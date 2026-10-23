@@ -46,10 +46,11 @@ export async function wonDealStats(
     SELECT
       avg(d.value)::numeric(14,2)::text AS "avgValue",
       percentile_cont(0.5) WITHIN GROUP (ORDER BY d.value)::numeric(14,2)::text AS "medianValue",
-      avg(extract(epoch FROM (d.won_time - d.created_at)) / 86400)::float8 AS "avgCycleDays",
-      percentile_cont(0.5) WITHIN GROUP (
+      (avg(extract(epoch FROM (d.won_time - d.created_at)) / 86400)
+        FILTER (WHERE d.won_time >= d.created_at))::float8 AS "avgCycleDays",
+      (percentile_cont(0.5) WITHIN GROUP (
         ORDER BY extract(epoch FROM (d.won_time - d.created_at)) / 86400
-      )::float8 AS "medianCycleDays"
+      ) FILTER (WHERE d.won_time >= d.created_at))::float8 AS "medianCycleDays"
     FROM deals d
     JOIN pipelines p ON p.id = d.pipeline_id
     WHERE d.deleted_at IS NULL

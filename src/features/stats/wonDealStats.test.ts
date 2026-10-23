@@ -77,6 +77,43 @@ describe("wonDealStats", () => {
     expect(r.medianCycleDays).toBeCloseTo(10, 5);
   });
 
+  it("leaves deals won before their creation date out of the sales cycle", async () => {
+    const user = await seedUser(h, { isAdmin: true });
+    const { pipeline, stages } = await seedPipeline(h);
+    const stage = stages[0];
+    if (stage === undefined) throw new Error("no stage");
+    const common = {
+      status: "won" as const,
+      value: "10.00",
+      pipelineId: pipeline.id,
+      stageId: stage.id,
+      ownerId: user.id,
+      visibilityLevel: "all" as const,
+    };
+    await seedDeal(h, {
+      ...common,
+      title: "ten day deal",
+      createdAt: new Date("2025-06-01T00:00:00Z"),
+      wonTime: new Date("2025-06-11T00:00:00Z"),
+    });
+    await seedDeal(h, {
+      ...common,
+      title: "imported after it was won",
+      createdAt: new Date("2025-08-01T00:00:00Z"),
+      wonTime: new Date("2025-06-02T00:00:00Z"),
+    });
+
+    const r = await wonDealStats(
+      h.db,
+      toActor(user),
+      { ...BASE, pipelineId: pipeline.id },
+      new AbortController().signal,
+    );
+    expect(r.avgCycleDays).toBeCloseTo(10, 5);
+    expect(r.medianCycleDays).toBeCloseTo(10, 5);
+    expect(r.avgValue).toBe("10.00");
+  });
+
   it("windows on won time, not creation time", async () => {
     const user = await seedUser(h, { isAdmin: true });
     const { pipeline, stages } = await seedPipeline(h);
