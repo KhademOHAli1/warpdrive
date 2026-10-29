@@ -1,4 +1,4 @@
-import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { McpServer } from "@modelcontextprotocol/server";
 import { z } from "zod";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";

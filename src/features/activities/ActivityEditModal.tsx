@@ -1,9 +1,10 @@
 "use client";
 import type React from "react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, type SelectOption } from "@/components/ui/Select";
 import { TimePicker } from "@/components/ui/TimePicker";
+import { reportTimePickerValidity } from "@/components/ui/timePickerValidity";
 import { ACTIVITY_PRIORITY_KEYS } from "@/constants/activityPriorities";
 import { FIELD_INPUT as FIELD } from "@/constants/formStyles";
 import {
@@ -42,6 +43,7 @@ export function ActivityEditModal({
   const preferences = useLocalePreferences();
   const [draftZone] = useState(preferences.timeZone);
   const tCalendar = useAppTranslations("calendar");
+  const fieldsRef = useRef<HTMLDivElement>(null);
   const typesQ = trpc.activities.listTypes.useQuery();
   const invalidateActivityLists = useInvalidateActivityLists();
   const types = localizeActivityTypes(typesQ.data ?? [], locale);
@@ -68,6 +70,7 @@ export function ActivityEditModal({
   const [pending, setPending] = useState(false);
 
   async function save(): Promise<void> {
+    if (!reportTimePickerValidity(fieldsRef.current)) return;
     if (subject.trim() === "") {
       setError(S.subjectRequired);
       return;
@@ -148,7 +151,7 @@ export function ActivityEditModal({
           <DialogTitle className="text-base font-semibold">{S.editActivity}</DialogTitle>
         </DialogHeader>
 
-        <div className="flex flex-col gap-3 px-5 py-4 text-sm">
+        <div ref={fieldsRef} className="flex flex-col gap-3 px-5 py-4 text-sm">
           <div className="block">
             <span className="mb-1 block font-medium">{S.type}</span>
             <Select
@@ -205,7 +208,7 @@ export function ActivityEditModal({
             timeZone={draftZone}
             date={date}
             time={time}
-            legacy={activity.allDay && !activity.dueDate}
+            legacy={activity.allDay && (activity.dueDate == null || activity.dueDate === "")}
           />
           <label className="block">
             <span className="mb-1 block font-medium">{S.location}</span>

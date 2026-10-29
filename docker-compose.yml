@@ -105,7 +105,13 @@ services:
     command: ["bun", "--bun", "next", "start"]
     env_file: .env
     healthcheck:
-      test: ["CMD", "bun", "-e", "fetch('http://localhost:3000/api/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      test:
+        [
+          "CMD",
+          "bun",
+          "-e",
+          "fetch('http://localhost:3000/api/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))",
+        ]
       interval: 15s
       timeout: 5s
       retries: 5

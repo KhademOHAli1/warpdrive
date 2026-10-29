@@ -19,8 +19,8 @@ export function contactPointAuditValue(value: unknown, locale: Locale): string |
   } as const;
   function point(raw: unknown): string {
     if (typeof raw === "string") return isolateAuditValue(raw, "ltr");
-    if (typeof raw !== "object" || raw === null || Array.isArray(raw))
-      return JSON.stringify(raw) ?? "";
+    if (raw === undefined || typeof raw === "function" || typeof raw === "symbol") return "";
+    if (typeof raw !== "object" || raw === null || Array.isArray(raw)) return JSON.stringify(raw);
     const record = raw as Record<string, unknown>;
     const supported =
       typeof record.value === "string" &&

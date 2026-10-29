@@ -1,4 +1,4 @@
-import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { McpServer } from "@modelcontextprotocol/server";
 import type { Db } from "@/db/client";
 import { createOrg, updateOrg } from "@/features/contacts/orgsRepo";
 import { createPerson, updatePerson } from "@/features/contacts/personsRepo";

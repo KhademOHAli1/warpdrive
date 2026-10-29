@@ -27,28 +27,33 @@ describe("StageChevrons", () => {
         ]}
       />,
     );
+    const segment = (name: string): HTMLElement => {
+      const item = getByText(name).closest("li");
+      if (item === null) throw new Error(`Missing stage segment: ${name}`);
+      return item;
+    };
 
     // Each segment reads in its own order-hue (inherited from the pipeline board).
-    expect(rgbPrefix(getByText("Qualified").style.backgroundColor)).toBe(
+    expect(rgbPrefix(segment("Qualified").style.backgroundColor)).toBe(
       rgbPrefix(tint(accentForOrder(0), 1)),
     );
-    expect(rgbPrefix(getByText("Contact").style.backgroundColor)).toBe(
+    expect(rgbPrefix(segment("Contact").style.backgroundColor)).toBe(
       rgbPrefix(tint(accentForOrder(1), 1)),
     );
-    expect(rgbPrefix(getByText("Proposal").style.backgroundColor)).toBe(
+    expect(rgbPrefix(segment("Proposal").style.backgroundColor)).toBe(
       rgbPrefix(tint(accentForOrder(2), 1)),
     );
 
     // Progress reads via fill intensity, and no leftover uniform token classes remain.
-    const passed = alphaOf(getByText("Qualified").style.backgroundColor);
-    const current = alphaOf(getByText("Contact").style.backgroundColor);
-    const future = alphaOf(getByText("Proposal").style.backgroundColor);
+    const passed = alphaOf(segment("Qualified").style.backgroundColor);
+    const current = alphaOf(segment("Contact").style.backgroundColor);
+    const future = alphaOf(segment("Proposal").style.backgroundColor);
     expect(passed).toBeGreaterThan(future);
     expect(current).toBeGreaterThanOrEqual(passed);
     for (const seg of ["Qualified", "Contact", "Proposal"]) {
-      expect(getByText(seg).className).not.toContain("bg-success");
-      expect(getByText(seg).className).not.toContain("bg-muted");
-      expect(getByText(seg).className).not.toContain("bg-primary");
+      expect(segment(seg).className).not.toContain("bg-success");
+      expect(segment(seg).className).not.toContain("bg-muted");
+      expect(segment(seg).className).not.toContain("bg-primary");
     }
   });
 });

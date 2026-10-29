@@ -8,6 +8,7 @@ import { MAX_DAILY_ACTIVITY_TARGET, MIN_DAILY_ACTIVITY_TARGET } from "@/constant
 import { useInvalidateActivityLists } from "@/features/activities/useInvalidateActivityLists";
 import { setDailyActivityTargetAction } from "@/features/identity/preferencesActions";
 import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
+import { useFormatters } from "@/lib/useFormatters";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { normalizeNumberInput } from "@/utils/normalizeNumberInput";
 import { SettingsCard, SettingsCardBody, SettingsCardHeader } from "../SettingsSurface";
@@ -26,12 +27,18 @@ function parseTarget(draft: string): number | null {
 export function DailyActivityTarget({ target }: { target: number }): React.ReactNode {
   const L = useSettingsMessages();
   const S = L.dailyActivityTarget;
+  const format = useFormatters();
 
   const router = useRouter();
   const reportError = useActionError();
   const invalidateActivityLists = useInvalidateActivityLists();
   const fieldId = useId();
-  const [draft, setDraft] = useState(String(target));
+  const [displayTarget, setDisplayTarget] = useState(target);
+  const [rawDraft, setRawDraft] = useState<string | null>(null);
+  // Keep typed drafts verbatim, including invalid input. Resting/committed values follow the
+  // current digit preference without rewriting unfinished work when that preference changes.
+  const draft =
+    rawDraft ?? format.number(displayTarget, { useGrouping: false, maximumFractionDigits: 0 });
   const committedRef = useRef(target);
   const persistedRef = useRef(target);
   const revisionRef = useRef(0);
@@ -42,7 +49,8 @@ export function DailyActivityTarget({ target }: { target: number }): React.React
     if (supersededByALaterCommit) return;
     const persisted = persistedRef.current;
     committedRef.current = persisted;
-    setDraft(String(persisted));
+    setDisplayTarget(persisted);
+    setRawDraft(null);
     reportError(errorId);
   }
 
@@ -67,12 +75,14 @@ export function DailyActivityTarget({ target }: { target: number }): React.React
     const current = committedRef.current;
     const next = parseTarget(draft);
     if (next === null || next === current) {
-      setDraft(String(current));
+      setDisplayTarget(current);
+      setRawDraft(null);
       return;
     }
     const revision = ++revisionRef.current;
     committedRef.current = next;
-    setDraft(String(next));
+    setDisplayTarget(next);
+    setRawDraft(null);
     writeQueueRef.current = writeQueueRef.current.then(() => persist(next, revision));
   }
 
@@ -92,7 +102,7 @@ export function DailyActivityTarget({ target }: { target: number }): React.React
           step={1}
           className="w-24"
           value={draft}
-          onChange={(e) => setDraft(e.target.value)}
+          onChange={(e) => setRawDraft(e.target.value)}
           onBlur={() => {
             commit();
           }}

@@ -22,12 +22,7 @@ export function GoalsTable({ goals, assigneeNames, onChanged, onEdit }: Props): 
   function goalLabel(g: Goal): string {
     if (g.subject === "activity")
       return L._extra.activityGoalDisplayLabel(g.action, L._extra.goalIntervals[g.interval]);
-    const noun =
-      g.subject === "deal"
-        ? g.metric === "value"
-          ? L._extra.goalDealValue
-          : L._extra.deals
-        : L._extra.activities;
+    const noun = g.metric === "value" ? L._extra.goalDealValue : L._extra.deals;
     return L._extra.goalDisplayLabel(
       noun,
       L._extra.goalActions[g.action],

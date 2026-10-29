@@ -15,69 +15,81 @@ export interface ChangeDisplayEntry {
   newValue: unknown;
 }
 
-// Audit rows keep their raw values. Localized prose is generated when the viewer reads them.
-export function localizedChangeLabel(entry: ChangeDisplayEntry, locale: Locale): string {
-  const t = createAppTranslator(locale, "sales");
-  const copy = messagesForLocale(locale).sales.changeLog;
-  function value(v: unknown): string {
-    if (v === null || v === undefined || v === "") return t("changeLog.none");
-    if (typeof v === "boolean") return t(v ? "changeLog.trueValue" : "changeLog.falseValue");
-    if (typeof v === "number") return new Intl.NumberFormat(locale).format(v);
-    return typeof v === "string" ? v : JSON.stringify(v);
-  }
+type SalesTranslator = ReturnType<typeof createAppTranslator<"sales">>;
+type LinkKind = "person" | "org" | "participant" | "follower";
+const linkedFields = new Map<string, LinkKind>([
+  ["person_id", "person"],
+  ["personId", "person"],
+  ["org_id", "org"],
+  ["orgId", "org"],
+  ["participant", "participant"],
+  ["follower", "follower"],
+]);
+
+function value(v: unknown, locale: Locale, t: SalesTranslator): string {
+  if (v === null || v === undefined || v === "") return t("changeLog.none");
+  if (typeof v === "boolean") return t(v ? "changeLog.trueValue" : "changeLog.falseValue");
+  if (typeof v === "number") return new Intl.NumberFormat(locale).format(v);
+  return typeof v === "string" ? v : JSON.stringify(v);
+}
+
+function linkedChangeLabel(entry: ChangeDisplayEntry, t: SalesTranslator): string | null {
+  const link = linkedFields.get(entry.field);
+  if (link === undefined) return null;
   const had = entry.oldValue !== null && entry.oldValue !== undefined;
   const has = entry.newValue !== null && entry.newValue !== undefined;
   const dir = !had ? "Add" : !has ? "Remove" : "Change";
-  const linked: Record<string, "person" | "org" | "participant" | "follower"> = {
-    person_id: "person",
-    personId: "person",
-    org_id: "org",
-    orgId: "org",
-    participant: "participant",
-    follower: "follower",
+  const linkDir = (link === "participant" || link === "follower") && dir === "Change" ? "Add" : dir;
+  return t(`changeLog.${link}${linkDir}` as "changeLog.personAdd");
+}
+
+function status(v: unknown, locale: Locale, t: SalesTranslator): string {
+  if (v === "open") return t("computed.statusOpen");
+  if (v === "won") return t("computed.statusWon");
+  if (v === "lost") return t("computed.statusLost");
+  return value(v, locale, t);
+}
+
+function displayAuditValue(field: string, v: unknown, locale: Locale, t: SalesTranslator): string {
+  if (isContactPointField(field)) return contactPointAuditValue(v, locale) ?? value(v, locale, t);
+  if (field === "status") return status(v, locale, t);
+  if (
+    (field === "source_channel" || field === "sourceChannel") &&
+    typeof v === "string" &&
+    isSourceChannelKey(v)
+  )
+    return sourceChannelLabel(v, locale);
+  return Array.isArray(v)
+    ? v.map((item) => value(item, locale, t)).join("، ")
+    : value(v, locale, t);
+}
+
+function enrichedValue(raw: unknown): { value: unknown; providers: string[] } | null {
+  if (typeof raw !== "object" || raw === null || Array.isArray(raw)) return null;
+  const record = raw as Record<string, unknown>;
+  if (!("value" in record) || !Array.isArray(record.providers)) return null;
+  return {
+    value: record.value,
+    providers: record.providers.filter((v): v is string => typeof v === "string"),
   };
-  const link = linked[entry.field];
-  if (link !== undefined) {
-    const linkDir =
-      (link === "participant" || link === "follower") && dir === "Change" ? "Add" : dir;
-    return t(`changeLog.${link}${linkDir}` as "changeLog.personAdd");
-  }
+}
+
+// Audit rows keep their raw values. Localized prose is generated when the viewer reads them.
+export function localizedChangeLabel(entry: ChangeDisplayEntry, locale: Locale): string {
+  const t = createAppTranslator(locale, "sales");
+  const linked = linkedChangeLabel(entry, t);
+  if (linked !== null) return linked;
+  const fields = new Map(Object.entries(messagesForLocale(locale).sales.changeLog.fields));
   const field = entry.field.startsWith("custom_field:")
     ? t("changeLog.customField")
-    : (copy.fields[entry.field.replaceAll(".", "_") as keyof typeof copy.fields] ??
-      t("changeLog.unknownField"));
-  const status = (v: unknown): string =>
-    v === "open"
-      ? t("computed.statusOpen")
-      : v === "won"
-        ? t("computed.statusWon")
-        : v === "lost"
-          ? t("computed.statusLost")
-          : value(v);
+    : (fields.get(entry.field.replaceAll(".", "_")) ?? t("changeLog.unknownField"));
   const lost = entry.field === "status" ? asLostStatusValue(entry.newValue) : null;
-  const record =
-    typeof entry.newValue === "object" && entry.newValue !== null && !Array.isArray(entry.newValue)
-      ? (entry.newValue as Record<string, unknown>)
-      : null;
-  const enriched =
-    record !== null && "value" in record && Array.isArray(record.providers) ? record : null;
+  const enriched = enrichedValue(entry.newValue);
   const newValue = lost !== null ? lost.value : enriched !== null ? enriched.value : entry.newValue;
-  const display = (v: unknown): string =>
-    isContactPointField(entry.field)
-      ? (contactPointAuditValue(v, locale) ?? value(v))
-      : entry.field === "status"
-        ? status(v)
-        : (entry.field === "source_channel" || entry.field === "sourceChannel") &&
-            typeof v === "string" &&
-            isSourceChannelKey(v)
-          ? sourceChannelLabel(v, locale)
-          : Array.isArray(v)
-            ? v.map(value).join("، ")
-            : value(v);
   const diff = t("changeLog.change", {
     field,
-    oldValue: isolateAuditValue(display(entry.oldValue)),
-    newValue: isolateAuditValue(display(newValue)),
+    oldValue: isolateAuditValue(displayAuditValue(entry.field, entry.oldValue, locale, t)),
+    newValue: isolateAuditValue(displayAuditValue(entry.field, newValue, locale, t)),
   });
   if (lost !== null) {
     const suffix = [lost.reason, lost.comment]
@@ -87,8 +99,7 @@ export function localizedChangeLabel(entry: ChangeDisplayEntry, locale: Locale):
     return suffix === "" ? diff : `${diff} · ${suffix}`;
   }
   if (enriched !== null) {
-    const providers = (enriched.providers as unknown[])
-      .filter((v): v is string => typeof v === "string")
+    const providers = enriched.providers
       .map((v) => isolateAuditValue(v))
       .join(locale === "fa" ? "، " : ", ");
     return providers === "" ? diff : diff + t("changeLog.fromProviders", { providers });

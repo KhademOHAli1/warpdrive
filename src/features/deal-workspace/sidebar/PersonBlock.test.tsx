@@ -277,7 +277,7 @@ it("adds a second email without dropping the first", async () => {
 it("promotes a non-primary email so the derived primary_email follows it", async () => {
   render(<PersonBlock person={multiPointPerson} />);
   fireEvent.click(screen.getByRole("button", { name: "Edit Email" }));
-  fireEvent.click(screen.getByRole("radio", { name: "Make email 2 primary" }));
+  fireEvent.click(screen.getByRole("radio", { name: "Make Email 2 primary" }));
   fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
   await waitFor(() => expect(updatePersonAction).toHaveBeenCalled());

@@ -160,6 +160,8 @@ export function ImportWizard(props: ImportWizardProps): React.ReactNode {
         )}
         {state.step === "preview" && state.batchId !== null && state.validation !== null && (
           <PreviewStep
+            target={state.target}
+            defs={defs}
             batchId={state.batchId}
             validation={state.validation}
             busy={busy}

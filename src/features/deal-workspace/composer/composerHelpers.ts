@@ -48,13 +48,14 @@ export function composedTemporal(
   const sameDayEnd =
     endAt ??
     (d.endTime === "" || allDay ? null : composeDueAtIso(d.startDate, d.endTime, timeZone));
-  const elapsed = iso && sameDayEnd ? (Date.parse(sameDayEnd) - Date.parse(iso)) / 60000 : 0;
+  const elapsed =
+    iso !== null && sameDayEnd !== null ? (Date.parse(sameDayEnd) - Date.parse(iso)) / 60000 : 0;
   return {
     dueAt: iso,
     allDay,
     dueDate,
     endAt,
-    endDate: allDay && endAt ? d.endDate : null,
+    endDate: allDay && endAt !== null ? d.endDate : null,
     durationMinutes: elapsed > 0 ? elapsed : deriveDurationMinutes(d.startTime, d.endTime),
   };
 }
@@ -88,7 +89,9 @@ function temporalUpdate(
       : {}),
     ...(endChanged
       ? {
-          ...(temporal.allDay && !stored.dueDate ? { dueDate: d.startDate } : {}),
+          ...(temporal.allDay && (stored.dueDate == null || stored.dueDate === "")
+            ? { dueDate: d.startDate }
+            : {}),
           endAt: temporal.endAt,
           endDate: temporal.endDate,
           durationMinutes: temporal.durationMinutes,

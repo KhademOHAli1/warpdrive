@@ -167,3 +167,30 @@ it("reports the existing monetary precision boundary without rounding or changin
   );
   expect(values.admin_numeric_key).toBe("۱۲٫۳۴۵");
 });
+
+it("does not manually save a stale custom time while an invalid raw time is shown", () => {
+  const onSave = vi.fn(() => Promise.resolve({ ok: true as const, value: {} }));
+  render(
+    <LocaleProvider locale="fa">
+      <InlineCustomFieldEditor
+        def={def({ type: "time", key: "time", name: "زمان پیگیری" })}
+        value="08:00"
+        currency="USD"
+        onSave={onSave}
+      />
+    </LocaleProvider>,
+  );
+  fireEvent.click(screen.getByRole("button", { name: "ویرایش زمان پیگیری" }));
+  const input = screen.getByLabelText("زمان پیگیری");
+  fireEvent.change(input, { target: { value: "09:00" } });
+  fireEvent.blur(input);
+  fireEvent.change(input, { target: { value: "99:99" } });
+  fireEvent.click(screen.getByRole("button", { name: "ذخیره" }));
+  expect(onSave).not.toHaveBeenCalled();
+  expect(input).toHaveValue("99:99");
+  expect(screen.getByRole("alert")).toHaveTextContent("ساعت معتبری");
+  fireEvent.change(input, { target: { value: "10:00" } });
+  fireEvent.blur(input);
+  fireEvent.click(screen.getByRole("button", { name: "ذخیره" }));
+  expect(onSave).toHaveBeenCalledWith("10:00");
+});

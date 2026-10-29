@@ -1,8 +1,10 @@
-import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
+import { Client, InMemoryTransport } from "@modelcontextprotocol/client";
+import { eq } from "drizzle-orm";
 import { expect, test } from "vitest";
+import { ERROR_IDS } from "@/constants/errorIds";
+import { deals } from "@/db/schema";
 import { withTestDb } from "@/db/testing";
-import { seedUser } from "@/db/testing/factories";
+import { seedPipelineWithStages, seedUser } from "@/db/testing/factories";
 import { buildAppContext } from "@/features/mcp/actorContext";
 import { hydrateActor } from "@/server/hydrateActor";
 import { buildMcpServer, listToolNames } from "./server";
@@ -82,6 +84,46 @@ test("tools/list serves every registered tool over the wire (each input schema i
     } finally {
       await client.close();
       await server.close();
+    }
+  });
+});
+
+test("wire calls validate input and retain write permissions", async () => {
+  await withTestDb(async (db) => {
+    const seeded = await seedPipelineWithStages(db, ["Open"]);
+    const stage = seeded.stages[0];
+    expect(stage).toBeDefined();
+    if (stage === undefined) return;
+
+    for (const isAdmin of [true, false]) {
+      const user = await seedUser(db, { isAdmin });
+      const actor = await hydrateActor(db, user.id, AbortSignal.timeout(5_000));
+      expect(actor).not.toBeNull();
+      if (actor === null) return;
+      const server = buildMcpServer(() => buildAppContext(db, actor), db);
+      const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+      await server.connect(serverTransport);
+      const client = new Client({ name: "wire-write-test", version: "0.0.0" });
+      await client.connect(clientTransport);
+      try {
+        const title = isAdmin ? "Allowed wire deal" : "Denied wire deal";
+        const input = { title, pipelineId: seeded.pipeline.id, stageId: stage.id };
+        const invalid = await client.callTool({
+          name: "create_deal",
+          arguments: { ...input, title: "" },
+        });
+        expect(invalid.isError).toBe(true);
+        expect(await db.select().from(deals).where(eq(deals.title, title))).toHaveLength(0);
+
+        const result = await client.callTool({ name: "create_deal", arguments: input });
+        expect(result.isError === true).toBe(!isAdmin);
+        const rows = await db.select().from(deals).where(eq(deals.title, title));
+        expect(rows).toHaveLength(isAdmin ? 1 : 0);
+        if (!isAdmin) expect(JSON.stringify(result.content)).toContain(ERROR_IDS.PERM_DENIED);
+      } finally {
+        await client.close();
+        await server.close();
+      }
     }
   });
 });

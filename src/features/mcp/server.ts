@@ -1,4 +1,4 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer } from "@modelcontextprotocol/server";
 import type { Db } from "@/db/client";
 import { registerReadTools } from "./tools/reads";
 import type { GetCtx } from "./tools/types";

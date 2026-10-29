@@ -46,14 +46,15 @@
     "language": "زبان",
     "calendar": "تقویم",
     "timeZone": "منطقه زمانی",
-    "persianCalendar": "هجری شمسی",
+    "persianCalendar": "هجری شمسی (ایران)",
     "gregorianCalendar": "میلادی",
-    "settingsTitle": "زبان و نمایش اعداد",
-    "settingsDescription": "زبان برنامه را انتخاب کنید. در حالت فارسی، می‌توانید شیوهٔ نمایش اعداد را هم تغییر دهید.",
+    "settingsTitle": "زبان، تقویم و اعداد",
+    "settingsDescription": "زبان و تقویم برنامه را انتخاب کنید. در حالت فارسی، می‌توانید شیوهٔ نمایش اعداد را هم تغییر دهید.",
     "numberDisplay": "نمایش اعداد",
     "persianNumbers": "اعداد فارسی (۱۲۳)",
     "englishNumbers": "اعداد انگلیسی (123)",
     "numberHelp": "این تنظیم، نمایش اعداد و تاریخ‌ها را تغییر می‌دهد و تأثیری بر اطلاعات ذخیره‌شده ندارد.",
-    "numberPreview": "پیش‌نمایش: {value, number}"
+    "numberPreview": "پیش‌نمایش: {value, number}",
+    "calendarHelp": "تقویم نمایش و انتخاب تاریخ را تعیین می‌کند. تاریخ‌های ذخیره‌شده تغییر نمی‌کنند."
   }
 }

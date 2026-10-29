@@ -5,6 +5,7 @@ import type React from "react";
 import { useId, useRef, useState } from "react";
 import { Input } from "@/components/ui/Input";
 import { Select, type SelectOption } from "@/components/ui/Select";
+import { reportTimePickerValidity } from "@/components/ui/timePickerValidity";
 import { createOrgAction, createPersonAction } from "@/features/contacts/actions";
 import { cleanAddress, nonEmptyPoints } from "@/features/contacts/EditContactForms";
 import {
@@ -185,7 +186,8 @@ function ContactCreateModal({
             onKeyDown={(event) => {
               if (event.key === "Enter") {
                 event.preventDefault();
-                void submit();
+                if (reportTimePickerValidity(event.currentTarget.closest('[role="dialog"]')))
+                  void submit();
               }
             }}
           />

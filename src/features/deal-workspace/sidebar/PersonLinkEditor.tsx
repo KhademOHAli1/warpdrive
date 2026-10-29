@@ -1,6 +1,7 @@
 "use client";
 import type React from "react";
 import { useId, useMemo, useRef, useState } from "react";
+import { reportTimePickerValidity } from "@/components/ui/timePickerValidity";
 import { FIELD_INPUT } from "@/constants/formStyles";
 import { createPersonAction } from "@/features/contacts/actions";
 import type { PersonMatchCandidate } from "@/features/contacts/personOptionsRepo";
@@ -16,13 +17,12 @@ import type { CustomFieldDef } from "@/types/customFields";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { findPersonMatches, type PersonMatchReason } from "./personMatch";
 
-// Why a suggestion showed up, in the user's terms. An email or phone is effectively an identity, so
-// say so plainly rather than the vaguer "similar contact" the create comboboxes use for names.
-const REASON_TEXT: Record<PersonMatchReason, string> = {
-  email: "already has this email",
-  phone: "already has this phone",
-  name: "has a similar name",
-};
+// Translate whole explanations so the matched person's name can appear naturally in each language.
+const REASON_MESSAGE = {
+  email: "computed.personMatchEmail",
+  phone: "computed.personMatchPhone",
+  name: "computed.personMatchName",
+} as const satisfies Record<PersonMatchReason, string>;
 
 interface Draft {
   firstName: string;
@@ -58,6 +58,7 @@ export function PersonLinkEditor({
   onError: (errorId: string) => void;
 }): React.ReactNode {
   const translateSales = useAppTranslations("sales");
+  const fieldsRef = useRef<HTMLDivElement>(null);
 
   const [draft, setDraft] = useState<Draft>(EMPTY);
   const [values, setValues] = useState<CustomFieldValues>({});
@@ -98,13 +99,14 @@ export function PersonLinkEditor({
   // Create-then-link. The deal link only happens once the person exists, so a failed create cannot
   // leave the deal pointing at nothing.
   async function save(): Promise<void> {
+    if (!reportTimePickerValidity(fieldsRef.current)) return;
     const name = fullName(draft);
     if (name === "") return;
     // createPerson validates important/required person fields server-side, so catch it here and
     // name the field rather than surfacing a bare E_CF_003 (mirrors ConvertLeadDialog).
     const missing = firstMissingImportantField(customFieldDefs, values);
     if (missing !== null) {
-      setError(`${missing.name} is required`);
+      setError(translateSales("computed.requiredField", { name: `\u2068${missing.name}\u2069` }));
       return;
     }
     setError(null);
@@ -149,7 +151,7 @@ export function PersonLinkEditor({
   }
 
   return (
-    <div className="space-y-2 py-1 text-sm">
+    <div ref={fieldsRef} className="space-y-2 py-1 text-sm">
       <Field
         id={ids.first}
         label={translateSales("first_name_702ef")}
@@ -191,10 +193,14 @@ export function PersonLinkEditor({
           {matches.map((m) => (
             <li key={m.option.id} className="flex items-center justify-between gap-2">
               <span className="min-w-0 truncate">
-                <span className="font-medium">
-                  <bdi dir="auto">{m.option.name}</bdi>
-                </span>{" "}
-                {REASON_TEXT[m.reason]}
+                {translateSales.rich(REASON_MESSAGE[m.reason], {
+                  name: m.option.name,
+                  person: (chunks) => (
+                    <bdi dir="auto" className="font-medium">
+                      {chunks}
+                    </bdi>
+                  ),
+                })}
               </span>
               <button
                 type="button"
@@ -209,7 +215,11 @@ export function PersonLinkEditor({
         </ul>
       )}
 
-      {error !== null && <p className="text-xs text-destructive">{error}</p>}
+      {error !== null && (
+        <p role="alert" className="text-xs text-destructive">
+          {error}
+        </p>
+      )}
 
       <div className="flex justify-end gap-2 pt-1">
         <button

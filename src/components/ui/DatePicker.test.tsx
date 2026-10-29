@@ -16,9 +16,104 @@ beforeAll(() => {
 // this, renders from earlier `it` blocks accumulate in the same jsdom document.
 afterEach(() => {
   cleanup();
+  vi.useRealTimers();
+  vi.unstubAllEnvs();
 });
 
 describe("DatePicker", () => {
+  it("keeps the visible civil month across locale/calendar changes and follows an external value", async () => {
+    const onChange = vi.fn();
+    const draft = (locale: "en" | "fa", calendar: "gregory" | "persian", value = "2026-07-04") => (
+      <LocaleProvider locale={locale} calendar={calendar}>
+        <input aria-label="Draft title" defaultValue="" />
+        <DatePicker value={value} onChange={onChange} ariaLabel="Start date" />
+      </LocaleProvider>
+    );
+    const view = render(draft("en", "gregory"));
+    fireEvent.change(screen.getByLabelText("Draft title"), { target: { value: "پیگیری قرارداد" } });
+    fireEvent.click(screen.getByLabelText("Start date"));
+    fireEvent.click(await screen.findByRole("button", { name: "Go to the Next Month" }));
+    expect(screen.getByRole("grid")).toHaveAccessibleName("August 2026");
+
+    view.rerender(draft("fa", "gregory"));
+    expect(await screen.findByRole("grid", { name: "اوت ۲۰۲۶" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "شنبه، ۱۵ اوت ۲۰۲۶" })).toBeVisible();
+    expect(screen.getByLabelText("Start date")).toHaveTextContent("۲۰۲۶/۰۷/۰۴");
+
+    view.rerender(draft("fa", "persian"));
+    expect(await screen.findByRole("grid", { name: "مرداد ۱۴۰۵" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "شنبه، ۲۴ مرداد ۱۴۰۵" })).toBeVisible();
+    expect(screen.getByLabelText("Start date")).toHaveTextContent("۱۴۰۵/۰۴/۱۳");
+
+    view.rerender(draft("fa", "persian", "2026-11-20"));
+    expect(await screen.findByRole("grid", { name: "آبان ۱۴۰۵" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "جمعه، ۲۹ آبان ۱۴۰۵، انتخاب‌شده" })).toBeVisible();
+    expect(screen.getByLabelText("Draft title")).toHaveValue("پیگیری قرارداد");
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it("opens at the account's Nowruz day and marks today when the browser is still on yesterday", async () => {
+    vi.stubEnv("TZ", "Pacific/Honolulu");
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-03-20T22:00:00Z"));
+    const onChange = vi.fn();
+    render(
+      <LocaleProvider locale="fa" timeZone="Asia/Tehran">
+        <DatePicker value={null} onChange={onChange} ariaLabel="Start date" />
+      </LocaleProvider>,
+    );
+    fireEvent.click(screen.getByLabelText("Start date"));
+    expect(await screen.findByRole("grid", { name: "فروردین ۱۴۰۵" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "امروز، شنبه، ۱ فروردین ۱۴۰۵" })).toBeVisible();
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it("respects a saved Gregorian calendar while keeping Farsi labels", async () => {
+    const onChange = vi.fn();
+    render(
+      <LocaleProvider locale="fa" calendar="gregory">
+        <DatePicker value="2026-03-21" onChange={onChange} ariaLabel="Start date" />
+      </LocaleProvider>,
+    );
+    expect(screen.getByLabelText("Start date")).toHaveTextContent("۲۰۲۶/۰۳/۲۱");
+    fireEvent.click(screen.getByLabelText("Start date"));
+    const next = await screen.findByText("۲۲", { selector: "button" });
+    expect(next).toHaveAccessibleName("یکشنبه، ۲۲ مارس ۲۰۲۶");
+    fireEvent.click(next);
+    expect(onChange).toHaveBeenCalledWith("2026-03-22");
+  });
+
+  it("respects a saved Solar Hijri calendar with English labels", async () => {
+    const onChange = vi.fn();
+    render(
+      <LocaleProvider locale="en" calendar="persian">
+        <DatePicker value="2026-03-21" onChange={onChange} ariaLabel="Start date" />
+      </LocaleProvider>,
+    );
+    expect(screen.getByLabelText("Start date")).toHaveTextContent("1405/01/01");
+    fireEvent.click(screen.getByLabelText("Start date"));
+    const next = await screen.findByText("2", { selector: "button" });
+    expect(next).toHaveAccessibleName("Sunday, Farvardin 2nd, 1405");
+    fireEvent.click(next);
+    expect(onChange).toHaveBeenCalledWith("2026-03-22");
+  });
+
+  it("updates the preferred calendar without changing the stored date or an unsaved draft", async () => {
+    const onChange = vi.fn();
+    const draft = (calendar: "persian" | "gregory") => (
+      <LocaleProvider locale="fa" calendar={calendar}>
+        <input aria-label="Draft title" defaultValue="" />
+        <DatePicker value="2026-03-21" onChange={onChange} ariaLabel="Start date" />
+      </LocaleProvider>
+    );
+    const view = render(draft("persian"));
+    fireEvent.change(screen.getByLabelText("Draft title"), { target: { value: "پیگیری قرارداد" } });
+    view.rerender(draft("gregory"));
+    expect(await screen.findByText("۲۰۲۶/۰۳/۲۱")).toBeVisible();
+    expect(screen.getByLabelText("Draft title")).toHaveValue("پیگیری قرارداد");
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
   it("uses chosen English digits with Farsi labels and keeps Gregorian action dates", async () => {
     const onChange = vi.fn();
     render(

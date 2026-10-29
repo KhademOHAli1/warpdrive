@@ -1,4 +1,4 @@
-import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { McpServer } from "@modelcontextprotocol/server";
 import type { Db } from "@/db/client";
 import { createDeal, moveDeal, updateDeal } from "@/features/deals/dealActions";
 import { dealCreateInput, dealMoveInput, dealUpdateInput } from "@/features/deals/schemas";

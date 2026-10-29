@@ -5,9 +5,7 @@ import { useMemo, useState } from "react";
 import { useCompanyCurrency } from "@/features/currencies/CurrencyProvider";
 import {
   CustomFieldCreateFields,
-  customFieldCreateError,
   customFieldCreatePayload,
-  firstMissingImportantField,
 } from "@/features/custom-fields/CustomFieldCreateFields";
 import { EntityCreateModalShell } from "@/features/entity-create/EntityCreateModalShell";
 import {
@@ -21,6 +19,7 @@ import { trpc } from "@/lib/trpc-client";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { AddDealLeftColumn } from "./AddDealLeftColumn";
 import { type AddDealState, initialAddDealState } from "./addDealState";
+import { addDealCustomFieldError } from "./addDealValidation";
 import { createDealAction } from "./createDealAction";
 import { deriveEntityTitle } from "./dealTitleAutofill";
 import { parseNewDeal } from "./newDealForm";
@@ -144,37 +143,13 @@ export function AddDealModal(props: AddDealModalProps): React.ReactNode {
       const dealFields = dealFieldsQ.data ?? [];
       const personFields = personFieldsQ.data ?? [];
       const orgFields = orgFieldsQ.data ?? [];
-      const missingDealField = firstMissingImportantField(dealFields, state.dealCustomFields);
-      if (missingDealField !== null) {
-        setError(translateSales("computed.requiredField", { name: missingDealField.name }));
-        return;
-      }
-      if (state.orgMode === "new") {
-        const missingOrgField = firstMissingImportantField(orgFields, state.orgCustomFields);
-        if (missingOrgField !== null) {
-          setError(translateSales("computed.requiredField", { name: missingOrgField.name }));
-          return;
-        }
-      }
-      if (state.personMode === "new") {
-        const missingPersonField = firstMissingImportantField(
-          personFields,
-          state.personCustomFields,
-        );
-        if (missingPersonField !== null) {
-          setError(translateSales("computed.requiredField", { name: missingPersonField.name }));
-          return;
-        }
-      }
-      const invalidCustomField =
-        customFieldCreateError(dealFields, state.dealCustomFields, locale) ??
-        (state.orgMode === "new"
-          ? customFieldCreateError(orgFields, state.orgCustomFields, locale)
-          : null) ??
-        (state.personMode === "new"
-          ? customFieldCreateError(personFields, state.personCustomFields, locale)
-          : null);
-      if (invalidCustomField) {
+      const invalidCustomField = addDealCustomFieldError(
+        state,
+        { dealFields, personFields, orgFields },
+        locale,
+        (name) => translateSales("computed.requiredField", { name }),
+      );
+      if (invalidCustomField !== null) {
         setError(invalidCustomField);
         return;
       }

@@ -71,8 +71,8 @@ export function groupByLocalDay(
     if (!includeOverdue && a.overdue === true) continue;
     // Multi-day activities (endAt set) span every local day in [dueAt, endAt]; local "YYYY-MM-DD"
     // strings compare lexically as dates. Single-day activities keep their one-day behavior.
-    const startKey = activityDay(a, timeZone)!;
-    const endKey = activityEndDay(a, timeZone)!;
+    const startKey = activityDay(a, timeZone);
+    const endKey = activityEndDay(a, timeZone);
     for (const iso of dayIsos) {
       if (iso >= startKey && iso <= endKey) map.get(iso)?.push(a);
     }

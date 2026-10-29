@@ -18,6 +18,7 @@ beforeAll(() => {
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
+  vi.useRealTimers();
 });
 
 const { createActivityAction } = vi.hoisted(() => ({
@@ -55,6 +56,7 @@ vi.mock("@/lib/trpc-client", () => ({
   },
 }));
 
+import { LocaleProvider } from "@/features/i18n/LocaleProvider";
 import { ActivityComposerInline } from "./ActivityComposerInline";
 
 // Opens the Participants MultiCombobox and toggles an option by its visible label.
@@ -69,9 +71,15 @@ it("focuses the Subject field as soon as the Activity composer opens", async () 
 });
 
 it("submits subject + assembled dueAt + done, without the 09:00 hardcode", async () => {
-  render(<ActivityComposerInline dealId="d1" personId={null} orgId="o1" onCreated={vi.fn()} />);
+  vi.useFakeTimers({ toFake: ["Date"] });
+  vi.setSystemTime(new Date("2026-03-20T22:00:00Z"));
+  render(
+    <LocaleProvider timeZone="Asia/Tehran">
+      <ActivityComposerInline dealId="d1" personId={null} orgId="o1" onCreated={vi.fn()} />
+    </LocaleProvider>,
+  );
   fireEvent.change(screen.getByLabelText("Subject"), { target: { value: "Discovery" } });
-  // Start date already defaults to today; only the time needs setting here.
+  // It is already March 21 in Tehran. The default date and entered hour share that account zone.
   fireEvent.change(screen.getByLabelText("Start time"), { target: { value: "14:00" } });
   fireEvent.blur(screen.getByLabelText("Start time"));
   fireEvent.click(screen.getByLabelText("Mark as done"));
@@ -85,7 +93,7 @@ it("submits subject + assembled dueAt + done, without the 09:00 hardcode", async
   expect(payload.subject).toBe("Discovery");
   expect(payload.done).toBe(true);
   expect(payload.dealId).toBe("d1");
-  expect(new Date(payload.dueAt as string).getHours()).toBe(14);
+  expect(payload.dueAt).toBe("2026-03-21T10:30:00.000Z");
 });
 
 it("maps Owner to assigneeId (a user) and Participants to guestPersonIds (persons)", async () => {
@@ -273,4 +281,16 @@ it("sends leadId (and a null dealId) when anchored to a lead", async () => {
   ];
   expect(payload.dealId).toBeNull();
   expect(payload.leadId).toBe("l1");
+});
+
+it.each(["Start time", "End time"])("does not save with an invalid raw time in %s", (label) => {
+  render(<ActivityComposerInline dealId="d1" personId={null} orgId="o1" onCreated={vi.fn()} />);
+  const start = screen.getByLabelText("Start time");
+  fireEvent.change(start, { target: { value: "09:00" } });
+  fireEvent.blur(start);
+  const input = screen.getByLabelText(label);
+  fireEvent.change(input, { target: { value: "99:99" } });
+  fireEvent.blur(input);
+  fireEvent.click(screen.getByRole("button", { name: "Save" }));
+  expect(createActivityAction).not.toHaveBeenCalled();
 });

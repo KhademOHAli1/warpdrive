@@ -98,7 +98,7 @@ export function dealFilterFields(
     },
     {
       field: "expectedCloseDate",
-      label: t("fields.expectedCloseDate"),
+      label: t("fields.expectedCloseFilter"),
       ops: OPS_BY_FIELD.expectedCloseDate,
       input: { kind: "date" },
     },

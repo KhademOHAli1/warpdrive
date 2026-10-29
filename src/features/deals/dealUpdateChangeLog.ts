@@ -2,8 +2,8 @@
 // caps. Every row is written on the caller's transaction (atomic with the UPDATE) and only when
 // the field was present in the input AND its value actually changed (a no-op edit logs nothing).
 import {
-  CHANGE_FIELD_EXPECTED_CLOSE,
   CHANGE_FIELD_CURRENCY,
+  CHANGE_FIELD_EXPECTED_CLOSE,
   CHANGE_FIELD_ORG,
   CHANGE_FIELD_PERSON,
   CHANGE_FIELD_SOURCE_CHANNEL_ID,

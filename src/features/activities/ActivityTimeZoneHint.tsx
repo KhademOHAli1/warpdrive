@@ -18,9 +18,10 @@ export function ActivityTimeZoneHint({
   let offset = "";
   let ambiguous = false;
   try {
-    if (date && time) ({ offset, ambiguous } = wallTimeToInstant(date, time, timeZone));
+    if (date !== "" && time !== "")
+      ({ offset, ambiguous } = wallTimeToInstant(date, time, timeZone));
   } catch {}
-  if (originalInstant && date && time) {
+  if (originalInstant != null && originalInstant !== "" && date !== "" && time !== "") {
     const original = instantParts(originalInstant, timeZone);
     if (original.date === date && original.time === time) offset = original.offset;
   }

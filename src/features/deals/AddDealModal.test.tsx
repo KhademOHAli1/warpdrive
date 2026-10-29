@@ -261,16 +261,32 @@ describe("AddDealModal", () => {
   });
 
   it("validates populated optional custom numbers before creating inline contacts", async () => {
-    customFieldDefs.push({id:"11111111-1111-1111-1111-111111111111",targetEntity:"deal",type:"numeric",name:"Score",key:"score",options:[],isRequired:false,isImportant:false,showInAddForm:true,order:0,archivedAt:null});
+    customFieldDefs.push({
+      id: "11111111-1111-1111-1111-111111111111",
+      targetEntity: "deal",
+      type: "numeric",
+      name: "Score",
+      key: "score",
+      options: [],
+      isRequired: false,
+      isImportant: false,
+      showInAddForm: true,
+      order: 0,
+      archivedAt: null,
+    });
     renderModal();
-    fireEvent.change(screen.getByLabelText("Organization"),{target:{value:"New Org"}});
+    fireEvent.change(screen.getByLabelText("Organization"), { target: { value: "New Org" } });
     fireEvent.blur(screen.getByLabelText("Organization"));
-    fireEvent.change(screen.getByLabelText("Score"),{target:{value:"invalid"}});
-    fireEvent.click(screen.getByRole("button",{name:"Save"}));
+    fireEvent.change(screen.getByLabelText("Score"), { target: { value: "invalid" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
     expect(createOrgAction).not.toHaveBeenCalled();
     expect(createPersonAction).not.toHaveBeenCalled();
     expect(createDealAction).not.toHaveBeenCalled();
-    expect((await screen.findAllByRole("alert")).some((node) => (node.textContent ?? "").includes("Score"))).toBe(true);
+    expect(
+      (await screen.findAllByRole("alert")).some((node) =>
+        (node.textContent ?? "").includes("Score"),
+      ),
+    ).toBe(true);
   });
 
   it("autofills '{org} deal' when the auto-prefix preference is on", () => {

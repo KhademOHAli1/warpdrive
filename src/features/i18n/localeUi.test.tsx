@@ -4,22 +4,18 @@ import LoginPage from "@/app/(auth)/login/page";
 import { LocaleProvider } from "./LocaleProvider";
 
 describe("localized sign-in", () => {
-  it("renders the saved Farsi sign-in language without a standalone language setting", () => {
+  it("renders the saved Farsi sign-in language without a standalone language setting", async () => {
     const html = renderToStaticMarkup(
-      <LocaleProvider locale="fa">
-        <LoginPage />
-      </LocaleProvider>,
+      <LocaleProvider locale="fa">{await LoginPage({})}</LocaleProvider>,
     );
     expect(html).toContain("ورود با حساب گوگل");
     expect(html).toContain("حساب \u2066Google Workspace\u2069 سازمان خود");
     expect(html).not.toContain("تغییر زبان به انگلیسی");
   });
 
-  it("keeps the English sign-in experience available", () => {
+  it("keeps the English sign-in experience available", async () => {
     const html = renderToStaticMarkup(
-      <LocaleProvider locale="en">
-        <LoginPage />
-      </LocaleProvider>,
+      <LocaleProvider locale="en">{await LoginPage({})}</LocaleProvider>,
     );
     expect(html).toContain("Sign in with Google");
     expect(html).not.toContain("Switch language to Persian");

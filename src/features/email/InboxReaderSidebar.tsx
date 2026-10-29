@@ -59,11 +59,10 @@ export function InboxReaderSidebar({
 
       {primaryEmail !== null && (
         <section className="flex items-center gap-2 rounded-md border p-3">
-          <Avatar
-            name={primaryName ?? primaryEmail}
-            className="h-8 w-8 text-xs"
-          />
-          <span className="min-w-0 truncate text-sm font-medium"><bdi dir="auto">{primaryName ?? primaryEmail}</bdi></span>
+          <Avatar name={primaryName ?? primaryEmail} className="h-8 w-8 text-xs" />
+          <span className="min-w-0 truncate text-sm font-medium">
+            <bdi dir="auto">{primaryName ?? primaryEmail}</bdi>
+          </span>
         </section>
       )}
 

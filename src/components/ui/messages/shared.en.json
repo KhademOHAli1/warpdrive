@@ -23,5 +23,6 @@
     "purple": "Purple",
     "pink": "Pink",
     "white": "White"
-  }
+  },
+  "invalidTime": "Enter a valid time in hours:minutes format."
 }

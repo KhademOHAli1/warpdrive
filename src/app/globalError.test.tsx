@@ -2,8 +2,17 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { STRINGS } from "@/constants/strings";
+import type { AppNamespace } from "@/features/i18n/catalog";
 import AppNotFound from "./(app)/not-found";
 import GlobalError from "./global-error";
+
+vi.mock("@/features/i18n/server", async () => {
+  const { createAppTranslator } = await import("@/features/i18n/catalog");
+  return {
+    getAppTranslations: (namespace: AppNamespace) =>
+      Promise.resolve(createAppTranslator("en", namespace)),
+  };
+});
 
 afterEach(cleanup);
 
@@ -43,8 +52,8 @@ describe("global error boundary", () => {
 // notFound() is already thrown by the deal, person and org pages. Without this file the user lands
 // on Next's stock page with none of the app chrome.
 describe("(app) not-found boundary", () => {
-  it("explains that the record is missing or not visible, and offers a way out", () => {
-    render(<AppNotFound />);
+  it("explains that the record is missing or not visible, and offers a way out", async () => {
+    render(await AppNotFound());
     expect(screen.getByRole("heading").textContent).toBeTruthy();
     expect(screen.getByRole("link").getAttribute("href")).toBe("/pipeline");
   });

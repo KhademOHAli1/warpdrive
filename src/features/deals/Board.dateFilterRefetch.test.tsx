@@ -188,7 +188,7 @@ describe("date context preference changes", () => {
     fireEvent.click(screen.getByText("change-date-preferences"));
     await waitFor(() => expect(savePreferences).toHaveBeenCalled());
     expect(boardQuery).not.toHaveBeenCalled();
-    await act(async () => finishSave({ ok: true }));
+    await act(() => Promise.resolve(finishSave({ ok: true })));
     await waitFor(() =>
       expect(boardQuery).toHaveBeenCalledWith(
         expect.objectContaining({ timeZone: "Asia/Tehran", locale: "fa", calendar: "persian" }),

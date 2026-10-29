@@ -37,6 +37,22 @@ export function LanguageSettings() {
             }}
           />
         </div>
+        <div className="space-y-1.5">
+          <p className="text-sm font-medium">{t("calendar")}</p>
+          <Select
+            ariaLabel={t("calendar")}
+            value={preferences.calendar}
+            disabled={pending}
+            options={[
+              { value: "persian", label: t("persianCalendar") },
+              { value: "gregory", label: t("gregorianCalendar") },
+            ]}
+            onChange={(value) => {
+              if (value === "persian" || value === "gregory") void choose({ calendar: value });
+            }}
+          />
+          <p className="text-sm text-muted-foreground">{t("calendarHelp")}</p>
+        </div>
         {preferences.locale === "fa" && (
           <div className="space-y-1.5">
             <p className="text-sm font-medium">{t("numberDisplay")}</p>

@@ -1,4 +1,4 @@
-import type { AuthInfo } from "@modelcontextprotocol/sdk/server/auth/types.js";
+import type { AuthInfo } from "@modelcontextprotocol/server";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import { verifyAccessToken } from "@/features/oauth/tokens";

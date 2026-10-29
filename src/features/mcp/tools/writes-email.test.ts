@@ -1,4 +1,4 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer } from "@modelcontextprotocol/server";
 import { sql } from "drizzle-orm";
 import { expect, test } from "vitest";
 import { withTestDb } from "@/db/testing";

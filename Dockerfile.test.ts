@@ -1,13 +1,11 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
-// The build stamp reaches the running app through three files that know nothing about each other:
-// the workflow passes the SHA as a build arg, the Dockerfile declares it in the stage that runs
-// `next build` (prerendered pages read it then) and in the runtime stage (dynamic pages read it at
-// request time), and src/config/env.ts defaults it to "". Any one of them dropping out is silent:
-// the app boots fine and just reports an empty commit, which is how prod ran unstamped.
+// Docker consumers pass APP_COMMIT as a build arg. Both the build and runtime stages must
+// preserve it; dropping either silently produces unstamped prerendered or dynamic pages.
+// Public CI's separate app-build stamp contract lives in ciWorkflow.test.ts. The upstream
+// private deployment workflow is not part of this checkout (see docs/public-ci.md).
 const dockerfile = readFileSync(new URL("./Dockerfile", import.meta.url), "utf8");
-const workflow = readFileSync(new URL("./.github/workflows/deploy.yml", import.meta.url), "utf8");
 
 function stage(name: string): string {
   const stages = dockerfile.split(/^FROM .+ AS /m);
@@ -17,10 +15,6 @@ function stage(name: string): string {
 }
 
 describe("build metadata (APP_COMMIT)", () => {
-  it("is passed as a build arg by the deploy workflow", () => {
-    expect(workflow).toMatch(/APP_COMMIT=\$\{\{\s*github\.sha\s*\}\}/);
-  });
-
   it("is declared in the build stage so prerendered pages carry it", () => {
     const build = stage("build");
     expect(build).toMatch(/^ARG APP_COMMIT/m);
@@ -36,5 +30,14 @@ describe("build metadata (APP_COMMIT)", () => {
   it("declares the runtime stamp after the COPY layers so a new SHA cannot bust their cache", () => {
     const runtime = stage("runtime");
     expect(runtime.indexOf("ARG APP_COMMIT")).toBeGreaterThan(runtime.lastIndexOf("\nCOPY "));
+  });
+});
+
+describe("Bun dependency patches", () => {
+  it.each(["deps", "prod-deps"])("copies patches before the %s frozen install", (name) => {
+    const dependencyStage = stage(name);
+    const copyPatches = dependencyStage.indexOf("COPY patches ./patches");
+    expect(copyPatches).toBeGreaterThan(-1);
+    expect(copyPatches).toBeLessThan(dependencyStage.indexOf("RUN bun install --frozen-lockfile"));
   });
 });

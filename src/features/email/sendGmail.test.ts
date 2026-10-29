@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { env } from "@/config/env";
 import { ok } from "@/types/result";
 import { FakeGmailClient } from "./gmailFake";
 import { sendGmail } from "./send";
@@ -21,13 +22,16 @@ describe("sendGmail (system-send primitive)", () => {
 
     const send = fake.calls.find((c) => c.method === "sendRaw");
     expect(send).toBeTruthy();
-    const raw = (send?.args as { rawBase64: string }).rawBase64;
+    if (send === undefined) return;
+    const raw = (send.args as { rawBase64: string }).rawBase64;
     const mime = Buffer.from(raw, "base64url").toString("utf8");
     expect(mime).toContain("Subject: System alert");
     expect(mime).toContain("To: you@y.com");
-    // Domain comes from env.GOOGLE_WORKSPACE_DOMAIN (example.com in the test env, per
-    // vitest.setup.ts); deriveMessageId is <accountId.idempotencyKey@domain>.
-    expect(mime).toMatch(/Message-ID: <acc-1\..*@example\.com>/);
+    // Bun can load a local workspace domain before test defaults are applied.
+    // The system sender must use that configured domain in its Message-ID.
+    const messageId = mime.split("\r\n").find((line) => line.startsWith("Message-ID:"));
+    expect(messageId).toMatch(/^Message-ID: <acc-1\./);
+    expect(messageId).toContain(`@${env.GOOGLE_WORKSPACE_DOMAIN}>`);
   });
 
   it("threads the reply when threadId is supplied", async () => {
@@ -41,7 +45,9 @@ describe("sendGmail (system-send primitive)", () => {
     );
     expect(r.ok).toBe(true);
     const send = fake.calls.find((c) => c.method === "sendRaw");
-    expect((send?.args as { threadId?: string }).threadId).toBe("th-9");
+    expect(send).toBeDefined();
+    if (send === undefined) return;
+    expect((send.args as { threadId?: string }).threadId).toBe("th-9");
   });
 
   it("propagates a transport error as a Result (never throws)", async () => {

@@ -16,13 +16,23 @@ export interface ActivityTemporalRecord {
   dueDate?: string | null;
   endDate?: string | null;
 }
+export function activityDay(
+  a: ActivityTemporalRecord & { dueAt: ActivityInstant },
+  timeZone?: string,
+): string;
+export function activityDay(a: ActivityTemporalRecord, timeZone?: string): string | null;
 export function activityDay(a: ActivityTemporalRecord, timeZone = "UTC"): string | null {
-  if (a.allDay && a.dueDate) return a.dueDate;
+  if (a.allDay && a.dueDate != null && a.dueDate !== "") return a.dueDate;
   const at = a.dueAt ?? a.dueAtIso;
   return at == null ? null : instantCivilDate(at, timeZone);
 }
+export function activityEndDay(
+  a: ActivityTemporalRecord & { dueAt: ActivityInstant },
+  timeZone?: string,
+): string;
+export function activityEndDay(a: ActivityTemporalRecord, timeZone?: string): string | null;
 export function activityEndDay(a: ActivityTemporalRecord, timeZone = "UTC"): string | null {
-  if (a.allDay && a.dueDate) return a.endDate ?? a.dueDate;
+  if (a.allDay && a.dueDate != null && a.dueDate !== "") return a.endDate ?? a.dueDate;
   return a.endAt == null ? activityDay(a, timeZone) : instantCivilDate(a.endAt, timeZone);
 }
 // Legacy all-day timestamps have no recoverable original zone. This explicit compatibility
@@ -33,6 +43,6 @@ export function activityParts(a: ActivityTemporalRecord, timeZone = "UTC") {
   return {
     date,
     time: a.allDay || at == null ? "" : instantParts(at, timeZone).time,
-    legacy: a.allDay && at != null && !a.dueDate,
+    legacy: a.allDay && at != null && (a.dueDate == null || a.dueDate === ""),
   };
 }

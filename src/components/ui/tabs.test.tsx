@@ -5,21 +5,21 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it } from "vitest";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./tabs";
 
+function Fixture(): React.ReactNode {
+  return (
+    <Tabs defaultValue="a">
+      <TabsList>
+        <TabsTrigger value="a">Alpha</TabsTrigger>
+        <TabsTrigger value="b">Beta</TabsTrigger>
+      </TabsList>
+      <TabsContent value="a">Panel A</TabsContent>
+      <TabsContent value="b">Panel B</TabsContent>
+    </Tabs>
+  );
+}
+
 describe("Tabs", () => {
   afterEach(cleanup);
-
-  function Fixture(): React.ReactNode {
-    return (
-      <Tabs defaultValue="a">
-        <TabsList>
-          <TabsTrigger value="a">Alpha</TabsTrigger>
-          <TabsTrigger value="b">Beta</TabsTrigger>
-        </TabsList>
-        <TabsContent value="a">Panel A</TabsContent>
-        <TabsContent value="b">Panel B</TabsContent>
-      </Tabs>
-    );
-  }
 
   it("exposes tablist/tab roles and shows the default panel", () => {
     render(<Fixture />);

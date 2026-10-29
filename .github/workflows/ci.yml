@@ -1,0 +1,114 @@
+name: Public Bun CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  crm:
+    name: CRM checks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Set up package-pinned Bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version-file: package.json
+      - name: Install locked app dependencies
+        run: bun install --frozen-lockfile
+      - name: Generate and check app types
+        run: bun run typecheck
+      - name: Check translations and lint
+        run: bun run lint
+      - name: Run app unit tests
+        run: bun run test:unit --maxWorkers=2
+      - name: Build app with isolated validation placeholders
+        run: bun run build
+        env:
+          NODE_ENV: production
+          APP_COMMIT: ${{ github.sha }}
+          DATABASE_URL: postgres://build:build@127.0.0.1:5432/build
+          GOOGLE_OAUTH_CLIENT_ID: ci-build-client
+          GOOGLE_OAUTH_CLIENT_SECRET: ci-build-secret
+          GOOGLE_WORKSPACE_DOMAIN: build.example.invalid
+          BASE_URL: http://127.0.0.1:3000
+          WS_TICKET_SECRET: ci_build_placeholder_ws_ticket_secret_0123456789
+          WS_PUBLIC_URL: ws://127.0.0.1:8080
+          NEXT_PUBLIC_WS_URL: ws://127.0.0.1:8080
+          MINIO_ENDPOINT: http://127.0.0.1:9000
+          MINIO_ACCESS_KEY: ci-build-access
+          MINIO_SECRET_KEY: ci-build-secret
+          TOKEN_ENCRYPTION_KEY: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+          OAUTH_SIGNING_KEY: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+          MCP_ENABLED: "true"
+          SEED_ADMIN_EMAIL: build@example.invalid
+          ALLOW_FIRST_LOGIN_ADMIN: "false"
+          DISABLE_TELEMETRY: "true"
+          DISABLE_UPDATE_CHECK: "true"
+          NEXT_TELEMETRY_DISABLED: "1"
+      - name: Build server entrypoints
+        run: bun run build:workers
+
+  site:
+    name: Marketing site checks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: site
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Set up package-pinned Bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version-file: site/package.json
+      - name: Install locked site dependencies
+        run: bun install --frozen-lockfile
+      - name: Generate site route types
+        run: bun --bun next typegen
+      - name: Check site types
+        run: bun run typecheck
+      - name: Run site tests
+        run: bun run test
+      - name: Build static site
+        run: bun run build
+        env:
+          NEXT_TELEMETRY_DISABLED: "1"
+
+  docs:
+    name: Documentation site checks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: docs-site
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Set up package-pinned Bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version-file: docs-site/package.json
+      - name: Install locked documentation dependencies
+        run: bun install --frozen-lockfile
+      - name: Check documentation types
+        run: bun run typecheck
+      - name: Build documentation site
+        run: bun run build

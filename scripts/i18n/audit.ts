@@ -3,7 +3,7 @@ import { relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { z } from "zod";
 import { SELECTABLE_LOCALES } from "../../src/features/i18n/registry";
-import { auditCatalogs } from "./auditCatalogs";
+import { auditCatalogs, type CatalogIssue } from "./auditCatalogs";
 import { auditSource, type SourceFinding } from "./auditSource";
 import { partitionReviewedSources } from "./reviewedSource";
 
@@ -58,6 +58,27 @@ function loadCatalogGroups(files: string[]): Map<string, Record<string, unknown>
   return groups;
 }
 
+function missingCatalogIssues(catalogs: Record<string, unknown>): CatalogIssue[] {
+  return SELECTABLE_LOCALES.filter((locale) => !(locale in catalogs)).map((locale) => ({
+    locale,
+    key: "",
+    code: "invalid-value",
+    message: "Required catalog is missing.",
+  }));
+}
+
+function printIssues(
+  catalogIssues: CatalogIssue[],
+  sourceFindings: SourceFinding[],
+  checkSource: boolean,
+): void {
+  for (const issue of catalogIssues.slice(0, 30))
+    console.error(`${issue.locale}:${issue.key} [${issue.code}] ${issue.message}`);
+  if (checkSource)
+    for (const finding of sourceFindings.slice(0, 20))
+      console.error(`${finding.file}:${finding.line} [${finding.kind}] ${finding.text}`);
+}
+
 function run(): number {
   const files = projectFiles(resolve(root, "src"));
   const groups = loadCatalogGroups(files);
@@ -70,15 +91,7 @@ function run(): number {
       ]),
     );
     const issues = auditCatalogs(catalogs, "en", reviewed);
-    for (const locale of SELECTABLE_LOCALES) {
-      if (!(locale in catalogs))
-        issues.push({
-          locale,
-          key: "",
-          code: "invalid-value",
-          message: "Required catalog is missing.",
-        });
-    }
+    issues.push(...missingCatalogIssues(catalogs));
     return issues.map((issue) => ({ ...issue, key: `${group}:${issue.key}` }));
   });
   if (groups.size === 0)
@@ -139,12 +152,7 @@ function run(): number {
     );
   }
   process.stdout.write(`${JSON.stringify(summary, null, 2)}\n`);
-  for (const issue of catalogIssues.slice(0, 30))
-    console.error(`${issue.locale}:${issue.key} [${issue.code}] ${issue.message}`);
-  if (args.has("--check") && newFindings.length > 0) {
-    for (const finding of newFindings.slice(0, 20))
-      console.error(`${finding.file}:${finding.line} [${finding.kind}] ${finding.text}`);
-  }
+  printIssues(catalogIssues, newFindings, args.has("--check"));
   if (catalogIssues.length > 0) return 1;
   if (args.has("--strict") && findings.length > 0) return 1;
   if (args.has("--check") && newFindings.length > 0) return 1;

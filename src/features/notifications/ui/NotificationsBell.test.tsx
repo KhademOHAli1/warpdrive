@@ -3,6 +3,9 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { LocaleProvider } from "@/features/i18n/LocaleProvider";
+import type { Locale } from "@/features/i18n/registry";
+import type { NumberingSystem } from "@/lib/numberingSystem";
 
 // Router/stream/actions/trpc are mocked at the module boundary (mirrors DealSidebar.test.tsx)
 // so the dropdown renders purely off an empty feed without a QueryClientProvider or real DB.
@@ -42,6 +45,28 @@ afterEach(() => {
 });
 
 describe("NotificationsBell", () => {
+  it.each<{
+    locale: Locale;
+    numberingSystem?: NumberingSystem;
+    badge: string;
+    label: string;
+  }>([
+    { locale: "fa", badge: "۳", label: "اعلان‌ها" },
+    { locale: "fa", numberingSystem: "arabext", badge: "۳", label: "اعلان‌ها" },
+    { locale: "fa", numberingSystem: "latn", badge: "3", label: "اعلان‌ها" },
+    { locale: "en", badge: "3", label: "Notifications" },
+  ])(
+    "uses $locale/$numberingSystem digits for the unread badge",
+    ({ locale, numberingSystem, badge, label }) => {
+      render(
+        <LocaleProvider locale={locale} numberingSystem={numberingSystem}>
+          <NotificationsBell userId="u1" />
+        </LocaleProvider>,
+      );
+      expect(screen.getByRole("button", { name: label })).toHaveTextContent(badge);
+    },
+  );
+
   it("renders a crisp lucide bell icon, not an emoji glyph", () => {
     const { container } = render(<NotificationsBell userId="u1" />);
     // No emoji glyphs: the system-font bell (blurry) or the old lightbulb.

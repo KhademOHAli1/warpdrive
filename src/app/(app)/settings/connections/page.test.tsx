@@ -7,6 +7,10 @@ const env = { MCP_ENABLED: true, BASE_URL: "https://crm.example.com" };
 const listConnections = vi.fn(() => Promise.resolve([]));
 
 vi.mock("@/config/env", () => ({ env }));
+vi.mock("@/features/identity/settingsMessages.server", async () => {
+  const { settingsMessagesForLocale } = await import("@/features/identity/settingsMessages");
+  return { getServerSettingsMessages: () => Promise.resolve(settingsMessagesForLocale("en")) };
+});
 vi.mock("@/db/client", () => ({ db: {} }));
 vi.mock("@/server/trpc/context", () => ({
   createContext: vi.fn(() => Promise.resolve({ db: {}, actor: { type: "member" } })),

@@ -27,6 +27,8 @@ type State = "idle" | "connecting" | "authed";
 export class WsMultiplexer {
   private socket: WebSocket | null = null;
   private state: State = "idle";
+  // Unmount/remount can abandon a ticket request before any socket exists to identify it.
+  private connectionGeneration = 0;
   // channel -> the set of live handlers for it.
   private readonly handlers = new Map<string, Set<ChannelHandler>>();
   // channels for which a subscribe frame has been sent on the current socket.
@@ -58,7 +60,8 @@ export class WsMultiplexer {
     if (set.size > 0) return;
     this.handlers.delete(channel);
     if (this.socket !== null && this.state === "authed" && this.subscribedOnSocket.has(channel)) {
-      this.socket.send(JSON.stringify({ kind: "unsubscribe", channel }));
+      if (this.socket.readyState === WebSocket.OPEN)
+        this.socket.send(JSON.stringify({ kind: "unsubscribe", channel }));
       this.subscribedOnSocket.delete(channel);
     }
     // No live channels left: drop the socket entirely.
@@ -70,19 +73,21 @@ export class WsMultiplexer {
     // Realtime disabled / jsdom: no endpoint, so never connect (matches the old hooks' guard).
     if (this.url === "") return;
     this.state = "connecting";
-    void this.connect();
+    void this.connect(++this.connectionGeneration);
   }
 
-  private async connect(): Promise<void> {
+  private async connect(generation: number): Promise<void> {
     let ticket: string;
     try {
       ticket = await this.mintTicket();
     } catch {
+      if (generation !== this.connectionGeneration) return;
       // Ticket failure: give up this attempt and tell handlers to refetch. Do not loop.
       this.state = "idle";
       this.notifyAll({ kind: "reconnect" });
       return;
     }
+    if (generation !== this.connectionGeneration) return;
     // Everyone unsubscribed while the ticket was minting.
     if (this.handlers.size === 0) {
       this.state = "idle";
@@ -90,12 +95,16 @@ export class WsMultiplexer {
     }
     const ws = this.makeSocket(this.url);
     this.socket = ws;
-    ws.onopen = () => ws.send(JSON.stringify({ kind: "auth", ticket }));
-    ws.onmessage = (evt: MessageEvent<string>) => this.onMessage(evt.data);
-    ws.onclose = () => this.onClose();
+    ws.onopen = () => {
+      if (this.socket !== ws || ws.readyState !== WebSocket.OPEN) return;
+      ws.send(JSON.stringify({ kind: "auth", ticket }));
+    };
+    ws.onmessage = (evt: MessageEvent<string>) => this.onMessage(ws, evt.data);
+    ws.onclose = () => this.onClose(ws);
   }
 
-  private onMessage(data: string): void {
+  private onMessage(ws: WebSocket, data: string): void {
+    if (this.socket !== ws || ws.readyState !== WebSocket.OPEN) return;
     let frame: WsFrame;
     try {
       frame = JSON.parse(data) as WsFrame;
@@ -120,12 +129,14 @@ export class WsMultiplexer {
 
   private sendSubscribe(channel: string): void {
     if (this.socket === null || this.state !== "authed") return;
+    if (this.socket.readyState !== WebSocket.OPEN) return;
     if (this.subscribedOnSocket.has(channel)) return;
     this.subscribedOnSocket.add(channel);
     this.socket.send(JSON.stringify({ kind: "subscribe", channel }));
   }
 
-  private onClose(): void {
+  private onClose(ws: WebSocket): void {
+    if (this.socket !== ws) return;
     this.socket = null;
     this.state = "idle";
     this.subscribedOnSocket.clear();
@@ -134,12 +145,15 @@ export class WsMultiplexer {
   }
 
   private closeSocket(): void {
+    this.connectionGeneration++;
     const s = this.socket;
     this.socket = null;
     this.state = "idle";
     this.subscribedOnSocket.clear();
     if (s !== null) {
-      // Drop our onclose so tearing down an idle socket does not fire a spurious reconnect nudge.
+      // Detach callbacks and guard their socket identity: an already queued callback can still run.
+      s.onopen = null;
+      s.onmessage = null;
       s.onclose = null;
       s.close();
     }

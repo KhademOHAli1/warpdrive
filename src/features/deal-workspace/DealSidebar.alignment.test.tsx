@@ -97,8 +97,8 @@ function expectSharedLeftValue(sectionName: string, label: string): void {
   const row = labelEl.closest("[data-testid='field-row']");
   expect(row).not.toBeNull();
   const value = within(row as HTMLElement).getByTestId("field-row-value");
-  expect(value.className).toContain("text-left");
-  expect(value.className).not.toContain("text-right");
+  expect(value.className).toContain("text-start");
+  expect(value.className).not.toContain("text-end");
 }
 
 function expectLabelAlign(sectionName: string, label: string, align: "left" | "right"): void {
@@ -109,15 +109,15 @@ function expectLabelAlign(sectionName: string, label: string, align: "left" | "r
   // The label token is the first grid child (icon + text); assert its justify/text alignment.
   const labelSpan = (row as HTMLElement).firstElementChild as HTMLElement;
   if (align === "left") {
-    expect(labelSpan.className).toContain("text-left");
-    expect(labelSpan.className).not.toContain("text-right");
+    expect(labelSpan.className).toContain("text-start");
+    expect(labelSpan.className).not.toContain("text-end");
   } else {
-    expect(labelSpan.className).toContain("text-right");
-    expect(labelSpan.className).not.toContain("text-left");
+    expect(labelSpan.className).toContain("text-end");
+    expect(labelSpan.className).not.toContain("text-start");
   }
 }
 
-it("renders Summary as PD's action list (no field-label column), other sections right-aligned", () => {
+it("renders Summary as PD's action list (no field-label column), other section labels end-aligned", () => {
   render(
     <DealSidebar
       workspace={makeWorkspace()}
@@ -132,14 +132,14 @@ it("renders Summary as PD's action list (no field-label column), other sections 
   const summary = within(screen.getByRole("region", { name: "Summary" }));
   expect(summary.queryByText("Value")).not.toBeInTheDocument();
   expect(summary.queryByText("Owner")).not.toBeInTheDocument();
-  expect(summary.getByText("$1,000")).toBeInTheDocument();
+  expect(summary.getByText("$1,000 USD")).toBeInTheDocument();
   expect(summary.queryAllByTestId("field-row")).toHaveLength(0);
   // Every other section keeps the right-aligned label default.
   expectLabelAlign("Organization", "Deal segment", "right");
   expectLabelAlign("Person", "Name", "right");
 });
 
-it("renders representative sidebar values through the shared left-aligned FieldRow", () => {
+it("renders representative sidebar values through the shared start-aligned FieldRow", () => {
   render(
     <DealSidebar
       workspace={makeWorkspace()}

@@ -199,19 +199,26 @@ export function useActivityComposer(props: ActivityComposerProps) {
     setPending(true);
     setError(null);
     const csrf = readCsrfToken();
-    let createInput: ReturnType<typeof buildActivityInput> | undefined;
-    let editInput: ReturnType<typeof buildActivityUpdateInput> | undefined;
+    let input:
+      | { kind: "create"; value: ReturnType<typeof buildActivityInput> }
+      | { kind: "edit"; value: ReturnType<typeof buildActivityUpdateInput> };
     try {
-      if (editing) editInput = buildActivityUpdateInput(editing.id, draft(), editing, draftZone);
-      else createInput = buildActivityInput(draft(), draftZone);
+      input =
+        editing !== null
+          ? {
+              kind: "edit",
+              value: buildActivityUpdateInput(editing.id, draft(), editing, draftZone),
+            }
+          : { kind: "create", value: buildActivityInput(draft(), draftZone) };
     } catch {
       setPending(false);
       setError(tCalendar("invalidWallTime"));
       return;
     }
-    const r = editInput
-      ? await editActivityAction(editInput, csrf)
-      : await createActivityAction(createInput!, csrf);
+    const r =
+      input.kind === "edit"
+        ? await editActivityAction(input.value, csrf)
+        : await createActivityAction(input.value, csrf);
     if (!r.ok) {
       setPending(false);
       setError(
@@ -239,7 +246,7 @@ export function useActivityComposer(props: ActivityComposerProps) {
 
   return {
     draftZone,
-    legacyAllDay: !!editing?.allDay && !editing?.dueDate,
+    legacyAllDay: editing?.allDay === true && (editing.dueDate == null || editing.dueDate === ""),
     types,
     owners,
     participantOptions,

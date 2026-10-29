@@ -2,7 +2,7 @@
 
 Warpdrive exposes an OAuth-authenticated Model Context Protocol server for CRM reads and writes. It lets compatible AI clients search CRM data and create or update records without granting more access than the signed-in Warpdrive user already has.
 
-The server does not expose delete, remove, archive, or destroy tools.
+CRM records cannot be deleted through MCP. Leads can be archived and restored, and users can delete their own unsent email drafts.
 
 ## Enable the server
 
@@ -64,7 +64,7 @@ https://<domain>/api/mcp
 
 Signed-in users can find this URL in Warpdrive under Settings, then Connected apps: the "Connect an AI client" card shows the server URL with a copy button and the Claude Desktop steps below. The card is hidden when `MCP_ENABLED=false`.
 
-Warpdrive supports Streamable HTTP, OAuth discovery, dynamic client registration, authorization code flow, and PKCE with S256.
+Warpdrive supports stateless MCP 2026-07-28 requests and 2025-era Streamable HTTP at the same endpoint, plus OAuth discovery, dynamic client registration, authorization code flow, and PKCE with S256. Each request authenticates its bearer token and uses that user's current permissions. The older HTTP+SSE transport is not served.
 
 To connect from Claude or Claude Desktop:
 
@@ -90,21 +90,24 @@ Read tools:
 - `list_activities`, `get_activity`
 - `list_pipelines`, `get_pipeline`
 - `pipeline_summary`
+- `list_emails`, `get_email`, `list_email_drafts`
 
 Write tools:
 
 - `create_deal`, `update_deal`, `move_deal_stage`
 - `create_lead`, `update_lead`, `convert_lead_to_deal`
+- `archive_lead` (use `archived: false` to restore a lead)
 - `create_person`, `update_person`
 - `create_organization`, `update_organization`
 - `create_activity`, `update_activity`, `complete_activity`
 - `add_note`
+- `create_email_draft`, `update_email_draft`, `delete_email_draft`
 
 ## Permissions and safety
 
 MCP acts as the user who completed OAuth. Existing Warpdrive visibility rules and permission flags apply to every tool call. A user who cannot see a record cannot read it through MCP, and a user without a required edit or create permission receives the same denial through MCP.
 
-Review write-tool requests in the client before approving them. The server intentionally has no delete tools.
+Review write-tool requests in the client before approving them. The only delete tool removes the authenticated user's own unsent email draft.
 
 ## Revoke a connection
 

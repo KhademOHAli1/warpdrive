@@ -526,7 +526,18 @@
       "yearly": "yearly"
     },
     "unassigned": "Unassigned",
+    "importDiagnostics": {
+      "field": "Field",
+      "row": "Row",
+      "customField": "Custom field",
+      "currency": "Currency",
+      "badRequest": "This import report request is invalid.",
+      "unauthorized": "Sign in to download this import error report.",
+      "forbidden": "You do not have permission to download this import error report.",
+      "notFound": "This import error report is unavailable."
+    },
     "importErrors": {
+      "date": "Enter a valid date.",
       "invalid": "Invalid value. Check its format and required fields.",
       "required": "This field is required.",
       "email": "Enter a valid email address.",

@@ -1,8 +1,10 @@
 "use client";
 
 import type React from "react";
+import { useRef } from "react";
 import { Button } from "@/components/ui/Button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { reportTimePickerValidity } from "@/components/ui/timePickerValidity";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { cn } from "@/lib/utils";
 
@@ -31,6 +33,7 @@ export function EntityCreateDialogShell({
   onClose,
 }: EntityCreateDialogShellProps): React.ReactNode {
   const tEntityCreate = useAppTranslations("entityCreate");
+  const fieldsRef = useRef<HTMLDivElement>(null);
 
   return (
     <Dialog
@@ -47,7 +50,9 @@ export function EntityCreateDialogShell({
           <DialogTitle className="text-base font-semibold">{title}</DialogTitle>
         </DialogHeader>
 
-        <div className={cn("flex-1 overflow-y-auto px-5 py-4", bodyClassName)}>{children}</div>
+        <div ref={fieldsRef} className={cn("flex-1 overflow-y-auto px-5 py-4", bodyClassName)}>
+          {children}
+        </div>
 
         {error !== null && (
           <p
@@ -62,7 +67,14 @@ export function EntityCreateDialogShell({
           <Button type="button" variant="outline" size="sm" onClick={onClose}>
             {tEntityCreate("cancel")}
           </Button>
-          <Button type="button" size="sm" disabled={pending || submitDisabled} onClick={onSubmit}>
+          <Button
+            type="button"
+            size="sm"
+            disabled={pending || submitDisabled}
+            onClick={() => {
+              if (reportTimePickerValidity(fieldsRef.current)) onSubmit();
+            }}
+          >
             {pending ? tEntityCreate("saving") : tEntityCreate("save")}
           </Button>
         </div>

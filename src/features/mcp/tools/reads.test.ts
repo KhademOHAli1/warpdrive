@@ -1,4 +1,4 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer } from "@modelcontextprotocol/server";
 import { expect, test } from "vitest";
 import { deals } from "@/db/schema";
 import { withTestDb } from "@/db/testing";

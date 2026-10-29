@@ -176,6 +176,7 @@
     "save_draft_as_a_template": "Save draft as a template",
     "manage_templates": "Manage templates",
     "compose_email": "compose email",
+    "record_composer": "Add to record",
     "enter_a_valid_email_address": "Enter a valid email address.",
     "nothing_queued_to_send": "Nothing queued to send.",
     "mail_folders": "Mail folders",
@@ -237,7 +238,13 @@
     "fileBytes": "{count, number} B",
     "fileKB": "{count, number} KB",
     "fileMB": "{count, number, :: .0} MB",
-    "conversationCount": "{count, plural, one {# conversation} other {# conversations}}"
+    "conversationCount": "{count, plural, one {# conversation} other {# conversations}}",
+    "scheduleIncomplete": "Choose a send date and time.",
+    "scheduleInvalid": "Enter a valid send date and time.",
+    "scheduleNonexistent": "This local time does not exist because the clocks change. Choose another time.",
+    "scheduleTimeZone": "Send time zone: {zone}",
+    "scheduleUtcOffset": "UTC offset: {offset}",
+    "scheduleAmbiguousTime": "The clocks repeat this time. The earlier occurrence ({offset}) will be used."
   },
   "_folders": {
     "inbox": "Inbox",

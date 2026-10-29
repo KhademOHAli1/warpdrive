@@ -5,7 +5,7 @@ import type { CalendarActivity } from "./calendar";
 function activity(over: Partial<CalendarActivity> & { id: string }): CalendarActivity {
   return {
     subject: over.id,
-    dueAt: new Date(2026, 7, 24, 9, 0),
+    dueAt: new Date("2026-08-24T09:00:00Z"),
     allDay: false,
     durationMinutes: 60,
     typeKey: "call",
@@ -25,18 +25,18 @@ describe("initialScrollHour", () => {
   });
 
   it("does not scroll past the working day just because the first activity is late", () => {
-    const late = activity({ id: "a", dueAt: new Date(2026, 7, 24, 15, 0) });
+    const late = activity({ id: "a", dueAt: new Date("2026-08-24T15:00:00Z") });
     expect(initialScrollHour([late])).toBe(DEFAULT_START_HOUR);
   });
 
-  it("opens earlier when an activity would otherwise sit above the fold", () => {
-    const early = activity({ id: "a", dueAt: new Date(2026, 7, 24, 6, 30) });
-    const later = activity({ id: "b", dueAt: new Date(2026, 7, 24, 11, 0) });
-    expect(initialScrollHour([early, later])).toBe(6);
+  it("opens earlier in the account zone when an activity would otherwise sit above the fold", () => {
+    const early = activity({ id: "a", dueAt: new Date("2026-08-24T03:00:00Z") });
+    const later = activity({ id: "b", dueAt: new Date("2026-08-24T07:30:00Z") });
+    expect(initialScrollHour([early, later], "Asia/Tehran")).toBe(6);
   });
 
   it("ignores an all-day activity, which is stored at midnight and shown in its own lane", () => {
-    const offsite = activity({ id: "a", allDay: true, dueAt: new Date(2026, 7, 24, 0, 0) });
+    const offsite = activity({ id: "a", allDay: true, dueAt: new Date("2026-08-24T00:00:00Z") });
     expect(initialScrollHour([offsite])).toBe(DEFAULT_START_HOUR);
   });
 });

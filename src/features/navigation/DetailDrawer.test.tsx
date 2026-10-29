@@ -15,6 +15,24 @@ afterEach(() => {
   back.mockReset();
 });
 
+function DeleteAction(): React.ReactNode {
+  const close = useDetailDrawerClose();
+  return (
+    <button type="button" onClick={() => close?.()}>
+      Delete
+    </button>
+  );
+}
+
+function CloseContextProbe({
+  onSeen,
+}: {
+  onSeen: (close: ReturnType<typeof useDetailDrawerClose>) => void;
+}): React.ReactNode {
+  onSeen(useDetailDrawerClose());
+  return null;
+}
+
 describe("DetailDrawer", () => {
   it("renders the intercepted detail content inside an open dialog", () => {
     render(
@@ -66,14 +84,6 @@ describe("DetailDrawer", () => {
     // A record deleted from inside the drawer has to dismiss it. Detail content cannot do that with
     // router.push: that is a soft navigation, and Next keeps the previously active @modal slot, so
     // the drawer would stay open on a record that no longer exists.
-    function DeleteAction(): React.ReactNode {
-      const close = useDetailDrawerClose();
-      return (
-        <button type="button" onClick={() => close?.()}>
-          Delete
-        </button>
-      );
-    }
     render(
       <DetailDrawer title="Lead details">
         <DeleteAction />
@@ -84,12 +94,8 @@ describe("DetailDrawer", () => {
   });
 
   it("reports no drawer to close when the same content renders standalone (deep link / hard load)", () => {
-    let seen: (() => void) | null | undefined;
-    function Probe(): React.ReactNode {
-      seen = useDetailDrawerClose();
-      return null;
-    }
-    render(<Probe />);
-    expect(seen).toBeNull();
+    const onSeen = vi.fn();
+    render(<CloseContextProbe onSeen={onSeen} />);
+    expect(onSeen).toHaveBeenCalledWith(null);
   });
 });

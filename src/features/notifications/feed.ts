@@ -27,8 +27,8 @@ import { resolveAccountLocalePreferences } from "@/features/i18n/accountPreferen
 import { getPreferences as getAccountPreferences } from "@/features/identity/preferencesRepo";
 import type { AuthUser } from "@/features/permissions/types";
 import type { NotificationFeedItem } from "@/types/notification";
-import { getPreferences } from "./preferences";
 import { notificationBand } from "./notificationBand";
+import { getPreferences } from "./preferences";
 
 const MAX_FETCH = 300;
 

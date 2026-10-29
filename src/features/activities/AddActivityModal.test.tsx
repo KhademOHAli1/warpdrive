@@ -257,3 +257,13 @@ it("shows Persian inline validation without losing the draft", () => {
   expect(screen.getByRole("alert")).toHaveTextContent("موضوع فعالیت را وارد کنید.");
   expect(createActivityAction).not.toHaveBeenCalled();
 });
+
+it("does not create from a stale start time while an invalid raw time is shown", () => {
+  render(<AddActivityModal defaultDate="2027-03-21" defaultTime="09:00" onClose={vi.fn()} />);
+  fireEvent.change(screen.getByLabelText("Subject"), { target: { value: "Call" } });
+  const input = screen.getByLabelText("Start time");
+  fireEvent.change(input, { target: { value: "99:99" } });
+  fireEvent.blur(input);
+  fireEvent.click(screen.getByRole("button", { name: "Save" }));
+  expect(createActivityAction).not.toHaveBeenCalled();
+});

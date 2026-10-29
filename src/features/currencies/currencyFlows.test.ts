@@ -20,13 +20,11 @@ const signal = () => AbortSignal.timeout(30_000);
 describe("currency across business workflows", () => {
   it("round-trips large foreign amounts through the input boundary and storage", async () => {
     await withTestDb(async (db) => {
-      await db
-        .insert(settings)
-        .values({
-          id: true,
-          baseCurrency: "USD",
-          defaultVisibilityLevels: { deal: "all", person: "all", organization: "all" },
-        });
+      await db.insert(settings).values({
+        id: true,
+        baseCurrency: "USD",
+        defaultVisibilityLevels: { deal: "all", person: "all", organization: "all" },
+      });
       const user = await seedUser(db, { isAdmin: true });
       const { pipeline, stages } = await seedPipelineWithStages(db, ["Qualified"]);
       const stage = stages[0];
@@ -61,13 +59,11 @@ describe("currency across business workflows", () => {
 
   it("never merges currencies in goal progress, daily series, or report averages", async () => {
     await withTestDb(async (db) => {
-      await db
-        .insert(settings)
-        .values({
-          id: true,
-          baseCurrency: "USD",
-          defaultVisibilityLevels: { deal: "all", person: "all", organization: "all" },
-        });
+      await db.insert(settings).values({
+        id: true,
+        baseCurrency: "USD",
+        defaultVisibilityLevels: { deal: "all", person: "all", organization: "all" },
+      });
       const user = await seedUser(db, { isAdmin: true });
       const actor = toActor(user);
       const { pipeline, stages } = await seedPipelineWithStages(db, ["Qualified"]);
@@ -129,13 +125,11 @@ describe("currency across business workflows", () => {
 
   it("preserves the native unit during duplication and conversion back to a lead", async () => {
     await withTestDb(async (db) => {
-      await db
-        .insert(settings)
-        .values({
-          id: true,
-          baseCurrency: "USD",
-          defaultVisibilityLevels: { deal: "all", person: "all", organization: "all" },
-        });
+      await db.insert(settings).values({
+        id: true,
+        baseCurrency: "USD",
+        defaultVisibilityLevels: { deal: "all", person: "all", organization: "all" },
+      });
       const user = await seedUser(db, { isAdmin: true });
       const actor = toActor(user);
       const { pipeline, stages } = await seedPipelineWithStages(db, ["Qualified"]);

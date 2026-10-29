@@ -89,7 +89,9 @@ describe("updateDeal: field updates", () => {
 
       // The stored value is still the valid 4200 (no corruption from the rejected writes).
       const [row] = await db.select().from(deals).where(eq(deals.id, deal.id));
-      expect((row?.customFields as Record<string, unknown>)[key]).toBe(4200);
+      expect(row).toBeDefined();
+      if (row === undefined) return;
+      expect((row.customFields as Record<string, unknown>)[key]).toBe(4200);
     });
   });
 

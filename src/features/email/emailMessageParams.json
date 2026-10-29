@@ -1,63 +1,25 @@
 {
-  "createLabel": [
-    "name"
-  ],
-  "trackingOpened": [
-    "n"
-  ],
-  "trackingClicked": [
-    "n"
-  ],
-  "_composer.signatureTitle": [
-    "name"
-  ],
-  "_extra.select_arg0": [
-    "arg0"
-  ],
-  "_extra.remove_arg0": [
-    "arg0"
-  ],
-  "_extra.scheduled": [
-    "date"
-  ],
-  "_extra.fileTooLarge": [
-    "name",
-    "max"
-  ],
-  "_extra.fileUnsupported": [
-    "name"
-  ],
-  "_extra.uploadStart": [
-    "name"
-  ],
-  "_extra.uploadFailed": [
-    "name"
-  ],
-  "_extra.uploadConfirm": [
-    "name"
-  ],
-  "_extra.fileBytes": [
-    "count"
-  ],
-  "_extra.fileKB": [
-    "count"
-  ],
-  "_extra.fileMB": [
-    "count"
-  ],
-  "_relative.daysAgo": [
-    "count"
-  ],
-  "_relative.minutesAgo": [
-    "count"
-  ],
-  "_relative.hoursAgo": [
-    "count"
-  ],
-  "_relative.longDaysAgo": [
-    "count"
-  ],
-  "_extra.conversationCount": [
-    "count"
-  ]
+  "createLabel": ["name"],
+  "trackingOpened": ["n"],
+  "trackingClicked": ["n"],
+  "_composer.signatureTitle": ["name"],
+  "_extra.select_arg0": ["arg0"],
+  "_extra.remove_arg0": ["arg0"],
+  "_extra.scheduled": ["date"],
+  "_extra.fileTooLarge": ["name", "max"],
+  "_extra.fileUnsupported": ["name"],
+  "_extra.uploadStart": ["name"],
+  "_extra.uploadFailed": ["name"],
+  "_extra.uploadConfirm": ["name"],
+  "_extra.fileBytes": ["count"],
+  "_extra.fileKB": ["count"],
+  "_extra.fileMB": ["count"],
+  "_relative.daysAgo": ["count"],
+  "_relative.minutesAgo": ["count"],
+  "_relative.hoursAgo": ["count"],
+  "_relative.longDaysAgo": ["count"],
+  "_extra.conversationCount": ["count"],
+  "_extra.scheduleTimeZone": ["zone"],
+  "_extra.scheduleUtcOffset": ["offset"],
+  "_extra.scheduleAmbiguousTime": ["offset"]
 }

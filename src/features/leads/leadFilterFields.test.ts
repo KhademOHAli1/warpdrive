@@ -20,12 +20,14 @@ describe("leadFilterFields", () => {
     expect(OPS_BY_LEAD_FIELD).toEqual({
       title: TEXT_OPS,
       value: ORDERED_OPS,
+      currency: EXACT_OPS,
       sourceOrigin: TEXT_OPS,
       ownerId: EXACT_OPS,
       labels: ARRAY_OPS,
     });
     expect(OPS_BY_LEAD_FIELD.title).toBe(TEXT_OPS);
     expect(OPS_BY_LEAD_FIELD.value).toBe(ORDERED_OPS);
+    expect(OPS_BY_LEAD_FIELD.currency).toBe(EXACT_OPS);
     expect(OPS_BY_LEAD_FIELD.sourceOrigin).toBe(TEXT_OPS);
     expect(OPS_BY_LEAD_FIELD.ownerId).toBe(EXACT_OPS);
     expect(OPS_BY_LEAD_FIELD.labels).toBe(ARRAY_OPS);

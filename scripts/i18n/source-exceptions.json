@@ -2,6 +2,24 @@
   "version": 1,
   "findings": [
     {
+      "id": "3071dad4597a67738848",
+      "file": "src/app/(app)/settings/users/InviteUserForm.tsx",
+      "text": "person@example.com",
+      "reason": "The invitation form uses this syntactically valid ASCII email address as a technical example, not interface prose. Its field labels, validation and invitation outcome messages are localized; changing address syntax into translated words would make the example misleading."
+    },
+    {
+      "id": "810e4d62a3e7ee8febbb",
+      "file": "src/features/deals/AddDealPersonColumn.tsx",
+      "text": "name@company.com",
+      "reason": "This is a syntactically valid email address example, rather than English interface prose. Keep its ASCII address syntax in every language; the field labels and row actions are translated, and email/phone inputs have explicit left-to-right direction."
+    },
+    {
+      "id": "6e455c0cab2ecf4a0848",
+      "file": "src/features/deals/notifyHelpers.ts",
+      "text": "@/constants/notifyStrings",
+      "reason": "Deal notifications persist stable legacy summary values for recipients with different languages. The notification display and email boundaries recognize and translate those protocol values for each recipient. Translating the persisted value with the actor's locale would break compatibility."
+    },
+    {
       "id": "0c3773c2a168b8267fb7",
       "file": "src/features/notifications/ui/notificationText.ts",
       "text": "@/constants/notifyStrings",

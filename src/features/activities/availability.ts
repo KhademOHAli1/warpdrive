@@ -49,7 +49,5 @@ export async function getBusyWindows(
       ),
     );
   signal.throwIfAborted();
-  return rows
-    .filter((r): r is { start: Date; end: Date } => r.start !== null)
-    .map((r) => ({ start: r.start, end: r.end }));
+  return rows;
 }

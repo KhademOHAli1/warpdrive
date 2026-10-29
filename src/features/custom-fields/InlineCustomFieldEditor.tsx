@@ -1,6 +1,8 @@
 "use client";
 
 import type React from "react";
+import { useRef } from "react";
+import { reportTimePickerValidity } from "@/components/ui/timePickerValidity";
 import { ERROR_IDS } from "@/constants/errorIds";
 import { useLocale } from "@/features/i18n/LocaleProvider";
 import { InlineEditFooter } from "@/features/inline-edit/InlineEditFooter";
@@ -27,6 +29,7 @@ export function InlineCustomFieldEditor({
 }): React.ReactNode {
   const locale = useLocale();
   const field = useInlineEditField<unknown>(value);
+  const fieldsRef = useRef<HTMLDivElement>(null);
   const dirty = JSON.stringify(field.draft ?? null) !== JSON.stringify(value ?? null);
 
   const clientError =
@@ -38,7 +41,7 @@ export function InlineCustomFieldEditor({
         ? null
         : saveErrorMessage(field.error, locale);
   const editor = field.editing ? (
-    <div className="flex flex-col gap-1.5">
+    <div ref={fieldsRef} className="flex flex-col gap-1.5">
       <CustomFieldFormControl
         def={def}
         hideValidationMessage
@@ -53,7 +56,8 @@ export function InlineCustomFieldEditor({
       <InlineEditFooter
         onCancel={field.cancel}
         onSave={() => {
-          if (clientError === null) field.commit(onSave);
+          if (clientError === null && reportTimePickerValidity(fieldsRef.current))
+            field.commit(onSave);
         }}
         saveDisabled={!dirty || clientError !== null}
         pending={field.pending}

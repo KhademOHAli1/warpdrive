@@ -7,16 +7,22 @@
 // ActivitiesTable.selection.test.tsx owns selection and bulk actions.
 import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("next/navigation", () => ({
   usePathname: () => "/activities",
   useRouter: () => ({ push: vi.fn() }),
 }));
 
+beforeEach(() => {
+  vi.useFakeTimers({ toFake: ["Date"] });
+  vi.setSystemTime(new Date("2026-07-08T12:00:00Z"));
+});
+
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
+  vi.useRealTimers();
 });
 
 const refetch = vi.fn();
@@ -52,15 +58,15 @@ vi.mock("@/utils/csrfCookie", () => ({ readCsrfToken: () => "tok" }));
 
 import { ActivitiesTable } from "./ActivitiesTable";
 
-// The default (unfiltered, "open") ActivityListFilter, unchanged by these tests: only the sort
-// field/direction varies per assertion below.
-function localYmd(d: Date): string {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
-    d.getDate(),
-  ).padStart(2, "0")}`;
-}
-const TODAY = localYmd(new Date());
-const DEFAULT_FILTER = { ownerId: "me", done: "open", from: TODAY, to: TODAY, typeKey: null };
+// Without a provider the account fallback is UTC. Only sort field/direction varies below.
+const DEFAULT_FILTER = {
+  ownerId: "me",
+  done: "open",
+  from: "2026-07-08",
+  to: "2026-07-08",
+  typeKey: null,
+  timeZone: "UTC",
+};
 
 function row(overrides: Record<string, unknown>) {
   return {

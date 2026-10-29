@@ -1,4 +1,5 @@
 import { escapeCsv } from "./csvSafe";
+import { formatImportDiagnostic, type ImportDiagnosticOptions } from "./diagnosticFormatter";
 
 export interface ErrorReportRow {
   rowNumber: number;
@@ -7,7 +8,10 @@ export interface ErrorReportRow {
 }
 
 // Columns: row number, flattened errors, then every raw header seen in first-seen order.
-export function buildErrorCsv(rows: ErrorReportRow[]): string {
+export function buildErrorCsv(
+  rows: ErrorReportRow[],
+  options: ImportDiagnosticOptions = { locale: "en" },
+): string {
   const headers: string[] = [];
   const seen = new Set<string>();
   for (const r of rows) {
@@ -20,7 +24,7 @@ export function buildErrorCsv(rows: ErrorReportRow[]): string {
   }
   const head = ["row", "errors", ...headers].map(escapeCsv).join(",");
   const lines = rows.map((r) => {
-    const reasons = r.errors.map((e) => `${e.field}: ${e.message}`).join("; ");
+    const reasons = r.errors.map((e) => formatImportDiagnostic(e, options)).join("; ");
     const cells = [String(r.rowNumber), reasons, ...headers.map((h) => r.raw[h] ?? "")];
     return cells.map(escapeCsv).join(",");
   });

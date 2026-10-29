@@ -58,15 +58,6 @@ export function LeadFilterBuilder({
   const fields = useMemo<ConditionFieldOption[]>(
     () => [
       {
-        field: "currency",
-        label: tMoney("currencyLabel"),
-        ops: OPS_BY_LEAD_FIELD.currency,
-        input: {
-          kind: "select",
-          options: CURRENCY_CODES.map((code) => ({ value: code, label: code })),
-        },
-      },
-      {
         field: "title",
         label: tLeads("title"),
         ops: OPS_BY_LEAD_FIELD.title,
@@ -77,6 +68,15 @@ export function LeadFilterBuilder({
         label: tLeads("value"),
         ops: OPS_BY_LEAD_FIELD.value,
         input: { kind: "number" },
+      },
+      {
+        field: "currency",
+        label: tMoney("currencyLabel"),
+        ops: OPS_BY_LEAD_FIELD.currency,
+        input: {
+          kind: "select",
+          options: CURRENCY_CODES.map((code) => ({ value: code, label: code })),
+        },
       },
       {
         field: "sourceOrigin",

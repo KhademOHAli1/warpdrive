@@ -26,8 +26,10 @@ describe("savedFilters schema", () => {
       })
       .returning();
 
-    expect(f?.isShared).toBe(false);
-    expect((f?.definition as { conditions: unknown[] }).conditions).toHaveLength(1);
+    expect(f).toBeDefined();
+    if (f === undefined) return;
+    expect(f.isShared).toBe(false);
+    expect((f.definition as { conditions: unknown[] }).conditions).toHaveLength(1);
   });
 
   it("rejects a saved filter with a non-existent owner", async () => {

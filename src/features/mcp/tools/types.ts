@@ -1,5 +1,4 @@
-import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
+import type { CallToolResult, McpServer } from "@modelcontextprotocol/server";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
@@ -52,14 +51,14 @@ export function getToolActor(getCtx: GetCtx): Result<HydratedActor, AppError> {
   return err(new AppError(ERROR_IDS.OAUTH_TOKEN_REVOKED, "MCP actor is unavailable", {}));
 }
 
-export function registerTool<S extends z.ZodObject>(
+export function registerTool<Shape extends z.ZodRawShape>(
   server: McpServer,
   registry: ToolRegistry,
   definition: {
     name: string;
     description: string;
-    inputSchema: S;
-    run: (input: z.output<S>, signal: AbortSignal) => Promise<CallToolResult>;
+    inputSchema: z.ZodObject<Shape>;
+    run: (input: z.output<z.ZodObject<Shape>>, signal: AbortSignal) => Promise<CallToolResult>;
   },
 ): void {
   const invoke: Invoke = async (raw, signal) => {
@@ -74,8 +73,9 @@ export function registerTool<S extends z.ZodObject>(
 
   server.registerTool(
     definition.name,
-    { description: definition.description, inputSchema: definition.inputSchema.shape },
-    (input, extra) => invoke(input, AbortSignal.any([extra.signal, AbortSignal.timeout(15_000)])),
+    { description: definition.description, inputSchema: definition.inputSchema },
+    (input, ctx) =>
+      invoke(input, AbortSignal.any([ctx.mcpReq.signal, AbortSignal.timeout(15_000)])),
   );
   registry.add(definition.name, invoke);
 }

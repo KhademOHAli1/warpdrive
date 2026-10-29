@@ -14,6 +14,24 @@ import { Dialog, DialogContent, DialogTitle } from "./dialog";
 
 afterEach(() => vi.clearAllMocks());
 
+function ControlledDialogHarness({
+  title,
+  unmountOnClose = false,
+}: {
+  title: string;
+  unmountOnClose?: boolean;
+}): ReactNode {
+  const [open, setOpen] = useState(true);
+  if (unmountOnClose && !open) return null;
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogContent>
+        <DialogTitle>{title}</DialogTitle>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 it("emits modal_opened on mount when defaultOpen and modal_closed with escape reason", async () => {
   const user = userEvent.setup();
   render(
@@ -80,18 +98,7 @@ it("emits modal_closed for a controlled dialog that UNMOUNTS on close (escape)",
   // emitted in the open-change callback, before the parent unmounts us. This is the GlobalNoteModal /
   // convert / merge shape the review flagged as losing modal_closed entirely.
   const user = userEvent.setup();
-  function Harness(): ReactNode {
-    const [open, setOpen] = useState(true);
-    if (!open) return null;
-    return (
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
-          <DialogTitle>u</DialogTitle>
-        </DialogContent>
-      </Dialog>
-    );
-  }
-  render(<Harness />);
+  render(<ControlledDialogHarness title="u" unmountOnClose />);
   await screen.findByText("u");
   captureMock.mockClear();
   await user.keyboard("{Escape}");
@@ -104,17 +111,7 @@ it("emits EXACTLY ONE modal_closed for an always-mounted controlled dialog (no d
   // When the same interaction is observed by BOTH the callback and the [open] effect (dialog stays
   // mounted, open flips to false), prevOpen must dedup so we do not emit two modal_closed events.
   const user = userEvent.setup();
-  function Harness(): ReactNode {
-    const [open, setOpen] = useState(true);
-    return (
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
-          <DialogTitle>m</DialogTitle>
-        </DialogContent>
-      </Dialog>
-    );
-  }
-  render(<Harness />);
+  render(<ControlledDialogHarness title="m" />);
   await screen.findByText("m");
   captureMock.mockClear();
   await user.keyboard("{Escape}");

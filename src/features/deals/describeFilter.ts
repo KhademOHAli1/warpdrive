@@ -33,12 +33,12 @@ export function describeRows(
   combinator: "and" | "or" = "and",
   locale: Locale = "en",
 ): string {
-  const operators = messagesForLocale(locale).filters.operators;
+  const operators = new Map(Object.entries(messagesForLocale(locale).filters.operators));
   return rows
     .filter((r) => VALUELESS_OPS.has(r.op) || completeRowValue(r.value) !== null)
     .map((r) => {
       const def = fields.find((f) => f.field === r.field);
-      const prefix = `${def?.label ?? r.field} ${operators[r.op as keyof typeof operators] ?? r.op}`;
+      const prefix = `${def?.label ?? r.field} ${operators.get(r.op) ?? r.op}`;
       return VALUELESS_OPS.has(r.op) ? prefix : `${prefix} ${valueLabel(def, r.value, locale)}`;
     })
     .join(

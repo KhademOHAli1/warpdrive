@@ -1,0 +1,64 @@
+diff --git a/dist/esm/server/lib/router-utils/setup-dev-bundler.js b/dist/esm/server/lib/router-utils/setup-dev-bundler.js
+index ed14ae52bd2c4b3e3eabc5dd2223f75013f1ea63..9985c9d2e9a13b30595772b705494024940f5b60 100644
+--- a/dist/esm/server/lib/router-utils/setup-dev-bundler.js
++++ b/dist/esm/server/lib/router-utils/setup-dev-bundler.js
+@@ -1015,13 +1015,24 @@ async function startWatcher(opts) {
+         };
+     }
+     function logErrorWithOriginalStack(err, type) {
++        const originalError = err;
+         if (err instanceof Error) {
+-            err.message = deobfuscateText(err.message);
++            const message = deobfuscateText(err.message);
++            // DOMException and frozen errors can have a readonly message. Preserve
++            // their diagnostic fields instead of masking the original failure.
++            if (!Reflect.set(err, 'message', message)) {
++                err = Object.defineProperties(new Error(message), {
++                    ...Object.getOwnPropertyDescriptors(originalError),
++                    name: { value: originalError.name, configurable: true, writable: true },
++                    message: { value: message, configurable: true, writable: true },
++                    stack: { value: originalError.stack, configurable: true, writable: true }
++                });
++            }
+         }
+-        if (err instanceof ModuleBuildError) {
++        if (originalError instanceof ModuleBuildError) {
+             // Errors that may come from issues from the user's code
+             Log.error(err.message);
+-        } else if (err instanceof TurbopackInternalError) {
++        } else if (originalError instanceof TurbopackInternalError) {
+         // An internal Turbopack error that has been handled by next-swc, written
+         // to disk and a simplified message shown to user on the Rust side.
+         } else if (type === 'warning') {
+diff --git a/dist/server/lib/router-utils/setup-dev-bundler.js b/dist/server/lib/router-utils/setup-dev-bundler.js
+index 85c0d78813501002f1a00944660ed291508adeb7..998f39c0cbbc18e5c4f9125789a51cb6d0bb505e 100644
+--- a/dist/server/lib/router-utils/setup-dev-bundler.js
++++ b/dist/server/lib/router-utils/setup-dev-bundler.js
+@@ -1083,13 +1083,24 @@ async function startWatcher(opts) {
+         };
+     }
+     function logErrorWithOriginalStack(err, type) {
++        const originalError = err;
+         if (err instanceof Error) {
+-            err.message = (0, _magicidentifier.deobfuscateText)(err.message);
++            const message = (0, _magicidentifier.deobfuscateText)(err.message);
++            // DOMException and frozen errors can have a readonly message. Preserve
++            // their diagnostic fields instead of masking the original failure.
++            if (!Reflect.set(err, 'message', message)) {
++                err = Object.defineProperties(new Error(message), {
++                    ...Object.getOwnPropertyDescriptors(originalError),
++                    name: { value: originalError.name, configurable: true, writable: true },
++                    message: { value: message, configurable: true, writable: true },
++                    stack: { value: originalError.stack, configurable: true, writable: true }
++                });
++            }
+         }
+-        if (err instanceof _utils2.ModuleBuildError) {
++        if (originalError instanceof _utils2.ModuleBuildError) {
+             // Errors that may come from issues from the user's code
+             _log.error(err.message);
+-        } else if (err instanceof _internalerror.TurbopackInternalError) {
++        } else if (originalError instanceof _internalerror.TurbopackInternalError) {
+         // An internal Turbopack error that has been handled by next-swc, written
+         // to disk and a simplified message shown to user on the Rust side.
+         } else if (type === 'warning') {

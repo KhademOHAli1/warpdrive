@@ -7,16 +7,16 @@ import { HideEmptyContext } from "./sectionFilter";
 
 afterEach(cleanup);
 
-it("renders a small medium label and a left-aligned value", () => {
+it("renders a small medium label and a start-aligned value", () => {
   render(<FieldRow label="Value">$10,000</FieldRow>);
   const label = screen.getByText("Value");
   expect(label.className).toContain("text-xs");
   expect(label.className).toContain("font-medium");
-  expect(label.className).toContain("text-right");
+  expect(label.className).toContain("text-end");
   expect(label.className).toContain("text-muted-foreground");
   const value = screen.getByTestId("field-row-value");
   expect(value).toHaveTextContent("$10,000");
-  expect(value.className).toContain("text-left");
+  expect(value.className).toContain("text-start");
 });
 
 it("stays visible when empty but the section is not hiding empties", () => {

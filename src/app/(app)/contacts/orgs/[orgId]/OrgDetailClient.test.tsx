@@ -195,12 +195,8 @@ describe("OrgDetailClient", () => {
 // deal/lead/person parent implied by ComposeScope alone).
 describe("OrgDetailClient composer seam", () => {
   it("creates an activity anchored to this org's orgId, not a dealId/leadId/personId", async () => {
-    const { container } = render(
-      <OrgDetailClient org={org as never} defs={[]} canMerge={true} baseCurrency="USD" />,
-    );
-    const composeSection = container.querySelector('section[aria-label="compose"]');
-    if (composeSection === null) throw new Error("compose section not found");
-    const compose = within(composeSection as HTMLElement);
+    render(<OrgDetailClient org={org as never} defs={[]} canMerge={true} baseCurrency="USD" />);
+    const compose = within(screen.getByRole("region", { name: "Add to record" }));
 
     fireEvent.click(compose.getByRole("button", { name: "Click here to add an activity..." }));
     fireEvent.change(compose.getByLabelText("Subject"), { target: { value: "Check in" } });

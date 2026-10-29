@@ -122,13 +122,33 @@ describe("GlobalContactModal open-details-after-create", () => {
 
 describe("GlobalContactModal person (rich create, M1)", () => {
   it("blocks an invalid custom numeric draft before creating the Persian contact", async () => {
-    customFieldDefs.push({id:"11111111-1111-1111-1111-111111111111",targetEntity:"person",type:"numeric",name:"امتیاز",key:"score",options:[],isRequired:false,isImportant:false,showInAddForm:true,order:0,archivedAt:null});
-    render(<LocaleProvider locale="fa"><GlobalContactModal kind="person" onClose={noop} onCreated={noop}/></LocaleProvider>);
-    fireEvent.change(screen.getByLabelText("نام"),{target:{value:"درسا"}});
-    fireEvent.change(screen.getByLabelText("امتیاز"),{target:{value:"invalid"}});
-    fireEvent.click(screen.getByRole("button",{name:"ذخیره"}));
+    customFieldDefs.push({
+      id: "11111111-1111-1111-1111-111111111111",
+      targetEntity: "person",
+      type: "numeric",
+      name: "امتیاز",
+      key: "score",
+      options: [],
+      isRequired: false,
+      isImportant: false,
+      showInAddForm: true,
+      order: 0,
+      archivedAt: null,
+    });
+    render(
+      <LocaleProvider locale="fa">
+        <GlobalContactModal kind="person" onClose={noop} onCreated={noop} />
+      </LocaleProvider>,
+    );
+    fireEvent.change(screen.getByLabelText("نام"), { target: { value: "درسا" } });
+    fireEvent.change(screen.getByLabelText("امتیاز"), { target: { value: "invalid" } });
+    fireEvent.click(screen.getByRole("button", { name: "ذخیره" }));
     expect(createPersonAction).not.toHaveBeenCalled();
-    expect((await screen.findAllByRole("alert")).some((node) => (node.textContent ?? "").includes("امتیاز"))).toBe(true);
+    expect(
+      (await screen.findAllByRole("alert")).some((node) =>
+        (node.textContent ?? "").includes("امتیاز"),
+      ),
+    ).toBe(true);
   });
   it("validates in Farsi and keeps the original Persian name in the payload", async () => {
     render(
@@ -265,4 +285,30 @@ describe("GlobalContactModal organization (rich create, M1)", () => {
       "tok",
     );
   });
+});
+
+it("does not bypass invalid raw time validation through Enter in the contact name", () => {
+  customFieldDefs.push({
+    id: "11111111-1111-1111-1111-111111111111",
+    targetEntity: "person",
+    type: "time",
+    name: "Follow-up time",
+    key: "time",
+    options: [],
+    isRequired: false,
+    isImportant: false,
+    showInAddForm: true,
+    order: 0,
+    archivedAt: null,
+  });
+  render(<GlobalContactModal kind="person" onClose={noop} onCreated={noop} />);
+  const name = screen.getByLabelText("Name");
+  fireEvent.change(name, { target: { value: "Ali" } });
+  const time = screen.getByLabelText("Follow-up time");
+  fireEvent.change(time, { target: { value: "09:00" } });
+  fireEvent.blur(time);
+  fireEvent.change(time, { target: { value: "99:99" } });
+  fireEvent.blur(time);
+  fireEvent.keyDown(name, { key: "Enter" });
+  expect(createPersonAction).not.toHaveBeenCalled();
 });

@@ -4,6 +4,8 @@ import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { Deal } from "@/db/schema";
 import type { CalendarActivity } from "@/features/activities/calendar";
+import { LocaleProvider } from "@/features/i18n/LocaleProvider";
+import type { Locale } from "@/features/i18n/registry";
 import { WorkspaceTabs } from "./tabs";
 
 // Separate from tabs.test.tsx because the badge assertions need a populated Email and Files
@@ -97,16 +99,18 @@ const doneActivity = {
   ownerName: "Nick",
 } satisfies CalendarActivity;
 
-function renderTabs(activities: CalendarActivity[]) {
+function renderTabs(activities: CalendarActivity[], locale: Locale = "en") {
   render(
-    <WorkspaceTabs
-      deal={deal}
-      tab="all"
-      onTab={() => {}}
-      activities={activities}
-      stages={stages}
-      createdActorName="Nick"
-    />,
+    <LocaleProvider locale={locale}>
+      <WorkspaceTabs
+        deal={deal}
+        tab="all"
+        onTab={() => {}}
+        activities={activities}
+        stages={stages}
+        createdActorName="Nick"
+      />
+    </LocaleProvider>,
   );
 }
 
@@ -126,5 +130,12 @@ describe("History tab counts", () => {
     renderTabs([]);
     expect(screen.getByRole("tab", { name: "Activities" })).toBeInTheDocument();
     expect(screen.queryByRole("tab", { name: /\(0\)/ })).not.toBeInTheDocument();
+  });
+
+  it("uses Persian digits for nonzero badges and leaves empty Persian labels alone", () => {
+    renderTabs([], "fa");
+    expect(screen.getByRole("tab", { name: "فعالیت‌ها" })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "فایل‌ها (۲)" })).toBeInTheDocument();
+    expect(screen.queryByRole("tab", { name: /\(۰\)/ })).not.toBeInTheDocument();
   });
 });

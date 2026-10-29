@@ -1,3 +1,4 @@
+import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import type React from "react";
 
@@ -21,8 +22,10 @@ export function PipelineBreadcrumb({
       </Link>
       {currentStageName !== null && (
         <>
-          {" "}
-          &rsaquo; <span className="font-medium text-foreground">{currentStageName}</span>
+          <ChevronRight aria-hidden="true" className="mx-1 inline size-3 align-middle" />
+          <bdi dir="auto" className="font-medium text-foreground">
+            {currentStageName}
+          </bdi>
         </>
       )}
     </p>

@@ -251,6 +251,7 @@ export function Composer({
         key={`body-${recipientsNonce}`}
         html={body}
         onChange={setBody}
+        ariaLabel={E._extra.email_body}
         insertToken={insertToken}
         // Frame the editor as a white rounded 14px card to match PD's composer body.
         frameClassName="rounded-md border border-border bg-background text-sm"

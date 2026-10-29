@@ -1,16 +1,20 @@
 "use client";
 import { Button } from "@/components/ui/Button";
-import { useLocale } from "@/features/i18n/LocaleProvider";
-import { settingsImportError } from "@/features/identity/settingsMessages";
+import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
+import { formatImportDiagnostic } from "@/features/import/diagnosticFormatter";
+import type { ImportTarget } from "@/features/import/wizardState";
 import { trpc } from "@/lib/trpc-client";
 import { useFormatters } from "@/lib/useFormatters";
+import type { CustomFieldDef } from "@/types/customFields";
 
 export interface PreviewStepProps {
   batchId: string;
   validation: { valid: number; invalid: number };
   busy: boolean;
   onCommit: () => void;
+  target?: ImportTarget;
+  defs?: readonly CustomFieldDef[];
 }
 
 export function PreviewStep({
@@ -18,10 +22,12 @@ export function PreviewStep({
   validation,
   busy,
   onCommit,
+  target,
+  defs,
 }: PreviewStepProps): React.ReactNode {
   const L = useSettingsMessages();
   const IMP = L.importer;
-  const locale = useLocale();
+  const preferences = useLocalePreferences();
   const format = useFormatters();
 
   const rows = trpc.import.listRows.useQuery({ batchId }).data ?? [];
@@ -49,7 +55,7 @@ export function PreviewStep({
                 <span className="font-medium tabular-nums">#{format.number(r.rowNumber)}</span>{" "}
                 <span className="text-red-600">
                   {r.errors
-                    .map((e) => `${e.field}: ${settingsImportError(L, e.message, locale)}`)
+                    .map((e) => formatImportDiagnostic(e, { ...preferences, target, defs }))
                     .join("; ")}
                 </span>
               </li>

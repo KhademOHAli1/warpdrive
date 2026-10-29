@@ -173,10 +173,8 @@ describe("DealWorkspaceClient compose bar", () => {
   };
 
   it("mounts the composer as the PD default state (tabs visible, Activity prompt), expanding on click", () => {
-    const { container } = render(<DealWorkspaceClient workspace={workspace as never} {...props} />);
-    const composeSection = container.querySelector('section[aria-label="compose"]');
-    if (composeSection === null) throw new Error("compose section not found");
-    const compose = within(composeSection as HTMLElement);
+    render(<DealWorkspaceClient workspace={workspace as never} {...props} />);
+    const compose = within(screen.getByRole("region", { name: "Add to record" }));
 
     // Pipedrive parity: the tab strip is always visible; the Activity tab starts as a
     // one-line prompt below it, and clicking the prompt expands the activity editor.
@@ -194,7 +192,7 @@ describe("DealWorkspaceClient compose bar", () => {
 
 describe("DealWorkspaceClient block gating", () => {
   // Real-render gating checks (this file renders the true child tree, not mocked stubs). Markers:
-  // ComposeBar renders <section aria-label="compose">; WorkspaceTabs renders an <h2>History</h2>.
+  // ComposeBar renders the named Add-to-record region; WorkspaceTabs renders an <h2>History</h2>.
   const baseProps = {
     selfActorId: "u1",
     emailAccountId: null,
@@ -208,19 +206,19 @@ describe("DealWorkspaceClient block gating", () => {
   };
 
   it("hides the ComposeBar when the email block is hidden", () => {
-    const { container } = render(
+    render(
       <DealWorkspaceClient
         workspace={workspace as never}
         {...baseProps}
         initialHiddenBlocks={["email"]}
       />,
     );
-    expect(container.querySelector('section[aria-label="compose"]')).toBeNull();
+    expect(screen.queryByRole("region", { name: "Add to record" })).toBeNull();
     expect(screen.getByRole("heading", { name: "History" })).toBeInTheDocument();
   });
 
   it("hides the WorkspaceTabs history when the timeline block is hidden", () => {
-    const { container } = render(
+    render(
       <DealWorkspaceClient
         workspace={workspace as never}
         {...baseProps}
@@ -228,18 +226,18 @@ describe("DealWorkspaceClient block gating", () => {
       />,
     );
     expect(screen.queryByRole("heading", { name: "History" })).not.toBeInTheDocument();
-    expect(container.querySelector('section[aria-label="compose"]')).not.toBeNull();
+    expect(screen.queryByRole("region", { name: "Add to record" })).not.toBeNull();
   });
 
   it("shows both when nothing is hidden", () => {
-    const { container } = render(
+    render(
       <DealWorkspaceClient
         workspace={workspace as never}
         {...baseProps}
         initialHiddenBlocks={[]}
       />,
     );
-    expect(container.querySelector('section[aria-label="compose"]')).not.toBeNull();
+    expect(screen.queryByRole("region", { name: "Add to record" })).not.toBeNull();
     expect(screen.getByRole("heading", { name: "History" })).toBeInTheDocument();
   });
 });

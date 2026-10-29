@@ -1,13 +1,19 @@
 "use client";
 import dynamic from "next/dynamic";
 import type React from "react";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import type { Labels, Modifiers } from "react-day-picker";
-import { useLocale, useMessages, useNumberingSystem } from "@/features/i18n/LocaleProvider";
+import {
+  useCalendarSystem,
+  useLocale,
+  useLocalePreferences,
+  useMessages,
+  useNumberingSystem,
+} from "@/features/i18n/LocaleProvider";
 import type { Locale } from "@/features/i18n/locale";
 import { cn } from "@/lib/utils";
 import { Button, buttonVariants } from "./Button";
-import { type DayAccessory, dayAccessoryButton } from "./DayAccessoryButton";
+import { type DayAccessory, DayAccessoryButton, DayAccessoryProvider } from "./DayAccessoryButton";
 import {
   formatGregorianPersianDate,
   formatMdy,
@@ -69,6 +75,8 @@ interface DatePickerProps {
   // immediately when the field enters edit mode).
   defaultOpen?: boolean;
   dayAccessory?: (localYmd: string) => DayAccessory | null;
+  // Lets data-loading callers use the same civil anchor as the displayed grid.
+  month?: Date;
   onMonthChange?: (month: Date) => void;
   onOpenChange?: (open: boolean) => void;
   onCalendarChange?: (calendar: CalendarSystem) => void;
@@ -79,10 +87,38 @@ export type CalendarSystem = "gregory" | "persian";
 function persianLabels(
   calendar: CalendarSystem,
   numberingSystem: "latn" | "arabext",
+  labelGrid?: Labels["labelGrid"],
 ): Partial<Labels> {
   const label = (date: Date, modifiers?: Modifiers): string =>
     formatPersianAccessibleDate(date, calendar, modifiers, numberingSystem);
-  return { labelDayButton: label, labelGridcell: label };
+  return { labelDayButton: label, labelGridcell: label, labelGrid };
+}
+
+function persianFormatters(calendar: CalendarSystem, numberingSystem: "latn" | "arabext") {
+  const options = { calendar, numberingSystem, timeZone: "UTC" };
+  const month = new Intl.DateTimeFormat("fa-IR", { ...options, month: "long" });
+  const year = new Intl.DateTimeFormat("fa-IR", { ...options, year: "numeric" });
+  const format = (date: Date, formatter: Intl.DateTimeFormat): string =>
+    formatter.format(new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 12)));
+  return {
+    formatCaption: (date: Date) => `${format(date, month)} ${format(date, year)}`,
+    formatMonthDropdown: (date: Date) => format(date, month),
+    formatYearDropdown: (date: Date) => format(date, year),
+  };
+}
+
+function accountToday(timeZone: string): Date {
+  const parts = new Intl.DateTimeFormat("en", {
+    calendar: "gregory",
+    numberingSystem: "latn",
+    timeZone,
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+  }).formatToParts(new Date());
+  const part = (type: "year" | "month" | "day") =>
+    Number(parts.find((entry) => entry.type === type)?.value);
+  return new Date(part("year"), part("month") - 1, part("day"));
 }
 
 function dateLabel(
@@ -111,30 +147,37 @@ export function DatePicker({
   formatLabel,
   defaultOpen = false,
   dayAccessory,
+  month: controlledMonth,
   onMonthChange,
   onOpenChange,
   onCalendarChange,
 }: DatePickerProps): React.ReactNode {
   const locale = useLocale();
+  const { timeZone } = useLocalePreferences();
+  const preferredCalendar = useCalendarSystem();
   const numberingSystem = useNumberingSystem();
   const { datePicker: messages } = useMessages();
   const [open, setOpenState] = useState(defaultOpen);
   const [calendarOverride, setCalendarOverride] = useState<CalendarSystem | null>(null);
-  const calendar = calendarOverride ?? (locale === "fa" ? "persian" : "gregory");
+  const calendar = calendarOverride ?? preferredCalendar;
+  const formatters = locale === "fa" ? persianFormatters(calendar, numberingSystem) : undefined;
+  const valueKey = value ?? "";
+  const [navigated, setNavigated] = useState<{ month: Date; forValue: string } | null>(null);
   const setOpen = (next: boolean): void => {
     setOpenState(next);
+    if (!next) setNavigated(null);
     onOpenChange?.(next);
   };
   const selected = value !== null ? (parseYmd(value) ?? undefined) : undefined;
+  // DayPicker uses browser-local Dates as civil containers. Keep that contract while
+  // projecting the real clock into the account zone for the initial view and Today marker.
+  const today = accountToday(timeZone);
+  const visibleMonth =
+    controlledMonth ?? (navigated?.forValue === valueKey ? navigated.month : (selected ?? today));
   const label = dateLabel(value, calendar, locale, formatLabel, numberingSystem);
-  const currentYear = new Date().getFullYear();
+  const currentYear = today.getFullYear();
   const startMonth = new Date(currentYear - DATE_PICKER_PAST_YEARS, 0);
   const endMonth = new Date(currentYear + DATE_PICKER_FUTURE_YEARS, 11);
-  const components = useMemo(
-    () =>
-      dayAccessory === undefined ? undefined : { DayButton: dayAccessoryButton(dayAccessory) },
-    [dayAccessory],
-  );
   const Picker =
     calendar === "persian"
       ? locale === "fa"
@@ -162,25 +205,36 @@ export function DatePicker({
         )}
       </PopoverTrigger>
       <PopoverContent>
-        <Picker
-          mode="single"
-          labels={locale === "fa" ? persianLabels(calendar, numberingSystem) : undefined}
-          numerals={numberingSystem}
-          selected={selected}
-          defaultMonth={selected}
-          weekStartsOn={calendar === "persian" ? 6 : undefined}
-          onSelect={(day) => {
-            if (day !== undefined) {
-              onChange(toYmd(day));
-              setOpen(false);
+        <DayAccessoryProvider value={dayAccessory}>
+          <Picker
+            mode="single"
+            labels={
+              locale === "fa"
+                ? persianLabels(calendar, numberingSystem, formatters?.formatCaption)
+                : undefined
             }
-          }}
-          captionLayout="dropdown"
-          startMonth={startMonth}
-          endMonth={endMonth}
-          onMonthChange={onMonthChange}
-          components={components}
-        />
+            formatters={formatters}
+            numerals={numberingSystem}
+            selected={selected}
+            month={visibleMonth}
+            today={today}
+            weekStartsOn={calendar === "persian" ? 6 : undefined}
+            onSelect={(day) => {
+              if (day !== undefined) {
+                onChange(toYmd(day));
+                setOpen(false);
+              }
+            }}
+            captionLayout="dropdown"
+            startMonth={startMonth}
+            endMonth={endMonth}
+            onMonthChange={(next) => {
+              if (controlledMonth === undefined) setNavigated({ month: next, forValue: valueKey });
+              onMonthChange?.(next);
+            }}
+            components={dayAccessory === undefined ? undefined : { DayButton: DayAccessoryButton }}
+          />
+        </DayAccessoryProvider>
         <div className="flex items-center justify-between gap-2 border-t pt-1.5">
           <Button
             variant="ghost"

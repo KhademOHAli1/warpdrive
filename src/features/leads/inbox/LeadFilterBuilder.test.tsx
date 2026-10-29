@@ -2,6 +2,8 @@
 import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { createAppTranslator } from "@/features/i18n/catalog";
+import { LocaleProvider } from "@/features/i18n/LocaleProvider";
 
 // "hot" is the catalog's "Hot" under case-insensitive matching, so it must not become a second
 // option; "high priority" is applied-only and still has to be selectable.
@@ -42,6 +44,24 @@ function openLabelRow() {
 }
 
 describe("LeadFilterBuilder label condition", () => {
+  it.each(["en", "fa"] as const)("starts a usable title condition in %s", (locale) => {
+    const onApply = vi.fn();
+    const t = createAppTranslator(locale, "filters");
+    render(
+      <LocaleProvider locale={locale}>
+        <LeadFilterBuilder users={[]} activeCount={0} onApply={onApply} />
+      </LocaleProvider>,
+    );
+    fireEvent.click(screen.getByRole("button", { name: t("filter") }));
+    fireEvent.click(screen.getByRole("button", { name: t("addCondition") }));
+    fireEvent.change(screen.getByRole("textbox"), { target: { value: "قرارداد جدید" } });
+    fireEvent.click(screen.getByRole("button", { name: t("apply") }));
+    expect(onApply).toHaveBeenCalledWith({
+      combinator: "and",
+      conditions: [{ field: "title", op: "contains", value: "قرارداد جدید" }],
+    });
+  });
+
   it("gives the Label field a Select value control, not a text box", () => {
     openLabelRow();
     const value = screen.getByLabelText("Condition 1 value");

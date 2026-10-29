@@ -1,7 +1,8 @@
 "use client";
 import { useRouter } from "next/navigation";
 import type React from "react";
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { reportTimePickerValidity } from "@/components/ui/timePickerValidity";
 import { CustomFieldFormControl, isCustomFieldValueEmpty } from "@/features/custom-fields/render";
 import { useSalesStrings } from "@/features/deals/useSalesStrings";
 import { useLocale } from "@/features/i18n/LocaleProvider";
@@ -73,6 +74,7 @@ function DetailsBulkEditor({
 }): React.ReactNode {
   const locale = useLocale();
   const router = useRouter();
+  const fieldsRef = useRef<HTMLDivElement>(null);
   const [draft, setDraft] = useState<Record<string, unknown>>(() => {
     const d: Record<string, unknown> = {};
     for (const def of customFieldDefs) d[def.key] = customFields[def.key];
@@ -93,6 +95,7 @@ function DetailsBulkEditor({
   }
 
   function commit(): void {
+    if (!reportTimePickerValidity(fieldsRef.current)) return;
     const patch = changedKeys();
     if (Object.keys(patch).length === 0) {
       onExit();
@@ -117,7 +120,7 @@ function DetailsBulkEditor({
   }
 
   return (
-    <div className="flex flex-col gap-2">
+    <div ref={fieldsRef} className="flex flex-col gap-2">
       {customFieldDefs.map((def) => (
         <div key={def.id} className="flex flex-col gap-0.5 text-muted-foreground text-xs">
           <span>

@@ -68,7 +68,7 @@ export function ActivityDatePicker({
   const calendar = calendarOverride ?? preferences.calendar;
   const selectedMonth =
     (value !== null ? parseYmd(value) : null) ??
-    parseYmd(instantCivilDate(new Date(), preferences.timeZone))!;
+    new Date(`${instantCivilDate(new Date(), preferences.timeZone)}T00:00:00`);
   const [navigated, setNavigated] = useState<{ month: Date; forValue: string } | null>(null);
   const navigationStillApplies = navigated !== null && navigated.forValue === valueKey;
   const month = navigationStillApplies ? navigated.month : selectedMonth;
@@ -110,9 +110,9 @@ export function ActivityDatePicker({
       ariaLabel={ariaLabel}
       placeholder={placeholder}
       dayAccessory={dayAccessory}
+      month={month}
       onCalendarChange={(next) => {
         setCalendarOverride(next);
-        setNavigated(null);
       }}
       onMonthChange={(m) => setNavigated({ month: m, forValue: valueKey })}
       onOpenChange={(open) => {

@@ -1,11 +1,12 @@
 "use client";
 import { Building2, CalendarClock, Clock, User } from "lucide-react";
 import type React from "react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Combobox, type ComboboxOption } from "@/components/ui/Combobox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, type SelectOption } from "@/components/ui/Select";
 import { TimePicker } from "@/components/ui/TimePicker";
+import { reportTimePickerValidity } from "@/components/ui/timePickerValidity";
 import { ACTIVITY_PRIORITY_KEYS } from "@/constants/activityPriorities";
 import { ActivityDatePicker } from "@/features/activities/ActivityDatePicker";
 import { composeDueAt } from "@/features/activities/activityTime";
@@ -61,6 +62,7 @@ export function AddActivityModal({
   const preferences = useLocalePreferences();
   const [draftZone] = useState(preferences.timeZone);
   const tCalendar = useAppTranslations("calendar");
+  const fieldsRef = useRef<HTMLDivElement>(null);
   const typesQ = trpc.activities.listTypes.useQuery();
   const peopleQ = trpc.contacts.listPeople.useQuery({ offset: 0, limit: 500 });
   const orgsQ = trpc.contacts.listOrgs.useQuery({ offset: 0, limit: 500 });
@@ -81,6 +83,7 @@ export function AddActivityModal({
   const dueRequired = leadId !== null || dealId !== null;
 
   async function submit(): Promise<void> {
+    if (!reportTimePickerValidity(fieldsRef.current)) return;
     if (subject.trim() === "") {
       setError(S.subjectRequired);
       return;
@@ -145,7 +148,7 @@ export function AddActivityModal({
           <DialogTitle className="text-base font-semibold">{S.addActivity}</DialogTitle>
         </DialogHeader>
 
-        <div className="flex flex-col gap-3 px-5 py-4 text-sm">
+        <div ref={fieldsRef} className="flex flex-col gap-3 px-5 py-4 text-sm">
           {/* Composer parity (deal page): a large subject, the type icon rail, then icon-gutter
               field rows via ComposerFieldRow. Kept the standalone Contact person / Organization
               pickers (the Activities page has no deal/lead context to anchor to). */}

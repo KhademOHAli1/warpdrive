@@ -1,8 +1,8 @@
 "use client";
 import type React from "react";
-import { useAppTranslations } from "@/features/i18n/LocaleProvider";
+import { formatTimelineEmailDate } from "@/features/email/inboxDate";
+import { useAppTranslations, useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import { formatUserName } from "@/features/identity/formatUserName";
-import { useFormatters } from "@/lib/useFormatters";
 
 export function AttributionLine({
   at,
@@ -12,10 +12,12 @@ export function AttributionLine({
   actorName: string | null;
 }): React.ReactNode {
   const t = useAppTranslations("sales");
-  const format = useFormatters();
+  const preferences = useLocalePreferences();
   return (
     <p className="mt-0.5 text-xs text-muted-foreground">
-      <time dateTime={at.toISOString()}>{format.dateTime(at)}</time>
+      <time dateTime={at.toISOString()}>
+        {formatTimelineEmailDate(at.toISOString(), undefined, preferences)}
+      </time>
       {" · "}
       {actorName === null ? (
         t("computed.unknownActor")

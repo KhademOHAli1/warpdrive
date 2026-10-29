@@ -21,8 +21,8 @@ export function groupActivities(
   const out: GroupedActivities = { overdue: [], today: [], upcoming: [] };
 
   for (const a of items) {
-    const key = activityDay(a, timeZone)!;
-    const endKey = activityEndDay(a, timeZone)!;
+    const key = activityDay(a, timeZone);
+    const endKey = activityEndDay(a, timeZone);
     if (key <= todayKey && endKey >= todayKey) {
       out.today.push(a);
     } else if (endKey < todayKey) {

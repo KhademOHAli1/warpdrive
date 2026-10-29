@@ -45,7 +45,7 @@ export function FilterableCalendar({
   const ownersQ = trpc.identity.assignableUsers.useQuery();
 
   const types = useMemo(
-    () => (typesQ.data ?? []).map((t) => ({ key: t.key, name: t.name })),
+    () => (typesQ.data ?? []).map((t) => ({ key: t.key, name: t.name, isSystem: t.isSystem })),
     [typesQ.data],
   );
   const owners = useMemo(

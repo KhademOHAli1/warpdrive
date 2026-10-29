@@ -40,16 +40,17 @@ export function ContactOverviewSection({
       <FieldRow label={tContacts("totalActivities")}>
         <span className="tabular-nums">{format.number(total)}</span>
       </FieldRow>
-      {Object.entries(byType).map(([key, count]) => (
-        <FieldRow
-          key={key}
-          label={
-            typeByKey.has(key) ? activityTypeName(typeByKey.get(key)!, locale) : capitalize(key)
-          }
-        >
-          <span className="tabular-nums">{format.number(count)}</span>
-        </FieldRow>
-      ))}
+      {Object.entries(byType).map(([key, count]) => {
+        const type = typeByKey.get(key);
+        return (
+          <FieldRow
+            key={key}
+            label={type === undefined ? capitalize(key) : activityTypeName(type, locale)}
+          >
+            <span className="tabular-nums">{format.number(count)}</span>
+          </FieldRow>
+        );
+      })}
       <FieldRow label={tContacts("mostActiveUsers")} empty={mostActiveUsers.length === 0}>
         {mostActiveUsers.length > 0
           ? mostActiveUsers.map((u) => (

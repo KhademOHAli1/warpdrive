@@ -86,29 +86,29 @@ Pipedrive.
 warpdrive covers Pipedrive's core BD loop and deliberately leaves the rest out of scope. The
 goal is a focused, self-hosted CRM, not a feature-for-feature clone.
 
-|  | warpdrive | Pipedrive |
-|---|:---:|:---:|
-| License | MIT, open source | Proprietary |
-| Hosting | Self-hosted, single-tenant | Vendor cloud |
-| Pricing | Free (your infrastructure only) | Paid, per seat |
-| Your data | Stays on your infrastructure | Vendor servers |
-| Kanban pipeline + custom stages | ✅ | ✅ |
-| Multiple pipelines | ✅ | ✅ |
-| Deal workspace (activities, notes, files, history) | ✅ | ✅ |
-| Contacts and organizations + custom fields | ✅ | ✅ |
-| Leads inbox + CSV import (with undo) | ✅ | ✅ |
-| Two-way Gmail (send/receive, threads, open/click tracking) | ✅ | ✅ |
-| Email templates, signatures, scheduled send | ✅ | ✅ |
-| Permissions, teams, user management | ✅ | ✅ |
-| Saved filters | ✅ | ✅ |
-| Realtime board / inbox / presence | ✅ | ✅ |
-| Notifications | ✅ | ✅ |
-| Pipeline stats (funnel, performance) | ✅ Basic | ✅ Advanced |
-| Products, Projects, Invoicing, Forecast | ➖ Out of scope | ✅ |
-| Multi-currency | ➖ Out of scope | ✅ |
-| Workflow automation | ➖ Email scheduling only | ✅ |
-| Web forms / chatbot / marketplace | ➖ Out of scope | ✅ |
-| Native mobile apps | ➖ Web app | ✅ |
+|                                                            |            warpdrive            |   Pipedrive    |
+| ---------------------------------------------------------- | :-----------------------------: | :------------: |
+| License                                                    |        MIT, open source         |  Proprietary   |
+| Hosting                                                    |   Self-hosted, single-tenant    |  Vendor cloud  |
+| Pricing                                                    | Free (your infrastructure only) | Paid, per seat |
+| Your data                                                  |  Stays on your infrastructure   | Vendor servers |
+| Kanban pipeline + custom stages                            |               ✅                |       ✅       |
+| Multiple pipelines                                         |               ✅                |       ✅       |
+| Deal workspace (activities, notes, files, history)         |               ✅                |       ✅       |
+| Contacts and organizations + custom fields                 |               ✅                |       ✅       |
+| Leads inbox + CSV import (with undo)                       |               ✅                |       ✅       |
+| Two-way Gmail (send/receive, threads, open/click tracking) |               ✅                |       ✅       |
+| Email templates, signatures, scheduled send                |               ✅                |       ✅       |
+| Permissions, teams, user management                        |               ✅                |       ✅       |
+| Saved filters                                              |               ✅                |       ✅       |
+| Realtime board / inbox / presence                          |               ✅                |       ✅       |
+| Notifications                                              |               ✅                |       ✅       |
+| Pipeline stats (funnel, performance)                       |            ✅ Basic             |  ✅ Advanced   |
+| Products, Projects, Invoicing, Forecast                    |         ➖ Out of scope         |       ✅       |
+| Multi-currency                                             |         ➖ Out of scope         |       ✅       |
+| Workflow automation                                        |    ➖ Email scheduling only     |       ✅       |
+| Web forms / chatbot / marketplace                          |         ➖ Out of scope         |       ✅       |
+| Native mobile apps                                         |           ➖ Web app            |       ✅       |
 
 ✅ supported · ➖ intentionally out of scope
 

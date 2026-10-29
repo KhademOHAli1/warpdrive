@@ -34,6 +34,7 @@ const NOT_PAGE_TITLES = new Set([
   "app/(app)/not-found.tsx",
   "app/global-error.tsx",
   "app/(auth)/login/page.tsx",
+  "features/auth/LoginScreen.tsx",
   "app/oauth/authorize/consent.tsx",
   "app/(app)/inbox/InboxListClient.tsx",
   "features/email/ThreadPane.tsx",

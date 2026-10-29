@@ -92,7 +92,15 @@ describe("EmailTimelineCard collapsed", () => {
     const undated = { ...message, sentAt: null, createdAt: "2026-06-01T09:15:00Z" };
     render(<EmailTimelineCard message={undated} scope={dealScope} onUnlinked={() => {}} />);
 
-    expect(screen.getByText(formatTimelineEmailDate("2026-06-01T09:15:00Z"))).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        formatTimelineEmailDate("2026-06-01T09:15:00Z", undefined, {
+          locale: "en",
+          calendar: "gregory",
+          timeZone: "UTC",
+        }),
+      ),
+    ).toBeInTheDocument();
   });
 
   it("issues no body query while collapsed", () => {

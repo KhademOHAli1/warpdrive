@@ -24,7 +24,7 @@ function isOverdue(row: ActivityTableRow, timeZone: string): boolean {
     timeZone,
     row.dueDate,
     row.endDate,
-    row.endAtIso ? new Date(row.endAtIso) : null,
+    row.endAtIso != null && row.endAtIso !== "" ? new Date(row.endAtIso) : null,
   );
 }
 

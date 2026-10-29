@@ -6,6 +6,10 @@ const actor = {
   id: "actor-1",
   flags: new Set<string>(),
 };
+vi.mock("@/features/identity/settingsMessages.server", async () => {
+  const { settingsMessagesForLocale } = await import("@/features/identity/settingsMessages");
+  return { getServerSettingsMessages: () => Promise.resolve(settingsMessagesForLocale("en")) };
+});
 
 vi.mock("@/features/permissions/can", () => ({
   can: vi.fn(() => true),

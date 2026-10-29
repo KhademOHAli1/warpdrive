@@ -94,4 +94,11 @@ describe("contextual sales language review", () => {
     );
     expect(label).toContain("از «\u2068Acme (Europe)\u2069» به «\u2068فروش تهران + Acme\u2069»");
   });
+  it("uses the unknown-field copy for unrecognized and prototype-like audit keys", () => {
+    const unknownField = createAppTranslator("fa", "sales")("changeLog.unknownField");
+    for (const field of ["unknown_field", "constructor", "toString", "__proto__"])
+      expect(readable(formatChangeLabel({ field, oldValue: "قبل", newValue: "بعد" }, "fa"))).toBe(
+        `${unknownField}: از «قبل» به «بعد»`,
+      );
+  });
 });

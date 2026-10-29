@@ -1,5 +1,5 @@
 import { instantCivilDate } from "@/lib/zonedDateTime";
-import type { ActivityTemporalRecord } from "./activityTemporal";
+import type { ActivityInstant, ActivityTemporalRecord } from "./activityTemporal";
 
 interface TemporalWrite {
   dueAt?: string | null;
@@ -9,10 +9,13 @@ interface TemporalWrite {
   endDate?: string | null;
 }
 export function canonicalCreateDates(input: TemporalWrite, zone: string) {
-  if (!input.allDay || !input.dueAt) return { dueDate: null, endDate: null };
+  if (input.allDay !== true || input.dueAt == null || input.dueAt === "")
+    return { dueDate: null, endDate: null };
   return {
     dueDate: input.dueDate ?? instantCivilDate(input.dueAt, zone),
-    endDate: input.endDate ?? (input.endAt ? instantCivilDate(input.endAt, zone) : null),
+    endDate:
+      input.endDate ??
+      (input.endAt != null && input.endAt !== "" ? instantCivilDate(input.endAt, zone) : null),
   };
 }
 // A read or unrelated edit cannot resolve the original civil date of an old placeholder instant.
@@ -35,7 +38,7 @@ export function canonicalUpdateDates(
     input.dueDate !== undefined ||
     input.endDate !== undefined;
   if (!changed) return {};
-  if (!allDay || !dueAt) return { dueDate: null, endDate: null };
+  if (!allDay || !hasAnchor(dueAt)) return { dueDate: null, endDate: null };
   return {
     dueDate:
       input.dueDate ??
@@ -44,16 +47,26 @@ export function canonicalUpdateDates(
     endDate:
       input.endDate ??
       (input.endAt === undefined ? current.endDate : null) ??
-      (endAt ? instantCivilDate(endAt, zone) : null),
+      (hasAnchor(endAt) ? instantCivilDate(endAt, zone) : null),
   };
 }
 function time(value: Date | string | number | null | undefined) {
   return value == null ? null : new Date(value).getTime();
+}
+// Keep the legacy presence rule, including empty strings and zero/NaN numeric anchors.
+function hasAnchor(value: ActivityInstant | null | undefined): value is ActivityInstant {
+  return Boolean(value);
 }
 
 export function civilEndBeforeStart(dates: {
   dueDate?: string | null;
   endDate?: string | null;
 }): boolean {
-  return !!(dates.dueDate && dates.endDate && dates.endDate < dates.dueDate);
+  return (
+    dates.dueDate != null &&
+    dates.dueDate !== "" &&
+    dates.endDate != null &&
+    dates.endDate !== "" &&
+    dates.endDate < dates.dueDate
+  );
 }

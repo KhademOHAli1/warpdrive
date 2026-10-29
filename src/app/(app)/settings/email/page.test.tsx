@@ -8,6 +8,10 @@ const actor = {
 };
 
 vi.mock("@/db/client", () => ({ db: {} }));
+vi.mock("@/features/identity/settingsMessages.server", async () => {
+  const { settingsMessagesForLocale } = await import("@/features/identity/settingsMessages");
+  return { getServerSettingsMessages: () => Promise.resolve(settingsMessagesForLocale("en")) };
+});
 vi.mock("@/server/trpc/context", () => ({
   createContext: vi.fn(() => Promise.resolve({ actor })),
 }));

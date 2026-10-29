@@ -117,13 +117,13 @@ function renderList(overrides: Partial<typeof baseDeal> = {}) {
 
 it("renders the value as formatted currency, not a raw number (PD $-format)", () => {
   renderList();
-  expect(screen.getByText("$58,000")).toBeInTheDocument();
+  expect(screen.getByText("$58,000 USD")).toBeInTheDocument();
   expect(screen.queryByText("58000")).not.toBeInTheDocument();
 });
 
 it("renders a null value as $0, matching PD's always-present value row", () => {
   renderList({ value: null as unknown as number });
-  expect(screen.getByText("$0")).toBeInTheDocument();
+  expect(screen.getByText("$0 USD")).toBeInTheDocument();
 });
 
 it("links the org and person rows to their records (PD entity links)", () => {
@@ -290,7 +290,7 @@ it("surfaces a failed participant create inline instead of swallowing it", async
 it("edits the value ONLY via the pencil, with a dirty-gated Save footer (PD mechanism)", async () => {
   renderList();
   // The value text is plain/selectable, not a click target.
-  fireEvent.click(screen.getByText("$58,000"));
+  fireEvent.click(screen.getByText("$58,000 USD"));
   expect(screen.queryByLabelText("Value")).not.toBeInTheDocument();
 
   fireEvent.click(screen.getByRole("button", { name: "Edit Value" }));
@@ -313,7 +313,7 @@ it("value editor: blur does not commit and Cancel discards (PD: only Cancel/Save
   expect(updateDealAction).not.toHaveBeenCalled();
   fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
   expect(updateDealAction).not.toHaveBeenCalled();
-  expect(screen.getByText("$58,000")).toBeInTheDocument();
+  expect(screen.getByText("$58,000 USD")).toBeInTheDocument();
 });
 
 it("close date: prompt click opens the editor; picking a day needs Save to commit", async () => {

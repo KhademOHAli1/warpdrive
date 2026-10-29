@@ -168,7 +168,7 @@ export function SharedComposeBar({
   return (
     <section
       ref={composeRef}
-      aria-label={E._extra.compose_email}
+      aria-label={E._extra.record_composer}
       className="mb-4 rounded border bg-card"
     >
       <Tabs value={activeTab} onValueChange={(v) => openTab(v as ComposeTab)}>

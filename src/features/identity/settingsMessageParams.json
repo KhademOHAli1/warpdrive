@@ -1,106 +1,33 @@
 {
-  "connectedAppsConnected": [
-    "date"
-  ],
-  "connectedAppsLastUsed": [
-    "date"
-  ],
-  "deleteStageTitle": [
-    "stage"
-  ],
-  "deleteStageDescription": [
-    "deals"
-  ],
-  "stageDeleteFailed": [
-    "stage",
-    "reason"
-  ],
-  "importer.rowsDetected": [
-    "n"
-  ],
-  "importer.valid": [
-    "n"
-  ],
-  "importer.withErrors": [
-    "n"
-  ],
-  "importer.commitButton": [
-    "n"
-  ],
-  "importer.result": [
-    "imported",
-    "skipped",
-    "invalid"
-  ],
-  "importer.resultCounts": [
-    "imported",
-    "errors"
-  ],
-  "_emailSync.connectedAs": [
-    "email"
-  ],
-  "_emailSync.lastSynced": [
-    "when"
-  ],
-  "_enrichment.settings.testFailed": [
-    "verdict"
-  ],
-  "_enrichment.settings.testQuotaHourly": [
-    "left"
-  ],
-  "_enrichment.settings.testQuotaDaily": [
-    "left"
-  ],
-  "_enrichment.settings.testQuotaLine": [
-    "windows"
-  ],
-  "_enrichment.settings.testNotEntitledLine": [
-    "lookups"
-  ],
-  "_enrichment.settings.statusThrottled": [
-    "until"
-  ],
-  "_enrichment.settings.statusQuota": [
-    "until"
-  ],
-  "_enrichment.settings.keyHint": [
-    "hint"
-  ],
-  "_extra.stageCount": [
-    "count"
-  ],
-  "_extra.progressText": [
-    "processed",
-    "total",
-    "pct"
-  ],
-  "_extra.removeUser": [
-    "name"
-  ],
-  "_extra.noEmailNotice": [
-    "name",
-    "email"
-  ],
-  "_extra.nameSaveError": [
-    "id"
-  ],
-  "_extra.selectedCount": [
-    "count"
-  ],
-  "_extra.goalDisplayLabel": [
-    "noun",
-    "action",
-    "interval"
-  ],
-  "_extra.importErrors.unknown": [
-    "kind",
-    "value"
-  ],
-  "_extra.importErrors.ambiguous": [
-    "count"
-  ],
-  "_extra.activityGoalDisplayLabel": [
-    "action",
-    "interval"
-  ]
+  "connectedAppsConnected": ["date"],
+  "connectedAppsLastUsed": ["date"],
+  "deleteStageTitle": ["stage"],
+  "deleteStageDescription": ["deals"],
+  "stageDeleteFailed": ["stage", "reason"],
+  "importer.rowsDetected": ["n"],
+  "importer.valid": ["n"],
+  "importer.withErrors": ["n"],
+  "importer.commitButton": ["n"],
+  "importer.result": ["imported", "skipped", "invalid"],
+  "importer.resultCounts": ["imported", "errors"],
+  "_emailSync.connectedAs": ["email"],
+  "_emailSync.lastSynced": ["when"],
+  "_enrichment.settings.testFailed": ["verdict"],
+  "_enrichment.settings.testQuotaHourly": ["left"],
+  "_enrichment.settings.testQuotaDaily": ["left"],
+  "_enrichment.settings.testQuotaLine": ["windows"],
+  "_enrichment.settings.testNotEntitledLine": ["lookups"],
+  "_enrichment.settings.statusThrottled": ["until"],
+  "_enrichment.settings.statusQuota": ["until"],
+  "_enrichment.settings.keyHint": ["hint"],
+  "_extra.stageCount": ["count"],
+  "_extra.progressText": ["processed", "total", "pct"],
+  "_extra.removeUser": ["name"],
+  "_extra.noEmailNotice": ["name", "email"],
+  "_extra.nameSaveError": ["id"],
+  "_extra.selectedCount": ["count"],
+  "_extra.goalDisplayLabel": ["noun", "action", "interval"],
+  "_extra.importErrors.unknown": ["kind", "value"],
+  "_extra.importErrors.ambiguous": ["count"],
+  "_extra.activityGoalDisplayLabel": ["action", "interval"]
 }

@@ -87,6 +87,6 @@ describe("Board first paint", () => {
   });
 
   test("renders the rot tint for a deal past its stage threshold", () => {
-    expect(ssr()).toContain("border-l-4");
+    expect(ssr()).toContain("border-s-4");
   });
 });

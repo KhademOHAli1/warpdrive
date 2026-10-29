@@ -44,8 +44,10 @@ catalog and workflows are incomplete.
 `bun run i18n:audit` checks catalog syntax and key/argument parity and prints remaining source
 migration candidates. `bun run i18n:audit -- --report` writes the detailed inventory to
 `docs/i18n-inventory.json`. The source scan covers JSX text, selected user-facing attributes,
-simple conditional/interpolated JSX strings and legacy English catalog imports. It does not
-prove complete translation coverage.
+conditional/interpolated strings, local const-map references, rendered React state setter copy
+and legacy English catalog imports. Binding analysis is bounded, preserves lexical scope and
+fails visibly on resource limits. Arbitrary helper output and server-returned copy still need
+feature review; an empty static inventory does not prove complete translation coverage.
 
 `bun run i18n:audit -- --check` additionally rejects new unresolved candidates relative to the
 explicit migration baseline. `--strict` fails while any source migration candidate remains.
@@ -53,11 +55,12 @@ Only deliberate review may update the baseline with `--write-baseline`; it is no
 declare untranslated text complete. Catalog checks always fail on missing or extra translation
 keys, invalid ICU messages or changed argument contracts.
 
-## Known pre-existing verification limits
+## Initial verification limits
 
 The public checkout omits a private deployment workflow referenced by two upstream test files.
 Production Docker build and broad lint were interrupted under heavy machine contention in the
-initial Bun migration. These limits remain open until independently resolved or revalidated.
+initial Bun migration. Later checks and the public CI work are recorded below; production
+deployment qualification remains separate from local verification.
 
 ## Verified infrastructure checkpoint, 2026-10-29
 
@@ -145,13 +148,13 @@ for the disambiguation model. Complete UI/database checks for this path are stil
   license/notice qualification remain open from the package migration.
 - Add/review German catalogs and workflows after the Farsi milestone. German is not selectable yet.
 
-## GitHub branch checkpoint, 2026-10-29
+## Historical GitHub branch checkpoint, 2026-10-29
 
 This checkpoint supersedes the in-progress checks listed above. It publishes the Bun/package
 migration, shared UI updates, multicurrency work and Farsi-first internationalization together.
 It is a development branch, with final language and release acceptance still open.
 
-- The combined Bun TypeScript check passed after the latest cross-feature changes.
+- The combined Bun TypeScript check passed at publication, before subsequent follow-up changes.
 - The email attachment build error was fixed by removing a duplicate client directive.
   All four attachment tests passed, an AST scan of 2,763 source files found no misplaced or
   duplicate directives, and the real Farsi pipeline rendered again in Chrome.
@@ -167,10 +170,60 @@ It is a development branch, with final language and release acceptance still ope
   and provider-name handling passed 56 targeted checks, including Bun's react-server condition.
 - The publication-time i18n check passed: zero catalog issues or new source findings,
   three literal candidates, one legacy catalog import and one reviewed protocol exception.
-- The complete lint command currently fails at Biome: 43 errors and 13 warnings, covering
+- At publication, the complete lint command failed at Biome: 43 errors and 13 warnings, covering
   formatting/import order and correctness rules. This branch is not qualified as lint-clean.
   A separate complete ESLint pass also completed with 53 errors.
 
 Remaining acceptance includes the full production/Docker build, complete lint cleanup,
 representative English/Farsi browser workflows and contextual language review. German catalogs
 and workflow verification follow the Farsi milestone; German is not selectable yet.
+
+## Current verification checkpoint, 2026-10-29
+
+This checkpoint supersedes the earlier in-progress verification status. Commit `7b841de` was
+pushed to [KhademOHAli1/warpdrive, feat/farsi-first-bun](https://github.com/KhademOHAli1/warpdrive/tree/feat/farsi-first-bun).
+The subsequent changes described here have not yet been pushed.
+
+- Farsi follow-ups now cover saved-calendar choices independently of language, date-picker
+  navigation, account-zone email scheduling, preserved time drafts and invalid-time guards
+  before manual mutations. Contextual workspace/sidebar copy and accessibility labels were
+  also refined. Focused worker checks passed; their overlapping counts are not additive.
+- The stronger source/catalog guard passed 28 tests. Its current inventory has zero unresolved
+  candidates and four explicitly reviewed exceptions. This is static evidence, not semantic
+  or workflow completeness, and the baseline was not reset.
+- A production build succeeded in a separate QA copy served on port 3101. Later sidebar and
+  contextual-label changes followed that build, so the final source still needs build confirmation.
+  Worker bundles also built successfully.
+- The latest complete unit run reported 5,311 passes and four failures. Targeted follow-ups
+  for those four failures passed 44 and 52 tests. A complete green rerun has not yet been recorded.
+  A fresh real PostgreSQL integration run passed 21 tests; no external email was sent.
+- Public CI now defines CRM, site and documentation jobs. Its local contract checks passed
+  21 tests; remote CI remains pending. Final integrated typecheck and lint results for the latest
+  source are still awaiting confirmation.
+- The native local server returned HTTP 200 for `/login` without a process restart. Development
+  read-only artifact warnings remain under separate diagnosis. Chrome update activity is left
+  untouched at the user's request; its completion is unconfirmed. Current in-app-browser attempts
+  time out, so full browser workflow acceptance remains incomplete. Earlier browser evidence above
+  is retained as historical verification. Current work prioritizes code, validation and the GitHub checkpoint.
+
+The active Farsi goal remains open. Remaining acceptance includes current-source build and
+regression confirmation, complete contextual English/Farsi browser workflows, real Gmail
+integration and production Docker/deployment verification. German remains the next language
+and is not selectable yet.
+
+
+## Isolated publication checkpoint — 2026-10-29
+
+This checkpoint exports the Bun/i18n hardening onto `7b841de`; the concurrent Finance OS/sidebar/settings and contacts redesigns remain in the live working tree and are excluded from this publication. They are not dependencies of the exported calendar, numeric input, scheduling, import diagnostics, or accessibility changes.
+
+The exported tree passed a fresh frozen Bun 1.4.2 install, route generation/typecheck, the strict translation audit (zero unresolved findings, zero catalog issues, four explicitly reviewed exceptions), full lint (12 nonblocking Biome warnings; ESLint clean), the Next production build, and all server-entrypoint builds. The isolated full unit run passed **5,335 tests in 856 files**. Subsequent small composer-label, MCP type-only, and PostHog patch changes passed their targeted checks; the final export passed 51 import/composer tests, and the final build/typecheck/lint passed with those changes included. Hosted CI must still validate the final commit as a complete tree.
+
+Fresh independent marketing-site checks passed using its own TypeScript 7.0.2 installation: frozen install, route generation, typecheck, 30 tests in seven files, and production/static build. Fresh documentation checks passed frozen install, TypeScript 7.0.2 typecheck and Docusaurus production build. These are local macOS results, not hosted Linux results or deployment acceptance.
+
+Database evidence includes 21 activity/notification checks, five import-report route checks, and 28 MCP checks on disposable PostgreSQL databases. MCP uses server/client SDK 2.4.0 and mcp-handler 2.3.0; its tests cover all 35 tools, schema validation, per-actor permissions/isolation and revoked tokens. PostHog is 5.60.1. The direct-package audit found 129 of 131 dependency entries current; CRM TypeScript 6.0.3 and jsdom 29.1.1 have reproduced compatibility constraints documented in [Bun runtime compatibility](bun-runtime-compatibility.md).
+
+Browser work resumed in the built-in browser without further Chrome update work. The earlier production preview verified Persian font, RTL document/layout and accessible card labels; English/Farsi switching updated client and server text/title/direction while preserving an unsaved name draft; Iranian calendar preference persisted after reload; Gregorian and Iranian date pickers represented the same day; Persian and Arabic time digits supported activity creation/editing/completion and rejected invalid drafts. Scheduling controls displayed Iranian dates and the account time zone; no email was sent or scheduled. The final isolated build is served separately on local port 3102 for exact-tree follow-up. The calendar type-label and email-field accessibility gaps found during these checks are fixed and tested in this checkpoint.
+
+The native development server was restarted with the persistent Next/Bun logger patch. Warm health requests succeeded; no read-only logger rejection or underlying timeout was reproduced after compilation settled. Compilation and request-queue delays remain distinct from application/database handling time.
+
+Publication/hosted-CI status: pending at the time this section was written. Full final-build browser acceptance remains in progress. German remains the next language and is not selectable as a completed CRM translation. External OAuth/Gmail delivery and production Docker/deployment qualification remain separate from this local i18n checkpoint.

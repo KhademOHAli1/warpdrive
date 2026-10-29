@@ -98,6 +98,7 @@ function ContactRows({
                 index: idx + 1,
               })}
               type={kind === "Phone" ? "tel" : "email"}
+              dir="ltr"
               maxLength={kind === "Phone" ? MAX_PHONE_LEN : MAX_EMAIL_LEN}
               disabled={disabled}
               value={row.value}

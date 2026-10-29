@@ -47,8 +47,8 @@ describe("UserMenu appearance", () => {
     render(<UserMenu userId="u1" userName="Ada" appearance="night" />);
     await userEvent.click(screen.getByRole("button", { name: "Account menu" }));
 
-    expect(screen.getByRole("menuitemradio", { name: "Day" })).not.toBeChecked();
-    expect(screen.getByRole("menuitemradio", { name: "Night" })).toBeChecked();
+    expect(screen.getByRole("menuitemradio", { name: "Light" })).not.toBeChecked();
+    expect(screen.getByRole("menuitemradio", { name: "Dark" })).toBeChecked();
     expect(screen.getByRole("menuitemradio", { name: "System" })).not.toBeChecked();
   });
 
@@ -58,18 +58,18 @@ describe("UserMenu appearance", () => {
   it("still shows the pick after the menu is closed and reopened", async () => {
     render(<UserMenu userId="u1" userName="Ada" appearance="day" />);
     await userEvent.click(screen.getByRole("button", { name: "Account menu" }));
-    await userEvent.click(screen.getByRole("menuitemradio", { name: "Night" }));
+    await userEvent.click(screen.getByRole("menuitemradio", { name: "Dark" }));
     await waitFor(() => expect(setAppearanceAction).toHaveBeenCalledTimes(1));
 
     await userEvent.click(screen.getByRole("button", { name: "Account menu" }));
-    expect(screen.getByRole("menuitemradio", { name: "Night" })).toBeChecked();
-    expect(screen.getByRole("menuitemradio", { name: "Day" })).not.toBeChecked();
+    expect(screen.getByRole("menuitemradio", { name: "Dark" })).toBeChecked();
+    expect(screen.getByRole("menuitemradio", { name: "Light" })).not.toBeChecked();
   });
 
   it("paints and persists the picked appearance", async () => {
     render(<UserMenu userId="u1" userName="Ada" appearance="day" />);
     await userEvent.click(screen.getByRole("button", { name: "Account menu" }));
-    await userEvent.click(screen.getByRole("menuitemradio", { name: "Night" }));
+    await userEvent.click(screen.getByRole("menuitemradio", { name: "Dark" }));
 
     await waitFor(() => expect(setAppearanceAction).toHaveBeenCalledTimes(1));
     expect(setAppearanceAction).toHaveBeenCalledWith({ appearance: "night" }, "csrf");

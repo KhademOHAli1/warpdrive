@@ -44,39 +44,44 @@ export const dealCreateInput = z.object({
   customFields: z.record(z.string(), z.unknown()).optional(),
 });
 
-export const dealUpdateInput = z.object({
-  dealId: z.string().uuid(),
-  expectedUpdatedAt: z.string().datetime(), // ISO datetime; compare-and-swap precondition
-  title: z.string().min(1).max(255).optional(),
-  value: moneyAmount.nullable().optional(),
-  currency: currencyCode.optional(),
-  expectedCloseDate: z.string().date().nullable().optional(),
-  status: z.enum(DEAL_STATUS).optional(),
-  lostReason: z.string().min(1).max(500).optional(),
-  // Multi-label edit from the workspace sidebar: replaces the whole array when present.
-  // Same dedupe + cap as create; omitted means "leave labels untouched".
-  labels: labelsArray.optional(),
-  // Source channel edit from the workspace sidebar: a fixed enum key or null.
-  // Omitted means "leave untouched"; explicit null clears it. Same enum as create.
-  sourceChannel: z
-    .enum(SOURCE_CHANNEL_KEYS as [string, ...string[]])
-    .nullable()
-    .optional(),
-  // Free-text external identifier for the source (e.g. the id in the originating system).
-  // Editable from the sidebar Source section; explicit null clears it, omitted leaves untouched.
-  sourceChannelId: z.string().max(255).nullable().optional(),
-  // Visibility-narrowing field: changing this re-scopes a group-visibility deal to a
-  // different group, stripping the old group's access. Server-side validated: updateDeal
-  // rejects (E_PERM_001) unless the actor is a member of the supplied group.
-  visibilityGroupId: z.string().uuid().optional(),
-  // Partial custom-field edit: only the supplied keys are merged over the deal's existing
-  // JSONB; omitted keys are untouched. updateDeal logs one change row per key that differs.
-  customFields: z.record(z.string(), z.unknown()).optional(),
-  // Primary person / organization relink. Explicit null unlinks; a uuid (re)links after a
-  // reference-visibility check. Omitted means "leave untouched".
-  personId: z.string().uuid().nullable().optional(),
-  orgId: z.string().uuid().nullable().optional(),
-}).refine((input) => input.currency === undefined || input.value !== undefined, { message: "Changing currency requires an explicit amount", path: ["value"] });
+export const dealUpdateInput = z
+  .object({
+    dealId: z.string().uuid(),
+    expectedUpdatedAt: z.string().datetime(), // ISO datetime; compare-and-swap precondition
+    title: z.string().min(1).max(255).optional(),
+    value: moneyAmount.nullable().optional(),
+    currency: currencyCode.optional(),
+    expectedCloseDate: z.string().date().nullable().optional(),
+    status: z.enum(DEAL_STATUS).optional(),
+    lostReason: z.string().min(1).max(500).optional(),
+    // Multi-label edit from the workspace sidebar: replaces the whole array when present.
+    // Same dedupe + cap as create; omitted means "leave labels untouched".
+    labels: labelsArray.optional(),
+    // Source channel edit from the workspace sidebar: a fixed enum key or null.
+    // Omitted means "leave untouched"; explicit null clears it. Same enum as create.
+    sourceChannel: z
+      .enum(SOURCE_CHANNEL_KEYS as [string, ...string[]])
+      .nullable()
+      .optional(),
+    // Free-text external identifier for the source (e.g. the id in the originating system).
+    // Editable from the sidebar Source section; explicit null clears it, omitted leaves untouched.
+    sourceChannelId: z.string().max(255).nullable().optional(),
+    // Visibility-narrowing field: changing this re-scopes a group-visibility deal to a
+    // different group, stripping the old group's access. Server-side validated: updateDeal
+    // rejects (E_PERM_001) unless the actor is a member of the supplied group.
+    visibilityGroupId: z.string().uuid().optional(),
+    // Partial custom-field edit: only the supplied keys are merged over the deal's existing
+    // JSONB; omitted keys are untouched. updateDeal logs one change row per key that differs.
+    customFields: z.record(z.string(), z.unknown()).optional(),
+    // Primary person / organization relink. Explicit null unlinks; a uuid (re)links after a
+    // reference-visibility check. Omitted means "leave untouched".
+    personId: z.string().uuid().nullable().optional(),
+    orgId: z.string().uuid().nullable().optional(),
+  })
+  .refine((input) => input.currency === undefined || input.value !== undefined, {
+    message: "Changing currency requires an explicit amount",
+    path: ["value"],
+  });
 
 export const dealMoveInput = z.object({
   dealId: z.string().uuid(),

@@ -4,8 +4,8 @@ import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/re
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 const { create, edit } = vi.hoisted(() => ({
-  create: vi.fn(async () => ({ ok: true, value: { id: "a" } })),
-  edit: vi.fn(async () => ({ ok: true, value: { id: "a" } })),
+  create: vi.fn(() => Promise.resolve({ ok: true, value: { id: "a" } })),
+  edit: vi.fn(() => Promise.resolve({ ok: true, value: { id: "a" } })),
 }));
 vi.mock("./actions", () => ({ createActivityAction: create, editActivityAction: edit }));
 vi.mock("@/utils/csrfCookie", () => ({ readCsrfToken: () => "csrf" }));

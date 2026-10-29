@@ -1,8 +1,10 @@
 "use client";
 import { CalendarClock, Clock, Link2, MapPin, StickyNote, User, Users, Video } from "lucide-react";
 import type React from "react";
+import { useRef } from "react";
 import { Input } from "@/components/ui/Input";
 import { Select, type SelectOption } from "@/components/ui/Select";
+import { reportTimePickerValidity } from "@/components/ui/timePickerValidity";
 import { ACTIVITY_PRIORITY_KEYS } from "@/constants/activityPriorities";
 import { FIELD_INPUT as FIELD } from "@/constants/formStyles";
 import { ActivityTimeZoneHint } from "@/features/activities/ActivityTimeZoneHint";
@@ -32,6 +34,7 @@ interface Props extends ActivityComposerProps {
 // live in useActivityComposer; this component is the field layout (PD's 7-icon rail).
 export function ActivityComposerInline(props: Props): React.ReactNode {
   const translateSales = useAppTranslations("sales");
+  const fieldsRef = useRef<HTMLDivElement>(null);
 
   const subjectRef = useComposeInitialFocus<HTMLInputElement>();
   const {
@@ -78,7 +81,7 @@ export function ActivityComposerInline(props: Props): React.ReactNode {
   } = useActivityComposer(props);
 
   return (
-    <div className="flex flex-col gap-3 p-2 text-sm">
+    <div ref={fieldsRef} className="flex flex-col gap-3 p-2 text-sm">
       <Input
         ref={subjectRef}
         data-compose-primary="activity"
@@ -208,7 +211,9 @@ export function ActivityComposerInline(props: Props): React.ReactNode {
         pending={pending}
         onDuplicate={duplicate}
         onCancel={() => props.onCancel?.()}
-        onSave={() => void submit()}
+        onSave={() => {
+          if (reportTimePickerValidity(fieldsRef.current)) void submit();
+        }}
       />
     </div>
   );

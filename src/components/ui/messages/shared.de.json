@@ -23,5 +23,6 @@
     "purple": "Violett",
     "pink": "Rosa",
     "white": "Weiß"
-  }
+  },
+  "invalidTime": "Geben Sie eine gültige Uhrzeit im Format Stunde:Minute ein."
 }

@@ -3,6 +3,9 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+import { LocaleProvider } from "@/features/i18n/LocaleProvider";
+import type { Locale } from "@/features/i18n/registry";
+import type { ComposeScope } from "./composeScope";
 
 beforeAll(() => {
   Element.prototype.scrollIntoView = vi.fn();
@@ -88,6 +91,32 @@ function renderBar(over: Partial<Parameters<typeof SharedComposeBar>[0]> = {}): 
 }
 
 describe("SharedComposeBar (Pipedrive default-state model)", () => {
+  it.each<{ locale: Locale; label: string; entityType: ComposeScope["entityType"] }>([
+    { locale: "en", label: "Add to record", entityType: "deal" },
+    { locale: "en", label: "Add to record", entityType: "lead" },
+    { locale: "fa", label: "افزودن اطلاعات", entityType: "deal" },
+    { locale: "fa", label: "افزودن اطلاعات", entityType: "lead" },
+  ])(
+    "names the $locale $entityType composer for all its content types",
+    ({ locale, label, entityType }) => {
+      render(
+        <LocaleProvider locale={locale}>
+          <SharedComposeBar
+            scope={{ entityType, entityId: "record-1" }}
+            emailAccountId={null}
+            onActivityCreated={vi.fn()}
+            onNoteCreated={vi.fn()}
+          />
+        </LocaleProvider>,
+      );
+      expect(screen.getByRole("region", { name: label })).toBeInTheDocument();
+      for (const tab of screen.getAllByRole("tab")) {
+        fireEvent.click(tab);
+        expect(screen.getByRole("region", { name: label })).toBeInTheDocument();
+      }
+    },
+  );
+
   it("shows the tab strip AND the Activity prompt when collapsed (tabs are always visible)", () => {
     renderBar();
     expect(screen.getByRole("tab", { name: "Activity" })).toBeInTheDocument();

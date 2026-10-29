@@ -159,7 +159,7 @@ describe("EnrichmentClient", () => {
     fireEvent.click(screen.getByRole("button", { name: S.test }));
     expect(await screen.findByText(S.testOk)).toBeInTheDocument();
     expect(
-      screen.getByText(S.testQuotaLine(`${S.testQuotaHourly(0)}, ${S.testQuotaDaily(1450)}`)),
+      screen.getByText("Remaining calls: 0 left this hour, 1,450 left today."),
     ).toBeInTheDocument();
   });
 

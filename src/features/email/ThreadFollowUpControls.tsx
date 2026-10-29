@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Select, type SelectOption } from "@/components/ui/Select";
+import { Select } from "@/components/ui/Select";
 import { MAIL_FOLLOW_UP_STATUS } from "@/constants/email";
 import type { EmailMessages } from "@/features/email/emailMessages";
 import { useEmailMessages } from "@/features/email/useEmailMessages";

@@ -16,7 +16,7 @@ function paceTone(pace: number | null): string {
   return pace >= 1 ? "text-emerald-600" : "text-destructive";
 }
 
-function GoalRow({ row, currency }: { row: GoalWithProgress; currency: string }): React.ReactNode {
+function GoalRow({ row }: { row: GoalWithProgress }): React.ReactNode {
   const preferences = useLocalePreferences();
 
   const format = useFormatters();
@@ -39,7 +39,7 @@ function GoalRow({ row, currency }: { row: GoalWithProgress; currency: string })
   const isValue = goal.metric === "value";
   const fmt = (v: string) =>
     isValue
-      ? money(v, goal.currency ?? currency, preferences)
+      ? money(v, goal.currency, preferences)
       : format.number(Number(v), { maximumFractionDigits: 0 });
 
   if (progress === null) {
@@ -66,7 +66,7 @@ function GoalRow({ row, currency }: { row: GoalWithProgress; currency: string })
         series={series}
         target={progress.target}
         metric={goal.metric}
-        currency={goal.currency ?? currency}
+        currency={goal.currency}
       />
       <p className="mt-0.5 flex justify-between text-xs text-muted-foreground tabular-nums">
         <span>
@@ -85,7 +85,6 @@ function GoalRow({ row, currency }: { row: GoalWithProgress; currency: string })
 
 export function GoalsWidget({
   data,
-  currency,
   canManage,
 }: {
   data: GoalWithProgress[];
@@ -117,7 +116,7 @@ export function GoalsWidget({
       <p className="mb-2 text-xs text-muted-foreground">{S._extra.goalPeriodNotice}</p>
       <div className="space-y-3">
         {data.map((row) => (
-          <GoalRow key={row.goal.id} row={row} currency={currency} />
+          <GoalRow key={row.goal.id} row={row} />
         ))}
         {canManage && (
           <Link

@@ -41,7 +41,7 @@ function renderColumn(items: CalendarActivity[], onOpenActivity = vi.fn(), onOpe
 }
 
 function fiveAtNine(): CalendarActivity[] {
-  return ["a", "b", "c", "d", "e"].map((id) => mk(id, new Date(2026, 6, 15, 9, 0), 60));
+  return ["a", "b", "c", "d", "e"].map((id) => mk(id, new Date("2026-07-15T09:00:00Z"), 60));
 }
 
 describe("AgendaDayColumn", () => {
@@ -52,21 +52,21 @@ describe("AgendaDayColumn", () => {
 
   it("clamps a late block's height to the remaining hours instead of overflowing past midnight", () => {
     // 23:00 + 120min naturally spans 2 hour-lanes, but only 1 hour remains before midnight.
-    renderColumn([mk("late", new Date(2026, 6, 15, 23, 0), 120)]);
+    renderColumn([mk("late", new Date("2026-07-15T23:00:00Z"), 120)]);
     const chip = screen.getByRole("button", { name: "Activity late" });
     expect(chip.parentElement?.style.height).toBe(`${HOUR_HEIGHT_PX}px`);
   });
 
   it("leaves a block that fits within the day unclamped", () => {
-    renderColumn([mk("normal", new Date(2026, 6, 15, 9, 0), 60)]);
+    renderColumn([mk("normal", new Date("2026-07-15T09:00:00Z"), 60)]);
     const chip = screen.getByRole("button", { name: "Activity normal" });
     expect(chip.parentElement?.style.height).toBe(`${HOUR_HEIGHT_PX}px`);
   });
 
   it("lays two overlapping activities side by side instead of one covering the other", () => {
     renderColumn([
-      mk("first", new Date(2026, 6, 15, 9, 0), 60),
-      mk("second", new Date(2026, 6, 15, 9, 30), 60),
+      mk("first", new Date("2026-07-15T09:00:00Z"), 60),
+      mk("second", new Date("2026-07-15T09:30:00Z"), 60),
     ]);
     const first = screen.getByRole("button", { name: "Activity first" }).parentElement;
     const second = screen.getByRole("button", { name: "Activity second" }).parentElement;
@@ -75,7 +75,7 @@ describe("AgendaDayColumn", () => {
   });
 
   it("makes the whole timed block clickable, not just its first line of text", () => {
-    renderColumn([mk("normal", new Date(2026, 6, 15, 9, 0), 120)]);
+    renderColumn([mk("normal", new Date("2026-07-15T09:00:00Z"), 120)]);
     expect(screen.getByRole("button", { name: "Activity normal" })).toHaveClass("h-full");
   });
 
@@ -118,10 +118,10 @@ describe("AgendaDayColumn", () => {
 
   it("lets a click land on the hour underneath the tall part of an overflow block", () => {
     renderColumn([
-      mk("a", new Date(2026, 6, 15, 9, 0), 240),
-      mk("b", new Date(2026, 6, 15, 9, 0), 240),
-      mk("c", new Date(2026, 6, 15, 9, 0), 60),
-      mk("d", new Date(2026, 6, 15, 11, 0), 60),
+      mk("a", new Date("2026-07-15T09:00:00Z"), 240),
+      mk("b", new Date("2026-07-15T09:00:00Z"), 240),
+      mk("c", new Date("2026-07-15T09:00:00Z"), 60),
+      mk("d", new Date("2026-07-15T11:00:00Z"), 60),
     ]);
     const trigger = screen.getByRole("button", { name: "Show 3 more activities" });
     expect(trigger.parentElement?.style.pointerEvents).toBe("none");
@@ -131,7 +131,7 @@ describe("AgendaDayColumn", () => {
   it("puts the activities ahead of the empty hour lanes in the tab order", () => {
     // The lanes are an affordance; the activities are the content. Rendered lanes-first, a keyboard
     // user walked 24 empty hours before reaching anything real.
-    renderColumn([mk("real", new Date(2026, 6, 15, 14, 0), 60)]);
+    renderColumn([mk("real", new Date("2026-07-15T14:00:00Z"), 60)]);
     const chip = screen.getByRole("button", { name: "Activity real" });
     const firstSlot = screen.getByRole("button", { name: "Add activity on 2026-07-15 at 00:00" });
     expect(chip.compareDocumentPosition(firstSlot) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();

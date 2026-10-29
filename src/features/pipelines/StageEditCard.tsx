@@ -1,4 +1,5 @@
 "use client";
+import { X } from "lucide-react";
 import type React from "react";
 import { useId } from "react";
 import { Checkbox } from "@/components/ui/Checkbox";
@@ -52,7 +53,7 @@ export function StageEditCard({
           onClick={onDelete}
           className="grid size-10 -m-2 place-items-center rounded text-muted-foreground transition-transform hover:bg-accent hover:text-red-600 active:scale-[0.96] disabled:cursor-not-allowed disabled:opacity-40"
         >
-          <span aria-hidden="true">&times;</span>
+          <X aria-hidden="true" className="size-4" />
         </button>
       </div>
 

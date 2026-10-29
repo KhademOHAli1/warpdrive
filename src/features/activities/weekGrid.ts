@@ -36,8 +36,8 @@ export function groupByDay(
     if (!includeOverdue && a.overdue === true) continue;
     // A multi-day activity (endAt set) covers every day in [dueAt, endAt]; a single-day one covers
     // just its own day. isoDay strings are "YYYY-MM-DD", so lexical compare is date compare.
-    const startKey = activityDay(a, timeZone)!;
-    const endKey = activityEndDay(a, timeZone)!;
+    const startKey = activityDay(a, timeZone);
+    const endKey = activityEndDay(a, timeZone);
     for (const day of days) {
       const key = isoDay(day);
       if (key >= startKey && key <= endKey) map.get(key)?.push(a);

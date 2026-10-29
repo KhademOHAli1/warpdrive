@@ -199,10 +199,8 @@ describe("LeadWorkspaceClient", () => {
   });
 
   it("mounts the compose bar in the PD default state, scoped to the lead", () => {
-    const { container } = renderClient();
-    const composeSection = container.querySelector('section[aria-label="compose"]');
-    if (composeSection === null) throw new Error("compose section not found");
-    const compose = within(composeSection as HTMLElement);
+    renderClient();
+    const compose = within(screen.getByRole("region", { name: "Add to record" }));
     // The compose tab strip is always visible (the timeline below has its own unrelated
     // All/Activities/Notes/Email tablist, hence the compose-scoped queries). PD's lead drawer
     // defaults to Notes (its "Take a note..." prompt), so Notes is first and selected here.

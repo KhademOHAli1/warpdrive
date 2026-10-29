@@ -1,13 +1,10 @@
 "use client";
-import { DatePicker } from "@/components/ui/DatePicker";
-import { TimePicker } from "@/components/ui/TimePicker";
 import { useEmailMessages } from "@/features/email/useEmailMessages";
-import { useLocale } from "@/features/i18n/LocaleProvider";
 // ComposerFooter: right-aligned Discard then the Send split (Send + Send later), matching PD's
 // action-bar order (Discard sits to the left of Send).
 // Phase 7: Send later is enabled when onSendLater is provided and a send is possible;
-// clicking it opens a datetime-local picker (min = now). Choosing a strictly-future
-// time calls onSendLater(Date); a past/now time shows an inline validation message.
+// clicking it opens localized date/time controls in the account timezone. A strictly-future
+// time calls onSendLater(Date); invalid or past times show an inline validation message.
 // Left slot holds open-tracking and link-tracking toggles plus add-as-activity (available
 // from both deal and inbox context). The signature picker lives in the composer toolbar,
 // not here, see Composer.tsx.
@@ -19,6 +16,7 @@ import { ToggleField } from "@/components/ui/ToggleField";
 import { Tip } from "@/components/ui/tooltip";
 import type { EmailVisibility } from "../threadVisibility";
 import { AddActivityToggle } from "./AddActivityToggle";
+import { ScheduleSendPicker } from "./ScheduleSendPicker";
 import { VisibilityControl } from "./VisibilityControl";
 
 interface ComposerFooterProps {
@@ -64,33 +62,8 @@ export function ComposerFooter({
   showVisibility = true,
 }: ComposerFooterProps): React.ReactNode {
   const E = useEmailMessages();
-  const locale = useLocale();
 
   const [showPicker, setShowPicker] = useState(false);
-  const [pickerValue, setPickerValue] = useState("");
-  const [pickerError, setPickerError] = useState<string | null>(null);
-
-  // Current local time formatted for a datetime-local input (min attribute floor).
-  function nowLocalInput(): string {
-    const d = new Date();
-    const pad = (n: number): string => String(n).padStart(2, "0");
-    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-  }
-
-  function handleSchedule(): void {
-    if (!pickerValue) return;
-    const d = new Date(pickerValue);
-    // Validate: chosen time must be strictly in the future. Reject past/now with an
-    // inline message (not the composer error banner).
-    if (!Number.isFinite(d.getTime()) || d.getTime() <= Date.now()) {
-      setPickerError(E._composer.scheduledPastMessage);
-      return;
-    }
-    setPickerError(null);
-    setShowPicker(false);
-    setPickerValue("");
-    onSendLater?.(d);
-  }
 
   return (
     <div className="flex items-center gap-3 flex-wrap">
@@ -156,51 +129,12 @@ export function ComposerFooter({
               </button>
             </Tip>
           </div>
-          {showPicker && (
-            <div className="flex flex-col items-end gap-1 mt-1">
-              <div className="flex items-center gap-1">
-                {locale === "fa" ? (
-                  <div className="flex flex-wrap gap-2">
-                    <DatePicker
-                      ariaLabel={E._extra.scheduleDate}
-                      value={pickerValue.slice(0, 10) || null}
-                      onChange={(date) =>
-                        setPickerValue(`${date ?? ""}T${pickerValue.split("T")[1] ?? ""}`)
-                      }
-                    />
-                    <TimePicker
-                      ariaLabel={E._extra.scheduleTime}
-                      value={pickerValue.split("T")[1] ?? ""}
-                      onChange={(time) => setPickerValue(`${pickerValue.slice(0, 10)}T${time}`)}
-                    />
-                  </div>
-                ) : (
-                  <input
-                    aria-label={E._extra.scheduleDate}
-                    type="datetime-local"
-                    data-testid="scheduled-at-picker"
-                    min={nowLocalInput()}
-                    value={pickerValue}
-                    onChange={(e) => {
-                      setPickerValue(e.target.value);
-                      setPickerError(null);
-                    }}
-                    className="rounded-md border border-border px-2 py-1 text-sm text-muted-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  />
-                )}
-                <button
-                  type="button"
-                  onClick={handleSchedule}
-                  className="ms-1 rounded-md bg-action px-2 py-1 text-sm text-action-foreground transition-transform hover:opacity-90 active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
-                >
-                  {E._extra.schedule}
-                </button>
-              </div>
-              {pickerError !== null && (
-                <span className="text-xs text-destructive">{pickerError}</span>
-              )}
-            </div>
-          )}
+          <ScheduleSendPicker
+            open={showPicker}
+            disabled={sending || !canSend || onSendLater === undefined}
+            onScheduled={onSendLater}
+            onClose={() => setShowPicker(false)}
+          />
         </div>
       </div>
     </div>

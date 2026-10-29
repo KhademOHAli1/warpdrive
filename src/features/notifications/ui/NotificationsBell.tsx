@@ -5,7 +5,11 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useActionError } from "@/components/shell/ActionErrorProvider";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/Popover";
-import { useAppTranslations, useLocalePreferences, useLocalePreferencePending } from "@/features/i18n/LocaleProvider";
+import {
+  useAppTranslations,
+  useLocalePreferencePending,
+  useLocalePreferences,
+} from "@/features/i18n/LocaleProvider";
 import { markAllReadAction, markReadAction } from "@/features/notifications/actions";
 import { trpc } from "@/lib/trpc-client";
 import { useFormatters } from "@/lib/useFormatters";
@@ -28,7 +32,10 @@ export function NotificationsBell({ userId }: { userId: string }): React.ReactNo
   const [markingAll, setMarkingAll] = useState(false);
 
   const countQuery = trpc.notifications.unreadCount.useQuery();
-  const feedQuery = trpc.notifications.feed.useQuery({ limit: 50, timeZone }, {enabled:!localePending});
+  const feedQuery = trpc.notifications.feed.useQuery(
+    { limit: 50, timeZone },
+    { enabled: !localePending },
+  );
 
   const feed = feedQuery.data ?? [];
   const unreadCount = countQuery.data ?? 0;
@@ -63,11 +70,11 @@ export function NotificationsBell({ userId }: { userId: string }): React.ReactNo
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger
         aria-label={t("title")}
-        className="relative flex h-10 w-10 items-center justify-center rounded-md transition-transform hover:bg-accent active:scale-[0.96]"
+        className="relative flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
       >
-        <Bell aria-hidden className="h-5 w-5 text-muted-foreground" strokeWidth={1.75} />
+        <Bell aria-hidden className="h-[19px] w-[19px] text-muted-foreground" strokeWidth={1.6} />
         {unreadCount > 0 ? (
-          <span className="absolute -end-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-blue-500 px-1 text-xs font-medium tabular-nums text-white">
+          <span className="absolute end-0 top-0 flex h-3.5 min-w-3.5 items-center justify-center rounded-full border border-border/70 bg-background px-0.5 text-[9px] font-medium tabular-nums text-action">
             {format.number(unreadCount)}
           </span>
         ) : null}

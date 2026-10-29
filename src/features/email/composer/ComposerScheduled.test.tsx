@@ -59,10 +59,18 @@ vi.stubGlobal("fetch", () => Promise.resolve(new Response(null, { status: 204 })
 
 import { Composer } from "./Composer";
 
-// Helper: format a Date as the local datetime-local input value.
-function toLocalInput(d: Date): string {
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+// Scheduling uses the account zone (UTC without a provider), independent of browser time.
+async function chooseFutureSchedule(): Promise<void> {
+  const now = new Date();
+  const date = new Date(now.getTime() + 3_600_000);
+  const input = screen.getByLabelText("Send time");
+  const clock = `${String(date.getUTCHours()).padStart(2, "0")}:${String(date.getUTCMinutes()).padStart(2, "0")}`;
+  fireEvent.click(screen.getByLabelText("Send date"));
+  if (date.getUTCMonth() !== now.getUTCMonth())
+    fireEvent.click(await screen.findByRole("button", { name: "Go to the Next Month" }));
+  fireEvent.click(await screen.findByText(String(date.getUTCDate()), { selector: "button" }));
+  fireEvent.change(input, { target: { value: clock } });
+  fireEvent.blur(input);
 }
 
 describe("Composer scheduled send", () => {
@@ -107,8 +115,7 @@ describe("Composer scheduled send: activity creation (fix #3)", () => {
 
     fireEvent.click(screen.getByRole("checkbox", { name: /add as activity/i }));
     fireEvent.click(screen.getByRole("button", { name: /send later/i }));
-    const picker = await screen.findByTestId("scheduled-at-picker");
-    fireEvent.change(picker, { target: { value: toLocalInput(new Date(Date.now() + 3_600_000)) } });
+    await chooseFutureSchedule();
     fireEvent.click(screen.getByRole("button", { name: /^schedule$/i }));
 
     await waitFor(() => expect(createActivityMock).toHaveBeenCalledTimes(1));
@@ -126,8 +133,7 @@ describe("Composer scheduled send: activity creation (fix #3)", () => {
 
     // Do NOT click the toggle.
     fireEvent.click(screen.getByRole("button", { name: /send later/i }));
-    const picker = await screen.findByTestId("scheduled-at-picker");
-    fireEvent.change(picker, { target: { value: toLocalInput(new Date(Date.now() + 3_600_000)) } });
+    await chooseFutureSchedule();
     fireEvent.click(screen.getByRole("button", { name: /^schedule$/i }));
 
     await waitFor(() => expect(sendEmailMock).toHaveBeenCalledTimes(1));

@@ -3,6 +3,9 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { STRINGS } from "@/constants/strings";
+import { LocaleProvider } from "@/features/i18n/LocaleProvider";
+import type { Locale } from "@/features/i18n/registry";
+import type { NumberingSystem } from "@/lib/numberingSystem";
 
 afterEach(() => {
   cleanup();
@@ -38,9 +41,17 @@ import { DailyActivityTarget } from "./DailyActivityTarget";
 
 const t = STRINGS.settings.dailyActivityTarget;
 
-function renderTarget(target = 5): HTMLInputElement {
-  render(<DailyActivityTarget target={target} />);
-  return screen.getByLabelText(t.label);
+function renderTarget(
+  target = 5,
+  locale: Locale = "en",
+  numberingSystem?: NumberingSystem,
+): HTMLInputElement {
+  render(
+    <LocaleProvider locale={locale} numberingSystem={numberingSystem}>
+      <DailyActivityTarget target={target} />
+    </LocaleProvider>,
+  );
+  return screen.getByLabelText(locale === "fa" ? "تعداد فعالیت در روز" : t.label);
 }
 
 function deferred(): { promise: Promise<Result>; resolve: (r: Result) => void } {
@@ -57,8 +68,65 @@ function commitValue(field: HTMLInputElement, value: string): void {
 }
 
 describe("DailyActivityTarget", () => {
+  it.each<{ numberingSystem?: NumberingSystem; initial: string; committed: string }>([
+    { initial: "۵", committed: "۹" },
+    { numberingSystem: "latn", initial: "5", committed: "9" },
+  ])(
+    "uses the chosen $numberingSystem digits before and after committing normalized input",
+    async ({ numberingSystem, initial, committed }) => {
+      const field = renderTarget(5, "fa", numberingSystem);
+      expect(field).toHaveValue(initial);
+      fireEvent.change(field, { target: { value: "٩" } });
+      expect(field).toHaveValue("٩");
+      fireEvent.blur(field);
+      await waitFor(() =>
+        expect(setDailyActivityTargetAction).toHaveBeenCalledWith({ target: 9 }, "csrf"),
+      );
+      expect(field).toHaveValue(committed);
+    },
+  );
+
+  it.each<{ numberingSystem?: NumberingSystem; saved: string }>([
+    { saved: "۵" },
+    { numberingSystem: "latn", saved: "5" },
+  ])(
+    "restores $numberingSystem display after an invalid draft or failed save",
+    async ({ numberingSystem, saved }) => {
+      const field = renderTarget(5, "fa", numberingSystem);
+      fireEvent.change(field, { target: { value: "۱۲x" } });
+      expect(field).toHaveValue("۱۲x");
+      fireEvent.blur(field);
+      expect(field).toHaveValue(saved);
+      expect(setDailyActivityTargetAction).not.toHaveBeenCalled();
+
+      setDailyActivityTargetAction.mockResolvedValueOnce({ ok: false, error: { id: "E_X" } });
+      commitValue(field, "۹");
+      await waitFor(() => expect(report).toHaveBeenCalledWith("E_X"));
+      expect(field).toHaveValue(saved);
+    },
+  );
+
+  it("preserves an unfinished draft across a number-display change, then resets in the new style", () => {
+    const view = render(
+      <LocaleProvider locale="fa" numberingSystem="arabext">
+        <DailyActivityTarget target={5} />
+      </LocaleProvider>,
+    );
+    const field = screen.getByRole("textbox");
+    fireEvent.change(field, { target: { value: "۱۲x" } });
+    view.rerender(
+      <LocaleProvider locale="fa" numberingSystem="latn">
+        <DailyActivityTarget target={5} />
+      </LocaleProvider>,
+    );
+    expect(field).toHaveValue("۱۲x");
+    fireEvent.blur(field);
+    expect(field).toHaveValue("5");
+    expect(setDailyActivityTargetAction).not.toHaveBeenCalled();
+  });
+
   it("renders the current target", () => {
-    expect(renderTarget(8)).toHaveValue(8);
+    expect(renderTarget(8)).toHaveValue("8");
   });
 
   it("persists a changed value on blur", async () => {
@@ -68,7 +136,7 @@ describe("DailyActivityTarget", () => {
     await waitFor(() =>
       expect(setDailyActivityTargetAction).toHaveBeenCalledWith({ target: 9 }, "csrf"),
     );
-    expect(field).toHaveValue(9);
+    expect(field).toHaveValue("9");
   });
 
   it("persists a changed value on Enter", async () => {
@@ -85,7 +153,7 @@ describe("DailyActivityTarget", () => {
     const field = renderTarget(5);
     fireEvent.change(field, { target: { value: "9" } });
     fireEvent.blur(field);
-    await waitFor(() => expect(field).toHaveValue(5));
+    await waitFor(() => expect(field).toHaveValue("5"));
     expect(report).toHaveBeenCalledWith("E_X");
   });
 
@@ -105,7 +173,7 @@ describe("DailyActivityTarget", () => {
     first.resolve({ ok: true });
     await waitFor(() => expect(report).toHaveBeenCalledWith("E_X"));
     expect(invalidateDayLoad).toHaveBeenCalledTimes(1);
-    expect(field).toHaveValue(9);
+    expect(field).toHaveValue("9");
   });
 
   it("leaves the day load alone when the save fails", async () => {
@@ -123,7 +191,7 @@ describe("DailyActivityTarget", () => {
     await waitFor(() => expect(setDailyActivityTargetAction).toHaveBeenCalledTimes(1));
     commitValue(field, "12");
     await waitFor(() => expect(setDailyActivityTargetAction).toHaveBeenCalledTimes(2));
-    expect(field).toHaveValue(12);
+    expect(field).toHaveValue("12");
   });
 
   it("does not call the action when the value is unchanged", () => {
@@ -138,7 +206,7 @@ describe("DailyActivityTarget", () => {
     fireEvent.change(field, { target: { value: "999" } });
     fireEvent.blur(field);
     expect(setDailyActivityTargetAction).not.toHaveBeenCalled();
-    expect(field).toHaveValue(5);
+    expect(field).toHaveValue("5");
   });
 
   it("clamps a fractional entry back instead of persisting it", () => {
@@ -146,7 +214,7 @@ describe("DailyActivityTarget", () => {
     fireEvent.change(field, { target: { value: "2.5" } });
     fireEvent.blur(field);
     expect(setDailyActivityTargetAction).not.toHaveBeenCalled();
-    expect(field).toHaveValue(5);
+    expect(field).toHaveValue("5");
   });
 
   it("keeps the newer value when an earlier save fails after a later commit", async () => {
@@ -165,7 +233,7 @@ describe("DailyActivityTarget", () => {
 
     await waitFor(() => expect(setDailyActivityTargetAction).toHaveBeenCalledTimes(2));
     expect(setDailyActivityTargetAction).toHaveBeenLastCalledWith({ target: 12 }, "csrf");
-    expect(field).toHaveValue(12);
+    expect(field).toHaveValue("12");
     expect(report).not.toHaveBeenCalled();
   });
 
@@ -185,6 +253,6 @@ describe("DailyActivityTarget", () => {
     await waitFor(() => expect(setDailyActivityTargetAction).toHaveBeenCalledTimes(2));
     expect(setDailyActivityTargetAction).toHaveBeenNthCalledWith(1, { target: 9 }, "csrf");
     expect(setDailyActivityTargetAction).toHaveBeenNthCalledWith(2, { target: 12 }, "csrf");
-    expect(field).toHaveValue(12);
+    expect(field).toHaveValue("12");
   });
 });

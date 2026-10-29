@@ -47,20 +47,34 @@ async function seedDeal(
 
 describe("runEmailNotificationJob", () => {
   it("renders in the recipient's saved language while retaining delivery keys", async () => {
-    await withTestDb(async db => {
+    await withTestDb(async (db) => {
       const recipient = await seedUser(db);
       await connectMailbox(db, recipient.id);
       const signal = new AbortController().signal;
-      await db.insert(userPreferences).values({userId:recipient.id,ui:{localePreferences:{locale:"fa",calendar:"persian",timeZone:"Asia/Tehran"}}});
-      await setPreference(db,recipient.id,"deal_won",{inApp:true,email:true},signal);
-      const [row] = await db.insert(notifications).values({userId:recipient.id,type:"deal_won",entityType:null,entityId:null,payload:{}}).returning();
+      await db.insert(userPreferences).values({
+        userId: recipient.id,
+        ui: { localePreferences: { locale: "fa", calendar: "persian", timeZone: "Asia/Tehran" } },
+      });
+      await setPreference(db, recipient.id, "deal_won", { inApp: true, email: true }, signal);
+      const [row] = await db
+        .insert(notifications)
+        .values({
+          userId: recipient.id,
+          type: "deal_won",
+          entityType: null,
+          entityId: null,
+          payload: {},
+        })
+        .returning();
       const notificationId = row?.id ?? "missing";
       const sent: SystemMessage[] = [];
-      const result = await runEmailNotificationJob(db,{notificationId},signal,{send:(_account,message)=>{
-        sent.push(message);
-        return Promise.resolve(ok({gmailMessageId:"fake-id"}));
-      }});
-      expect(result).toEqual(ok({sent:true}));
+      const result = await runEmailNotificationJob(db, { notificationId }, signal, {
+        send: (_account, message) => {
+          sent.push(message);
+          return Promise.resolve(ok({ gmailMessageId: "fake-id" }));
+        },
+      });
+      expect(result).toEqual(ok({ sent: true }));
       expect(sent).toHaveLength(1);
       expect(sent[0]?.subject).toContain("فرصت فروش");
       expect(sent[0]?.bodyHtml).toContain('lang="fa" dir="rtl"');

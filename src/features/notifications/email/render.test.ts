@@ -49,10 +49,21 @@ describe("renderNotificationEmail link", () => {
 
 describe("renderNotificationEmail", () => {
   it("renders Persian email copy with safe mixed-direction customer content", () => {
-    const out = renderNotificationEmail({
-      id:"n-fa",userId:"u1",type:"activity_reminder",entityType:"deal",entityId:"d1",actorId:null,
-      payload:{subject:'Call <Acme>'},readAt:null,createdAt:"2026-03-21T08:00:00Z",
-    }, "درسا", "fa");
+    const out = renderNotificationEmail(
+      {
+        id: "n-fa",
+        userId: "u1",
+        type: "activity_reminder",
+        entityType: "deal",
+        entityId: "d1",
+        actorId: null,
+        payload: { subject: "Call <Acme>" },
+        readAt: null,
+        createdAt: "2026-03-21T08:00:00Z",
+      },
+      "درسا",
+      "fa",
+    );
     expect(out.subject).toContain("موعد انجام");
     expect(out.text).toContain("درسا");
     expect(out.text).toContain("Call <Acme>");
@@ -64,7 +75,21 @@ describe("renderNotificationEmail", () => {
 
   it("localizes every notification email type and the unnamed-recipient fallback", () => {
     for (const type of NOTIFICATION_TYPES) {
-      const out = renderNotificationEmail({id:"n",userId:"u",type,entityType:null,entityId:null,actorId:null,payload:{},readAt:null,createdAt:"2026-03-21T00:00:00Z"}, "", "fa");
+      const out = renderNotificationEmail(
+        {
+          id: "n",
+          userId: "u",
+          type,
+          entityType: null,
+          entityId: null,
+          actorId: null,
+          payload: {},
+          readAt: null,
+          createdAt: "2026-03-21T00:00:00Z",
+        },
+        "",
+        "fa",
+      );
       expect(out.subject).toMatch(/[\u0600-\u06ff]/);
       expect(out.text).toContain("کاربر گرامی");
       expect(out.text).toContain("باز کردن:");

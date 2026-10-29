@@ -34,7 +34,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps): React.R
     <html lang={locale} dir={directionForLocale(locale)}>
       <body style={{ fontFamily: "system-ui, sans-serif", textAlign: "center", padding: "2rem" }}>
         <h1>{copy.appCrashTitle}</h1>
-        <p>{copy.appCrashBody}</p>
+        <p className="text-muted-foreground">{copy.appCrashBody}</p>
         {error.digest !== undefined && error.digest !== "" ? (
           <p className="font-mono text-xs text-muted-foreground">
             {copy.referenceLabel} <bdi dir="ltr">{error.digest}</bdi>

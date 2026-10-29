@@ -244,3 +244,13 @@ describe("ActivityEditModal", () => {
     expect(invalidateDayLoad).not.toHaveBeenCalled();
   });
 });
+
+it("does not save a subject-only patch while an invalid raw time is shown", () => {
+  render(<ActivityEditModal activity={activity} onClose={vi.fn()} />);
+  fireEvent.change(screen.getByLabelText("Subject"), { target: { value: "New subject" } });
+  const input = screen.getByLabelText("Start time");
+  fireEvent.change(input, { target: { value: "99:99" } });
+  fireEvent.blur(input);
+  fireEvent.click(screen.getByRole("button", { name: "Save" }));
+  expect(editActivityAction).not.toHaveBeenCalled();
+});

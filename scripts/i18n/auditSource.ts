@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import ts from "typescript";
+import { visibleCopyResolver } from "./sourceCopy";
 
 export interface SourceFinding {
   kind: "literal" | "legacy-catalog";
@@ -33,16 +34,20 @@ function hasRuntimeImport(node: ts.ImportDeclaration): boolean {
   );
 }
 
-// This finds migration candidates, not every possible user-facing string. Computed
-// data, errors returned by a server and copy assembled in helpers need feature review.
+// This finds migration candidates, including bounded local bindings and rendered React state.
+// Arbitrary helpers, imported data and server-returned errors still need feature review.
 export function auditSource(source: string, file: string): SourceFinding[] {
   const tree = ts.createSourceFile(file, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   const findings: SourceFinding[] = [];
+  const visibleCopy = visibleCopyResolver(tree);
+  const roots: ts.Expression[] = [];
+  const literalOrigins = new Set<ts.Node>();
   const occurrences = new Map<string, number>();
 
   function add(kind: SourceFinding["kind"], text: string, node: ts.Node): void {
     const normalized = text.replace(/\s+/g, " ").trim();
     if (!/\p{L}/u.test(normalized)) return;
+    if (kind === "literal") literalOrigins.add(node);
     const signature = `${kind}:${file}:${normalized}`;
     const occurrence = occurrences.get(signature) ?? 0;
     occurrences.set(signature, occurrence + 1);
@@ -56,6 +61,11 @@ export function auditSource(source: string, file: string): SourceFinding[] {
   }
 
   function expression(node: ts.Expression): void {
+    roots.push(node);
+    directExpression(node);
+  }
+
+  function directExpression(node: ts.Expression): void {
     if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) {
       add("literal", node.text, node);
     } else if (ts.isTemplateExpression(node)) {
@@ -65,13 +75,13 @@ export function auditSource(source: string, file: string): SourceFinding[] {
         node,
       );
     } else if (ts.isConditionalExpression(node)) {
-      expression(node.whenTrue);
-      expression(node.whenFalse);
+      directExpression(node.whenTrue);
+      directExpression(node.whenFalse);
     } else if (ts.isParenthesizedExpression(node)) {
-      expression(node.expression);
+      directExpression(node.expression);
     } else if (ts.isBinaryExpression(node)) {
       const operator = node.operatorToken.kind;
-      if (operator === ts.SyntaxKind.AmpersandAmpersandToken) expression(node.right);
+      if (operator === ts.SyntaxKind.AmpersandAmpersandToken) directExpression(node.right);
       else if (
         [
           ts.SyntaxKind.PlusToken,
@@ -79,8 +89,8 @@ export function auditSource(source: string, file: string): SourceFinding[] {
           ts.SyntaxKind.QuestionQuestionToken,
         ].includes(operator)
       ) {
-        expression(node.left);
-        expression(node.right);
+        directExpression(node.left);
+        directExpression(node.right);
       }
     }
   }
@@ -119,5 +129,9 @@ export function auditSource(source: string, file: string): SourceFinding[] {
     ts.forEachChild(node, visit);
   }
   visit(tree);
+  // Keep legacy literal occurrences first so extending coverage cannot renumber existing IDs.
+  for (const node of roots)
+    for (const origin of visibleCopy(node))
+      if (!literalOrigins.has(origin.node)) add("literal", origin.text, origin.node);
   return findings;
 }

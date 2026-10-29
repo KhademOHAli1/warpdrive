@@ -25,6 +25,8 @@ import { richTextExtensions } from "./richText.extensions";
 interface RichTextBodyProps {
   html: string;
   onChange: (html: string) => void;
+  // Callers name their own surface, since email bodies and activity notes share this editor.
+  ariaLabel?: string;
   // insertToken: when this value changes (non-empty), insert the text at the cursor.
   // Parent increments/changes it each time it wants to insert content.
   insertToken?: { text: string; seq: number };
@@ -43,6 +45,7 @@ interface RichTextBodyProps {
 export function RichTextBody({
   html,
   onChange,
+  ariaLabel,
   insertToken,
   contentClassName,
   frameClassName,
@@ -59,6 +62,13 @@ export function RichTextBody({
     immediatelyRender: false,
     extensions: richTextExtensions,
     content: html,
+    editorProps: {
+      attributes: {
+        role: "textbox",
+        "aria-multiline": "true",
+        ...(ariaLabel === undefined ? {} : { "aria-label": ariaLabel }),
+      },
+    },
     onUpdate({ editor: e }) {
       const raw = e.getHTML();
       const sanitized = sanitizeAuthorHtml(raw);

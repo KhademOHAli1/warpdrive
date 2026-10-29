@@ -42,7 +42,7 @@ function toCalendar(a: ActivityRow): CalendarActivity {
     id: a.id,
     subject: a.subject,
     dueAt: new Date(a.dueAtIso),
-    endAt: a.endAtIso ? new Date(a.endAtIso) : null,
+    endAt: a.endAtIso != null && a.endAtIso !== "" ? new Date(a.endAtIso) : null,
     allDay: a.allDay ?? false,
     dueDate: a.dueDate,
     endDate: a.endDate,

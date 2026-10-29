@@ -45,7 +45,8 @@ describe("sendEmail with attachments (Task 6.1)", () => {
 
       const sendCall = fake.calls.find((c) => c.method === "sendRaw");
       expect(sendCall).toBeDefined();
-      const rawArg = (sendCall?.args as { rawBase64: string }).rawBase64;
+      if (sendCall === undefined) return;
+      const rawArg = (sendCall.args as { rawBase64: string }).rawBase64;
       const decoded = Buffer.from(rawArg, "base64url").toString("utf8");
 
       expect(decoded).not.toContain("multipart/mixed");
@@ -102,7 +103,8 @@ describe("sendEmail with attachments (Task 6.1)", () => {
 
       const sendCall = fake.calls.find((c) => c.method === "sendRaw");
       expect(sendCall).toBeDefined();
-      const rawArg = (sendCall?.args as { rawBase64: string }).rawBase64;
+      if (sendCall === undefined) return;
+      const rawArg = (sendCall.args as { rawBase64: string }).rawBase64;
       const decoded = Buffer.from(rawArg, "base64url").toString("utf8");
 
       expect(decoded).toContain("multipart/mixed");

@@ -2,6 +2,7 @@
 import "@testing-library/jest-dom/vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
+import { LocaleProvider } from "@/features/i18n/LocaleProvider";
 import type { FilterDefinition } from "@/features/saved-filters/schemas";
 import { BoardFilterMenu } from "./BoardFilterMenu";
 import type { SavedFilterView as SavedFilter } from "./savedFilterView";
@@ -26,6 +27,18 @@ const AD_HOC: FilterDefinition = {
 // explain why a rep is looking at 2 of 33 deals. Reading a bare "Filter" while a filter is
 // applied is the whole bug.
 describe("board filter trigger", () => {
+  it("keeps an accessible Farsi label and localized condition count without a custom label", () => {
+    render(
+      <LocaleProvider locale="fa">
+        <BoardFilterMenu appliedDefinition={AD_HOC} activeCount={2} />
+      </LocaleProvider>,
+    );
+    const trigger = screen.getByRole("button", { name: "فیلتر" });
+    expect(trigger).toHaveTextContent("فیلتر");
+    expect(trigger).toHaveTextContent("۲");
+    expect(trigger).toHaveAttribute("data-filtered", "true");
+  });
+
   it("reads plain Filter when nothing is applied", () => {
     render(<BoardFilterMenu savedFilters={[ROTTING]} />);
     expect(screen.getByRole("button", { name: "Filter" })).toBeInTheDocument();

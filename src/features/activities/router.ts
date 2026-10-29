@@ -41,7 +41,12 @@ export const activitiesRouter = router({
   // Only active (non-archived) types are offered when creating an activity.
   listTypes: protectedProcedure.query(({ ctx }) =>
     ctx.db
-      .select({ id: activityTypes.id, key: activityTypes.key, name: activityTypes.name })
+      .select({
+        id: activityTypes.id,
+        key: activityTypes.key,
+        name: activityTypes.name,
+        isSystem: activityTypes.isSystem,
+      })
       .from(activityTypes)
       .where(isNull(activityTypes.archivedAt))
       .orderBy(asc(activityTypes.order)),

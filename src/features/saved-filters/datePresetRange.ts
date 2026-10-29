@@ -20,7 +20,7 @@ export interface CivilDateRange {
 }
 
 export function validTimeZone(value: string | null | undefined): value is string {
-  if (!value) return false;
+  if (value == null || value === "") return false;
   try {
     new Intl.DateTimeFormat("en", { timeZone: value });
     return true;

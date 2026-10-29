@@ -22,6 +22,7 @@
   },
   "include": [
     "next-env.d.ts",
+    ".typecheck/env.d.ts",
     "**/*.ts",
     "**/*.tsx",
     // Wildcards skip dot-directories, so app routes under one need naming outright or they fall

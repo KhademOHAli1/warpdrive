@@ -45,6 +45,25 @@ describe("RichTextBody – basic render + onChange", () => {
     const lastCall = onChange.mock.calls[onChange.mock.calls.length - 1]![0] as string;
     expect(lastCall).toContain("Hello");
   });
+
+  it("updates a caller-specific accessible name without resetting editor content", async () => {
+    const { RichTextBody } = await import("./RichTextBody");
+    const onChange = vi.fn();
+    const { rerender } = render(
+      <RichTextBody html="<p>Existing note</p>" onChange={onChange} ariaLabel="Activity note" />,
+    );
+    await waitFor(() => expect(document.querySelector("[contenteditable]")).toBeInTheDocument());
+    const editor = document.querySelector("[contenteditable]");
+    expect(editor).toHaveAccessibleName("Activity note");
+
+    rerender(
+      <RichTextBody html="<p>Existing note</p>" onChange={onChange} ariaLabel="یادداشت فعالیت" />,
+    );
+
+    await waitFor(() => expect(editor).toHaveAccessibleName("یادداشت فعالیت"));
+    expect(document.querySelector("[contenteditable]")).toBe(editor);
+    expect(editor).toHaveTextContent("Existing note");
+  });
 });
 
 // ---------------------------------------------------------------------------

@@ -20,6 +20,7 @@ export function ActivityTypeTab({
   return (
     <button
       type="button"
+      aria-pressed={active === value}
       onClick={() => onSelect(value)}
       className={cn(
         "flex items-center gap-1.5 rounded-md px-2.5 py-1 text-sm capitalize",

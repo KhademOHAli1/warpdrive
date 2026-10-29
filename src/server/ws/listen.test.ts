@@ -6,6 +6,21 @@ import { startWsServer, type WsServerDeps } from "./server";
 
 // The listener can be exercised without accepting a socket or touching the database.
 const unusedDeps = {} as WsServerDeps;
+const validEnv: NodeJS.ProcessEnv = {
+  NODE_ENV: "test",
+  GOOGLE_OAUTH_CLIENT_ID: "test-client",
+  GOOGLE_OAUTH_CLIENT_SECRET: "test-secret",
+  GOOGLE_WORKSPACE_DOMAIN: "example.com",
+  BASE_URL: "https://app.example.com",
+  DATABASE_URL: "postgres://placeholder:placeholder@localhost:5432/placeholder",
+  WS_TICKET_SECRET: "test-ws-ticket-secret-at-least-32-bytes-long!!",
+  WS_PUBLIC_URL: "wss://app.example.com/ws",
+  MINIO_ENDPOINT: "https://s3.example.com",
+  MINIO_ACCESS_KEY: "test-access",
+  MINIO_SECRET_KEY: "test-secret",
+  TOKEN_ENCRYPTION_KEY: Buffer.alloc(32, 1).toString("base64"),
+  MCP_ENABLED: "false",
+};
 
 describe("WebSocket listener address", () => {
   test("binds to the requested loopback address", async () => {
@@ -35,13 +50,13 @@ describe("WebSocket listener address", () => {
 
 describe("WebSocket host configuration", () => {
   test("accepts an explicit loopback bind and preserves an unset default", () => {
-    const loopback = parseEnv({ ...process.env, WS_HOST: "127.0.0.1" });
-    const unset = parseEnv({ ...process.env, WS_HOST: undefined });
+    const loopback = parseEnv({ ...validEnv, WS_HOST: "127.0.0.1" });
+    const unset = parseEnv({ ...validEnv, WS_HOST: undefined });
     expect(loopback.ok && loopback.value.WS_HOST).toBe("127.0.0.1");
     expect(unset.ok && unset.value.WS_HOST).toBeUndefined();
   });
 
   test("rejects an empty configured host", () => {
-    expect(parseEnv({ ...process.env, WS_HOST: "" }).ok).toBe(false);
+    expect(parseEnv({ ...validEnv, WS_HOST: "" }).ok).toBe(false);
   });
 });

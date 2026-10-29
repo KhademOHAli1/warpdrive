@@ -14,7 +14,7 @@ export function isActivityOverdue(
   if (done || dueAt === null) return false;
   if (!allDay) return dueAt.getTime() < now;
   return (
-    activityEndDay({ dueAt, allDay, dueDate, endDate, endAt }, timeZone)! <
+    activityEndDay({ dueAt, allDay, dueDate, endDate, endAt }, timeZone) <
     instantCivilDate(now, timeZone)
   );
 }

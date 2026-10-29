@@ -29,7 +29,7 @@ const actor = {
 };
 const signal = AbortSignal.timeout(45000);
 let checks = 0;
-function check(condition: unknown, message: string) {
+function check(condition: boolean, message: string) {
   if (!condition) throw new Error(message);
   checks++;
 }
@@ -207,8 +207,8 @@ try {
       "midnight was reclassified as all-day",
     );
   });
-  console.log(
-    `${checks} real repository PostgreSQL checks passed using only session-local TEMP fixtures. No public user rows mutated; temporary tables dropped at commit.`,
+  process.stdout.write(
+    `${checks} real repository PostgreSQL checks passed using only session-local TEMP fixtures. No public user rows mutated; temporary tables dropped at commit.\n`,
   );
 } finally {
   await pool.end();

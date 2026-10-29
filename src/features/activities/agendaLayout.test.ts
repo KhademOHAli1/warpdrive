@@ -8,10 +8,9 @@ import {
 } from "./agendaLayout";
 import type { CalendarActivity } from "./calendar";
 
-// Local-time constructor: placeBlock reads local hours, so the fixtures must be built in the same
-// frame or the expected topPx would depend on the machine's timezone.
+// The default account zone is UTC; fixture instants stay independent of the test host's zone.
 function at(hour: number, minute = 0): Date {
-  return new Date(2026, 7, 24, hour, minute);
+  return new Date(Date.UTC(2026, 7, 24, hour, minute));
 }
 
 function activity(over: Partial<CalendarActivity> & { id: string }): CalendarActivity {

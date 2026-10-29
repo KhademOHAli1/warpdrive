@@ -176,6 +176,7 @@
     "save_draft_as_a_template": "ذخیره پیش‌نویس به‌عنوان قالب",
     "manage_templates": "مدیریت قالب‌ها",
     "compose_email": "نوشتن ایمیل",
+    "record_composer": "افزودن اطلاعات",
     "enter_a_valid_email_address": "یک نشانی ایمیل معتبر وارد کنید.",
     "nothing_queued_to_send": "ایمیلی در صف ارسال نیست.",
     "mail_folders": "پوشه‌های ایمیل",
@@ -237,7 +238,13 @@
     "fileBytes": "{count, number} بایت",
     "fileKB": "{count, number} کیلوبایت",
     "fileMB": "{count, number, :: .0} مگابایت",
-    "conversationCount": "{count, plural, one {# گفت‌وگو} other {# گفت‌وگو}}"
+    "conversationCount": "{count, plural, one {# گفت‌وگو} other {# گفت‌وگو}}",
+    "scheduleIncomplete": "تاریخ و ساعت ارسال را انتخاب کنید.",
+    "scheduleInvalid": "تاریخ و ساعت ارسال را کامل و درست وارد کنید.",
+    "scheduleNonexistent": "این ساعت به‌دلیل تغییر ساعت رسمی وجود ندارد. ساعت دیگری انتخاب کنید.",
+    "scheduleTimeZone": "منطقهٔ زمانی ارسال: {zone}",
+    "scheduleUtcOffset": "اختلاف با زمان هماهنگ جهانی: {offset}",
+    "scheduleAmbiguousTime": "به‌دلیل عقب کشیده‌شدن ساعت رسمی، این ساعت دو بار پیش می‌آید. نوبت اول ({offset}) برای ارسال در نظر گرفته می‌شود."
   },
   "_folders": {
     "inbox": "صندوق ورودی",

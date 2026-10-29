@@ -28,6 +28,11 @@ import { useState } from "react";
 
 import { RecipientField } from "./RecipientField";
 
+function RecipientHarness(): React.ReactNode {
+  const [to, setTo] = useState<string[]>([]);
+  return <RecipientField label="To" values={to} onChange={setTo} />;
+}
+
 describe("RecipientField", () => {
   it("shows suggestions when typing in the input", async () => {
     render(<RecipientField label="To" values={[]} onChange={vi.fn()} />);
@@ -106,11 +111,7 @@ describe("RecipientField", () => {
   });
 
   it("commits each address as the separator is typed, character by character", async () => {
-    function Harness(): React.ReactNode {
-      const [to, setTo] = useState<string[]>([]);
-      return <RecipientField label="To" values={to} onChange={setTo} />;
-    }
-    render(<Harness />);
+    render(<RecipientHarness />);
     const input = screen.getByRole("combobox");
     await userEvent.type(input, "a@x.com,b@x.com;");
     expect(screen.getByRole("button", { name: "Remove a@x.com" })).toBeInTheDocument();

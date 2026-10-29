@@ -25,17 +25,17 @@ cp .env.example .env
 
 Fill it in. The deployment-specific values:
 
-| Var | Value on the box |
-| --- | --- |
-| `APP_DOMAIN` | `crm.example.com` (the public hostname) |
-| `ACME_EMAIL` | an address for Let's Encrypt expiry notices |
-| `BASE_URL` | `https://crm.example.com` |
-| `NEXT_PUBLIC_WS_URL` | `wss://crm.example.com/_ws` |
-| `WS_PUBLIC_URL` | `ws://ws:8080` (internal compose address) |
-| `MINIO_ENDPOINT` | `https://s3.crm.example.com` (public: the browser uploads directly here) |
-| `DATABASE_URL` | `postgres://warpdrive:warpdrive@postgres:5432/warpdrive` |
-| `SEED_ADMIN_EMAIL` | the first admin's email (required in production) |
-| `ALLOW_FIRST_LOGIN_ADMIN` | `false` (the env boundary rejects `true` in production) |
+| Var                       | Value on the box                                                         |
+| ------------------------- | ------------------------------------------------------------------------ |
+| `APP_DOMAIN`              | `crm.example.com` (the public hostname)                                  |
+| `ACME_EMAIL`              | an address for Let's Encrypt expiry notices                              |
+| `BASE_URL`                | `https://crm.example.com`                                                |
+| `NEXT_PUBLIC_WS_URL`      | `wss://crm.example.com/_ws`                                              |
+| `WS_PUBLIC_URL`           | `ws://ws:8080` (internal compose address)                                |
+| `MINIO_ENDPOINT`          | `https://s3.crm.example.com` (public: the browser uploads directly here) |
+| `DATABASE_URL`            | `postgres://warpdrive:warpdrive@postgres:5432/warpdrive`                 |
+| `SEED_ADMIN_EMAIL`        | the first admin's email (required in production)                         |
+| `ALLOW_FIRST_LOGIN_ADMIN` | `false` (the env boundary rejects `true` in production)                  |
 
 Generate the secrets:
 

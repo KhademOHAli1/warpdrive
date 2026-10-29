@@ -13,6 +13,7 @@ import { useActivitiesMessages } from "./useActivitiesMessages";
 export interface ActivityTypeOption {
   key: string;
   name: string;
+  isSystem?: boolean;
 }
 
 interface ActivitiesFiltersProps {

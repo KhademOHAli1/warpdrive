@@ -3,209 +3,123 @@
     "catalogs": [
       {
         "group": "src/components/data-table/messages/tableControls",
-        "locales": [
-          "en",
-          "fa"
-        ]
+        "locales": ["en", "fa"]
       },
       {
         "group": "src/components/filters/messages/filters",
-        "locales": [
-          "en",
-          "fa"
-        ]
+        "locales": ["en", "fa"]
       },
       {
         "group": "src/components/shell/messages/shell",
-        "locales": [
-          "en",
-          "fa"
-        ]
+        "locales": ["en", "fa"]
       },
       {
         "group": "src/components/shell/messages/utilities",
-        "locales": [
-          "en",
-          "fa"
-        ]
+        "locales": ["en", "fa"]
       },
       {
         "group": "src/components/ui/messages/shared",
-        "locales": [
-          "de",
-          "en",
-          "fa"
-        ]
+        "locales": ["de", "en", "fa"]
       },
       {
         "group": "src/features/activities/messages/activities",
-        "locales": [
-          "en",
-          "fa"
-        ]
+        "locales": ["en", "fa"]
       },
       {
         "group": "src/features/activities/messages/calendar",
-        "locales": [
-          "de",
-          "en",
-          "fa"
-        ]
+        "locales": ["de", "en", "fa"]
       },
       {
         "group": "src/features/auth/messages/authScreens",
-        "locales": [
-          "en",
-          "fa"
-        ]
+        "locales": ["en", "fa"]
       },
       {
         "group": "src/features/contacts/messages/contacts",
-        "locales": [
-          "en",
-          "fa"
-        ]
+        "locales": ["en", "fa"]
       },
       {
         "group": "src/features/custom-fields/messages/customFields",
-        "locales": [
-          "en",
-          "fa"
-        ]
+        "locales": ["en", "fa"]
       },
       {
         "group": "src/features/deals/messages/sales",
-        "locales": [
-          "en",
-          "fa"
-        ]
+        "locales": ["en", "fa"]
       },
       {
         "group": "src/features/email/messages/email",
-        "locales": [
-          "en",
-          "fa"
-        ]
+        "locales": ["en", "fa"]
       },
       {
         "group": "src/features/enrichment/messages/enrichment",
-        "locales": [
-          "en",
-          "fa"
-        ]
+        "locales": ["en", "fa"]
       },
       {
         "group": "src/features/entity-create/messages/entityCreate",
-        "locales": [
-          "en",
-          "fa"
-        ]
+        "locales": ["en", "fa"]
       },
       {
         "group": "src/features/files/messages/files",
-        "locales": [
-          "en",
-          "fa"
-        ]
+        "locales": ["en", "fa"]
       },
       {
         "group": "src/features/i18n/messages/boundary",
-        "locales": [
-          "en",
-          "fa"
-        ]
+        "locales": ["en", "fa"]
       },
       {
         "group": "src/features/i18n/messages/",
-        "locales": [
-          "en",
-          "fa"
-        ]
+        "locales": ["en", "fa"]
       },
       {
         "group": "src/features/identity/messages/settings",
-        "locales": [
-          "en",
-          "fa"
-        ]
+        "locales": ["en", "fa"]
       },
       {
         "group": "src/features/leads/messages/leads",
-        "locales": [
-          "en",
-          "fa"
-        ]
+        "locales": ["en", "fa"]
       },
       {
         "group": "src/features/notifications/messages/notifications",
-        "locales": [
-          "en",
-          "fa"
-        ]
+        "locales": ["en", "fa"]
       },
       {
         "group": "src/features/quick-add/messages/quickAdd",
-        "locales": [
-          "en",
-          "fa"
-        ]
+        "locales": ["en", "fa"]
       },
       {
         "group": "src/features/stats/messages/stats",
-        "locales": [
-          "en",
-          "fa"
-        ]
+        "locales": ["en", "fa"]
       }
     ],
     "catalogIssues": 0,
-    "sourceLiteralCandidates": 3,
-    "legacyCatalogImports": 2,
-    "sourceFilesWithFindings": 5,
+    "sourceLiteralCandidates": 0,
+    "legacyCatalogImports": 0,
+    "sourceFilesWithFindings": 0,
     "newSourceFindings": 0,
-    "reviewedSourceExceptions": 1,
-    "sourceMigrationComplete": false,
+    "reviewedSourceExceptions": 4,
+    "sourceMigrationComplete": true,
     "note": "Static inventory is a migration aid. Computed copy, backend errors, data labels and browser workflows still require feature review. A valid catalog does not prove that every screen is translated."
   },
   "catalogIssues": [],
-  "findings": [
+  "findings": [],
+  "reviewedSources": [
     {
-      "kind": "legacy-catalog",
-      "file": "src/features/deal-workspace/changeLabel.ts",
-      "text": "@/constants/enrichmentStrings",
-      "line": 22,
-      "id": "7b33f8a88d5ce1634483"
+      "id": "3071dad4597a67738848",
+      "file": "src/app/(app)/settings/users/InviteUserForm.tsx",
+      "text": "person@example.com",
+      "reason": "The invitation form uses this syntactically valid ASCII email address as a technical example, not interface prose. Its field labels, validation and invitation outcome messages are localized; changing address syntax into translated words would make the example misleading."
     },
     {
-      "kind": "literal",
-      "file": "src/features/deal-workspace/header/PipelineBreadcrumb.tsx",
-      "text": "&rsaquo;",
-      "line": 25,
-      "id": "8a18f5d02a10f70e0a05"
-    },
-    {
-      "kind": "literal",
+      "id": "810e4d62a3e7ee8febbb",
       "file": "src/features/deals/AddDealPersonColumn.tsx",
       "text": "name@company.com",
-      "line": 105,
-      "id": "810e4d62a3e7ee8febbb"
+      "reason": "This is a syntactically valid email address example, rather than English interface prose. Keep its ASCII address syntax in every language; the field labels and row actions are translated, and email/phone inputs have explicit left-to-right direction."
     },
     {
-      "kind": "legacy-catalog",
+      "id": "6e455c0cab2ecf4a0848",
       "file": "src/features/deals/notifyHelpers.ts",
       "text": "@/constants/notifyStrings",
-      "line": 4,
-      "id": "6e455c0cab2ecf4a0848"
+      "reason": "Deal notifications persist stable legacy summary values for recipients with different languages. The notification display and email boundaries recognize and translate those protocol values for each recipient. Translating the persisted value with the actor's locale would break compatibility."
     },
-    {
-      "kind": "literal",
-      "file": "src/features/pipelines/StageEditCard.tsx",
-      "text": "&times;",
-      "line": 55,
-      "id": "aacf4713ce201b297a37"
-    }
-  ],
-  "reviewedSources": [
     {
       "id": "0c3773c2a168b8267fb7",
       "file": "src/features/notifications/ui/notificationText.ts",

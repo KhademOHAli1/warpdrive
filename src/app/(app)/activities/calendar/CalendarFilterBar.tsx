@@ -4,8 +4,9 @@ import { Combobox, type ComboboxOption } from "@/components/ui/Combobox";
 import { Select } from "@/components/ui/Select";
 import type { ActivityTypeOption } from "@/features/activities/ActivitiesFilters";
 import { ActivityTypeTab } from "@/features/activities/ActivityTypeTab";
+import { activityTypeName } from "@/features/activities/activityTypeLabels";
 import type { CalendarFilterState } from "@/features/activities/calendarFilter";
-import { useAppTranslations } from "@/features/i18n/LocaleProvider";
+import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
 
 // Calendar filter toolbar (AC1): owner (assignee) / status / type, the same three axes the list
 // toolbar offers, minus the date range (the calendar view is the date window). Reuses the shared
@@ -22,6 +23,7 @@ export function CalendarFilterBar({
   types: ActivityTypeOption[];
 }): React.ReactNode {
   const t = useAppTranslations("calendar");
+  const locale = useLocale();
   function patch(next: Partial<CalendarFilterState>): void {
     onChange({ ...filter, ...next });
   }
@@ -62,7 +64,7 @@ export function CalendarFilterBar({
             key={t.key}
             active={filter.typeKey}
             value={t.key}
-            label={t.name}
+            label={activityTypeName(t, locale)}
             icon
             onSelect={(tab) => patch({ typeKey: tab })}
           />

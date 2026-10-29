@@ -12,11 +12,13 @@ WORKDIR /app
 # --- deps: full install (build needs devDeps: next, esbuild, drizzle types) ---
 FROM base AS deps
 COPY package.json bun.lock bunfig.toml ./
+COPY patches ./patches
 RUN bun install --frozen-lockfile
 
 # --- prod-deps: production-only tree for the runtime image ---
 FROM base AS prod-deps
 COPY package.json bun.lock bunfig.toml ./
+COPY patches ./patches
 RUN bun install --frozen-lockfile --prod
 
 # --- build: Next build + transpiled ws/worker/migrate entrypoints ---

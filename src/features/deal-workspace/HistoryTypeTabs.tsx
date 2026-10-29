@@ -76,12 +76,12 @@ export function HistoryTypeTabs({
       <TabsList className="flex-wrap gap-1">
         {TABS.map((t) => (
           <TabsTrigger key={t} value={t} className={PILL_TAB}>
-            {counts[t] === undefined
-              ? labels[t]
-              : translateSales("computed.historyTabCount", {
+            {(counts[t] ?? 0) > 0
+              ? translateSales("computed.historyTabCount", {
                   label: labels[t],
                   count: counts[t] ?? 0,
-                })}
+                })
+              : labels[t]}
           </TabsTrigger>
         ))}
       </TabsList>
