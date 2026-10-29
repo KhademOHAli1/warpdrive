@@ -17,12 +17,16 @@ interface ActivityChipProps {
 function ChipLabel({ a, parent }: { a: CalendarActivity; parent: string | null }): React.ReactNode {
   return (
     <span className="flex w-full min-w-0 items-baseline gap-1">
-      <span className="truncate">{a.subject}</span>
+      <bdi className="truncate" dir="auto">
+        {a.subject}
+      </bdi>
       {/* Shrinks faster than the subject: in a narrow lane the name gives up its room first,
           rather than both halves collapsing to three letters each. The colour is explicit rather
           than an opacity fade, which measured 3.93:1 here and 2.96:1 on the overdue tone. */}
       {parent !== null && (
-        <span className="shrink-[4] truncate text-[11px] text-foreground/70">{parent}</span>
+        <bdi dir="auto" className="shrink-[4] truncate text-[11px] text-foreground/70">
+          {parent}
+        </bdi>
       )}
     </span>
   );
@@ -48,7 +52,7 @@ export function ActivityChip({ a, onOpen, className = "" }: ActivityChipProps): 
         onClick={() => onOpen(a)}
         // items-start keeps the text at the top of a block sized to a whole meeting, rather than
         // floating in the middle of it the way a button centres its content by default.
-        className={`flex w-full items-start truncate rounded px-1 my-0.5 text-left text-xs hover:underline ${tone} ${className}`}
+        className={`flex w-full items-start truncate rounded px-1 my-0.5 text-start text-xs hover:underline ${tone} ${className}`}
       >
         {label}
       </button>

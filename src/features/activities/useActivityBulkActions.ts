@@ -3,10 +3,8 @@ import { useState } from "react";
 import type { RowSelection } from "@/components/data-table/useRowSelection";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { completeActivityAction, deleteActivityAction } from "./actions";
+import { useActivitiesMessages } from "./useActivitiesMessages";
 import { useInvalidateActivityLists } from "./useInvalidateActivityLists";
-
-const BULK_MARK_DONE_ERROR = "Couldn't mark some activities done. Please try again.";
-const BULK_DELETE_ERROR = "Couldn't delete some activities. Please try again.";
 
 // Runs the given per-id action across all selected ids, returning the ids that failed. Doesn't
 // swallow partial failures: callers keep failed ids selected and surface an error, mirroring the
@@ -28,6 +26,7 @@ export interface ActivityBulkActions {
 // Bulk mark-done/delete for the Activities table's selected rows. Extracted from ActivitiesTable
 // (data logic vs. presentation) and to keep the container under the file-size budget.
 export function useActivityBulkActions(selection: RowSelection): ActivityBulkActions {
+  const S = useActivitiesMessages();
   const [error, setError] = useState<string | null>(null);
   const invalidateActivityLists = useInvalidateActivityLists();
 
@@ -50,10 +49,8 @@ export function useActivityBulkActions(selection: RowSelection): ActivityBulkAct
   return {
     error,
     bulkMarkDone: () =>
-      run(
-        (id) => completeActivityAction({ id, done: true }, readCsrfToken()),
-        BULK_MARK_DONE_ERROR,
-      ),
-    bulkDelete: () => run((id) => deleteActivityAction({ id }, readCsrfToken()), BULK_DELETE_ERROR),
+      run((id) => completeActivityAction({ id, done: true }, readCsrfToken()), S.bulkDoneFailed),
+    bulkDelete: () =>
+      run((id) => deleteActivityAction({ id }, readCsrfToken()), S.bulkDeleteFailed),
   };
 }

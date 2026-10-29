@@ -93,7 +93,7 @@ services:
   # One-shot: apply forward-only Drizzle migrations, then exit. Gates the long-running tier.
   migrate:
     build: *app-build
-    command: ["node", "dist/migrate.mjs"]
+    command: ["bun", "dist/migrate.mjs"]
     env_file: .env
     depends_on:
       postgres:
@@ -102,10 +102,10 @@ services:
   app:
     build: *app-build
     restart: unless-stopped
-    command: ["node_modules/.bin/next", "start"]
+    command: ["bun", "--bun", "next", "start"]
     env_file: .env
     healthcheck:
-      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:3000/api/health || exit 1"]
+      test: ["CMD", "bun", "-e", "fetch('http://localhost:3000/api/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
       interval: 15s
       timeout: 5s
       retries: 5
@@ -119,12 +119,12 @@ services:
   ws:
     build: *app-build
     restart: unless-stopped
-    command: ["node", "dist/ws.mjs"]
+    command: ["bun", "dist/ws.mjs"]
     env_file: .env
     healthcheck:
       test:
         - "CMD"
-        - "node"
+        - "bun"
         - "-e"
         - "require('node:net').connect(8080,'127.0.0.1').on('connect',()=>process.exit(0)).on('error',()=>process.exit(1))"
       interval: 15s
@@ -138,7 +138,7 @@ services:
   worker:
     build: *app-build
     restart: unless-stopped
-    command: ["node", "dist/worker.mjs"]
+    command: ["bun", "dist/worker.mjs"]
     env_file: .env
     depends_on:
       migrate:

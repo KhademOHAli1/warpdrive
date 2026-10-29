@@ -1,3 +1,5 @@
+import { createAppTranslator } from "@/features/i18n/catalog";
+import type { Locale } from "@/features/i18n/registry";
 export interface RemovableStage {
   key: string;
   id: string | null;
@@ -87,8 +89,10 @@ export function incomingDealCounts(
   return incoming;
 }
 
-export function dealCountLabel(total: number, closed: number): string {
-  if (total === 0) return "No deals";
-  const deals = total === 1 ? "1 deal" : `${total} deals`;
-  return closed > 0 ? `${deals}, ${closed} won or lost` : deals;
+export function dealCountLabel(total: number, closed: number, locale: Locale = "en"): string {
+  const t = createAppTranslator(locale, "sales");
+  if (total === 0) return t("computed.stageCountEmpty");
+  return closed > 0
+    ? t("computed.stageCountWithClosed", { total, closed })
+    : t("computed.stageCount", { total });
 }

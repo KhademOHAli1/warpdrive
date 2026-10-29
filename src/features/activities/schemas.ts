@@ -12,6 +12,8 @@ export const activityCreateInput = z
     dueAt: z.string().datetime().nullable().default(null),
     // True when the user gave a day but no time. See composeDueAt.
     allDay: z.boolean().default(false),
+    dueDate: z.string().date().nullable().default(null),
+    endDate: z.string().date().nullable().default(null),
     // Multi-day end timestamp (Pipedrive parity). Ordering vs dueAt is enforced in the repo.
     endAt: z.string().datetime().nullable().default(null),
     durationMinutes: z.number().int().positive().nullable().default(null),
@@ -52,6 +54,8 @@ export const activityUpdateInput = z
       .optional(),
     dueAt: z.string().datetime().nullable().optional(),
     allDay: z.boolean().optional(),
+    dueDate: z.string().date().nullable().optional(),
+    endDate: z.string().date().nullable().optional(),
     endAt: z.string().datetime().nullable().optional(),
     durationMinutes: z.number().int().positive().nullable().optional(),
     location: z.string().trim().max(255).nullable().optional(),

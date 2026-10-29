@@ -1,11 +1,14 @@
 // Per-stage open-deal counts and values for the dashboard (NOT the kanban board:
 // the board uses deal.stageSums/dealRepo). Requires FROM deals d JOIN pipelines p
 // ON p.id = d.pipeline_id so dealVisibilityClause can gate on p.visibility_group_id.
+
 import { sql } from "drizzle-orm";
 import type { Db } from "@/db/client";
+import { reportCurrencyClause } from "@/features/currencies/reportCurrency";
 import { dealVisibilityClause } from "@/features/deals/visibility";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { ownerFilterClause } from "@/features/stats/ownerIds";
+import { canonicalMoney } from "@/lib/canonicalMoney";
 import type { OwnerIdFilter, StageSum } from "@/types/stats";
 
 function toSession(actor: PermSetUser) {
@@ -25,9 +28,11 @@ export async function stageSums(
   pipelineId: string,
   owners: OwnerIdFilter,
   signal: AbortSignal,
+  currency?: string,
 ): Promise<StageSum[]> {
   signal.throwIfAborted();
 
+  const currencyClause = await reportCurrencyClause(db, currency, signal);
   const visClause = dealVisibilityClause(toSession(actor));
   const ownerClause = ownerFilterClause(sql`d.owner_id`, owners);
 
@@ -41,7 +46,7 @@ export async function stageSums(
       s.name                                                  AS name,
       s."order"                                               AS "order",
       count(*)::int                                           AS "dealCount",
-      coalesce(sum(d.value), 0)::numeric(14,2)::text          AS total
+      coalesce(sum(d.value), 0)::text          AS total
     FROM deals d
     JOIN pipelines p ON p.id = d.pipeline_id
     JOIN stages s ON s.id = d.stage_id
@@ -50,6 +55,7 @@ export async function stageSums(
       AND d.deleted_at IS NULL
       AND d.archived_at IS NULL
       ${ownerClause}
+      ${currencyClause}
       AND ${visClause}
     GROUP BY d.stage_id, s.name, s."order"
     ORDER BY s."order" ASC
@@ -68,5 +74,5 @@ export async function stageSums(
       }>;
     }
   ).rows;
-  return rows;
+  return rows.map((row) => ({ ...row, total: canonicalMoney(row.total) }));
 }

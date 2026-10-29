@@ -1,4 +1,6 @@
+"use client";
 import type React from "react";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { HistoryFeed } from "./HistoryFeed";
 import type { HistoryItem } from "./historyTimeline";
 import { SectionHeading } from "./SectionHeading";
@@ -12,11 +14,13 @@ export function PinnedNotesSection({
   items: HistoryItem[];
   onNoteChanged?: () => void;
 }): React.ReactNode {
+  const translateSales = useAppTranslations("sales");
+
   if (items.length === 0) return null;
 
   return (
-    <section aria-label="pinned">
-      <SectionHeading>Pinned</SectionHeading>
+    <section aria-label={translateSales("pinned_3fab5")}>
+      <SectionHeading>{translateSales("pinned_f20c8")}</SectionHeading>
       <HistoryFeed items={items} emptyLabel="" onNoteChanged={onNoteChanged} />
     </section>
   );

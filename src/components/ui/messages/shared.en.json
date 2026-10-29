@@ -1,0 +1,27 @@
+{
+  "close": "Close",
+  "select": "Select",
+  "search": "Search...",
+  "noMatch": "No match.",
+  "removeOption": "Remove {label}",
+  "colorOptions": "{label} options",
+  "customHexColor": "Custom hex color",
+  "hexPlaceholder": "e.g. #1f2937…",
+  "invalidHexColor": "Enter a 6-digit hex color, such as #1f2937.",
+  "applyColor": "Apply color",
+  "timePlaceholder": "h:mm",
+  "colors": {
+    "black": "Black",
+    "slate": "Slate",
+    "red": "Red",
+    "orange": "Orange",
+    "amber": "Amber",
+    "green": "Green",
+    "teal": "Teal",
+    "blue": "Blue",
+    "indigo": "Indigo",
+    "purple": "Purple",
+    "pink": "Pink",
+    "white": "White"
+  }
+}

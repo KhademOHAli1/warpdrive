@@ -1,10 +1,12 @@
-import { ENRICHMENT_STRINGS } from "@/constants/enrichmentStrings";
 import { COMPANY_NAME_KEY } from "./canonicalKeys";
+import { type EnrichmentMessages, enrichmentMessagesForLocale } from "./enrichmentMessages";
 import type { ProposedField } from "./types";
 
-const S = ENRICHMENT_STRINGS.dialog;
-
-export function overwriteNotice(field: ProposedField): string | null {
+export function overwriteNotice(
+  field: ProposedField,
+  messages: EnrichmentMessages = enrichmentMessagesForLocale("en"),
+): string | null {
+  const S = messages.dialog;
   if (!field.isOverwrite) return null;
   if (field.currentValue === null) return S.overwritesHidden;
   const current = String(field.currentValue);

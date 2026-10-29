@@ -25,6 +25,7 @@ export function deriveEntityTitle(
   people: Option[],
   noun = "deal",
   appendNoun = true,
+  formatTitle?: (name: string) => string,
 ): string {
   const orgName =
     s.orgMode === "new" ? s.newOrgName.trim() : (orgs.find((o) => o.id === s.orgId)?.name ?? "");
@@ -34,5 +35,5 @@ export function deriveEntityTitle(
       : (people.find((p) => p.id === s.personId)?.name ?? "");
   const base = orgName !== "" ? orgName : personName;
   if (base === "") return "";
-  return appendNoun ? `${base} ${noun}` : base;
+  return appendNoun ? (formatTitle?.(base) ?? `${base} ${noun}`) : base;
 }

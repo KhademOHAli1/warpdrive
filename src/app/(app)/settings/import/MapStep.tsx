@@ -5,13 +5,17 @@ import { Checkbox } from "@/components/ui/Checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/RadioGroup";
 import { Select, type SelectOption } from "@/components/ui/Select";
 import { isImportFieldHidden } from "@/constants/builtinFields";
-import { STRINGS } from "@/constants/strings";
+import {
+  type SettingsMessages,
+  settingsBuiltinLabel,
+  settingsMessagesForLocale,
+} from "@/features/identity/settingsMessages";
+import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import {
   ENTITY_FIELDS,
   ENTITY_LABELS,
   type MappableEntity,
   primaryEntityOf,
-  qualifiedFieldLabel,
   TARGET_ENTITY_GROUPS,
 } from "@/features/import/importFields";
 import { sampleValues } from "@/features/import/sampleValues";
@@ -24,7 +28,6 @@ import {
 } from "@/features/import/wizardState";
 import type { CustomFieldDef } from "@/types/customFields";
 
-const IMP = STRINGS.settings.importer;
 const REQUIRED_MARKER = " *";
 const UNMAPPED_SELECT_VALUE = "mapping:unmapped";
 
@@ -64,7 +67,9 @@ export function buildColumnOptions(
   target: ImportTarget,
   defs: CustomFieldDef[],
   hidden: HiddenBuiltinsMap = {},
+  messages: SettingsMessages = settingsMessagesForLocale("en"),
 ): SelectOption[] {
+  const IMP = messages.importer;
   const primary = primaryEntityOf(target);
   const options: SelectOption[] = [{ value: UNMAPPED_SELECT_VALUE, label: IMP.unmapped }];
   for (const entity of TARGET_ENTITY_GROUPS[target]) {
@@ -76,8 +81,8 @@ export function buildColumnOptions(
       if (!required && isImportFieldHidden(field.field, hiddenForEntity)) continue;
       options.push({
         value: `s:${entity}:${field.field}`,
-        label: `${qualifiedFieldLabel(entity, field.label)}${required ? REQUIRED_MARKER : ""}`,
-        group: ENTITY_LABELS[entity],
+        label: `${settingsBuiltinLabel(messages, ENTITY_LABELS[entity])}[${settingsBuiltinLabel(messages, field.label)}]${required ? REQUIRED_MARKER : ""}`,
+        group: settingsBuiltinLabel(messages, ENTITY_LABELS[entity]),
       });
     }
   }
@@ -104,8 +109,11 @@ export function MapStep({
   busy,
   onContinue,
 }: MapStepProps): React.ReactNode {
+  const L = useSettingsMessages();
+  const IMP = L.importer;
+
   const complete = isMappingComplete(state);
-  const columnOptions = buildColumnOptions(state.target, defs, hiddenBuiltins);
+  const columnOptions = buildColumnOptions(state.target, defs, hiddenBuiltins, L);
   // Dedup applies to the record a row MATCHES on. Leads have no natural dedup key and always
   // create, so the control would do nothing there.
   const showDedup = state.target === "person" || state.target === "organization";

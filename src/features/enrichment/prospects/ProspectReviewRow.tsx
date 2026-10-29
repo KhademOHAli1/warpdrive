@@ -3,12 +3,10 @@
 import type React from "react";
 import { useId, useState } from "react";
 import { Checkbox } from "@/components/ui/Checkbox";
-import { ENRICHMENT_STRINGS } from "@/constants/enrichmentStrings";
 import { EnrichFieldRow } from "../EnrichFieldRow";
 import type { ProposedField } from "../types";
+import { useEnrichmentMessages } from "../useEnrichmentMessages";
 import type { ProspectMatch } from "./types";
-
-const S = ENRICHMENT_STRINGS.prospects;
 
 export interface FieldPick {
   selectedValue: string;
@@ -29,13 +27,18 @@ export interface ProspectReviewRowProps {
   onPickChange: (canonicalKey: string, pick: FieldPick) => void;
 }
 
-function errorMessage(errorId: string): string {
+function errorMessage(
+  errorId: string,
+  S: ReturnType<typeof useEnrichmentMessages>["prospects"],
+): string {
   if (errorId === "E_ENRICH_006") return S.itemStale;
   if (errorId === "E_PERM_001") return S.itemDenied;
   return S.itemFailed;
 }
 
 function Status({ outcome }: { outcome: ProspectReviewRowProps["outcome"] }): React.ReactNode {
+  const E = useEnrichmentMessages();
+  const S = E.prospects;
   if (outcome === "pending") return null;
   if (outcome === "created") {
     return <span className="text-muted-foreground text-xs">{S.applied}</span>;
@@ -43,7 +46,7 @@ function Status({ outcome }: { outcome: ProspectReviewRowProps["outcome"] }): Re
   if (outcome === "updated") {
     return <span className="text-muted-foreground text-xs">{S.updated}</span>;
   }
-  return <span className="text-destructive text-xs">{errorMessage(outcome.errorId)}</span>;
+  return <span className="text-destructive text-xs">{errorMessage(outcome.errorId, S)}</span>;
 }
 
 export function ProspectReviewRow({
@@ -58,6 +61,8 @@ export function ProspectReviewRow({
   onCheckedChange,
   onPickChange,
 }: ProspectReviewRowProps): React.ReactNode {
+  const E = useEnrichmentMessages();
+  const S = E.prospects;
   const [expanded, setExpanded] = useState(false);
   const checkboxId = useId();
   const empty = fields.length === 0;
@@ -78,7 +83,9 @@ export function ProspectReviewRow({
               {fullName}
             </label>
             {title !== undefined ? (
-              <span className="text-muted-foreground text-xs">{title}</span>
+              <span className="text-muted-foreground text-xs">
+                <bdi dir="auto">{title}</bdi>
+              </span>
             ) : null}
             <span className="text-muted-foreground text-xs">
               {match.kind === "existing" ? S.reviewWillUpdate : S.reviewWillCreate}
@@ -101,7 +108,7 @@ export function ProspectReviewRow({
         </div>
       </div>
       {expanded && !empty ? (
-        <div className="mt-2 flex flex-col gap-2 pl-7">
+        <div className="mt-2 flex flex-col gap-2 ps-7">
           {fields.map((field) => {
             const pick = picks[field.canonicalKey] ?? {
               selectedValue: String(field.selectedValue),

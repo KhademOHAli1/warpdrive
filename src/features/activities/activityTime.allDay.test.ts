@@ -8,7 +8,7 @@ describe("composeDueAt", () => {
     const r = composeDueAt("2026-08-31", "14:30");
     expect(r.allDay).toBe(false);
     expect(r.iso).not.toBeNull();
-    expect(new Date(r.iso ?? "").getHours()).toBe(14);
+    expect(new Date(r.iso ?? "").getUTCHours()).toBe(14);
   });
 
   test("marks a blank time as all-day rather than midnight", () => {
@@ -19,9 +19,9 @@ describe("composeDueAt", () => {
   test("still pins an all-day activity to the right calendar day", () => {
     const r = composeDueAt("2026-08-31", "");
     const d = new Date(r.iso ?? "");
-    expect(d.getFullYear()).toBe(2026);
-    expect(d.getMonth() + 1).toBe(8);
-    expect(d.getDate()).toBe(31);
+    expect(d.getUTCFullYear()).toBe(2026);
+    expect(d.getUTCMonth() + 1).toBe(8);
+    expect(d.getUTCDate()).toBe(31);
   });
 
   // Midnight is a real time someone can pick, and it must not be mistaken for "no time set".

@@ -1,0 +1,85 @@
+{
+  "inline": {
+    "edit": "Edit {label}",
+    "add": "+ Add",
+    "save": "Save",
+    "cancel": "Cancel",
+    "setDate": "Set date",
+    "errors": {
+      "generic": "Couldn't save",
+      "permission": "You don't have permission to edit this.",
+      "missing": "This record is no longer available.",
+      "invalid": "That value isn't valid.",
+      "session": "Your session expired. Please sign in again.",
+      "csrf": "Your session expired. Please refresh and try again."
+    }
+  },
+  "loading": {
+    "generic": "Loading",
+    "conversations": "Loading conversations",
+    "searching": "Searching",
+    "engagement": "Loading engagement timeline"
+  },
+  "searchOpen": "Open search",
+  "searchPlaceholder": "Search deals, people, organizations, leads...",
+  "reconnecting": "Reconnecting...",
+  "home": "{app} home",
+  "appearance": {
+    "title": "Appearance",
+    "day": "Light",
+    "night": "Dark",
+    "system": "System"
+  },
+  "errors": {
+    "generic": {
+      "title": "Couldn't complete that action",
+      "body": "Something went wrong and your change wasn't saved. Please refresh and try again."
+    },
+    "permission": {
+      "title": "You don't have permission",
+      "body": "You're not allowed to make this change. Ask an admin if you think this is a mistake."
+    },
+    "session": {
+      "title": "Your session expired",
+      "body": "Please sign in again to continue."
+    },
+    "csrf": {
+      "title": "Your session expired",
+      "body": "Please refresh the page and try again."
+    },
+    "noPipeline": {
+      "title": "No pipeline to convert into",
+      "body": "Create a pipeline in Settings, then convert this lead again."
+    },
+    "converted": {
+      "title": "This lead is already converted",
+      "body": "It already has a deal. Refresh the page to see the current state."
+    },
+    "invalidFilter": {
+      "title": "One of these conditions isn't valid",
+      "body": "Check each condition's value: a number field needs a number, and a date field needs a date."
+    },
+    "partialArchive": {
+      "title": "Some deals weren't archived",
+      "body": "Deals you can't edit stayed in the list. The rest moved to the Archive tab."
+    },
+    "partialStage": {
+      "title": "Some deals weren't moved",
+      "body": "Won, lost, and deals you can't edit kept their stage. The rest moved."
+    }
+  },
+  "search": {
+    "aria": "Search",
+    "error": "Couldn't run that search. Try again.",
+    "idle": "Type to search",
+    "resultsLabel": "Search results",
+    "headingDeals": "Deals",
+    "headingPeople": "People",
+    "headingOrganizations": "Organizations",
+    "headingLeads": "Leads",
+    "emptyDeals": "No deals",
+    "emptyPeople": "No people",
+    "emptyOrganizations": "No organizations",
+    "emptyLeads": "No leads"
+  }
+}

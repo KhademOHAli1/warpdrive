@@ -1,0 +1,69 @@
+{
+  "selectedCount": "{count, number} selected",
+  "clearSelection": "Clear selection",
+  "delete": "Delete",
+  "cancel": "Cancel",
+  "bulkDeleteTitle": "Delete {count, number} {noun}?",
+  "bulkDeleteDescription": "This cannot be undone, and it removes them for everyone on the team.",
+  "bulkDeleteConfirm": "Delete {noun}",
+  "customizeColumns": "Customize columns",
+  "columns": "Columns",
+  "hiddenColumns": "Hidden",
+  "reorderColumn": "Reorder {name}",
+  "column": "column",
+  "dragInstructions": "To pick up a column, press Space. Use the arrow keys to move it, press Space to drop it, or Escape to cancel.",
+  "columnPickedUp": "Picked up column {name}.",
+  "columnMoved": "Column {name} is at position {position, number} of {total, number}.",
+  "columnDropped": "Column {name} was placed at position {position, number} of {total, number}.",
+  "columnDragCancelled": "Reordering column {name} was cancelled.",
+  "saveCurrentView": "Save current view",
+  "viewName": "View name",
+  "viewNamePlaceholder": "Name this view",
+  "sharedWithEveryone": "Shared with everyone",
+  "untitledView": "Untitled view",
+  "save": "Save",
+  "saving": "Saving...",
+  "deleteNamedView": "Delete {name}",
+  "deleteViewTitle": "Delete view?",
+  "deleteFilterTitle": "Delete filter?",
+  "deletePrivateDescription": "\"{name}\" will be deleted. This cannot be undone.",
+  "deleteSharedDescription": "\"{name}\" will be deleted, for everyone it is shared with. This cannot be undone.",
+  "savedViews": "Saved views",
+  "favoriteView": "Favorite view",
+  "unfavoriteView": "Unfavorite view",
+  "nouns": {
+    "person": {
+      "singular": "person",
+      "plural": "people"
+    },
+    "organization": {
+      "singular": "organization",
+      "plural": "organizations"
+    },
+    "lead": {
+      "singular": "lead",
+      "plural": "leads"
+    },
+    "deal": {
+      "singular": "deal",
+      "plural": "deals"
+    },
+    "activity": {
+      "singular": "activity",
+      "plural": "activities"
+    },
+    "email": {
+      "singular": "email",
+      "plural": "emails"
+    },
+    "record": {
+      "singular": "record",
+      "plural": "records"
+    },
+    "item": {
+      "singular": "item",
+      "plural": "items"
+    }
+  },
+  "sortableColumn": "sortable column"
+}

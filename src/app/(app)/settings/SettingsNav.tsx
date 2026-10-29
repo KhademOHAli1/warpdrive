@@ -19,9 +19,7 @@ import {
 import { usePathname } from "next/navigation";
 import type React from "react";
 import { SecondaryNavLink } from "@/components/navigation/SecondaryNavLink";
-import { ENRICHMENT_STRINGS } from "@/constants/enrichmentStrings";
-import { SETTINGS_STRINGS } from "@/constants/settingsStrings";
-import { STRINGS } from "@/constants/strings";
+import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 
 interface NavItem {
   href: string;
@@ -34,42 +32,10 @@ interface NavSection {
   items: NavItem[];
 }
 
-const MY_ACCOUNT: NavSection = {
-  title: STRINGS.settings.myAccount,
-  items: [
-    { href: "/settings/profile", label: STRINGS.settings.profile, icon: User },
-    { href: "/settings/notifications", label: STRINGS.settings.notifications, icon: Bell },
-    { href: "/settings/email-sync", label: STRINGS.settings.emailSync, icon: MailCheck },
-    { href: "/settings/email", label: STRINGS.settings.emailTemplates, icon: Mail },
-    { href: "/settings/connections", label: STRINGS.settings.connectedApps, icon: Plug },
-  ],
-};
-
 // Company items need the MANAGE flag (or admin); hidden, not disabled, for everyone else.
-const COMPANY: NavSection = {
-  title: STRINGS.settings.companyOverview,
-  items: [
-    { href: "/settings/company", label: STRINGS.settings.companySettings, icon: Building2 },
-    { href: "/settings/users", label: STRINGS.settings.users, icon: Users },
-    { href: "/settings/teams", label: STRINGS.settings.teams, icon: UsersRound },
-    { href: "/settings/goals", label: SETTINGS_STRINGS.goals, icon: Target },
-    {
-      href: "/settings/permission-sets",
-      label: STRINGS.settings.permissionSets,
-      icon: ShieldCheck,
-    },
-    { href: "/settings/visibility-groups", label: STRINGS.settings.visibilityGroups, icon: Eye },
-    { href: "/settings/fields", label: STRINGS.settings.dataFields, icon: Table2 },
-  ],
-};
 
 // The enrichment page, its config query and its settings actions all require a real admin, so the
 // MANAGE flag alone must not surface this link.
-const ENRICHMENT_ITEM: NavItem = {
-  href: "/settings/enrichment",
-  label: ENRICHMENT_STRINGS.nav,
-  icon: Sparkles,
-};
 
 // Grouped left secondary menu (Pipedrive settings IA): My account for everyone, Company overview
 // for managers and admins. Replaces the old flat tab bar.
@@ -82,10 +48,45 @@ export function SettingsNav({
   canManageCompany: boolean;
   canImport: boolean;
 }): React.ReactNode {
+  const L = useSettingsMessages();
+  const ENRICHMENT_ITEM: NavItem = {
+    href: "/settings/enrichment",
+    label: L._enrichment.nav,
+    icon: Sparkles,
+  };
+
+  const COMPANY: NavSection = {
+    title: L.companyOverview,
+    items: [
+      { href: "/settings/company", label: L.companySettings, icon: Building2 },
+      { href: "/settings/users", label: L.users, icon: Users },
+      { href: "/settings/teams", label: L.teams, icon: UsersRound },
+      { href: "/settings/goals", label: L.goals, icon: Target },
+      {
+        href: "/settings/permission-sets",
+        label: L.permissionSets,
+        icon: ShieldCheck,
+      },
+      { href: "/settings/visibility-groups", label: L.visibilityGroups, icon: Eye },
+      { href: "/settings/fields", label: L.dataFields, icon: Table2 },
+    ],
+  };
+
+  const MY_ACCOUNT: NavSection = {
+    title: L.myAccount,
+    items: [
+      { href: "/settings/profile", label: L.profile, icon: User },
+      { href: "/settings/notifications", label: L.notifications, icon: Bell },
+      { href: "/settings/email-sync", label: L.emailSync, icon: MailCheck },
+      { href: "/settings/email", label: L.emailTemplates, icon: Mail },
+      { href: "/settings/connections", label: L.connectedApps, icon: Plug },
+    ],
+  };
+
   const pathname = usePathname();
   const importItem: NavItem = {
     href: "/settings/import",
-    label: STRINGS.settings.importData,
+    label: L.importData,
     icon: Upload,
   };
   const companyItems = [
@@ -100,7 +101,7 @@ export function SettingsNav({
       : [MY_ACCOUNT];
 
   return (
-    <nav aria-label="Settings sections" className="w-56 shrink-0 space-y-4">
+    <nav aria-label={L._extra.settingsSections} className="w-56 shrink-0 space-y-4">
       {sections.map((section) => (
         <div key={section.title}>
           {/* PD section header: 13px uppercase, muted, no extra letter-spacing. */}

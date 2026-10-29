@@ -6,7 +6,10 @@ import "react-day-picker/style.css";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { env } from "@/config/env";
-import { STRINGS } from "@/constants/strings";
+import { APP_NAME } from "@/constants/app";
+import { LocaleProvider } from "@/features/i18n/LocaleProvider";
+import { directionForLocale } from "@/features/i18n/locale";
+import { getLocalePreferences } from "@/features/i18n/server";
 import { TelemetryProvider } from "@/features/observability/TelemetryProvider";
 import { WebVitalsReporter } from "@/features/observability/WebVitalsReporter";
 import { AppearanceSync } from "@/features/theme/AppearanceSync";
@@ -25,18 +28,37 @@ const inter = localFont({
   display: "swap",
 });
 
+const vazirmatn = localFont({
+  src: "./fonts/vazirmatn-variable.woff2",
+  weight: "100 900",
+  style: "normal",
+  variable: "--font-vazirmatn",
+  display: "swap",
+});
+
 // Child routes set a bare title (e.g. "Pipeline"); the template appends the app
 // name so every tab reads "<where> · Warpdrive". Routes with no title fall back
 // to `default`.
 export const metadata = {
-  title: { default: STRINGS.app.name, template: `%s · ${STRINGS.app.name}` },
+  title: { default: APP_NAME, template: `%s · ${APP_NAME}` },
 };
 
-export default function RootLayout({ children }: { children: ReactNode }): ReactNode {
+export default async function RootLayout({
+  children,
+}: {
+  children: ReactNode;
+}): Promise<ReactNode> {
+  const preferences = await getLocalePreferences();
+  const { locale } = preferences;
   return (
     // suppressHydrationWarning: the inline script below adds/removes `dark` on <html> before
     // React hydrates, so the client class list legitimately differs from the server render.
-    <html lang="en" className={`${inter.variable} antialiased`} suppressHydrationWarning>
+    <html
+      lang={locale}
+      dir={directionForLocale(locale)}
+      className={`${inter.variable} ${vazirmatn.variable} antialiased`}
+      suppressHydrationWarning
+    >
       <body>
         {/* Runs before anything else in the body parses, so the theme is settled at first paint. */}
         <script
@@ -55,7 +77,9 @@ export default function RootLayout({ children }: { children: ReactNode }): React
           }}
         >
           <WebVitalsReporter />
-          <Providers>{children}</Providers>
+          <LocaleProvider {...preferences}>
+            <Providers>{children}</Providers>
+          </LocaleProvider>
         </TelemetryProvider>
       </body>
     </html>

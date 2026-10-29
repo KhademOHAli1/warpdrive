@@ -19,6 +19,7 @@ function goal(overrides: Partial<Goal>): Goal {
     activityTypeId: null,
     interval: "monthly",
     target: "200.00",
+    currency: "USD",
     startsOn: "2026-08-24",
     endsOn: null,
     createdAt: new Date(),
@@ -45,6 +46,26 @@ describe("GoalsTable", () => {
         onEdit={() => {}}
       />,
     );
-    expect(screen.getByText("20,000")).toBeInTheDocument();
+    expect(screen.getByText("20,000 USD")).toBeInTheDocument();
   });
+});
+
+it("uses a complete Persian goal phrase and localized unknown assignee labels", async () => {
+  const { LocaleProvider } = await import("@/features/i18n/LocaleProvider");
+  render(
+    <LocaleProvider locale="fa">
+      <GoalsTable
+        goals={[
+          goal({ assigneeKind: "user", assigneeId: "missing-user" }),
+          goal({ id: "g2", assigneeKind: "team", assigneeId: "missing-team" }),
+        ]}
+        assigneeNames={{}}
+        onChanged={() => {}}
+        onEdit={() => {}}
+      />
+    </LocaleProvider>,
+  );
+  expect(screen.getAllByText("فعالیت‌های انجام‌شده، ماهانه")).toHaveLength(2);
+  expect(screen.getByText("کاربر نامشخص")).toBeInTheDocument();
+  expect(screen.getByText("تیم نامشخص")).toBeInTheDocument();
 });

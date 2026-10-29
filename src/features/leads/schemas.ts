@@ -1,7 +1,9 @@
 import { z } from "zod";
 import { SOURCE_CHANNEL_KEYS } from "@/constants/sourceChannels";
+import { currencyCode, moneyAmount } from "@/features/currencies/currencySchema";
 import type { CustomFieldSortKey } from "@/features/custom-fields/sortKey";
 import { customFieldSortKeySchema } from "@/features/custom-fields/sortKeySchema";
+import { SELECTABLE_LOCALES } from "@/features/i18n/registry";
 import { labelNameArray } from "@/features/labels/labelsSchema";
 import { buildFilterSchema } from "@/schemas/filterCondition";
 import { LEAD_CONDITION_CONFIG } from "./leadFilterFields";
@@ -10,7 +12,8 @@ import { LEAD_CONDITION_CONFIG } from "./leadFilterFields";
 // ownerId is accepted but honored only for actors with deal.changeOwner (see createLead).
 export const leadCreateInput = z.object({
   title: z.string().min(1).max(255),
-  value: z.number().nonnegative().multipleOf(0.01).nullable().default(null),
+  value: moneyAmount.nullable().default(null),
+  currency: currencyCode.optional(),
   personId: z.string().uuid().nullable().default(null),
   orgId: z.string().uuid().nullable().default(null),
   expectedCloseDate: z.string().date().nullable().default(null),
@@ -84,7 +87,10 @@ export type LeadListParsed = z.output<typeof leadListInput>;
 
 export const leadByIdInput = z.object({ id: z.string().uuid() });
 
-export const leadTimelineInput = z.object({ leadId: z.string().uuid() });
+export const leadTimelineInput = z.object({
+  leadId: z.string().uuid(),
+  locale: z.enum(SELECTABLE_LOCALES).optional(),
+});
 
 // Convert a lead to a deal. pipelineId optional (defaults to the org default pipeline);
 // expectedUpdatedAt is the CAS token sourced from lead.updatedAt (ISO string).
@@ -132,14 +138,20 @@ export type BulkConvertLeadsInput = z.input<typeof bulkConvertLeadsInput>;
 // dealUpdateInput. expectedUpdatedAt is the CAS token sourced from lead.updatedAt (ISO string);
 // ownerId is honored only for actors holding deal.changeOwner (see updateLead). labels replaces
 // the whole set (the LeadLabelRow picker commits the full list). Omitted fields are left untouched.
-export const leadUpdateInput = z.object({
-  leadId: z.string().uuid(),
-  expectedUpdatedAt: z.string().datetime(),
-  title: z.string().trim().min(1).max(255).optional(),
-  value: z.number().nonnegative().multipleOf(0.01).nullable().optional(),
-  ownerId: z.string().uuid().optional(),
-  expectedCloseDate: z.string().date().nullable().optional(),
-  labels: labelNameArray.optional(),
-  customFields: z.record(z.string(), z.unknown()).optional(),
-});
+export const leadUpdateInput = z
+  .object({
+    leadId: z.string().uuid(),
+    expectedUpdatedAt: z.string().datetime(),
+    title: z.string().trim().min(1).max(255).optional(),
+    value: moneyAmount.nullable().optional(),
+    currency: currencyCode.optional(),
+    ownerId: z.string().uuid().optional(),
+    expectedCloseDate: z.string().date().nullable().optional(),
+    labels: labelNameArray.optional(),
+    customFields: z.record(z.string(), z.unknown()).optional(),
+  })
+  .refine((input) => input.currency === undefined || input.value !== undefined, {
+    message: "Changing currency requires an explicit amount",
+    path: ["value"],
+  });
 export type LeadUpdateInput = z.infer<typeof leadUpdateInput>;

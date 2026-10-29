@@ -6,13 +6,13 @@ import { DatePicker } from "@/components/ui/DatePicker";
 import { Input } from "@/components/ui/Input";
 import { Select, type SelectOption } from "@/components/ui/Select";
 import { TITLE_MAX_LEN } from "@/constants/fieldLimits";
-import { SOURCE_CHANNEL_KEYS, SOURCE_CHANNELS } from "@/constants/sourceChannels";
-import { STRINGS } from "@/constants/strings";
-import { LabelField } from "@/features/labels/LabelField";
-
-const L = STRINGS.leads;
-
+import { sourceChannelLabel } from "@/constants/sourceChannelLabels";
+import { SOURCE_CHANNEL_KEYS } from "@/constants/sourceChannels";
+import { CurrencySelect } from "@/features/currencies/CurrencySelect";
 import { EntityCombobox } from "@/features/entity-create/EntityCombobox";
+import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
+import { LabelField } from "@/features/labels/LabelField";
+import { useFormatters } from "@/lib/useFormatters";
 import type { AddLeadState } from "./addLeadState";
 
 interface Option {
@@ -31,6 +31,8 @@ interface AddLeadLeftColumnProps {
   owners: Option[] | null;
   groups: Option[] | null;
   baseCurrency: string;
+  currency?: string;
+  onCurrencyChange?: (currency: string) => void;
   organizationCustomFields?: React.ReactNode;
   leadCustomFields?: React.ReactNode;
 }
@@ -38,6 +40,11 @@ interface AddLeadLeftColumnProps {
 // Left column of the Add lead dialog (Pipedrive): contact/org, title, value, label, owner, close
 // date, source, visibility. No pipeline/stage (leads live outside pipelines). Presentational.
 export function AddLeadLeftColumn(props: AddLeadLeftColumnProps): React.ReactNode {
+  const tMoney = useAppTranslations("sales");
+  const tLeads = useAppTranslations("leads");
+  const locale = useLocale();
+  const format = useFormatters();
+
   const {
     state,
     set,
@@ -55,22 +62,22 @@ export function AddLeadLeftColumn(props: AddLeadLeftColumnProps): React.ReactNod
   return (
     <div className="flex flex-col gap-3 text-sm">
       <EntityCombobox
-        label={L.contactPerson}
+        label={tLeads("contactPerson")}
         options={people}
-        placeholder={L.searchAddPerson}
-        createLabel={(q) => L.addAsNewPerson(q)}
-        similarWarning={L.similarContact}
+        placeholder={tLeads("searchOrAddAPerson")}
+        createLabel={(q) => tLeads("addAsNewPerson", { name: q })}
+        similarWarning={tLeads("similarContactAlreadyExists")}
         onSelectExisting={(id) => set({ personMode: "existing", personId: id })}
         onCreateNew={(name) => set({ personMode: "new", personId: "", newPersonName: name })}
         onClear={() => set({ personMode: "existing", personId: "", newPersonName: "" })}
       />
 
       <EntityCombobox
-        label={L.organization}
+        label={tLeads("organizationText")}
         options={orgs}
-        placeholder={L.searchAddOrg}
-        createLabel={(q) => L.addAsNewOrg(q)}
-        similarWarning={L.similarOrg}
+        placeholder={tLeads("searchOrAddAnOrganization")}
+        createLabel={(q) => tLeads("addAsNewOrg", { name: q })}
+        similarWarning={tLeads("similarOrganizationAlreadyExists")}
         onSelectExisting={(id) => set({ orgMode: "existing", orgId: id })}
         onCreateNew={(name) => set({ orgMode: "new", orgId: "", newOrgName: name })}
         onClear={() => set({ orgMode: "existing", orgId: "", newOrgName: "" })}
@@ -79,52 +86,56 @@ export function AddLeadLeftColumn(props: AddLeadLeftColumnProps): React.ReactNod
       {state.orgMode === "new" ? organizationCustomFields : null}
 
       <label className="block" htmlFor={titleId}>
-        <span className="mb-1 block font-medium">{L.titleLabel}</span>
+        <span className="mb-1 block font-medium">{tLeads("title")}</span>
         <Input
           id={titleId}
-          aria-label={L.leadTitle}
+          aria-label={tLeads("leadTitleText")}
           value={state.title}
           onChange={(e) =>
             onTitleChange ? onTitleChange(e.target.value) : set({ title: e.target.value })
           }
-          placeholder={L.leadTitle}
+          placeholder={tLeads("leadTitleText")}
           maxLength={TITLE_MAX_LEN}
         />
-        <span className="mt-0.5 block text-right text-xs tabular-nums text-muted-foreground">
-          {state.title.length}/{TITLE_MAX_LEN}
+        <span className="mt-0.5 block text-end text-xs tabular-nums text-muted-foreground">
+          {format.number(state.title.length)}/{format.number(TITLE_MAX_LEN)}
         </span>
       </label>
 
       <div>
-        <span className="mb-1 block font-medium">{L.valueLabel}</span>
+        <span className="mb-1 block font-medium">{tLeads("value")}</span>
         <div className="flex gap-2">
           <Input
-            aria-label={L.leadValue}
+            aria-label={tLeads("leadValue")}
             inputMode="decimal"
             value={state.value}
             onChange={(e) => set({ value: e.target.value })}
-            placeholder={L.valuePlaceholder}
+            placeholder="0"
           />
-          <span className="flex items-center rounded-md border bg-muted px-2.5 text-sm text-muted-foreground">
-            {baseCurrency}
-          </span>
+          <div className="w-44 shrink-0">
+            <CurrencySelect
+              value={props.currency ?? baseCurrency}
+              onChange={props.onCurrencyChange ?? (() => {})}
+            />
+          </div>
         </div>
+        <p className="mt-1 text-xs text-muted-foreground">{tMoney("currencyAmountHint")}</p>
       </div>
 
       <div>
-        <span className="mb-1 block font-medium">{L.labelsLabel}</span>
+        <span className="mb-1 block font-medium">{tLeads("labels")}</span>
         <LabelField target="lead" value={state.labels} onChange={(labels) => set({ labels })} />
       </div>
 
       {owners !== null && (
         <div className="block">
-          <span className="mb-1 block font-medium">{L.ownerLabel}</span>
+          <span className="mb-1 block font-medium">{tLeads("owner")}</span>
           <Combobox
-            ariaLabel={L.ownerLabel}
+            ariaLabel={tLeads("owner")}
             value={state.ownerId}
             onChange={(id) => set({ ownerId: id })}
             options={[
-              { value: "", label: L.ownerMe },
+              { value: "", label: tLeads("me") },
               ...owners.map<ComboboxOption>((u) => ({
                 value: u.id,
                 label: u.name,
@@ -136,52 +147,52 @@ export function AddLeadLeftColumn(props: AddLeadLeftColumnProps): React.ReactNod
       )}
 
       <div className="block">
-        <span className="mb-1 block font-medium">{L.expectedCloseDate}</span>
+        <span className="mb-1 block font-medium">{tLeads("expectedCloseDate")}</span>
         <DatePicker
-          ariaLabel={L.expectedCloseDate}
+          ariaLabel={tLeads("expectedCloseDate")}
           value={state.expectedCloseDate === "" ? null : state.expectedCloseDate}
           onChange={(v) => set({ expectedCloseDate: v ?? "" })}
         />
       </div>
 
       <div>
-        <span className="mb-1 block font-medium">{L.sourceChannel}</span>
+        <span className="mb-1 block font-medium">{tLeads("sourceChannel")}</span>
         <Select
-          ariaLabel={L.sourceChannel}
+          ariaLabel={tLeads("sourceChannel")}
           value={state.sourceChannel}
           onChange={(v) => set({ sourceChannel: v })}
-          placeholder={L.noSourceChannel}
+          placeholder={tLeads("noSourceChannel")}
           options={[
-            { value: "", label: L.noSourceChannel },
+            { value: "", label: tLeads("noSourceChannel") },
             ...SOURCE_CHANNEL_KEYS.map<SelectOption>((k) => ({
               value: k,
-              label: SOURCE_CHANNELS[k].name,
+              label: sourceChannelLabel(k, locale),
             })),
           ]}
         />
       </div>
 
       <label className="block" htmlFor={sourceChannelIdId}>
-        <span className="mb-1 block font-medium">{L.sourceChannelId}</span>
+        <span className="mb-1 block font-medium">{tLeads("sourceChannelID")}</span>
         <Input
           id={sourceChannelIdId}
-          aria-label={L.sourceChannelId}
+          aria-label={tLeads("sourceChannelID")}
           value={state.sourceChannelId}
           onChange={(e) => set({ sourceChannelId: e.target.value })}
-          placeholder={L.sourceChannelIdPlaceholder}
+          placeholder={tLeads("referenceCampaignId")}
         />
       </label>
 
       {groups !== null && (
         <div className="block">
-          <span className="mb-1 block font-medium">{L.visibleTo}</span>
+          <span className="mb-1 block font-medium">{tLeads("visibleTo")}</span>
           <Select
-            ariaLabel={L.visibleTo}
+            ariaLabel={tLeads("visibleTo")}
             value={state.visibilityGroupId}
             onChange={(v) => set({ visibilityGroupId: v })}
-            placeholder={L.visibleToDefault}
+            placeholder={tLeads("default")}
             options={[
-              { value: "", label: L.visibleToDefault },
+              { value: "", label: tLeads("default") },
               ...groups.map<SelectOption>((g) => ({ value: g.id, label: g.name })),
             ]}
           />

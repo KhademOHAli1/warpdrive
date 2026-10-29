@@ -2,11 +2,16 @@
 import { Info } from "lucide-react";
 import type React from "react";
 import { useEffect, useState } from "react";
-import { formatCurrency } from "@/lib/formatCurrency";
+import { MoneyTotals } from "@/features/currencies/MoneyTotals";
+import type { CurrencyTotal } from "@/features/currencies/money";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
+import { useFormatters } from "@/lib/useFormatters";
 
 interface BoardSummaryProps {
-  totalValue: string;
+  totalValue: string | null;
+  currencyTotals?: CurrencyTotal[];
   dealCount: number;
+  currency?: string;
 }
 
 const SHOW_TOTAL_KEY = "wd.board.showTotal:v1";
@@ -17,7 +22,10 @@ const SHOW_TOTAL_KEY_LEGACY = "wd.board.showTotal";
 // to reveal the total. The preference sticks per browser via localStorage. Starts hidden on the
 // server render and hydrates from storage in an effect to avoid an SSR/client mismatch.
 export function BoardSummary(props: BoardSummaryProps): React.ReactNode {
-  const { totalValue, dealCount } = props;
+  const translateSales = useAppTranslations("sales");
+
+  const { totalValue, dealCount, currency } = props;
+  const format = useFormatters();
   const [showTotal, setShowTotal] = useState(false);
 
   useEffect(() => {
@@ -50,15 +58,19 @@ export function BoardSummary(props: BoardSummaryProps): React.ReactNode {
 
   return (
     <div className="flex items-center gap-1.5 text-sm tabular-nums text-muted-foreground">
-      <span>
-        {dealCount} {dealCount === 1 ? "deal" : "deals"}
-      </span>
+      <span>{translateSales("computed.dealCount", { count: dealCount })}</span>
       {showTotal && (
-        <span className="font-semibold text-foreground">{formatCurrency(totalValue)}</span>
+        <span className="font-semibold text-foreground">
+          {props.currencyTotals !== undefined && props.currencyTotals.length > 0 ? (
+            <MoneyTotals totals={props.currencyTotals} />
+          ) : totalValue !== null ? (
+            format.currency(totalValue, currency)
+          ) : null}
+        </span>
       )}
       <button
         type="button"
-        aria-label="Show deals total value"
+        aria-label={translateSales("show_deals_total_value_9c717")}
         aria-pressed={showTotal}
         onClick={toggle}
         className="relative flex h-5 w-5 items-center justify-center rounded-full border text-xs text-muted-foreground transition-[color,background-color,scale] duration-150 ease-out hover:bg-accent active:scale-[0.96] before:absolute before:-inset-2.5 before:content-[''] motion-reduce:transition-colors"

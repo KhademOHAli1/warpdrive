@@ -6,9 +6,9 @@ function titleCaseWord(word: string): string {
   return `${word.charAt(0).toUpperCase()}${word.slice(1)}`;
 }
 
-export function formatUserName(name: string): string {
+export function formatUserName(name: string, unassignedLabel = UNASSIGNED_LABEL): string {
   const trimmed = name.trim();
-  if (trimmed === "") return UNASSIGNED_LABEL;
+  if (trimmed === "") return unassignedLabel;
 
   const atIndex = trimmed.indexOf(EMAIL_SEPARATOR);
   if (atIndex <= 0) return trimmed;
@@ -20,5 +20,5 @@ export function formatUserName(name: string): string {
     .map(titleCaseWord)
     .join(" ");
 
-  return formattedLocalPart === "" ? UNASSIGNED_LABEL : formattedLocalPart;
+  return formattedLocalPart === "" ? unassignedLabel : formattedLocalPart;
 }

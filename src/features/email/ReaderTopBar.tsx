@@ -16,7 +16,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { STRINGS } from "@/constants/strings";
+import { useEmailMessages } from "@/features/email/useEmailMessages";
 import { trpc } from "@/lib/trpc-client";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { trashThreadAction } from "./actions";
@@ -43,6 +43,8 @@ export function ReaderTopBar({
   threadId: string;
   canManage: boolean;
 }): React.ReactNode {
+  const E = useEmailMessages();
+
   const router = useRouter();
   const reportError = useActionError();
   const utils = trpc.useUtils();
@@ -98,11 +100,11 @@ export function ReaderTopBar({
     <div className="flex items-center gap-2 border-b border-border px-4 py-2">
       <Link
         href="/inbox"
-        aria-label={STRINGS.inbox.backToInbox}
+        aria-label={E.backToInbox}
         className="flex items-center gap-1 rounded-md px-2 py-1 text-sm text-muted-foreground transition-transform hover:bg-accent active:scale-[0.96]"
       >
         <Chevron dir="left" />
-        {STRINGS.inbox.back}
+        {E.back}
       </Link>
 
       {/* Prev/next + position only for the mailbox owner: neighbors is null for a shared-thread
@@ -111,7 +113,7 @@ export function ReaderTopBar({
         <div className="flex items-center gap-1">
           <button
             type="button"
-            aria-label={STRINGS.inbox.previousConversation}
+            aria-label={E.previousConversation}
             disabled={neighbors.prevId === null}
             onClick={() => goTo(neighbors.prevId)}
             className="rounded-md p-1 text-muted-foreground transition-transform hover:bg-accent active:scale-[0.96] disabled:opacity-40"
@@ -123,7 +125,7 @@ export function ReaderTopBar({
           </span>
           <button
             type="button"
-            aria-label={STRINGS.inbox.nextConversation}
+            aria-label={E.nextConversation}
             disabled={neighbors.nextId === null}
             onClick={() => goTo(neighbors.nextId)}
             className="rounded-md p-1 text-muted-foreground transition-transform hover:bg-accent active:scale-[0.96] disabled:opacity-40"
@@ -143,7 +145,7 @@ export function ReaderTopBar({
             onClick={() => void archive()}
             className="rounded-md border border-border px-3 py-1 text-sm transition-transform hover:bg-accent active:scale-[0.96] disabled:opacity-50"
           >
-            {STRINGS.inbox.archive}
+            {E.archive}
           </button>
 
           <AlertDialog>
@@ -151,22 +153,22 @@ export function ReaderTopBar({
               disabled={busy}
               className="rounded-md border border-border px-3 py-1 text-sm text-destructive transition-transform hover:bg-destructive/10 active:scale-[0.96] disabled:opacity-50"
             >
-              {STRINGS.inbox.delete}
+              {E.delete}
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>{STRINGS.inbox.deleteConfirmTitle}</AlertDialogTitle>
-                <AlertDialogDescription>{STRINGS.inbox.deleteConfirmBody}</AlertDialogDescription>
+                <AlertDialogTitle>{E.deleteConfirmTitle}</AlertDialogTitle>
+                <AlertDialogDescription>{E.deleteConfirmBody}</AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel className="rounded-md border border-border px-3 py-1.5 text-sm transition-transform hover:bg-accent active:scale-[0.96]">
-                  {STRINGS.inbox.deleteCancel}
+                  {E.deleteCancel}
                 </AlertDialogCancel>
                 <AlertDialogAction
                   onClick={() => void del()}
                   className="rounded-md bg-destructive px-3 py-1.5 text-sm font-medium text-destructive-foreground transition-transform hover:bg-destructive/90 active:scale-[0.96]"
                 >
-                  {STRINGS.inbox.deleteConfirmAction}
+                  {E.deleteConfirmAction}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>

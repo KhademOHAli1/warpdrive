@@ -46,13 +46,10 @@ describe("filterUsersByStatus", () => {
 });
 
 describe("parseUserStatusFilter", () => {
-  it.each([
-    "all",
-    "active",
-    "invited",
-    "deactivated",
-  ] as const)("accepts the %s URL value", (value) =>
-    expect(parseUserStatusFilter(value)).toBe(value));
+  it.each(["all", "active", "invited", "deactivated"] as const)(
+    "accepts the %s URL value",
+    (value) => expect(parseUserStatusFilter(value)).toBe(value),
+  );
 
   it("falls back to all for missing or unknown URL values", () => {
     expect(parseUserStatusFilter(null)).toBe("all");

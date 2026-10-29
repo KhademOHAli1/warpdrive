@@ -7,7 +7,7 @@ import { useRowSelection } from "@/components/data-table/useRowSelection";
 import { ThreadRowsSkeleton } from "@/components/shell/skeletons";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { Skeleton } from "@/components/ui/Skeleton";
-import { STRINGS } from "@/constants/strings";
+import { useEmailMessages } from "@/features/email/useEmailMessages";
 import { trpc } from "@/lib/trpc-client";
 import type { ActionResult } from "@/types/actionResult";
 import { readCsrfToken } from "@/utils/csrfCookie";
@@ -17,7 +17,7 @@ import { markThreadReadAction, markThreadUnreadAction } from "./readActions";
 import { ThreadListToolbar } from "./ThreadListToolbar";
 import { canArchiveInFolder, canSelectInFolder, type ThreadFolder, ThreadRow } from "./ThreadRow";
 import { filterByAttributes, NO_ATTRIBUTE_FILTER } from "./threadAttributeFilter";
-import { BULK_ACTION_ERROR, runBulk } from "./threadBulkActions";
+import { runBulk } from "./threadBulkActions";
 import { useThreadFeed } from "./useThreadFeed";
 
 interface ThreadListProps {
@@ -56,6 +56,8 @@ export function ThreadList({
   quickFilter,
   onQuickFilterChange,
 }: ThreadListProps): React.ReactNode {
+  const E = useEmailMessages();
+
   const router = useRouter();
   const utils = trpc.useUtils();
   // Controlled when the caller lifts the quick-filter (InboxListClient), uncontrolled otherwise.
@@ -131,7 +133,7 @@ export function ThreadList({
       const failed = await runBulk(ids, action);
       selection.clear();
       for (const id of failed) selection.toggle(id);
-      setBulkError(failed.length > 0 ? BULK_ACTION_ERROR : null);
+      setBulkError(failed.length > 0 ? E._extra.bulkActionError : null);
       onSettled();
     } finally {
       setBulkBusy(false);
@@ -174,7 +176,7 @@ export function ThreadList({
         <div className="flex items-center gap-2">
           {canSelectInFolder(folder) && (
             <Checkbox
-              label="Select all threads"
+              label={E._extra.select_all_threads}
               checked={selection.allSelected(visibleIds)}
               onCheckedChange={() => selection.toggleAll(visibleIds)}
             />
@@ -182,9 +184,7 @@ export function ThreadList({
           {showSkeleton ? (
             <Skeleton className="h-3 w-24" />
           ) : (
-            <span className="tabular-nums">
-              {threads.length} {threads.length === 1 ? "conversation" : "conversations"}
-            </span>
+            <span className="tabular-nums">{E._extra.conversationCount(threads.length)}</span>
           )}
         </div>
       </div>
@@ -192,7 +192,7 @@ export function ThreadList({
       {canSelectInFolder(folder) && selection.count > 0 && (
         <div className="border-b px-3 py-2">
           <BulkActionBar count={selection.count} onClear={selection.clear}>
-            <div role="toolbar" aria-label="Bulk actions" className="flex flex-wrap gap-2">
+            <div role="toolbar" aria-label={E._extra.bulk_actions} className="flex flex-wrap gap-2">
               {canArchiveInFolder(folder) && (
                 <button
                   type="button"
@@ -200,7 +200,7 @@ export function ThreadList({
                   onClick={bulkArchive}
                   className="rounded-md border px-3 py-1 text-sm transition-transform hover:bg-accent active:scale-[0.96] disabled:opacity-50"
                 >
-                  {folder === "archive" ? "Unarchive" : "Archive"}
+                  {folder === "archive" ? E._extra.unarchive : E._extra.archive}
                 </button>
               )}
               <button
@@ -209,7 +209,7 @@ export function ThreadList({
                 onClick={bulkMarkRead}
                 className="rounded-md border px-3 py-1 text-sm transition-transform hover:bg-accent active:scale-[0.96] disabled:opacity-50"
               >
-                Mark read
+                {E._extra.mark_read}
               </button>
               <button
                 type="button"
@@ -217,7 +217,7 @@ export function ThreadList({
                 onClick={bulkMarkUnread}
                 className="rounded-md border px-3 py-1 text-sm transition-transform hover:bg-accent active:scale-[0.96] disabled:opacity-50"
               >
-                Mark unread
+                {E._extra.mark_unread}
               </button>
             </div>
           </BulkActionBar>
@@ -233,7 +233,7 @@ export function ThreadList({
       <ul className="flex-1 divide-y overflow-y-auto">
         {showSkeleton && <ThreadRowsSkeleton />}
         {!pending && threads.length === 0 && (
-          <li className="p-4 text-sm text-muted-foreground">{STRINGS.inbox.noThreads}</li>
+          <li className="p-4 text-sm text-muted-foreground">{E.noThreads}</li>
         )}
         {threads.map((thread) => (
           <ThreadRow
@@ -258,7 +258,7 @@ export function ThreadList({
               disabled={feed.loadingMore}
               className="w-full rounded-md border px-3 py-1.5 text-sm font-medium text-muted-foreground transition-[background-color,opacity,scale] duration-150 ease-out hover:bg-accent active:not-disabled:scale-[0.96] disabled:opacity-60 motion-reduce:transition-[background-color,opacity]"
             >
-              {feed.loadingMore ? STRINGS.inbox.loadingMore : STRINGS.inbox.loadMore}
+              {feed.loadingMore ? E.loadingMore : E.loadMore}
             </button>
           </li>
         )}

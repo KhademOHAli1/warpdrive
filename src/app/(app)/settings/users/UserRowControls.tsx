@@ -13,22 +13,14 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { identityErrorMessage } from "@/constants/settingsIdentity";
 import {
   assignPermissionSetAction,
   setUserActiveAction,
   setUserAdminAction,
 } from "@/features/identity/actions/users";
+import { settingsIdentityError } from "@/features/identity/settingsMessages";
+import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import { readCsrfToken } from "@/utils/csrfCookie";
-
-const T = {
-  menu: "User actions",
-  makeAdmin: "Make admin",
-  revokeAdmin: "Revoke admin",
-  activate: "Activate",
-  deactivate: "Deactivate",
-  changeSet: "Change permission set",
-} as const;
 
 interface Props {
   userId: string;
@@ -49,6 +41,18 @@ export function UserRowControls({
   permissionSets,
   onChanged,
 }: Props): React.ReactElement {
+  const L = useSettingsMessages();
+  const T = {
+    menu: L._extra.user_actions,
+    makeAdmin: L._extra.make_admin,
+    revokeAdmin: L._extra.revoke_admin,
+    activate: L._extra.activate,
+    deactivate: L._extra.deactivate,
+    changeSet: L._extra.change_permission_set,
+  } as const;
+
+  const identityErrorMessage = (error: string) => settingsIdentityError(L, error);
+
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const canAssignSet = permissionSets.length > 0 && (viewerIsAdmin || !isAdmin);

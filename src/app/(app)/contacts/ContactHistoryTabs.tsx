@@ -8,27 +8,13 @@ import { historyTabLabel } from "@/features/deal-workspace/historyTabCounts";
 import type { HistoryItem } from "@/features/deal-workspace/historyTimeline";
 import type { EmailCardScope } from "@/features/email/EmailTimelineCard";
 import { FileAttachments } from "@/features/files/FileAttachments";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
+import { useFormatters } from "@/lib/useFormatters";
 
 // Contact-scoped twin of the deal page's HistoryTypeTabs: the same per-type filter row
 // (All/Activities/Notes/Email/Files/Changelog), but Files renders the contact's own
 // attachments instead of the deal-scoped ones. The deal-workspace originals are reused
 // read-only (HistoryFeed) rather than modified, since they hard-code a dealId.
-const TAB_LABELS: Record<HistoryTab, string> = {
-  all: "All",
-  activities: "Activities",
-  notes: "Notes",
-  email: "Email",
-  files: "Files",
-  changelog: "Changelog",
-};
-
-const EMPTY_LABELS: Partial<Record<HistoryTab, string>> = {
-  all: "No history yet.",
-  activities: "No activities yet.",
-  notes: "No notes yet.",
-  changelog: "No changes recorded yet.",
-  email: "No emails linked to this contact yet.",
-};
 
 const TABS: HistoryTab[] = ["all", "activities", "notes", "email", "files", "changelog"];
 
@@ -59,6 +45,24 @@ export function ContactHistoryTabs({
   onNoteChanged,
   onEmailChanged,
 }: ContactHistoryTabsProps): React.ReactNode {
+  const tContacts = useAppTranslations("contacts");
+  const format = useFormatters();
+  const TAB_LABELS: Record<HistoryTab, string> = {
+    all: tContacts("all"),
+    activities: tContacts("activities"),
+    notes: tContacts("notes"),
+    email: tContacts("email"),
+    files: tContacts("files"),
+    changelog: tContacts("changelog"),
+  };
+  const EMPTY_LABELS: Partial<Record<HistoryTab, string>> = {
+    all: tContacts("noHistoryYet"),
+    activities: tContacts("noActivitiesYet"),
+    notes: tContacts("noNotesYet"),
+    changelog: tContacts("noChangesRecordedYet"),
+    email: tContacts("noEmailsLinkedToThisContactYet"),
+  };
+
   const [tab, setTab] = useState<HistoryTab>("all");
 
   return (
@@ -66,7 +70,7 @@ export function ContactHistoryTabs({
       <TabsList className="flex-wrap gap-1">
         {TABS.map((t) => (
           <TabsTrigger key={t} value={t} className={PILL_TAB}>
-            {historyTabLabel(TAB_LABELS[t], counts[t])}
+            {historyTabLabel(TAB_LABELS[t], counts[t], format.number)}
           </TabsTrigger>
         ))}
       </TabsList>
@@ -83,7 +87,7 @@ export function ContactHistoryTabs({
             emptyLabel={
               (tab === "email" ? emailEmptyLabel : undefined) ??
               EMPTY_LABELS[tab] ??
-              "No history yet."
+              tContacts("noHistoryYet")
             }
             onActivityChanged={onActivityChanged}
             onNoteChanged={onNoteChanged}

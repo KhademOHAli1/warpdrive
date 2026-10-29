@@ -3,6 +3,7 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical } from "lucide-react";
 import type React from "react";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { StageEditCard } from "./StageEditCard";
 import type { StageRow } from "./stageDiff";
 
@@ -23,6 +24,8 @@ export function SortableStageCard({
   onChange,
   onDelete,
 }: SortableStageCardProps): React.ReactNode {
+  const translateSales = useAppTranslations("sales");
+
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: sortId,
   });
@@ -38,7 +41,7 @@ export function SortableStageCard({
         dragHandle={
           <button
             type="button"
-            aria-label={`Reorder stage ${index + 1}`}
+            aria-label={translateSales("reorder_stage_arg0_6dd06", { arg0: index + 1 })}
             className="grid size-10 -m-2 cursor-grab touch-none place-items-center rounded text-muted-foreground transition-transform hover:bg-accent hover:text-foreground active:scale-[0.96]"
             {...attributes}
             {...listeners}

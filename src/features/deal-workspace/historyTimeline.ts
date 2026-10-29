@@ -1,9 +1,9 @@
-import { CHANGE_FIELD_STAGE_ID } from "@/constants/changeLogFields";
 import { type CommentableEntityType, isCommentableEntityType } from "@/constants/comments";
 import type { CalendarActivity } from "@/features/activities/calendar";
 import type { ChangeLogEntry } from "@/features/collaboration/changeLog";
 import type { DraftSummary } from "@/features/email/draftRepo";
 import type { EmailTimelineMessage } from "@/features/email/entityMessageReads";
+import type { Locale } from "@/features/i18n/registry";
 import { formatChangeLabel, formatValue } from "./changeLabel";
 
 export { formatChangeLabel } from "./changeLabel";
@@ -57,11 +57,11 @@ export interface CreatedAnchor {
 // "Stage: from → to", the same inline shape as a status change, rather than a boxed card.
 // Stage from/to are the already-resolved NAMES the read layer wrote onto old/new (it holds
 // the pipeline's stages), so no id leaks here.
-function toChangeItem(c: ChangeLogEntry): HistoryItem {
+function toChangeItem(c: ChangeLogEntry, locale: Locale): HistoryItem {
   const label =
-    c.field === CHANGE_FIELD_STAGE_ID
+    locale === "en" && (c.field === "stageId" || c.field === "stage_id")
       ? `Stage: ${formatValue(c.oldValue)} → ${formatValue(c.newValue)}`
-      : formatChangeLabel(c);
+      : formatChangeLabel(c, locale);
   return {
     kind: "event",
     id: c.id,
@@ -76,6 +76,7 @@ export function buildHistoryTimeline(
   changelog: ChangeLogEntry[],
   notes: NoteItem[] = [],
   created?: CreatedAnchor,
+  locale: Locale = "en",
 ): HistoryItem[] {
   const items: HistoryItem[] = [
     ...activities.map(
@@ -93,7 +94,7 @@ export function buildHistoryTimeline(
         entityId: n.entityId,
       }),
     ),
-    ...changelog.map(toChangeItem),
+    ...changelog.map((c) => toChangeItem(c, locale)),
   ];
   if (created !== undefined) {
     items.push({

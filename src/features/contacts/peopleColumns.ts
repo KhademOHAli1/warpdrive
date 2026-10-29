@@ -1,5 +1,6 @@
 import type { ColumnDef } from "@/components/data-table/columnModel";
-import { STRINGS } from "@/constants/strings";
+import { createAppTranslator } from "@/features/i18n/catalog";
+import type { Locale } from "@/features/i18n/registry";
 import type { PersonSortField } from "./schemas";
 
 // People list column catalog. Name is pinned (row link + avatar) and sortable; Email is sortable.
@@ -10,21 +11,38 @@ export interface PeopleColumn extends ColumnDef {
   sortField?: PersonSortField;
 }
 
+const english = createAppTranslator("en", "contacts");
+
 export const PEOPLE_COLUMNS: readonly PeopleColumn[] = [
   {
     key: "name",
-    header: STRINGS.contacts.colName,
+    header: english("name"),
     pinned: true,
     defaultVisible: true,
     sortField: "name",
   },
-  { key: "org", header: STRINGS.contacts.colOrg, defaultVisible: true },
+  { key: "org", header: english("organizationText"), defaultVisible: true },
   {
     key: "email",
-    header: STRINGS.contacts.colEmail,
+    header: english("email"),
     defaultVisible: true,
     sortField: "primaryEmail",
   },
-  { key: "phone", header: STRINGS.contacts.colPhone, defaultVisible: true },
-  { key: "closedDeals", header: STRINGS.contacts.colClosedDeals, defaultVisible: true },
+  { key: "phone", header: english("phone"), defaultVisible: true },
+  { key: "closedDeals", header: english("closedDeals"), defaultVisible: true },
 ] as const;
+
+export function peopleColumns(locale: Locale = "en") {
+  const t = createAppTranslator(locale, "contacts");
+  const labels = {
+    name: "name",
+    org: "organizationText",
+    email: "email",
+    phone: "phone",
+    closedDeals: "closedDeals",
+  } as const;
+  return PEOPLE_COLUMNS.map((column) => ({
+    ...column,
+    header: t(labels[column.key as keyof typeof labels]),
+  }));
+}

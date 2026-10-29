@@ -8,6 +8,7 @@ import { ARRAY_OPS, EXACT_OPS, FILTER_OP_KEYS, ORDERED_OPS, TEXT_OPS } from "@/c
 export const FILTER_FIELDS = [
   "status",
   "value",
+  "currency",
   "stageId",
   "ownerId",
   "expectedCloseDate",
@@ -31,6 +32,7 @@ export const OPS_BY_FIELD: Record<(typeof FILTER_FIELDS)[number], readonly strin
   title: TEXT_OPS,
   orgName: TEXT_OPS,
   value: ORDERED_OPS,
+  currency: EXACT_OPS,
   expectedCloseDate: ORDERED_OPS,
   nextActivityAt: ORDERED_OPS,
   lastActivityAt: ORDERED_OPS,

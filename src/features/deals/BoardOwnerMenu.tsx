@@ -3,6 +3,7 @@ import { ChevronDown } from "lucide-react";
 import type React from "react";
 import { useMemo, useState } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/Popover";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { OwnerRow } from "./BoardFilterMenuParts";
 import type { BoardOwner } from "./boardFilter";
 
@@ -24,13 +25,15 @@ export function BoardOwnerMenu({
   currentUserId,
   onSelectOwner,
 }: BoardOwnerMenuProps): React.ReactNode {
+  const translateSales = useAppTranslations("sales");
+
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
 
   const triggerLabel =
     selectedOwnerId === null
-      ? "Everyone"
-      : (owners.find((o) => o.ownerId === selectedOwnerId)?.name ?? "Owner");
+      ? translateSales("computed.everyone")
+      : (owners.find((o) => o.ownerId === selectedOwnerId)?.name ?? translateSales("fields.owner"));
 
   const q = query.trim().toLowerCase();
   const shown = useMemo(
@@ -48,7 +51,7 @@ export function BoardOwnerMenu({
       <PopoverTrigger asChild>
         <button
           type="button"
-          aria-label={`Owner: ${triggerLabel}`}
+          aria-label={translateSales("owner_arg0_e28cd", { arg0: triggerLabel })}
           className="inline-flex items-center gap-1.5 rounded-md border bg-card px-2.5 py-1 text-sm text-foreground hover:bg-accent"
         >
           <span className="max-w-32 truncate">{triggerLabel}</span>
@@ -60,12 +63,12 @@ export function BoardOwnerMenu({
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search owner"
+          placeholder={translateSales("search_owner_39a14")}
           className="mb-2 w-full rounded-md border px-2.5 py-1.5 text-sm"
         />
         <ul className="max-h-80 overflow-y-auto py-1">
           <OwnerRow
-            name="Everyone"
+            name={translateSales("computed.everyone")}
             selected={selectedOwnerId === null}
             onClick={() => pick(null)}
           />

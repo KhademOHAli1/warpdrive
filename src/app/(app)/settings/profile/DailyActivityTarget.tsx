@@ -5,24 +5,28 @@ import { useId, useRef, useState } from "react";
 import { useActionError } from "@/components/shell/ActionErrorProvider";
 import { Input } from "@/components/ui/Input";
 import { MAX_DAILY_ACTIVITY_TARGET, MIN_DAILY_ACTIVITY_TARGET } from "@/constants/activityLoad";
-import { STRINGS } from "@/constants/strings";
 import { useInvalidateActivityLists } from "@/features/activities/useInvalidateActivityLists";
 import { setDailyActivityTargetAction } from "@/features/identity/preferencesActions";
+import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import { readCsrfToken } from "@/utils/csrfCookie";
+import { normalizeNumberInput } from "@/utils/normalizeNumberInput";
 import { SettingsCard, SettingsCardBody, SettingsCardHeader } from "../SettingsSurface";
-
-const S = STRINGS.settings.dailyActivityTarget;
 
 function parseTarget(draft: string): number | null {
   const trimmed = draft.trim();
   if (trimmed === "") return null;
-  const value = Number(trimmed);
+  const normalized = normalizeNumberInput(trimmed);
+  if (normalized === null) return null;
+  const value = Number(normalized);
   if (!Number.isInteger(value)) return null;
   if (value < MIN_DAILY_ACTIVITY_TARGET || value > MAX_DAILY_ACTIVITY_TARGET) return null;
   return value;
 }
 
 export function DailyActivityTarget({ target }: { target: number }): React.ReactNode {
+  const L = useSettingsMessages();
+  const S = L.dailyActivityTarget;
+
   const router = useRouter();
   const reportError = useActionError();
   const invalidateActivityLists = useInvalidateActivityLists();
@@ -81,7 +85,7 @@ export function DailyActivityTarget({ target }: { target: number }): React.React
         </label>
         <Input
           id={fieldId}
-          type="number"
+          type="text"
           inputMode="numeric"
           min={MIN_DAILY_ACTIVITY_TARGET}
           max={MAX_DAILY_ACTIVITY_TARGET}

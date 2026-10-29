@@ -1,6 +1,7 @@
 "use client";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/Button";
+import { useEmailMessages } from "@/features/email/useEmailMessages";
 import { BLOCK_CLASS } from "@/features/observability/replayMasking";
 
 // Sanitized HTML is isolated in an iframe whose sandbox grants allow-same-origin ONLY.
@@ -43,6 +44,8 @@ export function MessageBodyFrame(props: {
   allowRemote: boolean;
   onShowRemote: () => void;
 }): React.ReactNode {
+  const E = useEmailMessages();
+
   // null until the frame has loaded and reported its content height; min-height keeps a
   // short (or not-yet-loaded) body from collapsing.
   const [height, setHeight] = useState<number | null>(null);
@@ -63,11 +66,11 @@ export function MessageBodyFrame(props: {
     <div>
       {!props.allowRemote && (
         <Button variant="outline" size="sm" className="mb-2" onClick={props.onShowRemote}>
-          Show remote content
+          {E._extra.show_remote_content}
         </Button>
       )}
       <iframe
-        title="email body"
+        title={E._extra.email_body}
         className={`${BLOCK_CLASS} block overflow-hidden rounded-md border border-border`}
         sandbox={IFRAME_SANDBOX}
         srcDoc={srcDoc}

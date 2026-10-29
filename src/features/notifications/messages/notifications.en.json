@@ -1,0 +1,95 @@
+{
+  "title": "Notifications",
+  "markAllRead": "Mark all read",
+  "seeAll": "See all activity",
+  "today": "Today",
+  "earlier": "Earlier",
+  "empty": "No notifications yet.",
+  "items": {
+    "mention": "You were mentioned",
+    "mentionTitle": "You were mentioned in {title}",
+    "activity_assigned": "Activity assigned: {subject}",
+    "activity_reminder": "Reminder: {subject}",
+    "deal_followed_update": "Update: {summary}",
+    "updated": "Deal details were updated",
+    "moved": "Deal moved to a new stage",
+    "followedFallback": "a followed deal changed",
+    "email_open": "Your email was opened",
+    "email_click": "A link in your email was clicked",
+    "deal_won": "A deal you follow was won",
+    "deal_lost": "A deal you follow was lost",
+    "comment_reply": "New reply to a comment",
+    "deal_email_received": "New email: {subject}",
+    "emailFallback": "on a deal"
+  },
+  "preferences": {
+    "pageTitle": "Notification preferences",
+    "loading": "Loading preferences...",
+    "columnInApp": "In-app",
+    "columnEmail": "Email",
+    "saveError": "Failed to save preference. Please try again.",
+    "typeLabels": {
+      "mention": "Mentions",
+      "activity_assigned": "Activity assigned to me",
+      "activity_reminder": "Activity reminders",
+      "deal_followed_update": "Followed-deal updates",
+      "email_open": "Email opened",
+      "email_click": "Email link clicked",
+      "deal_won": "Deal won",
+      "deal_lost": "Deal lost",
+      "comment_reply": "Comment replies",
+      "deal_email_received": "New email on my deals"
+    }
+  },
+  "email": {
+    "open": "Open: {link}",
+    "openAction": "Open in Warpdrive",
+    "recipientFallback": "there",
+    "activityFallback": "activity",
+    "mention": {
+      "subject": "Somebody mentioned you in Warpdrive",
+      "line": "{recipient}, somebody mentioned you."
+    },
+    "activity_assigned": {
+      "subject": "An activity was assigned to you in Warpdrive",
+      "line": "{recipient}, an activity was assigned to you."
+    },
+    "activity_reminder": {
+      "subject": "Reminder: {activitySubject} is due soon",
+      "line": "{recipient}, your activity \"{activitySubject}\" is due soon."
+    },
+    "deal_followed_update": {
+      "subject": "A deal you follow has an update",
+      "line": "{recipient}, a deal you are following has been updated."
+    },
+    "email_open": {
+      "subject": "Your email was opened",
+      "line": "{recipient}, someone opened your email."
+    },
+    "email_click": {
+      "subject": "A link in your email was clicked",
+      "line": "{recipient}, someone clicked a link in your email."
+    },
+    "deal_won": {
+      "subject": "Deal won!",
+      "line": "{recipient}, a deal was marked as won."
+    },
+    "deal_lost": {
+      "subject": "Deal lost",
+      "line": "{recipient}, a deal was marked as lost."
+    },
+    "comment_reply": {
+      "subject": "Someone replied to your comment in Warpdrive",
+      "line": "{recipient}, somebody replied to your comment."
+    },
+    "deal_email_received": {
+      "subject": "New email on a deal",
+      "subjectWithTitle": "New email on a deal: {subject}",
+      "line": "{recipient}, a new email arrived on a deal you follow."
+    },
+    "generic": {
+      "subject": "Warpdrive notification",
+      "line": "{recipient}, you have a new notification."
+    }
+  }
+}

@@ -4,7 +4,7 @@ import { useId } from "react";
 import { Switch } from "@/components/ui/Switch";
 import type { NotificationType } from "@/constants/notificationTypes";
 import { NOTIFICATION_TYPES } from "@/constants/notificationTypes";
-import { STRINGS } from "@/constants/strings";
+import { useMessages } from "@/features/i18n/LocaleProvider";
 
 type Prefs = Record<NotificationType, { inApp: boolean; email: boolean }>;
 
@@ -33,7 +33,7 @@ export function PreferencesForm({
   prefs: Prefs;
   onChange: (type: NotificationType, next: { inApp: boolean; email: boolean }) => void;
 }) {
-  const { columnInApp, columnEmail, typeLabels } = STRINGS.notifications.preferences;
+  const { columnInApp, columnEmail, typeLabels } = useMessages().notifications.preferences;
 
   return (
     <div className="divide-y">

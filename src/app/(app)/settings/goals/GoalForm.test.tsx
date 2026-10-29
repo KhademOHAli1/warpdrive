@@ -19,6 +19,7 @@ const goal: Goal = {
   activityTypeId: null,
   interval: "monthly",
   target: "200.00",
+  currency: "USD",
   startsOn: "2026-08-24",
   endsOn: null,
   createdAt: new Date(),

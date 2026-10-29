@@ -17,7 +17,7 @@ export function PipelineBreadcrumb({
   return (
     <p className="text-sm text-muted-foreground">
       <Link href={`/pipeline/${pipelineId}`} className="hover:text-foreground hover:underline">
-        {pipelineName}
+        <bdi dir="auto">{pipelineName}</bdi>
       </Link>
       {currentStageName !== null && (
         <>

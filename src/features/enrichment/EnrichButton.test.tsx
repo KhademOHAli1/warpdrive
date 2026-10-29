@@ -10,11 +10,7 @@ import type { RunView } from "./service";
 
 const RESUME_ISO = "2026-08-24T14:20:00.000Z";
 const FUTURE_ISO = "2099-01-02T14:20:00.000Z";
-const asClock = (iso: string): string => {
-  const d = new Date(iso);
-  return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
-};
-const resumeClock = asClock(RESUME_ISO);
+const resumeClock = "14:20";
 
 const status = vi.hoisted<{ value: EnrichmentStatus | undefined }>(() => ({ value: undefined }));
 const invalidateTimeline = vi.hoisted(() => vi.fn(() => Promise.resolve()));

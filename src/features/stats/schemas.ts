@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { currencyCode } from "@/features/currencies/currencySchema";
 
 // Boundary validation for the dashboard procedure input.
 // Query functions receive the validated/narrowed types and trust them.
@@ -10,6 +11,7 @@ export const ownerScopeInput = z.discriminatedUnion("kind", [
 ]);
 
 export const dashboardInput = z.object({
+  currency: currencyCode.optional(),
   pipelineId: z.string().uuid().nullable().default(null),
   ownerScope: ownerScopeInput.default({ kind: "me" }),
   from: z.string().date(),

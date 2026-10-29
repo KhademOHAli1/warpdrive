@@ -9,6 +9,8 @@ import {
 import { rowValueOf } from "@/components/filters/rowValue";
 import type { SelectOption } from "@/components/ui/Select";
 import { FILTER_OP_LABELS } from "@/constants/filterOps";
+import { CURRENCY_CODES } from "@/features/currencies/codes";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { mergeLabelOptions } from "@/features/labels/mergeLabelOptions";
 import { trpc } from "@/lib/trpc-client";
 import { OPS_BY_LEAD_FIELD } from "../leadFilterFields";
@@ -35,6 +37,9 @@ export function LeadFilterBuilder({
   activeCount,
   appliedCondition = null,
 }: LeadFilterBuilderProps): React.ReactNode {
+  const tMoney = useAppTranslations("sales");
+  const tLeads = useAppTranslations("leads");
+
   const ownerOptions: SelectOption[] = users.map((u) => ({ value: u.id, label: u.name }));
 
   const catalogNames = (trpc.labels.listByTarget.useQuery({ target: "lead" }).data ?? []).map(
@@ -52,28 +57,47 @@ export function LeadFilterBuilder({
 
   const fields = useMemo<ConditionFieldOption[]>(
     () => [
-      { field: "title", label: "Title", ops: OPS_BY_LEAD_FIELD.title, input: { kind: "text" } },
-      { field: "value", label: "Value", ops: OPS_BY_LEAD_FIELD.value, input: { kind: "number" } },
+      {
+        field: "currency",
+        label: tMoney("currencyLabel"),
+        ops: OPS_BY_LEAD_FIELD.currency,
+        input: {
+          kind: "select",
+          options: CURRENCY_CODES.map((code) => ({ value: code, label: code })),
+        },
+      },
+      {
+        field: "title",
+        label: tLeads("title"),
+        ops: OPS_BY_LEAD_FIELD.title,
+        input: { kind: "text" },
+      },
+      {
+        field: "value",
+        label: tLeads("value"),
+        ops: OPS_BY_LEAD_FIELD.value,
+        input: { kind: "number" },
+      },
       {
         field: "sourceOrigin",
-        label: "Source origin",
+        label: tLeads("sourceOrigin"),
         ops: OPS_BY_LEAD_FIELD.sourceOrigin,
         input: { kind: "text" },
       },
       {
         field: "ownerId",
-        label: "Owner",
+        label: tLeads("owner"),
         ops: OPS_BY_LEAD_FIELD.ownerId,
         input: { kind: "select", options: ownerOptions },
       },
       {
         field: "labels",
-        label: "Label",
+        label: tLeads("label"),
         ops: OPS_BY_LEAD_FIELD.labels,
         input: { kind: "multiselect", options: labelOptions },
       },
     ],
-    [ownerOptions, labelOptions],
+    [ownerOptions, labelOptions, tLeads, tMoney],
   );
 
   const appliedRows = useMemo<RawCondition[]>(

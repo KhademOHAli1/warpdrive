@@ -5,6 +5,7 @@ import type React from "react";
 import { useState } from "react";
 import { useActionError } from "@/components/shell/ActionErrorProvider";
 import { addFormCustomFieldDefs } from "@/features/custom-fields/CustomFieldCreateFields";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { EditableHeading } from "@/features/inline-edit/EditableHeading";
 import type { InlineSaveResult } from "@/features/inline-edit/useInlineEditField";
 import { useLabelChipResolver } from "@/features/labels/useLabelChipResolver";
@@ -25,6 +26,8 @@ import {
 // Lead detail header: title, owner, labels, and the Convert / Archive / overflow actions. Mutations
 // go through the lead server actions (CSRF + Result + CAS for convert) then navigate or refresh.
 export function LeadHeader({ lead }: { lead: LeadDetail }): React.ReactNode {
+  const tLeads = useAppTranslations("leads");
+
   const router = useRouter();
   const reportError = useActionError();
   const [pending, setPending] = useState(false);
@@ -107,7 +110,7 @@ export function LeadHeader({ lead }: { lead: LeadDetail }): React.ReactNode {
     <header className="mb-4 border-b pb-4">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <EditableHeading title={lead.title} label="lead title" onCommit={updateTitle} />
+          <EditableHeading title={lead.title} label={tLeads("leadTitle")} onCommit={updateTitle} />
           {/* Owner is not duplicated here: PD's lead drawer shows it only as a sidebar field
               (Summary > Owner), so the header carries just labels + archived state. */}
           <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground empty:hidden">
@@ -119,7 +122,9 @@ export function LeadHeader({ lead }: { lead: LeadDetail }): React.ReactNode {
                 {label.name}
               </span>
             ))}
-            {archived && <span className="rounded bg-muted px-2 py-0.5 text-xs">Archived</span>}
+            {archived && (
+              <span className="rounded bg-muted px-2 py-0.5 text-xs">{tLeads("archived")}</span>
+            )}
           </div>
         </div>
 
@@ -133,7 +138,7 @@ export function LeadHeader({ lead }: { lead: LeadDetail }): React.ReactNode {
             }}
             className="rounded-md bg-success px-3 py-1.5 text-sm font-medium text-success-foreground transition-[opacity,scale] duration-150 ease-out hover:opacity-90 active:scale-[0.96] disabled:opacity-50 motion-reduce:transition-opacity"
           >
-            {converted ? "Converted" : "Convert to deal"}
+            {converted ? tLeads("converted") : tLeads("convertToDeal")}
           </button>
           <button
             type="button"
@@ -141,10 +146,10 @@ export function LeadHeader({ lead }: { lead: LeadDetail }): React.ReactNode {
             onClick={() => void toggleArchive()}
             className="rounded-md border px-3 py-1.5 text-sm transition-[background-color,opacity,scale] duration-150 ease-out hover:bg-accent active:scale-[0.96] disabled:opacity-50 motion-reduce:transition-[background-color,opacity]"
           >
-            {archived ? "Restore" : "Archive"}
+            {archived ? tLeads("restore") : tLeads("archive")}
           </button>
           <PopMenu
-            triggerLabel="More lead actions"
+            triggerLabel={tLeads("moreLeadActions")}
             triggerClassName="rounded-md border p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground"
             align="right"
             trigger={<EllipsisVertical aria-hidden="true" className="h-4 w-4" />}
@@ -159,7 +164,7 @@ export function LeadHeader({ lead }: { lead: LeadDetail }): React.ReactNode {
                   void del();
                 }}
               >
-                Delete lead
+                {tLeads("deleteLead")}
               </button>
             )}
           </PopMenu>

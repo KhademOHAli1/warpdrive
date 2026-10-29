@@ -13,6 +13,7 @@ import {
 import { Textarea } from "@/components/ui/Textarea";
 import { deleteCommentAction, updateCommentAction } from "@/features/collaboration/commentActions";
 import { LinkifiedText } from "@/features/collaboration/LinkifiedText";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { AttributionLine } from "./AttributionLine";
 
@@ -35,6 +36,8 @@ export function CommentCard({
   onChanged,
   onError,
 }: CommentRowProps): React.ReactNode {
+  const translateSales = useAppTranslations("sales");
+
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(body);
   const [busy, setBusy] = useState(false);
@@ -76,7 +79,7 @@ export function CommentCard({
     return (
       <div className="py-1">
         <Textarea
-          aria-label="Comment"
+          aria-label={translateSales("comment_44f5e")}
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           rows={2}
@@ -90,10 +93,10 @@ export function CommentCard({
               setEditing(false);
             }}
           >
-            Cancel
+            {translateSales("cancel_19766")}
           </Button>
           <Button disabled={busy} onClick={() => void save()}>
-            Save
+            {translateSales("save_1509f")}
           </Button>
         </div>
       </div>
@@ -111,18 +114,24 @@ export function CommentCard({
       {canModify && (
         <DropdownMenu>
           <DropdownMenuTrigger
-            aria-label="Comment actions"
+            aria-label={translateSales("comment_actions_cf8f6")}
             className="relative shrink-0 rounded p-1 text-muted-foreground after:absolute after:-inset-2 after:content-[''] hover:bg-accent hover:text-foreground"
           >
             <Ellipsis aria-hidden="true" className="h-3.5 w-3.5" />
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" aria-label="Comment actions" className="min-w-40">
-            <DropdownMenuItem onSelect={startEditing}>Edit</DropdownMenuItem>
+          <DropdownMenuContent
+            align="end"
+            aria-label={translateSales("comment_actions_cf8f6")}
+            className="min-w-40"
+          >
+            <DropdownMenuItem onSelect={startEditing}>
+              {translateSales("edit_464c4")}
+            </DropdownMenuItem>
             <DropdownMenuItem
               onSelect={() => setConfirmOpen(true)}
               className="text-destructive focus:text-destructive"
             >
-              Delete
+              {translateSales("delete_e2d0a")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -130,9 +139,9 @@ export function CommentCard({
       <ConfirmDialog
         open={confirmOpen}
         onOpenChange={setConfirmOpen}
-        title="Delete comment?"
-        description="This action cannot be undone."
-        confirmLabel="Delete comment"
+        title={translateSales("delete_comment_4bb3b")}
+        description={translateSales("this_action_cannot_be_undone_3d6a4")}
+        confirmLabel={translateSales("delete_comment_e4381")}
         destructive
         pending={busy}
         onConfirm={() => void remove()}

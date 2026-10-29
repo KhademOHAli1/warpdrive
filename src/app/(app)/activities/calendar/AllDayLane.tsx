@@ -1,9 +1,11 @@
+"use client";
 import {
   ALL_DAY_ROW_HEIGHT_PX,
   splitAllDay,
   splitAllDayDisplay,
 } from "@/features/activities/agendaLayout";
 import type { CalendarActivity } from "@/features/activities/calendar";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { ActivityChip } from "./calendarChip";
 import { MoreActivitiesChip } from "./MoreActivitiesChip";
 
@@ -20,6 +22,7 @@ export function AllDayLane({
   rows: number;
   onOpenActivity: (activity: CalendarActivity) => void;
 }): React.ReactNode {
+  const t = useAppTranslations("calendar");
   const { allDay } = splitAllDay(items);
   const { visible, hidden } = splitAllDayDisplay(allDay, rows);
   return (
@@ -27,8 +30,8 @@ export function AllDayLane({
     <div
       data-all-day-lane
       role="group"
-      aria-label={`All day, ${dayLabel}`}
-      className="overflow-hidden border-l border-border px-0.5"
+      aria-label={t("allDayLabel", { date: dayLabel })}
+      className="overflow-hidden border-s border-border px-0.5"
       style={{ height: rows * ALL_DAY_ROW_HEIGHT_PX }}
     >
       {visible.map((a) => (

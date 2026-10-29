@@ -17,6 +17,8 @@ import type { PermSetUser } from "@/features/permissions/effective";
 import { assertReferenceVisible } from "@/features/permissions/referenceCheck";
 import type { DbOrTx } from "@/server/realtime/channelVersions";
 import { err, ok, type Result } from "@/types/result";
+import { activityAccountPreferences } from "./accountTimeZone";
+import { canonicalUpdateDates, civilEndBeforeStart } from "./activityTemporalWrite";
 import { recomputeDealsActivityDates } from "./nextActivity";
 import { type ActivityUpdateInput, activityUpdateInput } from "./schemas";
 import { resolveActivityVisibility } from "./visibility";
@@ -173,6 +175,7 @@ export async function updateActivity(
   }
   const input = parsed.data;
 
+  const prefs = await activityAccountPreferences(db, actor.id);
   return db.transaction(async (tx) => {
     const [current] = await tx
       .select()
@@ -209,7 +212,17 @@ export async function updateActivity(
 
     // A guest/participant-only edit has no scalar columns to write; skip the row UPDATE (Drizzle
     // rejects an empty .set()) and keep the current row for the recompute below.
-    const patch = buildPatch(input);
+    const civilDates = canonicalUpdateDates(current, input, prefs.timeZone);
+    if (civilEndBeforeStart(civilDates))
+      return err(
+        new AppError(ERROR_IDS.ACTIVITY_END_BEFORE_START, "activity end is before its start", {
+          id: current.id,
+        }),
+      );
+    const patch = {
+      ...buildPatch(input),
+      ...civilDates,
+    };
     let row = current;
     if (Object.keys(patch).length > 0) {
       const [updated] = await tx

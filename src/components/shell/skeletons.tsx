@@ -1,5 +1,7 @@
+"use client";
 import type React from "react";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 
 // Shared loading skeletons rendered by route loading.tsx files. Each mirrors the real page's
 // header + content shape closely enough that when the server render swaps in, nothing jumps.
@@ -36,8 +38,9 @@ function RowsSkeleton({ rows = 8 }: { rows?: number }): React.ReactNode {
 // Just the data region of a list page (toolbar + table rows), no heading. Used as the inner
 // <Suspense> fallback on list pages whose static heading renders immediately while the rows stream.
 export function ListSectionSkeleton(): React.ReactNode {
+  const t = useAppTranslations("shell.loading");
   return (
-    <div className="flex flex-col gap-4" role="status" aria-busy="true" aria-label="Loading">
+    <div className="flex flex-col gap-4" role="status" aria-busy="true" aria-label={t("generic")}>
       {/* Toolbar row (filter / view controls) above the table. */}
       <div className="flex items-center gap-2">
         <Skeleton className="h-8 w-20" />
@@ -49,8 +52,9 @@ export function ListSectionSkeleton(): React.ReactNode {
 }
 
 export function ListPageSkeleton(): React.ReactNode {
+  const t = useAppTranslations("shell.loading");
   return (
-    <main className="flex flex-col gap-4" aria-busy="true" aria-label="Loading">
+    <main className="flex flex-col gap-4" aria-busy="true" aria-label={t("generic")}>
       <HeadingSkeleton />
       <ListSectionSkeleton />
     </main>
@@ -58,8 +62,9 @@ export function ListPageSkeleton(): React.ReactNode {
 }
 
 export function BoardSkeleton(): React.ReactNode {
+  const t = useAppTranslations("shell.loading");
   return (
-    <main className="flex flex-col gap-4" aria-busy="true" aria-label="Loading">
+    <main className="flex flex-col gap-4" aria-busy="true" aria-label={t("generic")}>
       <HeadingSkeleton />
       <div className="flex gap-3 overflow-hidden">
         {Array.from({ length: 5 }, (_, col) => (
@@ -78,8 +83,9 @@ export function BoardSkeleton(): React.ReactNode {
 }
 
 export function DetailPageSkeleton(): React.ReactNode {
+  const t = useAppTranslations("shell.loading");
   return (
-    <main className="flex flex-col gap-4" aria-busy="true" aria-label="Loading">
+    <main className="flex flex-col gap-4" aria-busy="true" aria-label={t("generic")}>
       <HeadingSkeleton />
       <div className="flex flex-col gap-4 lg:flex-row">
         {/* Left sidebar (record fields / firmographics). */}
@@ -107,8 +113,9 @@ export function DetailDrawerSkeleton({
 }: {
   header?: React.ReactNode;
 } = {}): React.ReactNode {
+  const t = useAppTranslations("shell.loading");
   return (
-    <div className="flex flex-col gap-4" role="status" aria-busy="true" aria-label="Loading">
+    <div className="flex flex-col gap-4" role="status" aria-busy="true" aria-label={t("generic")}>
       {header ?? <Skeleton className="h-7 w-64" />}
       <div className="flex flex-col gap-4 lg:flex-row">
         <div className="flex w-full flex-col gap-3 lg:w-72">
@@ -125,8 +132,9 @@ export function DetailDrawerSkeleton({
 }
 
 export function InboxSkeleton(): React.ReactNode {
+  const t = useAppTranslations("shell.loading");
   return (
-    <main className="flex h-full flex-col gap-4" aria-busy="true" aria-label="Loading">
+    <main className="flex h-full flex-col gap-4" aria-busy="true" aria-label={t("generic")}>
       <HeadingSkeleton action={false} />
       <div className="flex flex-1 gap-4">
         {/* Thread list column. */}
@@ -148,12 +156,13 @@ export function InboxSkeleton(): React.ReactNode {
 
 // Rows for the inbox conversation list. Rendered inside the list's <ul>.
 export function ThreadRowsSkeleton({ rows = 6 }: { rows?: number } = {}): React.ReactNode {
+  const t = useAppTranslations("shell.loading");
   return (
     <li>
       <div
         role="status"
         aria-busy="true"
-        aria-label="Loading conversations"
+        aria-label={t("conversations")}
         className="flex flex-col gap-3 p-3"
       >
         {Array.from({ length: rows }, (_, i) => (
@@ -174,8 +183,9 @@ export function ThreadRowsSkeleton({ rows = 6 }: { rows?: number } = {}): React.
 // The four sectioned result groups of the global search palette, at their real heights so the
 // overlay does not resize when results land.
 export function SearchResultsSkeleton(): React.ReactNode {
+  const t = useAppTranslations("shell.loading");
   return (
-    <div role="status" aria-busy="true" aria-label="Searching" className="py-1">
+    <div role="status" aria-busy="true" aria-label={t("searching")} className="py-1">
       {Array.from({ length: 4 }, (_, section) => (
         // biome-ignore lint/suspicious/noArrayIndexKey: static placeholder sections
         <div key={section} className="px-3 py-1">
@@ -222,11 +232,12 @@ export function TableRowsSkeleton({
 // The engagement-timeline grid: a contact column plus month tracks, inside the same bordered card
 // the real table renders in.
 export function EngagementGridSkeleton({ lanes = 6 }: { lanes?: number } = {}): React.ReactNode {
+  const t = useAppTranslations("shell.loading");
   return (
     <div
       role="status"
       aria-busy="true"
-      aria-label="Loading engagement timeline"
+      aria-label={t("engagement")}
       className="rounded-lg border bg-card p-3 shadow-sm"
     >
       <div className="mb-3 flex gap-3">
@@ -247,8 +258,9 @@ export function EngagementGridSkeleton({ lanes = 6 }: { lanes?: number } = {}): 
 }
 
 export function DashboardSkeleton(): React.ReactNode {
+  const t = useAppTranslations("shell.loading");
   return (
-    <main className="flex flex-col gap-4" aria-busy="true" aria-label="Loading">
+    <main className="flex flex-col gap-4" aria-busy="true" aria-label={t("generic")}>
       <HeadingSkeleton action={false} />
       {/* Stat tiles row. */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">

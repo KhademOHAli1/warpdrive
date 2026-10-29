@@ -1,4 +1,5 @@
-import { STRINGS } from "@/constants/strings";
+"use client";
+import { useEmailMessages } from "@/features/email/useEmailMessages";
 import type { TrackingEvent } from "./trackingReads";
 
 interface MessageTrackingHistoryProps {
@@ -11,6 +12,8 @@ interface MessageTrackingHistoryProps {
 // transient WS trackingBadge shown in the thread header, which only nudges for the
 // current session and disappears on reload; this component survives it.
 export function MessageTrackingHistory({ tracking }: MessageTrackingHistoryProps): React.ReactNode {
+  const E = useEmailMessages();
+
   if (tracking.length === 0) return null;
 
   const opens = tracking.filter((t) => t.type === "open").length;
@@ -20,12 +23,12 @@ export function MessageTrackingHistory({ tracking }: MessageTrackingHistoryProps
     <div className="mt-2 flex flex-wrap gap-2 text-xs text-muted-foreground tabular-nums">
       {opens > 0 && (
         <span className="inline-block rounded-full bg-muted px-2 py-0.5">
-          {STRINGS.inbox.trackingOpened(opens)}
+          {E.trackingOpened(opens)}
         </span>
       )}
       {clicks > 0 && (
         <span className="inline-block rounded-full bg-muted px-2 py-0.5">
-          {STRINGS.inbox.trackingClicked(clicks)}
+          {E.trackingClicked(clicks)}
         </span>
       )}
     </div>

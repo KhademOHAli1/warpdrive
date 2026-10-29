@@ -3,6 +3,8 @@ import type React from "react";
 import { Input } from "@/components/ui/Input";
 import { MultiCombobox } from "@/components/ui/MultiCombobox";
 import { Select, type SelectOption } from "@/components/ui/Select";
+import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
+import { normalizeNumberInput } from "@/utils/normalizeNumberInput";
 import { DateConditionValue } from "./DateConditionValue";
 import { type RowValue, rowValueList, singleRowValue } from "./rowValue";
 
@@ -29,13 +31,15 @@ export function ConditionValue({
   value,
   onChange,
 }: ConditionValueProps): React.ReactNode {
+  const t = useAppTranslations("filters");
+  const locale = useLocale();
   if (input?.kind === "multiselect") {
     return (
       <MultiCombobox
         ariaLabel={ariaLabel}
         values={rowValueList(value)}
         onChange={onChange}
-        placeholder="Select"
+        placeholder={t("select")}
         options={input.options}
       />
     );
@@ -46,7 +50,7 @@ export function ConditionValue({
         ariaLabel={ariaLabel}
         value={singleRowValue(value)}
         onChange={onChange}
-        placeholder="Select"
+        placeholder={t("select")}
         options={input.options}
       />
     );
@@ -59,11 +63,15 @@ export function ConditionValue({
   return (
     <Input
       aria-label={ariaLabel}
-      type={input?.kind === "number" ? "number" : "text"}
+      type="text"
+      inputMode={input?.kind === "number" ? "decimal" : undefined}
       value={singleRowValue(value)}
-      onChange={(e) => onChange(e.currentTarget.value)}
+      onChange={(e) => {
+        const raw = e.currentTarget.value;
+        onChange(input?.kind === "number" ? (normalizeNumberInput(raw, locale) ?? raw) : raw);
+      }}
       className="w-full px-2 py-1"
-      placeholder="Value"
+      placeholder={t("value")}
     />
   );
 }

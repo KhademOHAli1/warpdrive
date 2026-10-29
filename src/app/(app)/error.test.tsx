@@ -2,6 +2,7 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { LocaleProvider } from "@/features/i18n/LocaleProvider";
 import AppSegmentError from "./error";
 
 afterEach(cleanup);
@@ -10,6 +11,16 @@ afterEach(cleanup);
 // this boundary is a genuine bug. In production Next redacts the message and gives only a digest,
 // which is the one handle an operator has to correlate the screen with a server log. Show it.
 describe("(app) error boundary", () => {
+  it("keeps recovery actions and the diagnostic reference usable in Farsi", () => {
+    const error = Object.assign(new Error("boom"), { digest: "ABC-123" });
+    render(
+      <LocaleProvider locale="fa">
+        <AppSegmentError error={error} reset={vi.fn()} />
+      </LocaleProvider>,
+    );
+    expect(screen.getByRole("button", { name: "تلاش دوباره" })).not.toBeNull();
+    expect(screen.getByText(/ABC-123/)).not.toBeNull();
+  });
   it("tells the user something broke rather than showing a blank screen", () => {
     render(<AppSegmentError error={new Error("boom")} reset={vi.fn()} />);
     expect(screen.getByRole("heading").textContent).toBeTruthy();

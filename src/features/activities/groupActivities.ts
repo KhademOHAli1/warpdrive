@@ -1,3 +1,5 @@
+import { instantCivilDate } from "@/lib/zonedDateTime";
+import { activityDay, activityEndDay } from "./activityTemporal";
 import type { CalendarActivity } from "./calendar";
 
 export interface GroupedActivities {
@@ -6,24 +8,24 @@ export interface GroupedActivities {
   upcoming: CalendarActivity[];
 }
 
-// UTC calendar-day key, so grouping is deterministic regardless of runtime tz.
-function dayKey(ms: number): string {
-  return new Date(ms).toISOString().slice(0, 10);
-}
-
 // Partition activities into the buckets Pipedrive's activity list uses: Overdue
 // (undone, before today), Today, and Upcoming. Completed past activities are
 // dropped so they do not clutter the to-do list. Each bucket is sorted by due
 // time ascending.
-export function groupActivities(items: CalendarActivity[], now: number): GroupedActivities {
-  const todayKey = dayKey(now);
+export function groupActivities(
+  items: CalendarActivity[],
+  now: number,
+  timeZone = "UTC",
+): GroupedActivities {
+  const todayKey = instantCivilDate(now, timeZone);
   const out: GroupedActivities = { overdue: [], today: [], upcoming: [] };
 
   for (const a of items) {
-    const key = dayKey(a.dueAt.getTime());
-    if (key === todayKey) {
+    const key = activityDay(a, timeZone)!;
+    const endKey = activityEndDay(a, timeZone)!;
+    if (key <= todayKey && endKey >= todayKey) {
       out.today.push(a);
-    } else if (key < todayKey) {
+    } else if (endKey < todayKey) {
       if (a.done === false) out.overdue.push(a);
       // completed past activities are intentionally dropped
     } else {

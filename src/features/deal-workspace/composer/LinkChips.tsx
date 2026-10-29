@@ -2,6 +2,7 @@
 import { Building2, CircleDollarSign, User, X } from "lucide-react";
 import type React from "react";
 import { Combobox, type ComboboxOption } from "@/components/ui/Combobox";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 
 export type LinkKind = "deal" | "person" | "org";
 
@@ -23,13 +24,6 @@ interface Props {
 }
 
 // The human word used in the remove-chip aria label ("Remove organization link").
-const KIND_WORD: Record<LinkKind, string> = {
-  deal: "deal",
-  person: "person",
-  org: "organization",
-};
-
-const ADD_LINK_LABEL = "Add link";
 
 // Entity-type glyph per link kind (Pipedrive parity: deal=$, person, org=building), shown as the
 // leading icon on each linked-entity row.
@@ -44,6 +38,8 @@ const KIND_ICON: Record<LinkKind, React.ReactNode> = {
 // the activity form, so this renders one bordered row per active link. Bound to the composer's link
 // state; the submit payload reads the same state so removing a row clears that link on the activity.
 export function LinkChips({ targets, value, onChange }: Props): React.ReactNode {
+  const translateSales = useAppTranslations("sales");
+
   const active = targets.filter((t) => value[t.kind] !== null);
   const removed = targets.filter((t) => value[t.kind] === null);
 
@@ -57,10 +53,18 @@ export function LinkChips({ targets, value, onChange }: Props): React.ReactNode 
           className="flex items-center gap-2 rounded-md border px-2.5 py-1.5 text-sm"
         >
           <span className="shrink-0 text-muted-foreground">{KIND_ICON[t.kind]}</span>
-          <span className="min-w-0 flex-1 truncate">{t.label}</span>
+          <span className="min-w-0 flex-1 truncate">
+            <bdi dir="auto">{t.label}</bdi>
+          </span>
           <button
             type="button"
-            aria-label={`Remove ${KIND_WORD[t.kind]} link`}
+            aria-label={translateSales(
+              t.kind === "deal"
+                ? "computed.removeDealLink"
+                : t.kind === "person"
+                  ? "computed.removePersonLink"
+                  : "computed.removeOrganizationLink",
+            )}
             onClick={() => onChange(t.kind, null)}
             className="shrink-0 rounded text-muted-foreground hover:text-foreground"
           >
@@ -71,8 +75,8 @@ export function LinkChips({ targets, value, onChange }: Props): React.ReactNode 
       {removed.length > 0 && (
         <div className="w-48">
           <Combobox
-            ariaLabel={ADD_LINK_LABEL}
-            placeholder={ADD_LINK_LABEL}
+            ariaLabel={translateSales("computed.addLink")}
+            placeholder={translateSales("computed.addLink")}
             value=""
             onChange={(kind) => {
               const target = removed.find((t) => t.kind === kind);

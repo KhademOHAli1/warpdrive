@@ -1,9 +1,12 @@
 import type { ReactNode } from "react";
-import { STRINGS } from "@/constants/strings";
+import { getServerSettingsMessages } from "@/features/identity/settingsMessages.server";
 
 // The notifications settings page is a client component, so its document title
 // lives here (server metadata) instead of on the page module.
-export const metadata = { title: STRINGS.settings.notifications };
+export async function generateMetadata() {
+  const L = await getServerSettingsMessages();
+  return { title: L.notifications };
+}
 
 export default function NotificationSettingsLayout({
   children,

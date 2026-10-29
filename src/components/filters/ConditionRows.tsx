@@ -1,7 +1,8 @@
 "use client";
 import type React from "react";
 import { Select, type SelectOption } from "@/components/ui/Select";
-import { VALUELESS_OPS } from "@/constants/filterOps";
+import { FILTER_OP_LABELS, VALUELESS_OPS } from "@/constants/filterOps";
+import { useAppTranslations, useMessages } from "@/features/i18n/LocaleProvider";
 import { ConditionValue, type ConditionValueInput } from "./ConditionValue";
 import type { RowValue } from "./rowValue";
 
@@ -45,11 +46,6 @@ interface ConditionRowsProps {
 
 const REMOVE = "✕";
 
-const COMBINATOR_OPTIONS: SelectOption[] = [
-  { value: "and", label: "all conditions" },
-  { value: "or", label: "any condition" },
-];
-
 // The condition list body: combinator selector, one row per condition (field / operator / value /
 // remove), and "+ Add condition". Fully controlled, so both the ad-hoc filter popover and the
 // saved-filter modal can host it with their own chrome and footer.
@@ -62,6 +58,13 @@ export function ConditionRows({
   combinator,
   onCombinatorChange,
 }: ConditionRowsProps): React.ReactNode {
+  const t = useAppTranslations("filters");
+  const localizedOps: Record<string, string> = useMessages().filters.operators;
+  const defaultOps: Record<string, string> = FILTER_OP_LABELS;
+  const combinatorOptions: SelectOption[] = [
+    { value: "and", label: t("allConditions") },
+    { value: "or", label: t("anyCondition") },
+  ];
   const first = fields[0];
 
   function addRow(): void {
@@ -82,12 +85,12 @@ export function ConditionRows({
     <>
       {supportsCombinator && rows.length > 1 ? (
         <div className="flex items-center gap-2 px-1">
-          <span className="text-xs text-muted-foreground">Match</span>
+          <span className="text-xs text-muted-foreground">{t("match")}</span>
           <Select
-            ariaLabel="Match combinator"
+            ariaLabel={t("combinator")}
             value={combinator}
             onChange={(v) => onCombinatorChange(v === "or" ? "or" : "and")}
-            options={COMBINATOR_OPTIONS}
+            options={combinatorOptions}
           />
         </div>
       ) : null}
@@ -97,7 +100,7 @@ export function ConditionRows({
         return (
           <div key={row.id} className="flex items-center gap-1.5">
             <Select
-              ariaLabel={`Condition ${i + 1} field`}
+              ariaLabel={t("fieldLabel", { index: i + 1 })}
               value={row.field}
               onChange={(v) => {
                 const nextDef = fields.find((f) => f.field === v);
@@ -107,17 +110,23 @@ export function ConditionRows({
               triggerClassName="min-w-0 flex-[3]"
             />
             <Select
-              ariaLabel={`Condition ${i + 1} operator`}
+              ariaLabel={t("operatorLabel", { index: i + 1 })}
               value={row.op}
               onChange={(v) => patch(i, { op: v, value: VALUELESS_OPS.has(v) ? "" : row.value })}
-              options={(def?.ops ?? []).map((o) => ({ value: o, label: opLabels[o] ?? o }))}
+              options={(def?.ops ?? []).map((o) => ({
+                value: o,
+                label:
+                  opLabels[o] === defaultOps[o]
+                    ? (localizedOps[o] ?? o)
+                    : (opLabels[o] ?? localizedOps[o] ?? o),
+              }))}
               triggerClassName="min-w-0 flex-[2]"
             />
             <div data-slot="condition-value" className="min-w-0 flex-[4]">
               {VALUELESS_OPS.has(row.op) ? null : (
                 <ConditionValue
                   input={def?.input}
-                  ariaLabel={`Condition ${i + 1} value`}
+                  ariaLabel={t("valueLabel", { index: i + 1 })}
                   value={row.value}
                   onChange={(v) => patch(i, { value: v })}
                 />
@@ -125,7 +134,7 @@ export function ConditionRows({
             </div>
             <button
               type="button"
-              aria-label={`Remove condition ${i + 1}`}
+              aria-label={t("removeLabel", { index: i + 1 })}
               onClick={() => removeRow(i)}
               className="shrink-0 rounded px-1.5 text-muted-foreground hover:text-foreground"
             >
@@ -140,7 +149,7 @@ export function ConditionRows({
         onClick={addRow}
         className="w-full rounded-md border border-dashed px-2 py-1.5 text-sm text-muted-foreground hover:border-ring hover:text-foreground"
       >
-        + Add condition
+        {t("addCondition")}
       </button>
     </>
   );

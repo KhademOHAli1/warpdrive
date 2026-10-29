@@ -19,13 +19,14 @@ import { useId, useRef, useState } from "react";
 import { Input } from "@/components/ui/Input";
 import { ERROR_IDS } from "@/constants/errorIds";
 import { BOARD_QUERY_KEY } from "@/features/deals/useDealMove";
+import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { applyStageOps } from "./applyStageOps";
 import { renamePipelineAction, reorderStagesAction } from "./pipelineEditActions";
 import { SortableStageCard } from "./SortableStageCard";
 import { StageDeleteDialog } from "./StageDeleteDialog";
 import { diffStages, type StageRow } from "./stageDiff";
-import { STAGE_EDIT_ERROR_MESSAGE } from "./stageEditMessages";
+import { stageEditErrorMessages } from "./stageEditMessages";
 import {
   assignCreatedIds,
   buildOrderedStageIds,
@@ -53,6 +54,9 @@ export function EditPipelineClient({
   pipelineName,
   stages,
 }: EditPipelineClientProps): React.ReactNode {
+  const translateSales = useAppTranslations("sales");
+  const locale = useLocale();
+
   const router = useRouter();
   const queryClient = useQueryClient();
   const nameId = useId();
@@ -92,7 +96,14 @@ export function EditPipelineClient({
     nextKeyRef.current += 1;
     setRows((prev) => [
       ...prev,
-      { key, id: null, name: "New stage", rottingDays: null, dealCount: 0, closedDealCount: 0 },
+      {
+        key,
+        id: null,
+        name: translateSales("computed.newStage"),
+        rottingDays: null,
+        dealCount: 0,
+        closedDealCount: 0,
+      },
     ]);
   }
 
@@ -108,7 +119,7 @@ export function EditPipelineClient({
     const csrf = readCsrfToken();
     const ops = diffStages({ originalById, rows, pendingDeletes: deletion.pendingDeletes });
 
-    const fail = (id: string): void => setError(STAGE_EDIT_ERROR_MESSAGE[id] ?? id);
+    const fail = (id: string): void => setError(stageEditErrorMessages(locale)[id] ?? id);
     try {
       if (name.trim() !== originalName && name.trim() !== "") {
         const r = await renamePipelineAction({ pipelineId, name: name.trim() }, csrf);
@@ -156,11 +167,11 @@ export function EditPipelineClient({
       <div className="mb-4 flex items-center gap-3">
         <div className="flex-1 text-sm">
           <label htmlFor={nameId} className="mb-1 block font-medium">
-            Pipeline name
+            {translateSales("pipeline_name_5ba23")}
           </label>
           <Input
             id={nameId}
-            aria-label="Pipeline name"
+            aria-label={translateSales("pipeline_name_5ba23")}
             value={name}
             onChange={(e) => setName(e.target.value)}
             className="max-w-md"
@@ -172,7 +183,7 @@ export function EditPipelineClient({
             onClick={() => router.push(`/pipeline/${pipelineId}`)}
             className="rounded-md border px-3 py-1.5 text-sm transition-transform hover:bg-accent active:scale-[0.96]"
           >
-            Cancel
+            {translateSales("cancel_19766")}
           </button>
           <button
             type="button"
@@ -180,7 +191,7 @@ export function EditPipelineClient({
             disabled={saving}
             className="rounded-md bg-action px-3 py-1.5 text-sm font-medium text-action-foreground transition-transform hover:bg-action/90 active:scale-[0.96] disabled:opacity-60"
           >
-            {saving ? "Saving..." : "Save changes"}
+            {saving ? translateSales("saving_dc85a") : translateSales("save_changes_dd0ae")}
           </button>
         </div>
       </div>
@@ -223,7 +234,7 @@ export function EditPipelineClient({
           onClick={addRow}
           className="flex w-64 shrink-0 items-center justify-center rounded-lg border border-dashed text-sm font-medium text-muted-foreground transition-transform hover:bg-accent hover:text-foreground active:scale-[0.96]"
         >
-          + Add stage
+          {translateSales("add_stage_d3310")}
         </button>
       </div>
     </div>

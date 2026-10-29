@@ -1,6 +1,10 @@
 import { type SQL, sql } from "drizzle-orm";
-import { type DatePresetKey, isCalendarDate, isDatePreset } from "@/constants/dateFilterPresets";
+import { isCalendarDate, isDatePreset } from "@/constants/dateFilterPresets";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
+import { type DateFilterContext, resolveDatePresetRange, resolveTimeZone } from "./datePresetRange";
+
+export { resolveTimeZone } from "./datePresetRange";
+
 import { requireValue } from "./filterAstSql";
 
 type DateColumnKind = "date" | "timestamptz";
@@ -11,64 +15,25 @@ const DATE_COLUMN_KIND: Record<string, DateColumnKind> = {
   lastActivityAt: "timestamptz",
 };
 
-const FALLBACK_ZONE = "UTC";
-
-export function resolveTimeZone(timeZone: string | null | undefined): string {
-  if (timeZone === null || timeZone === undefined || timeZone === "") return FALLBACK_ZONE;
-  try {
-    new Intl.DateTimeFormat("en-US", { timeZone });
-    return timeZone;
-  } catch {
-    return FALLBACK_ZONE;
-  }
-}
-
 interface DayRange {
   start: SQL;
   end: SQL;
 }
 
-type RangeBuilder = (today: SQL) => DayRange;
-
-const PRESET_RANGE: Record<DatePresetKey, RangeBuilder> = {
-  today: (t) => ({ start: t, end: sql`${t} + 1` }),
-  yesterday: (t) => ({ start: sql`${t} - 1`, end: t }),
-  tomorrow: (t) => ({ start: sql`${t} + 1`, end: sql`${t} + 2` }),
-  this_week: (t) => ({ start: weekStart(t), end: sql`${weekStart(t)} + 7` }),
-  last_week: (t) => ({ start: sql`${weekStart(t)} - 7`, end: weekStart(t) }),
-  next_week: (t) => ({ start: sql`${weekStart(t)} + 7`, end: sql`${weekStart(t)} + 14` }),
-  this_month: (t) => ({
-    start: sql`${monthStart(t)}::date`,
-    end: sql`(${monthStart(t)} + interval '1 month')::date`,
-  }),
-  last_month: (t) => ({
-    start: sql`(${monthStart(t)} - interval '1 month')::date`,
-    end: sql`${monthStart(t)}::date`,
-  }),
-  next_month: (t) => ({
-    start: sql`(${monthStart(t)} + interval '1 month')::date`,
-    end: sql`(${monthStart(t)} + interval '2 month')::date`,
-  }),
-  last_7_days: (t) => ({ start: sql`${t} - 6`, end: sql`${t} + 1` }),
-  next_7_days: (t) => ({ start: t, end: sql`${t} + 7` }),
-  last_30_days: (t) => ({ start: sql`${t} - 29`, end: sql`${t} + 1` }),
-  next_30_days: (t) => ({ start: t, end: sql`${t} + 30` }),
-};
-
-function weekStart(today: SQL): SQL {
-  return sql`date_trunc('week', ${today})::date`;
-}
-
-function monthStart(today: SQL): SQL {
-  return sql`date_trunc('month', ${today})`;
-}
-
-function localDayRange(op: string, raw: string | number | string[], zone: string): DayRange {
+function localDayRange(
+  op: string,
+  raw: string | number | string[],
+  zone: string,
+  context: DateFilterContext,
+): DayRange {
   if (Array.isArray(raw)) {
     throw new AppError(ERROR_IDS.DEAL_FILTER_INVALID, "List value on a date field", { op });
   }
   const value = String(raw);
-  if (isDatePreset(value)) return PRESET_RANGE[value](sql`(now() AT TIME ZONE ${zone})::date`);
+  if (isDatePreset(value)) {
+    const range = resolveDatePresetRange(value, { ...context, timeZone: zone });
+    return { start: sql`${range.startDate}::date`, end: sql`${range.endDateExclusive}::date` };
+  }
   if (!isCalendarDate(value)) {
     throw new AppError(ERROR_IDS.DEAL_FILTER_INVALID, "Date field needs a date or a preset", {
       op,
@@ -81,12 +46,18 @@ function asInstant(day: SQL, zone: string): SQL {
   return sql`((${day})::timestamp AT TIME ZONE ${zone})`;
 }
 
-function columnRange(field: string, op: string, raw: string | number | string[], zone: string) {
+function columnRange(
+  field: string,
+  op: string,
+  raw: string | number | string[],
+  zone: string,
+  context: DateFilterContext,
+) {
   const kind = DATE_COLUMN_KIND[field];
   if (kind === undefined) {
     throw new AppError(ERROR_IDS.DEAL_FILTER_INVALID, "Not a date filter field", { field });
   }
-  const local = localDayRange(op, raw, zone);
+  const local = localDayRange(op, raw, zone, context);
   if (kind === "date") return local;
   return { start: asInstant(local.start, zone), end: asInstant(local.end, zone) };
 }
@@ -97,9 +68,10 @@ export function dateCondition(
   op: string,
   value: string | number | string[] | undefined,
   timeZone: string | null | undefined,
+  context: DateFilterContext = {},
 ): SQL {
   const zone = resolveTimeZone(timeZone);
-  const { start, end } = columnRange(field, op, requireValue(op, value), zone);
+  const { start, end } = columnRange(field, op, requireValue(op, value), zone, context);
   switch (op) {
     case "eq":
       return sql`(${colSql} >= ${start} AND ${colSql} < ${end})`;

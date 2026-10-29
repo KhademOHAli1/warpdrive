@@ -1,15 +1,17 @@
 "use client";
-import * as RadixSelect from "@radix-ui/react-select";
-import { Check, ChevronDown } from "lucide-react";
+
 import type React from "react";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { cn } from "@/lib/utils";
+import { useDirection } from "./direction";
+import * as RadixSelect from "./primitives/select";
 
 export interface SelectOption {
   value: string;
   label: string;
   icon?: React.ReactNode;
   // Heading this option sits under. Consecutive options sharing a group render inside one
-  // RadixSelect.Group with a sticky label, which is how the import map step separates
+  // RadixSelect.SelectGroup with a sticky label, which is how the import map step separates
   // "Lead" fields from "Organization" fields in one picker.
   group?: string;
 }
@@ -36,7 +38,7 @@ interface SelectProps {
   disabled?: boolean;
 }
 
-// Radix reserves value="" on RadixSelect.Item/Root to mean "nothing selected, show the
+// Radix reserves value="" on RadixSelect.SelectItem/Root to mean "nothing selected, show the
 // placeholder": when the controlled value is "", it shows the placeholder text instead of the
 // matching option's label, and swallows re-selecting that option. Many callers pass a real
 // business option with value: "" (priority "None", org "No organization", owner "Me", ...), so
@@ -79,7 +81,7 @@ function groupOptions(options: SelectOption[]): OptionSection[] {
 
 function SelectItem({ option }: { option: SelectOption }): React.ReactNode {
   return (
-    <RadixSelect.Item
+    <RadixSelect.SelectItem
       value={toInternal(option.value)}
       className={cn(
         "flex cursor-pointer items-center gap-1.5 rounded px-2 py-1.5 text-sm outline-none transition-colors duration-150",
@@ -87,11 +89,8 @@ function SelectItem({ option }: { option: SelectOption }): React.ReactNode {
       )}
     >
       {option.icon}
-      <RadixSelect.ItemText>{option.label}</RadixSelect.ItemText>
-      <RadixSelect.ItemIndicator className="ml-auto">
-        <Check className="h-4 w-4" />
-      </RadixSelect.ItemIndicator>
-    </RadixSelect.Item>
+      {option.label}
+    </RadixSelect.SelectItem>
   );
 }
 
@@ -112,14 +111,14 @@ function SelectSection({
     );
   }
   return (
-    <RadixSelect.Group>
-      <RadixSelect.Label className="px-2 py-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+    <RadixSelect.SelectGroup>
+      <RadixSelect.SelectLabel className="px-2 py-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
         {heading}
-      </RadixSelect.Label>
+      </RadixSelect.SelectLabel>
       {options.map((o) => (
         <SelectItem key={o.value} option={o} />
       ))}
-    </RadixSelect.Group>
+    </RadixSelect.SelectGroup>
   );
 }
 
@@ -144,19 +143,21 @@ export function Select({
   onChange,
   options,
   ariaLabel,
-  placeholder = "Select",
+  placeholder,
   triggerClassName,
   triggerContent,
   triggerTitle,
   disabled,
 }: SelectProps): React.ReactNode {
+  const t = useAppTranslations("sharedUi");
   return (
-    <RadixSelect.Root
+    <RadixSelect.Select
+      dir={useDirection()}
       value={toInternal(value)}
       onValueChange={(v) => onChange(fromInternal(v))}
       disabled={disabled}
     >
-      <RadixSelect.Trigger
+      <RadixSelect.SelectTrigger
         aria-label={ariaLabel}
         title={triggerTitle}
         className={cn(
@@ -164,32 +165,22 @@ export function Select({
           triggerClassName,
         )}
       >
-        <RadixSelect.Value>
-          {triggerContent ?? triggerLabel(options, value, placeholder)}
-        </RadixSelect.Value>
-        <RadixSelect.Icon>
-          <span className="block transition-transform duration-150 ease-out group-data-[state=open]:rotate-180 motion-reduce:transition-none">
-            <ChevronDown className="h-4 w-4 text-muted-foreground" />
-          </span>
-        </RadixSelect.Icon>
-      </RadixSelect.Trigger>
-      <RadixSelect.Portal>
-        <RadixSelect.Content
-          position="popper"
-          sideOffset={4}
-          className="z-50 overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 [transform-origin:var(--radix-select-content-transform-origin)] motion-reduce:animate-none"
-        >
-          <RadixSelect.Viewport className="p-1">
-            {groupOptions(options).map((section) => (
-              <SelectSection
-                key={section.key}
-                heading={section.heading}
-                options={section.options}
-              />
-            ))}
-          </RadixSelect.Viewport>
-        </RadixSelect.Content>
-      </RadixSelect.Portal>
-    </RadixSelect.Root>
+        <RadixSelect.SelectValue>
+          {triggerContent ?? triggerLabel(options, value, placeholder ?? t("select"))}
+        </RadixSelect.SelectValue>
+      </RadixSelect.SelectTrigger>
+
+      <RadixSelect.SelectContent
+        position="popper"
+        sideOffset={4}
+        className="z-50 overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 [transform-origin:var(--radix-select-content-transform-origin)] motion-reduce:animate-none"
+      >
+        <div className="p-1">
+          {groupOptions(options).map((section) => (
+            <SelectSection key={section.key} heading={section.heading} options={section.options} />
+          ))}
+        </div>
+      </RadixSelect.SelectContent>
+    </RadixSelect.Select>
   );
 }

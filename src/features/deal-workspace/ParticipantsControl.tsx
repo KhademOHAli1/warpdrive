@@ -2,6 +2,7 @@
 import { Plus } from "lucide-react";
 import type React from "react";
 import { useState } from "react";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { ParticipantsDialog } from "./ParticipantsDialog";
 import { useParticipants } from "./useParticipants";
 
@@ -16,6 +17,8 @@ export function ParticipantsControl({
   orgId: string | null;
   orgName: string | null;
 }): React.ReactNode {
+  const translateSales = useAppTranslations("sales");
+
   const [open, setOpen] = useState(false);
   const data = useParticipants(dealId, orgId);
   const count = data.participants.length;
@@ -30,16 +33,16 @@ export function ParticipantsControl({
         {count === 0 ? (
           <>
             <Plus aria-hidden="true" className="h-3.5 w-3.5" />
-            Participants
+            {translateSales("participants_0e272")}
           </>
         ) : (
-          `${count} participant${count === 1 ? "" : "s"}`
+          translateSales("computed.participantCount", { count })
         )}
       </button>
       <ParticipantsDialog
         open={open}
         onOpenChange={setOpen}
-        title={orgName ?? "this deal"}
+        title={orgName ?? translateSales("this_deal_1fcce")}
         orgId={orgId}
         data={data}
       />

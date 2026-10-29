@@ -1,6 +1,8 @@
+"use client";
 import type React from "react";
 import { Avatar } from "@/components/ui/Avatar";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import {
   DeleteSavedFilterItem,
   type PendingFilterDelete,
@@ -20,6 +22,8 @@ export function OwnerRow({
   isCurrentUser?: boolean;
   onClick: () => void;
 }): React.ReactNode {
+  const translateSales = useAppTranslations("sales");
+
   return (
     <li>
       <button
@@ -31,8 +35,12 @@ export function OwnerRow({
         )}
       >
         <Avatar name={name} className="h-5 w-5 text-[10px]" />
-        <span className="truncate">{name}</span>
-        {isCurrentUser && <span className="shrink-0 text-muted-foreground">(my)</span>}
+        <span className="truncate">
+          <bdi dir="auto">{name}</bdi>
+        </span>
+        {isCurrentUser && (
+          <span className="shrink-0 text-muted-foreground">{translateSales("my_af88e")}</span>
+        )}
       </button>
     </li>
   );
@@ -53,6 +61,8 @@ export function SavedFilterItem({
   onToggleFavorite?: (id: string) => void;
   onRequestDelete?: (target: PendingFilterDelete) => void;
 }): React.ReactNode {
+  const translateSales = useAppTranslations("sales");
+
   return (
     <div className="flex items-center">
       <DropdownMenuItem
@@ -60,13 +70,19 @@ export function SavedFilterItem({
         onSelect={onPick}
         className={cn("min-w-0 flex-1", selected && "bg-accent font-medium")}
       >
-        <span className="truncate">{filter.name}</span>
+        <span className="truncate">
+          <bdi dir="auto">{filter.name}</bdi>
+        </span>
       </DropdownMenuItem>
       {/* Only the owner can toggle the favorite (it is a per-row, owner-scoped flag) or delete the
           row, so both controls are shown only for owned filters. */}
       {filter.isOwn && (
         <DropdownMenuItem
-          aria-label={filter.favorite ? "Unfavorite filter" : "Favorite filter"}
+          aria-label={
+            filter.favorite
+              ? translateSales("unfavorite_filter_03222")
+              : translateSales("favorite_filter_3da9a")
+          }
           aria-pressed={filter.favorite}
           // Starring is not picking, so the menu stays open.
           onSelect={(e) => {

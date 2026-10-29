@@ -2,16 +2,8 @@
 import type React from "react";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import type { BoardEmptyKind } from "./boardEmptyKind";
-import {
-  BOARD_CLEAR_FILTERS,
-  BOARD_EMPTY_BODY,
-  BOARD_EMPTY_FILTERED_BODY,
-  BOARD_EMPTY_FILTERED_TITLE,
-  BOARD_EMPTY_TITLE,
-  BOARD_EMPTY_UNSURE_BODY,
-  BOARD_EMPTY_UNSURE_TITLE,
-} from "./boardFilterCopy";
 
 interface BoardEmptyProps {
   kind: Exclude<BoardEmptyKind, "none">;
@@ -25,17 +17,18 @@ interface BoardEmptyProps {
 // that excluded everything never reads as an empty pipeline, and a state that could be either
 // claims neither and offers both ways out.
 export function BoardEmpty({ kind, onClearFilters, addSlot }: BoardEmptyProps): React.ReactNode {
+  const translateSales = useAppTranslations("sales");
   const clearFilters = (
     <Button size="sm" variant="outline" onClick={onClearFilters}>
-      {BOARD_CLEAR_FILTERS}
+      {translateSales("computed.clearFilters")}
     </Button>
   );
 
   if (kind === "filtered") {
     return (
       <EmptyState
-        title={BOARD_EMPTY_FILTERED_TITLE}
-        body={BOARD_EMPTY_FILTERED_BODY}
+        title={translateSales("computed.boardEmptyFilteredTitle")}
+        body={translateSales("computed.boardEmptyFilteredBody")}
         action={clearFilters}
       />
     );
@@ -43,8 +36,8 @@ export function BoardEmpty({ kind, onClearFilters, addSlot }: BoardEmptyProps): 
   if (kind === "unsure") {
     return (
       <EmptyState
-        title={BOARD_EMPTY_UNSURE_TITLE}
-        body={BOARD_EMPTY_UNSURE_BODY}
+        title={translateSales("computed.boardEmptyUnsureTitle")}
+        body={translateSales("computed.boardEmptyUnsureBody")}
         action={
           <div className="flex items-center gap-2">
             {clearFilters}
@@ -54,5 +47,11 @@ export function BoardEmpty({ kind, onClearFilters, addSlot }: BoardEmptyProps): 
       />
     );
   }
-  return <EmptyState title={BOARD_EMPTY_TITLE} body={BOARD_EMPTY_BODY} action={addSlot} />;
+  return (
+    <EmptyState
+      title={translateSales("computed.boardEmptyTitle")}
+      body={translateSales("computed.boardEmptyBody")}
+      action={addSlot}
+    />
+  );
 }

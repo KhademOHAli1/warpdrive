@@ -1,19 +1,23 @@
+"use client";
 import type React from "react";
 import { Badge } from "@/components/ui/Badge";
-import { DEAL_STATUS_LABELS, type DealStatus } from "@/constants/dealStatus";
+import type { DealStatus } from "@/constants/dealStatus";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 
 export function DealStatusBadge({ status }: { status: DealStatus | undefined }): React.ReactNode {
+  const translateSales = useAppTranslations("sales");
+
   if (status === "won") {
     return (
       <Badge variant="success" data-deal-status="won">
-        {DEAL_STATUS_LABELS.won}
+        {translateSales("computed.statusWon")}
       </Badge>
     );
   }
   if (status === "lost") {
     return (
       <Badge variant="destructive" data-deal-status="lost">
-        {DEAL_STATUS_LABELS.lost}
+        {translateSales("computed.statusLost")}
       </Badge>
     );
   }

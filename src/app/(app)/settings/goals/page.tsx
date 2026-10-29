@@ -1,24 +1,30 @@
 import { asc, isNull } from "drizzle-orm";
 import type { ReactNode } from "react";
-import { SETTINGS_STRINGS } from "@/constants/settingsStrings";
 import { activityTypes, teams } from "@/db/schema";
 import { goals } from "@/db/schema/goals";
+import { getServerSettingsMessages } from "@/features/identity/settingsMessages.server";
 import { listAssignableUsers } from "@/features/identity/users.service";
 import { can } from "@/features/permissions/can";
+import { readBaseCurrency } from "@/features/settings/readBaseCurrency";
 import { visiblePipelineOptions } from "@/features/stats/visiblePipelines";
 import { createContext } from "@/server/trpc/context";
 import { SettingsHeading } from "../SettingsHeading";
 import { SettingsPage } from "../SettingsSurface";
 import { GoalsClient } from "./GoalsClient";
 
-export const metadata = { title: SETTINGS_STRINGS.goals };
+export async function generateMetadata() {
+  const L = await getServerSettingsMessages();
+  return { title: L.goals };
+}
 
 export default async function GoalsSettingsPage(): Promise<ReactNode> {
+  const L = await getServerSettingsMessages();
+
   const { actor, db } = await createContext();
   // Reading a goal needs no permission; setting someone's quota is administrative, so this
   // screen is gated even though the Performance widget is not.
   if (actor === null || !can(actor, "goals.manage")) {
-    return <p className="text-sm text-red-600">{SETTINGS_STRINGS.requiresAdmin}</p>;
+    return <p className="text-sm text-red-600">{L.requiresAdmin}</p>;
   }
   const signal = AbortSignal.timeout(5000);
   const [goalRows, users, teamRows, pipelineRows, typeRows] = await Promise.all([
@@ -37,12 +43,10 @@ export default async function GoalsSettingsPage(): Promise<ReactNode> {
 
   return (
     <SettingsPage>
-      <SettingsHeading
-        title={SETTINGS_STRINGS.goals}
-        description={SETTINGS_STRINGS.goalsDescription}
-      />
+      <SettingsHeading title={L.goals} description={L.goalsDescription} />
       <GoalsClient
         goals={goalRows}
+        baseCurrency={await readBaseCurrency(db, signal)}
         users={users.map((u) => ({ id: u.id, name: u.name }))}
         teams={teamRows}
         pipelines={pipelineRows}

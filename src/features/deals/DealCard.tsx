@@ -1,7 +1,9 @@
+"use client";
 import type React from "react";
 import { Tip } from "@/components/ui/tooltip";
+import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
 import { avatarColorClass, initials } from "@/lib/avatar";
-import { formatCurrency } from "@/lib/formatCurrency";
+import { useFormatters } from "@/lib/useFormatters";
 import { cn } from "@/lib/utils";
 import type { ActivityState } from "./cardIndicators";
 import { activityState, activityTooltip, rottingState } from "./cardIndicators";
@@ -10,7 +12,6 @@ import type { BoardCard } from "./dealRepo";
 
 // String constants: no magic strings, no em dashes.
 const STRINGS = {
-  roledescription: "draggable deal card",
   contactSeparator: ", ",
   // Next-action affordance: a small colored circle, one fill per urgency. Indigo = booked for
   // later, green = due today, red = overdue, amber = nothing planned. Amber is the nudge, so a
@@ -37,9 +38,9 @@ const STRINGS = {
 // Night keeps the same three steps: a near-black red ground with a brighter rail, because the
 // light tints would blow out to pink cards on a dark board.
 const ROT_TINT: Record<number, string> = {
-  1: "bg-red-50 border-l-4 border-l-red-400 dark:bg-[#1e1113] dark:border-l-[#b91c1c]",
-  2: "bg-red-100 border-l-4 border-l-red-500 dark:bg-[#2a1416] dark:border-l-[#dc2626]",
-  3: "bg-red-200 border-l-4 border-l-red-600 dark:bg-[#3a181b] dark:border-l-[#ef4444]",
+  1: "bg-red-50 border-s-4 border-s-red-400 dark:bg-[#1e1113] dark:border-s-[#b91c1c]",
+  2: "bg-red-100 border-s-4 border-s-red-500 dark:bg-[#2a1416] dark:border-s-[#dc2626]",
+  3: "bg-red-200 border-s-4 border-s-red-600 dark:bg-[#3a181b] dark:border-s-[#ef4444]",
 } as const;
 
 interface DealCardProps {
@@ -59,9 +60,13 @@ interface DealCardProps {
   onOpen?: () => void;
   // Lifted state for the drag overlay: a strong shadow so the moving card floats above the board.
   elevated?: boolean;
+  currency?: string;
 }
 
 export function DealCard(props: DealCardProps): React.ReactNode {
+  const translateSales = useAppTranslations("sales");
+  const locale = useLocale();
+
   const {
     card,
     ownerName,
@@ -74,11 +79,17 @@ export function DealCard(props: DealCardProps): React.ReactNode {
     now,
     onOpen,
   } = props;
-  const { elevated } = props;
+  const { elevated, currency } = props;
+  const format = useFormatters();
   const compact = density === "compact";
   const activity = activityState(card.nextActivityAt, now);
   // Hover/aria copy for the next-action badge: names the soonest action and its timing.
-  const activityTip = activityTooltip(card.nextActivityTitle ?? null, card.nextActivityAt, now);
+  const activityTip = activityTooltip(
+    card.nextActivityTitle ?? null,
+    card.nextActivityAt,
+    now,
+    locale,
+  );
   const closed = card.status === "won" || card.status === "lost";
   const rot = rottingState(card.stageEnteredAt, closed ? null : rottingDays, now);
 
@@ -93,12 +104,12 @@ export function DealCard(props: DealCardProps): React.ReactNode {
   return (
     <button
       type="button"
-      aria-roledescription={STRINGS.roledescription}
+      aria-roledescription={translateSales("computed.draggableDeal")}
       aria-label={card.title}
       data-deal-id={card.id}
       onClick={onOpen}
       className={cn(
-        "w-full overflow-hidden rounded-lg border bg-card text-left shadow-sm transition-shadow hover:shadow-md",
+        "w-full overflow-hidden rounded-lg border bg-card text-start shadow-sm transition-shadow hover:shadow-md",
         onOpen !== undefined && "cursor-pointer hover:border-ring",
         elevated === true && "rotate-1 shadow-2xl ring-1 ring-ring/30",
         compact ? "px-3 py-2" : "px-3 py-3",
@@ -106,20 +117,24 @@ export function DealCard(props: DealCardProps): React.ReactNode {
       )}
     >
       <div className="flex items-center gap-2">
-        <div className="min-w-0 flex-1 truncate text-sm font-medium leading-tight">{primary}</div>
+        <div className="min-w-0 flex-1 truncate text-sm font-medium leading-tight">
+          <bdi dir="auto">{primary}</bdi>
+        </div>
         <DealStatusBadge status={card.status} />
       </div>
 
       {/* Description line: "org, person" (comfortable only). */}
       {!compact && descriptionLine !== null && (
-        <div className="mt-0.5 truncate text-xs text-muted-foreground">{descriptionLine}</div>
+        <div className="mt-0.5 truncate text-xs text-muted-foreground">
+          <bdi dir="auto">{descriptionLine}</bdi>
+        </div>
       )}
 
       {/* Value + label chips row (one chip per label, Pipedrive multi-label) */}
       <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">
         {card.value !== null && (
           <span className="font-semibold tabular-nums text-foreground">
-            {formatCurrency(card.value)}
+            {`${format.currency(card.value, card.currency ?? currency)}${card.currency !== undefined ? ` ${card.currency}` : ""}`}
           </span>
         )}
         {labels.map((label) => (
@@ -128,7 +143,7 @@ export function DealCard(props: DealCardProps): React.ReactNode {
             className="rounded-full px-2 py-0.5 text-xs font-medium text-white"
             style={{ backgroundColor: label.color }}
           >
-            {label.name}
+            <bdi dir="auto">{label.name}</bdi>
           </span>
         ))}
       </div>
@@ -141,13 +156,13 @@ export function DealCard(props: DealCardProps): React.ReactNode {
           // biome-ignore lint/performance/noImgElement: tiny board-card avatar, next/image not warranted
           <img
             src={ownerAvatarUrl}
-            alt={`owner: ${ownerName}`}
+            alt={translateSales("owner_arg0_18e21", { arg0: ownerName })}
             className="h-5 w-5 shrink-0 rounded-full object-cover outline outline-1 -outline-offset-1 outline-black/10 dark:outline-white/10"
           />
         ) : (
           <span
             role="img"
-            aria-label={`owner: ${ownerName}`}
+            aria-label={translateSales("owner_arg0_18e21", { arg0: ownerName })}
             className={cn(
               "flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-semibold uppercase",
               avatarColorClass(ownerName),
@@ -179,10 +194,10 @@ export function DealCard(props: DealCardProps): React.ReactNode {
           {rot.rotting && (
             <span
               role="status"
-              aria-label={`rotting, idle ${rot.ageDays} days`}
+              aria-label={translateSales("rotting_idle_arg0_days_0f4ad", { arg0: rot.ageDays })}
               className="rounded bg-white/80 px-1 py-0.5 text-xs font-medium tabular-nums text-red-700 dark:bg-black/40 dark:text-red-300"
             >
-              {rot.ageDays}d
+              {translateSales("computed.dayCount", { count: rot.ageDays })}
             </span>
           )}
         </span>

@@ -16,6 +16,7 @@ import {
 import { DEAL_STATUS } from "@/constants/dealStatus";
 import { users, visibilityGroups, visibilityLevelEnum } from "./identity";
 import { lostReasons } from "./lostReasons";
+import { moneyColumn } from "./money";
 import { pipelines } from "./pipelines";
 import { stages } from "./stages";
 
@@ -34,8 +35,9 @@ export const deals = pgTable(
     id: uuid("id").primaryKey().defaultRandom(),
     title: text("title").notNull(),
     status: dealStatus("status").notNull().default("open"),
-    // numeric(14,2): money in base currency; null = no value set (data-model §5).
-    value: numeric("value", { precision: 14, scale: 2 }),
+    // Value is denominated in this record's currency; null means no value is set.
+    value: moneyColumn("value"),
+    currency: text("currency").notNull().default(sql`public.warpdrive_base_currency()`),
     expectedCloseDate: date("expected_close_date"),
     // Label keys (Pipedrive multi Hot/Warm/Cold etc.); resolved to name+color in the UI.
     labels: text("labels").array().notNull().default(sql`'{}'`),

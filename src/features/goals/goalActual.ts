@@ -4,12 +4,14 @@
 // a team's members, or everyone), while the viewer's own visibility still decides which deals
 // they are allowed to see at all. Reading a colleague's goal must never surface a deal that
 // colleague can see and the viewer cannot.
+
 import { sql } from "drizzle-orm";
 import type { Db } from "@/db/client";
 import type { Goal } from "@/db/schema/goals";
 import { dealVisibilityClause } from "@/features/deals/visibility";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { activityVisibilityPredicate } from "@/features/stats/activityVisibilitySql";
+import { canonicalMoney } from "@/lib/canonicalMoney";
 import type { GoalPeriod } from "./goalPeriod";
 import {
   activityEvent,
@@ -39,20 +41,21 @@ async function dealTotals(
 
   const result = await db.execute(sql`
     SELECT count(*)::int AS "count",
-           coalesce(sum(d.value), 0)::numeric(14,2)::text AS "value"
+           coalesce(sum(d.value), 0)::text AS "value"
     FROM deals d
     JOIN pipelines p ON p.id = d.pipeline_id
     WHERE d.deleted_at IS NULL
       AND d.archived_at IS NULL
       AND p.is_archived = false
       AND ${windowClause}
+      ${goal.metric === "value" ? sql`AND d.currency = ${goal.currency}` : sql``}
       ${pipelineClause(goal, sql`d.pipeline_id`)}
       ${assigneeClause(goal, sql`d.owner_id`)}
       AND ${dealVisibilityClause(goalSession(actor))}
   `);
   signal.throwIfAborted();
   const row = (result as unknown as { rows: Totals[] }).rows[0];
-  return { count: row?.count ?? 0, value: row?.value ?? "0.00" };
+  return { count: row?.count ?? 0, value: canonicalMoney(row?.value ?? "0.00") };
 }
 
 async function activityTotals(

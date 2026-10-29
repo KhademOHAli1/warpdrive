@@ -1,4 +1,6 @@
 import { isSourceChannelKey } from "@/constants/sourceChannels";
+import { createAppTranslator } from "@/features/i18n/catalog";
+import type { Locale } from "@/features/i18n/registry";
 import { orNull, parseMoneyValue } from "@/utils/entityFormFields";
 import type { LeadCreateInput } from "./schemas";
 
@@ -19,12 +21,13 @@ export interface NewLeadFields {
 
 // Validate the Add lead form into a LeadCreateInput. Trust-boundary fields (visibility) are derived
 // server-side; ownerId is honored server-side only for actors with deal.changeOwner.
-export function parseNewLead(fields: NewLeadFields): ParseLeadResult {
+export function parseNewLead(fields: NewLeadFields, locale: Locale = "en"): ParseLeadResult {
+  const t = createAppTranslator(locale, "leads");
   const title = fields.title.trim();
-  if (title === "") return { ok: false, error: "Title is required" };
+  if (title === "") return { ok: false, error: t("titleRequired") };
 
-  const money = parseMoneyValue(fields.value);
-  if (!money.ok) return money;
+  const money = parseMoneyValue(fields.value, locale);
+  if (!money.ok) return { ok: false, error: locale === "en" ? money.error : t("validNumber") };
   // Labels are user-managed catalog names now (not a fixed key set), so accept any provided value
   // and just dedupe.
   const labels = [...new Set(fields.labels ?? [])];

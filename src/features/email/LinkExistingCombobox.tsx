@@ -5,11 +5,9 @@ import type React from "react";
 import { useEffect, useState } from "react";
 import { buttonVariants } from "@/components/ui/Button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/Popover";
-import { STRINGS } from "@/constants/strings";
+import { useEmailMessages } from "@/features/email/useEmailMessages";
 import { trpc } from "@/lib/trpc-client";
 import { cn } from "@/lib/utils";
-
-const S = STRINGS.inbox;
 
 interface LinkExistingComboboxProps {
   kind: "person" | "deal";
@@ -29,6 +27,8 @@ export function LinkExistingCombobox({
   triggerLabel,
   onPick,
 }: LinkExistingComboboxProps): React.ReactNode {
+  const E = useEmailMessages();
+
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
   const [debounced, setDebounced] = useState("");
@@ -45,7 +45,7 @@ export function LinkExistingCombobox({
   );
 
   const items = kind === "person" ? (data?.people ?? []) : (data?.deals ?? []);
-  const placeholder = kind === "person" ? S.searchPeoplePlaceholder : S.searchDealsPlaceholder;
+  const placeholder = kind === "person" ? E.searchPeoplePlaceholder : E.searchDealsPlaceholder;
   const showList = debounced.trim().length > 0;
 
   function pick(id: string, label: string): void {
@@ -77,7 +77,7 @@ export function LinkExistingCombobox({
           <CommandList className="max-h-56 overflow-y-auto p-1">
             {showList && (
               <CommandEmpty className="px-2 py-3 text-sm text-muted-foreground">
-                {S.noMatches}
+                {E.noMatches}
               </CommandEmpty>
             )}
             {showList && (

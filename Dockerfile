@@ -6,19 +6,18 @@
 # files via __dirname-relative reads, so they must stay in a real node_modules, not a bundle.
 # See docs/superpowers/specs/2026-07-07-docker-single-box-deploy-design.md.
 
-FROM node:22-alpine AS base
-RUN corepack enable
+FROM oven/bun:1.4.2 AS base
 WORKDIR /app
 
 # --- deps: full install (build needs devDeps: next, esbuild, drizzle types) ---
 FROM base AS deps
-COPY package.json pnpm-lock.yaml ./
-RUN pnpm install --frozen-lockfile
+COPY package.json bun.lock bunfig.toml ./
+RUN bun install --frozen-lockfile
 
 # --- prod-deps: production-only tree for the runtime image ---
 FROM base AS prod-deps
-COPY package.json pnpm-lock.yaml ./
-RUN pnpm install --frozen-lockfile --prod
+COPY package.json bun.lock bunfig.toml ./
+RUN bun install --frozen-lockfile --prod
 
 # --- build: Next build + transpiled ws/worker/migrate entrypoints ---
 FROM base AS build
@@ -57,7 +56,7 @@ RUN NODE_ENV=production \
     OAUTH_SIGNING_KEY=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA= \
     SEED_ADMIN_EMAIL=build@example.com \
     ALLOW_FIRST_LOGIN_ADMIN=false \
-    pnpm build:docker
+    bun run build:docker
 
 # --- runtime: minimal, non-root ---
 FROM base AS runtime
@@ -74,7 +73,7 @@ ENV PORT=3000
 COPY --from=prod-deps /app/node_modules ./node_modules
 # `next start` writes the fetch/route cache under .next/cache at request time, so this tree must be
 # owned by the non-root runtime user or those writes hit EACCES (noisy logs + disabled caching).
-COPY --chown=node:node --from=build /app/.next ./.next
+COPY --chown=bun:bun --from=build /app/.next ./.next
 COPY --from=build /app/public ./public
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/drizzle ./drizzle
@@ -84,8 +83,8 @@ COPY package.json next.config.ts ./
 # which read it at request time.
 ARG APP_COMMIT=
 ENV APP_COMMIT=${APP_COMMIT}
-# node:alpine ships an unprivileged `node` user; run as it, not root.
-USER node
+# The official Bun image provides the unprivileged `bun` user.
+USER bun
 EXPOSE 3000 8080
 # App is the default; compose overrides command per service (ws/worker/migrate).
-CMD ["node_modules/.bin/next", "start"]
+CMD ["bun", "--bun", "next", "start"]

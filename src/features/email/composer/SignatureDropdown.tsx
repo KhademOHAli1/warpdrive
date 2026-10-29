@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Tip } from "@/components/ui/tooltip";
-import { COMPOSER_STRINGS } from "./composer.constants";
+import { useEmailMessages } from "@/features/email/useEmailMessages";
 
 interface SignatureDropdownProps {
   signatures: { id: string; name: string }[];
@@ -25,13 +25,14 @@ export function SignatureDropdown({
   value,
   onChange,
 }: SignatureDropdownProps): React.ReactNode {
-  const current =
-    signatures.find((s) => s.id === value)?.name ?? COMPOSER_STRINGS.signatureNoneLabel;
+  const E = useEmailMessages();
+
+  const current = signatures.find((s) => s.id === value)?.name ?? E._composer.signatureNoneLabel;
   return (
     <DropdownMenu>
-      <Tip label={COMPOSER_STRINGS.signatureTitle(current)}>
+      <Tip label={E._composer.signatureTitle(current)}>
         <DropdownMenuTrigger
-          aria-label={COMPOSER_STRINGS.signaturePickerLabel}
+          aria-label={E._composer.signaturePickerLabel}
           className="flex items-center gap-1 rounded border border-border px-1.5 py-1 text-xs text-muted-foreground hover:bg-accent"
         >
           <Signature aria-hidden="true" className="h-3.5 w-3.5" />
@@ -39,11 +40,11 @@ export function SignatureDropdown({
       </Tip>
       <DropdownMenuContent align="start" className="min-w-32">
         <DropdownMenuItem
-          aria-label={COMPOSER_STRINGS.signatureNoneLabel}
+          aria-label={E._composer.signatureNoneLabel}
           className="text-xs"
           onSelect={() => onChange("")}
         >
-          {COMPOSER_STRINGS.signatureNoneLabel}
+          {E._composer.signatureNoneLabel}
         </DropdownMenuItem>
         {signatures.map((s) => (
           <DropdownMenuItem

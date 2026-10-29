@@ -4,6 +4,7 @@ import type { Goal } from "@/db/schema/goals";
 import { dealVisibilityClause } from "@/features/deals/visibility";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { activityVisibilityPredicate } from "@/features/stats/activityVisibilitySql";
+import { accumulateSeries } from "./accumulateSeries";
 import { type GoalPeriod, periodDays } from "./goalPeriod";
 import {
   activityEvent,
@@ -37,7 +38,7 @@ async function dealDays(
   const result = await db.execute(sql`
     SELECT ${at}::date::text AS "day",
            count(*)::int AS "count",
-           coalesce(sum(d.value), 0)::numeric(14,2)::text AS "value"
+           coalesce(sum(d.value), 0)::text AS "value"
     FROM deals d
     JOIN pipelines p ON p.id = d.pipeline_id
     WHERE d.deleted_at IS NULL
@@ -45,6 +46,7 @@ async function dealDays(
       AND p.is_archived = false
       AND ${state} ${at} >= ${from}::date
       AND ${at} < ${through}::date + INTERVAL '1 day'
+      ${goal.metric === "value" ? sql`AND d.currency = ${goal.currency}` : sql``}
       ${pipelineClause(goal, sql`d.pipeline_id`)}
       ${assigneeClause(goal, sql`d.owner_id`)}
       AND ${dealVisibilityClause(goalSession(actor))}
@@ -85,21 +87,6 @@ async function activityDays(
   return (result as unknown as { rows: DayTotal[] }).rows;
 }
 
-function accumulate(
-  days: string[],
-  totals: Map<string, DayTotal>,
-  metric: Goal["metric"],
-): GoalSeriesPoint[] {
-  let running = 0;
-  return days.map((day) => {
-    const total = totals.get(day);
-    if (total !== undefined) {
-      running += metric === "value" ? Math.round(Number(total.value) * 100) : total.count;
-    }
-    return { day, actual: metric === "value" ? (running / 100).toFixed(2) : String(running) };
-  });
-}
-
 export async function goalSeries(
   db: Db,
   actor: PermSetUser,
@@ -117,5 +104,5 @@ export async function goalSeries(
     goal.subject === "deal"
       ? await dealDays(db, actor, goal, period.start, through, signal)
       : await activityDays(db, actor, goal, period.start, through, signal);
-  return accumulate(days, new Map(rows.map((r) => [r.day, r])), goal.metric);
+  return accumulateSeries(days, new Map(rows.map((r) => [r.day, r])), goal.metric, goal.currency);
 }

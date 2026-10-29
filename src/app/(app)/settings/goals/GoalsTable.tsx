@@ -1,16 +1,12 @@
 "use client";
-
 import { useState, useTransition } from "react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/Button";
-import { SETTINGS_STRINGS } from "@/constants/settingsStrings";
 import type { Goal } from "@/db/schema/goals";
 import { deleteGoalAction } from "@/features/goals/actions";
-import { goalLabel } from "@/features/goals/goalLabel";
-import { goalNumberText } from "@/features/goals/goalTargetText";
+import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
+import { useFormatters } from "@/lib/useFormatters";
 import { readCsrfToken } from "@/utils/csrfCookie";
-
-const S = SETTINGS_STRINGS;
 
 interface Props {
   goals: Goal[];
@@ -20,6 +16,25 @@ interface Props {
 }
 
 export function GoalsTable({ goals, assigneeNames, onChanged, onEdit }: Props): React.ReactElement {
+  const L = useSettingsMessages();
+  const S = L;
+  const format = useFormatters();
+  function goalLabel(g: Goal): string {
+    if (g.subject === "activity")
+      return L._extra.activityGoalDisplayLabel(g.action, L._extra.goalIntervals[g.interval]);
+    const noun =
+      g.subject === "deal"
+        ? g.metric === "value"
+          ? L._extra.goalDealValue
+          : L._extra.deals
+        : L._extra.activities;
+    return L._extra.goalDisplayLabel(
+      noun,
+      L._extra.goalActions[g.action],
+      L._extra.goalIntervals[g.interval],
+    );
+  }
+
   const [pendingDelete, setPendingDelete] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [, startTransition] = useTransition();
@@ -68,11 +83,17 @@ export function GoalsTable({ goals, assigneeNames, onChanged, onEdit }: Props): 
               <td className="px-3 py-2">{goalLabel(g)}</td>
               <td className="px-3 py-2">
                 {g.assigneeId === null
-                  ? "Whole company"
-                  : (assigneeNames[g.assigneeId] ?? g.assigneeKind)}
+                  ? L._extra.whole_company
+                  : (assigneeNames[g.assigneeId] ??
+                    (g.assigneeKind === "team" ? L._extra.unknownTeam : L._extra.unknownUser))}
               </td>
-              <td className="px-3 py-2 tabular-nums">{goalNumberText(g.target, g.metric)}</td>
-              <td className="px-3 py-2 tabular-nums">{g.startsOn}</td>
+              <td className="px-3 py-2 tabular-nums">
+                {format.number(Number(g.target), {
+                  maximumFractionDigits: g.metric === "count" ? 0 : 4,
+                })}
+                {g.metric === "value" ? ` ${g.currency}` : ""}
+              </td>
+              <td className="px-3 py-2 tabular-nums">{format.dateOnly(g.startsOn)}</td>
               <td className="px-3 py-2 text-right">
                 <span className="inline-flex gap-1">
                   <Button variant="ghost" onClick={() => onEdit(g)}>

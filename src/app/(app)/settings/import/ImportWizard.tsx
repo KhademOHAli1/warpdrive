@@ -1,6 +1,6 @@
 "use client";
 import { useReducer, useState } from "react";
-import { STRINGS } from "@/constants/strings";
+import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import { commitBatchAction, setMappingAction } from "@/features/import/actions";
 import type { MappableEntity } from "@/features/import/importFields";
 import {
@@ -18,8 +18,6 @@ import { PhaseWait } from "./PhaseWait";
 import { PreviewStep } from "./PreviewStep";
 import { UploadStep } from "./UploadStep";
 import { WizardStepper } from "./WizardStepper";
-
-const IMP = STRINGS.settings.importer;
 
 export interface ImportWizardProps {
   personDefs: CustomFieldDef[];
@@ -50,6 +48,9 @@ function defsForTarget(props: ImportWizardProps, target: ImportTarget): CustomFi
 }
 
 export function ImportWizard(props: ImportWizardProps): React.ReactNode {
+  const L = useSettingsMessages();
+  const IMP = L.importer;
+
   const [state, dispatch] = useReducer(wizardReducer, undefined, initialWizardState);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);

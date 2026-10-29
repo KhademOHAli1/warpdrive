@@ -1,5 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "../components/ui/iconDirection.css";
 
 /*
  * Bind `dark:` to the `.dark` class, which is where the dark palette below is declared.
@@ -79,12 +81,10 @@
   --radius-lg: calc(var(--radius) + 2px);
 
   /*
-   * Pipedrive parity C1: Inter is the primary typeface. `--font-inter` is provided by next/font
-   * (self-hosted, set via a class on <html> in layout.tsx); Tailwind's `font-sans` utility and the
-   * v4 default page font both resolve `--font-sans`, so feeding Inter in here swaps the whole app
-   * to Inter with a system fallback if the bundled font ever fails to load.
+   * The interface typeface is selected by document language. Both fonts are local assets,
+   * so Persian glyphs and their metrics do not depend on the viewer's installed fonts.
    */
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+  --font-sans: var(--font-interface), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, "Noto Sans", sans-serif;
 
   /*
@@ -119,6 +119,14 @@
 }
 
 @layer base {
+  html {
+    --font-interface: var(--font-inter);
+  }
+
+  html:lang(fa) {
+    --font-interface: var(--font-vazirmatn);
+  }
+
   :root {
     --radius: 0.5rem;
 

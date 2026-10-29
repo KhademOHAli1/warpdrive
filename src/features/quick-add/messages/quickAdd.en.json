@@ -1,0 +1,30 @@
+{
+  "title": "Quick add",
+  "entities": {
+    "lead": "Lead",
+    "deal": "Deal",
+    "activity": "Activity",
+    "person": "Person",
+    "org": "Organization",
+    "note": "Note",
+    "email": "Email"
+  },
+  "addPerson": "Add person",
+  "addOrganization": "Add organization",
+  "name": "Name",
+  "nameRequired": "Name is required",
+  "fieldRequired": "{name} is required",
+  "organization": "Organization",
+  "noOrganization": "No organization",
+  "address": "Address",
+  "addressFields": {
+    "street": "Street",
+    "city": "City",
+    "region": "Region",
+    "postal": "Postal",
+    "country": "Country"
+  },
+  "newNote": "New note",
+  "noteTarget": "Note target person",
+  "selectPerson": "Select a person"
+}

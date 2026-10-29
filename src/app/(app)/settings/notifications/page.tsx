@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { NotificationType } from "@/constants/notificationTypes";
-import { STRINGS } from "@/constants/strings";
+import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import { setPreferenceAction } from "@/features/notifications/actions";
 import { PreferencesForm } from "@/features/notifications/ui/PreferencesForm";
 import { trpc } from "@/lib/trpc-client";
@@ -10,9 +10,12 @@ import { readCsrfToken } from "@/utils/csrfCookie";
 import { SettingsHeading } from "../SettingsHeading";
 import { SettingsCard, SettingsCardHeader, SettingsPage } from "../SettingsSurface";
 
-const { pageTitle, loading, saveError } = STRINGS.notifications.preferences;
-
 export default function NotificationSettingsPage() {
+  const L = useSettingsMessages();
+  const pageTitle = L._extra.notificationPageTitle;
+  const loading = L._extra.notificationLoading;
+  const saveError = L._extra.notificationSaveError;
+
   const utils = trpc.useUtils();
   const prefs = trpc.notifications.preferences.useQuery();
   const [error, setError] = useState<string | null>(null);
@@ -36,12 +39,12 @@ export default function NotificationSettingsPage() {
 
   return (
     <SettingsPage>
-      <SettingsHeading title={pageTitle} description={STRINGS.settings.notificationsDescription} />
+      <SettingsHeading title={pageTitle} description={L.notificationsDescription} />
       {error !== null && <p className="mb-4 text-sm text-destructive">{error}</p>}
       <SettingsCard>
         <SettingsCardHeader
-          title="Notification channels"
-          description="Choose how each kind of update reaches you."
+          title={L._extra.notification_channels}
+          description={L._extra.choose_how_each_kind_of_update_reaches_you}
         />
         <div className="px-5">
           <PreferencesForm

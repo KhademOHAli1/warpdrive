@@ -5,31 +5,10 @@ import { useId } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { MultiCombobox } from "@/components/ui/MultiCombobox";
-import { ENRICHMENT_STRINGS } from "@/constants/enrichmentStrings";
 import { PROSPECT_SENIORITIES, type ProspectSeniority } from "@/constants/prospectSearch";
 import type { ProviderId } from "../providers/types";
+import { useEnrichmentMessages } from "../useEnrichmentMessages";
 import { ProviderSelect } from "./ProviderSelect";
-
-const S = ENRICHMENT_STRINGS.prospects;
-
-const SENIORITY_LABELS: Readonly<Record<ProspectSeniority, string>> = {
-  owner: "Owner",
-  founder: "Founder",
-  c_suite: "C-suite",
-  partner: "Partner",
-  vp: "VP",
-  head: "Head",
-  director: "Director",
-  manager: "Manager",
-  senior: "Senior",
-  entry: "Entry",
-  intern: "Intern",
-};
-
-const SENIORITY_OPTIONS = PROSPECT_SENIORITIES.map((value) => ({
-  value,
-  label: SENIORITY_LABELS[value],
-}));
 
 export interface ProspectFiltersValue {
   provider: ProviderId;
@@ -54,6 +33,8 @@ export function ProspectFilters({
   onChange: (next: ProspectFiltersValue) => void;
   onSearch: () => void;
 }): React.ReactNode {
+  const E = useEnrichmentMessages();
+  const S = E.prospects;
   const titleId = useId();
   const seniorityId = useId();
   return (
@@ -90,7 +71,7 @@ export function ProspectFilters({
         </span>
         <MultiCombobox
           values={value.seniorities}
-          options={SENIORITY_OPTIONS}
+          options={PROSPECT_SENIORITIES.map((value) => ({ value, label: E.seniority[value] }))}
           ariaLabel={S.seniorityFilterLabel}
           placeholder={S.seniorityAny}
           onChange={(seniorities) => {

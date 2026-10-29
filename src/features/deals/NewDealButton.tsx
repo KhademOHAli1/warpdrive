@@ -3,6 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import type React from "react";
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { AddDealModal } from "./AddDealModal";
 import { BOARD_QUERY_KEY } from "./useDealMove";
 
@@ -25,6 +26,8 @@ export function NewDealButton({
   pipelines,
   baseCurrency,
 }: NewDealButtonProps): React.ReactNode {
+  const translateSales = useAppTranslations("sales");
+
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
 
@@ -37,7 +40,7 @@ export function NewDealButton({
         className="px-3"
         onClick={() => setOpen(true)}
       >
-        + Deal
+        {translateSales("deal_96653")}
       </Button>
 
       {open && (

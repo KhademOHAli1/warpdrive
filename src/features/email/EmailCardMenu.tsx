@@ -12,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { STRINGS } from "@/constants/strings";
+import { useEmailMessages } from "@/features/email/useEmailMessages";
 
 interface EmailCardMenuProps {
   threadId: string;
@@ -37,6 +37,8 @@ export function EmailCardMenu({
   onUnlink,
   unlinkLabel,
 }: EmailCardMenuProps): React.ReactNode {
+  const E = useEmailMessages();
+
   const [confirming, setConfirming] = useState(false);
 
   return (
@@ -45,7 +47,7 @@ export function EmailCardMenu({
         <DropdownMenuTrigger asChild>
           <button
             type="button"
-            aria-label={STRINGS.inbox.timelineMoreActions}
+            aria-label={E.timelineMoreActions}
             className="rounded p-1 text-muted-foreground transition-transform hover:bg-accent active:scale-[0.96]"
           >
             <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
@@ -54,17 +56,13 @@ export function EmailCardMenu({
         <DropdownMenuContent align="end">
           {canCompose && (
             <>
-              <DropdownMenuItem onSelect={onReplyAll}>
-                {STRINGS.inbox.replyAllAction}
-              </DropdownMenuItem>
-              <DropdownMenuItem onSelect={onForward}>
-                {STRINGS.inbox.forwardAction}
-              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={onReplyAll}>{E.replyAllAction}</DropdownMenuItem>
+              <DropdownMenuItem onSelect={onForward}>{E.forwardAction}</DropdownMenuItem>
               <DropdownMenuSeparator />
             </>
           )}
           <DropdownMenuItem asChild>
-            <Link href={`/inbox/${threadId}`}>{STRINGS.inbox.openInInbox}</Link>
+            <Link href={`/inbox/${threadId}`}>{E.openInInbox}</Link>
           </DropdownMenuItem>
           {canCompose && (
             <DropdownMenuItem onSelect={() => setConfirming(true)}>{unlinkLabel}</DropdownMenuItem>
@@ -75,9 +73,9 @@ export function EmailCardMenu({
       <ConfirmDialog
         open={confirming}
         onOpenChange={setConfirming}
-        title={STRINGS.inbox.unlinkConfirmTitle}
-        description={STRINGS.inbox.unlinkConfirmBody}
-        confirmLabel={STRINGS.inbox.unlinkConfirmAction}
+        title={E.unlinkConfirmTitle}
+        description={E.unlinkConfirmBody}
+        confirmLabel={E.unlinkConfirmAction}
         destructive
         onConfirm={onUnlink}
       />

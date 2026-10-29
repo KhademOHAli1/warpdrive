@@ -3,10 +3,8 @@ import type React from "react";
 import { useRef, useState } from "react";
 import { Input } from "@/components/ui/Input";
 import { EntityCombobox, type EntityPick } from "@/features/entity-create/EntityCombobox";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { trpc } from "@/lib/trpc-client";
-
-const PLACEHOLDER = "Link participant";
-const PEOPLE_LOAD_FAILED = "Could not load people to link.";
 
 export function ParticipantLinkField({
   linked,
@@ -17,6 +15,8 @@ export function ParticipantLinkField({
   orgId: string | null;
   onPick: (pick: EntityPick) => Promise<string | null>;
 }): React.ReactNode {
+  const translateSales = useAppTranslations("sales");
+
   const peopleQ = trpc.contacts.personOptions.useQuery();
   const orgPeopleQ = trpc.contacts.listPeopleForOrg.useQuery(
     { orgId: orgId ?? "" },
@@ -38,7 +38,7 @@ export function ParticipantLinkField({
     setError(null);
     const existing = alreadyLinked(pick);
     if (existing !== undefined) {
-      setError(`${existing} is already a participant`);
+      setError(translateSales("computed.alreadyParticipant", { name: existing }));
       setResetKey((k) => k + 1);
       return;
     }
@@ -56,21 +56,26 @@ export function ParticipantLinkField({
   const orgPeople = orgPeopleQ.data?.map((p) => ({ id: p.id, name: p.name }));
   const awaitingOrgPeople =
     orgId !== null && orgPeople === undefined && orgPeopleQ.isError !== true;
-  const message = peopleQ.isError ? PEOPLE_LOAD_FAILED : error;
+  const message = peopleQ.isError ? translateSales("computed.loadPeopleFailed") : error;
   return (
     <div className="w-64">
       {people === undefined || awaitingOrgPeople ? (
-        <Input aria-label={PLACEHOLDER} placeholder={PLACEHOLDER} disabled readOnly />
+        <Input
+          aria-label={translateSales("computed.linkParticipant")}
+          placeholder={translateSales("computed.linkParticipant")}
+          disabled
+          readOnly
+        />
       ) : (
         <EntityCombobox
           key={resetKey}
-          label={PLACEHOLDER}
+          label={translateSales("computed.linkParticipant")}
           hideLabel
           options={people}
           defaultOptions={orgPeople}
           excludeIds={linkedIds}
-          placeholder={PLACEHOLDER}
-          createLabel={(q) => `Add '${q}' as new person`}
+          placeholder={translateSales("computed.linkParticipant")}
+          createLabel={(q) => translateSales("add_arg0_as_new_person_11c06", { arg0: q })}
           onSelectExisting={() => undefined}
           onCreateNew={() => undefined}
           onClear={() => undefined}

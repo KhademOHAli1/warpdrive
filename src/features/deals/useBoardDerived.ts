@@ -1,3 +1,5 @@
+import { type CurrencyTotal, sumMoney } from "@/features/currencies/money";
+import { useLocale } from "@/features/i18n/LocaleProvider";
 import { applyConditions } from "./boardConditions";
 import { distinctBoardOwners, matchesOwnerFilter } from "./boardFilter";
 import type { Condition } from "./boardQuickFilter";
@@ -13,13 +15,15 @@ interface DerivedInput {
   conditions: Condition[];
   sortKey: BoardSortKey;
   sortDirection: SortDirection;
+  baseCurrency?: string;
 }
 
 interface Derived {
   owners: ReturnType<typeof distinctBoardOwners>;
   shownCards: BoardCard[];
-  sumsByStage: Map<string, { dealCount: number; total: number }>;
+  sumsByStage: Map<string, { dealCount: number; total: number; currencyTotals?: CurrencyTotal[] }>;
   boardTotal: number;
+  boardTotals: CurrencyTotal[];
   sortedByStage: Map<string, BoardCard[]>;
 }
 
@@ -30,23 +34,30 @@ interface Derived {
 export function useBoardDerived(input: DerivedInput): Derived {
   const { liveCards, stages, selectedOwnerId, conditions, sortKey, sortDirection } = input;
 
-  const owners = distinctBoardOwners(liveCards);
+  const locale = useLocale();
+  const owners = distinctBoardOwners(liveCards, locale);
 
   const shownCards = applyConditions(
     liveCards.filter((c) => matchesOwnerFilter(c, selectedOwnerId)),
     conditions,
   );
 
-  const sumsByStage = new Map<string, { dealCount: number; total: number }>();
-  for (const c of shownCards) {
-    const cur = sumsByStage.get(c.stageId) ?? { dealCount: 0, total: 0 };
-    sumsByStage.set(c.stageId, {
-      dealCount: cur.dealCount + 1,
-      total: cur.total + (c.value !== null ? Number(c.value) : 0),
+  const fallback = input.baseCurrency ?? "USD";
+  const sumsByStage = new Map<
+    string,
+    { dealCount: number; total: number; currencyTotals: CurrencyTotal[] }
+  >();
+  for (const stage of stages) {
+    const cards = shownCards.filter((card) => card.stageId === stage.id);
+    const currencyTotals = sumMoney(cards, fallback);
+    sumsByStage.set(stage.id, {
+      dealCount: cards.length,
+      currencyTotals,
+      total: currencyTotals.length === 1 ? Number(currencyTotals[0]?.value ?? 0) : 0,
     });
   }
-
-  const boardTotal = shownCards.reduce((s, c) => s + (c.value !== null ? Number(c.value) : 0), 0);
+  const boardTotals = sumMoney(shownCards, fallback);
+  const boardTotal = boardTotals.length === 1 ? Number(boardTotals[0]?.value ?? 0) : 0;
 
   const sortedByStage = new Map<string, BoardCard[]>(stages.map((s) => [s.id, []]));
   for (const c of shownCards) sortedByStage.get(c.stageId)?.push(c);
@@ -54,5 +65,5 @@ export function useBoardDerived(input: DerivedInput): Derived {
     sortedByStage.set(s.id, sortBoardCards(sortedByStage.get(s.id) ?? [], sortKey, sortDirection));
   }
 
-  return { owners, shownCards, sumsByStage, boardTotal, sortedByStage };
+  return { owners, shownCards, sumsByStage, boardTotal, boardTotals, sortedByStage };
 }

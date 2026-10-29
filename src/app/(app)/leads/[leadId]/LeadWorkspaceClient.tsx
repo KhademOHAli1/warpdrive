@@ -2,6 +2,7 @@
 import type React from "react";
 import type { Organization, Person } from "@/db/schema";
 import { SharedComposeBar } from "@/features/compose/SharedComposeBar";
+import { useLocale } from "@/features/i18n/LocaleProvider";
 import { LeadHeader } from "@/features/leads/detail/LeadHeader";
 import { LeadSidebar } from "@/features/leads/detail/LeadSidebar";
 import { LeadTimeline } from "@/features/leads/detail/LeadTimeline";
@@ -36,7 +37,8 @@ export function LeadWorkspaceClient({
   leadCustomFieldDefs = [],
   baseCurrency = "USD",
 }: LeadWorkspaceClientProps): React.ReactNode {
-  const timelineQ = trpc.lead.leadTimeline.useQuery({ leadId: lead.id });
+  const locale = useLocale();
+  const timelineQ = trpc.lead.leadTimeline.useQuery({ leadId: lead.id, locale });
   const timeline = timelineQ.data ?? { items: [], emails: [] };
   // Assignable users for the sidebar's Owner picker (LeadSummaryEditPanel); the write path
   // (updateLead) is the real authority (deal.changeOwner), this read is deliberately ungated.

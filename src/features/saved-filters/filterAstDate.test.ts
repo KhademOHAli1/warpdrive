@@ -2,111 +2,151 @@ import { PgDialect } from "drizzle-orm/pg-core";
 import { describe, expect, it } from "vitest";
 import { DATE_PRESET_KEYS } from "@/constants/dateFilterPresets";
 import { ERROR_IDS } from "@/constants/errorIds";
-import { filterToSql } from "./filterAst";
+import { type FilterCompileOptions, filterToSql } from "./filterAst";
 import type { FilterDefinition } from "./schemas";
 
 type Condition = FilterDefinition["conditions"][number];
-
 const dialect = new PgDialect();
-function emit(c: Condition, timeZone?: string | null) {
-  return dialect.sqlToQuery(filterToSql({ conditions: [c] }, { timeZone }));
+const NY = "America/New_York";
+const NOW = new Date("2026-09-02T16:00:00Z");
+function emit(c: Condition, timeZone?: string | null, context: FilterCompileOptions = {}) {
+  return dialect.sqlToQuery(filterToSql({ conditions: [c] }, { now: NOW, timeZone, ...context }));
 }
 
-const NY = "America/New_York";
-const LOCAL_TODAY = "(now() AT TIME ZONE $1)::date";
-
-describe("filterToSql: date fields compile to a half-open day range in the viewer's zone", () => {
-  it("an absolute date on a timestamptz column matches that calendar day in the zone", () => {
+describe("date predicates preserve column kinds, half-open bounds and null semantics", () => {
+  it("matches an absolute civil day in the viewer zone for timestamps", () => {
     const q = emit({ field: "nextActivityAt", op: "eq", value: "2026-09-02" }, NY);
     expect(q.sql).toBe(
-      `(d.next_activity_at >= (($1::date)::timestamp AT TIME ZONE $2) AND d.next_activity_at < (($3::date + 1)::timestamp AT TIME ZONE $4))`,
+      "(d.next_activity_at >= (($1::date)::timestamp AT TIME ZONE $2) AND d.next_activity_at < (($3::date + 1)::timestamp AT TIME ZONE $4))",
     );
     expect(q.params).toEqual(["2026-09-02", NY, "2026-09-02", NY]);
   });
-
-  it("an absolute date on a date column compares as a plain date", () => {
-    const q = emit({ field: "expectedCloseDate", op: "eq", value: "2026-09-30" }, NY);
+  it("compares date columns as plain Gregorian civil dates regardless of display calendar", () => {
+    const q = emit({ field: "expectedCloseDate", op: "eq", value: "2026-09-30" }, NY, {
+      calendar: "persian",
+      locale: "fa",
+    });
     expect(q.sql).toBe(
-      `(d.expected_close_date >= $1::date AND d.expected_close_date < $2::date + 1)`,
+      "(d.expected_close_date >= $1::date AND d.expected_close_date < $2::date + 1)",
     );
     expect(q.params).toEqual(["2026-09-30", "2026-09-30"]);
   });
-
-  it("maps every ordered operator onto the range bounds", () => {
-    const col = "d.expected_close_date";
-    const value = "2026-09-02";
-    const f = "expectedCloseDate";
+  it("maps every ordered absolute-date operator onto the same range bounds", () => {
+    const f = "expectedCloseDate",
+      value = "2026-09-02",
+      col = "d.expected_close_date";
     expect(emit({ field: f, op: "gt", value }).sql).toBe(`${col} >= $1::date + 1`);
     expect(emit({ field: f, op: "gte", value }).sql).toBe(`${col} >= $1::date`);
     expect(emit({ field: f, op: "lt", value }).sql).toBe(`${col} < $1::date`);
     expect(emit({ field: f, op: "lte", value }).sql).toBe(`${col} < $1::date + 1`);
-  });
-
-  it("neq keeps rows with no date, like the other null-safe negations", () => {
-    const q = emit({ field: "expectedCloseDate", op: "neq", value: "2026-09-02" });
-    expect(q.sql).toBe(
-      `(d.expected_close_date IS NULL OR d.expected_close_date < $1::date OR d.expected_close_date >= $2::date + 1)`,
+    expect(emit({ field: f, op: "neq", value }).sql).toBe(
+      `(${col} IS NULL OR ${col} < $1::date OR ${col} >= $2::date + 1)`,
     );
   });
-
-  it("resolves a preset from the clock in the viewer's zone", () => {
-    expect(emit({ field: "expectedCloseDate", op: "eq", value: "today" }, NY).sql).toBe(
-      `(d.expected_close_date >= ${LOCAL_TODAY} AND d.expected_close_date < ${LOCAL_TODAY.replace("$1", "$2")} + 1)`,
-    );
-    expect(emit({ field: "expectedCloseDate", op: "eq", value: "this_week" }, NY).sql).toBe(
-      `(d.expected_close_date >= date_trunc('week', ${LOCAL_TODAY})::date AND d.expected_close_date < date_trunc('week', ${LOCAL_TODAY.replace("$1", "$2")})::date + 7)`,
-    );
-    expect(emit({ field: "expectedCloseDate", op: "eq", value: "last_month" }, NY).sql).toBe(
-      `(d.expected_close_date >= (date_trunc('month', ${LOCAL_TODAY}) - interval '1 month')::date AND d.expected_close_date < date_trunc('month', ${LOCAL_TODAY.replace("$1", "$2")})::date)`,
-    );
-    expect(emit({ field: "expectedCloseDate", op: "eq", value: "last_7_days" }, NY).sql).toBe(
-      `(d.expected_close_date >= ${LOCAL_TODAY} - 6 AND d.expected_close_date < ${LOCAL_TODAY.replace("$1", "$2")} + 1)`,
-    );
-  });
-
-  it("converts a preset's local day bounds to instants for a timestamptz column", () => {
-    const q = emit({ field: "nextActivityAt", op: "eq", value: "today" }, NY);
-    expect(q.sql).toBe(
-      `(d.next_activity_at >= (((now() AT TIME ZONE $1)::date)::timestamp AT TIME ZONE $2) AND d.next_activity_at < (((now() AT TIME ZONE $3)::date + 1)::timestamp AT TIME ZONE $4))`,
-    );
-    expect(q.params).toEqual([NY, NY, NY, NY]);
-  });
-
-  it("falls back to UTC when the viewer has no zone or an unknown one", () => {
-    expect(emit({ field: "nextActivityAt", op: "gte", value: "today" }).params).toEqual([
-      "UTC",
-      "UTC",
+  it("binds Gregorian week/month/rolling bounds resolved from the injected clock", () => {
+    expect(emit({ field: "expectedCloseDate", op: "eq", value: "today" }, NY).params).toEqual([
+      "2026-09-02",
+      "2026-09-03",
     ]);
-    expect(emit({ field: "nextActivityAt", op: "gte", value: "today" }, null).params).toEqual([
-      "UTC",
-      "UTC",
+    expect(emit({ field: "expectedCloseDate", op: "eq", value: "this_week" }, NY).params).toEqual([
+      "2026-08-31",
+      "2026-09-07",
     ]);
-    expect(
-      emit({ field: "nextActivityAt", op: "gte", value: "today" }, "Mars/Olympus").params,
-    ).toEqual(["UTC", "UTC"]);
+    expect(emit({ field: "expectedCloseDate", op: "eq", value: "last_month" }, NY).params).toEqual([
+      "2026-08-01",
+      "2026-09-01",
+    ]);
+    expect(emit({ field: "expectedCloseDate", op: "eq", value: "last_7_days" }, NY).params).toEqual(
+      ["2026-08-27", "2026-09-03"],
+    );
   });
-
-  it("SECURITY: every preset compiles to constant SQL and binds only the zone", () => {
-    for (const key of DATE_PRESET_KEYS) {
-      const q = emit({ field: "nextActivityAt", op: "eq", value: key }, NY);
-      expect(new Set(q.params)).toEqual(new Set([NY]));
-      expect(q.sql).not.toContain(key);
-      expect(q.sql).toMatch(/now\(\) AT TIME ZONE/);
+  it("binds Solar Hijri month bounds and preserves all six operator contracts", () => {
+    const context = {
+      calendar: "persian" as const,
+      locale: "fa" as const,
+      now: new Date("2026-03-21T12:00:00Z"),
+    };
+    const condition = { field: "expectedCloseDate" as const, value: "this_month" };
+    const eq = emit({ ...condition, op: "eq" }, "Asia/Tehran", context);
+    expect(eq.sql).toBe("(d.expected_close_date >= $1::date AND d.expected_close_date < $2::date)");
+    expect(eq.params).toEqual(["2026-03-21", "2026-04-21"]);
+    const neq = emit({ ...condition, op: "neq" }, "Asia/Tehran", context);
+    expect(neq.sql).toBe(
+      "(d.expected_close_date IS NULL OR d.expected_close_date < $1::date OR d.expected_close_date >= $2::date)",
+    );
+    expect(neq.params).toEqual(eq.params);
+    for (const [op, bound, comparison] of [
+      ["gt", "2026-04-21", ">="],
+      ["gte", "2026-03-21", ">="],
+      ["lt", "2026-03-21", "<"],
+      ["lte", "2026-04-21", "<"],
+    ] as const) {
+      const q = emit({ ...condition, op }, "Asia/Tehran", context);
+      expect(q.sql).toBe(`d.expected_close_date ${comparison} $1::date`);
+      expect(q.params).toEqual([bound]);
     }
   });
-
-  it("rejects a value that is neither a real calendar date nor a preset", () => {
-    for (const value of ["soon", "2026-02-30", "2026-9-2"]) {
+  it("converts both resolved timestamp boundaries in PostgreSQL, retaining timezone transitions", () => {
+    const q = emit({ field: "nextActivityAt", op: "eq", value: "today" }, NY);
+    expect(q.sql).toBe(
+      "(d.next_activity_at >= (($1::date)::timestamp AT TIME ZONE $2) AND d.next_activity_at < (($3::date)::timestamp AT TIME ZONE $4))",
+    );
+    expect(q.params).toEqual(["2026-09-02", NY, "2026-09-03", NY]);
+  });
+  it("anchors every condition to one injectable clock and resolves Tehran midnight", () => {
+    const q = dialect.sqlToQuery(
+      filterToSql(
+        {
+          conditions: [
+            { field: "expectedCloseDate", op: "eq", value: "today" },
+            { field: "nextActivityAt", op: "eq", value: "this_month" },
+          ],
+        },
+        {
+          calendar: "persian",
+          locale: "fa",
+          timeZone: "Asia/Tehran",
+          now: new Date("2026-03-20T20:30:00Z"),
+        },
+      ),
+    );
+    expect(q.params).toEqual([
+      "2026-03-21",
+      "2026-03-22",
+      "2026-03-21",
+      "Asia/Tehran",
+      "2026-04-21",
+      "Asia/Tehran",
+    ]);
+  });
+  it("uses UTC for missing or invalid zones", () => {
+    for (const zone of [undefined, null, "Mars/Olympus"]) {
+      expect(emit({ field: "nextActivityAt", op: "gte", value: "today" }, zone).params).toEqual([
+        "2026-09-02",
+        "UTC",
+      ]);
+    }
+  });
+  it("keeps every preset and all user-supplied dates out of SQL text", () => {
+    for (const key of DATE_PRESET_KEYS) {
+      const q = emit({ field: "nextActivityAt", op: "eq", value: key }, NY);
+      expect(q.sql).not.toContain(key);
+      expect(q.params).toHaveLength(4);
+      expect(q.params[1]).toBe(NY);
+      expect(q.params[3]).toBe(NY);
+      expect(q.params[0]).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      expect(q.params[2]).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    }
+  });
+  it("rejects invalid dates and list values while keeping emptiness a plain null test", () => {
+    for (const value of ["soon", "2026-02-30", "2026-9-2", ["2026-09-02"]]) {
       expect(() => emit({ field: "nextActivityAt", op: "eq", value })).toThrow(
         expect.objectContaining({ id: ERROR_IDS.DEAL_FILTER_INVALID }),
       );
     }
-  });
-
-  it("isEmpty on an activity date is a plain null test", () => {
-    expect(emit({ field: "nextActivityAt", op: "isEmpty" }).sql).toBe(`d.next_activity_at IS NULL`);
+    expect(emit({ field: "nextActivityAt", op: "isEmpty" }).sql).toBe("d.next_activity_at IS NULL");
     expect(emit({ field: "lastActivityAt", op: "isNotEmpty" }).sql).toBe(
-      `NOT (d.last_activity_at IS NULL)`,
+      "NOT (d.last_activity_at IS NULL)",
     );
   });
 });

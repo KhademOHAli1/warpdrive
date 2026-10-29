@@ -17,6 +17,8 @@ import type { PermSetUser } from "@/features/permissions/effective";
 import { assertReferenceVisible } from "@/features/permissions/referenceCheck";
 import type { DbOrTx } from "@/server/realtime/channelVersions";
 import { err, ok, type Result } from "@/types/result";
+import { activityAccountPreferences } from "./accountTimeZone";
+import { canonicalCreateDates, civilEndBeforeStart } from "./activityTemporalWrite";
 import { recomputeDealActivityDates } from "./nextActivity";
 import { scheduleReminder } from "./reminders";
 import { type ActivityCreateInput, activityCreateInput } from "./schemas";
@@ -139,6 +141,12 @@ export async function createActivity(
   const orderCheck = assertEndNotBeforeStart(input.dueAt, input.endAt);
   if (!orderCheck.ok) return orderCheck;
 
+  const preferences = await activityAccountPreferences(db, actor.id);
+  const civilDates = canonicalCreateDates(input, preferences.timeZone);
+  if (civilEndBeforeStart(civilDates))
+    return err(
+      new AppError(ERROR_IDS.ACTIVITY_END_BEFORE_START, "activity end is before its start", {}),
+    );
   const refActor = toVisibilitySession(actor);
 
   const result = await db.transaction(async (tx) => {
@@ -163,6 +171,7 @@ export async function createActivity(
         dueAt: input.dueAt === null ? null : new Date(input.dueAt),
         // A null dueAt cannot be all-day: there is no day.
         allDay: input.dueAt !== null && input.allDay,
+        ...civilDates,
         endAt: input.endAt === null ? null : new Date(input.endAt),
         durationMinutes: input.durationMinutes,
         ownerId: actor.id,

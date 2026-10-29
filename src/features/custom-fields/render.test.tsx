@@ -71,3 +71,9 @@ describe("isCustomFieldValueEmpty", () => {
     expect(isCustomFieldValueEmpty(["a"])).toBe(false);
   });
 });
+
+it("treats blank structured fields as empty without hiding meaningful zero coordinates", () => {
+  expect(isCustomFieldValueEmpty({ street: "", country: "" })).toBe(true);
+  expect(isCustomFieldValueEmpty({ start: "", end: "" })).toBe(true);
+  expect(isCustomFieldValueEmpty({ lat: 0, lng: 0 })).toBe(false);
+});

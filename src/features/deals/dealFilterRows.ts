@@ -6,12 +6,15 @@ import type {
 import { completeRowValue, type RowValue } from "@/components/filters/rowValue";
 import { isDateConditionValue } from "@/constants/dateFilterPresets";
 import { VALUELESS_OPS } from "@/constants/filterOps";
+import { createAppTranslator } from "@/features/i18n/catalog";
+import type { Locale } from "@/features/i18n/registry";
 import {
   FILTER_FIELDS,
   type FILTER_OPS,
   OPS_BY_FIELD,
 } from "@/features/saved-filters/filterFields";
 import type { FilterDefinition } from "@/features/saved-filters/schemas";
+import { normalizeNumberInput } from "@/utils/normalizeNumberInput";
 
 type AstField = (typeof FILTER_FIELDS)[number];
 type AstOp = (typeof FILTER_OPS)[number];
@@ -28,6 +31,7 @@ function isAstField(field: string): field is AstField {
 export function dealRowsToDefinition(
   rows: readonly RawCondition[],
   combinator: "and" | "or",
+  locale: Locale = "en",
 ): FilterDefinition | null {
   const conditions = rows.flatMap((r) => {
     if (!isAstField(r.field)) return [];
@@ -35,7 +39,11 @@ export function dealRowsToDefinition(
     // op validated against the field's allow-list above; narrow to the AST enum for the definition.
     const condition = { field: r.field, op: r.op as AstOp };
     if (VALUELESS_OPS.has(r.op)) return [condition];
-    const value = completeRowValue(r.value);
+    const rawValue =
+      r.field === "value" && typeof r.value === "string"
+        ? (normalizeNumberInput(r.value, locale) ?? r.value)
+        : r.value;
+    const value = completeRowValue(rawValue);
     if (value === null) return [];
     return [{ ...condition, value }];
   });
@@ -62,7 +70,9 @@ export function definitionToRows(definition: FilterDefinition): ConditionRow[] {
 export function conditionRowIssue(
   rows: readonly RawCondition[],
   fields: readonly ConditionFieldOption[],
+  locale: Locale = "en",
 ): string | null {
+  const t = createAppTranslator(locale, "sales");
   for (const r of rows) {
     const value = completeRowValue(r.value);
     // A valueless op ignores whatever sits in the value, and a picked list is never free text,
@@ -70,11 +80,15 @@ export function conditionRowIssue(
     if (value === null || Array.isArray(value) || VALUELESS_OPS.has(r.op)) continue;
     const def = fields.find((f) => f.field === r.field);
     if (def === undefined) continue;
-    if (def.input.kind === "number" && Number.isNaN(Number(value))) {
-      return `${def.label} needs a number.`;
+    if (
+      def.input.kind === "number" &&
+      (normalizeNumberInput(value, locale) === null ||
+        Number.isNaN(Number(normalizeNumberInput(value, locale))))
+    ) {
+      return t("computed.needsNumber", { field: def.label });
     }
     if (def.input.kind === "date" && !isDateConditionValue(value)) {
-      return `${def.label} needs a date.`;
+      return t("computed.needsDate", { field: def.label });
     }
   }
   return null;

@@ -1,9 +1,12 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, render, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeAll, describe, expect, test, vi } from "vitest";
 import type { BoardCard } from "./dealRepo";
+
+const savePreferences = vi.hoisted(() => vi.fn());
+vi.mock("@/features/i18n/actions", () => ({ saveLocalePreferencesAction: savePreferences }));
 
 const boardQuery = vi.hoisted(() => vi.fn(() => Promise.resolve({ cards: [] })));
 
@@ -37,6 +40,7 @@ vi.mock("@/features/identity/preferencesActions", () => ({
   setBoardViewAction: () => Promise.resolve({ ok: true }),
 }));
 
+import { LocaleProvider, useSetLocalePreferences } from "@/features/i18n/LocaleProvider";
 import { Board } from "./Board";
 import type { BoardViewState } from "./boardView";
 import { forgetBoardView, rememberBoardView } from "./boardViewMemory";
@@ -46,6 +50,7 @@ afterEach(() => {
   cleanup();
   forgetBoardView();
   boardQuery.mockClear();
+  savePreferences.mockReset();
 });
 
 const PIPE = "11111111-1111-1111-1111-111111111111";
@@ -73,9 +78,26 @@ function freshClient(): QueryClient {
   return new QueryClient({ defaultOptions: { queries: { retry: false } } });
 }
 
-function renderBoard(conditions: BoardViewState["conditions"], qc = freshClient()) {
-  return render(
-    <QueryClientProvider client={qc}>
+function PreferenceControl() {
+  const set = useSetLocalePreferences();
+  return (
+    <button
+      type="button"
+      onClick={() => void set({ calendar: "persian", locale: "fa", timeZone: "Asia/Tehran" })}
+    >
+      change-date-preferences
+    </button>
+  );
+}
+
+function renderBoard(
+  conditions: BoardViewState["conditions"],
+  qc = freshClient(),
+  withPreferences = false,
+) {
+  const board = (
+    <>
+      {withPreferences && <PreferenceControl />}
       <Board
         pipelineId={PIPE}
         selfActorId={ANA}
@@ -92,12 +114,23 @@ function renderBoard(conditions: BoardViewState["conditions"], qc = freshClient(
           conditions,
         }}
       />
+    </>
+  );
+  return render(
+    <QueryClientProvider client={qc}>
+      {withPreferences ? (
+        <LocaleProvider locale="en" timeZone="UTC">
+          {board}
+        </LocaleProvider>
+      ) : (
+        board
+      )}
     </QueryClientProvider>,
   );
 }
 
 describe("board restored with a persisted filter", () => {
-  test("refetches on mount with the browser zone when the filter has a date condition", async () => {
+  test("refetches on mount with the saved UI zone when the filter has a date condition", async () => {
     renderBoard({ conditions: [{ field: "nextActivityAt", op: "eq", value: "today" }] });
     await waitFor(() => expect(boardQuery).toHaveBeenCalled());
     expect(boardQuery).toHaveBeenCalledWith(
@@ -133,5 +166,42 @@ describe("board remounted from the in-tab view memory", () => {
     expect(boardQuery).toHaveBeenCalledWith(
       expect.objectContaining({ pipelineId: PIPE, definition: VALUE_FILTER }),
     );
+  });
+});
+
+describe("date context preference changes", () => {
+  test("waits for persistence, refetches relative filters and keeps the shared board cache key", async () => {
+    let finishSave!: (value: { ok: true }) => void;
+    savePreferences.mockReturnValueOnce(
+      new Promise((resolve) => {
+        finishSave = resolve;
+      }),
+    );
+    const qc = freshClient();
+    renderBoard(
+      { conditions: [{ field: "expectedCloseDate", op: "eq", value: "this_month" }] },
+      qc,
+      true,
+    );
+    await waitFor(() => expect(boardQuery).toHaveBeenCalled());
+    boardQuery.mockClear();
+    fireEvent.click(screen.getByText("change-date-preferences"));
+    await waitFor(() => expect(savePreferences).toHaveBeenCalled());
+    expect(boardQuery).not.toHaveBeenCalled();
+    await act(async () => finishSave({ ok: true }));
+    await waitFor(() =>
+      expect(boardQuery).toHaveBeenCalledWith(
+        expect.objectContaining({ timeZone: "Asia/Tehran", locale: "fa", calendar: "persian" }),
+      ),
+    );
+    expect(qc.getQueryData(BOARD_QUERY_KEY(PIPE))).toEqual({ cards: [] });
+  });
+  test("does not refetch a non-date filter for calendar or timezone changes", async () => {
+    savePreferences.mockResolvedValueOnce({ ok: true });
+    renderBoard({ conditions: [{ field: "value", op: "gt", value: 50 }] }, freshClient(), true);
+    fireEvent.click(screen.getByText("change-date-preferences"));
+    await waitFor(() => expect(savePreferences).toHaveBeenCalled());
+    await act(async () => {});
+    expect(boardQuery).not.toHaveBeenCalled();
   });
 });

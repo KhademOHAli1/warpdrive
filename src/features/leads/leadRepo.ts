@@ -39,6 +39,7 @@ const leadRowSelection = {
   id: leads.id,
   title: leads.title,
   value: leads.value,
+  currency: leads.currency,
   labels: leads.labels,
   sourceOrigin: leads.sourceOrigin,
   personName: persons.name,
@@ -56,6 +57,7 @@ export interface LeadRow {
   id: string;
   title: string;
   value: string | null;
+  currency?: string;
   labels: string[];
   sourceOrigin: string;
   personName: string | null;
@@ -190,6 +192,8 @@ async function leadOrderBy(
     return customFieldOrderBy(leads.customFields, def, sort.dir);
   }
   const col = sortColumn(sort.field);
+  if (sort.field === "value")
+    return sql`${leads.currency} ASC, ${sort.dir === "asc" ? asc(col) : desc(col)}`;
   return sort.dir === "asc" ? asc(col) : desc(col);
 }
 

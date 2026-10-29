@@ -13,15 +13,15 @@ import { PinnedNotesSection } from "@/features/deal-workspace/PinnedNotesSection
 import { SectionHeading } from "@/features/deal-workspace/SectionHeading";
 import { FieldRow } from "@/features/deal-workspace/sidebar/FieldRow";
 import { emailTabStatusLabel } from "@/features/email/emailTabStatus";
+import { useEmailMessages } from "@/features/email/useEmailMessages";
 import { FileAttachments } from "@/features/files/FileAttachments";
+import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
 import { trpc } from "@/lib/trpc-client";
 import { ContactHistoryTabs } from "./ContactHistoryTabs";
 
 const EMPTY_CLASS = "text-sm text-muted-foreground";
 // Threads link to person_id (and deal_id), never to an organization, so an org's Email filter
 // states the reason instead of implying the record merely has no mail yet.
-const ORG_EMAIL_EMPTY = "Email is tracked on people, not organizations.";
-const EMAIL_LOAD_ERROR = "Couldn't load emails for this contact. Please try again.";
 
 export function TabStrip<T extends string>({
   tabs,
@@ -41,7 +41,7 @@ export function TabStrip<T extends string>({
           <TabsTrigger
             key={t}
             value={t}
-            className="px-3 py-2 text-muted-foreground hover:text-foreground data-[state=active]:border-b-2 data-[state=active]:border-link data-[state=active]:font-medium data-[state=active]:text-link"
+            className="px-3 py-2 text-muted-foreground hover:text-foreground data-[state=active]:border-b-2 data-[state=active]:border-sink data-[state=active]:font-medium data-[state=active]:text-link"
           >
             {labels[t]}
           </TabsTrigger>
@@ -84,6 +84,10 @@ export function ContactTimelinePanel({
   entityType: "person" | "organization";
   entityId: string;
 }): React.ReactNode {
+  const tContacts = useAppTranslations("contacts");
+  const locale = useLocale();
+  const emailMessages = useEmailMessages();
+
   const utils = trpc.useUtils();
   // Called unconditionally and merely disabled for an organization: a hook may not sit behind a
   // branch, and this panel serves both entity types.
@@ -92,7 +96,7 @@ export function ContactTimelinePanel({
     { enabled: entityType === "person" },
   );
   const rawItems =
-    trpc.contacts.contactTimeline.useQuery({ entityType, entityId }).data?.items ?? [];
+    trpc.contacts.contactTimeline.useQuery({ entityType, entityId, locale }).data?.items ?? [];
   const items = mergeEmailItems(rawItems, emailQuery.data ?? []);
   const { pinned, focus, history } = partitionFocusHistory(items);
   const historyByType = bucketByType(history);
@@ -125,20 +129,20 @@ export function ContactTimelinePanel({
     <div className="space-y-6">
       {emailQuery.isError && (
         <p role="alert" className="text-sm text-red-600">
-          {EMAIL_LOAD_ERROR}
+          {tContacts("couldnTLoadEmailsForThisContactPleaseTryAgain")}
         </p>
       )}
       <PinnedNotesSection items={pinned} onNoteChanged={onNoteChanged} />
-      <section aria-label="focus">
-        <SectionHeading>Focus</SectionHeading>
+      <section aria-label={tContacts("focusText")}>
+        <SectionHeading>{tContacts("focus")}</SectionHeading>
         <HistoryFeed
           items={focus}
-          emptyLabel="Nothing needs your attention"
+          emptyLabel={tContacts("nothingNeedsYourAttention")}
           onActivityChanged={onActivityChanged}
         />
       </section>
-      <section aria-label="history">
-        <SectionHeading>History</SectionHeading>
+      <section aria-label={tContacts("historyText")}>
+        <SectionHeading>{tContacts("history")}</SectionHeading>
         <ContactHistoryTabs
           entityType={entityType}
           entityId={entityId}
@@ -146,8 +150,10 @@ export function ContactTimelinePanel({
           counts={counts}
           emailScope={emailScope}
           emailEmptyLabel={
-            emailTabStatusLabel(emailQuery) ??
-            (entityType === "organization" ? ORG_EMAIL_EMPTY : undefined)
+            emailTabStatusLabel(emailQuery, emailMessages) ??
+            (entityType === "organization"
+              ? tContacts("emailIsTrackedOnPeopleNotOrganizations")
+              : undefined)
           }
           onActivityChanged={onActivityChanged}
           onNoteChanged={onNoteChanged}
@@ -177,12 +183,14 @@ export function CustomFieldsPanel<T extends { id: string; key: string; name: str
   values: Record<string, unknown>;
   renderValue: (def: T, value: unknown) => React.ReactNode;
 }): React.ReactNode {
+  const tContacts = useAppTranslations("contacts");
+
   if (defs.length === 0) return null;
   // CO-2: render as a CollapsibleSection (collapse toggle + shared 16px/600 heading) using the
   // shared FieldRow so labels/values align with every other sidebar section instead of the old
   // bespoke bordered <section> with a 14px/500 heading and hard-coded gray tokens.
   return (
-    <CollapsibleSection title="Custom fields">
+    <CollapsibleSection title={tContacts("customFields")}>
       {defs.map((def) => {
         const value = values[def.key];
         return (

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { Textarea } from "@/components/ui/Textarea";
 import type { CommentableEntityType } from "@/constants/comments";
 import { createCommentAction } from "@/features/collaboration/commentActions";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { trpc } from "@/lib/trpc-client";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { CommentCard } from "./CommentCard";
@@ -18,6 +19,8 @@ interface Props {
 }
 
 export function NoteComments({ noteId, entityType, entityId, onError }: Props): React.ReactNode {
+  const translateSales = useAppTranslations("sales");
+
   const utils = trpc.useUtils();
   const query = trpc.collaboration.listComments.useQuery({ entityType, entityId });
   const [composing, setComposing] = useState(false);
@@ -48,7 +51,7 @@ export function NoteComments({ noteId, entityType, entityId, onError }: Props): 
   return (
     <div className="mt-2 border-t border-border/60 pt-2">
       {mine.length > 0 && (
-        <ul className="mb-1 space-y-1 border-l-2 border-border/70 pl-3">
+        <ul className="mb-1 space-y-1 border-s-2 border-border/70 ps-3">
           {mine.map((c) => (
             <li key={c.id}>
               <CommentCard
@@ -68,11 +71,11 @@ export function NoteComments({ noteId, entityType, entityId, onError }: Props): 
       {composing ? (
         <div>
           <Textarea
-            aria-label="Comment"
+            aria-label={translateSales("comment_44f5e")}
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
             rows={2}
-            placeholder="Write a comment..."
+            placeholder={translateSales("write_a_comment_a89a1")}
             className="resize-y bg-card"
           />
           <div className="mt-2 flex justify-end gap-2">
@@ -83,10 +86,10 @@ export function NoteComments({ noteId, entityType, entityId, onError }: Props): 
                 setComposing(false);
               }}
             >
-              Cancel
+              {translateSales("cancel_19766")}
             </Button>
             <Button disabled={busy} onClick={() => void post()}>
-              Save
+              {translateSales("save_1509f")}
             </Button>
           </div>
         </div>
@@ -97,7 +100,7 @@ export function NoteComments({ noteId, entityType, entityId, onError }: Props): 
           className="flex items-center gap-1.5 rounded px-1 py-0.5 text-xs text-muted-foreground hover:bg-accent hover:text-foreground"
         >
           <MessageSquare aria-hidden="true" className="h-3.5 w-3.5" />
-          Comment
+          {translateSales("comment_44f5e")}
         </button>
       )}
     </div>

@@ -2,7 +2,7 @@
  * scripts/seed-smoke-phase5.ts
  *
  * Idempotent fixture seeder for the Phase 5 agent-browser smoke test.
- * Run: pnpm db:seed:smoke:phase5
+ * Run: bun run db:seed:smoke:phase5
  *
  * Produces the Task 21 preconditions:
  *   - Users A (admin, stats.viewOthers), B (regular), C (regular, no RestrictedGroup)

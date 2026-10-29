@@ -153,6 +153,7 @@ function renderClient(over: Partial<LeadDetail> = {}) {
 }
 
 const lead: LeadDetail = {
+  currency: "USD",
   id: "l1",
   title: "Acme lead",
   value: "1200.00",

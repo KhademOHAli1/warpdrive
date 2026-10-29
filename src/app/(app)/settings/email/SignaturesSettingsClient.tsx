@@ -13,8 +13,8 @@ import {
   updateSignatureAction,
 } from "@/features/email/authoringActions";
 import { RichTextBody } from "@/features/email/composer/RichTextBodyLazy";
+import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import { readCsrfToken } from "@/utils/csrfCookie";
-import { EMAIL_SETTINGS_STRINGS as S } from "./strings";
 
 type Sig = { id: string; name: string; isDefault: boolean; bodyHtml: string };
 type Draft = { id?: string; name: string; bodyHtml: string; isDefault: boolean };
@@ -22,6 +22,9 @@ const ROW_BUTTON =
   "relative h-auto px-0 py-0 text-sm font-normal text-muted-foreground hover:bg-transparent hover:text-foreground after:absolute after:left-0 after:top-1/2 after:h-10 after:w-full after:-translate-y-1/2 after:content-['']";
 
 export function SignaturesSettingsClient({ signatures }: { signatures: Sig[] }): React.ReactNode {
+  const L = useSettingsMessages();
+  const S = L._email;
+
   const router = useRouter();
   const reportError = useActionError();
   const [draft, setDraft] = useState<Draft | null>(null);

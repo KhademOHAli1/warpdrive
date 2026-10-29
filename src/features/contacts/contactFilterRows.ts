@@ -1,5 +1,7 @@
 import { completeRowValue, type RowValue, singleRowValue } from "@/components/filters/rowValue";
 import { FILTER_OP_LABELS, VALUELESS_OPS } from "@/constants/filterOps";
+import { createAppTranslator } from "@/features/i18n/catalog";
+import type { Locale } from "@/features/i18n/registry";
 import {
   CONTACT_ARRAY_FIELDS,
   type ContactFilterConfig,
@@ -21,18 +23,20 @@ export interface BuilderRow {
 export const OP_LABELS: Record<ContactFilterOp, string> = FILTER_OP_LABELS;
 
 // Human field labels for the field dropdown, per entity (keys match the backend config fields).
+const english = createAppTranslator("en", "contacts");
+
 export const PERSON_FILTER_LABELS: Record<string, string> = {
-  name: "Name",
-  primaryEmail: "Email",
-  ownerId: "Owner",
-  labels: "Label",
+  name: english("name"),
+  primaryEmail: english("email"),
+  ownerId: english("owner"),
+  labels: english("label"),
 };
 export const ORG_FILTER_LABELS: Record<string, string> = {
-  name: "Name",
-  industry: "Industry",
-  employeeCount: "Employees",
-  ownerId: "Owner",
-  labels: "Label",
+  name: english("name"),
+  industry: english("industry"),
+  employeeCount: english("employees"),
+  ownerId: english("owner"),
+  labels: english("label"),
 };
 
 // Field value input kind, derived from the backend config (no separate source of truth). "label"
@@ -68,4 +72,19 @@ export function rowsToDefinition(
     return [{ field: r.field, op: r.op, value: numeric }];
   });
   return conditions.length === 0 ? null : { combinator, conditions };
+}
+
+export function personFilterLabels(locale: Locale = "en"): Record<string, string> {
+  const t = createAppTranslator(locale, "contacts");
+  return { name: t("name"), primaryEmail: t("email"), ownerId: t("owner"), labels: t("label") };
+}
+export function orgFilterLabels(locale: Locale = "en"): Record<string, string> {
+  const t = createAppTranslator(locale, "contacts");
+  return {
+    name: t("name"),
+    industry: t("industry"),
+    employeeCount: t("employees"),
+    ownerId: t("owner"),
+    labels: t("label"),
+  };
 }

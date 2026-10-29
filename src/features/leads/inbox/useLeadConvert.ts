@@ -1,5 +1,6 @@
 "use client";
 import { useRef, useState } from "react";
+import { useLocale } from "@/features/i18n/LocaleProvider";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import type { LeadRow } from "../leadRepo";
 import { bulkConvertLeadsAction, convertLeadAction } from "../leadServerActions";
@@ -29,6 +30,7 @@ export function useLeadConvert({
   clearSelection,
   goToDeal,
 }: UseLeadConvertDeps): UseLeadConvertResult {
+  const locale = useLocale();
   const [convertError, setConvertError] = useState<string | null>(null);
   const [convertTarget, setConvertTarget] = useState<LeadRow | "bulk" | null>(null);
   const [bulkConvertPending, setBulkConvertPending] = useState(false);
@@ -55,7 +57,7 @@ export function useLeadConvert({
       }
       // Systemic failure (e.g. PERM_DENIED, no resolvable pipeline): surface it like convertRow
       // does and do NOT clear the selection or refetch as if the batch had succeeded.
-      setConvertError(convertErrorMessage(r.error.id));
+      setConvertError(convertErrorMessage(r.error.id, locale));
       return false;
     } finally {
       bulkConverting.current = false;
@@ -83,7 +85,7 @@ export function useLeadConvert({
       }
       // Stale CAS / already-converted / permission denied: show copy and refetch so the row
       // reflects the current server state (e.g. it now renders as "Converted").
-      setConvertError(convertErrorMessage(r.error.id));
+      setConvertError(convertErrorMessage(r.error.id, locale));
       await refetch();
       return false;
     } finally {

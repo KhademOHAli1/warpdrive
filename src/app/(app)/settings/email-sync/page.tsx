@@ -1,13 +1,16 @@
 import type { ReactNode } from "react";
 import { db } from "@/db/client";
 import { getActorMailboxStatus } from "@/features/email/mailboxOwnership";
+import { getServerSettingsMessages } from "@/features/identity/settingsMessages.server";
 import { createContext } from "@/server/trpc/context";
 import { SettingsHeading } from "../SettingsHeading";
 import { SettingsPage } from "../SettingsSurface";
 import { EmailSyncClient } from "./EmailSyncClient";
-import { EMAIL_SYNC_STRINGS } from "./strings";
 
-export const metadata = { title: EMAIL_SYNC_STRINGS.title };
+export async function generateMetadata() {
+  const L = await getServerSettingsMessages();
+  return { title: L._emailSync.title };
+}
 
 // Settings > Email sync (spec section 8). A "my account" page: gated to any authenticated
 // actor (mirrors settings/profile), NOT the admin MANAGE gate used by Company pages. Shows the
@@ -15,15 +18,16 @@ export const metadata = { title: EMAIL_SYNC_STRINGS.title };
 // disconnect controls. The org-level email tracking default lives on Company > General and is
 // intentionally NOT duplicated here.
 export default async function EmailSyncPage(): Promise<ReactNode> {
+  const L = await getServerSettingsMessages();
+
   const { actor } = await createContext();
-  if (actor === null)
-    return <p className="text-sm text-red-600">{EMAIL_SYNC_STRINGS.requiresAuth}</p>;
+  if (actor === null) return <p className="text-sm text-red-600">{L._emailSync.requiresAuth}</p>;
 
   const mailbox = await getActorMailboxStatus(db, actor.id, AbortSignal.timeout(5000));
 
   return (
     <SettingsPage>
-      <SettingsHeading title={EMAIL_SYNC_STRINGS.title} description={EMAIL_SYNC_STRINGS.intro} />
+      <SettingsHeading title={L._emailSync.title} description={L._emailSync.intro} />
       <EmailSyncClient
         mailbox={
           mailbox === null

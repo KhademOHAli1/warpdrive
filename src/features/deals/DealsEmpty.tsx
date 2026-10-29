@@ -3,7 +3,7 @@ import Link from "next/link";
 import type React from "react";
 import { Button, buttonVariants } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { STRINGS } from "@/constants/strings";
+import { useSalesStrings } from "@/features/deals/useSalesStrings";
 
 export interface DealsEmptyProps {
   variant: "list" | "archived";
@@ -24,6 +24,8 @@ export function DealsEmpty({
   onClearFilters,
   addSlot,
 }: DealsEmptyProps): React.ReactNode {
+  const STRINGS = useSalesStrings();
+
   if (filtered) {
     return (
       <EmptyState

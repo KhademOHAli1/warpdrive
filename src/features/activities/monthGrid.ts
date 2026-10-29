@@ -59,6 +59,7 @@ export function isSameMonth(day: Date, monthOf: Date): boolean {
 export function groupMonthActivities(
   activities: CalendarActivity[],
   days: Date[],
+  timeZone = "UTC",
 ): Map<string, CalendarActivity[]> {
-  return groupByDay(activities, days, true);
+  return groupByDay(activities, days, true, timeZone);
 }

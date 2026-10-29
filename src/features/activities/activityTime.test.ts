@@ -4,12 +4,12 @@ import { composeDueAtIso, deriveDurationMinutes } from "./activityTime";
 it("composes an ISO dueAt from date + time without hardcoding 09:00", () => {
   const iso = composeDueAtIso("2026-07-04", "14:00");
   expect(iso).not.toBeNull();
-  expect(new Date(iso as string).toISOString()).toBe(new Date("2026-07-04T14:00").toISOString());
+  expect(new Date(iso as string).toISOString()).toBe("2026-07-04T14:00:00.000Z");
 });
 
 it("uses midnight when the time is empty (all-day), not 09:00", () => {
   const iso = composeDueAtIso("2026-07-04", "");
-  expect(new Date(iso as string).getHours()).toBe(0);
+  expect(new Date(iso as string).getUTCHours()).toBe(0);
 });
 
 it("returns null dueAt when the date is empty", () => {

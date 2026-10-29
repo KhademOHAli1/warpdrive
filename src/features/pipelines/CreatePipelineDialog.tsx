@@ -12,16 +12,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/Input";
-import { STRINGS } from "@/constants/strings";
+import { useSalesStrings } from "@/features/deals/useSalesStrings";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { createPipelineAction } from "./pipelineEditActions";
 
 export type CreatePipelineDestination = "board" | "edit";
-
-const ERROR_MESSAGE: Record<string, string> = {
-  E_PERM_001: "You do not have permission to create pipelines.",
-  E_AUTH_CSRF: "Your session expired. Reload the page and try again.",
-};
 
 interface CreatePipelineDialogProps {
   open: boolean;
@@ -31,6 +27,13 @@ interface CreatePipelineDialogProps {
 }
 
 export function CreatePipelineDialog(props: CreatePipelineDialogProps): React.ReactNode {
+  const STRINGS = useSalesStrings();
+  const translateSales = useAppTranslations("sales");
+  const errorMessage: Record<string, string> = {
+    E_PERM_001: translateSales("computed.pipelineNoCreate"),
+    E_AUTH_CSRF: translateSales("computed.sessionExpired"),
+  };
+
   const { open, onOpenChange, onCreated, returnFocusTo } = props;
   const router = useRouter();
   const nameId = useId();
@@ -47,7 +50,7 @@ export function CreatePipelineDialog(props: CreatePipelineDialogProps): React.Re
     try {
       const r = await createPipelineAction({ name: trimmed }, readCsrfToken());
       if (!r.ok) {
-        setError(ERROR_MESSAGE[r.error.id] ?? r.error.id);
+        setError(errorMessage[r.error.id] ?? r.error.id);
         return;
       }
       onOpenChange(false);

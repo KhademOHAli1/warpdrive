@@ -3,11 +3,9 @@ import { ArrowUp } from "lucide-react";
 import type React from "react";
 import { Select, type SelectOption } from "@/components/ui/Select";
 import { Tip } from "@/components/ui/tooltip";
-import { STRINGS } from "@/constants/strings";
+import { useSalesStrings } from "@/features/deals/useSalesStrings";
 import { cn } from "@/lib/utils";
 import { BOARD_SORT_KEYS, type BoardSortKey, type SortDirection } from "./boardSort";
-
-const SORT = STRINGS.board.sort;
 
 export interface BoardSortControlProps<K extends string = BoardSortKey> {
   sortKey: K;
@@ -22,6 +20,7 @@ export interface BoardSortControlProps<K extends string = BoardSortKey> {
 export function BoardSortControl<K extends string = BoardSortKey>(
   props: BoardSortControlProps<K>,
 ): React.ReactNode {
+  const SORT = useSalesStrings().board.sort;
   const { sortKey, direction, onKeyChange, onToggleDirection, extraOptions = [] } = props;
   // The arrow points the way the data currently reads; the button offers the opposite action.
   const toggleLabel = direction === "asc" ? SORT.descending : SORT.ascending;
@@ -43,14 +42,14 @@ export function BoardSortControl<K extends string = BoardSortKey>(
           value={sortKey}
           onChange={(v) => onKeyChange(v as K)}
           options={options}
-          triggerClassName="w-auto rounded-r-none border-0 bg-transparent"
+          triggerClassName="w-auto rounded-e-none border-0 bg-transparent"
         />
         <Tip label={toggleLabel}>
           <button
             type="button"
             aria-label={toggleLabel}
             onClick={onToggleDirection}
-            className="flex items-center justify-center rounded-r-md border-l px-2 py-1.5 text-muted-foreground transition-[color,scale] duration-150 ease-out hover:text-foreground active:scale-[0.96] motion-reduce:transition-colors"
+            className="flex items-center justify-center rounded-e-md border-s px-2 py-1.5 text-muted-foreground transition-[color,scale] duration-150 ease-out hover:text-foreground active:scale-[0.96] motion-reduce:transition-colors"
           >
             {/* Up arrow = ascending; rotated 180deg for descending. */}
             <ArrowUp

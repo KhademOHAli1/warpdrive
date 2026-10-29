@@ -3,10 +3,11 @@ import { ERROR_IDS } from "@/constants/errorIds";
 import { dealActionErrorContent } from "./dealActionError";
 
 describe("dealActionErrorContent", () => {
-  it("explains a permission denial as an ownership problem", () => {
+  it("explains a permission denial without assuming a particular permission policy", () => {
     const { title, body } = dealActionErrorContent(ERROR_IDS.PERM_DENIED);
     expect(title).toMatch(/permission/i);
-    expect(body).toMatch(/owner/i);
+    expect(body).toMatch(/admin.*access/i);
+    expect(body).not.toMatch(/only.*owner/i);
   });
 
   it("explains a stale compare-and-swap as a concurrent change", () => {

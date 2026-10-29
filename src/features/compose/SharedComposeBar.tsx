@@ -14,8 +14,10 @@ import {
 import { Composer } from "@/features/email/Composer";
 import { preloadRichTextBody } from "@/features/email/composer/RichTextBodyLazy";
 import type { DraftSummary } from "@/features/email/draftRepo";
+import type { EmailMessages } from "@/features/email/emailMessages";
 import { invalidateRecordTimelines } from "@/features/email/invalidateRecordTimelines";
 import { toComposerDraft } from "@/features/email/toComposerDraft";
+import { useEmailMessages } from "@/features/email/useEmailMessages";
 import { FileAttachments } from "@/features/files/FileAttachments";
 import { trpc } from "@/lib/trpc-client";
 import { ComposeCollapsedTrigger } from "./ComposeCollapsedTrigger";
@@ -38,25 +40,23 @@ interface TabDef {
   Icon: () => React.ReactNode;
 }
 
-const ALL_TABS: TabDef[] = [
-  { id: "activity", label: "Activity", Icon: ActivityIcon },
-  { id: "notes", label: "Notes", Icon: NotesIcon },
-  { id: "email", label: "Email", Icon: EmailIcon },
-  { id: "files", label: "Files", Icon: FilesIcon },
-];
-
-// Pipedrive's per-tab "default state" prompts. Only Activity and Notes collapse to a
-// prompt; Email and Files render their content directly (PD does the same).
-const PROMPTS: Partial<Record<ComposeTab, string>> = {
-  activity: "Click here to add an activity...",
-  notes: "Take a note...",
-};
+function localizedALL_TABS(E: EmailMessages): TabDef[] {
+  return [
+    { id: "activity", label: E._extra.activity, Icon: ActivityIcon },
+    { id: "notes", label: E._extra.notes, Icon: NotesIcon },
+    { id: "email", label: E._extra.email, Icon: EmailIcon },
+    { id: "files", label: E._extra.files, Icon: FilesIcon },
+  ];
+}
+function localizedPROMPTS(E: EmailMessages): Partial<Record<ComposeTab, string>> {
+  return { activity: E._extra.click_here_to_add_an_activity, notes: E._extra.take_a_note };
+}
 
 // Activity and Notes are enabled for every scope; Email and Files are scope-gated
 // (see emailTabEnabled/fileTabEnabled in composeScope.ts). The default tab is the FIRST enabled tab
 // (see the tab state below), so both the order and the default follow from this list.
-function tabsForScope(scope: ComposeScope): TabDef[] {
-  const enabled = ALL_TABS.filter((t) => {
+function tabsForScope(scope: ComposeScope, E: EmailMessages): TabDef[] {
+  const enabled = localizedALL_TABS(E).filter((t) => {
     if (t.id === "email") return emailTabEnabled(scope);
     if (t.id === "files") return fileTabEnabled(scope);
     return true;
@@ -69,7 +69,7 @@ function tabsForScope(scope: ComposeScope): TabDef[] {
   return enabled;
 }
 
-// Lead tab order: Notes, then Activity; everything else keeps its ALL_TABS position.
+// Lead tab order: Notes, then Activity; everything else keeps its localizedALL_TABS(E) position.
 function rank(id: ComposeTab): number {
   if (id === "notes") return 0;
   if (id === "activity") return 1;
@@ -120,10 +120,12 @@ export function SharedComposeBar({
   onEditSaved,
   onEditCancel,
 }: Props): React.ReactNode {
+  const E = useEmailMessages();
+
   const composeRef = useRef<HTMLElement>(null);
   const utils = trpc.useUtils();
   const [expanded, setExpanded] = useState(false);
-  const tabs = tabsForScope(scope);
+  const tabs = tabsForScope(scope, E);
   // Default to the first enabled tab for this scope (Activity for deal/person/org, Notes for leads).
   // Activity is enabled for every scope, so tabs is never empty; the ?? keeps the type checker happy.
   const [tab, setTab] = useState<ComposeTab>(() => tabs[0]?.id ?? "activity");
@@ -160,11 +162,15 @@ export function SharedComposeBar({
     backToActivityPrompt();
   }
 
-  const prompt = PROMPTS[activeTab];
+  const prompt = localizedPROMPTS(E)[activeTab];
   const showPrompt = !resuming && !expanded && prompt !== undefined;
 
   return (
-    <section ref={composeRef} aria-label="compose" className="mb-4 rounded border bg-card">
+    <section
+      ref={composeRef}
+      aria-label={E._extra.compose_email}
+      className="mb-4 rounded border bg-card"
+    >
       <Tabs value={activeTab} onValueChange={(v) => openTab(v as ComposeTab)}>
         {/* The strip's divider is an inset shadow, not a border: a border sits below the content
             box, so the active tab's underline needed a -mb-px to cover it and that 1px of vertical
@@ -253,11 +259,11 @@ export function SharedComposeBar({
               </div>
             ) : (
               <p className="px-3 py-4 text-sm text-muted-foreground text-pretty">
-                Connect a Gmail mailbox in the{" "}
+                {E._extra.connect_a_gmail_mailbox_in_the}{" "}
                 <Link href="/inbox" className="text-primary hover:underline">
-                  Inbox
+                  {E._extra.inbox}
                 </Link>{" "}
-                to send email from here.
+                {E._extra.to_send_email_from_here}
               </p>
             ))}
 

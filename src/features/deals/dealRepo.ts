@@ -1,11 +1,13 @@
 // Board and list reads behind the deal visibility predicate.
 // All queries JOIN pipelines (alias p) so dealVisibilityClause can reference
 // p.visibility_group_id; none leak hidden deals into counts or totals.
+
 import { sql } from "drizzle-orm";
 import type { DealStatus } from "@/constants/dealStatus";
-import { filterToSql } from "@/features/saved-filters/filterAst";
+import { type FilterCompileOptions, filterToSql } from "@/features/saved-filters/filterAst";
 import { hasStatusCondition } from "@/features/saved-filters/filterFields";
 import type { FilterDefinition } from "@/features/saved-filters/schemas";
+import { canonicalMoney } from "@/lib/canonicalMoney";
 import type { DbOrTx } from "@/server/realtime/channelVersions";
 import type { DealVisibilitySession } from "@/types/session";
 import { dealVisibilityClause } from "./visibility";
@@ -45,6 +47,7 @@ export interface BoardCard {
   id: string;
   title: string;
   value: string | null;
+  currency?: string;
   status?: DealStatus;
   // Label keys (hot/warm/cold); resolved to name+color at the card boundary.
   // Optional like the other join-provided display fields so hand-built fixtures need not set it.
@@ -87,11 +90,19 @@ export async function getBoardColumns(
   pipelineId: string,
   signal: AbortSignal,
   filter?: FilterDefinition,
-  timeZone?: string | null,
+  dateContext: FilterCompileOptions | string | null = {},
 ): Promise<{ cards: BoardCard[] }> {
   signal.throwIfAborted();
   const visClause = dealVisibilityClause(session);
-  const filterClause = filter !== undefined ? filterToSql(filter, { timeZone }) : sql`true`;
+  const filterClause =
+    filter !== undefined
+      ? filterToSql(
+          filter,
+          typeof dateContext === "string" || dateContext === null
+            ? { timeZone: dateContext }
+            : dateContext,
+        )
+      : sql`true`;
   const openGate = hasStatusCondition(filter) ? sql`` : sql`AND d.status = 'open'`;
   const result = await db.execute(sql`
     SELECT
@@ -99,6 +110,7 @@ export async function getBoardColumns(
       d.title,
       d.status,
       d.value,
+      d.currency,
       d.labels,
       d.stage_id        AS "stageId",
       d.board_position  AS "boardPosition",
@@ -155,14 +167,15 @@ export async function getStageSums(
   session: DealVisibilitySession,
   pipelineId: string,
   signal: AbortSignal,
-): Promise<Array<{ stageId: string; dealCount: number; total: string }>> {
+): Promise<Array<{ stageId: string; currency: string; dealCount: number; total: string }>> {
   signal.throwIfAborted();
   const visClause = dealVisibilityClause(session);
   const result = await db.execute(sql`
     SELECT
       d.stage_id          AS "stageId",
+      d.currency,
       count(*)::int       AS "dealCount",
-      coalesce(sum(d.value), 0)::numeric(14,2) AS total
+      coalesce(sum(d.value), 0)::text AS total
     FROM deals d
     JOIN pipelines p ON p.id = d.pipeline_id
     WHERE d.pipeline_id = ${pipelineId}
@@ -171,15 +184,15 @@ export async function getStageSums(
       AND d.archived_at IS NULL
       AND p.is_archived = false
       AND ${visClause}
-    GROUP BY d.stage_id
+    GROUP BY d.stage_id, d.currency
   `);
   signal.throwIfAborted();
   const rows = (
     result as unknown as {
-      rows: Array<{ stageId: string; dealCount: number; total: string }>;
+      rows: Array<{ stageId: string; currency: string; dealCount: number; total: string }>;
     }
   ).rows;
-  return rows;
+  return rows.map((row) => ({ ...row, total: canonicalMoney(row.total) }));
 }
 
 // Paginated deal list behind the visibility predicate.
@@ -195,9 +208,15 @@ export async function listDeals(
     archived?: boolean;
     filter?: FilterDefinition;
     timeZone?: string | null;
+    dateContext?: FilterCompileOptions;
   },
   signal: AbortSignal,
-): Promise<{ rows: DealListCard[]; total: number; totalValue: string }> {
+): Promise<{
+  rows: DealListCard[];
+  total: number;
+  totalValue: string | null;
+  currencyTotals: Array<{ currency: string; value: string }>;
+}> {
   signal.throwIfAborted();
   const pipelineFilter =
     opts.pipelineId !== undefined ? sql`AND d.pipeline_id = ${opts.pipelineId}` : sql``;
@@ -207,7 +226,9 @@ export async function listDeals(
     opts.archived === true || hasStatusCondition(opts.filter) ? sql`` : sql`AND d.status = 'open'`;
   const visClause = dealVisibilityClause(session);
   const filterClause =
-    opts.filter !== undefined ? filterToSql(opts.filter, { timeZone: opts.timeZone }) : sql`true`;
+    opts.filter !== undefined
+      ? filterToSql(opts.filter, opts.dateContext ?? { timeZone: opts.timeZone })
+      : sql`true`;
   const base = sql`
     FROM deals d
     JOIN pipelines p ON p.id = d.pipeline_id
@@ -235,6 +256,7 @@ export async function listDeals(
         d.title,
         d.status,
         d.value,
+      d.currency,
         d.labels,
         d.stage_id        AS "stageId",
         d.board_position  AS "boardPosition",
@@ -257,23 +279,38 @@ export async function listDeals(
     `),
     db.execute(sql`
       SELECT
-        count(*)::int                                    AS total,
-        coalesce(sum(d.value), 0)::numeric(14,2)        AS "totalValue"
+        d.currency,
+        public.warpdrive_base_currency() AS "baseCurrency",
+        count(*)::int AS total,
+        coalesce(sum(d.value), 0)::text AS value
       ${base}
+      GROUP BY d.currency
+      ORDER BY d.currency
     `),
   ]);
   signal.throwIfAborted();
 
-  const agg = (aggRes as unknown as { rows: Array<{ total: number; totalValue: string }> }).rows[0];
-  if (agg === undefined) {
-    return { rows: [], total: 0, totalValue: "0.00" };
-  }
+  const aggregates = (
+    aggRes as unknown as {
+      rows: Array<{ total: number; currency: string; baseCurrency: string; value: string }>;
+    }
+  ).rows;
+  const currencyTotals = aggregates.map(({ currency, value }) => ({
+    currency,
+    value: canonicalMoney(value),
+  }));
   const rawRows = (
     rowsRes as unknown as { rows: (RawCard & { customFields: Record<string, unknown> })[] }
   ).rows;
   return {
     rows: rawRows.map(normalizeCard),
-    total: agg.total,
-    totalValue: agg.totalValue,
+    total: aggregates.reduce((total, row) => total + row.total, 0),
+    totalValue:
+      currencyTotals.length === 0
+        ? "0.00"
+        : currencyTotals.length === 1 && currencyTotals[0]?.currency === aggregates[0]?.baseCurrency
+          ? (currencyTotals[0]?.value ?? "0.00")
+          : null,
+    currencyTotals,
   };
 }

@@ -4,7 +4,9 @@ import { CustomFieldCell, customFieldCellClass } from "@/components/data-table/C
 import type { ColumnSort } from "@/components/data-table/useColumnSort";
 import { Avatar } from "@/components/ui/Avatar";
 import { Checkbox } from "@/components/ui/Checkbox";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { RecordLink } from "@/features/navigation/RecordLink";
+import { useFormatters } from "@/lib/useFormatters";
 import type { OrgColumn } from "./orgColumns";
 import type { OrgSortField } from "./schemas";
 
@@ -44,7 +46,7 @@ export interface OrgsTableProps {
 function SortGlyph({ dir }: { dir: "asc" | "desc" | null }): React.ReactNode {
   if (dir === null) return null;
   return (
-    <span aria-hidden="true" className="ml-1 inline-block text-[10px]">
+    <span aria-hidden="true" className="ms-1 inline-block text-[10px]">
       {dir === "asc" ? "▲" : "▼"}
     </span>
   );
@@ -78,7 +80,12 @@ function SortableHeader({
 // Presentational organizations table: header select-all + a sortable Name header, and a
 // per-row checkbox. Extracted from OrgsList (the data/fetch container) to keep both files
 // under the project's file-size budget, mirroring PeopleTable/PeopleList.
-function renderOrgCell(col: OrgColumn, row: OrgsListRow, currency: string): React.ReactNode {
+function renderOrgCell(
+  col: OrgColumn,
+  row: OrgsListRow,
+  currency: string,
+  number: (value: number) => string,
+): React.ReactNode {
   if (col.customField !== undefined) {
     return (
       <CustomFieldCell
@@ -97,17 +104,17 @@ function renderOrgCell(col: OrgColumn, row: OrgsListRow, currency: string): Reac
           className="flex items-center gap-2.5 font-medium text-primary hover:underline"
         >
           <Avatar name={row.name} className="h-6 w-6 rounded-md" />
-          {row.name}
+          <bdi dir="auto">{row.name}</bdi>
         </RecordLink>
       );
     case "address":
       return formatAddress(row.address);
     case "peopleCount":
-      return row.peopleCount;
+      return number(row.peopleCount);
     case "closedDeals":
-      return row.closedDeals;
+      return number(row.closedDeals);
     case "openDeals":
-      return row.openDeals;
+      return number(row.openDeals);
     default:
       return "";
   }
@@ -134,6 +141,9 @@ export function OrgsTable({
   columnsMenu,
   currency,
 }: OrgsTableProps): React.ReactNode {
+  const tContacts = useAppTranslations("contacts");
+  const format = useFormatters();
+
   return (
     <div className="overflow-hidden">
       {columnsMenu !== undefined ? (
@@ -142,10 +152,10 @@ export function OrgsTable({
       <div className="overflow-x-auto">
         <table className="w-full border-collapse text-sm">
           <thead>
-            <tr className="border-b bg-muted/60 text-left text-muted-foreground">
+            <tr className="border-b bg-muted/60 text-start text-muted-foreground">
               <th className="w-8 px-3 py-2">
                 <Checkbox
-                  label="Select all organizations"
+                  label={tContacts("selectAllOrganizations")}
                   checked={allSelected}
                   onCheckedChange={onToggleAll}
                 />
@@ -172,14 +182,14 @@ export function OrgsTable({
               <tr key={row.id} className="border-b last:border-0 hover:bg-muted/50">
                 <td className="px-3 py-2">
                   <Checkbox
-                    label={`Select ${row.name}`}
+                    label={tContacts("selectRecord", { name: row.name })}
                     checked={isSelected(row.id)}
                     onCheckedChange={() => onToggleRow(row.id)}
                   />
                 </td>
                 {visibleColumns.map((col) => (
                   <td key={col.key} className={cellClass(col)}>
-                    {renderOrgCell(col, row, currency)}
+                    {renderOrgCell(col, row, currency, format.number)}
                   </td>
                 ))}
               </tr>

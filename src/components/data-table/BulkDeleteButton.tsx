@@ -2,6 +2,8 @@
 import type React from "react";
 import { useState } from "react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
+import { deleteNouns } from "./deleteNouns";
 
 interface BulkDeleteButtonProps {
   count: number;
@@ -19,8 +21,10 @@ export function BulkDeleteButton({
   nounPlural,
   onConfirm,
 }: BulkDeleteButtonProps): React.ReactNode {
+  const t = useAppTranslations("tableControls");
+  const locale = useLocale();
   const [confirming, setConfirming] = useState(false);
-  const unit = count === 1 ? noun : nounPlural;
+  const labels = deleteNouns(noun, nounPlural, count, locale);
 
   return (
     <>
@@ -29,14 +33,15 @@ export function BulkDeleteButton({
         onClick={() => setConfirming(true)}
         className="rounded-md border px-3 py-1 text-sm transition-transform hover:bg-accent active:scale-[0.96]"
       >
-        Delete
+        {t("delete")}
       </button>
       <ConfirmDialog
         open={confirming}
         onOpenChange={setConfirming}
-        title={`Delete ${count} ${unit}?`}
-        description={`This cannot be undone, and it removes them for everyone on the team.`}
-        confirmLabel={`Delete ${nounPlural}`}
+        title={t("bulkDeleteTitle", { count, noun: labels.unit })}
+        description={t("bulkDeleteDescription")}
+        confirmLabel={t("bulkDeleteConfirm", { noun: labels.plural })}
+        cancelLabel={t("cancel")}
         destructive
         onConfirm={onConfirm}
       />

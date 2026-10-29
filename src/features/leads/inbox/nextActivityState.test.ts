@@ -28,3 +28,15 @@ describe("nextActivityState", () => {
     expect(nextActivityState("2026-07-10T09:00:00", now)).toBe("upcoming");
   });
 });
+
+it("uses the selected time zone rather than the browser day", () => {
+  const instant = new Date("2026-03-21T00:00:00Z");
+  const due = new Date("2026-03-20T22:00:00Z");
+  expect(nextActivityState(due, instant, "Asia/Tehran")).toBe("today");
+  expect(nextActivityState(due, instant, "UTC")).toBe("overdue");
+});
+it("handles a daylight saving date boundary without assuming 24 hour days", () => {
+  expect(
+    nextActivityState("2026-03-29T22:30:00Z", new Date("2026-03-29T00:00:00Z"), "Europe/Berlin"),
+  ).toBe("upcoming");
+});

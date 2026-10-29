@@ -5,7 +5,7 @@ import type React from "react";
 import { useState } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/Popover";
 import { LABEL_DOT_CLASSES } from "@/constants/labelColors";
-import { STRINGS } from "@/constants/strings";
+import { useEmailMessages } from "@/features/email/useEmailMessages";
 import { trpc } from "@/lib/trpc-client";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { createMailLabelAction } from "./mailLabelsActions";
@@ -25,6 +25,8 @@ interface MailLabelPickerProps {
 // cmdk + Popover (the sanctioned shadcn combobox stack, mirroring MultiCombobox); own filtering so
 // the create row survives an empty result set.
 export function MailLabelPicker({ value, onChange }: MailLabelPickerProps): React.ReactNode {
+  const E = useEmailMessages();
+
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -47,7 +49,7 @@ export function MailLabelPicker({ value, onChange }: MailLabelPickerProps): Reac
       color: DEFAULT_NEW_LABEL_COLOR,
     });
     if (!res.ok) {
-      setError(STRINGS.inbox.errorCreateLabel);
+      setError(E.errorCreateLabel);
       return;
     }
     await utils.mailLabels.list.invalidate();
@@ -58,14 +60,14 @@ export function MailLabelPicker({ value, onChange }: MailLabelPickerProps): Reac
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger className="rounded-full border border-dashed px-2 py-0.5 text-xs text-muted-foreground hover:border-muted-foreground hover:text-foreground">
-        {STRINGS.inbox.addLabel}
+        {E.addLabel}
       </PopoverTrigger>
       <PopoverContent align="start" className="w-56 p-0">
-        <Command shouldFilter={false} aria-label={STRINGS.inbox.addLabel}>
+        <Command shouldFilter={false} aria-label={E.addLabel}>
           <CommandInput
             value={search}
             onValueChange={setSearch}
-            placeholder={STRINGS.inbox.searchOrCreateLabel}
+            placeholder={E.searchOrCreateLabel}
             className="w-full border-b px-2.5 py-2 text-sm outline-none"
           />
           <CommandList className="max-h-56 overflow-y-auto p-1">
@@ -82,7 +84,7 @@ export function MailLabelPicker({ value, onChange }: MailLabelPickerProps): Reac
                     className={`inline-block h-2.5 w-2.5 shrink-0 rounded-full ${LABEL_DOT_CLASSES[label.color]}`}
                   />
                   {label.name}
-                  {value.includes(label.key) && <Check className="ml-auto h-4 w-4" />}
+                  {value.includes(label.key) && <Check className="ms-auto h-4 w-4" />}
                 </CommandItem>
               ))}
               {showCreate && (
@@ -91,7 +93,7 @@ export function MailLabelPicker({ value, onChange }: MailLabelPickerProps): Reac
                   onSelect={() => void handleCreate(term)}
                   className="flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-sm text-muted-foreground data-[selected=true]:bg-accent"
                 >
-                  {STRINGS.inbox.createLabel(term)}
+                  {E.createLabel(term)}
                 </CommandItem>
               )}
             </CommandGroup>

@@ -10,6 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
 import {
   DeleteSavedFilterConfirm,
   type PendingFilterDelete,
@@ -52,9 +53,12 @@ interface BoardFilterMenuProps {
 // filters, the create/edit entry and the action that clears the filter, in one menu. A list of
 // rows plus actions, so it is the shadcn/Radix DropdownMenu primitive.
 export function BoardFilterMenu(props: BoardFilterMenuProps): React.ReactNode {
+  const translateSales = useAppTranslations("sales");
+  const locale = useLocale();
+
   const { savedFilters = [], selectedFilterId = null, appliedDefinition = null } = props;
   const { appliedFilterName } = props;
-  const { activeCount = 0, triggerLabel = "Filter", onSelectFilter, onClearConditions } = props;
+  const { activeCount = 0, triggerLabel, onSelectFilter, onClearConditions } = props;
   const { onToggleFavorite, onDeleteFilter, onCreateFilter } = props;
   const { ownerFiltered = false, onClearOwner } = props;
   const [pendingDelete, setPendingDelete] = useState<PendingFilterDelete | null>(null);
@@ -68,17 +72,20 @@ export function BoardFilterMenu(props: BoardFilterMenuProps): React.ReactNode {
     appliedDefinition === null
       ? (savedFilters.find((f) => f.id === selectedFilterId)?.name ?? appliedFilterName)
       : undefined;
-  const triggerCopy = appliedName === undefined ? triggerLabel : `${triggerLabel}: ${appliedName}`;
+  const triggerCopy =
+    appliedName === undefined
+      ? triggerLabel
+      : `${triggerLabel ?? translateSales("computed.filter")}: ${appliedName}`;
   // A name is valid up to 120 chars and the trigger never wraps, so the visible copy is capped to
   // keep it from pushing the pipeline and action controls off the toolbar. aria-label keeps it all.
   const visibleCopy =
     appliedName === undefined
       ? triggerLabel
-      : `${triggerLabel}: ${truncateFilterName(appliedName)}`;
+      : `${triggerLabel ?? translateSales("computed.filter")}: ${truncateFilterName(appliedName)}`;
   // The entry names what the dialog it opens will do, since the dialog seeds itself from the
   // selected filter: opening "Create new filter" onto an Edit form misreports the outcome.
   const selectedFilter = savedFilters.find((f) => f.id === selectedFilterId);
-  const createEntryLabel = filterSaveCopy(filterSaveMode(selectedFilter)).title;
+  const createEntryLabel = filterSaveCopy(filterSaveMode(selectedFilter), locale).title;
   const ordered = [...savedFilters].sort((a, b) => Number(b.favorite) - Number(a.favorite));
 
   function clearAll(): void {
@@ -103,7 +110,7 @@ export function BoardFilterMenu(props: BoardFilterMenuProps): React.ReactNode {
           <Filter aria-hidden="true" className="h-4 w-4" />
           {visibleCopy}
           {activeCount > 0 ? (
-            <span className="ml-0.5 rounded-full bg-primary px-1.5 text-primary-foreground text-xs">
+            <span className="ms-0.5 rounded-full bg-primary px-1.5 text-primary-foreground text-xs">
               {activeCount}
             </span>
           ) : null}
@@ -118,7 +125,7 @@ export function BoardFilterMenu(props: BoardFilterMenuProps): React.ReactNode {
             onSelect={clearAll}
             className={cn(!filtered && "bg-accent font-medium")}
           >
-            All open deals
+            {translateSales("all_open_deals_5b239")}
           </DropdownMenuItem>
           {ordered.map((f) => (
             <SavedFilterItem
@@ -139,7 +146,11 @@ export function BoardFilterMenu(props: BoardFilterMenuProps): React.ReactNode {
             </DropdownMenuItem>
           </>
         )}
-        {filtered && <DropdownMenuItem onSelect={clearAll}>Clear filter</DropdownMenuItem>}
+        {filtered && (
+          <DropdownMenuItem onSelect={clearAll}>
+            {translateSales("clear_filter_ba59e")}
+          </DropdownMenuItem>
+        )}
       </DropdownMenuContent>
 
       {/* Sibling of the menu content, so a menu that closes cannot take the dialog with it. */}

@@ -1,0 +1,7 @@
+{
+  "signInWithGoogle": "Sign in with Google",
+  "loginTitle": "Sign in to Warpdrive",
+  "domainOnly": "Use your company Google Workspace account.",
+  "authFailed": "Sign-in did not complete. Try again with your company Google Workspace account.",
+  "pageTitle": "Sign in"
+}

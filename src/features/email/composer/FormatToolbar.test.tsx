@@ -198,18 +198,17 @@ describe("FormatToolbar – editor command wiring", () => {
 // ---------------------------------------------------------------------------
 
 describe("FormatToolbar – URL security (Fix 2)", () => {
-  it.each([
-    "javascript:alert(1)",
-    "data:text/html,<h1>x</h1>",
-    "vbscript:MsgBox(1)",
-  ])("Link dialog rejects %s", async (url) => {
-    const { runSpy } = await renderToolbar();
-    await userEvent.click(screen.getByRole("button", { name: /^link$/i }));
-    await userEvent.type(screen.getByRole("textbox", { name: "Link URL" }), url);
-    await userEvent.click(screen.getByRole("button", { name: "Insert link" }));
-    expect(runSpy).not.toHaveBeenCalled();
-    expect(screen.getByRole("alert")).toHaveTextContent("HTTP, HTTPS, or mailto");
-  });
+  it.each(["javascript:alert(1)", "data:text/html,<h1>x</h1>", "vbscript:MsgBox(1)"])(
+    "Link dialog rejects %s",
+    async (url) => {
+      const { runSpy } = await renderToolbar();
+      await userEvent.click(screen.getByRole("button", { name: /^link$/i }));
+      await userEvent.type(screen.getByRole("textbox", { name: "Link URL" }), url);
+      await userEvent.click(screen.getByRole("button", { name: "Insert link" }));
+      expect(runSpy).not.toHaveBeenCalled();
+      expect(screen.getByRole("alert")).toHaveTextContent("HTTP, HTTPS, or mailto");
+    },
+  );
 
   it("Link dialog allows mailto: URL", async () => {
     const { runSpy } = await renderToolbar();
@@ -222,17 +221,17 @@ describe("FormatToolbar – URL security (Fix 2)", () => {
     expect(runSpy).toHaveBeenCalledTimes(1);
   });
 
-  it.each([
-    "javascript:alert(1)",
-    "data:text/html,<script>evil()</script>",
-  ])("Image dialog rejects %s", async (url) => {
-    const { runSpy } = await renderToolbar();
-    await userEvent.click(screen.getByRole("button", { name: /^image$/i }));
-    await userEvent.type(screen.getByRole("textbox", { name: "Image URL" }), url);
-    await userEvent.click(screen.getByRole("button", { name: "Insert image" }));
-    expect(runSpy).not.toHaveBeenCalled();
-    expect(screen.getByRole("alert")).toHaveTextContent("HTTP, HTTPS, or data image");
-  });
+  it.each(["javascript:alert(1)", "data:text/html,<script>evil()</script>"])(
+    "Image dialog rejects %s",
+    async (url) => {
+      const { runSpy } = await renderToolbar();
+      await userEvent.click(screen.getByRole("button", { name: /^image$/i }));
+      await userEvent.type(screen.getByRole("textbox", { name: "Image URL" }), url);
+      await userEvent.click(screen.getByRole("button", { name: "Insert image" }));
+      expect(runSpy).not.toHaveBeenCalled();
+      expect(screen.getByRole("alert")).toHaveTextContent("HTTP, HTTPS, or data image");
+    },
+  );
 
   it("Image dialog allows data:image/ URL", async () => {
     const { runSpy } = await renderToolbar();

@@ -2,6 +2,7 @@
 import type React from "react";
 import { customFieldCellClass } from "@/components/data-table/CustomFieldCell";
 import { Checkbox } from "@/components/ui/Checkbox";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { type RecordPreview, useRecordPreview } from "@/features/navigation/recordPreviewStore";
 import type { LeadRow } from "../leadRepo";
 import type { LeadSortField } from "../schemas";
@@ -42,7 +43,7 @@ export interface LeadsTableProps {
 function SortGlyph({ dir }: { dir: "asc" | "desc" | null }): React.ReactNode {
   if (dir === null) return null;
   return (
-    <span aria-hidden="true" className="ml-1 inline-block text-[10px]">
+    <span aria-hidden="true" className="ms-1 inline-block text-[10px]">
       {dir === "asc" ? "▲" : "▼"}
     </span>
   );
@@ -63,15 +64,17 @@ export function LeadsTable({
   onOpen,
   renderRowActions,
 }: LeadsTableProps): React.ReactNode {
+  const tLeads = useAppTranslations("leads");
+
   const setPreview = useRecordPreview((s) => s.setPreview);
   const colSpan = columns.length + 2;
   return (
     <table className="w-full text-sm">
-      <thead className="sticky top-0 bg-muted/60 text-left text-xs uppercase text-muted-foreground">
+      <thead className="sticky top-0 bg-muted/60 text-start text-xs uppercase text-muted-foreground">
         <tr>
           <th className="w-8 px-3 py-2">
             <Checkbox
-              label="Select all leads"
+              label={tLeads("selectAllLeads")}
               checked={allSelected}
               onCheckedChange={onToggleAll}
             />
@@ -93,7 +96,7 @@ export function LeadsTable({
               {col.key === "sourceOrigin" && <SourceOriginInfo />}
             </th>
           ))}
-          <th className="px-3 py-2 font-semibold sr-only">Actions</th>
+          <th className="px-3 py-2 font-semibold sr-only">{tLeads("actions")}</th>
         </tr>
       </thead>
       <tbody>
@@ -126,7 +129,7 @@ export function LeadsTable({
                 {/* biome-ignore lint/a11y/useKeyWithClickEvents: keyboard toggling is handled by the Checkbox itself */}
                 <span onClick={(e) => e.stopPropagation()}>
                   <Checkbox
-                    label={`Select ${row.title}`}
+                    label={tLeads("selectRecord", { name: row.title })}
                     checked={isSelected(row.id)}
                     onCheckedChange={() => onToggleRow(row.id)}
                   />
@@ -140,7 +143,7 @@ export function LeadsTable({
                   <LeadCell column={col} row={row} now={now} currency={currency} />
                 </td>
               ))}
-              <td className="px-3 py-2 text-right">{renderRowActions(row)}</td>
+              <td className="px-3 py-2 text-end">{renderRowActions(row)}</td>
             </tr>
           ))
         )}

@@ -1,6 +1,7 @@
 "use client";
 import type React from "react";
 import { useState } from "react";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { SavedViewControl } from "@/features/saved-filters/SavedViewControl";
 import type { LeadConditionInput } from "../schemas";
 import { LeadFilterBuilder } from "./LeadFilterBuilder";
@@ -19,13 +20,15 @@ export function LeadsFilterControls({
   condition,
   onCondition,
 }: LeadsFilterControlsProps): React.ReactNode {
+  const tLeads = useAppTranslations("leads");
+
   const [savedViewId, setSavedViewId] = useState<string | null>(null);
 
   return (
     <>
       <SavedViewControl
         targetEntity="lead"
-        allLabel="All leads"
+        allLabel={tLeads("allLeads")}
         currentDefinition={condition}
         selectedViewId={savedViewId}
         onSelectView={(view) => {

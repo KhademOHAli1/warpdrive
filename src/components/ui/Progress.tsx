@@ -1,7 +1,8 @@
 "use client";
-import * as RadixProgress from "@radix-ui/react-progress";
+import { Progress as RadixProgress } from "radix-ui";
 import { forwardRef } from "react";
 import { cn } from "@/lib/utils";
+import { useDirection } from "./direction";
 
 interface ProgressProps
   extends Omit<React.ComponentPropsWithoutRef<typeof RadixProgress.Root>, "value" | "max"> {
@@ -13,12 +14,15 @@ interface ProgressProps
 
 export const Progress = forwardRef<React.ElementRef<typeof RadixProgress.Root>, ProgressProps>(
   ({ value, max = 100, label, className, indicatorClassName, ...props }, ref) => {
+    const direction = useDirection();
     const safeMax = max > 0 ? max : 100;
     const clamped = Math.min(Math.max(value, 0), safeMax);
     const remaining = 100 - (clamped / safeMax) * 100;
     return (
       <RadixProgress.Root
         ref={ref}
+        dir={direction}
+        data-slot="progress"
         value={clamped}
         max={safeMax}
         aria-label={label}
@@ -30,7 +34,7 @@ export const Progress = forwardRef<React.ElementRef<typeof RadixProgress.Root>, 
             "h-full w-full bg-primary transition-transform duration-300 ease-out motion-reduce:transition-none",
             indicatorClassName,
           )}
-          style={{ transform: `translateX(-${remaining}%)` }}
+          style={{ transform: `translateX(${direction === "rtl" ? remaining : -remaining}%)` }}
         />
       </RadixProgress.Root>
     );

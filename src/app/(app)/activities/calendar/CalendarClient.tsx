@@ -1,4 +1,6 @@
+"use client";
 import Link from "next/link";
+import { Select } from "@/components/ui/Select";
 import type { CalendarActivity } from "@/features/activities/calendar";
 import {
   type CalendarViewName,
@@ -7,6 +9,13 @@ import {
   stepAnchorIso,
   weekTitle,
 } from "@/features/activities/calendarView";
+import { useLocalNow } from "@/features/activities/useLocalNow";
+import { localDayIso } from "@/features/activities/weekAgenda";
+import {
+  useAppTranslations,
+  useLocalePreferences,
+  useSetLocalePreferences,
+} from "@/features/i18n/LocaleProvider";
 import { MonthView } from "./MonthView";
 import { WeekAgendaGrid } from "./WeekAgendaGrid";
 
@@ -15,6 +24,7 @@ interface CalendarClientProps {
   anchorIso: string;
   dayIsos: string[];
   activities: CalendarActivity[];
+  initialTodayIso?: string;
   // Shown instead of the grid when the window holds nothing. The caller owns the wording because
   // only it knows whether a filter is doing the excluding, and an empty grid says nothing at all.
   empty?: React.ReactNode;
@@ -31,60 +41,80 @@ export function CalendarClient({
   anchorIso,
   dayIsos,
   activities,
+  initialTodayIso = anchorIso,
   empty,
 }: CalendarClientProps): React.ReactNode {
-  const prevIso = stepAnchorIso(view, anchorIso, -1);
-  const nextIso = stepAnchorIso(view, anchorIso, 1);
-  const todayIso = new Date().toISOString().slice(0, 10);
+  const preferences = useLocalePreferences();
+  const setPreferences = useSetLocalePreferences();
+  const t = useAppTranslations("calendar");
+  const prevIso = stepAnchorIso(view, anchorIso, -1, preferences);
+  const nextIso = stepAnchorIso(view, anchorIso, 1, preferences);
+  const now = useLocalNow();
+  const todayIso = now === null ? initialTodayIso : localDayIso(now, preferences.timeZone);
   const label =
-    view === "month" ? monthTitle(anchorIso) : `Week of ${weekTitle(dayIsos[0] ?? anchorIso)}`;
+    view === "month"
+      ? monthTitle(anchorIso, preferences)
+      : t("weekOf", { date: weekTitle(dayIsos[0] ?? anchorIso, preferences) });
+  const rtl = preferences.locale === "fa";
 
   return (
     // Not <main>: the app shell already owns that landmark, and a second one inside it hides the
     // shell's from assistive tech instead of adding anything.
-    <section aria-label="Calendar" className="p-4">
-      <header className="flex items-center gap-3 mb-4">
+    <section aria-label={t("title")} className="p-4">
+      <header className="mb-4 flex flex-wrap items-center gap-3">
         <div className="flex gap-1 rounded-md border border-border p-0.5">
           <Link
             aria-current={view === "week" ? "page" : undefined}
             href={calendarHref("week", anchorIso)}
             className={tab(view === "week")}
           >
-            Week
+            {t("week")}
           </Link>
           <Link
             aria-current={view === "month" ? "page" : undefined}
             href={calendarHref("month", anchorIso)}
             className={tab(view === "month")}
           >
-            Month
+            {t("month")}
           </Link>
         </div>
         <div className="flex items-center gap-1">
           <Link
-            aria-label="Previous"
+            aria-label={t("previous")}
             href={calendarHref(view, prevIso)}
             className="px-2 py-1 text-sm rounded border border-border hover:bg-accent/60"
           >
-            {"<"}
+            <span aria-hidden>{rtl ? ">" : "<"}</span>
           </Link>
           <Link
             href={calendarHref(view, todayIso)}
             className="px-2 py-1 text-sm rounded border border-border hover:bg-accent/60"
           >
-            Today
+            {t("today")}
           </Link>
           <Link
-            aria-label="Next"
+            aria-label={t("next")}
             href={calendarHref(view, nextIso)}
             className="px-2 py-1 text-sm rounded border border-border hover:bg-accent/60"
           >
-            {">"}
+            <span aria-hidden>{rtl ? "<" : ">"}</span>
           </Link>
         </div>
         {/* The heading for the window being shown; the page had no heading of any level under
             its h1 for a screen reader to move between. */}
         <h2 className="text-sm font-medium text-foreground tabular-nums">{label}</h2>
+        <Select
+          ariaLabel={t("calendarSystem")}
+          triggerClassName="w-40"
+          value={preferences.calendar}
+          options={[
+            { value: "gregory", label: t("gregory") },
+            { value: "persian", label: t("persian") },
+          ]}
+          onChange={(calendar) => {
+            if (calendar === "gregory" || calendar === "persian") void setPreferences({ calendar });
+          }}
+        />
       </header>
 
       {empty !== undefined && activities.length === 0 ? (

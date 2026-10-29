@@ -34,10 +34,15 @@ function activity(): CalendarActivity {
 
 // Would this week's server range have fetched the activity, and does the grid then place it?
 function weekPlaces(anchorIso: string): { fetched: boolean; placed: boolean } {
-  const { days, range } = selectWindow("week", anchorIso);
-  const fetched = DUE >= range.from && DUE <= range.to;
+  const { days, range } = selectWindow("week", anchorIso, { timeZone: "America/Los_Angeles" });
+  const fetched = DUE >= range.from && DUE < range.to;
   const dayIsos = days.map((d) => d.toISOString().slice(0, 10));
-  const grouped = groupByLocalDay(fetched ? [activity()] : [], dayIsos, true);
+  const grouped = groupByLocalDay(
+    fetched ? [activity()] : [],
+    dayIsos,
+    true,
+    "America/Los_Angeles",
+  );
   return { fetched, placed: [...grouped.values()].some((v) => v.length > 0) };
 }
 

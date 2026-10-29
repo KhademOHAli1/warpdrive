@@ -42,7 +42,7 @@ describe("MoreActivitiesChip", () => {
         onOpen={vi.fn()}
       />,
     );
-    fireEvent.click(screen.getByRole("button", { name: "Show 1 more activities" }));
+    fireEvent.click(screen.getByRole("button", { name: "Show one more activity" }));
     expect(screen.getByText("All day")).toBeInTheDocument();
     expect(screen.queryByText("00:00")).toBeNull();
   });

@@ -99,6 +99,32 @@ describe("useRowCursor", () => {
     expect(onActivate).not.toHaveBeenCalled();
   });
 
+  test("supports physical j/k keys under a Persian layout while preserving input guards", () => {
+    const { result } = renderHook(() => useRowCursor(3, vi.fn()));
+    fireEvent.keyDown(window, { key: "ت", code: "KeyJ" });
+    fireEvent.keyDown(window, { key: "ت", code: "KeyJ" });
+    fireEvent.keyDown(window, { key: "ن", code: "KeyK" });
+    expect(result.current).toBe(0);
+    fireEvent.keyDown(window, { key: "ت", code: "KeyJ", isComposing: true });
+    fireEvent.keyDown(window, { key: "ت", code: "KeyJ", keyCode: 229 });
+    fireEvent.keyDown(window, { key: "ت", code: "KeyJ", shiftKey: true });
+    fireEvent.keyDown(window, { key: "ت", code: "KeyJ", altKey: true });
+    fireEvent.keyDown(window, { key: "ت", code: "KeyJ", ctrlKey: true });
+    expect(result.current).toBe(0);
+    const input = document.createElement("input");
+    document.body.append(input);
+    fireEvent.keyDown(input, { key: "ت", code: "KeyJ" });
+    document.body.insertAdjacentHTML("beforeend", '<div role="dialog"></div>');
+    fireEvent.keyDown(window, { key: "ت", code: "KeyJ" });
+    expect(result.current).toBe(0);
+  });
+
+  test("does not reinterpret other Latin characters by physical key", () => {
+    const { result } = renderHook(() => useRowCursor(3, vi.fn()));
+    fireEvent.keyDown(window, { key: "x", code: "KeyJ" });
+    expect(result.current).toBeNull();
+  });
+
   test("unbinds on unmount", () => {
     const onActivate = vi.fn();
     const { unmount } = renderHook(() => useRowCursor(3, onActivate));

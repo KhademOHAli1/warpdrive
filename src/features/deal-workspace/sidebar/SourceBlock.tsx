@@ -3,23 +3,16 @@ import { useRouter } from "next/navigation";
 import type React from "react";
 import { useState } from "react";
 import { Select } from "@/components/ui/Select";
-import {
-  isSourceChannelKey,
-  SOURCE_CHANNELS,
-  type SourceChannelKey,
-} from "@/constants/sourceChannels";
+import { sourceChannelOptions } from "@/constants/sourceChannelLabels";
+import { isSourceChannelKey, type SourceChannelKey } from "@/constants/sourceChannels";
 import { updateDealAction } from "@/features/deals/updateAction";
+import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
 import { InlineEditFooter } from "@/features/inline-edit/InlineEditFooter";
 import { saveErrorMessage } from "@/features/inline-edit/saveError";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { BulkEditRow } from "./BulkEditRow";
 import { SourceChannelField } from "./SourceChannelField";
 import { SourceChannelIdField } from "./SourceChannelIdField";
-
-const CHANNEL_OPTIONS = [
-  { value: "", label: "None" },
-  ...Object.entries(SOURCE_CHANNELS).map(([value, channel]) => ({ value, label: channel.name })),
-];
 
 interface SourceBlockProps {
   dealId: string;
@@ -77,6 +70,9 @@ function SourceBulkEditor({
   sourceChannelId: string | null;
   onExit: () => void;
 }): React.ReactNode {
+  const translateSales = useAppTranslations("sales");
+  const locale = useLocale();
+
   const router = useRouter();
   const expectedUpdatedAt = new Date(updatedAt).toISOString();
   const initialChannel =
@@ -111,28 +107,31 @@ function SourceBulkEditor({
           router.refresh();
           onExit();
         } else {
-          setError(saveErrorMessage(r.error.id));
+          setError(saveErrorMessage(r.error.id, locale));
         }
       })
       .catch(() => {
         setPending(false);
-        setError(saveErrorMessage());
+        setError(saveErrorMessage(undefined, locale));
       });
   }
 
   return (
     <div className="flex flex-col gap-2">
       <div className="flex flex-col gap-0.5 text-muted-foreground text-xs">
-        <span>Channel</span>
+        <span>{translateSales("channel_ce468")}</span>
         <Select
-          ariaLabel="Channel"
+          ariaLabel={translateSales("channel_ce468")}
           value={channel}
           onChange={setChannel}
-          options={CHANNEL_OPTIONS}
+          options={[
+            { value: "", label: translateSales("computed.none") },
+            ...sourceChannelOptions(locale),
+          ]}
         />
       </div>
       <BulkEditRow
-        label="Channel ID"
+        label={translateSales("channel_id_8edd6")}
         value={channelId}
         onChange={setChannelId}
         disabled={pending}

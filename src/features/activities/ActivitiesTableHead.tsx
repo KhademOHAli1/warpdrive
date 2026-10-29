@@ -4,6 +4,7 @@ import type { ColumnSort } from "@/components/data-table/useColumnSort";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { ActivitySortableTh } from "./ActivitySortableHeader";
 import type { ActivitySortField } from "./schemas";
+import { useActivitiesMessages } from "./useActivitiesMessages";
 
 interface ActivitiesTableHeadProps {
   effective: ColumnSort<ActivitySortField>;
@@ -21,27 +22,29 @@ export function ActivitiesTableHead({
   allSelected,
   onToggleAll,
 }: ActivitiesTableHeadProps): React.ReactNode {
+  const S = useActivitiesMessages();
   return (
-    <thead className="sticky top-0 bg-muted/60 text-left text-xs uppercase text-muted-foreground">
+    <thead className="sticky top-0 bg-muted/60 text-start text-xs uppercase text-muted-foreground">
       <tr>
         <th className="w-8 px-3 py-2">
-          <Checkbox
-            label="Select all activities"
-            checked={allSelected}
-            onCheckedChange={onToggleAll}
-          />
+          <Checkbox label={S.selectAll} checked={allSelected} onCheckedChange={onToggleAll} />
         </th>
-        <th className="px-3 py-2 font-semibold">Done</th>
-        <ActivitySortableTh field="subject" label="Subject" sort={effective} onSort={onSort} />
-        <th className="px-3 py-2 font-semibold">Deal</th>
-        <ActivitySortableTh field="priority" label="Priority" sort={effective} onSort={onSort} />
-        <th className="px-3 py-2 font-semibold">Contact</th>
-        <th className="px-3 py-2 font-semibold">Email</th>
-        <th className="px-3 py-2 font-semibold">Phone</th>
-        <th className="px-3 py-2 font-semibold">Organization</th>
-        <ActivitySortableTh field="dueAtIso" label="Due" sort={effective} onSort={onSort} />
-        <ActivitySortableTh field="duration" label="Duration" sort={effective} onSort={onSort} />
-        <th className="px-3 py-2 font-semibold">Assignee</th>
+        <th className="px-3 py-2 font-semibold">{S.done}</th>
+        <ActivitySortableTh field="subject" label={S.subject} sort={effective} onSort={onSort} />
+        <th className="px-3 py-2 font-semibold">{S.deal}</th>
+        <ActivitySortableTh field="priority" label={S.priority} sort={effective} onSort={onSort} />
+        <th className="px-3 py-2 font-semibold">{S.contact}</th>
+        <th className="px-3 py-2 font-semibold">{S.email}</th>
+        <th className="px-3 py-2 font-semibold">{S.phone}</th>
+        <th className="px-3 py-2 font-semibold">{S.organization}</th>
+        <ActivitySortableTh field="dueAtIso" label={S.due} sort={effective} onSort={onSort} />
+        <ActivitySortableTh
+          field="duration"
+          label={S.durationLabel}
+          sort={effective}
+          onSort={onSort}
+        />
+        <th className="px-3 py-2 font-semibold">{S.assignee}</th>
       </tr>
     </thead>
   );

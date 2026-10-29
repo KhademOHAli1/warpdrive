@@ -1,12 +1,9 @@
+"use client";
+import { useEmailMessages } from "@/features/email/useEmailMessages";
 import type { AttachmentMeta } from "./attachmentReads";
 
 // Same B/KB/MB convention as composer/AttachmentList.tsx and files/FileAttachments.tsx,
 // kept as a small local pure function so this file has no cross-feature import.
-function formatBytes(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
 
 interface InboundAttachmentListProps {
   attachments: AttachmentMeta[];
@@ -18,6 +15,13 @@ interface InboundAttachmentListProps {
 export function InboundAttachmentList({
   attachments,
 }: InboundAttachmentListProps): React.ReactNode {
+  const E = useEmailMessages();
+  function formatBytes(bytes: number): string {
+    if (bytes < 1024) return E._extra.fileBytes(bytes);
+    if (bytes < 1024 * 1024) return E._extra.fileKB(Math.round(bytes / 1024));
+    return E._extra.fileMB(bytes / (1024 * 1024));
+  }
+
   if (attachments.length === 0) return null;
 
   return (

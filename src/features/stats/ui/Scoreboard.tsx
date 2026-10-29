@@ -1,5 +1,8 @@
-import { STRINGS } from "@/constants/strings";
+"use client";
+import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
+import { useFormatters } from "@/lib/useFormatters";
 import type { ActivityCounters, DealCounters, WonDealStats } from "@/types/stats";
+import { useStatsMessages } from "../useStatsMessages";
 import { durationDays, money } from "./Panel";
 
 // Pipedrive's scoreboard view: the handful of numbers a manager reads first, above the charts.
@@ -12,10 +15,6 @@ function Tile({ label, value }: { label: string; value: string }) {
       <p className="mt-1 text-2xl font-medium tabular-nums">{value}</p>
     </div>
   );
-}
-
-function percent(v: number | null): string {
-  return v === null ? STRINGS.dashboard.noValue : `${Math.round(v * 100)}%`;
 }
 
 export function Scoreboard({
@@ -31,18 +30,27 @@ export function Scoreboard({
   winRate: number | null;
   currency: string;
 }) {
+  const preferences = useLocalePreferences();
+
+  const format = useFormatters();
+
+  const S = useStatsMessages();
+
   const cycle =
-    won.medianCycleDays === null ? STRINGS.dashboard.noValue : durationDays(won.medianCycleDays);
+    won.medianCycleDays === null ? S.noValue : durationDays(won.medianCycleDays, preferences);
   return (
     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-      <Tile label={STRINGS.dashboard.scoreWon} value={String(deals.won.count)} />
-      <Tile label={STRINGS.dashboard.scoreWinRate} value={percent(winRate)} />
+      <Tile label={S.scoreWon} value={format.number(deals.won.count)} />
       <Tile
-        label={STRINGS.dashboard.scoreAvgDeal}
-        value={won.avgValue === null ? STRINGS.dashboard.noValue : money(won.avgValue, currency)}
+        label={S.scoreWinRate}
+        value={winRate === null ? S.noValue : S._extra.percent(Math.round(winRate * 100))}
       />
-      <Tile label={STRINGS.dashboard.scoreCycle} value={cycle} />
-      <Tile label={STRINGS.dashboard.scoreActivities} value={String(activities.completed)} />
+      <Tile
+        label={S.scoreAvgDeal}
+        value={won.avgValue === null ? S.noValue : money(won.avgValue, currency, preferences)}
+      />
+      <Tile label={S.scoreCycle} value={cycle} />
+      <Tile label={S.scoreActivities} value={format.number(activities.completed)} />
     </div>
   );
 }

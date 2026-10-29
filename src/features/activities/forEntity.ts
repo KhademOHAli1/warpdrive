@@ -18,6 +18,7 @@ import { sanitizeAuthorHtml } from "@/features/email/sanitizeHtml";
 import { canSee } from "@/features/permissions/canSee";
 import type { PermSetUser } from "@/features/permissions/effective";
 import type { VisiblePersonOrOrg } from "@/features/permissions/types";
+import { activityAccountPreferences } from "./accountTimeZone";
 import type { CalendarActivity } from "./calendar";
 import { isActivityOverdue } from "./overdue";
 import { linkedParentVisible } from "./parentLinkVisibility";
@@ -28,6 +29,9 @@ interface ActivityRow {
   subject: string;
   dueAt: Date | null;
   allDay: boolean;
+  endAt?: Date | null;
+  dueDate?: string | null;
+  endDate?: string | null;
   durationMinutes: number | null;
   typeKey: string;
   done: boolean;
@@ -78,7 +82,9 @@ function toActivity(row: ActivityRow): Activity {
     priority: null,
     dueAt: row.dueAt,
     allDay: row.allDay,
-    endAt: null,
+    dueDate: row.dueDate ?? null,
+    endDate: row.endDate ?? null,
+    endAt: row.endAt ?? null,
     durationMinutes: row.durationMinutes,
     done: row.done,
     doneAt: row.doneAt,
@@ -124,6 +130,7 @@ function toCalendarActivity(
   leadOk: boolean,
   personOk: boolean,
   orgOk: boolean,
+  timeZone: string,
 ): CalendarActivity | null {
   if (row.dueAt === null) return null;
   return {
@@ -131,6 +138,9 @@ function toCalendarActivity(
     subject: row.subject,
     dueAt: row.dueAt,
     allDay: row.allDay,
+    endAt: row.endAt,
+    dueDate: row.dueDate ?? null,
+    endDate: row.endDate ?? null,
     durationMinutes: row.durationMinutes,
     typeKey: row.typeKey,
     done: row.done,
@@ -142,7 +152,16 @@ function toCalendarActivity(
     // authorized via its deal parent, which does not imply access to an owner-only linked record.
     personId: personOk ? row.personVisibleId : null,
     orgId: orgOk ? row.orgVisibleId : null,
-    overdue: isActivityOverdue(row.dueAt, row.allDay, row.done, now),
+    overdue: isActivityOverdue(
+      row.dueAt,
+      row.allDay,
+      row.done,
+      now,
+      timeZone,
+      row.dueDate,
+      row.endDate,
+      row.endAt,
+    ),
     ownerName: row.ownerName,
     // Defense in depth: re-sanitize author HTML at the read boundary (same pattern as
     // emailAuthoringReads). Idempotent on already-clean HTML written via createActivity, so no
@@ -164,6 +183,7 @@ export async function listActivitiesForEntity(
 ): Promise<CalendarActivity[]> {
   signal.throwIfAborted();
   const now = Date.now();
+  const preferences = await activityAccountPreferences(db, actor.id);
 
   // Build the where clause based on entityType. The FK column names in the
   // activities table map directly: deal_id, person_id, org_id. Lead-scoped activities
@@ -181,6 +201,9 @@ export async function listActivitiesForEntity(
       subject: activities.subject,
       dueAt: activities.dueAt,
       allDay: activities.allDay,
+      endAt: activities.endAt,
+      dueDate: activities.dueDate,
+      endDate: activities.endDate,
       durationMinutes: activities.durationMinutes,
       typeKey: activityTypes.key,
       done: activities.done,
@@ -256,7 +279,7 @@ export async function listActivitiesForEntity(
       groupId: row.leadVisibilityGroupId,
       visibleTo: row.leadVisibleToUserIds,
     });
-    const activity = toCalendarActivity(row, now, leadOk, personOk, orgOk);
+    const activity = toCalendarActivity(row, now, leadOk, personOk, orgOk, preferences.timeZone);
     if (activity !== null) out.push(activity);
   }
   return out;

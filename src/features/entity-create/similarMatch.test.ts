@@ -56,3 +56,22 @@ describe("findSimilarOptions", () => {
     expect(findSimilarOptions(opts, "GE")).toEqual([]);
   });
 });
+
+it("keeps Persian letters when comparing near-duplicate names", () => {
+  const options = [
+    { id: "fa", name: "شرکت پارس" },
+    { id: "other", name: "گروه مهر" },
+  ];
+  expect(findSimilarOptions(options, "پارس")).toEqual([options[0]]);
+  expect(findSimilarOptions(options, "ناشناخته")).toEqual([]);
+});
+it("compares Arabic and Persian letter variants without rewriting option names", () => {
+  const option = { id: "person", name: "علی کیانی" };
+  expect(findSimilarOptions([option], "علي كياني")).toEqual([option]);
+  expect(option.name).toBe("علی کیانی");
+});
+it("supports German diacritics instead of deleting whole words", () => {
+  expect(
+    findSimilarOptions([{ id: "de", name: "Müller GmbH" }], "Muller").map((o) => o.id),
+  ).toEqual(["de"]);
+});

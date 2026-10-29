@@ -11,6 +11,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { buttonVariants } from "@/components/ui/Button";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { cn } from "@/lib/utils";
 
 interface ConfirmDialogProps {
@@ -38,11 +39,12 @@ export function ConfirmDialog({
   title,
   description,
   confirmLabel,
-  cancelLabel = "Cancel",
+  cancelLabel,
   destructive = false,
   onConfirm,
   pending = false,
 }: ConfirmDialogProps): React.ReactNode {
+  const t = useAppTranslations("shell.inline");
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent className="max-w-md">
@@ -55,7 +57,7 @@ export function ConfirmDialog({
             disabled={pending}
             className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
           >
-            {cancelLabel}
+            {cancelLabel ?? t("cancel")}
           </AlertDialogCancel>
           <AlertDialogAction
             disabled={pending}

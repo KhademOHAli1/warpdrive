@@ -31,6 +31,7 @@
 import { type SQL, sql } from "drizzle-orm";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import { labelMembershipSql } from "@/features/labels/labelMembershipSql";
+import type { DateFilterContext } from "./datePresetRange";
 import { dateCondition } from "./filterAstDate";
 import {
   emptinessCondition,
@@ -47,6 +48,7 @@ import type { FilterDefinition } from "./schemas";
 const COLUMN_SQL: Record<string, SQL> = {
   status: sql`d.status`,
   value: sql`d.value`,
+  currency: sql`d.currency`,
   stageId: sql`d.stage_id`,
   ownerId: sql`d.owner_id`,
   expectedCloseDate: sql`d.expected_close_date`,
@@ -65,9 +67,7 @@ const ARRAY_FIELDS: ReadonlySet<string> = new Set(["labels"]);
 
 const DATE_FIELDS: ReadonlySet<string> = new Set(DEAL_CONDITION_CONFIG.dateFields);
 
-export interface FilterCompileOptions {
-  timeZone?: string | null;
-}
+export type FilterCompileOptions = DateFilterContext;
 
 function conditionSql(c: FilterDefinition["conditions"][number], opts: FilterCompileOptions): SQL {
   // SECURITY: column comes from the allow-list ONLY; c.field never reaches SQL as text.
@@ -95,7 +95,7 @@ function conditionSql(c: FilterDefinition["conditions"][number], opts: FilterCom
   }
 
   if (DATE_FIELDS.has(c.field)) {
-    return dateCondition(colSql, c.field, c.op, c.value, opts.timeZone);
+    return dateCondition(colSql, c.field, c.op, c.value, opts.timeZone, opts);
   }
 
   return scalarCondition(colSql, c.op, c.value);
@@ -108,7 +108,9 @@ function conditionSql(c: FilterDefinition["conditions"][number], opts: FilterCom
 // the boundary via Zod should prevent this in normal usage, but this function
 // is also called with typed inputs and must be independently safe).
 export function filterToSql(def: FilterDefinition, opts: FilterCompileOptions = {}): SQL {
-  const parts = def.conditions.map((c) => conditionSql(c, opts));
+  // One clock anchors every relative condition in the compiled predicate.
+  const context = { ...opts, now: opts.now ?? new Date() };
+  const parts = def.conditions.map((c) => conditionSql(c, context));
 
   // Fold the user conditions with the combinator. A group of two or more is parenthesised so the
   // rotting AND below cannot bind tighter than an OR inside it.

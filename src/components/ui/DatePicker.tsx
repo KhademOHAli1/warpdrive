@@ -2,10 +2,20 @@
 import dynamic from "next/dynamic";
 import type React from "react";
 import { useMemo, useState } from "react";
+import type { Labels, Modifiers } from "react-day-picker";
+import { useLocale, useMessages, useNumberingSystem } from "@/features/i18n/LocaleProvider";
+import type { Locale } from "@/features/i18n/locale";
 import { cn } from "@/lib/utils";
 import { Button, buttonVariants } from "./Button";
 import { type DayAccessory, dayAccessoryButton } from "./DayAccessoryButton";
-import { formatMdy, parseYmd, toYmd } from "./dateFormat";
+import {
+  formatGregorianPersianDate,
+  formatMdy,
+  formatPersianAccessibleDate,
+  formatPersianDate,
+  parseYmd,
+  toYmd,
+} from "./dateFormat";
 import { Popover, PopoverContent, PopoverTrigger } from "./Popover";
 
 // react-day-picker is a mid-weight calendar lib that only renders inside the popover, i.e. after
@@ -17,10 +27,21 @@ const DayPicker = dynamic(async () => (await import("react-day-picker")).DayPick
   ssr: false,
   loading: () => <div className="min-h-[18rem]" aria-hidden="true" />,
 });
+const PersianDayPicker = dynamic(async () => (await import("@daypicker/persian")).DayPicker, {
+  ssr: false,
+  loading: () => <div className="min-h-[18rem]" aria-hidden="true" />,
+});
+const PersianEnglishDayPicker = dynamic(
+  async () => (await import("./localizedDayPickers")).PersianEnglishCalendar,
+  { ssr: false, loading: () => <div className="min-h-[18rem]" aria-hidden="true" /> },
+);
+const GregorianPersianDayPicker = dynamic(
+  async () => (await import("./localizedDayPickers")).GregorianPersianCalendar,
+  { ssr: false, loading: () => <div className="min-h-[18rem]" aria-hidden="true" /> },
+);
 
-let dayPickerChunk: Promise<unknown> | null = null;
 function preloadDayPicker(): void {
-  dayPickerChunk ??= import("react-day-picker");
+  void import("react-day-picker");
 }
 
 // react-day-picker v10's captionLayout="dropdown" defaults navEnd to Dec 31
@@ -42,7 +63,7 @@ interface DatePickerProps {
   // placeholder span so a CTA trigger can style "Set expected close date" as a link.
   triggerClassName?: string;
   placeholderClassName?: string;
-  // Overrides the trigger's set-value text (default MM/DD/YYYY).
+  // Overrides the Gregorian trigger's set-value text (default MM/DD/YYYY).
   formatLabel?: (ymd: string) => string;
   // Opens the calendar popover on mount (PD's inline date editor shows the calendar
   // immediately when the field enters edit mode).
@@ -50,16 +71,41 @@ interface DatePickerProps {
   dayAccessory?: (localYmd: string) => DayAccessory | null;
   onMonthChange?: (month: Date) => void;
   onOpenChange?: (open: boolean) => void;
+  onCalendarChange?: (calendar: CalendarSystem) => void;
+}
+
+export type CalendarSystem = "gregory" | "persian";
+
+function persianLabels(
+  calendar: CalendarSystem,
+  numberingSystem: "latn" | "arabext",
+): Partial<Labels> {
+  const label = (date: Date, modifiers?: Modifiers): string =>
+    formatPersianAccessibleDate(date, calendar, modifiers, numberingSystem);
+  return { labelDayButton: label, labelGridcell: label };
+}
+
+function dateLabel(
+  value: string | null,
+  calendar: CalendarSystem,
+  locale: Locale,
+  formatLabel?: (ymd: string) => string,
+  numberingSystem?: "latn" | "arabext",
+): string {
+  if (value === null) return "";
+  if (calendar === "persian") return formatPersianDate(value, locale, numberingSystem);
+  if (locale === "fa") return formatGregorianPersianDate(value, numberingSystem);
+  return (formatLabel ?? formatMdy)(value);
 }
 
 // Popover + react-day-picker calendar. Value/onChange use local YYYY-MM-DD so
 // this drops into the existing date inputs (composer, add-deal, add-lead) with
-// no change to their action payloads; the trigger shows MM/DD/YYYY.
+// no change to their action payloads. The displayed calendar can be switched independently.
 export function DatePicker({
   value,
   onChange,
   ariaLabel,
-  placeholder = "Select date",
+  placeholder,
   triggerClassName,
   placeholderClassName,
   formatLabel,
@@ -67,14 +113,20 @@ export function DatePicker({
   dayAccessory,
   onMonthChange,
   onOpenChange,
+  onCalendarChange,
 }: DatePickerProps): React.ReactNode {
+  const locale = useLocale();
+  const numberingSystem = useNumberingSystem();
+  const { datePicker: messages } = useMessages();
   const [open, setOpenState] = useState(defaultOpen);
+  const [calendarOverride, setCalendarOverride] = useState<CalendarSystem | null>(null);
+  const calendar = calendarOverride ?? (locale === "fa" ? "persian" : "gregory");
   const setOpen = (next: boolean): void => {
     setOpenState(next);
     onOpenChange?.(next);
   };
   const selected = value !== null ? (parseYmd(value) ?? undefined) : undefined;
-  const label = value !== null ? (formatLabel ?? formatMdy)(value) : "";
+  const label = dateLabel(value, calendar, locale, formatLabel, numberingSystem);
   const currentYear = new Date().getFullYear();
   const startMonth = new Date(currentYear - DATE_PICKER_PAST_YEARS, 0);
   const endMonth = new Date(currentYear + DATE_PICKER_FUTURE_YEARS, 11);
@@ -83,6 +135,14 @@ export function DatePicker({
       dayAccessory === undefined ? undefined : { DayButton: dayAccessoryButton(dayAccessory) },
     [dayAccessory],
   );
+  const Picker =
+    calendar === "persian"
+      ? locale === "fa"
+        ? PersianDayPicker
+        : PersianEnglishDayPicker
+      : locale === "fa"
+        ? GregorianPersianDayPicker
+        : DayPicker;
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger
@@ -94,16 +154,21 @@ export function DatePicker({
         }
       >
         {label === "" ? (
-          <span className={placeholderClassName ?? "text-muted-foreground"}>{placeholder}</span>
+          <span className={placeholderClassName ?? "text-muted-foreground"}>
+            {placeholder ?? messages.selectDate}
+          </span>
         ) : (
           label
         )}
       </PopoverTrigger>
       <PopoverContent>
-        <DayPicker
+        <Picker
           mode="single"
+          labels={locale === "fa" ? persianLabels(calendar, numberingSystem) : undefined}
+          numerals={numberingSystem}
           selected={selected}
           defaultMonth={selected}
+          weekStartsOn={calendar === "persian" ? 6 : undefined}
           onSelect={(day) => {
             if (day !== undefined) {
               onChange(toYmd(day));
@@ -116,7 +181,19 @@ export function DatePicker({
           onMonthChange={onMonthChange}
           components={components}
         />
-        <div className="flex justify-end border-t pt-1.5">
+        <div className="flex items-center justify-between gap-2 border-t pt-1.5">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              const next = calendar === "gregory" ? "persian" : "gregory";
+              setCalendarOverride(next);
+              onCalendarChange?.(next);
+            }}
+            className="h-8 text-xs text-muted-foreground hover:text-foreground"
+          >
+            {calendar === "gregory" ? messages.usePersianCalendar : messages.useGregorianCalendar}
+          </Button>
           <Button
             variant="ghost"
             size="sm"
@@ -126,7 +203,7 @@ export function DatePicker({
             }}
             className="h-8 text-xs text-muted-foreground hover:text-foreground"
           >
-            Clear
+            {messages.clear}
           </Button>
         </div>
       </PopoverContent>

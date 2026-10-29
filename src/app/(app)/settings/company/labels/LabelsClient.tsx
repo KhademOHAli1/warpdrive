@@ -12,7 +12,7 @@ import {
   type LabelColor,
   type LabelTarget,
 } from "@/constants/labelColors";
-import { STRINGS } from "@/constants/strings";
+import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import {
   createLabelAction,
   deleteLabelAction,
@@ -30,16 +30,17 @@ interface Row extends LabelRowData {
   target: LabelTarget;
 }
 
-const S = STRINGS.settings;
-const TARGET_LABEL: Record<LabelTarget, string> = {
-  deal: S.targetDeal,
-  person: S.targetPerson,
-  organization: S.targetOrganization,
-  lead: S.targetLead,
-};
-
 // Labels tab (spec 6.4): grouped by target, enum-constrained color picker, guarded delete.
 export function LabelsClient({ rows: initial }: { rows: Row[] }): React.ReactNode {
+  const L = useSettingsMessages();
+  const S = L;
+  const TARGET_LABEL: Record<LabelTarget, string> = {
+    deal: S.targetDeal,
+    person: S.targetPerson,
+    organization: S.targetOrganization,
+    lead: S.targetLead,
+  };
+
   const router = useRouter();
   // Re-seeds from refreshed server props, so a failed reorder's optimistic order cannot stick
   // until a hard reload (SETTINGS-08 sibling).

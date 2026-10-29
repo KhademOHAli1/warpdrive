@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "findings": [
+    {
+      "id": "0c3773c2a168b8267fb7",
+      "file": "src/features/notifications/ui/notificationText.ts",
+      "text": "@/constants/notifyStrings",
+      "reason": "Legacy notification payloads persist these exact English summaries. This import is compared only as a protocol value; display text is mapped to typed localized messages. Keep compatibility with existing records."
+    }
+  ]
+}

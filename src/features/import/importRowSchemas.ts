@@ -12,10 +12,12 @@ import {
   MAX_LINKEDIN_URL_LEN,
   personCreateInput,
 } from "@/features/contacts/schemas";
+import { currencyCode, moneyAmount } from "@/features/currencies/currencySchema";
+import { moneyInputValue } from "@/lib/canonicalMoney";
 
 // CSV cells arrive as strings; z.coerce.number() converts (or fails on non-numeric input,
 // which is reported as a row error rather than silently coerced to null).
-const currencyValue = z.coerce.number().nonnegative().nullable().default(null);
+const currencyValue = moneyAmount.transform(moneyInputValue).nullable().default(null);
 
 // The organization block of a cross-entity row (a lead/deal/person row that also names its org).
 // `name` is required whenever the block exists at all: it is the key resolveOrgLink find-or-creates
@@ -69,6 +71,7 @@ export const noteImportGroupSchema = z.object({ body: z.string().trim().min(1).m
 export const dealImportRowSchema = z.object({
   title: z.string().min(1).max(255),
   value: currencyValue,
+  currency: currencyCode.optional(),
   expectedCloseDate: z.string().date().nullable().default(null),
   pipeline: z.string().trim().min(1).nullable().default(null),
   stage: z.string().trim().min(1).nullable().default(null),
@@ -82,6 +85,7 @@ export const dealImportRowSchema = z.object({
 export const leadImportRowSchema = z.object({
   title: z.string().min(1).max(255),
   value: currencyValue,
+  currency: currencyCode.optional(),
   expectedCloseDate: z.string().date().nullable().default(null),
   // The same enum leadCreateInput enforces at commit: a display label ("Outbound") or a typo must
   // fail here, in preview, not after the user clicks Import.

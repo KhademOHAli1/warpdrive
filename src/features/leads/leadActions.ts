@@ -101,7 +101,8 @@ export async function createLead(
     .insert(leads)
     .values({
       title: input.title,
-      value: input.value === null ? null : input.value.toFixed(2),
+      value: input.value === null ? null : String(input.value),
+      currency: input.currency ?? cfg?.baseCurrency ?? "USD",
       personId: input.personId,
       orgId: input.orgId,
       expectedCloseDate: input.expectedCloseDate,

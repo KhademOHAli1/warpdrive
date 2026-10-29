@@ -1,10 +1,13 @@
 import { redirect } from "next/navigation";
-import { STRINGS } from "@/constants/strings";
+import { getEmailMessages } from "@/features/email/emailMessages.server";
 import { parseFolder } from "@/features/email/inboxFolders";
 import { createContext } from "@/server/trpc/context";
 import { InboxListClient } from "./InboxListClient";
 
-export const metadata = { title: STRINGS.inbox.title };
+export async function generateMetadata() {
+  const E = await getEmailMessages();
+  return { title: E.title };
+}
 
 // Mailbox presence (for the rail's New email button) is read once in the shared inbox layout, not
 // here, so this route only resolves the active folder for the conversation column.

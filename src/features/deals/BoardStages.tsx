@@ -1,5 +1,7 @@
 "use client";
 import type React from "react";
+import type { CurrencyTotal } from "@/features/currencies/money";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { BoardColumn } from "./BoardColumn";
 import type { BoardProps } from "./boardTypes";
 import type { BoardCard } from "./dealRepo";
@@ -8,7 +10,7 @@ type Stage = BoardProps["stages"][number];
 
 interface BoardStagesProps {
   stages: Stage[];
-  sumsByStage: Map<string, { dealCount: number; total: number }>;
+  sumsByStage: Map<string, { dealCount: number; total: number; currencyTotals?: CurrencyTotal[] }>;
   sortedByStage: Map<string, BoardCard[]>;
   density: BoardProps["density"];
   now: Date;
@@ -29,9 +31,11 @@ export function BoardStages({
   pipelines,
   baseCurrency,
 }: BoardStagesProps): React.ReactNode {
+  const translateSales = useAppTranslations("sales");
+
   return (
     <ul
-      aria-label="Pipeline stages"
+      aria-label={translateSales("pipeline_stages_13dad")}
       className="flex min-h-0 flex-1 list-none gap-4 overflow-x-auto pb-4"
     >
       {stages.map((s, index) => {
@@ -44,7 +48,7 @@ export function BoardStages({
             className={[
               "relative flex min-w-72 flex-1",
               dividerBefore
-                ? "before:absolute before:-left-2 before:inset-y-2 before:w-px before:bg-muted-foreground/25"
+                ? "before:absolute before:-start-2 before:inset-y-2 before:w-px before:bg-muted-foreground/25"
                 : "",
             ]
               .join(" ")
@@ -58,6 +62,7 @@ export function BoardStages({
               cards={sortedByStage.get(s.id) ?? []}
               dealCount={stageSum?.dealCount ?? 0}
               totalValue={String(stageSum?.total ?? 0)}
+              currencyTotals={stageSum?.currencyTotals}
               density={density}
               now={now}
               pipelineId={pipelineId}

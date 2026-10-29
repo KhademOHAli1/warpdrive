@@ -2,8 +2,10 @@
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { useMemo, useState } from "react";
+import { useCompanyCurrency } from "@/features/currencies/CurrencyProvider";
 import {
   CustomFieldCreateFields,
+  customFieldCreateError,
   customFieldCreatePayload,
   firstMissingImportantField,
 } from "@/features/custom-fields/CustomFieldCreateFields";
@@ -13,6 +15,7 @@ import {
   resolveNewOrgId,
   resolveNewPersonId,
 } from "@/features/entity-create/modalHelpers";
+import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
 import { useInterfacePrefs } from "@/features/identity/InterfacePrefsProvider";
 import { trpc } from "@/lib/trpc-client";
 import { readCsrfToken } from "@/utils/csrfCookie";
@@ -57,8 +60,13 @@ function shouldOpenDealDetails(openAfterCreate: boolean, suppressDetailNav: bool
 }
 
 export function AddDealModal(props: AddDealModalProps): React.ReactNode {
-  const { pipelineId, pipelines, baseCurrency = "USD", stageId, prefillTitle } = props;
+  const translateSales = useAppTranslations("sales");
+  const locale = useLocale();
+
+  const companyCurrency = useCompanyCurrency();
+  const { pipelineId, pipelines, baseCurrency = companyCurrency, stageId, prefillTitle } = props;
   const { onClose, onCreated, suppressDetailNav = false } = props;
+  const [currency, setCurrency] = useState(baseCurrency);
   const router = useRouter();
   const { autoPrefixLeadDealTitles, openDetailsAfterCreate } = useInterfacePrefs();
   const firstStage = pipelines.find((p) => p.id === pipelineId)?.stages[0]?.id ?? "";
@@ -88,7 +96,14 @@ export function AddDealModal(props: AddDealModalProps): React.ReactNode {
   const orgs = orgsQ.data ?? [];
   // A prefilled title (inbox subject) counts as user-set, so the person/org autofill never clobbers it.
   const [titleEdited, setTitleEdited] = useState(hasPrefillTitle);
-  const derivedTitle = deriveEntityTitle(state, orgs, people, "deal", autoPrefixLeadDealTitles);
+  const derivedTitle = deriveEntityTitle(
+    state,
+    orgs,
+    people,
+    "deal",
+    autoPrefixLeadDealTitles,
+    (name) => translateSales("computed.defaultDealTitle", { name }),
+  );
   // Derived during render: an effect would paint the stale title for a frame, then correct it.
   if (!titleEdited && state.title !== derivedTitle) {
     setState((s) => (s.title === derivedTitle ? s : { ...s, title: derivedTitle }));
@@ -120,6 +135,7 @@ export function AddDealModal(props: AddDealModalProps): React.ReactNode {
           ownerId: state.ownerId,
         },
         state.pipelineId,
+        locale,
       );
       if (!parsed.ok) {
         setError(parsed.error);
@@ -130,13 +146,13 @@ export function AddDealModal(props: AddDealModalProps): React.ReactNode {
       const orgFields = orgFieldsQ.data ?? [];
       const missingDealField = firstMissingImportantField(dealFields, state.dealCustomFields);
       if (missingDealField !== null) {
-        setError(`${missingDealField.name} is required`);
+        setError(translateSales("computed.requiredField", { name: missingDealField.name }));
         return;
       }
       if (state.orgMode === "new") {
         const missingOrgField = firstMissingImportantField(orgFields, state.orgCustomFields);
         if (missingOrgField !== null) {
-          setError(`${missingOrgField.name} is required`);
+          setError(translateSales("computed.requiredField", { name: missingOrgField.name }));
           return;
         }
       }
@@ -146,9 +162,21 @@ export function AddDealModal(props: AddDealModalProps): React.ReactNode {
           state.personCustomFields,
         );
         if (missingPersonField !== null) {
-          setError(`${missingPersonField.name} is required`);
+          setError(translateSales("computed.requiredField", { name: missingPersonField.name }));
           return;
         }
+      }
+      const invalidCustomField =
+        customFieldCreateError(dealFields, state.dealCustomFields, locale) ??
+        (state.orgMode === "new"
+          ? customFieldCreateError(orgFields, state.orgCustomFields, locale)
+          : null) ??
+        (state.personMode === "new"
+          ? customFieldCreateError(personFields, state.personCustomFields, locale)
+          : null);
+      if (invalidCustomField) {
+        setError(invalidCustomField);
+        return;
       }
       const submitState = {
         ...state,
@@ -156,18 +184,19 @@ export function AddDealModal(props: AddDealModalProps): React.ReactNode {
         personCustomFields: customFieldCreatePayload(personFields, state.personCustomFields),
         orgCustomFields: customFieldCreatePayload(orgFields, state.orgCustomFields),
       };
-      const orgId = await resolveNewOrgId(submitState, csrf);
+      const orgId = await resolveNewOrgId(submitState, csrf, locale);
       if (orgId !== null && typeof orgId === "object") {
         setError(orgId.error);
         return;
       }
-      const personId = await resolveNewPersonId(submitState, orgId, csrf);
+      const personId = await resolveNewPersonId(submitState, orgId, csrf, locale);
       if (personId !== null && typeof personId === "object") {
         setError(personId.error);
         return;
       }
       const resolved = {
         ...parsed.input,
+        currency,
         personId,
         orgId,
         customFields: submitState.dealCustomFields,
@@ -178,7 +207,7 @@ export function AddDealModal(props: AddDealModalProps): React.ReactNode {
           : { ...resolved, visibilityGroupId: state.visibilityGroupId };
       const result = await createDealAction(input, csrf);
       if (!result.ok) {
-        setError(`Could not create deal (${result.error.id})`);
+        setError(translateSales("computed.createDealFailed", { id: result.error.id }));
         return;
       }
       onCreated(result.deal.id, parsed.input.title);
@@ -197,7 +226,7 @@ export function AddDealModal(props: AddDealModalProps): React.ReactNode {
 
   return (
     <EntityCreateModalShell
-      title="Add deal"
+      title={translateSales("add_deal_cdcda")}
       personMode={state.personMode}
       phones={state.phones}
       emails={state.emails}
@@ -205,7 +234,7 @@ export function AddDealModal(props: AddDealModalProps): React.ReactNode {
       onEmails={(emails) => set({ emails })}
       personCustomFields={
         <CustomFieldCreateFields
-          title="Person fields"
+          title={translateSales("person_fields_31c77")}
           defs={personFieldsQ.data ?? []}
           values={state.personCustomFields}
           onChange={(key, value) =>
@@ -233,9 +262,11 @@ export function AddDealModal(props: AddDealModalProps): React.ReactNode {
           owners={optionsOrNull(usersQ.data)}
           groups={optionsOrNull(groupsQ.data)}
           baseCurrency={baseCurrency}
+          currency={currency}
+          onCurrencyChange={setCurrency}
           organizationCustomFields={
             <CustomFieldCreateFields
-              title="Organization fields"
+              title={translateSales("organization_fields_805c7")}
               defs={orgFieldsQ.data ?? []}
               values={state.orgCustomFields}
               onChange={(key, value) =>
@@ -245,7 +276,7 @@ export function AddDealModal(props: AddDealModalProps): React.ReactNode {
           }
           dealCustomFields={
             <CustomFieldCreateFields
-              title="Deal fields"
+              title={translateSales("deal_fields_930ee")}
               defs={dealFieldsQ.data ?? []}
               values={state.dealCustomFields}
               onChange={(key, value) =>

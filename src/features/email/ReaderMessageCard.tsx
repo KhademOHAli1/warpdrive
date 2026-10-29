@@ -1,6 +1,8 @@
 "use client";
-
 import { Avatar } from "@/components/ui/Avatar";
+
+import { useEmailMessages } from "@/features/email/useEmailMessages";
+import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import type { ThreadMessage } from "./emailReads";
 import { InboundAttachmentList } from "./InboundAttachmentList";
 import { formatReaderDate } from "./inboxDate";
@@ -24,6 +26,9 @@ export function ReaderMessageCard({
   allowRemote,
   onShowRemote,
 }: ReaderMessageCardProps): React.ReactNode {
+  const E = useEmailMessages();
+  const preferences = useLocalePreferences();
+
   return (
     <article
       data-testid="reader-message-card"
@@ -42,24 +47,36 @@ export function ReaderMessageCard({
               {message.fromName ?? message.fromEmail}
             </span>
             {message.fromName !== null && (
-              <span className="ml-1.5 text-muted-foreground">{message.fromEmail}</span>
+              <span className="ms-1.5 text-muted-foreground">
+                <bdi dir="ltr">{message.fromEmail}</bdi>
+              </span>
             )}
             {message.direction === "outbound" && (
-              <span className="ml-1 rounded bg-accent px-1 text-accent-foreground">Sent</span>
+              <span className="ms-1 rounded bg-accent px-1 text-accent-foreground">
+                {E._extra.sent}
+              </span>
             )}
           </span>
         </span>
-        <span className="shrink-0 tabular-nums">{formatReaderDate(message.sentAt)}</span>
+        <span className="shrink-0 tabular-nums">
+          {formatReaderDate(message.sentAt, undefined, preferences)}
+        </span>
       </div>
       {message.toEmails.length > 0 && (
         // Recipients line (Pipedrive shows To: / Cc: in the message header). Matters most on sent
         // mail, where the row above is the counterparty but the body doesn't say who it went to.
         <div className="mb-2 text-xs text-muted-foreground">
-          <span className="font-medium">To:</span> <span>{message.toEmails.join(", ")}</span>
+          <span className="font-medium">{E._extra.to}</span>{" "}
+          <span>
+            <bdi dir="ltr">{message.toEmails.join(", ")}</bdi>
+          </span>
           {message.ccEmails.length > 0 && (
             <>
               {" · "}
-              <span className="font-medium">Cc:</span> <span>{message.ccEmails.join(", ")}</span>
+              <span className="font-medium">{E._extra.cc_9d0e3}</span>{" "}
+              <span>
+                <bdi dir="ltr">{message.ccEmails.join(", ")}</bdi>
+              </span>
             </>
           )}
         </div>

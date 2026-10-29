@@ -8,6 +8,7 @@ import {
   addOrgRelationAction,
   removeOrgRelationAction,
 } from "@/features/contacts/orgRelationActions";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { readCsrfToken } from "@/utils/csrfCookie";
 
 interface RelatedOrg {
@@ -38,6 +39,8 @@ export function RelatedOrgsPanel({
   orgOptions,
   onChanged,
 }: RelatedOrgsPanelProps): React.ReactNode {
+  const tContacts = useAppTranslations("contacts");
+
   const [targetOrgId, setTargetOrgId] = useState("");
   const [relationType, setRelationType] = useState("");
   const [pending, setPending] = useState(false);
@@ -59,7 +62,7 @@ export function RelatedOrgsPanel({
     );
     setPending(false);
     if (!r.ok) {
-      setError("Couldn't add that relation. Try again.");
+      setError(tContacts("couldnTAddThatRelationTryAgain"));
       return;
     }
     setTargetOrgId("");
@@ -74,7 +77,7 @@ export function RelatedOrgsPanel({
       readCsrfToken(),
     );
     if (!r.ok) {
-      setError("Couldn't remove that relation. Try again.");
+      setError(tContacts("couldnTRemoveThatRelationTryAgain"));
       return;
     }
     onChanged();
@@ -83,7 +86,7 @@ export function RelatedOrgsPanel({
   return (
     <div className="space-y-2">
       {related.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No related organizations yet.</p>
+        <p className="text-sm text-muted-foreground">{tContacts("noRelatedOrganizationsYet")}</p>
       ) : (
         <ul className="space-y-1.5">
           {related.map((r) => (
@@ -92,15 +95,15 @@ export function RelatedOrgsPanel({
                 <a href={`/contacts/orgs/${r.orgId}`} className="text-link hover:underline">
                   {r.name}
                 </a>
-                <span className="ml-1.5 text-xs text-muted-foreground">{r.relationType}</span>
+                <span className="ms-1.5 text-xs text-muted-foreground">{r.relationType}</span>
               </span>
               <button
                 type="button"
-                aria-label={`Remove ${r.name}`}
+                aria-label={tContacts("removeRecord", { name: r.name })}
                 onClick={() => void remove(r.orgId)}
                 className={ROW_ACTION_BUTTON}
               >
-                Remove
+                {tContacts("remove")}
               </button>
             </li>
           ))}
@@ -110,18 +113,18 @@ export function RelatedOrgsPanel({
       <div className="flex items-center gap-1.5 pt-1">
         <div className="min-w-0 flex-1">
           <Combobox
-            ariaLabel="Related organization"
+            ariaLabel={tContacts("relatedOrganization")}
             value={targetOrgId}
             onChange={setTargetOrgId}
             options={pickerOptions}
-            placeholder="Choose org"
+            placeholder={tContacts("chooseOrg")}
           />
         </div>
         <Input
-          aria-label="Relation type"
+          aria-label={tContacts("relationType")}
           value={relationType}
           onChange={(e) => setRelationType(e.target.value)}
-          placeholder="e.g. partner"
+          placeholder={tContacts("eGPartner")}
           className="w-28 shrink-0 px-2"
         />
         <button
@@ -130,7 +133,7 @@ export function RelatedOrgsPanel({
           onClick={() => void add()}
           className={`${ROW_ACTION_BUTTON} shrink-0`}
         >
-          Add
+          {tContacts("add")}
         </button>
       </div>
       {error !== null && <p className="text-xs text-red-600">{error}</p>}

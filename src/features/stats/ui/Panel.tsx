@@ -1,5 +1,7 @@
 import type React from "react";
-import { STRINGS } from "@/constants/strings";
+import { formatCurrency } from "@/lib/formatCurrency";
+import { type FormattingPreferences, localeTagForFormatting } from "@/lib/localeFormatting";
+import { statsMessagesForLocale } from "../statsMessages";
 
 // Every dashboard panel goes through here so an empty one says why it is empty. A heading
 // over dead space reads as a broken page, not as "there is nothing to show".
@@ -44,26 +46,33 @@ export function Bar({ label, pct }: { label: string; pct: number }): React.React
 }
 
 // A span shorter than half a day rounds to 0, and "0 days" claims the work took no time at all.
-export function durationDays(v: number): string {
+export function durationDays(v: number, preferences: Partial<FormattingPreferences> = {}): string {
   const rounded = Math.round(v);
-  return rounded === 0 ? STRINGS.dashboard.underADay : `${rounded} ${STRINGS.dashboard.days}`;
+  const copy = statsMessagesForLocale(preferences.locale === "fa" ? "fa" : "en");
+  return rounded === 0 ? copy.underADay : copy._extra.durationDays(rounded);
 }
 
 // "2026-01" to "Jan 2026". Parsed as UTC so the label cannot slip to the previous month for a
 // reader west of Greenwich.
-export function monthLabel(month: string): string {
+export function monthLabel(
+  month: string,
+  preferences: Partial<FormattingPreferences> = {},
+  includeYear = true,
+): string {
   const at = Date.UTC(Number(month.slice(0, 4)), Number(month.slice(5, 7)) - 1, 1);
-  return new Intl.DateTimeFormat(undefined, {
+  return new Intl.DateTimeFormat(localeTagForFormatting(preferences), {
+    calendar: "gregory",
+    numberingSystem: preferences.locale === "fa" ? "arabext" : "latn",
     month: "short",
-    year: "numeric",
+    ...(includeYear ? { year: "numeric" as const } : {}),
     timeZone: "UTC",
   }).format(at);
 }
 
-export function money(v: string, currency: string): string {
-  return new Intl.NumberFormat(undefined, {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 0,
-  }).format(Number(v));
+export function money(
+  v: string,
+  currency: string,
+  preferences: Partial<FormattingPreferences> = {},
+): string {
+  return formatCurrency(v, currency, preferences);
 }

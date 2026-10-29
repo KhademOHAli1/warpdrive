@@ -8,7 +8,7 @@ import type { ActivitySortField } from "./schemas";
 function SortGlyph({ dir }: { dir: "asc" | "desc" | null }): React.ReactNode {
   if (dir === null) return null;
   return (
-    <span aria-hidden="true" className="ml-1 inline-block text-[10px]">
+    <span aria-hidden="true" className="ms-1 inline-block text-[10px]">
       {dir === "asc" ? "▲" : "▼"}
     </span>
   );

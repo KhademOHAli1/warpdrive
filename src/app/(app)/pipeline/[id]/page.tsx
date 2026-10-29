@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import { cache } from "react";
-import { STRINGS } from "@/constants/strings";
 import { db } from "@/db/client";
 import { Board } from "@/features/deals/Board";
 import { boardViewDefinition } from "@/features/deals/boardView";
 import { resolveInitialBoardView } from "@/features/deals/initialBoardView";
+import { createSalesStrings } from "@/features/deals/salesStrings";
 import { rowToView } from "@/features/deals/savedFilterView";
+import { getAppTranslations, getLocalePreferences } from "@/features/i18n/server";
 import { getPreferencesForActor } from "@/features/identity/preferencesForActor";
 import { entityTitle } from "@/features/navigation/pageTitle";
 import { resolveVisiblePipeline } from "@/features/navigation/resolvePipeline";
@@ -31,6 +32,8 @@ export async function generateMetadata({
 }: {
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
+  const STRINGS = createSalesStrings((await getLocalePreferences()).locale);
+
   const { id } = await params;
   const loaded = await load();
   const name = loaded.kind === "ok" ? loaded.pipelines.find((p) => p.id === id)?.name : undefined;
@@ -42,10 +45,12 @@ export default async function PipelineBoardPage({
 }: {
   params: Promise<{ id: string }>;
 }): Promise<React.ReactNode> {
+  const translateSales = await getAppTranslations("sales");
+
   const { id } = await params;
   const ctx = await createContext();
   if (ctx.actor === null) {
-    return <main>Unauthorized</main>;
+    return <main>{translateSales("unauthorized_d089c")}</main>;
   }
   const actor = ctx.actor;
 
@@ -58,6 +63,7 @@ export default async function PipelineBoardPage({
   // The cards must already carry the restored filter, or the client would render the toolbar's
   // filter as active over unfiltered seeded cards, so the board waits on the (indexed, layout-
   // deduped) preference read.
+  const datePreferences = await getLocalePreferences();
   const prefsPromise = getPreferencesForActor(db, actor.id);
   const viewPromise = prefsPromise.then((p) =>
     resolveInitialBoardView(p.ui, async () =>
@@ -66,13 +72,17 @@ export default async function PipelineBoardPage({
   );
   void viewPromise.catch(() => {});
   const boardPromise = viewPromise.then((view) =>
-    createCaller(ctx).deal.board({ pipelineId: id, definition: boardViewDefinition(view) }),
+    createCaller(ctx).deal.board({
+      pipelineId: id,
+      definition: boardViewDefinition(view),
+      ...datePreferences,
+    }),
   );
   void boardPromise.catch(() => {});
 
   const loaded = await load();
   if (loaded.kind !== "ok") {
-    return <main>Unauthorized</main>;
+    return <main>{translateSales("unauthorized_d089c")}</main>;
   }
   const { pipelines } = loaded;
 
@@ -90,7 +100,10 @@ export default async function PipelineBoardPage({
   // counts/totals and the drag CAS precondition are derived client-side from the live cards,
   // so no separate stageSums fetch is needed here.
   return (
-    <main aria-label={`Board ${pipeline.name}`} className="h-full">
+    <main
+      aria-label={translateSales("board_arg0_2d402", { arg0: pipeline.name })}
+      className="h-full"
+    >
       <Board
         pipelineId={id}
         serverNow={new Date()}

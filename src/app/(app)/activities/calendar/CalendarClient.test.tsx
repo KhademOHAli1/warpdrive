@@ -113,6 +113,20 @@ it("renders the month grid when view=month (durability: same as a reloaded URL)"
   expect(screen.getAllByRole("gridcell")).toHaveLength(42);
 });
 
+it("uses the supplied request date for a deterministic first-render Today link", async () => {
+  const { renderToStaticMarkup } = await import("react-dom/server");
+  const html = renderToStaticMarkup(
+    <CalendarClient
+      view="month"
+      anchorIso="2026-06-15"
+      dayIsos={dayIsos}
+      activities={[]}
+      initialTodayIso="2026-01-03"
+    />,
+  );
+  expect(html).toContain('href="/activities/calendar?view=month&amp;d=2026-01-03"');
+});
+
 it("draws the header label and the adjacent-month tone from theme tokens", () => {
   render(<CalendarClient view="month" anchorIso="2026-06-15" dayIsos={dayIsos} activities={[]} />);
   expect(screen.getByText("June 2026")).toHaveClass("text-foreground");

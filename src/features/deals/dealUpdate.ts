@@ -93,7 +93,8 @@ function applyStatusTransition(
 function buildPatch(input: DealUpdateInput, now: Date): DealPatch {
   const patch: DealPatch = { updatedAt: now };
   if (input.title !== undefined) patch.title = input.title;
-  if (input.value !== undefined) patch.value = input.value === null ? null : input.value.toFixed(2);
+  if (input.currency !== undefined) patch.currency = input.currency;
+  if (input.value !== undefined) patch.value = input.value === null ? null : String(input.value);
   if (input.expectedCloseDate !== undefined) patch.expectedCloseDate = input.expectedCloseDate;
   if (input.status !== undefined) applyStatusTransition(patch, input.status, input.lostReason, now);
   if (input.labels !== undefined) patch.labels = input.labels;

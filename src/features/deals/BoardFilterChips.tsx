@@ -3,13 +3,7 @@ import { X } from "lucide-react";
 import type React from "react";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
-import {
-  BOARD_CHIPS_LABEL,
-  BOARD_CLEAR_ALL,
-  conditionChipLabel,
-  ownerChipLabel,
-  savedFilterChipLabel,
-} from "./boardFilterCopy";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 
 interface BoardFilterChipsProps {
   ownerName: string | null;
@@ -32,6 +26,7 @@ interface AppliedChip {
 // can name at most one of them, so without this row an owner selection or an ad-hoc definition is
 // invisible until the menu is opened.
 export function BoardFilterChips(props: BoardFilterChipsProps): React.ReactNode {
+  const translateSales = useAppTranslations("sales");
   const { ownerName, savedFilterName, conditionCount, onClearAll } = props;
   const { onClearOwner, onClearSavedFilter, onClearConditions } = props;
 
@@ -39,31 +34,34 @@ export function BoardFilterChips(props: BoardFilterChipsProps): React.ReactNode 
   if (ownerName !== null) {
     chips.push({
       key: "owner",
-      label: ownerChipLabel(ownerName),
-      removeLabel: "Remove owner filter",
+      label: translateSales("computed.ownerChip", { name: ownerName }),
+      removeLabel: translateSales("computed.removeOwnerFilter"),
       onClear: onClearOwner,
     });
   }
   if (savedFilterName !== null) {
     chips.push({
       key: "saved",
-      label: savedFilterChipLabel(savedFilterName),
-      removeLabel: "Remove saved filter",
+      label: translateSales("computed.savedFilterChip", { name: savedFilterName }),
+      removeLabel: translateSales("computed.removeSavedFilter"),
       onClear: onClearSavedFilter,
     });
   }
   if (conditionCount > 0) {
     chips.push({
       key: "conditions",
-      label: conditionChipLabel(conditionCount),
-      removeLabel: "Remove conditions",
+      label: translateSales("computed.conditionChip", { count: conditionCount }),
+      removeLabel: translateSales("computed.removeConditions"),
       onClear: onClearConditions,
     });
   }
   if (chips.length === 0) return null;
 
   return (
-    <ul aria-label={BOARD_CHIPS_LABEL} className="flex flex-wrap items-center gap-2">
+    <ul
+      aria-label={translateSales("computed.appliedFilters")}
+      className="flex flex-wrap items-center gap-2"
+    >
       {chips.map((chip) => (
         <li key={chip.key}>
           <Badge variant="secondary" className="gap-1 py-1">
@@ -81,7 +79,7 @@ export function BoardFilterChips(props: BoardFilterChipsProps): React.ReactNode 
       ))}
       <li>
         <Button variant="ghost" size="sm" onClick={onClearAll}>
-          {BOARD_CLEAR_ALL}
+          {translateSales("computed.clearAll")}
         </Button>
       </li>
     </ul>

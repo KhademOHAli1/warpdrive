@@ -4,11 +4,8 @@ import { Combobox, type ComboboxOption } from "@/components/ui/Combobox";
 import { Select } from "@/components/ui/Select";
 import type { ActivityTypeOption } from "@/features/activities/ActivitiesFilters";
 import { ActivityTypeTab } from "@/features/activities/ActivityTypeTab";
-import {
-  ALL_OWNERS_OPTION,
-  DONE_FILTER_OPTIONS,
-} from "@/features/activities/activityFilterOptions";
 import type { CalendarFilterState } from "@/features/activities/calendarFilter";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 
 // Calendar filter toolbar (AC1): owner (assignee) / status / type, the same three axes the list
 // toolbar offers, minus the date range (the calendar view is the date window). Reuses the shared
@@ -24,6 +21,7 @@ export function CalendarFilterBar({
   owners: ComboboxOption[];
   types: ActivityTypeOption[];
 }): React.ReactNode {
+  const t = useAppTranslations("calendar");
   function patch(next: Partial<CalendarFilterState>): void {
     onChange({ ...filter, ...next });
   }
@@ -34,25 +32,29 @@ export function CalendarFilterBar({
         {/* Both primitives default to w-full; with no width here each claims the whole flex line
             and wraps, so two one-word pickers render full-bleed and stacked. */}
         <Combobox
-          ariaLabel="Owner"
+          ariaLabel={t("owner")}
           triggerClassName="w-52"
           value={filter.ownerId ?? ""}
           onChange={(v) => patch({ ownerId: v === "" ? null : v })}
-          options={[ALL_OWNERS_OPTION, ...owners]}
+          options={[{ value: "", label: t("allOwners") }, ...owners]}
         />
         <Select
-          ariaLabel="Status"
+          ariaLabel={t("status")}
           triggerClassName="w-52"
           value={filter.done}
           onChange={(v) => patch({ done: v as CalendarFilterState["done"] })}
-          options={DONE_FILTER_OPTIONS}
+          options={[
+            { value: "open", label: t("open") },
+            { value: "done", label: t("completed") },
+            { value: "all", label: t("all") },
+          ]}
         />
       </div>
       <div className="flex flex-wrap items-center gap-1 border-b pb-2">
         <ActivityTypeTab
           active={filter.typeKey}
           value={null}
-          label="All"
+          label={t("all")}
           onSelect={(tab) => patch({ typeKey: tab })}
         />
         {types.map((t) => (

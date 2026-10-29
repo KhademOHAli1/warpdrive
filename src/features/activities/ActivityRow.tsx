@@ -4,21 +4,27 @@ import type React from "react";
 import { useEffect, useRef } from "react";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { ACTIVITY_PRIORITIES, isActivityPriorityKey } from "@/constants/activityPriorities";
+import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import { OwnerBadge } from "@/features/identity/OwnerBadge";
 import { cn } from "@/lib/utils";
 import { ActivityTypeIcon } from "./ActivityTypeIcon";
 import type { ActivityTableRow } from "./activityRows";
 import { fmtDue } from "./dueLabel";
 import { isActivityOverdue } from "./overdue";
+import { useActivitiesMessages } from "./useActivitiesMessages";
 
 // Wrapped at module scope so the clock read stays out of the render body (React Compiler
 // flags Date.now() called during render). An all-day row is late only once its DAY has passed.
-function isOverdue(row: ActivityTableRow): boolean {
+function isOverdue(row: ActivityTableRow, timeZone: string): boolean {
   return isActivityOverdue(
     row.dueAtIso === null ? null : new Date(row.dueAtIso),
     row.allDay,
     row.done,
     Date.now(),
+    timeZone,
+    row.dueDate,
+    row.endDate,
+    row.endAtIso ? new Date(row.endAtIso) : null,
   );
 }
 
@@ -35,10 +41,6 @@ export interface ActivityRowProps {
   cursor: boolean;
 }
 
-function fmtDuration(minutes: number | null): string {
-  return minutes === null ? "" : `${minutes} min`;
-}
-
 export function ActivityRow({
   row,
   selected,
@@ -47,6 +49,8 @@ export function ActivityRow({
   onRowClick,
   cursor,
 }: ActivityRowProps): React.ReactNode {
+  const S = useActivitiesMessages();
+  const preferences = useLocalePreferences();
   const ref = useRef<HTMLTableRowElement>(null);
 
   // Keep the cursor row in view when j/k walks past the edge of the scroll container.
@@ -61,7 +65,7 @@ export function ActivityRow({
       data-cursor={cursor ? "true" : undefined}
       className={cn(
         "cursor-pointer border-t hover:bg-accent/40",
-        isOverdue(row) && "text-destructive",
+        isOverdue(row, preferences.timeZone) && "text-destructive",
         cursor && "bg-accent/60 ring-1 ring-inset ring-ring",
       )}
     >
@@ -73,7 +77,7 @@ export function ActivityRow({
         {/* biome-ignore lint/a11y/useKeyWithClickEvents: propagation guard only */}
         <span className="inline-flex" onClick={(e) => e.stopPropagation()}>
           <Checkbox
-            label={`Select ${row.subject}`}
+            label={S.selectActivity(row.subject)}
             checked={selected}
             onCheckedChange={() => onToggleSelect(row.id)}
           />
@@ -84,7 +88,7 @@ export function ActivityRow({
         {/* biome-ignore lint/a11y/useKeyWithClickEvents: propagation guard only */}
         <span className="inline-flex" onClick={(e) => e.stopPropagation()}>
           <Checkbox
-            label={`Complete ${row.subject}`}
+            label={S.completeActivity(row.subject)}
             checked={row.done}
             onCheckedChange={() => onToggleDone(row.id, row.done)}
             // Round and green, matching the deal workspace's activity card, so Done never
@@ -104,7 +108,7 @@ export function ActivityRow({
       <td className="px-3 py-2 text-muted-foreground">
         {row.dealId !== null ? (
           <Link href={`/deals/${row.dealId}`} onClick={(e) => e.stopPropagation()}>
-            {row.dealTitle ?? "Deal"}
+            {row.dealTitle ?? S.deal}
           </Link>
         ) : (
           "-"
@@ -113,7 +117,7 @@ export function ActivityRow({
       <td className="px-3 py-2">
         {row.priority !== null && isActivityPriorityKey(row.priority) ? (
           <span style={{ color: ACTIVITY_PRIORITIES[row.priority].color }}>
-            {ACTIVITY_PRIORITIES[row.priority].name}
+            {S.priorities[row.priority]}
           </span>
         ) : (
           "-"
@@ -130,7 +134,7 @@ export function ActivityRow({
       </td>
       <td className="px-3 py-2 text-muted-foreground">
         {row.personEmail !== null ? (
-          <a href={`mailto:${row.personEmail}`} onClick={(e) => e.stopPropagation()}>
+          <a dir="ltr" href={`mailto:${row.personEmail}`} onClick={(e) => e.stopPropagation()}>
             {row.personEmail}
           </a>
         ) : (
@@ -139,7 +143,7 @@ export function ActivityRow({
       </td>
       <td className="px-3 py-2 text-muted-foreground">
         {row.personPhone !== null ? (
-          <a href={`tel:${row.personPhone}`} onClick={(e) => e.stopPropagation()}>
+          <a dir="ltr" href={`tel:${row.personPhone}`} onClick={(e) => e.stopPropagation()}>
             {row.personPhone}
           </a>
         ) : (
@@ -156,10 +160,10 @@ export function ActivityRow({
         )}
       </td>
       <td className="px-3 py-2 text-muted-foreground tabular-nums">
-        {fmtDue(row.dueAtIso, row.allDay)}
+        {fmtDue(row.dueAtIso, row.allDay, preferences, row.dueDate)}
       </td>
       <td className="px-3 py-2 text-muted-foreground tabular-nums">
-        {fmtDuration(row.durationMinutes)}
+        {row.durationMinutes === null ? "" : S.duration(row.durationMinutes)}
       </td>
       <td className="px-3 py-2">
         <OwnerBadge name={row.assigneeName} />

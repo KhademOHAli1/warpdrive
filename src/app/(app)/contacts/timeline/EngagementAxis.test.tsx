@@ -18,7 +18,7 @@ describe("EngagementAxis", () => {
     expect(screen.getByText("Jun 2026")).toBeInTheDocument();
     expect(screen.getByText("Today")).toBeInTheDocument();
     expect(screen.queryByText("Jul 2026")).not.toBeInTheDocument();
-    expect(screen.getByText("Contact")).toHaveClass("sticky", "left-0");
+    expect(screen.getByText("Contact")).toHaveClass("sticky", "start-0");
   });
 });
 

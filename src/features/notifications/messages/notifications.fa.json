@@ -1,0 +1,95 @@
+{
+  "title": "اعلان‌ها",
+  "markAllRead": "خوانده‌شدن همه",
+  "seeAll": "دیدن همهٔ فعالیت‌ها",
+  "today": "امروز",
+  "earlier": "پیش‌تر",
+  "empty": "هنوز اعلانی ندارید.",
+  "items": {
+    "mention": "از شما نام برده شد",
+    "mentionTitle": "در «{title}» از شما نام برده شد",
+    "activity_assigned": "فعالیتی به شما واگذار شد: {subject}",
+    "activity_reminder": "یادآوری: {subject}",
+    "deal_followed_update": "به‌روزرسانی: {summary}",
+    "updated": "فرصت فروش به‌روزرسانی شد",
+    "moved": "مرحلهٔ فرصت فروش تغییر کرد",
+    "followedFallback": "فرصت فروشی که دنبال می‌کنید تغییر کرده است",
+    "email_open": "ایمیل شما باز شد",
+    "email_click": "روی پیوندی در ایمیل شما کلیک شد",
+    "deal_won": "یکی از فرصت‌های فروشی که دنبال می‌کنید موفق شد",
+    "deal_lost": "یکی از فرصت‌های فروشی که دنبال می‌کنید ناموفق شد",
+    "comment_reply": "پاسخ تازه‌ای به دیدگاه شما داده شد",
+    "deal_email_received": "ایمیل تازه: {subject}",
+    "emailFallback": "دربارهٔ یک فرصت فروش"
+  },
+  "preferences": {
+    "pageTitle": "تنظیمات اعلان‌ها",
+    "loading": "در حال دریافت تنظیمات…",
+    "columnInApp": "در برنامه",
+    "columnEmail": "با ایمیل",
+    "saveError": "ذخیرهٔ تنظیمات ممکن نشد. دوباره تلاش کنید.",
+    "typeLabels": {
+      "mention": "نام بردن از من",
+      "activity_assigned": "واگذاری فعالیت به من",
+      "activity_reminder": "یادآوری فعالیت‌ها",
+      "deal_followed_update": "تغییر فرصت‌های فروشی که دنبال می‌کنم",
+      "email_open": "باز شدن ایمیل",
+      "email_click": "کلیک روی پیوند ایمیل",
+      "deal_won": "فرصت فروش موفق",
+      "deal_lost": "فرصت فروش ناموفق",
+      "comment_reply": "پاسخ به دیدگاه‌های من",
+      "deal_email_received": "ایمیل تازه دربارهٔ فرصت‌های فروش من"
+    }
+  },
+  "email": {
+    "open": "باز کردن: {link}",
+    "openAction": "باز کردن در Warpdrive",
+    "recipientFallback": "کاربر گرامی",
+    "activityFallback": "فعالیت",
+    "mention": {
+      "subject": "در Warpdrive از شما نام برده شد",
+      "line": "{recipient}، در Warpdrive از شما نام برده شده است."
+    },
+    "activity_assigned": {
+      "subject": "فعالیتی در Warpdrive به شما واگذار شد",
+      "line": "{recipient}، یک فعالیت به شما واگذار شده است."
+    },
+    "activity_reminder": {
+      "subject": "یادآوری: موعد انجام {activitySubject} نزدیک است",
+      "line": "{recipient}، موعد انجام فعالیت «{activitySubject}» نزدیک است."
+    },
+    "deal_followed_update": {
+      "subject": "تغییری در فرصت فروشِ دنبال‌شده ایجاد شد",
+      "line": "{recipient}، یکی از فرصت‌های فروشی که دنبال می‌کنید به‌روز شده است."
+    },
+    "email_open": {
+      "subject": "ایمیل شما باز شد",
+      "line": "{recipient}، ایمیل شما باز شده است."
+    },
+    "email_click": {
+      "subject": "روی پیوندی در ایمیل شما کلیک شد",
+      "line": "{recipient}، روی یکی از پیوندهای ایمیل شما کلیک شده است."
+    },
+    "deal_won": {
+      "subject": "فرصت فروش با موفقیت بسته شد",
+      "line": "{recipient}، وضعیت یک فرصت فروش به «موفق» تغییر کرد."
+    },
+    "deal_lost": {
+      "subject": "فرصت فروش ناموفق شد",
+      "line": "{recipient}، وضعیت یک فرصت فروش به «ناموفق» تغییر کرد."
+    },
+    "comment_reply": {
+      "subject": "به نظر شما در Warpdrive پاسخ داده شد",
+      "line": "{recipient}، به نظر شما پاسخی داده شده است."
+    },
+    "deal_email_received": {
+      "subject": "ایمیل تازه برای فرصت فروش",
+      "subjectWithTitle": "ایمیل تازه برای فرصت فروش: {subject}",
+      "line": "{recipient}، ایمیل تازه‌ای برای یکی از فرصت‌های فروشی که دنبال می‌کنید رسیده است."
+    },
+    "generic": {
+      "subject": "اعلان Warpdrive",
+      "line": "{recipient}، اعلان تازه‌ای دارید."
+    }
+  }
+}

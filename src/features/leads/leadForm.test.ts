@@ -19,7 +19,7 @@ describe("parseNewLead", () => {
     expect(r.input.ownerId).toBeUndefined();
   });
 
-  it("rounds value to cents and carries the rich fields", () => {
+  it("preserves supported decimal precision and carries the rich fields", () => {
     const PERSON = "33333333-3333-3333-3333-333333333333";
     const r = parseNewLead({
       title: "Rich",
@@ -31,7 +31,7 @@ describe("parseNewLead", () => {
     });
     expect(r.ok).toBe(true);
     if (!r.ok) return;
-    expect(r.input.value).toBe(1000.01);
+    expect(r.input.value).toBe(1000.005);
     expect(r.input.personId).toBe(PERSON);
     expect(r.input.labels).toEqual(["hot", "warm"]);
     expect(r.input.sourceChannel).toBe("referral");
@@ -54,4 +54,18 @@ describe("parseNewLead", () => {
   it("rejects a negative value", () => {
     expect(parseNewLead({ title: "X", value: "-3" }).ok).toBe(false);
   });
+});
+
+it("normalizes Persian input into canonical numeric values", () => {
+  const parsed = parseNewLead({ title: "پیگیری خرید", value: "۱٬۲۳۴٫۵۰" }, "fa");
+  expect(parsed.ok && parsed.input.value).toBe(1234.5);
+  expect(parsed.ok && parsed.input.sourceOrigin).toBe("manually_created");
+});
+it("rejects malformed Persian numbers with contextual Persian feedback", () => {
+  const parsed = parseNewLead({ title: "پیگیری خرید", value: "۱٬۲۳٫۵" }, "fa");
+  expect(parsed).toEqual({ ok: false, error: "یک عدد معتبر وارد کنید" });
+});
+
+it("rejects precision beyond the four-decimal storage boundary", () => {
+  expect(parseNewLead({ title: "X", value: "1.23456" }).ok).toBe(false);
 });

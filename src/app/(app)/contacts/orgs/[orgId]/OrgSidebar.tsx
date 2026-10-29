@@ -3,23 +3,21 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { useState } from "react";
-import { CONTACT_SIDEBAR_STRINGS } from "@/constants/contactSidebarStrings";
 import type { DealStatus } from "@/constants/dealStatus";
-import { STRINGS } from "@/constants/strings";
 import type { OrgDetail } from "@/features/contacts/orgsRepo";
 import { CollapsibleSection } from "@/features/deal-workspace/CollapsibleSection";
 import { FieldRow } from "@/features/deal-workspace/sidebar/FieldRow";
 import { OrganizationSection } from "@/features/deal-workspace/sidebar/OrganizationSection";
 import { SectionHeaderMenu } from "@/features/deal-workspace/sidebar/SectionHeaderMenu";
 import { FindPeopleButton } from "@/features/enrichment/prospects/FindPeopleButton";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
+import { useFormatters } from "@/lib/useFormatters";
 import type { CustomFieldDef } from "@/types/customFields";
 import { ContactOverviewSection } from "../../ContactOverviewSection";
 import { ListPanel } from "../../contactDetail.shared";
 import { customizeFieldsItem } from "../../contactSectionMenu";
 import { LinkedDealRow } from "../../LinkedDealRow";
 import { RelatedOrgsPanel } from "./RelatedOrgsPanel";
-
-const sections = CONTACT_SIDEBAR_STRINGS.sections;
 
 type RelatedOrg = React.ComponentProps<typeof RelatedOrgsPanel>["related"];
 
@@ -50,14 +48,13 @@ export function OrgSidebar({
   deals: { id: string; title: string; status: DealStatus }[];
   onRelatedChanged: () => void;
 }): React.ReactNode {
+  const tContacts = useAppTranslations("contacts");
+  const format = useFormatters();
+
   const router = useRouter();
   const [organizationBulkEditing, setOrganizationBulkEditing] = useState(false);
   const push = (href: string): void => router.push(href);
-  const orgFieldsItem = customizeFieldsItem(
-    push,
-    "organization",
-    STRINGS.dealSidebar.menu.customizeFields,
-  );
+  const orgFieldsItem = customizeFieldsItem(push, "organization", tContacts("customizeFields"));
 
   return (
     <aside className="space-y-2 min-w-0 lg:order-first">
@@ -72,7 +69,7 @@ export function OrgSidebar({
         currency={baseCurrency}
       />
 
-      <CollapsibleSection title={sections.relatedOrgs}>
+      <CollapsibleSection title={tContacts("relatedOrganizations")}>
         <RelatedOrgsPanel
           orgId={org.id}
           related={relatedOrgs}
@@ -81,9 +78,9 @@ export function OrgSidebar({
         />
       </CollapsibleSection>
 
-      <CollapsibleSection title={sections.stats}>
-        <FieldRow label="Open deals">
-          <span className="tabular-nums">{openDealsCount}</span>
+      <CollapsibleSection title={tContacts("stats")}>
+        <FieldRow label={tContacts("openDeals")}>
+          <span className="tabular-nums">{format.number(openDealsCount)}</span>
         </FieldRow>
       </CollapsibleSection>
 
@@ -91,12 +88,12 @@ export function OrgSidebar({
       <ContactOverviewSection entityType="organization" entityId={org.id} />
 
       <CollapsibleSection
-        title={sections.people}
+        title={tContacts("people")}
         headerActions={() => (
           <FindPeopleButton orgId={org.id} orgName={org.name}>
             {(findPeople) =>
               findPeople === null ? null : (
-                <SectionHeaderMenu sectionLabel={sections.people} menuItems={[findPeople]} />
+                <SectionHeaderMenu sectionLabel={tContacts("people")} menuItems={[findPeople]} />
               )
             }
           </FindPeopleButton>
@@ -104,7 +101,7 @@ export function OrgSidebar({
       >
         <ListPanel
           items={people}
-          empty="No people yet."
+          empty={tContacts("noPeopleYet")}
           render={(person) => (
             <li key={person.id}>
               <Link
@@ -118,10 +115,10 @@ export function OrgSidebar({
         />
       </CollapsibleSection>
 
-      <CollapsibleSection title={sections.deals}>
+      <CollapsibleSection title={tContacts("deals")}>
         <ListPanel
           items={deals}
-          empty="No deals yet."
+          empty={tContacts("noDealsYet")}
           render={(deal) => <LinkedDealRow key={deal.id} deal={deal} />}
         />
       </CollapsibleSection>

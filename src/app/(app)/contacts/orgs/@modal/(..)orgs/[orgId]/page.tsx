@@ -1,5 +1,6 @@
 import type React from "react";
 import { Suspense } from "react";
+import { getAppTranslations } from "@/features/i18n/server";
 import { DetailDrawer } from "@/features/navigation/DetailDrawer";
 import { DetailDrawerPreviewSkeleton } from "@/features/navigation/DetailDrawerPreviewSkeleton";
 import { OrgDetailView } from "../../../[orgId]/OrgDetailView";
@@ -12,9 +13,10 @@ export default async function InterceptedOrgPage({
 }: {
   params: Promise<{ orgId: string }>;
 }): Promise<React.ReactNode> {
+  const t = await getAppTranslations("contacts");
   const { orgId } = await params;
   return (
-    <DetailDrawer title="Organization details">
+    <DetailDrawer title={t("organizationDetails")}>
       <Suspense fallback={<DetailDrawerPreviewSkeleton recordId={orgId} />}>
         <OrgDetailView orgId={orgId} />
       </Suspense>

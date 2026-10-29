@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { RELEASE_DISMISS_KEY } from "../constants";
 import { useVersion } from "./useVersion";
 
@@ -27,6 +28,7 @@ function writeDismissed(version: string): void {
 // per-version in localStorage, so a newer release re-shows it. Release notes are plain text
 // (no markdown rendering) to avoid an XSS surface on GitHub-sourced content.
 export function VersionBanner() {
+  const t = useAppTranslations("utilities.release");
   const { data } = useVersion();
   const [expanded, setExpanded] = useState(false);
   const [dismissed, setDismissed] = useState<string | null>(readDismissed);
@@ -43,17 +45,29 @@ export function VersionBanner() {
   return (
     <div className="border-b bg-accent/60 px-4 py-2 text-sm text-accent-foreground">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-3">
-        <span className="font-semibold">🎉 warpdrive {latest} is available</span>
-        <span className="text-muted-foreground">(current: {data.current})</span>
+        <span className="font-semibold">
+          {t.rich("available", {
+            version: latest,
+            brand: (chunks) => <bdi dir="ltr">{chunks}</bdi>,
+            identifier: (chunks) => <bdi dir="ltr">{chunks}</bdi>,
+          })}
+        </span>
+        <span className="text-muted-foreground">
+          {t.rich("current", {
+            version: data.current,
+            identifier: (chunks) => <bdi dir="ltr">{chunks}</bdi>,
+          })}
+        </span>
         <Button
           variant="ghost"
           size="sm"
           onClick={() => setExpanded((e) => !e)}
-          aria-label={expanded ? "Hide release notes" : "Show release notes"}
+          aria-label={expanded ? t("hideNotes") : t("showNotes")}
+          aria-expanded={expanded}
         >
-          {expanded ? "Hide release notes" : "Show release notes"}
+          {expanded ? t("hideNotes") : t("showNotes")}
         </Button>
-        <div className="ml-auto flex items-center gap-3">
+        <div className="ms-auto flex items-center gap-3">
           {data.releaseUrl !== null && (
             <a
               href={data.releaseUrl}
@@ -61,17 +75,17 @@ export function VersionBanner() {
               rel="noopener noreferrer"
               className="underline-offset-2 hover:underline"
             >
-              View on GitHub →
+              {t.rich("github", { brand: (chunks) => <bdi dir="ltr">{chunks}</bdi> })}
             </a>
           )}
-          <Button variant="ghost" size="icon" onClick={handleDismiss} aria-label="Dismiss">
+          <Button variant="ghost" size="icon" onClick={handleDismiss} aria-label={t("dismiss")}>
             ×
           </Button>
         </div>
       </div>
       {expanded && data.releaseNotes !== null ? (
         <div className="mx-auto mt-2 max-w-6xl animate-in whitespace-pre-wrap border-t pt-2 text-muted-foreground fade-in slide-in-from-top-1 motion-reduce:animate-none">
-          {data.releaseNotes}
+          <bdi dir="auto">{data.releaseNotes}</bdi>
         </div>
       ) : null}
     </div>

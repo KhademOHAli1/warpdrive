@@ -43,3 +43,5 @@ export const CHANGE_LABEL_PARTICIPANT_ADDED = "Added a participant";
 export const CHANGE_LABEL_PARTICIPANT_REMOVED = "Removed a participant";
 export const CHANGE_LABEL_FOLLOWER_ADDED = "Started following";
 export const CHANGE_LABEL_FOLLOWER_REMOVED = "Stopped following";
+
+export const CHANGE_FIELD_CURRENCY = "currency";

@@ -1,4 +1,4 @@
-import { toYmd } from "@/components/ui/dateFormat";
+import { activityParts } from "./activityTemporal";
 import { composeDueAt } from "./activityTime";
 import type { ActivityUpdateInput } from "./schemas";
 
@@ -14,6 +14,8 @@ export interface EditableActivity {
   priority: string | null;
   dueAtIso: string | null;
   allDay: boolean;
+  dueDate?: string | null;
+  endDate?: string | null;
   durationMinutes: number | null;
   location: string | null;
   done: boolean;
@@ -29,22 +31,16 @@ export interface EditFormState {
   location: string;
 }
 
-// Local Y-M-D + H:m (24h) derived from an ISO instant, using the same local wall-clock
-// convention as composeDueAtIso/todayLocalDateString, so re-composing unchanged inputs
-// round-trips to the exact same ISO string (no spurious dueAt diff on an untouched date).
-// An all-day activity gives back its day and no time. Seeding the field from the stored
-// midnight would show a time nobody chose AND, on the next save, diff as a real time and
-// quietly convert a date-only activity into a midnight one.
+// Explicit account-zone projection for minute inputs. Saving compares these inputs before
+// converting, so untouched seconds, milliseconds and repeated-hour offsets survive exactly.
 export function isoToLocalParts(
   iso: string | null,
   allDay = false,
+  timeZone = "UTC",
+  dueDate?: string | null,
 ): { date: string; time: string } {
-  if (iso === null) return { date: "", time: "" };
-  const d = new Date(iso);
-  const time = allDay
-    ? ""
-    : `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
-  return { date: toYmd(d), time };
+  const { date, time } = activityParts({ dueAtIso: iso, allDay, dueDate }, timeZone);
+  return { date, time };
 }
 
 // Diffs the edit form's current state against the original activity and returns only the
@@ -53,6 +49,7 @@ export function isoToLocalParts(
 export function buildActivityPatch(
   activity: EditableActivity,
   state: EditFormState,
+  timeZone = "UTC",
 ): ActivityUpdateInput | null {
   const patch: ActivityUpdateInput = { id: activity.id };
   let changed = false;
@@ -73,10 +70,13 @@ export function buildActivityPatch(
   }
   // The flag rides with the timestamp: removing a time from an existing activity has to
   // actually remove it, not leave the old midnight behind looking chosen.
-  const { iso: dueAt, allDay } = composeDueAt(state.date, state.time);
-  if (dueAt !== activity.dueAtIso || allDay !== activity.allDay) {
+  const initial = isoToLocalParts(activity.dueAtIso, activity.allDay, timeZone, activity.dueDate);
+  if (state.date !== initial.date || state.time !== initial.time) {
+    const { iso: dueAt, allDay, dueDate } = composeDueAt(state.date, state.time, timeZone);
     patch.dueAt = dueAt;
     patch.allDay = allDay;
+    patch.dueDate = dueDate;
+    if (!allDay) patch.endDate = null;
     changed = true;
   }
   const location = state.location.trim() === "" ? null : state.location.trim();

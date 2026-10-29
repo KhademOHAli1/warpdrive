@@ -3,13 +3,11 @@
 import type React from "react";
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { STRINGS } from "@/constants/strings";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import {
   OrganizationCreateModal,
   PersonCreateModal,
 } from "@/features/quick-add/GlobalContactModal";
-
-const S = STRINGS.contacts;
 
 interface QuickAddContactProps {
   kind: "person" | "org";
@@ -30,8 +28,11 @@ export function QuickAddContact({
   prefillEmail,
   onCreated,
 }: QuickAddContactProps): React.ReactNode {
+  const tContacts = useAppTranslations("contacts");
+
   const [open, setOpen] = useState(false);
-  const label = triggerLabel ?? (kind === "person" ? S.addPerson : S.addOrg);
+  const label =
+    triggerLabel ?? (kind === "person" ? tContacts("person") : tContacts("organization"));
   const modalProps = {
     initialName: prefillName,
     initialEmail: prefillEmail,

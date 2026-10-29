@@ -1,4 +1,5 @@
 import { listDefs } from "@/features/custom-fields/defsRepo";
+import type { LocalePreferences } from "@/features/i18n/preferences";
 import { getPreferencesForActor } from "@/features/identity/preferencesForActor";
 import { readBaseCurrency } from "@/features/settings/readBaseCurrency";
 import type { AppContext } from "@/server/trpc/context";
@@ -12,7 +13,7 @@ const COUNT_ONLY = 1;
 
 export async function loadDealListPageData(
   ctx: AppContext & { actor: NonNullable<AppContext["actor"]> },
-  args: { pipelineId: string; archived: boolean },
+  args: { pipelineId: string; archived: boolean; viewPreferences?: LocalePreferences },
 ): Promise<{
   list: Awaited<ReturnType<ReturnType<typeof createCaller>["deal"]["list"]>>;
   prefs: Awaited<ReturnType<typeof getPreferencesForActor>>;
@@ -34,6 +35,7 @@ export async function loadDealListPageData(
       limit: FIRST_PAGE,
       archived: args.archived,
       definition: boardViewDefinition(view),
+      ...args.viewPreferences,
     }),
   );
   void listPromise.catch(() => {});

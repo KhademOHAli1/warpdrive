@@ -3,6 +3,7 @@
 import type React from "react";
 import { Button } from "@/components/ui/Button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { cn } from "@/lib/utils";
 
 export interface EntityCreateDialogShellProps {
@@ -29,6 +30,8 @@ export function EntityCreateDialogShell({
   onSubmit,
   onClose,
 }: EntityCreateDialogShellProps): React.ReactNode {
+  const tEntityCreate = useAppTranslations("entityCreate");
+
   return (
     <Dialog
       open
@@ -57,10 +60,10 @@ export function EntityCreateDialogShell({
 
         <div className="flex items-center justify-end gap-2 border-t px-5 py-3">
           <Button type="button" variant="outline" size="sm" onClick={onClose}>
-            Cancel
+            {tEntityCreate("cancel")}
           </Button>
           <Button type="button" size="sm" disabled={pending || submitDisabled} onClick={onSubmit}>
-            {pending ? "Saving..." : "Save"}
+            {pending ? tEntityCreate("saving") : tEntityCreate("save")}
           </Button>
         </div>
       </DialogContent>

@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.5.1/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.6.4/schema.json",
   "assist": {
     "actions": {
       "source": {
@@ -17,9 +17,11 @@
       "!**/.next",
       "!**/dist",
       "!**/node_modules",
+      "!**/*.d.json.ts",
       "!**/globals.css",
       "!**/parity-tools",
-      "!docs/parity-baselines"
+      "!docs/parity-baselines",
+      "!src/components/ui/primitives"
     ]
   },
   "formatter": {

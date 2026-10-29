@@ -248,3 +248,15 @@ describe("EntityCombobox", () => {
     expect(screen.queryByText("test org")).toBeNull();
   });
 });
+
+it("resolves Arabic keyboard variants to the existing Persian record without rewriting its name", () => {
+  const existing = { id: "fa-person", name: "علی کیانی" };
+  const { onSelectExisting, onCreateNew } = renderCombobox({ options: [existing] });
+  const input = screen.getByLabelText("Organization");
+  fireEvent.change(input, { target: { value: "علي كياني" } });
+  expect(onSelectExisting).toHaveBeenLastCalledWith("fa-person");
+  expect(onCreateNew).not.toHaveBeenCalled();
+  fireEvent.keyDown(input, { key: "Enter" });
+  expect(input).toHaveValue(existing.name);
+  expect(input).toHaveAttribute("dir", "auto");
+});

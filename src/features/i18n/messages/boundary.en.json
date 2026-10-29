@@ -1,0 +1,12 @@
+{
+  "notFound": "Not found",
+  "boundaryTitle": "Something went wrong",
+  "boundaryBody": "This page hit an unexpected error. Trying again may work; if it keeps happening, quote the reference below.",
+  "referenceLabel": "Reference:",
+  "retry": "Try again",
+  "appCrashTitle": "Warpdrive could not start",
+  "appCrashBody": "Reload the page. If it keeps happening, check the server logs.",
+  "reload": "Reload",
+  "notFoundBody": "That record does not exist, or you do not have access to it.",
+  "backToPipeline": "Back to pipeline"
+}

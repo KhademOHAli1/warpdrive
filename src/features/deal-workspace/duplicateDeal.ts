@@ -126,6 +126,7 @@ export async function duplicateDeal(
         // Always a fresh open deal: won/lost/archived/deleted state is NOT carried over.
         status: "open",
         value: source.value,
+        currency: source.currency,
         expectedCloseDate: source.expectedCloseDate,
         labels: source.labels,
         sourceChannel: source.sourceChannel,

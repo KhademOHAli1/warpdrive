@@ -17,6 +17,8 @@ export function toEditableActivity(
     priority: row.priority,
     dueAtIso: row.dueAtIso,
     allDay: row.allDay,
+    dueDate: row.dueDate,
+    endDate: row.endDate,
     durationMinutes: null,
     location: row.location,
     done: row.done,

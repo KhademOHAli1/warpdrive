@@ -1,7 +1,9 @@
+"use client";
 import type React from "react";
 import { Avatar } from "@/components/ui/Avatar";
 import { cn } from "@/lib/utils";
 import { formatUserName } from "./formatUserName";
+import { useSettingsMessages } from "./useSettingsMessages";
 
 interface OwnerBadgeProps {
   name: string | null;
@@ -10,7 +12,8 @@ interface OwnerBadgeProps {
 }
 
 export function OwnerBadge({ name, avatarUrl, className }: OwnerBadgeProps): React.ReactNode {
-  const displayName = formatUserName(name ?? "");
+  const L = useSettingsMessages();
+  const displayName = formatUserName(name ?? "", L._extra.unassigned);
 
   return (
     <span className={cn("inline-flex min-w-0 items-center gap-1.5 whitespace-nowrap", className)}>

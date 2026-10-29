@@ -14,7 +14,7 @@ Guidance for working in this codebase (with an AI coding assistant or by hand).
 - Self-hosted WebSocket server + Postgres LISTEN/NOTIFY for realtime
 - Gmail API via OAuth (Google Workspace); Google SSO for auth
 - pg-boss for background jobs; MinIO (S3-compatible) for file storage
-- pnpm
+- Bun
 
 ## Conventions
 
@@ -38,7 +38,7 @@ Rules:
 
 - **Bugfixes start with a failing test that reproduces the bug.** Fix only after you have seen it fail.
 - **Do not mock the database.** Integration tests hit a real Postgres test database. Mock/prod divergence hides broken queries and migrations, which is exactly the layer a CRM cannot get wrong. Tests spin up a disposable Postgres (Docker) and run against the real Drizzle migrations.
-- **Test runner:** Vitest. Co-locate tests inside the feature directory (`src/features/<feature>/*.test.ts`). The suite is split into a container-less `unit` project and a real-Postgres `integration` project (`pnpm test:unit` / `pnpm test:integration`).
+- **Test runner:** Vitest. Co-locate tests inside the feature directory (`src/features/<feature>/*.test.ts`). The suite is split into a container-less `unit` project and a real-Postgres `integration` project (`bun run test:unit` / `bun run test:integration`).
 - Never claim something works without running the test and seeing it pass. Evidence before assertions.
 
 ## Engineering Conventions
@@ -67,7 +67,7 @@ Any function that does I/O, waits, or runs longer than ~100ms takes `signal: Abo
 
 ### Use the design system, never reinvent (shadcn, hard rule)
 
-This project is shadcn-based (`components.json`, new-york/slate tokens, cva/cn/tailwind-merge, Radix primitives). **Never hand-roll a component the design system already provides.** Before writing any interactive UI surface (menu, dialog, popover, tabs, tooltip, select), first grep `src/components/ui/` for an existing wrapper and `package.json` for an installed `@radix-ui/*` dep, and use it. If the Radix dep is installed but no `ui/` wrapper exists, add the standard shadcn wrapper, then use it.
+This project is shadcn-based (`components.json`, Radix Nova registry, app tokens, Radix primitives). **Never hand-roll a component the design system already provides.** Before writing any interactive UI surface (menu, dialog, popover, tabs, tooltip, select), first grep `src/components/ui/` for an existing wrapper and `package.json` for an installed `@radix-ui/*` dep, and use it. If the Radix dep is installed but no `ui/` wrapper exists, add the standard shadcn wrapper, then use it.
 
 - **Dropdown menus** MUST use the `DropdownMenu` primitive (over `@radix-ui/react-dropdown-menu`), never a hand-rolled dismiss hook + `absolute` div.
 - **Modals** MUST use the `Dialog` primitive (over `@radix-ui/react-dialog`), never hand-rolled `fixed inset-0` overlays.
@@ -77,7 +77,7 @@ This project is shadcn-based (`components.json`, new-york/slate tokens, cva/cn/t
 
 ### Linting
 
-Biome (`biome.json`) plus type-aware ESLint (`eslint.config.mjs`, ESLint flat config) are enforced. Run the whole repo with `pnpm lint` (biome, then eslint); `eslint.config.mjs` is the source of truth for enabled rules.
+Biome (`biome.json`) plus type-aware ESLint (`eslint.config.mjs`, ESLint flat config) are enforced. Run the whole repo with `bun run lint` (biome, then eslint); `eslint.config.mjs` is the source of truth for enabled rules.
 
 Type-aware rules on include: `no-floating-promises`, `no-misused-promises`, `no-explicit-any`, `no-non-null-assertion`, `strict-boolean-expressions`, `switch-exhaustiveness-check`, `no-unnecessary-condition`, `consistent-type-imports`, import checks, `no-console` (allow warn/error), a `no-restricted-properties` guard on `process.env`, and `sonarjs/cognitive-complexity`. A `no-restricted-syntax` block bans raw `throw new Error` (use `AppError`), flags `fetch(` without `{ signal }`, and flags hand-rolled menus/modals so they use the shadcn primitives (only `src/components/ui/**` is exempt).
 
@@ -87,3 +87,10 @@ Type-aware rules on include: `no-floating-promises`, `no-misused-promises`, `no-
 - Never skip hooks
 - Never commit secrets
 - Use heredoc syntax for multi-line commit messages
+
+## Shared UI maintenance
+
+Read `docs/ui-updates.md` before changing shared UI. `src/components/ui/primitives/` is generated
+from the current shadcn registry; put CRM customizations in the adapters directly above it. Use
+`bun run ui:check` and `bun run ui:update` for registry refreshes. Keep `shadcn.registry.json` and
+the verified `shadcn.lock.json` snapshot current.

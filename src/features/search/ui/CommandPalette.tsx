@@ -3,7 +3,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { SearchResultsSkeleton } from "@/components/shell/skeletons";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { STRINGS } from "@/constants/strings";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { trpc } from "@/lib/trpc-client";
 import type { SearchResult, SearchResults } from "@/types/search";
 import { OPEN_SEARCH_EVENT } from "./events";
@@ -23,10 +23,8 @@ const ROUTES: Record<"deal" | "person" | "organization" | "lead", (id: string) =
 // memoization and reset logic even when there is genuinely no data yet).
 const EMPTY_RESULTS: SearchResults = { deals: [], people: [], organizations: [], leads: [] };
 
-const SEARCH_ERROR = "Couldn't run that search. Try again.";
-
 // -- SearchResultsList --
-// Pure presentational component: no tRPC, no hooks, safe to test in jsdom.
+// Presentational results: no tRPC; copy follows the viewer locale.
 export function SearchResultsList({
   results,
   activeId,
@@ -36,33 +34,34 @@ export function SearchResultsList({
   activeId?: string;
   onSelect: (kind: "deal" | "person" | "organization" | "lead", result: SearchResult) => void;
 }) {
+  const t = useAppTranslations("shell.search");
   return (
-    <div role="listbox" aria-label={STRINGS.search.resultsLabel}>
+    <div role="listbox" aria-label={t("resultsLabel")}>
       <Section
-        heading={STRINGS.search.headingDeals}
+        heading={t("headingDeals")}
         items={results.deals}
-        empty={STRINGS.search.emptyDeals}
+        empty={t("emptyDeals")}
         activeId={activeId}
         onSelect={(r) => onSelect("deal", r)}
       />
       <Section
-        heading={STRINGS.search.headingPeople}
+        heading={t("headingPeople")}
         items={results.people}
-        empty={STRINGS.search.emptyPeople}
+        empty={t("emptyPeople")}
         activeId={activeId}
         onSelect={(r) => onSelect("person", r)}
       />
       <Section
-        heading={STRINGS.search.headingOrganizations}
+        heading={t("headingOrganizations")}
         items={results.organizations}
-        empty={STRINGS.search.emptyOrganizations}
+        empty={t("emptyOrganizations")}
         activeId={activeId}
         onSelect={(r) => onSelect("organization", r)}
       />
       <Section
-        heading={STRINGS.search.headingLeads}
+        heading={t("headingLeads")}
         items={results.leads}
-        empty={STRINGS.search.emptyLeads}
+        empty={t("emptyLeads")}
         activeId={activeId}
         onSelect={(r) => onSelect("lead", r)}
       />
@@ -104,14 +103,18 @@ function Section({
                   el.scrollIntoView({ block: "nearest" });
                 }
               }}
-              className={`flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-accent ${
+              className={`flex w-full items-center gap-2 px-3 py-2 text-start text-sm hover:bg-accent ${
                 isActive ? "bg-accent" : ""
               }`}
               onClick={() => onSelect(r)}
             >
-              <span className="flex-1 truncate">{r.primary}</span>
+              <span className="flex-1 truncate">
+                <bdi dir="auto">{r.primary}</bdi>
+              </span>
               {r.secondary != null ? (
-                <span className="shrink-0 text-xs text-muted-foreground">{r.secondary}</span>
+                <span className="shrink-0 text-xs text-muted-foreground">
+                  <bdi dir="auto">{r.secondary}</bdi>
+                </span>
               ) : null}
             </button>
           );
@@ -125,6 +128,8 @@ function Section({
 // Overlay that owns open/close state, the hotkey, and the window event listener.
 // Mount once in the app layout so it is always available.
 export function CommandPalette() {
+  const t = useAppTranslations("shell.search");
+  const shell = useAppTranslations("shell");
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
   const [debounced, setDebounced] = useState("");
@@ -189,8 +194,8 @@ export function CommandPalette() {
         aria-describedby={undefined}
         className="top-[12%] max-w-lg translate-y-0 gap-0 overflow-hidden p-0 data-[state=open]:animate-none data-[state=closed]:animate-none"
       >
-        <DialogTitle className="sr-only">{STRINGS.search.placeholder}</DialogTitle>
-        <div className="border-b px-3 py-2 pr-9">
+        <DialogTitle className="sr-only">{shell("searchPlaceholder")}</DialogTitle>
+        <div className="border-b px-3 py-2 pe-9">
           <input
             ref={inputRef}
             type="search"
@@ -215,19 +220,19 @@ export function CommandPalette() {
                 if (sel !== undefined) handleSelect(sel.kind, sel.r);
               }
             }}
-            placeholder={STRINGS.search.placeholder}
+            placeholder={shell("searchPlaceholder")}
             // Suppress the native type=search clear "x": the Dialog already renders a close X, so
             // the browser's clear button made two X's cluster at the top-right (keep one).
             className="w-full bg-transparent text-sm outline-none [&::-webkit-search-cancel-button]:appearance-none"
-            aria-label="Search"
+            aria-label={t("aria")}
           />
         </div>
         <div className="max-h-96 overflow-y-auto">
           {!typed && !searched ? (
-            <p className="px-3 py-4 text-sm text-muted-foreground">{STRINGS.search.idle}</p>
+            <p className="px-3 py-4 text-sm text-muted-foreground">{t("idle")}</p>
           ) : failed ? (
             <p role="alert" className="px-3 py-4 text-sm text-destructive">
-              {SEARCH_ERROR}
+              {t("error")}
             </p>
           ) : pending ? (
             <SearchResultsSkeleton />

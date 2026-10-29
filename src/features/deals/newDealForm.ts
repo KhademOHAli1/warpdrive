@@ -1,4 +1,6 @@
 import { isSourceChannelKey, type SourceChannelKey } from "@/constants/sourceChannels";
+import { createAppTranslator } from "@/features/i18n/catalog";
+import type { Locale } from "@/features/i18n/registry";
 import { orNull, parseMoneyValue } from "@/utils/entityFormFields";
 import type { DealCreateInput } from "./schemas";
 
@@ -23,13 +25,18 @@ export interface NewDealFields {
 
 // Validate the Add Deal form fields into a DealCreateInput. Trust-boundary fields (visibility) are
 // derived server-side; ownerId is honored server-side only for actors with deal.changeOwner.
-export function parseNewDeal(fields: NewDealFields, pipelineId: string): ParseNewDealResult {
+export function parseNewDeal(
+  fields: NewDealFields,
+  pipelineId: string,
+  locale: Locale = "en",
+): ParseNewDealResult {
+  const t = createAppTranslator(locale, "sales");
   const title = fields.title.trim();
-  if (title === "") return { ok: false, error: "Title is required" };
-  if (fields.stageId === "") return { ok: false, error: "Stage is required" };
+  if (title === "") return { ok: false, error: t("computed.titleRequired") };
+  if (fields.stageId === "") return { ok: false, error: t("computed.stageRequired") };
 
-  const money = parseMoneyValue(fields.value);
-  if (!money.ok) return money;
+  const money = parseMoneyValue(fields.value, locale);
+  if (!money.ok) return { ok: false, error: t("computed.invalidMoney") };
   // Labels are user-managed catalog names now (validated server-side against the catalog); dedupe
   // but do not whitelist against a fixed enum.
   const labels = [...new Set(fields.labels ?? [])];

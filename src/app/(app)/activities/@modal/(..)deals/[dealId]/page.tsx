@@ -1,5 +1,6 @@
 import type React from "react";
 import { Suspense } from "react";
+import { getAppTranslations } from "@/features/i18n/server";
 import { DetailDrawer } from "@/features/navigation/DetailDrawer";
 import { DetailDrawerPreviewSkeleton } from "@/features/navigation/DetailDrawerPreviewSkeleton";
 import { DealDetailView } from "../../../../deals/[dealId]/DealDetailView";
@@ -13,9 +14,10 @@ export default async function InterceptedDealPage({
   params: Promise<{ dealId: string }>;
 }): Promise<React.ReactNode> {
   const { dealId } = await params;
+  const t = await getAppTranslations("utilities.drawer");
   return (
     <DetailDrawer
-      title="Deal details"
+      title={t("deal")}
       contentClassName="w-full sm:w-[96vw] md:w-[92vw] lg:w-[88vw] xl:w-[84vw] max-w-[1600px]"
     >
       <Suspense fallback={<DetailDrawerPreviewSkeleton recordId={dealId} />}>

@@ -1,6 +1,8 @@
-import { and, eq, gte, isNotNull, isNull, lte, sql } from "drizzle-orm";
+import { and, eq, isNotNull, isNull, sql } from "drizzle-orm";
 import type { Db } from "@/db/client";
 import { activities } from "@/db/schema";
+import { instantCivilDate } from "@/lib/zonedDateTime";
+import { activityDueDaySql } from "./activityDateSql";
 
 export interface DayLoadQuery {
   userId: string;
@@ -25,7 +27,7 @@ export async function getDayLoad(
 ): Promise<Record<string, number>> {
   signal.throwIfAborted();
   const zone = toZonePostgresAccepts(query.timeZone);
-  const dueDayInZone = sql<string>`to_char(${activities.dueAt} AT TIME ZONE ${zone}::text, 'YYYY-MM-DD')`;
+  const dueDayInZone = activityDueDaySql(zone);
   const rows = await db
     .select({ day: dueDayInZone, count: sql<number>`count(*)::int` })
     .from(activities)
@@ -34,8 +36,8 @@ export async function getDayLoad(
         eq(activities.assigneeId, query.userId),
         isNull(activities.deletedAt),
         isNotNull(activities.dueAt),
-        gte(activities.dueAt, query.from),
-        lte(activities.dueAt, query.to),
+        sql`${dueDayInZone} >= ${instantCivilDate(query.from, zone)}`,
+        sql`${dueDayInZone} < ${instantCivilDate(query.to, zone)}`,
       ),
     )
     .groupBy(sql`1`);

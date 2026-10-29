@@ -1,9 +1,10 @@
 "use client";
 import { Button } from "@/components/ui/Button";
-import { STRINGS } from "@/constants/strings";
+import { useLocale } from "@/features/i18n/LocaleProvider";
+import { settingsImportError } from "@/features/identity/settingsMessages";
+import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import { trpc } from "@/lib/trpc-client";
-
-const IMP = STRINGS.settings.importer;
+import { useFormatters } from "@/lib/useFormatters";
 
 export interface PreviewStepProps {
   batchId: string;
@@ -18,6 +19,11 @@ export function PreviewStep({
   busy,
   onCommit,
 }: PreviewStepProps): React.ReactNode {
+  const L = useSettingsMessages();
+  const IMP = L.importer;
+  const locale = useLocale();
+  const format = useFormatters();
+
   const rows = trpc.import.listRows.useQuery({ batchId }).data ?? [];
   const invalid = rows.filter((r) => r.status === "invalid");
 
@@ -40,9 +46,11 @@ export function PreviewStep({
           <ul className="divide-y rounded-md border text-sm">
             {invalid.map((r) => (
               <li key={r.id} className="px-3 py-2">
-                <span className="font-medium tabular-nums">#{r.rowNumber}</span>{" "}
+                <span className="font-medium tabular-nums">#{format.number(r.rowNumber)}</span>{" "}
                 <span className="text-red-600">
-                  {r.errors.map((e) => `${e.field}: ${e.message}`).join("; ")}
+                  {r.errors
+                    .map((e) => `${e.field}: ${settingsImportError(L, e.message, locale)}`)
+                    .join("; ")}
                 </span>
               </li>
             ))}

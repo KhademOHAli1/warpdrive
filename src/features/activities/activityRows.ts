@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gte, isNull, lte, type SQL, sql } from "drizzle-orm";
+import { and, asc, desc, eq, isNull, type SQL, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import type { VisibilityLevel } from "@/constants/visibility";
 import type { Db } from "@/db/client";
@@ -10,7 +10,9 @@ import { persons } from "@/db/schema/persons";
 import { pipelines } from "@/db/schema/pipelines";
 import { canSee } from "@/features/permissions/canSee";
 import type { PermSetUser } from "@/features/permissions/effective";
+import { addCivilDays } from "@/lib/zonedDateTime";
 import { assertNever } from "@/types/result";
+import { activityDueDaySql } from "./activityDateSql";
 import { buildActivityVisibility } from "./activityVisibility";
 import { linkedParentVisible } from "./parentLinkVisibility";
 import type { ActivityListFilter, ActivitySort, ActivitySortField } from "./schemas";
@@ -30,8 +32,11 @@ export interface ActivityTableRow {
   priority: string | null;
   done: boolean;
   dueAtIso: string | null;
+  endAtIso?: string | null;
   // No time was set; the list shows a date only.
   allDay: boolean;
+  dueDate?: string | null;
+  endDate?: string | null;
   durationMinutes: number | null;
   location: string | null;
   assigneeId: string;
@@ -130,13 +135,14 @@ function activitySortColumn(field: ActivitySortField): SQL {
 // Build the WHERE predicate list from the list filter, always anchored on the not-deleted guard.
 // ownerId narrows by assigneeId: Pipedrive's Activities "Owner" filter is really the assigned
 // user, not activities.ownerId (which just tracks who created the row).
-function activityFilterPredicates(filter: ActivityListFilter): SQL[] {
+function activityFilterPredicates(filter: ActivityListFilter, timeZone: string): SQL[] {
   const preds: SQL[] = [isNull(activities.deletedAt)];
   if (filter.ownerId !== null) preds.push(eq(activities.assigneeId, filter.ownerId));
   if (filter.done === "open") preds.push(eq(activities.done, false));
   else if (filter.done === "done") preds.push(eq(activities.done, true));
-  if (filter.from !== null) preds.push(gte(activities.dueAt, new Date(`${filter.from}T00:00:00`)));
-  if (filter.to !== null) preds.push(lte(activities.dueAt, new Date(`${filter.to}T23:59:59`)));
+  if (filter.from !== null) preds.push(sql`${activityDueDaySql(timeZone)} >= ${filter.from}`);
+  if (filter.to !== null)
+    preds.push(sql`${activityDueDaySql(timeZone)} < ${addCivilDays(filter.to, 1)}`);
   if (filter.typeKey !== null) preds.push(eq(activityTypes.key, filter.typeKey));
   return preds;
 }
@@ -147,6 +153,7 @@ export async function listActivityRows(
   filter: ActivityListFilter,
   signal: AbortSignal,
   sort?: ActivitySort,
+  timeZone = "UTC",
 ): Promise<ActivityTableRow[]> {
   signal.throwIfAborted();
   // No explicit sort: due date ascending (Postgres default places NULLs last on ASC), id as a
@@ -159,7 +166,10 @@ export async function listActivityRows(
       id: activities.id,
       subject: activities.subject,
       dueAt: activities.dueAt,
+      endAt: activities.endAt,
       allDay: activities.allDay,
+      dueDate: activities.dueDate,
+      endDate: activities.endDate,
       done: activities.done,
       durationMinutes: activities.durationMinutes,
       location: activities.location,
@@ -211,7 +221,7 @@ export async function listActivityRows(
     )
     .leftJoin(assigneeUser, eq(assigneeUser.id, activities.assigneeId))
     .leftJoin(ownerUser, eq(ownerUser.id, activities.ownerId))
-    .where(and(...activityFilterPredicates(filter)))
+    .where(and(...activityFilterPredicates(filter, timeZone)))
     // Stable server ORDER BY so this pagination-free list is deterministic across calls: the
     // requested (or default due-date) column, then id as a tiebreaker for equal sort keys.
     .orderBy(direction(orderColumn), asc(activities.id));
@@ -235,7 +245,10 @@ type JoinedRow = LinkGateColumns & {
   priority: string | null;
   done: boolean;
   dueAt: Date | null;
+  endAt?: Date | null;
   allDay: boolean;
+  dueDate?: string | null;
+  endDate?: string | null;
   durationMinutes: number | null;
   location: string | null;
   assigneeId: string;
@@ -258,7 +271,10 @@ function toTableRow(row: JoinedRow, gates: LinkGates): ActivityTableRow {
     priority: row.priority,
     done: row.done,
     dueAtIso: row.dueAt === null ? null : row.dueAt.toISOString(),
+    endAtIso: row.endAt?.toISOString() ?? null,
     allDay: row.allDay,
+    dueDate: row.dueDate,
+    endDate: row.endDate,
     durationMinutes: row.durationMinutes,
     location: row.location,
     assigneeId: row.assigneeId,

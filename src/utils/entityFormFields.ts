@@ -1,6 +1,10 @@
 // Shared Add-deal / Add-lead form-field parsing. Both entities persist the same money and label
 // shapes, so keeping this in one place stops the two forms from drifting (e.g. one rounding money
-// differently from the other and silently failing the server's multipleOf(0.01) check).
+// differently from the other and silently failing the server's moneyAmount check).
+import { moneyAmount } from "@/features/currencies/currencySchema";
+import { canonicalMoney } from "@/lib/canonicalMoney";
+import type { FormattingLocale } from "@/lib/localeFormatting";
+import { normalizeNumberInput } from "./normalizeNumberInput";
 
 // Trim to null: blank optional strings collapse to null so an empty input never persists "".
 export function orNull(v: string | null | undefined): string | null {
@@ -9,18 +13,19 @@ export function orNull(v: string | null | undefined): string | null {
   return t === "" ? null : t;
 }
 
-export type MoneyParse = { ok: true; value: number | null } | { ok: false; error: string };
+export type MoneyParse = { ok: true; value: number | string | null } | { ok: false; error: string };
 
-// Blank -> no value; otherwise a non-negative number rounded to cents (the value columns are
-// multipleOf(0.01)). Callers surface `error` as the form validation message.
-export function parseMoneyValue(raw: string): MoneyParse {
+// Blank -> no value; otherwise a non-negative amount with up to four decimal places. Callers surface `error` as the form validation message.
+export function parseMoneyValue(raw: string, locale: FormattingLocale = "en"): MoneyParse {
   const t = raw.trim();
   if (t === "") return { ok: true, value: null };
-  const n = Number(t);
-  if (!Number.isFinite(n) || n < 0) {
+  const normalized = normalizeNumberInput(t, locale);
+  const n = normalized === null ? Number.NaN : Number(normalized);
+  if (normalized === null || !moneyAmount.safeParse(normalized).success) {
     return { ok: false, error: "Value must be a non-negative number" };
   }
-  return { ok: true, value: Math.round(n * 100) / 100 };
+  const exact = canonicalMoney(normalized);
+  return { ok: true, value: canonicalMoney(String(n)) === exact ? n : exact };
 }
 
 // Coerce a single label value: keep any non-blank catalog name, null out blanks. Labels are

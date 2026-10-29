@@ -1,14 +1,21 @@
+"use client";
 import type { CalendarActivity } from "@/features/activities/calendar";
+import {
+  calendarWeekdayLabels,
+  formatCalendarDate,
+  isSameCalendarMonth,
+} from "@/features/activities/calendarSystem";
 import { anchorDate, calendarHref } from "@/features/activities/calendarView";
-import { groupMonthActivities, isSameMonth } from "@/features/activities/monthGrid";
+import { groupMonthActivities } from "@/features/activities/monthGrid";
+import { useAppTranslations, useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import { ActivityChip } from "./calendarChip";
+import { calendarDayLabel } from "./calendarLabels";
 
 // The month display is the WAI-ARIA grid pattern (role=grid > row > columnheader/gridcell),
 // the correct semantics for a calendar date grid. Biome's a11y rules assume any grid role is
 // an interactive widget needing focus management and a semantic <table>; this is a static,
 // read-only display, so those specific rules are suppressed per element below.
 
-const WEEKDAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
 const MAX_CHIPS = 3;
 const WEEK_ROWS = [0, 1, 2, 3, 4, 5] as const;
 
@@ -23,9 +30,12 @@ function DayCell({
   items: CalendarActivity[];
   todayIso: string;
 }): React.ReactNode {
+  const preferences = useLocalePreferences();
+  const t = useAppTranslations("calendar");
   const day = new Date(`${iso}T00:00:00.000Z`);
-  const adjacent = !isSameMonth(day, anchor);
+  const adjacent = !isSameCalendarMonth(day, anchor, preferences);
   const isToday = iso === todayIso;
+  const dateLabel = calendarDayLabel(iso, preferences);
   // De-emphasised, but still readable: gray-400 on gray-50 measured under the 4.5:1 floor.
   const cellTone = adjacent ? "bg-muted/50 text-foreground/60" : "";
   const todayRing = isToday ? "ring-1 ring-primary" : "";
@@ -42,9 +52,10 @@ function DayCell({
     >
       <a
         href={calendarHref("week", iso)}
+        aria-label={isToday ? t("todayLabel", { date: dateLabel }) : dateLabel}
         className="block text-xs font-medium hover:underline mb-0.5 tabular-nums"
       >
-        {day.getUTCDate()}
+        {formatCalendarDate(day, preferences, { day: "numeric" })}
       </a>
       {items.slice(0, MAX_CHIPS).map((a) => (
         <ActivityChip key={a.id} a={a} />
@@ -54,7 +65,7 @@ function DayCell({
           href={calendarHref("week", iso)}
           className="block text-xs text-primary hover:underline mt-0.5 tabular-nums"
         >
-          +{overflow} more
+          {t("more", { count: overflow })}
         </a>
       ) : null}
     </div>
@@ -72,17 +83,19 @@ export function MonthView({
   activities: CalendarActivity[];
   todayIso: string;
 }): React.ReactNode {
+  const preferences = useLocalePreferences();
+  const t = useAppTranslations("calendar");
   const anchor = anchorDate(anchorIso);
   const days = dayIsos.map((iso) => new Date(`${iso}T00:00:00.000Z`));
-  const grouped = groupMonthActivities(activities, days);
+  const grouped = groupMonthActivities(activities, days, preferences.timeZone);
 
   return (
     // biome-ignore lint/a11y/useSemanticElements: static calendar grid, not a data <table>
-    <div role="grid" aria-label="Month" className="flex flex-col gap-1">
+    <div role="grid" aria-label={t("month")} className="flex flex-col gap-1">
       {/* biome-ignore lint/a11y/useSemanticElements: header row of the calendar grid */}
       {/* biome-ignore lint/a11y/useFocusableInteractive: static read-only calendar grid */}
       <div role="row" className="grid grid-cols-7 gap-1">
-        {WEEKDAY_LABELS.map((w) => (
+        {calendarWeekdayLabels(preferences).map((w) => (
           // biome-ignore lint/a11y/useSemanticElements: weekday column header in the grid
           // biome-ignore lint/a11y/useFocusableInteractive: static read-only calendar grid
           <div key={w} role="columnheader" className="text-xs font-medium text-foreground px-1">

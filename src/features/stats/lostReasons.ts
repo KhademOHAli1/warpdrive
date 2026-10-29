@@ -3,11 +3,14 @@
 // API accepts free text in lost_reason. Rows are keyed on the id when there is one and fall
 // back to the text, so a typed reason is not silently filed under "no reason".
 // Windows on lost_time, and applies dealVisibilityClause.
+
 import { sql } from "drizzle-orm";
 import type { Db } from "@/db/client";
+import { reportCurrencyClause } from "@/features/currencies/reportCurrency";
 import { dealVisibilityClause } from "@/features/deals/visibility";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { ownerFilterClause } from "@/features/stats/ownerIds";
+import { canonicalMoney } from "@/lib/canonicalMoney";
 import type { DashboardFilters, LostReasonCount } from "@/types/stats";
 
 function toSession(actor: PermSetUser) {
@@ -29,6 +32,7 @@ export async function lostReasonBreakdown(
 ): Promise<LostReasonCount[]> {
   signal.throwIfAborted();
 
+  const currencyClause = await reportCurrencyClause(db, filters.currency, signal);
   const visClause = dealVisibilityClause(toSession(actor));
   const ownerClause = ownerFilterClause(sql`d.owner_id`, filters.owners);
   const pipelineClause =
@@ -39,7 +43,7 @@ export async function lostReasonBreakdown(
       d.lost_reason_id AS "reasonId",
       coalesce(lr.name, d.lost_reason) AS "name",
       count(*)::int AS "count",
-      coalesce(sum(d.value), 0)::numeric(14,2)::text AS "value"
+      coalesce(sum(d.value), 0)::text AS "value"
     FROM deals d
     JOIN pipelines p ON p.id = d.pipeline_id
     LEFT JOIN lost_reasons lr ON lr.id = d.lost_reason_id
@@ -51,11 +55,15 @@ export async function lostReasonBreakdown(
       AND d.lost_time < ${filters.to}::date + INTERVAL '1 day'
       ${pipelineClause}
       ${ownerClause}
+      ${currencyClause}
       AND ${visClause}
     GROUP BY d.lost_reason_id, coalesce(lr.name, d.lost_reason)
     ORDER BY count(*) DESC, "name" ASC NULLS LAST
   `);
 
   signal.throwIfAborted();
-  return (result as unknown as { rows: LostReasonCount[] }).rows;
+  return (result as unknown as { rows: LostReasonCount[] }).rows.map((row) => ({
+    ...row,
+    value: canonicalMoney(row.value),
+  }));
 }

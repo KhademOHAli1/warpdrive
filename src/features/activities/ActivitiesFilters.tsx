@@ -3,10 +3,12 @@ import type React from "react";
 import { Combobox, type ComboboxOption } from "@/components/ui/Combobox";
 import { DatePicker } from "@/components/ui/DatePicker";
 import { Select } from "@/components/ui/Select";
+import { useLocale } from "@/features/i18n/LocaleProvider";
 import { ActivityPresetChips } from "./ActivityPresetChips";
 import { ActivityTypeTab } from "./ActivityTypeTab";
-import { ALL_OWNERS_OPTION, DONE_FILTER_OPTIONS } from "./activityFilterOptions";
+import { activityTypeName } from "./activityTypeLabels";
 import type { ActivityListFilter } from "./schemas";
+import { useActivitiesMessages } from "./useActivitiesMessages";
 
 export interface ActivityTypeOption {
   key: string;
@@ -31,6 +33,8 @@ export function ActivitiesFilters({
   owners,
   types,
 }: ActivitiesFiltersProps): React.ReactNode {
+  const S = useActivitiesMessages();
+  const locale = useLocale();
   function patch(next: Partial<ActivityListFilter>): void {
     onChange({ ...filter, ...next });
   }
@@ -46,40 +50,44 @@ export function ActivitiesFilters({
         {/* Both primitives default to w-full; with no width here each claims the whole flex line
             and wraps, so the pickers render full-bleed and stacked. */}
         <Combobox
-          ariaLabel="Owner"
+          ariaLabel={S.owner}
           triggerClassName="w-52"
           value={filter.ownerId ?? ""}
           onChange={(v) => patch({ ownerId: v === "" ? null : v })}
-          options={[ALL_OWNERS_OPTION, ...owners]}
+          options={[{ value: "", label: S.allOwners }, ...owners]}
         />
         <Select
-          ariaLabel="Status"
+          ariaLabel={S.status}
           triggerClassName="w-52"
           value={filter.done}
           onChange={(v) => patch({ done: v as ActivityListFilter["done"] })}
-          options={DONE_FILTER_OPTIONS}
+          options={[
+            { value: "open", label: S.openStatus },
+            { value: "done", label: S.completed },
+            { value: "all", label: S.all },
+          ]}
         />
         <DatePicker
-          ariaLabel="From"
+          ariaLabel={S.from}
           value={filter.from}
           onChange={(v) => patch({ from: v })}
-          placeholder="From"
+          placeholder={S.from}
         />
         <DatePicker
-          ariaLabel="To"
+          ariaLabel={S.to}
           value={filter.to}
           onChange={(v) => patch({ to: v })}
-          placeholder="To"
+          placeholder={S.to}
         />
       </div>
       <div className="flex flex-wrap items-center gap-1 border-b pb-2">
-        <ActivityTypeTab active={filter.typeKey} value={null} label="All" onSelect={selectType} />
+        <ActivityTypeTab active={filter.typeKey} value={null} label={S.all} onSelect={selectType} />
         {types.map((t) => (
           <ActivityTypeTab
             key={t.key}
             active={filter.typeKey}
             value={t.key}
-            label={t.name}
+            label={activityTypeName(t, locale)}
             icon
             onSelect={selectType}
           />

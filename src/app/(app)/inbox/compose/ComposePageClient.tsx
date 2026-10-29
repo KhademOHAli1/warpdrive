@@ -4,10 +4,10 @@ import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { STRINGS } from "@/constants/strings";
 import { Composer } from "@/features/email/Composer";
 import { ComposeLinkSidebar } from "@/features/email/composer/ComposeLinkSidebar";
 import { toComposerDraft } from "@/features/email/toComposerDraft";
+import { useEmailMessages } from "@/features/email/useEmailMessages";
 import { useInboxRealtime } from "@/features/email/useInboxRealtime";
 import { trpc } from "@/lib/trpc-client";
 
@@ -28,6 +28,8 @@ export function ComposePageClient({
   selfActorId,
   draftId,
 }: ComposePageClientProps): React.ReactNode {
+  const E = useEmailMessages();
+
   const router = useRouter();
   // Opening compose unmounts InboxListClient (the full pane replaces the list), which would close
   // its realtime subscription. Keep it alive here so mail arriving during a compose session still
@@ -59,24 +61,22 @@ export function ComposePageClient({
   }
 
   return (
-    <main aria-label={STRINGS.inbox.composeTitle} className="flex h-full flex-col">
+    <main aria-label={E.composeTitle} className="flex h-full flex-col">
       <div className="flex shrink-0 items-center gap-2 border-b border-border px-4 py-2">
         <Link
           href="/inbox"
-          aria-label={STRINGS.inbox.backToInbox}
+          aria-label={E.backToInbox}
           className="flex items-center gap-1 rounded-md px-2 py-1 text-sm text-muted-foreground transition-transform hover:bg-accent active:scale-[0.96]"
         >
           <ChevronLeft aria-hidden="true" className="h-4 w-4" />
-          {STRINGS.inbox.back}
+          {E.back}
         </Link>
-        <h1 className="text-display font-[450] leading-tight tracking-tight">
-          {STRINGS.inbox.composeTitle}
-        </h1>
+        <h1 className="text-display font-[450] leading-tight tracking-tight">{E.composeTitle}</h1>
       </div>
       <div className="flex min-h-0 flex-1 items-start gap-6 overflow-y-auto p-4">
         <div className="flex min-w-0 flex-1 flex-col">
           {waitingForDraft ? (
-            <p className="p-3 text-sm text-muted-foreground">{STRINGS.inbox.loadingDraft}</p>
+            <p className="p-3 text-sm text-muted-foreground">{E.loadingDraft}</p>
           ) : (
             <Composer
               key={resumeDraft?.id ?? "new-email"}

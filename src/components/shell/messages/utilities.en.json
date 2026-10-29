@@ -1,0 +1,38 @@
+{
+  "consent": {
+    "request": "Connection request",
+    "title": "Connect an application to <brand>warpdrive</brand>?",
+    "permissions": "It will be able to read and update CRM data your permissions allow. It cannot delete records. You can revoke it later in Settings.",
+    "clientName": "Name it reports (not verified)",
+    "destination": "Access will be sent to",
+    "warning": "Anyone can request a connection and choose the name above. If you did not just start this from that application, deny it.",
+    "deny": "Deny",
+    "approve": "Allow access"
+  },
+  "release": {
+    "available": "🎉 <brand>warpdrive</brand> <identifier>{version}</identifier> is available",
+    "current": "(current: <identifier>{version}</identifier>)",
+    "showNotes": "Show release notes",
+    "hideNotes": "Hide release notes",
+    "github": "View on <brand>GitHub</brand>",
+    "dismiss": "Dismiss"
+  },
+  "labels": {
+    "add": "+ Add labels",
+    "menu": "Labels",
+    "empty": "No labels yet",
+    "create": "Create new label"
+  },
+  "editHeading": "Edit {label}",
+  "breadcrumb": "Breadcrumb",
+  "drawer": {
+    "org": "Organization details",
+    "person": "Contact details",
+    "deal": "Deal details",
+    "lead": "Lead details"
+  },
+  "presence": {
+    "more": "{count, plural, one {# more viewer} other {# more viewers}}",
+    "overflow": "+{count, number}"
+  }
+}

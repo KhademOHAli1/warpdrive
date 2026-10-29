@@ -1,0 +1,9 @@
+{
+  "cancel": "Cancel",
+  "new": "NEW",
+  "review": "Review",
+  "save": "Save",
+  "saving": "Saving...",
+  "createOrgError": "Could not create organization ({errorId})",
+  "createPersonError": "Could not create person ({errorId})"
+}

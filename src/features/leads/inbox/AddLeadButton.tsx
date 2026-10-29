@@ -9,7 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { STRINGS } from "@/constants/strings";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { AddLeadModal } from "../AddLeadModal";
 
 export interface AddLeadButtonProps {
@@ -28,6 +28,8 @@ export function AddLeadButton({
   canImport,
   onCreated,
 }: AddLeadButtonProps): React.ReactNode {
+  const tLeads = useAppTranslations("leads");
+
   const [open, setOpen] = useState(false);
 
   return (
@@ -36,22 +38,22 @@ export function AddLeadButton({
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="rounded-l-md bg-action px-3 py-1.5 text-sm font-medium text-action-foreground transition-[opacity,scale] duration-150 ease-out hover:opacity-90 active:scale-[0.96] motion-reduce:transition-opacity"
+          className="rounded-s-md bg-action px-3 py-1.5 text-sm font-medium text-action-foreground transition-[opacity,scale] duration-150 ease-out hover:opacity-90 active:scale-[0.96] motion-reduce:transition-opacity"
         >
-          + Lead
+          {tLeads("lead")}
         </button>
         <DropdownMenu>
           <DropdownMenuTrigger
-            aria-label="Add lead options"
-            className="rounded-r-md border-l border-action-foreground/20 bg-action px-1.5 py-1.5 text-action-foreground transition-[opacity,scale] duration-150 ease-out hover:opacity-90 active:scale-[0.96] motion-reduce:transition-opacity"
+            aria-label={tLeads("addLeadOptions")}
+            className="rounded-e-md border-s border-action-foreground/20 bg-action px-1.5 py-1.5 text-action-foreground transition-[opacity,scale] duration-150 ease-out hover:opacity-90 active:scale-[0.96] motion-reduce:transition-opacity"
           >
             <ChevronDown aria-hidden="true" className="h-4 w-4" />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="min-w-40">
-            <DropdownMenuItem onSelect={() => setOpen(true)}>New lead</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => setOpen(true)}>{tLeads("newLead")}</DropdownMenuItem>
             {canImport && (
               <DropdownMenuItem asChild>
-                <Link href="/settings/import/new">{STRINGS.settings.importer.importLeads}</Link>
+                <Link href="/settings/import/new">{tLeads("importLeads")}</Link>
               </DropdownMenuItem>
             )}
           </DropdownMenuContent>

@@ -25,7 +25,7 @@ just want to use it, start with the feature pages instead.
 | Object storage | MinIO, S3-compatible |
 | Email | Gmail API over OAuth |
 | Auth | Google SSO |
-| Package manager | pnpm |
+| Package manager | Bun |
 
 Custom fields are stored as JSONB rather than as migrated columns, which is what lets
 administrators add fields without a schema change.

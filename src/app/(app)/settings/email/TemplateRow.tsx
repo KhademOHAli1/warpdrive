@@ -6,8 +6,9 @@ import type React from "react";
 import { Button } from "@/components/ui/Button";
 import { Checkbox } from "@/components/ui/Checkbox";
 import type { SettingsTemplate } from "@/features/email/emailAuthoringReads";
+import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
+import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import { formatCreatedOn } from "./formatDate";
-import { EMAIL_SETTINGS_STRINGS as S } from "./strings";
 
 const ROW_BUTTON =
   "relative h-auto px-0 py-0 text-sm font-normal text-muted-foreground hover:bg-transparent hover:text-foreground after:absolute after:left-0 after:top-1/2 after:h-10 after:w-full after:-translate-y-1/2 after:content-['']";
@@ -28,6 +29,10 @@ export function TemplateRow({
   onEdit: () => void;
   onDelete: () => void;
 }): React.ReactNode {
+  const L = useSettingsMessages();
+  const preferences = useLocalePreferences();
+  const S = L._email;
+
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: t.id });
   const style = { transform: CSS.Transform.toString(transform), transition };
 
@@ -52,7 +57,9 @@ export function TemplateRow({
           </span>
         )}
       </span>
-      <span className="w-28 text-xs text-muted-foreground">{formatCreatedOn(t.createdAt)}</span>
+      <span className="w-28 text-xs text-muted-foreground">
+        {formatCreatedOn(t.createdAt, preferences)}
+      </span>
       <span className="w-24 text-xs text-muted-foreground">{S.you}</span>
       <span className="flex items-center gap-2">
         <Button

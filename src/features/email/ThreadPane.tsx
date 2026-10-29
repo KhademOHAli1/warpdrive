@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { STRINGS } from "@/constants/strings";
+import { useEmailMessages } from "@/features/email/useEmailMessages";
 import { type RouterOutputs, trpc } from "@/lib/trpc-client";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { InboxReaderSidebar } from "./InboxReaderSidebar";
@@ -30,6 +30,8 @@ export function ThreadPane({
   trackingBadge,
   initialThread,
 }: ThreadPaneProps): React.ReactNode {
+  const E = useEmailMessages();
+
   const [allowRemote, setAllowRemote] = useState(false);
   const { data, refetch } = trpc.email.thread.get.useQuery(
     { threadId, allowRemote },
@@ -71,7 +73,7 @@ export function ThreadPane({
   async function handleMarkUnread(): Promise<void> {
     const res = await markThreadUnreadAction(readCsrfToken(), { threadId });
     if (!res.ok) {
-      setMarkUnreadError(STRINGS.inbox.errorMarkUnread);
+      setMarkUnreadError(E.errorMarkUnread);
       return;
     }
     setMarkUnreadError(null);
@@ -80,7 +82,7 @@ export function ThreadPane({
   }
 
   if (data === undefined) {
-    return <div className="p-4 text-sm text-muted-foreground">Loading...</div>;
+    return <div className="p-4 text-sm text-muted-foreground">{E._extra.loading}</div>;
   }
 
   const { messages, accountId, canCompose, ownerEmail, personName, dealTitle } = data;
@@ -102,7 +104,7 @@ export function ThreadPane({
       <header className="px-4 py-3 border-b border-border">
         <div className="flex items-center justify-between gap-2">
           <h1 className="text-base font-semibold text-foreground text-balance">
-            {inboxThread.subject ?? "(no subject)"}
+            {inboxThread.subject ?? E._extra.no_subject}
           </h1>
           <div className="flex shrink-0 items-center gap-2">
             {markUnreadError !== null && (
@@ -124,7 +126,7 @@ export function ThreadPane({
               onClick={() => void handleMarkUnread()}
               className="shrink-0 rounded-md px-2 py-1 text-xs text-muted-foreground transition-transform hover:bg-accent active:scale-[0.96]"
             >
-              {STRINGS.inbox.markAsUnread}
+              {E.markAsUnread}
             </button>
           </div>
         </div>
@@ -135,7 +137,7 @@ export function ThreadPane({
               className="inline-block max-w-[12rem] truncate px-2 py-0.5 rounded-full bg-accent text-accent-foreground text-xs hover:underline"
             >
               {/* Pipedrive labels the chip with the linked record's NAME, not the type noun. */}
-              {personName ?? STRINGS.inbox.linkedPersonFallback}
+              {personName ?? E.linkedPersonFallback}
             </a>
           )}
           {inboxThread.dealId !== null && (
@@ -143,12 +145,12 @@ export function ThreadPane({
               href={`/deals/${inboxThread.dealId}`}
               className="inline-block max-w-[12rem] truncate px-2 py-0.5 rounded-full bg-accent text-accent-foreground text-xs hover:underline"
             >
-              {dealTitle ?? STRINGS.inbox.linkedDealFallback}
+              {dealTitle ?? E.linkedDealFallback}
             </a>
           )}
           {trackingBadge !== null && (
             <span className="inline-block px-2 py-0.5 rounded-full bg-muted text-muted-foreground text-xs">
-              {trackingBadge.kind === "open" ? "Opened" : "Clicked"}
+              {trackingBadge.kind === "open" ? E._extra.opened : E._extra.clicked}
             </span>
           )}
         </div>

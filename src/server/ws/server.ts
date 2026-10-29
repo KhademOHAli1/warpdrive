@@ -26,7 +26,7 @@ function rawToUtf8(raw: RawData): string {
 // This listener is publicly reachable: Caddy proxies /_ws straight through, and a TCP connection
 // is accepted from anyone before any credential is presented. The two bounds applied here, plus
 // the per-socket auth deadline in SocketSession, are what keep that from being free to abuse.
-export function startWsServer(port: number, deps: WsServerDeps): WebSocketServer {
+export function startWsServer(port: number, deps: WsServerDeps, host?: string): WebSocketServer {
   // One PresenceHub per server instance keeps test runs isolated.
   const presenceHub = new PresenceHub();
   const maxConnections = deps.maxConnections ?? WS_MAX_CONNECTIONS;
@@ -36,6 +36,7 @@ export function startWsServer(port: number, deps: WsServerDeps): WebSocketServer
   // since the library default is 100 MB buffered on behalf of a peer that has not authenticated.
   const wss = new WebSocketServer({
     port,
+    host,
     maxPayload: deps.maxPayloadBytes ?? WS_MAX_PAYLOAD_BYTES,
   });
 

@@ -1,6 +1,6 @@
-import { STRINGS } from "@/constants/strings";
 import { db } from "@/db/client";
 import { listDefs } from "@/features/custom-fields/defsRepo";
+import { getAppTranslations } from "@/features/i18n/server";
 import { getPreferencesForActor } from "@/features/identity/preferencesForActor";
 import { toLeadSort } from "@/features/leads/inbox/seedSort";
 import { LeadsInbox } from "@/features/leads/LeadsInbox";
@@ -8,12 +8,16 @@ import { can } from "@/features/permissions/can";
 import { readBaseCurrency } from "@/features/settings/readBaseCurrency";
 import { createContext } from "@/server/trpc/context";
 
-export const metadata = { title: STRINGS.nav.leads };
+export async function generateMetadata() {
+  const t = await getAppTranslations("leads");
+  return { title: t("leads") };
+}
 
 export default async function LeadsPage(): Promise<React.ReactNode> {
+  const t = await getAppTranslations("leads");
   const ctx = await createContext();
   if (ctx.actor === null) {
-    return <main>Unauthorized</main>;
+    return <main>{t("unauthorized")}</main>;
   }
   const [baseCurrency, prefs, customFieldDefs] = await Promise.all([
     readBaseCurrency(db, AbortSignal.timeout(8000)),
@@ -30,7 +34,7 @@ export default async function LeadsPage(): Promise<React.ReactNode> {
       : null;
 
   return (
-    <main aria-label="Leads" className="h-full">
+    <main aria-label={t("leads")} className="h-full">
       <LeadsInbox
         baseCurrency={baseCurrency}
         initialView={initialView}

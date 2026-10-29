@@ -3,19 +3,16 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { useState } from "react";
-import { CONTACT_SIDEBAR_STRINGS } from "@/constants/contactSidebarStrings";
-import { STRINGS } from "@/constants/strings";
 import type { PersonDetail } from "@/features/contacts/personsRepo";
 import { CollapsibleSection } from "@/features/deal-workspace/CollapsibleSection";
 import { PersonSection } from "@/features/deal-workspace/sidebar/PersonSection";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { trpc } from "@/lib/trpc-client";
 import type { CustomFieldDef } from "@/types/customFields";
 import { ContactOverviewSection } from "../../ContactOverviewSection";
 import { ListPanel } from "../../contactDetail.shared";
 import { customizeFieldsItem } from "../../contactSectionMenu";
 import { LinkedDealRow } from "../../LinkedDealRow";
-
-const sections = CONTACT_SIDEBAR_STRINGS.sections;
 
 // Person detail sidebar (CO-2): the Contact block is a CollapsibleSection with the shared section
 // header menu (pencil reveals empty fields, kebab customizes fields), matching the deal sidebar.
@@ -33,6 +30,8 @@ export function PersonSidebar({
   hiddenBuiltins?: ReadonlySet<string>;
   baseCurrency: string;
 }): React.ReactNode {
+  const tContacts = useAppTranslations("contacts");
+
   const router = useRouter();
   const [personBulkEditing, setPersonBulkEditing] = useState(false);
   const deals = trpc.contacts.dealsForPerson.useQuery({ personId: person.id }).data ?? [];
@@ -42,11 +41,7 @@ export function PersonSidebar({
       <PersonSection
         person={person}
         menuItems={[
-          customizeFieldsItem(
-            (href) => router.push(href),
-            "person",
-            STRINGS.dealSidebar.menu.customizeFields,
-          ),
+          customizeFieldsItem((href) => router.push(href), "person", tContacts("customizeFields")),
         ]}
         bulkEditing={personBulkEditing}
         onStartBulk={() => setPersonBulkEditing(true)}
@@ -61,16 +56,17 @@ export function PersonSidebar({
           href={`/contacts/orgs/${person.orgId}`}
           className="block rounded px-1 py-1 text-sm text-primary transition-colors duration-150 hover:bg-accent hover:underline motion-reduce:transition-none"
         >
-          View {orgName}
+          {tContacts("view")}
+          {orgName}
         </Link>
       )}
 
       <ContactOverviewSection entityType="person" entityId={person.id} />
 
-      <CollapsibleSection title={sections.deals}>
+      <CollapsibleSection title={tContacts("deals")}>
         <ListPanel
           items={deals}
-          empty="No deals yet."
+          empty={tContacts("noDealsYet")}
           render={(deal) => <LinkedDealRow key={deal.id} deal={deal} />}
         />
       </CollapsibleSection>

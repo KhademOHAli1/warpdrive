@@ -1,3 +1,8 @@
+"use client";
+import { DatePicker } from "@/components/ui/DatePicker";
+import { TimePicker } from "@/components/ui/TimePicker";
+import { useEmailMessages } from "@/features/email/useEmailMessages";
+import { useLocale } from "@/features/i18n/LocaleProvider";
 // ComposerFooter: right-aligned Discard then the Send split (Send + Send later), matching PD's
 // action-bar order (Discard sits to the left of Send).
 // Phase 7: Send later is enabled when onSendLater is provided and a send is possible;
@@ -12,10 +17,8 @@ import { ChevronDown } from "lucide-react";
 import { useState } from "react";
 import { ToggleField } from "@/components/ui/ToggleField";
 import { Tip } from "@/components/ui/tooltip";
-import { STRINGS } from "@/constants/strings";
 import type { EmailVisibility } from "../threadVisibility";
 import { AddActivityToggle } from "./AddActivityToggle";
-import { COMPOSER_STRINGS } from "./composer.constants";
 import { VisibilityControl } from "./VisibilityControl";
 
 interface ComposerFooterProps {
@@ -60,6 +63,9 @@ export function ComposerFooter({
   onVisibilityChange,
   showVisibility = true,
 }: ComposerFooterProps): React.ReactNode {
+  const E = useEmailMessages();
+  const locale = useLocale();
+
   const [showPicker, setShowPicker] = useState(false);
   const [pickerValue, setPickerValue] = useState("");
   const [pickerError, setPickerError] = useState<string | null>(null);
@@ -76,8 +82,8 @@ export function ComposerFooter({
     const d = new Date(pickerValue);
     // Validate: chosen time must be strictly in the future. Reject past/now with an
     // inline message (not the composer error banner).
-    if (d.getTime() <= Date.now()) {
-      setPickerError(COMPOSER_STRINGS.scheduledPastMessage);
+    if (!Number.isFinite(d.getTime()) || d.getTime() <= Date.now()) {
+      setPickerError(E._composer.scheduledPastMessage);
       return;
     }
     setPickerError(null);
@@ -92,15 +98,15 @@ export function ComposerFooter({
       <div className="flex items-center gap-2">
         <ToggleField
           control="switch"
-          label="Opens"
-          accessibleLabel="Track opens"
+          label={E._extra.opens}
+          accessibleLabel={E._extra.track_opens}
           checked={trackOpens}
           onCheckedChange={onTrackOpensChange}
         />
         <ToggleField
           control="switch"
-          label="Links"
-          accessibleLabel="Track links"
+          label={E._extra.links}
+          accessibleLabel={E._extra.track_links}
           checked={trackLinks}
           onCheckedChange={onTrackLinksChange}
         />
@@ -109,7 +115,7 @@ export function ComposerFooter({
         )}
       </div>
 
-      <div className="ml-auto flex items-center gap-2">
+      <div className="ms-auto flex items-center gap-2">
         {/* Interactive privacy picker (right cluster): Private / Shared, threaded into the send. */}
         {showVisibility && (
           <VisibilityControl value={visibility} onChange={(v) => onVisibilityChange?.(v)} />
@@ -120,9 +126,9 @@ export function ComposerFooter({
           type="button"
           onClick={onDiscard}
           className="px-3 py-1.5 rounded-md border border-border text-sm text-muted-foreground transition-[transform,background-color,color] hover:bg-accent hover:text-foreground active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          aria-label="Discard"
+          aria-label={E._extra.discard}
         >
-          Discard
+          {E._extra.discard}
         </button>
 
         <div className="flex flex-col items-end gap-1">
@@ -132,19 +138,19 @@ export function ComposerFooter({
               type="button"
               onClick={onSend}
               disabled={sending || !canSend}
-              className="px-3 py-1.5 rounded-l-md bg-success text-success-foreground text-sm font-medium transition-[transform,opacity] hover:opacity-90 active:scale-[0.96] disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
+              className="px-3 py-1.5 rounded-s-md bg-success text-success-foreground text-sm font-medium transition-[transform,opacity] hover:opacity-90 active:scale-[0.96] disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
             >
-              {STRINGS.inbox.send}
+              {E.send}
             </button>
-            <Tip label={onSendLater === undefined ? "Coming soon" : "Send later"}>
+            <Tip label={onSendLater === undefined ? E._extra.coming_soon : E._extra.send_later}>
               <button
                 type="button"
                 disabled={sending || !canSend || onSendLater === undefined}
-                aria-label="Send later"
+                aria-label={E._extra.send_later}
                 onClick={() => {
                   if (onSendLater !== undefined) setShowPicker((p) => !p);
                 }}
-                className="px-2 py-1.5 rounded-r-md border-l border-success-foreground/20 bg-success text-success-foreground text-sm font-medium transition-[transform,opacity] hover:opacity-90 active:scale-[0.96] disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
+                className="px-2 py-1.5 rounded-e-md border-s border-success-foreground/20 bg-success text-success-foreground text-sm font-medium transition-[transform,opacity] hover:opacity-90 active:scale-[0.96] disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
               >
                 <ChevronDown aria-hidden="true" className="h-3.5 w-3.5" />
               </button>
@@ -153,23 +159,41 @@ export function ComposerFooter({
           {showPicker && (
             <div className="flex flex-col items-end gap-1 mt-1">
               <div className="flex items-center gap-1">
-                <input
-                  type="datetime-local"
-                  data-testid="scheduled-at-picker"
-                  min={nowLocalInput()}
-                  value={pickerValue}
-                  onChange={(e) => {
-                    setPickerValue(e.target.value);
-                    setPickerError(null);
-                  }}
-                  className="rounded-md border border-border px-2 py-1 text-sm text-muted-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                />
+                {locale === "fa" ? (
+                  <div className="flex flex-wrap gap-2">
+                    <DatePicker
+                      ariaLabel={E._extra.scheduleDate}
+                      value={pickerValue.slice(0, 10) || null}
+                      onChange={(date) =>
+                        setPickerValue(`${date ?? ""}T${pickerValue.split("T")[1] ?? ""}`)
+                      }
+                    />
+                    <TimePicker
+                      ariaLabel={E._extra.scheduleTime}
+                      value={pickerValue.split("T")[1] ?? ""}
+                      onChange={(time) => setPickerValue(`${pickerValue.slice(0, 10)}T${time}`)}
+                    />
+                  </div>
+                ) : (
+                  <input
+                    aria-label={E._extra.scheduleDate}
+                    type="datetime-local"
+                    data-testid="scheduled-at-picker"
+                    min={nowLocalInput()}
+                    value={pickerValue}
+                    onChange={(e) => {
+                      setPickerValue(e.target.value);
+                      setPickerError(null);
+                    }}
+                    className="rounded-md border border-border px-2 py-1 text-sm text-muted-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  />
+                )}
                 <button
                   type="button"
                   onClick={handleSchedule}
-                  className="ml-1 rounded-md bg-action px-2 py-1 text-sm text-action-foreground transition-transform hover:opacity-90 active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
+                  className="ms-1 rounded-md bg-action px-2 py-1 text-sm text-action-foreground transition-transform hover:opacity-90 active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
                 >
-                  Schedule
+                  {E._extra.schedule}
                 </button>
               </div>
               {pickerError !== null && (

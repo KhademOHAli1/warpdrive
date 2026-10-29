@@ -7,12 +7,10 @@ import type React from "react";
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Select, type SelectOption } from "@/components/ui/Select";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { trpc } from "@/lib/trpc-client";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { mergeOrgsAction, mergePersonsAction } from "./actions";
-
-const SELECT_A_RECORD_LABEL = "Select a record";
-const SELECT_THE_SURVIVOR_LABEL = "Select the survivor";
 
 type Option = { id: string; name: string };
 
@@ -31,6 +29,8 @@ export function MergeDialog({
   onMerged,
   onClose,
 }: MergeDialogProps): React.ReactNode {
+  const tContacts = useAppTranslations("contacts");
+
   const orgQ = trpc.contacts.orgOptions.useQuery(undefined, { enabled: kind === "org" });
   const personQ = trpc.contacts.personOptions.useQuery(undefined, { enabled: kind === "person" });
   const all: Option[] = (kind === "org" ? orgQ.data : personQ.data) ?? [];
@@ -56,7 +56,7 @@ export function MergeDialog({
       const result =
         kind === "org" ? await mergeOrgsAction(args, csrf) : await mergePersonsAction(args, csrf);
       if (!result.ok) {
-        setError(`Could not merge (${result.error.id})`);
+        setError(tContacts("mergeError", { errorId: result.error.id }));
         return;
       }
       onMerged(survivorId);
@@ -68,32 +68,32 @@ export function MergeDialog({
   return (
     <div className="space-y-3 rounded-md border bg-card p-4">
       <div className="space-y-1">
-        <span className="block text-sm text-muted-foreground">Merge with</span>
+        <span className="block text-sm text-muted-foreground">{tContacts("mergeWith")}</span>
         <Select
-          ariaLabel="Merge with"
+          ariaLabel={tContacts("mergeWith")}
           value={partnerId}
           onChange={(next) => {
             setPartnerId(next);
             setSurvivorId("");
           }}
-          placeholder={SELECT_A_RECORD_LABEL}
+          placeholder={tContacts("selectARecord")}
           options={[
-            { value: "", label: SELECT_A_RECORD_LABEL },
+            { value: "", label: tContacts("selectARecord") },
             ...candidates.map<SelectOption>((c) => ({ value: c.id, label: c.name })),
           ]}
         />
       </div>
 
       <div className="space-y-1">
-        <span className="block text-sm text-muted-foreground">Survivor</span>
+        <span className="block text-sm text-muted-foreground">{tContacts("survivor")}</span>
         <div className={partner === null ? "pointer-events-none opacity-50" : undefined}>
           <Select
-            ariaLabel="Survivor"
+            ariaLabel={tContacts("survivor")}
             value={survivorId}
             onChange={setSurvivorId}
-            placeholder={SELECT_THE_SURVIVOR_LABEL}
+            placeholder={tContacts("selectTheSurvivor")}
             options={[
-              { value: "", label: SELECT_THE_SURVIVOR_LABEL },
+              { value: "", label: tContacts("selectTheSurvivor") },
               ...survivorOptions.map<SelectOption>((o) => ({ value: o.id, label: o.name })),
             ]}
           />
@@ -105,11 +105,11 @@ export function MergeDialog({
       <div className="flex justify-end gap-2">
         {onClose !== undefined && (
           <Button type="button" variant="outline" size="sm" onClick={onClose}>
-            Cancel
+            {tContacts("cancel")}
           </Button>
         )}
         <Button type="button" size="sm" disabled={!canConfirm} onClick={() => void confirm()}>
-          Merge
+          {tContacts("merge")}
         </Button>
       </div>
     </div>

@@ -1,11 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { analyzeSavedFilter } from "./auditConfig";
+import { filterDefinition } from "@/features/saved-filters/schemas";
 import { buildSavedFilterSeeds } from "./seed-demo-collab";
 
 // Guards the silent-no-op class: a seeded saved filter whose stored definition uses keys the
 // FilterDefinition schema strips parses to a degenerate/empty filter and narrows nothing. Every
-// seeded definition must be conformant (analyzeSavedFilter returns null: not invalid, lossy, or
-// degenerate).
+// seeded definition must be valid, retain every stored key, and narrow the result set.
 describe("buildSavedFilterSeeds", () => {
   const userIds = ["11111111-1111-1111-1111-111111111111", "22222222-2222-2222-2222-222222222222"];
 
@@ -17,13 +16,9 @@ describe("buildSavedFilterSeeds", () => {
 
   it("every seeded definition conforms to the filter schema (no lossy/invalid/degenerate)", () => {
     for (const s of buildSavedFilterSeeds(userIds)) {
-      const issue = analyzeSavedFilter({
-        id: s.name,
-        name: s.name,
-        targetEntity: s.target,
-        definition: s.def,
-      });
-      expect(issue, `filter "${s.name}" should be conformant`).toBeNull();
+      const parsed = filterDefinition.parse(s.def);
+      expect(parsed, `filter "${s.name}" must preserve its stored fields`).toMatchObject(s.def);
+      expect(parsed.conditions.length > 0 || parsed.rotting === true).toBe(true);
     }
   });
 

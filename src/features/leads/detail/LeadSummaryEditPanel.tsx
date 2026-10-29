@@ -2,19 +2,24 @@
 import { useRouter } from "next/navigation";
 import type React from "react";
 import type { SelectOption } from "@/components/ui/Select";
+import { CURRENCY_CODES } from "@/features/currencies/codes";
 import { FieldRow } from "@/features/deal-workspace/sidebar/FieldRow";
+import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
 import { OwnerBadge } from "@/features/identity/OwnerBadge";
 import { InlineDateField } from "@/features/inline-edit/InlineDateField";
 import { InlineSelectField } from "@/features/inline-edit/InlineSelectField";
 import { InlineTextField } from "@/features/inline-edit/InlineTextField";
 import { updateLeadAction } from "@/features/leads/leadServerActions";
+import { useFormatters } from "@/lib/useFormatters";
 import { err, ok, type Result } from "@/types/result";
 import { readCsrfToken } from "@/utils/csrfCookie";
+import { parseMoneyValue } from "@/utils/entityFormFields";
 
 interface PanelLead {
   id: string;
   updatedAt: string | Date;
   value: number | string | null;
+  currency?: string;
   ownerId: string;
   // The DB-joined owner name (getLeadById), present regardless of the owner's is_active status.
   // Used as a fallback so a deactivated owner (absent from `owners`, the assignable-users list)
@@ -37,7 +42,8 @@ interface LeadSummaryEditPanelProps {
 }
 
 type LeadFieldChange = Partial<{
-  value: number | null;
+  value: number | string | null;
+  currency: string;
   ownerId: string;
   expectedCloseDate: string | null;
 }>;
@@ -52,7 +58,13 @@ export function LeadSummaryEditPanel({
   owners,
   onSaved,
 }: LeadSummaryEditPanelProps): React.ReactNode {
+  const tLeads = useAppTranslations("leads");
+  const currencyT = useAppTranslations("sales");
+  const currencyLabel = currencyT("currencyLabel");
+
   const router = useRouter();
+  const locale = useLocale();
+  const format = useFormatters();
   const expectedUpdatedAt = new Date(lead.updatedAt).toISOString();
   // leads.owner_id is NOT NULL, so the lead always has a real owner, but `owners`
   // (trpc.identity.assignableUsers) filters is_active = true and can omit a since-deactivated
@@ -64,7 +76,7 @@ export function LeadSummaryEditPanel({
         { value: lead.ownerId, label: lead.ownerName ?? "" },
         ...owners.map((o) => ({ value: o.id, label: o.name })),
       ];
-  const value = lead.value === null ? null : Number(lead.value);
+  const value = lead.value;
 
   async function save(change: LeadFieldChange): Promise<Result<unknown, string>> {
     const r = await updateLeadAction(
@@ -89,26 +101,44 @@ export function LeadSummaryEditPanel({
 
   return (
     <>
-      <FieldRow label="Value" empty={value === null}>
-        <InlineTextField
-          label="Value"
-          value={value !== null ? String(value) : ""}
-          onSave={(v) => save({ value: v.trim() === "" ? null : Number(v) })}
-          placeholder="+ Add value"
+      <FieldRow label={currencyLabel}>
+        <InlineSelectField
+          label={currencyLabel}
+          value={lead.currency ?? "USD"}
+          options={CURRENCY_CODES.map((code) => ({ value: code, label: code }))}
+          onSave={(currency) => save({ currency, value })}
         />
       </FieldRow>
-      <FieldRow label="Owner">
+      <FieldRow label={tLeads("value")} empty={value === null}>
+        <InlineTextField
+          label={tLeads("value")}
+          formatError={(error) => (error === tLeads("validNumber") ? error : undefined)}
+          value={
+            value !== null
+              ? format.number(value, { useGrouping: false, maximumFractionDigits: 20 })
+              : ""
+          }
+          onSave={(v) => {
+            const parsed = parseMoneyValue(v, locale);
+            return parsed.ok
+              ? save({ value: parsed.value })
+              : Promise.resolve(err(tLeads("validNumber")));
+          }}
+          placeholder={tLeads("addValue")}
+        />
+      </FieldRow>
+      <FieldRow label={tLeads("owner")}>
         <InlineSelectField
-          label="Owner"
+          label={tLeads("owner")}
           value={lead.ownerId}
           options={ownerOptions}
           onSave={(v) => save({ ownerId: v })}
           renderValue={ownerBadgeFor}
         />
       </FieldRow>
-      <FieldRow label="Expected close" empty={lead.expectedCloseDate === null}>
+      <FieldRow label={tLeads("expectedClose")} empty={lead.expectedCloseDate === null}>
         <InlineDateField
-          label="Expected close"
+          label={tLeads("expectedClose")}
           value={lead.expectedCloseDate}
           onSave={(v) => save({ expectedCloseDate: v })}
         />

@@ -219,3 +219,27 @@ describe("AddLeadModal", () => {
     await waitFor(() => expect(routerPush).toHaveBeenCalledWith("/leads/l1"));
   });
 });
+
+it("validates custom numeric drafts before creating inline contacts", () => {
+  customFieldDefs.push({
+    id: "cf-number",
+    targetEntity: "lead",
+    type: "numeric",
+    name: "Confidence",
+    key: "confidence",
+    options: [],
+    isRequired: false,
+    isImportant: false,
+    showInAddForm: true,
+    order: 0,
+    archivedAt: null,
+  });
+  render(<AddLeadModal onClose={vi.fn()} onCreated={vi.fn()} />);
+  fireEvent.change(screen.getByLabelText("Organization"), { target: { value: "Brand New Org" } });
+  fireEvent.blur(screen.getByLabelText("Organization"));
+  fireEvent.change(screen.getByLabelText("Confidence"), { target: { value: "12x" } });
+  fireEvent.click(screen.getByRole("button", { name: "Save" }));
+  expect(createOrgAction).not.toHaveBeenCalled();
+  expect(createPersonAction).not.toHaveBeenCalled();
+  expect(createLeadAction).not.toHaveBeenCalled();
+});

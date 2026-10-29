@@ -1,4 +1,5 @@
-import { STRINGS } from "@/constants/strings";
+import { createAppTranslator } from "@/features/i18n/catalog";
+import type { Locale } from "@/features/i18n/registry";
 
 // Which empty the inbox is showing. "filtered" must never be worded like "none": a filter that
 // excludes everything is not the same fact as an inbox nobody has written to yet, and the two
@@ -12,33 +13,37 @@ export interface LeadsEmpty {
   action: string;
 }
 
-export function leadsEmptyState({
-  archived,
-  hasFilter,
-}: {
-  archived: boolean;
-  hasFilter: boolean;
-}): LeadsEmpty {
+export function leadsEmptyState(
+  {
+    archived,
+    hasFilter,
+  }: {
+    archived: boolean;
+    hasFilter: boolean;
+  },
+  locale: Locale = "en",
+): LeadsEmpty {
+  const t = createAppTranslator(locale, "leads");
   if (hasFilter) {
     return {
       kind: "filtered",
-      title: STRINGS.leads.emptyFilteredTitle,
-      body: STRINGS.leads.emptyFilteredBody,
-      action: STRINGS.leads.emptyFilteredAction,
+      title: t("noLeadsMatchTheseFilters"),
+      body: t("theFiltersAboveAreTheOnlyThingNarrowingThisViewClearThemToSeeItWhole"),
+      action: t("clearFilters"),
     };
   }
   if (archived) {
     return {
       kind: "none-archived",
-      title: STRINGS.leads.emptyArchivedTitle,
-      body: STRINGS.leads.emptyArchivedBody,
-      action: STRINGS.leads.emptyArchivedAction,
+      title: t("nothingInTheArchive"),
+      body: t("archivingALeadTakesItOutOfTheInboxWithoutDeletingItNothingIsArchivedRightNow"),
+      action: t("backToInbox"),
     };
   }
   return {
     kind: "none",
-    title: STRINGS.leads.emptyTitle,
-    body: STRINGS.leads.emptyBody,
-    action: STRINGS.leads.emptyAction,
+    title: t("noLeadsYet"),
+    body: t("aLeadIsAnUnqualifiedOpportunityYouWorkBeforeItEarnsAPlaceInThePipeline"),
+    action: t("addLead"),
   };
 }

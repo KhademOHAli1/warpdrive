@@ -34,6 +34,8 @@ const base = z.object({
   DATABASE_URL: z.string().min(1),
   WS_TICKET_SECRET: z.string().min(32),
   WS_PUBLIC_URL: z.string().min(1),
+  // Leave unset for the existing all-interface container listener; set explicitly for local use.
+  WS_HOST: z.string().trim().min(1).optional(),
   // Full URL, not a bare hostname: buildMinioClient does new URL(MINIO_ENDPOINT), and the
   // browser POSTs uploads directly to the presigned host, so it must be publicly reachable
   // (e.g. https://s3.example.com), never an internal-only compose alias like "minio".

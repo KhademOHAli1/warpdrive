@@ -1,13 +1,14 @@
 import Link from "next/link";
 import type React from "react";
-import { STRINGS } from "@/constants/strings";
+import { APP_NAME } from "@/constants/app";
+import { getAppTranslations } from "@/features/i18n/server";
 import { NotificationsBell } from "@/features/notifications/ui/NotificationsBell";
 import { GlobalAddMenu } from "@/features/quick-add/GlobalAddMenu";
 import type { Appearance } from "@/features/theme/appearance";
 import { SearchTrigger } from "./SearchTrigger";
 import { UserMenu } from "./UserMenu";
 
-export function TopBar({
+export async function TopBar({
   userId,
   userName,
   avatarUrl,
@@ -17,15 +18,16 @@ export function TopBar({
   userName?: string;
   avatarUrl?: string | null;
   appearance?: Appearance;
-}): React.ReactNode {
+}): Promise<React.ReactNode> {
+  const t = await getAppTranslations("shell");
   return (
     <header className="flex h-14 items-center gap-4 border-b bg-background px-4">
       <Link
         href="/pipeline"
-        aria-label={`${STRINGS.app.name} home`}
+        aria-label={t("home", { app: APP_NAME })}
         className="w-44 shrink-0 text-base font-semibold tracking-tight transition-opacity hover:opacity-80"
       >
-        {STRINGS.app.name}
+        <bdi dir="ltr">{APP_NAME}</bdi>
       </Link>
       <div className="mx-auto flex w-full max-w-lg items-center gap-2">
         <search className="min-w-0 flex-1">

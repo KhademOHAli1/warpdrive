@@ -3,10 +3,11 @@ import Link from "next/link";
 import type React from "react";
 import { buttonVariants } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { STRINGS } from "@/constants/strings";
-import { goalLabel } from "@/features/goals/goalLabel";
-import { goalNumberText } from "@/features/goals/goalTargetText";
 import type { GoalWithProgress } from "@/features/goals/router";
+import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
+import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
+import { useFormatters } from "@/lib/useFormatters";
+import { useStatsMessages } from "../useStatsMessages";
 import { GoalChart } from "./GoalChart";
 import { money, Panel } from "./Panel";
 
@@ -16,17 +17,37 @@ function paceTone(pace: number | null): string {
 }
 
 function GoalRow({ row, currency }: { row: GoalWithProgress; currency: string }): React.ReactNode {
+  const preferences = useLocalePreferences();
+
+  const format = useFormatters();
+
+  const S = useStatsMessages();
+
   const { goal, progress, series } = row;
-  const label = goalLabel(goal);
+  const goalCopy = useSettingsMessages();
+  const label =
+    goal.subject === "activity"
+      ? goalCopy._extra.activityGoalDisplayLabel(
+          goal.action,
+          goalCopy._extra.goalIntervals[goal.interval],
+        )
+      : goalCopy._extra.goalDisplayLabel(
+          goal.metric === "value" ? goalCopy._extra.goalDealValue : goalCopy._extra.deals,
+          goalCopy._extra.goalActions[goal.action],
+          goalCopy._extra.goalIntervals[goal.interval],
+        );
   const isValue = goal.metric === "value";
-  const fmt = (v: string) => (isValue ? money(v, currency) : goalNumberText(v, goal.metric));
+  const fmt = (v: string) =>
+    isValue
+      ? money(v, goal.currency ?? currency, preferences)
+      : format.number(Number(v), { maximumFractionDigits: 0 });
 
   if (progress === null) {
     return (
       <div>
         <div className="flex items-center justify-between text-sm">
           <span className="truncate">{label}</span>
-          <span className="text-muted-foreground">{STRINGS.dashboard.goalNotStarted}</span>
+          <span className="text-muted-foreground">{S.goalNotStarted}</span>
         </div>
       </div>
     );
@@ -45,15 +66,16 @@ function GoalRow({ row, currency }: { row: GoalWithProgress; currency: string })
         series={series}
         target={progress.target}
         metric={goal.metric}
-        currency={currency}
+        currency={goal.currency ?? currency}
       />
       <p className="mt-0.5 flex justify-between text-xs text-muted-foreground tabular-nums">
         <span>
-          {progress.periodStart} {STRINGS.dashboard.rangeSeparator} {progress.periodEnd}
+          {format.dateOnly(progress.periodStart)} {S.rangeSeparator}{" "}
+          {format.dateOnly(progress.periodEnd)}
         </span>
         {progress.pace !== null && (
           <span className={paceTone(progress.pace)}>
-            {STRINGS.dashboard.goalPace} {Math.round(progress.pace * 100)}%
+            {S.goalPace} {S._extra.percent(Math.round(progress.pace * 100))}
           </span>
         )}
       </p>
@@ -70,17 +92,19 @@ export function GoalsWidget({
   currency: string;
   canManage: boolean;
 }): React.ReactNode {
+  const S = useStatsMessages();
+
   if (data.length === 0) {
     return (
-      <Panel title={STRINGS.dashboard.widgetGoals} isEmpty={false} emptyText="">
+      <Panel title={S.widgetGoals} isEmpty={false} emptyText="">
         <EmptyState
-          title={STRINGS.dashboard.emptyGoals}
-          body={STRINGS.dashboard.emptyGoalsBody}
+          title={S.emptyGoals}
+          body={S.emptyGoalsBody}
           className="py-8"
           action={
             canManage ? (
               <Link href="/settings/goals" className={buttonVariants({ size: "sm" })}>
-                {STRINGS.dashboard.goalsSettingsLink}
+                {S.goalsSettingsLink}
               </Link>
             ) : undefined
           }
@@ -89,7 +113,8 @@ export function GoalsWidget({
     );
   }
   return (
-    <Panel title={STRINGS.dashboard.widgetGoals} isEmpty={false} emptyText="">
+    <Panel title={S.widgetGoals} isEmpty={false} emptyText="">
+      <p className="mb-2 text-xs text-muted-foreground">{S._extra.goalPeriodNotice}</p>
       <div className="space-y-3">
         {data.map((row) => (
           <GoalRow key={row.goal.id} row={row} currency={currency} />
@@ -99,7 +124,7 @@ export function GoalsWidget({
             href="/settings/goals"
             className="text-sm text-primary underline-offset-2 hover:underline"
           >
-            {STRINGS.dashboard.goalsSettingsLink}
+            {S.goalsSettingsLink}
           </Link>
         )}
       </div>

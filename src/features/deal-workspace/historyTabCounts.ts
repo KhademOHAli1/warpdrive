@@ -18,6 +18,10 @@ export function countHistoryTabs(
 
 // An empty tab shows its label alone: a "(0)" beside tabs that carry a real number reads as a
 // badge that failed to load.
-export function historyTabLabel(label: string, count: number | undefined): string {
-  return count !== undefined && count > 0 ? `${label} (${count})` : label;
+export function historyTabLabel(
+  label: string,
+  count: number | undefined,
+  formatCount: (count: number) => string = String,
+): string {
+  return count !== undefined && count > 0 ? `${label} (${formatCount(count)})` : label;
 }

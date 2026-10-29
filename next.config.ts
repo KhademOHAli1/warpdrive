@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import createNextIntlPlugin from "next-intl/plugin";
 
 // Security response headers, applied to every route.
 //
@@ -58,7 +59,8 @@ function securityHeaders(directives: string[]): { key: string; value: string }[]
 }
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ["pg", "pg-boss"],
+  // Its server DOM depends on packages with mixed module formats; load it through Bun.
+  serverExternalPackages: ["pg", "pg-boss", "isomorphic-dompurify"],
   // HSTS is set by Caddy, not here: it terminates TLS and so is the layer that knows the
   // response actually went out over HTTPS. See Caddyfile.
   headers() {
@@ -89,4 +91,32 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default createNextIntlPlugin({
+  requestConfig: "./src/features/i18n/request.ts",
+  experimental: {
+    createMessagesDeclaration: [
+      "./src/features/i18n/messages/en.json",
+      "./src/components/shell/messages/utilities.en.json",
+      "./src/features/enrichment/messages/enrichment.en.json",
+      "./src/features/stats/messages/stats.en.json",
+      "./src/features/auth/messages/authScreens.en.json",
+      "./src/features/custom-fields/messages/customFields.en.json",
+      "./src/features/files/messages/files.en.json",
+      "./src/features/email/messages/email.en.json",
+      "./src/features/quick-add/messages/quickAdd.en.json",
+      "./src/features/i18n/messages/boundary.en.json",
+      "./src/features/activities/messages/calendar.en.json",
+      "./src/features/activities/messages/activities.en.json",
+      "./src/components/ui/messages/shared.en.json",
+      "./src/components/shell/messages/shell.en.json",
+      "./src/features/identity/messages/settings.en.json",
+      "./src/features/contacts/messages/contacts.en.json",
+      "./src/features/leads/messages/leads.en.json",
+      "./src/features/entity-create/messages/entityCreate.en.json",
+      "./src/features/deals/messages/sales.en.json",
+      "./src/components/filters/messages/filters.en.json",
+      "./src/components/data-table/messages/tableControls.en.json",
+      "./src/features/notifications/messages/notifications.en.json",
+    ],
+  },
+})(nextConfig);

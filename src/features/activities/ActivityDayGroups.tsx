@@ -1,9 +1,11 @@
 "use client";
 import type React from "react";
 import { Fragment } from "react";
+import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import type { ActivityTableRow } from "./activityRows";
-import { isoToDayHeading } from "./dayHeading";
-import { localDayIso } from "./weekAgenda";
+import { activityDay } from "./activityTemporal";
+import { isoToDayHeading, isoToDayLabel } from "./dayHeading";
+import { useActivitiesMessages } from "./useActivitiesMessages";
 
 const NO_DATE_HEADING = "No date";
 
@@ -11,16 +13,6 @@ interface Props {
   rows: ActivityTableRow[];
   renderRow: (row: ActivityTableRow) => React.ReactNode;
   columnCount: number;
-}
-
-function dayKey(dueAtIso: string | null): string {
-  if (dueAtIso === null) return NO_DATE_HEADING;
-  // dueAtIso is a full ISO timestamp ("...T09:00:00.000Z"). ActivityRow's fmtDue() renders
-  // this same timestamp in the viewer's LOCAL time via toLocaleString(), so the day-group
-  // header must bucket by that same local calendar day, not the UTC date embedded in the
-  // ISO string, otherwise a row can file under a header that contradicts its own Due cell
-  // (e.g. "...T02:00:00.000Z" is still the previous evening in western timezones).
-  return isoToDayHeading(localDayIso(new Date(dueAtIso)));
 }
 
 // Groups list rows under day-header rows (Pipedrive list parity). Undated rows fall under a
@@ -31,9 +23,11 @@ function dayKey(dueAtIso: string | null): string {
 // nesting a <section>/<h3> wrapper: the table content model only allows <tr> as a direct child
 // of <tbody>, so anything else placed there breaks the table's rendering.
 export function ActivityDayGroups({ rows, renderRow, columnCount }: Props): React.ReactNode {
+  const S = useActivitiesMessages();
+  const preferences = useLocalePreferences();
   const groups = new Map<string, ActivityTableRow[]>();
   for (const r of rows) {
-    const key = dayKey(r.dueAtIso);
+    const key = activityDay(r, preferences.timeZone) ?? NO_DATE_HEADING;
     const bucket = groups.get(key) ?? [];
     bucket.push(r);
     groups.set(key, bucket);
@@ -48,7 +42,13 @@ export function ActivityDayGroups({ rows, renderRow, columnCount }: Props): Reac
               colSpan={columnCount}
               className="bg-muted/40 px-3 py-1 text-xs font-medium text-muted-foreground"
             >
-              <h3>{heading}</h3>
+              <h3
+                aria-label={
+                  heading === NO_DATE_HEADING ? S.noDate : isoToDayLabel(heading, preferences)
+                }
+              >
+                {heading === NO_DATE_HEADING ? S.noDate : isoToDayHeading(heading, preferences)}
+              </h3>
             </td>
           </tr>
           {bucket.map(renderRow)}

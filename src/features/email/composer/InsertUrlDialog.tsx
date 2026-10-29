@@ -11,30 +11,34 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/Input";
+import type { EmailMessages } from "@/features/email/emailMessages";
+import { useEmailMessages } from "@/features/email/useEmailMessages";
 
 export type InsertUrlKind = "link" | "image";
 
 const LINK_ALLOWED_SCHEMES = /^(https?:|mailto:)/i;
 const IMAGE_ALLOWED_SCHEMES = /^(https?:|data:image\/)/i;
 
-const COPY = {
-  link: {
-    title: "Insert link",
-    description: "Add an HTTP, HTTPS, or email link.",
-    label: "Link URL",
-    placeholder: "https://example.com…",
-    action: "Insert link",
-    error: "Enter an HTTP, HTTPS, or mailto URL.",
-  },
-  image: {
-    title: "Insert image",
-    description: "Add an HTTP, HTTPS, or data image URL.",
-    label: "Image URL",
-    placeholder: "https://example.com/image.png…",
-    action: "Insert image",
-    error: "Enter an HTTP, HTTPS, or data image URL.",
-  },
-} as const;
+function localizedCOPY(E: EmailMessages) {
+  return {
+    link: {
+      title: E._extra.insert_link,
+      description: E._extra.add_an_http_https_or_email_link,
+      label: E._extra.link_url,
+      placeholder: "https://example.com…",
+      action: E._extra.insert_link,
+      error: E._extra.enter_an_http_https_or_mailto_url,
+    },
+    image: {
+      title: E._extra.insert_image,
+      description: E._extra.add_an_http_https_or_data_image_url,
+      label: E._extra.image_url,
+      placeholder: "https://example.com/image.png…",
+      action: E._extra.insert_image,
+      error: E._extra.enter_an_http_https_or_data_image_url,
+    },
+  } as const;
+}
 
 interface InsertUrlDialogProps {
   kind: InsertUrlKind;
@@ -49,10 +53,12 @@ export function InsertUrlDialog({
   onOpenChange,
   onInsert,
 }: InsertUrlDialogProps): React.ReactNode {
+  const E = useEmailMessages();
+
   const inputId = useId();
   const [value, setValue] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const copy = COPY[kind];
+  const copy = localizedCOPY(E)[kind];
 
   function submit(): void {
     const trimmed = value.trim();
@@ -104,7 +110,7 @@ export function InsertUrlDialog({
           </div>
           <DialogFooter>
             <DialogClose asChild>
-              <Button variant="outline">Cancel</Button>
+              <Button variant="outline">{E._extra.cancel}</Button>
             </DialogClose>
             <Button type="submit">{copy.action}</Button>
           </DialogFooter>

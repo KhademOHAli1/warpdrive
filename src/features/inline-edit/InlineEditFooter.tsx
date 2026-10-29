@@ -1,6 +1,7 @@
 "use client";
 import type React from "react";
 import { Button } from "@/components/ui/Button";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 
 interface InlineEditFooterProps {
   onCancel: () => void;
@@ -21,6 +22,7 @@ export function InlineEditFooter({
   saveDisabled,
   pending = false,
 }: InlineEditFooterProps): React.ReactNode {
+  const t = useAppTranslations("shell.inline");
   const disabled = saveDisabled || pending;
   return (
     <div className="mt-2 flex justify-end gap-1">
@@ -31,7 +33,7 @@ export function InlineEditFooter({
         disabled={pending}
         className="h-6 rounded px-2 text-xs"
       >
-        Cancel
+        {t("cancel")}
       </Button>
       <Button
         size="sm"
@@ -40,7 +42,7 @@ export function InlineEditFooter({
         aria-disabled={disabled}
         className="h-6 rounded bg-save px-2 text-xs text-white disabled:bg-save-muted disabled:opacity-100"
       >
-        Save
+        {t("save")}
       </Button>
     </div>
   );

@@ -23,6 +23,15 @@ const row: LeadRow = {
 };
 
 describe("leadRowsToCsv", () => {
+  it("exports the raw native amount with a separate currency column", () => {
+    expect(
+      leadRowsToCsv(
+        [{ ...row, value: "12.345", currency: "KWD" }],
+        columnsFromKeys(["value"]),
+        "USD",
+      ),
+    ).toBe("Value,Currency\n12.345,KWD");
+  });
   it("emits a header row from the visible columns", () => {
     const csv = leadRowsToCsv([], cols, "USD");
     expect(csv).toBe("Title,Labels,Owner");

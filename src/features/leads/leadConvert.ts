@@ -197,6 +197,7 @@ export async function convertLead(
           title: lead.title,
           status: "open",
           value: lead.value,
+          currency: lead.currency,
           expectedCloseDate: lead.expectedCloseDate,
           labels: lead.labels,
           sourceChannel: lead.sourceChannel,

@@ -1,9 +1,10 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { CalendarActivity } from "@/features/activities/calendar";
 import { filterCalendarActivities, NO_CALENDAR_FILTER } from "@/features/activities/calendarFilter";
 import type { CalendarViewName } from "@/features/activities/calendarView";
+import { useLocalePreferencePending, useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import { trpc } from "@/lib/trpc-client";
 import { CalendarClient } from "./CalendarClient";
 import { CalendarEmpty } from "./CalendarEmpty";
@@ -18,13 +19,25 @@ export function FilterableCalendar({
   anchorIso,
   dayIsos,
   activities,
+  initialTodayIso,
 }: {
   view: CalendarViewName;
   anchorIso: string;
   dayIsos: string[];
   activities: CalendarActivity[];
+  initialTodayIso?: string;
 }): React.ReactNode {
   const router = useRouter();
+  const preferences = useLocalePreferences();
+  const saving = useLocalePreferencePending();
+  const context = `${preferences.calendar}:${preferences.timeZone}:${preferences.locale}`;
+  const previous = useRef(context);
+  useEffect(() => {
+    if (!saving && previous.current !== context) {
+      previous.current = context;
+      router.refresh();
+    }
+  }, [context, saving, router]);
   const [filter, setFilter] = useState(NO_CALENDAR_FILTER);
   const hasFilter =
     filter.ownerId !== null || filter.typeKey !== null || filter.done !== NO_CALENDAR_FILTER.done;
@@ -60,6 +73,7 @@ export function FilterableCalendar({
         anchorIso={anchorIso}
         dayIsos={dayIsos}
         activities={filtered}
+        initialTodayIso={initialTodayIso}
         empty={
           <CalendarEmpty
             view={view}

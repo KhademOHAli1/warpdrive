@@ -160,3 +160,9 @@ describe("next.config consent-screen form-action exemption", () => {
     expect(await cspForPath(`${CONSENT_PATH}/`)).not.toContain("form-action");
   });
 });
+
+describe("server dependency compatibility", () => {
+  it("loads DOMPurify and its DOM implementation outside the Next server bundle", () => {
+    expect(nextConfig.serverExternalPackages).toContain("isomorphic-dompurify");
+  });
+});

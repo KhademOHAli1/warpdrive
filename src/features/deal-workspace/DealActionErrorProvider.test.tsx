@@ -44,7 +44,7 @@ it("opens a permission-denied dialog when a denied action reports it", async () 
 
   const dialog = await screen.findByRole("dialog");
   expect(dialog).toHaveTextContent(/permission/i);
-  expect(dialog).toHaveTextContent(/owner/i);
+  expect(dialog).toHaveTextContent(/admin.*access/i);
 });
 
 it("dismisses the dialog on close", async () => {

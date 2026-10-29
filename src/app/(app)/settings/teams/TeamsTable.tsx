@@ -1,5 +1,6 @@
+"use client";
 import Link from "next/link";
-import { STRINGS } from "@/constants/strings";
+import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import {
   SETTINGS_TABLE_CELL,
   SETTINGS_TABLE_HEAD,
@@ -7,9 +8,6 @@ import {
   SETTINGS_TABLE_ROW,
   SettingsCard,
 } from "../SettingsSurface";
-
-const C = STRINGS.settings.columns;
-const V = STRINGS.settings.values;
 
 interface Team {
   id: string;
@@ -30,6 +28,10 @@ interface Props {
 // Pure, synchronous render of the teams table. Resolves each team's managerId to the
 // user's display name so the cell never shows a raw UUID.
 export function TeamsTable({ teams, users }: Props): React.ReactElement {
+  const L = useSettingsMessages();
+  const C = L.columns;
+  const V = L.values;
+
   const nameById = new Map(users.map((u) => [u.id, u.name]));
   return (
     <SettingsCard className="shadow-none">

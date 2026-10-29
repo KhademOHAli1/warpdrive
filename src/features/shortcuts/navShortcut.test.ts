@@ -16,6 +16,14 @@ describe("navHrefForKey", () => {
     expect(navHrefForKey("4", ITEMS)).toBeNull();
   });
 
+  test("maps Persian and Arabic digit keys without accepting other key text", () => {
+    expect(navHrefForKey("۱", ITEMS)).toBe("/a");
+    expect(navHrefForKey("٣", ITEMS)).toBe("/c");
+    expect(navHrefForKey("۰", ITEMS)).toBeNull();
+    expect(navHrefForKey("۴", ITEMS)).toBeNull();
+    expect(navHrefForKey("۱۲", ITEMS)).toBeNull();
+  });
+
   test("returns null for 0, which addresses no item", () => {
     expect(navHrefForKey("0", ITEMS)).toBeNull();
   });

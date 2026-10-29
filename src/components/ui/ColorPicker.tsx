@@ -4,22 +4,23 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/Popover";
 import { Tip } from "@/components/ui/tooltip";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { cn } from "@/lib/utils";
 
 const HEX_COLOR = /^#[0-9a-f]{6}$/i;
 const COLOR_OPTIONS = [
-  { label: "Black", value: "#000000" },
-  { label: "Slate", value: "#475569" },
-  { label: "Red", value: "#dc2626" },
-  { label: "Orange", value: "#ea580c" },
-  { label: "Amber", value: "#d97706" },
-  { label: "Green", value: "#16a34a" },
-  { label: "Teal", value: "#0d9488" },
-  { label: "Blue", value: "#2563eb" },
-  { label: "Indigo", value: "#4f46e5" },
-  { label: "Purple", value: "#9333ea" },
-  { label: "Pink", value: "#db2777" },
-  { label: "White", value: "#ffffff" },
+  { key: "black", value: "#000000" },
+  { key: "slate", value: "#475569" },
+  { key: "red", value: "#dc2626" },
+  { key: "orange", value: "#ea580c" },
+  { key: "amber", value: "#d97706" },
+  { key: "green", value: "#16a34a" },
+  { key: "teal", value: "#0d9488" },
+  { key: "blue", value: "#2563eb" },
+  { key: "indigo", value: "#4f46e5" },
+  { key: "purple", value: "#9333ea" },
+  { key: "pink", value: "#db2777" },
+  { key: "white", value: "#ffffff" },
 ] as const;
 
 interface ColorPickerProps {
@@ -36,15 +37,16 @@ export function ColorPicker({
   triggerClassName,
 }: ColorPickerProps): React.ReactNode {
   const inputId = useId();
+  const t = useAppTranslations("sharedUi");
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState(value);
-  const [error, setError] = useState<string | null>(null);
+  const [invalid, setInvalid] = useState(false);
 
   function handleOpenChange(next: boolean): void {
     setOpen(next);
     if (next) {
       setDraft(value);
-      setError(null);
+      setInvalid(false);
     }
   }
 
@@ -56,7 +58,7 @@ export function ColorPicker({
   function applyCustom(): void {
     const normalized = draft.trim().toLowerCase();
     if (!HEX_COLOR.test(normalized)) {
-      setError("Enter a 6-digit hex color, such as #1f2937.");
+      setInvalid(true);
       return;
     }
     choose(normalized);
@@ -80,14 +82,17 @@ export function ColorPicker({
           </Button>
         </PopoverTrigger>
       </Tip>
-      <PopoverContent className="w-52 space-y-3 p-3" aria-label={`${ariaLabel} options`}>
+      <PopoverContent
+        className="w-52 space-y-3 p-3"
+        aria-label={t("colorOptions", { label: ariaLabel })}
+      >
         <div className="grid grid-cols-4 gap-1">
           {COLOR_OPTIONS.map((color) => (
             <Button
               key={color.value}
               variant="ghost"
               size="icon"
-              aria-label={color.label}
+              aria-label={t(`colors.${color.key}`)}
               aria-pressed={value.toLowerCase() === color.value}
               onClick={() => choose(color.value)}
               className="size-10 p-2"
@@ -108,25 +113,26 @@ export function ColorPicker({
           }}
         >
           <label htmlFor={inputId} className="block text-xs font-medium">
-            Custom hex color
+            {t("customHexColor")}
           </label>
           <Input
             id={inputId}
             name="customHexColor"
+            dir="ltr"
             value={draft}
             onChange={(event) => setDraft(event.target.value)}
             autoComplete="off"
             spellCheck={false}
-            placeholder="e.g. #1f2937…"
+            placeholder={t("hexPlaceholder")}
             maxLength={7}
           />
-          {error !== null ? (
+          {invalid ? (
             <p role="alert" className="text-xs text-destructive">
-              {error}
+              {t("invalidHexColor")}
             </p>
           ) : null}
           <Button type="submit" size="sm" className="w-full">
-            Apply color
+            {t("applyColor")}
           </Button>
         </form>
       </PopoverContent>

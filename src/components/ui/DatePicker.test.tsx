@@ -2,6 +2,7 @@
 import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+import { LocaleProvider } from "@/features/i18n/LocaleProvider";
 import { DatePicker } from "./DatePicker";
 
 beforeAll(() => {
@@ -18,6 +19,57 @@ afterEach(() => {
 });
 
 describe("DatePicker", () => {
+  it("uses chosen English digits with Farsi labels and keeps Gregorian action dates", async () => {
+    const onChange = vi.fn();
+    render(
+      <LocaleProvider locale="fa" numberingSystem="latn">
+        <DatePicker value="2026-03-21" onChange={onChange} ariaLabel="Start date" />
+      </LocaleProvider>,
+    );
+    expect(screen.getByLabelText("Start date")).toHaveTextContent("1405/01/01");
+    fireEvent.click(screen.getByLabelText("Start date"));
+    const second = await screen.findByText("2", { selector: "button" });
+    expect(second).toHaveAccessibleName("یکشنبه، 2 فروردین 1405");
+    fireEvent.click(second);
+    expect(onChange).toHaveBeenCalledWith("2026-03-22");
+  });
+  it("defaults to the Iranian calendar when the interface language is Farsi", async () => {
+    const onChange = vi.fn();
+    render(
+      <LocaleProvider locale="fa">
+        <DatePicker value="2026-03-21" onChange={onChange} ariaLabel="Start date" />
+      </LocaleProvider>,
+    );
+    expect(screen.getByLabelText("Start date")).toHaveTextContent("۱۴۰۵/۰۱/۰۱");
+    fireEvent.click(screen.getByLabelText("Start date"));
+    expect(await screen.findByText("۲", { selector: "button" })).toBeVisible();
+    expect(screen.getByText("۱", { selector: "button" })).toHaveAccessibleName(
+      "شنبه، ۱ فروردین ۱۴۰۵، انتخاب‌شده",
+    );
+    fireEvent.click(screen.getByRole("button", { name: "نمایش تقویم میلادی" }));
+    expect(screen.getByLabelText("Start date")).toHaveTextContent("۲۰۲۶/۰۳/۲۱");
+    expect(screen.getByRole("button", { name: "نمایش تقویم هجری شمسی" })).toBeVisible();
+    expect(await screen.findByRole("button", { name: "رفتن به ماه بعد" })).toBeVisible();
+    const march22 = await screen.findByText("۲۲", { selector: "button" });
+    expect(march22).toHaveAccessibleName("یکشنبه، ۲۲ مارس ۲۰۲۶");
+    fireEvent.click(march22);
+    expect(onChange).toHaveBeenCalledWith("2026-03-22");
+  });
+  it("switches to the Iranian calendar and returns the selected Gregorian date", async () => {
+    const onChange = vi.fn();
+    render(<DatePicker value="2026-03-21" onChange={onChange} ariaLabel="Start date" />);
+    fireEvent.click(screen.getByLabelText("Start date"));
+    fireEvent.click(screen.getByRole("button", { name: "Use Solar Hijri calendar" }));
+    expect(screen.getByLabelText("Start date")).toHaveTextContent("1405/01/01");
+    expect(screen.getByRole("button", { name: "Use Gregorian calendar" })).toBeVisible();
+    expect(await screen.findByRole("button", { name: "Go to the Next Month" })).toBeVisible();
+    expect(document.querySelector(".rdp-weekday")).toHaveTextContent("Sa");
+    const second = await screen.findByText("2", { selector: "button" });
+    expect(second).toHaveAccessibleName("Sunday, Farvardin 2nd, 1405");
+    fireEvent.click(second);
+    expect(onChange).toHaveBeenCalledWith("2026-03-22");
+  });
+
   it("shows MM/DD/YYYY for the current value", () => {
     render(<DatePicker value="2026-07-04" onChange={vi.fn()} ariaLabel="Start date" />);
     expect(screen.getByLabelText("Start date")).toHaveTextContent("07/04/2026");

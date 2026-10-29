@@ -1,9 +1,9 @@
 import type { ReactNode } from "react";
 import type { SelectOption } from "@/components/ui/Select";
 import { BUILTIN_FIELDS } from "@/constants/builtinFields";
-import { ENRICHMENT_STRINGS } from "@/constants/enrichmentStrings";
 import type { EnrichEntity } from "@/features/enrichment/canonical";
 import { WRITABLE_BUILTIN_TARGETS } from "@/features/enrichment/mappingsRepo";
+import { getServerSettingsMessages } from "@/features/identity/settingsMessages.server";
 import { ENTITY_FIELDS } from "@/features/import/importFields";
 import { createContext } from "@/server/trpc/context";
 import { createCaller } from "@/server/trpc/root";
@@ -12,9 +12,10 @@ import { SettingsPage } from "../SettingsSurface";
 import { EnrichmentClient } from "./EnrichmentClient";
 import { buildMappingRows, encodeTarget } from "./targetOptions";
 
-const S = ENRICHMENT_STRINGS.settings;
-
-export const metadata = { title: S.title };
+export async function generateMetadata() {
+  const L = await getServerSettingsMessages();
+  return { title: L._enrichment.settings.title };
+}
 
 // Built-in targets carry their label in two catalogues: the data-fields one for plain columns, the
 // import one for the address leaves. Both are keyed the same way, so one lookup covers both.
@@ -32,6 +33,10 @@ function builtinOptionsFor(entity: EnrichEntity): SelectOption[] {
 }
 
 export default async function EnrichmentSettingsPage(): Promise<ReactNode> {
+  const L = await getServerSettingsMessages();
+
+  const S = L._enrichment.settings;
+
   const ctx = await createContext();
   // Server-side gate: the nav hides this page for a non-admin, but hiding is not a boundary.
   if (ctx.actor === null || ctx.actor.type !== "admin") {
@@ -71,6 +76,7 @@ export default async function EnrichmentSettingsPage(): Promise<ReactNode> {
             config.personMappings,
             personDefs,
             hiddenPerson,
+            L,
           ),
           hasCustomFields: personDefs.length > 0,
         }}
@@ -83,6 +89,7 @@ export default async function EnrichmentSettingsPage(): Promise<ReactNode> {
             config.orgMappings,
             orgDefs,
             hiddenOrg,
+            L,
           ),
           hasCustomFields: orgDefs.length > 0,
         }}

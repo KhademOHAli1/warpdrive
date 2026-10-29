@@ -2,11 +2,9 @@
 
 import type React from "react";
 import { Select } from "@/components/ui/Select";
-import { ENRICHMENT_STRINGS } from "@/constants/enrichmentStrings";
+import { PROVIDER_NAMES as NAMES } from "../enrichmentMessages";
 import { ENRICHMENT_PROVIDER_IDS, type ProviderId } from "../providers/types";
-
-const S = ENRICHMENT_STRINGS.prospects;
-const NAMES = ENRICHMENT_STRINGS.settings.providerNames;
+import { useEnrichmentMessages } from "../useEnrichmentMessages";
 
 function isProviderId(value: string): value is ProviderId {
   return (ENRICHMENT_PROVIDER_IDS as readonly string[]).includes(value);
@@ -21,6 +19,8 @@ export function ProviderSelect({
   providers: readonly ProviderId[];
   onChange: (provider: ProviderId) => void;
 }): React.ReactNode {
+  const E = useEnrichmentMessages();
+  const S = E.prospects;
   return (
     <div className="flex min-w-40 flex-col gap-1">
       <span className="text-muted-foreground text-xs">{S.providerLabel}</span>

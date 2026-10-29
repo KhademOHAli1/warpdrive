@@ -4,12 +4,13 @@ import { Bot } from "lucide-react";
 import { useId, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { STRINGS } from "@/constants/strings";
+import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import { SettingsCard, SettingsCardBody, SettingsCardHeader } from "../SettingsSurface";
 
-const S = STRINGS.settings;
-
 export function McpConnectCard({ endpointUrl }: { endpointUrl: string }): React.ReactNode {
+  const L = useSettingsMessages();
+  const S = L;
+
   const inputId = useId();
   const [copied, setCopied] = useState(false);
 

@@ -13,10 +13,9 @@ afterEach(cleanup);
 
 const S = ENRICHMENT_STRINGS.dialog;
 const RESUME_ISO = "2026-08-24T14:20:00.000Z";
-const resumeClock = (() => {
-  const d = new Date(RESUME_ISO);
-  return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
-})();
+// The provider's retry instant is displayed in the persisted preference (UTC by default),
+// independent of the machine running the test.
+const resumeClock = "14:20";
 
 const outcomes: ProviderOutcome[] = [
   { provider: "apollo", kind: "ok" },

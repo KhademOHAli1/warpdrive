@@ -1,5 +1,6 @@
 "use client";
 import type React from "react";
+import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
 import { InlineEditFooter } from "./InlineEditFooter";
 import { InlineFieldShell } from "./InlineFieldShell";
 import { saveErrorMessage } from "./saveError";
@@ -11,9 +12,8 @@ interface InlineTextFieldProps {
   value: string;
   onSave: InlineSaveFn<string>;
   placeholder?: string;
+  formatError?: (error: string) => string | undefined;
 }
-
-const DEFAULT_PLACEHOLDER = "+ Add";
 
 // PD-mechanism text field (see docs/superpowers/specs/2026-07-08-pd-inline-edit-mechanism.md):
 // plain selectable value + hover pencil; the pencil (or the empty-field prompt) opens a 32px
@@ -23,8 +23,11 @@ export function InlineTextField({
   label,
   value,
   onSave,
-  placeholder = DEFAULT_PLACEHOLDER,
+  placeholder,
+  formatError,
 }: InlineTextFieldProps): React.ReactNode {
+  const t = useAppTranslations("shell.inline");
+  const locale = useLocale();
   const f = useInlineEditField(value);
   const dirty = f.draft !== value;
 
@@ -54,14 +57,16 @@ export function InlineTextField({
   return (
     <div className="min-w-0">
       {f.error !== null && !f.editing ? (
-        <span className="text-xs text-destructive">{saveErrorMessage(f.error)}</span>
+        <span className="text-xs text-destructive">
+          {formatError?.(f.error) ?? saveErrorMessage(f.error, locale)}
+        </span>
       ) : null}
       <InlineFieldShell
         label={label}
         editing={f.editing}
         onStartEdit={f.start}
         value={value === "" ? null : value}
-        emptyPrompt={placeholder}
+        emptyPrompt={placeholder ?? t("add")}
       >
         {editor}
       </InlineFieldShell>

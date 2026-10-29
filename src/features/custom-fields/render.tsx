@@ -1,69 +1,64 @@
-// Custom-field render dispatch: maps each field type to a display string and a UI widget.
-// Adding a new field type forces a case here via assertNever (compile-time exhaustiveness).
+// Custom-field display is a read boundary. Persisted keys, dates, amounts and option labels are
+// preserved; UI callers supply explicit preferences while legacy exports keep their raw defaults.
 import { DEFAULT_BASE_CURRENCY } from "@/constants/currency";
-import { STRINGS } from "@/constants/strings";
+import { createAppTranslator } from "@/features/i18n/catalog";
+import { parseLocale } from "@/features/i18n/registry";
+import { formatCurrency } from "@/lib/formatCurrency";
+import { type FormattingPreferences, formatDateOnly, formatNumber } from "@/lib/localeFormatting";
 import type { CustomFieldDef } from "@/types/customFields";
 import { assertNever } from "@/types/result";
 import type { CustomFieldRefLabels } from "./refLabelsShared";
 import { isCustomFieldValueEmpty } from "./valueEmpty";
 
-// Re-export widgets from sibling file to keep this file under 200 lines.
 export { CustomFieldDetail, CustomFieldFormControl } from "./render.widgets";
 export type { CustomFieldDef };
 export { isCustomFieldValueEmpty };
-
-const EMPTY = "(empty)";
-
-function labelFor(def: CustomFieldDef, id: string): string {
-  return def.options.find((o) => o.id === id)?.label ?? id;
-}
-
-// Callers pass the tenant base currency (settings.base_currency via readBaseCurrency);
-// DEFAULT_BASE_CURRENCY is only the final fallback when a caller has none.
-function formatMoney(n: number, currency = DEFAULT_BASE_CURRENCY): string {
-  return new Intl.NumberFormat(undefined, {
-    style: "currency",
-    currency,
-  }).format(n);
-}
 
 export function formatCustomFieldDisplay(
   def: CustomFieldDef,
   value: unknown,
   currency = DEFAULT_BASE_CURRENCY,
   refLabels?: CustomFieldRefLabels,
+  preferences?: Partial<FormattingPreferences>,
 ): string {
-  if (isCustomFieldValueEmpty(value)) {
-    return EMPTY;
-  }
-
+  const t = createAppTranslator(parseLocale(preferences?.locale), "customFields");
+  if (isCustomFieldValueEmpty(value)) return t("empty");
+  const listSeparator = preferences?.locale === "fa" ? "، " : ", ";
+  const optionLabel = (id: string) => def.options.find((option) => option.id === id)?.label ?? id;
+  const date = (raw: string) =>
+    preferences === undefined ? raw : formatDateOnly(raw, preferences) || raw;
+  const time = (raw: string) =>
+    preferences === undefined
+      ? raw
+      : raw.replace(/\d/g, (digit) =>
+          formatNumber(Number(digit), preferences, { useGrouping: false }),
+        );
   switch (def.type) {
     case "text":
     case "large_text":
     case "autocomplete":
     case "phone":
-    case "date":
-    case "time":
       return value as string;
-
+    case "date":
+      return date(value as string);
+    case "time":
+      return time(value as string);
     case "numeric":
-      return (value as number).toString();
-
+      return preferences === undefined || typeof value !== "number"
+        ? String(value)
+        : formatNumber(value, preferences, { maximumFractionDigits: 20 });
     case "monetary":
-      return formatMoney(value as number, currency);
-
+      return formatCurrency(value as number, currency, preferences);
     case "single_option":
-      return labelFor(def, value as string);
-
+      return optionLabel(value as string);
     case "multi_option":
-      return (value as string[]).map((id) => labelFor(def, id)).join(", ");
-
+      return (value as string[]).map(optionLabel).join(listSeparator);
     case "date_range":
     case "time_range": {
-      const r = value as { start: string; end: string };
-      return `${r.start} to ${r.end}`;
+      const range = value as { start: string; end: string };
+      const part = def.type === "date_range" ? date : time;
+      return t("range", { start: part(range.start), end: part(range.end) });
     }
-
     case "user":
     case "person":
     case "org": {
@@ -75,14 +70,14 @@ export function formatCustomFieldDisplay(
           : def.type === "person"
             ? refLabels.person
             : refLabels.org;
-      return bucket[id] ?? STRINGS.customFields.restrictedRef;
+      return bucket[id] ?? t("restricted");
     }
-
     case "address": {
-      const a = value as Record<string, string>;
-      return [a.street, a.city, a.region, a.postal, a.country].filter(Boolean).join(", ");
+      const address = value as Record<string, string>;
+      return [address.street, address.city, address.region, address.postal, address.country]
+        .filter(Boolean)
+        .join(listSeparator);
     }
-
     default:
       return assertNever(def.type);
   }

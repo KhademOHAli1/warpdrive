@@ -49,6 +49,7 @@ const { createActivityAction } = vi.hoisted(() => ({
 vi.mock("./actions", () => ({ createActivityAction }));
 vi.mock("@/utils/csrfCookie", () => ({ readCsrfToken: () => "csrf" }));
 
+import { LocaleProvider } from "@/features/i18n/LocaleProvider";
 import { AddActivityModal } from "./AddActivityModal";
 
 function holdInvalidation(): { settle: () => Promise<void> } {
@@ -111,6 +112,10 @@ describe("AddActivityModal", () => {
   });
 
   it("submits with the leadId and dueAt when a date is provided (lead workspace composer)", async () => {
+    const now = new Date();
+    const expectedDueAt = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 10),
+    ).toISOString();
     render(<AddActivityModal onClose={vi.fn()} onCreated={vi.fn()} leadId="lead-1" />);
     fireEvent.change(screen.getByLabelText("Subject"), { target: { value: "Log a call" } });
     fireEvent.click(screen.getByLabelText("Due date"));
@@ -122,7 +127,7 @@ describe("AddActivityModal", () => {
         expect.objectContaining({
           leadId: "lead-1",
           subject: "Log a call",
-          dueAt: expect.stringMatching(/-10T/),
+          dueAt: expectedDueAt,
         }),
         expect.anything(),
       ),
@@ -186,8 +191,8 @@ describe("AddActivityModal", () => {
       Record<string, unknown>,
       string,
     ];
-    expect(new Date(payload.dueAt as string).getHours()).toBe(14);
-    expect(new Date(payload.dueAt as string).getMinutes()).toBe(30);
+    expect(new Date(payload.dueAt as string).getUTCHours()).toBe(14);
+    expect(new Date(payload.dueAt as string).getUTCMinutes()).toBe(30);
   });
 
   it("invalidates the day load after a successful create", async () => {
@@ -222,4 +227,33 @@ describe("AddActivityModal", () => {
     await waitFor(() => expect(screen.getByRole("alert")).toBeInTheDocument());
     expect(invalidateDayLoad).not.toHaveBeenCalled();
   });
+});
+
+it("creates an activity through Persian labels while preserving its type id and entered subject", async () => {
+  render(
+    <LocaleProvider locale="fa">
+      <AddActivityModal onClose={vi.fn()} />
+    </LocaleProvider>,
+  );
+  expect(screen.getByRole("dialog", { name: "افزودن فعالیت" })).toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "جلسه" }));
+  fireEvent.change(screen.getByLabelText("موضوع"), { target: { value: "جلسه با سارا" } });
+  fireEvent.click(screen.getByRole("button", { name: "ذخیره" }));
+  await waitFor(() =>
+    expect(createActivityAction).toHaveBeenCalledWith(
+      expect.objectContaining({ typeId: "t2", subject: "جلسه با سارا" }),
+      "csrf",
+    ),
+  );
+});
+
+it("shows Persian inline validation without losing the draft", () => {
+  render(
+    <LocaleProvider locale="fa">
+      <AddActivityModal onClose={vi.fn()} />
+    </LocaleProvider>,
+  );
+  fireEvent.click(screen.getByRole("button", { name: "ذخیره" }));
+  expect(screen.getByRole("alert")).toHaveTextContent("موضوع فعالیت را وارد کنید.");
+  expect(createActivityAction).not.toHaveBeenCalled();
 });

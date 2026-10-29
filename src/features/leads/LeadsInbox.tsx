@@ -5,16 +5,16 @@ import { useEffect, useMemo, useState } from "react";
 import { useColumns } from "@/components/data-table/useColumns";
 import { useActionError } from "@/components/shell/ActionErrorProvider";
 import { DEFAULT_BASE_CURRENCY } from "@/constants/currency";
-import { STRINGS } from "@/constants/strings";
 import { addFormCustomFieldDefs } from "@/features/custom-fields/CustomFieldCreateFields";
 import { customFieldColumns } from "@/features/custom-fields/listColumns";
 import { CustomFieldRefLabelsProvider } from "@/features/custom-fields/refLabelsContext";
+import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
 import { trpc } from "@/lib/trpc-client";
 import type { CustomFieldDef } from "@/types/customFields";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { ConvertLeadDialog } from "./ConvertLeadDialog";
 import { BulkEditPanel } from "./inbox/BulkEditPanel";
-import { LEAD_COLUMNS, type LeadColumn } from "./inbox/columns";
+import { type LeadColumn, leadColumns } from "./inbox/columns";
 import { buildLeadExportHref } from "./inbox/exportHref";
 import type { OwnerFilter } from "./inbox/LeadFilters";
 import { LeadRowActions } from "./inbox/LeadRowActions";
@@ -49,6 +49,8 @@ export function LeadsInbox({
   canImport = false,
   customFieldDefs = [],
 }: LeadsInboxProps): React.ReactNode {
+  const tLeads = useAppTranslations("leads");
+
   const router = useRouter();
   const reportError = useActionError();
   const currency = baseCurrency ?? DEFAULT_BASE_CURRENCY;
@@ -67,9 +69,10 @@ export function LeadsInbox({
 
   const sort = useLeadSort(initialView?.sort ?? null);
   const selection = useLeadSelection();
+  const locale = useLocale();
   const catalog = useMemo<readonly LeadColumn[]>(
-    () => [...LEAD_COLUMNS, ...customFieldColumns(customFieldDefs)],
-    [customFieldDefs],
+    () => [...leadColumns(locale), ...customFieldColumns(customFieldDefs)],
+    [customFieldDefs, locale],
   );
   const columns = useColumns(catalog, initialView?.columns);
 
@@ -191,7 +194,7 @@ export function LeadsInbox({
   return (
     <div className="flex h-full flex-col p-4">
       <h1 className="mb-3 text-display font-[450] leading-tight tracking-tight">
-        {STRINGS.nav.leads}
+        {tLeads("leads")}
       </h1>
       <LeadsActionBar
         filter={filter}
@@ -242,7 +245,7 @@ export function LeadsInbox({
         </div>
       )}
 
-      <div className="min-h-0 flex-1 overflow-auto rounded-lg border">
+      <div className="min-h-0 flex-1 overflow-auto rounded-sg border">
         {/* Nothing exists and nothing is filtered: the header row, select-all and sort controls
             are machinery over zero rows, so the table goes and the empty state stands alone.
             A filtered-to-nothing list keeps its columns, since the columns are still the view. */}

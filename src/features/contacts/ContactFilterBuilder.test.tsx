@@ -134,6 +134,6 @@ describe("ContactFilterBuilder label condition", () => {
     fireEvent.click(screen.getByRole("button", { name: /add condition/i }));
     fireEvent.click(screen.getByLabelText("Condition 1 field"));
     fireEvent.click(screen.getByRole("option", { name: "Employees" }));
-    expect(screen.getByLabelText("Condition 1 value")).toHaveAttribute("type", "number");
+    expect(screen.getByLabelText("Condition 1 value")).toHaveAttribute("inputmode", "decimal");
   });
 });

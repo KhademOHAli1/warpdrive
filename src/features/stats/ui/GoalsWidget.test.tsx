@@ -14,6 +14,7 @@ function seriesTo(day: string, actual: string): { day: string; actual: string }[
 function countGoal(target: string, actual: string): GoalWithProgress {
   const goal: Goal = {
     id: "g1",
+    currency: "USD",
     subject: "activity",
     action: "completed",
     metric: "count",

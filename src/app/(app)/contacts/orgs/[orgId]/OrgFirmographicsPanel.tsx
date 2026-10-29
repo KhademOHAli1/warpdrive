@@ -2,9 +2,12 @@
 import type React from "react";
 import { updateOrgAction } from "@/features/contacts/actions";
 import { FieldRow } from "@/features/deal-workspace/sidebar/FieldRow";
+import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
 import { InlineTextField } from "@/features/inline-edit/InlineTextField";
+import { useFormatters } from "@/lib/useFormatters";
 import { err, ok, type Result } from "@/types/result";
 import { readCsrfToken } from "@/utils/csrfCookie";
+import { normalizeNumberInput } from "@/utils/normalizeNumberInput";
 
 interface PanelOrg {
   id: string;
@@ -40,6 +43,10 @@ export function OrgFirmographicsPanel({
   onSaved,
   hidden = NONE,
 }: OrgFirmographicsPanelProps): React.ReactNode {
+  const tContacts = useAppTranslations("contacts");
+  const locale = useLocale();
+  const format = useFormatters();
+
   async function save(patch: FirmographicPatch): Promise<Result<unknown, string>> {
     const r = await updateOrgAction({ id: org.id, ...patch }, readCsrfToken());
     onSaved();
@@ -54,27 +61,33 @@ export function OrgFirmographicsPanel({
   return (
     <>
       {!hidden.has("domain") && (
-        <FieldRow label="Website" empty={org.domain === null || org.domain === ""}>
+        <FieldRow label={tContacts("website")} empty={org.domain === null || org.domain === ""}>
           <InlineTextField
-            label="Website"
+            label={tContacts("website")}
             value={org.domain ?? ""}
             onSave={(v) => saveText("domain", v)}
           />
         </FieldRow>
       )}
       {!hidden.has("linkedinUrl") && (
-        <FieldRow label="LinkedIn" empty={org.linkedinUrl === null || org.linkedinUrl === ""}>
+        <FieldRow
+          label={tContacts("linkedin")}
+          empty={org.linkedinUrl === null || org.linkedinUrl === ""}
+        >
           <InlineTextField
-            label="LinkedIn"
+            label={tContacts("linkedin")}
             value={org.linkedinUrl ?? ""}
             onSave={(v) => saveText("linkedinUrl", v)}
           />
         </FieldRow>
       )}
       {!hidden.has("industry") && (
-        <FieldRow label="Industry" empty={org.industry === null || org.industry === ""}>
+        <FieldRow
+          label={tContacts("industry")}
+          empty={org.industry === null || org.industry === ""}
+        >
           <InlineTextField
-            label="Industry"
+            label={tContacts("industry")}
             value={org.industry ?? ""}
             onSave={(v) => saveText("industry", v)}
           />
@@ -82,29 +95,54 @@ export function OrgFirmographicsPanel({
       )}
       {!hidden.has("annualRevenue") && (
         <FieldRow
-          label="Annual revenue"
+          label={tContacts("annualRevenue")}
           empty={org.annualRevenue === null || org.annualRevenue === ""}
         >
           <InlineTextField
-            label="Annual revenue"
-            value={org.annualRevenue ?? ""}
-            placeholder="+ Add revenue"
+            label={tContacts("annualRevenue")}
+            formatError={(error) => (error === tContacts("validRevenue") ? error : undefined)}
+            value={
+              org.annualRevenue == null
+                ? ""
+                : locale === "en"
+                  ? org.annualRevenue
+                  : format.number(Number(org.annualRevenue), {
+                      useGrouping: false,
+                      minimumFractionDigits: org.annualRevenue.split(".")[1]?.length ?? 0,
+                      maximumFractionDigits: 2,
+                    })
+            }
+            placeholder={tContacts("addRevenue")}
             onSave={(v) => {
               const trimmed = v.trim();
-              return save({ annualRevenue: trimmed === "" ? null : trimmed });
+              if (trimmed === "") return save({ annualRevenue: null });
+              const normalized = normalizeNumberInput(trimmed, locale);
+              if (normalized === null || !/^\d+(?:\.\d{1,2})?$/.test(normalized))
+                return Promise.resolve(err(tContacts("validRevenue")));
+              return save({ annualRevenue: normalized });
             }}
           />
         </FieldRow>
       )}
       {!hidden.has("employeeCount") && (
-        <FieldRow label="Employees" empty={org.employeeCount == null}>
+        <FieldRow label={tContacts("employees")} empty={org.employeeCount == null}>
           <InlineTextField
-            label="Employees"
-            value={org.employeeCount == null ? "" : String(org.employeeCount)}
-            placeholder="+ Add employees"
+            label={tContacts("employees")}
+            formatError={(error) => (error === tContacts("validEmployeeCount") ? error : undefined)}
+            value={
+              org.employeeCount == null
+                ? ""
+                : format.number(org.employeeCount, { useGrouping: false })
+            }
+            placeholder={tContacts("addEmployees")}
             onSave={(v) => {
               const trimmed = v.trim();
-              return save({ employeeCount: trimmed === "" ? null : Number(trimmed) });
+              if (trimmed === "") return save({ employeeCount: null });
+              const normalized = normalizeNumberInput(trimmed, locale);
+              const value = normalized === null ? NaN : Number(normalized);
+              if (!Number.isSafeInteger(value) || value < 0)
+                return Promise.resolve(err(tContacts("validEmployeeCount")));
+              return save({ employeeCount: value });
             }}
           />
         </FieldRow>

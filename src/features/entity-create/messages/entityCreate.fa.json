@@ -1,0 +1,9 @@
+{
+  "cancel": "انصراف",
+  "new": "جدید",
+  "review": "بررسی",
+  "save": "ذخیره",
+  "saving": "در حال ذخیره...",
+  "createOrgError": "ایجاد سازمان انجام نشد ({errorId})",
+  "createPersonError": "ایجاد فرد انجام نشد ({errorId})"
+}

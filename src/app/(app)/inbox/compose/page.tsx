@@ -1,11 +1,14 @@
 import { redirect } from "next/navigation";
-import { STRINGS } from "@/constants/strings";
 import { db } from "@/db/client";
+import { getEmailMessages } from "@/features/email/emailMessages.server";
 import { getActorMailbox } from "@/features/email/mailboxOwnership";
 import { createContext } from "@/server/trpc/context";
 import { ComposePageClient } from "./ComposePageClient";
 
-export const metadata = { title: STRINGS.inbox.composeTitle };
+export async function generateMetadata() {
+  const E = await getEmailMessages();
+  return { title: E.composeTitle };
+}
 
 export default async function ComposePage({
   searchParams,

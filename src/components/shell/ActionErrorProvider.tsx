@@ -8,6 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useLocale } from "@/features/i18n/LocaleProvider";
 import { withActionTelemetry } from "@/features/observability/resultSeam";
 import { actionErrorContent } from "./actionError";
 
@@ -32,7 +33,7 @@ export function ActionErrorProvider({ children }: { children: React.ReactNode })
   // null = nothing showing. A reported error stores its id (or "" when the action gave none).
   const [errorId, setErrorId] = useState<string | null>(null);
   const report: ReportActionError = withActionTelemetry((id) => setErrorId(id ?? ""), "app");
-  const content = actionErrorContent(errorId ?? undefined);
+  const content = actionErrorContent(errorId ?? undefined, useLocale());
 
   return (
     <ActionErrorContext.Provider value={report}>

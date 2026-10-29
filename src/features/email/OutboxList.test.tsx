@@ -69,7 +69,7 @@ it("renders queued and needs_review rows; Cancel only on pending", () => {
   render(<OutboxList />);
   expect(screen.getByText("Queued")).toBeInTheDocument();
   expect(screen.getByText("Stuck")).toBeInTheDocument();
-  expect(screen.getByText(/E_GMAIL_004/)).toBeInTheDocument();
+  expect(screen.getByText("We could not confirm the send. Check the thread before trying again.")).toBeInTheDocument();
   const cancels = screen.getAllByRole("button", { name: /Cancel/ });
   expect(cancels).toHaveLength(1); // only the pending row
 });

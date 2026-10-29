@@ -7,41 +7,13 @@ import { Input } from "@/components/ui/Input";
 import { Switch } from "@/components/ui/Switch";
 import { ERROR_IDS } from "@/constants/errorIds";
 import { inviteUserAction } from "@/features/identity/actions/invite";
+import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import { isValidEmail } from "@/lib/isValidEmail";
 import { readCsrfToken } from "@/utils/csrfCookie";
-
-const T = {
-  emailMissing: "Enter an email address.",
-  emailInvalid: "Enter a valid email address.",
-  nameMissing: "Enter a name.",
-  emailLabel: "Email",
-  emailPlaceholder: "person@example.com",
-  nameLabel: "Name",
-  namePlaceholder: "Full name",
-  admin: "Admin",
-  invite: "Invite",
-  inviting: "Inviting...",
-  inviteLinkLabel: "Invite link",
-  copy: "Copy link",
-  copied: "Copied",
-} as const;
 
 // warpdrive has no outbound email/invite delivery: inviteUser only pre-authorizes the email for
 // Google SSO adoption on first login. So we never silently imply an email was sent. Instead we
 // surface the shareable sign-in link (the app login URL) for the admin to pass along themselves.
-function noEmailNotice(name: string, email: string): string {
-  return `No email is sent automatically. Share the sign-in link below with ${name} (${email}), who signs in with Google using that address.`;
-}
-
-const MESSAGES: Record<string, string> = {
-  [ERROR_IDS.AUTH_EMAIL_TAKEN]: "That email is already registered.",
-  [ERROR_IDS.PERM_DENIED]: "You do not have permission to invite users.",
-  [ERROR_IDS.AUTH_INVITE_INPUT_INVALID]: "Enter a valid email and name.",
-};
-
-function inviteErrorMessage(id: string): string {
-  return MESSAGES[id] ?? "Something went wrong. Please try again.";
-}
 
 interface FieldErrors {
   email: string | null;
@@ -50,18 +22,48 @@ interface FieldErrors {
 
 const NO_FIELD_ERRORS: FieldErrors = { email: null, name: null };
 
-function validate(email: string, name: string): FieldErrors {
-  return {
-    email: email.length === 0 ? T.emailMissing : isValidEmail(email) ? null : T.emailInvalid,
-    name: name.length === 0 ? T.nameMissing : null,
-  };
-}
-
 interface Props {
   onInvited: () => void;
 }
 
 export function InviteUserForm({ onInvited }: Props): React.ReactElement {
+  const L = useSettingsMessages();
+
+  const MESSAGES: Record<string, string> = {
+    [ERROR_IDS.AUTH_EMAIL_TAKEN]: L._extra.that_email_is_already_registered,
+    [ERROR_IDS.PERM_DENIED]: L._extra.you_do_not_have_permission_to_invite_users,
+    [ERROR_IDS.AUTH_INVITE_INPUT_INVALID]: L._extra.enter_a_valid_email_and_name,
+  };
+
+  const T = {
+    emailMissing: L._extra.enter_an_email_address,
+    emailInvalid: L._extra.enter_a_valid_email_address,
+    nameMissing: L._extra.enter_a_name,
+    emailLabel: L._extra.email,
+    emailPlaceholder: "person@example.com",
+    nameLabel: L._extra.name,
+    namePlaceholder: L._extra.full_name,
+    admin: L._extra.admin,
+    invite: L._extra.invite,
+    inviting: L._extra.inviting,
+    inviteLinkLabel: L._extra.invite_link,
+    copy: L._extra.copy_link,
+    copied: L._extra.copied,
+  } as const;
+
+  function noEmailNotice(name: string, email: string): string {
+    return L._extra.noEmailNotice(name, email);
+  }
+  function inviteErrorMessage(id: string): string {
+    return MESSAGES[id] ?? L._errors.generic;
+  }
+  function validate(email: string, name: string): FieldErrors {
+    return {
+      email: email.length === 0 ? T.emailMissing : isValidEmail(email) ? null : T.emailInvalid,
+      name: name.length === 0 ? T.nameMissing : null,
+    };
+  }
+
   const emailRef = useRef<HTMLInputElement>(null);
   const nameRef = useRef<HTMLInputElement>(null);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -115,9 +117,9 @@ export function InviteUserForm({ onInvited }: Props): React.ReactElement {
           <UserPlus className="size-4" aria-hidden="true" />
         </div>
         <div>
-          <h2 className="text-sm font-semibold">Invite a user</h2>
+          <h2 className="text-sm font-semibold">{L._extra.invite_a_user}</h2>
           <p className="mt-0.5 text-sm text-muted-foreground">
-            Add a teammate and choose whether they can manage company settings.
+            {L._extra.add_a_teammate_and_choose_whether_they_can_manage_company_}
           </p>
         </div>
       </div>

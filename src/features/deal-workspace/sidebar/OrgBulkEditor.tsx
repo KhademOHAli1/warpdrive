@@ -1,6 +1,7 @@
 "use client";
 import type React from "react";
 import { useState } from "react";
+import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
 import { InlineEditFooter } from "@/features/inline-edit/InlineEditFooter";
 import { saveErrorMessage } from "@/features/inline-edit/saveError";
 import { BulkEditRow } from "./BulkEditRow";
@@ -36,11 +37,11 @@ interface OrgBulkEditorProps {
 const NONE: ReadonlySet<string> = new Set();
 
 const ADDRESS_PARTS = [
-  { key: "street", label: "Street" },
-  { key: "city", label: "City" },
-  { key: "region", label: "Region" },
-  { key: "postal", label: "Postal code" },
-  { key: "country", label: "Country" },
+  { key: "street" },
+  { key: "city" },
+  { key: "region" },
+  { key: "postal" },
+  { key: "country" },
 ] as const;
 
 const textOrNull = (v: string): string | null => (v.trim() === "" ? null : v.trim());
@@ -74,6 +75,9 @@ export function OrgBulkEditor({
   onExit,
   hidden = NONE,
 }: OrgBulkEditorProps): React.ReactNode {
+  const translateSales = useAppTranslations("sales");
+  const locale = useLocale();
+
   const [name, setName] = useState(org.name);
   const [domain, setDomain] = useState(org.domain ?? "");
   const [linkedin, setLinkedin] = useState(org.linkedinUrl ?? "");
@@ -116,29 +120,49 @@ export function OrgBulkEditor({
       .then((r) => {
         setPending(false);
         if (r.ok) onExit();
-        else setError(saveErrorMessage(r.errorId));
+        else setError(saveErrorMessage(r.errorId, locale));
       })
       .catch(() => {
         setPending(false);
-        setError(saveErrorMessage());
+        setError(saveErrorMessage(undefined, locale));
       });
   }
 
   return (
     <div className="flex flex-col gap-2">
-      <BulkEditRow label="Name" value={name} onChange={setName} disabled={pending} />
+      <BulkEditRow
+        label={translateSales("name_dcd1d")}
+        value={name}
+        onChange={setName}
+        disabled={pending}
+      />
       {!hidden.has("domain") && (
-        <BulkEditRow label="Website" value={domain} onChange={setDomain} disabled={pending} />
+        <BulkEditRow
+          label={translateSales("website_b5a22")}
+          value={domain}
+          onChange={setDomain}
+          disabled={pending}
+        />
       )}
       {!hidden.has("linkedinUrl") && (
-        <BulkEditRow label="LinkedIn" value={linkedin} onChange={setLinkedin} disabled={pending} />
+        <BulkEditRow
+          label={translateSales("linkedin_dd844")}
+          value={linkedin}
+          onChange={setLinkedin}
+          disabled={pending}
+        />
       )}
       {!hidden.has("industry") && (
-        <BulkEditRow label="Industry" value={industry} onChange={setIndustry} disabled={pending} />
+        <BulkEditRow
+          label={translateSales("industry_b4448")}
+          value={industry}
+          onChange={setIndustry}
+          disabled={pending}
+        />
       )}
       {!hidden.has("annualRevenue") && (
         <BulkEditRow
-          label="Annual revenue"
+          label={translateSales("annual_revenue_dcfdf")}
           value={revenue}
           onChange={setRevenue}
           disabled={pending}
@@ -146,17 +170,17 @@ export function OrgBulkEditor({
       )}
       {!hidden.has("employeeCount") && (
         <BulkEditRow
-          label="Number of employees"
+          label={translateSales("number_of_employees_abadd")}
           value={employees}
           onChange={setEmployees}
           disabled={pending}
         />
       )}
       {!hidden.has("address") &&
-        ADDRESS_PARTS.map(({ key, label }) => (
+        ADDRESS_PARTS.map(({ key }) => (
           <BulkEditRow
             key={key}
-            label={label}
+            label={translateSales(key === "postal" ? "computed.postalCode" : `computed.${key}`)}
             value={addr[key] ?? ""}
             onChange={(v) => setAddr((prev) => ({ ...prev, [key]: v }))}
             disabled={pending}

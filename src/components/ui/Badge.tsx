@@ -1,6 +1,7 @@
 import { cva, type VariantProps } from "class-variance-authority";
 import type React from "react";
 import { cn } from "@/lib/utils";
+import { Badge as ShadcnBadge } from "./primitives/badge";
 
 const badgeVariants = cva(
   "inline-flex w-fit shrink-0 items-center justify-center whitespace-nowrap rounded-md border px-2 py-0.5 text-xs font-medium",
@@ -25,5 +26,11 @@ export interface BadgeProps
 // shadcn-style status/metadata primitive. Badges are static labels, so unlike Button they do not
 // carry hover or press feedback.
 export function Badge({ className, variant, ...props }: BadgeProps): React.ReactNode {
-  return <span className={cn(badgeVariants({ variant }), className)} {...props} />;
+  return (
+    <ShadcnBadge
+      variant={variant === "success" ? "default" : (variant ?? "default")}
+      className={cn(badgeVariants({ variant }), className)}
+      {...props}
+    />
+  );
 }

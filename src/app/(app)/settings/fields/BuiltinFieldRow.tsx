@@ -4,12 +4,11 @@ import type React from "react";
 import { useActionError } from "@/components/shell/ActionErrorProvider";
 import { Switch } from "@/components/ui/Switch";
 import type { CustomFieldTarget } from "@/constants/customFieldTypes";
-import { STRINGS } from "@/constants/strings";
 import { setBuiltinFieldHiddenAction } from "@/features/custom-fields/actions";
+import { settingsBuiltinLabel } from "@/features/identity/settingsMessages";
+import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import type { BuiltinRow } from "./types";
-
-const S = STRINGS.settings;
 
 // One built-in field in the Data fields list. Locked identity fields render as a labelled,
 // badge-only row (no toggle). Everything else gets a single Hidden switch wired to the gated
@@ -21,6 +20,10 @@ export function BuiltinFieldRow({
   entity: CustomFieldTarget;
   row: BuiltinRow;
 }): React.ReactNode {
+  const L = useSettingsMessages();
+  const S = L;
+  const label = settingsBuiltinLabel(L, row.label);
+
   const router = useRouter();
   const reportError = useActionError();
 
@@ -35,7 +38,7 @@ export function BuiltinFieldRow({
 
   return (
     <li className="flex min-h-10 items-center gap-2 px-3 py-2 text-sm transition-colors duration-150 ease-out hover:bg-accent/30 motion-reduce:transition-none">
-      <span className="font-medium">{row.label}</span>
+      <span className="font-medium">{label}</span>
       <span className="rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
         {S.builtinBadge}
       </span>
@@ -48,7 +51,7 @@ export function BuiltinFieldRow({
             <Switch
               checked={row.hidden}
               onCheckedChange={(next) => void toggle(next)}
-              label={`${S.builtinHidden}: ${row.label}`}
+              label={`${S.builtinHidden}: ${label}`}
             />
           </>
         )}

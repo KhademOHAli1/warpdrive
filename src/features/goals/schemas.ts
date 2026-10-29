@@ -8,15 +8,20 @@ import {
   GOAL_METRICS,
   GOAL_SUBJECTS,
 } from "@/constants/goals";
+import { currencyCode, moneyAmount } from "@/features/currencies/currencySchema";
 
 // Target arrives as a decimal string so it survives the round trip to numeric(14,2) without
 // a float in the middle.
 const target = z
   .string()
-  .regex(/^\d+(\.\d{1,2})?$/)
+  .regex(/^\d+(\.\d{1,4})?$/)
+  .refine((v) => moneyAmount.safeParse(v).success, {
+    message: "target exceeds supported money precision",
+  })
   .refine((v) => Number(v) > 0, { message: "target must be greater than zero" });
 
 const shape = z.object({
+  currency: currencyCode.optional(),
   subject: z.enum(GOAL_SUBJECTS),
   action: z.enum(GOAL_ACTIONS),
   metric: z.enum(GOAL_METRICS),

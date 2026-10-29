@@ -4,8 +4,9 @@ import { ShieldPlus } from "lucide-react";
 import { useRef, useState, useTransition } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { identityErrorMessage } from "@/constants/settingsIdentity";
 import { createPermissionSetAction } from "@/features/identity/actions/permission-sets";
+import { settingsIdentityError } from "@/features/identity/settingsMessages";
+import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import { readCsrfToken } from "@/utils/csrfCookie";
 
 interface Props {
@@ -13,6 +14,9 @@ interface Props {
 }
 
 export function CreatePermissionSetForm({ onCreated }: Props): React.ReactElement {
+  const L = useSettingsMessages();
+  const identityErrorMessage = (error: string) => settingsIdentityError(L, error);
+
   const ref = useRef<HTMLInputElement>(null);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -41,15 +45,15 @@ export function CreatePermissionSetForm({ onCreated }: Props): React.ReactElemen
           <ShieldPlus className="size-4" aria-hidden="true" />
         </div>
         <div>
-          <h2 className="text-sm font-semibold">Create a permission set</h2>
+          <h2 className="text-sm font-semibold">{L._extra.create_a_permission_set}</h2>
           <p className="mt-0.5 text-sm text-muted-foreground">
-            Bundle access rules that can be assigned to users.
+            {L._extra.bundle_access_rules_that_can_be_assigned_to_users}
           </p>
         </div>
       </div>
       <div className="p-5">
         <label htmlFor="ps-name" className="sr-only">
-          Permission set name
+          {L._extra.permission_set_name}
         </label>
         <Input
           ref={ref}
@@ -57,7 +61,7 @@ export function CreatePermissionSetForm({ onCreated }: Props): React.ReactElemen
           type="text"
           required
           maxLength={80}
-          placeholder="New permission set name"
+          placeholder={L._extra.new_permission_set_name}
           className="w-full"
           disabled={isPending}
         />
@@ -69,7 +73,7 @@ export function CreatePermissionSetForm({ onCreated }: Props): React.ReactElemen
       </div>
       <div className="flex justify-end border-t bg-muted/20 px-5 py-3">
         <Button type="submit" disabled={isPending}>
-          {isPending ? "Creating..." : "Create"}
+          {isPending ? L._extra.creating : L._extra.create}
         </Button>
       </div>
     </form>

@@ -1,21 +1,13 @@
 "use client";
 import { Button } from "@/components/ui/Button";
 import { isTerminalImportStatus } from "@/constants/importStatus";
-import { STRINGS } from "@/constants/strings";
+import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import { useImportProgress } from "@/features/import/useImportProgress";
 import { trpc } from "@/lib/trpc-client";
 import { ProgressBar } from "./ProgressBar";
 
-const IMP = STRINGS.settings.importer;
 // Poll every second until the batch reaches a terminal status, then stop.
 const POLL_MS = 1000;
-
-function statusLabel(status: string): string {
-  if (status === "completed") return IMP.statusCompleted;
-  if (status === "partial") return IMP.statusPartial;
-  if (status === "failed") return IMP.statusFailed;
-  return IMP.importing;
-}
 
 export interface CommitStepProps {
   batchId: string;
@@ -23,6 +15,15 @@ export interface CommitStepProps {
 }
 
 export function CommitStep({ batchId, onReset }: CommitStepProps): React.ReactNode {
+  const L = useSettingsMessages();
+  const IMP = L.importer;
+  function statusLabel(status: string): string {
+    if (status === "completed") return IMP.statusCompleted;
+    if (status === "partial") return IMP.statusPartial;
+    if (status === "failed") return IMP.statusFailed;
+    return IMP.importing;
+  }
+
   const progress = useImportProgress(batchId);
   const batch = trpc.import.getBatch.useQuery(
     { batchId },

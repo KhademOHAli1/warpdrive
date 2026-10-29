@@ -8,6 +8,7 @@ interface Params {
   startTime: string;
   endDate: string;
   endTime: string;
+  timeZone?: string;
 }
 
 // Live Free/Busy signal for the composer: queries whether the assignee is already booked in the
@@ -19,8 +20,13 @@ export function useComposerAvailability({
   startTime,
   endDate,
   endTime,
+  timeZone = "UTC",
 }: Params): boolean {
-  const { from, to } = availabilityWindow(startDate, startTime, endDate, endTime);
+  let window: { from: string | null; to: string | null } = { from: null, to: null };
+  try {
+    window = availabilityWindow(startDate, startTime, endDate, endTime, timeZone);
+  } catch {}
+  const { from, to } = window;
   const q = trpc.activities.availability.useQuery(
     { userId: ownerId === "" ? null : ownerId, from: from ?? "", to: to ?? from ?? "" },
     { enabled: from !== null },

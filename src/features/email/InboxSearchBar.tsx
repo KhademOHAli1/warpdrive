@@ -3,7 +3,7 @@
 import { Search } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { INBOX_SEARCH_DEBOUNCE_MS } from "@/constants/email";
-import { STRINGS } from "@/constants/strings";
+import { useEmailMessages } from "@/features/email/useEmailMessages";
 
 interface InboxSearchBarProps {
   onQuery: (q: string) => void;
@@ -14,6 +14,8 @@ interface InboxSearchBarProps {
 // Clearing the input fires onQuery("") immediately (no debounce) so the caller snaps back to the
 // folder view without delay; blurring an empty input collapses back to the icon.
 export function InboxSearchBar({ onQuery }: InboxSearchBarProps): React.ReactNode {
+  const E = useEmailMessages();
+
   const [expanded, setExpanded] = useState(false);
   const [value, setValue] = useState("");
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -50,7 +52,7 @@ export function InboxSearchBar({ onQuery }: InboxSearchBarProps): React.ReactNod
     return (
       <button
         type="button"
-        aria-label={STRINGS.inbox.searchLabel}
+        aria-label={E.searchLabel}
         onClick={() => setExpanded(true)}
         className="inline-flex items-center rounded border bg-background p-1.5 text-muted-foreground outline-none hover:text-foreground focus:ring-1 focus:ring-ring"
       >
@@ -63,8 +65,8 @@ export function InboxSearchBar({ onQuery }: InboxSearchBarProps): React.ReactNod
     <input
       ref={inputRef}
       type="search"
-      aria-label={STRINGS.inbox.searchLabel}
-      placeholder={STRINGS.inbox.searchPlaceholder}
+      aria-label={E.searchLabel}
+      placeholder={E.searchPlaceholder}
       value={value}
       onChange={(e) => handleChange(e.target.value)}
       onBlur={handleBlur}

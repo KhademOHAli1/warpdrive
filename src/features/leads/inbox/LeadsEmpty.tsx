@@ -3,6 +3,7 @@ import type React from "react";
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { useLocale } from "@/features/i18n/LocaleProvider";
 import { AddLeadModal } from "../AddLeadModal";
 import { leadsEmptyState } from "./leadsEmptyState";
 
@@ -26,7 +27,8 @@ export function LeadsEmpty({
   onBackToInbox,
 }: LeadsEmptyProps): React.ReactNode {
   const [addOpen, setAddOpen] = useState(false);
-  const state = leadsEmptyState({ archived, hasFilter });
+  const locale = useLocale();
+  const state = leadsEmptyState({ archived, hasFilter }, locale);
 
   function onAction(): void {
     if (state.kind === "filtered") {

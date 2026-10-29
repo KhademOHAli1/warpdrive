@@ -1,3 +1,5 @@
+import { instantCivilDate, instantParts } from "@/lib/zonedDateTime";
+import { activityDay, activityEndDay } from "./activityTemporal";
 import type { CalendarActivity } from "./calendar";
 
 const DAY_START_HOUR = 0;
@@ -21,8 +23,8 @@ export function hourLabel(hour: number): string {
 }
 
 // An activity's own start, in the same local frame and the same "HH:mm" shape.
-export function startTimeLabel(dueAt: Date): string {
-  return `${String(dueAt.getHours()).padStart(2, "0")}:${String(dueAt.getMinutes()).padStart(2, "0")}`;
+export function startTimeLabel(dueAt: Date, timeZone = "UTC"): string {
+  return instantParts(dueAt, timeZone).time;
 }
 
 // Vertical placement of a timed activity block in the hourly week grid. Uses the viewer's
@@ -34,8 +36,10 @@ export function startTimeLabel(dueAt: Date): string {
 export function placeBlock(
   dueAt: Date,
   durationMinutes: number | null,
+  timeZone = "UTC",
 ): { topPx: number; heightPx: number } {
-  const minutesFromMidnight = dueAt.getHours() * 60 + dueAt.getMinutes();
+  const [hour, minute] = instantParts(dueAt, timeZone).time.split(":").map(Number);
+  const minutesFromMidnight = (hour ?? 0) * 60 + (minute ?? 0);
   const topPx = (minutesFromMidnight / 60) * HOUR_HEIGHT_PX;
   const heightPx =
     durationMinutes !== null
@@ -49,26 +53,17 @@ export function slotDateTime(dayIso: string, hour: number): { date: string; time
   return { date: dayIso, time: `${String(hour).padStart(2, "0")}:00` };
 }
 
-// Local (viewer wall-clock) day key for a Date, as "YYYY-MM-DD". This is the LOCAL-time
-// counterpart to weekGrid.ts's isoDay (UTC): the week agenda is a client-rendered, interactive
-// grid whose hour lane (placeBlock, above) already reads local hours/minutes, so its DAY bucket
-// must resolve in that same local frame. weekGrid.isoDay stays UTC-only for MonthView, which is
-// deliberately server-timezone-deterministic; do not merge the two.
-export function localDayIso(d: Date): string {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
+// Account-zone civil day key; the month grid and list use the same projection.
+export function localDayIso(d: Date, timeZone = "UTC"): string {
+  return instantCivilDate(d, timeZone);
 }
 
-// Bucket activities into their LOCAL due-day. Mirrors weekGrid.groupByDay's shape, but dayIsos
-// are taken as-is for the bucket keys (they are already the calendar's own local-frame day
-// strings), so no Date round-trip through isoDay is needed for the keys themselves; only each
-// activity's own dueAt needs the local-day conversion.
+// Canonical all-day dates remain fixed; timed and legacy rows project in the account zone.
 export function groupByLocalDay(
   activities: CalendarActivity[],
   dayIsos: string[],
   includeOverdue = false,
+  timeZone = "UTC",
 ): Map<string, CalendarActivity[]> {
   const map = new Map<string, CalendarActivity[]>();
   for (const iso of dayIsos) map.set(iso, []);
@@ -76,8 +71,8 @@ export function groupByLocalDay(
     if (!includeOverdue && a.overdue === true) continue;
     // Multi-day activities (endAt set) span every local day in [dueAt, endAt]; local "YYYY-MM-DD"
     // strings compare lexically as dates. Single-day activities keep their one-day behavior.
-    const startKey = localDayIso(a.dueAt);
-    const endKey = a.endAt != null ? localDayIso(a.endAt) : startKey;
+    const startKey = activityDay(a, timeZone)!;
+    const endKey = activityEndDay(a, timeZone)!;
     for (const iso of dayIsos) {
       if (iso >= startKey && iso <= endKey) map.get(iso)?.push(a);
     }

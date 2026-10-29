@@ -1,6 +1,6 @@
 import { sql } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
-import { notifications } from "@/db/schema";
+import { notifications, userPreferences } from "@/db/schema";
 import { withTestDb } from "@/db/testing";
 import { seedPipelineWithStages, seedUser } from "@/db/testing/factories";
 import type { AuthUser } from "@/features/permissions/types";
@@ -219,5 +219,19 @@ describe("notification feed read-time filtering", () => {
       const item = feed[0];
       expect(item?.band).toBe("today");
     });
+  });
+});
+
+it("bands the feed by account time zone across Nowruz midnight", async () => {
+  await withTestDb(async db => {
+    const user = await seedUser(db);
+    await db.insert(userPreferences).values({userId:user.id,timezone:"Asia/Tehran",ui:{localePreferences:{locale:"fa",calendar:"persian",timeZone:"America/New_York"}}});
+    await db.insert(notifications).values([
+      {userId:user.id,type:"mention",entityType:null,entityId:null,payload:{marker:"previous"},createdAt:new Date("2026-03-20T20:00:00Z")},
+      {userId:user.id,type:"mention",entityType:null,entityId:null,payload:{marker:"current"},createdAt:new Date("2026-03-20T20:45:00Z")},
+    ]);
+    const feed = await getFeed(db,toAuthUser(user),50,new AbortController().signal,{now:new Date("2026-03-20T21:00:00Z"),timeZone:"UTC"});
+    expect(feed.find(item=>item.payload.marker==="previous")?.band).toBe("earlier");
+    expect(feed.find(item=>item.payload.marker==="current")?.band).toBe("today");
   });
 });

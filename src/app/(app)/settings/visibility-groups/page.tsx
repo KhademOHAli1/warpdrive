@@ -1,8 +1,10 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { PERMISSION_FLAGS } from "@/constants/permissionFlags";
-import { STRINGS } from "@/constants/strings";
+import { getLocalePreferences } from "@/features/i18n/server";
+import { getServerSettingsMessages } from "@/features/identity/settingsMessages.server";
 import { listVisibilityGroups } from "@/features/identity/visibility-groups.service";
+import { formatDateTime } from "@/lib/localeFormatting";
 import { createContext } from "@/server/trpc/context";
 import { SettingsHeading } from "../SettingsHeading";
 import {
@@ -15,22 +17,24 @@ import {
 } from "../SettingsSurface";
 import { VisibilityGroupsClient } from "./VisibilityGroupsClient";
 
-const C = STRINGS.settings.columns;
-
-export const metadata = { title: STRINGS.settings.visibilityGroups };
+export async function generateMetadata() {
+  const L = await getServerSettingsMessages();
+  return { title: L.visibilityGroups };
+}
 
 export default async function VisibilityGroupsPage(): Promise<ReactNode> {
+  const L = await getServerSettingsMessages();
+  const preferences = await getLocalePreferences();
+  const C = L.columns;
+
   const { actor, db } = await createContext();
   if (actor === null || (actor.type !== "admin" && !actor.flags.has(PERMISSION_FLAGS.MANAGE))) {
-    return <p className="text-sm text-red-600">{STRINGS.settings.requiresAdmin}</p>;
+    return <p className="text-sm text-red-600">{L.requiresAdmin}</p>;
   }
   const rows = await listVisibilityGroups(db, AbortSignal.timeout(5000));
   return (
     <SettingsPage>
-      <SettingsHeading
-        title={STRINGS.settings.visibilityGroups}
-        description={STRINGS.settings.visibilityGroupsDescription}
-      />
+      <SettingsHeading title={L.visibilityGroups} description={L.visibilityGroupsDescription} />
       <SettingsCard className="shadow-none">
         <table className="w-full text-sm">
           <thead className={SETTINGS_TABLE_HEAD}>
@@ -51,7 +55,11 @@ export default async function VisibilityGroupsPage(): Promise<ReactNode> {
                   </Link>
                 </td>
                 <td className={`${SETTINGS_TABLE_CELL} tabular-nums text-muted-foreground`}>
-                  {g.createdAt.toLocaleDateString()}
+                  {formatDateTime(g.createdAt, preferences, {
+                    year: "numeric",
+                    month: "numeric",
+                    day: "numeric",
+                  })}
                 </td>
               </tr>
             ))}

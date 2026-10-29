@@ -2,8 +2,8 @@
 
 import type React from "react";
 import { useState } from "react";
-import { ENRICHMENT_STRINGS } from "@/constants/enrichmentStrings";
 import { trpc } from "@/lib/trpc-client";
+import { useEnrichmentMessages } from "../useEnrichmentMessages";
 import { FindPeopleDialog } from "./FindPeopleDialog";
 
 const STATUS_STALE_MS = 60_000;
@@ -22,6 +22,7 @@ export function FindPeopleButton({
   orgName: string;
   children: (item: FindPeopleItem | null) => React.ReactNode;
 }): React.ReactNode {
+  const E = useEnrichmentMessages();
   const statusQuery = trpc.enrichment.status.useQuery(undefined, {
     staleTime: STATUS_STALE_MS,
     retry: false,
@@ -35,7 +36,7 @@ export function FindPeopleButton({
       {children(
         ready
           ? {
-              label: ENRICHMENT_STRINGS.prospects.trigger,
+              label: E.prospects.trigger,
               onSelect: () => {
                 setEverOpened(true);
                 setOpen(true);

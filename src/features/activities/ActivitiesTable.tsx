@@ -8,6 +8,11 @@ import { type ColumnSort, useColumnSort } from "@/components/data-table/useColum
 import { RENDER_WINDOW_STEP, useRenderWindow } from "@/components/data-table/useRenderWindow";
 import { useRowSelection } from "@/components/data-table/useRowSelection";
 import { useActionError } from "@/components/shell/ActionErrorProvider";
+import {
+  useLocale,
+  useLocalePreferencePending,
+  useLocalePreferences,
+} from "@/features/i18n/LocaleProvider";
 import { useRecordPreview } from "@/features/navigation/recordPreviewStore";
 import { useRowCursor } from "@/features/shortcuts/useRowCursor";
 import { trpc } from "@/lib/trpc-client";
@@ -21,9 +26,11 @@ import { AddActivityModal } from "./AddActivityModal";
 import { completeActivityAction } from "./actions";
 import type { ActivityTableRow } from "./activityRows";
 import { activityRowTarget } from "./activityRowTarget";
+import { localizeActivityTypes } from "./activityTypeLabels";
 import { followUpLinksOf, useFollowUpAfterDone } from "./followUpAfterDone";
 import type { ActivitySortField } from "./schemas";
 import { toEditableActivity } from "./toEditableActivity";
+import { useActivitiesMessages } from "./useActivitiesMessages";
 import { useActivityBulkActions } from "./useActivityBulkActions";
 import { useActivityListFilter } from "./useActivityListFilter";
 
@@ -37,6 +44,10 @@ const DEFAULT_SORT: ColumnSort<ActivitySortField> = { field: "dueAtIso", dir: "a
 const ACTIVITY_TABLE_COLUMN_COUNT = 12;
 
 export function ActivitiesTable({ currentUserId }: { currentUserId: string }): React.ReactNode {
+  const S = useActivitiesMessages();
+  const locale = useLocale();
+  const preferences = useLocalePreferences();
+  const savingPreferences = useLocalePreferencePending();
   const { filter, setFilter, ready } = useActivityListFilter(currentUserId);
   const [modalOpen, setModalOpen] = useState(false);
   const [selected, setSelected] = useState<ActivityTableRow | null>(null);
@@ -47,8 +58,8 @@ export function ActivitiesTable({ currentUserId }: { currentUserId: string }): R
   const setPreview = useRecordPreview((s) => s.setPreview);
   const reportError = useActionError();
   const rowsQ = trpc.activities.listRows.useQuery(
-    { ...filter, sort: effective },
-    { enabled: ready },
+    { ...filter, sort: effective, timeZone: preferences.timeZone },
+    { enabled: ready && !savingPreferences },
   );
   const typesQ = trpc.activities.listTypes.useQuery();
   const ownersQ = trpc.identity.assignableUsers.useQuery();
@@ -71,8 +82,9 @@ export function ActivitiesTable({ currentUserId }: { currentUserId: string }): R
     [typesQ.data],
   );
   const types = useMemo(
-    () => (typesQ.data ?? []).map((t) => ({ key: t.key, name: t.name })),
-    [typesQ.data],
+    () =>
+      localizeActivityTypes(typesQ.data ?? [], locale).map((t) => ({ key: t.key, name: t.name })),
+    [typesQ.data, locale],
   );
   const owners = useMemo(
     () =>
@@ -147,13 +159,13 @@ export function ActivitiesTable({ currentUserId }: { currentUserId: string }): R
         {/* View toggle: List (active) vs Calendar. */}
         <div className="inline-flex rounded-md border bg-card p-0.5 text-sm">
           <span className="rounded-sm bg-accent px-2 py-1 font-medium text-accent-foreground">
-            List
+            {S.list}
           </span>
           <Link
             href="/activities/calendar"
             className="rounded-sm px-2 py-1 text-muted-foreground hover:text-foreground"
           >
-            Calendar
+            {S.calendar}
           </Link>
         </div>
         <button
@@ -161,11 +173,11 @@ export function ActivitiesTable({ currentUserId }: { currentUserId: string }): R
           onClick={() => setModalOpen(true)}
           className="rounded-md bg-action px-3 py-1.5 text-sm font-medium text-action-foreground transition-transform hover:opacity-90 active:scale-[0.96]"
         >
-          + Activity
+          {S.addActivityButton}
         </button>
         {!loadFailed && !loadPending && (
           <span className="text-sm text-muted-foreground tabular-nums">
-            {rows.length} {rows.length === 1 ? "activity" : "activities"}
+            {S.activityCount(rows.length)}
           </span>
         )}
       </div>
@@ -181,14 +193,14 @@ export function ActivitiesTable({ currentUserId }: { currentUserId: string }): R
             onClick={() => void bulkMarkDone()}
             className="rounded-md border px-3 py-1 text-sm transition-transform hover:bg-accent active:scale-[0.96]"
           >
-            Mark done
+            {S.markDone}
           </button>
           <button
             type="button"
             onClick={() => void bulkDelete()}
             className="rounded-md border px-3 py-1 text-sm transition-transform hover:bg-accent active:scale-[0.96]"
           >
-            Delete
+            {S.delete}
           </button>
         </BulkActionBar>
       )}

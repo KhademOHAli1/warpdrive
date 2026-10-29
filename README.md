@@ -118,24 +118,37 @@ Next.js (App Router) and React with TypeScript, Drizzle ORM on Postgres, tRPC wi
 Query, Next server actions, shadcn/ui with Tailwind, dnd-kit for the board, Zustand for
 board-local state, a self-hosted WebSocket server backed by Postgres LISTEN/NOTIFY, MinIO
 (or any S3-compatible store) for files, and the Gmail API via Google OAuth. Package manager:
-pnpm.
+Bun.
 
 ## Quickstart (local development)
 
-Requires Node, pnpm, and Docker.
+Requires Bun and Docker.
+
+The upstream MinIO container references in the compose file may no longer be publicly available.
+An S3-compatible service can be used for local development, but the shipped compose setup needs
+an updated storage image before it can be relied on for a fresh installation.
 
 ```bash
-pnpm install
+bun install --frozen-lockfile
 cp .env.example .env
 # bring up Postgres and MinIO with host ports and no TLS:
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d postgres minio
-pnpm db:migrate
-pnpm dev
+bun run db:migrate
+bun run dev
 ```
 
 The app runs at `http://localhost:3000`. Google sign-in and Gmail need an OAuth client (see
 [`docs/deploy.md`](docs/deploy.md)); for local exploration you can sign in without Google
 using the dev-login route.
+
+## Localization in progress
+
+Language is selected in Settings > Personal settings. Farsi also offers a saved choice between
+Persian digits (۱۲۳) and English digits (123), with a live preview. Persian uses
+right-to-left layout and defaults the shared date picker to the Iranian Solar Hijri calendar; the
+picker can also switch between Solar Hijri and Gregorian dates. Dates continue to be stored in the
+existing Gregorian ISO format. Translation and RTL adaptation across the rest of the CRM and the
+separate activities calendar view are still in progress.
 
 ## Self-hosting
 
@@ -154,8 +167,8 @@ setup, the `s3.` subdomain for file uploads, and every required environment vari
 ## Tests
 
 ```bash
-pnpm test:unit          # fast unit tests
-pnpm test:integration   # spins up a disposable Postgres via Testcontainers
+bun run test:unit          # fast unit tests
+bun run test:integration   # spins up a disposable Postgres via Testcontainers
 ```
 
 Integration tests run against a real Postgres (never a mock) so migrations and queries are
@@ -176,3 +189,10 @@ here on the next release. Please keep changes focused and include tests for new 
 ## License
 
 MIT. See [`LICENSE`](LICENSE).
+
+## Shared UI updates
+
+The shared UI follows the current shadcn Radix Nova registry with RTL support. Run
+`bun run ui:check` to preview registry updates and `bun run ui:update` to apply and verify them.
+CRM adapters are kept outside the replaceable registry directory. See
+[the UI update guide](docs/ui-updates.md) for the workflow and compatibility notes.

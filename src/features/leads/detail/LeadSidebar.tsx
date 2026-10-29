@@ -2,8 +2,8 @@
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { useState } from "react";
-import { isSourceChannelKey, SOURCE_CHANNELS } from "@/constants/sourceChannels";
-import { STRINGS } from "@/constants/strings";
+import { sourceChannelLabel } from "@/constants/sourceChannelLabels";
+import { isSourceChannelKey } from "@/constants/sourceChannels";
 import type { Organization, Person } from "@/db/schema";
 import { CollapsibleSection } from "@/features/deal-workspace/CollapsibleSection";
 import type { CustomFieldsSave } from "@/features/deal-workspace/sidebar/customFieldsSave";
@@ -11,6 +11,9 @@ import { FieldRow } from "@/features/deal-workspace/sidebar/FieldRow";
 import { PersonSection } from "@/features/deal-workspace/sidebar/PersonSection";
 import { RecordOrganizationSection } from "@/features/deal-workspace/sidebar/RecordOrganizationSection";
 import { sectionHeaderActions } from "@/features/deal-workspace/sidebar/sectionActions";
+import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
+import { sourceOriginLabel } from "@/features/leads/sourceLabels";
+import { useFormatters } from "@/lib/useFormatters";
 import type { CustomFieldDef } from "@/types/customFields";
 import { err, ok } from "@/types/result";
 import { readCsrfToken } from "@/utils/csrfCookie";
@@ -52,17 +55,21 @@ export function LeadSidebar({
   leadCustomFieldDefs?: CustomFieldDef[];
   baseCurrency?: string;
 }): React.ReactNode {
+  const tLeads = useAppTranslations("leads");
+  const locale = useLocale();
+
   const router = useRouter();
+  const format = useFormatters();
   const [personBulkEditing, setPersonBulkEditing] = useState(false);
   const [organizationBulkEditing, setOrganizationBulkEditing] = useState(false);
   const channelName =
     lead.sourceChannel !== null && isSourceChannelKey(lead.sourceChannel)
-      ? SOURCE_CHANNELS[lead.sourceChannel].name
+      ? sourceChannelLabel(lead.sourceChannel, locale)
       : (lead.sourceChannel ?? "-");
 
   const fieldsItem = (entity: "lead" | "person" | "organization") => [
     {
-      label: STRINGS.dealSidebar.menu.customizeFields,
+      label: tLeads("customizeFields"),
       onSelect: () => router.push(`/settings/fields?entity=${entity}`),
     },
   ];
@@ -82,8 +89,8 @@ export function LeadSidebar({
   return (
     <aside className="min-w-0 space-y-2">
       <CollapsibleSection
-        title="Summary"
-        headerActions={sectionHeaderActions("Summary", fieldsItem("lead"))}
+        title={tLeads("summary")}
+        headerActions={sectionHeaderActions(tLeads("summary"), fieldsItem("lead"))}
       >
         <LeadSummaryEditPanel
           lead={{
@@ -96,7 +103,7 @@ export function LeadSidebar({
           }}
           owners={owners}
         />
-        <FieldRow label="Labels">
+        <FieldRow label={tLeads("labels")}>
           <LeadLabelRow
             leadId={lead.id}
             expectedUpdatedAt={new Date(lead.updatedAt).toISOString()}
@@ -106,14 +113,14 @@ export function LeadSidebar({
       </CollapsibleSection>
 
       <CollapsibleSection
-        title="Source"
-        headerActions={sectionHeaderActions("Source", fieldsItem("lead"))}
+        title={tLeads("source")}
+        headerActions={sectionHeaderActions(tLeads("source"), fieldsItem("lead"))}
       >
-        <FieldRow label="Origin">{lead.sourceOrigin.replace(/_/g, " ")}</FieldRow>
-        <FieldRow label="Channel" empty={lead.sourceChannel === null}>
+        <FieldRow label={tLeads("origin")}>{sourceOriginLabel(lead.sourceOrigin, locale)}</FieldRow>
+        <FieldRow label={tLeads("channel")} empty={lead.sourceChannel === null}>
           {channelName}
         </FieldRow>
-        <FieldRow label="Channel ID" empty={lead.sourceChannelId === null}>
+        <FieldRow label={tLeads("channelID")} empty={lead.sourceChannelId === null}>
           {lead.sourceChannelId ?? "-"}
         </FieldRow>
       </CollapsibleSection>
@@ -145,15 +152,17 @@ export function LeadSidebar({
         customFields={lead.customFields as Record<string, unknown>}
         customFieldDefs={leadCustomFieldDefs}
         onSaveCustomFields={saveLeadCustomFields}
-        detailsTitle={STRINGS.dealSidebar.sections.details}
+        detailsTitle={tLeads("details")}
         detailsMenuItems={fieldsItem("lead")}
       />
 
       <CollapsibleSection
-        title="Overview"
-        headerActions={sectionHeaderActions("Overview", fieldsItem("lead"))}
+        title={tLeads("overview")}
+        headerActions={sectionHeaderActions(tLeads("overview"), fieldsItem("lead"))}
       >
-        <FieldRow label="Created">{lead.createdAt.toLocaleDateString()}</FieldRow>
+        <FieldRow label={tLeads("created")}>
+          {format.dateTime(lead.createdAt, { dateStyle: "medium" })}
+        </FieldRow>
       </CollapsibleSection>
     </aside>
   );

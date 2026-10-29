@@ -1,5 +1,6 @@
 "use client";
 import { useRef, useState } from "react";
+import { useEmailMessages } from "@/features/email/useEmailMessages";
 import { isValidEmail } from "@/lib/isValidEmail";
 import { trpc } from "@/lib/trpc-client";
 
@@ -20,6 +21,8 @@ interface RecipientFieldProps {
 // option ids, and its options are remote-fetched contacts (the async-search case the spec flags as
 // legitimately custom). A trigger-button popover would also break the inline "To:" pixel parity.
 export function RecipientField({ label, values, onChange }: RecipientFieldProps): React.ReactNode {
+  const E = useEmailMessages();
+
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -52,7 +55,7 @@ export function RecipientField({ label, values, onChange }: RecipientFieldProps)
       return;
     }
     if (!isValidEmail(trimmed)) {
-      setError("Enter a valid email address.");
+      setError(E._extra.enter_a_valid_email_address);
       return;
     }
     setError(null);
@@ -82,18 +85,20 @@ export function RecipientField({ label, values, onChange }: RecipientFieldProps)
       <span className="text-xs text-muted-foreground shrink-0">{label}</span>
       {values.map((v) => (
         <span key={v} className="flex items-center gap-0.5 rounded bg-accent px-1.5 py-0.5 text-xs">
-          {v}
+          <bdi dir="ltr">{v}</bdi>
           <button
             type="button"
-            aria-label={`Remove ${v}`}
+            aria-label={E._extra.remove_arg0(v)}
             onClick={() => removeEmail(v)}
-            className="ml-0.5 hover:opacity-70"
+            className="ms-0.5 hover:opacity-70"
           >
-            &times;
+            ×
           </button>
         </span>
       ))}
       <input
+        dir="ltr"
+        aria-label={label}
         role="combobox"
         aria-autocomplete="list"
         aria-expanded={open && suggestions.length > 0}
@@ -106,7 +111,13 @@ export function RecipientField({ label, values, onChange }: RecipientFieldProps)
         }}
         onKeyDown={(e) => {
           if (query.trim().length === 0) return;
-          if (e.key === "Enter" || e.key === "," || e.key === ";") {
+          if (
+            e.key === "Enter" ||
+            e.key === "," ||
+            e.key === ";" ||
+            e.key === "،" ||
+            e.key === "؛"
+          ) {
             e.preventDefault();
             addEmail(query);
             return;
@@ -125,7 +136,7 @@ export function RecipientField({ label, values, onChange }: RecipientFieldProps)
             <div key={p.id}>
               <button
                 type="button"
-                className="w-full text-left px-3 py-1.5 text-sm hover:bg-accent"
+                className="w-full text-start px-3 py-1.5 text-sm hover:bg-accent"
                 onMouseDown={(e) => {
                   e.preventDefault(); // keep focus on the input so onBlur doesn't fire first
                   if (p.primaryEmail != null) addEmail(p.primaryEmail);
@@ -133,7 +144,9 @@ export function RecipientField({ label, values, onChange }: RecipientFieldProps)
               >
                 {p.name}
                 {p.primaryEmail != null && p.primaryEmail !== p.name && (
-                  <span className="ml-1 text-xs text-muted-foreground">{p.primaryEmail}</span>
+                  <span className="ms-1 text-xs text-muted-foreground">
+                    <bdi dir="ltr">{p.primaryEmail}</bdi>
+                  </span>
                 )}
               </button>
             </div>

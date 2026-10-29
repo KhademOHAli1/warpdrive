@@ -1,6 +1,8 @@
 "use client";
 import type React from "react";
 import { Avatar } from "@/components/ui/Avatar";
+import { useEmailMessages } from "@/features/email/useEmailMessages";
+import { useFormatters } from "@/lib/useFormatters";
 import { SidebarLinkPanel } from "./SidebarLinkPanel";
 
 interface InboxReaderSidebarProps {
@@ -36,11 +38,17 @@ export function InboxReaderSidebar({
   canCompose,
   onLinked,
 }: InboxReaderSidebarProps): React.ReactNode {
+  const E = useEmailMessages();
+  const format = useFormatters();
+
   return (
-    <aside aria-label="Conversation details" className="w-72 shrink-0 space-y-4 border-l p-4">
+    <aside
+      aria-label={E._extra.conversation_details}
+      className="w-72 shrink-0 space-y-4 border-s p-4"
+    >
       <section>
         <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground tabular-nums">
-          {participants.length} people in this conversation
+          {format.number(participants.length)} {E._extra.people_in_this_conversation}
         </h2>
         <div className="flex flex-wrap gap-1.5">
           {participants.map((email) => (
@@ -51,10 +59,11 @@ export function InboxReaderSidebar({
 
       {primaryEmail !== null && (
         <section className="flex items-center gap-2 rounded-md border p-3">
-          <Avatar name={primaryName ?? primaryEmail} className="h-8 w-8 text-xs" />
-          <span className="min-w-0 truncate text-sm font-medium">
-            {primaryName ?? primaryEmail}
-          </span>
+          <Avatar
+            name={primaryName ?? primaryEmail}
+            className="h-8 w-8 text-xs"
+          />
+          <span className="min-w-0 truncate text-sm font-medium"><bdi dir="auto">{primaryName ?? primaryEmail}</bdi></span>
         </section>
       )}
 

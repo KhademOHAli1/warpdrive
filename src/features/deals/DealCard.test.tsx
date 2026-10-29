@@ -209,7 +209,7 @@ describe("DealCard", () => {
     expect(screen.getByText("Hot")).toBeTruthy();
   });
 
-  it("shows a rotting badge with text when idle past the threshold", () => {
+  it("shows time in the current stage when past its threshold", () => {
     render(
       <DealCard
         card={baseCard}
@@ -222,8 +222,8 @@ describe("DealCard", () => {
         now={new Date("2026-06-20T00:00:00Z")}
       />,
     );
-    expect(screen.getByText(/19d/)).toBeTruthy();
-    expect(screen.getByLabelText(/rotting/i)).toBeTruthy();
+    expect(screen.getByText("19 days")).toBeTruthy();
+    expect(screen.getByLabelText("Rotting; 19 days in this stage")).toBeTruthy();
   });
 
   it("hides the description line in compact density but keeps the deal-title primary line", () => {

@@ -1,9 +1,7 @@
 "use client";
 import type React from "react";
-import { ENRICHMENT_STRINGS } from "@/constants/enrichmentStrings";
 import { cn } from "@/lib/utils";
-
-const S = ENRICHMENT_STRINGS.dialog;
+import { useEnrichmentMessages } from "./useEnrichmentMessages";
 
 const SWEEP =
   "absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-white/85 to-transparent motion-reduce:animate-none dark:via-white/25";
@@ -23,6 +21,8 @@ function Bar({ className }: { className?: string }): React.ReactNode {
 }
 
 export function EnrichLoading(): React.ReactNode {
+  const E = useEnrichmentMessages();
+  const S = E.dialog;
   return (
     <div
       role="status"

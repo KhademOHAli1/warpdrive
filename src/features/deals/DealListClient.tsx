@@ -1,5 +1,4 @@
 "use client";
-
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { ColumnsMenu } from "@/components/data-table/ColumnsMenu";
@@ -7,6 +6,7 @@ import type { ColumnDef } from "@/components/data-table/columnModel";
 import { useColumns } from "@/components/data-table/useColumns";
 import { usePersistColumns } from "@/components/data-table/usePersistColumns";
 import { DEFAULT_BASE_CURRENCY } from "@/constants/currency";
+import { sumMoney } from "@/features/currencies/money";
 import { customFieldColumns } from "@/features/custom-fields/listColumns";
 import {
   type CustomFieldRefLabels,
@@ -14,6 +14,11 @@ import {
   EMPTY_REF_LABELS,
 } from "@/features/custom-fields/refLabelsContext";
 import type { CustomFieldSortKey } from "@/features/custom-fields/sortKey";
+import {
+  useAppTranslations,
+  useLocalePreferencePending,
+  useLocalePreferences,
+} from "@/features/i18n/LocaleProvider";
 import { hasDateCondition } from "@/features/saved-filters/filterFields";
 import type { FilterDefinition } from "@/features/saved-filters/schemas";
 import { trpc } from "@/lib/trpc-client";
@@ -28,8 +33,8 @@ import { DealFilterBuilder } from "./DealFilterBuilder";
 import type { DealListProps } from "./DealList";
 import { DealList } from "./DealList";
 import { DealsEmpty } from "./DealsEmpty";
-import { DEAL_LIST_COLUMNS } from "./dealListColumns";
-import { DEAL_LIST_QUERY_ROOT } from "./dealListQueryKey";
+import { dealListColumns } from "./dealListColumns";
+import { dealListQueryKey } from "./dealListQueryKey";
 import { type DealListSortKey, sortRows } from "./dealListSort";
 import { fetchDealListRows } from "./fetchDealListRows";
 import { NewDealButton } from "./NewDealButton";
@@ -66,7 +71,7 @@ interface DealListClientProps {
 
 export interface DealListFooter {
   total: number;
-  totalValue: string;
+  totalValue: string | null;
   filtered: boolean;
 }
 
@@ -77,9 +82,9 @@ export interface DealListFooter {
 export function resolveDealListFooter(args: {
   filtered: boolean;
   serverTotal: number;
-  serverTotalValue: string;
+  serverTotalValue: string | null;
   filteredCount: number;
-  filteredValue: string;
+  filteredValue: string | null;
 }): DealListFooter {
   return args.filtered
     ? { total: args.filteredCount, totalValue: args.filteredValue, filtered: true }
@@ -94,6 +99,11 @@ export function DealListClient({
   initial,
   variant = "list",
 }: DealListClientProps): React.ReactNode {
+  const translateSales = useAppTranslations("sales");
+  const preferences = useLocalePreferences();
+  const { locale } = preferences;
+  const preferencePending = useLocalePreferencePending();
+
   const { pipelineId, stages, pipelines, baseCurrency } = initial;
   const currency = baseCurrency ?? DEFAULT_BASE_CURRENCY;
   const actions = useDealListActions();
@@ -109,8 +119,8 @@ export function DealListClient({
   const [sortKey, setSortKey] = useState<DealListSortKey>(DEFAULT_SORT_KEY);
   const [sortDirection, setSortDirection] = useState<SortDirection>(DEFAULT_SORT_DIRECTION);
   const catalog = useMemo<(ColumnDef & { sortField?: CustomFieldSortKey })[]>(
-    () => [...DEAL_LIST_COLUMNS, ...customFieldColumns(initial.customFieldDefs ?? [])],
-    [initial.customFieldDefs],
+    () => [...dealListColumns(locale), ...customFieldColumns(initial.customFieldDefs ?? [])],
+    [initial.customFieldDefs, locale],
   );
   const extraSortOptions = useMemo(
     () =>
@@ -130,18 +140,21 @@ export function DealListClient({
     boardViewDefinition(initial.initialView ?? DEFAULT_BOARD_VIEW),
   );
   const listQuery = useQuery({
-    queryKey: [DEAL_LIST_QUERY_ROOT, pipelineId, variant, activeDefinition ?? "none"],
+    queryKey: dealListQueryKey(pipelineId, variant, activeDefinition, preferences),
+    enabled: !hasDateCondition(activeDefinition) || !preferencePending,
     queryFn: () =>
       fetchDealListRows(utils, {
         pipelineId,
         archived: variant === "archived",
         definition: activeDefinition,
+        preferences,
       }),
     initialData: seededForThisView
       ? {
           rows: initial.rows,
           total: initial.total,
           totalValue: initial.totalValue,
+          currencyTotals: initial.currencyTotals ?? [],
           refLabels: initial.refLabels ?? EMPTY_REF_LABELS,
         }
       : undefined,
@@ -161,7 +174,7 @@ export function DealListClient({
     listQuery.isPlaceholderData,
   );
 
-  const owners = useMemo(() => distinctBoardOwners(rows), [rows]);
+  const owners = useMemo(() => distinctBoardOwners(rows, locale), [rows, locale]);
   const shownRows = useMemo(() => {
     const filtered = rows.filter((r) => matchesOwnerFilter(r, selectedOwnerId));
     return sortRows(filtered, sortKey, sortDirection, initial.customFieldDefs ?? []);
@@ -173,14 +186,14 @@ export function DealListClient({
   // when it is on, it shows the narrowed subset and is labelled so the count is not read as the whole
   // pipeline. Value tracks the same set as the count so the two numbers never disagree.
   const clientFiltered = selectedOwnerId !== null;
-  const shownTotalValue = useMemo(
-    () => String(shownRows.reduce((s, r) => s + (r.value !== null ? Number(r.value) : 0), 0)),
-    [shownRows],
-  );
+  const currencyTotals = clientFiltered
+    ? sumMoney(shownRows, currency)
+    : (data?.currencyTotals ?? initial.currencyTotals ?? sumMoney(shownRows, currency));
+  const shownTotalValue = currencyTotals.length > 1 ? null : (currencyTotals[0]?.value ?? "0");
   const footer = resolveDealListFooter({
     filtered: clientFiltered,
     serverTotal: data?.total ?? 0,
-    serverTotalValue: data?.totalValue ?? "0",
+    serverTotalValue: data === undefined ? "0" : data.totalValue,
     filteredCount: shownRows.length,
     filteredValue: shownTotalValue,
   });
@@ -207,7 +220,9 @@ export function DealListClient({
         pipelineId={pipelineId}
         pipelines={pipelines}
         totalValue={footer.totalValue}
+        currencyTotals={currencyTotals}
         dealCount={footer.total}
+        currency={currency}
         activeView={variant}
         canManagePipelines={initial.canManagePipelines}
         createSlot={addDeal}
@@ -240,7 +255,7 @@ export function DealListClient({
               onApplyDefinition={setInlineDefinition}
               // The list keeps its own ad-hoc Filter builder, so this menu is the saved-filter
               // picker and the badge stays on the builder.
-              triggerLabel="Saved filters"
+              triggerLabel={translateSales("saved_filters_f52bc")}
             />
           </>
         }
@@ -248,10 +263,11 @@ export function DealListClient({
       {footer.filtered ? (
         <p
           role="status"
-          aria-label="filtered count"
+          aria-label={translateSales("filtered_count_b673c")}
           className="px-1 py-2 text-sm text-muted-foreground"
         >
-          Showing {footer.total} filtered {footer.total === 1 ? "deal" : "deals"}
+          {translateSales("showing_d6043")} {footer.total} {translateSales("filtered_13a30")}{" "}
+          {footer.total === 1 ? translateSales("deal_f96c9") : translateSales("deals_14687")}
         </p>
       ) : null}
       <CustomFieldRefLabelsProvider value={refLabels}>
@@ -260,6 +276,7 @@ export function DealListClient({
           rows={shownRows}
           total={footer.total}
           totalValue={footer.totalValue}
+          currencyTotals={currencyTotals}
           stages={stages}
           currency={currency}
           onBulkStage={actions.bulkStage}

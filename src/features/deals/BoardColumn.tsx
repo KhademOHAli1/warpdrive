@@ -1,31 +1,32 @@
 "use client";
 import { useDraggable, useDroppable } from "@dnd-kit/core";
-import { Scale } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { useState } from "react";
+import type { CurrencyTotal } from "@/features/currencies/money";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { useLabelColorResolver } from "@/features/labels/useLabelColorResolver";
-import { formatCurrency } from "@/lib/formatCurrency";
-import { stageSubtitle } from "./boardColumnSubtitle";
-import { accentForOrder, funnelClip, tint } from "./boardStageHeader";
 import { DealCard } from "./DealCard";
 import type { BoardCard } from "./dealRepo";
 import { StageAddButton } from "./StageAddButton";
-import { StageColumnMenu } from "./StageColumnMenu";
+import { StageColumnHeader } from "./StageColumnHeader";
 
 interface DraggableCardProps {
   card: BoardCard;
   rottingDays: number | null;
   density: "comfortable" | "compact";
   now: Date;
+  currency?: string;
 }
 
 function DraggableCard(props: DraggableCardProps): React.ReactNode {
-  const { card, rottingDays, density, now } = props;
+  const translateSales = useAppTranslations("sales");
+  const { card, rottingDays, density, now, currency } = props;
   const router = useRouter();
   const resolveLabels = useLabelColorResolver("deal");
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: card.id,
+    attributes: { roleDescription: translateSales("computed.draggableDeal") },
     data: { stageId: card.stageId, boardPosition: card.boardPosition },
   });
 
@@ -38,6 +39,7 @@ function DraggableCard(props: DraggableCardProps): React.ReactNode {
     >
       <DealCard
         card={card}
+        currency={currency}
         ownerName={card.ownerName ?? "?"}
         ownerAvatarUrl={card.ownerAvatarUrl}
         personName={card.personName ?? null}
@@ -60,6 +62,7 @@ export interface BoardColumnProps {
   cards: BoardCard[];
   dealCount: number;
   totalValue: string;
+  currencyTotals?: CurrencyTotal[];
   density: "comfortable" | "compact";
   // null until the client clock is set (see Board). Threads down to each DealCard's time visuals.
   now: Date;
@@ -70,11 +73,12 @@ export interface BoardColumnProps {
 }
 
 export function BoardColumn(props: BoardColumnProps): React.ReactNode {
+  const translateSales = useAppTranslations("sales");
+
   const { stageId, stageName, order, rottingDays, cards, dealCount, totalValue, density, now } =
     props;
   const { pipelineId, pipelines, baseCurrency } = props;
   const { setNodeRef, isOver } = useDroppable({ id: stageId });
-  const accent = accentForOrder(order);
   // P1: local collapse state, toggled from the per-column actions menu. Session-only (no persist):
   // a rep collapses a stage to focus the board for the current session, not as a durable preference.
   const [collapsed, setCollapsed] = useState(false);
@@ -82,7 +86,7 @@ export function BoardColumn(props: BoardColumnProps): React.ReactNode {
   return (
     <section
       ref={setNodeRef}
-      aria-roledescription="stage column"
+      aria-roledescription={translateSales("computed.stageColumn")}
       aria-label={stageName}
       className={[
         // Pipedrive-style lane: a tall, subtly filled column so every stage (even empty ones)
@@ -99,52 +103,38 @@ export function BoardColumn(props: BoardColumnProps): React.ReactNode {
         .join(" ")
         .trim()}
     >
-      <header className="relative">
-        {/* P1: per-column actions menu, top-right of the header (Pipedrive reveals it on hover). */}
-        <div className="absolute right-1 top-0.5 z-10">
-          <StageColumnMenu
-            pipelineId={pipelineId}
-            stageId={stageId}
-            stageName={stageName}
-            pipelines={pipelines}
-            baseCurrency={baseCurrency}
-            collapsed={collapsed}
-            onToggleCollapse={() => setCollapsed((v) => !v)}
-          />
-        </div>
-        {/* Pipedrive-style funnel: a tinted arrow segment per stage. P4: 16px stage headings
-            (text-base) to match Pipedrive's board hierarchy; keep the colored funnel chip. */}
-        <div
-          className="px-3 py-1.5 text-base font-semibold text-foreground"
-          style={{
-            clipPath: funnelClip(order === 0),
-            backgroundColor: tint(accent, 0.18),
-            borderLeft: order === 0 ? `3px solid ${accent}` : undefined,
-          }}
-        >
-          {stageName}
-        </div>
-        <div className="mt-1 flex items-center gap-1 px-1 text-xs text-muted-foreground">
-          {/* Balance/scale glyph before the value line (Pipedrive convention). */}
-          <Scale data-stage-metric-icon aria-hidden="true" className="h-3.5 w-3.5 shrink-0" />
-          <span className="tabular-nums">
-            {stageSubtitle(formatCurrency(totalValue), dealCount)}
-          </span>
-        </div>
-      </header>
+      <StageColumnHeader
+        pipelineId={pipelineId}
+        stageId={stageId}
+        stageName={stageName}
+        order={order}
+        pipelines={pipelines}
+        baseCurrency={baseCurrency}
+        dealCount={dealCount}
+        totalValue={totalValue}
+        currencyTotals={props.currencyTotals}
+        collapsed={collapsed}
+        onToggleCollapse={() => setCollapsed((v) => !v)}
+      />
 
       {!collapsed && (
         <>
           <ul
             className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto"
-            aria-label={`${stageName} deals`}
+            aria-label={translateSales("arg0_deals_33b08", { arg0: stageName })}
           >
             {cards.map((card) => (
               <li
                 key={card.id}
                 className="[content-visibility:auto] [contain-intrinsic-size:auto_96px]"
               >
-                <DraggableCard card={card} rottingDays={rottingDays} density={density} now={now} />
+                <DraggableCard
+                  card={card}
+                  currency={card.currency ?? baseCurrency}
+                  rottingDays={rottingDays}
+                  density={density}
+                  now={now}
+                />
               </li>
             ))}
           </ul>

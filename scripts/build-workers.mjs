@@ -5,7 +5,7 @@ import { build } from "esbuild";
 // deliberately do NOT inline node_modules: deps like jsdom (via isomorphic-dompurify) read their
 // own data files with a __dirname-relative readFileSync, which breaks the moment they are bundled.
 // The Docker runtime ships a prod-only node_modules for these external requires to resolve against.
-// Output is .mjs so Node treats it as ESM without a package.json "type" and without reparsing.
+// Output is .mjs so the bundled workers have an explicit ESM format.
 const entries = [
   { in: "src/entrypoints/ws.ts", out: "dist/ws.mjs" },
   { in: "src/entrypoints/worker.ts", out: "dist/worker.mjs" },

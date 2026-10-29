@@ -24,6 +24,7 @@ vi.mock("@/lib/trpc-client", () => ({
 }));
 
 import { STRINGS } from "@/constants/strings";
+import { LocaleProvider } from "@/features/i18n/LocaleProvider";
 import type { SearchResults } from "@/types/search";
 import { CommandPalette, SearchResultsList } from "./CommandPalette";
 import { OPEN_SEARCH_EVENT } from "./events";
@@ -43,6 +44,27 @@ beforeEach(() => {
 });
 
 describe("SearchResultsList", () => {
+  it("uses Farsi result headings while preserving record names and navigation", () => {
+    const onSelect = vi.fn();
+    render(
+      <LocaleProvider locale="fa">
+        <SearchResultsList
+          results={{
+            ...EMPTY_RESULTS,
+            deals: [{ id: "d1", primary: "Acme renewal", secondary: "example.com" }],
+          }}
+          onSelect={onSelect}
+        />
+      </LocaleProvider>,
+    );
+    expect(screen.getByRole("listbox", { name: "نتیجه‌های جست‌وجو" })).toBeInTheDocument();
+    expect(screen.getByText("فرصت‌های فروش")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("option"));
+    expect(onSelect).toHaveBeenCalledWith(
+      "deal",
+      expect.objectContaining({ id: "d1", primary: "Acme renewal" }),
+    );
+  });
   it("renders sectioned results and a no-results note per empty section", () => {
     render(
       <SearchResultsList

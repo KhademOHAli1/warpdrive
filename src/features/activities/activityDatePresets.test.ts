@@ -9,7 +9,7 @@ function ymd(d: Date): string {
 }
 
 // A Wednesday, chosen so "this week" is unambiguously mid-week.
-const TODAY = new Date(2026, 6, 8); // 2026-07-08
+const TODAY = new Date("2026-07-08T12:00:00Z"); // 2026-07-08
 
 describe("presetRange", () => {
   it("today: both bounds are today", () => {

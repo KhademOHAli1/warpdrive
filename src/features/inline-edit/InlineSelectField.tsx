@@ -1,6 +1,7 @@
 "use client";
 import type React from "react";
 import { Select, type SelectOption } from "@/components/ui/Select";
+import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
 import { InlineEditFooter } from "./InlineEditFooter";
 import { InlineFieldShell } from "./InlineFieldShell";
 import { saveErrorMessage } from "./saveError";
@@ -18,8 +19,6 @@ interface InlineSelectFieldProps {
   renderValue?: (value: string) => React.ReactNode;
 }
 
-const DEFAULT_PLACEHOLDER = "+ Add";
-
 // PD-mechanism select field. Verified live (source-channel field): PD selects do NOT autosave
 // on pick; the option lands in the editor's draft and the dirty-gated Save footer commits it,
 // identical to text fields. Only Cancel/Save close the editor.
@@ -28,9 +27,11 @@ export function InlineSelectField({
   value,
   options,
   onSave,
-  placeholder = DEFAULT_PLACEHOLDER,
+  placeholder,
   renderValue,
 }: InlineSelectFieldProps): React.ReactNode {
+  const t = useAppTranslations("shell.inline");
+  const locale = useLocale();
   const f = useInlineEditField(value);
   const dirty = f.draft !== value;
   const selectedLabel = options.find((o) => o.value === value)?.label ?? "";
@@ -50,7 +51,7 @@ export function InlineSelectField({
   return (
     <div className="min-w-0">
       {f.error !== null && !f.editing ? (
-        <span className="text-xs text-destructive">{saveErrorMessage(f.error)}</span>
+        <span className="text-xs text-destructive">{saveErrorMessage(f.error, locale)}</span>
       ) : null}
       <InlineFieldShell
         label={label}
@@ -63,7 +64,7 @@ export function InlineSelectField({
               ? renderValue(value)
               : selectedLabel
         }
-        emptyPrompt={placeholder}
+        emptyPrompt={placeholder ?? t("add")}
       >
         {editor}
       </InlineFieldShell>

@@ -2,12 +2,12 @@
 import type React from "react";
 import { useHideEmpty } from "./sectionFilter";
 
-// Shared deal/person/org field row: a two-column grid with one label token and a left-aligned
+// Shared deal/person/org field row: a two-column grid with one label token and a start-aligned
 // value column. Editable rows compose their trigger inside this renderer so alignment cannot drift.
 // `empty` marks a value-less row so the section's funnel toggle can hide it.
 // `labelAlign` controls the label column: "right" (default) hugs the value; "left" hangs the label
-// at the column start, matching Pipedrive's left-aligned Summary block (the other sidebar sections
-// keep the right-aligned default).
+// at the column start, matching Pipedrive's start-aligned Summary block (the other sidebar sections
+// keep the end-aligned default).
 export function FieldRow({
   label,
   children,
@@ -33,8 +33,8 @@ export function FieldRow({
       <span
         className={
           labelAlign === "left"
-            ? "flex items-center justify-start gap-1 text-left text-xs font-medium leading-[18px] text-muted-foreground"
-            : "flex items-center justify-end gap-1 text-right text-xs font-medium leading-[18px] text-muted-foreground"
+            ? "flex items-center justify-start gap-1 text-start text-xs font-medium leading-[18px] text-muted-foreground"
+            : "flex items-center justify-end gap-1 text-end text-xs font-medium leading-[18px] text-muted-foreground"
         }
       >
         {icon}
@@ -42,7 +42,7 @@ export function FieldRow({
       </span>
       <span
         data-testid="field-row-value"
-        className="min-w-0 break-words text-left text-sm text-foreground"
+        className="min-w-0 break-words text-start text-sm text-foreground"
       >
         {children}
       </span>

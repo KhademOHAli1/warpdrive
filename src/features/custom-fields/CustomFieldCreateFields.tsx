@@ -1,7 +1,10 @@
 "use client";
 
 import type React from "react";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
+import type { Locale } from "@/features/i18n/registry";
 import type { CustomFieldDef } from "@/types/customFields";
+import { customFieldDraftError } from "./inputValidation";
 import { CustomFieldFormControl, isCustomFieldValueEmpty } from "./render";
 
 export type CustomFieldValues = Record<string, unknown>;
@@ -60,37 +63,58 @@ export function customFieldCreatePayload(
   return payload;
 }
 
+// Run this before creating linked contacts so a malformed main-entity field cannot leave
+// partially-created records behind. Optional empty fields are omitted by the existing payload helper.
+export function customFieldCreateError(
+  defs: CustomFieldDef[],
+  values: CustomFieldValues,
+  locale: Locale = "en",
+): string | null {
+  for (const def of addFormCustomFieldDefs(defs)) {
+    const value = values[def.key];
+    if (!def.isImportant && !def.isRequired && isCreateCustomFieldEmpty(def, value)) continue;
+    const error = customFieldDraftError(
+      def.isImportant ? { ...def, isRequired: true } : def,
+      value,
+      locale,
+    );
+    if (error !== null) return error;
+  }
+  return null;
+}
+
 export function CustomFieldCreateFields({
   defs,
   values,
   onChange,
-  title = "Custom fields",
+  title,
 }: {
   defs: CustomFieldDef[];
   values: CustomFieldValues;
   onChange: (key: string, value: unknown) => void;
   title?: string;
 }): React.ReactNode {
+  const t = useAppTranslations("customFields");
   const visibleDefs = addFormCustomFieldDefs(defs);
   if (visibleDefs.length === 0) return null;
 
   return (
     <fieldset className="space-y-3 border-t pt-3">
       <legend className="px-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-        {title}
+        {title ?? t("heading")}
       </legend>
       {visibleDefs.map((def) => {
         const required = def.isImportant || def.isRequired;
         return (
           <div key={def.id} className="space-y-1.5">
             <div className="text-sm font-medium">
-              {def.name}
+              <bdi dir="auto">{def.name}</bdi>
               {required ? (
                 <>
-                  <span aria-hidden="true" className="ml-1 text-destructive">
+                  <span aria-hidden="true" className="ms-1 text-destructive">
                     *
                   </span>
-                  <span className="sr-only"> (required)</span>
+                  <span className="sr-only">{t("required")}</span>
                 </>
               ) : null}
             </div>

@@ -1,8 +1,10 @@
 "use client";
 import { useState } from "react";
 import { createActivityAction, editActivityAction } from "@/features/activities/actions";
+import { localizeActivityTypes } from "@/features/activities/activityTypeLabels";
 import type { EditableActivity } from "@/features/activities/getForEdit";
 import { useInvalidateActivityLists } from "@/features/activities/useInvalidateActivityLists";
+import { useAppTranslations, useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import { trpc } from "@/lib/trpc-client";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import {
@@ -37,11 +39,18 @@ export interface ActivityComposerProps {
 // from ActivityComposerInline so the component stays under the file cap and the create-vs-edit
 // seeding + submit branching live in one place. Returns flat value/setter pairs consumed by the JSX.
 export function useActivityComposer(props: ActivityComposerProps) {
+  const preferences = useLocalePreferences();
+  const [draftZone] = useState(preferences.timeZone);
+  const tCalendar = useAppTranslations("calendar");
+  const translateSales = useAppTranslations("sales");
   const { dealId, leadId, personId, orgId, personName, dealTitle, orgName, onCreated } = props;
   const editing = props.editing ?? null;
 
   const invalidateActivityLists = useInvalidateActivityLists();
-  const types = trpc.activities.listTypes.useQuery().data ?? [];
+  const types = localizeActivityTypes(
+    trpc.activities.listTypes.useQuery().data ?? [],
+    preferences.locale,
+  );
   const owners = trpc.identity.assignableUsers.useQuery().data ?? [];
   const orgPeople = trpc.contacts.listPeopleForOrg.useQuery(
     { orgId: orgId ?? "" },
@@ -53,10 +62,21 @@ export function useActivityComposer(props: ActivityComposerProps) {
     orgId !== null ? (orgPeople.data ?? []) : [],
     personId,
     personName,
+    translateSales("computed.dealContact"),
   );
 
-  const start = localPartsFromIso(editing?.dueAt ?? null, editing?.allDay ?? false);
-  const end = localPartsFromIso(editing?.endAt ?? null);
+  const start = localPartsFromIso(
+    editing?.dueAt ?? null,
+    editing?.allDay ?? false,
+    draftZone,
+    editing?.dueDate,
+  );
+  const end = localPartsFromIso(
+    editing?.endAt ?? null,
+    editing?.allDay ?? false,
+    draftZone,
+    editing?.endDate,
+  );
 
   const [typeId, setTypeId] = useState(editing?.typeId ?? "");
   const [subject, setSubject] = useState(editing?.subject ?? "");
@@ -65,7 +85,7 @@ export function useActivityComposer(props: ActivityComposerProps) {
   const [subjectEdited, setSubjectEdited] = useState(editing !== null);
   const [priority, setPriority] = useState(editing?.priority ?? "");
   const [startDate, setStartDate] = useState(
-    editing !== null ? start.date : todayLocalDateString(),
+    editing !== null ? start.date : todayLocalDateString(draftZone),
   );
   const [startTime, setStartTime] = useState(start.time);
   const [endTime, setEndTime] = useState(end.time);
@@ -86,20 +106,39 @@ export function useActivityComposer(props: ActivityComposerProps) {
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
-  const pageLinks = { dealId, personId, orgId, dealTitle, personName, orgName };
+  const linkLabels = {
+    deal: dealTitle ?? translateSales("computed.deal"),
+    person: personName ?? translateSales("computed.person"),
+    org: orgName ?? translateSales("computed.organization"),
+  };
+  const pageLinks = {
+    dealId,
+    personId,
+    orgId,
+    dealTitle: linkLabels.deal,
+    personName: linkLabels.person,
+    orgName: linkLabels.org,
+  };
   const linkTargets =
     editing === null
       ? buildLinkTargets(dealId, personId, orgId, {
-          deal: dealTitle,
-          person: personName,
-          org: orgName,
+          deal: linkLabels.deal,
+          person: linkLabels.person,
+          org: linkLabels.org,
         })
       : buildEditLinkTargets(editing, pageLinks);
   function setLink(kind: LinkKind, id: string | null): void {
     setLinks((prev) => ({ ...prev, [kind]: id }));
   }
 
-  const busy = useComposerAvailability({ ownerId, startDate, startTime, endDate, endTime });
+  const busy = useComposerAvailability({
+    ownerId,
+    startDate,
+    startTime,
+    endDate,
+    endTime,
+    timeZone: draftZone,
+  });
 
   const effectiveTypeId = typeId === "" ? (types[0]?.id ?? "") : typeId;
   const typeName = types.find((t) => t.id === effectiveTypeId)?.name ?? "";
@@ -132,7 +171,7 @@ export function useActivityComposer(props: ActivityComposerProps) {
     setSubjectEdited(false);
     setNote("");
     setLocation("");
-    setStartDate(todayLocalDateString());
+    setStartDate(todayLocalDateString(draftZone));
     setStartTime("");
     setEndTime("");
     setEndDate("");
@@ -146,28 +185,41 @@ export function useActivityComposer(props: ActivityComposerProps) {
 
   async function submit(): Promise<void> {
     if (subjectValue.trim() === "") {
-      setError("Subject is required");
+      setError(translateSales("computed.subjectRequired"));
       return;
     }
     if (effectiveTypeId === "") {
-      setError("Activity type unavailable");
+      setError(translateSales("computed.activityTypeUnavailable"));
       return;
     }
     if (startDate.trim() === "") {
-      setError("Date is required");
+      setError(translateSales("computed.dateRequired"));
       return;
     }
     setPending(true);
     setError(null);
     const csrf = readCsrfToken();
-    const r =
-      editing !== null
-        ? await editActivityAction(buildActivityUpdateInput(editing.id, draft(), editing), csrf)
-        : await createActivityAction(buildActivityInput(draft()), csrf);
+    let createInput: ReturnType<typeof buildActivityInput> | undefined;
+    let editInput: ReturnType<typeof buildActivityUpdateInput> | undefined;
+    try {
+      if (editing) editInput = buildActivityUpdateInput(editing.id, draft(), editing, draftZone);
+      else createInput = buildActivityInput(draft(), draftZone);
+    } catch {
+      setPending(false);
+      setError(tCalendar("invalidWallTime"));
+      return;
+    }
+    const r = editInput
+      ? await editActivityAction(editInput, csrf)
+      : await createActivityAction(createInput!, csrf);
     if (!r.ok) {
       setPending(false);
-      const verb = editing !== null ? "save" : "create";
-      setError(`Could not ${verb} activity (${r.error.id})`);
+      setError(
+        translateSales(
+          editing !== null ? "computed.saveActivityFailed" : "computed.createActivityFailed",
+          { id: r.error.id },
+        ),
+      );
       return;
     }
     await invalidateActivityLists();
@@ -186,6 +238,8 @@ export function useActivityComposer(props: ActivityComposerProps) {
   }
 
   return {
+    draftZone,
+    legacyAllDay: !!editing?.allDay && !editing?.dueDate,
     types,
     owners,
     participantOptions,

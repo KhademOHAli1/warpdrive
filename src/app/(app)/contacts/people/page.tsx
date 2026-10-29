@@ -2,33 +2,34 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { PageHeading } from "@/components/shell/PageHeading";
 import { ListSectionSkeleton } from "@/components/shell/skeletons";
-import { STRINGS } from "@/constants/strings";
 import { PeopleList } from "@/features/contacts/PeopleList";
 import { QuickAddContact } from "@/features/contacts/QuickAddContact";
 import { listDefs } from "@/features/custom-fields/defsRepo";
+import { getAppTranslations } from "@/features/i18n/server";
 import { getPreferencesForActor } from "@/features/identity/preferencesForActor";
 import { readBaseCurrency } from "@/features/settings/readBaseCurrency";
 import { createContext } from "@/server/trpc/context";
 import { createCaller } from "@/server/trpc/root";
 
-export const metadata = { title: STRINGS.contacts.peopleHeading };
+export async function generateMetadata() {
+  const t = await getAppTranslations("contacts");
+  return { title: t("people") };
+}
 
 // Contacts nav landing: a paginated, visibility-filtered list of people. The heading renders
 // immediately; the row data streams into the <Suspense> boundary so a navigation shows the real
 // page chrome without waiting on the list query.
 export default async function PeopleListPage(): Promise<React.ReactNode> {
+  const t = await getAppTranslations("contacts");
   const ctx = await createContext();
   if (ctx.actor === null) {
     redirect("/login");
   }
   return (
-    <main aria-label={STRINGS.contacts.peopleHeading} className="flex flex-col gap-4">
+    <main aria-label={t("people")} className="flex flex-col gap-4">
       <PageHeading
-        crumbs={[
-          { label: STRINGS.nav.contacts, href: "/contacts/people" },
-          { label: STRINGS.contacts.peopleHeading },
-        ]}
-        title={STRINGS.contacts.peopleHeading}
+        crumbs={[{ label: t("contacts"), href: "/contacts/people" }, { label: t("people") }]}
+        title={t("people")}
         actions={<QuickAddContact kind="person" />}
       />
       <Suspense fallback={<ListSectionSkeleton />}>

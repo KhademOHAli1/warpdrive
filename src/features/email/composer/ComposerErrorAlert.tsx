@@ -1,5 +1,7 @@
 "use client";
 
+import { useEmailMessages } from "@/features/email/useEmailMessages";
+
 // Dismissible error banner for the composer (send failures, upload errors, etc.).
 // Renders nothing when there is no error, so callers can mount it unconditionally.
 interface ComposerErrorAlertProps {
@@ -8,6 +10,8 @@ interface ComposerErrorAlertProps {
 }
 
 export function ComposerErrorAlert({ error, onDismiss }: ComposerErrorAlertProps): React.ReactNode {
+  const E = useEmailMessages();
+
   if (error === null) return null;
   return (
     <div
@@ -17,11 +21,11 @@ export function ComposerErrorAlert({ error, onDismiss }: ComposerErrorAlertProps
       <span>{error}</span>
       <button
         type="button"
-        aria-label="Dismiss error"
+        aria-label={E._extra.dismiss_error}
         onClick={onDismiss}
         className="shrink-0 font-medium hover:opacity-70"
       >
-        &times;
+        ×
       </button>
     </div>
   );

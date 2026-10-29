@@ -3,6 +3,7 @@ import { Plus, User } from "lucide-react";
 import Link from "next/link";
 import type React from "react";
 import { useState } from "react";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { CollapsibleSection } from "../CollapsibleSection";
 import { ParticipantsDialog } from "../ParticipantsDialog";
 import { useParticipants } from "../useParticipants";
@@ -18,6 +19,8 @@ export function ParticipantsSection({
   orgId: string | null;
   orgName: string | null;
 }): React.ReactNode {
+  const translateSales = useAppTranslations("sales");
+
   const [open, setOpen] = useState(false);
   const data = useParticipants(dealId, orgId);
   const hasAddedParticipant = data.participants.some((p) => !p.isPrimary);
@@ -30,7 +33,7 @@ export function ParticipantsSection({
       headerActions={() => (
         <button
           type="button"
-          aria-label="Add participant"
+          aria-label={translateSales("add_participant_464c3")}
           onClick={() => setOpen(true)}
           className="rounded p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
         >
@@ -46,7 +49,7 @@ export function ParticipantsSection({
               href={`/contacts/people/${p.personId}`}
               className="min-w-0 truncate font-semibold text-primary hover:underline"
             >
-              {p.name}
+              <bdi dir="auto">{p.name}</bdi>
             </Link>
           </li>
         ))}
@@ -56,12 +59,12 @@ export function ParticipantsSection({
         onClick={() => setOpen(true)}
         className="mt-1 rounded-md border px-2.5 py-1 text-sm transition-[background-color,scale] duration-150 ease-out hover:bg-accent active:scale-[0.96]"
       >
-        View All
+        {translateSales("view_all_ff557")}
       </button>
       <ParticipantsDialog
         open={open}
         onOpenChange={setOpen}
-        title={orgName ?? "this deal"}
+        title={orgName ?? translateSales("this_deal_1fcce")}
         orgId={orgId}
         data={data}
       />

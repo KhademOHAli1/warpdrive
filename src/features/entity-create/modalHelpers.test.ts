@@ -61,3 +61,32 @@ describe("resolveNewPersonId", () => {
     );
   });
 });
+
+it("normalizes Persian phone digits while preserving email text and label identifiers", async () => {
+  createPersonAction.mockResolvedValue({ ok: true, value: { id: "p-fa" } });
+  const state = {
+    ...initialEntityCreateState(),
+    personMode: "new" as const,
+    newPersonName: "علی",
+    phones: [{ label: "Work", value: "+۹۸ ۹۱۲ ۳۴۵۶۷۸۹" }],
+    emails: [{ label: "Work", value: "mail۲@example.com" }],
+  };
+  await resolveNewPersonId(state, null, "csrf", "fa");
+  expect(createPersonAction).toHaveBeenCalledWith(
+    expect.objectContaining({
+      phones: [{ label: "Work", value: "+98 912 3456789", primary: true }],
+      emails: [{ label: "Work", value: "mail۲@example.com", primary: true }],
+    }),
+    "csrf",
+  );
+});
+it("localizes inline contact failures without translating stable error IDs", async () => {
+  createOrgAction.mockResolvedValue({ ok: false, error: { id: "E_PERM_001" } });
+  expect(
+    await resolveNewOrgId(
+      { ...initialEntityCreateState(), orgMode: "new", newOrgName: "شرکت" },
+      "csrf",
+      "fa",
+    ),
+  ).toEqual({ error: "ایجاد سازمان انجام نشد (E_PERM_001)" });
+});

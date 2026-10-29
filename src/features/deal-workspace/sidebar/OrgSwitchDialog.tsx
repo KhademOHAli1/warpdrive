@@ -9,7 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { STRINGS } from "@/constants/strings";
+import { useSalesStrings } from "@/features/deals/useSalesStrings";
 
 interface OrgSwitchDialogProps {
   open: boolean;
@@ -26,6 +26,8 @@ export function OrgSwitchDialog({
   onOpenChange,
   onSave,
 }: OrgSwitchDialogProps) {
+  const STRINGS = useSalesStrings();
+
   const [orgId, setOrgId] = useState(currentOrgId ?? "");
   const [pending, setPending] = useState(false);
   const comboOptions: ComboboxOption[] = options.map((org) => ({
@@ -51,7 +53,9 @@ export function OrgSwitchDialog({
     >
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{STRINGS.dealSidebar.orgDialog.title}</DialogTitle>
+          <DialogTitle>
+            <bdi dir="auto">{STRINGS.dealSidebar.orgDialog.title}</bdi>
+          </DialogTitle>
         </DialogHeader>
         <Combobox
           ariaLabel={STRINGS.dealSidebar.orgDialog.organization}

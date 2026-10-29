@@ -2,6 +2,7 @@
 import { ChevronDown, Filter } from "lucide-react";
 import type React from "react";
 import { useState } from "react";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { cn } from "@/lib/utils";
 import { HideEmptyContext } from "./sidebar/sectionFilter";
 
@@ -23,11 +24,13 @@ export function CollapsibleSection({
   showFilter?: boolean;
   children: React.ReactNode;
 }): React.ReactNode {
+  const translateSales = useAppTranslations("sales");
+
   const [open, setOpen] = useState(defaultOpen);
   const [hideEmpty, setHideEmpty] = useState(false);
   return (
     <section aria-label={title} className="overflow-hidden rounded-md border bg-card">
-      <div className="flex items-center gap-1 pr-2">
+      <div className="flex items-center gap-1 pe-2">
         <button
           type="button"
           aria-expanded={open}
@@ -41,12 +44,12 @@ export function CollapsibleSection({
               open ? "" : "-rotate-90",
             )}
           />
-          {title}
+          <bdi dir="auto">{title}</bdi>
         </button>
         {showFilter && (
           <button
             type="button"
-            aria-label="Hide empty fields"
+            aria-label={translateSales("hide_empty_fields_d8d9e")}
             aria-pressed={hideEmpty}
             onClick={() => setHideEmpty((v) => !v)}
             className={

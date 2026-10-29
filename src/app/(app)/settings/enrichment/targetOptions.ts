@@ -1,6 +1,5 @@
 import type { SelectOption } from "@/components/ui/Select";
 import { isImportFieldHidden } from "@/constants/builtinFields";
-import { ENRICHMENT_STRINGS } from "@/constants/enrichmentStrings";
 import {
   canonicalField,
   canonicalKeysFor,
@@ -13,9 +12,12 @@ import {
   STRING_TARGET_TYPES,
 } from "@/features/enrichment/targetTypes";
 import type { ResolvedMapping } from "@/features/enrichment/types";
+import {
+  type SettingsMessages,
+  settingsBuiltinLabel,
+  settingsMessagesForLocale,
+} from "@/features/identity/settingsMessages";
 import type { MappingRow } from "./MappingTable";
-
-const S = ENRICHMENT_STRINGS.settings;
 
 export type MappingTarget =
   | { kind: "builtin"; key: string }
@@ -52,7 +54,11 @@ export interface CustomFieldTargetDef {
 // Mirrors the type gate in features/enrichment/mappingsRepo, which is the authority: a save that
 // disagrees with this list is rejected there with ENRICH_MAPPING_INVALID.
 
-function customOptionsFor(canonicalKey: string, defs: CustomFieldTargetDef[]): SelectOption[] {
+function customOptionsFor(
+  canonicalKey: string,
+  defs: CustomFieldTargetDef[],
+  messages: SettingsMessages,
+): SelectOption[] {
   const valueType = valueTypeOf(canonicalKey);
   const accepted = valueType === "number" ? NUMBER_TARGET_TYPES : STRING_TARGET_TYPES;
   return defs
@@ -60,7 +66,7 @@ function customOptionsFor(canonicalKey: string, defs: CustomFieldTargetDef[]): S
     .map((d) => ({
       value: encodeTarget({ kind: "custom", fieldDefId: d.id }),
       label: d.name,
-      group: S.mappingCustomGroup,
+      group: messages._enrichment.settings.mappingCustomGroup,
     }));
 }
 
@@ -95,7 +101,9 @@ export function buildMappingRows(
   mappings: ResolvedMapping[],
   defs: CustomFieldTargetDef[],
   hiddenBuiltins: ReadonlySet<string>,
+  messages: SettingsMessages = settingsMessagesForLocale("en"),
 ): MappingRow[] {
+  const S = messages._enrichment.settings;
   const byKey = new Map(mappings.map((m) => [m.canonicalKey, m]));
   const owners = ownersByTarget(mappings);
   // A built-in hidden in Settings > Data fields is not offered: enrichment does not write it
@@ -109,12 +117,16 @@ export function buildMappingRows(
     const compatible = [
       ...offered
         .filter((o) => builtinAcceptsCanonical(o.value.slice(BUILTIN_PREFIX.length), canonicalKey))
-        .map((o) => ({ ...o, group: S.mappingBuiltinGroup })),
-      ...customOptionsFor(canonicalKey, defs),
+        .map((o) => ({
+          ...o,
+          label: settingsBuiltinLabel(messages, o.label),
+          group: S.mappingBuiltinGroup,
+        })),
+      ...customOptionsFor(canonicalKey, defs, messages),
     ];
     return {
       canonicalKey,
-      label: canonicalField(canonicalKey)?.label ?? canonicalKey,
+      label: settingsBuiltinLabel(messages, canonicalField(canonicalKey)?.label ?? canonicalKey),
       value: currentValue(byKey.get(canonicalKey)),
       options: [
         { value: NOT_MAPPED_VALUE, label: S.mappingNotMapped },

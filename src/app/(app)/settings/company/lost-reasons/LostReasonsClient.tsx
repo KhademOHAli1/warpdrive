@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useActionError } from "@/components/shell/ActionErrorProvider";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { STRINGS } from "@/constants/strings";
+import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import {
   archiveLostReasonAction,
   createLostReasonAction,
@@ -22,12 +22,14 @@ export interface LostReasonRow {
   name: string;
 }
 
-const S = STRINGS.settings;
 const ROW_BUTTON =
   "relative h-auto px-0 py-0 text-xs font-medium text-muted-foreground hover:bg-transparent hover:text-foreground after:absolute after:left-0 after:top-1/2 after:h-10 after:w-full after:-translate-y-1/2 after:content-['']";
 
 // Lost reasons tab (spec 6.3): archive is a soft-delete; historical deals keep their reason.
 export function LostReasonsClient({ rows: initial }: { rows: LostReasonRow[] }): React.ReactNode {
+  const L = useSettingsMessages();
+  const S = L;
+
   const router = useRouter();
   const reportError = useActionError();
   // Re-seeds from refreshed server props: add/rename/archive call router.refresh(), which re-runs

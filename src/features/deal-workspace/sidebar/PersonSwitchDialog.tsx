@@ -10,7 +10,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/Input";
-import { STRINGS } from "@/constants/strings";
+import { useSalesStrings } from "@/features/deals/useSalesStrings";
 import { trpc } from "@/lib/trpc-client";
 
 export function PersonSwitchDialog({
@@ -24,6 +24,8 @@ export function PersonSwitchDialog({
   onOpenChange: (open: boolean) => void;
   onSave: (personId: string) => Promise<void>;
 }) {
+  const STRINGS = useSalesStrings();
+
   const [personId, setPersonId] = useState(currentPersonId ?? "");
   const [pending, setPending] = useState(false);
   const peopleQ = trpc.contacts.personOptions.useQuery(undefined, { enabled: open });
@@ -54,7 +56,9 @@ export function PersonSwitchDialog({
     >
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{strings.title}</DialogTitle>
+          <DialogTitle>
+            <bdi dir="auto">{strings.title}</bdi>
+          </DialogTitle>
         </DialogHeader>
         {people === undefined ? (
           <Input aria-label={strings.person} placeholder={strings.person} disabled readOnly />

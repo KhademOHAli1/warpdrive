@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { cache } from "react";
-import { STRINGS } from "@/constants/strings";
 import { DealListClient } from "@/features/deals/DealListClient";
 import { loadDealListPageData } from "@/features/deals/dealListPageData";
+import { createSalesStrings } from "@/features/deals/salesStrings";
+import { getAppTranslations, getLocalePreferences } from "@/features/i18n/server";
 import { entityTitle } from "@/features/navigation/pageTitle";
 import { resolveVisiblePipeline } from "@/features/navigation/resolvePipeline";
 import { canManagePipelines } from "@/features/pipelines/canManagePipelines";
@@ -25,6 +26,8 @@ export async function generateMetadata({
 }: {
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
+  const STRINGS = createSalesStrings((await getLocalePreferences()).locale);
+
   const { id } = await params;
   const loaded = await load();
   const name = loaded.kind === "ok" ? loaded.pipelines.find((p) => p.id === id)?.name : undefined;
@@ -38,19 +41,24 @@ export default async function PipelineListPage({
 }: {
   params: Promise<{ id: string }>;
 }): Promise<React.ReactNode> {
+  const translateSales = await getAppTranslations("sales");
+
   const { id } = await params;
   const loaded = await load();
   if (loaded.kind === "unauth") {
-    return <main>Unauthorized</main>;
+    return <main>{translateSales("unauthorized_d089c")}</main>;
   }
   const { ctx, pipelines } = loaded;
-  if (ctx.actor === null) return <main>Unauthorized</main>;
+  if (ctx.actor === null) return <main>{translateSales("unauthorized_d089c")}</main>;
 
   // A nonexistent (or hidden) pipeline 404s like the entity detail routes, not a 200 soft-404.
   const pipeline = resolveVisiblePipeline(pipelines, id);
 
   const { list, prefs, customFieldDefs, baseCurrency, initialView, unfilteredTotal } =
-    await loadDealListPageData({ ...ctx, actor: ctx.actor }, { pipelineId: id, archived: false });
+    await loadDealListPageData(
+      { ...ctx, actor: ctx.actor },
+      { pipelineId: id, archived: false, viewPreferences: await getLocalePreferences() },
+    );
   const stages = pipeline.stages.map((s) => ({ id: s.id, name: s.name }));
   const pipelineOptions = pipelines.map((p) => ({
     id: p.id,
@@ -59,7 +67,10 @@ export default async function PipelineListPage({
   }));
 
   return (
-    <main aria-label={`Deals ${pipeline.name}`} className="h-full">
+    <main
+      aria-label={translateSales("deals_arg0_2a124", { arg0: pipeline.name })}
+      className="h-full"
+    >
       <DealListClient
         variant="list"
         initial={{
@@ -67,6 +78,7 @@ export default async function PipelineListPage({
           rows: list.rows.map((r) => ({ ...r, updatedAt: r.updatedAt.toISOString() })),
           total: list.total,
           totalValue: list.totalValue,
+          currencyTotals: list.currencyTotals,
           stages,
           pipelines: pipelineOptions,
           initialColumns: prefs.ui.dealsListView,

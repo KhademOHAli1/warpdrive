@@ -1,6 +1,7 @@
 "use client";
 import type React from "react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/RadioGroup";
+import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
 import { cn } from "@/lib/utils";
 import { funnelClip, stageSegmentStyle } from "./boardStageHeader";
 
@@ -15,11 +16,15 @@ interface StageChevronProps {
 // it gets arrow-key roving + screen-reader semantics; each stage is a RadioGroupItem rendering its
 // own chevron segment (custom children, so no default radio dot).
 export function StageChevron({ stages, selectedId, onSelect }: StageChevronProps): React.ReactNode {
+  const translateSales = useAppTranslations("sales");
+  const locale = useLocale();
+  const direction = locale === "fa" ? "rtl" : "ltr";
+
   return (
     <RadioGroup
       value={selectedId}
       onValueChange={onSelect}
-      aria-label="Pipeline stage"
+      aria-label={translateSales("pipeline_stage_8e0c5")}
       className="flex w-full gap-0 overflow-hidden"
     >
       {stages.map((s, i) => {
@@ -33,15 +38,15 @@ export function StageChevron({ stages, selectedId, onSelect }: StageChevronProps
             key={s.id}
             value={s.id}
             style={{
-              clipPath: funnelClip(i === 0),
+              clipPath: funnelClip(i === 0, direction),
               backgroundColor: fill.backgroundColor,
               fontWeight: fill.fontWeight,
             }}
             className={cn(
-              "-ml-1 flex-1 truncate px-3 py-1.5 text-center text-xs text-foreground transition-opacity first:ml-0 hover:opacity-90",
+              "-ms-1 flex-1 truncate px-3 py-1.5 text-center text-xs text-foreground transition-opacity first:ms-0 hover:opacity-90",
             )}
           >
-            {s.name}
+            <bdi dir="auto">{s.name}</bdi>
           </RadioGroupItem>
         );
       })}

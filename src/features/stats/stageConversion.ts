@@ -6,6 +6,7 @@
 // selects which deals started in the period, then measures how far that cohort progressed.
 import { sql } from "drizzle-orm";
 import type { Db } from "@/db/client";
+import { reportCurrencyClause } from "@/features/currencies/reportCurrency";
 import { dealVisibilityClause } from "@/features/deals/visibility";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { ownerFilterClause } from "@/features/stats/ownerIds";
@@ -38,6 +39,7 @@ export async function stageConversion(
 ): Promise<StageConversionRow[]> {
   signal.throwIfAborted();
 
+  const currencyClause = await reportCurrencyClause(db, filters.currency, signal);
   const visClause = dealVisibilityClause(toSession(actor));
   const ownerClause = ownerFilterClause(sql`d.owner_id`, filters.owners);
 
@@ -54,7 +56,8 @@ export async function stageConversion(
         AND d.created_at >= ${filters.from}::date
         AND d.created_at < ${filters.to}::date + INTERVAL '1 day'
         ${ownerClause}
-        AND ${visClause}
+        ${currencyClause}
+      AND ${visClause}
     ),
     moves AS (
       SELECT cl.entity_id AS deal_id,

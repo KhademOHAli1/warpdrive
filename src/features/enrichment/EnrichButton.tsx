@@ -2,18 +2,14 @@
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { useCallback, useState } from "react";
-import { ENRICHMENT_STRINGS } from "@/constants/enrichmentStrings";
 import { ERROR_IDS } from "@/constants/errorIds";
 import { trpc } from "@/lib/trpc-client";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { applyEnrichmentAction, enrichRecordAction } from "./actions";
 import type { EnrichEntity } from "./canonical";
 import { type EnrichApplyError, EnrichDialog, type EnrichRunState } from "./EnrichDialog";
-import { failureReasonsText } from "./failureReasons";
 import { remainingFields } from "./remainingFields";
 import type { Selection } from "./types";
-
-const S = ENRICHMENT_STRINGS.dialog;
 
 const LOADING: EnrichRunState = { kind: "loading" };
 
@@ -36,16 +32,6 @@ interface EnrichButtonProps {
   children: (fill: FillGapsProps) => React.ReactNode;
 }
 
-function clock(iso: string): string {
-  const d = new Date(iso);
-  return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
-}
-
-function isoFrom(context: Record<string, unknown> | undefined, key: string): string | null {
-  const value = context?.[key];
-  return typeof value === "string" ? value : null;
-}
-
 // Errors a fresh fan-out could answer differently. A missing identifier or an unconfigured
 // provider is about this record or this workspace, and re-running changes neither.
 const RETRYABLE_RUN_ERRORS = new Set<string>([
@@ -54,23 +40,6 @@ const RETRYABLE_RUN_ERRORS = new Set<string>([
   ERROR_IDS.ENRICH_KEY_UNREADABLE,
   ERROR_IDS.ENRICH_NOT_ENTITLED,
 ]);
-
-function runErrorMessage(id: string, context: Record<string, unknown> | undefined): string {
-  if (id === ERROR_IDS.ENRICH_NO_PROVIDER) return ENRICHMENT_STRINGS.button.notConfigured;
-  if (id === ERROR_IDS.ENRICH_NO_IDENTIFIER) return S.noIdentifierError;
-  if (id === ERROR_IDS.ENRICH_ALL_FAILED) {
-    const reasons = failureReasonsText(context);
-    return reasons === null ? S.allFailedError : S.allFailedErrorReasons(reasons);
-  }
-  if (id === ERROR_IDS.ENRICH_UNSUPPORTED) return S.unsupportedError;
-  if (id === ERROR_IDS.ENRICH_NOT_ENTITLED) return S.notEntitledError;
-  if (id === ERROR_IDS.ENRICH_KEY_UNREADABLE) return S.keyUnreadableError;
-  if (id === ERROR_IDS.ENRICH_THROTTLED) {
-    const until = isoFrom(context, "earliestRetryIso");
-    return until === null ? S.throttledErrorUnknown : S.throttledError(clock(until));
-  }
-  return S.runError;
-}
 
 // Owns the enrichment call and the review dialog; the caller owns the button's placement, which is
 // why this hands the button's props back through a render prop instead of drawing one itself.
@@ -130,12 +99,14 @@ export function EnrichButton({
       // leave the record loading forever with its button disabled.
       const value: EnrichRunState =
         result === null
-          ? { kind: "error", message: S.runError, canRefresh: true }
+          ? { kind: "error", message: "", canRefresh: true }
           : result.ok
             ? { kind: "loaded", run: result.value }
             : {
                 kind: "error",
-                message: runErrorMessage(result.error.id, result.error.context),
+                message: "",
+                errorId: result.error.id,
+                errorContext: result.error.context,
                 canRefresh: RETRYABLE_RUN_ERRORS.has(result.error.id),
               };
       setPendingFor((prev) => {
@@ -155,17 +126,17 @@ export function EnrichButton({
     void run(false);
   }, [run, entityId]);
 
-  function applyErrorFor(id: string): { message: string; canRefresh: boolean } {
-    if (id === ERROR_IDS.ENRICH_STALE) return { message: S.staleError, canRefresh: true };
+  function applyErrorFor(id: string): EnrichApplyError {
+    if (id === ERROR_IDS.ENRICH_STALE) return { messageKey: "staleError", canRefresh: true };
     // A repointed mapping means the preview described a different target. Re-running rebuilds it.
     if (id === ERROR_IDS.ENRICH_MAPPINGS_CHANGED) {
-      return { message: S.mappingsChangedError, canRefresh: true };
+      return { messageKey: "mappingsChangedError", canRefresh: true };
     }
     // The run aged out of the cache while the dialog sat open. Re-running is the whole remedy.
     if (id === ERROR_IDS.ENRICH_RUN_NOT_FOUND) {
-      return { message: S.staleError, canRefresh: true };
+      return { messageKey: "staleError", canRefresh: true };
     }
-    return { message: S.applyError, canRefresh: false };
+    return { messageKey: "applyError", canRefresh: false };
   }
 
   // An apply writes change-log rows, and the History panel reads those through its own query
@@ -198,7 +169,7 @@ export function EnrichButton({
     if (result === null) {
       setApplyError({
         entityId: appliedTo,
-        value: { message: S.applyError, canRefresh: false },
+        value: { messageKey: "applyError", canRefresh: false },
       });
       return;
     }
@@ -236,7 +207,7 @@ export function EnrichButton({
       refreshAfterApply(appliedTo);
       setApplyError({
         entityId: appliedTo,
-        value: { message: S.unresolvedOrgError, canRefresh: false },
+        value: { messageKey: "unresolvedOrgError", canRefresh: false },
       });
       return;
     }

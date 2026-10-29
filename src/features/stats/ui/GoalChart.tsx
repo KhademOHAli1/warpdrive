@@ -7,31 +7,17 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import { STRINGS } from "@/constants/strings";
 import type { Goal } from "@/db/schema/goals";
 import type { GoalPeriod } from "@/features/goals/goalPeriod";
 import type { GoalSeriesPoint } from "@/features/goals/goalSeries";
-import { goalNumberText } from "@/features/goals/goalTargetText";
+import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
+import { useFormatters } from "@/lib/useFormatters";
+import { useStatsMessages } from "../useStatsMessages";
 import { goalChartPoints } from "./goalChartPoints";
 import { money } from "./Panel";
 
 const ACTUAL = "actual";
 const TARGET = "target";
-
-const CONFIG: ChartConfig = {
-  [ACTUAL]: { label: STRINGS.dashboard.goalBooked, color: "hsl(var(--primary))" },
-  [TARGET]: { label: STRINGS.dashboard.goalTargetPace, color: "hsl(var(--muted-foreground))" },
-};
-
-const DAY_LABEL = new Intl.DateTimeFormat(undefined, {
-  month: "short",
-  day: "numeric",
-  timeZone: "UTC",
-});
-
-function dayLabel(day: string): string {
-  return DAY_LABEL.format(new Date(`${day}T00:00:00Z`));
-}
 
 export function GoalChart({
   period,
@@ -46,9 +32,22 @@ export function GoalChart({
   metric: Goal["metric"];
   currency: string;
 }): React.ReactNode {
+  const preferences = useLocalePreferences();
+
+  const format = useFormatters();
+
+  const S = useStatsMessages();
+
+  const CONFIG: ChartConfig = {
+    [ACTUAL]: { label: S.goalBooked, color: "hsl(var(--primary))" },
+    [TARGET]: { label: S.goalTargetPace, color: "hsl(var(--muted-foreground))" },
+  };
+
+  const dayLabel = (day: string) => format.dateOnly(day, { month: "short", day: "numeric" });
+
   const points = goalChartPoints(period, series, target);
   const fmt = (v: number): string =>
-    metric === "value" ? money(String(v), currency) : goalNumberText(String(Math.round(v)), metric);
+    metric === "value" ? money(String(v), currency, preferences) : format.number(Math.round(v));
 
   return (
     <ChartContainer config={CONFIG} aria-hidden="true" className="h-36">

@@ -70,8 +70,8 @@ describe("AgendaDayColumn", () => {
     ]);
     const first = screen.getByRole("button", { name: "Activity first" }).parentElement;
     const second = screen.getByRole("button", { name: "Activity second" }).parentElement;
-    expect([first?.style.left, first?.style.width]).toEqual(["0%", "50%"]);
-    expect([second?.style.left, second?.style.width]).toEqual(["50%", "50%"]);
+    expect([first?.style.insetInlineStart, first?.style.width]).toEqual(["0%", "50%"]);
+    expect([second?.style.insetInlineStart, second?.style.width]).toEqual(["50%", "50%"]);
   });
 
   it("makes the whole timed block clickable, not just its first line of text", () => {
@@ -89,7 +89,7 @@ describe("AgendaDayColumn", () => {
     // 30% of a 180px column is 54px, which rendered "+5 more" as "+5 ...".
     renderColumn(fiveAtNine());
     const block = screen.getByRole("button", { name: "Show 4 more activities" }).parentElement;
-    expect(block).toHaveClass("w-[min(max(30%,5rem),60%)]", "right-0");
+    expect(block).toHaveClass("w-[min(max(30%,5rem),60%)]", "end-0");
   });
 
   it("caps the more-chip so a narrow column cannot starve the chip beside it", () => {

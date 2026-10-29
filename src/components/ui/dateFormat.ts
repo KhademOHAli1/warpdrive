@@ -31,3 +31,94 @@ export function formatMdy(v: string): string {
   if (d === null) return "";
   return `${String(d.getMonth() + 1).padStart(2, "0")}/${String(d.getDate()).padStart(2, "0")}/${d.getFullYear()}`;
 }
+
+// The stored value is a Gregorian civil date, not an instant. Formatting at UTC noon
+// avoids shifting that date when server and browser run in different time zones.
+const dateFormatOptions = {
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  timeZone: "UTC",
+} as const;
+const persianDateFormatter = new Intl.DateTimeFormat(
+  "fa-IR-u-ca-persian-nu-arabext",
+  dateFormatOptions,
+);
+const englishPersianDateFormatter = new Intl.DateTimeFormat(
+  "fa-IR-u-ca-persian-nu-latn",
+  dateFormatOptions,
+);
+const persianGregorianDateFormatter = new Intl.DateTimeFormat(
+  "fa-IR-u-ca-gregory-nu-arabext",
+  dateFormatOptions,
+);
+const accessibleDateOptions = {
+  year: "numeric",
+  month: "long",
+  day: "numeric",
+  weekday: "long",
+  timeZone: "UTC",
+} as const;
+const solarAccessibleDateFormatter = new Intl.DateTimeFormat(
+  "fa-IR-u-ca-persian-nu-arabext",
+  accessibleDateOptions,
+);
+const gregorianAccessibleDateFormatter = new Intl.DateTimeFormat(
+  "fa-IR-u-ca-gregory-nu-arabext",
+  accessibleDateOptions,
+);
+
+function utcCivilDate(date: Date): Date {
+  return new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 12));
+}
+
+function formatCivilDate(v: string, formatter: Intl.DateTimeFormat): string {
+  const date = parseYmd(v);
+  if (date === null) return "";
+  return formatter.format(utcCivilDate(date));
+}
+
+export function formatPersianDate(
+  v: string,
+  locale: "en" | "fa" = "fa",
+  numberingSystem?: "latn" | "arabext",
+): string {
+  return formatCivilDate(
+    v,
+    locale === "fa" && numberingSystem !== "latn"
+      ? persianDateFormatter
+      : englishPersianDateFormatter,
+  );
+}
+
+export function formatGregorianPersianDate(
+  v: string,
+  numberingSystem?: "latn" | "arabext",
+): string {
+  return formatCivilDate(
+    v,
+    numberingSystem === "latn"
+      ? new Intl.DateTimeFormat("fa-IR-u-ca-gregory-nu-latn", dateFormatOptions)
+      : persianGregorianDateFormatter,
+  );
+}
+
+export function formatPersianAccessibleDate(
+  date: Date,
+  calendar: "persian" | "gregory",
+  modifiers?: Record<string, boolean>,
+  numberingSystem?: "latn" | "arabext",
+): string {
+  const formatter =
+    numberingSystem === "latn"
+      ? new Intl.DateTimeFormat("fa-IR", { ...accessibleDateOptions, calendar, numberingSystem })
+      : calendar === "persian"
+        ? solarAccessibleDateFormatter
+        : gregorianAccessibleDateFormatter;
+  const parts = formatter.formatToParts(utcCivilDate(date));
+  const part = (type: Intl.DateTimeFormatPartTypes): string =>
+    parts.find((item) => item.type === type)?.value ?? "";
+  const formatted = `${part("weekday")}، ${part("day")} ${part("month")} ${part("year")}`;
+  const withToday = modifiers?.today === true ? `امروز، ${formatted}` : formatted;
+  return modifiers?.selected === true ? `${withToday}، انتخاب‌شده` : withToday;
+}

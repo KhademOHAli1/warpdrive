@@ -2,15 +2,13 @@
 import type React from "react";
 import { useState } from "react";
 import { useActionError } from "@/components/shell/ActionErrorProvider";
-import { STRINGS } from "@/constants/strings";
 import { QuickAddContact } from "@/features/contacts/QuickAddContact";
 import { AddDealModal } from "@/features/deals/AddDealModal";
+import { useEmailMessages } from "@/features/email/useEmailMessages";
 import { trpc } from "@/lib/trpc-client";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { LinkExistingCombobox } from "./LinkExistingCombobox";
 import { linkThread } from "./linkActions";
-
-const S = STRINGS.inbox;
 
 interface SidebarLinkPanelProps {
   threadId: string;
@@ -29,6 +27,8 @@ interface SidebarLinkPanelProps {
 // the thread and auto-link the new record. Owner-gated (canEdit === canCompose); the whole panel is
 // hidden for viewers who cannot mutate the mailbox, so no control is offered that the backend rejects.
 export function SidebarLinkPanel(props: SidebarLinkPanelProps): React.ReactNode {
+  const E = useEmailMessages();
+
   const { threadId, personId, personName, dealId, dealTitle, subject } = props;
   const { primaryEmail, primaryName, canEdit, onLinked } = props;
   const [dealModalOpen, setDealModalOpen] = useState(false);
@@ -56,18 +56,18 @@ export function SidebarLinkPanel(props: SidebarLinkPanelProps): React.ReactNode 
     <div className="space-y-4">
       <section className="space-y-2">
         <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          {S.sidebarContactHeading}
+          {E.sidebarContactHeading}
         </h3>
         {personId !== null ? (
           <>
             <LinkedRecordRow
               name={personName}
               href={`/contacts/people/${personId}`}
-              view={S.viewContact}
+              view={E.viewContact}
             />
             <LinkExistingCombobox
               kind="person"
-              triggerLabel={S.changeLink}
+              triggerLabel={E.changeLink}
               onPick={(id) => void link({ personId: id })}
             />
           </>
@@ -75,12 +75,12 @@ export function SidebarLinkPanel(props: SidebarLinkPanelProps): React.ReactNode 
           <>
             <LinkExistingCombobox
               kind="person"
-              triggerLabel={S.linkExisting}
+              triggerLabel={E.linkExisting}
               onPick={(id) => void link({ personId: id })}
             />
             <QuickAddContact
               kind="person"
-              triggerLabel={S.createContact}
+              triggerLabel={E.createContact}
               prefillName={primaryName ?? undefined}
               prefillEmail={primaryEmail ?? undefined}
               onCreated={(id) => void link({ personId: id })}
@@ -91,14 +91,14 @@ export function SidebarLinkPanel(props: SidebarLinkPanelProps): React.ReactNode 
 
       <section className="space-y-2">
         <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          {S.sidebarDealHeading}
+          {E.sidebarDealHeading}
         </h3>
         {dealId !== null ? (
           <>
-            <LinkedRecordRow name={dealTitle} href={`/deals/${dealId}`} view={S.viewDeal} />
+            <LinkedRecordRow name={dealTitle} href={`/deals/${dealId}`} view={E.viewDeal} />
             <LinkExistingCombobox
               kind="deal"
-              triggerLabel={S.changeLink}
+              triggerLabel={E.changeLink}
               onPick={(id) => void link({ dealId: id })}
             />
           </>
@@ -106,7 +106,7 @@ export function SidebarLinkPanel(props: SidebarLinkPanelProps): React.ReactNode 
           <>
             <LinkExistingCombobox
               kind="deal"
-              triggerLabel={S.linkExisting}
+              triggerLabel={E.linkExisting}
               onPick={(id) => void link({ dealId: id })}
             />
             <button
@@ -115,7 +115,7 @@ export function SidebarLinkPanel(props: SidebarLinkPanelProps): React.ReactNode 
               onClick={() => setDealModalOpen(true)}
               className="w-full rounded-md border border-border px-2 py-1.5 text-xs text-muted-foreground transition-transform hover:bg-accent active:scale-[0.96] disabled:opacity-50"
             >
-              {S.addNewDeal}
+              {E.addNewDeal}
             </button>
           </>
         )}

@@ -1,7 +1,7 @@
 "use client";
 import { useActionError } from "@/components/shell/ActionErrorProvider";
 import { Button } from "@/components/ui/Button";
-import { STRINGS } from "@/constants/strings";
+import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import { undoImportAction } from "@/features/import/actions";
 import type { BatchSummary } from "@/features/import/results";
 import { trpc } from "@/lib/trpc-client";
@@ -15,8 +15,6 @@ import {
   SettingsCardBody,
 } from "../SettingsSurface";
 
-const IMP = STRINGS.settings.importer;
-
 function RowActions({
   batch,
   onUndo,
@@ -24,6 +22,9 @@ function RowActions({
   batch: BatchSummary;
   onUndo: (id: string) => void;
 }): React.ReactNode {
+  const L = useSettingsMessages();
+  const IMP = L.importer;
+
   const undoable = batch.status === "completed" || batch.status === "partial";
   return (
     <span className="space-x-3">
@@ -51,6 +52,16 @@ function RowActions({
 }
 
 export function ImportHistory(): React.ReactNode {
+  const L = useSettingsMessages();
+  const IMP = L.importer;
+
+  const targetLabels: Record<string, string> = {
+    person: IMP.person,
+    organization: IMP.organization,
+    deal: IMP.deal,
+    lead: IMP.lead,
+    activity: IMP.activity,
+  };
   const utils = trpc.useUtils();
   const reportError = useActionError();
   const batches = trpc.import.listBatches.useQuery().data ?? [];
@@ -85,8 +96,10 @@ export function ImportHistory(): React.ReactNode {
               {batches.map((b) => (
                 <tr key={b.id} className={SETTINGS_TABLE_ROW}>
                   <td className={SETTINGS_TABLE_CELL}>{b.filename}</td>
-                  <td className={SETTINGS_TABLE_CELL}>{b.targetEntity}</td>
-                  <td className={SETTINGS_TABLE_CELL}>{b.status}</td>
+                  <td className={SETTINGS_TABLE_CELL}>
+                    {targetLabels[b.targetEntity] ?? b.targetEntity}
+                  </td>
+                  <td className={SETTINGS_TABLE_CELL}>{L._labels.importStatus[b.status]}</td>
                   <td className={`${SETTINGS_TABLE_CELL} tabular-nums`}>
                     {IMP.resultCounts(b.importedRows, b.errorRows)}
                   </td>

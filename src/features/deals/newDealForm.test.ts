@@ -22,10 +22,10 @@ describe("parseNewDeal", () => {
     }
   });
 
-  it("parses and rounds a numeric value to cents", () => {
+  it("preserves supported decimal precision in a numeric value", () => {
     const r = parseNewDeal({ title: "Deal", stageId: STAGE, value: "1000.005" }, PIPE);
     expect(r.ok).toBe(true);
-    if (r.ok) expect(r.input.value).toBe(1000.01);
+    if (r.ok) expect(r.input.value).toBe(1000.005);
   });
 
   it("rejects a negative or non-numeric value", () => {

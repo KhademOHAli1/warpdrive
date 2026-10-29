@@ -7,7 +7,6 @@ import { allDayRowCount } from "@/features/activities/agendaLayout";
 import { initialScrollHour } from "@/features/activities/agendaScroll";
 import type { CalendarActivity } from "@/features/activities/calendar";
 import { calendarActivityTarget } from "@/features/activities/calendarActivityTarget";
-import { isoToDayLabel } from "@/features/activities/dayHeading";
 import { followUpLinksOf, useFollowUpAfterDone } from "@/features/activities/followUpAfterDone";
 import { useLocalNow } from "@/features/activities/useLocalNow";
 import {
@@ -17,12 +16,14 @@ import {
   localDayIso,
   slotDateTime,
 } from "@/features/activities/weekAgenda";
+import { useAppTranslations, useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import { useRecordPreview } from "@/features/navigation/recordPreviewStore";
 import { trpc } from "@/lib/trpc-client";
 import { useIsomorphicLayoutEffect } from "@/lib/useIsomorphicLayoutEffect";
 import { AgendaDayColumn } from "./AgendaDayColumn";
 import { AgendaDayHeader } from "./AgendaDayHeader";
 import { AllDayLane } from "./AllDayLane";
+import { calendarDayLabel } from "./calendarLabels";
 import { NowLine } from "./NowLine";
 import { TimeGutter } from "./TimeGutter";
 
@@ -47,6 +48,8 @@ function toEditable(a: CalendarActivity, typeIdByKey: Map<string, string>): Edit
     priority: null,
     dueAtIso: a.dueAt.toISOString(),
     allDay: a.allDay,
+    dueDate: a.dueDate,
+    endDate: a.endDate,
     durationMinutes: a.durationMinutes,
     location: a.location ?? null,
     done: a.done,
@@ -67,6 +70,8 @@ export function WeekAgendaGrid({
   activities: CalendarActivity[];
 }): React.ReactNode {
   const router = useRouter();
+  const preferences = useLocalePreferences();
+  const t = useAppTranslations("calendar");
   const typesQ = trpc.activities.listTypes.useQuery();
   const typeIdByKey = useMemo(
     () => new Map((typesQ.data ?? []).map((t) => [t.key, t.id])),
@@ -86,12 +91,15 @@ export function WeekAgendaGrid({
   // frame or an activity near local midnight lands in the wrong column (see weekAgenda.test.ts's
   // "under a non-UTC timezone" regression). includeOverdue: an incomplete activity due in a past
   // navigated week must still render on its due day, not vanish; there is no separate overdue rail.
-  const grouped = useMemo(() => groupByLocalDay(activities, dayIsos, true), [activities, dayIsos]);
+  const grouped = useMemo(
+    () => groupByLocalDay(activities, dayIsos, true, preferences.timeZone),
+    [activities, dayIsos, preferences.timeZone],
+  );
   const selected = activities.find((a) => a.id === selectedId) ?? null;
   // One lane height for the whole week: a lane sized per column would push only some days' hour
   // grids down, and the same hour would sit at a different height in each column.
   const allDayRows = useMemo(() => allDayRowCount(grouped.values()), [grouped]);
-  const todayIso = now === null ? null : localDayIso(now);
+  const todayIso = now === null ? null : localDayIso(now, preferences.timeZone);
   const showNowLine = todayIso !== null && dayIsos.includes(todayIso);
 
   // Park the scroll on the working day. Left at the top, a 24-hour column opens on an empty
@@ -111,8 +119,9 @@ export function WeekAgendaGrid({
     if (el === null || hours === null || anchoredWeek.current === weekKey) return;
     anchoredWeek.current = weekKey;
     el.scrollTop =
-      hours.offsetTop + initialScrollHour([...grouped.values()].flat()) * HOUR_HEIGHT_PX;
-  }, [weekKey, grouped]);
+      hours.offsetTop +
+      initialScrollHour([...grouped.values()].flat(), preferences.timeZone) * HOUR_HEIGHT_PX;
+  }, [weekKey, grouped, preferences.timeZone]);
 
   function refresh(): void {
     router.refresh();
@@ -163,13 +172,13 @@ export function WeekAgendaGrid({
                 className="grid border-b border-border"
                 style={{ gridTemplateColumns: AGENDA_GRID_COLS }}
               >
-                <div className="bg-muted/40 px-1.5 py-1 text-right text-[10px] text-muted-foreground">
-                  All day
+                <div className="bg-muted/40 px-1.5 py-1 text-end text-[10px] text-muted-foreground">
+                  {t("allDay")}
                 </div>
                 {dayIsos.map((iso) => (
                   <AllDayLane
                     key={iso}
-                    dayLabel={isoToDayLabel(iso)}
+                    dayLabel={calendarDayLabel(iso, preferences)}
                     items={grouped.get(iso) ?? NO_ITEMS}
                     rows={allDayRows}
                     onOpenActivity={openActivity}
@@ -189,13 +198,13 @@ export function WeekAgendaGrid({
               <AgendaDayColumn
                 key={iso}
                 iso={iso}
-                dayLabel={isoToDayLabel(iso)}
+                dayLabel={calendarDayLabel(iso, preferences)}
                 items={grouped.get(iso) ?? NO_ITEMS}
                 onOpenActivity={openActivity}
                 onOpenSlot={openSlot}
               />
             ))}
-            {showNowLine && now !== null && <NowLine now={now} />}
+            {showNowLine && now !== null && <NowLine now={now} timeZone={preferences.timeZone} />}
           </div>
         </div>
       </div>

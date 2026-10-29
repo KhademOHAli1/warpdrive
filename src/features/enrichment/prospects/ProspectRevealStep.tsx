@@ -3,10 +3,9 @@
 import type React from "react";
 import { Button } from "@/components/ui/Button";
 import { Progress } from "@/components/ui/Progress";
-import { ENRICHMENT_STRINGS } from "@/constants/enrichmentStrings";
+import { useEnrichmentMessages } from "../useEnrichmentMessages";
+import { revealErrorMessage } from "./searchMessage";
 import type { RevealQueueStatus } from "./useRevealQueue";
-
-const S = ENRICHMENT_STRINGS.prospects;
 
 function percent(processed: number, total: number): number {
   return total === 0 ? 0 : Math.round((processed / total) * 100);
@@ -29,6 +28,8 @@ export function ProspectRevealStep({
   error: string | null;
   onStop: () => void;
 }): React.ReactNode {
+  const E = useEnrichmentMessages();
+  const S = E.prospects;
   return (
     <div className="flex flex-col gap-3 py-4">
       <div className="flex items-center justify-between gap-3">
@@ -48,7 +49,9 @@ export function ProspectRevealStep({
       ) : null}
       {status === "error" ? (
         <span className="text-destructive text-xs">
-          {error === null ? S.revealFailed : `${S.revealFailed} ${error}`}
+          {error === null || revealErrorMessage(error, E) === S.revealFailed
+            ? S.revealFailed
+            : `${S.revealFailed} ${revealErrorMessage(error, E)}`}
         </span>
       ) : null}
     </div>

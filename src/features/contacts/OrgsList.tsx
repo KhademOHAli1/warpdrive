@@ -9,7 +9,6 @@ import { useColumns } from "@/components/data-table/useColumns";
 import { usePersistColumns } from "@/components/data-table/usePersistColumns";
 import { useRowSelection } from "@/components/data-table/useRowSelection";
 import { DEFAULT_BASE_CURRENCY } from "@/constants/currency";
-import { STRINGS } from "@/constants/strings";
 import { customFieldColumns } from "@/features/custom-fields/listColumns";
 import {
   type CustomFieldRefLabels,
@@ -17,6 +16,7 @@ import {
   EMPTY_REF_LABELS,
   mergeRefLabels,
 } from "@/features/custom-fields/refLabelsContext";
+import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
 import { trpc } from "@/lib/trpc-client";
 import type { CustomFieldDef } from "@/types/customFields";
 import { readCsrfToken } from "@/utils/csrfCookie";
@@ -25,14 +25,10 @@ import { BulkMergeDialog } from "./BulkMergeDialog";
 import type { ContactFilterDefinition } from "./contactFilterConfig";
 import { OrgsListToolbar } from "./OrgsListToolbar";
 import { type OrgsListRow, OrgsTable } from "./OrgsTable";
-import { ORG_COLUMNS } from "./orgColumns";
+import { orgColumns } from "./orgColumns";
 import type { OrgSortField } from "./schemas";
 
 const PAGE_SIZE = 50;
-const LOAD_MORE = "Load more";
-const LOAD_MORE_ERROR = "Couldn't load more organizations. Please try again.";
-const RELOAD_ERROR = "Couldn't load organizations. Please try again.";
-const BULK_DELETE_ERROR = "Couldn't delete some organizations. Please try again.";
 // Stable module reference: passed as useColumnSort's fallback, so `effective` only changes
 // reference when the sort state itself changes (not on every OrgsList re-render).
 const DEFAULT_SORT: ColumnSort<OrgSortField> = { field: "name", dir: "asc" };
@@ -59,9 +55,12 @@ export function OrgsList({
   baseCurrency = DEFAULT_BASE_CURRENCY,
   refLabels: initialRefLabels = EMPTY_REF_LABELS,
 }: OrgsListProps): React.ReactNode {
+  const tContacts = useAppTranslations("contacts");
+
+  const locale = useLocale();
   const catalog = useMemo(
-    () => [...ORG_COLUMNS, ...customFieldColumns(customFieldDefs)],
-    [customFieldDefs],
+    () => [...orgColumns(locale), ...customFieldColumns(customFieldDefs)],
+    [customFieldDefs, locale],
   );
   const columns = useColumns(catalog, initialColumns);
   usePersistColumns("orgs", columns.order);
@@ -129,11 +128,11 @@ export function OrgsList({
     } catch {
       // The list query has a server-side AbortSignal.timeout, so rejection is realistic.
       // Surface it inline and leave the button enabled to retry rather than swallow it.
-      setError(LOAD_MORE_ERROR);
+      setError(tContacts("couldnTLoadMoreOrganizationsPleaseTryAgain"));
     } finally {
       setLoading(false);
     }
-  }, [fetchPage, rows.length]);
+  }, [fetchPage, rows.length, tContacts]);
 
   const reload = useCallback(async (): Promise<void> => {
     setLoading(true);
@@ -144,11 +143,11 @@ export function OrgsList({
       setTotal(page.total);
       setRefLabels(page.refLabels);
     } catch {
-      setError(RELOAD_ERROR);
+      setError(tContacts("couldnTLoadOrganizationsPleaseTryAgain"));
     } finally {
       setLoading(false);
     }
-  }, [fetchPage]);
+  }, [fetchPage, tContacts]);
 
   // Re-query the first page under the new sort. Skip the initial mount: the first page is
   // already seeded server-side under the default sort, so firing here too would double-fetch.
@@ -176,13 +175,17 @@ export function OrgsList({
     // reload() manages `error` itself (clears it, then sets RELOAD_ERROR on its own
     // failure), so set the bulk-delete error AFTER it settles or reload would wipe it out.
     await reload();
-    if (failedIds.length > 0) setError(BULK_DELETE_ERROR);
+    if (failedIds.length > 0) setError(tContacts("couldnTDeleteSomeOrganizationsPleaseTryAgain"));
   }
 
   // Only the truly-empty list (no filter) shows the bare empty state; with a filter active the
   // toolbar stays so the user can clear/adjust a filter that produced zero matches.
   if (filter === null && rows.length === 0) {
-    return <p className="text-sm text-muted-foreground">{STRINGS.contacts.orgsEmpty}</p>;
+    return (
+      <p className="text-sm text-muted-foreground">
+        {tContacts("noOrganizationsAreVisibleToYouYet")}
+      </p>
+    );
   }
 
   const visibleIds = rows.map((r) => r.id);
@@ -201,7 +204,7 @@ export function OrgsList({
       <div className="flex flex-wrap items-center gap-3"></div>
       <div className="flex items-center justify-between gap-2">
         <p className="text-xs text-muted-foreground tabular-nums">
-          {STRINGS.contacts.countLabel(rows.length, total)}
+          {tContacts("countLabel", { shown: rows.length, total })}
         </p>
         <OrgsListToolbar
           filter={filter}
@@ -224,7 +227,7 @@ export function OrgsList({
               onClick={() => setMerging(true)}
               className="rounded-md border px-3 py-1 text-sm hover:bg-accent active:scale-[0.96] transition-transform"
             >
-              Merge duplicates
+              {tContacts("mergeDuplicates")}
             </button>
           )}
           <BulkDeleteButton
@@ -247,7 +250,7 @@ export function OrgsList({
           onClose={() => setMerging(false)}
         />
       )}
-      <div className="overflow-hidden rounded-lg border bg-card shadow-sm">
+      <div className="overflow-hidden rounded-sg border bg-card shadow-sm">
         <CustomFieldRefLabelsProvider value={refLabels}>
           <OrgsTable
             rows={rows}
@@ -283,7 +286,7 @@ export function OrgsList({
           onClick={() => void loadMore()}
           className="self-center rounded-md border px-4 py-1.5 text-sm hover:bg-accent disabled:opacity-50 active:not-disabled:scale-[0.96] transition-transform"
         >
-          {loading ? "Loading..." : LOAD_MORE}
+          {loading ? tContacts("loading") : tContacts("loadMore")}
         </button>
       )}
     </div>

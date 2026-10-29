@@ -186,7 +186,8 @@ export async function createDeal(
         title: input.title,
         // Always 'open' on create; won/lost transitions go through updateDeal (F27).
         status: "open",
-        value: input.value === null ? null : input.value.toFixed(2),
+        value: input.value === null ? null : String(input.value),
+        currency: input.currency ?? cfg?.baseCurrency ?? "USD",
         expectedCloseDate: input.expectedCloseDate,
         labels: input.labels,
         sourceChannel: input.sourceChannel,

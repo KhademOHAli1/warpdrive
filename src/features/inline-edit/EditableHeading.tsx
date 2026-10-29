@@ -1,6 +1,7 @@
 "use client";
 
 import type React from "react";
+import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
 import { InlineEditFooter } from "./InlineEditFooter";
 import { InlineFieldShell } from "./InlineFieldShell";
 import { saveErrorMessage } from "./saveError";
@@ -17,6 +18,8 @@ interface EditableHeadingProps {
 // title remains selectable text, row hover reveals the shared bordered pencil, and the editor
 // uses the shared Save/Cancel footer. Blank and unchanged values never reach the mutation.
 export function EditableHeading({ title, label, onCommit }: EditableHeadingProps): React.ReactNode {
+  const t = useAppTranslations("utilities");
+  const locale = useLocale();
   const f = useInlineEditField(title);
   const trimmedDraft = f.draft.trim();
   const dirty = trimmedDraft !== "" && trimmedDraft !== title;
@@ -31,7 +34,8 @@ export function EditableHeading({ title, label, onCommit }: EditableHeadingProps
         <input
           // biome-ignore lint/a11y/noAutofocus: inline edit focuses immediately on activation
           autoFocus
-          aria-label={`Edit ${label}`}
+          aria-label={t("editHeading", { label })}
+          dir="auto"
           value={f.draft}
           disabled={f.pending}
           onChange={(event) => f.setDraft(event.target.value)}
@@ -56,13 +60,13 @@ export function EditableHeading({ title, label, onCommit }: EditableHeadingProps
   return (
     <div className="min-w-0">
       {f.error !== null && !f.editing ? (
-        <span className="text-xs text-destructive">{saveErrorMessage(f.error)}</span>
+        <span className="text-xs text-destructive">{saveErrorMessage(f.error, locale)}</span>
       ) : null}
       <InlineFieldShell
         label={label}
         editing={f.editing}
         onStartEdit={f.start}
-        value={title}
+        value={<bdi dir="auto">{title}</bdi>}
         valueElement="h1"
         valueClassName="truncate text-display font-semibold text-foreground"
       >

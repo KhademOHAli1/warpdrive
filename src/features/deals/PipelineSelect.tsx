@@ -10,7 +10,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { STRINGS } from "@/constants/strings";
+import { useSalesStrings } from "@/features/deals/useSalesStrings";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { CreatePipelineDialog } from "@/features/pipelines/CreatePipelineDialog";
 import { cn } from "@/lib/utils";
 
@@ -21,6 +22,10 @@ interface PipelineSelectProps {
 }
 
 export function PipelineSelect(props: PipelineSelectProps): React.ReactNode {
+  const STRINGS = useSalesStrings();
+
+  const translateSales = useAppTranslations("sales");
+
   const { pipelineId, pipelines, canManagePipelines = false } = props;
   const router = useRouter();
   const [createOpen, setCreateOpen] = useState(false);
@@ -36,24 +41,30 @@ export function PipelineSelect(props: PipelineSelectProps): React.ReactNode {
           className="inline-flex items-center gap-1.5 rounded-md border bg-card px-2.5 py-1.5 text-sm font-medium text-foreground hover:bg-accent"
         >
           <Menu aria-hidden="true" className="h-4 w-4 text-muted-foreground" />
-          <span className="max-w-40 truncate">{current?.name ?? "Pipeline"}</span>
+          <span className="max-w-40 truncate">
+            {current?.name ?? translateSales("pipeline_37e1c")}
+          </span>
           <ChevronDown aria-hidden="true" className="h-3.5 w-3.5" />
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" aria-label="Select pipeline" className="min-w-44">
+        <DropdownMenuContent
+          align="end"
+          aria-label={translateSales("select_pipeline_ee810")}
+          className="min-w-44"
+        >
           {pipelines.map((p) => (
             <DropdownMenuItem
               key={p.id}
               onSelect={() => router.push(`/pipeline/${p.id}`)}
               className={cn("truncate", p.id === pipelineId && "font-semibold text-foreground")}
             >
-              {p.name}
+              <bdi dir="auto">{p.name}</bdi>
             </DropdownMenuItem>
           ))}
           {canManagePipelines && (
             <>
               <DropdownMenuSeparator />
               <DropdownMenuItem onSelect={() => setCreateOpen(true)}>
-                <Plus aria-hidden="true" className="mr-2 h-4 w-4" />
+                <Plus aria-hidden="true" className="me-2 h-4 w-4" />
                 {STRINGS.settings.addNewPipeline}
               </DropdownMenuItem>
             </>

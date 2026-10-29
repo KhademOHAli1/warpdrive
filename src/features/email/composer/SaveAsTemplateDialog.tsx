@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/Input";
 import { createTemplateAction } from "@/features/email/authoringActions";
+import { useEmailMessages } from "@/features/email/useEmailMessages";
 import { trpc } from "@/lib/trpc-client";
 import { readCsrfToken } from "@/utils/csrfCookie";
 
@@ -34,6 +35,8 @@ export function SaveAsTemplateDialog({
   open: openProp,
   onOpenChange,
 }: SaveAsTemplateDialogProps): React.ReactNode {
+  const E = useEmailMessages();
+
   const reportError = useActionError();
   const utils = trpc.useUtils();
   const controlled = openProp !== undefined;
@@ -71,23 +74,23 @@ export function SaveAsTemplateDialog({
       {!controlled && (
         <DialogTrigger asChild>
           <Button type="button" variant="outline" size="sm">
-            Save as template
+            {E._extra.save_as_template}
           </Button>
         </DialogTrigger>
       )}
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Save as template</DialogTitle>
+          <DialogTitle>{E._extra.save_as_template}</DialogTitle>
         </DialogHeader>
         <Input
-          aria-label="Template name"
-          placeholder="Template name"
+          aria-label={E._extra.template_name}
+          placeholder={E._extra.template_name}
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
         <DialogFooter>
           <Button type="button" disabled={!canSave} onClick={() => void save()}>
-            Save
+            {E._extra.save}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -1,30 +1,14 @@
+"use client";
 import type React from "react";
 import { PILL_TAB, Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { HistoryFeed } from "@/features/deal-workspace/HistoryFeed";
-import { historyTabLabel } from "@/features/deal-workspace/historyTabCounts";
 import type { HistoryItem } from "@/features/deal-workspace/historyTimeline";
 import type { DraftSummary } from "@/features/email/draftRepo";
 import type { EmailCardScope } from "@/features/email/EmailTimelineCard";
 import { FileAttachments } from "@/features/files/FileAttachments";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 
 export type HistoryTab = "all" | "activities" | "notes" | "email" | "files" | "changelog";
-
-const TAB_LABELS: Record<HistoryTab, string> = {
-  all: "All",
-  activities: "Activities",
-  notes: "Notes",
-  email: "Email",
-  files: "Files",
-  changelog: "Changelog",
-};
-
-const EMPTY_LABELS: Partial<Record<HistoryTab, string>> = {
-  all: "No history yet.",
-  activities: "No activities yet.",
-  notes: "No notes yet.",
-  changelog: "No changes recorded yet.",
-  email: "No emails linked to this deal yet.",
-};
 
 const TABS: HistoryTab[] = ["all", "activities", "notes", "email", "files", "changelog"];
 
@@ -70,12 +54,34 @@ export function HistoryTypeTabs({
   onResumeDraft,
   onDraftChanged,
 }: HistoryTypeTabsProps): React.ReactNode {
+  const translateSales = useAppTranslations("sales");
+
+  const labels = {
+    all: translateSales("computed.allHistory"),
+    activities: translateSales("computed.activities"),
+    notes: translateSales("computed.notes"),
+    email: translateSales("computed.email"),
+    files: translateSales("computed.files"),
+    changelog: translateSales("computed.changelog"),
+  };
+  const emptyLabels: Partial<Record<HistoryTab, string>> = {
+    all: translateSales("no_history_yet_15f6e"),
+    activities: translateSales("computed.noActivities"),
+    notes: translateSales("computed.noNotes"),
+    changelog: translateSales("computed.noChanges"),
+    email: translateSales("computed.noLinkedEmails"),
+  };
   return (
     <Tabs value={tab} onValueChange={(v) => onTab(v as HistoryTab)}>
       <TabsList className="flex-wrap gap-1">
         {TABS.map((t) => (
           <TabsTrigger key={t} value={t} className={PILL_TAB}>
-            {historyTabLabel(TAB_LABELS[t], counts[t])}
+            {counts[t] === undefined
+              ? labels[t]
+              : translateSales("computed.historyTabCount", {
+                  label: labels[t],
+                  count: counts[t] ?? 0,
+                })}
           </TabsTrigger>
         ))}
       </TabsList>
@@ -89,8 +95,8 @@ export function HistoryTypeTabs({
             items={items[tab]}
             emptyLabel={
               (tab === "email" ? emailEmptyLabel : undefined) ??
-              EMPTY_LABELS[tab] ??
-              "No history yet."
+              emptyLabels[tab] ??
+              translateSales("no_history_yet_15f6e")
             }
             onActivityChanged={onActivityChanged}
             onNoteChanged={onNoteChanged}

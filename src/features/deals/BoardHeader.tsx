@@ -1,6 +1,8 @@
 "use client";
 import type React from "react";
 import { wsChannel } from "@/constants/wsChannels";
+import type { CurrencyTotal } from "@/features/currencies/money";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { PresenceBar } from "@/features/presence/ui/PresenceBar";
 import type { FilterDefinition } from "@/features/saved-filters/schemas";
 import { BoardFilterChips } from "./BoardFilterChips";
@@ -13,7 +15,6 @@ import type { BoardViewControls } from "./useBoardView";
 
 // An owner whose every deal is excluded is absent from `owners`, so the chip still reports the
 // board is narrowed even when the visible cards cannot name them.
-const UNNAMED_OWNER = "Unknown";
 
 interface BoardHeaderProps {
   pipelineId: string;
@@ -21,8 +22,10 @@ interface BoardHeaderProps {
   stages: BoardProps["stages"];
   selfActorId: string;
   owners: BoardOwner[];
-  totalValue: string;
+  totalValue: string | null;
+  currencyTotals?: CurrencyTotal[];
   dealCount: number;
+  currency?: string;
   view: BoardViewControls;
   addSlot: React.ReactNode;
   onPreviewFilter: (definition: FilterDefinition | null) => void;
@@ -32,19 +35,24 @@ interface BoardHeaderProps {
 // Everything above the stage columns: the toolbar with its filter/sort/create slots, and the row
 // of chips naming each narrowing dimension the board currently applies.
 export function BoardHeader(props: BoardHeaderProps): React.ReactNode {
+  const translateSales = useAppTranslations("sales");
+
   const { pipelineId, pipelines, stages, selfActorId, owners, view, addSlot } = props;
   const { totalValue, dealCount, onPreviewFilter, canManagePipelines } = props;
   const ownerName =
     view.ownerId === null
       ? null
-      : (owners.find((o) => o.ownerId === view.ownerId)?.name ?? UNNAMED_OWNER);
+      : (owners.find((o) => o.ownerId === view.ownerId)?.name ??
+        translateSales("computed.unknownOwner"));
 
   return (
     <BoardToolbar
       pipelineId={pipelineId}
       pipelines={pipelines}
       totalValue={totalValue}
+      currencyTotals={props.currencyTotals}
       dealCount={dealCount}
+      currency={props.currency}
       canManagePipelines={canManagePipelines}
       createSlot={addSlot}
       sortSlot={

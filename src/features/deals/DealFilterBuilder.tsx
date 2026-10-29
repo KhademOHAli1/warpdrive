@@ -2,6 +2,7 @@
 import type React from "react";
 import { useMemo } from "react";
 import { ConditionRowsBuilder, type RawCondition } from "@/components/filters/ConditionRowsBuilder";
+import { useLocale } from "@/features/i18n/LocaleProvider";
 import { mergeLabelOptions } from "@/features/labels/mergeLabelOptions";
 import type { FilterDefinition } from "@/features/saved-filters/schemas";
 import { trpc } from "@/lib/trpc-client";
@@ -28,6 +29,7 @@ export function DealFilterBuilder({
   activeCount,
   appliedDefinition = null,
 }: DealFilterBuilderProps): React.ReactNode {
+  const locale = useLocale();
   const ownersQ = trpc.identity.assignableUsers.useQuery(undefined, { staleTime: 30_000 });
   const catalogNames = (trpc.labels.listByTarget.useQuery({ target: "deal" }).data ?? []).map(
     (l) => l.name,
@@ -36,11 +38,14 @@ export function DealFilterBuilder({
   // card, and a filter that omits a label the user can see on screen reads as broken.
   const appliedNames = trpc.labels.appliedNames.useQuery({ target: "deal" }).data ?? [];
 
-  const fields = dealFilterFields({
-    owners: ownersQ.data ?? [],
-    stages,
-    labelOptions: mergeLabelOptions(catalogNames, appliedNames),
-  });
+  const fields = dealFilterFields(
+    {
+      owners: ownersQ.data ?? [],
+      stages,
+      labelOptions: mergeLabelOptions(catalogNames, appliedNames),
+    },
+    locale,
+  );
 
   const appliedRows = useMemo(
     () => (appliedDefinition === null ? [] : definitionToRows(appliedDefinition)),
@@ -48,7 +53,7 @@ export function DealFilterBuilder({
   );
 
   function handleApply(rows: RawCondition[], combinator: "and" | "or"): void {
-    onApply(dealRowsToDefinition(rows, combinator));
+    onApply(dealRowsToDefinition(rows, combinator, locale));
   }
 
   return (

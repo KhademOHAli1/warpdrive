@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Textarea } from "@/components/ui/Textarea";
 import { createNoteAction } from "@/features/collaboration/actions";
+import { useEmailMessages } from "@/features/email/useEmailMessages";
 import type { EntityType } from "@/types/entityRef";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { useComposeInitialFocus } from "./useComposeInitialFocus";
@@ -26,6 +27,8 @@ export function ComposeNoteTab({
   onNoteCreated,
   onCancel,
 }: Props): React.ReactNode {
+  const E = useEmailMessages();
+
   const [body, setBody] = useState("");
   const [pending, setPending] = useState(false);
   const noteRef = useComposeInitialFocus<HTMLTextAreaElement>();
@@ -50,11 +53,11 @@ export function ComposeNoteTab({
       <Textarea
         ref={noteRef}
         data-compose-primary="notes"
-        aria-label="Note"
+        aria-label={E._extra.note}
         value={body}
         onChange={(e) => setBody(e.target.value)}
         rows={3}
-        placeholder="Take a note..."
+        placeholder={E._extra.take_a_note}
         className="resize-y bg-warning/10 focus-visible:border-ring/50"
       />
       <div className="mt-2 flex justify-end gap-2">
@@ -65,10 +68,10 @@ export function ComposeNoteTab({
             onCancel?.();
           }}
         >
-          Cancel
+          {E._extra.cancel}
         </Button>
         <Button disabled={pending} onClick={() => void save()}>
-          Save
+          {E._extra.save}
         </Button>
       </div>
     </div>

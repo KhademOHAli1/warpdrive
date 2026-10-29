@@ -2,7 +2,10 @@ import { z } from "zod";
 import type { Db } from "@/db/client";
 import { attachRefLabels } from "@/features/custom-fields/refLabels";
 import { listParticipants } from "@/features/deal-workspace/participantsList";
+import { resolveAccountLocalePreferences } from "@/features/i18n/accountPreferences";
+import { type LocalePreferences, localePreferencesSchema } from "@/features/i18n/preferences";
 import { getPreferences } from "@/features/identity/preferencesRepo";
+import type { FilterCompileOptions } from "@/features/saved-filters/filterAst";
 import { hasDateCondition } from "@/features/saved-filters/filterFields";
 import { parseSavedFilterDefinition } from "@/features/saved-filters/parseDefinition";
 import { listSavedFilterViews } from "@/features/saved-filters/savedFilterList";
@@ -30,17 +33,23 @@ export function actorToSession(actor: {
   };
 }
 
-const timeZoneInput = z.string().max(64).optional();
+// View metadata is a validated fallback for legacy accounts with no saved locale preferences.
+const viewPreferenceInput = localePreferencesSchema.partial().shape;
 
-async function viewerTimeZone(
+async function viewerDateContext(
   db: Db,
   userId: string,
   definition: FilterDefinition | undefined,
-  requestZone: string | undefined,
+  fallback: Partial<LocalePreferences>,
   signal: AbortSignal,
-): Promise<string | null> {
-  if (!hasDateCondition(definition)) return null;
-  return (await getPreferences(db, userId, signal)).timezone ?? requestZone ?? null;
+): Promise<FilterCompileOptions> {
+  if (!hasDateCondition(definition)) return {};
+  const preferences = await getPreferences(db, userId, signal);
+  return resolveAccountLocalePreferences({
+    saved: preferences.ui.localePreferences,
+    profileTimeZone: preferences.timezone,
+    fallback,
+  });
 }
 
 export const dealRouter = router({
@@ -49,7 +58,7 @@ export const dealRouter = router({
       z.object({
         pipelineId: z.string().uuid(),
         definition: filterDefinition.optional(),
-        timeZone: timeZoneInput,
+        ...viewPreferenceInput,
       }),
     )
     .query(async ({ ctx, input }) => {
@@ -60,7 +69,7 @@ export const dealRouter = router({
         input.pipelineId,
         signal,
         input.definition,
-        await viewerTimeZone(ctx.db, ctx.actor.id, input.definition, input.timeZone, signal),
+        await viewerDateContext(ctx.db, ctx.actor.id, input.definition, input, signal),
       );
     }),
   stageSums: protectedProcedure
@@ -83,7 +92,7 @@ export const dealRouter = router({
         limit: z.number().int().min(1).max(500).default(50),
         archived: z.boolean().optional(),
         definition: filterDefinition.optional(),
-        timeZone: timeZoneInput,
+        ...viewPreferenceInput,
       }),
     )
     .query(async ({ ctx, input }) => {
@@ -97,11 +106,11 @@ export const dealRouter = router({
           limit: input.limit,
           archived: input.archived,
           filter: input.definition,
-          timeZone: await viewerTimeZone(
+          dateContext: await viewerDateContext(
             ctx.db,
             ctx.actor.id,
             input.definition,
-            input.timeZone,
+            input,
             signal,
           ),
         },

@@ -1,8 +1,9 @@
+"use client";
+import { useEmailMessages } from "@/features/email/useEmailMessages";
+
 // AttachButton: paperclip button that drives the presigned-upload handshake for
 // one or more files. On success calls onAttached with {fileId, filename, size}.
 // Validates content-type and size client-side before calling the server action.
-
-"use client";
 
 import { Paperclip } from "lucide-react";
 import { useRef, useState } from "react";
@@ -31,6 +32,8 @@ export function AttachButton({
   onAttached,
   onUploadingChange,
 }: AttachButtonProps): React.ReactNode {
+  const E = useEmailMessages();
+
   const inputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -60,10 +63,10 @@ export function AttachButton({
   async function uploadSingleFile(file: File): Promise<string | null> {
     // Client-side guard: size and type before the server action.
     if (file.size > ATTACH_MAX_FILE_BYTES) {
-      return `"${file.name}" is too large (max ${Math.round(ATTACH_MAX_FILE_BYTES / 1024 / 1024)} MB).`;
+      return E._extra.fileTooLarge(file.name, Math.round(ATTACH_MAX_FILE_BYTES / 1024 / 1024));
     }
     if (!ALLOWED_TYPES.has(file.type)) {
-      return `"${file.name}" has an unsupported file type.`;
+      return E._extra.fileUnsupported(file.name);
     }
 
     // (1) Request a presigned POST from the server.
@@ -76,7 +79,7 @@ export function AttachButton({
       size: file.size,
     });
     if (!requestResult.ok) {
-      return `Could not start upload for "${file.name}".`;
+      return E._extra.uploadStart(file.name);
     }
     const { fileId, post } = requestResult.value;
 
@@ -88,13 +91,13 @@ export function AttachButton({
     form.append("file", file);
     const uploadResp = await fetch(post.url, { method: "POST", body: form });
     if (!uploadResp.ok) {
-      return `Upload failed for "${file.name}".`;
+      return E._extra.uploadFailed(file.name);
     }
 
     // (3) Confirm the upload server-side.
     const confirmResult = await confirmUploadAction(csrfToken, fileId);
     if (!confirmResult.ok) {
-      return `Could not confirm upload for "${file.name}".`;
+      return E._extra.uploadConfirm(file.name);
     }
 
     onAttached({ fileId, filename: file.name, size: file.size });
@@ -108,10 +111,10 @@ export function AttachButton({
           {error}
         </p>
       )}
-      <Tip label="Attach file">
+      <Tip label={E._extra.attach_file}>
         <button
           type="button"
-          aria-label="Attach file"
+          aria-label={E._extra.attach_file}
           onClick={() => inputRef.current?.click()}
           className="p-1 rounded hover:bg-accent text-muted-foreground"
         >

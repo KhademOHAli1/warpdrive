@@ -4,11 +4,10 @@ import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { LABEL_COLOR_CLASSES, type LabelColor } from "@/constants/labelColors";
-import { STRINGS } from "@/constants/strings";
+import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import { ReorderControls } from "../ReorderControls";
 import { LabelColorSelect } from "./LabelColorSelect";
 
-const S = STRINGS.settings;
 const ROW_BUTTON =
   "relative h-auto px-0 py-0 text-xs font-medium text-muted-foreground hover:bg-transparent hover:text-foreground after:absolute after:left-0 after:top-1/2 after:h-10 after:w-full after:-translate-y-1/2 after:content-['']";
 
@@ -38,6 +37,9 @@ export function LabelRow({
   onColor,
   onDelete,
 }: Props): React.ReactNode {
+  const L = useSettingsMessages();
+  const S = L;
+
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(row.name);
 

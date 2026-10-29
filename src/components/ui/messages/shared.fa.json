@@ -1,0 +1,27 @@
+{
+  "close": "بستن",
+  "select": "انتخاب کنید",
+  "search": "جست‌وجو...",
+  "noMatch": "موردی پیدا نشد.",
+  "removeOption": "حذف {label}",
+  "colorOptions": "گزینه‌های {label}",
+  "customHexColor": "رنگ دلخواه (کد هگز)",
+  "hexPlaceholder": "برای مثال ⁦#1f2937⁩",
+  "invalidHexColor": "کد رنگ هگزادسیمال ۶ رقمی وارد کنید، مانند ⁦#1f2937⁩.",
+  "applyColor": "اعمال رنگ",
+  "timePlaceholder": "ساعت:دقیقه",
+  "colors": {
+    "black": "سیاه",
+    "slate": "خاکستری تیره",
+    "red": "قرمز",
+    "orange": "نارنجی",
+    "amber": "کهربایی",
+    "green": "سبز",
+    "teal": "سبزآبی",
+    "blue": "آبی",
+    "indigo": "نیلی",
+    "purple": "بنفش",
+    "pink": "صورتی",
+    "white": "سفید"
+  }
+}

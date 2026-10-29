@@ -114,6 +114,7 @@ export async function applyCreateDeal(
   const candidate = {
     title: parsed.data.title,
     value: parsed.data.value,
+    currency: parsed.data.currency,
     expectedCloseDate: parsed.data.expectedCloseDate,
     pipelineId: pipelineResult.value,
     stageId: stageResult.value,

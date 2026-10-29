@@ -54,6 +54,7 @@ export const ENTITY_FIELDS: Record<MappableEntity, readonly StandardImportField[
   deal: [
     { field: "title", label: "Title", required: true },
     { field: "value", label: "Value", required: false },
+    { field: "currency", label: "Currency", required: false },
     { field: "expectedCloseDate", label: "Expected close date", required: false },
     { field: "pipeline", label: "Pipeline", required: false },
     { field: "stage", label: "Stage", required: false },
@@ -61,6 +62,7 @@ export const ENTITY_FIELDS: Record<MappableEntity, readonly StandardImportField[
   lead: [
     { field: "title", label: "Title", required: true },
     { field: "value", label: "Value", required: false },
+    { field: "currency", label: "Currency", required: false },
     { field: "expectedCloseDate", label: "Expected close date", required: false },
     { field: "sourceChannel", label: "Source channel", required: false },
     { field: "sourceChannelId", label: "Source channel ID", required: false },

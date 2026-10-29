@@ -1,21 +1,26 @@
 import type { ReactNode } from "react";
-import { STRINGS } from "@/constants/strings";
 import { db } from "@/db/client";
 import { listDefs } from "@/features/custom-fields/defsRepo";
 import { listHiddenBuiltins } from "@/features/custom-fields/hiddenBuiltinsRepo";
+import { getServerSettingsMessages } from "@/features/identity/settingsMessages.server";
 import { can } from "@/features/permissions/can";
 import { createContext } from "@/server/trpc/context";
 import { ImportWizard } from "../ImportWizard";
 
-export const metadata = { title: STRINGS.settings.importer.title };
+export async function generateMetadata() {
+  const L = await getServerSettingsMessages();
+  return { title: L.importer.title };
+}
 
 export default async function NewImportPage(): Promise<ReactNode> {
+  const L = await getServerSettingsMessages();
+
   const { actor } = await createContext();
   if (actor === null) {
-    return <p className="text-sm text-red-600">{STRINGS.settings.requiresAuth}</p>;
+    return <p className="text-sm text-red-600">{L.requiresAuth}</p>;
   }
   if (!can(actor, "data.import")) {
-    return <p className="text-sm text-red-600">{STRINGS.settings.importer.requiresImport}</p>;
+    return <p className="text-sm text-red-600">{L.importer.requiresImport}</p>;
   }
 
   const signal = AbortSignal.timeout(5000);

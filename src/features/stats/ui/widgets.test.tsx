@@ -167,7 +167,7 @@ describe("stats widgets", () => {
 
   // Count and money sat in one justify-between row, so four rows put their counts at four
   // different x positions and the money read as the lesser number.
-  it("right-aligns both numeric columns of deal performance and keeps the money at full weight", () => {
+  it("aligns both numeric columns to the reading edge of deal performance and keeps the money at full weight", () => {
     render(
       <DealPerformanceWidget
         currency="USD"
@@ -180,10 +180,10 @@ describe("stats widgets", () => {
       />,
     );
     const count = screen.getByText("10");
-    expect(count.className).toContain("text-right");
+    expect(count.className).toContain("text-end");
     expect(count.className).toContain("tabular-nums");
     const value = screen.getByText("$418,500");
-    expect(value.className).toContain("text-right");
+    expect(value.className).toContain("text-end");
     expect(value.className).toContain("tabular-nums");
     expect(value.className).not.toContain("text-muted-foreground");
   });

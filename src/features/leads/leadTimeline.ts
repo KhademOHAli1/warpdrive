@@ -19,6 +19,7 @@ import {
   users,
 } from "@/db/schema";
 import { leads } from "@/db/schema/leads";
+import { activityAccountPreferences } from "@/features/activities/accountTimeZone";
 import type { CalendarActivity } from "@/features/activities/calendar";
 import { isActivityOverdue } from "@/features/activities/overdue";
 import { linkedParentVisible } from "@/features/activities/parentLinkVisibility";
@@ -28,6 +29,7 @@ import {
   type HistoryItem,
   type NoteItem,
 } from "@/features/deal-workspace/historyTimeline";
+import type { Locale } from "@/features/i18n/registry";
 import type { AuthUser } from "@/features/permissions/types";
 import type { DealVisibilitySession } from "@/types/session";
 import { leadVisibilityClause } from "./visibility";
@@ -67,6 +69,7 @@ export async function leadTimeline(
   session: DealVisibilitySession,
   leadId: string,
   signal: AbortSignal,
+  locale: Locale = "en",
 ): Promise<LeadTimelineResult> {
   signal.throwIfAborted();
   const [visible] = await db
@@ -96,12 +99,16 @@ export async function leadTimeline(
   signal.throwIfAborted();
 
   const now = Date.now();
+
   const activityRows = await db
     .select({
       id: activities.id,
       subject: activities.subject,
       dueAt: activities.dueAt,
       allDay: activities.allDay,
+      dueDate: activities.dueDate,
+      endDate: activities.endDate,
+      endAt: activities.endAt,
       durationMinutes: activities.durationMinutes,
       typeKey: activityTypes.key,
       done: activities.done,
@@ -131,6 +138,7 @@ export async function leadTimeline(
     )
     .where(and(eq(activities.leadId, leadId), isNull(activities.deletedAt)));
   const actor = sessionActor(session);
+  const preferences = await activityAccountPreferences(db, actor.id);
   const activityItems: CalendarActivity[] = [];
   for (const row of activityRows) {
     if (row.dueAt === null) continue;
@@ -151,6 +159,9 @@ export async function leadTimeline(
       subject: row.subject,
       dueAt: row.dueAt,
       allDay: row.allDay,
+      dueDate: row.dueDate,
+      endDate: row.endDate,
+      endAt: row.endAt,
       durationMinutes: row.durationMinutes,
       typeKey: row.typeKey,
       done: row.done,
@@ -162,7 +173,16 @@ export async function leadTimeline(
       personName: personOk ? row.personName : null,
       orgId: orgOk ? row.orgVisibleId : null,
       orgName: orgOk ? row.orgName : null,
-      overdue: isActivityOverdue(row.dueAt, row.allDay, row.done, now),
+      overdue: isActivityOverdue(
+        row.dueAt,
+        row.allDay,
+        row.done,
+        now,
+        preferences.timeZone,
+        row.dueDate,
+        row.endDate,
+        row.endAt,
+      ),
       ownerName: row.ownerName,
     });
   }
@@ -189,7 +209,7 @@ export async function leadTimeline(
   signal.throwIfAborted();
 
   return {
-    items: buildHistoryTimeline(activityItems, changelog, noteItems),
+    items: buildHistoryTimeline(activityItems, changelog, noteItems, undefined, locale),
     emails: emailRows,
   };
 }

@@ -2,6 +2,7 @@
 import type React from "react";
 import { TimePicker } from "@/components/ui/TimePicker";
 import { ActivityDatePicker } from "@/features/activities/ActivityDatePicker";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 
 interface Props {
   startDate: string;
@@ -30,23 +31,33 @@ export function DateRangeRow({
   onEndDate,
   assigneeId,
 }: Props): React.ReactNode {
+  const translateSales = useAppTranslations("sales");
+
   const loadFor = assigneeId === "" ? null : assigneeId;
   return (
     <div className="flex flex-wrap items-center gap-2">
       <ActivityDatePicker
-        ariaLabel="Start date"
+        ariaLabel={translateSales("start_date_81696")}
         value={startDate === "" ? null : startDate}
         onChange={(v) => onStartDate(v ?? "")}
         assigneeId={loadFor}
       />
-      <TimePicker ariaLabel="Start time" value={startTime} onChange={onStartTime} />
+      <TimePicker
+        ariaLabel={translateSales("start_time_babe9")}
+        value={startTime}
+        onChange={onStartTime}
+      />
       <span aria-hidden="true" className="text-muted-foreground">
-        to
+        {translateSales("to_663ea")}
       </span>
-      <TimePicker ariaLabel="End time" value={endTime} onChange={onEndTime} />
+      <TimePicker
+        ariaLabel={translateSales("end_time_2e460")}
+        value={endTime}
+        onChange={onEndTime}
+      />
       <ActivityDatePicker
-        ariaLabel="End date"
-        placeholder="End date"
+        ariaLabel={translateSales("end_date_14303")}
+        placeholder={translateSales("end_date_14303")}
         value={endDate === "" ? null : endDate}
         onChange={(v) => onEndDate(v ?? "")}
         assigneeId={loadFor}

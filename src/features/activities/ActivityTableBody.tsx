@@ -1,8 +1,10 @@
+"use client";
 import type React from "react";
 import type { RenderWindow } from "@/components/data-table/useRenderWindow";
 import { TableRowsSkeleton } from "@/components/shell/skeletons";
 import { ActivityDayGroups } from "./ActivityDayGroups";
 import type { ActivityTableRow } from "./activityRows";
+import { useActivitiesMessages } from "./useActivitiesMessages";
 
 interface Props {
   loadFailed: boolean;
@@ -28,6 +30,7 @@ export function ActivityTableBody({
   columnCount,
   onRetry,
 }: Props): React.ReactNode {
+  const S = useActivitiesMessages();
   if (loadFailed) {
     return (
       <tr>
@@ -36,27 +39,27 @@ export function ActivityTableBody({
           role="alert"
           className="px-3 py-10 text-center text-muted-foreground"
         >
-          Couldn&apos;t load activities.{" "}
+          {S.loadFailed}{" "}
           <button
             type="button"
             onClick={onRetry}
             className="font-medium text-primary underline underline-offset-2 hover:opacity-90"
           >
-            Retry
+            {S.retry}
           </button>
         </td>
       </tr>
     );
   }
   if (loadPending) {
-    return <TableRowsSkeleton columnCount={columnCount} label="Loading activities" />;
+    return <TableRowsSkeleton columnCount={columnCount} label={S.loading} />;
   }
   // visible is a prefix of the full row set, so an empty slice means an empty set.
   if (rowWindow.visible.length === 0) {
     return (
       <tr>
         <td colSpan={columnCount} className="px-3 py-10 text-center text-muted-foreground">
-          No activities in this view.
+          {S.emptyView}
         </td>
       </tr>
     );
@@ -80,7 +83,7 @@ export function ActivityTableBody({
               onClick={rowWindow.showMore}
               className="rounded-md border px-4 py-1.5 text-sm transition-transform hover:bg-accent active:scale-[0.96]"
             >
-              Show more ({rowWindow.remaining} more)
+              {S.showMore(rowWindow.remaining)}
             </button>
           </td>
         </tr>

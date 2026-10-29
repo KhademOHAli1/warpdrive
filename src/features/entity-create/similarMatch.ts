@@ -1,11 +1,15 @@
+import { normalizeDigits } from "@/utils/normalizeNumberInput";
 import type { Option } from "./modalState";
 
-// Normalize for comparison: lowercase, strip punctuation to single spaces, trim. So "ACME, Inc."
-// and "acme inc" compare equal.
-function normalize(s: string): string {
-  return s
+// Comparison only. Preserve every stored/displayed name while folding common Unicode variants.
+export function normalizeEntityName(value: string): string {
+  return normalizeDigits(value.normalize("NFKD"))
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/[يى]/g, "ی")
+    .replace(/ك/g, "ک")
+    .replace(/ß/g, "ss")
+    .replace(/[\p{M}ـ]/gu, "")
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
     .trim();
 }
 
@@ -29,7 +33,7 @@ function editDistance(a: string, b: string): number {
 
 // Generic leading words that do not make two names "the same company", so a shared one of these
 // should not trigger a duplicate warning.
-const GENERIC_LEADING = new Set(["the", "a", "an"]);
+const GENERIC_LEADING = new Set(["the", "a", "an", "شرکت", "گروه", "موسسه"]);
 
 // The first token of a normalized name, if it is distinctive enough to signal a shared identity
 // (>= 3 chars and not a generic article). Returns "" when there is no distinctive leading word.
@@ -43,11 +47,11 @@ function distinctiveFirstToken(normalized: string): string {
 // distinctive first word (e.g. "Acme Global" vs "Acme Inc"). Used to warn before creating a
 // duplicate contact or organization. A 1-char query is treated as too vague to match.
 export function findSimilarOptions(options: Option[], query: string): Option[] {
-  const q = normalize(query);
+  const q = normalizeEntityName(query);
   if (q.length < 2) return [];
   const qFirst = distinctiveFirstToken(q);
   return options.filter((o) => {
-    const n = normalize(o.name);
+    const n = normalizeEntityName(o.name);
     if (n.length < 2) return false;
     if (n.includes(q) || q.includes(n)) return true;
     // Scale the allowed typo distance to name length so short unrelated names ("GE" vs "BP", edit

@@ -1,4 +1,5 @@
-import { date, index, numeric, pgEnum, pgTable, timestamp, uuid } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import { date, index, pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import {
   GOAL_ACTIONS,
   GOAL_ASSIGNEE_KINDS,
@@ -7,6 +8,7 @@ import {
   GOAL_SUBJECTS,
 } from "@/constants/goals";
 import { activityTypes } from "./activityTypes";
+import { moneyColumn } from "./money";
 import { pipelines } from "./pipelines";
 
 export const goalSubject = pgEnum("goal_subject", GOAL_SUBJECTS);
@@ -30,7 +32,8 @@ export const goals = pgTable(
     activityTypeId: uuid("activity_type_id").references(() => activityTypes.id),
     interval: goalInterval("interval").notNull(),
     // Count goals store a whole number here; value goals store money.
-    target: numeric("target", { precision: 14, scale: 2 }).notNull(),
+    target: moneyColumn("target").notNull(),
+    currency: text("currency").notNull().default(sql`public.warpdrive_base_currency()`),
     startsOn: date("starts_on").notNull(),
     endsOn: date("ends_on"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),

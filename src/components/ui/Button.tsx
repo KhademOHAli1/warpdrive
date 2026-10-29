@@ -2,6 +2,7 @@
 import { cva, type VariantProps } from "class-variance-authority";
 import { forwardRef } from "react";
 import { cn } from "@/lib/utils";
+import { Button as ShadcnButton } from "./primitives/button";
 
 export const buttonVariants = cva(
   // C1 (Pipedrive parity): button/link weight bumped 500 -> 600 (font-medium -> font-semibold).
@@ -12,12 +13,12 @@ export const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-action text-action-foreground hover:opacity-90 disabled:bg-disabled disabled:text-disabled-foreground",
+          "bg-action text-action-foreground hover:opacity-90 disabled:bg-disabled disabled:text-disabled-foreground disabled:opacity-100",
         outline: "border bg-card hover:bg-accent disabled:opacity-50",
         ghost: "hover:bg-accent hover:text-foreground disabled:opacity-50",
         // Irreversible actions (delete, discard). Used by ConfirmDialog's affirmative button.
         destructive:
-          "bg-destructive text-destructive-foreground hover:bg-destructive/90 disabled:bg-disabled disabled:text-disabled-foreground",
+          "bg-destructive text-destructive-foreground hover:bg-destructive/90 disabled:bg-disabled disabled:text-disabled-foreground disabled:opacity-100",
       },
       size: {
         sm: "h-8 px-2.5",
@@ -44,8 +45,10 @@ const TAP_SCALE =
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, type, static: isStatic, ...props }, ref) => (
-    <button
+    <ShadcnButton
       ref={ref}
+      variant={variant ?? "default"}
+      size={size === "md" || size === undefined || size === null ? "default" : size}
       type={type ?? "button"}
       className={cn(buttonVariants({ variant, size }), isStatic !== true && TAP_SCALE, className)}
       {...props}

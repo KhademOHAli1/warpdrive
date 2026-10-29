@@ -1,15 +1,14 @@
 "use client";
-
 import Link from "next/link";
 import type React from "react";
 import { CustomFieldCell, customFieldCellClass } from "@/components/data-table/CustomFieldCell";
 import type { ColumnDef } from "@/components/data-table/columnModel";
 import { Avatar } from "@/components/ui/Avatar";
 import { Checkbox } from "@/components/ui/Checkbox";
-import { formatCurrency } from "@/lib/formatCurrency";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
+import { useFormatters } from "@/lib/useFormatters";
 import { DealStatusBadge } from "./DealStatusBadge";
 import { DealTitleCell } from "./DealTitleCell";
-import { fmtDate, fmtDateOnly } from "./dealListFormat";
 import type { DealListRow } from "./dealListTypes";
 
 interface RenderWindow {
@@ -44,6 +43,9 @@ function cellClass(col: ColumnDef): string {
 }
 
 export function DealListTableBody(props: DealListTableBodyProps): React.ReactNode {
+  const translateSales = useAppTranslations("sales");
+
+  const format = useFormatters();
   const { rowWindow, rowCount, visibleColumns, colSpan, selected, onToggleRow } = props;
   const { stageNameById, editingId, onStartEdit, onCancelEdit, onCommitTitle, currency } = props;
   const { onUnarchive, empty } = props;
@@ -73,20 +75,22 @@ export function DealListTableBody(props: DealListTableBodyProps): React.ReactNod
       case "org":
         return row.orgId !== null && (row.orgName ?? null) !== null ? (
           <Link href={`/contacts/orgs/${row.orgId}`} className="text-primary hover:underline">
-            {row.orgName}
+            <bdi dir="auto">{row.orgName}</bdi>
           </Link>
         ) : (
           (row.orgName ?? "")
         );
       case "value":
-        return row.value !== null ? formatCurrency(row.value) : "";
+        return row.value !== null
+          ? `${format.currency(row.value, row.currency ?? currency)} ${row.currency ?? currency}`
+          : "";
       case "stage":
         return stageNameById.get(row.stageId) ?? row.stageId;
       case "owner":
         return (row.ownerName ?? null) !== null ? (
           <span className="flex items-center gap-2">
             <Avatar name={row.ownerName ?? ""} src={row.ownerAvatarUrl} className="h-6 w-6" />
-            {row.ownerName}
+            <bdi dir="auto">{row.ownerName}</bdi>
           </span>
         ) : (
           ""
@@ -94,9 +98,19 @@ export function DealListTableBody(props: DealListTableBodyProps): React.ReactNod
       case "person":
         return row.personName ?? "";
       case "expectedCloseDate":
-        return fmtDateOnly(row.expectedCloseDate);
+        return row.expectedCloseDate !== null &&
+          row.expectedCloseDate !== undefined &&
+          row.expectedCloseDate !== ""
+          ? format.dateOnly(row.expectedCloseDate)
+          : "";
       case "nextActivity":
-        return fmtDate(row.nextActivityAt);
+        return row.nextActivityAt === null
+          ? ""
+          : format.dateTime(row.nextActivityAt, {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+            });
       case "status":
         return <DealStatusBadge status={row.status} />;
       default:
@@ -113,7 +127,7 @@ export function DealListTableBody(props: DealListTableBodyProps): React.ReactNod
         >
           <td className="w-10 px-3 py-2">
             <Checkbox
-              label={`Select ${row.title}`}
+              label={translateSales("select_arg0_ed59e", { arg0: row.title })}
               checked={selected.has(row.id)}
               onCheckedChange={() => onToggleRow(row.id)}
             />
@@ -130,7 +144,7 @@ export function DealListTableBody(props: DealListTableBodyProps): React.ReactNod
                 onClick={() => onUnarchive(row.id)}
                 className="rounded border px-2 py-1 text-xs font-medium text-foreground hover:bg-muted"
               >
-                Unarchive
+                {translateSales("unarchive_f5653")}
               </button>
             </td>
           ) : null}
@@ -149,7 +163,7 @@ export function DealListTableBody(props: DealListTableBodyProps): React.ReactNod
               onClick={rowWindow.showMore}
               className="rounded-md border px-4 py-1.5 text-sm transition-transform hover:bg-accent active:scale-[0.96]"
             >
-              Show more ({rowWindow.remaining} more)
+              {translateSales("computed.showMoreRows", { count: rowWindow.remaining })}
             </button>
           </td>
         </tr>

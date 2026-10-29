@@ -1,0 +1,216 @@
+{
+  "summary": {
+    "catalogs": [
+      {
+        "group": "src/components/data-table/messages/tableControls",
+        "locales": [
+          "en",
+          "fa"
+        ]
+      },
+      {
+        "group": "src/components/filters/messages/filters",
+        "locales": [
+          "en",
+          "fa"
+        ]
+      },
+      {
+        "group": "src/components/shell/messages/shell",
+        "locales": [
+          "en",
+          "fa"
+        ]
+      },
+      {
+        "group": "src/components/shell/messages/utilities",
+        "locales": [
+          "en",
+          "fa"
+        ]
+      },
+      {
+        "group": "src/components/ui/messages/shared",
+        "locales": [
+          "de",
+          "en",
+          "fa"
+        ]
+      },
+      {
+        "group": "src/features/activities/messages/activities",
+        "locales": [
+          "en",
+          "fa"
+        ]
+      },
+      {
+        "group": "src/features/activities/messages/calendar",
+        "locales": [
+          "de",
+          "en",
+          "fa"
+        ]
+      },
+      {
+        "group": "src/features/auth/messages/authScreens",
+        "locales": [
+          "en",
+          "fa"
+        ]
+      },
+      {
+        "group": "src/features/contacts/messages/contacts",
+        "locales": [
+          "en",
+          "fa"
+        ]
+      },
+      {
+        "group": "src/features/custom-fields/messages/customFields",
+        "locales": [
+          "en",
+          "fa"
+        ]
+      },
+      {
+        "group": "src/features/deals/messages/sales",
+        "locales": [
+          "en",
+          "fa"
+        ]
+      },
+      {
+        "group": "src/features/email/messages/email",
+        "locales": [
+          "en",
+          "fa"
+        ]
+      },
+      {
+        "group": "src/features/enrichment/messages/enrichment",
+        "locales": [
+          "en",
+          "fa"
+        ]
+      },
+      {
+        "group": "src/features/entity-create/messages/entityCreate",
+        "locales": [
+          "en",
+          "fa"
+        ]
+      },
+      {
+        "group": "src/features/files/messages/files",
+        "locales": [
+          "en",
+          "fa"
+        ]
+      },
+      {
+        "group": "src/features/i18n/messages/boundary",
+        "locales": [
+          "en",
+          "fa"
+        ]
+      },
+      {
+        "group": "src/features/i18n/messages/",
+        "locales": [
+          "en",
+          "fa"
+        ]
+      },
+      {
+        "group": "src/features/identity/messages/settings",
+        "locales": [
+          "en",
+          "fa"
+        ]
+      },
+      {
+        "group": "src/features/leads/messages/leads",
+        "locales": [
+          "en",
+          "fa"
+        ]
+      },
+      {
+        "group": "src/features/notifications/messages/notifications",
+        "locales": [
+          "en",
+          "fa"
+        ]
+      },
+      {
+        "group": "src/features/quick-add/messages/quickAdd",
+        "locales": [
+          "en",
+          "fa"
+        ]
+      },
+      {
+        "group": "src/features/stats/messages/stats",
+        "locales": [
+          "en",
+          "fa"
+        ]
+      }
+    ],
+    "catalogIssues": 0,
+    "sourceLiteralCandidates": 3,
+    "legacyCatalogImports": 2,
+    "sourceFilesWithFindings": 5,
+    "newSourceFindings": 0,
+    "reviewedSourceExceptions": 1,
+    "sourceMigrationComplete": false,
+    "note": "Static inventory is a migration aid. Computed copy, backend errors, data labels and browser workflows still require feature review. A valid catalog does not prove that every screen is translated."
+  },
+  "catalogIssues": [],
+  "findings": [
+    {
+      "kind": "legacy-catalog",
+      "file": "src/features/deal-workspace/changeLabel.ts",
+      "text": "@/constants/enrichmentStrings",
+      "line": 22,
+      "id": "7b33f8a88d5ce1634483"
+    },
+    {
+      "kind": "literal",
+      "file": "src/features/deal-workspace/header/PipelineBreadcrumb.tsx",
+      "text": "&rsaquo;",
+      "line": 25,
+      "id": "8a18f5d02a10f70e0a05"
+    },
+    {
+      "kind": "literal",
+      "file": "src/features/deals/AddDealPersonColumn.tsx",
+      "text": "name@company.com",
+      "line": 105,
+      "id": "810e4d62a3e7ee8febbb"
+    },
+    {
+      "kind": "legacy-catalog",
+      "file": "src/features/deals/notifyHelpers.ts",
+      "text": "@/constants/notifyStrings",
+      "line": 4,
+      "id": "6e455c0cab2ecf4a0848"
+    },
+    {
+      "kind": "literal",
+      "file": "src/features/pipelines/StageEditCard.tsx",
+      "text": "&times;",
+      "line": 55,
+      "id": "aacf4713ce201b297a37"
+    }
+  ],
+  "reviewedSources": [
+    {
+      "id": "0c3773c2a168b8267fb7",
+      "file": "src/features/notifications/ui/notificationText.ts",
+      "text": "@/constants/notifyStrings",
+      "reason": "Legacy notification payloads persist these exact English summaries. This import is compared only as a protocol value; display text is mapped to typed localized messages. Keep compatibility with existing records."
+    }
+  ]
+}

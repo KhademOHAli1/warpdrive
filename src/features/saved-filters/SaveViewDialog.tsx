@@ -1,7 +1,7 @@
 "use client";
 import type React from "react";
 import { useId, useState } from "react";
-import { type ActionErrorContent, actionErrorContent } from "@/components/shell/actionError";
+import { actionErrorContent } from "@/components/shell/actionError";
 import { Button } from "@/components/ui/Button";
 import { Checkbox } from "@/components/ui/Checkbox";
 import {
@@ -12,13 +12,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/Input";
+import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import type { SavedView, SavedViewDefinition } from "./savedView";
 import type { SavedFilterTargetEntity } from "./schemas";
 import { createSavedFilterAction } from "./serverActions";
-
-// One copy for both the checkbox's accessible name and its visible <label>.
-const SHARED_LABEL = "Shared with everyone";
 
 interface SaveViewDialogProps {
   targetEntity: SavedFilterTargetEntity;
@@ -36,15 +34,18 @@ export function SaveViewDialog({
   onClose,
   onSaved,
 }: SaveViewDialogProps): React.ReactNode {
+  const t = useAppTranslations("tableControls");
+  const locale = useLocale();
   const nameId = useId();
   const sharedId = useId();
   const [name, setName] = useState("");
   const [isShared, setIsShared] = useState(false);
-  const [error, setError] = useState<ActionErrorContent | null>(null);
+  const [errorId, setErrorId] = useState<string | null>(null);
+  const error = errorId === null ? null : actionErrorContent(errorId, locale);
   const [saving, setSaving] = useState(false);
 
   async function save(): Promise<void> {
-    const viewName = name.trim() === "" ? "Untitled view" : name.trim();
+    const viewName = name.trim() === "" ? t("untitledView") : name.trim();
     setSaving(true);
     const res = await createSavedFilterAction(
       { name: viewName, targetEntity, definition, isShared },
@@ -52,7 +53,7 @@ export function SaveViewDialog({
     );
     setSaving(false);
     if (!res.ok) {
-      setError(actionErrorContent(res.error.id));
+      setErrorId(res.error.id);
       return;
     }
     onSaved({
@@ -74,25 +75,26 @@ export function SaveViewDialog({
     >
       <DialogContent aria-describedby={undefined} className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Save current view</DialogTitle>
+          <DialogTitle>{t("saveCurrentView")}</DialogTitle>
         </DialogHeader>
         <label className="block text-sm" htmlFor={nameId}>
-          <span className="mb-1 block font-medium">View name</span>
+          <span className="mb-1 block font-medium">{t("viewName")}</span>
           <Input
             id={nameId}
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Name this view"
+            placeholder={t("viewNamePlaceholder")}
+            dir="auto"
           />
         </label>
         <div className="flex items-center gap-2 text-sm">
           <Checkbox
             id={sharedId}
-            label={SHARED_LABEL}
+            label={t("sharedWithEveryone")}
             checked={isShared}
             onCheckedChange={setIsShared}
           />
-          <label htmlFor={sharedId}>{SHARED_LABEL}</label>
+          <label htmlFor={sharedId}>{t("sharedWithEveryone")}</label>
         </div>
         {error !== null && (
           <div role="alert" className="text-sm text-red-600">
@@ -102,10 +104,10 @@ export function SaveViewDialog({
         )}
         <DialogFooter>
           <Button variant="outline" size="sm" onClick={onClose}>
-            Cancel
+            {t("cancel")}
           </Button>
           <Button size="sm" disabled={saving} onClick={() => void save()}>
-            Save
+            {saving ? t("saving") : t("save")}
           </Button>
         </DialogFooter>
       </DialogContent>

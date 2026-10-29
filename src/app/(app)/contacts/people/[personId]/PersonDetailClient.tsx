@@ -4,6 +4,7 @@ import { useState } from "react";
 import { SharedComposeBar } from "@/features/compose/SharedComposeBar";
 import { MergeDialog } from "@/features/contacts/MergeDialog";
 import type { PersonDetail } from "@/features/contacts/personsRepo";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { trpc } from "@/lib/trpc-client";
 import type { CustomFieldDef } from "@/types/customFields";
 import { PersonDetailHeader } from "../../ContactDetailHeader";
@@ -13,11 +14,6 @@ import { PersonSidebar } from "./PersonSidebar";
 // No page-level Email tab: linked mail is now a card in the Activity timeline, reachable under
 // its Email filter, the way the deal workspace shows it.
 type Tab = "activity" | "files";
-
-const TAB_LABELS: Record<Tab, string> = {
-  activity: "Activity",
-  files: "Files",
-};
 
 const TABS: readonly Tab[] = ["activity", "files"];
 
@@ -46,6 +42,12 @@ export function PersonDetailClient({
   followers = [],
   isFollowedBySelf = false,
 }: PersonDetailClientProps) {
+  const tContacts = useAppTranslations("contacts");
+
+  const TAB_LABELS: Record<Tab, string> = {
+    activity: tContacts("activity"),
+    files: tContacts("files"),
+  };
   const router = useRouter();
   const [tab, setTab] = useState<Tab>("activity");
   const [merging, setMerging] = useState(false);

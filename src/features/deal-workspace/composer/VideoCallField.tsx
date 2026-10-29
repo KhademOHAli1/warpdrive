@@ -1,6 +1,7 @@
 "use client";
 import { Video, X } from "lucide-react";
 import type React from "react";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 
 interface Props {
   value: string;
@@ -20,6 +21,8 @@ function generateVideoCallLink(): string {
 // generated the link is shown with a remove control. The URL string is bound to the composer form
 // and submitted with the activity.
 export function VideoCallField({ value, onChange }: Props): React.ReactNode {
+  const translateSales = useAppTranslations("sales");
+
   if (value === "") {
     return (
       <button
@@ -28,7 +31,7 @@ export function VideoCallField({ value, onChange }: Props): React.ReactNode {
         className="inline-flex w-fit items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-sm text-muted-foreground transition-transform hover:text-foreground active:scale-[0.96]"
       >
         <Video className="h-4 w-4" />
-        Add video call link
+        {translateSales("add_video_call_link_5cbb6")}
       </button>
     );
   }
@@ -40,7 +43,7 @@ export function VideoCallField({ value, onChange }: Props): React.ReactNode {
       </a>
       <button
         type="button"
-        aria-label="Remove video call link"
+        aria-label={translateSales("remove_video_call_link_7da43")}
         onClick={() => onChange("")}
         className="rounded text-muted-foreground hover:text-foreground"
       >

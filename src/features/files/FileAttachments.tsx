@@ -7,10 +7,11 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
 import { trpc } from "@/lib/trpc-client";
+import { useFormatters } from "@/lib/useFormatters";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { ALLOWED_CONTENT_TYPES } from "./contentTypes";
-import { FILE_ATTACHMENTS_STRINGS } from "./fileAttachments.constants";
 import type { FileEntityType, FileListItem } from "./listFilesForEntity";
 import { requestDownloadAction } from "./serverActions";
 import { uploadOneFile } from "./uploadHandshake";
@@ -24,17 +25,19 @@ interface FileAttachmentsProps {
   readOnly?: boolean;
 }
 
-function formatBytes(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
-  return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
-}
-
 export function FileAttachments({
   entityType,
   entityId,
   readOnly = false,
 }: FileAttachmentsProps): React.ReactNode {
+  const t = useAppTranslations("files");
+  const locale = useLocale();
+  const format = useFormatters();
+  function formatBytes(bytes: number): string {
+    if (bytes < 1024) return `${format.number(bytes)} ${t("bytes")}`;
+    if (bytes < 1024 * 1024) return `${format.number(Math.round(bytes / 1024))} ${t("kilobytes")}`;
+    return `${format.number(bytes / 1024 / 1024, { minimumFractionDigits: 1, maximumFractionDigits: 1 })} ${t("megabytes")}`;
+  }
   const query = trpc.files.listForEntity.useQuery({ entityType, entityId });
   const files: FileListItem[] = query.data ?? [];
   const inputRef = useRef<HTMLInputElement>(null);
@@ -50,7 +53,7 @@ export function FileAttachments({
       for (let i = 0; i < list.length; i++) {
         const file = list[i];
         if (file === undefined) continue;
-        const message = await uploadOneFile(file, entityType, entityId);
+        const message = await uploadOneFile(file, entityType, entityId, locale);
         if (message !== null) {
           setError(message);
           return;
@@ -68,18 +71,22 @@ export function FileAttachments({
 
   async function handleDownload(fileId: string): Promise<void> {
     setError(null);
-    const result = await requestDownloadAction(readCsrfToken(), fileId);
-    if (!result.ok) {
-      setError(FILE_ATTACHMENTS_STRINGS.downloadFailed);
-      return;
+    try {
+      const result = await requestDownloadAction(readCsrfToken(), fileId);
+      if (!result.ok) {
+        setError(t("downloadFailed"));
+        return;
+      }
+      // Anchor click, not window.open: the URL is minted after an await, so the user gesture is
+      // gone and window.open would be popup-blocked. A programmatic anchor click is not.
+      const anchor = document.createElement("a");
+      anchor.href = result.value.url;
+      anchor.target = "_blank";
+      anchor.rel = "noopener";
+      anchor.click();
+    } catch {
+      setError(t("downloadFailed"));
     }
-    // Anchor click, not window.open: the URL is minted after an await, so the user gesture is
-    // gone and window.open would be popup-blocked. A programmatic anchor click is not.
-    const anchor = document.createElement("a");
-    anchor.href = result.value.url;
-    anchor.target = "_blank";
-    anchor.rel = "noopener";
-    anchor.click();
   }
 
   return (
@@ -90,8 +97,20 @@ export function FileAttachments({
         </p>
       )}
 
+      {query.isLoading && (
+        <p role="status" className="text-sm text-muted-foreground">
+          {t("loading")}
+        </p>
+      )}
+      {query.isError && (
+        <p role="alert" className="text-sm text-destructive">
+          {t("loadFailed")}
+        </p>
+      )}
       {files.length === 0 ? (
-        <p className="text-sm text-muted-foreground">{FILE_ATTACHMENTS_STRINGS.emptyLabel}</p>
+        !query.isLoading && !query.isError ? (
+          <p className="text-sm text-muted-foreground">{t("empty")}</p>
+        ) : null
       ) : (
         <ul className="space-y-1">
           {files.map((file) => (
@@ -99,10 +118,10 @@ export function FileAttachments({
               <button
                 type="button"
                 onClick={() => void handleDownload(file.id)}
-                aria-label={FILE_ATTACHMENTS_STRINGS.downloadLabel(file.filename)}
-                className="truncate text-left text-primary hover:underline"
+                aria-label={t("download", { name: file.filename })}
+                className="truncate text-start text-primary hover:underline"
               >
-                {file.filename}
+                <bdi dir="auto">{file.filename}</bdi>
               </button>
               <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
                 {formatBytes(file.sizeBytes)}
@@ -120,7 +139,7 @@ export function FileAttachments({
             onClick={() => inputRef.current?.click()}
             className="rounded-md border px-3 py-1.5 text-sm transition-transform hover:bg-accent active:scale-[0.96] disabled:opacity-50"
           >
-            {FILE_ATTACHMENTS_STRINGS.uploadLabel}
+            {busy ? t("uploading") : t("upload")}
           </button>
           <input
             ref={inputRef}
@@ -128,7 +147,7 @@ export function FileAttachments({
             multiple
             className="sr-only"
             tabIndex={-1}
-            aria-label={FILE_ATTACHMENTS_STRINGS.uploadLabel}
+            aria-label={t("upload")}
             accept={ALLOWED_CONTENT_TYPES.join(",")}
             onChange={(e) => void handleFiles(e.target.files)}
           />

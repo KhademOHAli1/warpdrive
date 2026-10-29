@@ -4,6 +4,7 @@ import type React from "react";
 import { useState } from "react";
 import { ERROR_IDS } from "@/constants/errorIds";
 import { updateDealAction } from "@/features/deals/updateAction";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { CatalogLabelPicker } from "@/features/labels/CatalogLabelPicker";
 import { resolveLabelChips } from "@/features/labels/resolveLabels";
 import { trpc } from "@/lib/trpc-client";
@@ -25,6 +26,8 @@ export function LabelRow({
   expectedUpdatedAt: string;
   labels: string[];
 }): React.ReactNode {
+  const translateSales = useAppTranslations("sales");
+
   const router = useRouter();
   const reportError = useDealActionError();
   // Both re-seed from the server once a router.refresh() delivers new props.
@@ -74,7 +77,7 @@ export function LabelRow({
             key={chip.name}
             className={`rounded-full border px-2.5 py-0.5 text-xs font-medium ${chip.classes}`}
           >
-            {chip.name}
+            <bdi dir="auto">{chip.name}</bdi>
           </span>
         ))}
         <CatalogLabelPicker
@@ -84,7 +87,9 @@ export function LabelRow({
         />
       </div>
       {stale ? (
-        <p className="mt-1 text-xs text-muted-foreground">Labels changed elsewhere; reloaded.</p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          {translateSales("labels_changed_elsewhere_reloaded_062f9")}
+        </p>
       ) : null}
     </div>
   );

@@ -5,16 +5,14 @@ import { useState } from "react";
 import { useActionError } from "@/components/shell/ActionErrorProvider";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { STRINGS } from "@/constants/strings";
 import {
   addOptionAction,
   archiveOptionAction,
   renameOptionAction,
 } from "@/features/custom-fields/actions";
+import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import type { CustomFieldOption } from "@/types/customFields";
 import { readCsrfToken } from "@/utils/csrfCookie";
-
-const S = STRINGS.settings;
 
 export function OptionEditor({
   defId,
@@ -23,6 +21,9 @@ export function OptionEditor({
   defId: string;
   options: CustomFieldOption[];
 }): React.ReactNode {
+  const L = useSettingsMessages();
+  const S = L;
+
   const router = useRouter();
   const reportError = useActionError();
   const [newLabel, setNewLabel] = useState("");

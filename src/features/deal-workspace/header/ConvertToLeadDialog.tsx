@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { convertToLeadAction } from "@/features/deal-workspace/convertToLeadAction";
 import { useDealActionError } from "@/features/deal-workspace/DealActionErrorProvider";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { readCsrfToken } from "@/utils/csrfCookie";
 
 // Confirm dialog for "Convert to a lead". Conversion archives the deal and creates a Leads-Inbox
@@ -28,6 +29,8 @@ export function ConvertToLeadDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }): React.ReactNode {
+  const translateSales = useAppTranslations("sales");
+
   const router = useRouter();
   const reportError = useDealActionError();
   const [pending, setPending] = useState(false);
@@ -48,18 +51,19 @@ export function ConvertToLeadDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Convert to a lead</DialogTitle>
+          <DialogTitle>{translateSales("convert_to_a_lead_5cff3")}</DialogTitle>
           <DialogDescription>
-            This moves the deal to the Leads Inbox as a new lead and archives the deal. You can
-            convert the lead back to a deal later.
+            {translateSales(
+              "this_moves_the_deal_to_the_leads_inbox_as_a_new_lead_and_archives_9ec17",
+            )}
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={pending}>
-            Cancel
+            {translateSales("cancel_19766")}
           </Button>
           <Button onClick={() => void confirm()} disabled={pending}>
-            Convert
+            {translateSales("convert_5cd42")}
           </Button>
         </DialogFooter>
       </DialogContent>

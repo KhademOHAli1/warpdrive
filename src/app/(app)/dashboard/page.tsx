@@ -1,18 +1,21 @@
-import { STRINGS } from "@/constants/strings";
 import { db } from "@/db/client";
 import { todayInZone } from "@/features/goals/todayInZone";
 import { getPreferencesForActor } from "@/features/identity/preferencesForActor";
 import { can } from "@/features/permissions/can";
 import { loadDashboardConfig } from "@/features/stats/stageNames";
+import { getStatsMessages } from "@/features/stats/statsMessages.server";
 import { Dashboard } from "@/features/stats/ui/Dashboard";
 import { createContext } from "@/server/trpc/context";
 
-export const metadata = { title: STRINGS.dashboard.title };
+export async function generateMetadata() {
+  return { title: (await getStatsMessages()).title };
+}
 
 export default async function DashboardPage(): Promise<React.ReactNode> {
+  const S = await getStatsMessages();
   const ctx = await createContext();
   if (ctx.actor === null) {
-    return <main>Unauthorized</main>;
+    return <main>{S._extra.unauthorized}</main>;
   }
 
   const canViewOthers = can(ctx.actor, "stats.viewOthers");
@@ -27,7 +30,7 @@ export default async function DashboardPage(): Promise<React.ReactNode> {
   const today = todayInZone(prefs.timezone, new Date());
 
   return (
-    <main aria-label={STRINGS.dashboard.title}>
+    <main aria-label={S.title}>
       <Dashboard
         canViewOthers={canViewOthers}
         canManageGoals={canManageGoals}

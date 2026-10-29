@@ -2,7 +2,7 @@
  * scripts/seed-smoke.ts
  *
  * Idempotent fixture seeder for the Phase 4 agent-browser smoke test.
- * Run: pnpm db:seed:smoke
+ * Run: bun run db:seed:smoke
  *
  * Prints to stderr on success (console.warn per project lint rules):
  *   smoke_email=<email>

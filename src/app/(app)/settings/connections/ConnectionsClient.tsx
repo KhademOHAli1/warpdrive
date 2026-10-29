@@ -1,11 +1,11 @@
 "use client";
-
 import { Plug } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { STRINGS } from "@/constants/strings";
+import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import { revokeConnectionAction } from "@/features/oauth/revokeAction";
+import { useFormatters } from "@/lib/useFormatters";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { SettingsCard, SettingsCardBody, SettingsCardHeader } from "../SettingsSurface";
 
@@ -16,17 +16,18 @@ export interface ConnectionView {
   lastUsedAtIso: string | null;
 }
 
-const S = STRINGS.settings;
-
-function formatDate(iso: string | null): string {
-  return iso === null ? S.connectedAppsNeverUsed : new Date(iso).toLocaleString();
-}
-
 export function ConnectionsClient({
   connections: initialConnections,
 }: {
   connections: ConnectionView[];
 }): React.ReactNode {
+  const L = useSettingsMessages();
+  const format = useFormatters();
+  const S = L;
+  function formatDate(iso: string | null): string {
+    return iso === null ? S.connectedAppsNeverUsed : format.dateTime(iso);
+  }
+
   const router = useRouter();
   const [connections, setConnections] = useState(initialConnections);
   const [pendingId, setPendingId] = useState<string | null>(null);

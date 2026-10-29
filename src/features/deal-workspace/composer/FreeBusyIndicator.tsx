@@ -1,4 +1,6 @@
+"use client";
 import type React from "react";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -9,6 +11,8 @@ interface Props {
 // precomputed busy flag (see activities/availability.getBusyWindows); it is an indicator, not a
 // scheduling control, so it renders no interactive surface.
 export function FreeBusyIndicator({ busy }: Props): React.ReactNode {
+  const translateSales = useAppTranslations("sales");
+
   return (
     <span
       role="status"
@@ -24,7 +28,7 @@ export function FreeBusyIndicator({ busy }: Props): React.ReactNode {
           busy ? "bg-amber-500" : "bg-emerald-500",
         )}
       />
-      {busy ? "Busy" : "Free"}
+      {busy ? translateSales("busy_2b9cf") : translateSales("free_f411a")}
     </span>
   );
 }

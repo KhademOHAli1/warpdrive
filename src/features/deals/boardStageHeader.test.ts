@@ -61,6 +61,17 @@ describe("stageSegmentStyle", () => {
 });
 
 describe("funnelClip", () => {
+  it("mirrors the arrow and keeps the first stage's right edge flat in RTL", () => {
+    expect(funnelClip(true, "rtl")).toBe(
+      "polygon(100% 0, 0.75rem 0, 0 50%, 0.75rem 100%, 100% 100%)",
+    );
+  });
+
+  it("puts the interlocking notch on the right in RTL", () => {
+    expect(funnelClip(false, "rtl")).toContain("calc(100% - 0.75rem) 50%");
+    expect(funnelClip(false, "rtl")).toContain("0 50%");
+  });
+
   it("gives the first segment a flat left edge (no left notch)", () => {
     const clip = funnelClip(true);
     expect(clip).toContain("100% 50%"); // still points right

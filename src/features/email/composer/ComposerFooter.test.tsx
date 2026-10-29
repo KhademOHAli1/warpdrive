@@ -232,22 +232,51 @@ describe("ComposerFooter tracking toggles", () => {
     expect(handler).toHaveBeenCalledWith(true);
   });
 
-  it.each([
-    "Opens",
-    "Links",
-  ])("gives the %s toggle the same inline hover surface as the visibility control", (text) => {
-    render(
+  it.each(["Opens", "Links"])(
+    "gives the %s toggle the same inline hover surface as the visibility control",
+    (text) => {
+      render(
+        <ComposerFooter
+          canSend={true}
+          sending={false}
+          onSend={vi.fn()}
+          onDiscard={vi.fn()}
+          trackOpens={false}
+          onTrackOpensChange={vi.fn()}
+          trackLinks={false}
+          onTrackLinksChange={vi.fn()}
+        />,
+      );
+      expect(screen.getByText(text).parentElement).toHaveClass(
+        ...INLINE_CONTROL_SURFACE.split(" "),
+      );
+    },
+  );
+});
+
+it("offers Iranian date and localized time controls for Persian send-later without sending", async () => {
+  const { LocaleProvider } = await import("@/features/i18n/LocaleProvider");
+  const onSend = vi.fn();
+  const onSendLater = vi.fn();
+  render(
+    <LocaleProvider locale="fa">
       <ComposerFooter
-        canSend={true}
+        canSend
         sending={false}
-        onSend={vi.fn()}
+        onSend={onSend}
         onDiscard={vi.fn()}
         trackOpens={false}
         onTrackOpensChange={vi.fn()}
         trackLinks={false}
         onTrackLinksChange={vi.fn()}
-      />,
-    );
-    expect(screen.getByText(text).parentElement).toHaveClass(...INLINE_CONTROL_SURFACE.split(" "));
-  });
+        onSendLater={onSendLater}
+      />
+    </LocaleProvider>,
+  );
+  fireEvent.click(screen.getByRole("button", { name: "ارسال در زمان دیگر" }));
+  expect(screen.getByLabelText("تاریخ ارسال")).toBeInTheDocument();
+  expect(screen.getByLabelText("زمان ارسال")).toBeInTheDocument();
+  expect(document.querySelector('input[type="datetime-local"]')).toBeNull();
+  expect(onSend).not.toHaveBeenCalled();
+  expect(onSendLater).not.toHaveBeenCalled();
 });

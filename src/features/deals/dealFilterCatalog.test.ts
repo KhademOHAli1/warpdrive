@@ -13,6 +13,7 @@ describe("dealFilterFields", () => {
       "title",
       "orgName",
       "value",
+      "currency",
       "ownerId",
       "stageId",
       "status",

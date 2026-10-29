@@ -3,11 +3,9 @@
 import type React from "react";
 import { Button } from "@/components/ui/Button";
 import { Checkbox } from "@/components/ui/Checkbox";
-import { ENRICHMENT_STRINGS } from "@/constants/enrichmentStrings";
+import { useEnrichmentMessages } from "../useEnrichmentMessages";
 import { ProspectResultRow } from "./ProspectResultRow";
 import type { BadgedProspect } from "./types";
-
-const S = ENRICHMENT_STRINGS.prospects;
 
 function headerState(
   profiles: readonly BadgedProspect[],
@@ -37,30 +35,32 @@ export function ProspectResultsTable({
   onTogglePage: (select: boolean) => void;
   onLoadMore: () => void;
 }): React.ReactNode {
+  const E = useEnrichmentMessages();
+  const S = E.prospects;
   const allOnPage = headerState(profiles, isSelected);
   return (
     <div className="flex flex-col gap-3">
       <div className="max-h-96 overflow-y-auto rounded-md border border-border">
-        <table className="w-full border-collapse text-left">
+        <table className="w-full border-collapse text-start">
           <thead className="sticky top-0 bg-background">
             <tr className="border-border border-b">
-              <th className="w-8 py-2 pl-3">
+              <th className="w-8 py-2 ps-3">
                 <Checkbox
                   checked={allOnPage}
                   onCheckedChange={onTogglePage}
                   label={S.selectAllOnPage}
                 />
               </th>
-              <th className="py-2 pl-2 font-normal text-muted-foreground text-xs">
+              <th className="py-2 ps-2 font-normal text-muted-foreground text-xs">
                 {S.columnPerson}
               </th>
-              <th className="py-2 pl-3 font-normal text-muted-foreground text-xs">
+              <th className="py-2 ps-3 font-normal text-muted-foreground text-xs">
                 {S.columnTitle}
               </th>
-              <th className="py-2 pl-3 font-normal text-muted-foreground text-xs">
+              <th className="py-2 ps-3 font-normal text-muted-foreground text-xs">
                 {S.columnLocation}
               </th>
-              <th className="py-2 pr-3 pl-3 font-normal text-muted-foreground text-xs">
+              <th className="py-2 pe-3 ps-3 font-normal text-muted-foreground text-xs">
                 {S.columnSignals}
               </th>
             </tr>

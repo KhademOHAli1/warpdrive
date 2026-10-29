@@ -2,6 +2,7 @@
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { updateDealAction } from "@/features/deals/updateAction";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { EditableHeading } from "@/features/inline-edit/EditableHeading";
 import type { InlineSaveResult } from "@/features/inline-edit/useInlineEditField";
 import { readCsrfToken } from "@/utils/csrfCookie";
@@ -20,6 +21,8 @@ export function EditableTitle({
   title,
   expectedUpdatedAt,
 }: EditableTitleProps): React.ReactNode {
+  const translateSales = useAppTranslations("sales");
+
   const router = useRouter();
 
   async function commit(next: string): Promise<InlineSaveResult> {
@@ -28,5 +31,7 @@ export function EditableTitle({
     return r.ok ? { ok: true, value: undefined } : { ok: false, error: r.error.id };
   }
 
-  return <EditableHeading title={title} label="deal title" onCommit={commit} />;
+  return (
+    <EditableHeading title={title} label={translateSales("deal_title_890fc")} onCommit={commit} />
+  );
 }

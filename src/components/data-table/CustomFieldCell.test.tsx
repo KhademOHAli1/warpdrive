@@ -43,8 +43,8 @@ describe("CustomFieldCell", () => {
     );
     expect(screen.getByText("Ada")).not.toBeNull();
   });
-  it("right-aligns numeric cells", () => {
-    expect(customFieldCellClass(def({ type: "numeric" }))).toContain("text-right");
-    expect(customFieldCellClass(def({}))).not.toContain("text-right");
+  it("aligns numeric cells at the logical end", () => {
+    expect(customFieldCellClass(def({ type: "numeric" }))).toContain("text-end");
+    expect(customFieldCellClass(def({}))).not.toContain("text-end");
   });
 });

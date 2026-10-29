@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ICON_BUTTON } from "@/constants/formStyles";
 import { deleteOrgAction, deletePersonAction } from "@/features/contacts/actions";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { readCsrfToken } from "@/utils/csrfCookie";
 
 interface ContactActionsMenuProps {
@@ -34,6 +35,8 @@ export function ContactActionsMenu({
   canDelete,
   onMerge,
 }: ContactActionsMenuProps): React.ReactNode {
+  const tContacts = useAppTranslations("contacts");
+
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
@@ -55,15 +58,23 @@ export function ContactActionsMenu({
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger aria-label="Contact actions" disabled={pending} className={ICON_BUTTON}>
+      <DropdownMenuTrigger
+        aria-label={tContacts("contactActions")}
+        disabled={pending}
+        className={ICON_BUTTON}
+      >
         <EllipsisVertical aria-hidden="true" className="h-4 w-4" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-44">
-        <DropdownMenuItem onSelect={() => void copyLink()}>Copy link</DropdownMenuItem>
-        {canMerge && <DropdownMenuItem onSelect={onMerge}>Merge duplicates</DropdownMenuItem>}
+        <DropdownMenuItem onSelect={() => void copyLink()}>
+          {tContacts("copyLink")}
+        </DropdownMenuItem>
+        {canMerge && (
+          <DropdownMenuItem onSelect={onMerge}>{tContacts("mergeDuplicates")}</DropdownMenuItem>
+        )}
         {canDelete && (
           <DropdownMenuItem onSelect={() => setConfirmingDelete(true)} className="text-destructive">
-            Delete
+            {tContacts("delete")}
           </DropdownMenuItem>
         )}
       </DropdownMenuContent>
@@ -73,9 +84,9 @@ export function ContactActionsMenu({
       <ConfirmDialog
         open={confirmingDelete}
         onOpenChange={setConfirmingDelete}
-        title="Delete this record?"
-        description="This cannot be undone."
-        confirmLabel="Delete"
+        title={tContacts("deleteThisRecord")}
+        description={tContacts("thisCannotBeUndone")}
+        confirmLabel={tContacts("delete")}
         destructive
         pending={pending}
         onConfirm={() => void remove()}

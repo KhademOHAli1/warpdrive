@@ -2,6 +2,7 @@
 import { Archive, Ellipsis, Inbox } from "lucide-react";
 import type React from "react";
 import { ColumnsMenu } from "@/components/data-table/ColumnsMenu";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import type { LeadNextActivityBucket } from "../schemas";
 import { AddLeadButton } from "./AddLeadButton";
 import type { LeadColumn } from "./columns";
@@ -68,23 +69,25 @@ function ToggleIcon({
 // Full-width action bar (replaces the old left sub-rail). Inbox/Archive icon group, add-lead split
 // button, counter, filters, column cog, and a more-actions menu with CSV export.
 export function LeadsActionBar(props: LeadsActionBarProps): React.ReactNode {
+  const tLeads = useAppTranslations("leads");
+
   const { filter, onFilter, count } = props;
   return (
     <div className="mb-3 flex flex-wrap items-center gap-3">
       <div className="inline-flex overflow-hidden rounded-md border">
         <ToggleIcon
           active={filter === "inbox"}
-          label="Inbox"
+          label={tLeads("inbox")}
           onClick={() => onFilter("inbox")}
-          rounded="rounded-l-md"
+          rounded="rounded-s-md"
         >
           <Inbox aria-hidden="true" className="h-4 w-4" />
         </ToggleIcon>
         <ToggleIcon
           active={filter === "archived"}
-          label="Archive"
+          label={tLeads("archive")}
           onClick={() => onFilter("archived")}
-          rounded="rounded-r-md border-l"
+          rounded="rounded-e-md border-s"
         >
           <Archive aria-hidden="true" className="h-4 w-4" />
         </ToggleIcon>
@@ -97,10 +100,10 @@ export function LeadsActionBar(props: LeadsActionBarProps): React.ReactNode {
       />
 
       <span className="text-sm tabular-nums text-muted-foreground">
-        {count} {count === 1 ? "lead" : "leads"}
+        {tLeads("leadCount", { count })}
       </span>
 
-      <div className="ml-auto flex items-center gap-2">
+      <div className="ms-auto flex items-center gap-2">
         {props.filterBuilder}
         <LeadFilters
           labelKeys={props.labelKeys}
@@ -117,7 +120,7 @@ export function LeadsActionBar(props: LeadsActionBarProps): React.ReactNode {
           onReorder={props.onReorderColumn}
         />
         <PopMenu
-          triggerLabel="More actions"
+          triggerLabel={tLeads("moreActions")}
           triggerClassName="rounded-md border p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground"
           align="right"
           trigger={<Ellipsis aria-hidden="true" className="h-4 w-4" />}
@@ -132,7 +135,7 @@ export function LeadsActionBar(props: LeadsActionBarProps): React.ReactNode {
                 props.onExport();
               }}
             >
-              Export leads
+              {tLeads("exportLeads")}
             </button>
           )}
         </PopMenu>

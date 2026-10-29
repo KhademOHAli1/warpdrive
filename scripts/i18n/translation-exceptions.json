@@ -1,0 +1,22 @@
+{
+  "src/components/ui/messages/shared": {
+    "de": {
+      "timePlaceholder": "HH:mm is the canonical 24-hour time-input notation in German too.",
+      "colors.orange": "Orange is the standard German color name, identical to English.",
+      "colors.indigo": "Indigo is the standard German color name, identical to English."
+    }
+  },
+  "src/features/activities/messages/calendar": {
+    "de": {
+      "status": "Status is the standard German UI term, identical to English."
+    }
+  },
+  "src/features/identity/messages/settings": {
+    "fa": {
+      "mcpConnectDocsUrl": "This is a documentation URL; translating it would break navigation.",
+      "_enrichment.settings.providerNames.apollo": "Apollo is the provider product name.",
+      "_enrichment.settings.providerNames.rocketreach": "RocketReach is the provider product name.",
+      "_enrichment.settings.providerNames.getprospect": "GetProspect is the provider product name."
+    }
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "title": "افزودن سریع",
+  "entities": {
+    "lead": "سرنخ",
+    "deal": "فرصت فروش",
+    "activity": "فعالیت",
+    "person": "فرد",
+    "org": "سازمان",
+    "note": "یادداشت",
+    "email": "ایمیل"
+  },
+  "addPerson": "افزودن فرد",
+  "addOrganization": "افزودن سازمان",
+  "name": "نام",
+  "nameRequired": "نام را وارد کنید.",
+  "fieldRequired": "تکمیل فیلد «{name}» الزامی است.",
+  "organization": "سازمان",
+  "noOrganization": "بدون سازمان",
+  "address": "نشانی",
+  "addressFields": {
+    "street": "خیابان و پلاک",
+    "city": "شهر",
+    "region": "استان / منطقه",
+    "postal": "کد پستی",
+    "country": "کشور"
+  },
+  "newNote": "یادداشت تازه",
+  "noteTarget": "یادداشت برای این فرد",
+  "selectPerson": "یک فرد را انتخاب کنید"
+}

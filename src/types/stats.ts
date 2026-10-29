@@ -92,6 +92,7 @@ export type OwnerScope =
 export type OwnerIdFilter = { everyone: true } | { everyone: false; ids: string[] };
 
 export interface DashboardFilters {
+  currency?: string;
   pipelineId: string | null;
   owners: OwnerIdFilter;
   from: string;

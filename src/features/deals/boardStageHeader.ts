@@ -54,9 +54,14 @@ export function stageSegmentStyle(
   };
 }
 
-// Arrow segment: flat left edge for the first stage, a left notch for the rest
-// so neighbours interlock. Right edge always points toward the next stage.
-export function funnelClip(isFirst: boolean): string {
+// Mirror the geometry, rather than the element, so text keeps its natural direction.
+export function funnelClip(isFirst: boolean, direction: "ltr" | "rtl" = "ltr"): string {
+  if (direction === "rtl") {
+    const left = "0.75rem 0, 0 50%, 0.75rem 100%";
+    return isFirst
+      ? `polygon(100% 0, ${left}, 100% 100%)`
+      : `polygon(100% 0, ${left}, 100% 100%, calc(100% - 0.75rem) 50%)`;
+  }
   const right = "calc(100% - 0.75rem) 0, 100% 50%, calc(100% - 0.75rem) 100%";
   return isFirst ? `polygon(0 0, ${right}, 0 100%)` : `polygon(0 0, ${right}, 0 100%, 0.75rem 50%)`;
 }

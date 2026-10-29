@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import {
   SETTINGS_TABLE_CELL,
   SETTINGS_TABLE_HEAD,
@@ -34,25 +35,27 @@ interface Props {
   viewerIsAdmin: boolean;
 }
 
-const C = {
-  name: "Name",
-  email: "Email",
-  role: "Role",
-  permissionSet: "Permission set",
-  active: "Active",
-  actions: "Actions",
-} as const;
-
-const V = {
-  admin: "Admin",
-  regular: "Regular",
-  yes: "Yes",
-  no: "No",
-  invited: "Invited",
-  noSet: "None",
-} as const;
-
 export function UsersClient({ rows, permissionSets, viewerIsAdmin }: Props): React.ReactElement {
+  const L = useSettingsMessages();
+
+  const V = {
+    admin: L._extra.admin,
+    regular: L._extra.regular,
+    yes: L._extra.yes,
+    no: L._extra.no,
+    invited: L._extra.invited,
+    noSet: L._extra.none,
+  } as const;
+
+  const C = {
+    name: L._extra.name,
+    email: L._extra.email,
+    role: L._extra.role,
+    permissionSet: L._extra.permission_set,
+    active: L._extra.active,
+    actions: L._extra.actions,
+  } as const;
+
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();

@@ -4,17 +4,23 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, type SelectOption } from "@/components/ui/Select";
 import { TimePicker } from "@/components/ui/TimePicker";
-import { ACTIVITY_PRIORITIES, ACTIVITY_PRIORITY_KEYS } from "@/constants/activityPriorities";
+import { ACTIVITY_PRIORITY_KEYS } from "@/constants/activityPriorities";
 import { FIELD_INPUT as FIELD } from "@/constants/formStyles";
+import {
+  useAppTranslations,
+  useLocale,
+  useLocalePreferences,
+} from "@/features/i18n/LocaleProvider";
 import { trpc } from "@/lib/trpc-client";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { ActivityDatePicker } from "./ActivityDatePicker";
+import { ActivityTimeZoneHint } from "./ActivityTimeZoneHint";
 import { ActivityTypeIcon } from "./ActivityTypeIcon";
 import { completeActivityAction, deleteActivityAction, editActivityAction } from "./actions";
 import { buildActivityPatch, type EditableActivity, isoToLocalParts } from "./activityEditPatch";
+import { localizeActivityTypes } from "./activityTypeLabels";
+import { useActivitiesMessages } from "./useActivitiesMessages";
 import { useInvalidateActivityLists } from "./useInvalidateActivityLists";
-
-const NO_PRIORITY_LABEL = "No priority";
 
 export type { EditableActivity } from "./activityEditPatch";
 
@@ -31,10 +37,20 @@ export function ActivityEditModal({
   onSaved,
   onMarkedDone,
 }: Props): React.ReactNode {
+  const S = useActivitiesMessages();
+  const locale = useLocale();
+  const preferences = useLocalePreferences();
+  const [draftZone] = useState(preferences.timeZone);
+  const tCalendar = useAppTranslations("calendar");
   const typesQ = trpc.activities.listTypes.useQuery();
   const invalidateActivityLists = useInvalidateActivityLists();
-  const types = typesQ.data ?? [];
-  const initialParts = isoToLocalParts(activity.dueAtIso, activity.allDay);
+  const types = localizeActivityTypes(typesQ.data ?? [], locale);
+  const initialParts = isoToLocalParts(
+    activity.dueAtIso,
+    activity.allDay,
+    draftZone,
+    activity.dueDate,
+  );
 
   const [typeId, setTypeId] = useState(activity.typeId);
   // Guard against ActivitiesTable.toEditable opening this modal with typeId: "" (row clicked
@@ -53,10 +69,20 @@ export function ActivityEditModal({
 
   async function save(): Promise<void> {
     if (subject.trim() === "") {
-      setError("Subject is required");
+      setError(S.subjectRequired);
       return;
     }
-    const patch = buildActivityPatch(activity, { subject, typeId, priority, date, time, location });
+    let patch: ReturnType<typeof buildActivityPatch>;
+    try {
+      patch = buildActivityPatch(
+        activity,
+        { subject, typeId, priority, date, time, location },
+        draftZone,
+      );
+    } catch {
+      setError(tCalendar("invalidWallTime"));
+      return;
+    }
     if (patch === null) {
       onClose();
       return;
@@ -66,7 +92,7 @@ export function ActivityEditModal({
     const r = await editActivityAction(patch, readCsrfToken());
     if (!r.ok) {
       setPending(false);
-      setError(`Could not save activity (${r.error.id})`);
+      setError(S.saveFailed(r.error.id));
       return;
     }
     await invalidateActivityLists();
@@ -81,7 +107,7 @@ export function ActivityEditModal({
     const r = await deleteActivityAction({ id: activity.id }, readCsrfToken());
     if (!r.ok) {
       setPending(false);
-      setError(`Could not delete activity (${r.error.id})`);
+      setError(S.deleteFailed(r.error.id));
       return;
     }
     await invalidateActivityLists();
@@ -97,7 +123,7 @@ export function ActivityEditModal({
     const r = await completeActivityAction({ id: activity.id, done: next }, readCsrfToken());
     if (!r.ok) {
       setPending(false);
-      setError(`Could not update activity (${r.error.id})`);
+      setError(S.updateFailed(r.error.id));
       return;
     }
     await invalidateActivityLists();
@@ -119,14 +145,14 @@ export function ActivityEditModal({
         className="max-w-md gap-0 overflow-hidden bg-card p-0"
       >
         <DialogHeader className="border-b px-5 py-3">
-          <DialogTitle className="text-base font-semibold">Edit activity</DialogTitle>
+          <DialogTitle className="text-base font-semibold">{S.editActivity}</DialogTitle>
         </DialogHeader>
 
         <div className="flex flex-col gap-3 px-5 py-4 text-sm">
           <div className="block">
-            <span className="mb-1 block font-medium">Type</span>
+            <span className="mb-1 block font-medium">{S.type}</span>
             <Select
-              ariaLabel="Activity type"
+              ariaLabel={S.activityType}
               value={effectiveTypeId}
               onChange={setTypeId}
               options={types.map<SelectOption>((t) => ({
@@ -137,50 +163,57 @@ export function ActivityEditModal({
             />
           </div>
           <label className="block">
-            <span className="mb-1 block font-medium">Subject</span>
+            <span className="mb-1 block font-medium">{S.subject}</span>
             <input
-              aria-label="Subject"
+              aria-label={S.subject}
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
               className={FIELD}
             />
           </label>
           <div className="block">
-            <span className="mb-1 block font-medium">Priority</span>
+            <span className="mb-1 block font-medium">{S.priority}</span>
             <Select
-              ariaLabel="Priority"
+              ariaLabel={S.priority}
               value={priority}
               onChange={setPriority}
-              placeholder={NO_PRIORITY_LABEL}
+              placeholder={S.noPriority}
               options={[
-                { value: "", label: NO_PRIORITY_LABEL },
+                { value: "", label: S.noPriority },
                 ...ACTIVITY_PRIORITY_KEYS.map<SelectOption>((k) => ({
                   value: k,
-                  label: ACTIVITY_PRIORITIES[k].name,
+                  label: S.priorities[k],
                 })),
               ]}
             />
           </div>
           <div className="block">
-            <span className="mb-1 block font-medium">Due date</span>
+            <span className="mb-1 block font-medium">{S.dueDate}</span>
             <ActivityDatePicker
-              ariaLabel="Due date"
+              ariaLabel={S.dueDate}
               value={date === "" ? null : date}
               onChange={(v) => setDate(v ?? "")}
               assigneeId={activity.assigneeId ?? null}
             />
           </div>
           <div className="block">
-            <span className="mb-1 block font-medium">Start time</span>
-            <TimePicker ariaLabel="Start time" value={time} onChange={setTime} />
+            <span className="mb-1 block font-medium">{S.startTime}</span>
+            <TimePicker ariaLabel={S.startTime} value={time} onChange={setTime} />
           </div>
+          <ActivityTimeZoneHint
+            originalInstant={activity.dueAtIso}
+            timeZone={draftZone}
+            date={date}
+            time={time}
+            legacy={activity.allDay && !activity.dueDate}
+          />
           <label className="block">
-            <span className="mb-1 block font-medium">Location</span>
+            <span className="mb-1 block font-medium">{S.location}</span>
             <input
-              aria-label="Location"
+              aria-label={S.location}
               value={location}
               onChange={(e) => setLocation(e.target.value)}
-              placeholder="Add location"
+              placeholder={S.addLocation}
               className={FIELD}
             />
           </label>
@@ -203,7 +236,7 @@ export function ActivityEditModal({
               disabled={pending}
               className="rounded-md border px-3 py-1.5 text-sm text-red-700 transition-transform hover:bg-red-50 active:not-disabled:scale-[0.96] disabled:opacity-50"
             >
-              Delete
+              {S.delete}
             </button>
             <button
               type="button"
@@ -211,7 +244,7 @@ export function ActivityEditModal({
               disabled={pending}
               className="rounded-md border px-3 py-1.5 text-sm transition-transform hover:bg-accent active:not-disabled:scale-[0.96] disabled:opacity-50"
             >
-              {doneNow ? "Reopen" : "Mark as done"}
+              {doneNow ? S.reopen : S.markAsDone}
             </button>
           </div>
           <div className="flex items-center gap-2">
@@ -220,7 +253,7 @@ export function ActivityEditModal({
               onClick={onClose}
               className="rounded-md border px-3 py-1.5 text-sm transition-transform hover:bg-accent active:scale-[0.96]"
             >
-              Cancel
+              {S.cancel}
             </button>
             <button
               type="button"
@@ -228,7 +261,7 @@ export function ActivityEditModal({
               disabled={pending}
               className="rounded-md bg-action px-4 py-1.5 text-sm font-medium text-action-foreground transition-transform hover:opacity-90 active:not-disabled:scale-[0.96] disabled:opacity-50"
             >
-              {pending ? "Saving..." : "Save"}
+              {pending ? S.saving : S.save}
             </button>
           </div>
         </div>

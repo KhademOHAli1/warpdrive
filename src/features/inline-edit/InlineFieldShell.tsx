@@ -2,6 +2,7 @@
 import { Pencil } from "lucide-react";
 import type React from "react";
 import { useEffect, useRef } from "react";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { cn } from "@/lib/utils";
 
 const FIRST_ENABLED_CONTROL = [
@@ -46,6 +47,7 @@ export function InlineFieldShell({
   emptyPrompt,
   children,
 }: InlineFieldShellProps): React.ReactNode {
+  const t = useAppTranslations("shell.inline");
   const editorRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -63,7 +65,7 @@ export function InlineFieldShell({
       <button
         type="button"
         onClick={onStartEdit}
-        className="-mx-1 -my-0.5 rounded px-1 py-0.5 text-left text-sm text-link transition-[background-color,scale] duration-150 ease-out hover:bg-field-hover active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transition-colors"
+        className="-mx-1 -my-0.5 rounded px-1 py-0.5 text-start text-sm text-link transition-[background-color,scale] duration-150 ease-out hover:bg-field-hover active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transition-colors"
       >
         {emptyPrompt}
       </button>
@@ -74,10 +76,10 @@ export function InlineFieldShell({
   // gray hover background bleeds past the content without adding layout height.
   const ValueElement = valueElement;
   return (
-    <div className="group -mx-1 -my-1 relative flex min-w-0 items-center rounded px-1 py-1 pr-8 hover:bg-field-hover">
+    <div className="group -mx-1 -my-1 relative flex min-w-0 items-center rounded px-1 py-1 pe-8 hover:bg-field-hover">
       <ValueElement
         className={cn(
-          "min-w-0 cursor-text select-text break-words text-left text-sm",
+          "min-w-0 cursor-text select-text break-words text-start text-sm",
           valueClassName,
         )}
       >
@@ -85,11 +87,11 @@ export function InlineFieldShell({
       </ValueElement>
       <button
         type="button"
-        aria-label={`Edit ${label}`}
+        aria-label={t("edit", { label })}
         onClick={onStartEdit}
         // opacity (not visibility) so the button stays in the tab order and the
         // accessibility tree; focus-visible reveals it for keyboard users.
-        className="absolute top-1/2 right-1 flex h-6 w-[26px] -translate-y-1/2 items-center justify-center rounded border border-field-border bg-card opacity-0 transition-[opacity,background-color,scale] duration-150 ease-out after:absolute after:-inset-1.5 after:content-[''] hover:bg-accent active:scale-[0.96] focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring group-hover:opacity-100 motion-reduce:transition-[opacity,background-color]"
+        className="absolute top-1/2 end-1 flex h-6 w-[26px] -translate-y-1/2 items-center justify-center rounded border border-field-border bg-card opacity-0 transition-[opacity,background-color,scale] duration-150 ease-out after:absolute after:-inset-1.5 after:content-[''] hover:bg-accent active:scale-[0.96] focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring group-hover:opacity-100 motion-reduce:transition-[opacity,background-color]"
       >
         <Pencil aria-hidden="true" className="h-4 w-4" />
       </button>

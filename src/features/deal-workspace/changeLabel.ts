@@ -19,9 +19,12 @@ import {
   CHANGE_LABEL_PERSON_LINKED,
   CHANGE_LABEL_PERSON_UNLINKED,
 } from "@/constants/changeLogFields";
-import { ENRICHMENT_STRINGS } from "@/constants/enrichmentStrings";
 import { isSourceChannelKey, SOURCE_CHANNELS } from "@/constants/sourceChannels";
 import { canonicalField } from "@/features/enrichment/canonical";
+import { providerName } from "@/features/enrichment/providerNames";
+import type { Locale } from "@/features/i18n/registry";
+import { isContactPointField } from "./contactPointAuditValue";
+import { localizedChangeLabel } from "./localizedChangeLabel";
 import { asLostStatusValue } from "./lostStatusValue";
 
 // Format a jsonb audit value for display; null/empty read as "(none)".
@@ -61,11 +64,9 @@ function asEnrichedValue(value: unknown): EnrichedValue | null {
   };
 }
 
-const PROVIDER_NAMES: Readonly<Record<string, string>> = ENRICHMENT_STRINGS.settings.providerNames;
-
 // "apollo" -> "Apollo"; an id no longer in the roster renders as itself rather than vanishing.
 function provenanceClause(providers: string[]): string {
-  const names = providers.map((p) => PROVIDER_NAMES[p] ?? p);
+  const names = providers.map(providerName);
   const last = names.at(-1);
   if (last === undefined) return "";
   const list = names.length === 1 ? last : `${names.slice(0, -1).join(", ")} and ${last}`;
@@ -144,11 +145,16 @@ function lostStatusLabel(field: string, oldValue: unknown, newValue: unknown): s
   return suffix === "" ? head : `${head} · ${suffix}`;
 }
 
-export function formatChangeLabel(entry: {
-  field: string;
-  oldValue: unknown;
-  newValue: unknown;
-}): string {
+export function formatChangeLabel(
+  entry: {
+    field: string;
+    oldValue: unknown;
+    newValue: unknown;
+  },
+  locale: Locale = "en",
+): string {
+  if (locale !== "en" || isContactPointField(entry.field))
+    return localizedChangeLabel(entry, locale);
   const lost = lostStatusLabel(entry.field, entry.oldValue, entry.newValue);
   if (lost !== null) return lost;
   const directional = directionalLabel(entry.field, entry.oldValue, entry.newValue);

@@ -1,0 +1,10 @@
+/* Mirror the complete interface icon set, including sidebar pictograms.
+ * Keep the rule outside generated shadcn sources so registry updates retain it.
+ * :dir respects inherited direction, nested LTR sections and portals.
+ * Existing RTL transforms and explicitly direction-selected icons must not flip twice.
+ */
+svg.lucide:dir(rtl):not([data-rtl-mirror="false"]):not([class*="rtl:rotate-"]):not(
+  [class*="rtl:-rotate-"]
+):not([class*="rtl:scale-"]):not([class*="rtl:-scale-"]) {
+  scale: -1 1;
+}

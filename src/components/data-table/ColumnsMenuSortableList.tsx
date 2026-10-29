@@ -1,7 +1,19 @@
 "use client";
-import { DndContext, type DragEndEvent, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
-import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import {
+  DndContext,
+  type DragEndEvent,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 import type React from "react";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import type { ColumnDef } from "./columnModel";
 import { SortableColumnRow } from "./SortableColumnRow";
 
@@ -23,7 +35,11 @@ export function ColumnsMenuSortableList({
   onToggle,
   onReorder,
 }: ColumnsMenuSortableListProps): React.ReactNode {
-  const sensors = useSensors(useSensor(PointerSensor));
+  const t = useAppTranslations("tableControls");
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
   const byKey = new Map(catalog.map((c) => [c.key, c]));
 
   function onDragEnd(e: DragEndEvent): void {
@@ -32,8 +48,47 @@ export function ColumnsMenuSortableList({
     if (from !== to) onReorder(from, to);
   }
 
+  const nameFor = (id: string | number) => byKey.get(String(id))?.header ?? t("column");
+  const positionFor = (id: string | number) => Math.max(1, order.indexOf(String(id)) + 1);
+  const accessibility = {
+    screenReaderInstructions: { draggable: t("dragInstructions") },
+    announcements: {
+      onDragStart: ({ active }: { active: { id: string | number } }) =>
+        t("columnPickedUp", { name: nameFor(active.id) }),
+      onDragOver: ({
+        active,
+        over,
+      }: {
+        active: { id: string | number };
+        over: { id: string | number } | null;
+      }) =>
+        over === null
+          ? undefined
+          : t("columnMoved", {
+              name: nameFor(active.id),
+              position: positionFor(over.id),
+              total: order.length,
+            }),
+      onDragEnd: ({
+        active,
+        over,
+      }: {
+        active: { id: string | number };
+        over: { id: string | number } | null;
+      }) =>
+        over === null
+          ? t("columnDragCancelled", { name: nameFor(active.id) })
+          : t("columnDropped", {
+              name: nameFor(active.id),
+              position: positionFor(over.id),
+              total: order.length,
+            }),
+      onDragCancel: ({ active }: { active: { id: string | number } }) =>
+        t("columnDragCancelled", { name: nameFor(active.id) }),
+    },
+  };
   return (
-    <DndContext sensors={sensors} onDragEnd={onDragEnd}>
+    <DndContext sensors={sensors} onDragEnd={onDragEnd} accessibility={accessibility}>
       <SortableContext items={[...order]} strategy={verticalListSortingStrategy}>
         {order.map((key) => {
           const col = byKey.get(key);

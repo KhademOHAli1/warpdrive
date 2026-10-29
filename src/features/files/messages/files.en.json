@@ -1,0 +1,15 @@
+{
+  "upload": "Upload file",
+  "uploading": "Uploading...",
+  "empty": "No files attached yet.",
+  "loading": "Loading files...",
+  "loadFailed": "Could not load files. Please try again.",
+  "download": "Download {name}",
+  "tooLarge": "\"{name}\" is too large (max {maxMb, number} MB).",
+  "unsupportedType": "\"{name}\" has an unsupported file type.",
+  "uploadFailed": "Upload failed for \"{name}\".",
+  "downloadFailed": "Could not open that file.",
+  "bytes": "B",
+  "kilobytes": "KB",
+  "megabytes": "MB"
+}

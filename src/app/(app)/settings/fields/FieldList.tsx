@@ -2,8 +2,8 @@
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { useActionError } from "@/components/shell/ActionErrorProvider";
-import { STRINGS } from "@/constants/strings";
 import { reorderDefsAction } from "@/features/custom-fields/actions";
+import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import { moveInArray } from "@/features/settings/reorder";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { FieldRowItem } from "./FieldRowItem";
@@ -16,6 +16,8 @@ export function FieldList({
   rows: FieldRow[];
   footer: React.ReactNode;
 }): React.ReactNode {
+  const L = useSettingsMessages();
+
   const router = useRouter();
   const reportError = useActionError();
   const ids = rows.map((r) => r.id);
@@ -31,7 +33,7 @@ export function FieldList({
   return (
     <ul className="divide-y overflow-hidden rounded-lg border bg-card shadow-sm">
       {rows.length === 0 ? (
-        <li className="px-3 py-2 text-sm text-muted-foreground">{STRINGS.settings.noFields}</li>
+        <li className="px-3 py-2 text-sm text-muted-foreground">{L.noFields}</li>
       ) : (
         rows.map((row, index) => (
           <FieldRowItem

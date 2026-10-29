@@ -57,4 +57,16 @@ describe("UserMenu", () => {
     expect(settings.getAttribute("href")).toBe("/settings/profile");
     expect(logout.getAttribute("href")).toBe("/auth/logout");
   });
+
+  it("keeps language preferences in settings rather than a separate menu toggle", async () => {
+    const user = userEvent.setup();
+    render(<UserMenu userId="u1" />);
+    screen.getByRole("button", { name: "Account menu" }).focus();
+    await user.keyboard("{Enter}");
+    expect(screen.queryByRole("menuitem", { name: "Switch language to Persian" })).toBeNull();
+    expect(screen.getByRole("menuitem", { name: /Settings/ })).toHaveAttribute(
+      "href",
+      "/settings/profile",
+    );
+  });
 });

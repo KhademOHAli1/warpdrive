@@ -5,6 +5,8 @@ import type React from "react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { connectGmailStart, disconnectMailboxAction } from "@/features/email/actions";
+import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
+import { useFormatters } from "@/lib/useFormatters";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import {
   SettingsCard,
@@ -13,9 +15,6 @@ import {
   SettingsCardHeader,
 } from "../SettingsSurface";
 import { mailboxDisplayHealth, mailboxDotClass, mailboxStatusLabel } from "./statusLabel";
-import { EMAIL_SYNC_STRINGS } from "./strings";
-
-const S = EMAIL_SYNC_STRINGS;
 
 export interface MailboxView {
   id: string;
@@ -25,12 +24,15 @@ export interface MailboxView {
   lastErrorId: string | null;
 }
 
-function formatSync(iso: string | null): string {
-  if (iso === null) return S.neverSynced;
-  return S.lastSynced(new Date(iso).toLocaleString());
-}
-
 export function EmailSyncClient({ mailbox }: { mailbox: MailboxView | null }): React.ReactNode {
+  const L = useSettingsMessages();
+  const format = useFormatters();
+  const S = L._emailSync;
+  function formatSync(iso: string | null): string {
+    if (iso === null) return S.neverSynced;
+    return S.lastSynced(format.dateTime(iso));
+  }
+
   const router = useRouter();
   const [now, setNow] = useState<Date | null>(null);
   // eslint-disable-next-line react-hooks/set-state-in-effect -- the clock is the browser's, not the request's: rendering a stall from the server time would disagree with the tab a minute later
@@ -74,8 +76,8 @@ export function EmailSyncClient({ mailbox }: { mailbox: MailboxView | null }): R
     <SettingsCard>
       <SettingsCardHeader
         icon={<Mail className="size-4" aria-hidden="true" />}
-        title="Gmail connection"
-        description="Connect one mailbox to sync messages and activity."
+        title={L._extra.gmail_connection}
+        description={L._extra.connect_one_mailbox_to_sync_messages_and_activity}
       />
       <SettingsCardBody>
         <div className="mb-1 flex items-center gap-2">
@@ -84,7 +86,7 @@ export function EmailSyncClient({ mailbox }: { mailbox: MailboxView | null }): R
             data-health={health}
             className={`inline-block h-2 w-2 rounded-full ${mailboxDotClass(health)}`}
           />
-          <span className="text-sm font-medium">{mailboxStatusLabel(mailbox, now)}</span>
+          <span className="text-sm font-medium">{mailboxStatusLabel(mailbox, now, S)}</span>
         </div>
         {mailbox !== null ? (
           <>

@@ -3,11 +3,12 @@ import type React from "react";
 import { useId } from "react";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/RadioGroup";
-import { ENRICHMENT_STRINGS } from "@/constants/enrichmentStrings";
+import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
+import { useFormatters } from "@/lib/useFormatters";
+import { canonicalFieldLabel } from "./enrichmentMessages";
 import { overwriteNotice } from "./overwriteNotice";
 import type { ProposedField, ProposedValue } from "./types";
-
-const S = ENRICHMENT_STRINGS.dialog;
+import { useEnrichmentMessages } from "./useEnrichmentMessages";
 
 export interface EnrichFieldRowProps {
   field: ProposedField;
@@ -24,29 +25,59 @@ export interface EnrichFieldRowProps {
 
 const PRIMARY_CHOICE = { alongside: "alongside", primary: "primary" } as const;
 
-function providersOf(value: ProposedValue): string {
-  return value.providers.join(", ");
+function providersOf(value: ProposedValue, separator: string): string {
+  return value.providers.join(separator);
 }
 
-function SingleValue({ value }: { value: ProposedValue }): React.ReactNode {
+function SingleValue({
+  value,
+  groupNumbers,
+}: {
+  value: ProposedValue;
+  groupNumbers: boolean;
+}): React.ReactNode {
+  const E = useEnrichmentMessages();
+  const fmt = useFormatters();
+  const display =
+    typeof value.value === "number"
+      ? fmt.number(value.value, { useGrouping: groupNumbers })
+      : String(value.value);
   return (
     <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
-      <span className="text-sm text-foreground">{String(value.value)}</span>
-      <span className="text-xs text-muted-foreground">{providersOf(value)}</span>
+      <span className="text-sm text-foreground">
+        <bdi dir="auto">{display}</bdi>
+      </span>
+      <span className="text-xs text-muted-foreground">
+        <bdi dir="auto">{providersOf(value, E.listSeparator)}</bdi>
+      </span>
     </div>
   );
 }
 
 // The value text is the click target, not the dot beside it, so the label owns the association.
-function ContestedOption({ value }: { value: ProposedValue }): React.ReactNode {
+function ContestedOption({
+  value,
+  groupNumbers,
+}: {
+  value: ProposedValue;
+  groupNumbers: boolean;
+}): React.ReactNode {
+  const E = useEnrichmentMessages();
+  const fmt = useFormatters();
+  const display =
+    typeof value.value === "number"
+      ? fmt.number(value.value, { useGrouping: groupNumbers })
+      : String(value.value);
   const id = useId();
   return (
     <div className="flex items-center gap-2">
       <RadioGroupItem id={id} value={String(value.value)} />
       <label htmlFor={id} className="text-sm text-foreground">
-        {String(value.value)}
+        <bdi dir="auto">{display}</bdi>
       </label>
-      <span className="text-xs text-muted-foreground">{providersOf(value)}</span>
+      <span className="text-xs text-muted-foreground">
+        <bdi dir="auto">{providersOf(value, E.listSeparator)}</bdi>
+      </span>
     </div>
   );
 }
@@ -55,17 +86,21 @@ function ContestedValues({
   values,
   selectedValue,
   onValueChange,
+  groupNumbers,
 }: {
   values: ProposedValue[];
   selectedValue: string;
   onValueChange: (value: string) => void;
+  groupNumbers: boolean;
 }): React.ReactNode {
+  const E = useEnrichmentMessages();
+  const S = E.dialog;
   return (
     <div className="flex flex-col gap-1">
       <span className="text-xs text-muted-foreground">{S.pickOne}</span>
       <RadioGroup value={selectedValue} onValueChange={onValueChange} className="gap-1">
         {values.map((value) => (
-          <ContestedOption key={String(value.value)} value={value} />
+          <ContestedOption key={String(value.value)} value={value} groupNumbers={groupNumbers} />
         ))}
       </RadioGroup>
     </div>
@@ -81,6 +116,8 @@ function PrimaryChoice({
   makePrimary: boolean;
   onMakePrimaryChange: (makePrimary: boolean) => void;
 }): React.ReactNode {
+  const E = useEnrichmentMessages();
+  const S = E.dialog;
   const alongsideId = useId();
   const primaryId = useId();
   return (
@@ -122,20 +159,24 @@ export function EnrichFieldRow({
   onValueChange,
   onMakePrimaryChange,
 }: EnrichFieldRowProps): React.ReactNode {
+  const E = useEnrichmentMessages();
+  const S = E.dialog;
+  const { locale } = useLocalePreferences();
+  const label = canonicalFieldLabel(field.canonicalKey, field.label, E, locale);
   const checkboxId = useId();
   const first = field.values[0];
-  const notice = overwriteNotice(field);
+  const notice = overwriteNotice(field, E);
   return (
     <div className="grid grid-cols-[auto_8rem_1fr] items-start gap-x-3 gap-y-1 py-2">
       <Checkbox
         id={checkboxId}
         checked={checked}
         onCheckedChange={onCheckedChange}
-        label={field.label}
+        label={label}
         className="mt-0.5"
       />
       <label htmlFor={checkboxId} className="text-sm text-muted-foreground">
-        {field.label}
+        {label}
       </label>
       <div className="flex flex-col gap-1">
         {field.values.length > 1 ? (
@@ -143,9 +184,10 @@ export function EnrichFieldRow({
             values={field.values}
             selectedValue={selectedValue}
             onValueChange={onValueChange}
+            groupNumbers={field.canonicalKey !== "org.foundedYear"}
           />
         ) : first !== undefined ? (
-          <SingleValue value={first} />
+          <SingleValue value={first} groupNumbers={field.canonicalKey !== "org.foundedYear"} />
         ) : null}
         {notice !== null ? <span className="text-xs text-muted-foreground">{notice}</span> : null}
         {field.currentInvalid && field.currentValue !== null ? (

@@ -1,9 +1,9 @@
 "use client";
-
 import type React from "react";
 import type { Person } from "@/db/schema";
 import { ContactLabelsControl } from "@/features/contacts/ContactLabelsControl";
 import { EnrichButton } from "@/features/enrichment/EnrichButton";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import type { CustomFieldDef } from "@/types/customFields";
 import { CollapsibleSection } from "../CollapsibleSection";
 import { PersonBlock } from "./PersonBlock";
@@ -39,9 +39,11 @@ export function PersonSection({
   showLabels?: boolean;
   onSaved?: () => void;
 }): React.ReactNode {
+  const translateSales = useAppTranslations("sales");
+
   return (
     <CollapsibleSection
-      title="Person"
+      title={translateSales("person_6007d")}
       headerActions={() => (
         <EnrichButton
           entityType="person"
@@ -51,7 +53,7 @@ export function PersonSection({
         >
           {(fill) => (
             <SectionHeaderMenu
-              sectionLabel="Person"
+              sectionLabel={translateSales("person_6007d")}
               onEdit={onStartBulk}
               menuItems={menuItems}
               {...fill}

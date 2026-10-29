@@ -4,10 +4,11 @@ import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import type React from "react";
 import { Tip } from "@/components/ui/tooltip";
-import { STRINGS } from "@/constants/strings";
+import { useEmailMessages } from "@/features/email/useEmailMessages";
 import { trpc } from "@/lib/trpc-client";
+import { useFormatters } from "@/lib/useFormatters";
 import { cn } from "@/lib/utils";
-import { FOLDER_KEYS, FOLDER_LABELS, type FolderKey, parseFolder } from "./inboxFolders";
+import { FOLDER_KEYS, type FolderKey, parseFolder } from "./inboxFolders";
 
 const COMPOSE_PATH = "/inbox/compose";
 
@@ -39,17 +40,23 @@ export function InboxFolderRail({
 }: {
   newEmailEnabled: boolean;
 }): React.ReactNode {
+  const E = useEmailMessages();
+  const format = useFormatters();
+
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { folder: activeFolder, composeActive } = deriveActive(pathname, searchParams);
   const unreadCount = trpc.email.inbox.unreadCount.useQuery().data ?? 0;
   return (
-    <nav aria-label="Mail folders" className="flex w-60 shrink-0 flex-col gap-1 border-r p-3">
+    <nav
+      aria-label={E._extra.mail_folders}
+      className="flex w-60 shrink-0 flex-col gap-1 border-e p-3"
+    >
       {/* A disabled Link has no real-world meaning (it would still be clickable), so the
           no-mailbox state renders a genuinely inert disabled button instead of a navigable
           link; only the enabled state navigates to the full-pane compose route. */}
       {newEmailEnabled ? (
-        <Tip label="Compose a new email">
+        <Tip label={E._extra.compose_a_new_email}>
           <Link
             href="/inbox/compose"
             aria-current={composeActive ? "page" : undefined}
@@ -58,17 +65,17 @@ export function InboxFolderRail({
               composeActive && "ring-2 ring-ring ring-offset-1",
             )}
           >
-            <span aria-hidden="true">+</span> {STRINGS.inbox.composeTitle}
+            <span aria-hidden="true">+</span> {E.composeTitle}
           </Link>
         </Tip>
       ) : (
-        <Tip label="Compose needs a connected mailbox">
+        <Tip label={E._extra.compose_needs_a_connected_mailbox}>
           <button
             type="button"
             disabled
             className={cn(NEW_EMAIL_BUTTON_CLASSES, "cursor-not-allowed opacity-60")}
           >
-            <span aria-hidden="true">+</span> {STRINGS.inbox.composeTitle}
+            <span aria-hidden="true">+</span> {E.composeTitle}
           </button>
         </Tip>
       )}
@@ -88,10 +95,10 @@ export function InboxFolderRail({
             )}
           >
             <Glyph aria-hidden="true" className="h-4 w-4" />
-            <span>{FOLDER_LABELS[key]}</span>
+            <span>{E._folders[key]}</span>
             {key === "inbox" && unreadCount > 0 && (
-              <span className="ml-auto rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-semibold text-primary-foreground tabular-nums">
-                {unreadCount}
+              <span className="ms-auto rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-semibold text-primary-foreground tabular-nums">
+                {format.number(unreadCount)}
               </span>
             )}
           </Link>

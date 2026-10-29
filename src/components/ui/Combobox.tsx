@@ -1,12 +1,20 @@
 "use client";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "cmdk";
 import { Check, ChevronsUpDown } from "lucide-react";
 import type React from "react";
 import { forwardRef, useState } from "react";
 import { Avatar } from "@/components/ui/Avatar";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "./Button";
 import { Popover, PopoverContent, PopoverTrigger } from "./Popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "./primitives/command";
 
 export interface ComboboxOption {
   value: string;
@@ -62,7 +70,7 @@ export const Combobox = forwardRef<HTMLButtonElement, ComboboxProps>(function Co
     onChange,
     options,
     ariaLabel,
-    placeholder = "Select",
+    placeholder,
     footer,
     triggerClassName,
     disabled = false,
@@ -72,6 +80,7 @@ export const Combobox = forwardRef<HTMLButtonElement, ComboboxProps>(function Co
   ref,
 ) {
   const [open, setOpen] = useState(false);
+  const t = useAppTranslations("sharedUi");
   const selected = options.find((o) => o.value === value);
   const groups = groupOptions(options);
   return (
@@ -95,21 +104,24 @@ export const Combobox = forwardRef<HTMLButtonElement, ComboboxProps>(function Co
               className="h-5 w-5 text-[10px]"
             />
           )}
-          {selected?.label ?? <span className="text-muted-foreground">{placeholder}</span>}
+          {selected?.label ?? (
+            <span className="text-muted-foreground">{placeholder ?? t("select")}</span>
+          )}
         </span>
         <ChevronsUpDown className="h-4 w-4 shrink-0 text-muted-foreground" />
       </PopoverTrigger>
       <PopoverContent className="p-0">
         <Command filter={matchLabel} shouldFilter={search === undefined}>
           <CommandInput
-            placeholder="Search..."
+            placeholder={t("search")}
+            aria-label={t("search")}
             value={search?.value}
             onValueChange={search?.onChange}
             className="w-full border-b px-2.5 py-2 text-sm outline-none"
           />
           <CommandList className="max-h-56 overflow-y-auto p-1">
             <CommandEmpty className="px-2 py-3 text-sm text-muted-foreground">
-              No match.
+              {t("noMatch")}
             </CommandEmpty>
             {groups.map((g) => (
               <CommandGroup
@@ -136,7 +148,7 @@ export const Combobox = forwardRef<HTMLButtonElement, ComboboxProps>(function Co
                       />
                     )}
                     {o.label}
-                    {o.value === value && <Check className="ml-auto h-4 w-4" />}
+                    {o.value === value && <Check className="ms-auto h-4 w-4" />}
                   </CommandItem>
                 ))}
               </CommandGroup>

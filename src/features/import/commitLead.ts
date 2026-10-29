@@ -26,6 +26,7 @@ export async function applyCreateLead(
   const candidate = {
     title: data.title,
     value: data.value,
+    currency: data.currency,
     orgId,
     expectedCloseDate: data.expectedCloseDate,
     sourceOrigin: "imported",

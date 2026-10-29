@@ -7,8 +7,8 @@ import { Input } from "@/components/ui/Input";
 import { Select, type SelectOption } from "@/components/ui/Select";
 import { Switch } from "@/components/ui/Switch";
 import { ERROR_IDS } from "@/constants/errorIds";
-import { STRINGS } from "@/constants/strings";
 import { ACTIVITY_TYPE_ICON_KEYS, ActivityTypeIcon } from "@/features/activities/ActivityTypeIcon";
+import { activityTypeName } from "@/features/activities/activityTypeLabels";
 import {
   createActivityTypeAction,
   deleteActivityTypeAction,
@@ -16,6 +16,8 @@ import {
   reorderActivityTypesAction,
   setActivityTypeActiveAction,
 } from "@/features/activities/typeActions";
+import { useLocale } from "@/features/i18n/LocaleProvider";
+import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import { moveInArray } from "@/features/settings/reorder";
 import { useSyncedState } from "@/lib/useSyncedState";
 import { readCsrfToken } from "@/utils/csrfCookie";
@@ -38,15 +40,8 @@ function slug(name: string): string {
     .replace(/^_+|_+$/g, "");
 }
 
-const S = STRINGS.settings;
 const ROW_BUTTON =
   "relative h-auto px-0 py-0 text-xs font-medium text-muted-foreground hover:bg-transparent hover:text-foreground after:absolute after:left-0 after:top-1/2 after:h-10 after:w-full after:-translate-y-1/2 after:content-['']";
-const ACTIVITY_ICON_OPTIONS: SelectOption[] = ACTIVITY_TYPE_ICON_KEYS.map((key) => ({
-  value: key,
-  label: key,
-  icon: <ActivityTypeIcon typeKey={key} />,
-}));
-
 // Activities tab (spec 6.2): list + rename + enable/disable + up/down reorder + guarded delete +
 // add form with an icon picker. Reorder uses buttons (dnd deferred).
 export function ActivityTypesClient({
@@ -54,6 +49,15 @@ export function ActivityTypesClient({
 }: {
   rows: ActivityTypeRow[];
 }): React.ReactNode {
+  const L = useSettingsMessages();
+  const locale = useLocale();
+  const S = L;
+  const ACTIVITY_ICON_OPTIONS: SelectOption[] = ACTIVITY_TYPE_ICON_KEYS.map((key) => ({
+    value: key,
+    label: (L._labels.icons as Record<string, string>)[key] ?? key,
+    icon: <ActivityTypeIcon typeKey={key} />,
+  }));
+
   const router = useRouter();
   // Re-seeds from refreshed server props (ACTIVITIES-17). See LostReasonsClient for why this is a
   // render-time sync rather than an effect.
@@ -70,7 +74,11 @@ export function ActivityTypesClient({
     if (name === "") return;
     setPending(true);
     const r = await createActivityTypeAction(
-      { key: slug(name), name, icon: addIcon },
+      {
+        key: slug(name).slice(0, 64) || `custom_${crypto.randomUUID().replaceAll("-", "")}`,
+        name,
+        icon: addIcon,
+      },
       readCsrfToken(),
     );
     setPending(false);
@@ -126,7 +134,7 @@ export function ActivityTypesClient({
               <span
                 className={`flex-1 text-sm ${row.active ? "" : "text-muted-foreground line-through"}`}
               >
-                {row.name}
+                {activityTypeName(row, locale)}
               </span>
             )}
             {row.isSystem && (

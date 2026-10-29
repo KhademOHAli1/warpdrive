@@ -230,4 +230,4 @@ Each row is `page -> route -> setup -> filename`.
 1. Add a row to the table above.
 2. Capture it with the parameters above.
 3. Reference it from the page as `/img/screenshots/<feature>/<filename>`.
-4. Run `pnpm -C docs-site build` to confirm it resolves.
+4. Run `bun --cwd docs-site run build` to confirm it resolves.

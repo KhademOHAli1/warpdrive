@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { DEAL_BLOCKS, type DealBlockId } from "@/constants/dealBlocks";
 import { ICON_BUTTON } from "@/constants/formStyles";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 
 interface BlockVisibilityButtonProps {
   isHidden: (id: DealBlockId) => boolean;
@@ -21,12 +22,21 @@ export function BlockVisibilityButton({
   isHidden,
   onToggle,
 }: BlockVisibilityButtonProps): React.ReactNode {
+  const translateSales = useAppTranslations("sales");
+
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger aria-label="Toggle detail blocks" className={ICON_BUTTON}>
+      <DropdownMenuTrigger
+        aria-label={translateSales("toggle_detail_blocks_396e8")}
+        className={ICON_BUTTON}
+      >
         <Eye aria-hidden="true" className="h-4 w-4" />
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" aria-label="Detail blocks" className="min-w-44">
+      <DropdownMenuContent
+        align="end"
+        aria-label={translateSales("detail_blocks_25204")}
+        className="min-w-44"
+      >
         {DEAL_BLOCKS.map((b) => (
           <DropdownMenuCheckboxItem
             key={b.id}
@@ -35,7 +45,7 @@ export function BlockVisibilityButton({
             onSelect={(e) => e.preventDefault()}
             onCheckedChange={() => onToggle(b.id)}
           >
-            {b.name}
+            <bdi dir="auto">{b.name}</bdi>
           </DropdownMenuCheckboxItem>
         ))}
       </DropdownMenuContent>

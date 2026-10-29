@@ -4,9 +4,11 @@ import type React from "react";
 import { useState } from "react";
 import { DatePicker } from "@/components/ui/DatePicker";
 import { Select } from "@/components/ui/Select";
-import { STRINGS } from "@/constants/strings";
+import { CurrencySelect } from "@/features/currencies/CurrencySelect";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { trpc } from "@/lib/trpc-client";
 import type { OwnerScope } from "@/types/stats";
+import { useStatsMessages } from "../useStatsMessages";
 import { ActivityTypesWidget, LostReasonsWidget } from "./Breakdowns";
 import { GoalsWidget } from "./GoalsWidget";
 import { OwnerScopeSelect } from "./OwnerScopeSelect";
@@ -48,6 +50,10 @@ export function Dashboard({
   currency,
   today,
 }: DashboardProps) {
+  const S = useStatsMessages();
+
+  const tCurrency = useAppTranslations("sales");
+  const [selectedCurrency, setSelectedCurrency] = useState(currency);
   const [ownerScope, setOwnerScope] = useState<OwnerScope>(ME_SCOPE);
   const initial = currentYearRange();
   const [from, setFrom] = useState(initial.from);
@@ -60,7 +66,7 @@ export function Dashboard({
   const pipelines = pipelinesQ.data ?? [];
   // "All pipelines" is the first option and the default selection.
   const pipelineOptions = [
-    { value: ALL_PIPELINES, label: STRINGS.dashboard.allPipelines },
+    { value: ALL_PIPELINES, label: S.allPipelines },
     ...pipelines.map((p) => ({ value: p.id, label: p.name })),
   ];
 
@@ -71,6 +77,7 @@ export function Dashboard({
   const goalsQ = trpc.goals.list.useQuery({ on: today });
 
   const data = trpc.stats.dashboard.useQuery({
+    currency: selectedCurrency,
     pipelineId,
     ownerScope,
     from,
@@ -84,14 +91,14 @@ export function Dashboard({
 
   let body: React.ReactNode;
   if (data.isLoading) {
-    body = <p>{STRINGS.dashboard.loading}</p>;
+    body = <p>{S.loading}</p>;
   } else if (data.isError) {
     // The only reachable dashboard error is E_STATS_001 (a specific pipeline not visible, e.g. a
     // stale selection). "All pipelines" no longer errors on a missing default (STATS-08).
-    body = <p className="text-muted-foreground">{STRINGS.dashboard.statsUnavailable}</p>;
+    body = <p className="text-muted-foreground">{S.statsUnavailable}</p>;
   } else if (result === undefined) {
     // Brief window between isLoading=false and data arrival (e.g. background refetch).
-    body = <p>{STRINGS.dashboard.loading}</p>;
+    body = <p>{S.loading}</p>;
   } else {
     body = (
       <div className="space-y-4">
@@ -100,19 +107,23 @@ export function Dashboard({
           won={result.wonDealStats}
           activities={result.activities}
           winRate={result.winRate}
-          currency={currency}
+          currency={result.currency}
         />
-        <GoalsWidget data={goalsQ.data ?? []} currency={currency} canManage={canManageGoals} />
+        <GoalsWidget
+          data={goalsQ.data ?? []}
+          currency={result.currency}
+          canManage={canManageGoals}
+        />
         {/* Full width above the grid: a time series is the one panel a reader scans left to
             right, and half a column squeezes twelve months into an unreadable tick run. */}
-        <WonTrendWidget data={result.wonTrend} currency={currency} />
+        <WonTrendWidget data={result.wonTrend} currency={result.currency} />
         <div className="grid gap-4 md:grid-cols-2">
-          <DealPerformanceWidget data={result.dealPerformance} currency={currency} />
+          <DealPerformanceWidget data={result.dealPerformance} currency={result.currency} />
           <FunnelWidget data={result.funnel} ownerScope={result.effectiveOwnerScope} />
           <ActivitiesWidget data={result.activities} />
-          <StageSumsWidget data={result.stageSums} currency={currency} />
+          <StageSumsWidget data={result.stageSums} currency={result.currency} />
           <ActivityTypesWidget data={result.activitiesByType} />
-          <LostReasonsWidget data={result.lostReasons} currency={currency} />
+          <LostReasonsWidget data={result.lostReasons} currency={result.currency} />
         </div>
       </div>
     );
@@ -122,8 +133,11 @@ export function Dashboard({
     <div className="p-6">
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <h1 className="text-balance text-display font-[450] leading-tight tracking-tight">
-          {STRINGS.dashboard.title}
+          {S.title}
         </h1>
+        <div className="w-56">
+          <CurrencySelect value={selectedCurrency} onChange={setSelectedCurrency} />
+        </div>
         <OwnerScopeSelect
           value={result?.effectiveOwnerScope ?? ownerScope}
           onChange={setOwnerScope}
@@ -133,24 +147,25 @@ export function Dashboard({
         />
         <div className="flex items-center gap-2">
           <DatePicker
-            ariaLabel={STRINGS.dashboard.rangeStartLabel}
+            ariaLabel={S.rangeStartLabel}
             value={from}
             onChange={(v) => setFrom(v ?? initial.from)}
           />
-          <span aria-hidden="true">{STRINGS.dashboard.rangeSeparator}</span>
+          <span aria-hidden="true">{S.rangeSeparator}</span>
           <DatePicker
-            ariaLabel={STRINGS.dashboard.rangeEndLabel}
+            ariaLabel={S.rangeEndLabel}
             value={to}
             onChange={(v) => setTo(v ?? initial.to)}
           />
         </div>
         <Select
-          ariaLabel={STRINGS.dashboard.pipelineLabel}
+          ariaLabel={S.pipelineLabel}
           value={selectedPipelineId}
           onChange={(v) => setSelectedPipelineId(v)}
           options={pipelineOptions}
         />
       </div>
+      <p className="mb-4 text-sm text-muted-foreground">{tCurrency("currencyNotice")}</p>
       {body}
     </div>
   );

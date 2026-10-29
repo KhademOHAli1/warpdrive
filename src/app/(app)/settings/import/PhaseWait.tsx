@@ -1,12 +1,10 @@
 "use client";
 import { useEffect, useRef } from "react";
 import { ERROR_IDS } from "@/constants/errorIds";
-import { STRINGS } from "@/constants/strings";
+import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import { useImportProgress } from "@/features/import/useImportProgress";
 import { trpc } from "@/lib/trpc-client";
 import { ProgressBar } from "./ProgressBar";
-
-const IMP = STRINGS.settings.importer;
 
 // The batch fields a wait step reads once its phase finishes.
 interface ReadyBatch {
@@ -35,6 +33,9 @@ export function PhaseWait({
   onError,
   label,
 }: PhaseWaitProps): React.ReactNode {
+  const L = useSettingsMessages();
+  const IMP = L.importer;
+
   const progress = useImportProgress(batchId);
   const batch = trpc.import.getBatch.useQuery(
     { batchId },

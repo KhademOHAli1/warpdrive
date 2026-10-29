@@ -12,10 +12,10 @@ Warpdrive is MIT licensed and developed at
 ## Running locally
 
 ```sh
-pnpm install
+bun install
 cp .env.example .env    # fill in values
-pnpm db:migrate
-pnpm dev
+bun run db:migrate
+bun run dev
 ```
 
 For a full stack with Postgres and MinIO in containers, see the local development
@@ -24,7 +24,7 @@ section of [Installation](./setup.md).
 ## Tests
 
 ```sh
-pnpm test:unit
+bun run test:unit
 ```
 
 Warpdrive is developed test-first. A bugfix begins with a failing test that reproduces
@@ -63,8 +63,8 @@ These docs are built with Docusaurus and live in `docs-site/` in the same reposi
 Every page has an "Edit this page" link at the bottom that opens the source file.
 
 ```sh
-pnpm -C docs-site start   # local preview with hot reload
-pnpm -C docs-site build   # production build
+bun --cwd docs-site run start   # local preview with hot reload
+bun --cwd docs-site run build   # production build
 ```
 
 The build treats a **broken cross-link as an error**, so a renamed page fails the

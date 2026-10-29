@@ -1,3 +1,5 @@
+"use client";
+import { useEmailMessages } from "@/features/email/useEmailMessages";
 // AttachmentList: shows confirmed uploads with a remove control per item.
 
 export interface AttachedFile {
@@ -11,13 +13,14 @@ interface AttachmentListProps {
   onRemove: (fileId: string) => void;
 }
 
-function formatBytes(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
-
 export function AttachmentList({ attachments, onRemove }: AttachmentListProps): React.ReactNode {
+  const E = useEmailMessages();
+  function formatBytes(bytes: number): string {
+    if (bytes < 1024) return E._extra.fileBytes(bytes);
+    if (bytes < 1024 * 1024) return E._extra.fileKB(Math.round(bytes / 1024));
+    return E._extra.fileMB(bytes / (1024 * 1024));
+  }
+
   if (attachments.length === 0) return null;
 
   return (
@@ -28,11 +31,11 @@ export function AttachmentList({ attachments, onRemove }: AttachmentListProps): 
           <span className="shrink-0 text-muted-foreground/70">{formatBytes(f.size)}</span>
           <button
             type="button"
-            aria-label={`Remove ${f.filename}`}
+            aria-label={E._extra.remove_arg0(f.filename)}
             onClick={() => onRemove(f.fileId)}
             className="shrink-0 hover:text-destructive"
           >
-            &times;
+            ×
           </button>
         </li>
       ))}

@@ -3,10 +3,12 @@ import { CalendarClock, Clock, Link2, MapPin, StickyNote, User, Users, Video } f
 import type React from "react";
 import { Input } from "@/components/ui/Input";
 import { Select, type SelectOption } from "@/components/ui/Select";
-import { ACTIVITY_PRIORITIES, ACTIVITY_PRIORITY_KEYS } from "@/constants/activityPriorities";
+import { ACTIVITY_PRIORITY_KEYS } from "@/constants/activityPriorities";
 import { FIELD_INPUT as FIELD } from "@/constants/formStyles";
+import { ActivityTimeZoneHint } from "@/features/activities/ActivityTimeZoneHint";
 import { useComposeInitialFocus } from "@/features/compose/useComposeInitialFocus";
 import { RichTextBody } from "@/features/email/composer/RichTextBodyLazy";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { ComposerDisclosureField } from "./ComposerDisclosureField";
 import { ComposerFieldRow } from "./ComposerFieldRow";
 import { ComposerFooter } from "./ComposerFooter";
@@ -20,8 +22,6 @@ import { VideoCallField } from "./VideoCallField";
 
 const ICON = "h-4 w-4";
 
-const NO_PRIORITY_LABEL = "No priority";
-
 interface Props extends ActivityComposerProps {
   // Collapses the composer back to its one-line prompt (Cancel button). Optional so scopes that
   // mount the composer without a collapse affordance can omit it (defaults to a no-op).
@@ -31,8 +31,12 @@ interface Props extends ActivityComposerProps {
 // Create OR edit an activity (edit mode when `editing` is set). All state and the submit branching
 // live in useActivityComposer; this component is the field layout (PD's 7-icon rail).
 export function ActivityComposerInline(props: Props): React.ReactNode {
+  const translateSales = useAppTranslations("sales");
+
   const subjectRef = useComposeInitialFocus<HTMLInputElement>();
   const {
+    draftZone,
+    legacyAllDay,
     subjectValue,
     setSubject,
     setSubjectEdited,
@@ -78,13 +82,13 @@ export function ActivityComposerInline(props: Props): React.ReactNode {
       <Input
         ref={subjectRef}
         data-compose-primary="activity"
-        aria-label="Subject"
+        aria-label={translateSales("subject_68971")}
         value={subjectValue}
         onChange={(e) => {
           setSubject(e.target.value);
           setSubjectEdited(true);
         }}
-        placeholder="Subject"
+        placeholder={translateSales("subject_68971")}
         className="w-full rounded-md border px-3 py-2 text-display font-medium outline-none focus:border-primary focus:ring-1 focus:ring-primary placeholder:text-muted-foreground"
       />
       <TypeIconRail types={types} value={effectiveTypeId} onChange={setTypeId} />
@@ -107,18 +111,31 @@ export function ActivityComposerInline(props: Props): React.ReactNode {
         </div>
       </ComposerFieldRow>
 
+      <ActivityTimeZoneHint
+        originalInstant={props.editing?.dueAt}
+        timeZone={draftZone}
+        date={startDate}
+        time={startTime}
+        legacy={legacyAllDay}
+      />
       <ComposerFieldRow icon={<CalendarClock className={ICON} />}>
         <div className="w-48">
           <Select
-            ariaLabel="Priority"
+            ariaLabel={translateSales("priority_d60db")}
             value={priority}
             onChange={setPriority}
-            placeholder={NO_PRIORITY_LABEL}
+            placeholder={translateSales("computed.noPriority")}
             options={[
-              { value: "", label: NO_PRIORITY_LABEL },
+              { value: "", label: translateSales("computed.noPriority") },
               ...ACTIVITY_PRIORITY_KEYS.map<SelectOption>((k) => ({
                 value: k,
-                label: ACTIVITY_PRIORITIES[k].name,
+                label: translateSales(
+                  k === "high"
+                    ? "computed.priorityHigh"
+                    : k === "medium"
+                      ? "computed.priorityMedium"
+                      : "computed.priorityLow",
+                ),
               })),
             ]}
           />
@@ -136,19 +153,25 @@ export function ActivityComposerInline(props: Props): React.ReactNode {
       </ComposerFieldRow>
 
       <ComposerFieldRow icon={<MapPin className={ICON} />}>
-        <ComposerDisclosureField label="Location" hasValue={location !== ""}>
+        <ComposerDisclosureField
+          label={translateSales("location_15b61")}
+          hasValue={location !== ""}
+        >
           <input
-            aria-label="Location"
+            aria-label={translateSales("location_15b61")}
             value={location}
             onChange={(e) => setLocation(e.target.value)}
-            placeholder="Add location"
+            placeholder={translateSales("add_location_db071")}
             className={FIELD}
           />
         </ComposerDisclosureField>
       </ComposerFieldRow>
 
       <ComposerFieldRow icon={<Video className={ICON} />}>
-        <ComposerDisclosureField label="Video call" hasValue={videoCallUrl !== ""}>
+        <ComposerDisclosureField
+          label={translateSales("video_call_7b79b")}
+          hasValue={videoCallUrl !== ""}
+        >
           <VideoCallField value={videoCallUrl} onChange={setVideoCallUrl} />
         </ComposerDisclosureField>
       </ComposerFieldRow>

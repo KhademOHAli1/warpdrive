@@ -5,6 +5,7 @@ import { Select } from "@/components/ui/Select";
 import { ActivityTypeTab } from "@/features/activities/ActivityTypeTab";
 import { ALL_OWNERS_OPTION } from "@/features/activities/activityFilterOptions";
 import type { ContactEntity } from "@/features/contacts/engagementTimeline";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { cn } from "@/lib/utils";
 
 export interface EngagementFilter {
@@ -20,17 +21,6 @@ interface EngagementTypeOption {
 }
 
 // Period options mirror Pipedrive's "N months back" selector.
-const PERIOD_OPTIONS = [
-  { value: "3", label: "3 months back" },
-  { value: "6", label: "6 months back" },
-  { value: "12", label: "12 months back" },
-];
-
-const ENTITY_TABS: { value: ContactEntity; label: string }[] = [
-  { value: "person", label: "People" },
-  { value: "organization", label: "Organizations" },
-];
-
 interface EngagementFiltersProps {
   filter: EngagementFilter;
   onChange: (f: EngagementFilter) => void;
@@ -47,6 +37,18 @@ export function EngagementFilters({
   owners,
   types,
 }: EngagementFiltersProps): React.ReactNode {
+  const tContacts = useAppTranslations("contacts");
+  const PERIOD_OPTIONS = [
+    { value: "3", label: tContacts("3MonthsBack") },
+    { value: "6", label: tContacts("6MonthsBack") },
+    { value: "12", label: tContacts("12MonthsBack") },
+  ];
+
+  const ENTITY_TABS: { value: ContactEntity; label: string }[] = [
+    { value: "person", label: tContacts("people") },
+    { value: "organization", label: tContacts("organizations") },
+  ];
+
   function patch(next: Partial<EngagementFilter>): void {
     onChange({ ...filter, ...next });
   }
@@ -73,23 +75,23 @@ export function EngagementFilters({
           ))}
         </div>
         <Select
-          ariaLabel="Period"
+          ariaLabel={tContacts("period")}
           value={String(filter.monthsBack)}
           onChange={(v) => patch({ monthsBack: Number(v) })}
           options={PERIOD_OPTIONS}
         />
         <Combobox
-          ariaLabel="Owner"
+          ariaLabel={tContacts("owner")}
           value={filter.ownerId ?? ""}
           onChange={(v) => patch({ ownerId: v === "" ? null : v })}
-          options={[ALL_OWNERS_OPTION, ...owners]}
+          options={[{ ...ALL_OWNERS_OPTION, label: tContacts("everyone") }, ...owners]}
         />
       </div>
       <div className="flex flex-wrap items-center gap-1 border-b pb-2">
         <ActivityTypeTab
           active={filter.typeKey}
           value={null}
-          label="All"
+          label={tContacts("all")}
           onSelect={(v) => patch({ typeKey: v })}
         />
         {types.map((t) => (

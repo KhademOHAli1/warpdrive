@@ -1,6 +1,7 @@
 "use client";
 import type React from "react";
 import { useState } from "react";
+import { useLocale } from "@/features/i18n/LocaleProvider";
 import { InlineEditFooter } from "@/features/inline-edit/InlineEditFooter";
 import { InlineFieldShell } from "@/features/inline-edit/InlineFieldShell";
 import { saveErrorMessage } from "@/features/inline-edit/saveError";
@@ -23,8 +24,8 @@ interface SidebarFieldRowProps {
 
 // Pipedrive-mechanism sidebar field row (see
 // docs/superpowers/specs/2026-07-08-pd-inline-edit-mechanism.md): the value is plain
-// selectable text; hovering reveals a right-edge pencil which is the ONLY way into edit
-// mode; the editor swaps in place with a right-aligned, dirty-gated Cancel/Save footer.
+// selectable text; hovering reveals a end-edge pencil which is the ONLY way into edit
+// mode; the editor swaps in place with a end-aligned, dirty-gated Cancel/Save footer.
 // Escape/blur/outside clicks never dismiss (PD has no such gesture). Save is held open
 // on failure so the draft isn't lost.
 export function SidebarFieldRow({
@@ -36,6 +37,7 @@ export function SidebarFieldRow({
   onSave,
   empty = false,
 }: SidebarFieldRowProps): React.ReactNode {
+  const locale = useLocale();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(initialDraft);
   const [pending, setPending] = useState(false);
@@ -64,19 +66,19 @@ export function SidebarFieldRow({
         if (result.ok) {
           setEditing(false);
         } else {
-          setError(saveErrorMessage(result.errorId));
+          setError(saveErrorMessage(result.errorId, locale));
         }
       })
       .catch(() => {
         setPending(false);
-        setError(saveErrorMessage());
+        setError(saveErrorMessage(undefined, locale));
       });
   };
 
   if (readOnly) {
     return (
       <FieldRow label={label} empty={empty}>
-        <span className="block min-w-0 truncate text-left text-sm">{value}</span>
+        <span className="block min-w-0 truncate text-start text-sm">{value}</span>
       </FieldRow>
     );
   }

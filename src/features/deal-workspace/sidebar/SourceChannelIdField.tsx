@@ -2,6 +2,7 @@
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { updateDealAction } from "@/features/deals/updateAction";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { InlineTextField } from "@/features/inline-edit/InlineTextField";
 import { err, ok, type Result } from "@/types/result";
 import { readCsrfToken } from "@/utils/csrfCookie";
@@ -21,6 +22,8 @@ export function SourceChannelIdField({
   updatedAt,
   sourceChannelId,
 }: SourceChannelIdFieldProps): React.ReactNode {
+  const translateSales = useAppTranslations("sales");
+
   const router = useRouter();
   const expectedUpdatedAt = new Date(updatedAt).toISOString();
 
@@ -35,8 +38,12 @@ export function SourceChannelIdField({
   }
 
   return (
-    <FieldRow label="Channel ID" empty={sourceChannelId === null}>
-      <InlineTextField label="Channel ID" value={sourceChannelId ?? ""} onSave={save} />
+    <FieldRow label={translateSales("channel_id_8edd6")} empty={sourceChannelId === null}>
+      <InlineTextField
+        label={translateSales("channel_id_8edd6")}
+        value={sourceChannelId ?? ""}
+        onSave={save}
+      />
     </FieldRow>
   );
 }

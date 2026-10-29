@@ -1,11 +1,11 @@
 "use client";
+
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { useId, useState } from "react";
 import { useActionError } from "@/components/shell/ActionErrorProvider";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { ENRICHMENT_STRINGS } from "@/constants/enrichmentStrings";
 import type { EnrichEntity } from "@/features/enrichment/canonical";
 import type { QuotaRemaining } from "@/features/enrichment/providers/types";
 import {
@@ -17,25 +17,17 @@ import {
   setProviderKeyAction,
   testProviderAction,
 } from "@/features/enrichment/settingsActions";
+import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import { trpc } from "@/lib/trpc-client";
 import { readCsrfToken } from "@/utils/csrfCookie";
+import { normalizeNumberInput } from "@/utils/normalizeNumberInput";
 import { SettingsCard, SettingsCardBody, SettingsCardHeader } from "../SettingsSurface";
 import { type MappingRow, MappingTable } from "./MappingTable";
 import { ProviderCard, type ProviderCardView } from "./ProviderCard";
 import { decodeTarget } from "./targetOptions";
 import { useCooldownClock } from "./useCooldownClock";
 
-const S = ENRICHMENT_STRINGS.settings;
 const MAX_TTL_DAYS = 365;
-
-function verdictOf(kind: string): string {
-  if (kind === "ok") return S.testOk;
-  if (kind === "no_match") return S.testNoMatch;
-  const known = Object.hasOwn(ENRICHMENT_STRINGS.outcome, kind);
-  return S.testFailed(
-    known ? ENRICHMENT_STRINGS.outcome[kind as keyof typeof ENRICHMENT_STRINGS.outcome] : kind,
-  );
-}
 
 function without(current: ReadonlySet<string>, key: string): ReadonlySet<string> {
   const next = new Set(current);
@@ -68,6 +60,19 @@ export function EnrichmentClient({
   organization: MappingSection;
   cacheTtlDays: number;
 }): React.ReactNode {
+  const L = useSettingsMessages();
+
+  const S = L._enrichment.settings;
+
+  function verdictOf(kind: string): string {
+    if (kind === "ok") return S.testOk;
+    if (kind === "no_match") return S.testNoMatch;
+    const known = Object.hasOwn(L._enrichment.outcome, kind);
+    return S.testFailed(
+      known ? L._enrichment.outcome[kind as keyof typeof L._enrichment.outcome] : kind,
+    );
+  }
+
   const router = useRouter();
   const reportError = useActionError();
   const utils = trpc.useUtils();
@@ -174,7 +179,8 @@ export function EnrichmentClient({
     // Number("") is 0, and 0 is a legal TTL meaning "never reuse a cached run", so a blank field
     // has to be rejected before the conversion rather than saved as a silent opt-out.
     const raw = ttl.trim();
-    const days = Number(raw);
+    const normalized = normalizeNumberInput(raw);
+    const days = normalized === null ? NaN : Number(normalized);
     if (raw === "" || !Number.isInteger(days) || days < 0 || days > MAX_TTL_DAYS) {
       setTtlError(S.cacheInvalid);
       return;
@@ -246,7 +252,8 @@ export function EnrichmentClient({
           <div className="flex items-center gap-2">
             <Input
               id={ttlFieldId}
-              type="number"
+              type="text"
+              inputMode="numeric"
               min={0}
               max={MAX_TTL_DAYS}
               value={ttl}

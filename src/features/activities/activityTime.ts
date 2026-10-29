@@ -1,3 +1,5 @@
+import { addCivilDays, civilDateRange, wallTimeToInstant } from "@/lib/zonedDateTime";
+
 // Client-side time assembly for the activity composer. Combines the date + time inputs
 // into the existing dueAt (ISO) and durationMinutes fields, so the composer no longer
 // hardcodes a 09:00 due time. Same-day only (no multi-day end date).
@@ -20,30 +22,37 @@ function toMinutes(time: string): number | null {
 export interface ComposedDueAt {
   iso: string | null;
   allDay: boolean;
+  dueDate: string | null;
 }
 
-export function composeDueAt(startDate: string, startTime: string): ComposedDueAt {
-  const iso = composeDueAtIso(startDate, startTime);
-  return { iso, allDay: iso !== null && startTime === "" };
+export function composeDueAt(
+  startDate: string,
+  startTime: string,
+  timeZone = "UTC",
+): ComposedDueAt {
+  const iso = composeDueAtIso(startDate, startTime, timeZone);
+  const allDay = iso !== null && startTime === "";
+  return { iso, allDay, dueDate: allDay ? startDate : null };
 }
 
-export function composeDueAtIso(startDate: string, startTime: string): string | null {
-  if (startDate === "") return null;
-  const parts = /^(\d{4})-(\d{2})-(\d{2})$/.exec(startDate);
-  if (parts === null) return null;
-  const time = startTime === "" ? "00:00" : startTime;
-  const d = new Date(`${startDate}T${time}`);
-  if (Number.isNaN(d.getTime())) return null;
-  // Reject calendar-invalid dates (e.g. 2026-02-30) that Date silently rolls forward:
-  // require the constructed local date to round-trip the input components.
-  if (
-    d.getFullYear() !== Number(parts[1]) ||
-    d.getMonth() + 1 !== Number(parts[2]) ||
-    d.getDate() !== Number(parts[3])
-  ) {
+export function composeDueAtIso(
+  startDate: string,
+  startTime: string,
+  timeZone = "UTC",
+): string | null {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(startDate) || (startTime !== "" && toMinutes(startTime) === null))
+    return null;
+  try {
+    return startTime === ""
+      ? civilDateRange(startDate, addCivilDays(startDate, 1), timeZone).from.toISOString()
+      : wallTimeToInstant(startDate, startTime, timeZone).iso;
+  } catch (error) {
+    // Invalid input has historically yielded null. A valid clock time in a DST gap is an
+    // actionable error: callers must show it rather than silently create an undated row.
+    if (error instanceof RangeError && error.message === "nonexistent activity wall time")
+      throw error;
     return null;
   }
-  return d.toISOString();
 }
 
 export function deriveDurationMinutes(startTime: string, endTime: string): number | null {

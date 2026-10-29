@@ -1,12 +1,10 @@
 "use client";
 import type React from "react";
 import { useState, useSyncExternalStore } from "react";
-import { STRINGS } from "@/constants/strings";
 import { AddDealModal } from "@/features/deals/AddDealModal";
+import { useEmailMessages } from "@/features/email/useEmailMessages";
 import { trpc } from "@/lib/trpc-client";
 import { LinkExistingCombobox } from "../LinkExistingCombobox";
-
-const S = STRINGS.inbox;
 
 // Hydration-safe "on the client yet" flag. getServerSnapshot returns false, so the server HTML and
 // the first client render agree; the client then swaps to true on the next render. Used to gate a
@@ -39,6 +37,8 @@ export function ComposeLinkSidebar({
   onLink,
   onUnlink,
 }: ComposeLinkSidebarProps): React.ReactNode {
+  const E = useEmailMessages();
+
   const [dealModalOpen, setDealModalOpen] = useState(false);
   const isClient = useIsClient();
 
@@ -53,34 +53,34 @@ export function ComposeLinkSidebar({
   return (
     <div className="space-y-2">
       <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-        {S.linkDealSidebarHeading}
+        {E.linkDealSidebarHeading}
       </h3>
       {dealId === null && (
-        <p className="text-xs text-muted-foreground">{S.linkDealSidebarHelper}</p>
+        <p className="text-xs text-muted-foreground">{E.linkDealSidebarHelper}</p>
       )}
       {dealId !== null ? (
         <div className="flex items-center justify-between gap-2 rounded-md border border-border px-2 py-1.5">
           <span className="min-w-0 truncate text-sm font-medium">
-            {dealTitle ?? S.linkedDealFallback}
+            {dealTitle ?? E.linkedDealFallback}
           </span>
           <button
             type="button"
             onClick={onUnlink}
             className="shrink-0 text-xs text-primary hover:underline"
           >
-            {S.unlinkDeal}
+            {E.unlinkDeal}
           </button>
         </div>
       ) : (
         <>
-          <LinkExistingCombobox kind="deal" triggerLabel={S.linkExisting} onPick={onLink} />
+          <LinkExistingCombobox kind="deal" triggerLabel={E.linkExisting} onPick={onLink} />
           <button
             type="button"
             disabled={!isClient || firstPipelineId === null}
             onClick={() => setDealModalOpen(true)}
             className="w-full rounded-md border border-border px-2 py-1.5 text-xs text-muted-foreground transition-transform hover:bg-accent active:scale-[0.96] disabled:opacity-50"
           >
-            {S.addNewDeal}
+            {E.addNewDeal}
           </button>
         </>
       )}

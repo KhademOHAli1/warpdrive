@@ -1,9 +1,10 @@
 "use client";
 import { type Dispatch, type SetStateAction, useState } from "react";
-import { STRINGS } from "@/constants/strings";
+import { useSalesStrings } from "@/features/deals/useSalesStrings";
+import { useLocale } from "@/features/i18n/LocaleProvider";
 import type { StageDeleteRequest } from "./StageDeleteDialog";
 import type { StageDeleteOp, StageRow } from "./stageDiff";
-import { STAGE_DELETE_FAILURE_REASON, STAGE_EDIT_ERROR_MESSAGE } from "./stageEditMessages";
+import { stageDeleteFailureReasons, stageEditErrorMessages } from "./stageEditMessages";
 import {
   type DealCounts,
   incomingDealCounts,
@@ -43,6 +44,9 @@ export interface SaveOutcome {
 }
 
 export function useStageDeletion({ rows, setRows, setError }: UseStageDeletionArgs): StageDeletion {
+  const STRINGS = useSalesStrings();
+  const locale = useLocale();
+
   const [pendingDeletes, setPendingDeletes] = useState<StageDeleteOp[]>([]);
   const [request, setRequest] = useState<StageDeleteRequest | null>(null);
   const [removed, setRemoved] = useState<Record<string, RemovedRow>>({});
@@ -125,7 +129,9 @@ export function useStageDeletion({ rows, setRows, setError }: UseStageDeletionAr
     if (outcome.failed !== undefined && failed !== undefined) {
       const { errorId } = outcome.failed;
       const reason =
-        STAGE_DELETE_FAILURE_REASON[errorId] ?? STAGE_EDIT_ERROR_MESSAGE[errorId] ?? errorId;
+        stageDeleteFailureReasons(locale)[errorId] ??
+        stageEditErrorMessages(locale)[errorId] ??
+        errorId;
       setError(STRINGS.settings.stageDeleteFailed(failed.row.name, reason));
     }
   }

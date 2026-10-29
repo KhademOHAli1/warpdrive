@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import type { LabelTarget } from "@/constants/labelColors";
 import { LABEL_DOT_CLASSES } from "@/constants/labelColors";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { trpc } from "@/lib/trpc-client";
 
 // Catalog-driven "Add labels" dropdown (Pipedrive parity). A dropdown list of every label the
@@ -30,6 +31,7 @@ export function CatalogLabelPicker({
   value,
   onChange,
 }: CatalogLabelPickerProps): React.ReactNode {
+  const t = useAppTranslations("utilities.labels");
   const catalog = trpc.labels.listByTarget.useQuery({ target }).data ?? [];
 
   function isActive(name: string): boolean {
@@ -47,11 +49,11 @@ export function CatalogLabelPicker({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="rounded-full border border-dashed px-2 py-0.5 text-xs text-muted-foreground hover:border-muted-foreground hover:text-foreground">
-        + Add labels
+        {t("add")}
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" aria-label="Labels" className="min-w-52">
+      <DropdownMenuContent align="start" aria-label={t("menu")} className="min-w-52">
         {catalog.length === 0 ? (
-          <DropdownMenuItem disabled>No labels yet</DropdownMenuItem>
+          <DropdownMenuItem disabled>{t("empty")}</DropdownMenuItem>
         ) : (
           catalog.map((label) => (
             <DropdownMenuCheckboxItem
@@ -63,15 +65,15 @@ export function CatalogLabelPicker({
             >
               <span
                 aria-hidden="true"
-                className={`mr-2 inline-block h-2.5 w-2.5 shrink-0 rounded-full ${LABEL_DOT_CLASSES[label.color]}`}
+                className={`me-2 inline-block h-2.5 w-2.5 shrink-0 rounded-full ${LABEL_DOT_CLASSES[label.color]}`}
               />
-              {label.name}
+              <bdi dir="auto">{label.name}</bdi>
             </DropdownMenuCheckboxItem>
           ))
         )}
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <a href={LABELS_SETTINGS_HREF}>Create new label</a>
+          <a href={LABELS_SETTINGS_HREF}>{t("create")}</a>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

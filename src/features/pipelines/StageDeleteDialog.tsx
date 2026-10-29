@@ -11,7 +11,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Select } from "@/components/ui/Select";
-import { STRINGS } from "@/constants/strings";
+import { useSalesStrings } from "@/features/deals/useSalesStrings";
+import { useLocale } from "@/features/i18n/LocaleProvider";
 import { dealCountLabel, type StageDestination } from "./stageRemoval";
 
 export interface StageDeleteRequest {
@@ -34,6 +35,9 @@ export function StageDeleteDialog({
   onCancel,
   onConfirm,
 }: StageDeleteDialogProps): React.ReactNode {
+  const STRINGS = useSalesStrings();
+  const locale = useLocale();
+
   const [destination, setDestination] = useState(request.defaultDestinationId);
   const s = STRINGS.settings;
   return (
@@ -47,7 +51,9 @@ export function StageDeleteDialog({
         <DialogHeader>
           <DialogTitle>{s.deleteStageTitle(request.name)}</DialogTitle>
           <DialogDescription>
-            {s.deleteStageDescription(dealCountLabel(request.dealCount, request.closedDealCount))}
+            {s.deleteStageDescription(
+              dealCountLabel(request.dealCount, request.closedDealCount, locale),
+            )}
           </DialogDescription>
         </DialogHeader>
         <div className="text-sm">

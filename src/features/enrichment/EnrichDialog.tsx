@@ -10,24 +10,32 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ENRICHMENT_STRINGS } from "@/constants/enrichmentStrings";
+import { useFormatters } from "@/lib/useFormatters";
 import { EnrichFieldRow } from "./EnrichFieldRow";
 import { EnrichLoading } from "./EnrichLoading";
+import { runErrorMessage } from "./enrichmentErrors";
+import type { EnrichmentMessages } from "./enrichmentMessages";
 import type { ProviderOutcome } from "./providers/types";
 import type { RunView } from "./service";
 import type { ProposedField, Selection } from "./types";
-
-const S = ENRICHMENT_STRINGS.dialog;
+import { useEnrichmentMessages } from "./useEnrichmentMessages";
 
 export type EnrichRunState =
   | { kind: "loading" }
   // `canRefresh` is false for a failure a fresh run cannot change, such as a record with no
   // identifier: offering a retry there only spends the user's attention.
-  | { kind: "error"; message: string; canRefresh: boolean }
+  | {
+      kind: "error";
+      message: string;
+      errorId?: string;
+      errorContext?: Record<string, unknown>;
+      canRefresh: boolean;
+    }
   | { kind: "loaded"; run: RunView };
 
 export interface EnrichApplyError {
-  message: string;
+  message?: string;
+  messageKey?: "applyError" | "staleError" | "mappingsChangedError" | "unresolvedOrgError";
   // A stale record is recoverable by re-running, so that error alone offers the escape hatch.
   canRefresh: boolean;
 }
@@ -44,12 +52,7 @@ interface EnrichDialogProps {
   now?: Date;
 }
 
-function clock(iso: string): string {
-  const d = new Date(iso);
-  return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
-}
-
-function age(fromIso: string, now: Date): string {
+function age(fromIso: string, now: Date, S: EnrichmentMessages["dialog"]): string {
   const minutes = Math.floor((now.getTime() - new Date(fromIso).getTime()) / 60_000);
   if (minutes < 1) return S.ageJustNow;
   if (minutes < 60) return S.ageMinutes(minutes);
@@ -58,19 +61,42 @@ function age(fromIso: string, now: Date): string {
   return S.ageDays(Math.floor(hours / 24));
 }
 
-function outcomeText(outcome: ProviderOutcome): string {
-  const verdict = ENRICHMENT_STRINGS.outcome[outcome.kind];
+function outcomeText(
+  outcome: ProviderOutcome,
+  E: EnrichmentMessages,
+  clock: (iso: string) => string,
+): string {
+  const S = E.dialog;
+  const verdict = E.outcome[outcome.kind];
   return outcome.retryAfterIso === undefined
     ? S.outcomeLine(outcome.provider, verdict)
     : S.outcomeLineUntil(outcome.provider, verdict, clock(outcome.retryAfterIso));
 }
 
+function runFailureText(
+  state: Extract<EnrichRunState, { kind: "error" }>,
+  messages: EnrichmentMessages,
+  clock: (iso: string) => string,
+): string {
+  return state.errorId === undefined
+    ? state.message || messages.dialog.runError
+    : runErrorMessage(state.errorId, state.errorContext, messages, clock);
+}
+
 // Always rendered for a completed run, including one that proposed nothing: without it a thin
 // result reads as "nobody knows this person" when the truth is "two providers were throttled".
 function OutcomeFooter({ outcomes }: { outcomes: ProviderOutcome[] }): React.ReactNode {
+  const E = useEnrichmentMessages();
+  const fmt = useFormatters();
   return (
     <p data-testid="enrich-outcomes" className="text-xs text-muted-foreground">
-      {outcomes.map((o) => outcomeText(o)).join(", ")}
+      {outcomes
+        .map((o) =>
+          outcomeText(o, E, (iso) =>
+            fmt.dateTime(iso, { hour: "2-digit", minute: "2-digit", hour12: false }),
+          ),
+        )
+        .join(E.listSeparator)}
     </p>
   );
 }
@@ -108,6 +134,8 @@ function RunPanel({
   onApply: (selections: Selection[]) => void;
   onCancel: () => void;
 }): React.ReactNode {
+  const E = useEnrichmentMessages();
+  const S = E.dialog;
   const [picks, setPicks] = useState(() => initialState(run.fields));
 
   const selections: Selection[] = run.fields.flatMap((field) => {
@@ -175,6 +203,9 @@ export function EnrichDialog({
   onApply,
   now = new Date(),
 }: EnrichDialogProps): React.ReactNode {
+  const E = useEnrichmentMessages();
+  const S = E.dialog;
+  const fmt = useFormatters();
   const run = state.kind === "loaded" ? state.run : null;
   // A failed run is cached like any other, so without this the record replays that failure for the
   // whole TTL with no way to ask again.
@@ -187,7 +218,7 @@ export function EnrichDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <div className="flex items-baseline justify-between gap-4 pr-8">
+          <div className="flex items-baseline justify-between gap-4 pe-8">
             <DialogTitle>{S.title(entityName)}</DialogTitle>
             {run !== null ? (
               <span className="text-xs text-muted-foreground">
@@ -197,7 +228,7 @@ export function EnrichDialog({
           </div>
           <div className="flex items-center justify-between gap-4">
             <DialogDescription>
-              {run?.cached === true ? S.cached(age(run.createdAtIso, now)) : S.subtitle}
+              {run?.cached === true ? S.cached(age(run.createdAtIso, now, S)) : S.subtitle}
             </DialogDescription>
             {showRefresh ? (
               // A refresh is a paid fan-out. Starting one while an apply is in flight would let the
@@ -214,7 +245,7 @@ export function EnrichDialog({
             role="alert"
             className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive"
           >
-            {applyError.message}
+            {applyError.messageKey === undefined ? applyError.message : S[applyError.messageKey]}
           </p>
         ) : null}
 
@@ -222,7 +253,9 @@ export function EnrichDialog({
 
         {state.kind === "error" ? (
           <p role="alert" className="text-sm text-destructive">
-            {state.message}
+            {runFailureText(state, E, (iso) =>
+              fmt.dateTime(iso, { hour: "2-digit", minute: "2-digit", hour12: false }),
+            )}
           </p>
         ) : null}
 

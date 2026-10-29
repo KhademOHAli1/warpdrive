@@ -5,6 +5,7 @@ import { DEFAULT_DAILY_ACTIVITY_TARGET } from "@/constants/activityLoad";
 import { activityTypes } from "@/db/schema";
 import { getPreferencesForActor } from "@/features/identity/preferencesForActor";
 import { protectedProcedure, router } from "@/server/trpc/trpc";
+import { activityAccountPreferences } from "./accountTimeZone";
 import { listActivityRows } from "./activityRows";
 import { getBusyWindows } from "./availability";
 import { calendarRange } from "./calendar";
@@ -16,13 +17,24 @@ import { activityListFilter, activitySortInput } from "./schemas";
 // listRows' input: the list filter (every field defaulted, so an empty call still resolves to
 // the default "open" view) plus an optional sort (still separate from the filter's own shape,
 // since ActivityListFilter is also the exact type listActivityRows and its tests expect).
-const listRowsInput = activityListFilter.extend({ sort: activitySortInput.optional() });
+const listRowsInput = activityListFilter.extend({
+  sort: activitySortInput.optional(),
+  timeZone: z.string().optional(),
+});
 
 export const activitiesRouter = router({
   // All visible activities enriched for the Activities table (deal/contact/org/priority).
-  listRows: protectedProcedure.input(listRowsInput).query(({ ctx, input }) => {
-    const { sort, ...filter } = input;
-    return listActivityRows(ctx.db, ctx.actor, filter, AbortSignal.timeout(10_000), sort);
+  listRows: protectedProcedure.input(listRowsInput).query(async ({ ctx, input }) => {
+    const { sort, timeZone, ...filter } = input;
+    const prefs = await activityAccountPreferences(ctx.db, ctx.actor.id, { timeZone });
+    return listActivityRows(
+      ctx.db,
+      ctx.actor,
+      filter,
+      AbortSignal.timeout(10_000),
+      sort,
+      prefs.timeZone,
+    );
   }),
 
   // Activity type catalog for the create modal (call/meeting/task/deadline/email/lunch).
@@ -38,15 +50,25 @@ export const activitiesRouter = router({
   // calendarRange returns CalendarActivity[] (not a Result); no unwrap needed.
   // Client sends ISO datetime strings; convert to Date before the repo call.
   calendarRange: protectedProcedure
-    .input(z.object({ from: z.string().datetime(), to: z.string().datetime() }))
-    .query(({ ctx, input }) =>
-      calendarRange(
+    .input(
+      z.object({
+        from: z.string().datetime(),
+        to: z.string().datetime(),
+        timeZone: z.string().optional(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const prefs = await activityAccountPreferences(ctx.db, ctx.actor.id, {
+        timeZone: input.timeZone,
+      });
+      return calendarRange(
         ctx.db,
         ctx.actor,
         { from: new Date(input.from), to: new Date(input.to) },
         AbortSignal.timeout(10_000),
-      ),
-    ),
+        prefs.timeZone,
+      );
+    }),
 
   listForEntity: protectedProcedure
     .input(
@@ -86,10 +108,12 @@ export const activitiesRouter = router({
       }),
     )
     .query(async ({ ctx, input }) => {
+      const prefs = await activityAccountPreferences(ctx.db, ctx.actor.id);
       const windows = await getBusyWindows(
         ctx.db,
         {
           userId: input.userId ?? ctx.actor.id,
+          timeZone: prefs.timeZone,
           from: new Date(input.from),
           to: new Date(input.to),
         },
@@ -109,6 +133,9 @@ export const activitiesRouter = router({
     )
     .query(async ({ ctx, input }) => {
       const userId = input.userId ?? ctx.actor.id;
+      const viewer = await activityAccountPreferences(ctx.db, ctx.actor.id, {
+        timeZone: input.timeZone,
+      });
       const [counts, prefs] = await Promise.all([
         getDayLoad(
           ctx.db,
@@ -116,7 +143,7 @@ export const activitiesRouter = router({
             userId,
             from: new Date(input.from),
             to: new Date(input.to),
-            timeZone: input.timeZone,
+            timeZone: viewer.timeZone,
           },
           AbortSignal.timeout(10_000),
         ),

@@ -38,11 +38,25 @@ vi.mock("@/features/activities/AddActivityModal", () => ({
   AddActivityModal: () => <div data-testid="activity-modal" />,
 }));
 
+import { LocaleProvider } from "@/features/i18n/LocaleProvider";
 import { GlobalAddMenu } from "./GlobalAddMenu";
 
 const PIPE = { id: "p1", name: "Sales", stages: [{ id: "s1", name: "Qualified" }] };
 
 describe("GlobalAddMenu", () => {
+  it("exposes localized entities while keeping stable keyboard shortcuts", async () => {
+    useQuery.mockReturnValue({ data: [PIPE] });
+    render(
+      <LocaleProvider locale="fa">
+        <GlobalAddMenu />
+      </LocaleProvider>,
+    );
+    expect(screen.getByRole("button", { name: "افزودن سریع" })).toBeInTheDocument();
+    fireEvent.keyDown(window, { key: "+" });
+    expect(await screen.findByRole("menuitem", { name: /فرصت فروش/ })).toBeInTheDocument();
+    fireEvent.keyDown(screen.getByRole("menu"), { key: "D" });
+    expect(await screen.findByTestId("deal-modal")).toBeInTheDocument();
+  });
   it("opens a menu with all five entries and their shortcuts", async () => {
     const user = userEvent.setup();
     useQuery.mockReturnValue({ data: [PIPE] });

@@ -1,18 +1,23 @@
 import type { ReactNode } from "react";
 import { PERMISSION_FLAGS } from "@/constants/permissionFlags";
-import { STRINGS } from "@/constants/strings";
 import { db } from "@/db/client";
 import { listTypes } from "@/features/activities/typesRepo";
+import { getServerSettingsMessages } from "@/features/identity/settingsMessages.server";
 import { createContext } from "@/server/trpc/context";
 import { ActivityTypesClient } from "./ActivityTypesClient";
 
-export const metadata = { title: STRINGS.settings.activities };
+export async function generateMetadata() {
+  const L = await getServerSettingsMessages();
+  return { title: L.activities };
+}
 
 // Company settings > Activities tab (spec 6.2): activity-type catalog CRUD.
 export default async function ActivitiesPage(): Promise<ReactNode> {
+  const L = await getServerSettingsMessages();
+
   const { actor } = await createContext();
   if (actor === null || (actor.type !== "admin" && !actor.flags.has(PERMISSION_FLAGS.MANAGE))) {
-    return <p className="text-sm text-red-600">{STRINGS.settings.requiresAdmin}</p>;
+    return <p className="text-sm text-red-600">{L.requiresAdmin}</p>;
   }
 
   const rows = await listTypes(db, { activeOnly: false }, AbortSignal.timeout(5000));

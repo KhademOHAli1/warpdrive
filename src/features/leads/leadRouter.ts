@@ -42,6 +42,7 @@ export const leadRouter = router({
         actorToSession(ctx.actor),
         input.leadId,
         AbortSignal.timeout(10_000),
+        input.locale,
       ),
     ),
 });

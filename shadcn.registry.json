@@ -1,0 +1,28 @@
+{
+  "style": "radix-nova",
+  "components": [
+    "button",
+    "input",
+    "textarea",
+    "badge",
+    "skeleton",
+    "avatar",
+    "checkbox",
+    "collapsible",
+    "popover",
+    "progress",
+    "radio-group",
+    "select",
+    "switch",
+    "alert-dialog",
+    "dialog",
+    "dropdown-menu",
+    "sheet",
+    "tabs",
+    "tooltip",
+    "chart",
+    "command",
+    "direction",
+    "input-group"
+  ]
+}

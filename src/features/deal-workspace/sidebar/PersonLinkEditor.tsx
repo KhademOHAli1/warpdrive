@@ -1,5 +1,4 @@
 "use client";
-
 import type React from "react";
 import { useId, useMemo, useRef, useState } from "react";
 import { FIELD_INPUT } from "@/constants/formStyles";
@@ -12,6 +11,7 @@ import {
   firstMissingImportantField,
 } from "@/features/custom-fields/CustomFieldCreateFields";
 import { updateDealAction } from "@/features/deals/updateAction";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import type { CustomFieldDef } from "@/types/customFields";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { findPersonMatches, type PersonMatchReason } from "./personMatch";
@@ -57,6 +57,8 @@ export function PersonLinkEditor({
   onDone: () => void;
   onError: (errorId: string) => void;
 }): React.ReactNode {
+  const translateSales = useAppTranslations("sales");
+
   const [draft, setDraft] = useState<Draft>(EMPTY);
   const [values, setValues] = useState<CustomFieldValues>({});
   const [pending, setPending] = useState(false);
@@ -150,20 +152,20 @@ export function PersonLinkEditor({
     <div className="space-y-2 py-1 text-sm">
       <Field
         id={ids.first}
-        label="First name"
+        label={translateSales("first_name_702ef")}
         value={draft.firstName}
         onChange={(v) => set({ firstName: v })}
       />
       <Field
         id={ids.last}
-        label="Last name"
+        label={translateSales("last_name_7b488")}
         value={draft.lastName}
         onChange={(v) => set({ lastName: v })}
       />
       {!hidden.has("phones") && (
         <Field
           id={ids.phone}
-          label="Phone"
+          label={translateSales("phone_63dce")}
           value={draft.phone}
           onChange={(v) => set({ phone: v })}
         />
@@ -171,7 +173,7 @@ export function PersonLinkEditor({
       {!hidden.has("emails") && (
         <Field
           id={ids.email}
-          label="Email"
+          label={translateSales("email_969cc")}
           value={draft.email}
           onChange={(v) => set({ email: v })}
         />
@@ -181,7 +183,7 @@ export function PersonLinkEditor({
         defs={customFieldDefs}
         values={values}
         onChange={(key, value) => setValues((current) => ({ ...current, [key]: value }))}
-        title="Person fields"
+        title={translateSales("person_fields_31c77")}
       />
 
       {matches.length > 0 && (
@@ -189,7 +191,10 @@ export function PersonLinkEditor({
           {matches.map((m) => (
             <li key={m.option.id} className="flex items-center justify-between gap-2">
               <span className="min-w-0 truncate">
-                <span className="font-medium">{m.option.name}</span> {REASON_TEXT[m.reason]}
+                <span className="font-medium">
+                  <bdi dir="auto">{m.option.name}</bdi>
+                </span>{" "}
+                {REASON_TEXT[m.reason]}
               </span>
               <button
                 type="button"
@@ -197,7 +202,7 @@ export function PersonLinkEditor({
                 onClick={() => void link(m.option.id)}
                 className="shrink-0 rounded border px-2 py-0.5 text-xs hover:bg-accent disabled:opacity-50"
               >
-                Link
+                {translateSales("link_a6a32")}
               </button>
             </li>
           ))}
@@ -213,7 +218,7 @@ export function PersonLinkEditor({
           onClick={onDone}
           className="rounded-md border px-2.5 py-1 text-xs hover:bg-accent disabled:opacity-50"
         >
-          Cancel
+          {translateSales("cancel_19766")}
         </button>
         <button
           type="button"
@@ -221,7 +226,7 @@ export function PersonLinkEditor({
           onClick={() => void save()}
           className="rounded-md bg-primary px-2.5 py-1 text-xs text-primary-foreground hover:opacity-90 disabled:opacity-50"
         >
-          Save
+          {translateSales("save_1509f")}
         </button>
       </div>
     </div>
@@ -241,7 +246,7 @@ function Field({
 }): React.ReactNode {
   return (
     <div className="flex items-center gap-2">
-      <label htmlFor={id} className="w-24 shrink-0 text-right text-muted-foreground">
+      <label htmlFor={id} className="w-24 shrink-0 text-end text-muted-foreground">
         {label}
       </label>
       <input

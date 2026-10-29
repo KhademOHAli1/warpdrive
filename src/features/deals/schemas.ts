@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { DEAL_STATUS } from "@/constants/dealStatus";
 import { SOURCE_CHANNEL_KEYS } from "@/constants/sourceChannels";
+import { currencyCode, moneyAmount } from "@/features/currencies/currencySchema";
 import { labelNameArray } from "@/features/labels/labelsSchema";
 
 // Multi-label: an array of catalog label names, deduped + capped by labelNameArray. Names are
@@ -16,7 +17,8 @@ const labelsField = labelsArray.default([]);
 // ordinary user cannot spoof ownership.
 export const dealCreateInput = z.object({
   title: z.string().min(1).max(255),
-  value: z.number().nonnegative().multipleOf(0.01).nullable().default(null),
+  value: moneyAmount.nullable().default(null),
+  currency: currencyCode.optional(),
   pipelineId: z.string().uuid(),
   stageId: z.string().uuid(),
   personId: z.string().uuid().nullable().default(null),
@@ -46,7 +48,8 @@ export const dealUpdateInput = z.object({
   dealId: z.string().uuid(),
   expectedUpdatedAt: z.string().datetime(), // ISO datetime; compare-and-swap precondition
   title: z.string().min(1).max(255).optional(),
-  value: z.number().nonnegative().multipleOf(0.01).nullable().optional(),
+  value: moneyAmount.nullable().optional(),
+  currency: currencyCode.optional(),
   expectedCloseDate: z.string().date().nullable().optional(),
   status: z.enum(DEAL_STATUS).optional(),
   lostReason: z.string().min(1).max(500).optional(),
@@ -73,7 +76,7 @@ export const dealUpdateInput = z.object({
   // reference-visibility check. Omitted means "leave untouched".
   personId: z.string().uuid().nullable().optional(),
   orgId: z.string().uuid().nullable().optional(),
-});
+}).refine((input) => input.currency === undefined || input.value !== undefined, { message: "Changing currency requires an explicit amount", path: ["value"] });
 
 export const dealMoveInput = z.object({
   dealId: z.string().uuid(),

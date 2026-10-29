@@ -1,6 +1,7 @@
 "use client";
 import { Eye } from "lucide-react";
 import type React from "react";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 
 const BTN =
   "rounded-md border px-3 py-1.5 text-sm transition-[background-color,scale] duration-150 ease-out hover:bg-accent active:scale-[0.96] disabled:opacity-50 motion-reduce:transition-colors";
@@ -26,6 +27,8 @@ export function CreateFilterModalFooter({
   onSave,
   saveLabel,
 }: CreateFilterModalFooterProps): React.ReactNode {
+  const translateSales = useAppTranslations("sales");
+
   return (
     <div className="flex items-center justify-between gap-2 border-t px-5 py-3">
       {onPreview !== undefined ? (
@@ -36,14 +39,14 @@ export function CreateFilterModalFooter({
           className={`inline-flex items-center gap-1.5 ${BTN}`}
         >
           <Eye aria-hidden="true" className="h-4 w-4" />
-          Preview
+          {translateSales("preview_324b1")}
         </button>
       ) : (
         <span />
       )}
       <div className="flex gap-2">
         <button type="button" onClick={onCancel} className={BTN}>
-          Cancel
+          {translateSales("cancel_19766")}
         </button>
         {onApply !== undefined ? (
           <button
@@ -52,7 +55,7 @@ export function CreateFilterModalFooter({
             onClick={onApply}
             className={`font-medium ${BTN}`}
           >
-            Apply
+            {translateSales("apply_31e39")}
           </button>
         ) : null}
         <button

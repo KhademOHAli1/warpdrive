@@ -10,12 +10,14 @@ import { NAV_PREF_COOKIE } from "@/constants/cookies";
 import { db } from "@/db/client";
 import { FollowUpPromptProvider } from "@/features/activities/followUpAfterDone";
 import { CSRF_COOKIE } from "@/features/auth/csrf";
+import { CurrencyProvider } from "@/features/currencies/CurrencyProvider";
 import { InterfacePrefsProvider } from "@/features/identity/InterfacePrefsProvider";
 import { interfacePrefsFromUi } from "@/features/identity/interfacePrefs";
 import { getPreferencesForActor } from "@/features/identity/preferencesForActor";
 import { IdentifyUser } from "@/features/observability/IdentifyUser";
 import { VersionBanner } from "@/features/release/ui/VersionBanner";
 import { CommandPalette } from "@/features/search/ui/CommandPalette";
+import { readBaseCurrency } from "@/features/settings/readBaseCurrency";
 import { GlobalShortcuts } from "@/features/shortcuts/GlobalShortcuts";
 import { appearanceSeedScript, parseAppearance } from "@/features/theme/appearance";
 import { createContext } from "@/server/trpc/context";
@@ -32,46 +34,51 @@ export default async function AppLayout({ children }: { children: ReactNode }): 
   // user row), so the shell no longer re-reads that row per authenticated page. Only the per-user
   // interface preferences remain; default comfortable when no row exists (DealCard/Board read the
   // density via the data-density attribute).
-  const prefs = await getPreferencesForActor(db, ctx.actor.id);
+  const [prefs, baseCurrency] = await Promise.all([
+    getPreferencesForActor(db, ctx.actor.id),
+    readBaseCurrency(db, AbortSignal.timeout(5000)),
+  ]);
   return (
-    <ActionErrorProvider>
-      <IdentifyUser
-        user={{
-          id: ctx.actor.id,
-          name: ctx.actor.name,
-          email: ctx.actor.email,
-          role: ctx.actor.type,
-        }}
-      />
-      {/* Reconciles this device's theme cookie with the account's stored choice, inline and ahead
+    <CurrencyProvider currency={baseCurrency}>
+      <ActionErrorProvider>
+        <IdentifyUser
+          user={{
+            id: ctx.actor.id,
+            name: ctx.actor.name,
+            email: ctx.actor.email,
+            role: ctx.actor.type,
+          }}
+        />
+        {/* Reconciles this device's theme cookie with the account's stored choice, inline and ahead
           of the shell, so a cold browser never paints a frame of the wrong theme. */}
-      <script
-        // biome-ignore lint/security/noDangerouslySetInnerHtml: three known literals; must be inline to beat first paint
-        dangerouslySetInnerHTML={{
-          __html: appearanceSeedScript(parseAppearance(prefs.ui.appearance)),
-        }}
-      />
-      <InterfacePrefsProvider value={interfacePrefsFromUi(prefs.ui)}>
-        <FollowUpPromptProvider>
-          <div data-density={prefs.density} className="flex h-screen flex-col">
-            <CsrfRefresher hasCsrf={hasCsrf} />
-            {ctx.actor.type === "admin" && <VersionBanner />}
-            <ReconnectBanner />
-            <TopBar
-              userId={ctx.actor.id}
-              userName={ctx.actor.name}
-              avatarUrl={ctx.actor.avatarUrl}
-              appearance={parseAppearance(prefs.ui.appearance)}
-            />
-            <div className="flex min-h-0 flex-1">
-              <LeftNav initialExpanded={navExpanded} />
-              <main className="min-w-0 flex-1 overflow-auto bg-muted/70 p-6">{children}</main>
+        <script
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: three known literals; must be inline to beat first paint
+          dangerouslySetInnerHTML={{
+            __html: appearanceSeedScript(parseAppearance(prefs.ui.appearance)),
+          }}
+        />
+        <InterfacePrefsProvider value={interfacePrefsFromUi(prefs.ui)}>
+          <FollowUpPromptProvider>
+            <div data-density={prefs.density} className="flex h-screen flex-col">
+              <CsrfRefresher hasCsrf={hasCsrf} />
+              {ctx.actor.type === "admin" && <VersionBanner />}
+              <ReconnectBanner />
+              <TopBar
+                userId={ctx.actor.id}
+                userName={ctx.actor.name}
+                avatarUrl={ctx.actor.avatarUrl}
+                appearance={parseAppearance(prefs.ui.appearance)}
+              />
+              <div className="flex min-h-0 flex-1">
+                <LeftNav initialExpanded={navExpanded} />
+                <main className="min-w-0 flex-1 overflow-auto bg-muted/70 p-6">{children}</main>
+              </div>
+              <CommandPalette />
+              <GlobalShortcuts />
             </div>
-            <CommandPalette />
-            <GlobalShortcuts />
-          </div>
-        </FollowUpPromptProvider>
-      </InterfacePrefsProvider>
-    </ActionErrorProvider>
+          </FollowUpPromptProvider>
+        </InterfacePrefsProvider>
+      </ActionErrorProvider>
+    </CurrencyProvider>
   );
 }

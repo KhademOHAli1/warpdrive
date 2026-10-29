@@ -3,9 +3,11 @@
 // Windows on won_time (see dealPerformance for why) and applies dealVisibilityClause.
 import { sql } from "drizzle-orm";
 import type { Db } from "@/db/client";
+import { reportCurrencyClause } from "@/features/currencies/reportCurrency";
 import { dealVisibilityClause } from "@/features/deals/visibility";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { ownerFilterClause } from "@/features/stats/ownerIds";
+import { canonicalMoney } from "@/lib/canonicalMoney";
 import type { DashboardFilters, WonTrendPoint } from "@/types/stats";
 import { monthsInRange, windowStart } from "./monthBuckets";
 
@@ -38,6 +40,7 @@ export async function wonTrend(
   const start = windowStart(filters.from, months);
   if (start === null) return [];
 
+  const currencyClause = await reportCurrencyClause(db, filters.currency, signal);
   const visClause = dealVisibilityClause(toSession(actor));
   const ownerClause = ownerFilterClause(sql`d.owner_id`, filters.owners);
   const pipelineClause =
@@ -47,7 +50,7 @@ export async function wonTrend(
     SELECT
       to_char(date_trunc('month', d.won_time), 'YYYY-MM') AS "month",
       count(*)::int AS "count",
-      coalesce(sum(d.value), 0)::numeric(14,2)::text AS "value"
+      coalesce(sum(d.value), 0)::text AS "value"
     FROM deals d
     JOIN pipelines p ON p.id = d.pipeline_id
     WHERE d.deleted_at IS NULL
@@ -58,6 +61,7 @@ export async function wonTrend(
       AND d.won_time < ${filters.to}::date + INTERVAL '1 day'
       ${pipelineClause}
       ${ownerClause}
+      ${currencyClause}
       AND ${visClause}
     GROUP BY 1
   `);
@@ -72,7 +76,7 @@ export async function wonTrend(
     return {
       month,
       count: row?.count ?? 0,
-      value: row?.value ?? "0.00",
+      value: canonicalMoney(row?.value ?? "0.00"),
     };
   });
 }

@@ -6,7 +6,7 @@
  * deals/leads/contacts/activities/emails plus labels, notes, notifications,
  * files, tracking, participants, teams, custom fields, and visibility variety.
  *
- * Run: pnpm db:seed:demo
+ * Run: bun run db:seed:demo
  * Re-runnable: wipes previously seeded demo-owned rows, then reseeds
  * deterministically (fixed PRNG seed). Smoke/phase5 fixtures are left alone.
  * Login any demo user via /auth/dev-login?email=demo1@example.com (dev only).

@@ -12,8 +12,7 @@
 // hidden rows) a cursor-based page-until-full strategy can replace this without changing
 // the contract.
 //
-// Band: UTC day boundary. "today" = created_at on or after midnight UTC today. Chosen
-// over local-time because the server has no user timezone and UTC is consistent.
+// Bands use the viewer's resolved account day. UTC remains the deterministic fallback.
 //
 // In-app preference filter: getPreferences is resolved once per call and applied
 // alongside the visibility filter. Rows whose type the user disabled in-app are hidden
@@ -24,19 +23,16 @@ import type { Db } from "@/db/client";
 import { notifications } from "@/db/schema";
 import type { Notification } from "@/db/schema/notifications";
 import { canActorAccessParent } from "@/features/files/fileAuthz";
+import { resolveAccountLocalePreferences } from "@/features/i18n/accountPreferences";
+import { getPreferences as getAccountPreferences } from "@/features/identity/preferencesRepo";
 import type { AuthUser } from "@/features/permissions/types";
 import type { NotificationFeedItem } from "@/types/notification";
 import { getPreferences } from "./preferences";
+import { notificationBand } from "./notificationBand";
 
 const MAX_FETCH = 300;
 
-function band(createdAt: Date): "today" | "earlier" {
-  const now = new Date();
-  const todayStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-  return createdAt >= todayStart ? "today" : "earlier";
-}
-
-function toFeedItem(r: Notification): NotificationFeedItem {
+function toFeedItem(r: Notification, now: Date, timeZone: string): NotificationFeedItem {
   return {
     id: r.id,
     userId: r.userId,
@@ -47,7 +43,7 @@ function toFeedItem(r: Notification): NotificationFeedItem {
     payload: r.payload,
     readAt: r.readAt ? r.readAt.toISOString() : null,
     createdAt: r.createdAt.toISOString(),
-    band: band(r.createdAt),
+    band: notificationBand(r.createdAt, now, timeZone),
   };
 }
 
@@ -72,10 +68,12 @@ export async function getFeed(
   user: AuthUser,
   limit: number,
   signal: AbortSignal,
+  options: { timeZone?: string; now?: Date } = {},
 ): Promise<NotificationFeedItem[]> {
   signal.throwIfAborted();
+  const now = options.now ?? new Date();
   const fetchCount = Math.min(limit * 3, MAX_FETCH);
-  const [rows, prefs] = await Promise.all([
+  const [rows, prefs, accountPreferences] = await Promise.all([
     db
       .select()
       .from(notifications)
@@ -83,8 +81,14 @@ export async function getFeed(
       .orderBy(desc(notifications.createdAt))
       .limit(fetchCount),
     getPreferences(db, user.id, signal),
+    getAccountPreferences(db, user.id, signal),
   ]);
   signal.throwIfAborted();
+  const { timeZone } = resolveAccountLocalePreferences({
+    saved: accountPreferences.ui.localePreferences,
+    profileTimeZone: accountPreferences.timezone,
+    fallback: { timeZone: options.timeZone },
+  });
 
   const visible: NotificationFeedItem[] = [];
   for (const row of rows) {
@@ -92,7 +96,7 @@ export async function getFeed(
     // Fail-open for unknown types: only suppress when inApp is explicitly false.
     if (prefs[row.type].inApp === false) continue;
     const ok = await isVisible(db, user, row, signal);
-    if (ok) visible.push(toFeedItem(row));
+    if (ok) visible.push(toFeedItem(row, now, timeZone));
   }
   return visible;
 }

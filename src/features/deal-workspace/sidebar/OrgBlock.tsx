@@ -4,6 +4,7 @@ import type React from "react";
 import type { Organization } from "@/db/schema";
 import { updateOrgAction } from "@/features/contacts/actions";
 import { ContactCustomFieldRows } from "@/features/custom-fields/ContactCustomFieldRows";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import type { CustomFieldDef } from "@/types/customFields";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { externalHref, LinkValue } from "./contactLinks";
@@ -61,6 +62,8 @@ export function OrgBlock({
   customFieldDefs?: CustomFieldDef[];
   currency?: string;
 }): React.ReactNode {
+  const translateSales = useAppTranslations("sales");
+
   const router = useRouter();
   const address = formatAddress(org.address);
 
@@ -94,10 +97,10 @@ export function OrgBlock({
   return (
     <>
       <SidebarFieldRow
-        label="Name"
+        label={translateSales("name_dcd1d")}
         value={
           <a href={`/contacts/orgs/${org.id}`} className="text-primary hover:underline">
-            {org.name}
+            <bdi dir="auto">{org.name}</bdi>
           </a>
         }
         initialDraft={org.name}
@@ -105,11 +108,15 @@ export function OrgBlock({
         onSave={(draft) => save({ name: draft.trim() })}
       />
       {labels !== undefined && (
-        <SidebarFieldRow label="Labels" value={<LabelChips labels={labels} />} readOnly />
+        <SidebarFieldRow
+          label={translateSales("labels_934b8")}
+          value={<LabelChips labels={labels} />}
+          readOnly
+        />
       )}
       {!hidden.has("domain") && (
         <SidebarFieldRow
-          label="Website"
+          label={translateSales("website_b5a22")}
           value={
             org.domain === null ? (
               "-"
@@ -130,7 +137,7 @@ export function OrgBlock({
       )}
       {!hidden.has("linkedinUrl") && (
         <SidebarFieldRow
-          label="LinkedIn"
+          label={translateSales("linkedin_dd844")}
           value={
             org.linkedinUrl === null ? (
               "-"
@@ -151,7 +158,7 @@ export function OrgBlock({
       )}
       {!hidden.has("industry") && (
         <SidebarFieldRow
-          label="Industry"
+          label={translateSales("industry_b4448")}
           value={org.industry ?? "-"}
           empty={org.industry === null}
           initialDraft={org.industry ?? ""}
@@ -164,7 +171,7 @@ export function OrgBlock({
       )}
       {!hidden.has("annualRevenue") && (
         <SidebarFieldRow
-          label="Annual revenue"
+          label={translateSales("annual_revenue_dcfdf")}
           value={org.annualRevenue ?? "-"}
           empty={org.annualRevenue === null}
           initialDraft={org.annualRevenue ?? ""}
@@ -177,7 +184,7 @@ export function OrgBlock({
       )}
       {!hidden.has("employeeCount") && (
         <SidebarFieldRow
-          label="Number of employees"
+          label={translateSales("number_of_employees_abadd")}
           value={org.employeeCount ?? "-"}
           empty={org.employeeCount === null}
           initialDraft={org.employeeCount === null ? "" : String(org.employeeCount)}

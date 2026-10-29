@@ -3,9 +3,11 @@ import { memo, useCallback, useRef, useState } from "react";
 import { layoutTimed, splitAllDay } from "@/features/activities/agendaLayout";
 import { DEFAULT_START_HOUR } from "@/features/activities/agendaScroll";
 import type { CalendarActivity } from "@/features/activities/calendar";
-import { HOUR_HEIGHT_PX, HOURS, hourLabel } from "@/features/activities/weekAgenda";
+import { HOUR_HEIGHT_PX, HOURS } from "@/features/activities/weekAgenda";
+import { useAppTranslations, useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import { cn } from "@/lib/utils";
 import { ActivityChip } from "./calendarChip";
+import { calendarDayLabel, calendarHourLabel } from "./calendarLabels";
 import { MoreActivitiesChip } from "./MoreActivitiesChip";
 
 const COLUMN_HEIGHT_PX = HOURS.length * HOUR_HEIGHT_PX;
@@ -37,8 +39,10 @@ export const AgendaDayColumn = memo(function AgendaDayColumn({
   onOpenActivity,
   onOpenSlot,
 }: AgendaDayColumnProps): React.ReactNode {
+  const preferences = useLocalePreferences();
+  const t = useAppTranslations("calendar");
   const { timed } = splitAllDay(items);
-  const { placements, overflows } = layoutTimed(timed);
+  const { placements, overflows } = layoutTimed(timed, preferences.timeZone);
   const ref = useRef<HTMLDivElement>(null);
   // Roving tabindex: one lane per column is in the tab order and the arrows walk the rest, so a
   // week costs 7 tab stops instead of 168 before the keyboard reaches anything.
@@ -59,7 +63,7 @@ export const AgendaDayColumn = memo(function AgendaDayColumn({
       ref={ref}
       role="group"
       aria-label={dayLabel}
-      className="relative border-l border-border"
+      className="relative border-s border-border"
       style={{ height: COLUMN_HEIGHT_PX }}
     >
       {placements.map(({ activity, topPx, heightPx, leftPct, widthPct, overflowing }) => (
@@ -75,7 +79,7 @@ export const AgendaDayColumn = memo(function AgendaDayColumn({
             // 120min) would otherwise run past midnight and be clipped by the column instead of
             // ending visibly at the day boundary.
             height: Math.min(heightPx, COLUMN_HEIGHT_PX - topPx),
-            left: overflowing ? 0 : `${leftPct}%`,
+            insetInlineStart: overflowing ? 0 : `${leftPct}%`,
             width: overflowing ? undefined : `${widthPct}%`,
           }}
         >
@@ -85,7 +89,7 @@ export const AgendaDayColumn = memo(function AgendaDayColumn({
       {overflows.map(({ activities, topPx, heightPx }) => (
         <div
           key={`more-${activities[0]?.id ?? topPx}`}
-          className={cn("absolute right-0 z-10 overflow-hidden px-px", MORE_WIDTH_CLASS)}
+          className={cn("absolute end-0 z-10 overflow-hidden px-px", MORE_WIDTH_CLASS)}
           style={{
             top: topPx,
             height: Math.min(heightPx, COLUMN_HEIGHT_PX - topPx),
@@ -103,7 +107,13 @@ export const AgendaDayColumn = memo(function AgendaDayColumn({
           type="button"
           data-hour={hour}
           tabIndex={hour === focusHour ? 0 : -1}
-          aria-label={`Add activity on ${iso} at ${hourLabel(hour)}`}
+          aria-label={t("addActivitySlot", {
+            date:
+              preferences.locale === "en" && preferences.calendar === "gregory"
+                ? iso
+                : calendarDayLabel(iso, preferences),
+            time: calendarHourLabel(hour, preferences),
+          })}
           onClick={() => onOpenSlot(iso, hour)}
           onKeyDown={(e) => onKeyDown(e, hour)}
           className="absolute inset-x-0 border-t border-border/60 hover:bg-accent/30"

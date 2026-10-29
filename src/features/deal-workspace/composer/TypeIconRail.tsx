@@ -37,7 +37,7 @@ export function TypeIconRail({
           )}
         >
           <ActivityTypeIcon typeKey={t.key} />
-          {t.name}
+          <bdi dir="auto">{t.name}</bdi>
         </button>
       ))}
     </div>

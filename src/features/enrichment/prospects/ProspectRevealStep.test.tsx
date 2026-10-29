@@ -80,7 +80,8 @@ describe("ProspectRevealStep", () => {
         onStop={noop}
       />,
     );
-    expect(screen.getByText(/provider down/)).toBeInTheDocument();
+    expect(screen.getByText(/The reveal stopped early/)).toBeInTheDocument();
+    expect(screen.queryByText(/provider down/)).not.toBeInTheDocument();
   });
 
   it("stops offering a second stop while the batch already sent finishes", () => {

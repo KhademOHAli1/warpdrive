@@ -3,9 +3,8 @@ import { ArrowDown, ArrowUp } from "lucide-react";
 import type React from "react";
 import { Button } from "@/components/ui/Button";
 import { Tip } from "@/components/ui/tooltip";
-import { STRINGS } from "@/constants/strings";
+import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 
-const S = STRINGS.settings;
 const ICON_BUTTON =
   "relative size-7 shrink-0 p-0 text-muted-foreground after:absolute after:size-10 after:content-['']";
 
@@ -24,6 +23,9 @@ export function ReorderControls({
   onMoveUp,
   onMoveDown,
 }: ReorderControlsProps): React.ReactNode {
+  const L = useSettingsMessages();
+  const S = L;
+
   return (
     <div className="flex items-center gap-3">
       <Tip label={S.moveUp}>

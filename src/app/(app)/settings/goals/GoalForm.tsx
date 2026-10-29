@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/Button";
 import { DatePicker } from "@/components/ui/DatePicker";
@@ -12,11 +11,13 @@ import {
   type GoalAssigneeKind,
   type GoalSubject,
 } from "@/constants/goals";
-import { SETTINGS_STRINGS } from "@/constants/settingsStrings";
 import type { Goal } from "@/db/schema/goals";
+import { CurrencySelect } from "@/features/currencies/CurrencySelect";
 import { goalTargetInput } from "@/features/goals/goalTargetText";
+import { useLocale } from "@/features/i18n/LocaleProvider";
+import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
+import { normalizeNumberInput } from "@/utils/normalizeNumberInput";
 
-const S = SETTINGS_STRINGS;
 const ANY = "goal:any";
 
 export interface Option {
@@ -34,6 +35,7 @@ export interface GoalDraft {
   activityTypeId: string | null;
   interval: string;
   target: string;
+  currency?: string;
   startsOn: string;
   endsOn: string | null;
 }
@@ -45,6 +47,7 @@ interface Props {
   activityTypes: Option[];
   // Present when editing; the same form serves both so create and edit cannot drift apart.
   initial?: Goal;
+  baseCurrency?: string;
   submitLabel: string;
   onSubmit: (draft: GoalDraft) => Promise<{ ok: boolean; errorId?: string }>;
   onDone: () => void;
@@ -56,10 +59,16 @@ export function GoalForm({
   pipelines,
   activityTypes,
   initial,
+  baseCurrency = "USD",
   submitLabel,
   onSubmit,
   onDone,
 }: Props): React.ReactElement {
+  const L = useSettingsMessages();
+  const S = L;
+  const locale = useLocale();
+
+  const [currency, setCurrency] = useState(initial?.currency ?? baseCurrency);
   const [subject, setSubject] = useState<GoalSubject>(initial?.subject ?? "deal");
   const [action, setAction] = useState<string>(initial?.action ?? "won");
   const [metric, setMetric] = useState<string>(initial?.metric ?? "value");
@@ -91,7 +100,7 @@ export function GoalForm({
 
   const actionOptions = (subject === "deal" ? DEAL_ACTIONS : ACTIVITY_ACTIONS).map((a) => ({
     value: a,
-    label: a,
+    label: L._extra.goalActions[a],
   }));
   const assigneeOptions =
     assigneeKind === "user"
@@ -111,7 +120,8 @@ export function GoalForm({
         pipelineId: pipelineId === ANY ? null : pipelineId,
         activityTypeId: subject === "activity" && activityTypeId !== ANY ? activityTypeId : null,
         interval,
-        target: target.trim(),
+        currency,
+        target: normalizeNumberInput(target, locale) ?? target.trim(),
         startsOn,
         endsOn,
       });
@@ -125,13 +135,14 @@ export function GoalForm({
 
   return (
     <form onSubmit={submit} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      {metric === "value" && <CurrencySelect value={currency} onChange={setCurrency} />}
       <Select
         ariaLabel={S.goalSubject}
         value={subject}
         onChange={chooseSubject}
         options={[
-          { value: "deal", label: "Deals" },
-          { value: "activity", label: "Activities" },
+          { value: "deal", label: L._extra.deals },
+          { value: "activity", label: L._extra.activities },
         ]}
       />
       <Select
@@ -147,10 +158,10 @@ export function GoalForm({
         options={
           subject === "deal"
             ? [
-                { value: "count", label: "Count" },
-                { value: "value", label: "Value" },
+                { value: "count", label: L._extra.count },
+                { value: "value", label: L._extra.value },
               ]
-            : [{ value: "count", label: "Count" }]
+            : [{ value: "count", label: L._extra.count }]
         }
       />
       <Select
@@ -161,9 +172,9 @@ export function GoalForm({
           setAssigneeId(ANY);
         }}
         options={[
-          { value: "company", label: "Whole company" },
-          { value: "team", label: "A team" },
-          { value: "user", label: "One person" },
+          { value: "company", label: L._extra.whole_company },
+          { value: "team", label: L._extra.a_team },
+          { value: "user", label: L._extra.one_person },
         ]}
       />
       {assigneeKind !== "company" && (
@@ -171,7 +182,7 @@ export function GoalForm({
           ariaLabel={S.goalAssignee}
           value={assigneeId}
           onChange={setAssigneeId}
-          options={[{ value: ANY, label: "Select" }, ...assigneeOptions]}
+          options={[{ value: ANY, label: L._extra.select }, ...assigneeOptions]}
         />
       )}
       <Select
@@ -198,7 +209,7 @@ export function GoalForm({
         ariaLabel={S.goalInterval}
         value={interval}
         onChange={setInterval}
-        options={GOAL_INTERVALS.map((i) => ({ value: i, label: i }))}
+        options={GOAL_INTERVALS.map((i) => ({ value: i, label: L._extra.goalIntervals[i] }))}
       />
       <Input
         aria-label={S.goalTarget}

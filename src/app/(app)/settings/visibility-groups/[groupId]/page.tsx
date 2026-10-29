@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import { PERMISSION_FLAGS } from "@/constants/permissionFlags";
-import { STRINGS } from "@/constants/strings";
+import { getServerSettingsMessages } from "@/features/identity/settingsMessages.server";
 import { listAssignableUsers } from "@/features/identity/users.service";
 import {
   listGroupMembers,
@@ -13,17 +13,22 @@ import { SettingsHeading } from "../../SettingsHeading";
 import { SettingsPage } from "../../SettingsSurface";
 import { GroupMembersClient } from "./GroupMembersClient";
 
-export const metadata = { title: STRINGS.settings.visibilityGroups };
+export async function generateMetadata() {
+  const L = await getServerSettingsMessages();
+  return { title: L.visibilityGroups };
+}
 
 export default async function GroupDetailPage({
   params,
 }: {
   params: Promise<{ groupId: string }>;
 }): Promise<ReactNode> {
+  const L = await getServerSettingsMessages();
+
   const { groupId } = await params;
   const { actor, db } = await createContext();
   if (actor === null || (actor.type !== "admin" && !actor.flags.has(PERMISSION_FLAGS.MANAGE))) {
-    return <p className="text-sm text-red-600">{STRINGS.settings.requiresAdmin}</p>;
+    return <p className="text-sm text-red-600">{L.requiresAdmin}</p>;
   }
 
   const signal = AbortSignal.timeout(5000);
@@ -43,11 +48,14 @@ export default async function GroupDetailPage({
         href="/settings/visibility-groups"
         className="text-sm text-primary underline-offset-4 hover:underline"
       >
-        &larr; {STRINGS.settings.visibilityGroups}
+        <span aria-hidden="true" className="inline-block rtl:rotate-180">
+          ←
+        </span>{" "}
+        {L.visibilityGroups}
       </Link>
       <SettingsHeading
         title={group.name}
-        description="Manage who belongs to this visibility group."
+        description={L._extra.manage_who_belongs_to_this_visibility_group}
       />
       <GroupMembersClient groupId={groupId} members={members} allUsers={allUsers} />
     </SettingsPage>

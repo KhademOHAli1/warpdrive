@@ -11,38 +11,22 @@ import {
   type CustomFieldTarget,
   type CustomFieldType,
 } from "@/constants/customFieldTypes";
-import { STRINGS } from "@/constants/strings";
 import { createDefAction } from "@/features/custom-fields/actions";
+import { settingsFieldType } from "@/features/identity/settingsMessages";
+import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { SettingsHeading } from "../SettingsHeading";
 import { SettingsPage } from "../SettingsSurface";
 import { BuiltinFieldRow } from "./BuiltinFieldRow";
 import { FieldList } from "./FieldList";
-import { DATA_FIELDS_STRINGS } from "./strings";
 import type { BuiltinRow, FieldRow } from "./types";
 
-const S = STRINGS.settings;
-const TARGET_LABEL: Record<CustomFieldTarget, string> = {
-  deal: S.entityDeal,
-  lead: S.entityLead,
-  person: S.entityPerson,
-  organization: S.entityOrganization,
-  activity: S.entityActivity,
-};
-const TARGET_OPTIONS = CUSTOM_FIELD_TARGETS.map((fieldTarget) => ({
-  value: fieldTarget,
-  label: TARGET_LABEL[fieldTarget],
-}));
-const FIELD_TYPE_OPTIONS = CUSTOM_FIELD_TYPES.map((fieldType) => ({
-  value: fieldType,
-  label: fieldType.replaceAll("_", " "),
-}));
 const OPTION_TYPES = new Set<CustomFieldType>(["single_option", "multi_option"]);
 
 // Parses the comma-separated options input into the {id,label} option shape createDef expects.
 function parseOptions(raw: string): { id: string; label: string }[] {
   return raw
-    .split(",")
+    .split(/[,،]/)
     .map((s) => s.trim())
     .filter((s) => s !== "")
     .map((label) => ({ id: crypto.randomUUID(), label }));
@@ -57,6 +41,24 @@ export function DataFieldsClient({
   builtinByTarget?: Record<string, BuiltinRow[]>;
   initialTarget?: CustomFieldTarget;
 }): React.ReactNode {
+  const L = useSettingsMessages();
+  const FIELD_TYPE_OPTIONS = CUSTOM_FIELD_TYPES.map((fieldType) => ({
+    value: fieldType,
+    label: settingsFieldType(L, fieldType),
+  }));
+  const S = L;
+  const TARGET_LABEL: Record<CustomFieldTarget, string> = {
+    deal: S.entityDeal,
+    lead: S.entityLead,
+    person: S.entityPerson,
+    organization: S.entityOrganization,
+    activity: S.entityActivity,
+  };
+  const TARGET_OPTIONS = CUSTOM_FIELD_TARGETS.map((fieldTarget) => ({
+    value: fieldTarget,
+    label: TARGET_LABEL[fieldTarget],
+  }));
+
   const router = useRouter();
   const [target, setTarget] = useState<CustomFieldTarget>(initialTarget);
   const [name, setName] = useState("");
@@ -92,7 +94,7 @@ export function DataFieldsClient({
 
   return (
     <SettingsPage>
-      <SettingsHeading title={S.dataFields} description={DATA_FIELDS_STRINGS.description} />
+      <SettingsHeading title={S.dataFields} description={L._fields.description} />
 
       <div className="block">
         <span className="mb-1 block text-sm font-medium">{S.entity}</span>
@@ -141,7 +143,7 @@ export function DataFieldsClient({
                     value={type}
                     onChange={(value) => setType(value as CustomFieldType)}
                     options={FIELD_TYPE_OPTIONS}
-                    triggerContent={type.replaceAll("_", " ")}
+                    triggerContent={settingsFieldType(L, type)}
                   />
                 </div>
                 <Button

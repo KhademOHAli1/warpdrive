@@ -51,7 +51,9 @@ describe("VersionBanner", () => {
   it("renders the version pair when an update is available", () => {
     mockStatus({});
     render(<VersionBanner />);
-    expect(screen.getByText(/v1\.7\.0 is available/)).toBeTruthy();
+    expect(screen.getByText("v1.7.0").parentElement?.textContent).toBe(
+      "🎉 warpdrive v1.7.0 is available",
+    );
     expect(screen.getByText(/1\.6\.0/)).toBeTruthy();
   });
 
@@ -66,7 +68,9 @@ describe("VersionBanner", () => {
     localStorage.setItem(RELEASE_DISMISS_KEY, "v1.7.0");
     mockStatus({ latest: "v1.8.0" });
     render(<VersionBanner />);
-    expect(screen.getByText(/v1\.8\.0 is available/)).toBeTruthy();
+    expect(screen.getByText("v1.8.0").parentElement?.textContent).toBe(
+      "🎉 warpdrive v1.8.0 is available",
+    );
   });
 
   it("stores the dismissed version in localStorage when dismiss is clicked", () => {
@@ -90,7 +94,9 @@ describe("VersionBanner", () => {
     });
     mockStatus({});
     expect(() => render(<VersionBanner />)).not.toThrow();
-    expect(screen.getByText(/v1\.7\.0 is available/)).toBeTruthy();
+    expect(screen.getByText("v1.7.0").parentElement?.textContent).toBe(
+      "🎉 warpdrive v1.7.0 is available",
+    );
   });
 
   it("dismisses without throwing when localStorage.setItem throws", () => {
@@ -100,6 +106,6 @@ describe("VersionBanner", () => {
     mockStatus({});
     render(<VersionBanner />);
     expect(() => fireEvent.click(screen.getByRole("button", { name: /dismiss/i }))).not.toThrow();
-    expect(screen.queryByText(/v1\.7\.0 is available/)).toBeNull();
+    expect(screen.queryByText("v1.7.0")).toBeNull();
   });
 });

@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { useDealActionError } from "@/features/deal-workspace/DealActionErrorProvider";
 import { mergeDealsAction } from "@/features/deal-workspace/mergeDealsAction";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import type { FilterDefinition } from "@/features/saved-filters/schemas";
 import { trpc } from "@/lib/trpc-client";
 import { readCsrfToken } from "@/utils/csrfCookie";
@@ -50,6 +51,8 @@ export function MergeDealDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }): React.ReactNode {
+  const translateSales = useAppTranslations("sales");
+
   const router = useRouter();
   const reportError = useDealActionError();
   const [picked, setPicked] = useState<MergeCandidate | null>(null);
@@ -108,11 +111,11 @@ export function MergeDealDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Merge deals</DialogTitle>
+          <DialogTitle>{translateSales("merge_deals_8b44b")}</DialogTitle>
           <DialogDescription>
-            Pick the deal to merge this deal into. Its activities, notes, emails, participants, and
-            followers move to that deal, this deal is deleted, and you land on the merged deal. This
-            cannot be undone.
+            {translateSales(
+              "pick_the_deal_to_merge_this_deal_into_its_activities_notes_emails_50dc9",
+            )}
           </DialogDescription>
         </DialogHeader>
         <Combobox
@@ -120,15 +123,15 @@ export function MergeDealDialog({
           onChange={pick}
           options={options}
           search={{ value: query, onChange: setQuery }}
-          ariaLabel="Deal to merge in"
-          placeholder="Merge into"
+          ariaLabel={translateSales("deal_to_merge_in_130dd")}
+          placeholder={translateSales("merge_into_6e699")}
         />
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={pending}>
-            Cancel
+            {translateSales("cancel_19766")}
           </Button>
           <Button onClick={() => void confirm()} disabled={pending || picked === null}>
-            Merge
+            {translateSales("merge_8851a")}
           </Button>
         </DialogFooter>
       </DialogContent>

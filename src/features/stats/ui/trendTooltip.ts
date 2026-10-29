@@ -1,3 +1,5 @@
+import type { FormattingPreferences } from "@/lib/localeFormatting";
+import { statsMessagesForLocale } from "../statsMessages";
 import { money } from "./Panel";
 
 // The row recharts hands back for the hovered point. It arrives as unknown, so the count is read
@@ -14,9 +16,13 @@ export function trendTooltipValue(
   value: string | number | undefined,
   datum: unknown,
   currency: string,
+  preferences: Partial<FormattingPreferences> = {},
 ): string {
-  const amount = money(String(value ?? 0), currency);
+  const amount = money(String(value ?? 0), currency, preferences);
   const count = countOf(datum);
   if (count === null) return amount;
-  return `${amount} from ${count} ${count === 1 ? "deal" : "deals"}`;
+  return statsMessagesForLocale(preferences.locale === "fa" ? "fa" : "en")._extra.trendDeals(
+    amount,
+    count,
+  );
 }

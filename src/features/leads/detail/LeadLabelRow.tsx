@@ -4,6 +4,7 @@ import type React from "react";
 import { useState } from "react";
 import { useActionError } from "@/components/shell/ActionErrorProvider";
 import { ERROR_IDS } from "@/constants/errorIds";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { CatalogLabelPicker } from "@/features/labels/CatalogLabelPicker";
 import { resolveLabelChips } from "@/features/labels/resolveLabels";
 import { updateLeadAction } from "@/features/leads/leadServerActions";
@@ -27,6 +28,8 @@ export function LeadLabelRow({
   expectedUpdatedAt: string;
   labels: string[];
 }): React.ReactNode {
+  const tLeads = useAppTranslations("leads");
+
   const router = useRouter();
   const reportError = useActionError();
   // Both re-seed from the server once a router.refresh() delivers new props.
@@ -86,7 +89,9 @@ export function LeadLabelRow({
         />
       </div>
       {stale ? (
-        <p className="mt-1 text-xs text-muted-foreground">Labels changed elsewhere; reloaded.</p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          {tLeads("labelsChangedElsewhereReloaded")}
+        </p>
       ) : null}
     </div>
   );

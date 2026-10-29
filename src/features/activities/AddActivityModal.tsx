@@ -6,14 +6,22 @@ import { Combobox, type ComboboxOption } from "@/components/ui/Combobox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, type SelectOption } from "@/components/ui/Select";
 import { TimePicker } from "@/components/ui/TimePicker";
-import { ACTIVITY_PRIORITIES, ACTIVITY_PRIORITY_KEYS } from "@/constants/activityPriorities";
+import { ACTIVITY_PRIORITY_KEYS } from "@/constants/activityPriorities";
 import { ActivityDatePicker } from "@/features/activities/ActivityDatePicker";
 import { composeDueAt } from "@/features/activities/activityTime";
 import { ComposerFieldRow } from "@/features/deal-workspace/composer/ComposerFieldRow";
 import { TypeIconRail } from "@/features/deal-workspace/composer/TypeIconRail";
+import {
+  useAppTranslations,
+  useLocale,
+  useLocalePreferences,
+} from "@/features/i18n/LocaleProvider";
 import { trpc } from "@/lib/trpc-client";
 import { readCsrfToken } from "@/utils/csrfCookie";
+import { ActivityTimeZoneHint } from "./ActivityTimeZoneHint";
 import { createActivityAction } from "./actions";
+import { localizeActivityTypes } from "./activityTypeLabels";
+import { useActivitiesMessages } from "./useActivitiesMessages";
 import { useInvalidateActivityLists } from "./useInvalidateActivityLists";
 
 // Shared icon size for the composer-style field-row leading icons (matches ActivityComposerInline).
@@ -23,9 +31,9 @@ const ICON = "h-4 w-4";
 // person/organization links. Wired to the CSRF-guarded createActivityAction.
 // dueAt and allDay always travel together; sending a timestamp without the flag is what made
 // a blank time read back as midnight.
-function composedDue(date: string, time: string): { dueAt: string | null; allDay: boolean } {
-  const { iso, allDay } = composeDueAt(date, time);
-  return { dueAt: iso, allDay };
+function composedDue(date: string, time: string, zone: string) {
+  const { iso, allDay, dueDate } = composeDueAt(date, time, zone);
+  return { dueAt: iso, allDay, dueDate };
 }
 
 export function AddActivityModal({
@@ -48,11 +56,16 @@ export function AddActivityModal({
   defaultDate?: string;
   defaultTime?: string;
 }): React.ReactNode {
+  const S = useActivitiesMessages();
+  const locale = useLocale();
+  const preferences = useLocalePreferences();
+  const [draftZone] = useState(preferences.timeZone);
+  const tCalendar = useAppTranslations("calendar");
   const typesQ = trpc.activities.listTypes.useQuery();
   const peopleQ = trpc.contacts.listPeople.useQuery({ offset: 0, limit: 500 });
   const orgsQ = trpc.contacts.listOrgs.useQuery({ offset: 0, limit: 500 });
   const invalidateActivityLists = useInvalidateActivityLists();
-  const types = typesQ.data ?? [];
+  const types = localizeActivityTypes(typesQ.data ?? [], locale);
 
   const [typeId, setTypeId] = useState("");
   const [subject, setSubject] = useState("");
@@ -69,15 +82,22 @@ export function AddActivityModal({
 
   async function submit(): Promise<void> {
     if (subject.trim() === "") {
-      setError("Subject is required");
+      setError(S.subjectRequired);
       return;
     }
     if (effectiveTypeId === "") {
-      setError("Activity type unavailable");
+      setError(S.typeUnavailable);
       return;
     }
     if (dueRequired && due === "") {
-      setError("Due date is required");
+      setError(S.dueRequired);
+      return;
+    }
+    let temporal: ReturnType<typeof composedDue>;
+    try {
+      temporal = composedDue(due, startTime, draftZone);
+    } catch {
+      setError(tCalendar("invalidWallTime"));
       return;
     }
     setPending(true);
@@ -87,7 +107,7 @@ export function AddActivityModal({
         typeId: effectiveTypeId,
         subject: subject.trim(),
         priority: priority === "" ? null : priority,
-        ...(due === "" ? { dueAt: null, allDay: false } : composedDue(due, startTime)),
+        ...temporal,
         durationMinutes: null,
         dealId,
         leadId,
@@ -101,7 +121,7 @@ export function AddActivityModal({
     );
     if (!r.ok) {
       setPending(false);
-      setError(`Could not create activity (${r.error.id})`);
+      setError(S.createFailed(r.error.id));
       return;
     }
     await invalidateActivityLists();
@@ -122,7 +142,7 @@ export function AddActivityModal({
         className="max-w-md gap-0 overflow-hidden bg-card p-0"
       >
         <DialogHeader className="border-b px-5 py-3">
-          <DialogTitle className="text-base font-semibold">Add activity</DialogTitle>
+          <DialogTitle className="text-base font-semibold">{S.addActivity}</DialogTitle>
         </DialogHeader>
 
         <div className="flex flex-col gap-3 px-5 py-4 text-sm">
@@ -130,10 +150,10 @@ export function AddActivityModal({
               field rows via ComposerFieldRow. Kept the standalone Contact person / Organization
               pickers (the Activities page has no deal/lead context to anchor to). */}
           <input
-            aria-label="Subject"
+            aria-label={S.subject}
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
-            placeholder="Subject"
+            placeholder={S.subject}
             className="w-full rounded-md border px-3 py-2 text-display font-medium outline-none focus:border-primary focus:ring-1 focus:ring-primary placeholder:text-muted-foreground"
           />
           <TypeIconRail types={types} value={effectiveTypeId} onChange={setTypeId} />
@@ -142,30 +162,32 @@ export function AddActivityModal({
             <div className="flex flex-wrap items-center gap-2">
               <div className="w-40">
                 <ActivityDatePicker
-                  ariaLabel="Due date"
+                  ariaLabel={S.dueDate}
                   value={due === "" ? null : due}
-                  placeholder="Due date"
+                  placeholder={S.dueDate}
                   onChange={(v) => setDue(v ?? "")}
                 />
               </div>
               <div className="w-28">
-                <TimePicker ariaLabel="Start time" value={startTime} onChange={setStartTime} />
+                <TimePicker ariaLabel={S.startTime} value={startTime} onChange={setStartTime} />
               </div>
             </div>
           </ComposerFieldRow>
 
+          <ActivityTimeZoneHint timeZone={draftZone} date={due} time={startTime} />
+
           <ComposerFieldRow icon={<CalendarClock className={ICON} />}>
             <div className="w-48">
               <Select
-                ariaLabel="Priority"
+                ariaLabel={S.priority}
                 value={priority}
                 onChange={setPriority}
-                placeholder="No priority"
+                placeholder={S.noPriority}
                 options={[
-                  { value: "", label: "No priority" },
+                  { value: "", label: S.noPriority },
                   ...ACTIVITY_PRIORITY_KEYS.map<SelectOption>((k) => ({
                     value: k,
-                    label: ACTIVITY_PRIORITIES[k].name,
+                    label: S.priorities[k],
                   })),
                 ]}
               />
@@ -174,12 +196,12 @@ export function AddActivityModal({
 
           <ComposerFieldRow icon={<User className={ICON} />}>
             <Combobox
-              ariaLabel="Contact person"
+              ariaLabel={S.contactPerson}
               value={personId}
               onChange={setPersonId}
-              placeholder="Contact person"
+              placeholder={S.contactPerson}
               options={[
-                { value: "", label: "None" },
+                { value: "", label: S.none },
                 ...(peopleQ.data?.rows ?? []).map<ComboboxOption>((p) => ({
                   value: p.id,
                   label: p.name,
@@ -191,12 +213,12 @@ export function AddActivityModal({
 
           <ComposerFieldRow icon={<Building2 className={ICON} />}>
             <Combobox
-              ariaLabel="Organization"
+              ariaLabel={S.organization}
               value={orgId}
               onChange={setOrgId}
-              placeholder="Organization"
+              placeholder={S.organization}
               options={[
-                { value: "", label: "None" },
+                { value: "", label: S.none },
                 ...(orgsQ.data?.rows ?? []).map<ComboboxOption>((o) => ({
                   value: o.id,
                   label: o.name,
@@ -221,7 +243,7 @@ export function AddActivityModal({
             onClick={onClose}
             className="rounded-md border px-3 py-1.5 text-sm transition-transform hover:bg-accent active:scale-[0.96]"
           >
-            Cancel
+            {S.cancel}
           </button>
           <button
             type="button"
@@ -229,7 +251,7 @@ export function AddActivityModal({
             disabled={pending || (dueRequired && due === "")}
             className="rounded-md bg-action px-4 py-1.5 text-sm font-medium text-action-foreground transition-transform hover:opacity-90 active:not-disabled:scale-[0.96] disabled:opacity-50"
           >
-            {pending ? "Saving..." : "Save"}
+            {pending ? S.saving : S.save}
           </button>
         </div>
       </DialogContent>

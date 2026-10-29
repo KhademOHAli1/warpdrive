@@ -1,26 +1,31 @@
 import { eq } from "drizzle-orm";
 import type { ReactNode } from "react";
 import { DEFAULT_DAILY_ACTIVITY_TARGET } from "@/constants/activityLoad";
-import { STRINGS } from "@/constants/strings";
 import { db } from "@/db/client";
 import { users } from "@/db/schema/identity";
 import { interfacePrefsFromUi } from "@/features/identity/interfacePrefs";
 import { getPreferencesForActor } from "@/features/identity/preferencesForActor";
+import { getServerSettingsMessages } from "@/features/identity/settingsMessages.server";
 import { createContext } from "@/server/trpc/context";
 import { SettingsHeading } from "../SettingsHeading";
 import { SettingsPage } from "../SettingsSurface";
 import { DailyActivityTarget } from "./DailyActivityTarget";
 import { InterfacePreferences } from "./InterfacePreferences";
+import { LanguageSettings } from "./LanguageSettings";
 import { ProfileClient } from "./ProfileClient";
 
-export const metadata = { title: STRINGS.settings.profile };
+export async function generateMetadata() {
+  const L = await getServerSettingsMessages();
+  return { title: L.profile };
+}
 
 // Personal preferences (Pipedrive "My account"): display name + avatar are editable (avatar via
 // the presigned-upload handshake); timezone + interface density persist to user_preferences.
 export default async function ProfilePage(): Promise<ReactNode> {
+  const L = await getServerSettingsMessages();
+
   const { actor } = await createContext();
-  if (actor === null)
-    return <p className="text-sm text-red-600">{STRINGS.settings.requiresAuth}</p>;
+  if (actor === null) return <p className="text-sm text-red-600">{L.requiresAuth}</p>;
 
   const [[me], prefs] = await Promise.all([
     db
@@ -32,10 +37,8 @@ export default async function ProfilePage(): Promise<ReactNode> {
 
   return (
     <SettingsPage>
-      <SettingsHeading
-        title={STRINGS.settings.profile}
-        description={STRINGS.settings.profileDescription}
-      />
+      <SettingsHeading title={L.profile} description={L.profileDescription} />
+      <LanguageSettings />
       <ProfileClient
         name={me?.name ?? ""}
         email={me?.email ?? ""}

@@ -16,16 +16,29 @@ describe("parseMoneyValue", () => {
     expect(parseMoneyValue("  ")).toEqual({ ok: true, value: null });
   });
 
-  it("rounds to cents so it satisfies the multipleOf(0.01) column", () => {
+  it("preserves up to four decimal places", () => {
     expect(parseMoneyValue("1200")).toEqual({ ok: true, value: 1200 });
-    expect(parseMoneyValue("9.999")).toEqual({ ok: true, value: 10 });
-    expect(parseMoneyValue("9.994")).toEqual({ ok: true, value: 9.99 });
+    expect(parseMoneyValue("9.999")).toEqual({ ok: true, value: 9.999 });
+    expect(parseMoneyValue("9.994")).toEqual({ ok: true, value: 9.994 });
   });
 
   it("rejects negative or non-numeric input", () => {
     expect(parseMoneyValue("-5").ok).toBe(false);
     expect(parseMoneyValue("abc").ok).toBe(false);
   });
+
+  it("accepts Iranian and Arabic-script money input with valid separators", () => {
+    expect(parseMoneyValue("۱۲٬۳۴۵٫۶۷")).toEqual({ ok: true, value: 12345.67 });
+    expect(parseMoneyValue("١٢٣٫٤٥")).toEqual({ ok: true, value: 123.45 });
+    expect(parseMoneyValue("1.234,56", "de")).toEqual({ ok: true, value: 1234.56 });
+  });
+
+  it.each(["12,34", "۱۲٫۳.۴", "0x10", "1e3", "−۵"])(
+    "rejects malformed or negative money %s",
+    (value) => {
+      expect(parseMoneyValue(value).ok).toBe(false);
+    },
+  );
 });
 
 describe("resolveLabelKey", () => {

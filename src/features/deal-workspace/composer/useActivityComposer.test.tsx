@@ -26,6 +26,7 @@ vi.mock("@/lib/trpc-client", () => ({
   },
 }));
 
+import { LocaleProvider } from "@/features/i18n/LocaleProvider";
 import { useActivityComposer } from "./useActivityComposer";
 
 afterEach(() => {
@@ -121,4 +122,19 @@ describe("useActivityComposer day load invalidation", () => {
     expect(createActivityAction).not.toHaveBeenCalled();
     expect(invalidateDayLoad).not.toHaveBeenCalled();
   });
+});
+
+it("uses the Persian built-in activity name for the default subject", () => {
+  const { result } = renderHook(
+    () => useActivityComposer({ dealId: "d1", personId: null, orgId: null, onCreated: vi.fn() }),
+    {
+      wrapper: ({ children }) => (
+        <LocaleProvider locale="fa" timeZone="Asia/Tehran">
+          {children}
+        </LocaleProvider>
+      ),
+    },
+  );
+  expect(result.current.subjectValue).toBe("تماس");
+  expect(result.current.types[0]?.name).toBe("تماس");
 });

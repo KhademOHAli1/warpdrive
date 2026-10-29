@@ -1,7 +1,7 @@
 import type React from "react";
 
 // Resolved label chip: display name + the Tailwind classes that paint its color (from
-// useLabelChipResolver). Rendered right-aligned to match the sidebar's value column.
+// useLabelChipResolver). Rendered end-aligned to match the sidebar's value column.
 export interface ResolvedLabelChip {
   name: string;
   classes: string;
@@ -18,7 +18,7 @@ export function LabelChips({ labels }: { labels: ResolvedLabelChip[] }): React.R
           key={label.name}
           className={`rounded-full border px-2 py-0.5 text-xs font-medium ${label.classes}`}
         >
-          {label.name}
+          <bdi dir="auto">{label.name}</bdi>
         </span>
       ))}
     </span>

@@ -1,18 +1,23 @@
 import type { ReactNode } from "react";
 import { PERMISSION_FLAGS } from "@/constants/permissionFlags";
-import { STRINGS } from "@/constants/strings";
 import { db } from "@/db/client";
+import { getServerSettingsMessages } from "@/features/identity/settingsMessages.server";
 import { listLabels } from "@/features/labels/labelsRepo";
 import { createContext } from "@/server/trpc/context";
 import { LabelsClient } from "./LabelsClient";
 
-export const metadata = { title: STRINGS.settings.labels };
+export async function generateMetadata() {
+  const L = await getServerSettingsMessages();
+  return { title: L.labels };
+}
 
 // Company settings > Labels tab (spec 6.4): labels grouped by target with an enum color picker.
 export default async function LabelsPage(): Promise<ReactNode> {
+  const L = await getServerSettingsMessages();
+
   const { actor } = await createContext();
   if (actor === null || (actor.type !== "admin" && !actor.flags.has(PERMISSION_FLAGS.MANAGE))) {
-    return <p className="text-sm text-red-600">{STRINGS.settings.requiresAdmin}</p>;
+    return <p className="text-sm text-red-600">{L.requiresAdmin}</p>;
   }
 
   const rows = await listLabels(db, {}, AbortSignal.timeout(5000));

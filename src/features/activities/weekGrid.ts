@@ -1,3 +1,4 @@
+import { activityDay, activityEndDay } from "./activityTemporal";
 // Pure week-grid helpers for the in-app calendar. UTC-based and Monday-first so the
 // grid is deterministic regardless of the server/browser timezone. Activities flagged
 // overdue are excluded from the day buckets (they live in the Overdue rail instead).
@@ -27,6 +28,7 @@ export function groupByDay(
   activities: CalendarActivity[],
   days: Date[],
   includeOverdue = false,
+  timeZone = "UTC",
 ): Map<string, CalendarActivity[]> {
   const map = new Map<string, CalendarActivity[]>();
   for (const day of days) map.set(isoDay(day), []);
@@ -34,8 +36,8 @@ export function groupByDay(
     if (!includeOverdue && a.overdue === true) continue;
     // A multi-day activity (endAt set) covers every day in [dueAt, endAt]; a single-day one covers
     // just its own day. isoDay strings are "YYYY-MM-DD", so lexical compare is date compare.
-    const startKey = isoDay(a.dueAt);
-    const endKey = a.endAt != null ? isoDay(a.endAt) : startKey;
+    const startKey = activityDay(a, timeZone)!;
+    const endKey = activityEndDay(a, timeZone)!;
     for (const day of days) {
       const key = isoDay(day);
       if (key >= startKey && key <= endKey) map.get(key)?.push(a);

@@ -2,8 +2,9 @@
 import type React from "react";
 import { useMemo, useState } from "react";
 import { FIELD_INPUT as FIELD } from "@/constants/formStyles";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import type { Option } from "./modalState";
-import { findSimilarOptions } from "./similarMatch";
+import { findSimilarOptions, normalizeEntityName } from "./similarMatch";
 
 export type EntityPick = { kind: "existing"; id: string } | { kind: "new"; name: string };
 
@@ -34,13 +35,15 @@ export interface EntityComboboxProps {
 // (c) runs a bespoke Levenshtein "Review" mode surfacing near-duplicates that are not substrings of
 // the query. cmdk models none of that, and swapping to a trigger button would break pixel parity.
 const MENU =
-  "absolute left-0 right-0 top-full z-10 mt-1 max-h-56 overflow-auto rounded-md border bg-popover shadow-md";
-const ROW = "block w-full px-2.5 py-1.5 text-left text-sm hover:bg-accent";
+  "absolute start-0 end-0 top-full z-10 mt-1 max-h-56 overflow-auto rounded-md border bg-popover shadow-md";
+const ROW = "block w-full px-2.5 py-1.5 text-start text-sm hover:bg-accent";
 
 // Pipedrive-style select-or-create field: a text input that searches existing options as you type
 // and offers a "create new" row when the query matches none. Fully owns its query text; the parent
 // only hears about committed choices (select existing id, create new by name, or clear).
 export function EntityCombobox(props: EntityComboboxProps): React.ReactNode {
+  const tEntityCreate = useAppTranslations("entityCreate");
+
   const { label, options, createLabel, onSelectExisting, onCreateNew, onClear, placeholder } =
     props;
   const { similarWarning, hideLabel, onPick, excludeIds, defaultOptions } = props;
@@ -48,7 +51,7 @@ export function EntityCombobox(props: EntityComboboxProps): React.ReactNode {
   const [open, setOpen] = useState(false);
   const [chosen, setChosen] = useState<"existing" | "new" | null>(null);
 
-  const q = query.trim().toLowerCase();
+  const q = normalizeEntityName(query);
   // In "review" mode (after committing a create) the menu offers the near-duplicates so the user can
   // pick one instead; those are not necessarily substrings of the typed name, so use similar-match.
   const inReview = chosen === "new";
@@ -71,9 +74,9 @@ export function EntityCombobox(props: EntityComboboxProps): React.ReactNode {
     [inReview, q, query, listed],
   );
   const { exact, menuOptions } = useMemo(() => {
-    const isExact = options.some((o) => o.name.trim().toLowerCase() === q);
+    const isExact = options.some((o) => normalizeEntityName(o.name) === q);
     const filtered =
-      q === "" ? emptyQueryListed : listed.filter((o) => o.name.toLowerCase().includes(q));
+      q === "" ? emptyQueryListed : listed.filter((o) => normalizeEntityName(o.name).includes(q));
     return { exact: isExact, menuOptions: inReview ? similar : filtered };
   }, [options, listed, emptyQueryListed, q, inReview, similar]);
   const showCreate = q !== "" && !exact;
@@ -93,7 +96,7 @@ export function EntityCombobox(props: EntityComboboxProps): React.ReactNode {
       onClear();
       return;
     }
-    const match = options.find((o) => o.name.trim().toLowerCase() === text.toLowerCase());
+    const match = options.find((o) => normalizeEntityName(o.name) === normalizeEntityName(text));
     if (match !== undefined) onSelectExisting(match.id);
     else onCreateNew(text);
   }
@@ -121,7 +124,7 @@ export function EntityCombobox(props: EntityComboboxProps): React.ReactNode {
   function commitFromKeyboard(): void {
     const text = query.trim();
     if (text === "") return;
-    const match = options.find((o) => o.name.trim().toLowerCase() === text.toLowerCase());
+    const match = options.find((o) => normalizeEntityName(o.name) === normalizeEntityName(text));
     if (match !== undefined) selectExisting(match);
     else createNew();
   }
@@ -133,7 +136,7 @@ export function EntityCombobox(props: EntityComboboxProps): React.ReactNode {
       onClear();
       return;
     }
-    const match = options.find((o) => o.name.trim().toLowerCase() === text.toLowerCase());
+    const match = options.find((o) => normalizeEntityName(o.name) === normalizeEntityName(text));
     if (match !== undefined) {
       setQuery(match.name);
       setChosen("existing");
@@ -151,6 +154,7 @@ export function EntityCombobox(props: EntityComboboxProps): React.ReactNode {
         aria-label={label}
         type="text"
         autoComplete="off"
+        dir="auto"
         value={query}
         placeholder={placeholder}
         onChange={(e) => handleChange(e.target.value)}
@@ -170,8 +174,8 @@ export function EntityCombobox(props: EntityComboboxProps): React.ReactNode {
         className={FIELD}
       />
       {chosen === "new" && query.trim() !== "" && (
-        <span className="pointer-events-none absolute right-2.5 top-8 rounded bg-primary px-1.5 py-0.5 text-[10px] font-semibold text-primary-foreground">
-          NEW
+        <span className="pointer-events-none absolute end-2.5 top-8 rounded bg-primary px-1.5 py-0.5 text-[10px] font-semibold text-primary-foreground">
+          {tEntityCreate("new")}
         </span>
       )}
       {showWarning && (
@@ -186,7 +190,7 @@ export function EntityCombobox(props: EntityComboboxProps): React.ReactNode {
             }}
             className="font-medium text-primary underline"
           >
-            Review
+            {tEntityCreate("review")}
           </button>
         </p>
       )}
@@ -203,7 +207,7 @@ export function EntityCombobox(props: EntityComboboxProps): React.ReactNode {
                 }}
                 className={ROW}
               >
-                {o.name}
+                <bdi dir="auto">{o.name}</bdi>
               </button>
             </div>
           ))}

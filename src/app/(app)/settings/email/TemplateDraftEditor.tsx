@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/Input";
 import { InsertFieldMenu } from "@/features/email/composer/InsertFieldMenu";
 import { RichTextBody } from "@/features/email/composer/RichTextBodyLazy";
 import { MERGE_TOKEN_FIELDS, mergeTokenPlaceholder } from "@/features/email/mergeTokens";
-import { EMAIL_SETTINGS_STRINGS as S } from "./strings";
+import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 
 // A template draft. Shared with the client (the parent owns the value; the editor owns the
 // insert-field cursor state so a bumped seq re-fires the {{token}} insertion in RichTextBody).
@@ -41,6 +41,9 @@ export function TemplateDraftEditor({
   onSave: () => void;
   onCancel: () => void;
 }): React.ReactNode {
+  const L = useSettingsMessages();
+  const S = L._email;
+
   // Bumping `seq` is what RichTextBody keys its cursor insertion on; `text` is the placeholder.
   const [insertToken, setInsertToken] = useState<{ text: string; seq: number }>({
     text: "",

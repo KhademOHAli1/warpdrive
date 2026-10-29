@@ -1,15 +1,16 @@
 "use client";
+
 import type React from "react";
 import { useId, useState } from "react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Switch } from "@/components/ui/Switch";
-import { ENRICHMENT_STRINGS } from "@/constants/enrichmentStrings";
 import type { QuotaRemaining } from "@/features/enrichment/providers/types";
+import { useLocale, useNumberingSystem } from "@/features/i18n/LocaleProvider";
+import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
+import { localeWithNumberingSystem } from "@/lib/numberingSystem";
 import { SettingsCard, SettingsCardBody, SettingsCardHeader } from "../SettingsSurface";
-
-const S = ENRICHMENT_STRINGS.settings;
 
 export interface ProviderCardView {
   provider: string;
@@ -22,41 +23,11 @@ export interface ProviderCardView {
   needsAttention: boolean;
 }
 
-// Local wall-clock, because a cooldown is something the admin reads against their own clock.
-function clockTime(iso: string): string {
-  const at = new Date(iso);
-  return `${String(at.getHours()).padStart(2, "0")}:${String(at.getMinutes()).padStart(2, "0")}`;
-}
-
 // Zero is a real count and has to survive to the admin, so each window is tested for presence
 // rather than truthiness.
-function quotaLine(quota: QuotaRemaining | null): string | null {
-  if (quota === null) return null;
-  const windows: string[] = [];
-  if (quota.hourly !== undefined) windows.push(S.testQuotaHourly(quota.hourly));
-  if (quota.daily !== undefined) windows.push(S.testQuotaDaily(quota.daily));
-  return windows.length === 0 ? null : S.testQuotaLine(windows.join(", "));
-}
-
-function notEntitledLine(entities: readonly string[] | null): string | null {
-  if (entities === null || entities.length === 0) return null;
-  const named = entities.map((e) =>
-    e === "person" ? S.testLookupPerson : S.testLookupOrganization,
-  );
-  return S.testNotEntitledLine(named.join(S.testLookupSeparator));
-}
 
 // A null clock is the pre-mount render: both the comparison and the printed time are local, so
 // neither may run until the browser has supplied its own clock.
-function statusLine(view: ProviderCardView, now: Date | null): string {
-  if (!view.hasKey) return S.statusNoKey;
-  if (view.needsAttention) return S.statusRejected;
-  if (now !== null && view.throttledUntilIso !== null && new Date(view.throttledUntilIso) > now) {
-    const until = clockTime(view.throttledUntilIso);
-    return view.throttleReason === "quota" ? S.statusQuota(until) : S.statusThrottled(until);
-  }
-  return view.enabled ? S.statusEnabled : S.statusDisabled;
-}
 
 export function ProviderCard({
   view,
@@ -83,6 +54,41 @@ export function ProviderCard({
   testQuota?: QuotaRemaining | null;
   testNotEntitled?: readonly string[] | null;
 }): React.ReactNode {
+  const L = useSettingsMessages();
+  const locale = useLocale();
+  const numberingSystem = useNumberingSystem();
+
+  const S = L._enrichment.settings;
+
+  function quotaLine(quota: QuotaRemaining | null): string | null {
+    if (quota === null) return null;
+    const windows: string[] = [];
+    if (quota.hourly !== undefined) windows.push(S.testQuotaHourly(quota.hourly));
+    if (quota.daily !== undefined) windows.push(S.testQuotaDaily(quota.daily));
+    return windows.length === 0
+      ? null
+      : S.testQuotaLine(windows.join(locale === "fa" ? "، " : ", "));
+  }
+  function notEntitledLine(entities: readonly string[] | null): string | null {
+    if (entities === null || entities.length === 0) return null;
+    const named = entities.map((e) =>
+      e === "person" ? S.testLookupPerson : S.testLookupOrganization,
+    );
+    return S.testNotEntitledLine(named.join(S.testLookupSeparator));
+  }
+  function statusLine(view: ProviderCardView, now: Date | null): string {
+    if (!view.hasKey) return S.statusNoKey;
+    if (view.needsAttention) return S.statusRejected;
+    if (now !== null && view.throttledUntilIso !== null && new Date(view.throttledUntilIso) > now) {
+      const until = new Intl.DateTimeFormat(
+        localeWithNumberingSystem(locale === "fa" ? "fa-IR" : "en-GB", numberingSystem),
+        { hour: "2-digit", minute: "2-digit", hourCycle: "h23" },
+      ).format(new Date(view.throttledUntilIso));
+      return view.throttleReason === "quota" ? S.statusQuota(until) : S.statusThrottled(until);
+    }
+    return view.enabled ? S.statusEnabled : S.statusDisabled;
+  }
+
   const keyFieldId = useId();
   const [draftKey, setDraftKey] = useState("");
   const [confirming, setConfirming] = useState(false);

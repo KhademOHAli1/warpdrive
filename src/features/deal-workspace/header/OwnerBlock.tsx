@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { changeOwnerAction } from "@/features/deal-workspace/actions";
 import { useDealActionError } from "@/features/deal-workspace/DealActionErrorProvider";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { formatUserName } from "@/features/identity/formatUserName";
 import { readCsrfToken } from "@/utils/csrfCookie";
 
@@ -35,6 +36,8 @@ export function OwnerBlock({
   canChangeOwner,
   assignableUsers,
 }: OwnerBlockProps): React.ReactNode {
+  const translateSales = useAppTranslations("sales");
+
   const router = useRouter();
   const reportError = useDealActionError();
   const [pending, setPending] = useState(false);
@@ -59,25 +62,33 @@ export function OwnerBlock({
     <div className="flex items-center gap-2">
       <Avatar name={name} src={owner?.avatarUrl ?? null} />
       <div className="min-w-0 leading-tight">
-        <p className="truncate text-sm font-medium text-foreground">{name}</p>
-        <p className="text-xs text-muted-foreground">Owner</p>
+        <p className="truncate text-sm font-medium text-foreground">
+          <bdi dir="auto">{name}</bdi>
+        </p>
+        <p className="text-xs text-muted-foreground">{translateSales("owner_4b1b8")}</p>
       </div>
       {canChangeOwner && (
         <DropdownMenu>
           <DropdownMenuTrigger
-            aria-label="Change owner"
+            aria-label={translateSales("change_owner_2877d")}
             disabled={pending}
             className="relative rounded p-0.5 text-muted-foreground transition-[color,scale] duration-150 ease-out after:absolute after:-inset-2 after:content-[''] hover:text-foreground active:not-disabled:scale-[0.96] disabled:opacity-50"
           >
             <ChevronDown aria-hidden="true" className="h-4 w-4" />
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" aria-label="Assign owner" className="min-w-44">
+          <DropdownMenuContent
+            align="end"
+            aria-label={translateSales("assign_owner_b2926")}
+            className="min-w-44"
+          >
             {assignableUsers.length === 0 ? (
-              <p className="px-2 py-1.5 text-sm text-muted-foreground">No assignable users</p>
+              <p className="px-2 py-1.5 text-sm text-muted-foreground">
+                {translateSales("no_assignable_users_dc411")}
+              </p>
             ) : (
               assignableUsers.map((u) => (
                 <DropdownMenuItem key={u.id} onSelect={() => void reassign(u.id)}>
-                  {u.name}
+                  <bdi dir="auto">{u.name}</bdi>
                 </DropdownMenuItem>
               ))
             )}

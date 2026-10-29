@@ -18,6 +18,7 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
+import { LocaleProvider } from "@/features/i18n/LocaleProvider";
 import { OrgFirmographicsPanel } from "./OrgFirmographicsPanel";
 
 const org = {
@@ -128,4 +129,53 @@ describe("OrgFirmographicsPanel", () => {
 
     expect(await screen.findByText(/couldn.t save/i)).toBeInTheDocument();
   });
+});
+
+it("accepts Persian employee counts and saves canonical numbers", async () => {
+  render(
+    <LocaleProvider locale="fa">
+      <OrgFirmographicsPanel org={org} onSaved={vi.fn()} />
+    </LocaleProvider>,
+  );
+  fireEvent.click(screen.getByRole("button", { name: /تعداد کارکنان/ }));
+  fireEvent.change(screen.getByLabelText("تعداد کارکنان"), { target: { value: "۳۵۰" } });
+  fireEvent.keyDown(screen.getByLabelText("تعداد کارکنان"), { key: "Enter" });
+  await vi.waitFor(() =>
+    expect(updateOrgAction).toHaveBeenCalledWith(
+      expect.objectContaining({ employeeCount: 350 }),
+      "csrf",
+    ),
+  );
+});
+it("keeps a malformed count out of the update API", async () => {
+  render(
+    <LocaleProvider locale="fa">
+      <OrgFirmographicsPanel org={org} onSaved={vi.fn()} />
+    </LocaleProvider>,
+  );
+  fireEvent.click(screen.getByRole("button", { name: /تعداد کارکنان/ }));
+  fireEvent.change(screen.getByLabelText("تعداد کارکنان"), { target: { value: "۳٫۵" } });
+  fireEvent.keyDown(screen.getByLabelText("تعداد کارکنان"), { key: "Enter" });
+  expect(
+    await screen.findByText("تعداد کارکنان باید یک عدد صحیح و نامنفی باشد"),
+  ).toBeInTheDocument();
+  expect(updateOrgAction).not.toHaveBeenCalled();
+});
+
+it("normalizes Persian annual revenue without changing its currency or decimal storage", async () => {
+  render(
+    <LocaleProvider locale="fa">
+      <OrgFirmographicsPanel org={org} onSaved={vi.fn()} />
+    </LocaleProvider>,
+  );
+  expect(screen.getByText("۵۰۰۰۰۰۰٫۰۰")).toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: /درآمد سالانه/ }));
+  fireEvent.change(screen.getByLabelText("درآمد سالانه"), { target: { value: "۱٬۲۵۰٫۵۰" } });
+  fireEvent.keyDown(screen.getByLabelText("درآمد سالانه"), { key: "Enter" });
+  await vi.waitFor(() =>
+    expect(updateOrgAction).toHaveBeenCalledWith(
+      expect.objectContaining({ annualRevenue: "1250.50" }),
+      "csrf",
+    ),
+  );
 });

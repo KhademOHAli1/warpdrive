@@ -1,4 +1,5 @@
 "use client";
+import { type EmailMessages, emailMessagesForLocale } from "../emailMessages";
 
 // Send-handler logic extracted from Composer to keep that file under the line cap.
 // Both handleSend and handleSendLater share the same draft-state setters and
@@ -18,6 +19,7 @@ import type { ComposerContext } from "./composer.types";
 import { sendFailureMessage } from "./sendFailure";
 
 export interface ComposerSendDeps {
+  messages?: EmailMessages;
   accountId: string;
   resolvedThreadId: string | undefined;
   toList: string[];
@@ -180,7 +182,10 @@ export function buildSendHandlers(deps: ComposerSendDeps) {
       route: currentRoute(),
       scheduled,
     });
-    return { ok: false, msg: sendFailureMessage(errorId) };
+    return {
+      ok: false,
+      msg: sendFailureMessage(errorId, deps.messages ?? emailMessagesForLocale("en")),
+    };
   }
 
   // The send action arms its own deadline and can reject rather than return a Result (so can a

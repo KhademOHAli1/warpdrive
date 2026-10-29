@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { PERMISSION_FLAGS } from "@/constants/permissionFlags";
-import { STRINGS } from "@/constants/strings";
+import { getServerSettingsMessages } from "@/features/identity/settingsMessages.server";
 import { listTeams } from "@/features/identity/teams.service";
 import { listAssignableUsers, listUsers } from "@/features/identity/users.service";
 import { createContext } from "@/server/trpc/context";
@@ -9,12 +9,17 @@ import { SettingsPage } from "../SettingsSurface";
 import { TeamsClient } from "./TeamsClient";
 import { TeamsTable } from "./TeamsTable";
 
-export const metadata = { title: STRINGS.settings.teams };
+export async function generateMetadata() {
+  const L = await getServerSettingsMessages();
+  return { title: L.teams };
+}
 
 export default async function TeamsPage(): Promise<ReactNode> {
+  const L = await getServerSettingsMessages();
+
   const { actor, db } = await createContext();
   if (actor === null || (actor.type !== "admin" && !actor.flags.has(PERMISSION_FLAGS.MANAGE))) {
-    return <p className="text-sm text-red-600">{STRINGS.settings.requiresAdmin}</p>;
+    return <p className="text-sm text-red-600">{L.requiresAdmin}</p>;
   }
   const signal = AbortSignal.timeout(5000);
   // Two user lists on purpose: the table resolves an already-set manager's NAME (which may be an
@@ -30,10 +35,7 @@ export default async function TeamsPage(): Promise<ReactNode> {
   const teamRows = teams.map((t) => ({ id: t.id, name: t.name, managerId: t.managerId }));
   return (
     <SettingsPage>
-      <SettingsHeading
-        title={STRINGS.settings.teams}
-        description={STRINGS.settings.teamsDescription}
-      />
+      <SettingsHeading title={L.teams} description={L.teamsDescription} />
       <TeamsTable teams={teamRows} users={users} />
       <div className="mt-6">
         <TeamsClient users={assignableUsers} />

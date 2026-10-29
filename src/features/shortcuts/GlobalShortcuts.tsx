@@ -13,7 +13,8 @@ export function GlobalShortcuts(): React.ReactNode {
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent): void => {
-      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      if (e.metaKey || e.ctrlKey || e.altKey || e.shiftKey) return;
+      if (e.isComposing || e.keyCode === 229 || e.defaultPrevented) return;
       if (isTypingTarget(e.target) || isOverlayOpen(document)) return;
       const href = navHrefForKey(e.key, NAV_ITEMS);
       if (href === null) return;

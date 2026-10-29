@@ -4,7 +4,6 @@ import {
   date,
   index,
   jsonb,
-  numeric,
   pgTable,
   text,
   timestamp,
@@ -12,6 +11,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { deals } from "./deals";
 import { users, visibilityGroups, visibilityLevelEnum } from "./identity";
+import { moneyColumn } from "./money";
 
 // tsvector custom type for the generated search column (mirrors deals.ts: drizzle-orm has no
 // first-class tsvector column builder, so a customType keeps the Drizzle model typed).
@@ -28,7 +28,8 @@ export const leads = pgTable(
   {
     id: uuid("id").primaryKey().defaultRandom(),
     title: text("title").notNull(),
-    value: numeric("value", { precision: 14, scale: 2 }),
+    value: moneyColumn("value"),
+    currency: text("currency").notNull().default(sql`public.warpdrive_base_currency()`),
     personId: uuid("person_id"),
     orgId: uuid("org_id"),
     ownerId: uuid("owner_id")

@@ -1,8 +1,9 @@
 "use client";
+
 import Link from "next/link";
 import type React from "react";
 import { Select, type SelectOption } from "@/components/ui/Select";
-import { ENRICHMENT_STRINGS } from "@/constants/enrichmentStrings";
+import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import {
   SETTINGS_TABLE_CELL,
   SETTINGS_TABLE_HEAD,
@@ -10,7 +11,6 @@ import {
   SETTINGS_TABLE_ROW,
 } from "../SettingsSurface";
 
-const S = ENRICHMENT_STRINGS.settings;
 const FIELDS_HREF = "/settings/fields";
 
 export interface MappingRow {
@@ -34,6 +34,10 @@ export function MappingTable({
   busyKeys: ReadonlySet<string>;
   onSelect: (canonicalKey: string, value: string) => void;
 }): React.ReactNode {
+  const L = useSettingsMessages();
+
+  const S = L._enrichment.settings;
+
   return (
     <div className="space-y-2">
       <h3 className="text-sm font-semibold">{title}</h3>

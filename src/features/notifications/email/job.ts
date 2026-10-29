@@ -7,6 +7,8 @@ import { emailAccounts, notifications, users } from "@/db/schema";
 import type { SystemMessage } from "@/features/email/sendSystem";
 import { sendGmail } from "@/features/email/sendSystem";
 import { canActorAccessParent } from "@/features/files/fileAuthz";
+import { resolveAccountLocalePreferences } from "@/features/i18n/accountPreferences";
+import { getPreferences as getAccountPreferences } from "@/features/identity/preferencesRepo";
 import { hydrateActor } from "@/server/hydrateActor";
 import type { EmailAccountRow } from "@/types/email";
 import type { NotificationRow } from "@/types/notification";
@@ -111,10 +113,16 @@ export async function runEmailNotificationJob(
     .where(eq(users.id, notifRow.userId))
     .limit(1);
   signal.throwIfAborted();
-  const recipientName = userRow?.name ?? "there";
+  const recipientName = userRow?.name ?? null;
+  const preferences = await getAccountPreferences(db, notifRow.userId, signal);
+  signal.throwIfAborted();
+  const { locale } = resolveAccountLocalePreferences({
+    saved: preferences.ui.localePreferences,
+    profileTimeZone: preferences.timezone,
+  });
 
   // (f) Render and build the SystemMessage.
-  const rendered = renderNotificationEmail(notifRow, recipientName);
+  const rendered = renderNotificationEmail(notifRow, recipientName, locale);
   const message: SystemMessage = {
     to: [account.emailAddress],
     subject: rendered.subject,

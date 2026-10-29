@@ -4,8 +4,9 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/Button";
 import { Combobox, type ComboboxOption } from "@/components/ui/Combobox";
-import { identityErrorMessage } from "@/constants/settingsIdentity";
 import { addGroupMemberAction, removeGroupMemberAction } from "@/features/identity/actions/groups";
+import { settingsIdentityError } from "@/features/identity/settingsMessages";
+import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { SettingsCard, SettingsCardBody, SettingsCardHeader } from "../../SettingsSurface";
 
@@ -30,6 +31,9 @@ interface Props {
 // pattern used by CreateGroupForm/CreateTeamForm: local pending/error state, a server
 // action per mutation, router.refresh() to reload the server-loaded roster on success.
 export function GroupMembersClient({ groupId, members, allUsers }: Props): React.ReactElement {
+  const L = useSettingsMessages();
+  const identityErrorMessage = (error: string) => settingsIdentityError(L, error);
+
   const router = useRouter();
   const [selectedUserId, setSelectedUserId] = useState("");
   const [isPending, startTransition] = useTransition();
@@ -68,9 +72,14 @@ export function GroupMembersClient({ groupId, members, allUsers }: Props): React
 
   return (
     <SettingsCard>
-      <SettingsCardHeader title="Members" description="Add or remove users from this group." />
+      <SettingsCardHeader
+        title={L._extra.members}
+        description={L._extra.add_or_remove_users_from_this_group}
+      />
       <ul className="divide-y">
-        {members.length === 0 && <li className="text-sm text-muted-foreground">No members yet.</li>}
+        {members.length === 0 && (
+          <li className="text-sm text-muted-foreground">{L._extra.no_members_yet}</li>
+        )}
         {members.map((m) => (
           <li key={m.userId} className="flex items-center justify-between gap-2 px-5 py-3">
             <span className="text-sm">{m.name}</span>
@@ -78,12 +87,12 @@ export function GroupMembersClient({ groupId, members, allUsers }: Props): React
               type="button"
               variant="outline"
               size="sm"
-              aria-label={`Remove ${m.name}`}
+              aria-label={L._extra.removeUser(m.name)}
               disabled={isPending}
               onClick={() => handleRemove(m.userId)}
               className="text-red-600"
             >
-              Remove
+              {L._extra.remove}
             </Button>
           </li>
         ))}
@@ -92,12 +101,12 @@ export function GroupMembersClient({ groupId, members, allUsers }: Props): React
       <SettingsCardBody className="border-t">
         <div className="flex items-end gap-2">
           <div className="flex-1">
-            <span className="mb-1 block text-sm font-medium">Add member</span>
+            <span className="mb-1 block text-sm font-medium">{L._extra.add_member}</span>
             <Combobox
-              ariaLabel="Add member"
+              ariaLabel={L._extra.add_member}
               value={selectedUserId}
               onChange={setSelectedUserId}
-              placeholder="Select a user"
+              placeholder={L._extra.select_a_user}
               options={nonMembers.map<ComboboxOption>((u) => ({
                 value: u.id,
                 label: u.name,
@@ -107,7 +116,7 @@ export function GroupMembersClient({ groupId, members, allUsers }: Props): React
             />
           </div>
           <Button type="button" disabled={isPending || selectedUserId === ""} onClick={handleAdd}>
-            Add
+            {L._extra.add}
           </Button>
         </div>
 

@@ -1,8 +1,11 @@
 "use client";
 import type React from "react";
+import { activityTypeName } from "@/features/activities/activityTypeLabels";
 import { CollapsibleSection } from "@/features/deal-workspace/CollapsibleSection";
 import { FieldRow } from "@/features/deal-workspace/sidebar/FieldRow";
+import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
 import { trpc } from "@/lib/trpc-client";
+import { useFormatters } from "@/lib/useFormatters";
 
 function capitalize(key: string): string {
   return key.length === 0 ? key : key[0]?.toUpperCase() + key.slice(1);
@@ -19,6 +22,12 @@ export function ContactOverviewSection({
   entityType: "person" | "organization";
   entityId: string;
 }): React.ReactNode {
+  const tContacts = useAppTranslations("contacts");
+
+  const format = useFormatters();
+  const locale = useLocale();
+  const types = trpc.activities.listTypes.useQuery().data ?? [];
+  const typeByKey = new Map(types.map((type) => [type.key, type]));
   const stats = trpc.contacts.activityStats.useQuery({ entityType, entityId }).data;
   const total = stats?.total ?? 0;
   const byType = stats?.byType ?? {};
@@ -27,31 +36,44 @@ export function ContactOverviewSection({
   const inactiveDays = stats?.inactiveDays ?? null;
 
   return (
-    <CollapsibleSection title="Overview">
-      <FieldRow label="Total activities">
-        <span className="tabular-nums">{total}</span>
+    <CollapsibleSection title={tContacts("overview")}>
+      <FieldRow label={tContacts("totalActivities")}>
+        <span className="tabular-nums">{format.number(total)}</span>
       </FieldRow>
       {Object.entries(byType).map(([key, count]) => (
-        <FieldRow key={key} label={capitalize(key)}>
-          <span className="tabular-nums">{count}</span>
+        <FieldRow
+          key={key}
+          label={
+            typeByKey.has(key) ? activityTypeName(typeByKey.get(key)!, locale) : capitalize(key)
+          }
+        >
+          <span className="tabular-nums">{format.number(count)}</span>
         </FieldRow>
       ))}
-      <FieldRow label="Most active users" empty={mostActiveUsers.length === 0}>
+      <FieldRow label={tContacts("mostActiveUsers")} empty={mostActiveUsers.length === 0}>
         {mostActiveUsers.length > 0
-          ? mostActiveUsers.map((u) => `${u.name} (${u.count})`).join(", ")
+          ? mostActiveUsers.map((u) => (
+              <bdi key={u.name} dir="auto" className="me-2 inline-block">
+                {u.name} ({format.number(u.count)})
+              </bdi>
+            ))
           : "-"}
       </FieldRow>
-      <FieldRow label="Last activity" empty={lastActivityAt === null}>
+      <FieldRow label={tContacts("lastActivity")} empty={lastActivityAt === null}>
         {lastActivityAt !== null ? (
-          <span className="tabular-nums">{lastActivityAt.toLocaleDateString()}</span>
+          <span className="tabular-nums">
+            {format.dateTime(lastActivityAt, { dateStyle: "medium" })}
+          </span>
         ) : (
           "-"
         )}
       </FieldRow>
-      <FieldRow label="Inactive" empty={inactiveDays === null}>
+      <FieldRow label={tContacts("inactive")} empty={inactiveDays === null}>
         {inactiveDays !== null ? (
           <span>
-            <span className="tabular-nums">{inactiveDays}</span> days
+            <span className="tabular-nums">
+              {tContacts("inactiveDays", { count: inactiveDays })}
+            </span>
           </span>
         ) : (
           "-"

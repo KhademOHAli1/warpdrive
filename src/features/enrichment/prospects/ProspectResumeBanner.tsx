@@ -2,9 +2,7 @@
 
 import type React from "react";
 import { Button } from "@/components/ui/Button";
-import { ENRICHMENT_STRINGS } from "@/constants/enrichmentStrings";
-
-const S = ENRICHMENT_STRINGS.prospects;
+import { useEnrichmentMessages } from "../useEnrichmentMessages";
 
 export function ProspectResumeBanner({
   count,
@@ -15,6 +13,8 @@ export function ProspectResumeBanner({
   onOpen: () => void;
   onDismiss: () => void;
 }): React.ReactNode {
+  const E = useEnrichmentMessages();
+  const S = E.prospects;
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-border bg-muted/40 px-3 py-2">
       <span className="text-foreground text-sm">{S.resumeBanner(count)}</span>

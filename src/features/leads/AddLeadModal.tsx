@@ -2,9 +2,10 @@
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { useState } from "react";
-import { DEFAULT_BASE_CURRENCY } from "@/constants/currency";
+import { useCompanyCurrency } from "@/features/currencies/CurrencyProvider";
 import {
   CustomFieldCreateFields,
+  customFieldCreateError,
   customFieldCreatePayload,
   firstMissingImportantField,
 } from "@/features/custom-fields/CustomFieldCreateFields";
@@ -15,6 +16,7 @@ import {
   resolveNewOrgId,
   resolveNewPersonId,
 } from "@/features/entity-create/modalHelpers";
+import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
 import { useInterfacePrefs } from "@/features/identity/InterfacePrefsProvider";
 import { trpc } from "@/lib/trpc-client";
 import { readCsrfToken } from "@/utils/csrfCookie";
@@ -30,10 +32,16 @@ export interface AddLeadModalProps {
 }
 
 export function AddLeadModal({
-  baseCurrency = DEFAULT_BASE_CURRENCY,
+  baseCurrency: initialCurrency,
   onClose,
   onCreated,
 }: AddLeadModalProps): React.ReactNode {
+  const companyCurrency = useCompanyCurrency();
+  const baseCurrency = initialCurrency ?? companyCurrency;
+  const tLeads = useAppTranslations("leads");
+  const locale = useLocale();
+  const [currency, setCurrency] = useState(baseCurrency);
+
   const router = useRouter();
   const { autoPrefixLeadDealTitles, openDetailsAfterCreate } = useInterfacePrefs();
   const [state, setState] = useState<AddLeadState>(initialAddLeadState());
@@ -54,10 +62,29 @@ export function AddLeadModal({
   const people = peopleQ.data ?? [];
   const orgs = orgsQ.data ?? [];
   const [titleEdited, setTitleEdited] = useState(false);
-  const derivedTitle = deriveEntityTitle(state, orgs, people, "lead", autoPrefixLeadDealTitles);
+  const derivedTitle = deriveEntityTitle(
+    state,
+    orgs,
+    people,
+    "lead",
+    autoPrefixLeadDealTitles,
+    (name) => tLeads("defaultLeadTitle", { name }),
+  );
   // Derived during render: an effect would paint the stale title for a frame, then correct it.
   if (!titleEdited && state.title !== derivedTitle) {
     setState((s) => (s.title === derivedTitle ? s : { ...s, title: derivedTitle }));
+  }
+
+  function validateCreateFields(): string | null {
+    return (
+      customFieldCreateError(leadFieldsQ.data ?? [], state.leadCustomFields, locale) ??
+      (state.orgMode === "new"
+        ? customFieldCreateError(orgFieldsQ.data ?? [], state.orgCustomFields, locale)
+        : null) ??
+      (state.personMode === "new"
+        ? customFieldCreateError(personFieldsQ.data ?? [], state.personCustomFields, locale)
+        : null)
+    );
   }
 
   async function submit(): Promise<void> {
@@ -67,18 +94,21 @@ export function AddLeadModal({
       const csrf = readCsrfToken();
       // Validate the lead fields BEFORE creating any inline org/person, so an invalid lead (e.g.
       // blank title) can never leave an orphaned org/person behind or duplicate one on retry.
-      const parsed = parseNewLead({
-        title: state.title,
-        value: state.value,
-        personId: null,
-        orgId: null,
-        labels: state.labels,
-        sourceChannel: state.sourceChannel,
-        sourceChannelId: state.sourceChannelId,
-        expectedCloseDate: state.expectedCloseDate,
-        ownerId: state.ownerId,
-        visibilityGroupId: state.visibilityGroupId,
-      });
+      const parsed = parseNewLead(
+        {
+          title: state.title,
+          value: state.value,
+          personId: null,
+          orgId: null,
+          labels: state.labels,
+          sourceChannel: state.sourceChannel,
+          sourceChannelId: state.sourceChannelId,
+          expectedCloseDate: state.expectedCloseDate,
+          ownerId: state.ownerId,
+          visibilityGroupId: state.visibilityGroupId,
+        },
+        locale,
+      );
       if (!parsed.ok) {
         setError(parsed.error);
         return;
@@ -86,7 +116,7 @@ export function AddLeadModal({
       const leadFields = leadFieldsQ.data ?? [];
       const missingLeadField = firstMissingImportantField(leadFields, state.leadCustomFields);
       if (missingLeadField !== null) {
-        setError(`${missingLeadField.name} is required`);
+        setError(tLeads("fieldRequired", { name: missingLeadField.name }));
         return;
       }
       const personFields = personFieldsQ.data ?? [];
@@ -94,7 +124,7 @@ export function AddLeadModal({
       if (state.orgMode === "new") {
         const missingOrgField = firstMissingImportantField(orgFields, state.orgCustomFields);
         if (missingOrgField !== null) {
-          setError(`${missingOrgField.name} is required`);
+          setError(tLeads("fieldRequired", { name: missingOrgField.name }));
           return;
         }
       }
@@ -104,21 +134,26 @@ export function AddLeadModal({
           state.personCustomFields,
         );
         if (missingPersonField !== null) {
-          setError(`${missingPersonField.name} is required`);
+          setError(tLeads("fieldRequired", { name: missingPersonField.name }));
           return;
         }
+      }
+      const customError = validateCreateFields();
+      if (customError !== null) {
+        setError(customError);
+        return;
       }
       const submitState = {
         ...state,
         personCustomFields: customFieldCreatePayload(personFields, state.personCustomFields),
         orgCustomFields: customFieldCreatePayload(orgFields, state.orgCustomFields),
       };
-      const orgId = await resolveNewOrgId(submitState, csrf);
+      const orgId = await resolveNewOrgId(submitState, csrf, locale);
       if (orgId !== null && typeof orgId === "object") {
         setError(orgId.error);
         return;
       }
-      const personId = await resolveNewPersonId(submitState, orgId, csrf);
+      const personId = await resolveNewPersonId(submitState, orgId, csrf, locale);
       if (personId !== null && typeof personId === "object") {
         setError(personId.error);
         return;
@@ -126,6 +161,7 @@ export function AddLeadModal({
       const result = await createLeadAction(
         {
           ...parsed.input,
+          currency,
           personId,
           orgId,
           customFields: customFieldCreatePayload(leadFields, state.leadCustomFields),
@@ -133,7 +169,7 @@ export function AddLeadModal({
         csrf,
       );
       if (!result.ok) {
-        setError(`Could not create lead (${result.error.id})`);
+        setError(tLeads("createError", { errorId: result.error.id }));
         return;
       }
       onCreated();
@@ -148,7 +184,7 @@ export function AddLeadModal({
 
   return (
     <EntityCreateModalShell
-      title="Add lead"
+      title={tLeads("addLead")}
       personMode={state.personMode}
       phones={state.phones}
       emails={state.emails}
@@ -156,7 +192,7 @@ export function AddLeadModal({
       onEmails={(emails) => set({ emails })}
       personCustomFields={
         <CustomFieldCreateFields
-          title="Person fields"
+          title={tLeads("personFields")}
           defs={personFieldsQ.data ?? []}
           values={state.personCustomFields}
           onChange={(key, value) =>
@@ -182,9 +218,11 @@ export function AddLeadModal({
           owners={optionsOrNull(usersQ.data)}
           groups={optionsOrNull(groupsQ.data)}
           baseCurrency={baseCurrency}
+          currency={currency}
+          onCurrencyChange={setCurrency}
           organizationCustomFields={
             <CustomFieldCreateFields
-              title="Organization fields"
+              title={tLeads("organizationFields")}
               defs={orgFieldsQ.data ?? []}
               values={state.orgCustomFields}
               onChange={(key, value) =>
@@ -194,7 +232,7 @@ export function AddLeadModal({
           }
           leadCustomFields={
             <CustomFieldCreateFields
-              title="Lead fields"
+              title={tLeads("leadFields")}
               defs={leadFieldsQ.data ?? []}
               values={state.leadCustomFields}
               onChange={(key, value) =>

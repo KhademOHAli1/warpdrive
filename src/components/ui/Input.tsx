@@ -1,5 +1,6 @@
 import { forwardRef } from "react";
 import { cn } from "@/lib/utils";
+import { Input as ShadcnInput } from "./primitives/input";
 
 // shadcn-style Input wrapper. The single-line counterpart to Textarea, and the sanctioned
 // replacement for bare <input> across the create/edit forms. The box model (border, radius,
@@ -11,7 +12,7 @@ import { cn } from "@/lib/utils";
 // Radix primitive applies; this is the standard wrapper to use instead of a bare <input>.
 export const Input = forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
   ({ className, ...props }, ref) => (
-    <input
+    <ShadcnInput
       ref={ref}
       className={cn(
         "w-full rounded-md border px-2.5 py-1.5 text-sm outline-none transition-[border-color,box-shadow,background-color] duration-150 ease-out placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/50 motion-reduce:transition-none disabled:cursor-not-allowed disabled:opacity-50",

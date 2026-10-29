@@ -78,6 +78,7 @@ export async function convertDealToLead(
         .values({
           title: deal.title,
           value: deal.value,
+          currency: deal.currency,
           personId: deal.personId,
           orgId: deal.orgId,
           expectedCloseDate: deal.expectedCloseDate,

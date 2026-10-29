@@ -4,6 +4,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { GripVertical } from "lucide-react";
 import type React from "react";
 import { Checkbox } from "@/components/ui/Checkbox";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import type { ColumnDef } from "./columnModel";
 
 export interface SortableColumnRowProps {
@@ -21,6 +22,7 @@ export function SortableColumnRow({
   pinned,
   onToggle,
 }: SortableColumnRowProps): React.ReactNode {
+  const t = useAppTranslations("tableControls");
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
     id: col.key,
     disabled: pinned,
@@ -38,10 +40,11 @@ export function SortableColumnRow({
       ) : (
         <button
           type="button"
-          aria-label={`Reorder ${col.header}`}
           className="cursor-grab text-muted-foreground"
           {...attributes}
           {...listeners}
+          aria-label={t("reorderColumn", { name: col.header })}
+          aria-roledescription={t("sortableColumn")}
         >
           <GripVertical aria-hidden="true" className="h-4 w-4" />
         </button>
@@ -53,7 +56,7 @@ export function SortableColumnRow({
           onCheckedChange={() => onToggle(col.key)}
           label={col.header}
         />
-        <span>{col.header}</span>
+        <bdi dir="auto">{col.header}</bdi>
       </div>
     </div>
   );

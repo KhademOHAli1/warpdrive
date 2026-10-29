@@ -10,6 +10,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ERROR_IDS } from "@/constants/errorIds";
+import { useLocale } from "@/features/i18n/LocaleProvider";
 import { withActionTelemetry } from "@/features/observability/resultSeam";
 import { dealActionErrorContent } from "./dealActionError";
 
@@ -34,6 +35,7 @@ export function DealActionErrorProvider({
 }: {
   children: React.ReactNode;
 }): React.ReactNode {
+  const locale = useLocale();
   const router = useRouter();
   // null = no error showing. A reported error stores its id (or "" when the action gave none).
   const [errorId, setErrorId] = useState<string | null>(null);
@@ -44,7 +46,7 @@ export function DealActionErrorProvider({
     // fails identically until the page is reloaded by hand.
     if (id === ERROR_IDS.DEAL_PRECONDITION) router.refresh();
   }, "deal");
-  const content = dealActionErrorContent(errorId ?? undefined);
+  const content = dealActionErrorContent(errorId ?? undefined, locale);
 
   return (
     <DealActionErrorContext.Provider value={report}>
@@ -57,7 +59,9 @@ export function DealActionErrorProvider({
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{content.title}</DialogTitle>
+            <DialogTitle>
+              <bdi dir="auto">{content.title}</bdi>
+            </DialogTitle>
             <DialogDescription>{content.body}</DialogDescription>
           </DialogHeader>
         </DialogContent>

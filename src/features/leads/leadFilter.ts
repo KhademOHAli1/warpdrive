@@ -40,10 +40,11 @@ export interface LeadFilterConfig {
 }
 
 export const LEAD_FILTER_CONFIG: LeadFilterConfig = {
-  fields: ["title", "value", "sourceOrigin", "ownerId", "labels"],
+  fields: ["title", "value", "currency", "sourceOrigin", "ownerId", "labels"],
   columnSql: {
     title: sql`${leads.title}`,
     value: sql`${leads.value}`,
+    currency: sql`${leads.currency}`,
     sourceOrigin: sql`${leads.sourceOrigin}`,
     ownerId: sql`${leads.ownerId}`,
     labels: sql`${leads.labels}`,
@@ -51,6 +52,7 @@ export const LEAD_FILTER_CONFIG: LeadFilterConfig = {
   opsByField: {
     title: TEXT_OPS,
     value: ORDERED_OPS,
+    currency: EXACT_OPS,
     sourceOrigin: TEXT_OPS,
     ownerId: EXACT_OPS,
     labels: ARRAY_OPS,

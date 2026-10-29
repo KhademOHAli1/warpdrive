@@ -2,6 +2,7 @@ import { z } from "zod";
 import { MAX_DAILY_ACTIVITY_TARGET, MIN_DAILY_ACTIVITY_TARGET } from "@/constants/activityLoad";
 import { DEAL_SIDEBAR_SECTION_IDS } from "@/constants/dealSidebarSections";
 import { BOARD_SORT_KEYS } from "@/features/deals/boardSort";
+import { localePreferencesSchema } from "@/features/i18n/preferences";
 import { filterDefinition } from "@/features/saved-filters/schemas";
 import { APPEARANCE_VALUES } from "@/features/theme/appearance";
 
@@ -97,6 +98,7 @@ export const columnViewInputSchema = z.object({
 // bad key failed the whole object and getPreferences fell back to {}, silently resetting every
 // unrelated preference on load.
 export const uiSchema = z.object({
+  localePreferences: localePreferencesSchema.optional().catch(undefined),
   dealHeaderBlocks: dealHeaderBlocksSchema.optional().catch(undefined),
   dealSidebarSections: dealSidebarSectionsSchema.optional().catch(undefined),
   leadsView: leadsViewSchema.optional().catch(undefined),

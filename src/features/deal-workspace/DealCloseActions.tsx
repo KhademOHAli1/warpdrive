@@ -9,6 +9,7 @@ import { useDealActionError } from "@/features/deal-workspace/DealActionErrorPro
 import { DealStatusBadge } from "@/features/deal-workspace/DealStatusBadge";
 import { MarkLostDialog } from "@/features/deal-workspace/MarkLostDialog";
 import { playWinChime } from "@/features/deals/winChime";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { useInterfacePrefs } from "@/features/identity/InterfacePrefsProvider";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { markWonAction, reopenDealAction } from "./actions";
@@ -41,6 +42,8 @@ export function DealCloseActions({
   lostReasonText = null,
   scheduleFollowUpAfterWon,
 }: DealCloseActionsProps): React.ReactNode {
+  const translateSales = useAppTranslations("sales");
+
   const router = useRouter();
   const reportError = useDealActionError();
   const { winSound } = useInterfacePrefs();
@@ -80,7 +83,7 @@ export function DealCloseActions({
           onClick={() => void reopen()}
           className="rounded-md border px-2 py-1 text-xs font-medium transition-[background-color,scale] duration-150 ease-out hover:bg-accent active:not-disabled:scale-[0.96] disabled:opacity-50"
         >
-          Reopen
+          {translateSales("reopen_a886d")}
         </button>
       </div>
     );
@@ -121,7 +124,7 @@ export function DealCloseActions({
         onClick={() => void won()}
         className="rounded-md bg-success px-3 py-1.5 text-sm font-medium text-success-foreground transition-[opacity,scale] duration-150 ease-out hover:opacity-90 active:not-disabled:scale-[0.96] disabled:opacity-50"
       >
-        Won
+        {translateSales("won_acdf2")}
       </button>
       <button
         type="button"
@@ -129,7 +132,7 @@ export function DealCloseActions({
         onClick={() => setPicking(true)}
         className="rounded-md bg-destructive px-3 py-1.5 text-sm font-medium text-destructive-foreground transition-[opacity,scale] duration-150 ease-out hover:opacity-90 active:not-disabled:scale-[0.96] disabled:opacity-50"
       >
-        Lost
+        {translateSales("lost_51e13")}
       </button>
       <MarkLostDialog
         dealId={dealId}

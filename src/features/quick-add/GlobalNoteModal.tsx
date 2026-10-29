@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { Combobox, type ComboboxOption } from "@/components/ui/Combobox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ComposeNoteTab } from "@/features/compose/ComposeNoteTab";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { trpc } from "@/lib/trpc-client";
 
 // Global "+ Note" surface (Pipedrive parity). Notes are polymorphic (entity_type, entity_id), so
@@ -17,6 +18,7 @@ export function GlobalNoteModal({
   onClose: () => void;
   onCreated: () => void;
 }): React.ReactNode {
+  const t = useAppTranslations("quickAdd");
   const [personId, setPersonId] = useState("");
   const peopleQ = trpc.contacts.personOptions.useQuery(undefined, { retry: false });
   const options = useMemo<ComboboxOption[]>(
@@ -28,15 +30,15 @@ export function GlobalNoteModal({
     <Dialog open onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>New note</DialogTitle>
+          <DialogTitle>{t("newNote")}</DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
           <Combobox
             value={personId}
             onChange={setPersonId}
             options={options}
-            ariaLabel="Note target person"
-            placeholder="Select a person"
+            ariaLabel={t("noteTarget")}
+            placeholder={t("selectPerson")}
           />
           {personId !== "" && (
             <ComposeNoteTab

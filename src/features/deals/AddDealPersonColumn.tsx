@@ -3,6 +3,7 @@ import type React from "react";
 import { Input } from "@/components/ui/Input";
 import { Select, type SelectOption } from "@/components/ui/Select";
 import { MAX_EMAIL_LEN, MAX_PHONE_LEN } from "@/features/contacts/fieldBounds";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 
 export interface ContactPoint {
   label: string;
@@ -32,10 +33,12 @@ export function AddDealPersonColumn({
   onPhones,
   onEmails,
 }: AddDealPersonColumnProps): React.ReactNode {
+  const translateSales = useAppTranslations("sales");
+
   return (
     <div className="flex flex-col gap-4">
       <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-        Person
+        {translateSales("person_6007d")}
       </h3>
 
       <ContactRows
@@ -69,19 +72,31 @@ function ContactRows({
   disabled: boolean;
   onChange: (next: ContactPoint[]) => void;
 }): React.ReactNode {
+  const translateSales = useAppTranslations("sales");
+
+  const kindLabel = translateSales(kind === "Phone" ? "computed.phone" : "computed.email");
+  const labelKeys = {
+    Work: "computed.work",
+    Mobile: "computed.mobile",
+    Home: "computed.home",
+    Other: "computed.other",
+  } as const;
   function update(idx: number, patch: Partial<ContactPoint>): void {
     onChange(rows.map((r, i) => (i === idx ? { ...r, ...patch } : r)));
   }
   return (
     <div className="text-sm">
-      <span className="mb-1 block font-medium">{kind}</span>
+      <span className="mb-1 block font-medium">{kindLabel}</span>
       <div className="flex flex-col gap-2">
         {rows.map((row, idx) => (
           // Positional rows for an ephemeral create form.
           // biome-ignore lint/suspicious/noArrayIndexKey: positional contact rows
           <div key={idx} className="flex items-center gap-2">
             <Input
-              aria-label={`${kind} ${idx + 1}`}
+              aria-label={translateSales("computed.contactRow", {
+                kind: kindLabel,
+                index: idx + 1,
+              })}
               type={kind === "Phone" ? "tel" : "email"}
               maxLength={kind === "Phone" ? MAX_PHONE_LEN : MAX_EMAIL_LEN}
               disabled={disabled}
@@ -94,10 +109,16 @@ function ContactRows({
                 pointer-events-none wrapper reproduces the disabled input's read-only behavior. */}
             <div className={disabled ? "pointer-events-none opacity-60" : undefined}>
               <Select
-                ariaLabel={`${kind} ${idx + 1} type`}
+                ariaLabel={translateSales("arg0_arg1_type_102cb", {
+                  arg0: kindLabel,
+                  arg1: idx + 1,
+                })}
                 value={row.label}
                 onChange={(v) => update(idx, { label: v })}
-                options={labels.map<SelectOption>((l) => ({ value: l, label: l }))}
+                options={labels.map<SelectOption>((l) => ({
+                  value: l,
+                  label: translateSales(labelKeys[l as keyof typeof labelKeys]),
+                }))}
               />
             </div>
           </div>
@@ -109,7 +130,7 @@ function ContactRows({
         onClick={() => onChange([...rows, { label: labels[0] ?? "Work", value: "" }])}
         className="mt-2 text-sm font-medium text-primary hover:underline disabled:opacity-40"
       >
-        + Add {kind.toLowerCase()}
+        {translateSales(kind === "Phone" ? "computed.addPhone" : "computed.addEmail")}
       </button>
     </div>
   );

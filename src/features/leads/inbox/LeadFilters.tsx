@@ -1,6 +1,7 @@
 "use client";
 import type React from "react";
 import { Checkbox } from "@/components/ui/Checkbox";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { mergeLabelOptions } from "@/features/labels/mergeLabelOptions";
 import { trpc } from "@/lib/trpc-client";
 import type { LeadNextActivityBucket } from "../schemas";
@@ -15,13 +16,6 @@ export interface OwnerFilter {
   onChange: (ids: string[]) => void;
 }
 
-const NEXT_ACTIVITY_OPTIONS: { key: LeadNextActivityBucket; label: string }[] = [
-  { key: "overdue", label: "Overdue" },
-  { key: "today", label: "Today" },
-  { key: "week", label: "This week" },
-  { key: "none", label: "No activity" },
-];
-
 const TRIGGER =
   "flex items-center gap-1 rounded-md border bg-card px-2.5 py-1 text-sm hover:bg-accent";
 
@@ -30,16 +24,22 @@ function toggle<T>(list: readonly T[], item: T): T[] {
 }
 
 function OwnerMenu({ owner }: { owner: OwnerFilter }): React.ReactNode {
+  const tLeads = useAppTranslations("leads");
+
   const label =
     owner.selected.length === 0
-      ? "Everyone"
-      : `${owner.selected.length} owner${owner.selected.length === 1 ? "" : "s"}`;
+      ? tLeads("everyone")
+      : tLeads("ownerCount", { count: owner.selected.length });
   return (
-    <PopMenu triggerLabel="Owner filter" triggerClassName={TRIGGER} trigger={<span>{label}</span>}>
+    <PopMenu
+      triggerLabel={tLeads("ownerFilter")}
+      triggerClassName={TRIGGER}
+      trigger={<span>{label}</span>}
+    >
       {() => (
         <div className="max-h-64 overflow-auto">
           <button type="button" className={POP_ITEM} onClick={() => owner.onChange([])}>
-            Everyone
+            {tLeads("everyone")}
           </button>
           {owner.users.map((u) => (
             <div key={u.id} className="flex items-center gap-2 rounded px-2 py-1.5 hover:bg-accent">
@@ -72,6 +72,14 @@ export function LeadFilters({
   onNextActivity,
   owner,
 }: LeadFiltersProps): React.ReactNode {
+  const tLeads = useAppTranslations("leads");
+  const NEXT_ACTIVITY_OPTIONS: { key: LeadNextActivityBucket; label: string }[] = [
+    { key: "overdue", label: tLeads("overdue") },
+    { key: "today", label: tLeads("today") },
+    { key: "week", label: tLeads("thisWeek") },
+    { key: "none", label: tLeads("noActivity") },
+  ];
+
   const catalogNames = (trpc.labels.listByTarget.useQuery({ target: "lead" }).data ?? []).map(
     (l) => l.name,
   );
@@ -80,23 +88,27 @@ export function LeadFilters({
   // a label the user can see on screen reads as broken. Catalog order first, then the strays.
   const appliedNames = trpc.labels.appliedNames.useQuery({ target: "lead" }).data ?? [];
   const allLabels = mergeLabelOptions(catalogNames, appliedNames);
-  const labelText = labelKeys.length === 0 ? "All labels" : `${labelKeys.length} labels`;
+  const labelText =
+    labelKeys.length === 0
+      ? tLeads("allLabels")
+      : tLeads("labelCount", { count: labelKeys.length });
   const naText =
     nextActivity === null
-      ? "Next activity"
-      : (NEXT_ACTIVITY_OPTIONS.find((o) => o.key === nextActivity)?.label ?? "Next activity");
+      ? tLeads("nextActivity")
+      : (NEXT_ACTIVITY_OPTIONS.find((o) => o.key === nextActivity)?.label ??
+        tLeads("nextActivity"));
 
   return (
     <>
       <PopMenu
-        triggerLabel="Label filter"
+        triggerLabel={tLeads("labelFilter")}
         triggerClassName={TRIGGER}
         trigger={<span>{labelText}</span>}
       >
         {() => (
           <div>
             <button type="button" className={POP_ITEM} onClick={() => onLabelKeys([])}>
-              All labels
+              {tLeads("allLabels")}
             </button>
             {allLabels.map((name) => (
               <div
@@ -116,7 +128,7 @@ export function LeadFilters({
       </PopMenu>
 
       <PopMenu
-        triggerLabel="Next-activity filter"
+        triggerLabel={tLeads("nextActivityFilter")}
         triggerClassName={TRIGGER}
         trigger={<span>{naText}</span>}
       >
@@ -130,7 +142,7 @@ export function LeadFilters({
                 close();
               }}
             >
-              Any time
+              {tLeads("anyTime")}
             </button>
             {NEXT_ACTIVITY_OPTIONS.map((o) => (
               <button

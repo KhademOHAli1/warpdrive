@@ -1,4 +1,4 @@
-import { and, eq, isNull, lte, sql } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import type { VisibilityLevel } from "@/constants/visibility";
 import type { Db } from "@/db/client";
 import { activities, activityTypes, users } from "@/db/schema";
@@ -9,6 +9,7 @@ import { persons } from "@/db/schema/persons";
 import { pipelines } from "@/db/schema/pipelines";
 import { canSee } from "@/features/permissions/canSee";
 import type { PermSetUser } from "@/features/permissions/effective";
+import { activityWindowSql } from "./activityDateSql";
 import { buildActivityVisibility } from "./activityVisibility";
 import { isActivityOverdue } from "./overdue";
 import { linkedParentVisible } from "./parentLinkVisibility";
@@ -20,6 +21,8 @@ export interface CalendarActivity {
   dueAt: Date;
   // No time was set; the editor must not echo the stored midnight back.
   allDay: boolean;
+  dueDate?: string | null;
+  endDate?: string | null;
   // Explicit multi-day end (Pipedrive parity, B3). Null/undefined for a single-day activity. When
   // set, the calendar range + day grouping treat the activity as spanning [dueAt, endAt] so it shows
   // on every covered day, not just its start day.
@@ -66,6 +69,8 @@ export interface CalendarActivity {
 
 interface CalendarRow {
   allDay: boolean;
+  dueDate?: string | null;
+  endDate?: string | null;
   id: string;
   subject: string;
   endAt: Date | null;
@@ -137,12 +142,15 @@ function toCalendarActivity(
   dueAt: Date,
   now: number,
   gates: LinkGates,
+  timeZone: string,
 ): CalendarActivity {
   return {
     id: row.id,
     subject: row.subject,
     dueAt,
     allDay: row.allDay,
+    dueDate: row.dueDate,
+    endDate: row.endDate,
     endAt: row.endAt,
     durationMinutes: row.durationMinutes,
     typeKey: row.typeKey,
@@ -156,7 +164,16 @@ function toCalendarActivity(
     orgId: gates.org ? row.orgVisibleId : null,
     personName: gates.person ? row.personName : null,
     orgName: gates.org ? row.orgName : null,
-    overdue: isActivityOverdue(dueAt, row.allDay, row.done, now),
+    overdue: isActivityOverdue(
+      dueAt,
+      row.allDay,
+      row.done,
+      now,
+      timeZone,
+      row.dueDate,
+      row.endDate,
+      row.endAt,
+    ),
     ownerName: row.ownerName,
     assigneeId: row.assigneeId,
   };
@@ -172,6 +189,7 @@ export async function calendarRange(
   actor: PermSetUser,
   range: { from: Date; to: Date },
   signal: AbortSignal,
+  timeZone = "UTC",
 ): Promise<CalendarActivity[]> {
   signal.throwIfAborted();
   const now = Date.now();
@@ -182,6 +200,8 @@ export async function calendarRange(
       subject: activities.subject,
       dueAt: activities.dueAt,
       allDay: activities.allDay,
+      dueDate: activities.dueDate,
+      endDate: activities.endDate,
       endAt: activities.endAt,
       durationMinutes: activities.durationMinutes,
       typeKey: activityTypes.key,
@@ -231,13 +251,7 @@ export async function calendarRange(
     // Overlap, not point-in-range: an activity intersects [from, to] when it starts on or before
     // `to` AND its end (explicit endAt, else its own dueAt) is on or after `from`. This keeps a
     // multi-day activity visible on every range its span touches, not only its start day.
-    .where(
-      and(
-        isNull(activities.deletedAt),
-        lte(activities.dueAt, range.to),
-        sql`coalesce(${activities.endAt}, ${activities.dueAt}) >= ${range.from}`,
-      ),
-    );
+    .where(and(isNull(activities.deletedAt), activityWindowSql(range, timeZone)));
   signal.throwIfAborted();
 
   const participantsByActivity = await loadParentlessParticipants(db, rows, signal);
@@ -248,7 +262,7 @@ export async function calendarRange(
     if (row.dueAt === null) continue;
     const vis = buildActivityVisibility(row, participantsByActivity.get(row.id) ?? []);
     if (vis === null || !canSee(actor, vis)) continue;
-    out.push(toCalendarActivity(row, row.dueAt, now, linkGates(actor, row)));
+    out.push(toCalendarActivity(row, row.dueAt, now, linkGates(actor, row), timeZone));
   }
   return out;
 }

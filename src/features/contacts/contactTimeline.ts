@@ -13,6 +13,7 @@ import {
   type HistoryItem,
   type NoteItem,
 } from "@/features/deal-workspace/historyTimeline";
+import type { Locale } from "@/features/i18n/registry";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { assertReferenceVisible } from "@/features/permissions/referenceCheck";
 import { toRefActor } from "./actorAdapters";
@@ -32,6 +33,7 @@ export async function contactTimeline(
   entityType: "person" | "organization",
   entityId: string,
   signal: AbortSignal,
+  locale: Locale = "en",
 ): Promise<ContactTimelineResult> {
   signal.throwIfAborted();
   const visible = await assertReferenceVisible(
@@ -62,5 +64,5 @@ export async function contactTimeline(
   const changelog = await listChangeLog(db, entityType, entityId, signal);
   signal.throwIfAborted();
 
-  return { items: buildHistoryTimeline(activityItems, changelog, noteItems) };
+  return { items: buildHistoryTimeline(activityItems, changelog, noteItems, undefined, locale) };
 }

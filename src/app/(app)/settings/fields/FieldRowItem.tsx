@@ -7,18 +7,18 @@ import { Button } from "@/components/ui/Button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/Collapsible";
 import { Input } from "@/components/ui/Input";
 import { Switch } from "@/components/ui/Switch";
-import { STRINGS } from "@/constants/strings";
 import {
   archiveDefAction,
   renameDefAction,
   setDefFlagsAction,
 } from "@/features/custom-fields/actions";
+import { settingsFieldType } from "@/features/identity/settingsMessages";
+import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { ReorderControls } from "../company/ReorderControls";
 import { OptionEditor } from "./OptionEditor";
 import type { FieldRow } from "./types";
 
-const S = STRINGS.settings;
 const OPTION_TYPES = new Set(["single_option", "multi_option"]);
 const ROW_ACTION =
   "relative min-h-10 px-1 text-xs font-medium text-muted-foreground transition-colors duration-150 ease-out after:absolute after:inset-x-0 after:inset-y-0 after:content-[''] hover:text-foreground focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 motion-reduce:transition-none";
@@ -34,6 +34,9 @@ export function FieldRowItem({
   isLast: boolean;
   onMove: (direction: "up" | "down") => void;
 }): React.ReactNode {
+  const L = useSettingsMessages();
+  const S = L;
+
   const router = useRouter();
   const reportError = useActionError();
   const [editing, setEditing] = useState(false);
@@ -86,7 +89,7 @@ export function FieldRowItem({
               <div className="flex items-center gap-2">
                 <span className="truncate text-sm font-medium">{row.name}</span>
                 <span className="shrink-0 rounded bg-muted px-1.5 py-0.5 text-[11px] capitalize text-muted-foreground">
-                  {row.type.replaceAll("_", " ")}
+                  {settingsFieldType(L, row.type)}
                 </span>
               </div>
               {activeOptions.length > 0 && (

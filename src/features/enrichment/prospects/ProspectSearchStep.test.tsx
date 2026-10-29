@@ -102,7 +102,7 @@ describe("ProspectSearchStep", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("shows what the provider returned when the search failed outright", () => {
+  it("shows a safe failure explanation without raw provider response prose", () => {
     render(
       <ProspectSearchStep
         {...props({
@@ -115,6 +115,7 @@ describe("ProspectSearchStep", () => {
         })}
       />,
     );
-    expect(screen.getByText(/Provider returned 422/)).toBeInTheDocument();
+    expect(screen.getByText(/provider could not complete/)).toBeInTheDocument();
+    expect(screen.queryByText(/Provider returned 422/)).not.toBeInTheDocument();
   });
 });

@@ -8,8 +8,10 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { Combobox, type ComboboxOption } from "@/components/ui/Combobox";
+import type { EmailMessages } from "@/features/email/emailMessages";
 import { applyMergeFields } from "@/features/email/merge";
 import { MERGE_TOKEN_FIELDS, mergeTokenPlaceholder } from "@/features/email/mergeTokens";
+import { useEmailMessages } from "@/features/email/useEmailMessages";
 import { trpc } from "@/lib/trpc-client";
 import { InsertFieldMenu } from "./InsertFieldMenu";
 import { type InsertFieldContext, insertFields } from "./insertFields";
@@ -38,7 +40,9 @@ function mergeTokenItems(ctx: Record<string, string>): {
   }));
 }
 
-const CHOOSE_TEMPLATE_LABEL = "Choose template";
+function localizedCHOOSE_TEMPLATE_LABEL(E: EmailMessages) {
+  return E._extra.choose_template;
+}
 // Stable identity so the apply effect does not re-run on every render while the query is loading.
 const EMPTY_MERGE_CONTEXT: Record<string, string> = {};
 
@@ -80,6 +84,8 @@ export function InsertToolbar({
   personId = null,
   dealId = null,
 }: InsertToolbarProps): React.ReactNode {
+  const E = useEmailMessages();
+
   const [selectedTemplateId, setSelectedTemplateId] = useState("");
   // Save-as-template dialog, opened from the template dropdown footer (PD parity).
   const [saveOpen, setSaveOpen] = useState(false);
@@ -153,7 +159,7 @@ export function InsertToolbar({
     <div className="flex items-center gap-2 flex-wrap border-b border-border px-2 py-1">
       <div className="w-40">
         <Combobox
-          ariaLabel={CHOOSE_TEMPLATE_LABEL}
+          ariaLabel={localizedCHOOSE_TEMPLATE_LABEL(E)}
           value={selectedTemplateId}
           onChange={(next) => {
             // Reset the applied-guard so the new selection triggers the effect.
@@ -161,7 +167,7 @@ export function InsertToolbar({
             lastApplied.current = null;
             setSelectedTemplateId(next);
           }}
-          placeholder={CHOOSE_TEMPLATE_LABEL}
+          placeholder={localizedCHOOSE_TEMPLATE_LABEL(E)}
           options={templates.map<ComboboxOption>((t) => ({ value: t.id, label: t.name }))}
           // PD consolidates save + manage into the same dropdown as browse.
           footer={(close) => (
@@ -172,15 +178,15 @@ export function InsertToolbar({
                   close();
                   setSaveOpen(true);
                 }}
-                className="flex w-full items-center gap-1.5 rounded px-2 py-1.5 text-left text-xs text-primary hover:bg-accent"
+                className="flex w-full items-center gap-1.5 rounded px-2 py-1.5 text-start text-xs text-primary hover:bg-accent"
               >
-                <span aria-hidden="true">+</span> Save draft as a template
+                <span aria-hidden="true">+</span> {E._extra.save_draft_as_a_template}
               </button>
               <Link
                 href="/settings/email"
                 className="flex w-full items-center gap-1.5 rounded px-2 py-1.5 text-xs text-muted-foreground hover:bg-accent"
               >
-                Manage templates
+                {E._extra.manage_templates}
               </Link>
             </>
           )}

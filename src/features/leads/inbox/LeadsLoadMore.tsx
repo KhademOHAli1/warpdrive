@@ -1,8 +1,11 @@
 "use client";
 import type React from "react";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 
 // The inbox's paging affordance, rendered only while pages remain.
 export function LeadsLoadMore({ onClick }: { onClick: () => void }): React.ReactNode {
+  const tLeads = useAppTranslations("leads");
+
   return (
     <div className="mt-3 flex justify-center">
       <button
@@ -10,7 +13,7 @@ export function LeadsLoadMore({ onClick }: { onClick: () => void }): React.React
         onClick={onClick}
         className="rounded-md border px-4 py-1.5 text-sm font-medium transition-[background-color,scale] duration-150 ease-out hover:bg-accent active:scale-[0.96] motion-reduce:transition-colors"
       >
-        Load more
+        {tLeads("loadMore")}
       </button>
     </div>
   );

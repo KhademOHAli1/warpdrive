@@ -1,0 +1,115 @@
+import { createTranslator, type NamespaceKeys, type NestedKeyOf } from "use-intl/core";
+import tableEnglish from "@/components/data-table/messages/tableControls.en.json";
+import tablePersian from "@/components/data-table/messages/tableControls.fa.json";
+import filtersEnglish from "@/components/filters/messages/filters.en.json";
+import filtersPersian from "@/components/filters/messages/filters.fa.json";
+import utilitiesEnglish from "@/components/shell/messages/utilities.en.json";
+import utilitiesPersian from "@/components/shell/messages/utilities.fa.json";
+import enrichmentEnglish from "@/features/enrichment/messages/enrichment.en.json";
+import enrichmentPersian from "@/features/enrichment/messages/enrichment.fa.json";
+import shellEnglish from "@/components/shell/messages/shell.en.json";
+import shellPersian from "@/components/shell/messages/shell.fa.json";
+import sharedEnglish from "@/components/ui/messages/shared.en.json";
+import sharedPersian from "@/components/ui/messages/shared.fa.json";
+import { CALENDAR_MESSAGES } from "@/features/activities/calendarMessages";
+import activitiesEnglish from "@/features/activities/messages/activities.en.json";
+import activitiesPersian from "@/features/activities/messages/activities.fa.json";
+import authEnglish from "@/features/auth/messages/authScreens.en.json";
+import authPersian from "@/features/auth/messages/authScreens.fa.json";
+import statsEnglish from "@/features/stats/messages/stats.en.json";
+import statsPersian from "@/features/stats/messages/stats.fa.json";
+import contactsEnglish from "@/features/contacts/messages/contacts.en.json";
+import contactsPersian from "@/features/contacts/messages/contacts.fa.json";
+import customEnglish from "@/features/custom-fields/messages/customFields.en.json";
+import customPersian from "@/features/custom-fields/messages/customFields.fa.json";
+import salesEnglish from "@/features/deals/messages/sales.en.json";
+import salesPersian from "@/features/deals/messages/sales.fa.json";
+import emailEnglish from "@/features/email/messages/email.en.json";
+import emailPersian from "@/features/email/messages/email.fa.json";
+import entityEnglish from "@/features/entity-create/messages/entityCreate.en.json";
+import entityPersian from "@/features/entity-create/messages/entityCreate.fa.json";
+import filesEnglish from "@/features/files/messages/files.en.json";
+import filesPersian from "@/features/files/messages/files.fa.json";
+import settingsEnglish from "@/features/identity/messages/settings.en.json";
+import settingsPersian from "@/features/identity/messages/settings.fa.json";
+import leadsEnglish from "@/features/leads/messages/leads.en.json";
+import leadsPersian from "@/features/leads/messages/leads.fa.json";
+import notificationsEnglish from "@/features/notifications/messages/notifications.en.json";
+import notificationsPersian from "@/features/notifications/messages/notifications.fa.json";
+import quickEnglish from "@/features/quick-add/messages/quickAdd.en.json";
+import quickPersian from "@/features/quick-add/messages/quickAdd.fa.json";
+import { localeWithNumberingSystem, type NumberingSystem } from "@/lib/numberingSystem";
+import { mergeMessages } from "./mergeMessages";
+import boundaryEnglish from "./messages/boundary.en.json";
+import boundaryPersian from "./messages/boundary.fa.json";
+import en from "./messages/en.json";
+import fa from "./messages/fa.json";
+import type { Locale } from "./registry";
+
+const english = {
+  ...en,
+  utilities: utilitiesEnglish,
+  enrichment: enrichmentEnglish,
+  stats: statsEnglish,
+  authScreens: authEnglish,
+  customFields: customEnglish,
+  files: filesEnglish,
+  email: emailEnglish,
+  quickAdd: quickEnglish,
+  boundaries: boundaryEnglish,
+  calendar: CALENDAR_MESSAGES.en,
+  activities: activitiesEnglish,
+  sharedUi: sharedEnglish,
+  shell: shellEnglish,
+  settings: settingsEnglish,
+  contacts: contactsEnglish,
+  leads: leadsEnglish,
+  entityCreate: entityEnglish,
+  sales: salesEnglish,
+  filters: filtersEnglish,
+  tableControls: tableEnglish,
+  notifications: notificationsEnglish,
+};
+const persian: typeof english = mergeMessages(english, {
+  ...fa,
+  utilities: utilitiesPersian,
+  enrichment: enrichmentPersian,
+  stats: statsPersian,
+  authScreens: authPersian,
+  customFields: customPersian,
+  files: filesPersian,
+  email: emailPersian,
+  quickAdd: quickPersian,
+  boundaries: boundaryPersian,
+  calendar: CALENDAR_MESSAGES.fa,
+  activities: activitiesPersian,
+  sharedUi: sharedPersian,
+  shell: shellPersian,
+  settings: settingsPersian,
+  contacts: contactsPersian,
+  leads: leadsPersian,
+  entityCreate: entityPersian,
+  sales: salesPersian,
+  filters: filtersPersian,
+  tableControls: tablePersian,
+  notifications: notificationsPersian,
+});
+const catalogs = { en: english, fa: persian } satisfies Record<Locale, typeof english>;
+export type AppMessages = typeof english;
+export type AppNamespace = NamespaceKeys<AppMessages, NestedKeyOf<AppMessages>>;
+
+export function messagesForLocale(locale: Locale): AppMessages {
+  return catalogs[locale];
+}
+
+export function createAppTranslator<Namespace extends AppNamespace>(
+  locale: Locale,
+  namespace: Namespace,
+  numberingSystem?: NumberingSystem,
+) {
+  return createTranslator({
+    locale: localeWithNumberingSystem(locale, numberingSystem),
+    messages: messagesForLocale(locale),
+    namespace,
+  });
+}

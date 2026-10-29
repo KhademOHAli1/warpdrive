@@ -2,15 +2,18 @@ import type { ReactNode } from "react";
 import { BUILTIN_FIELDS } from "@/constants/builtinFields";
 import { CUSTOM_FIELD_TARGETS, type CustomFieldTarget } from "@/constants/customFieldTypes";
 import { PERMISSION_FLAGS } from "@/constants/permissionFlags";
-import { STRINGS } from "@/constants/strings";
 import { db } from "@/db/client";
 import { listDefs } from "@/features/custom-fields/defsRepo";
 import { listHiddenBuiltins } from "@/features/custom-fields/hiddenBuiltinsRepo";
+import { getServerSettingsMessages } from "@/features/identity/settingsMessages.server";
 import { createContext } from "@/server/trpc/context";
 import { DataFieldsClient } from "./DataFieldsClient";
 import type { BuiltinRow, FieldRow } from "./types";
 
-export const metadata = { title: STRINGS.settings.dataFields };
+export async function generateMetadata() {
+  const L = await getServerSettingsMessages();
+  return { title: L.dataFields };
+}
 
 // Data fields admin page (spec 7): gated on metadata.manage (the same gate the def actions
 // enforce). List, create, archive, rename, reorder, and option editing.
@@ -19,6 +22,8 @@ export default async function DataFieldsPage({
 }: {
   searchParams: Promise<{ entity?: string }>;
 }): Promise<ReactNode> {
+  const L = await getServerSettingsMessages();
+
   const { entity } = await searchParams;
   const initialTarget: CustomFieldTarget = CUSTOM_FIELD_TARGETS.includes(
     entity as CustomFieldTarget,
@@ -30,7 +35,7 @@ export default async function DataFieldsPage({
     actor === null ||
     (actor.type !== "admin" && !actor.flags.has(PERMISSION_FLAGS.METADATA_MANAGE))
   ) {
-    return <p className="text-sm text-red-600">{STRINGS.settings.requiresAdmin}</p>;
+    return <p className="text-sm text-red-600">{L.requiresAdmin}</p>;
   }
 
   const signal = AbortSignal.timeout(5000);

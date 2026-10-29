@@ -1,6 +1,9 @@
 // Masked 24h time helpers for the shared TimePicker. Value contract is "HH:mm"
 // so it drops into the composer startTime/endTime state that composeDueAtIso and
 // deriveDurationMinutes already consume. Empty string means "no time".
+import type { FormattingLocale } from "@/lib/localeFormatting";
+import { displayNumberingSystem, type NumberingSystem } from "@/lib/numberingSystem";
+import { normalizeDigits } from "@/utils/normalizeNumberInput";
 
 export function isValidHm(v: string): boolean {
   const m = /^(\d{2}):(\d{2})$/.exec(v);
@@ -25,7 +28,7 @@ function maskColonTime(trimmed: string, colonIdx: number): string {
 }
 
 export function maskTime(raw: string): string {
-  const trimmed = raw.trim();
+  const trimmed = normalizeDigits(raw).trim();
   if (trimmed === "") return "";
   if (isValidHm(trimmed)) return trimmed;
   const colonIdx = trimmed.indexOf(":");
@@ -44,4 +47,14 @@ export function maskTime(raw: string): string {
   }
   if (h > 23 || min > 59) return "";
   return `${String(h).padStart(2, "0")}:${String(min).padStart(2, "0")}`;
+}
+
+export function formatTimeInput(
+  value: string,
+  locale: FormattingLocale,
+  numberingSystem?: NumberingSystem,
+): string {
+  return displayNumberingSystem({ locale, numberingSystem }) === "arabext"
+    ? value.replace(/\d/g, (digit) => String.fromCharCode(0x06f0 + Number(digit)))
+    : value;
 }

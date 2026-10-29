@@ -73,6 +73,7 @@ const baseOrg: Organization = {
 };
 
 const baseLead: LeadDetail = {
+  currency: "USD",
   id: "l1",
   title: "Acme lead",
   value: null,
@@ -108,7 +109,7 @@ it("uses the shared Pipedrive field tokens (small, medium, right-aligned label)"
   const label = screen.getByText("Channel ID");
   expect(label.className).toContain("text-xs");
   expect(label.className).toContain("font-medium");
-  expect(label.className).toContain("text-right");
+  expect(label.className).toContain("text-end");
 });
 
 it("gives each section a kebab options menu but no misleading edit pencil", () => {

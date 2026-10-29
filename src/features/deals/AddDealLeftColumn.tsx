@@ -6,15 +6,14 @@ import { DatePicker } from "@/components/ui/DatePicker";
 import { Input } from "@/components/ui/Input";
 import { Select, type SelectOption } from "@/components/ui/Select";
 import { TITLE_MAX_LEN } from "@/constants/fieldLimits";
-import { SOURCE_CHANNEL_KEYS, SOURCE_CHANNELS } from "@/constants/sourceChannels";
+import { sourceChannelOptions } from "@/constants/sourceChannelLabels";
+import { CurrencySelect } from "@/features/currencies/CurrencySelect";
 import { EntityCombobox } from "@/features/entity-create/EntityCombobox";
+import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
 import { LabelField } from "@/features/labels/LabelField";
-import { formatMediumDate } from "@/lib/formatDate";
+import { useFormatters } from "@/lib/useFormatters";
 import type { AddDealState } from "./addDealState";
 import { StageChevron } from "./StageChevron";
-
-const NO_CHANNEL_LABEL = "No channel";
-const DEFAULT_VISIBILITY_LABEL = "Default";
 
 interface Option {
   id: string;
@@ -37,6 +36,8 @@ interface AddDealLeftColumnProps {
   owners: Option[] | null; // null hides the owner select (actor cannot reassign)
   groups: Option[] | null; // null hides the visible-to select
   baseCurrency: string;
+  currency?: string;
+  onCurrencyChange?: (currency: string) => void;
   organizationCustomFields?: React.ReactNode;
   dealCustomFields?: React.ReactNode;
 }
@@ -44,6 +45,10 @@ interface AddDealLeftColumnProps {
 // Left column of the Add deal dialog (Pipedrive field order): contact/org, title, value, pipeline,
 // stage, label, close date, owner, source, visibility. Purely presentational.
 export function AddDealLeftColumn(props: AddDealLeftColumnProps): React.ReactNode {
+  const translateSales = useAppTranslations("sales");
+  const locale = useLocale();
+  const format = useFormatters();
+
   const {
     state,
     set,
@@ -63,22 +68,22 @@ export function AddDealLeftColumn(props: AddDealLeftColumnProps): React.ReactNod
   return (
     <div className="flex flex-col gap-3 text-sm">
       <EntityCombobox
-        label="Contact person"
+        label={translateSales("contact_person_744c0")}
         options={people}
-        placeholder="Search or add a person"
-        createLabel={(q) => `Add '${q}' as new person`}
-        similarWarning="Similar contact already exists."
+        placeholder={translateSales("search_or_add_a_person_49385")}
+        createLabel={(q) => translateSales("add_arg0_as_new_person_11c06", { arg0: q })}
+        similarWarning={translateSales("similar_contact_already_exists_4f208")}
         onSelectExisting={(id) => set({ personMode: "existing", personId: id })}
         onCreateNew={(name) => set({ personMode: "new", personId: "", newPersonName: name })}
         onClear={() => set({ personMode: "existing", personId: "", newPersonName: "" })}
       />
 
       <EntityCombobox
-        label="Organization"
+        label={translateSales("organization_d764d")}
         options={orgs}
-        placeholder="Search or add an organization"
-        createLabel={(q) => `Add '${q}' as new organization`}
-        similarWarning="Similar organization already exists."
+        placeholder={translateSales("search_or_add_an_organization_36308")}
+        createLabel={(q) => translateSales("add_arg0_as_new_organization_d5252", { arg0: q })}
+        similarWarning={translateSales("similar_organization_already_exists_260ac")}
         onSelectExisting={(id) => set({ orgMode: "existing", orgId: id })}
         onCreateNew={(name) => set({ orgMode: "new", orgId: "", newOrgName: name })}
         onClear={() => set({ orgMode: "existing", orgId: "", newOrgName: "" })}
@@ -87,42 +92,46 @@ export function AddDealLeftColumn(props: AddDealLeftColumnProps): React.ReactNod
       {state.orgMode === "new" ? organizationCustomFields : null}
 
       <label className="block" htmlFor={titleId}>
-        <span className="mb-1 block font-medium">Title</span>
+        <span className="mb-1 block font-medium">{translateSales("title_7e8cd")}</span>
         <Input
           id={titleId}
-          aria-label="Deal title"
+          aria-label={translateSales("deal_title_95b14")}
           value={state.title}
           onChange={(e) =>
             onTitleChange ? onTitleChange(e.target.value) : set({ title: e.target.value })
           }
-          placeholder="Deal title"
+          placeholder={translateSales("deal_title_95b14")}
           maxLength={TITLE_MAX_LEN}
         />
-        <span className="mt-0.5 block text-right text-xs tabular-nums text-muted-foreground">
+        <span className="mt-0.5 block text-end text-xs tabular-nums text-muted-foreground">
           {state.title.length}/{TITLE_MAX_LEN}
         </span>
       </label>
 
       <div>
-        <span className="mb-1 block font-medium">Value</span>
+        <span className="mb-1 block font-medium">{translateSales("value_8e379")}</span>
         <div className="flex gap-2">
           <Input
-            aria-label="Deal value"
+            aria-label={translateSales("deal_value_9412c")}
             inputMode="decimal"
             value={state.value}
             onChange={(e) => set({ value: e.target.value })}
             placeholder="0"
           />
-          <span className="flex items-center rounded-md border bg-muted px-2.5 text-sm text-muted-foreground">
-            {baseCurrency}
-          </span>
+          <div className="w-44 shrink-0">
+            <CurrencySelect
+              value={props.currency ?? baseCurrency}
+              onChange={props.onCurrencyChange ?? (() => {})}
+            />
+          </div>
         </div>
+        <p className="mt-1 text-xs text-muted-foreground">{translateSales("currencyAmountHint")}</p>
       </div>
 
       <div>
-        <span className="mb-1 block font-medium">Pipeline</span>
+        <span className="mb-1 block font-medium">{translateSales("pipeline_37e1c")}</span>
         <Select
-          ariaLabel="Pipeline"
+          ariaLabel={translateSales("pipeline_37e1c")}
           value={state.pipelineId}
           onChange={(v) => {
             const next = pipelines.find((p) => p.id === v);
@@ -133,7 +142,7 @@ export function AddDealLeftColumn(props: AddDealLeftColumnProps): React.ReactNod
       </div>
 
       <div>
-        <span className="mb-1 block font-medium">Pipeline stage</span>
+        <span className="mb-1 block font-medium">{translateSales("pipeline_stage_8e0c5")}</span>
         <StageChevron
           stages={stages}
           selectedId={state.stageId}
@@ -142,31 +151,33 @@ export function AddDealLeftColumn(props: AddDealLeftColumnProps): React.ReactNod
       </div>
 
       <div className="block">
-        <span className="mb-1 block font-medium">Labels</span>
+        <span className="mb-1 block font-medium">{translateSales("labels_934b8")}</span>
         <LabelField target="deal" value={state.labels} onChange={(labels) => set({ labels })} />
       </div>
 
       <div className="block">
-        <span className="mb-1 block font-medium">Expected close date</span>
+        <span className="mb-1 block font-medium">
+          {translateSales("expected_close_date_af65c")}
+        </span>
         <DatePicker
-          ariaLabel="Expected close date"
+          ariaLabel={translateSales("expected_close_date_af65c")}
           value={state.expectedCloseDate === "" ? null : state.expectedCloseDate}
-          placeholder="Set date"
-          triggerClassName="flex h-8 w-full items-center rounded border border-field-border bg-card px-2 text-left text-sm"
-          formatLabel={formatMediumDate}
+          placeholder={translateSales("set_date_08c6c")}
+          triggerClassName="flex h-8 w-full items-center rounded border border-field-border bg-card px-2 text-start text-sm"
+          formatLabel={format.dateOnly}
           onChange={(v) => set({ expectedCloseDate: v ?? "" })}
         />
       </div>
 
       {owners !== null && (
         <div className="block">
-          <span className="mb-1 block font-medium">Owner</span>
+          <span className="mb-1 block font-medium">{translateSales("owner_4b1b8")}</span>
           <Combobox
-            ariaLabel="Owner"
+            ariaLabel={translateSales("owner_4b1b8")}
             value={state.ownerId}
             onChange={(id) => set({ ownerId: id })}
             options={[
-              { value: "", label: "Me" },
+              { value: "", label: translateSales("computed.me") },
               ...owners.map<ComboboxOption>((u) => ({
                 value: u.id,
                 label: u.name,
@@ -178,43 +189,40 @@ export function AddDealLeftColumn(props: AddDealLeftColumnProps): React.ReactNod
       )}
 
       <div>
-        <span className="mb-1 block font-medium">Source channel</span>
+        <span className="mb-1 block font-medium">{translateSales("source_channel_23f39")}</span>
         <Select
-          ariaLabel="Source channel"
+          ariaLabel={translateSales("source_channel_23f39")}
           value={state.sourceChannel}
           onChange={(v) => set({ sourceChannel: v })}
-          placeholder={NO_CHANNEL_LABEL}
+          placeholder={translateSales("computed.noChannel")}
           options={[
-            { value: "", label: NO_CHANNEL_LABEL },
-            ...SOURCE_CHANNEL_KEYS.map<SelectOption>((k) => ({
-              value: k,
-              label: SOURCE_CHANNELS[k].name,
-            })),
+            { value: "", label: translateSales("computed.noChannel") },
+            ...sourceChannelOptions(locale),
           ]}
         />
       </div>
 
       <label className="block" htmlFor={sourceChannelIdId}>
-        <span className="mb-1 block font-medium">Source channel ID</span>
+        <span className="mb-1 block font-medium">{translateSales("source_channel_id_65b0c")}</span>
         <Input
           id={sourceChannelIdId}
-          aria-label="Source channel ID"
+          aria-label={translateSales("source_channel_id_65b0c")}
           value={state.sourceChannelId}
           onChange={(e) => set({ sourceChannelId: e.target.value })}
-          placeholder="Reference / campaign id"
+          placeholder={translateSales("reference_campaign_id_929b6")}
         />
       </label>
 
       {groups !== null && (
         <div className="block">
-          <span className="mb-1 block font-medium">Visible to</span>
+          <span className="mb-1 block font-medium">{translateSales("visible_to_eee20")}</span>
           <Select
-            ariaLabel="Visible to"
+            ariaLabel={translateSales("visible_to_eee20")}
             value={state.visibilityGroupId}
             onChange={(v) => set({ visibilityGroupId: v })}
-            placeholder={DEFAULT_VISIBILITY_LABEL}
+            placeholder={translateSales("computed.defaultVisibility")}
             options={[
-              { value: "", label: DEFAULT_VISIBILITY_LABEL },
+              { value: "", label: translateSales("computed.defaultVisibility") },
               ...groups.map<SelectOption>((g) => ({ value: g.id, label: g.name })),
             ]}
           />

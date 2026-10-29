@@ -4,9 +4,11 @@
 // Windows on won_time (see dealPerformance for why), and applies dealVisibilityClause.
 import { sql } from "drizzle-orm";
 import type { Db } from "@/db/client";
+import { reportCurrencyClause } from "@/features/currencies/reportCurrency";
 import { dealVisibilityClause } from "@/features/deals/visibility";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { ownerFilterClause } from "@/features/stats/ownerIds";
+import { canonicalMoney } from "@/lib/canonicalMoney";
 import type { DashboardFilters, WonDealStats } from "@/types/stats";
 
 function toSession(actor: PermSetUser) {
@@ -35,6 +37,7 @@ export async function wonDealStats(
 ): Promise<WonDealStats> {
   signal.throwIfAborted();
 
+  const currencyClause = await reportCurrencyClause(db, filters.currency, signal);
   const visClause = dealVisibilityClause(toSession(actor));
   const ownerClause = ownerFilterClause(sql`d.owner_id`, filters.owners);
   const pipelineClause =
@@ -44,8 +47,11 @@ export async function wonDealStats(
   // "no deals won" must not render as an average of zero.
   const result = await db.execute(sql`
     SELECT
-      avg(d.value)::numeric(14,2)::text AS "avgValue",
-      percentile_cont(0.5) WITHIN GROUP (ORDER BY d.value)::numeric(14,2)::text AS "medianValue",
+      avg(d.value)::numeric(18,4)::text AS "avgValue",
+      (
+        ((array_agg(d.value ORDER BY d.value) FILTER (WHERE d.value IS NOT NULL))[(count(d.value) + 1) / 2]
+        + (array_agg(d.value ORDER BY d.value) FILTER (WHERE d.value IS NOT NULL))[(count(d.value) + 2) / 2]) / 2
+      )::numeric(18,4)::text AS "medianValue",
       (avg(extract(epoch FROM (d.won_time - d.created_at)) / 86400)
         FILTER (WHERE d.won_time >= d.created_at))::float8 AS "avgCycleDays",
       (percentile_cont(0.5) WITHIN GROUP (
@@ -61,6 +67,7 @@ export async function wonDealStats(
       AND d.won_time < ${filters.to}::date + INTERVAL '1 day'
       ${pipelineClause}
       ${ownerClause}
+      ${currencyClause}
       AND ${visClause}
   `);
 
@@ -68,8 +75,8 @@ export async function wonDealStats(
 
   const row = (result as unknown as { rows: Row[] }).rows[0];
   return {
-    avgValue: row?.avgValue ?? null,
-    medianValue: row?.medianValue ?? null,
+    avgValue: row?.avgValue == null ? null : canonicalMoney(row.avgValue),
+    medianValue: row?.medianValue == null ? null : canonicalMoney(row.medianValue),
     avgCycleDays: row?.avgCycleDays ?? null,
     medianCycleDays: row?.medianCycleDays ?? null,
   };

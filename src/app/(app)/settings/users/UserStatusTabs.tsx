@@ -1,14 +1,9 @@
 "use client";
+
 import type React from "react";
 import { Button } from "@/components/ui/Button";
+import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import type { UserStatusFilter } from "./userStatus";
-
-const TABS: { key: UserStatusFilter; label: string }[] = [
-  { key: "all", label: "All" },
-  { key: "active", label: "Active" },
-  { key: "invited", label: "Invited" },
-  { key: "deactivated", label: "Deactivated" },
-];
 
 // Status filter tabs for the Manage users table (S-U3).
 export function UserStatusTabs({
@@ -18,9 +13,18 @@ export function UserStatusTabs({
   value: UserStatusFilter;
   onChange: (status: UserStatusFilter) => void;
 }): React.ReactNode {
+  const L = useSettingsMessages();
+
+  const TABS: { key: UserStatusFilter; label: string }[] = [
+    { key: "all", label: L._extra.all },
+    { key: "active", label: L._extra.active },
+    { key: "invited", label: L._extra.invited },
+    { key: "deactivated", label: L._extra.deactivated },
+  ];
+
   return (
     <fieldset
-      aria-label="User status filter"
+      aria-label={L._extra.user_status_filter}
       className="flex min-w-0 items-center gap-1 border-0 p-0"
     >
       {TABS.map((tab) => (

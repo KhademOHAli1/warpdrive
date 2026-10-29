@@ -1,11 +1,14 @@
 import { redirect } from "next/navigation";
-import { STRINGS } from "@/constants/strings";
+import { getEmailMessages } from "@/features/email/emailMessages.server";
 import type { RouterOutputs } from "@/lib/trpc-client";
 import { createContext } from "@/server/trpc/context";
 import { createCaller } from "@/server/trpc/root";
 import { InboxThreadClient } from "./InboxThreadClient";
 
-export const metadata = { title: STRINGS.inbox.title };
+export async function generateMetadata() {
+  const E = await getEmailMessages();
+  return { title: E.title };
+}
 
 export default async function InboxThreadPage({
   params,

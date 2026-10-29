@@ -1,9 +1,14 @@
 "use client";
 import type * as React from "react";
 import { createContext, useContext, useId } from "react";
-import { ResponsiveContainer, Tooltip } from "recharts";
+import type { ResponsiveContainer } from "recharts";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
+import { useFormatters } from "@/lib/useFormatters";
 import { cn } from "@/lib/utils";
+import {
+  ChartContainer as ShadcnChartContainer,
+  ChartTooltip as Tooltip,
+} from "./primitives/chart";
 
 // SANCTIONED recharts wrapper (shadcn `chart`). Feature code composes recharts marks inside
 // ChartContainer and never imports ResponsiveContainer or Tooltip directly.
@@ -65,7 +70,9 @@ export function ChartContainer({
         )}
         {...rest}
       >
-        <ResponsiveContainer>{children}</ResponsiveContainer>
+        <ShadcnChartContainer config={config} className="aspect-auto size-full">
+          {children}
+        </ShadcnChartContainer>
       </div>
     </ChartContext.Provider>
   );
@@ -104,6 +111,7 @@ export function ChartTooltipContent({
   labelFormatter,
 }: ChartTooltipContentProps): React.ReactNode {
   const config = useChartConfig();
+  const format = useFormatters();
   if (active !== true || payload === undefined || payload.length === 0) return null;
   return (
     <div className="rounded-md border bg-popover px-2 py-1.5 text-xs text-popover-foreground shadow-md">
@@ -119,8 +127,9 @@ export function ChartTooltipContent({
               style={{ backgroundColor: series?.color ?? item.color }}
             />
             <span className="text-muted-foreground">{series?.label ?? key}</span>
-            <span className="ml-auto font-medium">
-              {formatValue?.(item.value, key, item.payload) ?? item.value}
+            <span className="ms-auto font-medium">
+              {formatValue?.(item.value, key, item.payload) ??
+                (typeof item.value === "number" ? format.number(item.value) : item.value)}
             </span>
           </p>
         );

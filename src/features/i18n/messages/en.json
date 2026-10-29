@@ -1,0 +1,59 @@
+{
+  "nav": {
+    "pipeline": "Pipeline",
+    "leads": "Leads",
+    "deals": "Deals",
+    "contacts": "Contacts",
+    "people": "People",
+    "orgs": "Organizations",
+    "contactsTimeline": "Timeline",
+    "activities": "Activities",
+    "inbox": "Inbox",
+    "dashboard": "Performance",
+    "settings": "Settings",
+    "docs": "Docs"
+  },
+  "auth": {
+    "signInWithGoogle": "Sign in with Google",
+    "loginTitle": "Sign in to Warpdrive",
+    "domainOnly": "Use your company Google Workspace account."
+  },
+  "account": {
+    "menu": "Account menu",
+    "heading": "My account",
+    "settings": "Settings",
+    "logout": "Log out"
+  },
+  "navigation": {
+    "primary": "Primary",
+    "collapse": "Collapse sidebar",
+    "expand": "Expand sidebar",
+    "collapseShort": "Collapse"
+  },
+  "language": {
+    "switchTo": "فارسی",
+    "switchLabel": "Switch language to Persian"
+  },
+  "datePicker": {
+    "selectDate": "Select date",
+    "clear": "Clear",
+    "usePersianCalendar": "Use Solar Hijri calendar",
+    "useGregorianCalendar": "Use Gregorian calendar"
+  },
+  "preferences": {
+    "saveError": "Your language and regional preferences could not be saved. Please try again.",
+    "saving": "Saving language and regional preferences...",
+    "language": "Language",
+    "calendar": "Calendar",
+    "timeZone": "Time zone",
+    "persianCalendar": "Solar Hijri",
+    "gregorianCalendar": "Gregorian",
+    "settingsTitle": "Language and numbers",
+    "settingsDescription": "Choose the interface language. Number display can be changed when using Persian.",
+    "numberDisplay": "Number display",
+    "persianNumbers": "Persian digits (۱۲۳)",
+    "englishNumbers": "English digits (123)",
+    "numberHelp": "This changes how numbers and dates are displayed. Saved values stay the same.",
+    "numberPreview": "Preview: {value, number}"
+  }
+}

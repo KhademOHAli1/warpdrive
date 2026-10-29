@@ -1,24 +1,13 @@
 "use client";
 import { useRouter } from "next/navigation";
-import type { SelectOption } from "@/components/ui/Select";
-import {
-  isSourceChannelKey,
-  SOURCE_CHANNELS,
-  type SourceChannelKey,
-} from "@/constants/sourceChannels";
+import { sourceChannelOptions } from "@/constants/sourceChannelLabels";
+import { isSourceChannelKey, type SourceChannelKey } from "@/constants/sourceChannels";
 import { updateDealAction } from "@/features/deals/updateAction";
+import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
 import { InlineSelectField } from "@/features/inline-edit/InlineSelectField";
 import { err, ok, type Result } from "@/types/result";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { FieldRow } from "./FieldRow";
-
-const SOURCE_CHANNEL_OPTIONS: SelectOption[] = [
-  { value: "", label: "None" },
-  ...Object.entries(SOURCE_CHANNELS).map(([value, channel]) => ({
-    value,
-    label: channel.name,
-  })),
-];
 
 interface SourceChannelFieldProps {
   dealId: string;
@@ -27,6 +16,9 @@ interface SourceChannelFieldProps {
 }
 
 export function SourceChannelField({ dealId, updatedAt, sourceChannel }: SourceChannelFieldProps) {
+  const translateSales = useAppTranslations("sales");
+  const locale = useLocale();
+
   const router = useRouter();
   const expectedUpdatedAt = new Date(updatedAt).toISOString();
   const channelValue =
@@ -43,11 +35,14 @@ export function SourceChannelField({ dealId, updatedAt, sourceChannel }: SourceC
   }
 
   return (
-    <FieldRow label="Channel">
+    <FieldRow label={translateSales("channel_ce468")}>
       <InlineSelectField
-        label="Channel"
+        label={translateSales("channel_ce468")}
         value={channelValue}
-        options={SOURCE_CHANNEL_OPTIONS}
+        options={[
+          { value: "", label: translateSales("computed.none") },
+          ...sourceChannelOptions(locale),
+        ]}
         onSave={save}
       />
     </FieldRow>

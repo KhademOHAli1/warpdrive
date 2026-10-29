@@ -25,6 +25,7 @@ import {
 } from "@/features/collaboration/actions";
 import { LinkifiedText } from "@/features/collaboration/LinkifiedText";
 import { useDealActionError } from "@/features/deal-workspace/DealActionErrorProvider";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { AttributionLine } from "./AttributionLine";
 import { NoteComments } from "./NoteComments";
@@ -52,6 +53,8 @@ export function NoteCard({
   entityType?: CommentableEntityType;
   entityId?: string;
 }): React.ReactNode {
+  const translateSales = useAppTranslations("sales");
+
   const [isPinned, setPinned] = useState(pinned);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(body);
@@ -108,7 +111,7 @@ export function NoteCard({
       {editing ? (
         <div>
           <textarea
-            aria-label="Note"
+            aria-label={translateSales("note_d8da2")}
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
             rows={3}
@@ -123,7 +126,7 @@ export function NoteCard({
               }}
               className="rounded-md border px-3 py-1.5 text-sm transition-transform hover:bg-accent active:scale-[0.96]"
             >
-              Cancel
+              {translateSales("cancel_19766")}
             </button>
             <button
               type="button"
@@ -131,7 +134,7 @@ export function NoteCard({
               onClick={() => void save()}
               className="rounded-md bg-action px-3 py-1.5 text-sm font-medium text-action-foreground transition-transform hover:opacity-90 active:scale-[0.96] disabled:opacity-50"
             >
-              Save
+              {translateSales("save_1509f")}
             </button>
           </div>
         </div>
@@ -145,7 +148,9 @@ export function NoteCard({
           </div>
           <button
             type="button"
-            aria-label={isPinned ? "Unpin note" : "Pin note"}
+            aria-label={
+              isPinned ? translateSales("unpin_note_0f6ed") : translateSales("pin_note_95331")
+            }
             aria-pressed={isPinned}
             disabled={busy}
             onClick={() => void togglePin()}
@@ -159,18 +164,24 @@ export function NoteCard({
           </button>
           <DropdownMenu>
             <DropdownMenuTrigger
-              aria-label="More actions"
+              aria-label={translateSales("more_actions_f8d46")}
               className="relative shrink-0 rounded p-1 text-muted-foreground after:absolute after:-inset-2 after:content-[''] hover:bg-accent hover:text-foreground"
             >
               <Ellipsis aria-hidden="true" className="h-4 w-4" />
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" aria-label="More actions" className="min-w-40">
-              <DropdownMenuItem onSelect={() => setEditing(true)}>Edit</DropdownMenuItem>
+            <DropdownMenuContent
+              align="end"
+              aria-label={translateSales("more_actions_f8d46")}
+              className="min-w-40"
+            >
+              <DropdownMenuItem onSelect={() => setEditing(true)}>
+                {translateSales("edit_464c4")}
+              </DropdownMenuItem>
               <DropdownMenuItem
                 onSelect={() => setConfirmOpen(true)}
                 className="text-destructive focus:text-destructive"
               >
-                Delete
+                {translateSales("delete_e2d0a")}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -189,8 +200,10 @@ export function NoteCard({
       <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete note?</DialogTitle>
-            <DialogDescription>This action cannot be undone.</DialogDescription>
+            <DialogTitle>{translateSales("delete_note_eecf9")}</DialogTitle>
+            <DialogDescription>
+              {translateSales("this_action_cannot_be_undone_3d6a4")}
+            </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <DialogClose asChild>
@@ -198,7 +211,7 @@ export function NoteCard({
                 type="button"
                 className="rounded-md border px-3 py-1.5 text-sm transition-transform hover:bg-accent active:scale-[0.96]"
               >
-                Cancel
+                {translateSales("cancel_19766")}
               </button>
             </DialogClose>
             <button
@@ -207,7 +220,7 @@ export function NoteCard({
               onClick={() => void confirmDelete()}
               className="rounded-md bg-destructive px-3 py-1.5 text-sm font-medium text-destructive-foreground transition-transform hover:opacity-90 active:scale-[0.96] disabled:opacity-50"
             >
-              Delete
+              {translateSales("delete_e2d0a")}
             </button>
           </DialogFooter>
         </DialogContent>

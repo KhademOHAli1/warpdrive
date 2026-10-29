@@ -3,14 +3,12 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { SETTINGS_STRINGS } from "@/constants/settingsStrings";
 import type { Goal } from "@/db/schema/goals";
 import { createGoalAction, updateGoalAction } from "@/features/goals/actions";
+import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { type GoalDraft, GoalForm, type Option } from "./GoalForm";
 import { GoalsTable } from "./GoalsTable";
-
-const S = SETTINGS_STRINGS;
 
 export function GoalsClient({
   goals,
@@ -18,13 +16,18 @@ export function GoalsClient({
   teams,
   pipelines,
   activityTypes,
+  baseCurrency,
 }: {
   goals: Goal[];
   users: Option[];
   teams: Option[];
   pipelines: Option[];
   activityTypes: Option[];
+  baseCurrency?: string;
 }): React.ReactElement {
+  const L = useSettingsMessages();
+  const S = L;
+
   const router = useRouter();
   const refresh = () => router.refresh();
   const [editing, setEditing] = useState<Goal | null>(null);
@@ -47,6 +50,7 @@ export function GoalsClient({
   return (
     <>
       <GoalForm
+        baseCurrency={baseCurrency}
         users={users}
         teams={teams}
         pipelines={pipelines}
@@ -75,6 +79,7 @@ export function GoalsClient({
           </DialogHeader>
           {editing !== null && (
             <GoalForm
+              baseCurrency={baseCurrency}
               users={users}
               teams={teams}
               pipelines={pipelines}

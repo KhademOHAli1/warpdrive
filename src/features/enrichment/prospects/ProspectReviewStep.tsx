@@ -3,12 +3,10 @@
 import type React from "react";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { ENRICHMENT_STRINGS } from "@/constants/enrichmentStrings";
 import type { Selection } from "../types";
+import { useEnrichmentMessages } from "../useEnrichmentMessages";
 import { type FieldPick, ProspectReviewRow } from "./ProspectReviewRow";
 import type { RevealedProspect, RevealFailure } from "./revealContract";
-
-const S = ENRICHMENT_STRINGS.prospects;
 
 export type ItemOutcome = "pending" | "created" | "updated" | { errorId: string };
 
@@ -78,6 +76,8 @@ export function ProspectReviewStep({
   error: string | null;
   onApply: (submissions: ReviewSubmission[]) => void;
 }): React.ReactNode {
+  const E = useEnrichmentMessages();
+  const S = E.prospects;
   const [picks, setPicks] = useState<Picks>(() => initialPicks(revealed));
   const [checked, setChecked] = useState<Set<string>>(() => initialChecked(revealed));
 

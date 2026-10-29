@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import type React from "react";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 
 export interface Crumb {
   label: string;
@@ -21,10 +24,11 @@ export function PageHeading({
   description?: React.ReactNode;
   actions?: React.ReactNode;
 }): React.ReactNode {
+  const t = useAppTranslations("utilities");
   return (
     <div className="mb-4">
       {crumbs !== undefined && crumbs.length > 0 ? (
-        <nav aria-label="Breadcrumb" className="mb-1">
+        <nav aria-label={t("breadcrumb")} className="mb-1">
           <ol className="flex flex-wrap items-center gap-1 text-sm text-muted-foreground">
             {crumbs.map((crumb, i) => {
               const isLast = i === crumbs.length - 1;
@@ -40,11 +44,11 @@ export function PageHeading({
                   ) : null}
                   {crumb.href !== undefined && !isLast ? (
                     <Link href={crumb.href} className="hover:text-foreground">
-                      {crumb.label}
+                      <bdi dir="auto">{crumb.label}</bdi>
                     </Link>
                   ) : (
                     <span aria-current={isLast ? "page" : undefined} className="text-foreground">
-                      {crumb.label}
+                      <bdi dir="auto">{crumb.label}</bdi>
                     </span>
                   )}
                 </li>
@@ -55,7 +59,9 @@ export function PageHeading({
       ) : null}
       <div className="flex items-center justify-between gap-3">
         {/* Inter is a vendored variable font, so the 450 weight (lighter than semibold) resolves. */}
-        <h1 className="text-display font-[450] leading-tight tracking-tight">{title}</h1>
+        <h1 className="text-display font-[450] leading-tight tracking-tight">
+          <bdi dir="auto">{title}</bdi>
+        </h1>
         {actions}
       </div>
       {description !== undefined ? (

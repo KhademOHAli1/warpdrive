@@ -1,25 +1,19 @@
+import { addCivilDays, civilDateRange, instantCivilDate } from "@/lib/zonedDateTime";
 // URL-driven view model for the calendar: parse { view, d } at the boundary
 // (invalid values fall back to defaults, never throw), pick the day window + DB
-// range for the active view, and step the anchor for prev/next. All UTC.
-import { addDaysUtc, addMonthsUtc, endOfDayUtc, monthGridDays, monthGridRange } from "./monthGrid";
-import { weekDays } from "./weekGrid";
+// range for the active view, and step the anchor for prev/next. Grid Date values are UTC
+// civil-date containers; fetched timestamp bounds use the explicit account timezone.
+import {
+  addCalendarMonths,
+  type CalendarOptions,
+  calendarDateParts,
+  formatCalendarDate,
+  startOfCalendarMonth,
+  startOfCalendarWeek,
+} from "./calendarSystem";
+import { addDaysUtc } from "./monthGrid";
 
 export type CalendarViewName = "week" | "month";
-
-const MONTH_NAMES = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-] as const;
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -38,47 +32,74 @@ export function anchorDate(anchorIso: string): Date {
 export function parseCalendarParams(
   raw: { view?: string; d?: string },
   today: Date = new Date(),
+  timeZone = "UTC",
 ): { view: CalendarViewName; anchorIso: string } {
   const view: CalendarViewName = raw.view === "month" ? "month" : "week";
   const anchorIso =
-    raw.d !== undefined && isValidIsoDate(raw.d) ? raw.d : today.toISOString().slice(0, 10);
+    raw.d !== undefined && isValidIsoDate(raw.d) ? raw.d : instantCivilDate(today, timeZone);
   return { view, anchorIso };
 }
 
 export function selectWindow(
   view: CalendarViewName,
   anchorIso: string,
+  options: CalendarOptions & { timeZone?: string } = {},
 ): { days: Date[]; range: { from: Date; to: Date } } {
   const anchor = anchorDate(anchorIso);
   if (view === "month") {
-    return { days: monthGridDays(anchor), range: monthGridRange(anchor) };
+    const start = startOfCalendarWeek(startOfCalendarMonth(anchor, options), options);
+    const days = Array.from({ length: 42 }, (_, i) => addDaysUtc(start, i));
+    return {
+      days,
+      range: civilDateRange(
+        start.toISOString().slice(0, 10),
+        addDaysUtc(start, 42).toISOString().slice(0, 10),
+        options.timeZone,
+      ),
+    };
   }
-  const days = weekDays(anchor);
+  const start = startOfCalendarWeek(anchor, options);
+  const days = Array.from({ length: 7 }, (_, i) => addDaysUtc(start, i));
   const first = days[0] ?? anchor;
-  const last = addDaysUtc(first, 6);
-  // The week grid buckets by the VIEWER'S local day (weekAgenda.groupByLocalDay), so the fetched
-  // range has to cover the local week, not the UTC one. One day of slack either side spans every
-  // real offset (UTC-12 to UTC+14); groupByLocalDay drops whatever falls outside the seven columns.
-  return { days, range: { from: addDaysUtc(first, -1), to: endOfDayUtc(addDaysUtc(last, 1)) } };
+  return {
+    days,
+    range: civilDateRange(
+      first.toISOString().slice(0, 10),
+      addCivilDays(first.toISOString().slice(0, 10), 7),
+      options.timeZone,
+    ),
+  };
 }
 
-export function stepAnchorIso(view: CalendarViewName, anchorIso: string, dir: 1 | -1): string {
+export function stepAnchorIso(
+  view: CalendarViewName,
+  anchorIso: string,
+  dir: 1 | -1,
+  options: CalendarOptions = {},
+): string {
   const anchor = anchorDate(anchorIso);
-  const next = view === "month" ? addMonthsUtc(anchor, dir) : addDaysUtc(anchor, 7 * dir);
+  const next =
+    view === "month" ? addCalendarMonths(anchor, dir, options) : addDaysUtc(anchor, 7 * dir);
   return next.toISOString().slice(0, 10);
 }
 
-export function monthTitle(anchorIso: string): string {
+export function monthTitle(anchorIso: string, options: CalendarOptions = {}): string {
   const d = anchorDate(anchorIso);
-  return `${MONTH_NAMES[d.getUTCMonth()] ?? ""} ${d.getUTCFullYear()}`;
+  if (options.locale === "fa") {
+    const parts = calendarDateParts(d, options, {
+      month: "long",
+      year: "numeric",
+    });
+    return `${parts.find((part) => part.type === "month")?.value ?? ""} ${parts.find((part) => part.type === "year")?.value ?? ""}`;
+  }
+  return formatCalendarDate(d, options, { month: "long", year: "numeric" });
 }
 
 // Week header title: abbreviated month, day, and year (e.g. "Jun 15, 2026") so paging across
 // a month or year boundary stays oriented (the old label dropped the month and year).
-export function weekTitle(dayIso: string): string {
+export function weekTitle(dayIso: string, options: CalendarOptions = {}): string {
   const d = anchorDate(dayIso);
-  const month = (MONTH_NAMES[d.getUTCMonth()] ?? "").slice(0, 3);
-  return `${month} ${d.getUTCDate()}, ${d.getUTCFullYear()}`;
+  return formatCalendarDate(d, options, { month: "short", day: "numeric", year: "numeric" });
 }
 
 // Single source of truth for the calendar route + its query contract (view, d). Producer of

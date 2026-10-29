@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { useEmailMessages } from "@/features/email/useEmailMessages";
 import { RecipientField } from "./RecipientField";
 
 interface RecipientsRowProps {
@@ -19,6 +20,8 @@ export function RecipientsRow({
   bcc,
   onBccChange,
 }: RecipientsRowProps): React.ReactNode {
+  const E = useEmailMessages();
+
   const [showCcBcc, setShowCcBcc] = useState(false);
   // Addresses already entered force the rows to stay visible: collapsing them would hide
   // recipients that Send still delivers to. The toggle is therefore only offered while both
@@ -30,24 +33,24 @@ export function RecipientsRow({
     <div className="flex flex-col">
       <div className="flex items-center">
         <div className="flex-1">
-          <RecipientField label="To" values={to} onChange={onToChange} />
+          <RecipientField label={E._extra.to_ae79e} values={to} onChange={onToChange} />
         </div>
         {!hasAddresses && (
           <button
             type="button"
-            aria-label="Cc/Bcc"
+            aria-label={E._extra.cc_bcc}
             aria-expanded={expanded}
             onClick={() => setShowCcBcc((v) => !v)}
-            className="ml-2 shrink-0 rounded px-2 py-1 text-xs text-muted-foreground transition-[transform,color,background-color] hover:bg-accent hover:text-foreground active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="ms-2 shrink-0 rounded px-2 py-1 text-xs text-muted-foreground transition-[transform,color,background-color] hover:bg-accent hover:text-foreground active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            Cc/Bcc
+            {E._extra.cc_bcc}
           </button>
         )}
       </div>
       {expanded && (
         <>
-          <RecipientField label="Cc" values={cc} onChange={onCcChange} />
-          <RecipientField label="Bcc" values={bcc} onChange={onBccChange} />
+          <RecipientField label={E._extra.cc} values={cc} onChange={onCcChange} />
+          <RecipientField label={E._extra.bcc} values={bcc} onChange={onBccChange} />
         </>
       )}
     </div>

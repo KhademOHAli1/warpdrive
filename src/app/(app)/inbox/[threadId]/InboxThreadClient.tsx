@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ThreadPane } from "@/features/email/ThreadPane";
+import { useEmailMessages } from "@/features/email/useEmailMessages";
 import { useInboxRealtime } from "@/features/email/useInboxRealtime";
 import type { RouterOutputs } from "@/lib/trpc-client";
 
@@ -17,6 +18,8 @@ export function InboxThreadClient({
   selfActorId,
   initialThread,
 }: InboxThreadClientProps): React.ReactNode {
+  const E = useEmailMessages();
+
   const [trackingBadge, setTrackingBadge] = useState<{ kind: "open" | "click" } | null>(null);
 
   useInboxRealtime({
@@ -26,7 +29,7 @@ export function InboxThreadClient({
   });
 
   return (
-    <main aria-label="Thread" className="h-full">
+    <main aria-label={E._extra.thread} className="h-full">
       <ThreadPane threadId={threadId} trackingBadge={trackingBadge} initialThread={initialThread} />
     </main>
   );

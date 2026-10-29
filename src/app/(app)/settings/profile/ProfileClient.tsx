@@ -7,10 +7,10 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/RadioGroup";
 import { Select, type SelectOption } from "@/components/ui/Select";
-import { STRINGS } from "@/constants/strings";
 import { AvatarUpload } from "@/features/identity/avatar/AvatarUpload";
 import { updateProfilePreferencesAction } from "@/features/identity/preferencesActions";
 import { updateUserProfileAction } from "@/features/identity/profileActions";
+import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import {
   SettingsCard,
@@ -37,17 +37,20 @@ const TIMEZONES = [
   "Europe/London",
   "Europe/Berlin",
   "Europe/Kyiv",
+  "Asia/Tehran",
   "Asia/Singapore",
   "Asia/Tokyo",
   "Australia/Sydney",
 ];
 const TIMEZONE_NONE_VALUE = "timezone:none";
-const TIMEZONE_OPTIONS: SelectOption[] = [
-  { value: TIMEZONE_NONE_VALUE, label: STRINGS.settings.timezoneNone },
-  ...TIMEZONES.map((tz) => ({ value: tz, label: tz })),
-];
 
 export function ProfileClient(props: ProfileClientProps): React.ReactNode {
+  const L = useSettingsMessages();
+  const TIMEZONE_OPTIONS: SelectOption[] = [
+    { value: TIMEZONE_NONE_VALUE, label: L.timezoneNone },
+    ...TIMEZONES.map((tz) => ({ value: tz, label: tz })),
+  ];
+
   const router = useRouter();
   const reportError = useActionError();
   const [timezone, setTimezone] = useState<string>(props.timezone ?? "");
@@ -92,14 +95,14 @@ export function ProfileClient(props: ProfileClientProps): React.ReactNode {
   return (
     <SettingsCard>
       <SettingsCardHeader
-        title="Account details"
-        description="Update your photo, display name, timezone, and interface density."
+        title={L._extra.account_details}
+        description={L._extra.update_your_photo_display_name_timezone_and_interface_dens}
       />
       <SettingsCardBody className="space-y-5">
         <AvatarUpload name={props.name} avatarUrl={props.avatarUrl} />
         <div>
           <label htmlFor={nameFieldId} className="mb-1 block text-sm font-medium">
-            {STRINGS.settings.name}
+            {L.name}
           </label>
           <Input
             id={nameFieldId}
@@ -108,7 +111,7 @@ export function ProfileClient(props: ProfileClientProps): React.ReactNode {
           />
           {nameError !== null && (
             <p role="alert" className="mt-1 text-xs text-destructive">
-              {`Could not save name (${nameError})`}
+              {L._extra.nameSaveError(nameError)}
             </p>
           )}
           <div className="mt-2 flex items-center gap-3">
@@ -119,42 +122,40 @@ export function ProfileClient(props: ProfileClientProps): React.ReactNode {
               disabled={nameSaving}
               onClick={() => void saveName()}
             >
-              {STRINGS.settings.saveName}
+              {L.saveName}
             </Button>
-            {nameSaved && (
-              <span className="text-sm text-muted-foreground">{STRINGS.settings.saved}</span>
-            )}
+            {nameSaved && <span className="text-sm text-muted-foreground">{L.saved}</span>}
           </div>
         </div>
         <div>
-          <span className="mb-1 block text-sm font-medium">{STRINGS.settings.email}</span>
+          <span className="mb-1 block text-sm font-medium">{L.email}</span>
           <p className="text-sm text-muted-foreground">{props.email || "-"}</p>
         </div>
 
         <div className="block">
-          <span className="mb-1 block text-sm font-medium">{STRINGS.settings.timezone}</span>
+          <span className="mb-1 block text-sm font-medium">{L.timezone}</span>
           <Select
-            ariaLabel={STRINGS.settings.timezone}
+            ariaLabel={L.timezone}
             value={timezone}
             onChange={(value) => setTimezone(value === TIMEZONE_NONE_VALUE ? "" : value)}
-            placeholder={STRINGS.settings.timezoneNone}
+            placeholder={L.timezoneNone}
             options={TIMEZONE_OPTIONS}
           />
         </div>
 
         <fieldset>
-          <legend className="mb-1 block text-sm font-medium">{STRINGS.settings.density}</legend>
+          <legend className="mb-1 block text-sm font-medium">{L.density}</legend>
           <RadioGroup
             value={density}
             onValueChange={(v) => setDensity(v as "comfortable" | "compact")}
-            aria-label={STRINGS.settings.density}
+            aria-label={L.density}
             className="flex gap-4 text-sm"
           >
             {(["comfortable", "compact"] as const).map((d) => (
               <div key={d} className="flex items-center gap-1.5">
                 <RadioGroupItem value={d} id={`density-${d}`} />
                 <label htmlFor={`density-${d}`} className="cursor-pointer">
-                  {d === "comfortable" ? STRINGS.settings.comfortable : STRINGS.settings.compact}
+                  {d === "comfortable" ? L.comfortable : L.compact}
                 </label>
               </div>
             ))}
@@ -162,9 +163,7 @@ export function ProfileClient(props: ProfileClientProps): React.ReactNode {
         </fieldset>
       </SettingsCardBody>
       <SettingsCardFooter>
-        {saved ? (
-          <span className="mr-auto text-sm text-muted-foreground">{STRINGS.settings.saved}</span>
-        ) : null}
+        {saved ? <span className="mr-auto text-sm text-muted-foreground">{L.saved}</span> : null}
         <Button
           type="button"
           variant="default"
@@ -173,7 +172,7 @@ export function ProfileClient(props: ProfileClientProps): React.ReactNode {
           disabled={pending}
           onClick={() => void save()}
         >
-          {STRINGS.settings.save}
+          {L.save}
         </Button>
       </SettingsCardFooter>
     </SettingsCard>

@@ -6,12 +6,13 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { MultiCombobox } from "@/components/ui/MultiCombobox";
 import { Select } from "@/components/ui/Select";
-import { IDENTITY_SETTINGS_STRINGS, identityErrorMessage } from "@/constants/settingsIdentity";
 import {
   deleteTeamAction,
   setTeamMembersAction,
   updateTeamAction,
 } from "@/features/identity/actions/teams";
+import { settingsIdentityError } from "@/features/identity/settingsMessages";
+import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import {
   SettingsCard,
@@ -20,7 +21,6 @@ import {
   SettingsCardHeader,
 } from "../../SettingsSurface";
 
-const T = IDENTITY_SETTINGS_STRINGS.teamEditor;
 const MANAGER_NONE_VALUE = "team:manager:none";
 
 interface Member {
@@ -51,6 +51,11 @@ export function TeamEditClient({
   members,
   assignableUsers,
 }: Props): React.ReactElement {
+  const L = useSettingsMessages();
+  const T = L._identity.teamEditor;
+
+  const identityErrorMessage = (error: string) => settingsIdentityError(L, error);
+
   const router = useRouter();
   const [name, setName] = useState(initialName);
   const [managerId, setManagerId] = useState(initialManagerId ?? "");
@@ -110,12 +115,12 @@ export function TeamEditClient({
 
   return (
     <SettingsCard>
-      <SettingsCardHeader title="Team details" description={T.membersHelp} />
+      <SettingsCardHeader title={L._extra.team_details} description={T.membersHelp} />
       <SettingsCardBody className="space-y-5">
         <div className="flex flex-col gap-1.5">
-          <span className="text-sm font-medium">Team name</span>
+          <span className="text-sm font-medium">{L._extra.team_name}</span>
           <Input
-            aria-label="Team name"
+            aria-label={L._extra.team_name}
             type="text"
             value={name}
             maxLength={80}
@@ -146,7 +151,7 @@ export function TeamEditClient({
             values={memberIds}
             onChange={(v) => !isPending && setMemberIds(v)}
             options={memberOptions}
-            placeholder="Add members"
+            placeholder={L._extra.add_members}
           />
         </div>
 
@@ -165,10 +170,10 @@ export function TeamEditClient({
           onClick={remove}
           className="text-red-600"
         >
-          Delete team
+          {L._extra.delete_team}
         </Button>
         <Button type="button" disabled={isPending} onClick={save}>
-          {isPending ? "Saving..." : "Save changes"}
+          {isPending ? L._extra.saving : L._extra.save_changes}
         </Button>
       </SettingsCardFooter>
     </SettingsCard>

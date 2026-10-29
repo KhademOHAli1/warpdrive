@@ -1,3 +1,6 @@
+"use client";
+import { useEmailMessages } from "@/features/email/useEmailMessages";
+
 // FromPicker: the sender address as it appears in the composer's From row (ComposerHeader owns
 // the row itself). Single-mailbox today, so it renders as plain text, no
 // dropdown caret or button, to avoid implying a mailbox switcher that does not exist yet. When
@@ -8,10 +11,16 @@ interface FromPickerProps {
 }
 
 export function FromPicker({ address }: FromPickerProps): React.ReactNode {
+  const E = useEmailMessages();
+
   return (
     <>
-      <span className="w-12 shrink-0 text-xs font-medium text-muted-foreground">From</span>
-      <span className="text-xs text-foreground">{address}</span>
+      <span className="w-12 shrink-0 text-xs font-medium text-muted-foreground">
+        {E._extra.from}
+      </span>
+      <span className="text-xs text-foreground">
+        <bdi dir="ltr">{address}</bdi>
+      </span>
     </>
   );
 }

@@ -18,9 +18,10 @@ export function buildParticipantOptions(
   orgPeople: ParticipantOption[],
   personId: string | null,
   personName: string | undefined,
+  fallback = DEAL_CONTACT_FALLBACK,
 ): ParticipantOption[] {
   const dealPerson: ParticipantOption[] =
-    personId !== null ? [{ id: personId, name: personName ?? DEAL_CONTACT_FALLBACK }] : [];
+    personId !== null ? [{ id: personId, name: personName ?? fallback }] : [];
 
   const seen = new Set<string>();
   return [...dealPerson, ...orgPeople].filter((p) => {

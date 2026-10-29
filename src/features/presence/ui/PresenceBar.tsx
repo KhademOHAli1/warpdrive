@@ -1,6 +1,7 @@
 "use client";
 
 import { Tip } from "@/components/ui/tooltip";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import type { PresenceUser } from "@/types/presence";
 import { usePresence } from "./usePresence";
 
@@ -12,12 +13,13 @@ interface PresenceAvatarsProps {
 // Pure presentational component: renders initials avatars for all users except
 // the viewer (selfId), collapsing overflow past 3 into a "+N" badge.
 export function PresenceAvatars({ users, selfId }: PresenceAvatarsProps): React.ReactNode {
+  const t = useAppTranslations("utilities.presence");
   const others = users.filter((u) => u.userId !== selfId);
   const shown = others.slice(0, 3);
   const overflow = others.length - shown.length;
 
   return (
-    <div className="flex items-center -space-x-2">
+    <div className="flex items-center [&>*+*]:-ms-2">
       {shown.map((u) => (
         <Tip key={u.userId} label={u.name}>
           <span
@@ -25,13 +27,17 @@ export function PresenceAvatars({ users, selfId }: PresenceAvatarsProps): React.
             aria-label={u.name}
             className="grid size-6 place-items-center rounded-full border bg-muted text-xs font-medium text-foreground"
           >
-            {u.name.slice(0, 1).toUpperCase()}
+            <bdi dir="auto">{u.name.slice(0, 1).toUpperCase()}</bdi>
           </span>
         </Tip>
       ))}
       {overflow > 0 ? (
-        <span className="grid size-6 place-items-center rounded-full border bg-muted text-xs font-medium text-muted-foreground tabular-nums">
-          +{overflow}
+        <span
+          role="img"
+          aria-label={t("more", { count: overflow })}
+          className="grid size-6 place-items-center rounded-full border bg-muted text-xs font-medium text-muted-foreground tabular-nums"
+        >
+          <bdi dir="ltr">{t("overflow", { count: overflow })}</bdi>
         </span>
       ) : null}
     </div>

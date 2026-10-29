@@ -5,6 +5,10 @@ import { describe, expect, it, vi } from "vitest";
 import { Button, buttonVariants } from "./Button";
 
 describe("Button", () => {
+  it("keeps a ghost button unfilled when delegating to the registry component", () => {
+    render(<Button variant="ghost">Calendar action</Button>);
+    expect(screen.getByRole("button", { name: "Calendar action" })).not.toHaveClass("bg-primary");
+  });
   it("defaults to type=button and fires onClick", () => {
     const onClick = vi.fn();
     render(<Button onClick={onClick}>Save</Button>);

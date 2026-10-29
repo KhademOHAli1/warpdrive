@@ -1,6 +1,7 @@
 "use client";
 import type React from "react";
 import { useState } from "react";
+import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
 import { InlineEditFooter } from "@/features/inline-edit/InlineEditFooter";
 import { saveErrorMessage } from "@/features/inline-edit/saveError";
 import type { ContactPoint } from "@/types/contactPoint";
@@ -44,6 +45,9 @@ export function PersonBulkEditor({
   onExit,
   hidden = NONE,
 }: PersonBulkEditorProps): React.ReactNode {
+  const translateSales = useAppTranslations("sales");
+  const locale = useLocale();
+
   const initialPhones = serializePoints(phones);
   const initialEmails = serializePoints(emails);
   const [first, setFirst] = useState(firstName ?? "");
@@ -70,18 +74,28 @@ export function PersonBulkEditor({
       .then((r) => {
         setPending(false);
         if (r.ok) onExit();
-        else setError(saveErrorMessage(r.errorId));
+        else setError(saveErrorMessage(r.errorId, locale));
       })
       .catch(() => {
         setPending(false);
-        setError(saveErrorMessage());
+        setError(saveErrorMessage(undefined, locale));
       });
   }
 
   return (
     <div className="flex flex-col gap-2">
-      <BulkRow label="First name" value={first} onChange={setFirst} disabled={pending} />
-      <BulkRow label="Last name" value={last} onChange={setLast} disabled={pending} />
+      <BulkRow
+        label={translateSales("first_name_702ef")}
+        value={first}
+        onChange={setFirst}
+        disabled={pending}
+      />
+      <BulkRow
+        label={translateSales("last_name_7b488")}
+        value={last}
+        onChange={setLast}
+        disabled={pending}
+      />
       {!hidden.has("phones") && (
         <BulkPointsRow
           kind="Phone"

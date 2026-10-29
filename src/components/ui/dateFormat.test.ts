@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { formatMdy, parseYmd, toYmd } from "./dateFormat";
+import {
+  formatGregorianPersianDate,
+  formatMdy,
+  formatPersianAccessibleDate,
+  formatPersianDate,
+  parseYmd,
+  toYmd,
+} from "./dateFormat";
 
 describe("dateFormat", () => {
   it("toYmd renders a local YYYY-MM-DD", () => {
@@ -20,5 +27,21 @@ describe("dateFormat", () => {
   it("formatMdy converts to MM/DD/YYYY and blanks invalid input", () => {
     expect(formatMdy("2026-07-04")).toBe("07/04/2026");
     expect(formatMdy("")).toBe("");
+  });
+  it("formats Solar Hijri dates at Nowruz and the end of a leap year", () => {
+    expect(formatPersianDate("2024-03-20")).toBe("۱۴۰۳/۰۱/۰۱");
+    expect(formatPersianDate("2025-03-20")).toBe("۱۴۰۳/۱۲/۳۰");
+    expect(formatPersianDate("2025-03-21")).toBe("۱۴۰۴/۰۱/۰۱");
+    expect(formatPersianDate("2026-02-30")).toBe("");
+    expect(formatPersianDate("2026-03-21", "en")).toBe("1405/01/01");
+    expect(formatGregorianPersianDate("2026-03-21")).toBe("۲۰۲۶/۰۳/۲۱");
+  });
+  it("uses natural Persian date labels and includes selection and today status", () => {
+    expect(
+      formatPersianAccessibleDate(new Date(2026, 9, 23), "persian", {
+        today: true,
+        selected: true,
+      }),
+    ).toBe("امروز، جمعه، ۱ آبان ۱۴۰۵، انتخاب‌شده");
   });
 });

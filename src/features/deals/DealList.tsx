@@ -1,11 +1,13 @@
 "use client";
-
 import type React from "react";
 import { useState } from "react";
 import type { ColumnDef } from "@/components/data-table/columnModel";
 import { RENDER_WINDOW_STEP, useRenderWindow } from "@/components/data-table/useRenderWindow";
 import { Checkbox } from "@/components/ui/Checkbox";
-import { formatCurrency } from "@/lib/formatCurrency";
+import { MoneyTotals } from "@/features/currencies/MoneyTotals";
+import type { CurrencyTotal } from "@/features/currencies/money";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
+import { useFormatters } from "@/lib/useFormatters";
 import { DealListBulkBar } from "./DealListBulkBar";
 import { DealListTableBody } from "./DealListTableBody";
 import { MAX_TITLE_LEN } from "./DealTitleCell";
@@ -18,7 +20,8 @@ export interface DealListProps {
   pipelineId: string;
   rows: DealListRow[];
   total: number;
-  totalValue: string;
+  totalValue: string | null;
+  currencyTotals?: CurrencyTotal[];
   stages: DealListStage[];
   // Resolves true when the move actually landed, false when it failed. DealList clears the row
   // selection only on true, so a failed move keeps the selection instead of falsely signalling
@@ -42,7 +45,10 @@ export interface DealListProps {
 }
 
 export function DealList(props: DealListProps) {
+  const translateSales = useAppTranslations("sales");
+
   const { pipelineId, rows, total, totalValue, stages, currency } = props;
+  const format = useFormatters();
   const { onBulkStage, onBulkArchive, onUnarchive } = props;
   const { visibleColumns, columnsMenu, empty, filtered = false } = props;
   const { editCell } = useInlineEdit(pipelineId);
@@ -125,12 +131,12 @@ export function DealList(props: DealListProps) {
 
       <div className="overflow-x-auto">
         <table className="w-full border-collapse text-sm">
-          <caption className="sr-only">Deals list</caption>
+          <caption className="sr-only">{translateSales("deals_list_87f6a")}</caption>
           <thead>
-            <tr className="border-b bg-muted/60 text-left text-muted-foreground">
+            <tr className="border-b bg-muted/60 text-start text-muted-foreground">
               <th scope="col" className="w-10 px-3 py-2">
                 <Checkbox
-                  label="Select all deals"
+                  label={translateSales("select_all_deals_43ba0")}
                   checked={selectAllState()}
                   onCheckedChange={toggleAll}
                 />
@@ -142,7 +148,7 @@ export function DealList(props: DealListProps) {
               ))}
               {onUnarchive ? (
                 <th scope="col" className="px-3 py-2 font-semibold">
-                  Actions
+                  {translateSales("actions_ff805")}
                 </th>
               ) : null}
             </tr>
@@ -166,8 +172,13 @@ export function DealList(props: DealListProps) {
           <tfoot>
             <tr className="border-t bg-muted/60 font-medium text-foreground">
               <td colSpan={bodyColSpan} className="px-3 py-2 tabular-nums">
-                {total} {total === 1 ? "deal" : "deals"} &middot; total value{" "}
-                {formatCurrency(totalValue)}
+                {translateSales("computed.dealCount", { count: total })}{" "}
+                {translateSales("middot_total_value_137d5")}{" "}
+                {props.currencyTotals !== undefined && props.currencyTotals.length > 0 ? (
+                  <MoneyTotals totals={props.currencyTotals} />
+                ) : totalValue !== null ? (
+                  format.currency(totalValue, currency)
+                ) : null}
               </td>
             </tr>
           </tfoot>

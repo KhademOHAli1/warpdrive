@@ -50,6 +50,7 @@ vi.mock("@/lib/trpc-client", () => ({
   },
 }));
 
+import { LocaleProvider } from "@/features/i18n/LocaleProvider";
 import { GlobalContactModal } from "./GlobalContactModal";
 
 afterEach(() => {
@@ -120,6 +121,32 @@ describe("GlobalContactModal open-details-after-create", () => {
 });
 
 describe("GlobalContactModal person (rich create, M1)", () => {
+  it("blocks an invalid custom numeric draft before creating the Persian contact", async () => {
+    customFieldDefs.push({id:"11111111-1111-1111-1111-111111111111",targetEntity:"person",type:"numeric",name:"امتیاز",key:"score",options:[],isRequired:false,isImportant:false,showInAddForm:true,order:0,archivedAt:null});
+    render(<LocaleProvider locale="fa"><GlobalContactModal kind="person" onClose={noop} onCreated={noop}/></LocaleProvider>);
+    fireEvent.change(screen.getByLabelText("نام"),{target:{value:"درسا"}});
+    fireEvent.change(screen.getByLabelText("امتیاز"),{target:{value:"invalid"}});
+    fireEvent.click(screen.getByRole("button",{name:"ذخیره"}));
+    expect(createPersonAction).not.toHaveBeenCalled();
+    expect((await screen.findAllByRole("alert")).some((node) => (node.textContent ?? "").includes("امتیاز"))).toBe(true);
+  });
+  it("validates in Farsi and keeps the original Persian name in the payload", async () => {
+    render(
+      <LocaleProvider locale="fa">
+        <GlobalContactModal kind="person" onClose={noop} onCreated={noop} />
+      </LocaleProvider>,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "ذخیره" }));
+    expect(await screen.findByText("نام را وارد کنید.")).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("نام"), { target: { value: "درسا رضایی" } });
+    fireEvent.click(screen.getByRole("button", { name: "ذخیره" }));
+    await waitFor(() =>
+      expect(createPersonAction).toHaveBeenCalledWith(
+        expect.objectContaining({ name: "درسا رضایی" }),
+        "tok",
+      ),
+    );
+  });
   it("does not submit from Enter while custom fields are still loading", () => {
     customFieldsQuery.isLoading = true;
     render(<GlobalContactModal kind="person" onClose={noop} onCreated={noop} />);

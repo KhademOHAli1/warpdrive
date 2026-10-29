@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Tip } from "@/components/ui/tooltip";
 import { ICON_BUTTON } from "@/constants/formStyles";
-import { STRINGS } from "@/constants/strings";
+import { useSalesStrings } from "@/features/deals/useSalesStrings";
 
 export interface SectionHeaderMenuItem {
   label: string;
@@ -41,6 +41,8 @@ function FillGapsButton({
   fillGapsDisabledReason,
 }: Required<Pick<SectionHeaderMenuProps, "onFillGaps">> &
   Pick<SectionHeaderMenuProps, "fillGapsBusy" | "fillGapsDisabledReason">): React.ReactNode {
+  const STRINGS = useSalesStrings();
+
   const button = (
     <button
       type="button"
@@ -72,6 +74,8 @@ export function SectionHeaderMenu({
   fillGapsBusy,
   fillGapsDisabledReason,
 }: SectionHeaderMenuProps): React.ReactNode {
+  const STRINGS = useSalesStrings();
+
   return (
     <div className="flex items-center gap-1">
       {onFillGaps !== undefined && (

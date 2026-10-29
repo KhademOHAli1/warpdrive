@@ -1,13 +1,21 @@
 "use client";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "cmdk";
 import { Check, ChevronsUpDown, X } from "lucide-react";
 import type React from "react";
 import { useState } from "react";
 import { Avatar } from "@/components/ui/Avatar";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "./Button";
 import type { ComboboxOption } from "./Combobox";
 import { Popover, PopoverContent, PopoverTrigger } from "./Popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "./primitives/command";
 
 interface MultiComboboxProps {
   values: string[];
@@ -26,9 +34,10 @@ export function MultiCombobox({
   onChange,
   options,
   ariaLabel,
-  placeholder = "Select",
+  placeholder,
 }: MultiComboboxProps): React.ReactNode {
   const [open, setOpen] = useState(false);
+  const t = useAppTranslations("sharedUi");
   const selected = options.filter((o) => values.includes(o.value));
 
   function toggle(value: string): void {
@@ -56,7 +65,7 @@ export function MultiCombobox({
             {o.label}
             <button
               type="button"
-              aria-label={`Remove ${o.label}`}
+              aria-label={t("removeOption", { label: o.label })}
               onClick={() => toggle(o.value)}
               className="relative rounded text-muted-foreground transition-[color,scale] duration-150 ease-out after:absolute after:-inset-1.5 after:content-[''] hover:text-foreground active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transition-colors"
             >
@@ -66,21 +75,24 @@ export function MultiCombobox({
         ))}
         <PopoverTrigger
           aria-label={ariaLabel}
-          className="flex flex-1 items-center justify-between gap-1 self-stretch text-left outline-none"
+          className="flex flex-1 items-center justify-between gap-1 self-stretch text-start outline-none"
         >
-          {values.length === 0 && <span className="text-muted-foreground">{placeholder}</span>}
-          <ChevronsUpDown className="ml-auto h-4 w-4 shrink-0 text-muted-foreground" />
+          {values.length === 0 && (
+            <span className="text-muted-foreground">{placeholder ?? t("select")}</span>
+          )}
+          <ChevronsUpDown className="ms-auto h-4 w-4 shrink-0 text-muted-foreground" />
         </PopoverTrigger>
       </div>
       <PopoverContent className="p-0">
         <Command>
           <CommandInput
-            placeholder="Search..."
+            placeholder={t("search")}
+            aria-label={t("search")}
             className="w-full border-b px-2.5 py-2 text-sm outline-none"
           />
           <CommandList className="max-h-56 overflow-y-auto p-1">
             <CommandEmpty className="px-2 py-3 text-sm text-muted-foreground">
-              No match.
+              {t("noMatch")}
             </CommandEmpty>
             <CommandGroup>
               {options.map((o) => (
@@ -94,7 +106,7 @@ export function MultiCombobox({
                     <Avatar name={o.avatarName} src={o.avatarUrl} className="h-5 w-5 text-[10px]" />
                   )}
                   {o.label}
-                  {values.includes(o.value) && <Check className="ml-auto h-4 w-4" />}
+                  {values.includes(o.value) && <Check className="ms-auto h-4 w-4" />}
                 </CommandItem>
               ))}
             </CommandGroup>

@@ -5,6 +5,7 @@ import { listDefs } from "@/features/custom-fields/defsRepo";
 import { listHiddenBuiltins } from "@/features/custom-fields/hiddenBuiltinsRepo";
 import { resolveCustomFieldRefLabelsFor } from "@/features/custom-fields/refLabels";
 import { CustomFieldRefLabelsProvider } from "@/features/custom-fields/refLabelsContext";
+import { getAppTranslations } from "@/features/i18n/server";
 import { getLeadById, getLeadRelations } from "@/features/leads/leadRepo";
 import { readBaseCurrency } from "@/features/settings/readBaseCurrency";
 import { createContext } from "@/server/trpc/context";
@@ -41,6 +42,7 @@ export async function loadLead(leadId: string) {
 }
 
 export async function LeadDetailView({ leadId }: { leadId: string }): Promise<React.ReactNode> {
+  const t = await getAppTranslations("leads");
   const loaded = await loadLead(leadId);
   if (loaded.kind === "unauth") redirect("/login");
   if (loaded.kind === "notfound") notFound();
@@ -86,7 +88,7 @@ export async function LeadDetailView({ leadId }: { leadId: string }): Promise<Re
   );
 
   return (
-    <main aria-label="Lead" className="h-full">
+    <main aria-label={t("leadText")} className="h-full">
       <CustomFieldRefLabelsProvider value={refLabels}>
         <LeadWorkspaceClient
           lead={loaded.lead}

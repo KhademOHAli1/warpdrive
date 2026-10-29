@@ -1,3 +1,5 @@
+import { createAppTranslator } from "@/features/i18n/catalog";
+import type { Locale } from "@/features/i18n/registry";
 import { assertNever } from "@/types/result";
 
 // What Save does for the filter the dialog was opened on. updateSavedFilter is owner-scoped in SQL,
@@ -16,17 +18,22 @@ export interface FilterSaveCopy {
   note: string | null;
 }
 
-export function filterSaveCopy(mode: FilterSaveMode): FilterSaveCopy {
+export function filterSaveCopy(mode: FilterSaveMode, locale: Locale = "en"): FilterSaveCopy {
+  const t = createAppTranslator(locale, "sales");
   switch (mode) {
     case "create":
-      return { title: "Create new filter", saveLabel: "Save", note: null };
+      return { title: t("computed.createFilterTitle"), saveLabel: t("computed.save"), note: null };
     case "update":
-      return { title: "Edit filter", saveLabel: "Save changes", note: null };
+      return {
+        title: t("computed.editFilterTitle"),
+        saveLabel: t("computed.saveChanges"),
+        note: null,
+      };
     case "fork":
       return {
-        title: "Save as a new filter",
-        saveLabel: "Save as new",
-        note: "You don't own this filter, so your changes are saved as a new one.",
+        title: t("computed.copyFilterTitle"),
+        saveLabel: t("computed.saveAsNew"),
+        note: t("computed.copyFilterNote"),
       };
     default:
       return assertNever(mode);

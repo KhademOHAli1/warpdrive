@@ -3,6 +3,7 @@ import { Trash2 } from "lucide-react";
 import type React from "react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
 
 // A saved filter or view the user has asked to delete, held until they confirm.
 export interface PendingFilterDelete {
@@ -21,9 +22,10 @@ export function DeleteSavedFilterItem({
   target: PendingFilterDelete;
   onRequest: (target: PendingFilterDelete) => void;
 }): React.ReactNode {
+  const t = useAppTranslations("tableControls");
   return (
     <DropdownMenuItem
-      aria-label={`Delete ${target.name}`}
+      aria-label={t("deleteNamedView", { name: target.name })}
       onSelect={(e) => {
         e.preventDefault();
         onRequest(target);
@@ -48,16 +50,21 @@ export function DeleteSavedFilterConfirm({
   onOpenChange: (open: boolean) => void;
   onConfirm: (id: string) => void;
 }): React.ReactNode {
+  const t = useAppTranslations("tableControls");
+  const locale = useLocale();
   if (pending === null) return null;
+  const displayName = locale === "fa" ? `\u2068${pending.name}\u2069` : pending.name;
   // A shared row is deleted outright, so it goes for everyone who could see it.
-  const scope = pending.isShared ? ", for everyone it is shared with" : "";
   return (
     <ConfirmDialog
       open
       onOpenChange={onOpenChange}
-      title={`Delete ${noun}?`}
-      description={`"${pending.name}" will be deleted${scope}. This cannot be undone.`}
-      confirmLabel="Delete"
+      title={t(noun === "view" ? "deleteViewTitle" : "deleteFilterTitle")}
+      description={t(pending.isShared ? "deleteSharedDescription" : "deletePrivateDescription", {
+        name: displayName,
+      })}
+      confirmLabel={t("delete")}
+      cancelLabel={t("cancel")}
       destructive
       onConfirm={() => onConfirm(pending.id)}
     />

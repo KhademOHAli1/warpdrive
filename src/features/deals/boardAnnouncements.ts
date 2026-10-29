@@ -1,14 +1,15 @@
 import type { Announcements } from "@dnd-kit/core";
-import { STRINGS } from "@/constants/strings";
-
-const A = STRINGS.board.announcements;
+import type { Locale } from "@/features/i18n/registry";
+import { createSalesStrings } from "./salesStrings";
 
 // Screen-reader announcements for board drags (UI 9.1). Extracted from Board.tsx so the
 // component stays within the file-size budget; pure given the two name lookups.
 export function boardAnnouncements(
   cardTitleById: Map<string, string>,
   stageNameById: Map<string, string>,
+  locale: Locale = "en",
 ): Announcements {
+  const A = createSalesStrings(locale).board.announcements;
   return {
     onDragStart: ({ active }) => {
       const title = cardTitleById.get(String(active.id)) ?? String(active.id);

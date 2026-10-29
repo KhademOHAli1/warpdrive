@@ -1,7 +1,9 @@
 "use client";
 import { Check } from "lucide-react";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import type { WizardStep } from "@/features/import/wizardState";
 import { activeDisplayStep, WIZARD_DISPLAY_STEPS } from "@/features/import/wizardSteps";
+import { useFormatters } from "@/lib/useFormatters";
 import { cn } from "@/lib/utils";
 
 type StepState = "complete" | "current" | "upcoming";
@@ -16,6 +18,8 @@ function stateFor(index: number, active: number): StepState {
 // Import). Completed steps show a check, the current step a filled numbered circle, upcoming
 // steps a muted outline. Mirrors Pipedrive's stepper so users always know where they are.
 export function WizardStepper({ step }: { step: WizardStep }): React.ReactNode {
+  const t = useAppTranslations("settings.importer");
+  const format = useFormatters();
   const active = activeDisplayStep(step);
   return (
     <ol className="flex items-center gap-1 text-sm">
@@ -40,7 +44,7 @@ export function WizardStepper({ step }: { step: WizardStep }): React.ReactNode {
                 {stepState === "complete" ? (
                   <Check aria-hidden="true" className="h-3.5 w-3.5" />
                 ) : (
-                  i + 1
+                  format.number(i + 1)
                 )}
               </span>
               <span
@@ -49,7 +53,7 @@ export function WizardStepper({ step }: { step: WizardStep }): React.ReactNode {
                   stepState === "upcoming" ? "text-muted-foreground" : "text-foreground",
                 )}
               >
-                {s.label}
+                {t(s.labelKey)}
               </span>
             </div>
             {i < WIZARD_DISPLAY_STEPS.length - 1 && (

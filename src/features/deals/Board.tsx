@@ -12,12 +12,12 @@ import {
 } from "@dnd-kit/core";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useLocalePreferencePending, useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import { useLabelColorResolver } from "@/features/labels/useLabelColorResolver";
 import { capture, currentRoute } from "@/features/observability/capture";
 import { EVENTS } from "@/features/observability/events";
 import { hasDateCondition } from "@/features/saved-filters/filterFields";
 import type { FilterDefinition } from "@/features/saved-filters/schemas";
-import { browserTimeZone } from "@/lib/browserTimeZone";
 import { trpc } from "@/lib/trpc-client";
 import { BoardEmpty } from "./BoardEmpty";
 import { BoardHeader } from "./BoardHeader";
@@ -28,6 +28,7 @@ import type { BoardProps } from "./boardTypes";
 import { isBoardFiltered } from "./boardView";
 import { DealCard } from "./DealCard";
 import { DragDropZones, zoneTransition } from "./DragDropZones";
+import { dateFilterContextKey } from "./dealListQueryKey";
 import { resolveNeighbors } from "./dragNeighbors";
 import { MoveDealDialog } from "./MoveDealDialog";
 import { NewDealButton } from "./NewDealButton";
@@ -40,6 +41,9 @@ import { BOARD_QUERY_KEY, useDealMove } from "./useDealMove";
 export type { BoardProps } from "./boardTypes";
 
 export function Board(props: BoardProps): React.ReactNode {
+  const preferences = useLocalePreferences();
+  const { locale, calendar, timeZone } = preferences;
+  const preferencePending = useLocalePreferencePending();
   const { pipelineId, selfActorId, stages, cards, pipelines, density, baseCurrency } = props;
   const { serverNow } = props;
   const { move } = useDealMove(pipelineId);
@@ -69,13 +73,18 @@ export function Board(props: BoardProps): React.ReactNode {
   // the server-rendered cards; invalidation reconciles via the tRPC board query. This closes
   // the bug where a dropped card only appeared in its new column after an F5.
   const activeDefinition = previewDefinition ?? inlineDefinition ?? savedFilter?.definition;
+  const dateContext = hasDateCondition(activeDefinition) ? dateFilterContextKey(preferences) : null;
+  const datePreferencePending = dateContext !== null && preferencePending;
   const boardQuery = useQuery({
+    enabled: !datePreferencePending,
     queryKey: BOARD_QUERY_KEY(pipelineId),
     queryFn: () =>
       utils.client.deal.board.query({
         pipelineId,
         definition: activeDefinition,
-        timeZone: browserTimeZone(),
+        timeZone,
+        locale,
+        calendar,
       }),
     initialData: { cards },
     initialDataUpdatedAt: hasDateCondition(activeDefinition) ? 0 : undefined,
@@ -91,27 +100,37 @@ export function Board(props: BoardProps): React.ReactNode {
   // savedFilter is a deliberate trigger dep (the queryFn closes over its definition), not used
   // in the body, so biome's exhaustive-deps check is suppressed here on purpose.
   const filterMounted = useRef(false);
-  // biome-ignore lint/correctness/useExhaustiveDependencies: savedFilter/previewDefinition are intentional refetch triggers
+  // biome-ignore lint/correctness/useExhaustiveDependencies: savedFilter/previewDefinition/dateContext are intentional refetch triggers
   useEffect(() => {
     if (!filterMounted.current) {
       filterMounted.current = true;
       return;
     }
+    if (datePreferencePending) return;
     void refetch();
-  }, [savedFilter, previewDefinition, inlineDefinition, refetch]);
+  }, [
+    savedFilter,
+    previewDefinition,
+    inlineDefinition,
+    dateContext,
+    datePreferencePending,
+    refetch,
+  ]);
 
   // All display derivations (owner + saved-filter + quick-condition narrowing, per-stage sums,
   // board total, per-column sorting) live in one hook. Drag math still reads raw liveCards.
-  const { owners, shownCards, sumsByStage, boardTotal, sortedByStage } = useBoardDerived({
-    liveCards,
-    stages,
-    selectedOwnerId,
-    // Ad-hoc conditions now flow through the server-side filter definition (BoardFilterButton),
-    // so there is no client-side quick-condition list to apply here.
-    conditions: [],
-    sortKey,
-    sortDirection,
-  });
+  const { owners, shownCards, sumsByStage, boardTotal, boardTotals, sortedByStage } =
+    useBoardDerived({
+      liveCards,
+      baseCurrency,
+      stages,
+      selectedOwnerId,
+      // Ad-hoc conditions now flow through the server-side filter definition (BoardFilterButton),
+      // so there is no client-side quick-condition list to apply here.
+      conditions: [],
+      sortKey,
+      sortDirection,
+    });
 
   // Clock for time-derived visuals, seeded from the request so SSR and hydration agree on a real
   // timestamp. Reading `new Date()` during render would diverge between the two; starting from
@@ -212,7 +231,9 @@ export function Board(props: BoardProps): React.ReactNode {
         selfActorId={selfActorId}
         owners={owners}
         totalValue={String(boardTotal)}
+        currencyTotals={boardTotals}
         dealCount={shownCards.length}
+        currency={baseCurrency}
         view={view}
         addSlot={addDeal}
         onPreviewFilter={setPreviewDefinition}
@@ -233,7 +254,7 @@ export function Board(props: BoardProps): React.ReactNode {
           setActiveId(null);
         }}
         onDragEnd={onDragEnd}
-        accessibility={{ announcements: boardAnnouncements(cardTitleById, stageNameById) }}
+        accessibility={{ announcements: boardAnnouncements(cardTitleById, stageNameById, locale) }}
       >
         {emptyKind !== "none" && (
           <BoardEmpty kind={emptyKind} onClearFilters={view.clearFilters} addSlot={addDeal} />
@@ -262,6 +283,7 @@ export function Board(props: BoardProps): React.ReactNode {
           {activeCard !== undefined ? (
             <DealCard
               card={activeCard}
+              currency={baseCurrency}
               ownerName={activeCard.ownerName ?? "?"}
               personName={activeCard.personName ?? null}
               orgName={activeCard.orgName ?? null}

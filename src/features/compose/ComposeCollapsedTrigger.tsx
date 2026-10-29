@@ -21,7 +21,7 @@ export function ComposeCollapsedTrigger({ label, onExpand, onPreload }: Props): 
       onClick={onExpand}
       onMouseEnter={onPreload}
       onFocus={onPreload}
-      className="flex h-[60px] w-full items-center pl-4 text-start text-sm font-[450] text-muted-foreground"
+      className="flex h-[60px] w-full items-center ps-4 text-start text-sm font-[450] text-muted-foreground"
     >
       {label}
     </button>

@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ICON_BUTTON } from "@/constants/formStyles";
 import { followDealAction, unfollowDealAction } from "@/features/deal-workspace/actions";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { readCsrfToken } from "@/utils/csrfCookie";
 
 interface FollowersButtonProps {
@@ -29,6 +30,8 @@ export function FollowersButton({
   followers,
   isFollowedBySelf,
 }: FollowersButtonProps): React.ReactNode {
+  const translateSales = useAppTranslations("sales");
+
   const router = useRouter();
   const [pending, setPending] = useState(false);
 
@@ -47,20 +50,28 @@ export function FollowersButton({
     <DropdownMenu>
       <DropdownMenuTrigger className={`${ICON_BUTTON} gap-1.5 text-sm`}>
         <Users aria-hidden="true" className="h-4 w-4" />
-        <span className="tabular-nums">{count}</span> {count === 1 ? "follower" : "followers"}
+        <span className="tabular-nums">{translateSales("computed.followerCount", { count })}</span>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" aria-label="Followers" className="min-w-52">
+      <DropdownMenuContent
+        align="end"
+        aria-label={translateSales("followers_a145a")}
+        className="min-w-52"
+      >
         <DropdownMenuItem disabled={pending} onSelect={() => void toggle()} className="font-medium">
-          {isFollowedBySelf ? "Following" : "Follow"}
+          {isFollowedBySelf ? translateSales("following_344b4") : translateSales("follow_641d1")}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         {count === 0 ? (
-          <p className="px-2 py-1.5 text-sm text-muted-foreground">No followers yet</p>
+          <p className="px-2 py-1.5 text-sm text-muted-foreground">
+            {translateSales("no_followers_yet_330fc")}
+          </p>
         ) : (
           followers.map((f) => (
             <div key={f.id} className="flex items-center gap-2 px-2 py-1.5 text-sm">
               <Avatar name={f.name} src={f.avatarUrl} className="h-6 w-6 text-[10px]" />
-              <span className="truncate">{f.name}</span>
+              <span className="truncate">
+                <bdi dir="auto">{f.name}</bdi>
+              </span>
             </div>
           ))
         )}

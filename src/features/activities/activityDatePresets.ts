@@ -1,3 +1,6 @@
+import type { CalendarSystem } from "@/features/i18n/preferences";
+import { addCivilDays, instantCivilDate } from "@/lib/zonedDateTime";
+import { startOfCalendarWeek } from "./calendarSystem";
 // Quick time-preset date ranges for the activities list (A1). Each preset resolves to the
 // filter's inclusive local-day bounds (from/to, "YYYY-MM-DD"); presets touch the date range
 // only, orthogonal to the Status (open/done/all) dropdown. Week is Monday-first to match the
@@ -10,33 +13,24 @@ export interface PresetRange {
   to: string | null;
 }
 
-function ymd(d: Date): string {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
-    d.getDate(),
-  ).padStart(2, "0")}`;
-}
-
-function addLocalDays(d: Date, n: number): Date {
-  const r = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-  r.setDate(r.getDate() + n);
-  return r;
-}
-
-// Monday (local) that begins the week containing `d`. getDay(): 0=Sun..6=Sat.
-function mondayOf(d: Date): Date {
-  const dow = d.getDay();
-  return addLocalDays(d, dow === 0 ? -6 : 1 - dow);
-}
-
-export function presetRange(preset: ActivityDatePreset, today: Date): PresetRange {
+export function presetRange(
+  preset: ActivityDatePreset,
+  today: Date,
+  calendar: CalendarSystem = "gregory",
+  timeZone = "UTC",
+  locale: "en" | "fa" | "de" = "en",
+): PresetRange {
+  const day = instantCivilDate(today, timeZone);
   switch (preset) {
     case "today":
-      return { from: ymd(today), to: ymd(today) };
+      return { from: day, to: day };
     case "overdue":
-      return { from: null, to: ymd(addLocalDays(today, -1)) };
+      return { from: null, to: addCivilDays(day, -1) };
     case "this_week": {
-      const start = mondayOf(today);
-      return { from: ymd(start), to: ymd(addLocalDays(start, 6)) };
+      const start = startOfCalendarWeek(new Date(`${day}T00:00:00Z`), { calendar, locale })
+        .toISOString()
+        .slice(0, 10);
+      return { from: start, to: addCivilDays(start, 6) };
     }
     case "todo":
       return { from: null, to: null };
@@ -45,10 +39,16 @@ export function presetRange(preset: ActivityDatePreset, today: Date): PresetRang
 
 // Which preset (if any) a given range corresponds to, for active-chip highlighting.
 // Order matters: to-do (fully cleared) is checked before overdue (also from-null).
-export function activePreset(range: PresetRange, today: Date): ActivityDatePreset | null {
+export function activePreset(
+  range: PresetRange,
+  today: Date,
+  calendar: CalendarSystem = "gregory",
+  timeZone = "UTC",
+  locale: "en" | "fa" | "de" = "en",
+): ActivityDatePreset | null {
   const presets: ActivityDatePreset[] = ["todo", "today", "overdue", "this_week"];
   for (const p of presets) {
-    const r = presetRange(p, today);
+    const r = presetRange(p, today, calendar, timeZone, locale);
     if (r.from === range.from && r.to === range.to) return p;
   }
   return null;

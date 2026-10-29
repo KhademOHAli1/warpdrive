@@ -24,8 +24,9 @@ import type {
   DealSidebarSectionPreference,
 } from "@/constants/dealSidebarSections";
 import { sectionName } from "@/constants/dealSidebarSections";
-import { STRINGS } from "@/constants/strings";
 import { useDealActionError } from "@/features/deal-workspace/DealActionErrorProvider";
+import { useSalesStrings } from "@/features/deals/useSalesStrings";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { setSidebarSectionsAction } from "@/features/identity/preferencesActions";
 import { readCsrfToken } from "@/utils/csrfCookie";
 
@@ -49,6 +50,8 @@ function SectionRow({
   onMove: (id: DealSidebarSectionId, dir: -1 | 1) => void;
   onToggle: (id: DealSidebarSectionId) => void;
 }) {
+  const translateSales = useAppTranslations("sales");
+
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
     id: section.id,
   });
@@ -64,7 +67,7 @@ function SectionRow({
     >
       <button
         type="button"
-        aria-label={`Reorder ${name}`}
+        aria-label={translateSales("reorder_arg0_1071b", { arg0: name })}
         className="cursor-grab text-muted-foreground"
         {...attributes}
         {...listeners}
@@ -75,26 +78,32 @@ function SectionRow({
         checked={section.visible}
         disabled={locked}
         onCheckedChange={() => onToggle(section.id)}
-        label={locked ? `${name} (always shown)` : `Show ${name}`}
+        label={
+          locked
+            ? translateSales("arg0_always_shown_a46a1", { arg0: name })
+            : translateSales("show_arg0_56cd8", { arg0: name })
+        }
       />
-      <span className="min-w-0 flex-1 text-sm">{name}</span>
+      <span className="min-w-0 flex-1 text-sm">
+        <bdi dir="auto">{name}</bdi>
+      </span>
       <button
         type="button"
-        aria-label={`Move ${name} up`}
+        aria-label={translateSales("move_arg0_up_0da0b", { arg0: name })}
         disabled={index === 0}
         onClick={() => onMove(section.id, -1)}
         className="rounded px-2 py-1 text-xs text-muted-foreground hover:bg-muted disabled:opacity-40"
       >
-        Up
+        {translateSales("up_55490")}
       </button>
       <button
         type="button"
-        aria-label={`Move ${name} down`}
+        aria-label={translateSales("move_arg0_down_af5e1", { arg0: name })}
         disabled={index === count - 1}
         onClick={() => onMove(section.id, 1)}
         className="rounded px-2 py-1 text-xs text-muted-foreground hover:bg-muted disabled:opacity-40"
       >
-        Down
+        {translateSales("down_b86d1")}
       </button>
     </div>
   );
@@ -106,6 +115,8 @@ export function ManageSectionsDialog({
   onOpenChange,
   onSaved,
 }: ManageSectionsDialogProps): React.ReactNode {
+  const STRINGS = useSalesStrings();
+
   const [draft, setDraft] = useState(sections);
   const reportError = useDealActionError();
   const sensors = useSensors(useSensor(PointerSensor));

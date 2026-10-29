@@ -2,8 +2,9 @@
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { useState } from "react";
-import { STRINGS } from "@/constants/strings";
 import { CustomFieldFormControl, isCustomFieldValueEmpty } from "@/features/custom-fields/render";
+import { useSalesStrings } from "@/features/deals/useSalesStrings";
+import { useLocale } from "@/features/i18n/LocaleProvider";
 import { InlineEditFooter } from "@/features/inline-edit/InlineEditFooter";
 import { saveErrorMessage } from "@/features/inline-edit/saveError";
 import type { CustomFieldDef } from "@/types/customFields";
@@ -28,6 +29,8 @@ export function DetailsBlock({
   bulkEditing = false,
   onExitBulk,
 }: DetailsBlockProps): React.ReactNode {
+  const STRINGS = useSalesStrings();
+
   if (customFieldDefs.length === 0) {
     return (
       <p className="text-muted-foreground text-xs">{STRINGS.dealSidebar.emptyState.details}</p>
@@ -68,6 +71,7 @@ function DetailsBulkEditor({
   customFields: Record<string, unknown>;
   onExit: () => void;
 }): React.ReactNode {
+  const locale = useLocale();
   const router = useRouter();
   const [draft, setDraft] = useState<Record<string, unknown>>(() => {
     const d: Record<string, unknown> = {};
@@ -103,12 +107,12 @@ function DetailsBulkEditor({
           router.refresh();
           onExit();
         } else {
-          setError(saveErrorMessage(r.error));
+          setError(saveErrorMessage(r.error, locale));
         }
       })
       .catch(() => {
         setPending(false);
-        setError(saveErrorMessage());
+        setError(saveErrorMessage(undefined, locale));
       });
   }
 
@@ -116,7 +120,9 @@ function DetailsBulkEditor({
     <div className="flex flex-col gap-2">
       {customFieldDefs.map((def) => (
         <div key={def.id} className="flex flex-col gap-0.5 text-muted-foreground text-xs">
-          <span>{def.name}</span>
+          <span>
+            <bdi dir="auto">{def.name}</bdi>
+          </span>
           <CustomFieldFormControl
             def={def}
             value={draft[def.key]}

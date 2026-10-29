@@ -9,28 +9,24 @@ import { PinnedNotesSection } from "@/features/deal-workspace/PinnedNotesSection
 import type { TimelineView } from "@/features/deal-workspace/TimelineTabs";
 import { TimelineTabs } from "@/features/deal-workspace/TimelineTabs";
 import { decodeEmailSnippet } from "@/features/email/snippetText";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { MASK_CLASS } from "@/features/observability/replayMasking";
 import { cn } from "@/lib/utils";
 import type { LeadTimelineEmail } from "../leadTimeline";
 
 type Tab = "all" | "activities" | "notes" | "email";
 
-const TABS: { key: Tab; label: string }[] = [
-  { key: "all", label: "All" },
-  { key: "activities", label: "Activities" },
-  { key: "notes", label: "Notes" },
-  { key: "email", label: "Email" },
-];
-
 function EmailList({ emails }: { emails: LeadTimelineEmail[] }): React.ReactNode {
+  const tLeads = useAppTranslations("leads");
+
   if (emails.length === 0) {
-    return <p className="text-sm text-muted-foreground">No emails linked to this lead yet.</p>;
+    return <p className="text-sm text-muted-foreground">{tLeads("noEmailsLinkedToThisLeadYet")}</p>;
   }
   return (
     <ul className="space-y-2">
       {emails.map((e) => (
         <li key={e.id} className="rounded-md border bg-card px-3 py-2">
-          <p className="text-sm font-medium text-foreground">{e.subject ?? "(no subject)"}</p>
+          <p className="text-sm font-medium text-foreground">{e.subject ?? tLeads("noSubject")}</p>
           <p className="text-xs text-muted-foreground">
             {e.direction} · {e.fromEmail}
           </p>
@@ -59,6 +55,14 @@ export function LeadTimeline({
   emails: LeadTimelineEmail[];
   onNoteChanged?: () => void;
 }): React.ReactNode {
+  const tLeads = useAppTranslations("leads");
+  const TABS: { key: Tab; label: string }[] = [
+    { key: "all", label: tLeads("all") },
+    { key: "activities", label: tLeads("activities") },
+    { key: "notes", label: tLeads("notes") },
+    { key: "email", label: tLeads("email") },
+  ];
+
   const [view, setView] = useState<TimelineView>("history");
   const [tab, setTab] = useState<Tab>("all");
   const { pinned, focus, history } = useMemo(() => partitionFocusHistory(items), [items]);
@@ -70,7 +74,7 @@ export function LeadTimeline({
       <PinnedNotesSection items={pinned} onNoteChanged={onNoteChanged} />
       <TimelineTabs view={view} onView={setView}>
         {view === "focus" ? (
-          <HistoryFeed items={focus} emptyLabel="Nothing needs your attention" />
+          <HistoryFeed items={focus} emptyLabel={tLeads("nothingNeedsYourAttention")} />
         ) : (
           <Tabs value={tab} onValueChange={(v) => setTab(v as Tab)}>
             <TabsList className="mb-3 flex-wrap gap-1">
@@ -85,17 +89,17 @@ export function LeadTimeline({
               {tab === "all" && (
                 <HistoryFeed
                   items={history}
-                  emptyLabel="No history yet."
+                  emptyLabel={tLeads("noHistoryYet")}
                   onNoteChanged={onNoteChanged}
                 />
               )}
               {tab === "activities" && (
-                <HistoryFeed items={activities} emptyLabel="No activities yet." />
+                <HistoryFeed items={activities} emptyLabel={tLeads("noActivitiesYet")} />
               )}
               {tab === "notes" && (
                 <HistoryFeed
                   items={notes}
-                  emptyLabel="No notes yet."
+                  emptyLabel={tLeads("noNotesYet")}
                   onNoteChanged={onNoteChanged}
                 />
               )}

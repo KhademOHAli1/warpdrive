@@ -9,7 +9,7 @@
 //
 // FontSize: @tiptap/extension-font-size has only a prerelease build (3.0.0-next.3).
 // We implement it as a small custom Extension that adds a fontSize attribute to
-// TextStyle marks. @tiptap/core is not directly resolvable in this pnpm layout
+// TextStyle marks. @tiptap/core is not a declared direct dependency
 // (only @tiptap/react is linked at the root); Extension and related types are
 // imported from @tiptap/react which re-exports everything from @tiptap/core.
 

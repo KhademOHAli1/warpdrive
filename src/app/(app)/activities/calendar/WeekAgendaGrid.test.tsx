@@ -185,7 +185,7 @@ describe("WeekAgendaGrid scroll position", () => {
   it("opens earlier when a rendered activity would otherwise sit above the fold", () => {
     const early = {
       ...mk("early", "2026-07-15T09:00:00.000Z"),
-      dueAt: new Date(2026, 6, 15, 6, 0),
+      dueAt: new Date("2026-07-15T06:00:00.000Z"),
     };
     render(<WeekAgendaGrid dayIsos={dayIsos} activities={[early]} />);
     expect(scroller().scrollTop).toBe(6 * HOUR_HEIGHT_PX);

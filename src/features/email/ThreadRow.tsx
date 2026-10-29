@@ -1,11 +1,11 @@
 "use client";
-
 import { ChevronDown, Paperclip } from "lucide-react";
 import { useState } from "react";
 import { useActionError } from "@/components/shell/ActionErrorProvider";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { ROW_ACTION_BUTTON } from "@/constants/formStyles";
-import { STRINGS } from "@/constants/strings";
+import { useEmailMessages } from "@/features/email/useEmailMessages";
+import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import { MASK_CLASS } from "@/features/observability/replayMasking";
 import { cn } from "@/lib/utils";
 import { readCsrfToken } from "@/utils/csrfCookie";
@@ -45,6 +45,8 @@ function RowArchiveButton({
   threadId: string;
   onDone: () => void;
 }): React.ReactNode {
+  const E = useEmailMessages();
+
   const [busy, setBusy] = useState(false);
   const reportError = useActionError();
   if (!canArchiveInFolder(folder)) return null;
@@ -66,7 +68,7 @@ function RowArchiveButton({
       onClick={() => void run()}
       className={`${ROW_ACTION_BUTTON} self-start`}
     >
-      {isArchive ? "Unarchive" : "Archive"}
+      {isArchive ? E._extra.unarchive : E._extra.archive}
     </button>
   );
 }
@@ -97,18 +99,21 @@ export function ThreadRow({
   onArchiveDone,
   onVisibilityChanged,
 }: ThreadRowProps): React.ReactNode {
-  const subject = thread.subject ?? "(no subject)";
+  const E = useEmailMessages();
+  const preferences = useLocalePreferences();
+
+  const subject = thread.subject ?? E._extra.no_subject;
   const weight = thread.unread ? "font-semibold" : "font-normal";
   // Pipedrive-style single-line row: sender column, then subject + inline snippet, then the date
   // on the right (archive appears on hover). No persistent reading pane; the row opens the thread.
   return (
     <li
-      className={`group flex items-center gap-2 pr-2 [content-visibility:auto] [contain-intrinsic-size:auto_52px] ${active ? "bg-accent" : "hover:bg-muted/50"}`}
+      className={`group flex items-center gap-2 pe-2 [content-visibility:auto] [contain-intrinsic-size:auto_52px] ${active ? "bg-accent" : "hover:bg-muted/50"}`}
     >
       {canSelectInFolder(folder) && (
         <div className="flex items-center px-2 py-2.5">
           <Checkbox
-            label={`Select ${subject}`}
+            label={E._extra.select_arg0(subject)}
             checked={selected}
             onCheckedChange={() => onToggleSelected(thread.id)}
           />
@@ -116,7 +121,7 @@ export function ThreadRow({
       )}
       <button
         type="button"
-        className={`flex min-w-0 flex-1 items-center gap-3 py-2.5 text-left ${canSelectInFolder(folder) ? "" : "pl-3"}`}
+        className={`flex min-w-0 flex-1 items-center gap-3 py-2.5 text-start ${canSelectInFolder(folder) ? "" : "ps-3"}`}
         onClick={() => onOpen(thread.id)}
       >
         {/* Correspondent column (Pipedrive leads each row with the counterparty). Projected by the
@@ -127,12 +132,12 @@ export function ThreadRow({
             {thread.unread && (
               <span
                 aria-hidden="true"
-                className="mr-1.5 inline-block h-1.5 w-1.5 rounded-full bg-primary align-middle"
+                className="me-1.5 inline-block h-1.5 w-1.5 rounded-full bg-primary align-middle"
               />
             )}
             {/* Pipedrive leads with the sender's display name; fall back to the address when the
                 From header carried no name (or older mail synced before from_name existed). */}
-            {thread.senderName ?? thread.senderEmail}
+            <bdi dir="auto">{thread.senderName ?? thread.senderEmail}</bdi>
           </span>
         )}
         {/* A15: the label chip leads the subject (Pipedrive positions it before, not after). */}
@@ -142,7 +147,7 @@ export function ThreadRow({
           {thread.senderEmail === null && thread.unread && (
             <span
               aria-hidden="true"
-              className="mr-1.5 inline-block h-1.5 w-1.5 rounded-full bg-primary align-middle"
+              className="me-1.5 inline-block h-1.5 w-1.5 rounded-full bg-primary align-middle"
             />
           )}
           <span className={`text-foreground ${weight}`}>{subject}</span>
@@ -155,14 +160,14 @@ export function ThreadRow({
         </span>
         {thread.personId === null && thread.dealId === null && (
           <span className="shrink-0 rounded bg-warning/20 px-1.5 py-0.5 text-xs text-warning-foreground">
-            Unlinked
+            {E._extra.unlinked}
           </span>
         )}
       </button>
       {thread.hasAttachment && (
         <Paperclip
           role="img"
-          aria-label={STRINGS.inbox.hasAttachmentLabel}
+          aria-label={E.hasAttachmentLabel}
           className="h-3.5 w-3.5 shrink-0 text-muted-foreground"
         />
       )}
@@ -176,15 +181,15 @@ export function ThreadRow({
             visibility={thread.visibility}
             onChanged={onVisibilityChanged}
           />
-          <ChevronDown data-privacy-caret="true" aria-hidden="true" className="-ml-1 h-3 w-3" />
+          <ChevronDown data-privacy-caret="true" aria-hidden="true" className="-ms-1 h-3 w-3" />
         </div>
       )}
       <div className="shrink-0 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
         <RowArchiveButton folder={folder} threadId={thread.id} onDone={onArchiveDone} />
       </div>
       {/* A14: row date at the larger 14px font (text-sm) to match Pipedrive's list. */}
-      <span className="w-16 shrink-0 text-right text-sm text-muted-foreground tabular-nums">
-        {formatInboxListDate(thread.lastMessageAt)}
+      <span className="w-16 shrink-0 text-end text-sm text-muted-foreground tabular-nums">
+        {formatInboxListDate(thread.lastMessageAt, undefined, preferences)}
       </span>
     </li>
   );

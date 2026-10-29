@@ -526,6 +526,20 @@
       "when": 1788371581000,
       "tag": "0074_backfill_deal_last_activity",
       "breakpoints": true
+    },
+    {
+      "idx": 75,
+      "version": "7",
+      "when": 1793295544115,
+      "tag": "0075_multicurrency",
+      "breakpoints": true
+    },
+    {
+      "idx": 76,
+      "version": "7",
+      "when": 1793298309171,
+      "tag": "0076_activity_civil_dates",
+      "breakpoints": true
     }
   ]
 }

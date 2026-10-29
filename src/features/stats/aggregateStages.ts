@@ -1,3 +1,4 @@
+import { sumMoney } from "@/features/currencies/money";
 // Merging per-pipeline stage rows for the "All pipelines" view.
 //
 // Stage identity is per pipeline, so there is nothing to join on except position. Rows are
@@ -55,12 +56,13 @@ export function aggregateStageConversion(
 }
 
 export function aggregateStageSums(perPipeline: readonly StageSum[][]): StageSum[] {
-  const byOrder = new Map<number, { dealCount: number; total: number; names: Set<string> }>();
+  const byOrder = new Map<number, { dealCount: number; total: string; names: Set<string> }>();
   for (const rows of perPipeline) {
     for (const r of rows) {
-      const bucket = byOrder.get(r.order) ?? { dealCount: 0, total: 0, names: new Set() };
+      const bucket = byOrder.get(r.order) ?? { dealCount: 0, total: "0", names: new Set() };
       bucket.dealCount += r.dealCount;
-      bucket.total += Number(r.total);
+      bucket.total =
+        sumMoney([{ value: bucket.total }, { value: r.total }], "USD")[0]?.value ?? "0";
       bucket.names.add(r.name);
       byOrder.set(r.order, bucket);
     }
@@ -75,7 +77,7 @@ export function aggregateStageSums(perPipeline: readonly StageSum[][]): StageSum
         name: mergedName(bucket?.names ?? new Set(), order),
         order,
         dealCount: bucket?.dealCount ?? 0,
-        total: (bucket?.total ?? 0).toFixed(2),
+        total: bucket?.total ?? "0.00",
       };
     });
 }

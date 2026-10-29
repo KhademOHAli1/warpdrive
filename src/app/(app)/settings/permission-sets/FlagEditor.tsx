@@ -11,11 +11,13 @@ import {
   TEAM_SCOPED_FLAGS,
   type TeamScopedCapability,
 } from "@/constants/permissionFlags";
-import { IDENTITY_SETTINGS_STRINGS, identityErrorMessage } from "@/constants/settingsIdentity";
 import { updateFlagsAction } from "@/features/identity/actions/permission-sets";
+import {
+  settingsIdentityError,
+  settingsPermissionLabel,
+} from "@/features/identity/settingsMessages";
+import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import { readCsrfToken } from "@/utils/csrfCookie";
-
-const T = IDENTITY_SETTINGS_STRINGS.flagEditor;
 
 // Ownership capabilities that also expose a _team variant (a team manager acting on a managed
 // member's records). Rendered as a third checkbox alongside own/any. Narrows `cap` so the
@@ -44,20 +46,27 @@ function FlagCheckbox({
   onToggle: (key: PermissionFlagKey) => void;
   disabled: boolean;
 }): React.ReactElement {
+  const L = useSettingsMessages();
+  const label = settingsPermissionLabel(L, flagKey);
   return (
     <div className="flex items-center gap-2 text-sm">
       <Checkbox
-        label={flagKey}
+        label={label}
         checked={checked}
         disabled={disabled}
         onCheckedChange={() => onToggle(flagKey)}
       />
-      <span>{flagKey}</span>
+      <span>{label}</span>
     </div>
   );
 }
 
 export function FlagEditor({ setId, name, flags, onSaved }: Props): React.ReactElement {
+  const L = useSettingsMessages();
+  const T = L._identity.flagEditor;
+
+  const identityErrorMessage = (error: string) => settingsIdentityError(L, error);
+
   const [current, setCurrent] = useState<FlagMap>(flags);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -116,7 +125,9 @@ export function FlagEditor({ setId, name, flags, onSaved }: Props): React.ReactE
           <div className="flex flex-col gap-2">
             {OWNERSHIP_FLAGS.map((cap) => (
               <div key={cap} className="flex flex-col gap-1 border-b pb-1.5 last:border-b-0">
-                <span className="text-xs text-muted-foreground">{cap}</span>
+                <span className="text-xs text-muted-foreground">
+                  {settingsPermissionLabel(L, cap)}
+                </span>
                 <div className="flex flex-wrap gap-x-4 gap-y-2">
                   <FlagCheckbox
                     flagKey={`${cap}_own`}

@@ -4,6 +4,7 @@ import type React from "react";
 import type { Person } from "@/db/schema";
 import { updatePersonAction } from "@/features/contacts/actions";
 import { ContactCustomFieldRows } from "@/features/custom-fields/ContactCustomFieldRows";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import type { ContactPoint } from "@/types/contactPoint";
 import type { CustomFieldDef } from "@/types/customFields";
 import { readCsrfToken } from "@/utils/csrfCookie";
@@ -56,6 +57,8 @@ export function PersonBlock({
   customFieldDefs?: CustomFieldDef[];
   currency?: string;
 }): React.ReactNode {
+  const translateSales = useAppTranslations("sales");
+
   const router = useRouter();
 
   async function save(change: PersonFieldChange): Promise<{ ok: boolean; errorId?: string }> {
@@ -87,20 +90,24 @@ export function PersonBlock({
   return (
     <>
       <SidebarFieldRow
-        label="Name"
+        label={translateSales("name_dcd1d")}
         value={
           <a href={`/contacts/people/${person.id}`} className="text-primary hover:underline">
-            {person.name}
+            <bdi dir="auto">{person.name}</bdi>
           </a>
         }
         readOnly
       />
       {labels !== undefined && (
-        <SidebarFieldRow label="Labels" value={<LabelChips labels={labels} />} readOnly />
+        <SidebarFieldRow
+          label={translateSales("labels_934b8")}
+          value={<LabelChips labels={labels} />}
+          readOnly
+        />
       )}
       {!hideNameParts && !hidden.has("firstName") && (
         <SidebarFieldRow
-          label="First name"
+          label={translateSales("first_name_702ef")}
           value={person.firstName ?? "-"}
           empty={person.firstName === null}
           initialDraft={person.firstName ?? ""}
@@ -113,7 +120,7 @@ export function PersonBlock({
       )}
       {!hideNameParts && !hidden.has("lastName") && (
         <SidebarFieldRow
-          label="Last name"
+          label={translateSales("last_name_7b488")}
           value={person.lastName ?? "-"}
           empty={person.lastName === null}
           initialDraft={person.lastName ?? ""}
@@ -126,7 +133,7 @@ export function PersonBlock({
       )}
       {!hidden.has("phones") && (
         <SidebarFieldRow
-          label="Phone"
+          label={translateSales("phone_63dce")}
           value={phones.length === 0 ? "-" : <ContactPointsValue points={phones} kind="Phone" />}
           empty={phones.length === 0}
           initialDraft={serializePoints(phones)}
@@ -136,7 +143,7 @@ export function PersonBlock({
       )}
       {!hidden.has("emails") && (
         <SidebarFieldRow
-          label="Email"
+          label={translateSales("email_969cc")}
           value={emails.length === 0 ? "-" : <ContactPointsValue points={emails} kind="Email" />}
           empty={emails.length === 0}
           initialDraft={serializePoints(emails)}

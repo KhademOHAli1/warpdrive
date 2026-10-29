@@ -2,21 +2,12 @@
 import { UploadCloud } from "lucide-react";
 import { type Dispatch, useState } from "react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/RadioGroup";
-import { STRINGS } from "@/constants/strings";
+import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import { confirmImportUploadAction, requestImportUploadAction } from "@/features/import/actions";
 import { MAX_IMPORT_CSV_BYTES } from "@/features/import/importFields";
 import type { ImportTarget, WizardAction, WizardState } from "@/features/import/wizardState";
 import { cn } from "@/lib/utils";
 import { readCsrfToken } from "@/utils/csrfCookie";
-
-const IMP = STRINGS.settings.importer;
-const TARGETS: { value: ImportTarget; label: string }[] = [
-  { value: "person", label: IMP.person },
-  { value: "organization", label: IMP.organization },
-  { value: "deal", label: IMP.deal },
-  { value: "lead", label: IMP.lead },
-  { value: "activity", label: IMP.activity },
-];
 
 export interface UploadStepProps {
   state: WizardState;
@@ -26,6 +17,16 @@ export interface UploadStepProps {
 }
 
 export function UploadStep({ state, dispatch, busy, onError }: UploadStepProps): React.ReactNode {
+  const L = useSettingsMessages();
+  const IMP = L.importer;
+  const TARGETS: { value: ImportTarget; label: string }[] = [
+    { value: "person", label: IMP.person },
+    { value: "organization", label: IMP.organization },
+    { value: "deal", label: IMP.deal },
+    { value: "lead", label: IMP.lead },
+    { value: "activity", label: IMP.activity },
+  ];
+
   const [fileError, setFileError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [dragging, setDragging] = useState(false);

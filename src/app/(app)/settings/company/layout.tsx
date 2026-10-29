@@ -2,29 +2,27 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
-import { STRINGS } from "@/constants/strings";
+import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import { cn } from "@/lib/utils";
 import { SettingsHeading } from "../SettingsHeading";
 import { SettingsPage } from "../SettingsSurface";
 
-const TABS = [
-  { href: "/settings/company", label: STRINGS.settings.companyGeneral },
-  { href: "/settings/company/activities", label: STRINGS.settings.activities },
-  { href: "/settings/company/lost-reasons", label: STRINGS.settings.lostReasons },
-  { href: "/settings/company/labels", label: STRINGS.settings.labels },
-  { href: "/settings/company/pipelines", label: STRINGS.settings.pipelines },
-] as const;
-
 // Company settings container: title + tab strip (Currencies omitted, out of scope).
 export default function CompanyLayout({ children }: { children: ReactNode }): ReactNode {
+  const L = useSettingsMessages();
+  const TABS = [
+    { href: "/settings/company", label: L.companyGeneral },
+    { href: "/settings/company/activities", label: L.activities },
+    { href: "/settings/company/lost-reasons", label: L.lostReasons },
+    { href: "/settings/company/labels", label: L.labels },
+    { href: "/settings/company/pipelines", label: L.pipelines },
+  ] as const;
+
   const pathname = usePathname();
   return (
     <SettingsPage>
-      <SettingsHeading
-        title={STRINGS.settings.companySettings}
-        description={STRINGS.settings.companySettingsDescription}
-      />
-      <nav aria-label="Company settings" className="flex flex-wrap gap-1 border-b">
+      <SettingsHeading title={L.companySettings} description={L.companySettingsDescription} />
+      <nav aria-label={L._extra.company_settings} className="flex flex-wrap gap-1 border-b">
         {TABS.map((tab) => {
           const active = pathname === tab.href;
           return (

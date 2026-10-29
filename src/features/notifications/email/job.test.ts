@@ -1,6 +1,6 @@
 import { eq, sql } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
-import { notifications } from "@/db/schema";
+import { notifications, userPreferences } from "@/db/schema";
 import { withTestDb } from "@/db/testing";
 import { seedPipelineWithStages, seedUser } from "@/db/testing/factories";
 import type { SystemMessage } from "@/features/email/sendSystem";
@@ -46,6 +46,27 @@ async function seedDeal(
 }
 
 describe("runEmailNotificationJob", () => {
+  it("renders in the recipient's saved language while retaining delivery keys", async () => {
+    await withTestDb(async db => {
+      const recipient = await seedUser(db);
+      await connectMailbox(db, recipient.id);
+      const signal = new AbortController().signal;
+      await db.insert(userPreferences).values({userId:recipient.id,ui:{localePreferences:{locale:"fa",calendar:"persian",timeZone:"Asia/Tehran"}}});
+      await setPreference(db,recipient.id,"deal_won",{inApp:true,email:true},signal);
+      const [row] = await db.insert(notifications).values({userId:recipient.id,type:"deal_won",entityType:null,entityId:null,payload:{}}).returning();
+      const notificationId = row?.id ?? "missing";
+      const sent: SystemMessage[] = [];
+      const result = await runEmailNotificationJob(db,{notificationId},signal,{send:(_account,message)=>{
+        sent.push(message);
+        return Promise.resolve(ok({gmailMessageId:"fake-id"}));
+      }});
+      expect(result).toEqual(ok({sent:true}));
+      expect(sent).toHaveLength(1);
+      expect(sent[0]?.subject).toContain("فرصت فروش");
+      expect(sent[0]?.bodyHtml).toContain('lang="fa" dir="rtl"');
+      expect(sent[0]?.idempotencyKey).toBe(notificationId);
+    });
+  });
   it("drops (no send) when the referenced deal is no longer visible to the recipient", async () => {
     // RED: this is the security assertion. runEmailNotificationJob must NOT call send
     // when the recipient cannot see the deal that the notification references.

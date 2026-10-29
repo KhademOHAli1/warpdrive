@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import type React from "react";
-import { STRINGS } from "@/constants/strings";
+import { getAppTranslations } from "@/features/i18n/server";
 import { entityTitle } from "@/features/navigation/pageTitle";
 import { LeadDetailView, loadLead } from "./LeadDetailView";
 
@@ -9,10 +9,11 @@ export async function generateMetadata({
 }: {
   params: Promise<{ leadId: string }>;
 }): Promise<Metadata> {
+  const t = await getAppTranslations("leads");
   const { leadId } = await params;
   const loaded = await loadLead(leadId);
   const name = loaded.kind === "ok" ? loaded.lead.title : null;
-  return { title: entityTitle(name, STRINGS.titles.leadFallback) };
+  return { title: entityTitle(name, t("leadText")) };
 }
 
 export default async function LeadDetailPage({

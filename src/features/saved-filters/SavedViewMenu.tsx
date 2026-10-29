@@ -9,6 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { cn } from "@/lib/utils";
 import {
   DeleteSavedFilterConfirm,
@@ -48,6 +49,7 @@ export function SavedViewMenu({
   onDelete,
   onSaveCurrent,
 }: SavedViewMenuProps): React.ReactNode {
+  const t = useAppTranslations("tableControls");
   const selected = views.find((v) => v.id === selectedViewId) ?? null;
   const ordered = [...views].sort((a, b) => Number(b.favorite) - Number(a.favorite));
   const [pendingDelete, setPendingDelete] = useState<PendingFilterDelete | null>(null);
@@ -55,10 +57,12 @@ export function SavedViewMenu({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        aria-label="Saved views"
+        aria-label={t("savedViews")}
         className="inline-flex items-center gap-1.5 rounded-md border bg-card px-2.5 py-1 text-sm text-foreground hover:bg-accent"
       >
-        <span className="max-w-32 truncate">{selected?.name ?? "Saved views"}</span>
+        <span className="max-w-32 truncate">
+          <bdi dir="auto">{selected?.name ?? t("savedViews")}</bdi>
+        </span>
         <ChevronDown aria-hidden="true" className="h-3.5 w-3.5 text-muted-foreground" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-64">
@@ -77,13 +81,15 @@ export function SavedViewMenu({
                 onSelect={() => onSelect(v)}
                 className={cn("min-w-0 flex-1", selectedViewId === v.id && "bg-accent font-medium")}
               >
-                <span className="truncate">{v.name}</span>
+                <span className="truncate">
+                  <bdi dir="auto">{v.name}</bdi>
+                </span>
               </DropdownMenuItem>
               {/* Starring and deleting are both owner-scoped, so neither is offered on someone
                   else's shared view. */}
               {v.isOwn && (
                 <DropdownMenuItem
-                  aria-label={v.favorite ? "Unfavorite view" : "Favorite view"}
+                  aria-label={v.favorite ? t("unfavoriteView") : t("favoriteView")}
                   // Starring is not picking, so the menu stays open.
                   onSelect={(e) => {
                     e.preventDefault();
@@ -109,7 +115,7 @@ export function SavedViewMenu({
           onSelect={onSaveCurrent}
           className="font-medium text-primary"
         >
-          <span aria-hidden="true">+</span> Save current view
+          <span aria-hidden="true">+</span> {t("saveCurrentView")}
         </DropdownMenuItem>
       </DropdownMenuContent>
 

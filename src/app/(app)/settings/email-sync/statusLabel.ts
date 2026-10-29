@@ -1,5 +1,8 @@
 import { type MailboxSyncRow, mailboxSyncHealth } from "@/features/email/syncHealth";
-import { EMAIL_SYNC_STRINGS } from "./strings";
+import {
+  type SettingsMessages,
+  settingsMessagesForLocale,
+} from "@/features/identity/settingsMessages";
 
 export type MailboxDisplayHealth = "syncing" | "stalled" | "disconnected";
 
@@ -13,14 +16,18 @@ export function mailboxDisplayHealth(
   return mailboxSyncHealth(row, now);
 }
 
-export function mailboxStatusLabel(row: MailboxSyncRow | null, now: Date | null): string {
+export function mailboxStatusLabel(
+  row: MailboxSyncRow | null,
+  now: Date | null,
+  messages: SettingsMessages["_emailSync"] = settingsMessagesForLocale("en")._emailSync,
+): string {
   switch (mailboxDisplayHealth(row, now)) {
     case "disconnected":
-      return EMAIL_SYNC_STRINGS.statusDisconnected;
+      return messages.statusDisconnected;
     case "stalled":
-      return EMAIL_SYNC_STRINGS.statusStalled;
+      return messages.statusStalled;
     case "syncing":
-      return EMAIL_SYNC_STRINGS.statusConnected;
+      return messages.statusConnected;
   }
 }
 

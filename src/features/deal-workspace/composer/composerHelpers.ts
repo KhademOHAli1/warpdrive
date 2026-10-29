@@ -1,9 +1,11 @@
+import { type ActivityTemporalRecord, activityParts } from "@/features/activities/activityTemporal";
 import {
   composeDueAt,
   composeDueAtIso,
   deriveDurationMinutes,
 } from "@/features/activities/activityTime";
 import { isBlankHtml } from "@/features/activities/isBlankHtml";
+import { addCivilDays, civilDateRange, instantCivilDate } from "@/lib/zonedDateTime";
 import type { LinkKind, LinkTarget, LinkValue } from "./LinkChips";
 
 // Draft state the composer submits; kept here so ActivityComposerInline stays under the file cap.
@@ -25,29 +27,74 @@ export interface ActivityDraft {
   participants: string[];
 }
 
-// Inverse of composeDueAt: split a stored ISO timestamp back into the composer's local date
-// (YYYY-MM-DD) and time (HH:mm) inputs. Uses local getters to match how composeDueAtIso builds the
-// ISO from local parts, so an edit round-trips to the same instant. Empty ISO -> empty inputs.
-// An all-day activity gives back its day and NO time: the stored midnight is a placeholder for
-// the day, not a time the user picked, and echoing it back is the reported bug.
+// Input projection in the frozen draft zone; canonical all-day dates never shift.
 export function localPartsFromIso(
   iso: string | null,
   allDay = false,
+  timeZone = "UTC",
+  dueDate?: string | null,
 ): { date: string; time: string } {
-  if (iso === null) return { date: "", time: "" };
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return { date: "", time: "" };
-  const pad = (n: number): string => String(n).padStart(2, "0");
-  const date = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-  const time = allDay ? "" : `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  const { date, time } = activityParts({ dueAtIso: iso, allDay, dueDate }, timeZone);
   return { date, time };
 }
 
-// dueAt and allDay always travel together: a timestamp without the flag is exactly the state
-// that made a blank time read back as midnight.
-function composedDue(d: ActivityDraft): { dueAt: string | null; allDay: boolean } {
-  const { iso, allDay } = composeDueAt(d.startDate, d.startTime);
-  return { dueAt: iso, allDay };
+export function composedTemporal(
+  d: Pick<ActivityDraft, "startDate" | "startTime" | "endDate" | "endTime">,
+  timeZone = "UTC",
+) {
+  const { iso, allDay, dueDate } = composeDueAt(d.startDate, d.startTime, timeZone);
+  const endAt =
+    d.endDate === "" ? null : composeDueAtIso(d.endDate, allDay ? "" : d.endTime, timeZone);
+  const sameDayEnd =
+    endAt ??
+    (d.endTime === "" || allDay ? null : composeDueAtIso(d.startDate, d.endTime, timeZone));
+  const elapsed = iso && sameDayEnd ? (Date.parse(sameDayEnd) - Date.parse(iso)) / 60000 : 0;
+  return {
+    dueAt: iso,
+    allDay,
+    dueDate,
+    endAt,
+    endDate: allDay && endAt ? d.endDate : null,
+    durationMinutes: elapsed > 0 ? elapsed : deriveDurationMinutes(d.startTime, d.endTime),
+  };
+}
+
+function temporalUpdate(
+  d: ActivityDraft,
+  stored: Partial<ActivityTemporalRecord>,
+  timeZone: string,
+) {
+  const temporal = composedTemporal(d, timeZone);
+  if (stored.allDay === undefined) return temporal;
+  const start = activityParts({ ...stored, allDay: stored.allDay }, timeZone);
+  const end = localPartsFromIso(
+    stored.endAt == null
+      ? null
+      : (stored.endAt instanceof Date ? stored.endAt : new Date(stored.endAt)).toISOString(),
+    stored.allDay,
+    timeZone,
+    stored.endDate,
+  );
+  const startChanged = d.startDate !== start.date || d.startTime !== start.time;
+  const endChanged = d.endDate !== end.date || d.endTime !== end.time;
+  return {
+    ...(startChanged
+      ? {
+          dueAt: temporal.dueAt,
+          allDay: temporal.allDay,
+          dueDate: temporal.dueDate,
+          ...(!temporal.allDay ? { endDate: null } : {}),
+        }
+      : {}),
+    ...(endChanged
+      ? {
+          ...(temporal.allDay && !stored.dueDate ? { dueDate: d.startDate } : {}),
+          endAt: temporal.endAt,
+          endDate: temporal.endDate,
+          durationMinutes: temporal.durationMinutes,
+        }
+      : {}),
+  };
 }
 
 // Map the composer draft to an activityUpdateInput patch for an existing activity. Mirrors
@@ -63,15 +110,18 @@ function changedLinks(links: LinkValue, stored: StoredLinks) {
   };
 }
 
-export function buildActivityUpdateInput(id: string, d: ActivityDraft, stored: StoredLinks) {
+export function buildActivityUpdateInput(
+  id: string,
+  d: ActivityDraft,
+  stored: StoredLinks & Partial<ActivityTemporalRecord>,
+  timeZone = "UTC",
+) {
   return {
     id,
     typeId: d.typeId,
     subject: d.subject.trim(),
     priority: d.priority === "" ? null : d.priority,
-    ...composedDue(d),
-    endAt: d.endDate === "" ? null : composeDueAtIso(d.endDate, d.endTime),
-    durationMinutes: deriveDurationMinutes(d.startTime, d.endTime),
+    ...temporalUpdate(d, stored, timeZone),
     ...changedLinks(d.links, stored),
     location: d.location.trim() === "" ? null : d.location.trim(),
     note: isBlankHtml(d.note) ? null : d.note,
@@ -82,14 +132,12 @@ export function buildActivityUpdateInput(id: string, d: ActivityDraft, stored: S
 }
 
 // Map the composer draft to the createActivityAction input (nullish/trim normalization in one place).
-export function buildActivityInput(d: ActivityDraft) {
+export function buildActivityInput(d: ActivityDraft, timeZone = "UTC") {
   return {
     typeId: d.typeId,
     subject: d.subject.trim(),
     priority: d.priority === "" ? null : d.priority,
-    ...composedDue(d),
-    endAt: d.endDate === "" ? null : composeDueAtIso(d.endDate, d.endTime),
-    durationMinutes: deriveDurationMinutes(d.startTime, d.endTime),
+    ...composedTemporal(d, timeZone),
     dealId: d.links.deal,
     leadId: d.leadId,
     personId: d.links.person,
@@ -114,25 +162,26 @@ export function availabilityWindow(
   startTime: string,
   endDate: string,
   endTime: string,
+  timeZone = "UTC",
 ): { from: string | null; to: string | null } {
-  const from = composeDueAtIso(startDate, startTime);
+  if (startDate && startTime === "") {
+    const range = civilDateRange(startDate, addCivilDays(endDate || startDate, 1), timeZone);
+    return { from: range.from.toISOString(), to: range.to.toISOString() };
+  }
+  const from = composeDueAtIso(startDate, startTime, timeZone);
   const to =
     endDate !== ""
-      ? composeDueAtIso(endDate, endTime)
+      ? composeDueAtIso(endDate, endTime, timeZone)
       : endTime !== ""
-        ? composeDueAtIso(startDate, endTime)
+        ? composeDueAtIso(startDate, endTime, timeZone)
         : from;
   return { from, to };
 }
 
 // Local YYYY-MM-DD for the Start date default. Built from local date parts (not
 // toISOString, which is UTC and can land on the wrong calendar day for the user).
-export function todayLocalDateString(): string {
-  const d = new Date();
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
+export function todayLocalDateString(timeZone = "UTC", now = new Date()): string {
+  return instantCivilDate(now, timeZone);
 }
 
 const LINK_FALLBACK: Record<LinkKind, string> = {

@@ -5,14 +5,13 @@ import {
   type CustomFieldRefLabels,
   mergeRefLabels,
 } from "@/features/custom-fields/refLabelsContext";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { trpc } from "@/lib/trpc-client";
 import type { ContactFilterDefinition } from "./contactFilterConfig";
 import { type PeopleListRow, type RawPersonRow, toRow } from "./PeopleTable";
 import type { PersonSortField } from "./schemas";
 
 const PAGE_SIZE = 50;
-const LOAD_MORE_ERROR = "Couldn't load more people. Please try again.";
-const RELOAD_ERROR = "Couldn't load people. Please try again.";
 
 export interface PeopleListPaging {
   rows: PeopleListRow[];
@@ -33,6 +32,7 @@ export function usePeopleListPaging(opts: {
   sort: ColumnSort<PersonSortField>;
   filter: ContactFilterDefinition | null;
 }): PeopleListPaging {
+  const t = useAppTranslations("contacts");
   const { initial, initialTotal, initialRefLabels, orgNames, sort, filter } = opts;
   const utils = trpc.useUtils();
   const utilsRef = useRef(utils);
@@ -73,11 +73,11 @@ export function usePeopleListPaging(opts: {
       setTotal(page.total);
       setRefLabels((prev) => mergeRefLabels(prev, page.refLabels));
     } catch {
-      setError(LOAD_MORE_ERROR);
+      setError(t("couldnTLoadMorePeoplePleaseTryAgain"));
     } finally {
       setLoading(false);
     }
-  }, [fetchPage, rows.length]);
+  }, [fetchPage, rows.length, t]);
 
   const reload = useCallback(async (): Promise<void> => {
     setLoading(true);
@@ -88,11 +88,11 @@ export function usePeopleListPaging(opts: {
       setTotal(page.total);
       setRefLabels(page.refLabels);
     } catch {
-      setError(RELOAD_ERROR);
+      setError(t("couldnTLoadPeoplePleaseTryAgain"));
     } finally {
       setLoading(false);
     }
-  }, [fetchPage]);
+  }, [fetchPage, t]);
 
   return { rows, total, refLabels, loading, error, setError, loadMore, reload };
 }

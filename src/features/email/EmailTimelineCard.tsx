@@ -1,10 +1,10 @@
 "use client";
-
 import { ChevronDown, ChevronUp, Paperclip } from "lucide-react";
 import type React from "react";
 import { useState } from "react";
 import { useActionError } from "@/components/shell/ActionErrorProvider";
-import { STRINGS } from "@/constants/strings";
+import { useEmailMessages } from "@/features/email/useEmailMessages";
+import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import { trpc } from "@/lib/trpc-client";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import type { ComposerContext } from "./composer/composer.types";
@@ -45,6 +45,9 @@ export function EmailTimelineCard({
   scope,
   onUnlinked,
 }: EmailTimelineCardProps): React.ReactNode {
+  const E = useEmailMessages();
+  const preferences = useLocalePreferences();
+
   const [expanded, setExpanded] = useState(false);
   const [allowRemote, setAllowRemote] = useState(false);
   const [composeMode, setComposeMode] = useState<ReplyMode | null>(null);
@@ -84,24 +87,25 @@ export function EmailTimelineCard({
       <div className="flex items-start justify-between gap-2 p-3">
         <div className="min-w-0">
           <h3 className="truncate text-sm font-semibold text-foreground">
-            {message.subject ?? "(no subject)"}
+            {message.subject ?? E._extra.no_subject}
           </h3>
           <p className="mt-0.5 truncate text-xs text-muted-foreground">
             {/* No Gmail Date header: mergeEmailItems orders such a message by createdAt, so date
                 it by createdAt too rather than leaving the slot blank. */}
             <span className="tabular-nums">
-              {formatTimelineEmailDate(message.sentAt ?? message.createdAt)}
+              {formatTimelineEmailDate(message.sentAt ?? message.createdAt, undefined, preferences)}
             </span>
             {" · "}
             <span>{message.fromName ?? message.fromEmail}</span>
             {toLine !== "" && (
               <span>
                 {" "}
-                {"→"} To: {toLine}
+                {"→"} {E._extra.to}
+                {toLine}
               </span>
             )}
             {message.hasAttachment && (
-              <Paperclip className="ml-1 inline h-3 w-3" aria-label="Has attachment" />
+              <Paperclip className="ms-1 inline h-3 w-3" aria-label={E._extra.has_attachment} />
             )}
           </p>
           {!expanded && message.snippet !== null && message.snippet !== "" && (
@@ -113,7 +117,7 @@ export function EmailTimelineCard({
         <div className="flex shrink-0 items-center gap-1">
           <button
             type="button"
-            aria-label={expanded ? STRINGS.inbox.collapseEmail : STRINGS.inbox.expandEmail}
+            aria-label={expanded ? E.collapseEmail : E.expandEmail}
             onClick={() => setExpanded((v) => !v)}
             className="rounded p-1 text-muted-foreground transition-transform hover:bg-accent active:scale-[0.96]"
           >
@@ -129,7 +133,7 @@ export function EmailTimelineCard({
               onClick={() => startCompose("reply")}
               className="rounded px-2 py-1 text-xs text-muted-foreground transition-transform hover:bg-accent active:scale-[0.96]"
             >
-              {STRINGS.inbox.replyAction}
+              {E.replyAction}
             </button>
           )}
           <EmailCardMenu
@@ -138,30 +142,26 @@ export function EmailTimelineCard({
             onReplyAll={() => startCompose("replyAll")}
             onForward={() => startCompose("forward")}
             onUnlink={() => void handleUnlink()}
-            unlinkLabel={
-              scope.kind === "deal" ? STRINGS.inbox.unlinkFromDeal : STRINGS.inbox.unlinkFromPerson
-            }
+            unlinkLabel={scope.kind === "deal" ? E.unlinkFromDeal : E.unlinkFromPerson}
           />
         </div>
       </div>
 
       {expanded && (
         <div className="border-t border-border p-3">
-          {body.isLoading && (
-            <p className="text-xs text-muted-foreground">{STRINGS.inbox.loadingEmail}</p>
-          )}
+          {body.isLoading && <p className="text-xs text-muted-foreground">{E.loadingEmail}</p>}
           {/* An error must not read as an empty body: say it failed and offer the retry. */}
           {body.isError && (
             <div className="flex items-center gap-2">
               <p role="alert" className="text-xs text-destructive">
-                {STRINGS.inbox.emailBodyFailed}
+                {E.emailBodyFailed}
               </p>
               <button
                 type="button"
                 onClick={() => void body.refetch()}
                 className="rounded px-2 py-0.5 text-xs text-muted-foreground hover:bg-accent"
               >
-                {STRINGS.inbox.retry}
+                {E.retry}
               </button>
             </div>
           )}

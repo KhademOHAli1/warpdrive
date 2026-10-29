@@ -1,20 +1,24 @@
 "use client";
-
 import { Button } from "@/components/ui/Button";
-import { STRINGS } from "@/constants/strings";
+
+import type { EmailMessages } from "@/features/email/emailMessages";
 import type { InboxFilter } from "./emailReads";
 import { InboxAttributeFilters } from "./InboxAttributeFilters";
 import type { ThreadFolder } from "./ThreadRow";
 import type { AttributeFilterState } from "./threadAttributeFilter";
+import { useEmailMessages } from "./useEmailMessages";
 
 // Toolbar Refresh control label (A1). Local constant, no magic string.
-const REFRESH_LABEL = "Refresh";
-
-const FILTERS: { key: InboxFilter; label: string }[] = [
-  { key: "all", label: STRINGS.inbox.filterAll },
-  { key: "unmatched", label: STRINGS.inbox.filterUnmatched },
-  { key: "needs_linking", label: STRINGS.inbox.filterNeedsLinking },
-];
+function localizedREFRESH_LABEL(E: EmailMessages) {
+  return E._extra.refresh;
+}
+function localizedFILTERS(E: EmailMessages): { key: InboxFilter; label: string }[] {
+  return [
+    { key: "all", label: E.filterAll },
+    { key: "unmatched", label: E.filterUnmatched },
+    { key: "needs_linking", label: E.filterNeedsLinking },
+  ];
+}
 
 interface ThreadListToolbarProps {
   folder: ThreadFolder;
@@ -39,14 +43,15 @@ export function ThreadListToolbar({
   onAttrFilterChange,
   onRefresh,
 }: ThreadListToolbarProps): React.ReactNode {
+  const E = useEmailMessages();
   if (folder === "linked") return null;
 
   if (folder !== "inbox") {
     return (
       <div className="flex items-center border-b p-2">
-        <div className="ml-auto">
+        <div className="ms-auto">
           <Button variant="outline" size="sm" onClick={onRefresh}>
-            {REFRESH_LABEL}
+            {localizedREFRESH_LABEL(E)}
           </Button>
         </div>
       </div>
@@ -55,8 +60,8 @@ export function ThreadListToolbar({
 
   return (
     <div className="flex flex-wrap items-center gap-2 border-b p-2">
-      <nav aria-label="inbox filters" className="flex gap-1">
-        {FILTERS.map((f) => (
+      <nav aria-label={E._extra.inbox_filters} className="flex gap-1">
+        {localizedFILTERS(E).map((f) => (
           <button
             key={f.key}
             type="button"
@@ -72,7 +77,7 @@ export function ThreadListToolbar({
           </button>
         ))}
       </nav>
-      <div className="ml-auto flex items-center gap-2">
+      <div className="ms-auto flex items-center gap-2">
         <InboxAttributeFilters
           value={attrFilter}
           onChange={onAttrFilterChange}
@@ -80,7 +85,7 @@ export function ThreadListToolbar({
           onQuickFilterChange={onFilterChange}
         />
         <Button variant="outline" size="sm" onClick={onRefresh}>
-          {REFRESH_LABEL}
+          {localizedREFRESH_LABEL(E)}
         </Button>
       </div>
     </div>

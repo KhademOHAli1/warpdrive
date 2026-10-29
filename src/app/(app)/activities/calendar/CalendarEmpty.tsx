@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { AddActivityModal } from "@/features/activities/AddActivityModal";
 import type { CalendarViewName } from "@/features/activities/calendarView";
+import { useLocale } from "@/features/i18n/LocaleProvider";
 import { calendarEmptyState } from "./calendarEmptyState";
 
 export interface CalendarEmptyProps {
@@ -29,7 +30,8 @@ export function CalendarEmpty({
   onCreated,
 }: CalendarEmptyProps): React.ReactNode {
   const [addOpen, setAddOpen] = useState(false);
-  const state = calendarEmptyState({ view, hasFilter, hasUnfilteredActivities });
+  const locale = useLocale();
+  const state = calendarEmptyState({ view, hasFilter, hasUnfilteredActivities, locale });
 
   return (
     <>

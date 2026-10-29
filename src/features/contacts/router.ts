@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { attachRefLabels } from "@/features/custom-fields/refLabels";
 import { dealsForOrg, dealsForPerson } from "@/features/deal-workspace/participants";
+import { SELECTABLE_LOCALES } from "@/features/i18n/registry";
 import { protectedProcedure, router } from "@/server/trpc/trpc";
 import { unwrap } from "@/server/unwrap";
 import { activityStats } from "./activityStats";
@@ -106,6 +107,7 @@ export const contactsRouter = router({
       z.object({
         entityType: z.enum(["person", "organization"]),
         entityId: z.string().uuid(),
+        locale: z.enum(SELECTABLE_LOCALES).optional(),
       }),
     )
     .query(({ ctx, input }) =>
@@ -115,6 +117,7 @@ export const contactsRouter = router({
         input.entityType,
         input.entityId,
         AbortSignal.timeout(10_000),
+        input.locale,
       ),
     ),
 

@@ -6,6 +6,7 @@ dist
 !.env.example
 !.env.example.test.ts
 *.tsbuildinfo
+src/**/messages/*.d.json.ts
 .harness/ledger.jsonl
 drizzle/meta/_journal.json.bak
 next-env.d.ts

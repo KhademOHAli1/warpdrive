@@ -1,13 +1,13 @@
 "use client";
-
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { useState } from "react";
-import { STRINGS } from "@/constants/strings";
 import type { Person } from "@/db/schema";
 import type { PersonMatchCandidate } from "@/features/contacts/personOptionsRepo";
 import { useDealActionError } from "@/features/deal-workspace/DealActionErrorProvider";
 import { updateDealAction } from "@/features/deals/updateAction";
+import { useSalesStrings } from "@/features/deals/useSalesStrings";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { trpc } from "@/lib/trpc-client";
 import type { CustomFieldDef } from "@/types/customFields";
 import { readCsrfToken } from "@/utils/csrfCookie";
@@ -23,11 +23,11 @@ const NONE: ReadonlySet<string> = new Set();
 // Mirror the rows PersonBlock renders for a linked person, honouring the same Settings > Data
 // fields hides so the empty panel does not offer a row the populated one suppresses.
 function emptyRows(hidden: ReadonlySet<string>): string[] {
-  return ["Name"]
-    .concat(hidden.has("firstName") ? [] : ["First name"])
-    .concat(hidden.has("lastName") ? [] : ["Last name"])
-    .concat(hidden.has("phones") ? [] : ["Phone"])
-    .concat(hidden.has("emails") ? [] : ["Email"]);
+  return ["name"]
+    .concat(hidden.has("firstName") ? [] : ["firstName"])
+    .concat(hidden.has("lastName") ? [] : ["lastName"])
+    .concat(hidden.has("phones") ? [] : ["phone"])
+    .concat(hidden.has("emails") ? [] : ["email"]);
 }
 
 // The deal sidebar's Person node. A linked person renders the shared PersonSection unchanged; a
@@ -62,6 +62,10 @@ export function DealPersonSection({
   customFieldDefs?: CustomFieldDef[];
   currency?: string;
 }): React.ReactNode {
+  const STRINGS = useSalesStrings();
+
+  const translateSales = useAppTranslations("sales");
+
   const router = useRouter();
   const reportError = useDealActionError();
   const utils = trpc.useUtils();
@@ -124,9 +128,13 @@ export function DealPersonSection({
 
   return (
     <CollapsibleSection
-      title="Person"
+      title={translateSales("person_6007d")}
       headerActions={() => (
-        <SectionHeaderMenu sectionLabel="Person" onEdit={onStartBulk} menuItems={menuItems} />
+        <SectionHeaderMenu
+          sectionLabel={translateSales("person_6007d")}
+          onEdit={onStartBulk}
+          menuItems={menuItems}
+        />
       )}
     >
       {bulkEditing ? (
@@ -144,7 +152,13 @@ export function DealPersonSection({
         />
       ) : (
         emptyRows(hidden).map((label) => (
-          <SidebarFieldRow key={label} label={label} value="-" empty readOnly />
+          <SidebarFieldRow
+            key={label}
+            label={translateSales(`computed.${label}` as "computed.name")}
+            value="-"
+            empty
+            readOnly
+          />
         ))
       )}
     </CollapsibleSection>

@@ -1,6 +1,7 @@
 "use client";
 import type React from "react";
 import { BulkActionBar } from "@/components/data-table/BulkActionBar";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { trpc } from "@/lib/trpc-client";
 import type { BulkUpdateLeadsInput } from "../schemas";
 import { PopMenu } from "./PopMenu";
@@ -41,7 +42,7 @@ function Menu({
   );
 }
 
-const ITEM = "block w-full rounded px-2 py-1.5 text-left text-sm hover:bg-accent";
+const ITEM = "block w-full rounded px-2 py-1.5 text-start text-sm hover:bg-accent";
 
 // Bulk-edit toolbar shown while the selection is non-empty. Each control maps to a single
 // bulkUpdateLeadsAction change set (owner / label set-or-clear / archive-restore / delete).
@@ -54,13 +55,15 @@ export function BulkEditPanel({
   converting = false,
   onClear,
 }: BulkEditPanelProps): React.ReactNode {
+  const tLeads = useAppTranslations("leads");
+
   const labelNames = (trpc.labels.listByTarget.useQuery({ target: "lead" }).data ?? []).map(
     (l) => l.name,
   );
   return (
     <BulkActionBar count={count} onClear={onClear}>
       {assignableUsers.length > 0 && (
-        <Menu label="Change owner">
+        <Menu label={tLeads("changeOwner")}>
           {(close) =>
             assignableUsers.map((u) => (
               <button
@@ -80,7 +83,7 @@ export function BulkEditPanel({
         </Menu>
       )}
 
-      <Menu label="Set label">
+      <Menu label={tLeads("setLabel")}>
         {(close) => (
           <>
             {labelNames.map((name) => (
@@ -106,7 +109,7 @@ export function BulkEditPanel({
               }}
               className={ITEM}
             >
-              Clear labels
+              {tLeads("clearLabels")}
             </button>
           </>
         )}
@@ -119,19 +122,19 @@ export function BulkEditPanel({
           disabled={converting}
           className={`${BTN} disabled:opacity-50`}
         >
-          {converting ? "Converting..." : "Convert to deal"}
+          {converting ? tLeads("converting") : tLeads("convertToDeal")}
         </button>
       )}
 
       <button type="button" onClick={() => onApply({ archived: !archived })} className={BTN}>
-        {archived ? "Restore" : "Archive"}
+        {archived ? tLeads("restore") : tLeads("archive")}
       </button>
       <button
         type="button"
         onClick={() => onApply({ deleted: true })}
         className="rounded-md border border-destructive/40 px-2.5 py-1 text-sm text-destructive transition-[background-color,scale] duration-150 ease-out hover:bg-destructive/10 active:scale-[0.96] motion-reduce:transition-colors"
       >
-        Delete
+        {tLeads("delete")}
       </button>
     </BulkActionBar>
   );

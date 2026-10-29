@@ -85,20 +85,22 @@ beforeEach(() => {
 });
 afterEach(cleanup);
 
-it.each(
-  sections,
-)("%s offers Fill the gaps once a provider is connected", (_name, renderSection) => {
-  render(renderSection());
-  expect(screen.getByRole("button", { name: BUTTON })).toBeEnabled();
-});
+it.each(sections)(
+  "%s offers Fill the gaps once a provider is connected",
+  (_name, renderSection) => {
+    render(renderSection());
+    expect(screen.getByRole("button", { name: BUTTON })).toBeEnabled();
+  },
+);
 
-it.each(
-  sections,
-)("%s renders the header untouched with nothing connected", (_name, renderSection) => {
-  status.value = { ready: false, providers: [] };
-  render(renderSection());
-  expect(screen.queryByRole("button", { name: BUTTON })).not.toBeInTheDocument();
-});
+it.each(sections)(
+  "%s renders the header untouched with nothing connected",
+  (_name, renderSection) => {
+    status.value = { ready: false, providers: [] };
+    render(renderSection());
+    expect(screen.queryByRole("button", { name: BUTTON })).not.toBeInTheDocument();
+  },
+);
 
 it("keeps Fill the gaps off a deal section that has no record to enrich", () => {
   render(<DealPersonSection {...dealPersonProps} person={null} />);

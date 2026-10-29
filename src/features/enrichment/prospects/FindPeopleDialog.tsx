@@ -11,22 +11,22 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { ENRICHMENT_STRINGS } from "@/constants/enrichmentStrings";
 import { trpc } from "@/lib/trpc-client";
 import type { ProviderId } from "../providers/types";
+import { useEnrichmentMessages } from "../useEnrichmentMessages";
 import { ProspectRevealStep } from "./ProspectRevealStep";
 import { ProspectReviewStep } from "./ProspectReviewStep";
 import { ProspectSearchPane } from "./ProspectSearchPane";
 import { revealBatchRoute } from "./revealContract";
 import { useProspectFlow } from "./useProspectFlow";
 
-const S = ENRICHMENT_STRINGS.prospects;
 const NO_PROVIDERS: ProviderId[] = [];
 
 function reviewError(
   applyError: string | null,
   mappingsMismatch: boolean,
   queueStatus: string,
+  S: ReturnType<typeof useEnrichmentMessages>["prospects"],
 ): string | null {
   if (applyError !== null) return applyError;
   if (mappingsMismatch) return S.mappingsChangedError;
@@ -44,6 +44,8 @@ export function FindPeopleDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }): React.ReactNode {
+  const E = useEnrichmentMessages();
+  const S = E.prospects;
   const providersQuery = trpc.enrichment.searchProviders.useQuery(undefined, {
     enabled: open,
     retry: false,
@@ -175,7 +177,7 @@ export function FindPeopleDialog({
             failures={flow.failures}
             outcomes={flow.outcomes}
             applying={flow.applying}
-            error={reviewError(flow.applyError, flow.mappingsMismatch, queueStatus)}
+            error={reviewError(flow.applyError, flow.mappingsMismatch, queueStatus, S)}
             onApply={(submissions) => {
               const applied = session.current;
               void flow.apply(submissions).then((summary) => {

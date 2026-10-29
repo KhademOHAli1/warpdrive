@@ -6,11 +6,11 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { MultiCombobox } from "@/components/ui/MultiCombobox";
 import { Select } from "@/components/ui/Select";
-import { IDENTITY_SETTINGS_STRINGS, identityErrorMessage } from "@/constants/settingsIdentity";
 import { createTeamAction, setTeamMembersAction } from "@/features/identity/actions/teams";
+import { settingsIdentityError } from "@/features/identity/settingsMessages";
+import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import { readCsrfToken } from "@/utils/csrfCookie";
 
-const T = IDENTITY_SETTINGS_STRINGS.teamEditor;
 const MANAGER_NONE_VALUE = "team:manager:none";
 
 interface User {
@@ -24,6 +24,11 @@ interface Props {
 }
 
 export function CreateTeamForm({ users, onCreated }: Props): React.ReactElement {
+  const L = useSettingsMessages();
+  const T = L._identity.teamEditor;
+
+  const identityErrorMessage = (error: string) => settingsIdentityError(L, error);
+
   const [name, setName] = useState("");
   const [managerId, setManagerId] = useState<string>(MANAGER_NONE_VALUE);
   const [memberIds, setMemberIds] = useState<string[]>([]);
@@ -122,7 +127,7 @@ export function CreateTeamForm({ users, onCreated }: Props): React.ReactElement 
               <p className="text-xs text-muted-foreground">{T.membersHelp}</p>
             </div>
             <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
-              {memberIds.length} selected
+              {L._extra.selectedCount(memberIds.length)}
             </span>
           </div>
           <MultiCombobox

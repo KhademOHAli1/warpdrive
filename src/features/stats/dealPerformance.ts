@@ -7,9 +7,11 @@
 // FROM deals d JOIN pipelines p ON p.id = d.pipeline_id).
 import { sql } from "drizzle-orm";
 import type { Db } from "@/db/client";
+import { reportCurrencyClause } from "@/features/currencies/reportCurrency";
 import { dealVisibilityClause } from "@/features/deals/visibility";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { ownerFilterClause } from "@/features/stats/ownerIds";
+import { canonicalMoney } from "@/lib/canonicalMoney";
 import type { DashboardFilters, DealCounters, MoneyBucket } from "@/types/stats";
 
 // Build a DealVisibilitySession from a PermSetUser (same shape, different names).
@@ -43,6 +45,7 @@ export async function dealPerformance(
 ): Promise<DealCounters> {
   signal.throwIfAborted();
 
+  const currencyClause = await reportCurrencyClause(db, filters.currency, signal);
   const visClause = dealVisibilityClause(toSession(actor));
   const ownerClause = ownerFilterClause(sql`d.owner_id`, filters.owners);
   const pipelineClause =
@@ -58,13 +61,13 @@ export async function dealPerformance(
   const result = await db.execute(sql`
     SELECT
       count(*) filter (where ${addedIn})::int AS "addedCount",
-      coalesce(sum(d.value) filter (where ${addedIn}), 0)::numeric(14,2)::text AS "addedValue",
+      coalesce(sum(d.value) filter (where ${addedIn}), 0)::text AS "addedValue",
       count(*) filter (where ${wonIn})::int AS "wonCount",
-      coalesce(sum(d.value) filter (where ${wonIn}), 0)::numeric(14,2)::text AS "wonValue",
+      coalesce(sum(d.value) filter (where ${wonIn}), 0)::text AS "wonValue",
       count(*) filter (where ${lostIn})::int AS "lostCount",
-      coalesce(sum(d.value) filter (where ${lostIn}), 0)::numeric(14,2)::text AS "lostValue",
+      coalesce(sum(d.value) filter (where ${lostIn}), 0)::text AS "lostValue",
       count(*) filter (where ${isOpen})::int AS "openCount",
-      coalesce(sum(d.value) filter (where ${isOpen}), 0)::numeric(14,2)::text AS "openValue"
+      coalesce(sum(d.value) filter (where ${isOpen}), 0)::text AS "openValue"
     FROM deals d
     JOIN pipelines p ON p.id = d.pipeline_id
     WHERE d.deleted_at IS NULL
@@ -72,6 +75,7 @@ export async function dealPerformance(
       AND p.is_archived = false
       ${pipelineClause}
       ${ownerClause}
+      ${currencyClause}
       AND ${visClause}
   `);
 
@@ -83,9 +87,9 @@ export async function dealPerformance(
     return { added: { ...empty }, won: { ...empty }, lost: { ...empty }, open: { ...empty } };
   }
   return {
-    added: { count: row.addedCount, value: row.addedValue },
-    won: { count: row.wonCount, value: row.wonValue },
-    lost: { count: row.lostCount, value: row.lostValue },
-    open: { count: row.openCount, value: row.openValue },
+    added: { count: row.addedCount, value: canonicalMoney(row.addedValue) },
+    won: { count: row.wonCount, value: canonicalMoney(row.wonValue) },
+    lost: { count: row.lostCount, value: canonicalMoney(row.lostValue) },
+    open: { count: row.openCount, value: canonicalMoney(row.openValue) },
   };
 }

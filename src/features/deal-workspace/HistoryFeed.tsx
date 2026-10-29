@@ -38,7 +38,7 @@ function RailMarker({ item }: { item: HistoryItem }): React.ReactNode {
       <span
         aria-hidden="true"
         data-rail="email"
-        className="absolute -left-[2.15rem] top-1 flex h-5 w-5 items-center justify-center rounded-full border border-border bg-card text-muted-foreground"
+        className="absolute -start-[2.15rem] top-1 flex h-5 w-5 items-center justify-center rounded-full border border-border bg-card text-muted-foreground"
       >
         <Mail className="h-3 w-3" />
       </span>
@@ -49,8 +49,8 @@ function RailMarker({ item }: { item: HistoryItem }): React.ReactNode {
       aria-hidden="true"
       className={
         item.kind === "note"
-          ? "absolute -left-[1.95rem] top-2.5 h-2.5 w-2.5 rounded-full border-2 border-warning bg-warning"
-          : "absolute -left-[1.8rem] top-1.5 h-2 w-2 rounded-full border-2 border-muted-foreground/40 bg-card"
+          ? "absolute -start-[1.95rem] top-2.5 h-2.5 w-2.5 rounded-full border-2 border-warning bg-warning"
+          : "absolute -start-[1.8rem] top-1.5 h-2 w-2 rounded-full border-2 border-muted-foreground/40 bg-card"
       }
     />
   );
@@ -90,7 +90,7 @@ export function HistoryFeed({
     return <p className="text-sm text-muted-foreground">{emptyLabel}</p>;
   }
   return (
-    <ol className="relative ml-2 space-y-2 border-l pl-6">
+    <ol className="relative ms-2 space-y-2 border-s ps-6">
       {items.map((item) => (
         <li key={item.id} className="relative">
           <RailMarker item={item} />

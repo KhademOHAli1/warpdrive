@@ -4,6 +4,7 @@ import { useState } from "react";
 import { SharedComposeBar } from "@/features/compose/SharedComposeBar";
 import { MergeDialog } from "@/features/contacts/MergeDialog";
 import type { OrgDetail } from "@/features/contacts/orgsRepo";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { trpc } from "@/lib/trpc-client";
 import type { CustomFieldDef } from "@/types/customFields";
 import { OrganizationDetailHeader } from "../../ContactDetailHeader";
@@ -12,12 +13,6 @@ import { OrgEmailPanel } from "../../OrgEmailPanel";
 import { OrgSidebar } from "./OrgSidebar";
 
 type Tab = "activity" | "email" | "files";
-
-const TAB_LABELS: Record<Tab, string> = {
-  activity: "Activity",
-  email: "Email",
-  files: "Files",
-};
 
 const TABS: readonly Tab[] = ["activity", "email", "files"];
 
@@ -44,6 +39,13 @@ export function OrgDetailClient({
   followers = [],
   isFollowedBySelf = false,
 }: OrgDetailClientProps) {
+  const tContacts = useAppTranslations("contacts");
+
+  const TAB_LABELS: Record<Tab, string> = {
+    activity: tContacts("activity"),
+    email: tContacts("email"),
+    files: tContacts("files"),
+  };
   const router = useRouter();
   const [tab, setTab] = useState<Tab>("activity");
   const [merging, setMerging] = useState(false);

@@ -1,0 +1,69 @@
+{
+  "selectedCount": "{count, number} مورد انتخاب شده",
+  "clearSelection": "لغو انتخاب",
+  "delete": "حذف",
+  "cancel": "انصراف",
+  "bulkDeleteTitle": "{count, number} {noun} حذف شود؟",
+  "bulkDeleteDescription": "این عمل قابل بازگرداندن نیست و موارد انتخاب‌شده را برای همه اعضای تیم حذف می‌کند.",
+  "bulkDeleteConfirm": "حذف {noun}",
+  "customizeColumns": "تنظیم ستون‌ها",
+  "columns": "ستون‌ها",
+  "hiddenColumns": "ستون‌های پنهان",
+  "reorderColumn": "جابه‌جایی ستون {name}",
+  "column": "ستون",
+  "dragInstructions": "برای شروع جابه‌جایی ستون، کلید فاصله را بزنید. با کلیدهای جهت‌نما ستون را جابه‌جا کنید؛ برای ثبت جایگاه دوباره فاصله و برای انصراف Escape را بزنید.",
+  "columnPickedUp": "ستون «{name}» برای جابه‌جایی انتخاب شد.",
+  "columnMoved": "ستون «{name}» در جایگاه {position, number} از {total, number} قرار دارد.",
+  "columnDropped": "ستون «{name}» در جایگاه {position, number} از {total, number} قرار گرفت.",
+  "columnDragCancelled": "جابه‌جایی ستون «{name}» لغو شد.",
+  "saveCurrentView": "ذخیره نمای فعلی",
+  "viewName": "نام نما",
+  "viewNamePlaceholder": "نامی برای این نما وارد کنید",
+  "sharedWithEveryone": "اشتراک با همه",
+  "untitledView": "نمای بدون نام",
+  "save": "ذخیره",
+  "saving": "در حال ذخیره...",
+  "deleteNamedView": "حذف {name}",
+  "deleteViewTitle": "نما حذف شود؟",
+  "deleteFilterTitle": "فیلتر حذف شود؟",
+  "deletePrivateDescription": "«{name}» حذف می‌شود. این عمل قابل بازگرداندن نیست.",
+  "deleteSharedDescription": "«{name}» برای همه افرادی که به آن دسترسی دارند حذف می‌شود. این عمل قابل بازگرداندن نیست.",
+  "savedViews": "نماهای ذخیره‌شده",
+  "favoriteView": "افزودن نما به علاقه‌مندی‌ها",
+  "unfavoriteView": "حذف نما از علاقه‌مندی‌ها",
+  "nouns": {
+    "person": {
+      "singular": "فرد",
+      "plural": "افراد"
+    },
+    "organization": {
+      "singular": "سازمان",
+      "plural": "سازمان‌ها"
+    },
+    "lead": {
+      "singular": "سرنخ",
+      "plural": "سرنخ‌ها"
+    },
+    "deal": {
+      "singular": "فرصت فروش",
+      "plural": "فرصت‌های فروش"
+    },
+    "activity": {
+      "singular": "فعالیت",
+      "plural": "فعالیت‌ها"
+    },
+    "email": {
+      "singular": "ایمیل",
+      "plural": "ایمیل‌ها"
+    },
+    "record": {
+      "singular": "رکورد",
+      "plural": "رکوردها"
+    },
+    "item": {
+      "singular": "مورد",
+      "plural": "موارد"
+    }
+  },
+  "sortableColumn": "ستون قابل جابه‌جایی"
+}

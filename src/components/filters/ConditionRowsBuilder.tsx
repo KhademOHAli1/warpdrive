@@ -3,6 +3,8 @@ import { Filter } from "lucide-react";
 import type React from "react";
 import { useState } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/Popover";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
+import { useFormatters } from "@/lib/useFormatters";
 import {
   type ConditionFieldOption,
   type ConditionRow,
@@ -50,6 +52,8 @@ export function ConditionRowsBuilder({
   appliedRows = [],
   appliedCombinator = "and",
 }: ConditionRowsBuilderProps): React.ReactNode {
+  const t = useAppTranslations("filters");
+  const format = useFormatters();
   const seed = (): ConditionRow[] => appliedRows.map((r) => ({ ...r, id: crypto.randomUUID() }));
   const [open, setOpen] = useState(false);
   const [combinator, setCombinator] = useState<"and" | "or">(appliedCombinator);
@@ -80,14 +84,14 @@ export function ConditionRowsBuilder({
   return (
     <Popover open={open} onOpenChange={openChange}>
       <PopoverTrigger
-        aria-label="Filter"
+        aria-label={t("filter")}
         className="inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm text-muted-foreground hover:bg-accent hover:text-foreground"
       >
         <Filter aria-hidden="true" className="h-4 w-4" />
-        Filter
+        {t("filter")}
         {activeCount > 0 ? (
-          <span className="ml-0.5 rounded-full bg-primary px-1.5 text-xs text-primary-foreground tabular-nums">
-            {activeCount}
+          <span className="ms-0.5 rounded-full bg-primary px-1.5 text-xs text-primary-foreground tabular-nums">
+            {format.number(activeCount)}
           </span>
         ) : null}
       </PopoverTrigger>
@@ -108,14 +112,14 @@ export function ConditionRowsBuilder({
             onClick={clear}
             className="rounded-md px-3 py-1 text-sm text-muted-foreground hover:text-foreground"
           >
-            Clear
+            {t("clear")}
           </button>
           <button
             type="button"
             onClick={apply}
             className="rounded-md bg-action px-3 py-1 text-sm text-action-foreground active:scale-[0.96] transition-transform"
           >
-            Apply
+            {t("apply")}
           </button>
         </div>
       </PopoverContent>

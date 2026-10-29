@@ -4,6 +4,7 @@ import type React from "react";
 import { Input } from "@/components/ui/Input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/RadioGroup";
 import { MAX_EMAIL_LEN, MAX_PHONE_LEN } from "@/features/contacts/fieldBounds";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import type { ContactPoint } from "@/types/contactPoint";
 import { LinkValue, mailtoHref, telHref } from "./contactLinks";
 import {
@@ -18,7 +19,6 @@ import {
 
 export type ContactPointKind = "Email" | "Phone";
 
-const NOUN: Record<ContactPointKind, string> = { Email: "email", Phone: "phone" };
 const MAX_LEN: Record<ContactPointKind, number> = {
   Email: MAX_EMAIL_LEN,
   Phone: MAX_PHONE_LEN,
@@ -77,9 +77,11 @@ export function ContactPointsEditor({
   setDraft: (v: string) => void;
   disabled?: boolean;
 }): React.ReactNode {
+  const translateSales = useAppTranslations("sales");
+
   const parsed = parsePoints(draft);
   const rows = parsed.length === 0 ? [BLANK] : parsed;
-  const noun = NOUN[kind];
+  const noun = translateSales(kind === "Phone" ? "computed.phone" : "computed.email");
   const primaryIndex = Math.max(
     rows.findIndex((p) => p.primary),
     0,
@@ -101,7 +103,7 @@ export function ContactPointsEditor({
             className="flex items-center gap-1"
           >
             <Input
-              aria-label={`${kind} ${index + 1}`}
+              aria-label={translateSales("computed.contactRow", { kind: noun, index: index + 1 })}
               type={kind === "Email" ? "email" : "tel"}
               maxLength={MAX_LEN[kind]}
               value={row.value}
@@ -112,13 +114,16 @@ export function ContactPointsEditor({
             {rows.length > 1 && (
               <RadioGroupItem
                 value={String(index)}
-                aria-label={`Make ${noun} ${index + 1} primary`}
+                aria-label={translateSales("make_arg0_arg1_primary_5274e", {
+                  arg0: noun,
+                  arg1: index + 1,
+                })}
                 className="order-1"
               />
             )}
             <button
               type="button"
-              aria-label={`Remove ${noun} ${index + 1}`}
+              aria-label={translateSales("remove_arg0_arg1_89b25", { arg0: noun, arg1: index + 1 })}
               disabled={disabled}
               onClick={() => commit(removePointAt(rows, index))}
               className="order-3 flex h-5 w-5 shrink-0 items-center justify-center rounded text-muted-foreground transition-colors duration-150 hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50 motion-reduce:transition-none"
@@ -134,7 +139,7 @@ export function ContactPointsEditor({
         onClick={() => commit(appendPoint(rows))}
         className="self-start text-sm font-semibold text-link hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
       >
-        + Add {noun}
+        {translateSales(kind === "Phone" ? "computed.addPhone" : "computed.addEmail")}
       </button>
     </div>
   );

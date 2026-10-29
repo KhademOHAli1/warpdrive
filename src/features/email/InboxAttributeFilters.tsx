@@ -13,7 +13,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Select, type SelectOption } from "@/components/ui/Select";
 import { MAIL_LABELS } from "@/constants/email";
-import { STRINGS } from "@/constants/strings";
+import type { EmailMessages } from "@/features/email/emailMessages";
+import { useEmailMessages } from "@/features/email/useEmailMessages";
 import type { InboxFilter } from "./emailReads";
 import {
   type AttributeFilterState,
@@ -28,23 +29,25 @@ const FOLLOW_UP_FILTER_STATES = ["waiting", "replied", "closed"] as const;
 
 // U5 quick-filters (A12): server-side single-select narrowing surfaced in a shadcn DropdownMenu
 // (never a native control). "none" maps back to the "all" InboxFilter so the linking tabs regain
-// control. Copy is local (owned-file constant) rather than STRINGS.inbox to keep this change
+// control. Copy is local (owned-file constant) rather than E to keep this change
 // scoped to the files U5 owns.
-const QUICK_FILTER_OPTIONS: { value: InboxFilter; label: string }[] = [
-  { value: "shared", label: "Shared" },
-  { value: "private", label: "Private" },
-  { value: "tracked", label: "Tracked emails" },
-  { value: "to_me", label: "To: me" },
-  { value: "from_contact", label: "From an existing contact" },
-  { value: "linked_open_deal", label: "Linked with an open deal" },
-];
-const QUICK_FILTER_TRIGGER = "More filters";
+function localizedQUICK_FILTER_OPTIONS(E: EmailMessages): { value: InboxFilter; label: string }[] {
+  return [
+    { value: "shared", label: E._extra.shared },
+    { value: "private", label: E._extra.private },
+    { value: "tracked", label: E._extra.tracked_emails },
+    { value: "to_me", label: E._extra.to_me },
+    { value: "from_contact", label: E._extra.from_an_existing_contact },
+    { value: "linked_open_deal", label: E._extra.linked_with_an_open_deal },
+  ];
+}
+
 const QUICK_FILTER_NONE = "none";
 
 // The dropdown only owns the six quick-filters; when the active InboxFilter is a linking tab
 // (all/unmatched/needs_linking) no radio is checked and the "None" reset is selected.
-function isQuickFilter(f: InboxFilter): boolean {
-  return QUICK_FILTER_OPTIONS.some((o) => o.value === f);
+function isQuickFilter(f: InboxFilter, E: EmailMessages): boolean {
+  return localizedQUICK_FILTER_OPTIONS(E).some((o) => o.value === f);
 }
 
 function QuickFilterMenu({
@@ -54,24 +57,26 @@ function QuickFilterMenu({
   quickFilter: InboxFilter;
   onQuickFilterChange: (next: InboxFilter) => void;
 }): React.ReactNode {
-  const radioValue = isQuickFilter(quickFilter) ? quickFilter : QUICK_FILTER_NONE;
+  const E = useEmailMessages();
+
+  const radioValue = isQuickFilter(quickFilter, E) ? quickFilter : QUICK_FILTER_NONE;
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm">
-          {QUICK_FILTER_TRIGGER}
+          {E._extra.moreFilters}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuLabel>{QUICK_FILTER_TRIGGER}</DropdownMenuLabel>
+        <DropdownMenuLabel>{E._extra.moreFilters}</DropdownMenuLabel>
         <DropdownMenuRadioGroup
           value={radioValue}
           onValueChange={(v) =>
             onQuickFilterChange(v === QUICK_FILTER_NONE ? "all" : (v as InboxFilter))
           }
         >
-          <DropdownMenuRadioItem value={QUICK_FILTER_NONE}>None</DropdownMenuRadioItem>
-          {QUICK_FILTER_OPTIONS.map((o) => (
+          <DropdownMenuRadioItem value={QUICK_FILTER_NONE}>{E._extra.none}</DropdownMenuRadioItem>
+          {localizedQUICK_FILTER_OPTIONS(E).map((o) => (
             <DropdownMenuRadioItem key={o.value} value={o.value}>
               {o.label}
             </DropdownMenuRadioItem>
@@ -116,15 +121,17 @@ export function InboxAttributeFilters({
   quickFilter?: InboxFilter;
   onQuickFilterChange?: (next: InboxFilter) => void;
 }): React.ReactNode {
-  const inbox = STRINGS.inbox;
+  const E = useEmailMessages();
+
+  const inbox = E;
   const statusNames = inbox.followUpStatusNames;
   const labelNames = inbox.labelNames;
   const followUpOptions: SelectOption[] = [
-    { value: "", label: "All follow-ups" },
+    { value: "", label: E._extra.all_follow_ups },
     ...FOLLOW_UP_FILTER_STATES.map((s) => ({ value: s, label: statusNames[s] })),
   ];
   const labelOptions: SelectOption[] = [
-    { value: "", label: "All labels" },
+    { value: "", label: E._extra.all_labels },
     ...MAIL_LABELS.map((l) => ({ value: l, label: labelNames[l] })),
   ];
   const dateRangeOptions: SelectOption[] = [
@@ -135,18 +142,18 @@ export function InboxAttributeFilters({
   return (
     <div className="flex flex-wrap items-center gap-2">
       <Select
-        ariaLabel="Follow-up status filter"
+        ariaLabel={E._extra.follow_up_status_filter}
         value={value.followUp}
         onChange={(followUp) => onChange({ ...value, followUp })}
-        placeholder="Follow-up"
+        placeholder={E._extra.follow_up}
         options={followUpOptions}
         triggerClassName="w-auto"
       />
       <Select
-        ariaLabel="Label filter"
+        ariaLabel={E._extra.label_filter}
         value={value.label}
         onChange={(label) => onChange({ ...value, label })}
-        placeholder="Label"
+        placeholder={E._extra.label}
         options={labelOptions}
         triggerClassName="w-auto"
       />

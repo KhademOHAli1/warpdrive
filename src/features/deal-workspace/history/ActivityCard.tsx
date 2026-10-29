@@ -9,30 +9,24 @@ import { followUpLinksOf, useFollowUpAfterDone } from "@/features/activities/fol
 import { ActivityTypeIcon } from "@/features/activities/typeIcons";
 import { useInvalidateActivityLists } from "@/features/activities/useInvalidateActivityLists";
 import { linkifyHtml } from "@/features/collaboration/linkify";
+import { useAppTranslations, useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import { formatUserName } from "@/features/identity/formatUserName";
 import { useInterfacePrefs } from "@/features/identity/InterfacePrefsProvider";
+import {
+  formatDateOnly,
+  formatDateTime as formatInstant,
+  localeTagForFormatting,
+} from "@/lib/localeFormatting";
 import { trpc } from "@/lib/trpc-client";
+import { instantCivilDate } from "@/lib/zonedDateTime";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { useDealActionError } from "../DealActionErrorProvider";
 import { ActivityCardMenu } from "./ActivityCardMenu";
 
 type EntityKey = { entityType: "deal" | "person" | "organization"; entityId: string };
 
-function formatDate(at: Date): string {
-  return at.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
-}
-
 // Completion stamp includes the time of day (Pipedrive shows "Done <date> <time>"): the user
 // wants to see WHEN an activity was actually completed, not just the day.
-function formatDateTime(at: Date): string {
-  return at.toLocaleString(undefined, {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  });
-}
 
 // Enriched activity card (Pipedrive parity): interactive mark-as-done checkbox,
 // a footer with due date / created-by / linked person + org, and a "More actions"
@@ -51,6 +45,27 @@ export function ActivityCard({
   // the "Edit" menu item both call it; omitted where editing is not offered.
   onEdit?: () => void;
 }): React.ReactNode {
+  const translateSales = useAppTranslations("sales");
+  const preferences = useLocalePreferences();
+  const formatDate = (at: Date) =>
+    activity.allDay
+      ? formatDateOnly(activity.dueDate ?? instantCivilDate(at, preferences.timeZone), preferences)
+      : formatInstant(at, preferences, {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+          hour: "numeric",
+          minute: "2-digit",
+        });
+  const formatDateTime = (at: Date) =>
+    formatInstant(at, preferences, {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    });
+
   const [done, setDone] = useState(activity.done);
   const [busy, setBusy] = useState(false);
   const utils = trpc.useUtils();
@@ -139,7 +154,9 @@ export function ActivityCard({
           checked={done}
           onCheckedChange={() => void toggle()}
           disabled={busy}
-          label={done ? "Reopen activity" : "Mark as done"}
+          label={
+            done ? translateSales("reopen_activity_08df1") : translateSales("mark_as_done_62aa4")
+          }
           className="mt-0.5 rounded-full data-[state=checked]:border-success data-[state=checked]:bg-success data-[state=checked]:text-success-foreground"
         />
         <div className="min-w-0 flex-1">
@@ -149,14 +166,18 @@ export function ActivityCard({
             type="button"
             onClick={() => onEdit?.()}
             disabled={onEdit === undefined}
-            className="flex w-full items-center gap-1.5 text-pretty text-left text-sm font-medium text-foreground enabled:hover:text-primary disabled:cursor-default"
+            className="flex w-full items-center gap-1.5 text-pretty text-start text-sm font-medium text-foreground enabled:hover:text-primary disabled:cursor-default"
           >
             <ActivityTypeIcon typeKey={activity.typeKey} />
-            <span className="min-w-0 truncate">{activity.subject}</span>
+            <span className="min-w-0 truncate">
+              <bdi dir="auto">{activity.subject}</bdi>
+            </span>
           </button>
           <p className="mt-0.5 flex flex-wrap items-center gap-x-1.5 text-xs text-muted-foreground">
             {activity.overdue ? (
-              <span className="font-semibold uppercase text-destructive">Overdue</span>
+              <span className="font-semibold uppercase text-destructive">
+                {translateSales("overdue_d6609")}
+              </span>
             ) : null}
             <span
               data-testid="activity-date"
@@ -165,7 +186,13 @@ export function ActivityCard({
               {formatDate(at)}
             </span>
             {activity.durationMinutes !== null ? (
-              <span>· {activity.durationMinutes} min</span>
+              <span>
+                ·{" "}
+                {new Intl.NumberFormat(localeTagForFormatting(preferences)).format(
+                  activity.durationMinutes,
+                )}{" "}
+                {translateSales("min_1f6fa")}
+              </span>
             ) : null}
             {activity.ownerName != null ? (
               <span>· {formatUserName(activity.ownerName)}</span>
@@ -174,24 +201,24 @@ export function ActivityCard({
               <Link
                 href={`/contacts/people/${activity.personId}`}
                 className="text-primary hover:underline"
-                aria-label="Linked person"
+                aria-label={translateSales("linked_person_cc4dc")}
               >
-                · {activity.personName ?? "Person"}
+                · {activity.personName ?? translateSales("person_6007d")}
               </Link>
             ) : null}
             {activity.orgId !== null ? (
               <Link
                 href={`/contacts/orgs/${activity.orgId}`}
                 className="text-primary hover:underline"
-                aria-label="Linked organization"
+                aria-label={translateSales("linked_organization_9861a")}
               >
-                · {activity.orgName ?? "Organization"}
+                · {activity.orgName ?? translateSales("organization_d764d")}
               </Link>
             ) : null}
           </p>
           {done && activity.doneAt != null ? (
             <p data-testid="activity-completed" className="mt-0.5 text-xs text-success">
-              Completed {formatDateTime(activity.doneAt)}
+              {translateSales("completed_22a97")} {formatDateTime(activity.doneAt)}
             </p>
           ) : null}
           {activity.videoCallUrl != null && activity.videoCallUrl !== "" ? (
@@ -201,7 +228,7 @@ export function ActivityCard({
               rel="noreferrer"
               className="mt-0.5 inline-flex items-center gap-1 text-xs text-primary hover:underline"
             >
-              Join video call
+              {translateSales("join_video_call_5ed04")}
             </a>
           ) : null}
           {activity.location != null && activity.location !== "" && (

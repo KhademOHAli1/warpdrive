@@ -74,10 +74,10 @@ interface Extent {
 
 // Overlap is decided on the rendered extent, not the stored duration: a duration-less activity
 // still paints placeBlock's minimum block, so two of them at the same minute do collide on screen.
-function extents(items: CalendarActivity[]): Extent[] {
+function extents(items: CalendarActivity[], timeZone: string): Extent[] {
   return items
     .map((activity) => {
-      const { topPx, heightPx } = placeBlock(activity.dueAt, activity.durationMinutes);
+      const { topPx, heightPx } = placeBlock(activity.dueAt, activity.durationMinutes, timeZone);
       return { activity, topPx, heightPx, endPx: topPx + heightPx };
     })
     .sort(
@@ -156,12 +156,16 @@ function layoutCluster(
   });
 }
 
-export function layoutTimed(items: CalendarActivity[]): {
+export function layoutTimed(
+  items: CalendarActivity[],
+  timeZone = "UTC",
+): {
   placements: TimedPlacement[];
   overflows: TimedOverflow[];
 } {
   const placements: TimedPlacement[] = [];
   const overflows: TimedOverflow[] = [];
-  for (const cluster of clusters(extents(items))) layoutCluster(cluster, placements, overflows);
+  for (const cluster of clusters(extents(items, timeZone)))
+    layoutCluster(cluster, placements, overflows);
   return { placements, overflows };
 }

@@ -18,6 +18,8 @@ import { PinnedNotesSection } from "@/features/deal-workspace/PinnedNotesSection
 import { SectionHeading } from "@/features/deal-workspace/SectionHeading";
 import type { DraftSummary } from "@/features/email/draftRepo";
 import { emailTabStatusLabel } from "@/features/email/emailTabStatus";
+import { useEmailMessages } from "@/features/email/useEmailMessages";
+import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
 import { trpc } from "@/lib/trpc-client";
 
 // Stable empty array: a new [] on every render would churn useMemo dependencies below.
@@ -71,6 +73,10 @@ export function WorkspaceTabs({
   onEditActivity,
   onResumeDraft,
 }: WorkspaceTabsProps) {
+  const translateSales = useAppTranslations("sales");
+  const emailMessages = useEmailMessages();
+  const locale = useLocale();
+
   // `?? EMPTY` rather than `?? []`: a fresh array literal each render changes the identity of every
   // downstream useMemo dependency, so the timeline was rebuilt on every render while data was absent.
   const notes =
@@ -108,12 +114,12 @@ export function WorkspaceTabs({
     () =>
       mergeDraftItems(
         mergeEmailItems(
-          buildHistoryTimeline(activities, resolvedChangelog, notes, createdAnchor),
+          buildHistoryTimeline(activities, resolvedChangelog, notes, createdAnchor, locale),
           emails,
         ),
         drafts,
       ),
-    [activities, resolvedChangelog, notes, createdAnchor, emails, drafts],
+    [activities, resolvedChangelog, notes, createdAnchor, emails, drafts, locale],
   );
   const { pinned, focus, history } = useMemo(() => partitionFocusHistory(allItems), [allItems]);
   const historyByType = useMemo(() => bucketByType(history), [history]);
@@ -144,15 +150,15 @@ export function WorkspaceTabs({
           while the rest of the timeline still renders. */}
       {emailQuery.isError === true && (
         <p role="alert" className="text-sm text-destructive">
-          Couldn't load emails for this deal. Please try again.
+          {translateSales("couldn_t_load_emails_for_this_deal_please_try_again_b563b")}
         </p>
       )}
 
-      <section aria-label="focus">
-        <SectionHeading>Focus</SectionHeading>
+      <section aria-label={translateSales("focus_c51fa")}>
+        <SectionHeading>{translateSales("focus_9d3ca")}</SectionHeading>
         <HistoryFeed
           items={focus}
-          emptyLabel="Nothing needs your attention"
+          emptyLabel={translateSales("nothing_needs_your_attention_8fa19")}
           onActivityChanged={onActivityChanged}
           onNoteChanged={onNoteChanged}
           onEditActivity={onEditActivity}
@@ -163,8 +169,8 @@ export function WorkspaceTabs({
         />
       </section>
 
-      <section aria-label="history">
-        <SectionHeading>History</SectionHeading>
+      <section aria-label={translateSales("history_259aa")}>
+        <SectionHeading>{translateSales("history_0e769")}</SectionHeading>
         <HistoryTypeTabs
           tab={tab}
           onTab={onTab}
@@ -175,7 +181,7 @@ export function WorkspaceTabs({
           onNoteChanged={onNoteChanged}
           onEditActivity={onEditActivity}
           emailScope={emailScope}
-          emailEmptyLabel={emailTabStatusLabel(emailQuery)}
+          emailEmptyLabel={emailTabStatusLabel(emailQuery, emailMessages)}
           onEmailChanged={onEmailChanged}
           onResumeDraft={onResumeDraft}
           onDraftChanged={onDraftChanged}

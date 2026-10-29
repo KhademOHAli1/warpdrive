@@ -9,6 +9,7 @@ import {
   firstMissingImportantField,
 } from "@/features/custom-fields/CustomFieldCreateFields";
 import { EntityCreateDialogShell } from "@/features/entity-create/EntityCreateDialogShell";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import type { CustomFieldDef } from "@/types/customFields";
 
 export function ConvertLeadDialog({
@@ -22,6 +23,8 @@ export function ConvertLeadDialog({
   onClose: () => void;
   onConvert: (customFields: Record<string, unknown>) => Promise<boolean>;
 }): React.ReactNode {
+  const tLeads = useAppTranslations("leads");
+
   const [values, setValues] = useState<Record<string, unknown>>(() => ({ ...initialValues }));
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
@@ -31,7 +34,7 @@ export function ConvertLeadDialog({
     if (submitting.current) return;
     const missing = firstMissingImportantField(defs, values);
     if (missing !== null) {
-      setError(`${missing.name} is required`);
+      setError(tLeads("fieldRequired", { name: missing.name }));
       return;
     }
 
@@ -53,7 +56,7 @@ export function ConvertLeadDialog({
 
   return (
     <EntityCreateDialogShell
-      title="Convert to deal"
+      title={tLeads("convertToDeal")}
       error={error}
       pending={pending}
       onSubmit={() => void submit()}
@@ -63,7 +66,7 @@ export function ConvertLeadDialog({
         defs={defs}
         values={values}
         onChange={(key, value) => setValues((current) => ({ ...current, [key]: value }))}
-        title="Deal fields"
+        title={tLeads("dealFields")}
       />
     </EntityCreateDialogShell>
   );

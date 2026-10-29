@@ -1,4 +1,6 @@
+"use client";
 import type React from "react";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { AttributionLine } from "./AttributionLine";
 
 // "Deal created" anchor (synthesized from deal.createdAt, decision 1). A titled
@@ -10,9 +12,11 @@ export function CreatedCard({
   at: Date;
   actorName: string | null;
 }): React.ReactNode {
+  const translateSales = useAppTranslations("sales");
+
   return (
     <div className="py-0.5">
-      <p className="text-sm font-medium text-foreground">Deal created</p>
+      <p className="text-sm font-medium text-foreground">{translateSales("deal_created_5f6be")}</p>
       <AttributionLine at={at} actorName={actorName} />
     </div>
   );

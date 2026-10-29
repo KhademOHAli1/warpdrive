@@ -1,5 +1,8 @@
+"use client";
+
 import { TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 
 interface ConsentProps {
   action: string;
@@ -32,33 +35,29 @@ function redirectDisplay(redirectUri: string): string {
  * next to it, and the user is told to deny if they did not start this.
  */
 export function Consent({ action, clientName, redirectUri }: ConsentProps): React.ReactElement {
+  const t = useAppTranslations("utilities.consent");
   return (
     <main className="flex min-h-screen items-center justify-center bg-muted/30 p-6">
       <section className="w-full max-w-md space-y-6 rounded-xl border bg-card p-6 shadow-sm">
         <div className="space-y-2">
-          <p className="text-sm font-medium text-muted-foreground">Connection request</p>
+          <p className="text-sm font-medium text-muted-foreground">{t("request")}</p>
           <h1 className="text-balance text-2xl font-semibold">
-            Connect an application to warpdrive?
+            {t.rich("title", { brand: (chunks) => <bdi dir="ltr">{chunks}</bdi> })}
           </h1>
-          <p className="text-pretty text-sm text-muted-foreground">
-            It will be able to read and update CRM data your permissions allow. It cannot delete
-            records. You can revoke it later in Settings.
-          </p>
+          <p className="text-pretty text-sm text-muted-foreground">{t("permissions")}</p>
         </div>
 
         <dl className="space-y-3 rounded-lg border bg-muted/40 p-4 text-sm">
           <div className="space-y-1">
-            <dt className="text-xs font-medium text-muted-foreground">
-              Name it reports (not verified)
-            </dt>
+            <dt className="text-xs font-medium text-muted-foreground">{t("clientName")}</dt>
             <dd data-testid="consent-client-name" className="break-words font-medium">
-              {clientName}
+              <bdi dir="auto">{clientName}</bdi>
             </dd>
           </div>
           <div className="space-y-1">
-            <dt className="text-xs font-medium text-muted-foreground">Access will be sent to</dt>
+            <dt className="text-xs font-medium text-muted-foreground">{t("destination")}</dt>
             <dd data-testid="consent-redirect-host" className="break-all font-mono text-xs">
-              {redirectDisplay(redirectUri)}
+              <bdi dir="ltr">{redirectDisplay(redirectUri)}</bdi>
             </dd>
           </div>
         </dl>
@@ -68,18 +67,15 @@ export function Consent({ action, clientName, redirectUri }: ConsentProps): Reac
           className="flex gap-2 text-pretty text-xs text-muted-foreground"
         >
           <TriangleAlert aria-hidden className="mt-px size-4 shrink-0 text-warning" />
-          <span>
-            Anyone can request a connection and choose the name above. If you did not just start
-            this from that application, deny it.
-          </span>
+          <span>{t("warning")}</span>
         </p>
 
         <form action={action} method="post" className="flex justify-end gap-2">
           <Button type="submit" name="decision" value="deny" variant="outline">
-            Deny
+            {t("deny")}
           </Button>
           <Button type="submit" name="decision" value="approve">
-            Allow access
+            {t("approve")}
           </Button>
         </form>
       </section>

@@ -10,6 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useEmailMessages } from "@/features/email/useEmailMessages";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { setThreadVisibilityAction } from "./threadVisibilityActions";
 
@@ -31,6 +32,8 @@ export function ThreadPrivacyToggle({
   visibility: string;
   onChanged?: () => void;
 }): React.ReactNode {
+  const E = useEmailMessages();
+
   const [busy, setBusy] = useState(false);
   const reportError = useActionError();
   const isPrivate = visibility === "private";
@@ -47,7 +50,7 @@ export function ThreadPrivacyToggle({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        aria-label={isPrivate ? "Private conversation" : "Shared conversation"}
+        aria-label={isPrivate ? E._extra.private_conversation : E._extra.shared_conversation}
         disabled={busy}
         onClick={(e) => e.stopPropagation()}
         onPointerDown={(e) => e.stopPropagation()}
@@ -56,8 +59,8 @@ export function ThreadPrivacyToggle({
         <LockGlyph open={!isPrivate} />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-40" onClick={(e) => e.stopPropagation()}>
-        <DropdownMenuItem onSelect={() => void set("private")}>Private</DropdownMenuItem>
-        <DropdownMenuItem onSelect={() => void set("shared")}>Shared</DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => void set("private")}>{E._extra.private}</DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => void set("shared")}>{E._extra.shared}</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

@@ -1,15 +1,15 @@
 "use client";
 
 import { useCallback, useMemo, useRef, useState } from "react";
-import { ENRICHMENT_STRINGS } from "@/constants/enrichmentStrings";
-import { AppError, ERROR_IDS } from "@/constants/errorIds";
+import { AppError } from "@/constants/errorIds";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { applyProspectsAction } from "../prospectApplyActions";
 import type { ProviderId } from "../providers/types";
+import { useEnrichmentMessages } from "../useEnrichmentMessages";
 import type { ItemOutcome, ReviewSubmission } from "./ProspectReviewStep";
 import { prospectActionProfile } from "./profilePayload";
 import { type RevealBatch, type RevealedProspect, revealProspects } from "./revealContract";
-import { revealErrorMessage } from "./searchMessage";
+import { revealErrorId } from "./searchMessage";
 import type { BadgedProspect } from "./types";
 import { useProspectSearch } from "./useProspectSearch";
 import { useProspectSelection } from "./useProspectSelection";
@@ -44,6 +44,7 @@ function fingerprintsDiffer(chunks: readonly RevealBatch[]): boolean {
 }
 
 export function useProspectFlow(orgId: string, providers: readonly ProviderId[]) {
+  const E = useEnrichmentMessages();
   const [step, setStep] = useState<ProspectStep>("search");
   const [batchId, setBatchId] = useState<string>(() => crypto.randomUUID());
   const [resumeId, setResumeId] = useState<string | null>(null);
@@ -51,7 +52,13 @@ export function useProspectFlow(orgId: string, providers: readonly ProviderId[])
   const [outcomes, setOutcomes] = useState<Readonly<Record<string, ItemOutcome>>>({});
   const [applying, setApplying] = useState(false);
   const generation = useRef(0);
-  const [applyError, setApplyError] = useState<string | null>(null);
+  const [applyErrorKey, setApplyError] = useState<"mappings" | "apply" | null>(null);
+  const applyError =
+    applyErrorKey === "mappings"
+      ? E.prospects.mappingsChangedError
+      : applyErrorKey === "apply"
+        ? E.dialog.applyError
+        : null;
   const selection = useProspectSelection();
   const search = useProspectSearch(providers, selection);
   const searchProvider = search.filters.provider;
@@ -68,7 +75,8 @@ export function useProspectFlow(orgId: string, providers: readonly ProviderId[])
         readCsrfToken(),
       );
       if (!result.ok) {
-        throw new AppError(ERROR_IDS.ENRICH_ALL_FAILED, revealErrorMessage(result.error.id), {});
+        const errorId = revealErrorId(result.error.id);
+        throw new AppError(errorId, errorId, { causeId: result.error.id });
       }
       return [result.value];
     },
@@ -117,7 +125,7 @@ export function useProspectFlow(orgId: string, providers: readonly ProviderId[])
     async (submissions: ReviewSubmission[]): Promise<ApplySummary> => {
       const session = generation.current;
       if (mappingsMismatch) {
-        setApplyError(ENRICHMENT_STRINGS.prospects.mappingsChangedError);
+        setApplyError("mappings");
         return "failed";
       }
       setApplying(true);
@@ -138,7 +146,7 @@ export function useProspectFlow(orgId: string, providers: readonly ProviderId[])
       const superseded = session !== generation.current;
       if (!superseded) setApplying(false);
       if (!result.ok) {
-        if (!superseded) setApplyError(ENRICHMENT_STRINGS.dialog.applyError);
+        if (!superseded) setApplyError("apply");
         return "failed";
       }
       const next: Record<string, ItemOutcome> = {};

@@ -1,0 +1,27 @@
+{
+  "close": "Schließen",
+  "select": "Auswählen",
+  "search": "Suchen...",
+  "noMatch": "Keine Treffer.",
+  "removeOption": "{label} entfernen",
+  "colorOptions": "Optionen für {label}",
+  "customHexColor": "Eigene Hex-Farbe",
+  "hexPlaceholder": "z. B. #1f2937…",
+  "invalidHexColor": "Geben Sie einen sechsstelligen Hex-Farbcode ein, z. B. #1f2937.",
+  "applyColor": "Farbe übernehmen",
+  "timePlaceholder": "h:mm",
+  "colors": {
+    "black": "Schwarz",
+    "slate": "Schiefergrau",
+    "red": "Rot",
+    "orange": "Orange",
+    "amber": "Bernstein",
+    "green": "Grün",
+    "teal": "Blaugrün",
+    "blue": "Blau",
+    "indigo": "Indigo",
+    "purple": "Violett",
+    "pink": "Rosa",
+    "white": "Weiß"
+  }
+}

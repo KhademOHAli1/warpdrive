@@ -2,13 +2,13 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { STRINGS } from "@/constants/strings";
 import { DraftsList } from "@/features/email/DraftsList";
 import type { InboxFilter } from "@/features/email/emailReads";
 import { InboxSearchBar } from "@/features/email/InboxSearchBar";
 import type { FolderKey } from "@/features/email/inboxFolders";
 import { OutboxList } from "@/features/email/OutboxList";
 import { ThreadList } from "@/features/email/ThreadList";
+import { useEmailMessages } from "@/features/email/useEmailMessages";
 import { useInboxRealtime } from "@/features/email/useInboxRealtime";
 import { trpc } from "@/lib/trpc-client";
 
@@ -18,6 +18,8 @@ interface InboxListClientProps {
 }
 
 export function InboxListClient({ selfActorId, folder }: InboxListClientProps): React.ReactNode {
+  const E = useEmailMessages();
+
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   // The quick-filter lives here (not inside ThreadList) so it narrows the in-mail search too: search
@@ -64,9 +66,9 @@ export function InboxListClient({ selfActorId, folder }: InboxListClientProps): 
   // only its conversation column here. Full-width conversation list (Pipedrive Sales Inbox parity):
   // no persistent reading pane; a row opens the thread on its own page inside the same shell.
   return (
-    <main aria-label="Inbox" className="flex h-full min-h-0 flex-col">
-      <h1 className="shrink-0 border-b px-4 py-2 text-lg font-semibold">{STRINGS.inbox.title}</h1>
-      <section aria-label="Conversations" className="flex min-h-0 min-w-0 flex-1 flex-col">
+    <main aria-label={E._extra.inbox} className="flex h-full min-h-0 flex-col">
+      <h1 className="shrink-0 border-b px-4 py-2 text-lg font-semibold">{E.title}</h1>
+      <section aria-label={E._extra.conversations} className="flex min-h-0 min-w-0 flex-1 flex-col">
         {listPane}
       </section>
     </main>

@@ -4,8 +4,9 @@ import { Eye } from "lucide-react";
 import { useRef, useState, useTransition } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { identityErrorMessage } from "@/constants/settingsIdentity";
 import { createGroupAction } from "@/features/identity/actions/groups";
+import { settingsIdentityError } from "@/features/identity/settingsMessages";
+import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import { readCsrfToken } from "@/utils/csrfCookie";
 
 interface Props {
@@ -13,6 +14,9 @@ interface Props {
 }
 
 export function CreateGroupForm({ onCreated }: Props): React.ReactElement {
+  const L = useSettingsMessages();
+  const identityErrorMessage = (error: string) => settingsIdentityError(L, error);
+
   const ref = useRef<HTMLInputElement>(null);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -41,15 +45,15 @@ export function CreateGroupForm({ onCreated }: Props): React.ReactElement {
           <Eye className="size-4" aria-hidden="true" />
         </div>
         <div>
-          <h2 className="text-sm font-semibold">Create a visibility group</h2>
+          <h2 className="text-sm font-semibold">{L._extra.create_a_visibility_group}</h2>
           <p className="mt-0.5 text-sm text-muted-foreground">
-            Control which records a group of users can access.
+            {L._extra.control_which_records_a_group_of_users_can_access}
           </p>
         </div>
       </div>
       <div className="p-5">
         <label htmlFor="group-name" className="sr-only">
-          Visibility group name
+          {L._extra.visibility_group_name}
         </label>
         <Input
           ref={ref}
@@ -57,7 +61,7 @@ export function CreateGroupForm({ onCreated }: Props): React.ReactElement {
           type="text"
           required
           maxLength={80}
-          placeholder="New visibility group name"
+          placeholder={L._extra.new_visibility_group_name}
           className="w-full"
           disabled={isPending}
         />
@@ -69,7 +73,7 @@ export function CreateGroupForm({ onCreated }: Props): React.ReactElement {
       </div>
       <div className="flex justify-end border-t bg-muted/20 px-5 py-3">
         <Button type="submit" disabled={isPending}>
-          {isPending ? "Creating..." : "Create"}
+          {isPending ? L._extra.creating : L._extra.create}
         </Button>
       </div>
     </form>

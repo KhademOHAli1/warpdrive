@@ -2,11 +2,11 @@
 import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { ENRICHMENT_STRINGS } from "@/constants/enrichmentStrings";
+import {settingsMessagesForLocale} from "@/features/identity/settingsMessages";
 import type { QuotaRemaining } from "@/features/enrichment/providers/types";
 import { ProviderCard, type ProviderCardView } from "./ProviderCard";
 
-const S = ENRICHMENT_STRINGS.settings;
+const S = settingsMessagesForLocale("en")._enrichment.settings;
 
 afterEach(cleanup);
 
@@ -273,4 +273,25 @@ it("locks Test connection while the provider is cooling down", () => {
   });
 
   expect(screen.getByRole("button", { name: S.test })).toBeDisabled();
+});
+
+it("describes remaining request quotas in Persian without implying paid credits", async () => {
+  const { LocaleProvider } = await import("@/features/i18n/LocaleProvider");
+  render(
+    <LocaleProvider locale="fa">
+      <ProviderCard
+        view={{ ...BASE, hasKey: true }}
+        now={null}
+        onToggle={vi.fn()}
+        onSaveKey={vi.fn()}
+        onRemoveKey={vi.fn()}
+        onTest={vi.fn()}
+        testResult="اتصال برقرار است"
+        testQuota={{ hourly: 12, daily: 5 }}
+      />
+    </LocaleProvider>,
+  );
+  expect(
+    screen.getByText("درخواست‌های باقی‌مانده: ۱۲ درخواست در ساعت جاری، ۵ درخواست امروز."),
+  ).toBeInTheDocument();
 });

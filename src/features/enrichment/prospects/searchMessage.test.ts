@@ -74,12 +74,13 @@ describe("messageForOutcome", () => {
 });
 
 describe("messageForOutcome provider detail", () => {
-  it("names what the provider actually returned so a failure is diagnosable", () => {
+  it("shows a safe explanation while retaining provider detail outside the rendered message", () => {
     const message = messageForOutcome(
       outcomeOf("provider_error", "apollo", "Provider returned 422"),
       "Acme",
     );
-    expect(message?.body).toContain("Provider returned 422");
+    expect(message?.body).toContain("provider could not complete");
+    expect(message?.body).not.toContain("Provider returned 422");
   });
 
   it("leaves the mapped kinds alone rather than appending a duplicate detail", () => {

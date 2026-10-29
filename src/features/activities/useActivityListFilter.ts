@@ -1,5 +1,6 @@
 "use client";
 import { type Dispatch, type SetStateAction, useState } from "react";
+import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import { type PresetRange, presetRange } from "./activityDatePresets";
 import type { ActivityListFilter } from "./schemas";
 import { useLocalNow } from "./useLocalNow";
@@ -18,6 +19,7 @@ function defaultFilter(currentUserId: string, range: PresetRange): ActivityListF
 
 export function useActivityListFilter(currentUserId: string): ActivityListFilterState {
   const localNow = useLocalNow();
+  const preferences = useLocalePreferences();
   const [chosen, setChosen] = useState<ActivityListFilter | null>(null);
   if (chosen !== null) return { filter: chosen, setFilter: setChosen, ready: true };
   if (localNow === null) {
@@ -28,7 +30,16 @@ export function useActivityListFilter(currentUserId: string): ActivityListFilter
     };
   }
   return {
-    filter: defaultFilter(currentUserId, presetRange("today", localNow)),
+    filter: defaultFilter(
+      currentUserId,
+      presetRange(
+        "today",
+        localNow,
+        preferences.calendar,
+        preferences.timeZone,
+        preferences.locale,
+      ),
+    ),
     setFilter: setChosen,
     ready: true,
   };

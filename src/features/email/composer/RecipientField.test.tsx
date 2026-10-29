@@ -126,3 +126,22 @@ describe("RecipientField", () => {
     expect(onChange).toHaveBeenCalledWith([]);
   });
 });
+
+it("supports Persian recipient validation and punctuation without changing address bytes", async () => {
+  const { LocaleProvider } = await import("@/features/i18n/LocaleProvider");
+  const onChange = vi.fn();
+  render(
+    <LocaleProvider locale="fa">
+      <RecipientField label="گیرنده" values={[]} onChange={onChange} />
+    </LocaleProvider>,
+  );
+  const input = screen.getByRole("combobox", { name: "گیرنده" });
+  expect(input).toHaveAttribute("dir", "ltr");
+  fireEvent.change(input, { target: { value: "bad-address" } });
+  fireEvent.keyDown(input, { key: "Enter" });
+  expect(screen.getByText("یک نشانی ایمیل معتبر وارد کنید.")).toBeInTheDocument();
+  expect(onChange).not.toHaveBeenCalled();
+  fireEvent.change(input, { target: { value: "Sara.Example+sales@example.com" } });
+  fireEvent.keyDown(input, { key: "،" });
+  expect(onChange).toHaveBeenCalledWith(["Sara.Example+sales@example.com"]);
+});

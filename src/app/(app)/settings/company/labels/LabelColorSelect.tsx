@@ -2,17 +2,7 @@
 import type React from "react";
 import { Select } from "@/components/ui/Select";
 import { LABEL_COLORS, LABEL_DOT_CLASSES, type LabelColor } from "@/constants/labelColors";
-
-const LABEL_COLOR_OPTIONS = LABEL_COLORS.map((color) => ({
-  value: color,
-  label: color,
-  icon: (
-    <span
-      aria-hidden="true"
-      className={`inline-block size-3 rounded-full ${LABEL_DOT_CLASSES[color]}`}
-    />
-  ),
-}));
+import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 
 interface LabelColorSelectProps {
   ariaLabel: string;
@@ -27,6 +17,18 @@ export function LabelColorSelect({
   value,
   onChange,
 }: LabelColorSelectProps): React.ReactNode {
+  const L = useSettingsMessages();
+  const LABEL_COLOR_OPTIONS = LABEL_COLORS.map((color) => ({
+    value: color,
+    label: L._labels.colors[color],
+    icon: (
+      <span
+        aria-hidden="true"
+        className={`inline-block size-3 rounded-full ${LABEL_DOT_CLASSES[color]}`}
+      />
+    ),
+  }));
+
   return (
     <Select
       ariaLabel={ariaLabel}

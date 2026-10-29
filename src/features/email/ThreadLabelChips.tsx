@@ -3,6 +3,8 @@ import { Pencil } from "lucide-react";
 import dynamic from "next/dynamic";
 import type React from "react";
 import { useState } from "react";
+import type { EmailMessages } from "@/features/email/emailMessages";
+import { useEmailMessages } from "@/features/email/useEmailMessages";
 import { trpc } from "@/lib/trpc-client";
 import { resolveMailLabelChips } from "./mailLabelResolve";
 
@@ -14,7 +16,9 @@ const MailLabelPicker = dynamic(async () => (await import("./MailLabelPicker")).
 
 // Local label: adding to src/constants/inboxStrings.ts is out of this unit's file scope, so the
 // pencil affordance carries its accessible name here.
-const EDIT_LABELS_LABEL = "Edit labels";
+function localizedEDIT_LABELS_LABEL(E: EmailMessages) {
+  return E._extra.edit_labels;
+}
 
 interface ThreadLabelChipsProps {
   labels: string[];
@@ -32,6 +36,8 @@ export function ThreadLabelChips({
   labels,
   onLabelsChange,
 }: ThreadLabelChipsProps): React.ReactNode {
+  const E = useEmailMessages();
+
   const [editing, setEditing] = useState(false);
   const catalog = trpc.mailLabels.list.useQuery().data ?? [];
   const chips = resolveMailLabelChips(catalog, labels);
@@ -50,7 +56,7 @@ export function ThreadLabelChips({
       {editable && (
         <button
           type="button"
-          aria-label={EDIT_LABELS_LABEL}
+          aria-label={localizedEDIT_LABELS_LABEL(E)}
           onClick={() => setEditing((v) => !v)}
           className="inline-flex rounded p-1 text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
         >

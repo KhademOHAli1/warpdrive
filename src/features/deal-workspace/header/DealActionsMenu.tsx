@@ -15,6 +15,7 @@ import { deleteDealAction } from "@/features/deal-workspace/actions";
 import { useDealActionError } from "@/features/deal-workspace/DealActionErrorProvider";
 import { duplicateDealAction } from "@/features/deal-workspace/duplicateDealAction";
 import { archiveDealAction } from "@/features/deals/archiveActions";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { useDetailDrawerClose } from "@/features/navigation/detailDrawerClose";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { ConvertToLeadDialog } from "./ConvertToLeadDialog";
@@ -43,6 +44,8 @@ export function DealActionsMenu({
   expectedUpdatedAt,
   canDelete,
 }: DealActionsMenuProps): React.ReactNode {
+  const translateSales = useAppTranslations("sales");
+
   const router = useRouter();
   const reportError = useDealActionError();
   const closeDrawer = useDetailDrawerClose();
@@ -85,18 +88,32 @@ export function DealActionsMenu({
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger aria-label="Deal actions" disabled={pending} className={ICON_BUTTON}>
+      <DropdownMenuTrigger
+        aria-label={translateSales("deal_actions_d9823")}
+        disabled={pending}
+        className={ICON_BUTTON}
+      >
         <EllipsisVertical aria-hidden="true" className="h-4 w-4" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-44">
-        <DropdownMenuItem onSelect={() => void copyLink()}>Copy link</DropdownMenuItem>
-        <DropdownMenuItem onSelect={() => void duplicate()}>Duplicate</DropdownMenuItem>
-        <DropdownMenuItem onSelect={() => setFlow("convert")}>Convert to a lead</DropdownMenuItem>
-        <DropdownMenuItem onSelect={() => setFlow("merge")}>Merge</DropdownMenuItem>
-        <DropdownMenuItem onSelect={() => void archive()}>Archive</DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => void copyLink()}>
+          {translateSales("copy_link_dbf36")}
+        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => void duplicate()}>
+          {translateSales("duplicate_02cda")}
+        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => setFlow("convert")}>
+          {translateSales("convert_to_a_lead_5cff3")}
+        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => setFlow("merge")}>
+          {translateSales("merge_8851a")}
+        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => void archive()}>
+          {translateSales("archive_66f48")}
+        </DropdownMenuItem>
         {canDelete && (
           <DropdownMenuItem onSelect={() => setFlow("delete")} className="text-destructive">
-            Delete deal
+            {translateSales("delete_deal_0e193")}
           </DropdownMenuItem>
         )}
       </DropdownMenuContent>
@@ -129,9 +146,11 @@ export function DealActionsMenu({
         onOpenChange={(o) => {
           if (!o) setFlow(null);
         }}
-        title="Delete this deal?"
-        description="This cannot be undone. The deal and its activity are removed for everyone."
-        confirmLabel="Delete"
+        title={translateSales("delete_this_deal_5da3f")}
+        description={translateSales(
+          "this_cannot_be_undone_the_deal_and_its_activity_are_removed_for_e_7d528",
+        )}
+        confirmLabel={translateSales("delete_e2d0a")}
         destructive
         pending={pending}
         onConfirm={() => void remove()}

@@ -4,7 +4,6 @@ import type React from "react";
 import { useRef, useState } from "react";
 import { useActionError } from "@/components/shell/ActionErrorProvider";
 import { Switch } from "@/components/ui/Switch";
-import { STRINGS } from "@/constants/strings";
 import type { InterfacePrefs } from "@/features/identity/InterfacePrefsProvider";
 import {
   setOpenDetailsAfterCreateAction,
@@ -12,21 +11,13 @@ import {
   setUiFlagAction,
 } from "@/features/identity/preferencesActions";
 import type { OpenDetailsAfterCreate, UiFlagKey } from "@/features/identity/preferencesSchema";
+import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import { cn } from "@/lib/utils";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { SettingsCard, SettingsCardBody, SettingsCardHeader } from "../SettingsSurface";
 
-const S = STRINGS.settings.interface;
-
 // The five scalar flags, in Pipedrive's visual order. openDetailsAfterCreate is rendered separately
 // because it is a parent switch over three per-entity children.
-const FLAG_ROWS: Array<{ key: UiFlagKey; label: string }> = [
-  { key: "usPhoneFormat", label: S.usPhoneFormat },
-  { key: "winSound", label: S.winSound },
-  { key: "emailLinksNewTab", label: S.emailLinksNewTab },
-  { key: "prefillParticipantsAsRecipients", label: S.prefillParticipantsAsRecipients },
-  { key: "autoPrefixLeadDealTitles", label: S.autoPrefixLeadDealTitles },
-];
 
 function Row({
   label,
@@ -57,6 +48,16 @@ export function InterfacePreferences({
   prefs: InterfacePrefs;
   scheduleFollowUpAfterWon: boolean;
 }): React.ReactNode {
+  const L = useSettingsMessages();
+  const S = L.interface;
+  const FLAG_ROWS: Array<{ key: UiFlagKey; label: string }> = [
+    { key: "usPhoneFormat", label: S.usPhoneFormat },
+    { key: "winSound", label: S.winSound },
+    { key: "emailLinksNewTab", label: S.emailLinksNewTab },
+    { key: "prefillParticipantsAsRecipients", label: S.prefillParticipantsAsRecipients },
+    { key: "autoPrefixLeadDealTitles", label: S.autoPrefixLeadDealTitles },
+  ];
+
   const router = useRouter();
   const reportError = useActionError();
   const [scheduleFollowUp, setScheduleFollowUp] = useState(initialScheduleFollowUp);
@@ -142,12 +143,12 @@ export function InterfacePreferences({
   return (
     <SettingsCard>
       <SettingsCardHeader
-        title={STRINGS.settings.interfaceHeading}
-        description="Choose how creation, navigation, formatting, and notifications behave."
+        title={L.interfaceHeading}
+        description={L._extra.choose_how_creation_navigation_formatting_and_notification}
       />
       <SettingsCardBody className="space-y-4">
         <Row
-          label={STRINGS.settings.scheduleFollowUpAfterWon}
+          label={L.scheduleFollowUpAfterWon}
           checked={scheduleFollowUp}
           onToggle={(v) => void toggleScheduleFollowUp(v)}
         />

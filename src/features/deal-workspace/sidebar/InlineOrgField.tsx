@@ -5,6 +5,7 @@ import { useState } from "react";
 import { createOrgAction } from "@/features/contacts/actions";
 import { updateDealAction } from "@/features/deals/updateAction";
 import { EntityCombobox } from "@/features/entity-create/EntityCombobox";
+import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
 import { InlineEditFooter } from "@/features/inline-edit/InlineEditFooter";
 import { InlineFieldShell } from "@/features/inline-edit/InlineFieldShell";
 import { saveErrorMessage } from "@/features/inline-edit/saveError";
@@ -40,6 +41,9 @@ export function InlineOrgField({
   orgOptions: OrgRef[];
   onSaved: () => void;
 }): React.ReactNode {
+  const translateSales = useAppTranslations("sales");
+  const locale = useLocale();
+
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState<Draft>({ kind: "unchanged" });
   const [pending, setPending] = useState(false);
@@ -98,7 +102,7 @@ export function InlineOrgField({
 
   return (
     <InlineFieldShell
-      label="Organization"
+      label={translateSales("organization_d764d")}
       editing={editing}
       onStartEdit={start}
       value={
@@ -107,26 +111,26 @@ export function InlineOrgField({
             href={`/contacts/orgs/${org.id}`}
             className="font-semibold text-primary hover:underline"
           >
-            {org.name}
+            <bdi dir="auto">{org.name}</bdi>
           </Link>
         ) : null
       }
-      emptyPrompt="Add organization"
+      emptyPrompt={translateSales("add_organization_0ca87")}
     >
       <div>
         <EntityCombobox
-          label="Organization"
+          label={translateSales("organization_d764d")}
           hideLabel
           options={orgOptions}
-          placeholder="Search or add an organization"
-          createLabel={(q) => `Add '${q}' as new organization`}
-          similarWarning="Similar organization already exists."
+          placeholder={translateSales("search_or_add_an_organization_36308")}
+          createLabel={(q) => translateSales("add_arg0_as_new_organization_d5252", { arg0: q })}
+          similarWarning={translateSales("similar_organization_already_exists_260ac")}
           onSelectExisting={(id) => setDraft({ kind: "existing", id })}
           onCreateNew={(name) => setDraft({ kind: "new", name })}
           onClear={() => setDraft({ kind: "clear" })}
         />
         {errorId !== null && (
-          <p className="mt-1 text-xs text-destructive">{saveErrorMessage(errorId)}</p>
+          <p className="mt-1 text-xs text-destructive">{saveErrorMessage(errorId, locale)}</p>
         )}
         <InlineEditFooter
           onCancel={() => setEditing(false)}

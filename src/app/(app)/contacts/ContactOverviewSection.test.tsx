@@ -19,6 +19,16 @@ let stats: ContactActivityStats = {
 vi.mock("@/lib/trpc-client", () => ({
   trpc: {
     contacts: { activityStats: { useQuery: () => ({ data: stats }) } },
+    activities: {
+      listTypes: {
+        useQuery: () => ({
+          data: [
+            { key: "call", name: "Call", isSystem: true },
+            { key: "meeting", name: "Meeting", isSystem: true },
+          ],
+        }),
+      },
+    },
   },
 }));
 
@@ -47,7 +57,8 @@ describe("ContactOverviewSection", () => {
     expect(section.getByText("Meeting")).toBeInTheDocument();
     // Most active users (spec B2).
     expect(section.getByText("Most active users")).toBeInTheDocument();
-    expect(section.getByText("Ann (2), Bob (1)")).toBeInTheDocument();
+    expect(section.getByText("Ann (2)")).toHaveAttribute("dir", "auto");
+    expect(section.getByText("Bob (1)")).toHaveAttribute("dir", "auto");
     // Inactive days.
     expect(section.getByText("Inactive")).toBeInTheDocument();
     expect(section.getByText(/5/)).toBeInTheDocument();

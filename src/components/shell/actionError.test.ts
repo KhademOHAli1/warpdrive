@@ -3,6 +3,9 @@ import { ERROR_IDS } from "@/constants/errorIds";
 import { actionErrorContent } from "./actionError";
 
 describe("actionErrorContent", () => {
+  it("uses Farsi wording for the selected interface language", () => {
+    expect(actionErrorContent(undefined, "fa").title).toBe("انجام این کار ممکن نشد");
+  });
   it("falls back to the generic copy for an unmapped id", () => {
     expect(actionErrorContent("E_NOT_A_REAL_ID").title).toBe("Couldn't complete that action");
   });

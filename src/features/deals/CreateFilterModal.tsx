@@ -4,6 +4,7 @@ import { useState } from "react";
 import { type ConditionRow, ConditionRows } from "@/components/filters/ConditionRows";
 import { type ActionErrorContent, actionErrorContent } from "@/components/shell/actionError";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
 import { mergeLabelOptions } from "@/features/labels/mergeLabelOptions";
 import type { FilterDefinition } from "@/features/saved-filters/schemas";
 import {
@@ -57,19 +58,24 @@ export function CreateFilterModal({
   savedFilter,
   initialDefinition,
 }: CreateFilterModalProps): React.ReactNode {
+  const locale = useLocale();
+  const translateSales = useAppTranslations("sales");
   const mode = filterSaveMode(savedFilter);
-  const copy = filterSaveCopy(mode);
+  const copy = filterSaveCopy(mode, locale);
   const seedDefinition = savedFilter?.definition ?? initialDefinition;
   const catalogNames = (trpc.labels.listByTarget.useQuery({ target: "deal" }).data ?? []).map(
     (l) => l.name,
   );
   // Union in what deals actually carry, so a label visible on a card is a label you can filter by.
   const appliedNames = trpc.labels.appliedNames.useQuery({ target: "deal" }).data ?? [];
-  const fields = dealFilterFields({
-    owners: owners.map((o) => ({ id: o.ownerId, name: o.name })),
-    stages,
-    labelOptions: mergeLabelOptions(catalogNames, appliedNames),
-  });
+  const fields = dealFilterFields(
+    {
+      owners: owners.map((o) => ({ id: o.ownerId, name: o.name })),
+      stages,
+      labelOptions: mergeLabelOptions(catalogNames, appliedNames),
+    },
+    locale,
+  );
 
   const [rows, setRows] = useState<ConditionRow[]>(() =>
     seedDefinition === undefined ? [blankConditionRow(fields)] : definitionToRows(seedDefinition),
@@ -84,14 +90,14 @@ export function CreateFilterModal({
   const [saveError, setSaveError] = useState<ActionErrorContent | null>(null);
   const [saving, setSaving] = useState(false);
 
-  const effectiveName = nameEdited ? name : describeRows(rows, fields, combinator);
+  const effectiveName = nameEdited ? name : describeRows(rows, fields, combinator, locale);
   // Caught as the user types, so a value the server would reject never costs a round trip.
-  const issue = conditionRowIssue(rows, fields);
+  const issue = conditionRowIssue(rows, fields, locale);
 
   // The filter as currently edited: rows with a real value, minus incomplete ones. Shared by
   // Save (persist) and Preview (apply live without saving).
   function buildDefinition(): FilterDefinition {
-    return dealRowsToDefinition(rows, combinator) ?? { combinator, conditions: [] };
+    return dealRowsToDefinition(rows, combinator, locale) ?? { combinator, conditions: [] };
   }
 
   async function save(): Promise<void> {
@@ -106,7 +112,10 @@ export function CreateFilterModal({
 
   async function persist(): Promise<void> {
     const definition = buildDefinition();
-    const filterName = effectiveName.trim() === "" ? "Untitled filter" : effectiveName.trim();
+    const filterName =
+      effectiveName.trim() === ""
+        ? translateSales("computed.untitledFilter")
+        : effectiveName.trim();
     if (mode === "update" && savedFilter !== undefined) {
       const res = await updateSavedFilterAction(
         savedFilter.id,
@@ -143,7 +152,9 @@ export function CreateFilterModal({
         className="max-w-2xl gap-0 overflow-hidden bg-card p-0"
       >
         <DialogHeader className="border-b px-5 py-3">
-          <DialogTitle className="text-base font-semibold">{copy.title}</DialogTitle>
+          <DialogTitle className="text-base font-semibold">
+            <bdi dir="auto">{copy.title}</bdi>
+          </DialogTitle>
         </DialogHeader>
         <div className="max-h-[70vh] space-y-2 overflow-y-auto px-5 py-4">
           {copy.note !== null ? <p className="text-sm text-muted-foreground">{copy.note}</p> : null}
@@ -162,7 +173,9 @@ export function CreateFilterModal({
           {issue !== null ? <p className="text-sm text-red-600">{issue}</p> : null}
           {saveError !== null ? (
             <div className="text-sm text-red-600">
-              <p className="font-medium">{saveError.title}</p>
+              <p className="font-medium">
+                <bdi dir="auto">{saveError.title}</bdi>
+              </p>
               <p>{saveError.body}</p>
             </div>
           ) : null}

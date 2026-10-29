@@ -1,6 +1,8 @@
+"use client";
 import type React from "react";
 import { Tip } from "@/components/ui/tooltip";
-import { stageSegmentStyle } from "@/features/deals/boardStageHeader";
+import { funnelClip, stageSegmentStyle } from "@/features/deals/boardStageHeader";
+import { useLocale } from "@/features/i18n/LocaleProvider";
 
 // Pipedrive's signature deal-detail element: a connected chevron pipeline where
 // each stage is an arrow segment. Passed stages read as "done", the current
@@ -15,10 +17,6 @@ export interface StageChip {
 
 // Arrow shape: flat left edge, pointed right edge, with a matching left notch on
 // all but the first segment so neighbours interlock.
-const NOTCH = "0.75rem";
-const FIRST_CLIP =
-  "polygon(0 0, calc(100% - 0.75rem) 0, 100% 50%, calc(100% - 0.75rem) 100%, 0 100%)";
-const MID_CLIP = `polygon(0 0, calc(100% - 0.75rem) 0, 100% 50%, calc(100% - 0.75rem) 100%, 0 100%, ${NOTCH} 50%)`;
 
 // Inherit the pipeline board's per-order hue ramp (stageSegmentStyle) instead of a uniform
 // primary/success/muted set: each segment is tinted in its own stage color, and progress reads
@@ -30,6 +28,7 @@ function segmentState(chip: StageChip): "current" | "passed" | "future" {
 }
 
 export function StageChevrons({ chips }: { chips: StageChip[] }): React.ReactNode {
+  const direction = useLocale() === "fa" ? "rtl" : "ltr";
   return (
     <ol className="flex min-w-0 items-stretch overflow-hidden rounded-md">
       {chips.map((chip, idx) => {
@@ -40,17 +39,17 @@ export function StageChevrons({ chips }: { chips: StageChip[] }): React.ReactNod
               aria-current={chip.current ? "step" : undefined}
               className={[
                 "truncate px-4 py-1 text-xs leading-5 text-foreground",
-                idx > 0 ? "-ml-2 pl-6" : "",
+                idx > 0 ? "-ms-2 ps-6" : "",
               ]
                 .join(" ")
                 .trim()}
               style={{
-                clipPath: idx === 0 ? FIRST_CLIP : MID_CLIP,
+                clipPath: funnelClip(idx === 0, direction),
                 backgroundColor: fill.backgroundColor,
                 fontWeight: fill.fontWeight,
               }}
             >
-              {chip.name}
+              <bdi dir="auto">{chip.name}</bdi>
             </li>
           </Tip>
         );

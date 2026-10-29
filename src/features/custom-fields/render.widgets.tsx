@@ -1,6 +1,7 @@
 "use client";
 // Custom-field widget dispatch: CustomFieldDetail (read-only) and
 // CustomFieldFormControl (editable). Controls use the shared shadcn-style UI primitives.
+import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import { assertNever } from "@/types/result";
 import { useCustomFieldRefLabels } from "./refLabelsContext";
 import { formatCustomFieldDisplay } from "./render";
@@ -19,6 +20,7 @@ import {
 import type { ControlProps, DetailProps } from "./render.widget-types";
 
 export function CustomFieldDetail({ def, value, currency }: DetailProps) {
+  const preferences = useLocalePreferences();
   const refLabels = useCustomFieldRefLabels();
   const numeric = def.type === "numeric" || def.type === "monetary";
   const multiline = def.type === "large_text";
@@ -26,11 +28,18 @@ export function CustomFieldDetail({ def, value, currency }: DetailProps) {
     multiline ? " text-pretty" : ""
   }`;
   return (
-    <span className={className}>{formatCustomFieldDisplay(def, value, currency, refLabels)}</span>
+    <bdi dir={def.type === "phone" || def.type === "time" ? "ltr" : "auto"} className={className}>
+      {formatCustomFieldDisplay(def, value, currency, refLabels, preferences)}
+    </bdi>
   );
 }
 
-export function CustomFieldFormControl({ def, value, onChange }: ControlProps) {
+export function CustomFieldFormControl({
+  def,
+  value,
+  onChange,
+  hideValidationMessage,
+}: ControlProps) {
   const id = `cf-${def.key}`;
 
   switch (def.type) {
@@ -41,10 +50,26 @@ export function CustomFieldFormControl({ def, value, onChange }: ControlProps) {
     case "large_text":
       return <LargeTextControl id={id} def={def} value={value} onChange={onChange} />;
     case "numeric":
-      return <NumericControl id={id} def={def} value={value} onChange={onChange} />;
+      return (
+        <NumericControl
+          id={id}
+          def={def}
+          value={value}
+          onChange={onChange}
+          hideValidationMessage={hideValidationMessage}
+        />
+      );
     case "monetary":
       return (
-        <NumericControl id={id} def={def} value={value} onChange={onChange} step="0.01" min={0} />
+        <NumericControl
+          id={id}
+          def={def}
+          value={value}
+          onChange={onChange}
+          hideValidationMessage={hideValidationMessage}
+          step="0.01"
+          min={0}
+        />
       );
     case "date":
       return <DateControl id={id} def={def} value={value} onChange={onChange} />;

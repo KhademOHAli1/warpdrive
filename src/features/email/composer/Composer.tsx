@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useEmailMessages } from "@/features/email/useEmailMessages";
 import { useInterfacePrefs } from "@/features/identity/InterfacePrefsProvider";
 import { trpc } from "@/lib/trpc-client";
 import type { EmailVisibility } from "../threadVisibility";
@@ -71,6 +72,8 @@ export function Composer({
   onSent,
   onClose,
 }: ComposerProps): React.ReactNode {
+  const E = useEmailMessages();
+
   const resolvedThreadId = resolveComposerThreadId(threadId, draft?.threadId, context);
   const links = resolveComposerLinks({ context, linkDealId, draft });
   const { prefillParticipantsAsRecipients } = useInterfacePrefs();
@@ -161,6 +164,7 @@ export function Composer({
   // event time, not this render), so the rule's warning here is a false positive.
   // eslint-disable-next-line react-hooks/refs -- refs are read inside the returned handlers, not now
   const { handleSend, handleSendLater } = buildSendHandlers({
+    messages: E,
     accountId,
     resolvedThreadId,
     toList,
@@ -196,7 +200,7 @@ export function Composer({
 
   return (
     <section
-      aria-label="compose email"
+      aria-label={E._extra.compose_email}
       className="rounded-md border border-border bg-background p-3 flex flex-col gap-2 text-sm"
     >
       <ComposerHeader

@@ -10,6 +10,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { useState } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/Popover";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useEmailMessages } from "@/features/email/useEmailMessages";
 
 interface InsertFieldItem {
   label: string;
@@ -35,9 +36,12 @@ const CATEGORY_TAB =
 export function InsertFieldMenu({
   items,
   onInsert,
-  label = "Insert field",
+  label: suppliedLabel,
   onRefresh,
 }: InsertFieldMenuProps): React.ReactNode {
+  const E = useEmailMessages();
+  const label = suppliedLabel ?? E._extra.insertField;
+
   const [open, setOpen] = useState(false);
   // Active category tab; null = All.
   const [tab, setTab] = useState<string | null>(null);
@@ -58,18 +62,18 @@ export function InsertFieldMenu({
       <PopoverContent align="start" className="w-60 p-0">
         <Command>
           <CommandInput
-            placeholder="Search fields..."
+            placeholder={E._extra.search_fields}
             className="w-full border-b px-2.5 py-2 text-sm outline-none"
           />
           {categories.length > 1 && (
             <Tabs value={tab ?? ALL_TAB} onValueChange={(v) => setTab(v === ALL_TAB ? null : v)}>
               <TabsList className="flex-wrap gap-1 border-b px-1 py-1">
                 <TabsTrigger value={ALL_TAB} className={CATEGORY_TAB}>
-                  All
+                  {E._extra.all}
                 </TabsTrigger>
                 {categories.map((c) => (
                   <TabsTrigger key={c} value={c} className={CATEGORY_TAB}>
-                    {c}
+                    {(E._fieldLabels as Record<string, string>)[c.toLowerCase()] ?? c}
                   </TabsTrigger>
                 ))}
               </TabsList>
@@ -77,12 +81,16 @@ export function InsertFieldMenu({
           )}
           <CommandList className="max-h-56 overflow-y-auto p-1">
             <CommandEmpty className="px-2 py-3 text-sm text-muted-foreground">
-              No match.
+              {E._extra.no_match}
             </CommandEmpty>
             <CommandGroup>
               {shown.map((item) => (
                 <CommandItem
-                  key={item.label}
+                  key={
+                    (E._fieldLabels as Record<string, string>)[
+                      item.label.toLowerCase().replaceAll(" ", "_")
+                    ] ?? item.label
+                  }
                   value={item.label}
                   onSelect={() => {
                     onInsert(item.value);
@@ -101,9 +109,9 @@ export function InsertFieldMenu({
             <button
               type="button"
               onClick={() => onRefresh()}
-              className="flex w-full items-center gap-1.5 rounded px-2 py-1.5 text-left text-xs text-muted-foreground hover:bg-accent"
+              className="flex w-full items-center gap-1.5 rounded px-2 py-1.5 text-start text-xs text-muted-foreground hover:bg-accent"
             >
-              <span aria-hidden="true">↻</span> Update autofilled values
+              <span aria-hidden="true">↻</span> {E._extra.update_autofilled_values}
             </button>
           </div>
         )}

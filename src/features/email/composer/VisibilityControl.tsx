@@ -1,5 +1,6 @@
 "use client";
 
+import { useEmailMessages } from "@/features/email/useEmailMessages";
 // VisibilityControl (C1): interactive composer privacy picker. A shadcn DropdownMenu (never a
 // native <select>) offering Private / Shared. The chosen value is lifted into composer state and
 // threaded into the send payload (useComposerSend -> sendEmailInput.visibility) so the sent thread
@@ -16,7 +17,6 @@ import {
 import { INLINE_CONTROL_SURFACE } from "@/components/ui/inlineControlSurface";
 import { cn } from "@/lib/utils";
 import type { EmailVisibility } from "../threadVisibility";
-import { COMPOSER_STRINGS } from "./composer.constants";
 
 interface VisibilityControlProps {
   value: EmailVisibility;
@@ -31,14 +31,14 @@ function LockGlyph({ open }: { open: boolean }): React.ReactNode {
 }
 
 export function VisibilityControl({ value, onChange }: VisibilityControlProps): React.ReactNode {
+  const E = useEmailMessages();
+
   const isPrivate = value === "private";
-  const label = isPrivate
-    ? COMPOSER_STRINGS.visibilityPrivateLabel
-    : COMPOSER_STRINGS.visibilityLabel;
+  const label = isPrivate ? E._composer.visibilityPrivateLabel : E._composer.visibilityLabel;
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        aria-label={COMPOSER_STRINGS.visibilityPickerLabel}
+        aria-label={E._composer.visibilityPickerLabel}
         className={cn(
           INLINE_CONTROL_SURFACE,
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
@@ -49,18 +49,18 @@ export function VisibilityControl({ value, onChange }: VisibilityControlProps): 
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-40">
         <DropdownMenuItem
-          aria-label={COMPOSER_STRINGS.visibilityPrivateLabel}
+          aria-label={E._composer.visibilityPrivateLabel}
           className="text-xs"
           onSelect={() => onChange("private")}
         >
-          {COMPOSER_STRINGS.visibilityPrivateLabel}
+          {E._composer.visibilityPrivateLabel}
         </DropdownMenuItem>
         <DropdownMenuItem
-          aria-label={COMPOSER_STRINGS.visibilityLabel}
+          aria-label={E._composer.visibilityLabel}
           className="text-xs"
           onSelect={() => onChange("shared")}
         >
-          {COMPOSER_STRINGS.visibilityLabel}
+          {E._composer.visibilityLabel}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

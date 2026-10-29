@@ -3,10 +3,12 @@
 // runs every stage-based query behind visiblePipelines so a restricted pipeline's stage names
 // never reach a user who cannot see that pipeline. That applies to the "All pipelines"
 // aggregate as much as to a single selected pipeline.
+
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import { listTeams } from "@/features/identity/teams.service";
 import { listAssignableUsers } from "@/features/identity/users.service";
 import { can } from "@/features/permissions/can";
+import { readBaseCurrency } from "@/features/settings/readBaseCurrency";
 import { activitiesByType } from "@/features/stats/activitiesByType";
 import { activitiesPerformance } from "@/features/stats/activitiesPerformance";
 import { aggregateStageConversion, aggregateStageSums } from "@/features/stats/aggregateStages";
@@ -42,7 +44,9 @@ export const statsRouter = router({
       );
     }
 
+    const currency = input.currency ?? (await readBaseCurrency(ctx.db, signal));
     const filters = {
+      currency,
       pipelineId: requested,
       owners,
       from: input.from,
@@ -68,12 +72,13 @@ export const statsRouter = router({
       ),
       Promise.all(
         stagePipelineIds.map((pipelineId) =>
-          stageSums(ctx.db, ctx.actor, pipelineId, owners, signal),
+          stageSums(ctx.db, ctx.actor, pipelineId, owners, signal, currency),
         ),
       ),
     ]);
 
     return {
+      currency,
       dealPerformance: dp,
       winRate: winRate(dp.won, dp.lost),
       wonDealStats: wds,

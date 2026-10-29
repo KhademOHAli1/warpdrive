@@ -6,7 +6,7 @@
 
 import { ARRAY_OPS, EXACT_OPS, FILTER_OP_KEYS, ORDERED_OPS, TEXT_OPS } from "@/constants/filterOps";
 
-export const LEAD_FILTER_FIELDS = ["title", "value", "sourceOrigin", "ownerId", "labels"] as const;
+export const LEAD_FILTER_FIELDS = ["title", "value", "currency", "sourceOrigin", "ownerId", "labels"] as const;
 export type LeadFilterField = (typeof LEAD_FILTER_FIELDS)[number];
 export const LEAD_FILTER_OPS = FILTER_OP_KEYS;
 
@@ -15,6 +15,7 @@ export const LEAD_FILTER_OPS = FILTER_OP_KEYS;
 export const OPS_BY_LEAD_FIELD: Record<LeadFilterField, readonly string[]> = {
   title: TEXT_OPS,
   value: ORDERED_OPS,
+  currency: EXACT_OPS,
   sourceOrigin: TEXT_OPS,
   ownerId: EXACT_OPS,
   labels: ARRAY_OPS,

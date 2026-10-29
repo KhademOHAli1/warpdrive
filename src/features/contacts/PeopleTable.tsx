@@ -5,8 +5,10 @@ import type { ColumnSort } from "@/components/data-table/useColumnSort";
 import { Avatar } from "@/components/ui/Avatar";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { DEFAULT_BASE_CURRENCY } from "@/constants/currency";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { useInterfacePrefs } from "@/features/identity/InterfacePrefsProvider";
 import { RecordLink } from "@/features/navigation/RecordLink";
+import { useFormatters } from "@/lib/useFormatters";
 import { formatUsPhone } from "@/utils/phone";
 import type { PeopleColumn } from "./peopleColumns";
 import type { PersonSortField } from "./schemas";
@@ -65,7 +67,7 @@ export interface PeopleTableProps {
 function SortGlyph({ dir }: { dir: "asc" | "desc" | null }): React.ReactNode {
   if (dir === null) return null;
   return (
-    <span aria-hidden="true" className="ml-1 inline-block text-[10px]">
+    <span aria-hidden="true" className="ms-1 inline-block text-[10px]">
       {dir === "asc" ? "▲" : "▼"}
     </span>
   );
@@ -104,6 +106,7 @@ function renderPersonCell(
   row: PeopleListRow,
   usPhoneFormat: boolean,
   currency: string,
+  number: (value: number) => string,
 ): React.ReactNode {
   if (col.customField !== undefined) {
     return (
@@ -128,7 +131,7 @@ function renderPersonCell(
             }
             className="text-primary hover:underline"
           >
-            {row.name}
+            <bdi dir="auto">{row.name}</bdi>
           </RecordLink>
         </span>
       );
@@ -139,17 +142,21 @@ function renderPersonCell(
           preview={{ id: row.orgId, title: row.orgName ?? "" }}
           className="text-primary hover:underline"
         >
-          {row.orgName}
+          <bdi dir="auto">{row.orgName}</bdi>
         </RecordLink>
       ) : (
         (row.orgName ?? "")
       );
     case "email":
-      return row.primaryEmail ?? "";
+      return <bdi dir="ltr">{row.primaryEmail ?? ""}</bdi>;
     case "phone":
-      return row.phone === null ? "" : usPhoneFormat ? formatUsPhone(row.phone) : row.phone;
+      return (
+        <bdi dir="ltr">
+          {row.phone === null ? "" : usPhoneFormat ? formatUsPhone(row.phone) : row.phone}
+        </bdi>
+      );
     case "closedDeals":
-      return row.closedDeals;
+      return number(row.closedDeals);
     default:
       return "";
   }
@@ -175,6 +182,9 @@ export function PeopleTable({
   columnsMenu,
   currency = DEFAULT_BASE_CURRENCY,
 }: PeopleTableProps): React.ReactNode {
+  const tContacts = useAppTranslations("contacts");
+  const format = useFormatters();
+
   const { usPhoneFormat } = useInterfacePrefs();
   return (
     <div className="overflow-hidden">
@@ -184,10 +194,10 @@ export function PeopleTable({
       <div className="overflow-x-auto">
         <table className="w-full border-collapse text-sm">
           <thead>
-            <tr className="border-b bg-muted/60 text-left text-muted-foreground">
+            <tr className="border-b bg-muted/60 text-start text-muted-foreground">
               <th className="w-8 px-3 py-2">
                 <Checkbox
-                  label="Select all people"
+                  label={tContacts("selectAllPeople")}
                   checked={allSelected}
                   onCheckedChange={onToggleAll}
                 />
@@ -214,14 +224,14 @@ export function PeopleTable({
               <tr key={row.id} className="border-b last:border-0 hover:bg-muted/50">
                 <td className="px-3 py-2">
                   <Checkbox
-                    label={`Select ${row.name}`}
+                    label={tContacts("selectRecord", { name: row.name })}
                     checked={isSelected(row.id)}
                     onCheckedChange={() => onToggleRow(row.id)}
                   />
                 </td>
                 {visibleColumns.map((col) => (
                   <td key={col.key} className={cellClass(col)}>
-                    {renderPersonCell(col, row, usPhoneFormat, currency)}
+                    {renderPersonCell(col, row, usPhoneFormat, currency, format.number)}
                   </td>
                 ))}
               </tr>

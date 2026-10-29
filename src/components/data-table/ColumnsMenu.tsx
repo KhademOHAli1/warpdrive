@@ -5,6 +5,7 @@ import type React from "react";
 import { useState } from "react";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/Popover";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { type ColumnDef, pinnedKey } from "./columnModel";
 
 // dnd-kit lives behind this boundary. The cog trigger stays in the route bundle so it paints with
@@ -34,6 +35,7 @@ export function ColumnsMenu({
   onToggle,
   onReorder,
 }: ColumnsMenuProps): React.ReactNode {
+  const t = useAppTranslations("tableControls");
   const [open, setOpen] = useState(false);
   const pin = pinnedKey(catalog);
   const hidden = catalog.filter((c) => !visibleKeys.has(c.key));
@@ -41,7 +43,7 @@ export function ColumnsMenu({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger
-        aria-label="Customize columns"
+        aria-label={t("customizeColumns")}
         className="rounded-md border p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground"
       >
         <Settings aria-hidden="true" className="h-4 w-4" />
@@ -50,7 +52,9 @@ export function ColumnsMenu({
         align="end"
         className="min-w-56 max-h-[min(70vh,32rem)] overflow-y-auto p-1 text-sm"
       >
-        <p className="px-2 py-1 text-xs font-medium uppercase text-muted-foreground">Columns</p>
+        <p className="px-2 py-1 text-xs font-medium uppercase text-muted-foreground">
+          {t("columns")}
+        </p>
         <ColumnsMenuSortableList
           catalog={catalog}
           order={order}
@@ -60,7 +64,9 @@ export function ColumnsMenu({
         />
         {hidden.length > 0 ? (
           <>
-            <p className="px-2 pt-2 text-xs font-medium uppercase text-muted-foreground">Hidden</p>
+            <p className="px-2 pt-2 text-xs font-medium uppercase text-muted-foreground">
+              {t("hiddenColumns")}
+            </p>
             {hidden.map((col) => (
               <div
                 key={col.key}
@@ -72,7 +78,7 @@ export function ColumnsMenu({
                   onCheckedChange={() => onToggle(col.key)}
                   label={col.header}
                 />
-                <span>{col.header}</span>
+                <bdi dir="auto">{col.header}</bdi>
               </div>
             ))}
           </>

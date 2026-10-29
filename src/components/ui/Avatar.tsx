@@ -1,43 +1,42 @@
+"use client";
 import type React from "react";
+import { useState } from "react";
 import { avatarColorClass, initials } from "@/lib/avatar";
 import { cn } from "@/lib/utils";
+import { AvatarFallback, Avatar as ShadcnAvatar } from "./primitives/avatar";
 
-interface AvatarProps {
+export function Avatar({
+  name,
+  src,
+  className,
+}: {
   name: string;
-  // Optional avatar image (e.g. users.avatar_url). Renders the image when present, falling back to
-  // colored initials when null/undefined or if it fails to load is not handled (kept simple).
   src?: string | null;
   className?: string;
-}
-
-// Colored initial avatar (Pipedrive shows one beside every contact/owner). The
-// name drives both the initials and a deterministic swatch. role="img" with an
-// aria-label keeps the initials from being read as loose text.
-export function Avatar({ name, src, className }: AvatarProps): React.ReactNode {
-  if (src !== null && src !== undefined && src !== "") {
-    return (
-      // biome-ignore lint/performance/noImgElement: small avatar, next/image not warranted here
-      <img
-        src={src}
-        alt={name}
-        className={cn(
-          "inline-block h-7 w-7 shrink-0 rounded-full object-cover outline outline-1 -outline-offset-1 outline-black/10 dark:outline-white/10",
-          className,
-        )}
-      />
-    );
-  }
+}): React.ReactNode {
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
+  const hasPhoto = src !== null && src !== undefined && src !== "" && src !== failedSrc;
   return (
-    <span
-      role="img"
-      aria-label={name}
-      className={cn(
-        "inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold",
-        avatarColorClass(name),
-        className,
-      )}
+    <ShadcnAvatar
+      role={hasPhoto ? undefined : "img"}
+      aria-label={hasPhoto ? undefined : name}
+      className={cn("inline-flex size-7", className)}
     >
-      {initials(name)}
-    </span>
+      {hasPhoto ? (
+        // biome-ignore lint/performance/noImgElement: native loading preserves immediate avatar semantics
+        <img
+          src={src}
+          alt={name}
+          onError={() => setFailedSrc(src)}
+          className="size-full rounded-full object-cover"
+        />
+      ) : (
+        <AvatarFallback
+          className={cn("text-xs font-semibold text-inherit", avatarColorClass(name))}
+        >
+          {initials(name)}
+        </AvatarFallback>
+      )}
+    </ShadcnAvatar>
   );
 }

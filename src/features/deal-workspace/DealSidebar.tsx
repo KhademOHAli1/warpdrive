@@ -8,10 +8,12 @@ import {
   type DealSidebarSectionPreference,
   normalizeDealSidebarSections,
 } from "@/constants/dealSidebarSections";
-import { STRINGS } from "@/constants/strings";
 import type { PersonMatchCandidate } from "@/features/contacts/personOptionsRepo";
 import { useDealActionError } from "@/features/deal-workspace/DealActionErrorProvider";
 import { updateDealAction } from "@/features/deals/updateAction";
+import { useSalesStrings } from "@/features/deals/useSalesStrings";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
+import { useFormatters } from "@/lib/useFormatters";
 import { err, ok } from "@/types/result";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { CollapsibleSection } from "./CollapsibleSection";
@@ -65,6 +67,11 @@ export function DealSidebar({
   hiddenOrgFields?: ReadonlySet<string>;
   hiddenPersonFields?: ReadonlySet<string>;
 }): React.ReactNode {
+  const STRINGS = useSalesStrings();
+
+  const translateSales = useAppTranslations("sales");
+  const format = useFormatters();
+
   const {
     deal,
     person,
@@ -168,7 +175,8 @@ export function DealSidebar({
           deal={{
             id: deal.id,
             updatedAt: deal.updatedAt,
-            value: deal.value !== null ? Number(deal.value) : null,
+            value: deal.value,
+            currency: deal.currency,
             expectedCloseDate: deal.expectedCloseDate,
             labels: deal.labels,
           }}
@@ -254,14 +262,20 @@ export function DealSidebar({
         title={sections.overview}
         headerActions={sectionActions(sections.overview, [dealFieldsItem])}
       >
-        <FieldRow label="Deal age">
-          <span className="tabular-nums">{overview.ageDays}</span> days
+        <FieldRow label={translateSales("deal_age_8b12d")}>
+          <span className="tabular-nums">
+            {translateSales("computed.dayCount", { count: overview.ageDays })}
+          </span>
         </FieldRow>
-        <FieldRow label="Inactive">
-          <span className="tabular-nums">{overview.inactiveDays}</span> days
+        <FieldRow label={translateSales("inactive_ac7c9")}>
+          <span className="tabular-nums">
+            {translateSales("computed.dayCount", { count: overview.inactiveDays })}
+          </span>
         </FieldRow>
-        <FieldRow label="Created">
-          <span className="tabular-nums">{deal.createdAt.toLocaleDateString()}</span>
+        <FieldRow label={translateSales("created_d70b9")}>
+          <span className="tabular-nums">
+            {format.dateTime(deal.createdAt, { year: "numeric", month: "short", day: "numeric" })}
+          </span>
         </FieldRow>
       </CollapsibleSection>
     ),

@@ -5,15 +5,13 @@ import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Skeleton } from "@/components/ui/Skeleton";
-import { ENRICHMENT_STRINGS } from "@/constants/enrichmentStrings";
 import type { ProviderId, ProviderOutcome } from "../providers/types";
+import { useEnrichmentMessages } from "../useEnrichmentMessages";
 import { ProspectFilters, type ProspectFiltersValue } from "./ProspectFilters";
 import { ProspectResultsTable } from "./ProspectResultsTable";
 import { messageForErrorId, messageForOutcome } from "./searchMessage";
 import type { BadgedProspect } from "./types";
 import type { ProspectSelection } from "./useProspectSelection";
-
-const S = ENRICHMENT_STRINGS.prospects;
 
 export interface ProspectSearchStepProps {
   orgName: string;
@@ -62,6 +60,8 @@ function Results({
 }
 
 export function ProspectSearchStep(props: ProspectSearchStepProps): React.ReactNode {
+  const E = useEnrichmentMessages();
+  const S = E.prospects;
   const {
     orgName,
     providers,
@@ -80,9 +80,9 @@ export function ProspectSearchStep(props: ProspectSearchStepProps): React.ReactN
 
   const message =
     errorId !== null
-      ? messageForErrorId(errorId, orgName)
+      ? messageForErrorId(errorId, orgName, E)
       : searched && profiles.length === 0 && outcome !== null
-        ? messageForOutcome(outcome, orgName)
+        ? messageForOutcome(outcome, orgName, E)
         : null;
 
   return (
@@ -120,7 +120,7 @@ export function ProspectSearchStep(props: ProspectSearchStepProps): React.ReactN
               setDismissedFull(true);
             }}
           >
-            {ENRICHMENT_STRINGS.dialog.cancel}
+            {E.dialog.cancel}
           </button>
         </span>
       ) : null}

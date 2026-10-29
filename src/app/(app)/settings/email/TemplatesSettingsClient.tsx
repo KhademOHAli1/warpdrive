@@ -29,9 +29,10 @@ import {
   updateTemplateAction,
 } from "@/features/email/authoringActions";
 import type { SettingsTemplate } from "@/features/email/emailAuthoringReads";
+import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
+import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { formatCreatedOn } from "./formatDate";
-import { EMAIL_SETTINGS_STRINGS as S } from "./strings";
 import { type TemplateDraft, TemplateDraftEditor } from "./TemplateDraftEditor";
 import { TemplateRow } from "./TemplateRow";
 
@@ -42,6 +43,10 @@ export function TemplatesSettingsClient({
   templates: SettingsTemplate[];
   canShare: boolean;
 }): React.ReactNode {
+  const L = useSettingsMessages();
+  const preferences = useLocalePreferences();
+  const S = L._email;
+
   const router = useRouter();
   const reportError = useActionError();
   const [draft, setDraft] = useState<TemplateDraft | null>(null);
@@ -223,7 +228,7 @@ export function TemplatesSettingsClient({
           <DndContext
             sensors={sensors}
             collisionDetection={closestCenter}
-            onDragEnd={(e) => void onDragEnd(e)}
+            onDragEnd={(e: DragEndEvent) => void onDragEnd(e)}
           >
             <SortableContext items={ownViewIds} strategy={verticalListSortingStrategy}>
               {ownRows.map((t) => (
@@ -260,7 +265,7 @@ export function TemplatesSettingsClient({
                 )}
               </span>
               <span className="w-28 text-xs text-muted-foreground">
-                {formatCreatedOn(t.createdAt)}
+                {formatCreatedOn(t.createdAt, preferences)}
               </span>
               <span className="w-24 text-xs text-muted-foreground">{t.ownerName}</span>
             </li>

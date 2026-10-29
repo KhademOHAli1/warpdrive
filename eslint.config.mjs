@@ -19,10 +19,13 @@ export default tseslint.config(
     // the standalone marketing site (its own package + toolchain), so the app's type-aware config
     // does not apply to it. See docs/superpowers/specs/2026-07-18-landing-cloudflare-pages-design.md.
     ignores: [
+      // Registry sources stay pristine; adapters are linted and all UI remains typechecked.
+      "src/components/ui/primitives/**",
       "drizzle/**",
       ".next/**",
       "dist/**",
       "node_modules/**",
+      "**/*.d.json.ts",
       "**/parity-tools/**",
       "site/**",
       "docs-site/**",

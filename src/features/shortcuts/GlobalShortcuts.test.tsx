@@ -55,6 +55,20 @@ describe("GlobalShortcuts number keys", () => {
     expect(push).not.toHaveBeenCalled();
   });
 
+  test("accepts Persian/Arabic digits and leaves IME, shifted and modified input alone", () => {
+    render(<GlobalShortcuts />);
+    fireEvent.keyDown(window, { key: "۲" });
+    fireEvent.keyDown(window, { key: "٣" });
+    expect(push.mock.calls).toEqual([[NAV_ITEMS[1]?.href], [NAV_ITEMS[2]?.href]]);
+    push.mockClear();
+    fireEvent.keyDown(window, { key: "۲", isComposing: true });
+    fireEvent.keyDown(window, { key: "۲", keyCode: 229 });
+    fireEvent.keyDown(window, { key: "۲", shiftKey: true });
+    fireEvent.keyDown(window, { key: "۲", ctrlKey: true });
+    fireEvent.keyDown(window, { key: "۲", altKey: true });
+    expect(push).not.toHaveBeenCalled();
+  });
+
   test("unbinds on unmount", () => {
     const view = render(<GlobalShortcuts />);
     view.unmount();

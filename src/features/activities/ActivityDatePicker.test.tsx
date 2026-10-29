@@ -8,6 +8,7 @@ vi.mock("@/lib/trpc-client", () => ({
   trpc: { activities: { dayLoad: { useQuery: (...args: unknown[]) => useQuery(...args) } } },
 }));
 
+import { LocaleProvider } from "@/features/i18n/LocaleProvider";
 import { ActivityDatePicker } from "./ActivityDatePicker";
 
 beforeAll(() => {
@@ -55,11 +56,15 @@ it("names the exact count and target on a loaded day", async () => {
   expect(dayButton("15")).toHaveAccessibleName(/1 activity scheduled, daily target 5/);
 });
 
-it("asks the server to bucket days in the viewer's own timezone", () => {
+it("asks the server to bucket days in the account timezone independently of the browser", () => {
   loaded({});
-  render(<ActivityDatePicker value="2026-07-04" onChange={vi.fn()} ariaLabel="Start date" />);
+  render(
+    <LocaleProvider timeZone="Asia/Tehran">
+      <ActivityDatePicker value="2026-07-04" onChange={vi.fn()} ariaLabel="Start date" />
+    </LocaleProvider>,
+  );
   const [input] = useQuery.mock.calls[0] as [{ timeZone: string }];
-  expect(input.timeZone).toBe(Intl.DateTimeFormat().resolvedOptions().timeZone);
+  expect(input.timeZone).toBe("Asia/Tehran");
 });
 
 it("pads the range past the grid so a local day is never half-covered", () => {
@@ -68,6 +73,16 @@ it("pads the range past the grid so a local day is never half-covered", () => {
   const [input] = useQuery.mock.calls[0] as [{ from: string; to: string }];
   expect(input.from < "2026-06-29").toBe(true);
   expect(input.to > "2026-08-09").toBe(true);
+});
+
+it("loads the whole Solar Hijri month when switching calendars", () => {
+  loaded({});
+  render(<ActivityDatePicker value="2026-03-21" onChange={vi.fn()} ariaLabel="Start date" />);
+  fireEvent.click(screen.getByLabelText("Start date"));
+  fireEvent.click(screen.getByRole("button", { name: "Use Solar Hijri calendar" }));
+  const [input] = useQuery.mock.calls.at(-1) as [{ from: string; to: string }];
+  expect(input.from < "2026-03-01").toBe(true);
+  expect(input.to > "2026-04-21").toBe(true);
 });
 
 it("queries the month the calendar shows, not the UTC month of its local first day", () => {

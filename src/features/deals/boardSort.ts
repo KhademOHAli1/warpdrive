@@ -1,4 +1,4 @@
-import { parseDealValue } from "@/lib/parseDealValue";
+import { compareMoneyValues } from "@/features/currencies/money";
 import type { BoardCard } from "./dealRepo";
 
 // The ordered board sort keys we support today, driving the dropdown. Each maps to a field the
@@ -44,7 +44,8 @@ function compareNullable<T>(
 // call is the documented slow path for repeated locale-aware compares on a re-sort hot path.
 const collator = new Intl.Collator(undefined, { sensitivity: "base" });
 const byText = (x: string, y: string): number => collator.compare(x, y);
-const byNumber = (x: number, y: number): number => x - y;
+const validMoney = (value: string | null): string | null =>
+  value !== null && /^-?\d+(\.\d{1,4})?$/.test(value) ? value : null;
 const byTime = (x: Date, y: Date): number => x.getTime() - y.getTime();
 
 // A null/blank string collapses to null so blanks sort last (an empty person name is "unset").
@@ -60,7 +61,10 @@ function compareByKey(a: BoardCard, b: BoardCard, key: BoardSortKey, dir: SortDi
     case "title":
       return compareNullable(text(a.title), text(b.title), byText, dir);
     case "value":
-      return compareNullable(parseDealValue(a.value), parseDealValue(b.value), byNumber, dir);
+      return (
+        (a.currency ?? "USD").localeCompare(b.currency ?? "USD") ||
+        compareNullable(validMoney(a.value), validMoney(b.value), compareMoneyValues, dir)
+      );
     case "person":
       return compareNullable(text(a.personName), text(b.personName), byText, dir);
     case "organization":

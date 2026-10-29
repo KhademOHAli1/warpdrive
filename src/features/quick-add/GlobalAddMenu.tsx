@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { AddActivityModal } from "@/features/activities/AddActivityModal";
 import { AddDealModal } from "@/features/deals/AddDealModal";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { AddLeadModal } from "@/features/leads/AddLeadModal";
 import { isOverlayOpen, isTypingTarget } from "@/features/shortcuts/shortcutTarget";
 import { trpc } from "@/lib/trpc-client";
@@ -19,21 +20,20 @@ import { GlobalNoteModal } from "./GlobalNoteModal";
 type ModalKind = "deal" | "lead" | "activity" | "person" | "org" | "note" | null;
 
 interface Entry {
-  key: string;
-  label: string;
+  key: Exclude<ModalKind, null> | "email";
   shortcut: string;
 }
 
 // Entries in menu order (Pipedrive Lead/Deal/Activity/Person/Organization/Note/Email; Product is
 // out of scope). Note opens a target-picker modal; Email routes to the standalone compose surface.
 const ENTRIES: Entry[] = [
-  { key: "lead", label: "Lead", shortcut: "L" },
-  { key: "deal", label: "Deal", shortcut: "D" },
-  { key: "activity", label: "Activity", shortcut: "A" },
-  { key: "person", label: "Person", shortcut: "P" },
-  { key: "org", label: "Organization", shortcut: "O" },
-  { key: "note", label: "Note", shortcut: "N" },
-  { key: "email", label: "Email", shortcut: "E" },
+  { key: "lead", shortcut: "L" },
+  { key: "deal", shortcut: "D" },
+  { key: "activity", shortcut: "A" },
+  { key: "person", shortcut: "P" },
+  { key: "org", shortcut: "O" },
+  { key: "note", shortcut: "N" },
+  { key: "email", shortcut: "E" },
 ];
 
 // The global "+" quick-add next to the search box (Pipedrive parity): opens a menu whose entries
@@ -41,6 +41,7 @@ const ENTRIES: Entry[] = [
 // (focus trap, arrow/Escape nav, portal); the letter shortcuts (L/D/A/P/O) stay wired via an
 // onKeyDown on the content so a single keypress fires the matching modal while the menu is open.
 export function GlobalAddMenu(): React.ReactNode {
+  const t = useAppTranslations("quickAdd");
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [modal, setModal] = useState<ModalKind>(null);
@@ -78,7 +79,7 @@ export function GlobalAddMenu(): React.ReactNode {
         router.push("/inbox/compose");
         return;
       }
-      setModal(entry.key as ModalKind);
+      setModal(entry.key);
     },
     [isDisabled, router],
   );
@@ -114,7 +115,7 @@ export function GlobalAddMenu(): React.ReactNode {
         <DropdownMenuTrigger asChild>
           <button
             type="button"
-            aria-label="Quick add"
+            aria-label={t("title")}
             className="flex h-9 w-9 items-center justify-center rounded-md bg-action text-lg font-medium text-action-foreground transition-transform hover:opacity-90 active:scale-[0.96]"
           >
             <span aria-hidden="true">+</span>
@@ -128,8 +129,11 @@ export function GlobalAddMenu(): React.ReactNode {
               onSelect={() => choose(entry)}
               className="justify-between"
             >
-              <span>{entry.label}</span>
-              <kbd className="rounded border bg-muted px-1.5 text-xs text-muted-foreground">
+              <span>{t(`entities.${entry.key}`)}</span>
+              <kbd
+                dir="ltr"
+                className="rounded border bg-muted px-1.5 text-xs text-muted-foreground"
+              >
                 {entry.shortcut}
               </kbd>
             </DropdownMenuItem>

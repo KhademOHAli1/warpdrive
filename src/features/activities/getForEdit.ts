@@ -26,6 +26,8 @@ export interface EditableActivity {
   dueAt: string | null;
   // The user set a day but no time; the composer must not echo the stored midnight back.
   allDay: boolean;
+  dueDate?: string | null;
+  endDate?: string | null;
   endAt: string | null;
   durationMinutes: number | null;
   location: string | null;
@@ -146,6 +148,8 @@ export async function getActivityForEdit(
     priority: normalizePriority(row.priority),
     dueAt: row.dueAt?.toISOString() ?? null,
     allDay: row.allDay,
+    dueDate: row.dueDate,
+    endDate: row.endDate,
     endAt: row.endAt?.toISOString() ?? null,
     durationMinutes: row.durationMinutes,
     location: row.location,

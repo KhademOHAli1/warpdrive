@@ -2,6 +2,7 @@
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { updateOrgAction } from "@/features/contacts/actions";
+import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
 import { InlineEditFooter } from "@/features/inline-edit/InlineEditFooter";
 import { InlineFieldShell } from "@/features/inline-edit/InlineFieldShell";
 import { saveErrorMessage } from "@/features/inline-edit/saveError";
@@ -14,11 +15,11 @@ import { refreshQuietly } from "./sidebarEditors";
 
 // The editable text parts of a structured address, in display order.
 const ADDRESS_PARTS = [
-  { key: "street", label: "Street" },
-  { key: "city", label: "City" },
-  { key: "region", label: "Region" },
-  { key: "postal", label: "Postal code" },
-  { key: "country", label: "Country" },
+  { key: "street" },
+  { key: "city" },
+  { key: "region" },
+  { key: "postal" },
+  { key: "country" },
 ] as const;
 
 type AddressPart = (typeof ADDRESS_PARTS)[number]["key"];
@@ -60,6 +61,9 @@ export function OrgAddressField({
   address: Record<string, unknown> | null;
   formatted: string;
 }): React.ReactNode {
+  const translateSales = useAppTranslations("sales");
+  const locale = useLocale();
+
   const router = useRouter();
   const initial = toDraft(address);
   const f = useInlineEditField<AddressDraft>(initial);
@@ -78,11 +82,11 @@ export function OrgAddressField({
 
   const editor = f.editing ? (
     <div className="flex flex-col gap-1.5">
-      {ADDRESS_PARTS.map(({ key, label }) => (
+      {ADDRESS_PARTS.map(({ key }) => (
         <input
           key={key}
-          aria-label={label}
-          placeholder={label}
+          aria-label={translateSales(key === "postal" ? "computed.postalCode" : `computed.${key}`)}
+          placeholder={translateSales(key === "postal" ? "computed.postalCode" : `computed.${key}`)}
           value={f.draft[key]}
           disabled={f.pending}
           onChange={(e) => f.setDraft({ ...f.draft, [key]: e.target.value })}
@@ -91,7 +95,7 @@ export function OrgAddressField({
       ))}
       {f.error !== null ? (
         <span role="alert" className="text-destructive text-xs">
-          {saveErrorMessage(f.error)}
+          {saveErrorMessage(f.error, locale)}
         </span>
       ) : null}
       <InlineEditFooter
@@ -104,13 +108,13 @@ export function OrgAddressField({
   ) : null;
 
   return (
-    <FieldRow label="Address" empty={formatted === "-"}>
+    <FieldRow label={translateSales("address_56ef8")} empty={formatted === "-"}>
       <InlineFieldShell
-        label="Address"
+        label={translateSales("address_56ef8")}
         editing={f.editing}
         onStartEdit={f.start}
         value={formatted === "-" ? null : formatted}
-        emptyPrompt="+ Add address"
+        emptyPrompt={translateSales("add_address_5ec4d")}
       >
         {editor}
       </InlineFieldShell>

@@ -45,4 +45,4 @@ export function PopMenu({
   );
 }
 
-export const POP_ITEM = "block w-full rounded px-2 py-1.5 text-left text-sm hover:bg-accent";
+export const POP_ITEM = "block w-full rounded px-2 py-1.5 text-start text-sm hover:bg-accent";

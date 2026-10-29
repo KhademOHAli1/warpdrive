@@ -9,12 +9,14 @@ import { createOrgAction, createPersonAction } from "@/features/contacts/actions
 import { cleanAddress, nonEmptyPoints } from "@/features/contacts/EditContactForms";
 import {
   CustomFieldCreateFields,
+  customFieldCreateError,
   customFieldCreatePayload,
-  firstMissingImportantField,
 } from "@/features/custom-fields/CustomFieldCreateFields";
 import { AddDealPersonColumn, type ContactPoint } from "@/features/deals/AddDealPersonColumn";
 import { EntityCreateDialogShell } from "@/features/entity-create/EntityCreateDialogShell";
+import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
 import { useInterfacePrefs } from "@/features/identity/InterfacePrefsProvider";
+import { saveErrorMessage } from "@/features/inline-edit/saveError";
 import { trpc } from "@/lib/trpc-client";
 import { readCsrfToken } from "@/utils/csrfCookie";
 
@@ -33,13 +35,7 @@ interface GlobalContactModalProps extends ContactCreateModalProps {
   kind: ContactKind;
 }
 
-const ADDRESS_FIELDS = [
-  ["street", "Street"],
-  ["city", "City"],
-  ["region", "Region"],
-  ["postal", "Postal"],
-  ["country", "Country"],
-] as const;
+const ADDRESS_FIELDS = ["street", "city", "region", "postal", "country"] as const;
 
 // Compatibility entry point for the global quick-add menu. List and embedded surfaces use the
 // explicit variants below so their intent is visible without branching props at the call site.
@@ -70,6 +66,8 @@ function ContactCreateModal({
   initialEmail = "",
   afterCreate = "respect-interface-preference",
 }: GlobalContactModalProps): React.ReactNode {
+  const t = useAppTranslations("quickAdd");
+  const locale = useLocale();
   const router = useRouter();
   const { openDetailsAfterCreate } = useInterfacePrefs();
   const nameId = useId();
@@ -99,13 +97,13 @@ function ContactCreateModal({
     if (submitting.current || pending || customFieldsQ.isLoading) return;
     const trimmed = name.trim();
     if (trimmed === "") {
-      setError("Name is required");
+      setError(t("nameRequired"));
       return;
     }
     const defs = customFieldsQ.data ?? [];
-    const missingField = firstMissingImportantField(defs, customFields);
-    if (missingField !== null) {
-      setError(`${missingField.name} is required`);
+    const fieldError = customFieldCreateError(defs, customFields, locale);
+    if (fieldError !== null) {
+      setError(fieldError);
       return;
     }
     const submittedCustomFields = customFieldCreatePayload(defs, customFields);
@@ -137,7 +135,7 @@ function ContactCreateModal({
             );
 
       if (!result.ok) {
-        setError(result.error.id);
+        setError(saveErrorMessage(result.error.id, locale));
         return;
       }
 
@@ -164,7 +162,7 @@ function ContactCreateModal({
 
   return (
     <EntityCreateDialogShell
-      title={kind === "person" ? "Add person" : "Add organization"}
+      title={kind === "person" ? t("addPerson") : t("addOrganization")}
       bodyClassName="grid gap-6 md:grid-cols-[1.4fr_1fr]"
       error={error}
       pending={pending}
@@ -175,7 +173,7 @@ function ContactCreateModal({
       <div className="min-w-0 space-y-4">
         <div className="space-y-1">
           <label htmlFor={nameId} className="block text-sm font-medium">
-            Name
+            {t("name")}
           </label>
           <Input
             id={nameId}
@@ -195,14 +193,14 @@ function ContactCreateModal({
 
         {kind === "person" && (
           <div className="space-y-1">
-            <span className="block text-sm font-medium">Organization</span>
+            <span className="block text-sm font-medium">{t("organization")}</span>
             <Select
-              ariaLabel="Organization"
+              ariaLabel={t("organization")}
               value={selectedOrgId}
               onChange={setSelectedOrgId}
-              placeholder="No organization"
+              placeholder={t("noOrganization")}
               options={[
-                { value: "", label: "No organization" },
+                { value: "", label: t("noOrganization") },
                 ...orgOptions.map<SelectOption>((option) => ({
                   value: option.id,
                   label: option.name,
@@ -232,14 +230,14 @@ function ContactCreateModal({
         ) : (
           <fieldset className="flex flex-col gap-3">
             <legend className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              Address
+              {t("address")}
             </legend>
-            {ADDRESS_FIELDS.map(([key, label]) => {
+            {ADDRESS_FIELDS.map((key) => {
               const id = `${addressId}-${key}`;
               return (
                 <div key={key} className="space-y-1">
                   <label htmlFor={id} className="block text-sm font-medium">
-                    {label}
+                    {t(`addressFields.${key}`)}
                   </label>
                   <Input
                     id={id}

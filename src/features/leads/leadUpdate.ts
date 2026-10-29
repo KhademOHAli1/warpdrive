@@ -25,8 +25,9 @@ function buildPatch(
 ): LeadPatch {
   const patch: LeadPatch = { updatedAt: now };
   if (input.title !== undefined) patch.title = input.title;
+  if (input.currency !== undefined) patch.currency = input.currency;
   if (input.value !== undefined) {
-    patch.value = input.value === null ? null : input.value.toFixed(2);
+    patch.value = input.value === null ? null : String(input.value);
   }
   if (input.ownerId !== undefined) patch.ownerId = input.ownerId;
   if (input.expectedCloseDate !== undefined) patch.expectedCloseDate = input.expectedCloseDate;

@@ -4,20 +4,25 @@ import { useRouter } from "next/navigation";
 import type React from "react";
 import { useActionError } from "@/components/shell/ActionErrorProvider";
 import { Checkbox } from "@/components/ui/Checkbox";
+import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { ActivityTypeIcon } from "./ActivityTypeIcon";
 import { completeActivityAction } from "./actions";
 import type { CalendarActivity } from "./calendar";
 import { fmtDue } from "./dueLabel";
 import { groupActivities } from "./groupActivities";
+import { useActivitiesMessages } from "./useActivitiesMessages";
 
 // Serializable row (dueAt as ISO string) so it can cross the server/client boundary.
 export interface ActivityRow {
   id: string;
   subject: string;
   dueAtIso: string;
+  endAtIso?: string | null;
   // No time was set; show the day alone.
   allDay?: boolean;
+  dueDate?: string | null;
+  endDate?: string | null;
   typeKey: string;
   done: boolean;
   dealId: string | null;
@@ -37,7 +42,10 @@ function toCalendar(a: ActivityRow): CalendarActivity {
     id: a.id,
     subject: a.subject,
     dueAt: new Date(a.dueAtIso),
+    endAt: a.endAtIso ? new Date(a.endAtIso) : null,
     allDay: a.allDay ?? false,
+    dueDate: a.dueDate,
+    endDate: a.endDate,
     durationMinutes: null,
     typeKey: a.typeKey,
     done: a.done,
@@ -49,12 +57,6 @@ function toCalendar(a: ActivityRow): CalendarActivity {
   };
 }
 
-const SECTION_LABEL: Record<"overdue" | "today" | "upcoming", string> = {
-  overdue: "Overdue",
-  today: "Today",
-  upcoming: "Upcoming",
-};
-
 function Row({
   a,
   onDone,
@@ -62,12 +64,14 @@ function Row({
   a: ActivityRow;
   onDone: (id: string, currentDone: boolean) => void;
 }): React.ReactNode {
+  const S = useActivitiesMessages();
+  const preferences = useLocalePreferences();
   const href = linkFor(a);
-  const time = fmtDue(a.dueAtIso, a.allDay ?? false);
+  const time = fmtDue(a.dueAtIso, a.allDay ?? false, preferences, a.dueDate);
   return (
     <li className="flex items-center gap-3 px-3 py-2 hover:bg-muted/50">
       <Checkbox
-        label={`Mark "${a.subject}" done`}
+        label={S.markSubjectDone(a.subject)}
         checked={a.done}
         onCheckedChange={() => onDone(a.id, a.done)}
       />
@@ -79,10 +83,10 @@ function Row({
       </span>
       {href !== null && (
         <Link href={href} className="text-sm text-primary hover:underline">
-          Open
+          {S.open}
         </Link>
       )}
-      <time className="w-32 shrink-0 text-right text-xs text-muted-foreground tabular-nums">
+      <time className="w-32 shrink-0 text-end text-xs text-muted-foreground tabular-nums">
         {time}
       </time>
     </li>
@@ -100,10 +104,17 @@ export function ActivityList({
   items: ActivityRow[];
   now: number;
 }): React.ReactNode {
+  const S = useActivitiesMessages();
+  const SECTION_LABEL: Record<"overdue" | "today" | "upcoming", string> = {
+    overdue: S.overdue,
+    today: S.today,
+    upcoming: S.upcoming,
+  };
   const router = useRouter();
   const reportError = useActionError();
   const byId = new Map(items.map((a) => [a.id, a]));
-  const grouped = groupActivities(items.map(toCalendar), now);
+  const preferences = useLocalePreferences();
+  const grouped = groupActivities(items.map(toCalendar), now, preferences.timeZone);
 
   function onDone(id: string, currentDone: boolean): void {
     void completeActivityAction({ id, done: !currentDone }, readCsrfToken()).then((r) => {
@@ -120,7 +131,7 @@ export function ActivityList({
     .filter((s) => s.rows.length > 0);
 
   if (sections.length === 0) {
-    return <p className="text-sm text-muted-foreground">No activities scheduled.</p>;
+    return <p className="text-sm text-muted-foreground">{S.empty}</p>;
   }
 
   return (

@@ -1,8 +1,10 @@
+"use client";
 import Link from "next/link";
 import type React from "react";
 import { Tip } from "@/components/ui/tooltip";
 import { ActivityTypeIcon } from "@/features/activities/ActivityTypeIcon";
 import type { ContactEntity, EngagementLane } from "@/features/contacts/engagementTimeline";
+import { useFormatters } from "@/lib/useFormatters";
 import { cn } from "@/lib/utils";
 
 function contactHref(entity: ContactEntity, id: string): string {
@@ -21,20 +23,23 @@ export function EngagementLaneRow({
   months: string[];
   entity: ContactEntity;
 }): React.ReactNode {
+  const format = useFormatters();
   return (
     <tr>
       <th
         scope="row"
-        className="sticky left-0 z-10 border-b border-r bg-card px-3 py-2 text-left text-sm font-normal"
+        className="sticky start-0 z-10 border-b border-e bg-card px-3 py-2 text-start text-sm font-normal"
       >
         <div className="flex min-w-0 items-center gap-2">
           <Link
             href={contactHref(entity, lane.contactId)}
             className="min-w-0 truncate font-medium hover:underline"
           >
-            {lane.contactName}
+            <bdi dir="auto">{lane.contactName}</bdi>
           </Link>
-          <span className="shrink-0 text-xs text-muted-foreground">{lane.total}</span>
+          <span className="shrink-0 text-xs text-muted-foreground">
+            {format.number(lane.total)}
+          </span>
         </div>
       </th>
       {months.map((key, monthIndex) => {
@@ -42,7 +47,7 @@ export function EngagementLaneRow({
         return (
           <td
             key={key}
-            className={cn("border-b px-3 py-2 align-middle", monthIndex > 0 && "border-l")}
+            className={cn("border-b px-3 py-2 align-middle", monthIndex > 0 && "border-s")}
           >
             <div className="flex min-w-0 flex-wrap items-center gap-1">
               {markers.map((m) => (

@@ -9,13 +9,13 @@ import { useColumns } from "@/components/data-table/useColumns";
 import { usePersistColumns } from "@/components/data-table/usePersistColumns";
 import { useRowSelection } from "@/components/data-table/useRowSelection";
 import { DEFAULT_BASE_CURRENCY } from "@/constants/currency";
-import { STRINGS } from "@/constants/strings";
 import { customFieldColumns } from "@/features/custom-fields/listColumns";
 import {
   type CustomFieldRefLabels,
   CustomFieldRefLabelsProvider,
   EMPTY_REF_LABELS,
 } from "@/features/custom-fields/refLabelsContext";
+import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
 import { SavedViewControl } from "@/features/saved-filters/SavedViewControl";
 import type { CustomFieldDef } from "@/types/customFields";
 import { readCsrfToken } from "@/utils/csrfCookie";
@@ -23,15 +23,13 @@ import { deletePersonAction } from "./actions";
 import { BulkMergeDialog } from "./BulkMergeDialog";
 import { ContactFilterBuilder } from "./ContactFilterBuilder";
 import { type ContactFilterDefinition, PERSON_FILTER_CONFIG } from "./contactFilterConfig";
-import { PERSON_FILTER_LABELS } from "./contactFilterRows";
+import { personFilterLabels } from "./contactFilterRows";
 import type { PeopleListRow } from "./PeopleTable";
 import { PeopleTable } from "./PeopleTable";
-import { PEOPLE_COLUMNS } from "./peopleColumns";
+import { peopleColumns } from "./peopleColumns";
 import type { PersonSortField } from "./schemas";
 import { usePeopleListPaging } from "./usePeopleListPaging";
 
-const LOAD_MORE = "Load more";
-const BULK_DELETE_ERROR = "Couldn't delete some people. Please try again.";
 // Stable module reference: passed as useColumnSort's fallback, so `effective` only changes
 // reference when the sort state itself changes (not on every PeopleList re-render).
 const DEFAULT_SORT: ColumnSort<PersonSortField> = { field: "name", dir: "asc" };
@@ -67,9 +65,12 @@ export function PeopleList({
   baseCurrency = DEFAULT_BASE_CURRENCY,
   refLabels: initialRefLabels = EMPTY_REF_LABELS,
 }: PeopleListProps): React.ReactNode {
+  const tContacts = useAppTranslations("contacts");
+
+  const locale = useLocale();
   const catalog = useMemo(
-    () => [...PEOPLE_COLUMNS, ...customFieldColumns(customFieldDefs)],
-    [customFieldDefs],
+    () => [...peopleColumns(locale), ...customFieldColumns(customFieldDefs)],
+    [customFieldDefs, locale],
   );
   const columns = useColumns(catalog, initialColumns);
   usePersistColumns("people", columns.order);
@@ -120,13 +121,15 @@ export function PeopleList({
     // reload() manages `error` itself (clears it, then sets RELOAD_ERROR on its own
     // failure), so set the bulk-delete error AFTER it settles or reload would wipe it out.
     await reload();
-    if (failedIds.length > 0) setError(BULK_DELETE_ERROR);
+    if (failedIds.length > 0) setError(tContacts("couldnTDeleteSomePeoplePleaseTryAgain"));
   }
 
   // Only the truly-empty list (no filter) shows the bare empty state. With a filter active, keep the
   // toolbar rendered so the user can always clear/adjust the filter that produced zero matches.
   if (filter === null && rows.length === 0) {
-    return <p className="text-sm text-muted-foreground">{STRINGS.contacts.empty}</p>;
+    return (
+      <p className="text-sm text-muted-foreground">{tContacts("noPeopleAreVisibleToYouYet")}</p>
+    );
   }
 
   const visibleIds = rows.map((r) => r.id);
@@ -145,12 +148,12 @@ export function PeopleList({
       <div className="flex flex-wrap items-center gap-3"></div>
       <div className="flex items-center justify-between gap-2">
         <p className="text-xs text-muted-foreground tabular-nums">
-          {STRINGS.contacts.countLabel(rows.length, total)}
+          {tContacts("countLabel", { shown: rows.length, total })}
         </p>
         <div className="flex items-center gap-2">
           <SavedViewControl
             targetEntity="person"
-            allLabel="All people"
+            allLabel={tContacts("allPeople")}
             currentDefinition={filter}
             selectedViewId={savedViewId}
             onSelectView={(view) => {
@@ -160,7 +163,7 @@ export function PeopleList({
           />
           <ContactFilterBuilder
             config={PERSON_FILTER_CONFIG}
-            fieldLabels={PERSON_FILTER_LABELS}
+            fieldLabels={personFilterLabels(locale)}
             activeCount={filter?.conditions.length ?? 0}
             appliedDefinition={filter}
             onApply={(def) => {
@@ -179,7 +182,7 @@ export function PeopleList({
               onClick={() => setMerging(true)}
               className="rounded-md border px-3 py-1 text-sm hover:bg-accent active:scale-[0.96] transition-transform"
             >
-              Merge duplicates
+              {tContacts("mergeDuplicates")}
             </button>
           )}
           <BulkDeleteButton
@@ -202,7 +205,7 @@ export function PeopleList({
           onClose={() => setMerging(false)}
         />
       )}
-      <div className="overflow-hidden rounded-lg border bg-card shadow-sm">
+      <div className="overflow-hidden rounded-sg border bg-card shadow-sm">
         <CustomFieldRefLabelsProvider value={refLabels}>
           <PeopleTable
             rows={rows}
@@ -238,7 +241,7 @@ export function PeopleList({
           onClick={() => void loadMore()}
           className="self-center rounded-md border px-4 py-1.5 text-sm hover:bg-accent disabled:opacity-50 active:not-disabled:scale-[0.96] transition-transform"
         >
-          {loading ? "Loading..." : LOAD_MORE}
+          {loading ? tContacts("loading") : tContacts("loadMore")}
         </button>
       )}
     </div>

@@ -1,10 +1,10 @@
 "use client";
-
 import type React from "react";
 import type { Organization } from "@/db/schema";
 import { ContactLabelsControl } from "@/features/contacts/ContactLabelsControl";
 import { EnrichButton } from "@/features/enrichment/EnrichButton";
 import { FindPeopleButton } from "@/features/enrichment/prospects/FindPeopleButton";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import type { CustomFieldDef } from "@/types/customFields";
 import { CollapsibleSection } from "../CollapsibleSection";
 import { OrgBlock } from "./OrgBlock";
@@ -39,16 +39,18 @@ export function OrganizationSection({
   showLabels?: boolean;
   children?: React.ReactNode;
 }): React.ReactNode {
+  const translateSales = useAppTranslations("sales");
+
   return (
     <CollapsibleSection
-      title="Organization"
+      title={translateSales("organization_d764d")}
       headerActions={() => (
         <EnrichButton entityType="organization" entityId={org.id} entityName={org.name}>
           {(fill) => (
             <FindPeopleButton orgId={org.id} orgName={org.name}>
               {(findPeople) => (
                 <SectionHeaderMenu
-                  sectionLabel="Organization"
+                  sectionLabel={translateSales("organization_d764d")}
                   onEdit={onStartBulk}
                   menuItems={findPeople === null ? menuItems : [...menuItems, findPeople]}
                   {...fill}

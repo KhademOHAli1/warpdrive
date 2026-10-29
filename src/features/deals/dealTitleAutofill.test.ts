@@ -82,3 +82,13 @@ describe("deriveEntityTitle", () => {
     expect(deriveEntityTitle(base, orgs, people, "deal", false)).toBe("");
   });
 });
+
+it("allows the locale catalog to control generated-title word order", () => {
+  const selected = { ...base, orgId: "o1" };
+  expect(deriveEntityTitle(selected, orgs, people, "lead", true, (name) => `سرنخ ${name}`)).toBe(
+    "سرنخ Acme Corp",
+  );
+  expect(deriveEntityTitle(selected, orgs, people, "lead", false, (name) => `سرنخ ${name}`)).toBe(
+    "Acme Corp",
+  );
+});
