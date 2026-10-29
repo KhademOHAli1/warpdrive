@@ -18,6 +18,34 @@ const def = (over: Partial<CustomFieldDef>): CustomFieldDef => ({
 });
 
 describe("valueSchemaFor", () => {
+  it.each(["+99 (123) 456-7890", "+۹۹ (۱۲۳) ۴۵۶-۷۸۹۰", "+٩٩ (١٢٣) ٤٥٦-٧٨٩٠", "+۹9 (١۲٣) ۴5۶-٧۸٩۰"])(
+    "accepts supported phone digit scripts while preserving authored values",
+    (value) => {
+      const phone = def({ type: "phone", key: "callback_phone", isRequired: true });
+      expect(valueSchemaFor(phone).safeParse(value)).toEqual({ success: true, data: value });
+      expect(buildCustomFieldsSchema([phone]).safeParse({ callback_phone: value })).toEqual({
+        success: true,
+        data: { callback_phone: value },
+      });
+    },
+  );
+
+  it.each([
+    "",
+    "()",
+    "+",
+    "123",
+    "----",
+    "(  )",
+    "    ",
+    "۹۹A۹۹",
+    "+٩٩call",
+    "++۱۲۳۴",
+    "۱۲۳۴/۵۶۷۸",
+  ])("keeps malformed phone inputs invalid", (value) => {
+    expect(valueSchemaFor(def({ type: "phone" })).safeParse(value).success).toBe(false);
+  });
+
   it("accepts a valid single_option id and rejects an unknown one", () => {
     const s = valueSchemaFor(
       def({ type: "single_option", options: [{ id: "opt_a", label: "A" }] }),

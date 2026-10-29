@@ -25,6 +25,44 @@ describe("findPersonMatches", () => {
     expect(m).toEqual([{ option: OPTIONS[0], reason: "phone" }]);
   });
 
+  it.each([
+    ["+1 (619) 555-0134", "۶۱۹-۵۵۵-۰۱۳۴"],
+    ["+۱ (۶۱۹) ۵۵۵-۰۱۳۴", "619-555-0134"],
+    ["+1 (619) 555-0134", "٦١٩-٥٥٥-٠١٣٤"],
+    ["+١ (٦١٩) ٥٥٥-٠١٣٤", "619-555-0134"],
+    ["+۱ (۶۱۹) ۵۵۵-۰۱۳۴", "٦١٩-٥٥٥-٠١٣٤"],
+    ["+1 (۶١9) ۵٥5-۰١3۴", "۶1٩-5۵٥-0۱٣4"],
+  ])("matches stored %s against %s without rewriting the stored phone", (stored, typed) => {
+    const option = { id: "mixed-phone", name: "", emails: [], phones: [stored] };
+
+    const matches = findPersonMatches({ ...EMPTY, phone: typed }, [option]);
+
+    expect(matches).toEqual([{ option, reason: "phone" }]);
+    expect(matches[0]?.option).toBe(option);
+    expect(option.phones).toEqual([stored]);
+  });
+
+  it("keeps the seven-digit floor after normalizing every digit script", () => {
+    expect(findPersonMatches({ ...EMPTY, phone: "۵۵۵۰۱۳۴" }, OPTIONS)).toEqual([
+      { option: OPTIONS[0], reason: "phone" },
+    ]);
+    expect(findPersonMatches({ ...EMPTY, phone: "٥٥٠١٣٤" }, OPTIONS)).toEqual([]);
+    const shortStored = { id: "short", name: "", emails: [], phones: ["۵۵۰۱۳۴"] };
+    expect(findPersonMatches({ ...EMPTY, phone: "6195550134" }, [shortStored])).toEqual([]);
+  });
+
+  it.each([
+    ["+1 (619) 555-0134 x۹۹", "6195550134"],
+    ["+1 (619) 555-0134 x٩٩", "6195550134"],
+    ["+1 (619) 555-0134", "6195550134 x۹۹"],
+    ["+1 (619) 555-0134", "6195550134 x٩٩"],
+  ])("does not discard extension digits when comparing %s with %s", (stored, typed) => {
+    const option = { id: "extension", name: "", emails: [], phones: [stored] };
+
+    expect(findPersonMatches({ ...EMPTY, phone: typed }, [option])).toEqual([]);
+    expect(option.phones).toEqual([stored]);
+  });
+
   it("matches a near-duplicate name the way the Add deal combobox does", () => {
     const m = findPersonMatches({ ...EMPTY, name: "Kali Reyez" }, OPTIONS);
     expect(m).toEqual([{ option: OPTIONS[1], reason: "name" }]);

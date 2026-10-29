@@ -1,9 +1,11 @@
 import { z } from "zod";
 import type { CustomFieldDef } from "@/types/customFields";
 import { assertNever } from "@/types/result";
+import { normalizeDigits } from "@/utils/normalizeNumberInput";
 
 const hhmm = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/);
 const isoDate = z.string().date();
+const phonePattern = /^(?=.*[0-9])\+?[0-9 ()-]{4,}$/;
 
 const addressSchema = z
   .object({
@@ -66,7 +68,8 @@ export function valueSchemaFor(def: CustomFieldDef): z.ZodTypeAny {
         .object({ start: hhmm, end: hhmm })
         .refine((r) => r.end >= r.start, "end before start");
     case "phone":
-      return z.string().regex(/^\+?[0-9 ()-]{4,}$/);
+      // Validate supported input digit scripts while preserving the author's stored value.
+      return z.string().refine((value) => phonePattern.test(normalizeDigits(value)));
     case "user":
     case "person":
     case "org":

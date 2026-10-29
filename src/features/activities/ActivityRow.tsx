@@ -7,6 +7,7 @@ import { ACTIVITY_PRIORITIES, isActivityPriorityKey } from "@/constants/activity
 import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import { OwnerBadge } from "@/features/identity/OwnerBadge";
 import { cn } from "@/lib/utils";
+import { telHref } from "@/utils/phone";
 import { ActivityTypeIcon } from "./ActivityTypeIcon";
 import type { ActivityTableRow } from "./activityRows";
 import { fmtDue } from "./dueLabel";
@@ -143,7 +144,7 @@ export function ActivityRow({
       </td>
       <td className="px-3 py-2 text-muted-foreground">
         {row.personPhone !== null ? (
-          <a dir="ltr" href={`tel:${row.personPhone}`} onClick={(e) => e.stopPropagation()}>
+          <a dir="ltr" href={telHref(row.personPhone)} onClick={(e) => e.stopPropagation()}>
             {row.personPhone}
           </a>
         ) : (

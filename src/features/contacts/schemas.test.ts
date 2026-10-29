@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { emailPointSchema, personCreateInput, phonePointSchema } from "./schemas";
+import {
+  emailPointSchema,
+  personCreateInput,
+  personUpdateInput,
+  phonePointSchema,
+} from "./schemas";
 
 describe("emailPointSchema", () => {
   it("rejects a non-email value", () => {
@@ -17,6 +22,30 @@ describe("emailPointSchema", () => {
 });
 
 describe("phonePointSchema", () => {
+  it.each(["+99 (123) 456.7890", "+۹۹ (۱۲۳) ۴۵۶.۷۸۹۰", "+٩٩ (١٢٣) ٤٥٦.٧٨٩٠", "+۹9 (١۲٣) ۴5۶.٧۸٩۰"])(
+    "accepts supported digit scripts without rewriting authored phone text",
+    (value) => {
+      const point = { label: "work", value, primary: true };
+      expect(phonePointSchema.safeParse(point)).toEqual({ success: true, data: point });
+      const created = personCreateInput.safeParse({ name: "مخاطب آزمایشی", phones: [point] });
+      expect(created.success).toBe(true);
+      if (created.success) expect(created.data.phones).toEqual([point]);
+      const updated = personUpdateInput.safeParse({
+        id: "11111111-1111-4111-8111-111111111111",
+        phones: [point],
+      });
+      expect(updated.success).toBe(true);
+      if (updated.success) expect(updated.data.phones).toEqual([point]);
+    },
+  );
+
+  it.each(["() + - .", "۹۹ call-me", "۹".repeat(41)])(
+    "keeps existing phone charset, digit and length requirements",
+    (value) => {
+      expect(phonePointSchema.safeParse({ label: "work", value }).success).toBe(false);
+    },
+  );
+
   it("rejects a value with letters", () => {
     expect(phonePointSchema.safeParse({ label: "work", value: "call-me" }).success).toBe(false);
   });

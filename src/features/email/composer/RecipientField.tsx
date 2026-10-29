@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useEmailMessages } from "@/features/email/useEmailMessages";
 import { isValidEmail } from "@/lib/isValidEmail";
 import { trpc } from "@/lib/trpc-client";
@@ -30,6 +30,13 @@ export function RecipientField({ label, values, onChange }: RecipientFieldProps)
   // captured when the handler was created: picking a suggestion clears the query and blurs in the
   // same tick, and a stale closure would re-commit the half-typed search text.
   const queryRef = useRef("");
+  const blurTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(
+    () => () => {
+      if (blurTimerRef.current !== null) clearTimeout(blurTimerRef.current);
+    },
+    [],
+  );
 
   const { data } = trpc.contacts.listPeople.useQuery({
     offset: 0,
@@ -127,7 +134,11 @@ export function RecipientField({ label, values, onChange }: RecipientFieldProps)
         }}
         onBlur={() => {
           commitPending();
-          setTimeout(() => setOpen(false), 150);
+          if (blurTimerRef.current !== null) clearTimeout(blurTimerRef.current);
+          blurTimerRef.current = setTimeout(() => {
+            blurTimerRef.current = null;
+            setOpen(false);
+          }, 150);
         }}
       />
       {open && suggestions.length > 0 && (

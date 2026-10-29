@@ -15,6 +15,20 @@ describe("formatUsPhone", () => {
     expect(formatUsPhone("(415) 555-1234")).toBe("(415) 555-1234");
   });
 
+  it.each(["۴۱۵۵۵۵۱۲۳۴", "٤١٥٥٥٥١٢٣٤", "+۱ (۴۱۵) ۵۵۵-۱۲۳۴", "4۱٥.5۵٥.1۲٣۴"])(
+    "formats the same US number written with localized digits: %s",
+    (raw) => {
+      expect(formatUsPhone(raw)).toBe("(415) 555-1234");
+    },
+  );
+
+  it.each(["+۹۸ 4155551234", "+٩٨ 4155551234", "(415) 555-1234 x۹۹", "(415) 555-1234 x٩٩"])(
+    "preserves the complete international number or extension: %s",
+    (raw) => {
+      expect(formatUsPhone(raw)).toBe(raw);
+    },
+  );
+
   it("leaves a non-US-looking number untouched", () => {
     expect(formatUsPhone("+44 20 7946 0958")).toBe("+44 20 7946 0958");
   });

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -79,6 +79,41 @@ describe("RecipientField", () => {
     fireEvent.change(input, { target: { value: "custom@x.com" } });
     fireEvent.blur(input);
     expect(onChange).toHaveBeenCalledWith(["custom@x.com"]);
+  });
+
+  it("cancels the delayed suggestion close when the field is unmounted", () => {
+    vi.useFakeTimers();
+    try {
+      const { unmount } = render(<RecipientField label="To" values={[]} onChange={vi.fn()} />);
+      const input = screen.getByRole("combobox");
+      fireEvent.change(input, { target: { value: "ali" } });
+      fireEvent.blur(input);
+      expect(vi.getTimerCount()).toBe(1);
+
+      unmount();
+      expect(vi.getTimerCount()).toBe(0);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("keeps the blur delay while the field remains mounted", async () => {
+    vi.useFakeTimers();
+    try {
+      const { unmount } = render(<RecipientField label="To" values={[]} onChange={vi.fn()} />);
+      const input = screen.getByRole("combobox");
+      fireEvent.change(input, { target: { value: "ali" } });
+      fireEvent.blur(input);
+
+      await act(() => vi.advanceTimersByTime(149));
+      expect(screen.getByText("Alice")).toBeInTheDocument();
+      await act(() => vi.advanceTimersByTime(1));
+      expect(screen.queryByText("Alice")).not.toBeInTheDocument();
+      expect(vi.getTimerCount()).toBe(0);
+      unmount();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("shows an inline error when a malformed address loses focus, instead of dropping it", () => {

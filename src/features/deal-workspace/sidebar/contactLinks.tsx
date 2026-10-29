@@ -3,13 +3,10 @@ import type React from "react";
 import { useInterfacePrefs } from "@/features/identity/InterfacePrefsProvider";
 import { formatUsPhone } from "@/utils/phone";
 
+export { telHref } from "@/utils/phone";
+
 // Turn sidebar contact-field values into openable links so the user can dial / mail / visit without
 // copy-pasting. Pure href builders (unit-tested) + a small display component the field rows reuse.
-
-export function telHref(phone: string): string {
-  // Dialers want an unformatted number; keep a leading + but drop spaces, dashes, parens.
-  return `tel:${phone.replace(/[^\d+]/g, "")}`;
-}
 
 export function mailtoHref(email: string): string {
   return `mailto:${email.trim()}`;

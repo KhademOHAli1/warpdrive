@@ -1,4 +1,5 @@
 import { findSimilarOptions } from "@/features/entity-create/similarMatch";
+import { normalizeDigits } from "@/utils/normalizeNumberInput";
 
 // A visible person reduced to the fields the deal Person panel can match a typed draft against.
 export interface PersonMatchOption {
@@ -29,7 +30,7 @@ export interface PersonMatch {
 const MIN_PHONE_DIGITS = 7;
 
 function digits(s: string): string {
-  return s.replace(/\D+/g, "");
+  return normalizeDigits(s).replace(/\D+/g, "");
 }
 
 // Only a complete address is an identity claim; "steve" is still mid-typing.

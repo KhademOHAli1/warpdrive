@@ -2,6 +2,7 @@ import { z } from "zod";
 import type { CustomFieldSortKey } from "@/features/custom-fields/sortKey";
 import { customFieldSortKeySchema } from "@/features/custom-fields/sortKeySchema";
 import { labelNameArray } from "@/features/labels/labelsSchema";
+import { normalizeDigits } from "@/utils/normalizeNumberInput";
 // Field length bounds live in a zod-free module so client forms can read a maxLength hint without
 // pulling zod; re-exported here so existing importers of contacts/schemas.ts still resolve.
 import {
@@ -39,7 +40,13 @@ export const emailPointSchema = contactPointSchema.extend({
   value: z.string().trim().min(1).max(MAX_EMAIL_LEN).email(),
 });
 export const phonePointSchema = contactPointSchema.extend({
-  value: z.string().trim().min(1).max(MAX_PHONE_LEN).regex(PHONE_PATTERN),
+  // Accept supported input digit scripts without rewriting the author's stored phone text.
+  value: z
+    .string()
+    .trim()
+    .min(1)
+    .max(MAX_PHONE_LEN)
+    .refine((value) => PHONE_PATTERN.test(normalizeDigits(value))),
 });
 
 const addressObject = z.object({
