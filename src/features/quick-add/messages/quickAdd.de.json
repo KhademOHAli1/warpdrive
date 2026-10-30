@@ -1,0 +1,30 @@
+{
+  "title": "Schnell hinzufügen",
+  "entities": {
+    "lead": "Lead",
+    "deal": "Verkaufschance",
+    "activity": "Aktivität",
+    "person": "Person",
+    "org": "Organisation",
+    "note": "Notiz",
+    "email": "E-Mail"
+  },
+  "addPerson": "Person hinzufügen",
+  "addOrganization": "Organisation hinzufügen",
+  "name": "Name",
+  "nameRequired": "Ein Name ist erforderlich",
+  "fieldRequired": "{name} ist erforderlich",
+  "organization": "Organisation",
+  "noOrganization": "Keine Organisation",
+  "address": "Adresse",
+  "addressFields": {
+    "street": "Straße",
+    "city": "Ort",
+    "region": "Bundesland / Region",
+    "postal": "Postleitzahl",
+    "country": "Land"
+  },
+  "newNote": "Neue Notiz",
+  "noteTarget": "Person für die Notiz",
+  "selectPerson": "Person auswählen"
+}

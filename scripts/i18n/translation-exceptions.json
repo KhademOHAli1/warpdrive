@@ -17,6 +17,153 @@
       "_enrichment.settings.providerNames.apollo": "Apollo is the provider product name.",
       "_enrichment.settings.providerNames.rocketreach": "RocketReach is the provider product name.",
       "_enrichment.settings.providerNames.getprospect": "GetProspect is the provider product name."
+    },
+    "de": {
+      "teams": "Teams is the standard German plural for workplace teams.",
+      "name": "Name is the standard German field label, identical to English.",
+      "interface.openDetailsPerson": "Person is the standard German singular entity label, identical to English.",
+      "mcpConnectStepsHeading": "The phrase uses the German preposition In and the invariant product name Claude Desktop.",
+      "mcpConnectDocsUrl": "The documentation URL is a navigation target and must remain unchanged.",
+      "labels": "Labels is an established German CRM term for record labels and remains consistent with the other German catalogs.",
+      "systemBadge": "System is the German noun used for system-defined records, identical to English.",
+      "targetLead": "Leads is the standard German plural of the agreed CRM term Lead.",
+      "entityLead": "Lead is the agreed German CRM term; it does not mean a leadership role.",
+      "entityPerson": "Person is the standard German singular entity label, identical to English.",
+      "columns.name": "Name is the standard German field label, identical to English.",
+      "importer.lead": "Leads is the standard German plural of the agreed CRM term Lead.",
+      "importer.colStatus": "Status is the standard German UI noun, identical to English.",
+      "_email.nameLabel": "Name is the standard German field label, identical to English.",
+      "_email.nameHeader": "Name is the standard German field label, identical to English.",
+      "_enrichment.settings.providerNames.apollo": "Apollo is the provider product name.",
+      "_enrichment.settings.providerNames.rocketreach": "RocketReach is the provider product name.",
+      "_enrichment.settings.providerNames.getprospect": "GetProspect is the provider product name.",
+      "_enrichment.settings.mappingPerson": "Person is the standard German singular entity label, identical to English.",
+      "_extra.name": "Name is the standard German field label, identical to English.",
+      "_labels.builtin.name": "Name is the standard German field label, identical to English.",
+      "_labels.builtin.label": "Label is the established German CRM term for a record label, consistent with Labels elsewhere.",
+      "_labels.builtin.person": "Person is the standard German singular entity label, identical to English.",
+      "_labels.builtin.lead": "Lead is the agreed German CRM term; it does not mean a leadership role."
+    }
+  },
+  "src/components/filters/messages/filters": {
+    "de": {
+      "filter": "Filter is the standard German interface noun."
+    }
+  },
+  "src/components/shell/messages/shell": {
+    "de": {
+      "appearance.system": "System is the standard German label for following the operating-system appearance.",
+      "search.headingLeads": "Leads is the agreed German CRM term; not translated as Führung."
+    }
+  },
+  "src/components/shell/messages/utilities": {
+    "de": {
+      "labels.menu": "Label/Labels is the established German term for mail and CRM labels."
+    }
+  },
+  "src/features/activities/messages/activities": {
+    "de": {
+      "status": "Status is the standard German noun."
+    }
+  },
+  "src/features/contacts/messages/contacts": {
+    "de": {
+      "person": "The add action uses a plus sign and the standard German entity name Person.",
+      "label": "Label is the established German CRM noun for a record label.",
+      "labels": "Labels is the established German CRM plural for record labels.",
+      "linkedin": "LinkedIn is a product name and is preserved.",
+      "website": "Website is a standard German noun for an organization website.",
+      "name": "Name is the standard German field label, identical to English.",
+      "personFallback": "Person is the standard German singular entity label, identical to English."
+    }
+  },
+  "src/features/deals/messages/sales": {
+    "de": {
+      "board_4816c": "Board is an established German CRM/Kanban view name.",
+      "board_arg0_2d402": "Board is an established German CRM/Kanban view name followed by the unchanged view number argument.",
+      "labels_934b8": "Labels is the established German CRM plural for record labels.",
+      "linkedin_dd844": "LinkedIn is a product name and is preserved.",
+      "name_dcd1d": "Name is the standard German field label, identical to English.",
+      "person_6007d": "Person is the standard German singular entity label, identical to English.",
+      "website_b5a22": "Website is a standard German noun for an organization website.",
+      "min_1f6fa": "min is the standard language-independent abbreviation for minutes.",
+      "legacy.dealSidebar.sections.details": "Details is the standard German plural used for a record details section.",
+      "legacy.dealSidebar.sections.person": "Person is the standard German singular entity label, identical to English.",
+      "legacy.dealSidebar.personDialog.person": "Person is the standard German singular entity label, identical to English.",
+      "computed.savedFilterChip": "Filter is the standard German UI noun followed by the authored filter name.",
+      "computed.filter": "Filter is the standard German UI noun, identical to English.",
+      "computed.name": "Name is the standard German field label, identical to English.",
+      "computed.person": "Person is the standard German singular entity label, identical to English.",
+      "fields.status": "Status is the standard German UI noun, identical to English.",
+      "fields.labels": "Label is the established German CRM noun for a record label.",
+      "changeLog.fields.status": "Status is the standard German UI noun, identical to English.",
+      "changeLog.fields.labels": "Labels is the established German CRM plural for record labels.",
+      "changeLog.fields.org_domain": "Website is a standard German noun for an organization website.",
+      "changeLog.fields.org_linkedinUrl": "LinkedIn is a product name and is preserved.",
+      "changeLog.fields.person_name": "Name is the standard German field label, identical to English.",
+      "changeLog.fields.person_linkedinUrl": "LinkedIn is a product name and is preserved.",
+      "sourceChannels.outbound": "Outbound is the standard German sales-channel term for proactive outreach.",
+      "sourceChannels.inbound": "Inbound is the standard German sales-channel term for incoming prospect interest."
+    }
+  },
+  "src/features/email/messages/email": {
+    "de": {
+      "_extra.links": "Link and Links are standard German interface nouns.",
+      "_extra.link": "Link and Links are standard German interface nouns.",
+      "_extra.cc_bcc": "Standard email header abbreviations; preserve Cc/Bcc notation.",
+      "_extra.cc": "Standard email header abbreviations; preserve Cc/Bcc notation.",
+      "_extra.bcc": "Standard email header abbreviations; preserve Cc/Bcc notation.",
+      "_extra.label": "Label/Labels is the established German term for mail and CRM labels.",
+      "_extra.cc_9d0e3": "Standard email header abbreviations; preserve Cc/Bcc notation.",
+      "_extra.fileBytes": "Standard byte units B/KB/MB with unchanged number formatting contract.",
+      "_extra.fileKB": "Standard byte units B/KB/MB with unchanged number formatting contract.",
+      "_extra.fileMB": "Standard byte units B/KB/MB with unchanged number formatting contract.",
+      "_fieldLabels.person": "Person/Name has the same spelling in German and English."
+    }
+  },
+  "src/features/enrichment/messages/enrichment": {
+    "de": {
+      "prospects.columnPerson": "Person/Name has the same spelling in German and English.",
+      "canonical.org_name": "Person/Name has the same spelling in German and English.",
+      "seniority.partner": "Established German business/career-level loanword; awkward substitutes would change or obscure the role.",
+      "seniority.vp": "International job-level abbreviation for Vice President; provider seniority level remains recognizable.",
+      "seniority.manager": "Established German business/career-level loanword; awkward substitutes would change or obscure the role.",
+      "seniority.senior": "Established German business/career-level loanword; awkward substitutes would change or obscure the role."
+    }
+  },
+  "src/features/files/messages/files": {
+    "de": {
+      "bytes": "B is the standard byte unit symbol.",
+      "kilobytes": "KB is the standard kilobyte unit symbol.",
+      "megabytes": "MB is the standard megabyte unit symbol."
+    }
+  },
+  "src/features/i18n/messages/": {
+    "de": {
+      "nav.leads": "Leads is the established German CRM plural, used consistently across the interface."
+    }
+  },
+  "src/features/leads/messages/leads": {
+    "de": {
+      "lead": "The add action uses a plus sign and the established German CRM term Lead.",
+      "person": "The add action uses a plus sign and the standard German entity name Person.",
+      "details": "Details is the standard German plural used for a record details section.",
+      "label": "Label is the established German CRM noun for a record label.",
+      "labels": "Labels is the established German CRM plural for record labels.",
+      "leadText": "Lead is the agreed German CRM term for an unqualified sales contact.",
+      "leads": "Leads is the established German CRM plural, used consistently across the interface."
+    }
+  },
+  "src/features/quick-add/messages/quickAdd": {
+    "de": {
+      "entities.lead": "Lead is the agreed German CRM term for an unqualified sales contact.",
+      "entities.person": "Person is the standard German singular entity label, identical to English.",
+      "name": "Name is the standard German field label, identical to English."
+    }
+  },
+  "src/features/stats/messages/stats": {
+    "de": {
+      "ownerGroupTeams": "Teams is the standard German plural of Team."
     }
   }
 }

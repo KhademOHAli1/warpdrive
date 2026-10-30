@@ -56,9 +56,13 @@ vi.mock("./createDealAction", () => ({ createDealAction }));
 vi.mock("@/features/contacts/actions", () => ({ createPersonAction, createOrgAction }));
 vi.mock("@/utils/csrfCookie", () => ({ readCsrfToken: () => "csrf" }));
 const { routerPush } = vi.hoisted(() => ({ routerPush: vi.fn() }));
+vi.mock("@/features/i18n/actions", () => ({ saveLocalePreferencesAction: vi.fn() }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: routerPush, refresh: vi.fn() }) }));
 
 import { TITLE_MAX_LEN } from "@/constants/fieldLimits";
+import { messagesForLocale } from "@/features/i18n/catalog";
+import { LocaleProvider } from "@/features/i18n/LocaleProvider";
+import type { Locale } from "@/features/i18n/registry";
 import {
   INTERFACE_PREFS_DEFAULT,
   InterfacePrefsProvider,
@@ -320,3 +324,46 @@ describe("AddDealModal", () => {
     );
   });
 });
+
+it.each<{ from: Locale; to: Locale; raw: string; expected: number }>([
+  { from: "de", to: "en", raw: "1.234", expected: 1234 },
+  { from: "en", to: "de", raw: "1.234", expected: 1.234 },
+  { from: "fa", to: "de", raw: "۱٫۲۳۴", expected: 1.234 },
+])(
+  "preserves $from money draft meaning after switching to $to",
+  async ({ from, to, raw, expected }) => {
+    const qc = new QueryClient();
+    const tree = (locale: Locale) => (
+      <LocaleProvider locale={locale}>
+        <QueryClientProvider client={qc}>
+          <AddDealModal
+            pipelineId={PIPE}
+            pipelines={[{ id: PIPE, name: "Sales", stages: [{ id: STAGE_A, name: "Qualified" }] }]}
+            onClose={vi.fn()}
+            onCreated={vi.fn()}
+          />
+        </QueryClientProvider>
+      </LocaleProvider>
+    );
+    const { rerender } = render(tree(from));
+    const initialMessages = messagesForLocale(from).sales;
+    fireEvent.change(screen.getByLabelText(initialMessages.deal_title_95b14), {
+      target: { value: "Locale draft" },
+    });
+    fireEvent.change(screen.getByLabelText(initialMessages.deal_value_9412c), {
+      target: { value: raw },
+    });
+    rerender(tree(to));
+    const currentMessages = messagesForLocale(to).sales;
+    await waitFor(() =>
+      expect(screen.getByLabelText(currentMessages.deal_value_9412c)).toHaveValue(raw),
+    );
+    fireEvent.click(screen.getByRole("button", { name: messagesForLocale(to).entityCreate.save }));
+    await waitFor(() =>
+      expect(createDealAction).toHaveBeenCalledWith(
+        expect.objectContaining({ value: expected }),
+        expect.anything(),
+      ),
+    );
+  },
+);

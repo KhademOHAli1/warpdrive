@@ -9,7 +9,7 @@ import { Switch } from "@/components/ui/Switch";
 import type { QuotaRemaining } from "@/features/enrichment/providers/types";
 import { useLocale, useNumberingSystem } from "@/features/i18n/LocaleProvider";
 import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
-import { localeWithNumberingSystem } from "@/lib/numberingSystem";
+import { localeTagForFormatting } from "@/lib/localeFormatting";
 import { SettingsCard, SettingsCardBody, SettingsCardHeader } from "../SettingsSurface";
 
 export interface ProviderCardView {
@@ -80,10 +80,11 @@ export function ProviderCard({
     if (!view.hasKey) return S.statusNoKey;
     if (view.needsAttention) return S.statusRejected;
     if (now !== null && view.throttledUntilIso !== null && new Date(view.throttledUntilIso) > now) {
-      const until = new Intl.DateTimeFormat(
-        localeWithNumberingSystem(locale === "fa" ? "fa-IR" : "en-GB", numberingSystem),
-        { hour: "2-digit", minute: "2-digit", hourCycle: "h23" },
-      ).format(new Date(view.throttledUntilIso));
+      const until = new Intl.DateTimeFormat(localeTagForFormatting({ locale, numberingSystem }), {
+        hour: "2-digit",
+        minute: "2-digit",
+        hourCycle: "h23",
+      }).format(new Date(view.throttledUntilIso));
       return view.throttleReason === "quota" ? S.statusQuota(until) : S.statusThrottled(until);
     }
     return view.enabled ? S.statusEnabled : S.statusDisabled;

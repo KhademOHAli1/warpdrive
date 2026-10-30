@@ -1,0 +1,69 @@
+{
+  "selectedCount": "{count, number} ausgewählt",
+  "clearSelection": "Auswahl aufheben",
+  "delete": "Löschen",
+  "cancel": "Abbrechen",
+  "bulkDeleteTitle": "{count, number} {noun} löschen?",
+  "bulkDeleteDescription": "Dies kann nicht rückgängig gemacht werden. Die Einträge werden für das gesamte Team entfernt.",
+  "bulkDeleteConfirm": "{noun} löschen",
+  "customizeColumns": "Spalten anpassen",
+  "columns": "Spalten",
+  "hiddenColumns": "Ausgeblendet",
+  "reorderColumn": "{name} verschieben",
+  "column": "Spalte",
+  "dragInstructions": "Drücken Sie die Leertaste, um eine Spalte aufzunehmen. Verschieben Sie sie mit den Pfeiltasten. Mit der Leertaste legen Sie die Spalte ab, mit Escape brechen Sie ab.",
+  "columnPickedUp": "Spalte {name} aufgenommen.",
+  "columnMoved": "Spalte {name} befindet sich an Position {position, number} von {total, number}.",
+  "columnDropped": "Spalte {name} wurde an Position {position, number} von {total, number} abgelegt.",
+  "columnDragCancelled": "Das Verschieben von Spalte {name} wurde abgebrochen.",
+  "saveCurrentView": "Aktuelle Ansicht speichern",
+  "viewName": "Name der Ansicht",
+  "viewNamePlaceholder": "Ansicht benennen",
+  "sharedWithEveryone": "Mit allen geteilt",
+  "untitledView": "Unbenannte Ansicht",
+  "save": "Speichern",
+  "saving": "Wird gespeichert...",
+  "deleteNamedView": "{name} löschen",
+  "deleteViewTitle": "Ansicht löschen?",
+  "deleteFilterTitle": "Filter löschen?",
+  "deletePrivateDescription": "„{name}“ wird gelöscht. Dies kann nicht rückgängig gemacht werden.",
+  "deleteSharedDescription": "„{name}“ wird für alle Personen gelöscht, mit denen der Eintrag geteilt ist. Dies kann nicht rückgängig gemacht werden.",
+  "savedViews": "Gespeicherte Ansichten",
+  "favoriteView": "Ansicht als Favorit markieren",
+  "unfavoriteView": "Ansicht aus Favoriten entfernen",
+  "nouns": {
+    "person": {
+      "singular": "Person",
+      "plural": "Personen"
+    },
+    "organization": {
+      "singular": "Organisation",
+      "plural": "Organisationen"
+    },
+    "lead": {
+      "singular": "Lead",
+      "plural": "Leads"
+    },
+    "deal": {
+      "singular": "Verkaufschance",
+      "plural": "Verkaufschancen"
+    },
+    "activity": {
+      "singular": "Aktivität",
+      "plural": "Aktivitäten"
+    },
+    "email": {
+      "singular": "E-Mail",
+      "plural": "E-Mails"
+    },
+    "record": {
+      "singular": "Datensatz",
+      "plural": "Datensätze"
+    },
+    "item": {
+      "singular": "Eintrag",
+      "plural": "Einträge"
+    }
+  },
+  "sortableColumn": "sortierbare Spalte"
+}

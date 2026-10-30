@@ -29,6 +29,8 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
+import { LocaleProvider } from "@/features/i18n/LocaleProvider";
+import type { Locale } from "@/features/i18n/registry";
 import { LeadSummaryEditPanel } from "./LeadSummaryEditPanel";
 
 const lead = {
@@ -46,6 +48,34 @@ const owners = [
 ];
 
 describe("LeadSummaryEditPanel", () => {
+  it("keeps the German value draft locale when retrying a failed save in English", async () => {
+    updateLeadAction.mockResolvedValueOnce({ ok: false, error: { id: "E_PERM_001" } });
+    const tree = (locale: Locale) => (
+      <LocaleProvider locale={locale}>
+        <LeadSummaryEditPanel lead={lead} owners={owners} />
+      </LocaleProvider>
+    );
+    const view = render(tree("de"));
+    fireEvent.click(screen.getByRole("button", { name: "Betrag bearbeiten" }));
+    fireEvent.change(screen.getByLabelText("Betrag"), { target: { value: "1,234" } });
+    fireEvent.keyDown(screen.getByLabelText("Betrag"), { key: "Enter" });
+    await screen.findByText(/Berechtigung/);
+    view.rerender(tree("en"));
+    fireEvent.click(screen.getByRole("button", { name: "Edit Value" }));
+    expect(screen.getByLabelText("Value")).toHaveValue("1,234");
+    fireEvent.keyDown(screen.getByLabelText("Value"), { key: "Enter" });
+    await vi.waitFor(() => expect(updateLeadAction).toHaveBeenCalledTimes(2));
+    expect(updateLeadAction).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({ value: 1.234 }),
+      "csrf",
+    );
+    expect(updateLeadAction).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({ value: 1.234 }),
+      "csrf",
+    );
+  });
   it("saves an edited Value with the CAS expectedUpdatedAt and the CSRF token", async () => {
     render(<LeadSummaryEditPanel lead={lead} owners={owners} />);
     fireEvent.click(screen.getByRole("button", { name: "Edit Value" }));

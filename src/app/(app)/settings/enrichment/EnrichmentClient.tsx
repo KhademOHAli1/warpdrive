@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import type React from "react";
-import { useId, useState } from "react";
+import { useId, useRef, useState } from "react";
 import { useActionError } from "@/components/shell/ActionErrorProvider";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -17,8 +17,11 @@ import {
   setProviderKeyAction,
   testProviderAction,
 } from "@/features/enrichment/settingsActions";
+import { useLocale } from "@/features/i18n/LocaleProvider";
+import type { Locale } from "@/features/i18n/registry";
 import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import { trpc } from "@/lib/trpc-client";
+import { useSyncedState } from "@/lib/useSyncedState";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { normalizeNumberInput } from "@/utils/normalizeNumberInput";
 import { SettingsCard, SettingsCardBody, SettingsCardHeader } from "../SettingsSurface";
@@ -61,6 +64,7 @@ export function EnrichmentClient({
   cacheTtlDays: number;
 }): React.ReactNode {
   const L = useSettingsMessages();
+  const locale = useLocale();
 
   const S = L._enrichment.settings;
 
@@ -77,7 +81,10 @@ export function EnrichmentClient({
   const reportError = useActionError();
   const utils = trpc.useUtils();
   const ttlFieldId = useId();
-  const [ttl, setTtl] = useState(String(cacheTtlDays));
+  const [committedTtl, setCommittedTtl] = useSyncedState(cacheTtlDays);
+  const [ttlDraft, setTtlDraft] = useState<{ raw: string; locale: Locale } | null>(null);
+  const ttl = ttlDraft?.raw ?? String(committedTtl);
+  const ttlRequest = useRef(0);
   const [ttlError, setTtlError] = useState<string | null>(null);
   const [testing, setTesting] = useState<ReadonlySet<string>>(() => new Set());
   const [testResults, setTestResults] = useState<Record<string, TestVerdict | null>>({});
@@ -88,13 +95,14 @@ export function EnrichmentClient({
 
   // Every mutation on this page ends here, so a failure always reaches the shared error surface
   // instead of leaving a control that looks like it did something.
-  async function run(action: Promise<ActionResult>): Promise<void> {
+  async function run(action: Promise<ActionResult>, onSuccess?: () => void): Promise<void> {
     try {
       const result = await action;
       if (!result.ok) {
         reportError(result.error.id);
         return;
       }
+      onSuccess?.();
       // router.refresh redraws this page, not the enrichment.status query the Fill the gaps button
       // holds for five minutes. Without this, a provider connected here stays invisible on a record,
       // and one removed here keeps looking ready, until that cache expires.
@@ -179,14 +187,22 @@ export function EnrichmentClient({
     // Number("") is 0, and 0 is a legal TTL meaning "never reuse a cached run", so a blank field
     // has to be rejected before the conversion rather than saved as a silent opt-out.
     const raw = ttl.trim();
-    const normalized = normalizeNumberInput(raw);
+    const normalized = normalizeNumberInput(raw, ttlDraft?.locale ?? locale);
     const days = normalized === null ? NaN : Number(normalized);
     if (raw === "" || !Number.isInteger(days) || days < 0 || days > MAX_TTL_DAYS) {
       setTtlError(S.cacheInvalid);
       return;
     }
     setTtlError(null);
-    void run(setCacheTtlAction({ days }, readCsrfToken()));
+    const submittedDraft = ttlDraft;
+    const request = ++ttlRequest.current;
+    void run(setCacheTtlAction({ days }, readCsrfToken()), () => {
+      if (request !== ttlRequest.current) return;
+      setCommittedTtl(days);
+      // A successful commit ends this draft's locale. A later edit is a different object and
+      // keeps its text and origin even when the earlier request completes during typing.
+      setTtlDraft((current) => (current === submittedDraft ? null : current));
+    });
   }
 
   return (
@@ -258,7 +274,10 @@ export function EnrichmentClient({
               max={MAX_TTL_DAYS}
               value={ttl}
               className="w-32"
-              onChange={(e) => setTtl(e.target.value)}
+              onChange={(e) => {
+                const raw = e.target.value;
+                setTtlDraft((previous) => ({ raw, locale: previous?.locale ?? locale }));
+              }}
             />
             <Button size="sm" onClick={saveTtl}>
               {S.cacheSave}

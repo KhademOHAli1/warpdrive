@@ -74,6 +74,7 @@ export function AddDealModal(props: AddDealModalProps): React.ReactNode {
     const base = initialAddDealState(pipelineId, stageId ?? firstStage);
     return hasPrefillTitle ? { ...base, title: prefillTitle } : base;
   });
+  const [valueLocale, setValueLocale] = useState(locale);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
@@ -86,7 +87,11 @@ export function AddDealModal(props: AddDealModalProps): React.ReactNode {
   const personFieldsQ = trpc.customFields.listDefs.useQuery({ target: "person" });
   const orgFieldsQ = trpc.customFields.listDefs.useQuery({ target: "organization" });
 
-  const set = (patch: Partial<AddDealState>): void => setState((s) => ({ ...s, ...patch }));
+  const set = (patch: Partial<AddDealState>): void => {
+    // An unfinished amount keeps its input convention when the interface language changes.
+    if (patch.value !== undefined && state.value.trim() === "") setValueLocale(locale);
+    setState((s) => ({ ...s, ...patch }));
+  };
 
   // Autofill the title from the chosen person/org ("{name} deal") until the user edits it
   // themselves. Mirrors the derived value into state so submit uses it. `titleEdited` locks it once
@@ -135,6 +140,7 @@ export function AddDealModal(props: AddDealModalProps): React.ReactNode {
         },
         state.pipelineId,
         locale,
+        valueLocale,
       );
       if (!parsed.ok) {
         setError(parsed.error);

@@ -6,7 +6,7 @@ import { money } from "./Panel";
 // defensively: a month whose count is missing still has money worth showing.
 function countOf(datum: unknown): number | null {
   if (typeof datum !== "object" || datum === null) return null;
-  const count = (datum as { count?: unknown }).count;
+  const count = "count" in datum ? datum.count : undefined;
   return typeof count === "number" ? count : null;
 }
 
@@ -21,8 +21,8 @@ export function trendTooltipValue(
   const amount = money(String(value ?? 0), currency, preferences);
   const count = countOf(datum);
   if (count === null) return amount;
-  return statsMessagesForLocale(preferences.locale === "fa" ? "fa" : "en")._extra.trendDeals(
-    amount,
-    count,
-  );
+  return statsMessagesForLocale(
+    preferences.locale ?? "en",
+    preferences.numberingSystem,
+  )._extra.trendDeals(amount, count);
 }

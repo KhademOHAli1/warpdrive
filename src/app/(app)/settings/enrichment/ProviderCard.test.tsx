@@ -3,6 +3,7 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { QuotaRemaining } from "@/features/enrichment/providers/types";
+import { LocaleProvider } from "@/features/i18n/LocaleProvider";
 import { settingsMessagesForLocale } from "@/features/identity/settingsMessages";
 import { ProviderCard, type ProviderCardView } from "./ProviderCard";
 
@@ -51,6 +52,37 @@ function renderCard(
 }
 
 describe("ProviderCard", () => {
+  it("formats German cooldown status with a German native formatter", () => {
+    const formatters = vi.spyOn(Intl, "DateTimeFormat");
+    try {
+      render(
+        <LocaleProvider locale="de">
+          <ProviderCard
+            view={{
+              ...BASE,
+              hasKey: true,
+              enabled: true,
+              throttledUntilIso: "2026-08-24T10:30:00Z",
+            }}
+            now={new Date("2026-08-24T09:00:00Z")}
+            onToggle={vi.fn()}
+            onSaveKey={vi.fn()}
+            onRemoveKey={vi.fn()}
+            onTest={vi.fn()}
+          />
+        </LocaleProvider>,
+      );
+      expect(screen.getByText(/Abfragelimit erreicht bis/)).toBeInTheDocument();
+      expect(
+        formatters.mock.results.some(
+          (result) =>
+            result.type === "return" && result.value.resolvedOptions().locale.startsWith("de"),
+        ),
+      ).toBe(true);
+    } finally {
+      formatters.mockRestore();
+    }
+  });
   it("disables the toggle and explains why while no key is stored", () => {
     renderCard({});
     expect(screen.getByRole("switch")).toBeDisabled();

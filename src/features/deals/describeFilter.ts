@@ -1,5 +1,5 @@
 import type { ConditionFieldOption, RawCondition } from "@/components/filters/ConditionRows";
-import { completeRowValue, type RowValue } from "@/components/filters/rowValue";
+import { completeRowValue, type RowValue, singleRowValue } from "@/components/filters/rowValue";
 import { isDatePreset } from "@/constants/dateFilterPresets";
 import { VALUELESS_OPS } from "@/constants/filterOps";
 import { messagesForLocale } from "@/features/i18n/catalog";
@@ -20,8 +20,10 @@ function valueLabel(
   value: RowValue,
   locale: Locale,
 ): string {
-  if (!Array.isArray(value)) return optionLabel(def, value, locale);
-  return value.map((v) => optionLabel(def, v, locale)).join(locale === "fa" ? " یا " : " or ");
+  if (!Array.isArray(value)) return optionLabel(def, singleRowValue(value), locale);
+  return value
+    .map((v) => optionLabel(def, v, locale))
+    .join(messagesForLocale(locale).sales.computed.or);
 }
 
 // A default filter name derived from the conditions, e.g. "Owner is Ada King and Value greater
@@ -35,13 +37,17 @@ export function describeRows(
 ): string {
   const operators = new Map(Object.entries(messagesForLocale(locale).filters.operators));
   return rows
-    .filter((r) => VALUELESS_OPS.has(r.op) || completeRowValue(r.value) !== null)
+    .filter(
+      (r) =>
+        VALUELESS_OPS.has(r.op) ||
+        (Array.isArray(r.value)
+          ? completeRowValue(r.value) !== null
+          : singleRowValue(r.value).trim() !== ""),
+    )
     .map((r) => {
       const def = fields.find((f) => f.field === r.field);
       const prefix = `${def?.label ?? r.field} ${operators.get(r.op) ?? r.op}`;
       return VALUELESS_OPS.has(r.op) ? prefix : `${prefix} ${valueLabel(def, r.value, locale)}`;
     })
-    .join(
-      combinator === "or" ? (locale === "fa" ? " یا " : " or ") : locale === "fa" ? " و " : " and ",
-    );
+    .join(messagesForLocale(locale).sales.computed[combinator]);
 }

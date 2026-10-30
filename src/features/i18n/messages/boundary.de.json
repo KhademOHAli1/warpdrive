@@ -1,0 +1,12 @@
+{
+  "notFound": "Nicht gefunden",
+  "boundaryTitle": "Ein Fehler ist aufgetreten",
+  "boundaryBody": "Beim Laden dieser Seite ist ein unerwarteter Fehler aufgetreten. Versuchen Sie es erneut. Falls das Problem bestehen bleibt, geben Sie bei einer Rückfrage den folgenden Referenzcode an.",
+  "referenceLabel": "Referenz:",
+  "retry": "Erneut versuchen",
+  "appCrashTitle": "Warpdrive konnte nicht gestartet werden",
+  "appCrashBody": "Laden Sie die Seite neu. Falls das Problem bestehen bleibt, lassen Sie die Serverprotokolle von Ihrer Administration prüfen.",
+  "reload": "Neu laden",
+  "notFoundBody": "Dieser Datensatz existiert nicht oder Sie haben keinen Zugriff darauf.",
+  "backToPipeline": "Zurück zur Vertriebspipeline"
+}

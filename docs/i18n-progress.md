@@ -1,10 +1,20 @@
 # Multilingual CRM delivery
 
-The active work is multilingual infrastructure and application-wide localization. Delivery order:
-English regression safety, fully usable Iranian Persian (Farsi), then fully usable German. The
-initial active goal names Farsi as its first milestone; the user's subsequent German requirement
-is part of the completion scope. German must not be offered as a selectable language while its
-catalog and workflows are incomplete.
+English and Iranian Persian are the completed first localization milestone. German is the next
+milestone, with the same calendar, numeric-input, accessibility and contextual-copy requirements.
+The earlier dated sections below are historical evidence; this section and the newest checkpoint
+supersede their pending statuses.
+
+The Bun/Farsi work through `610e0ea` is consolidated on the user's
+[main branch](https://github.com/KhademOHAli1/warpdrive/tree/main). The exact commit passed all
+three [hosted CI jobs](https://github.com/KhademOHAli1/warpdrive/actions/runs/40965697019),
+including 5,392 CRM unit checks and 30 marketing checks. The merged task branches are closed.
+The repository remains an open source fork with its upstream relationship and MIT attribution.
+Concurrent unpublished interface redesign work remains preserved in its separate live checkout.
+
+German now covers all 22 catalog groups, with integrated checks and production browser
+verification recorded in the newest checkpoint below. Hosted CI validates each published commit.
+A catalog check alone does not establish workflow acceptance.
 
 ## Acceptance
 
@@ -26,18 +36,13 @@ catalog and workflows are incomplete.
 
 ## Current work
 
-- [x] Establish next-intl request/server/client infrastructure and persistent preferences.
-- [x] Add shared locale formatting and numeric input normalization; migrate pipeline/deal/lead consumers.
-- [x] Add activities calendar Solar Hijri math, navigation, localized labels and persistent selection.
-- [x] Add catalog/ICU validation and an explicit source migration inventory/baseline.
-- [ ] Migrate remaining custom-field and feature-specific formatting/parsing.
-- [ ] Align event grouping, creation and display with one explicit account timezone contract.
-- [ ] Migrate all English catalog imports and literal UI copy.
-- [ ] Finish shared controls, forms and feature layout RTL and accessibility adaptation.
-- [x] Bundle Vazirmatn with license/provenance and verify its use in the Farsi browser session.
-- [ ] Translate and review all Farsi workflows in context.
-- [ ] Verify complete Farsi workflows and all applicable regression checks.
-- [ ] Add and review German catalogs, formatting and complete workflows after Farsi.
+- [x] Establish server/client translation, typed ICU catalogs and persistent preferences.
+- [x] Complete Iranian calendar, account-zone dates, numeric input, RTL and Persian typography.
+- [x] Complete Farsi source migration, contextual review and representative browser workflows.
+- [x] Pass final Bun typecheck, lint, unit tests, app/worker builds and hosted three-job CI for Farsi.
+- [x] Draft and review complete German resources, preserving authored data and protocol values.
+- [x] Adapt German date controls and protect canonical numbers from locale-dependent parsing.
+- [x] Finish integrated German checks and representative browser workflows; publish this verified source on main.
 
 ## Audit commands
 
@@ -238,3 +243,48 @@ Final browser contact creation exposed a real Farsi input defect: an identical p
 The follow-up passed full export typecheck, translation audit (zero unresolved findings, four reviewed exceptions), lint, production/worker builds and 144 targeted unit checks. Real PostgreSQL create/update checks preserve authored phone values, and six MCP wire/auth checks confirm all 35 tool schemas remain representable and permissions/isolation/revocation work. After rebuilding the exact isolated app, Persian-digit contact creation succeeded in the browser. No telephone call or email delivery was initiated.
 
 The checked build continues on local port 3102. Final hosted CI and publication of this follow-up remain pending at the time of writing. German implementation follows Farsi closeout; its planned registry entry is still unavailable in the language picker.
+
+
+## German delivery checkpoint, 2026-10-30
+
+German is available beside English and Iranian Persian across all 22 message-catalog groups.
+The 2,425 source messages have complete German resources and retain their ICU arguments,
+plural/select contracts and rich-text tags. Established German terms, brands and unit symbols
+that match English have individually reviewed, keyed invariant reasons. The strict audit has
+zero catalog issues, zero unresolved source findings and the same four reviewed source
+exceptions; the migration baseline was not reset.
+
+The contextual review aligned Verkaufschance, Vertriebspipeline, Verantwortliche Person,
+Folgeaktivität and Fehlende Daten ergänzen. It also corrected one-row/one-opportunity grammar,
+automatic-title help and the team-visibility permission label. The latter now describes access
+to team members' records in English, Farsi and German; the permission ID and grant are unchanged.
+
+German Gregorian date pickers use dotted dates and German controls; the Iranian calendar uses
+German CLDR month/day names with its own calendar math. Language, calendar, account zone and
+Farsi digit choice remain independent. Typed locale-resource maps preserve exact required keys
+while permitting translated text even with generated English literal declarations.
+
+Canonical decimal strings are displayed directly through Intl without lossy Number coercion.
+Creation forms, money/goal editors, contact numeric fields, filter rows and integer preferences
+keep an authored draft's input locale across a language change. Filters normalize only once,
+reject invalid numeric drafts before Apply and emit canonical primitives to existing APIs.
+Successful cache-TTL writes end that draft's locale while preserving newer input.
+
+Local Bun verification passed route generation/typecheck, the strict audit, full lint (12 existing
+nonblocking Biome warnings), the production build, all four worker-entrypoint builds, and a
+complete unit run of 5,462 tests in 865 files. The narrow history-display follow-up
+passed 62 focused unit checks and 15 real PostgreSQL checks, covering exact numeric strings,
+digit-only cache changes, validated read preferences and preserved payloads/visibility. Hosted CI reruns the complete suite on the published commit.
+
+Production browser checks verified persisted German server titles/lang/ltr, English/Farsi/German
+switching without losing an unsaved name, retained Iranian preference, saved Gregorian selection,
+German DD.MM.YYYY controls, the full German Iranian activities calendar, activity completion
+across reload, decimal-comma creation and exact four-place amount editing after the server write.
+The German missing-record recovery screen and composer labels were also checked. Authored demo
+records, external product names and stored identifiers remain content. No email was sent.
+
+The verified app runs separately on local port 3103. External OAuth/Gmail delivery and production
+Docker/deployment acceptance remain installation-specific; they are not inferred from local
+translation checks. The user's repository remains an open source fork of sneg55/warpdrive, with
+upstream history and MIT attribution preserved. Concurrent unpublished interface redesign work
+in the original checkout remains separate from this qualified source.

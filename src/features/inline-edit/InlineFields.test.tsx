@@ -42,7 +42,7 @@ describe("InlineTextField (PD mechanism)", () => {
     fireEvent.click(screen.getByRole("button", { name: "Edit Value" }));
     fireEvent.change(screen.getByLabelText("Value"), { target: { value: "20" } });
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
-    expect(onSave).toHaveBeenCalledWith("20");
+    expect(onSave).toHaveBeenCalledWith("20", "en");
     // Let the in-flight save settle (pending disables the editor controls) before re-editing.
     await waitFor(() => expect(screen.getByText("10")).toBeInTheDocument());
 
@@ -75,7 +75,7 @@ describe("InlineTextField (PD mechanism)", () => {
     expect(onSave).not.toHaveBeenCalled();
     fireEvent.change(input, { target: { value: "20" } });
     fireEvent.keyDown(input, { key: "Enter" });
-    expect(onSave).toHaveBeenCalledWith("20");
+    expect(onSave).toHaveBeenCalledWith("20", "en");
   });
 
   it("shows an inline error when the save fails", async () => {

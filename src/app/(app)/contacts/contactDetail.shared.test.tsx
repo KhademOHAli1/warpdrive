@@ -5,6 +5,10 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { CalendarActivity } from "@/features/activities/calendar";
 import type { HistoryItem } from "@/features/deal-workspace/historyTimeline";
+import { LocaleProvider } from "@/features/i18n/LocaleProvider";
+import type { NumberingSystem } from "@/lib/numberingSystem";
+
+const timelineQueryInput = vi.hoisted(() => vi.fn());
 
 afterEach(() => {
   cleanup();
@@ -67,7 +71,12 @@ const invalidateActivityStats = vi.fn();
 vi.mock("@/lib/trpc-client", () => ({
   trpc: {
     contacts: {
-      contactTimeline: { useQuery: () => ({ data: { items: queryItems } }) },
+      contactTimeline: {
+        useQuery: (input: unknown) => {
+          timelineQueryInput(input);
+          return { data: { items: queryItems } };
+        },
+      },
     },
     email: { listMessagesForContact: { useQuery: () => ({ data: [], isError: false }) } },
     files: { listForEntity: { useQuery: () => ({ data: [{ id: "f1" }, { id: "f2" }] }) } },
@@ -89,6 +98,27 @@ import {
 } from "./contactDetail.shared";
 
 describe("ContactTimelinePanel", () => {
+  it("changes the timeline query cache input when only the digit preference changes", () => {
+    const tree = (numberingSystem: NumberingSystem) => (
+      <LocaleProvider locale="fa" numberingSystem={numberingSystem}>
+        <ContactTimelinePanel entityType="person" entityId="pe1" />
+      </LocaleProvider>
+    );
+    const view = render(tree("latn"));
+    expect(timelineQueryInput).toHaveBeenLastCalledWith({
+      entityType: "person",
+      entityId: "pe1",
+      locale: "fa",
+      numberingSystem: "latn",
+    });
+    view.rerender(tree("arabext"));
+    expect(timelineQueryInput).toHaveBeenLastCalledWith({
+      entityType: "person",
+      entityId: "pe1",
+      locale: "fa",
+      numberingSystem: "arabext",
+    });
+  });
   afterEach(() => {
     queryItems = mixedItems;
   });

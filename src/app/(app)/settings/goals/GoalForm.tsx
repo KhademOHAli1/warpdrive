@@ -15,7 +15,9 @@ import type { Goal } from "@/db/schema/goals";
 import { CurrencySelect } from "@/features/currencies/CurrencySelect";
 import { goalTargetInput } from "@/features/goals/goalTargetText";
 import { useLocale } from "@/features/i18n/LocaleProvider";
+import type { Locale } from "@/features/i18n/registry";
 import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
+import { useFormatters } from "@/lib/useFormatters";
 import { normalizeNumberInput } from "@/utils/normalizeNumberInput";
 
 const ANY = "goal:any";
@@ -67,6 +69,7 @@ export function GoalForm({
   const L = useSettingsMessages();
   const S = L;
   const locale = useLocale();
+  const format = useFormatters();
 
   const [currency, setCurrency] = useState(initial?.currency ?? baseCurrency);
   const [subject, setSubject] = useState<GoalSubject>(initial?.subject ?? "deal");
@@ -79,9 +82,13 @@ export function GoalForm({
   const [pipelineId, setPipelineId] = useState<string>(initial?.pipelineId ?? ANY);
   const [activityTypeId, setActivityTypeId] = useState<string>(initial?.activityTypeId ?? ANY);
   const [interval, setInterval] = useState<string>(initial?.interval ?? "monthly");
-  const [target, setTarget] = useState(
-    initial === undefined ? "" : goalTargetInput(initial.target),
-  );
+  const [seedTarget] = useState(initial === undefined ? "" : goalTargetInput(initial.target));
+  const [targetDraft, setTargetDraft] = useState<{ raw: string; locale: Locale } | null>(null);
+  const target =
+    targetDraft?.raw ??
+    (seedTarget === ""
+      ? ""
+      : format.number(seedTarget, { useGrouping: false, maximumFractionDigits: 20 }));
   const [startsOn, setStartsOn] = useState<string>(
     initial?.startsOn ?? new Date().toISOString().slice(0, 10),
   );
@@ -121,7 +128,10 @@ export function GoalForm({
         activityTypeId: subject === "activity" && activityTypeId !== ANY ? activityTypeId : null,
         interval,
         currency,
-        target: normalizeNumberInput(target, locale) ?? target.trim(),
+        target:
+          targetDraft === null
+            ? seedTarget
+            : (normalizeNumberInput(targetDraft.raw, targetDraft.locale) ?? targetDraft.raw.trim()),
         startsOn,
         endsOn,
       });
@@ -215,7 +225,10 @@ export function GoalForm({
         aria-label={S.goalTarget}
         placeholder={S.goalTarget}
         value={target}
-        onChange={(e) => setTarget(e.target.value)}
+        onChange={(e) => {
+          const raw = e.target.value;
+          setTargetDraft((current) => ({ raw, locale: current?.locale ?? locale }));
+        }}
       />
       <DatePicker
         ariaLabel={S.goalStartsOn}

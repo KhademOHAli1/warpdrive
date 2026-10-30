@@ -27,6 +27,10 @@ code, styling, and assets are original, and the interface ships its own visual l
 on [shadcn/ui](https://ui.shadcn.com). warpdrive is not affiliated with or endorsed by
 Pipedrive.
 
+This [maintained open source fork](https://github.com/KhademOHAli1/warpdrive) adds the Bun
+runtime and Persian/German localization to [upstream Warpdrive](https://github.com/sneg55/warpdrive).
+It retains the upstream relationship, history and MIT attribution.
+
 ## Contents
 
 - [Features](#features)
@@ -34,6 +38,7 @@ Pipedrive.
 - [warpdrive vs Pipedrive](#warpdrive-vs-pipedrive)
 - [Tech stack](#tech-stack)
 - [Quickstart (local development)](#quickstart-local-development)
+- [Languages and regional settings](#languages-and-regional-settings)
 - [Self-hosting](#self-hosting)
 - [Tests](#tests)
 - [Project status](#project-status)
@@ -141,14 +146,19 @@ The app runs at `http://localhost:3000`. Google sign-in and Gmail need an OAuth 
 [`docs/deploy.md`](docs/deploy.md)); for local exploration you can sign in without Google
 using the dev-login route.
 
-## Localization in progress
+## Languages and regional settings
 
-Language is selected in Settings > Personal settings. Farsi also offers a saved choice between
-Persian digits (۱۲۳) and English digits (123), with a live preview. Persian uses
-right-to-left layout and defaults the shared date picker to the Iranian Solar Hijri calendar; the
-picker can also switch between Solar Hijri and Gregorian dates. Dates continue to be stored in the
-existing Gregorian ISO format. Translation and RTL adaptation across the rest of the CRM and the
-separate activities calendar view are still in progress.
+Select English, Iranian Persian (Farsi), or German in Settings > Personal settings.
+Language, calendar and account time zone are independent saved preferences. Persian uses
+right-to-left layout and offers Persian or Latin digits. German uses decimal commas and
+localized dates. Both the Gregorian and Iranian Solar Hijri calendars are available in the
+shared date pickers and activities calendar. Saved dates remain Gregorian ISO values; stored
+amounts and API/export formats retain their canonical representation.
+
+Translations use whole messages, contextual terminology, ICU plurals and localized accessibility
+labels. See [the localization glossary](docs/i18n-glossary.md) and
+[localization progress and verification](docs/i18n-progress.md). Run `bun run i18n:check` when
+changing interface copy; catalog validity is followed by contextual workflow review.
 
 ## Self-hosting
 
@@ -176,15 +186,17 @@ exercised as they run in production.
 
 ## Project status
 
-warpdrive is used in production for a single team's BD workflow and is actively developed.
-The features listed above are built and working. The out-of-scope rows in the comparison
-table are deliberate and not on the near-term roadmap; the focus is depth and polish on the
-core pipeline, deal, contact, and email surfaces.
+This fork focuses on the Bun runtime, Iranian calendar support and contextual Persian/German
+localization. [Localization progress](docs/i18n-progress.md) records source, test, CI and local
+browser evidence. Production deployment and external OAuth/Gmail configuration remain
+specific to the installation.
 
 ## Contributing
 
-Issues and pull requests are welcome. PRs are reviewed and merged upstream, then land back
-here on the next release. Please keep changes focused and include tests for new behavior.
+Focused pull requests to this fork are welcome. Include tests for new behavior and run the
+Bun typecheck, translation audit and lint checks. Keep identifiers, stored records and API
+contracts independent of interface language; use the [localization glossary](docs/i18n-glossary.md)
+for translation changes. Changes of general interest can also be proposed to the upstream project.
 
 ## License
 

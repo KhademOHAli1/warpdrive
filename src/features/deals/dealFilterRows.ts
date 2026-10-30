@@ -3,7 +3,7 @@ import type {
   ConditionRow,
   RawCondition,
 } from "@/components/filters/ConditionRowsBuilder";
-import { completeRowValue, type RowValue } from "@/components/filters/rowValue";
+import { completeRowValue, invalidNumberDraft, type RowValue } from "@/components/filters/rowValue";
 import { isDateConditionValue } from "@/constants/dateFilterPresets";
 import { VALUELESS_OPS } from "@/constants/filterOps";
 import { createAppTranslator } from "@/features/i18n/catalog";
@@ -23,6 +23,14 @@ function isAstField(field: string): field is AstField {
   return (FILTER_FIELDS as readonly string[]).includes(field);
 }
 
+function canonicalNumericValue(value: string, locale: Locale): string {
+  // Plain values come from saved definitions or older EN/FA callers. A decimal point is
+  // canonical here; the current interface locale must never reinterpret it as grouping.
+  return Number.isFinite(Number(value))
+    ? value
+    : (normalizeNumberInput(value, locale === "de" ? "en" : locale) ?? value);
+}
+
 // Compile the inline builder's raw rows into a deal FilterDefinition, or null for a no-op filter.
 // Defense in depth against a malformed row (the read path re-validates via `filterDefinition`):
 // drops rows with a blank value or a field/op pairing outside the schema allow-list. Values stay
@@ -39,11 +47,11 @@ export function dealRowsToDefinition(
     // op validated against the field's allow-list above; narrow to the AST enum for the definition.
     const condition = { field: r.field, op: r.op as AstOp };
     if (VALUELESS_OPS.has(r.op)) return [condition];
-    const rawValue =
-      r.field === "value" && typeof r.value === "string"
-        ? (normalizeNumberInput(r.value, locale) ?? r.value)
-        : r.value;
-    const value = completeRowValue(rawValue);
+    const complete = completeRowValue(r.value);
+    const value =
+      r.field === "value" && typeof complete === "string"
+        ? canonicalNumericValue(complete, locale)
+        : complete;
     if (value === null) return [];
     return [{ ...condition, value }];
   });
@@ -74,16 +82,17 @@ export function conditionRowIssue(
 ): string | null {
   const t = createAppTranslator(locale, "sales");
   for (const r of rows) {
+    if (VALUELESS_OPS.has(r.op)) continue;
+    const def = fields.find((field) => field.field === r.field);
+    if (def === undefined) continue;
+    if (invalidNumberDraft(r.value)) return t("computed.needsNumber", { field: def.label });
     const value = completeRowValue(r.value);
     // A valueless op ignores whatever sits in the value, and a picked list is never free text,
     // so neither can carry the malformed number or date this checks for.
-    if (value === null || Array.isArray(value) || VALUELESS_OPS.has(r.op)) continue;
-    const def = fields.find((f) => f.field === r.field);
-    if (def === undefined) continue;
+    if (value === null || Array.isArray(value)) continue;
     if (
       def.input.kind === "number" &&
-      (normalizeNumberInput(value, locale) === null ||
-        Number.isNaN(Number(normalizeNumberInput(value, locale))))
+      !Number.isFinite(Number(canonicalNumericValue(value, locale)))
     ) {
       return t("computed.needsNumber", { field: def.label });
     }

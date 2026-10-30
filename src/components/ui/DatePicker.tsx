@@ -15,6 +15,9 @@ import { cn } from "@/lib/utils";
 import { Button, buttonVariants } from "./Button";
 import { type DayAccessory, DayAccessoryButton, DayAccessoryProvider } from "./DayAccessoryButton";
 import {
+  calendarFormatters,
+  formatDmy,
+  formatGermanAccessibleDate,
   formatGregorianPersianDate,
   formatMdy,
   formatPersianAccessibleDate,
@@ -43,6 +46,14 @@ const PersianEnglishDayPicker = dynamic(
 );
 const GregorianPersianDayPicker = dynamic(
   async () => (await import("./localizedDayPickers")).GregorianPersianCalendar,
+  { ssr: false, loading: () => <div className="min-h-[18rem]" aria-hidden="true" /> },
+);
+const GregorianGermanDayPicker = dynamic(
+  async () => (await import("./localizedDayPickers")).GregorianGermanCalendar,
+  { ssr: false, loading: () => <div className="min-h-[18rem]" aria-hidden="true" /> },
+);
+const PersianGermanDayPicker = dynamic(
+  async () => (await import("./localizedDayPickers")).PersianGermanCalendar,
   { ssr: false, loading: () => <div className="min-h-[18rem]" aria-hidden="true" /> },
 );
 
@@ -84,27 +95,17 @@ interface DatePickerProps {
 
 export type CalendarSystem = "gregory" | "persian";
 
-function persianLabels(
+function localizedLabels(
+  locale: "fa" | "de",
   calendar: CalendarSystem,
   numberingSystem: "latn" | "arabext",
   labelGrid?: Labels["labelGrid"],
 ): Partial<Labels> {
   const label = (date: Date, modifiers?: Modifiers): string =>
-    formatPersianAccessibleDate(date, calendar, modifiers, numberingSystem);
+    locale === "de"
+      ? formatGermanAccessibleDate(date, calendar, modifiers)
+      : formatPersianAccessibleDate(date, calendar, modifiers, numberingSystem);
   return { labelDayButton: label, labelGridcell: label, labelGrid };
-}
-
-function persianFormatters(calendar: CalendarSystem, numberingSystem: "latn" | "arabext") {
-  const options = { calendar, numberingSystem, timeZone: "UTC" };
-  const month = new Intl.DateTimeFormat("fa-IR", { ...options, month: "long" });
-  const year = new Intl.DateTimeFormat("fa-IR", { ...options, year: "numeric" });
-  const format = (date: Date, formatter: Intl.DateTimeFormat): string =>
-    formatter.format(new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 12)));
-  return {
-    formatCaption: (date: Date) => `${format(date, month)} ${format(date, year)}`,
-    formatMonthDropdown: (date: Date) => format(date, month),
-    formatYearDropdown: (date: Date) => format(date, year),
-  };
 }
 
 function accountToday(timeZone: string): Date {
@@ -131,6 +132,7 @@ function dateLabel(
   if (value === null) return "";
   if (calendar === "persian") return formatPersianDate(value, locale, numberingSystem);
   if (locale === "fa") return formatGregorianPersianDate(value, numberingSystem);
+  if (locale === "de") return (formatLabel ?? formatDmy)(value);
   return (formatLabel ?? formatMdy)(value);
 }
 
@@ -160,7 +162,8 @@ export function DatePicker({
   const [open, setOpenState] = useState(defaultOpen);
   const [calendarOverride, setCalendarOverride] = useState<CalendarSystem | null>(null);
   const calendar = calendarOverride ?? preferredCalendar;
-  const formatters = locale === "fa" ? persianFormatters(calendar, numberingSystem) : undefined;
+  const formatters =
+    locale === "en" ? undefined : calendarFormatters(locale, calendar, numberingSystem);
   const valueKey = value ?? "";
   const [navigated, setNavigated] = useState<{ month: Date; forValue: string } | null>(null);
   const setOpen = (next: boolean): void => {
@@ -180,12 +183,8 @@ export function DatePicker({
   const endMonth = new Date(currentYear + DATE_PICKER_FUTURE_YEARS, 11);
   const Picker =
     calendar === "persian"
-      ? locale === "fa"
-        ? PersianDayPicker
-        : PersianEnglishDayPicker
-      : locale === "fa"
-        ? GregorianPersianDayPicker
-        : DayPicker;
+      ? { en: PersianEnglishDayPicker, fa: PersianDayPicker, de: PersianGermanDayPicker }[locale]
+      : { en: DayPicker, fa: GregorianPersianDayPicker, de: GregorianGermanDayPicker }[locale];
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger
@@ -209,8 +208,8 @@ export function DatePicker({
           <Picker
             mode="single"
             labels={
-              locale === "fa"
-                ? persianLabels(calendar, numberingSystem, formatters?.formatCaption)
+              locale !== "en"
+                ? localizedLabels(locale, calendar, numberingSystem, formatters?.formatCaption)
                 : undefined
             }
             formatters={formatters}

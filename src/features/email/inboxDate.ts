@@ -70,10 +70,7 @@ export function formatReaderDate(
     ...(sameYear ? {} : { year: "numeric" }),
   });
   const age = Math.round(dayNumber(now, prefs.timeZone) - dayNumber(date, prefs.timeZone));
-  const copy = emailMessagesForLocale(
-    prefs.locale === "fa" ? "fa" : "en",
-    prefs.numberingSystem,
-  )._relative;
+  const copy = emailMessagesForLocale(prefs.locale, prefs.numberingSystem)._relative;
   const relative = age <= 0 ? copy.today : age === 1 ? copy.yesterday : copy.daysAgo(age);
   return `${datePart} (${relative})`;
 }
@@ -86,10 +83,7 @@ export function formatTimelineEmailDate(
   if (date === null) return "";
   const prefs = preferencesOrLocal(preferences);
   const time = formatDateTime(date, prefs, { hour: "numeric", minute: "2-digit" });
-  const copy = emailMessagesForLocale(
-    prefs.locale === "fa" ? "fa" : "en",
-    prefs.numberingSystem,
-  )._relative;
+  const copy = emailMessagesForLocale(prefs.locale, prefs.numberingSystem)._relative;
   const minutes = Math.max(0, Math.round((now.getTime() - date.getTime()) / 60_000));
   let relative: string;
   if (minutes < 1) relative = copy.justNow;

@@ -1,0 +1,60 @@
+{
+  "nav": {
+    "pipeline": "Vertriebspipeline",
+    "leads": "Leads",
+    "deals": "Verkaufschancen",
+    "contacts": "Kontakte",
+    "people": "Personen",
+    "orgs": "Organisationen",
+    "contactsTimeline": "Interaktionsverlauf",
+    "activities": "Aktivitäten",
+    "inbox": "Posteingang",
+    "dashboard": "Vertriebsleistung",
+    "settings": "Einstellungen",
+    "docs": "Dokumentation"
+  },
+  "auth": {
+    "signInWithGoogle": "Mit Google anmelden",
+    "loginTitle": "Bei Warpdrive anmelden",
+    "domainOnly": "Verwenden Sie Ihr geschäftliches Konto bei Google Workspace."
+  },
+  "account": {
+    "menu": "Kontomenü",
+    "heading": "Mein Konto",
+    "settings": "Einstellungen",
+    "logout": "Abmelden"
+  },
+  "navigation": {
+    "primary": "Hauptnavigation",
+    "collapse": "Seitenleiste einklappen",
+    "expand": "Seitenleiste ausklappen",
+    "collapseShort": "Einklappen"
+  },
+  "language": {
+    "switchTo": "English",
+    "switchLabel": "Sprache zu Englisch wechseln"
+  },
+  "datePicker": {
+    "selectDate": "Datum auswählen",
+    "clear": "Auswahl löschen",
+    "usePersianCalendar": "Persischen Kalender verwenden",
+    "useGregorianCalendar": "Gregorianischen Kalender verwenden"
+  },
+  "preferences": {
+    "saveError": "Ihre Sprach- und Regionseinstellungen konnten nicht gespeichert werden. Bitte versuchen Sie es erneut.",
+    "saving": "Sprach- und Regionseinstellungen werden gespeichert…",
+    "language": "Sprache",
+    "calendar": "Kalender",
+    "timeZone": "Zeitzone",
+    "persianCalendar": "Persisch (Solar-Hidschri, Iran)",
+    "gregorianCalendar": "Gregorianisch",
+    "calendarHelp": "Wählen Sie den Kalender für die Anzeige und Auswahl von Daten. Gespeicherte Datumswerte bleiben unverändert.",
+    "settingsTitle": "Sprache, Kalender und Zahlen",
+    "settingsDescription": "Wählen Sie die Sprache und den Kalender der Anwendung. Für Persisch können Sie zusätzlich die Zifferndarstellung festlegen.",
+    "numberDisplay": "Zifferndarstellung",
+    "persianNumbers": "Persische Ziffern (۱۲۳)",
+    "englishNumbers": "Lateinische Ziffern (123)",
+    "numberHelp": "Diese Einstellung ändert die Anzeige von Zahlen und Daten. Gespeicherte Werte bleiben unverändert.",
+    "numberPreview": "Vorschau: {value, number}"
+  }
+}

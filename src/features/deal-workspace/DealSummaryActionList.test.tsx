@@ -3,6 +3,7 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeAll, expect, it, vi } from "vitest";
+import { LocaleProvider } from "@/features/i18n/LocaleProvider";
 
 beforeAll(() => {
   Element.prototype.scrollIntoView = vi.fn();
@@ -103,6 +104,49 @@ const baseDeal = {
   expectedCloseDate: null as string | null,
   labels: [] as string[],
 };
+
+it("keeps a stored decimal unchanged when opening and blurring its German money editor", () => {
+  render(
+    <LocaleProvider locale="de">
+      <DealSummaryActionList
+        deal={{ ...baseDeal, value: "1.234" }}
+        person={null}
+        org={null}
+        baseCurrency="USD"
+      />
+    </LocaleProvider>,
+  );
+  fireEvent.click(screen.getByRole("button", { name: /Betrag.*bearbeiten|bearbeiten.*Betrag/ }));
+  const input = screen.getByLabelText("Betrag");
+  expect(input).toHaveValue("1,234");
+  expect(screen.getByRole("button", { name: "Speichern" })).toBeDisabled();
+  fireEvent.blur(input);
+  expect(updateDealAction).not.toHaveBeenCalled();
+});
+
+it("keeps exact money and a German draft's locale through an interface switch", async () => {
+  const element = (locale: "de" | "en") => (
+    <LocaleProvider locale={locale}>
+      <DealSummaryActionList
+        deal={{ ...baseDeal, value: "99999999999999.1234" }}
+        person={null}
+        org={null}
+        baseCurrency="USD"
+      />
+    </LocaleProvider>
+  );
+  const view = render(element("de"));
+  fireEvent.click(screen.getByRole("button", { name: /Betrag.*bearbeiten|bearbeiten.*Betrag/ }));
+  const input = screen.getByLabelText("Betrag");
+  expect(input).toHaveValue("99999999999999,1234");
+  fireEvent.change(input, { target: { value: "99999999999999,1235" } });
+  view.rerender(element("en"));
+  expect(input).toHaveValue("99999999999999,1235");
+  fireEvent.click(screen.getByRole("button", { name: "Save" }));
+  await vi.waitFor(() => expect(updateDealAction).toHaveBeenCalled());
+  const [payload] = updateDealAction.mock.calls[0] as unknown as [Record<string, unknown>];
+  expect(payload.value).toBe("99999999999999.1235");
+});
 
 function renderList(overrides: Partial<typeof baseDeal> = {}) {
   return render(

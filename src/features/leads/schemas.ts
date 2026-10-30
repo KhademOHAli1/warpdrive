@@ -5,6 +5,7 @@ import type { CustomFieldSortKey } from "@/features/custom-fields/sortKey";
 import { customFieldSortKeySchema } from "@/features/custom-fields/sortKeySchema";
 import { SELECTABLE_LOCALES } from "@/features/i18n/registry";
 import { labelNameArray } from "@/features/labels/labelsSchema";
+import { NUMBERING_SYSTEMS } from "@/lib/numberingSystem";
 import { buildFilterSchema } from "@/schemas/filterCondition";
 import { LEAD_CONDITION_CONFIG } from "./leadFilterFields";
 
@@ -90,6 +91,7 @@ export const leadByIdInput = z.object({ id: z.string().uuid() });
 export const leadTimelineInput = z.object({
   leadId: z.string().uuid(),
   locale: z.enum(SELECTABLE_LOCALES).optional(),
+  numberingSystem: z.enum(NUMBERING_SYSTEMS).optional(),
 });
 
 // Convert a lead to a deal. pipelineId optional (defaults to the org default pipeline);

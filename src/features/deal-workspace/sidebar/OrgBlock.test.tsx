@@ -3,6 +3,8 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
 import type { Organization } from "@/db/schema";
+import { LocaleProvider } from "@/features/i18n/LocaleProvider";
+import type { Locale } from "@/features/i18n/registry";
 import { HideEmptyContext } from "./sectionFilter";
 
 const { refresh, updateOrgAction } = vi.hoisted(() => ({
@@ -31,6 +33,51 @@ const blankOrg: Organization = {
   linkedinUrl: null,
   address: null,
 } as unknown as Organization;
+
+it("localizes canonical numeric seeds and keeps a German employee draft across a language switch", async () => {
+  const org = { ...blankOrg, annualRevenue: "1234.50", employeeCount: 200 };
+  const tree = (locale: Locale) => (
+    <LocaleProvider locale={locale}>
+      <OrgBlock org={org} />
+    </LocaleProvider>
+  );
+  const view = render(tree("de"));
+  expect(screen.getByText("1234,50")).toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "Anzahl der Beschäftigten bearbeiten" }));
+  fireEvent.change(screen.getByLabelText("editor-employees"), { target: { value: "1.234" } });
+  view.rerender(tree("en"));
+  expect(screen.getByLabelText("editor-employees")).toHaveValue("1.234");
+  fireEvent.click(screen.getByRole("button", { name: "Save" }));
+  await waitFor(() =>
+    expect(updateOrgAction).toHaveBeenCalledWith({ id: "o1", employeeCount: 1234 }, "csrf"),
+  );
+});
+
+it("validates numeric sidebar inputs before calling the action and accepts Persian digits", async () => {
+  render(
+    <LocaleProvider locale="fa">
+      <OrgBlock org={blankOrg} />
+    </LocaleProvider>,
+  );
+  fireEvent.click(screen.getByRole("button", { name: /تعداد کارکنان/ }));
+  fireEvent.change(screen.getByLabelText("editor-employees"), { target: { value: "۱٫۵" } });
+  fireEvent.click(screen.getByRole("button", { name: "ذخیره" }));
+  await screen.findByRole("alert");
+  expect(updateOrgAction).not.toHaveBeenCalled();
+  fireEvent.change(screen.getByLabelText("editor-employees"), { target: { value: "۱۲۳۴" } });
+  fireEvent.click(screen.getByRole("button", { name: "ذخیره" }));
+  await waitFor(() =>
+    expect(updateOrgAction).toHaveBeenCalledWith({ id: "o1", employeeCount: 1234 }, "csrf"),
+  );
+  fireEvent.click(screen.getByRole("button", { name: /درآمد سالانه/ }));
+  fireEvent.change(screen.getByLabelText("editor-annual-revenue"), {
+    target: { value: "۱۲٬۳۴۵٫۵۰" },
+  });
+  fireEvent.click(screen.getByRole("button", { name: "ذخیره" }));
+  await waitFor(() =>
+    expect(updateOrgAction).toHaveBeenCalledWith({ id: "o1", annualRevenue: "12345.50" }, "csrf"),
+  );
+});
 
 it("renders Website as an https link (adding scheme) and LinkedIn as its url, opening in a new tab", () => {
   const org = {

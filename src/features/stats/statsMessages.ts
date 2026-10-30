@@ -1,10 +1,19 @@
 import { createTranslator } from "next-intl";
+import type { MessageCatalog } from "@/features/i18n/messageTypes";
 import type { Locale } from "@/features/i18n/registry";
+import { localeWithNumberingSystem, type NumberingSystem } from "@/lib/numberingSystem";
+import de from "./messages/stats.de.json";
 import en from "./messages/stats.en.json";
 import fa from "./messages/stats.fa.json";
-export function statsMessagesForLocale(locale: Locale) {
-  const copy = locale === "fa" ? fa : en;
-  const t = createTranslator({ locale, messages: copy });
+
+const messagesByLocale: Record<Locale, MessageCatalog<typeof en>> = { en, fa, de };
+
+export function statsMessagesForLocale(locale: Locale, numberingSystem?: NumberingSystem) {
+  const copy = messagesByLocale[locale];
+  const t = createTranslator({
+    locale: localeWithNumberingSystem(locale, numberingSystem),
+    messages: copy,
+  });
   return {
     ...copy,
     _extra: {

@@ -16,6 +16,7 @@ import {
 import type { Locale } from "@/features/i18n/registry";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { assertReferenceVisible } from "@/features/permissions/referenceCheck";
+import type { NumberingSystem } from "@/lib/numberingSystem";
 import { toRefActor } from "./actorAdapters";
 
 export interface ContactTimelineResult {
@@ -34,6 +35,7 @@ export async function contactTimeline(
   entityId: string,
   signal: AbortSignal,
   locale: Locale = "en",
+  numberingSystem?: NumberingSystem,
 ): Promise<ContactTimelineResult> {
   signal.throwIfAborted();
   const visible = await assertReferenceVisible(
@@ -64,5 +66,14 @@ export async function contactTimeline(
   const changelog = await listChangeLog(db, entityType, entityId, signal);
   signal.throwIfAborted();
 
-  return { items: buildHistoryTimeline(activityItems, changelog, noteItems, undefined, locale) };
+  return {
+    items: buildHistoryTimeline(
+      activityItems,
+      changelog,
+      noteItems,
+      undefined,
+      locale,
+      numberingSystem,
+    ),
+  };
 }

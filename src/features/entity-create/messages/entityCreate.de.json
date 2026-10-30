@@ -1,0 +1,9 @@
+{
+  "cancel": "Abbrechen",
+  "new": "NEU",
+  "review": "Prüfen",
+  "save": "Speichern",
+  "saving": "Wird gespeichert...",
+  "createOrgError": "Organisation konnte nicht erstellt werden ({errorId})",
+  "createPersonError": "Person konnte nicht erstellt werden ({errorId})"
+}

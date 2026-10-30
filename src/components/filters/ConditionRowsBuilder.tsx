@@ -3,6 +3,7 @@ import { Filter } from "lucide-react";
 import type React from "react";
 import { useState } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/Popover";
+import { VALUELESS_OPS } from "@/constants/filterOps";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { useFormatters } from "@/lib/useFormatters";
 import {
@@ -11,6 +12,7 @@ import {
   ConditionRows,
   type RawCondition,
 } from "./ConditionRows";
+import { completeRowValue, invalidNumberDraft, isNumberDraft } from "./rowValue";
 
 // The consumers (contacts, deals, leads builders) import these from here, so keep them resolving.
 export type {
@@ -58,6 +60,7 @@ export function ConditionRowsBuilder({
   const [open, setOpen] = useState(false);
   const [combinator, setCombinator] = useState<"and" | "or">(appliedCombinator);
   const [rows, setRows] = useState<ConditionRow[]>(seed);
+  const invalid = rows.some((row) => !VALUELESS_OPS.has(row.op) && invalidNumberDraft(row.value));
 
   function openChange(next: boolean): void {
     if (next) {
@@ -68,8 +71,13 @@ export function ConditionRowsBuilder({
   }
 
   function apply(): void {
+    if (invalid) return;
     onApply(
-      rows.map((r) => ({ field: r.field, op: r.op, value: r.value })),
+      rows.map((r) => ({
+        field: r.field,
+        op: r.op,
+        value: isNumberDraft(r.value) ? (completeRowValue(r.value) ?? "") : r.value,
+      })),
       combinator,
     );
     setOpen(false);
@@ -117,6 +125,7 @@ export function ConditionRowsBuilder({
           <button
             type="button"
             onClick={apply}
+            disabled={invalid}
             className="rounded-md bg-action px-3 py-1 text-sm text-action-foreground active:scale-[0.96] transition-transform"
           >
             {t("apply")}

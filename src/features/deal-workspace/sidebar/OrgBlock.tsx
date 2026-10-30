@@ -1,12 +1,15 @@
 "use client";
 import { useRouter } from "next/navigation";
 import type React from "react";
+import { ERROR_IDS } from "@/constants/errorIds";
 import type { Organization } from "@/db/schema";
 import { updateOrgAction } from "@/features/contacts/actions";
 import { ContactCustomFieldRows } from "@/features/custom-fields/ContactCustomFieldRows";
-import { useAppTranslations } from "@/features/i18n/LocaleProvider";
+import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
+import { useFormatters } from "@/lib/useFormatters";
 import type { CustomFieldDef } from "@/types/customFields";
 import { readCsrfToken } from "@/utils/csrfCookie";
+import { normalizeNumberInput } from "@/utils/normalizeNumberInput";
 import { externalHref, LinkValue } from "./contactLinks";
 import { LabelChips, type ResolvedLabelChip } from "./LabelChips";
 import { OrgAddressField } from "./OrgAddressField";
@@ -63,6 +66,20 @@ export function OrgBlock({
   currency?: string;
 }): React.ReactNode {
   const translateSales = useAppTranslations("sales");
+  const locale = useLocale();
+  const format = useFormatters();
+  const revenueText =
+    org.annualRevenue === null
+      ? ""
+      : locale === "en"
+        ? org.annualRevenue
+        : format.number(org.annualRevenue, {
+            useGrouping: false,
+            minimumFractionDigits: org.annualRevenue.split(".")[1]?.length ?? 0,
+            maximumFractionDigits: 20,
+          });
+  const employeesText =
+    org.employeeCount === null ? "" : format.number(org.employeeCount, { useGrouping: false });
 
   const router = useRouter();
   const address = formatAddress(org.address);
@@ -172,26 +189,41 @@ export function OrgBlock({
       {!hidden.has("annualRevenue") && (
         <SidebarFieldRow
           label={translateSales("annual_revenue_dcfdf")}
-          value={org.annualRevenue ?? "-"}
+          value={revenueText === "" ? "-" : revenueText}
           empty={org.annualRevenue === null}
-          initialDraft={org.annualRevenue ?? ""}
+          initialDraft={revenueText}
           renderEditor={textEditor("editor-annual-revenue")}
-          onSave={(draft) => {
+          onSave={(draft, draftLocale) => {
             const trimmed = draft.trim();
-            return save({ annualRevenue: trimmed === "" ? null : trimmed });
+            if (trimmed === "") return save({ annualRevenue: null });
+            const normalized = normalizeNumberInput(trimmed, draftLocale);
+            if (normalized === null || !/^\d+(?:\.\d{1,2})?$/.test(normalized))
+              return Promise.resolve({
+                ok: false,
+                errorId: ERROR_IDS.CONTACT_UPDATE_INPUT_INVALID,
+              });
+            return save({ annualRevenue: normalized });
           }}
         />
       )}
       {!hidden.has("employeeCount") && (
         <SidebarFieldRow
           label={translateSales("number_of_employees_abadd")}
-          value={org.employeeCount ?? "-"}
+          value={employeesText === "" ? "-" : employeesText}
           empty={org.employeeCount === null}
-          initialDraft={org.employeeCount === null ? "" : String(org.employeeCount)}
+          initialDraft={employeesText}
           renderEditor={textEditor("editor-employees")}
-          onSave={(draft) => {
+          onSave={(draft, draftLocale) => {
             const trimmed = draft.trim();
-            return save({ employeeCount: trimmed === "" ? null : Number(trimmed) });
+            if (trimmed === "") return save({ employeeCount: null });
+            const normalized = normalizeNumberInput(trimmed, draftLocale);
+            const count = normalized === null ? NaN : Number(normalized);
+            if (!Number.isSafeInteger(count) || count < 0)
+              return Promise.resolve({
+                ok: false,
+                errorId: ERROR_IDS.CONTACT_UPDATE_INPUT_INVALID,
+              });
+            return save({ employeeCount: count });
           }}
         />
       )}

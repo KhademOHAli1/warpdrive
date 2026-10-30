@@ -29,13 +29,14 @@ export function parseNewDeal(
   fields: NewDealFields,
   pipelineId: string,
   locale: Locale = "en",
+  valueLocale: Locale = locale,
 ): ParseNewDealResult {
   const t = createAppTranslator(locale, "sales");
   const title = fields.title.trim();
   if (title === "") return { ok: false, error: t("computed.titleRequired") };
   if (fields.stageId === "") return { ok: false, error: t("computed.stageRequired") };
 
-  const money = parseMoneyValue(fields.value, locale);
+  const money = parseMoneyValue(fields.value, valueLocale);
   if (!money.ok) return { ok: false, error: t("computed.invalidMoney") };
   // Labels are user-managed catalog names now (validated server-side against the catalog); dedupe
   // but do not whitelist against a fixed enum.

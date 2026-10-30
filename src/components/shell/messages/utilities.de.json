@@ -1,0 +1,38 @@
+{
+  "consent": {
+    "request": "Verbindungsanfrage",
+    "title": "Eine Anwendung mit <brand>warpdrive</brand> verbinden?",
+    "permissions": "Die Anwendung kann CRM-Daten im Rahmen Ihrer Berechtigungen lesen und aktualisieren. Sie kann keine Datensätze löschen. Sie können den Zugriff später in den Einstellungen widerrufen.",
+    "clientName": "Selbst angegebener Name (nicht überprüft)",
+    "destination": "Zugriffsfreigabe wird gesendet an",
+    "warning": "Jede Person kann eine Verbindung anfordern und den obigen Namen frei wählen. Lehnen Sie die Anfrage ab, wenn Sie sie nicht gerade in dieser Anwendung gestartet haben.",
+    "deny": "Ablehnen",
+    "approve": "Zugriff erlauben"
+  },
+  "release": {
+    "available": "🎉 <brand>warpdrive</brand> <identifier>{version}</identifier> ist verfügbar",
+    "current": "(aktuell: <identifier>{version}</identifier>)",
+    "showNotes": "Versionshinweise anzeigen",
+    "hideNotes": "Versionshinweise ausblenden",
+    "github": "Auf <brand>GitHub</brand> ansehen",
+    "dismiss": "Schließen"
+  },
+  "labels": {
+    "add": "+ Labels hinzufügen",
+    "menu": "Labels",
+    "empty": "Noch keine Labels",
+    "create": "Neues Label erstellen"
+  },
+  "editHeading": "{label} bearbeiten",
+  "breadcrumb": "Navigationspfad",
+  "drawer": {
+    "org": "Details zur Organisation",
+    "person": "Kontaktdetails",
+    "deal": "Details zur Verkaufschance",
+    "lead": "Details zum Lead"
+  },
+  "presence": {
+    "more": "{count, plural, one {# weitere Person betrachtet diesen Datensatz} other {# weitere Personen betrachten diesen Datensatz}}",
+    "overflow": "+{count, number}"
+  }
+}

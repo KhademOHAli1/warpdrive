@@ -2,7 +2,11 @@
 import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+import { LocaleProvider } from "@/features/i18n/LocaleProvider";
 import type { LeadDetail } from "@/features/leads/leadRepo";
+import type { NumberingSystem } from "@/lib/numberingSystem";
+
+const timelineQueryInput = vi.hoisted(() => vi.fn());
 
 // The Due date field is now the shared DatePicker (Radix Popover), whose
 // pointer APIs jsdom does not implement. Polyfill them so the popover opens.
@@ -47,21 +51,24 @@ vi.mock("@/lib/trpc-client", () => ({
     enrichment: { status: { useQuery: () => ({ data: { ready: false, providers: [] } }) } },
     lead: {
       leadTimeline: {
-        useQuery: () => ({
-          refetch: refetchTimeline,
-          data: {
-            items: [
-              {
-                id: "n1",
-                kind: "note",
-                at: new Date("2026-07-01T00:00:00Z"),
-                body: "First touch",
-                actorName: "Nick",
-              },
-            ],
-            emails: [],
-          },
-        }),
+        useQuery: (input: unknown) => {
+          timelineQueryInput(input);
+          return {
+            refetch: refetchTimeline,
+            data: {
+              items: [
+                {
+                  id: "n1",
+                  kind: "note",
+                  at: new Date("2026-07-01T00:00:00Z"),
+                  body: "First touch",
+                  actorName: "Nick",
+                },
+              ],
+              emails: [],
+            },
+          };
+        },
       },
     },
     activities: {
@@ -94,6 +101,32 @@ vi.mock("@/lib/trpc-client", () => ({
 
 import type { Organization, Person } from "@/db/schema";
 import { LeadWorkspaceClient } from "./LeadWorkspaceClient";
+
+it("changes the timeline query cache input when only the digit preference changes", () => {
+  const tree = (numberingSystem: NumberingSystem) => (
+    <LocaleProvider locale="fa" numberingSystem={numberingSystem}>
+      <LeadWorkspaceClient
+        lead={lead}
+        person={person}
+        org={org}
+        hiddenPersonFields={NONE}
+        hiddenOrgFields={NONE}
+      />
+    </LocaleProvider>
+  );
+  const view = render(tree("latn"));
+  expect(timelineQueryInput).toHaveBeenLastCalledWith({
+    leadId: lead.id,
+    locale: "fa",
+    numberingSystem: "latn",
+  });
+  view.rerender(tree("arabext"));
+  expect(timelineQueryInput).toHaveBeenLastCalledWith({
+    leadId: lead.id,
+    locale: "fa",
+    numberingSystem: "arabext",
+  });
+});
 
 const person: Person = {
   id: "pe1",

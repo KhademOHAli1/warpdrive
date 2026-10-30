@@ -1,6 +1,6 @@
 // Pure date-string helpers for the shared DatePicker. Value contract is local
 // YYYY-MM-DD (matches the existing action inputs z.string().date() and the
-// composer startDate state), display is MM/DD/YYYY (Pipedrive parity).
+// composer startDate state). Display order follows the interface language and chosen calendar.
 
 export function toYmd(d: Date): string {
   const year = d.getFullYear();
@@ -52,6 +52,14 @@ const persianGregorianDateFormatter = new Intl.DateTimeFormat(
   "fa-IR-u-ca-gregory-nu-arabext",
   dateFormatOptions,
 );
+const germanDateFormatter = new Intl.DateTimeFormat(
+  "de-DE-u-ca-gregory-nu-latn",
+  dateFormatOptions,
+);
+const germanPersianDateFormatter = new Intl.DateTimeFormat(
+  "de-DE-u-ca-persian-nu-latn",
+  dateFormatOptions,
+);
 const accessibleDateOptions = {
   year: "numeric",
   month: "long",
@@ -67,6 +75,14 @@ const gregorianAccessibleDateFormatter = new Intl.DateTimeFormat(
   "fa-IR-u-ca-gregory-nu-arabext",
   accessibleDateOptions,
 );
+const germanSolarAccessibleDateFormatter = new Intl.DateTimeFormat(
+  "de-DE-u-ca-persian-nu-latn",
+  accessibleDateOptions,
+);
+const germanGregorianAccessibleDateFormatter = new Intl.DateTimeFormat(
+  "de-DE-u-ca-gregory-nu-latn",
+  accessibleDateOptions,
+);
 
 function utcCivilDate(date: Date): Date {
   return new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 12));
@@ -78,11 +94,25 @@ function formatCivilDate(v: string, formatter: Intl.DateTimeFormat): string {
   return formatter.format(utcCivilDate(date));
 }
 
+function datePart(parts: Intl.DateTimeFormatPart[], type: Intl.DateTimeFormatPartTypes): string {
+  return parts.find((part) => part.type === type)?.value ?? "";
+}
+
+export function formatDmy(v: string): string {
+  return formatCivilDate(v, germanDateFormatter);
+}
+
 export function formatPersianDate(
   v: string,
-  locale: "en" | "fa" = "fa",
+  locale: "en" | "fa" | "de" = "fa",
   numberingSystem?: "latn" | "arabext",
 ): string {
+  if (locale === "de") {
+    const date = parseYmd(v);
+    if (date === null) return "";
+    const parts = germanPersianDateFormatter.formatToParts(utcCivilDate(date));
+    return `${datePart(parts, "day")}.${datePart(parts, "month")}.${datePart(parts, "year")}`;
+  }
   return formatCivilDate(
     v,
     locale === "fa" && numberingSystem !== "latn"
@@ -121,4 +151,37 @@ export function formatPersianAccessibleDate(
   const formatted = `${part("weekday")}، ${part("day")} ${part("month")} ${part("year")}`;
   const withToday = modifiers?.today === true ? `امروز، ${formatted}` : formatted;
   return modifiers?.selected === true ? `${withToday}، انتخاب‌شده` : withToday;
+}
+
+export function formatGermanAccessibleDate(
+  date: Date,
+  calendar: "persian" | "gregory",
+  modifiers?: Record<string, boolean>,
+): string {
+  const formatter =
+    calendar === "persian"
+      ? germanSolarAccessibleDateFormatter
+      : germanGregorianAccessibleDateFormatter;
+  const parts = formatter.formatToParts(utcCivilDate(date));
+  const formatted = `${datePart(parts, "weekday")}, ${datePart(parts, "day")}. ${datePart(parts, "month")} ${datePart(parts, "year")}`;
+  const withToday = modifiers?.today === true ? `Heute, ${formatted}` : formatted;
+  return modifiers?.selected === true ? `${withToday}, ausgewählt` : withToday;
+}
+
+export function calendarFormatters(
+  locale: "fa" | "de",
+  calendar: "persian" | "gregory",
+  numberingSystem: "latn" | "arabext",
+) {
+  const options = { calendar, numberingSystem, timeZone: "UTC" };
+  const language = locale === "de" ? "de-DE" : "fa-IR";
+  const month = new Intl.DateTimeFormat(language, { ...options, month: "long" });
+  const year = new Intl.DateTimeFormat(language, { ...options, year: "numeric" });
+  const format = (date: Date, formatter: Intl.DateTimeFormat, type: "month" | "year"): string =>
+    datePart(formatter.formatToParts(utcCivilDate(date)), type);
+  return {
+    formatCaption: (date: Date) => `${format(date, month, "month")} ${format(date, year, "year")}`,
+    formatMonthDropdown: (date: Date) => format(date, month, "month"),
+    formatYearDropdown: (date: Date) => format(date, year, "year"),
+  };
 }

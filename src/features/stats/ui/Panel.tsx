@@ -48,7 +48,7 @@ export function Bar({ label, pct }: { label: string; pct: number }): React.React
 // A span shorter than half a day rounds to 0, and "0 days" claims the work took no time at all.
 export function durationDays(v: number, preferences: Partial<FormattingPreferences> = {}): string {
   const rounded = Math.round(v);
-  const copy = statsMessagesForLocale(preferences.locale === "fa" ? "fa" : "en");
+  const copy = statsMessagesForLocale(preferences.locale ?? "en", preferences.numberingSystem);
   return rounded === 0 ? copy.underADay : copy._extra.durationDays(rounded);
 }
 
@@ -62,7 +62,6 @@ export function monthLabel(
   const at = Date.UTC(Number(month.slice(0, 4)), Number(month.slice(5, 7)) - 1, 1);
   return new Intl.DateTimeFormat(localeTagForFormatting(preferences), {
     calendar: "gregory",
-    numberingSystem: preferences.locale === "fa" ? "arabext" : "latn",
     month: "short",
     ...(includeYear ? { year: "numeric" as const } : {}),
     timeZone: "UTC",

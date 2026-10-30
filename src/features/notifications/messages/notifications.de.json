@@ -1,0 +1,95 @@
+{
+  "title": "Benachrichtigungen",
+  "markAllRead": "Alle als gelesen markieren",
+  "seeAll": "Alle Aktivitäten anzeigen",
+  "today": "Heute",
+  "earlier": "Früher",
+  "empty": "Noch keine Benachrichtigungen vorhanden.",
+  "items": {
+    "mention": "Sie wurden erwähnt",
+    "mentionTitle": "Sie wurden in „{title}“ erwähnt",
+    "activity_assigned": "Aktivität zugewiesen: {subject}",
+    "activity_reminder": "Erinnerung: {subject}",
+    "deal_followed_update": "Aktualisierung: {summary}",
+    "updated": "Die Angaben zur Verkaufschance wurden aktualisiert",
+    "moved": "Die Verkaufschance wurde in eine andere Phase verschoben",
+    "followedFallback": "Eine Verkaufschance, der Sie folgen, wurde geändert",
+    "email_open": "Ihre E-Mail wurde geöffnet",
+    "email_click": "Ein Link in Ihrer E-Mail wurde angeklickt",
+    "deal_won": "Eine Verkaufschance, der Sie folgen, wurde gewonnen",
+    "deal_lost": "Eine Verkaufschance, der Sie folgen, wurde verloren",
+    "comment_reply": "Neue Antwort auf einen Kommentar",
+    "deal_email_received": "Neue E-Mail: {subject}",
+    "emailFallback": "zu einer Verkaufschance"
+  },
+  "preferences": {
+    "pageTitle": "Benachrichtigungseinstellungen",
+    "loading": "Einstellungen werden geladen…",
+    "columnInApp": "In der App",
+    "columnEmail": "E-Mail",
+    "saveError": "Die Einstellung konnte nicht gespeichert werden. Bitte versuchen Sie es erneut.",
+    "typeLabels": {
+      "mention": "Erwähnungen",
+      "activity_assigned": "Mir zugewiesene Aktivitäten",
+      "activity_reminder": "Aktivitätserinnerungen",
+      "deal_followed_update": "Änderungen an Verkaufschancen, denen ich folge",
+      "email_open": "E-Mail geöffnet",
+      "email_click": "E-Mail-Link angeklickt",
+      "deal_won": "Verkaufschance gewonnen",
+      "deal_lost": "Verkaufschance verloren",
+      "comment_reply": "Antworten auf Kommentare",
+      "deal_email_received": "Neue E-Mails zu meinen Verkaufschancen"
+    }
+  },
+  "email": {
+    "open": "Öffnen: {link}",
+    "openAction": "In Warpdrive öffnen",
+    "recipientFallback": "Hallo",
+    "activityFallback": "Aktivität",
+    "mention": {
+      "subject": "Sie wurden in Warpdrive erwähnt",
+      "line": "{recipient}, jemand hat Sie erwähnt."
+    },
+    "activity_assigned": {
+      "subject": "Ihnen wurde in Warpdrive eine Aktivität zugewiesen",
+      "line": "{recipient}, Ihnen wurde eine Aktivität zugewiesen."
+    },
+    "activity_reminder": {
+      "subject": "Erinnerung: {activitySubject} ist bald fällig",
+      "line": "{recipient}, Ihre Aktivität „{activitySubject}“ ist bald fällig."
+    },
+    "deal_followed_update": {
+      "subject": "Eine Verkaufschance, der Sie folgen, wurde aktualisiert",
+      "line": "{recipient}, eine Verkaufschance, der Sie folgen, wurde aktualisiert."
+    },
+    "email_open": {
+      "subject": "Ihre E-Mail wurde geöffnet",
+      "line": "{recipient}, jemand hat Ihre E-Mail geöffnet."
+    },
+    "email_click": {
+      "subject": "Ein Link in Ihrer E-Mail wurde angeklickt",
+      "line": "{recipient}, jemand hat einen Link in Ihrer E-Mail angeklickt."
+    },
+    "deal_won": {
+      "subject": "Verkaufschance gewonnen!",
+      "line": "{recipient}, eine Verkaufschance wurde als gewonnen markiert."
+    },
+    "deal_lost": {
+      "subject": "Verkaufschance verloren",
+      "line": "{recipient}, eine Verkaufschance wurde als verloren markiert."
+    },
+    "comment_reply": {
+      "subject": "Neue Antwort auf Ihren Kommentar in Warpdrive",
+      "line": "{recipient}, jemand hat auf Ihren Kommentar geantwortet."
+    },
+    "deal_email_received": {
+      "subject": "Neue E-Mail zu einer Verkaufschance",
+      "subjectWithTitle": "Neue E-Mail zu einer Verkaufschance: {subject}",
+      "line": "{recipient}, zu einer Verkaufschance, der Sie folgen, ist eine neue E-Mail eingegangen."
+    },
+    "generic": {
+      "subject": "Benachrichtigung von Warpdrive",
+      "line": "{recipient}, Sie haben eine neue Benachrichtigung."
+    }
+  }
+}

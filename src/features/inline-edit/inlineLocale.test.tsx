@@ -1,14 +1,33 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { afterEach, expect, it } from "vitest";
+import { afterEach, expect, it, vi } from "vitest";
 import { LocaleProvider } from "@/features/i18n/LocaleProvider";
-import { err } from "@/types/result";
+import type { Locale } from "@/features/i18n/registry";
+import { err, ok } from "@/types/result";
 import { InlineDateField } from "./InlineDateField";
 import { InlineTextField } from "./InlineTextField";
 import { saveErrorMessage } from "./saveError";
 
 afterEach(cleanup);
+
+it("recaptures the input locale after canceling an earlier numeric draft", () => {
+  const onSave = vi.fn(() => Promise.resolve(ok(undefined)));
+  const tree = (locale: Locale) => (
+    <LocaleProvider locale={locale}>
+      <InlineTextField label="Amount" value="10" onSave={onSave} />
+    </LocaleProvider>
+  );
+  const view = render(tree("de"));
+  fireEvent.click(screen.getByRole("button", { name: "Amount bearbeiten" }));
+  fireEvent.change(screen.getByLabelText("Amount"), { target: { value: "1,234" } });
+  fireEvent.click(screen.getByRole("button", { name: "Abbrechen" }));
+  view.rerender(tree("en"));
+  fireEvent.click(screen.getByRole("button", { name: "Edit Amount" }));
+  fireEvent.change(screen.getByLabelText("Amount"), { target: { value: "1,234" } });
+  fireEvent.keyDown(screen.getByLabelText("Amount"), { key: "Enter" });
+  expect(onSave).toHaveBeenCalledWith("1,234", "en");
+});
 
 it("localizes inline actions and retains caller-reviewed validation messages", async () => {
   render(

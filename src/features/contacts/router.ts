@@ -2,6 +2,7 @@ import { z } from "zod";
 import { attachRefLabels } from "@/features/custom-fields/refLabels";
 import { dealsForOrg, dealsForPerson } from "@/features/deal-workspace/participants";
 import { SELECTABLE_LOCALES } from "@/features/i18n/registry";
+import { NUMBERING_SYSTEMS } from "@/lib/numberingSystem";
 import { protectedProcedure, router } from "@/server/trpc/trpc";
 import { unwrap } from "@/server/unwrap";
 import { activityStats } from "./activityStats";
@@ -108,6 +109,7 @@ export const contactsRouter = router({
         entityType: z.enum(["person", "organization"]),
         entityId: z.string().uuid(),
         locale: z.enum(SELECTABLE_LOCALES).optional(),
+        numberingSystem: z.enum(NUMBERING_SYSTEMS).optional(),
       }),
     )
     .query(({ ctx, input }) =>
@@ -118,6 +120,7 @@ export const contactsRouter = router({
         input.entityId,
         AbortSignal.timeout(10_000),
         input.locale,
+        input.numberingSystem,
       ),
     ),
 

@@ -15,7 +15,7 @@ import { FieldRow } from "@/features/deal-workspace/sidebar/FieldRow";
 import { emailTabStatusLabel } from "@/features/email/emailTabStatus";
 import { useEmailMessages } from "@/features/email/useEmailMessages";
 import { FileAttachments } from "@/features/files/FileAttachments";
-import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
+import { useAppTranslations, useLocale, useNumberingSystem } from "@/features/i18n/LocaleProvider";
 import { trpc } from "@/lib/trpc-client";
 import { ContactHistoryTabs } from "./ContactHistoryTabs";
 
@@ -86,6 +86,7 @@ export function ContactTimelinePanel({
 }): React.ReactNode {
   const tContacts = useAppTranslations("contacts");
   const locale = useLocale();
+  const numberingSystem = useNumberingSystem();
   const emailMessages = useEmailMessages();
 
   const utils = trpc.useUtils();
@@ -96,7 +97,8 @@ export function ContactTimelinePanel({
     { enabled: entityType === "person" },
   );
   const rawItems =
-    trpc.contacts.contactTimeline.useQuery({ entityType, entityId, locale }).data?.items ?? [];
+    trpc.contacts.contactTimeline.useQuery({ entityType, entityId, locale, numberingSystem }).data
+      ?.items ?? [];
   const items = mergeEmailItems(rawItems, emailQuery.data ?? []);
   const { pinned, focus, history } = partitionFocusHistory(items);
   const historyByType = bucketByType(history);

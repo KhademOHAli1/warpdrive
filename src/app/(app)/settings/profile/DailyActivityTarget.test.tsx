@@ -68,6 +68,47 @@ function commitValue(field: HTMLInputElement, value: string): void {
 }
 
 describe("DailyActivityTarget", () => {
+  it.each([
+    { raw: "7,0", saved: 7 },
+    { raw: "0.020", saved: 20 },
+  ])("parses a German whole-number draft $raw", async ({ raw, saved }) => {
+    render(
+      <LocaleProvider locale="de">
+        <DailyActivityTarget target={5} />
+      </LocaleProvider>,
+    );
+    commitValue(screen.getByRole("textbox"), raw);
+    await waitFor(() =>
+      expect(setDailyActivityTargetAction).toHaveBeenCalledWith({ target: saved }, "csrf"),
+    );
+  });
+  it("rejects a grouped German target outside the limit instead of reading it as a decimal", () => {
+    render(
+      <LocaleProvider locale="de">
+        <DailyActivityTarget target={5} />
+      </LocaleProvider>,
+    );
+    commitValue(screen.getByRole("textbox"), "1.000");
+    expect(setDailyActivityTargetAction).not.toHaveBeenCalled();
+  });
+  it("does not reinterpret an active German target draft after switching languages", async () => {
+    const view = render(
+      <LocaleProvider locale="de">
+        <DailyActivityTarget target={5} />
+      </LocaleProvider>,
+    );
+    const field = screen.getByRole("textbox");
+    fireEvent.change(field, { target: { value: "7,0" } });
+    view.rerender(
+      <LocaleProvider locale="en">
+        <DailyActivityTarget target={5} />
+      </LocaleProvider>,
+    );
+    fireEvent.blur(field);
+    await waitFor(() =>
+      expect(setDailyActivityTargetAction).toHaveBeenCalledWith({ target: 7 }, "csrf"),
+    );
+  });
   it.each<{ numberingSystem?: NumberingSystem; initial: string; committed: string }>([
     { initial: "۵", committed: "۹" },
     { numberingSystem: "latn", initial: "5", committed: "9" },

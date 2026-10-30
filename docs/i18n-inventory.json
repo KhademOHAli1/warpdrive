@@ -3,19 +3,19 @@
     "catalogs": [
       {
         "group": "src/components/data-table/messages/tableControls",
-        "locales": ["en", "fa"]
+        "locales": ["de", "en", "fa"]
       },
       {
         "group": "src/components/filters/messages/filters",
-        "locales": ["en", "fa"]
+        "locales": ["de", "en", "fa"]
       },
       {
         "group": "src/components/shell/messages/shell",
-        "locales": ["en", "fa"]
+        "locales": ["de", "en", "fa"]
       },
       {
         "group": "src/components/shell/messages/utilities",
-        "locales": ["en", "fa"]
+        "locales": ["de", "en", "fa"]
       },
       {
         "group": "src/components/ui/messages/shared",
@@ -23,7 +23,7 @@
       },
       {
         "group": "src/features/activities/messages/activities",
-        "locales": ["en", "fa"]
+        "locales": ["de", "en", "fa"]
       },
       {
         "group": "src/features/activities/messages/calendar",
@@ -31,63 +31,63 @@
       },
       {
         "group": "src/features/auth/messages/authScreens",
-        "locales": ["en", "fa"]
+        "locales": ["de", "en", "fa"]
       },
       {
         "group": "src/features/contacts/messages/contacts",
-        "locales": ["en", "fa"]
+        "locales": ["de", "en", "fa"]
       },
       {
         "group": "src/features/custom-fields/messages/customFields",
-        "locales": ["en", "fa"]
+        "locales": ["de", "en", "fa"]
       },
       {
         "group": "src/features/deals/messages/sales",
-        "locales": ["en", "fa"]
+        "locales": ["de", "en", "fa"]
       },
       {
         "group": "src/features/email/messages/email",
-        "locales": ["en", "fa"]
+        "locales": ["de", "en", "fa"]
       },
       {
         "group": "src/features/enrichment/messages/enrichment",
-        "locales": ["en", "fa"]
+        "locales": ["de", "en", "fa"]
       },
       {
         "group": "src/features/entity-create/messages/entityCreate",
-        "locales": ["en", "fa"]
+        "locales": ["de", "en", "fa"]
       },
       {
         "group": "src/features/files/messages/files",
-        "locales": ["en", "fa"]
+        "locales": ["de", "en", "fa"]
       },
       {
         "group": "src/features/i18n/messages/boundary",
-        "locales": ["en", "fa"]
+        "locales": ["de", "en", "fa"]
       },
       {
         "group": "src/features/i18n/messages/",
-        "locales": ["en", "fa"]
+        "locales": ["de", "en", "fa"]
       },
       {
         "group": "src/features/identity/messages/settings",
-        "locales": ["en", "fa"]
+        "locales": ["de", "en", "fa"]
       },
       {
         "group": "src/features/leads/messages/leads",
-        "locales": ["en", "fa"]
+        "locales": ["de", "en", "fa"]
       },
       {
         "group": "src/features/notifications/messages/notifications",
-        "locales": ["en", "fa"]
+        "locales": ["de", "en", "fa"]
       },
       {
         "group": "src/features/quick-add/messages/quickAdd",
-        "locales": ["en", "fa"]
+        "locales": ["de", "en", "fa"]
       },
       {
         "group": "src/features/stats/messages/stats",
-        "locales": ["en", "fa"]
+        "locales": ["de", "en", "fa"]
       }
     ],
     "catalogIssues": 0,

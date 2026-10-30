@@ -45,6 +45,7 @@ export function AddLeadModal({
   const router = useRouter();
   const { autoPrefixLeadDealTitles, openDetailsAfterCreate } = useInterfacePrefs();
   const [state, setState] = useState<AddLeadState>(initialAddLeadState());
+  const [valueLocale, setValueLocale] = useState(locale);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
@@ -56,7 +57,11 @@ export function AddLeadModal({
   const orgFieldsQ = trpc.customFields.listDefs.useQuery({ target: "organization" });
   const leadFieldsQ = trpc.customFields.listDefs.useQuery({ target: "lead" });
 
-  const set = (patch: Partial<AddLeadState>): void => setState((s) => ({ ...s, ...patch }));
+  const set = (patch: Partial<AddLeadState>): void => {
+    // An unfinished amount keeps its input convention when the interface language changes.
+    if (patch.value !== undefined && state.value.trim() === "") setValueLocale(locale);
+    setState((s) => ({ ...s, ...patch }));
+  };
 
   // Autofill the lead title from the chosen person/org ("{name} lead") until the user edits it.
   const people = peopleQ.data ?? [];
@@ -108,6 +113,7 @@ export function AddLeadModal({
           visibilityGroupId: state.visibilityGroupId,
         },
         locale,
+        valueLocale,
       );
       if (!parsed.ok) {
         setError(parsed.error);

@@ -97,17 +97,12 @@ function row(overrides: Record<string, unknown>) {
   };
 }
 
-function localYmd(d: Date): string {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
-    d.getDate(),
-  ).padStart(2, "0")}`;
-}
-
 describe("ActivitiesTable default filter", () => {
   it("opens on the current user's activities due today", () => {
     useQuery.mockReturnValue({ data: [row({})], refetch });
     render(<ActivitiesTable currentUserId="me" />);
-    const today = localYmd(new Date());
+    // The default account zone is UTC, independently of the test machine zone.
+    const today = new Date().toISOString().slice(0, 10);
     expect(useQuery).toHaveBeenLastCalledWith(
       expect.objectContaining({ ownerId: "me", from: today, to: today, done: "open" }),
       expect.anything(),

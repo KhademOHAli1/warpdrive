@@ -1,23 +1,22 @@
 "use client";
 import type React from "react";
 import { useAppTranslations, useLocalePreferences } from "@/features/i18n/LocaleProvider";
-import { localeWithNumberingSystem, type NumberingSystem } from "@/lib/numberingSystem";
+import type { Locale } from "@/features/i18n/registry";
+import { localeTagForFormatting } from "@/lib/localeFormatting";
+import type { NumberingSystem } from "@/lib/numberingSystem";
 
 export function monthLabel(
   key: string,
-  locale: "en" | "fa" = "en",
+  locale: Locale = "en",
   numberingSystem?: NumberingSystem,
 ): string {
   if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(key)) return key;
-  return new Intl.DateTimeFormat(
-    localeWithNumberingSystem(locale === "fa" ? "fa-IR-u-ca-gregory" : "en-US", numberingSystem),
-    {
-      calendar: "gregory",
-      timeZone: "UTC",
-      month: "short",
-      year: "numeric",
-    },
-  ).format(new Date(`${key}-15T12:00:00Z`));
+  return new Intl.DateTimeFormat(localeTagForFormatting({ locale, numberingSystem }), {
+    calendar: "gregory",
+    timeZone: "UTC",
+    month: "short",
+    year: "numeric",
+  }).format(new Date(`${key}-15T12:00:00Z`));
 }
 
 // The month header row: a pinned "Contact" column, then one fixed-layout column per month.

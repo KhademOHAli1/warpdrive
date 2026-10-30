@@ -1,8 +1,10 @@
 import { createTranslator } from "use-intl/core";
 import type { ENRICHMENT_STRINGS } from "@/constants/enrichmentStrings";
+import type { MessageCatalog } from "@/features/i18n/messageTypes";
 import type { Locale } from "@/features/i18n/registry";
 import { localeWithNumberingSystem, type NumberingSystem } from "@/lib/numberingSystem";
 import argumentsByPath from "./enrichmentMessageParams.json";
+import german from "./messages/enrichment.de.json";
 import english from "./messages/enrichment.en.json";
 import persian from "./messages/enrichment.fa.json";
 
@@ -20,6 +22,11 @@ export type EnrichmentMessages = Localized<
     typeof english,
     "canonical" | "seniority" | "listSeparator" | "providerError" | "quotaError"
   >;
+const messagesByLocale: Record<Locale, MessageCatalog<typeof english>> = {
+  en: english,
+  fa: persian,
+  de: german,
+};
 
 export function enrichmentMessagesForLocale(
   locale: Locale,
@@ -27,7 +34,7 @@ export function enrichmentMessagesForLocale(
 ): EnrichmentMessages {
   const translate = createTranslator({
     locale: localeWithNumberingSystem(locale, numberingSystem),
-    messages: locale === "fa" ? persian : english,
+    messages: messagesByLocale[locale],
     formats: { number: { plain: { useGrouping: false } } },
   }) as unknown as (key: string, args?: Record<string, string | number>) => string;
   const params: Record<string, string[]> = argumentsByPath;

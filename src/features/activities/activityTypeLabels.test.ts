@@ -2,6 +2,30 @@ import { describe, expect, it } from "vitest";
 import { activityTypeName, localizeActivityTypes } from "./activityTypeLabels";
 
 describe("activity type display names", () => {
+  it("uses German system defaults while preserving custom names and source records", () => {
+    const types = [
+      { key: "call", name: "Call", isSystem: true },
+      { key: "meeting", name: "Meeting" },
+      { key: "task", name: "Task" },
+      { key: "deadline", name: "Deadline" },
+      { key: "email", name: "Email" },
+      { key: "lunch", name: "Lunch" },
+    ];
+    expect(localizeActivityTypes(types, "de").map((type) => type.name)).toEqual([
+      "Anruf",
+      "Besprechung",
+      "Aufgabe",
+      "Frist",
+      "E-Mail",
+      "Mittagessen",
+    ]);
+    expect(types[0]?.name).toBe("Call");
+    expect(activityTypeName({ key: "call", name: "Kundengespräch", isSystem: true }, "de")).toBe(
+      "Kundengespräch",
+    );
+    expect(activityTypeName({ key: "call", name: "Call", isSystem: false }, "de")).toBe("Call");
+    expect(activityTypeName({ key: "__proto__", name: "Eigener Typ" }, "de")).toBe("Eigener Typ");
+  });
   it("localizes all seeded defaults without changing identifiers or original rows", () => {
     const types = [
       { id: "a", key: "call", name: "Call", isSystem: true },

@@ -14,6 +14,7 @@ it("imports pure enrichment messages and audit labels in Bun's React server envi
     console.log(JSON.stringify({
       en: enrichmentMessagesForLocale("en").button.label,
       fa: enrichmentMessagesForLocale("fa").dialog.apply(12),
+      de: enrichmentMessagesForLocale("de").button.label,
       known: PROVIDER_NAMES.apollo,
       unknown: providerName("__proto__"),
       history: formatChangeLabel({field:"org.industry", oldValue:"Retail", newValue:{value:"Fintech", providers:["apollo","toString"]}}, "en")
@@ -25,6 +26,7 @@ it("imports pure enrichment messages and audit labels in Bun's React server envi
   expect(JSON.parse(output)).toEqual({
     en: "Fill the gaps",
     fa: "ثبت ۱۲ فیلد",
+    de: "Fehlende Daten ergänzen",
     known: "Apollo",
     unknown: "__proto__",
     history: "Industry: Retail → Fintech (from Apollo and toString)",

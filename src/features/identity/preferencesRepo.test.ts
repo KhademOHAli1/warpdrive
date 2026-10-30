@@ -1,7 +1,9 @@
 import { sql } from "drizzle-orm";
 import { afterAll, beforeAll, expect, it } from "vitest";
 import { seedUser } from "@/db/testing/factories";
+import { resolveAccountLocalePreferences } from "@/features/i18n/accountPreferences";
 import { makeTestDb } from "@/test/db";
+import { getPreferencesForActor } from "./preferencesForActor";
 import { getPreferences, setPreferences } from "./preferencesRepo";
 
 let h: Awaited<ReturnType<typeof makeTestDb>>;
@@ -68,6 +70,43 @@ it("a ui-only write does not reset timezone/density", async () => {
   expect(p.density).toBe("compact");
   expect(p.ui.dealHeaderBlocks).toEqual(["x"]);
 });
+
+it.each([
+  { calendar: "gregory", numberingSystem: "latn" },
+  { calendar: "persian", numberingSystem: "arabext" },
+] as const)(
+  "persists German $calendar account preferences independently of cookies and profile settings",
+  async ({ calendar, numberingSystem }) => {
+    const user = await seedUser(h.db);
+    const localePreferences = {
+      locale: "de",
+      calendar,
+      timeZone: "Asia/Tehran",
+      numberingSystem,
+    } as const;
+    await setPreferences(
+      h.db,
+      user.id,
+      { timezone: "Europe/Berlin", density: "compact", ui: { usPhoneFormat: true } },
+      sig(),
+    );
+    await setPreferences(h.db, user.id, { ui: { localePreferences } }, sig());
+
+    const stored = await getPreferencesForActor(h.db, user.id);
+
+    expect(stored.ui.localePreferences).toEqual(localePreferences);
+    expect(stored.ui.usPhoneFormat).toBe(true);
+    expect(stored.density).toBe("compact");
+    expect(stored.timezone).toBe("Europe/Berlin");
+    expect(
+      resolveAccountLocalePreferences({
+        saved: stored.ui.localePreferences,
+        profileTimeZone: stored.timezone,
+        fallback: { locale: "fa", calendar: "gregory", timeZone: "UTC", numberingSystem: "latn" },
+      }),
+    ).toEqual({ ...localePreferences, timeZone: "Europe/Berlin" });
+  },
+);
 
 it("round-trips the scheduleFollowUpAfterWon ui flag", async () => {
   const u = await seedUser(h.db);

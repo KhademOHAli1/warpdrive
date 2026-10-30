@@ -4,6 +4,7 @@ import type { ChangeLogEntry } from "@/features/collaboration/changeLog";
 import type { DraftSummary } from "@/features/email/draftRepo";
 import type { EmailTimelineMessage } from "@/features/email/entityMessageReads";
 import type { Locale } from "@/features/i18n/registry";
+import type { NumberingSystem } from "@/lib/numberingSystem";
 import { formatChangeLabel, formatValue } from "./changeLabel";
 
 export { formatChangeLabel } from "./changeLabel";
@@ -57,11 +58,15 @@ export interface CreatedAnchor {
 // "Stage: from → to", the same inline shape as a status change, rather than a boxed card.
 // Stage from/to are the already-resolved NAMES the read layer wrote onto old/new (it holds
 // the pipeline's stages), so no id leaks here.
-function toChangeItem(c: ChangeLogEntry, locale: Locale): HistoryItem {
+function toChangeItem(
+  c: ChangeLogEntry,
+  locale: Locale,
+  numberingSystem?: NumberingSystem,
+): HistoryItem {
   const label =
     locale === "en" && (c.field === "stageId" || c.field === "stage_id")
       ? `Stage: ${formatValue(c.oldValue)} → ${formatValue(c.newValue)}`
-      : formatChangeLabel(c, locale);
+      : formatChangeLabel(c, locale, numberingSystem);
   return {
     kind: "event",
     id: c.id,
@@ -77,6 +82,7 @@ export function buildHistoryTimeline(
   notes: NoteItem[] = [],
   created?: CreatedAnchor,
   locale: Locale = "en",
+  numberingSystem?: NumberingSystem,
 ): HistoryItem[] {
   const items: HistoryItem[] = [
     ...activities.map(
@@ -94,7 +100,7 @@ export function buildHistoryTimeline(
         entityId: n.entityId,
       }),
     ),
-    ...changelog.map((c) => toChangeItem(c, locale)),
+    ...changelog.map((c) => toChangeItem(c, locale, numberingSystem)),
   ];
   if (created !== undefined) {
     items.push({

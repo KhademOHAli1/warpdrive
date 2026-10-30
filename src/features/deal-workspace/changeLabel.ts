@@ -23,6 +23,7 @@ import { isSourceChannelKey, SOURCE_CHANNELS } from "@/constants/sourceChannels"
 import { canonicalField } from "@/features/enrichment/canonical";
 import { providerName } from "@/features/enrichment/providerNames";
 import type { Locale } from "@/features/i18n/registry";
+import type { NumberingSystem } from "@/lib/numberingSystem";
 import { isContactPointField } from "./contactPointAuditValue";
 import { localizedChangeLabel } from "./localizedChangeLabel";
 import { asLostStatusValue } from "./lostStatusValue";
@@ -152,9 +153,10 @@ export function formatChangeLabel(
     newValue: unknown;
   },
   locale: Locale = "en",
+  numberingSystem?: NumberingSystem,
 ): string {
   if (locale !== "en" || isContactPointField(entry.field))
-    return localizedChangeLabel(entry, locale);
+    return localizedChangeLabel(entry, locale, numberingSystem);
   const lost = lostStatusLabel(entry.field, entry.oldValue, entry.newValue);
   if (lost !== null) return lost;
   const directional = directionalLabel(entry.field, entry.oldValue, entry.newValue);

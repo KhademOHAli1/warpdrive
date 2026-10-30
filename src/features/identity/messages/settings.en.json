@@ -638,7 +638,7 @@
       "metadata_manage": "metadata.manage",
       "goals_manage": "goals.manage",
       "permissions_manage": "permissions.manage",
-      "team_viewMembers": "team.viewMembers",
+      "team_viewMembers": "View records owned by members of teams you manage",
       "deal_edit_own": "deal.edit_own",
       "deal_edit_any": "deal.edit_any",
       "deal_delete_own": "deal.delete_own",

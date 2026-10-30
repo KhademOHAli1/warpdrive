@@ -1,9 +1,11 @@
 import { createTranslator } from "next-intl";
 import type { INBOX_STRINGS } from "@/constants/inboxStrings";
+import type { MessageCatalog } from "@/features/i18n/messageTypes";
 import type { Locale } from "@/features/i18n/registry";
 import { localeWithNumberingSystem, type NumberingSystem } from "@/lib/numberingSystem";
 import type { COMPOSER_STRINGS } from "./composer/composer.constants";
 import argumentsByPath from "./emailMessageParams.json";
+import german from "./messages/email.de.json";
 import english from "./messages/email.en.json";
 import persian from "./messages/email.fa.json";
 
@@ -24,13 +26,19 @@ type Source = Omit<typeof english, keyof typeof INBOX_STRINGS | "_composer"> &
     _composer: Omit<typeof COMPOSER_STRINGS, "defaultActivitySubject" | "emailActivityTypeKey">;
   };
 export type EmailMessages = Localized<Source>;
+const messagesByLocale: Record<Locale, MessageCatalog<typeof english>> = {
+  en: english,
+  fa: persian,
+  de: german,
+};
+
 export function emailMessagesForLocale(
   locale: Locale,
   numberingSystem?: NumberingSystem,
 ): EmailMessages {
   const translate = createTranslator({
     locale: localeWithNumberingSystem(locale, numberingSystem),
-    messages: locale === "fa" ? persian : english,
+    messages: messagesByLocale[locale],
   }) as unknown as (key: string, values?: Record<string, string | number>) => string;
   const parameters: Record<string, string[]> = argumentsByPath;
   function build(value: unknown, path: string): unknown {

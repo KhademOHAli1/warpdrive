@@ -19,6 +19,7 @@ afterEach(() => {
 });
 
 import { LocaleProvider } from "@/features/i18n/LocaleProvider";
+import type { Locale } from "@/features/i18n/registry";
 import { OrgFirmographicsPanel } from "./OrgFirmographicsPanel";
 
 const org = {
@@ -31,6 +32,33 @@ const org = {
 };
 
 describe("OrgFirmographicsPanel", () => {
+  it("formats high-precision canonical revenue without a Number conversion", () => {
+    render(
+      <LocaleProvider locale="de">
+        <OrgFirmographicsPanel
+          org={{ ...org, annualRevenue: "9007199254740993.12" }}
+          onSaved={vi.fn()}
+        />
+      </LocaleProvider>,
+    );
+    expect(screen.getByText("9007199254740993,12")).toBeInTheDocument();
+  });
+  it("saves an active German revenue draft after switching the interface to English", async () => {
+    const tree = (locale: Locale) => (
+      <LocaleProvider locale={locale}>
+        <OrgFirmographicsPanel org={org} onSaved={vi.fn()} />
+      </LocaleProvider>
+    );
+    const view = render(tree("de"));
+    fireEvent.click(screen.getByRole("button", { name: "Jahresumsatz bearbeiten" }));
+    fireEvent.change(screen.getByLabelText("Jahresumsatz"), { target: { value: "1.234,50" } });
+    view.rerender(tree("en"));
+    expect(screen.getByLabelText("Annual revenue")).toHaveValue("1.234,50");
+    fireEvent.keyDown(screen.getByLabelText("Annual revenue"), { key: "Enter" });
+    await vi.waitFor(() =>
+      expect(updateOrgAction).toHaveBeenCalledWith({ id: "o1", annualRevenue: "1234.50" }, "csrf"),
+    );
+  });
   it("renders the firmographic fields from the org", () => {
     render(<OrgFirmographicsPanel org={org} onSaved={vi.fn()} />);
     expect(screen.getByText("acme.com")).toBeInTheDocument();

@@ -48,6 +48,53 @@ describe("renderNotificationEmail link", () => {
 });
 
 describe("renderNotificationEmail", () => {
+  it.each(NOTIFICATION_TYPES)(
+    "renders German %s email copy and the unnamed-recipient fallback",
+    (type) => {
+      const row = {
+        id: "n-de",
+        userId: "u-de",
+        type,
+        entityType: null,
+        entityId: null,
+        actorId: null,
+        payload: {},
+        readAt: null,
+        createdAt: "2026-03-21T00:00:00Z",
+      };
+
+      const out = renderNotificationEmail(row, "", "de");
+
+      expect(out.subject).not.toBe(renderNotificationEmail(row, "", "en").subject);
+      expect(out.text).toContain("Hallo,");
+      expect(out.text).toContain("\n\nÖffnen: ");
+      expect(out.html).toContain('lang="de" dir="ltr"');
+      expect(out.html).toContain("In Warpdrive öffnen");
+    },
+  );
+
+  it("keeps a German incoming-email subject's authored title and canonical link", () => {
+    const out = renderNotificationEmail(
+      {
+        id: "n-de-title",
+        userId: "u-de",
+        type: "deal_email_received",
+        entityType: "deal",
+        entityId: "d1",
+        actorId: null,
+        payload: { subject: "Angebot ۱۲۳ <Acme>" },
+        readAt: null,
+        createdAt: "2026-03-21T00:00:00Z",
+      },
+      "Alex",
+      "de",
+    );
+    expect(out.subject).toBe("Neue E-Mail zu einer Verkaufschance: Angebot ۱۲۳ <Acme>");
+    expect(out.text).toContain("Alex, zu einer Verkaufschance, der Sie folgen");
+    expect(out.text).toContain("/deals/d1");
+    expect(out.html).toContain('lang="de" dir="ltr"');
+  });
+
   it("renders Persian email copy with safe mixed-direction customer content", () => {
     const out = renderNotificationEmail(
       {

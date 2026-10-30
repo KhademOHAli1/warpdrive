@@ -27,7 +27,7 @@ describe("language and regional preferences", () => {
 
   it("rejects unsupported preference writes and recovers individual invalid cookies", () => {
     expect(
-      localePreferencesSchema.safeParse({ locale: "de", calendar: "persian", timeZone: "UTC" })
+      localePreferencesSchema.safeParse({ locale: "fr", calendar: "persian", timeZone: "UTC" })
         .success,
     ).toBe(false);
     expect(
@@ -42,8 +42,20 @@ describe("language and regional preferences", () => {
     ).toEqual({ locale: "fa", calendar: "persian", timeZone: "UTC" });
   });
 
-  it("records German as planned without exposing an untranslated option", () => {
-    expect(LOCALE_REGISTRY.de.status).toBe("planned");
-    expect(SELECTABLE_LOCALES).toEqual(["en", "fa"]);
+  it("accepts German with an independent Iranian calendar and deterministic defaults", () => {
+    expect(LOCALE_REGISTRY.de.status).toBe("available");
+    expect(SELECTABLE_LOCALES).toEqual(["en", "fa", "de"]);
+    expect(resolveLocalePreferences({ locale: "de" })).toEqual({
+      locale: "de",
+      calendar: "gregory",
+      timeZone: "UTC",
+    });
+    expect(
+      localePreferencesSchema.parse({
+        locale: "de",
+        calendar: "persian",
+        timeZone: "Europe/Berlin",
+      }),
+    ).toEqual({ locale: "de", calendar: "persian", timeZone: "Europe/Berlin" });
   });
 });

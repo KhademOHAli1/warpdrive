@@ -6,6 +6,8 @@ import { useActionError } from "@/components/shell/ActionErrorProvider";
 import { Input } from "@/components/ui/Input";
 import { MAX_DAILY_ACTIVITY_TARGET, MIN_DAILY_ACTIVITY_TARGET } from "@/constants/activityLoad";
 import { useInvalidateActivityLists } from "@/features/activities/useInvalidateActivityLists";
+import { useLocale } from "@/features/i18n/LocaleProvider";
+import type { Locale } from "@/features/i18n/registry";
 import { setDailyActivityTargetAction } from "@/features/identity/preferencesActions";
 import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import { useFormatters } from "@/lib/useFormatters";
@@ -13,10 +15,10 @@ import { readCsrfToken } from "@/utils/csrfCookie";
 import { normalizeNumberInput } from "@/utils/normalizeNumberInput";
 import { SettingsCard, SettingsCardBody, SettingsCardHeader } from "../SettingsSurface";
 
-function parseTarget(draft: string): number | null {
+function parseTarget(draft: string, locale: Locale): number | null {
   const trimmed = draft.trim();
   if (trimmed === "") return null;
-  const normalized = normalizeNumberInput(trimmed);
+  const normalized = normalizeNumberInput(trimmed, locale);
   if (normalized === null) return null;
   const value = Number(normalized);
   if (!Number.isInteger(value)) return null;
@@ -28,17 +30,18 @@ export function DailyActivityTarget({ target }: { target: number }): React.React
   const L = useSettingsMessages();
   const S = L.dailyActivityTarget;
   const format = useFormatters();
+  const locale = useLocale();
 
   const router = useRouter();
   const reportError = useActionError();
   const invalidateActivityLists = useInvalidateActivityLists();
   const fieldId = useId();
   const [displayTarget, setDisplayTarget] = useState(target);
-  const [rawDraft, setRawDraft] = useState<string | null>(null);
+  const [rawDraft, setRawDraft] = useState<{ raw: string; locale: Locale } | null>(null);
   // Keep typed drafts verbatim, including invalid input. Resting/committed values follow the
   // current digit preference without rewriting unfinished work when that preference changes.
   const draft =
-    rawDraft ?? format.number(displayTarget, { useGrouping: false, maximumFractionDigits: 0 });
+    rawDraft?.raw ?? format.number(displayTarget, { useGrouping: false, maximumFractionDigits: 0 });
   const committedRef = useRef(target);
   const persistedRef = useRef(target);
   const revisionRef = useRef(0);
@@ -73,7 +76,7 @@ export function DailyActivityTarget({ target }: { target: number }): React.React
 
   function commit(): void {
     const current = committedRef.current;
-    const next = parseTarget(draft);
+    const next = parseTarget(draft, rawDraft?.locale ?? locale);
     if (next === null || next === current) {
       setDisplayTarget(current);
       setRawDraft(null);
@@ -102,7 +105,10 @@ export function DailyActivityTarget({ target }: { target: number }): React.React
           step={1}
           className="w-24"
           value={draft}
-          onChange={(e) => setRawDraft(e.target.value)}
+          onChange={(e) => {
+            const raw = e.target.value;
+            setRawDraft((previous) => ({ raw, locale: previous?.locale ?? locale }));
+          }}
           onBlur={() => {
             commit();
           }}

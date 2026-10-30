@@ -106,17 +106,17 @@ export function OrgFirmographicsPanel({
                 ? ""
                 : locale === "en"
                   ? org.annualRevenue
-                  : format.number(Number(org.annualRevenue), {
+                  : format.number(org.annualRevenue, {
                       useGrouping: false,
                       minimumFractionDigits: org.annualRevenue.split(".")[1]?.length ?? 0,
-                      maximumFractionDigits: 2,
+                      maximumFractionDigits: 20,
                     })
             }
             placeholder={tContacts("addRevenue")}
-            onSave={(v) => {
+            onSave={(v, draftLocale) => {
               const trimmed = v.trim();
               if (trimmed === "") return save({ annualRevenue: null });
-              const normalized = normalizeNumberInput(trimmed, locale);
+              const normalized = normalizeNumberInput(trimmed, draftLocale);
               if (normalized === null || !/^\d+(?:\.\d{1,2})?$/.test(normalized))
                 return Promise.resolve(err(tContacts("validRevenue")));
               return save({ annualRevenue: normalized });
@@ -135,10 +135,10 @@ export function OrgFirmographicsPanel({
                 : format.number(org.employeeCount, { useGrouping: false })
             }
             placeholder={tContacts("addEmployees")}
-            onSave={(v) => {
+            onSave={(v, draftLocale) => {
               const trimmed = v.trim();
               if (trimmed === "") return save({ employeeCount: null });
-              const normalized = normalizeNumberInput(trimmed, locale);
+              const normalized = normalizeNumberInput(trimmed, draftLocale);
               const value = normalized === null ? NaN : Number(normalized);
               if (!Number.isSafeInteger(value) || value < 0)
                 return Promise.resolve(err(tContacts("validEmployeeCount")));

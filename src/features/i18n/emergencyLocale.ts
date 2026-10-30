@@ -1,3 +1,4 @@
+import de from "./messages/boundary.de.json";
 import en from "./messages/boundary.en.json";
 import fa from "./messages/boundary.fa.json";
 import { LOCALE_COOKIE } from "./preferences";
@@ -18,5 +19,5 @@ export function emergencyLocale(cookie: string): Locale {
 }
 
 export function emergencyMessages(locale: Locale) {
-  return locale === "fa" ? fa : en;
+  return { en, fa, de }[locale];
 }

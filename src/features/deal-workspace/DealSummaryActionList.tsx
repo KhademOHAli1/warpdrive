@@ -75,6 +75,7 @@ export function DealSummaryActionList({
   const expectedUpdatedAt = new Date(deal.updatedAt).toISOString();
   const [editingValue, setEditingValue] = useState(false);
   const [draft, setDraft] = useState("");
+  const [draftLocale, setDraftLocale] = useState(locale);
   const [currency, setCurrency] = useState(deal.currency ?? baseCurrency);
   const [editingDate, setEditingDate] = useState(false);
   const [dateDraft, setDateDraft] = useState<string | null>(deal.expectedCloseDate);
@@ -95,7 +96,7 @@ export function DealSummaryActionList({
 
   // Dirty + parseable gating for the value editor's Save (PD disables Save until the
   // draft differs; an unparseable draft must never commit).
-  const parsedMoney = parseMoneyValue(draft, locale);
+  const parsedMoney = parseMoneyValue(draft, draftLocale);
   const parsedValue = parsedMoney.ok ? parsedMoney.value : null;
   const valueValid = parsedMoney.ok;
   const valueDirty =
@@ -117,7 +118,12 @@ export function DealSummaryActionList({
           label={translateSales("value_8e379")}
           editing={editingValue}
           onStartEdit={() => {
-            setDraft(deal.value !== null ? String(deal.value) : "");
+            setDraft(
+              deal.value !== null
+                ? format.number(deal.value, { useGrouping: false, maximumFractionDigits: 20 })
+                : "",
+            );
+            setDraftLocale(locale);
             setCurrency(deal.currency ?? baseCurrency);
             setEditingValue(true);
           }}

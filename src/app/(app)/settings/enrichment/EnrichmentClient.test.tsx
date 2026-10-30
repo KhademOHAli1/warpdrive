@@ -4,6 +4,8 @@ import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/re
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ENRICHMENT_STRINGS } from "@/constants/enrichmentStrings";
+import { LocaleProvider } from "@/features/i18n/LocaleProvider";
+import { settingsMessagesForLocale } from "@/features/identity/settingsMessages";
 
 const refresh = vi.fn();
 const reportError = vi.fn();
@@ -98,6 +100,126 @@ beforeEach(() => {
 afterEach(cleanup);
 
 describe("EnrichmentClient", () => {
+  it("starts a fresh TTL draft in the current locale after a successful commit", async () => {
+    const tree = (locale: "de" | "en", days: number) => (
+      <LocaleProvider locale={locale}>
+        <EnrichmentClient
+          providers={[]}
+          person={{ entity: "person", title: "Person", rows: [], hasCustomFields: false }}
+          organization={{
+            entity: "organization",
+            title: "Organization",
+            rows: [],
+            hasCustomFields: false,
+          }}
+          cacheTtlDays={days}
+        />
+      </LocaleProvider>
+    );
+    const view = render(tree("de", 30));
+    const field = screen.getByRole("textbox");
+    fireEvent.change(field, { target: { value: "7,0" } });
+    fireEvent.click(screen.getByRole("button", { name: "Speichern" }));
+    await waitFor(() => expect(refresh).toHaveBeenCalled());
+    expect(field).toHaveValue("7");
+    view.rerender(tree("en", 7));
+    fireEvent.change(field, { target: { value: "1,000" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+    expect(setCacheTtlAction).toHaveBeenCalledTimes(1);
+    expect(screen.getByText(S.cacheInvalid)).toBeInTheDocument();
+    fireEvent.change(field, { target: { value: "8.0" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+    await waitFor(() => expect(setCacheTtlAction).toHaveBeenLastCalledWith({ days: 8 }, "csrf"));
+  });
+
+  it("does not discard newer TTL typing when an earlier successful request finishes", async () => {
+    let finish: (result: { ok: true }) => void = () => undefined;
+    vi.mocked(setCacheTtlAction).mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finish = resolve;
+        }),
+    );
+    const tree = (locale: "de" | "en") => (
+      <LocaleProvider locale={locale}>
+        <EnrichmentClient
+          providers={[]}
+          person={{ entity: "person", title: "Person", rows: [], hasCustomFields: false }}
+          organization={{
+            entity: "organization",
+            title: "Organization",
+            rows: [],
+            hasCustomFields: false,
+          }}
+          cacheTtlDays={30}
+        />
+      </LocaleProvider>
+    );
+    const view = render(tree("de"));
+    const field = screen.getByRole("textbox");
+    fireEvent.change(field, { target: { value: "7,0" } });
+    fireEvent.click(screen.getByRole("button", { name: "Speichern" }));
+    fireEvent.change(field, { target: { value: "8,0" } });
+    view.rerender(tree("en"));
+    finish({ ok: true });
+    await waitFor(() => expect(refresh).toHaveBeenCalled());
+    expect(field).toHaveValue("8,0");
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+    await waitFor(() => expect(setCacheTtlAction).toHaveBeenLastCalledWith({ days: 8 }, "csrf"));
+    await waitFor(() => expect(field).toHaveValue("8"));
+    fireEvent.change(field, { target: { value: "1,000" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+    expect(setCacheTtlAction).toHaveBeenCalledTimes(2);
+  });
+
+  it.each([
+    { raw: "7,0", days: 7 },
+    { raw: "0.030", days: 30 },
+  ])("parses a German integer TTL $raw", async ({ raw, days }) => {
+    const element = (
+      <EnrichmentClient
+        providers={[]}
+        person={{ entity: "person", title: "Person", rows: [], hasCustomFields: false }}
+        organization={{
+          entity: "organization",
+          title: "Organization",
+          rows: [],
+          hasCustomFields: false,
+        }}
+        cacheTtlDays={30}
+      />
+    );
+    render(<LocaleProvider locale="de">{element}</LocaleProvider>);
+    const s = settingsMessagesForLocale("de")._enrichment.settings;
+    fireEvent.change(screen.getByRole("textbox"), { target: { value: raw } });
+    fireEvent.click(screen.getByRole("button", { name: s.cacheSave }));
+    await waitFor(() => expect(setCacheTtlAction).toHaveBeenCalledWith({ days }, "csrf"));
+  });
+  it("retains a German TTL draft's origin locale and rejects grouped out-of-range values", async () => {
+    const element = (
+      <EnrichmentClient
+        providers={[]}
+        person={{ entity: "person", title: "Person", rows: [], hasCustomFields: false }}
+        organization={{
+          entity: "organization",
+          title: "Organization",
+          rows: [],
+          hasCustomFields: false,
+        }}
+        cacheTtlDays={30}
+      />
+    );
+    const view = render(<LocaleProvider locale="de">{element}</LocaleProvider>);
+    const s = settingsMessagesForLocale("de")._enrichment.settings;
+    const field = screen.getByRole("textbox");
+    fireEvent.change(field, { target: { value: "1.000" } });
+    fireEvent.click(screen.getByRole("button", { name: s.cacheSave }));
+    expect(setCacheTtlAction).not.toHaveBeenCalled();
+    fireEvent.change(field, { target: { value: "7,0" } });
+    view.rerender(<LocaleProvider locale="en">{element}</LocaleProvider>);
+    fireEvent.click(screen.getByRole("button", { name: S.cacheSave }));
+    await waitFor(() => expect(setCacheTtlAction).toHaveBeenCalledWith({ days: 7 }, "csrf"));
+  });
   it("enables a provider and refreshes the page", async () => {
     renderClient();
     fireEvent.click(screen.getByRole("switch"));

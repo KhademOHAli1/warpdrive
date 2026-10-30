@@ -5,6 +5,8 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { Deal } from "@/db/schema";
 import type { CalendarActivity } from "@/features/activities/calendar";
+import { LocaleProvider } from "@/features/i18n/LocaleProvider";
+import type { NumberingSystem } from "@/lib/numberingSystem";
 import { WorkspaceTabs } from "./tabs";
 
 // tRPC is a network boundary here; stub the two queries WorkspaceTabs reads. The fixture data
@@ -15,6 +17,7 @@ import { WorkspaceTabs } from "./tabs";
 const noteState = vi.hoisted(() => ({
   notes: [{ id: "n1", body: "hi", createdAt: new Date("2026-07-01T00:00:00Z"), pinned: false }],
 }));
+const changeState = vi.hoisted(() => ({ numeric: false }));
 vi.mock("@/lib/trpc-client", () => ({
   trpc: {
     // ActivityCard (rendered in the Focus/History feeds) reads useUtils for its optimistic mark-done.
@@ -36,17 +39,29 @@ vi.mock("@/lib/trpc-client", () => ({
       },
       listChangeLog: {
         useQuery: () => ({
-          data: [
-            {
-              id: "c1",
-              field: "stageId",
-              oldValue: "stage-demo",
-              newValue: "stage-proposal",
-              actorId: null,
-              actorName: "Nick",
-              createdAt: new Date("2026-07-02T00:00:00Z"),
-            },
-          ],
+          data: changeState.numeric
+            ? [
+                {
+                  id: "money-change",
+                  field: "value",
+                  oldValue: "1234.56",
+                  newValue: "1234.5678",
+                  actorId: null,
+                  actorName: "Nick",
+                  createdAt: new Date("2026-07-02T00:00:00Z"),
+                },
+              ]
+            : [
+                {
+                  id: "c1",
+                  field: "stageId",
+                  oldValue: "stage-demo",
+                  newValue: "stage-proposal",
+                  actorId: null,
+                  actorName: "Nick",
+                  createdAt: new Date("2026-07-02T00:00:00Z"),
+                },
+              ],
         }),
       },
     },
@@ -59,6 +74,7 @@ vi.mock("@/utils/csrfCookie", () => ({ readCsrfToken: () => "csrf" }));
 
 afterEach(() => {
   cleanup();
+  changeState.numeric = false;
   noteState.notes = [
     { id: "n1", body: "hi", createdAt: new Date("2026-07-01T00:00:00Z"), pinned: false },
   ];
@@ -123,6 +139,25 @@ it("shows Focus and History at once with no toggle", () => {
 });
 
 describe("WorkspaceTabs", () => {
+  it("rebuilds numeric history when only the saved digit preference changes", () => {
+    changeState.numeric = true;
+    const tree = (numberingSystem: NumberingSystem) => (
+      <LocaleProvider locale="fa" numberingSystem={numberingSystem}>
+        <WorkspaceTabs
+          deal={deal}
+          tab="all"
+          onTab={() => {}}
+          activities={[]}
+          stages={[]}
+          createdActorName="Nick"
+        />
+      </LocaleProvider>
+    );
+    const view = render(tree("latn"));
+    expect(screen.getByText(/1,234\.56.*1,234\.5678/)).toBeInTheDocument();
+    view.rerender(tree("arabext"));
+    expect(screen.getByText(/۱٬۲۳۴٫۵۶.*۱٬۲۳۴٫۵۶۷۸/)).toBeInTheDocument();
+  });
   it("Activities badge counts only the completed activities shown in History, not the unfiltered total", () => {
     // 3 open (Focus-bound) + 1 completed (History-bound): the badge above the
     // single-item History list must read (1), not the raw activities.length of 4.

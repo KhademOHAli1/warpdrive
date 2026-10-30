@@ -31,6 +31,7 @@ import {
 } from "@/features/deal-workspace/historyTimeline";
 import type { Locale } from "@/features/i18n/registry";
 import type { AuthUser } from "@/features/permissions/types";
+import type { NumberingSystem } from "@/lib/numberingSystem";
 import type { DealVisibilitySession } from "@/types/session";
 import { leadVisibilityClause } from "./visibility";
 
@@ -70,6 +71,7 @@ export async function leadTimeline(
   leadId: string,
   signal: AbortSignal,
   locale: Locale = "en",
+  numberingSystem?: NumberingSystem,
 ): Promise<LeadTimelineResult> {
   signal.throwIfAborted();
   const [visible] = await db
@@ -209,7 +211,14 @@ export async function leadTimeline(
   signal.throwIfAborted();
 
   return {
-    items: buildHistoryTimeline(activityItems, changelog, noteItems, undefined, locale),
+    items: buildHistoryTimeline(
+      activityItems,
+      changelog,
+      noteItems,
+      undefined,
+      locale,
+      numberingSystem,
+    ),
     emails: emailRows,
   };
 }

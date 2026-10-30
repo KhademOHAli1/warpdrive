@@ -8,8 +8,10 @@ import type {
   IDENTITY_SETTINGS_STRINGS,
 } from "@/constants/settingsIdentity";
 import type { SETTINGS_STRINGS } from "@/constants/settingsStrings";
+import type { MessageCatalog } from "@/features/i18n/messageTypes";
 import type { Locale } from "@/features/i18n/registry";
 import { localeWithNumberingSystem, type NumberingSystem } from "@/lib/numberingSystem";
+import german from "./messages/settings.de.json";
 import english from "./messages/settings.en.json";
 import persian from "./messages/settings.fa.json";
 import argumentNames from "./settingsMessageParams.json";
@@ -51,6 +53,11 @@ export type SettingsMessages = Omit<Localized<Source>, "_extra"> & {
 };
 type Translate = (key: string, values?: Record<string, string | number>) => string;
 const argumentsByPath: Record<string, string[]> = argumentNames;
+const messagesByLocale: Record<Locale, MessageCatalog<typeof english>> = {
+  en: english,
+  fa: persian,
+  de: german,
+};
 
 // Existing components retain typed field/function contracts while JSON is the only runtime copy.
 export function settingsMessagesForLocale(
@@ -59,7 +66,7 @@ export function settingsMessagesForLocale(
 ): SettingsMessages {
   const translate = createTranslator({
     locale: localeWithNumberingSystem(locale, numberingSystem),
-    messages: locale === "fa" ? persian : english,
+    messages: messagesByLocale[locale],
   }) as unknown as Translate;
   function localize(value: unknown, path: string): unknown {
     const parameters = argumentsByPath[path];

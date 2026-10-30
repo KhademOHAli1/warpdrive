@@ -19,7 +19,7 @@ import { SectionHeading } from "@/features/deal-workspace/SectionHeading";
 import type { DraftSummary } from "@/features/email/draftRepo";
 import { emailTabStatusLabel } from "@/features/email/emailTabStatus";
 import { useEmailMessages } from "@/features/email/useEmailMessages";
-import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
+import { useAppTranslations, useLocale, useNumberingSystem } from "@/features/i18n/LocaleProvider";
 import { trpc } from "@/lib/trpc-client";
 
 // Stable empty array: a new [] on every render would churn useMemo dependencies below.
@@ -76,6 +76,7 @@ export function WorkspaceTabs({
   const translateSales = useAppTranslations("sales");
   const emailMessages = useEmailMessages();
   const locale = useLocale();
+  const numberingSystem = useNumberingSystem();
 
   // `?? EMPTY` rather than `?? []`: a fresh array literal each render changes the identity of every
   // downstream useMemo dependency, so the timeline was rebuilt on every render while data was absent.
@@ -114,12 +115,19 @@ export function WorkspaceTabs({
     () =>
       mergeDraftItems(
         mergeEmailItems(
-          buildHistoryTimeline(activities, resolvedChangelog, notes, createdAnchor, locale),
+          buildHistoryTimeline(
+            activities,
+            resolvedChangelog,
+            notes,
+            createdAnchor,
+            locale,
+            numberingSystem,
+          ),
           emails,
         ),
         drafts,
       ),
-    [activities, resolvedChangelog, notes, createdAnchor, emails, drafts, locale],
+    [activities, resolvedChangelog, notes, createdAnchor, emails, drafts, locale, numberingSystem],
   );
   const { pinned, focus, history } = useMemo(() => partitionFocusHistory(allItems), [allItems]);
   const historyByType = useMemo(() => bucketByType(history), [history]);

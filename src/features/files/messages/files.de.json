@@ -1,0 +1,15 @@
+{
+  "upload": "Datei hochladen",
+  "uploading": "Wird hochgeladen...",
+  "empty": "Noch keine Dateien angehängt.",
+  "loading": "Dateien werden geladen...",
+  "loadFailed": "Dateien konnten nicht geladen werden. Bitte versuchen Sie es erneut.",
+  "download": "{name} herunterladen",
+  "tooLarge": "„{name}“ ist zu groß (maximal {maxMb, number} MB).",
+  "unsupportedType": "Der Dateityp von „{name}“ wird nicht unterstützt.",
+  "uploadFailed": "„{name}“ konnte nicht hochgeladen werden.",
+  "downloadFailed": "Die Datei konnte nicht geöffnet werden.",
+  "bytes": "B",
+  "kilobytes": "KB",
+  "megabytes": "MB"
+}

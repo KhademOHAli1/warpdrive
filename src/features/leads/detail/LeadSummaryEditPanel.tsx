@@ -4,7 +4,7 @@ import type React from "react";
 import type { SelectOption } from "@/components/ui/Select";
 import { CURRENCY_CODES } from "@/features/currencies/codes";
 import { FieldRow } from "@/features/deal-workspace/sidebar/FieldRow";
-import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { OwnerBadge } from "@/features/identity/OwnerBadge";
 import { InlineDateField } from "@/features/inline-edit/InlineDateField";
 import { InlineSelectField } from "@/features/inline-edit/InlineSelectField";
@@ -63,7 +63,6 @@ export function LeadSummaryEditPanel({
   const currencyLabel = currencyT("currencyLabel");
 
   const router = useRouter();
-  const locale = useLocale();
   const format = useFormatters();
   const expectedUpdatedAt = new Date(lead.updatedAt).toISOString();
   // leads.owner_id is NOT NULL, so the lead always has a real owner, but `owners`
@@ -118,8 +117,8 @@ export function LeadSummaryEditPanel({
               ? format.number(value, { useGrouping: false, maximumFractionDigits: 20 })
               : ""
           }
-          onSave={(v) => {
-            const parsed = parseMoneyValue(v, locale);
+          onSave={(v, draftLocale) => {
+            const parsed = parseMoneyValue(v, draftLocale);
             return parsed.ok
               ? save({ value: parsed.value })
               : Promise.resolve(err(tLeads("validNumber")));

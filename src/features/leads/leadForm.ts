@@ -21,12 +21,16 @@ export interface NewLeadFields {
 
 // Validate the Add lead form into a LeadCreateInput. Trust-boundary fields (visibility) are derived
 // server-side; ownerId is honored server-side only for actors with deal.changeOwner.
-export function parseNewLead(fields: NewLeadFields, locale: Locale = "en"): ParseLeadResult {
+export function parseNewLead(
+  fields: NewLeadFields,
+  locale: Locale = "en",
+  valueLocale: Locale = locale,
+): ParseLeadResult {
   const t = createAppTranslator(locale, "leads");
   const title = fields.title.trim();
   if (title === "") return { ok: false, error: t("titleRequired") };
 
-  const money = parseMoneyValue(fields.value, locale);
+  const money = parseMoneyValue(fields.value, valueLocale);
   if (!money.ok) return { ok: false, error: locale === "en" ? money.error : t("validNumber") };
   // Labels are user-managed catalog names now (not a fixed key set), so accept any provided value
   // and just dedupe.

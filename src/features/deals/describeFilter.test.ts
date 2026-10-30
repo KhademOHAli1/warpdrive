@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { NumberDraft } from "@/components/filters/rowValue";
 import { dealFilterFields } from "./dealFilterCatalog";
 import { describeRows } from "./describeFilter";
 
@@ -9,6 +10,46 @@ const FIELDS = dealFilterFields({
 });
 
 describe("describeRows", () => {
+  it("keeps numeric drafts in their authored form across display-locale changes", () => {
+    const drafts: NumberDraft[] = [
+      { kind: "number-draft", raw: "1.234,56", locale: "de" },
+      { kind: "number-draft", raw: "1,234.56", locale: "en" },
+      { kind: "number-draft", raw: "۱۲٫۳۴", locale: "fa" },
+      { kind: "number-draft", raw: "1,2,3", locale: "de" },
+    ];
+    const fields = dealFilterFields({}, "de");
+    for (const draft of drafts) {
+      expect(describeRows([{ field: "value", op: "gt", value: draft }], fields, "and", "de")).toBe(
+        `Betrag größer als ${draft.raw}`,
+      );
+    }
+  });
+  it("uses German conjunctions while preserving contact and label names", () => {
+    const fields = dealFilterFields({ owners: [{ id: "u1", name: "Ada King" }] }, "de");
+    const summary = describeRows(
+      [
+        { field: "ownerId", op: "eq", value: "u1" },
+        { field: "labels", op: "eq", value: ["Hot", "Cold"] },
+      ],
+      fields,
+      "and",
+      "de",
+    );
+    expect(summary).toContain("ist Ada King und ");
+    expect(summary).toContain("Hot oder Cold");
+    expect(summary).not.toMatch(/ and | or /);
+    expect(
+      describeRows(
+        [
+          { field: "title", op: "contains", value: "Acme" },
+          { field: "value", op: "gt", value: "60000" },
+        ],
+        fields,
+        "or",
+        "de",
+      ),
+    ).toContain("Acme oder ");
+  });
   it("names a text condition with the field label and the operator label", () => {
     expect(describeRows([{ field: "title", op: "contains", value: "Acme" }], FIELDS)).toBe(
       "Title contains Acme",

@@ -1,6 +1,8 @@
 "use client";
 import type React from "react";
+import { useRef } from "react";
 import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
+import type { Locale } from "@/features/i18n/registry";
 import { InlineEditFooter } from "./InlineEditFooter";
 import { InlineFieldShell } from "./InlineFieldShell";
 import { saveErrorMessage } from "./saveError";
@@ -10,7 +12,7 @@ import { useInlineEditField } from "./useInlineEditField";
 interface InlineTextFieldProps {
   label: string;
   value: string;
-  onSave: InlineSaveFn<string>;
+  onSave: (value: string, draftLocale: Locale) => ReturnType<InlineSaveFn<string>>;
   placeholder?: string;
   formatError?: (error: string) => string | undefined;
 }
@@ -29,7 +31,17 @@ export function InlineTextField({
   const t = useAppTranslations("shell.inline");
   const locale = useLocale();
   const f = useInlineEditField(value);
+  const draftLocale = useRef<Locale | null>(null);
   const dirty = f.draft !== value;
+  const start = (): void => {
+    if (f.error === null || draftLocale.current === null) draftLocale.current = locale;
+    f.start();
+  };
+  const cancel = (): void => {
+    draftLocale.current = null;
+    f.cancel();
+  };
+  const save: InlineSaveFn<string> = (draft) => onSave(draft, draftLocale.current ?? locale);
 
   const editor = f.editing ? (
     <div>
@@ -41,13 +53,13 @@ export function InlineTextField({
         disabled={f.pending}
         onChange={(e) => f.setDraft(e.target.value)}
         onKeyDown={(e) => {
-          if (e.key === "Enter" && dirty) f.commit(onSave);
+          if (e.key === "Enter" && dirty) f.commit(save);
         }}
         className="h-8 w-full rounded border border-field-border bg-card px-2 text-sm"
       />
       <InlineEditFooter
-        onCancel={f.cancel}
-        onSave={() => f.commit(onSave)}
+        onCancel={cancel}
+        onSave={() => f.commit(save)}
         saveDisabled={!dirty}
         pending={f.pending}
       />
@@ -64,7 +76,7 @@ export function InlineTextField({
       <InlineFieldShell
         label={label}
         editing={f.editing}
-        onStartEdit={f.start}
+        onStartEdit={start}
         value={value === "" ? null : value}
         emptyPrompt={placeholder ?? t("add")}
       >

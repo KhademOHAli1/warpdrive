@@ -37,7 +37,7 @@ it("dirty-gates Save, then Save calls onSave with the draft and exits", async ()
   expect(screen.getByRole("button", { name: "Save" })).toBeDisabled();
   fireEvent.change(screen.getByLabelText("editor"), { target: { value: "acme.com" } });
   fireEvent.click(screen.getByRole("button", { name: "Save" }));
-  await vi.waitFor(() => expect(onSave).toHaveBeenCalledWith("acme.com"));
+  await vi.waitFor(() => expect(onSave).toHaveBeenCalledWith("acme.com", "en"));
   await vi.waitFor(() => expect(screen.queryByLabelText("editor")).not.toBeInTheDocument());
 });
 
