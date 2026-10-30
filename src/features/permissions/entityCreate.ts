@@ -4,6 +4,7 @@ import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type * as schema from "@/db/schema";
 import { users } from "@/db/schema/identity";
 import { err, ok, type Result } from "@/types/result";
+import { mayTransferOwner, toTransferActor } from "./mayTransferOwner";
 
 type Db = NodePgDatabase<typeof schema>;
 
@@ -20,16 +21,13 @@ export interface EntityCreateSession {
   flags: Record<string, boolean>;
 }
 
-// Owner defaults to the creator; deal.changeOwner (or admin) may assign the entity to another user,
-// who must exist. Without the capability a client-supplied ownerId is ignored (no spoofing). Shared
-// by createDeal and createLead so this ownership trust boundary can never diverge between them.
 export async function resolveOwnerId(
   db: Db,
   session: EntityCreateSession,
   requested: string | undefined,
   signal: AbortSignal,
 ): Promise<Result<string, AppError>> {
-  if (requested === undefined || !(session.isAdmin || session.flags["deal.changeOwner"] === true)) {
+  if (requested === undefined || !mayTransferOwner(toTransferActor(session), session.userId)) {
     return ok(session.userId);
   }
   const [target] = await db.select({ id: users.id }).from(users).where(eq(users.id, requested));

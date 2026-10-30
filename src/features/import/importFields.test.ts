@@ -3,6 +3,7 @@ import { isTerminalImportStatus } from "@/constants/importStatus";
 import {
   ENTITY_FIELDS,
   ENTITY_LABELS,
+  fieldsFor,
   primaryEntityOf,
   qualifiedFieldLabel,
   STANDARD_IMPORT_FIELDS,
@@ -72,7 +73,7 @@ it("offers address subfields as dotted leaves, never a bare address field", () =
 });
 
 it("offers a note body", () => {
-  expect(ENTITY_FIELDS.note.map((f) => f.field)).toEqual(["body"]);
+  expect(fieldsFor("note", "csv").map((f) => f.field)).toEqual(["body"]);
   expect(ENTITY_FIELDS.note[0]?.required).toBe(false);
 });
 

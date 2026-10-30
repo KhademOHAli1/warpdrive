@@ -2,9 +2,11 @@
 // (the LeadSummaryEditPanel's Value/Owner/Expected-close inline-edit save path).
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
+import { permissionSets } from "@/db/schema";
 import { leads } from "@/db/schema/leads";
 import { withTestDb } from "@/db/testing";
 import { seedUser } from "@/db/testing/factories";
+import { hydrateActor } from "@/server/hydrateActor";
 import type { LeadSession } from "./leadActions";
 import { updateLead } from "./leadUpdate";
 
@@ -36,6 +38,22 @@ async function insertLead(
 }
 
 const sig = () => new AbortController().signal;
+
+async function hydratedSession(
+  db: Parameters<Parameters<typeof withTestDb>[0]>[0],
+  flags: Record<string, boolean>,
+) {
+  const [set] = await db
+    .insert(permissionSets)
+    .values({ name: `ps-${Math.random().toString(36).slice(2)}`, flags })
+    .returning();
+  const user = await seedUser(db, { permissionSetId: set?.id });
+  const actor = await hydrateActor(db, user.id, new AbortController().signal);
+  if (actor === null) throw new Error("hydrate failed");
+  const flagMap: Record<string, boolean> = {};
+  for (const f of actor.flags) flagMap[f] = true;
+  return session(user.id, { flags: flagMap });
+}
 
 describe("updateLead: field updates", () => {
   it("updates a trimmed title and reads it back", async () => {
@@ -160,7 +178,7 @@ describe("updateLead: field updates", () => {
     });
   });
 
-  it("reassigns ownerId when the actor holds deal.changeOwner", async () => {
+  it("reassigns ownerId when the actor holds deal.changeOwner_any", async () => {
     await withTestDb(async (db) => {
       const a = await seedUser(db);
       const b = await seedUser(db);
@@ -168,7 +186,7 @@ describe("updateLead: field updates", () => {
 
       const r = await updateLead(
         db,
-        session(a.id, { flags: { "deal.changeOwner": true } }),
+        await hydratedSession(db, { "deal.changeOwner_any": true }),
         { leadId: lead.id, expectedUpdatedAt: lead.updatedAt.toISOString(), ownerId: b.id },
         sig(),
       );
@@ -259,5 +277,51 @@ describe("updateLead: input validation", () => {
       if (r.ok) return;
       expect(r.error.id).toBe("E_LEAD_006");
     });
+  });
+});
+
+describe("updateLead: scoped changeOwner flags", () => {
+  async function attempt(flags: Record<string, boolean>, leadOwnedByActor: boolean) {
+    let outcome = { ok: false, reassigned: false };
+    await withTestDb(async (db) => {
+      const actor = await hydratedSession(db, flags);
+      const other = await seedUser(db);
+      const target = await seedUser(db);
+      const lead = await insertLead(db, leadOwnedByActor ? actor.userId : other.id);
+      const r = await updateLead(
+        db,
+        actor,
+        { leadId: lead.id, expectedUpdatedAt: lead.updatedAt.toISOString(), ownerId: target.id },
+        sig(),
+      );
+      const [after] = await db.select().from(leads).where(eq(leads.id, lead.id));
+      outcome = { ok: r.ok, reassigned: after?.ownerId === target.id };
+    });
+    return outcome;
+  }
+
+  it("lets deal.changeOwner_any reassign a lead owned by someone else", async () => {
+    expect(await attempt({ "deal.changeOwner_any": true }, false)).toEqual({
+      ok: true,
+      reassigned: true,
+    });
+  });
+
+  it("lets deal.changeOwner_own reassign a lead the actor owns", async () => {
+    expect(await attempt({ "deal.changeOwner_own": true }, true)).toEqual({
+      ok: true,
+      reassigned: true,
+    });
+  });
+
+  it("refuses deal.changeOwner_own on a lead owned by someone else", async () => {
+    expect(await attempt({ "deal.changeOwner_own": true }, false)).toEqual({
+      ok: false,
+      reassigned: false,
+    });
+  });
+
+  it("refuses a set with neither changeOwner flag", async () => {
+    expect(await attempt({ "deal.create": true }, true)).toEqual({ ok: false, reassigned: false });
   });
 });

@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
+import { permissionSets } from "@/db/schema";
 import { withTestDb } from "@/db/testing";
 import { seedUser } from "@/db/testing/factories";
+import { hydrateActor } from "@/server/hydrateActor";
 import { type EntityCreateSession, resolveOwnerId, resolveVisibilityGroup } from "./entityCreate";
 
 function session(over: Partial<EntityCreateSession> = {}): EntityCreateSession {
@@ -49,26 +51,12 @@ describe("resolveOwnerId", () => {
     });
   });
 
-  it("ignores an override without deal.changeOwner", async () => {
+  it("ignores an override without a changeOwner flag", async () => {
     await withTestDb(async (db) => {
       const creator = await seedUser(db);
       const target = await seedUser(db);
       const r = await resolveOwnerId(db, session({ userId: creator.id }), target.id, sig());
       expect(r.ok && r.value).toBe(creator.id);
-    });
-  });
-
-  it("honors an override with deal.changeOwner when the target exists", async () => {
-    await withTestDb(async (db) => {
-      const creator = await seedUser(db);
-      const target = await seedUser(db);
-      const r = await resolveOwnerId(
-        db,
-        session({ userId: creator.id, flags: { "deal.changeOwner": true } }),
-        target.id,
-        sig(),
-      );
-      expect(r.ok && r.value).toBe(target.id);
     });
   });
 
@@ -84,6 +72,51 @@ describe("resolveOwnerId", () => {
       expect(r.ok).toBe(false);
       if (r.ok) return;
       expect(r.error.id).toBe("E_USER_001");
+    });
+  });
+});
+
+describe("resolveOwnerId with hydrated scoped changeOwner flags", () => {
+  async function hydratedSession(
+    db: Parameters<typeof hydrateActor>[0],
+    flags: Record<string, boolean>,
+  ) {
+    const [set] = await db
+      .insert(permissionSets)
+      .values({ name: `ps-${Math.random().toString(36).slice(2)}`, flags })
+      .returning();
+    const user = await seedUser(db, { permissionSetId: set?.id });
+    const actor = await hydrateActor(db, user.id, sig());
+    if (actor === null) throw new Error("hydrate failed");
+    const flagMap: Record<string, boolean> = {};
+    for (const f of actor.flags) flagMap[f] = true;
+    return session({ userId: user.id, flags: flagMap });
+  }
+
+  it("honors the requested owner for a set holding deal.changeOwner_any", async () => {
+    await withTestDb(async (db) => {
+      const target = await seedUser(db);
+      const s = await hydratedSession(db, { "deal.changeOwner_any": true });
+      const r = await resolveOwnerId(db, s, target.id, sig());
+      expect(r.ok && r.value).toBe(target.id);
+    });
+  });
+
+  it("honors the requested owner for a set holding deal.changeOwner_own", async () => {
+    await withTestDb(async (db) => {
+      const target = await seedUser(db);
+      const s = await hydratedSession(db, { "deal.changeOwner_own": true });
+      const r = await resolveOwnerId(db, s, target.id, sig());
+      expect(r.ok && r.value).toBe(target.id);
+    });
+  });
+
+  it("keeps the creator for a set with neither changeOwner flag", async () => {
+    await withTestDb(async (db) => {
+      const target = await seedUser(db);
+      const s = await hydratedSession(db, { "deal.create": true });
+      const r = await resolveOwnerId(db, s, target.id, sig());
+      expect(r.ok && r.value).toBe(s.userId);
     });
   });
 });

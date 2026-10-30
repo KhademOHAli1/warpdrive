@@ -3,89 +3,28 @@ import type { Dispatch } from "react";
 import { Button } from "@/components/ui/Button";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/RadioGroup";
-import { Select, type SelectOption } from "@/components/ui/Select";
-import { isImportFieldHidden } from "@/constants/builtinFields";
+import { Select } from "@/components/ui/Select";
 import { STRINGS } from "@/constants/strings";
-import {
-  ENTITY_FIELDS,
-  ENTITY_LABELS,
-  type MappableEntity,
-  primaryEntityOf,
-  qualifiedFieldLabel,
-  TARGET_ENTITY_GROUPS,
-} from "@/features/import/importFields";
+import type { HiddenBuiltinsMap } from "@/features/import/eligibleFields";
 import { sampleValues } from "@/features/import/sampleValues";
 import {
-  type ColumnChoice,
-  type ImportTarget,
   isMappingComplete,
   type WizardAction,
   type WizardState,
 } from "@/features/import/wizardState";
 import type { CustomFieldDef } from "@/types/customFields";
+import {
+  buildColumnOptions,
+  choiceToValue,
+  UNMAPPED_SELECT_VALUE,
+  valueToChoice,
+} from "./columnOptions";
+import { StageOptions } from "./StageOptions";
+
+export type { HiddenBuiltinsMap };
+export { buildColumnOptions };
 
 const IMP = STRINGS.settings.importer;
-const REQUIRED_MARKER = " *";
-const UNMAPPED_SELECT_VALUE = "mapping:unmapped";
-
-// Encode a choice as a select value: "" unmapped, "s:<entity>:<field>" standard, "c:<key>" custom.
-// The entity has to ride along: Organization > Name and Person > Name are different destinations
-// that would otherwise collide on the same "s:name" value.
-function choiceToValue(choice: ColumnChoice): string {
-  if (choice.isCustom && choice.key !== "") return `c:${choice.key}`;
-  if (choice.field !== "") return `s:${choice.entity}:${choice.field}`;
-  return "";
-}
-
-function valueToChoice(value: string, target: ImportTarget): ColumnChoice {
-  const primary = primaryEntityOf(target);
-  if (value.startsWith("s:")) {
-    const [entity, ...rest] = value.slice(2).split(":");
-    return { entity: entity as MappableEntity, field: rest.join(":"), isCustom: false, key: "" };
-  }
-  // Only the target's own custom-field defs are offered, so a custom column is always primary.
-  if (value.startsWith("c:")) {
-    return { entity: primary, field: "", isCustom: true, key: value.slice(2) };
-  }
-  return { entity: primary, field: "", isCustom: false, key: "" };
-}
-
-// One grouped picker over every entity this target's row may write: Lead fields, then Organization
-// fields, then Note. Only the primary entity's fields carry the required marker; a related group
-// is optional until one of its cells is filled, and its own required field (Organization > Name)
-// is enforced at validate time.
-const EMPTY_HIDDEN: ReadonlySet<string> = new Set();
-
-// Hidden built-in fields per entity (settings > Data fields). Entities without a set (lead, note)
-// have no built-in-field management, so they are never gated.
-export type HiddenBuiltinsMap = Partial<Record<MappableEntity, ReadonlySet<string>>>;
-
-export function buildColumnOptions(
-  target: ImportTarget,
-  defs: CustomFieldDef[],
-  hidden: HiddenBuiltinsMap = {},
-): SelectOption[] {
-  const primary = primaryEntityOf(target);
-  const options: SelectOption[] = [{ value: UNMAPPED_SELECT_VALUE, label: IMP.unmapped }];
-  for (const entity of TARGET_ENTITY_GROUPS[target]) {
-    const hiddenForEntity = hidden[entity] ?? EMPTY_HIDDEN;
-    for (const field of ENTITY_FIELDS[entity]) {
-      const required = entity === primary && field.required;
-      // A hidden built-in is dropped from the picker, EXCEPT a required primary field, which must
-      // always be mappable (locked identity fields cannot be hidden, so this is defensive).
-      if (!required && isImportFieldHidden(field.field, hiddenForEntity)) continue;
-      options.push({
-        value: `s:${entity}:${field.field}`,
-        label: `${qualifiedFieldLabel(entity, field.label)}${required ? REQUIRED_MARKER : ""}`,
-        group: ENTITY_LABELS[entity],
-      });
-    }
-  }
-  for (const def of defs) {
-    options.push({ value: `c:${def.key}`, label: def.name, group: IMP.customGroup });
-  }
-  return options;
-}
 
 export interface MapStepProps {
   state: WizardState;
@@ -104,8 +43,8 @@ export function MapStep({
   busy,
   onContinue,
 }: MapStepProps): React.ReactNode {
-  const complete = isMappingComplete(state);
-  const columnOptions = buildColumnOptions(state.target, defs, hiddenBuiltins);
+  const complete = isMappingComplete(state, state.source);
+  const columnOptions = buildColumnOptions(state.target, defs, hiddenBuiltins, state.source);
   // Dedup applies to the record a row MATCHES on. Leads have no natural dedup key and always
   // create, so the control would do nothing there.
   const showDedup = state.target === "person" || state.target === "organization";
@@ -183,6 +122,15 @@ export function MapStep({
             ))}
           </RadioGroup>
         </fieldset>
+      )}
+
+      {state.source === "pipedrive" && state.target === "deal" && (
+        <StageOptions
+          checked={state.createMissingStages}
+          onChange={(createMissingStages) =>
+            dispatch({ type: "setCreateMissingStages", createMissingStages })
+          }
+        />
       )}
 
       {canRowNote && (

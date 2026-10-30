@@ -3,6 +3,7 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { useReducer } from "react";
 import { afterEach, beforeAll, expect, it, vi } from "vitest";
+import { eligibleFields } from "@/features/import/eligibleFields";
 import {
   buildColumnMapping,
   initialWizardState,
@@ -154,7 +155,7 @@ it("maps a column to an Organization field on a lead import", () => {
 
   expect(onMapping).toHaveBeenCalledWith({
     dedupMode: "skip",
-    options: { rowNoteFromUnmapped: false },
+    options: { rowNoteFromUnmapped: false, createMissingStages: false },
     columns: {
       reporter_type: { entity: "lead", field: "title", isCustom: false, key: "" },
       url: { entity: "organization", field: "domain", isCustom: false, key: "" },
@@ -187,4 +188,79 @@ it("renders a visible label next to the row-note checkbox", () => {
   expect(visible).toBeInTheDocument();
   expect(visible.tagName).toBe("LABEL");
   expect(visible).toHaveAttribute("for", box.id);
+});
+
+function SourceHarness({
+  source,
+  target,
+  onMapping,
+}: {
+  source: "csv" | "pipedrive";
+  target: "deal" | "person" | "note";
+  onMapping?: (m: unknown) => void;
+}): React.ReactNode {
+  const [state, dispatch] = useReducer(wizardReducer, undefined, () => {
+    let s = wizardReducer(initialWizardState(), { type: "setSource", source });
+    s = wizardReducer(s, { type: "setTarget", target });
+    return wizardReducer(s, {
+      type: "prepared",
+      headers: ["Deal - Title", "Deal - ID"],
+      totalRows: 1,
+      previewRows: [],
+      suggest: { eligible: eligibleFields(target, source), defs: [] },
+    });
+  });
+  return (
+    <MapStep
+      state={state}
+      dispatch={dispatch}
+      defs={[]}
+      busy={false}
+      onContinue={() => onMapping?.(buildColumnMapping(state))}
+    />
+  );
+}
+
+it("shows the stage checkbox, off by default, for a pipedrive deal import", () => {
+  render(<SourceHarness source="pipedrive" target="deal" />);
+  const box = screen.getByRole("checkbox", { name: "Create missing pipelines and stages" });
+  expect(box).not.toBeChecked();
+  expect(screen.getByText("Create missing pipelines and stages").tagName).toBe("LABEL");
+});
+
+it("records the stage checkbox in the mapping options", () => {
+  const onMapping = vi.fn();
+  render(<SourceHarness source="pipedrive" target="deal" onMapping={onMapping} />);
+  fireEvent.click(screen.getByRole("checkbox", { name: "Create missing pipelines and stages" }));
+  fireEvent.click(screen.getByRole("button", { name: "Continue" }));
+  expect(onMapping.mock.calls[0]?.[0]).toMatchObject({ options: { createMissingStages: true } });
+});
+
+it("hides the stage checkbox for csv deals and non-deal pipedrive targets", () => {
+  const { unmount } = render(<SourceHarness source="csv" target="deal" />);
+  expect(screen.queryByText("Create missing pipelines and stages")).not.toBeInTheDocument();
+  unmount();
+  render(<SourceHarness source="pipedrive" target="person" />);
+  expect(screen.queryByText("Create missing pipelines and stages")).not.toBeInTheDocument();
+});
+
+it("applies the Pipedrive suggestions and gates Continue on the Pipedrive ID", () => {
+  render(<SourceHarness source="pipedrive" target="deal" />);
+  expect(screen.getByLabelText("Maps to: Deal - Title")).toHaveTextContent("Deal[Title] *");
+  expect(screen.getByLabelText("Maps to: Deal - ID")).toHaveTextContent("Deal[Pipedrive ID] *");
+  expect(screen.getByRole("button", { name: "Continue" })).toBeEnabled();
+});
+
+it("keeps Continue disabled without the Pipedrive ID", () => {
+  render(<SourceHarness source="pipedrive" target="deal" />);
+  chooseSelect("Maps to: Deal - ID", "Do not import");
+  expect(screen.getByRole("button", { name: "Continue" })).toBeDisabled();
+});
+
+it("offers only the body for the side note of a pipedrive deal import", () => {
+  render(<SourceHarness source="pipedrive" target="deal" />);
+  fireEvent.click(screen.getByLabelText("Maps to: Deal - Title"));
+  expect(screen.getByRole("option", { name: "Note" })).toBeInTheDocument();
+  expect(screen.queryByRole("option", { name: "Note[Created]" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("option", { name: "Note[Deal ID]" })).not.toBeInTheDocument();
 });

@@ -54,9 +54,13 @@ function sanitizeNote(note: string | null): string | null {
   return note === null ? null : sanitizeAuthorHtml(note);
 }
 
-// Resolve doneAt from the done flag on create.
-function resolveDoneAt(done: boolean): Date | null {
-  return done ? new Date() : null;
+export interface CreateActivityOptions {
+  doneAtOverride?: Date;
+  scheduleReminder?: boolean;
+}
+
+function resolveDoneAt(done: boolean, override: Date | undefined): Date | null {
+  return done ? (override ?? new Date()) : null;
 }
 
 // Multi-day guard: a provided endAt must not precede the start (dueAt). Both are ISO strings
@@ -123,6 +127,7 @@ export async function createActivity(
   actor: PermSetUser,
   raw: ActivityCreateInput,
   signal: AbortSignal,
+  options: CreateActivityOptions = {},
 ): Promise<Result<Activity, AppError>> {
   // Parse at the boundary so defaulted fields (priority, dueAt, arrays) are always present.
   const input = activityCreateInput.parse(raw);
@@ -176,7 +181,7 @@ export async function createActivity(
         note: sanitizeNote(input.note),
         videoCallUrl: input.videoCallUrl,
         done: input.done,
-        doneAt: resolveDoneAt(input.done),
+        doneAt: resolveDoneAt(input.done, options.doneAtOverride),
       })
       .returning();
 
@@ -202,9 +207,7 @@ export async function createActivity(
     return ok(row);
   });
 
-  // Schedule the reminder only AFTER the tx commits: a rolled-back create must not
-  // leave a queued job. No-op in tests/scripts with no queue; throws in production.
-  if (result.ok === true) {
+  if (result.ok === true && options.scheduleReminder !== false) {
     await scheduleReminder(result.value.id, result.value.dueAt, signal);
   }
   return result;

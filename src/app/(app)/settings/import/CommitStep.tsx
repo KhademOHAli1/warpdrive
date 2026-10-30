@@ -5,6 +5,7 @@ import { STRINGS } from "@/constants/strings";
 import { useImportProgress } from "@/features/import/useImportProgress";
 import { trpc } from "@/lib/trpc-client";
 import { ProgressBar } from "./ProgressBar";
+import { RowWarnings } from "./RowWarnings";
 
 const IMP = STRINGS.settings.importer;
 // Poll every second until the batch reaches a terminal status, then stop.
@@ -38,6 +39,7 @@ export function CommitStep({ batchId, onReset }: CommitStepProps): React.ReactNo
   // The exact imported/skipped/invalid split, computed server-side from row statuses once
   // the commit is terminal (finalizeBatch conflates imported + skipped_duplicate).
   const result = trpc.import.getResult.useQuery({ batchId }, { enabled: done }).data;
+  const rows = trpc.import.listRows.useQuery({ batchId }, { enabled: done }).data ?? [];
 
   if (batch === undefined) {
     return <p className="text-sm text-muted-foreground">{IMP.importing}</p>;
@@ -54,6 +56,7 @@ export function CommitStep({ batchId, onReset }: CommitStepProps): React.ReactNo
           {IMP.result(counts.imported, counts.skipped, counts.invalid)}
         </p>
       )}
+      {done && <RowWarnings rows={rows} />}
       {done && (
         <Button type="button" variant="outline" size="sm" onClick={onReset}>
           {IMP.startOver}

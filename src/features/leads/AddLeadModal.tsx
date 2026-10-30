@@ -2,6 +2,7 @@
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { useState } from "react";
+import { HiddenRecordNotice } from "@/components/HiddenRecordNotice";
 import { DEFAULT_BASE_CURRENCY } from "@/constants/currency";
 import {
   CustomFieldCreateFields,
@@ -39,6 +40,7 @@ export function AddLeadModal({
   const [state, setState] = useState<AddLeadState>(initialAddLeadState());
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const [hiddenTitle, setHiddenTitle] = useState<string | null>(null);
 
   const peopleQ = trpc.contacts.personOptions.useQuery();
   const orgsQ = trpc.contacts.orgOptions.useQuery();
@@ -137,6 +139,10 @@ export function AddLeadModal({
         return;
       }
       onCreated();
+      if (result.value === null) {
+        setHiddenTitle(parsed.input.title);
+        return;
+      }
       onClose();
       // "Open details view after creating a new item" (personal preference): leads share the
       // lead/deal flag with deals. Otherwise the caller's onCreated handles the refresh.
@@ -144,6 +150,10 @@ export function AddLeadModal({
     } finally {
       setPending(false);
     }
+  }
+
+  if (hiddenTitle !== null) {
+    return <HiddenRecordNotice entityLabel="Lead" title={hiddenTitle} onDismiss={onClose} />;
   }
 
   return (

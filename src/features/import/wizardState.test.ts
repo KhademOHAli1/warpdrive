@@ -101,7 +101,7 @@ it("buildColumnMapping emits the columnMappingSchema shape, dropping unmapped he
   s = wizardReducer(s, { type: "setDedup", dedupMode: "update" });
   expect(buildColumnMapping(s)).toEqual({
     dedupMode: "update",
-    options: { rowNoteFromUnmapped: false },
+    options: { rowNoteFromUnmapped: false, createMissingStages: false },
     columns: {
       "Full Name": { entity: "person", field: "name", isCustom: false, key: "" },
       Email: { entity: "person", field: "emails", isCustom: false, key: "" },

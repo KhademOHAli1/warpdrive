@@ -3,6 +3,14 @@
 // is a lead AND its organization), and Pipedrive's picker is entity-tabbed for exactly that
 // reason. mapRow groups the mapped cells back out by entity; commit writes each group through its
 // own authority. Custom fields come from listDefs at render time.
+import type { ImportSource } from "@/constants/importSources";
+import {
+  PIPEDRIVE_ACTIVITY_FIELDS,
+  PIPEDRIVE_DEAL_FIELDS,
+  PIPEDRIVE_NOTE_FIELDS,
+  PIPEDRIVE_ORGANIZATION_FIELDS,
+  PIPEDRIVE_PERSON_FIELDS,
+} from "./pipedriveImportFields";
 import type { ImportTarget } from "./wizardState";
 
 // Upper bound for a client-parsed CSV (25 MB, matching the attachment cap). The browser
@@ -10,7 +18,6 @@ import type { ImportTarget } from "./wizardState";
 // (a 500 MB mis-selection) would freeze the tab; the upload step rejects anything larger.
 export const MAX_IMPORT_CSV_BYTES = 26_214_400;
 
-// "note" is not an import target; it is an extra record a row can produce alongside its primary.
 export type MappableEntity = ImportTarget | "note";
 
 export interface StandardImportField {
@@ -20,6 +27,7 @@ export interface StandardImportField {
   // Other fields of the same entity that stand in for this one. Person > Name is required, but a
   // contact export routinely splits it, so mapping either part satisfies it and mapRow joins them.
   satisfiedBy?: readonly string[];
+  sources?: readonly ImportSource[];
 }
 
 // The person columns whose values a display name can be built from, in the order they are joined.
@@ -37,6 +45,7 @@ export const ENTITY_FIELDS: Record<MappableEntity, readonly StandardImportField[
     { field: "lastName", label: "Last name", required: false },
     { field: "emails", label: "Email", required: false },
     { field: "phones", label: "Phone", required: false },
+    ...PIPEDRIVE_PERSON_FIELDS,
   ],
   organization: [
     { field: "name", label: "Name", required: true },
@@ -50,6 +59,7 @@ export const ENTITY_FIELDS: Record<MappableEntity, readonly StandardImportField[
     { field: "address.region", label: "Address: state / region", required: false },
     { field: "address.postal", label: "Address: postal code", required: false },
     { field: "address.country", label: "Address: country", required: false },
+    ...PIPEDRIVE_ORGANIZATION_FIELDS,
   ],
   deal: [
     { field: "title", label: "Title", required: true },
@@ -57,6 +67,7 @@ export const ENTITY_FIELDS: Record<MappableEntity, readonly StandardImportField[
     { field: "expectedCloseDate", label: "Expected close date", required: false },
     { field: "pipeline", label: "Pipeline", required: false },
     { field: "stage", label: "Stage", required: false },
+    ...PIPEDRIVE_DEAL_FIELDS,
   ],
   lead: [
     { field: "title", label: "Title", required: true },
@@ -70,8 +81,9 @@ export const ENTITY_FIELDS: Record<MappableEntity, readonly StandardImportField[
     { field: "typeKey", label: "Type", required: false },
     { field: "dueAt", label: "Due date", required: false },
     { field: "durationMinutes", label: "Duration (minutes)", required: false },
+    ...PIPEDRIVE_ACTIVITY_FIELDS,
   ],
-  note: [{ field: "body", label: "Note", required: false }],
+  note: [{ field: "body", label: "Note", required: false }, ...PIPEDRIVE_NOTE_FIELDS],
 };
 
 export const ENTITY_LABELS: Record<MappableEntity, string> = {
@@ -94,8 +106,6 @@ export function qualifiedFieldLabel(entity: MappableEntity, fieldLabel: string):
   return `${entityLabel}[${fieldLabel}]`;
 }
 
-// The entity a target's row primarily creates. Targets and entities share names, but the
-// distinction matters: "note" is an entity that is never a target.
 export function primaryEntityOf(target: ImportTarget): MappableEntity {
   return target;
 }
@@ -111,14 +121,70 @@ export const TARGET_ENTITY_GROUPS: Record<ImportTarget, readonly MappableEntity[
   deal: ["deal", "organization", "person", "note"],
   lead: ["lead", "organization", "note"],
   activity: ["activity"],
+  note: ["note"],
 };
 
-// The primary entity's fields. Mapping-completeness and the per-target row schemas read this, so
-// the required-field list has exactly one source of truth.
 export const STANDARD_IMPORT_FIELDS: Record<ImportTarget, readonly StandardImportField[]> = {
   person: ENTITY_FIELDS.person,
   organization: ENTITY_FIELDS.organization,
   deal: ENTITY_FIELDS.deal,
   lead: ENTITY_FIELDS.lead,
   activity: ENTITY_FIELDS.activity,
+  note: ENTITY_FIELDS.note.map((f) => (f.field === "body" ? { ...f, required: true } : f)),
 };
+
+export const IMPORT_TARGETS = [
+  "person",
+  "organization",
+  "deal",
+  "lead",
+  "activity",
+  "note",
+] as const satisfies readonly ImportTarget[];
+
+export const PIPEDRIVE_ID_FIELD = "pipedriveId";
+
+const PIPEDRIVE_ID_REQUIRED_TARGETS: readonly ImportTarget[] = [
+  "person",
+  "organization",
+  "deal",
+  "activity",
+  "note",
+];
+
+const SOURCE_TARGETS: Record<ImportSource, readonly ImportTarget[]> = {
+  csv: ["person", "organization", "deal", "lead", "activity"],
+  pipedrive: ["person", "organization", "deal", "activity", "note"],
+};
+
+export function isFieldOfferedFor(field: StandardImportField, source: ImportSource): boolean {
+  return field.sources === undefined || field.sources.includes(source);
+}
+
+export const SIDE_NOTE_FIELD = "body";
+
+export function isFieldOfferedInGroup(
+  entity: MappableEntity,
+  target: ImportTarget,
+  field: StandardImportField,
+): boolean {
+  return entity !== "note" || target === "note" || field.field === SIDE_NOTE_FIELD;
+}
+
+export function fieldsFor(entity: MappableEntity, source: ImportSource): StandardImportField[] {
+  return ENTITY_FIELDS[entity].filter((f) => isFieldOfferedFor(f, source));
+}
+
+export function targetsFor(source: ImportSource): readonly ImportTarget[] {
+  return SOURCE_TARGETS[source];
+}
+
+export function requiredFieldsFor(
+  target: ImportTarget,
+  source: ImportSource,
+): StandardImportField[] {
+  const required = STANDARD_IMPORT_FIELDS[target].filter((f) => f.required);
+  if (source !== "pipedrive" || !PIPEDRIVE_ID_REQUIRED_TARGETS.includes(target)) return required;
+  const idField = ENTITY_FIELDS[target].find((f) => f.field === PIPEDRIVE_ID_FIELD);
+  return idField === undefined ? required : [...required, idField];
+}

@@ -27,7 +27,7 @@ function RowActions({
   const undoable = batch.status === "completed" || batch.status === "partial";
   return (
     <span className="space-x-3">
-      {batch.errorRows > 0 && (
+      {(batch.errorRows > 0 || batch.warnedRows > 0) && (
         <a
           href={`/settings/import/${batch.id}/errors.csv`}
           className="text-primary hover:underline"

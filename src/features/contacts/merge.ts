@@ -1,9 +1,11 @@
-import { eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import type { Organization, Person } from "@/db/schema";
 import { organizations, persons } from "@/db/schema";
 import { recordChange } from "@/features/collaboration/changeLog";
+import { lockImportMutation } from "@/features/import/importLock";
+import { repointMappings } from "@/features/import/repointMappings";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { err, ok, type Result } from "@/types/result";
 import {
@@ -30,9 +32,15 @@ export async function mergePersons(
   signal.throwIfAborted();
 
   return db.transaction(async (tx) => {
-    signal.throwIfAborted();
-    const [survivor] = await tx.select().from(persons).where(eq(persons.id, args.survivorId));
-    const [merged] = await tx.select().from(persons).where(eq(persons.id, args.mergedId));
+    await lockImportMutation(tx, signal);
+    const [survivor] = await tx
+      .select()
+      .from(persons)
+      .where(and(eq(persons.id, args.survivorId), isNull(persons.deletedAt)));
+    const [merged] = await tx
+      .select()
+      .from(persons)
+      .where(and(eq(persons.id, args.mergedId), isNull(persons.deletedAt)));
     if (survivor === undefined || merged === undefined) {
       return err(new AppError(ERROR_IDS.CONTACT_NOT_FOUND, "not found", args));
     }
@@ -41,6 +49,7 @@ export async function mergePersons(
     if (gate.ok === false) return gate;
 
     await repointPersonFks(tx, args.survivorId, args.mergedId);
+    await repointMappings(tx, "person", args.survivorId, args.mergedId, signal);
 
     const emails = [...survivor.emails, ...merged.emails].map((e) => ({
       ...e,
@@ -90,15 +99,15 @@ export async function mergeOrgs(
   signal.throwIfAborted();
 
   return db.transaction(async (tx) => {
-    signal.throwIfAborted();
+    await lockImportMutation(tx, signal);
     const [survivor] = await tx
       .select()
       .from(organizations)
-      .where(eq(organizations.id, args.survivorId));
+      .where(and(eq(organizations.id, args.survivorId), isNull(organizations.deletedAt)));
     const [merged] = await tx
       .select()
       .from(organizations)
-      .where(eq(organizations.id, args.mergedId));
+      .where(and(eq(organizations.id, args.mergedId), isNull(organizations.deletedAt)));
     if (survivor === undefined || merged === undefined) {
       return err(new AppError(ERROR_IDS.CONTACT_NOT_FOUND, "not found", args));
     }
@@ -107,6 +116,7 @@ export async function mergeOrgs(
     if (gate.ok === false) return gate;
 
     await repointOrgFks(tx, args.survivorId, args.mergedId);
+    await repointMappings(tx, "organization", args.survivorId, args.mergedId, signal);
 
     const [updated] = await tx
       .update(organizations)

@@ -4,9 +4,13 @@ export interface ErrorReportRow {
   rowNumber: number;
   raw: Record<string, string>;
   errors: { field: string; message: string }[];
+  warnings: { field: string; message: string }[];
 }
 
-// Columns: row number, flattened errors, then every raw header seen in first-seen order.
+function flatten(items: { field: string; message: string }[]): string {
+  return items.map((e) => `${e.field}: ${e.message}`).join("; ");
+}
+
 export function buildErrorCsv(rows: ErrorReportRow[]): string {
   const headers: string[] = [];
   const seen = new Set<string>();
@@ -18,10 +22,14 @@ export function buildErrorCsv(rows: ErrorReportRow[]): string {
       }
     }
   }
-  const head = ["row", "errors", ...headers].map(escapeCsv).join(",");
+  const head = ["row", "errors", "warnings", ...headers].map(escapeCsv).join(",");
   const lines = rows.map((r) => {
-    const reasons = r.errors.map((e) => `${e.field}: ${e.message}`).join("; ");
-    const cells = [String(r.rowNumber), reasons, ...headers.map((h) => r.raw[h] ?? "")];
+    const cells = [
+      String(r.rowNumber),
+      flatten(r.errors),
+      flatten(r.warnings),
+      ...headers.map((h) => r.raw[h] ?? ""),
+    ];
     return cells.map(escapeCsv).join(",");
   });
   return [head, ...lines].join("\n");

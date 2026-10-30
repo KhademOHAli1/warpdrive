@@ -48,6 +48,12 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: "category",
+      label: "Guides",
+      collapsed: false,
+      items: ["guides/migrating-from-pipedrive"],
+    },
+    {
+      type: "category",
       label: "Operations",
       collapsed: false,
       items: ["operations/updating"],

@@ -12,21 +12,36 @@ import {
   MAX_LINKEDIN_URL_LEN,
   personCreateInput,
 } from "@/features/contacts/schemas";
+import {
+  dealStatus,
+  doneFlag,
+  importDate,
+  labelList,
+  lostReason,
+  optionalImportDate,
+  optionalText,
+  pipedriveLinkShape,
+} from "./importFieldParsers";
 
 // CSV cells arrive as strings; z.coerce.number() converts (or fails on non-numeric input,
 // which is reported as a row error rather than silently coerced to null).
 const currencyValue = z.coerce.number().nonnegative().nullable().default(null);
 
-// The organization block of a cross-entity row (a lead/deal/person row that also names its org).
-// `name` is required whenever the block exists at all: it is the key resolveOrgLink find-or-creates
-// on, so an org block without one has nowhere to go. Firmographics live on orgUpdateInput rather
-// than orgCreateInput, so commit creates the org by name and then applies these through updateOrg.
-//
-// Every optional field is `.optional()`, never `.nullable().default(null)`. updateOrg reads an
-// explicit null as "clear this column", so defaulting an UNMAPPED field to null would wipe the
-// existing domain/industry/revenue off every org an "update"-mode import touched.
-export const orgImportGroupSchema = z.object({
+const MISSING_NAME_MESSAGE = "name is required without a Pipedrive ID";
+
+function requireNameOrPipedriveId(
+  value: { name?: string | undefined; pipedriveId?: string | undefined },
+  ctx: z.RefinementCtx,
+): void {
+  if (value.name === undefined && value.pipedriveId === undefined) {
+    ctx.addIssue({ code: "custom", path: ["name"], message: MISSING_NAME_MESSAGE });
+  }
+}
+
+export const orgImportBaseSchema = z.object({
   name: z.string().trim().min(1).max(255),
+  pipedriveId: optionalText,
+  owner: optionalText,
   domain: z.string().trim().max(MAX_DOMAIN_LEN).optional(),
   industry: z.string().trim().max(MAX_INDUSTRY_LEN).optional(),
   linkedinUrl: z.string().trim().max(MAX_LINKEDIN_URL_LEN).optional(),
@@ -48,18 +63,28 @@ export const orgImportGroupSchema = z.object({
     .optional(),
 });
 
+export const orgImportGroupSchema = orgImportBaseSchema
+  .partial({ name: true })
+  .superRefine(requireNameOrPipedriveId);
+
 // The person block of a deal row: the contact the deal belongs to, resolved by name or email.
 //
 // Reuses personCreateInput's own contact-point schemas rather than a loose shape of its own:
 // resolvePersonLink creates the person through personCreateInput at commit, so anything this
 // accepts and that rejects would show as a valid row in preview and then fail on Import.
-export const personImportGroupSchema = personCreateInput.pick({
-  name: true,
-  firstName: true,
-  lastName: true,
-  emails: true,
-  phones: true,
-});
+export const personImportBaseSchema = personCreateInput
+  .pick({
+    name: true,
+    firstName: true,
+    lastName: true,
+    emails: true,
+    phones: true,
+  })
+  .extend({ pipedriveId: optionalText, owner: optionalText });
+
+export const personImportGroupSchema = personImportBaseSchema
+  .partial({ name: true })
+  .superRefine(requireNameOrPipedriveId);
 
 // The 50k cap mirrors noteCreateInput. createNote does not re-parse its input, so a row whose note
 // body (a huge mapped cell, or a wide rowNoteFromUnmapped dump) exceeds it would otherwise insert
@@ -72,6 +97,14 @@ export const dealImportRowSchema = z.object({
   expectedCloseDate: z.string().date().nullable().default(null),
   pipeline: z.string().trim().min(1).nullable().default(null),
   stage: z.string().trim().min(1).nullable().default(null),
+  pipedriveId: optionalText,
+  owner: optionalText,
+  status: dealStatus,
+  wonTime: optionalImportDate,
+  lostTime: optionalImportDate,
+  createdAt: optionalImportDate,
+  lostReason,
+  labels: labelList,
   customFields: z.record(z.string(), z.unknown()).default({}),
 });
 
@@ -93,26 +126,24 @@ export const leadImportRowSchema = z.object({
   customFields: z.record(z.string(), z.unknown()).default({}),
 });
 
-// CSV due dates are rarely full ISO datetimes; normalize any Date-parseable string to one so
-// activityCreateInput's z.string().datetime() (strict ISO) accepts it downstream. An
-// unparseable string is reported as a row error, not silently dropped to null.
-const dueAtField = z
-  .string()
-  .trim()
-  .refine((v) => !Number.isNaN(Date.parse(v)), "must be a valid date")
-  .transform((v) => new Date(v).toISOString())
-  .nullable()
-  .default(null);
+const dueAtField = importDate.nullable().default(null);
 
 export const activityImportRowSchema = z.object({
   subject: z.string().min(1).max(255),
   typeKey: z.string().trim().min(1).nullable().default(null),
   dueAt: dueAtField,
   durationMinutes: z.coerce.number().int().positive().nullable().default(null),
-  // Without this, z.object strips the customFields key mapRow.ts already validated against the
-  // live defs (unknown keys are dropped by default), so commitActivity.ts's second parse through
-  // this schema would silently lose every custom-field value before it ever reaches
-  // activityCreateInput. Matches the exact shape activityCreateInput/personCreateInput/
-  // orgCreateInput declare so the value round-trips unchanged.
+  pipedriveId: optionalText,
+  assignee: optionalText,
+  done: doneFlag,
+  doneAt: optionalImportDate,
+  ...pipedriveLinkShape,
   customFields: z.record(z.string(), z.unknown()).default({}),
+});
+
+export const noteImportRowSchema = z.object({
+  body: z.string().trim().min(1).max(50_000),
+  createdAt: optionalImportDate,
+  pipedriveId: optionalText,
+  ...pipedriveLinkShape,
 });

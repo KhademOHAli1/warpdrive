@@ -6,6 +6,7 @@ import { users } from "@/db/schema";
 import { guardCsrf } from "@/features/identity/actions/shared";
 import { SIG } from "@/features/identity/actions/sig";
 import { createContext } from "@/server/trpc/context";
+import { isLeadVisibleToSession } from "./createdVisibility";
 import { archiveLead, createLead, type LeadSession } from "./leadActions";
 import { bulkUpdateLeads } from "./leadBulk";
 import { bulkConvertLeads } from "./leadBulkConvert";
@@ -59,11 +60,14 @@ async function authorize(
 export async function createLeadAction(
   input: LeadCreateInput,
   csrfToken: string | null = null,
-): Promise<LeadActionResult<{ id: string }>> {
+): Promise<LeadActionResult<{ id: string } | null>> {
   const auth = await authorize(csrfToken);
   if (!auth.ok) return auth;
   const r = await createLead(db, auth.session, input, SIG());
   if (!r.ok) return { ok: false, error: { id: r.error.id } };
+  if (!(await isLeadVisibleToSession(db, auth.session, r.value.id, SIG()))) {
+    return { ok: true, value: null };
+  }
   return { ok: true, value: { id: r.value.id } };
 }
 

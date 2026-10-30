@@ -2,7 +2,9 @@
 import { useReducer, useState } from "react";
 import { STRINGS } from "@/constants/strings";
 import { commitBatchAction, setMappingAction } from "@/features/import/actions";
+import { eligibleFields } from "@/features/import/eligibleFields";
 import type { MappableEntity } from "@/features/import/importFields";
+import type { SuggestContext } from "@/features/import/wizardSeed";
 import {
   buildColumnMapping,
   type ImportTarget,
@@ -44,6 +46,8 @@ function defsForTarget(props: ImportWizardProps, target: ImportTarget): CustomFi
       return props.activityDefs;
     case "lead":
       return props.leadDefs;
+    case "note":
+      return [];
     default:
       return assertNever(target);
   }
@@ -60,6 +64,11 @@ export function ImportWizard(props: ImportWizardProps): React.ReactNode {
       new Set(keys),
     ]),
   );
+
+  const suggest: SuggestContext = {
+    eligible: eligibleFields(state.target, state.source, hiddenBuiltins),
+    defs,
+  };
 
   // Persist the mapping then hand off to the background validate job; the wizard waits on
   // the "validating" step for the batch to reach "ready".
@@ -127,6 +136,7 @@ export function ImportWizard(props: ImportWizardProps): React.ReactNode {
                   headers: b.headers,
                   totalRows: b.totalRows,
                   previewRows: b.previewRows ?? [],
+                  suggest,
                 });
               }
             }}

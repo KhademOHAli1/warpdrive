@@ -21,8 +21,12 @@ import { err, ok, type Result } from "@/types/result";
 // visibility derivation) AND can()'s PermSetUser (permission-flag checks).
 export type ImportActor = ContactActor & PermSetUser;
 
-export type Commit = { status: ImportRowStatus; entityId: string | null };
 export type RowError = { field: string; message: string };
+export type Commit = {
+  status: ImportRowStatus;
+  entityId: string | null;
+  warnings: RowError[];
+};
 
 // Records a row created ALONGSIDE its primary entity. Each stays null when the row linked to a
 // pre-existing record instead of creating one, which is exactly the distinction undo needs: it
@@ -39,10 +43,7 @@ export const noSideEffects: SideEffects = {
   createdNoteId: null,
 };
 
-// drizzle nests db.transaction inside the outer commit tx as a SAVEPOINT, so the
-// audited create/update authorities run atomically within the row commit while
-// still deriving owner + visibility from settings and validating custom fields.
-type Tx = Parameters<Parameters<Db["transaction"]>[0]>[0];
+export type Tx = Parameters<Parameters<Db["transaction"]>[0]>[0];
 
 // Map a Zod failure to row-level errors so commitRow can finalize "invalid"
 // deterministically (a malformed mapped row must never throw an opaque DB error
@@ -142,6 +143,7 @@ export async function finalize(
   entityId: string | null,
   errors: RowError[],
   side: SideEffects = noSideEffects,
+  warnings: RowError[] = [],
 ): Promise<Result<Commit, AppError>> {
   const updated = await tx
     .update(importRows)
@@ -152,11 +154,12 @@ export async function finalize(
       createdPersonId: side.createdPersonId,
       createdNoteId: side.createdNoteId,
       errors,
+      warnings,
     })
     .where(sql`${importRows.id} = ${rowId}`)
     .returning({ id: importRows.id });
   if (updated.length === 0) {
     return err(new AppError(ERROR_IDS.IMPORT_ROW_GONE, "row gone during finalize", { rowId }));
   }
-  return ok({ status, entityId });
+  return ok({ status, entityId, warnings });
 }

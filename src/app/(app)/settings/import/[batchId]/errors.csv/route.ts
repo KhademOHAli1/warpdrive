@@ -1,15 +1,15 @@
-import { and, eq, inArray } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/db/client";
-import { importBatches, importRows } from "@/db/schema";
+import { importBatches } from "@/db/schema";
 import { buildErrorCsv } from "@/features/import/errorReport";
+import { loadErrorReportRows } from "@/features/import/errorReportRows";
 import { can } from "@/features/permissions/can";
 import { createContext } from "@/server/trpc/context";
 
 const routeParams = z.object({ batchId: z.string().uuid() });
 
-// GET the error report for one batch: only invalid/failed rows, gated to the owner + data.import.
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ batchId: string }> },
@@ -27,11 +27,7 @@ export async function GET(
     return new NextResponse("Not found", { status: 404 });
   }
 
-  const rows = await db
-    .select({ rowNumber: importRows.rowNumber, raw: importRows.raw, errors: importRows.errors })
-    .from(importRows)
-    .where(and(eq(importRows.batchId, batchId), inArray(importRows.status, ["invalid", "failed"])))
-    .orderBy(importRows.rowNumber);
+  const rows = await loadErrorReportRows(db, batchId, AbortSignal.timeout(15_000));
 
   const csv = buildErrorCsv(rows);
   return new NextResponse(csv, {
