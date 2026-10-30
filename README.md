@@ -204,6 +204,10 @@ localization. [Localization progress](docs/i18n-progress.md) records source, tes
 browser evidence. Production deployment and external OAuth/Gmail configuration remain
 specific to the installation.
 
+The [advanced pipeline analytics proposal](docs/pipeline-analytics-proposal.md) outlines an
+Insights view, richer funnel analysis, bottlenecks, pipeline movement and future forecasting.
+It records a proposed direction rather than additional shipped features.
+
 ## Contributing
 
 Focused pull requests to this fork are welcome. Include tests for new behavior and run the
