@@ -67,7 +67,7 @@ async function createPrimary(
     case "deal":
       return applyCreateDeal(tx, actor, mapped, links, ctx, signal);
     case "lead":
-      return withoutWarnings(await applyCreateLead(tx, actor, mapped, links.orgId, signal));
+      return withoutWarnings(await applyCreateLead(tx, actor, mapped, links, ctx, signal));
     case "activity":
       return applyCreateActivity(tx, actor, mapped, ctx, signal);
     case "note":

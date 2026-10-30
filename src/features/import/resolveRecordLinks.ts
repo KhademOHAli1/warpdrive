@@ -1,6 +1,6 @@
 import { and, isNull, sql } from "drizzle-orm";
 import type { PgColumn } from "drizzle-orm/pg-core";
-import { deals, organizations, persons } from "@/db/schema";
+import { deals, leads, organizations, persons } from "@/db/schema";
 import type { DbOrTx } from "@/server/realtime/channelVersions";
 import type { Result } from "@/types/result";
 import { err, ok } from "@/types/result";
@@ -11,22 +11,25 @@ import { liveVisibility } from "./recordVisibility";
 
 export interface RecordLinkValues {
   dealPipedriveId?: string | undefined;
+  leadPipedriveId?: string | undefined;
   personPipedriveId?: string | undefined;
   orgPipedriveId?: string | undefined;
   dealTitle?: string | undefined;
+  leadTitle?: string | undefined;
   personName?: string | undefined;
   orgName?: string | undefined;
 }
 
 export interface ResolvedRecordLinks {
   dealId: string | null;
+  leadId: string | null;
   personId: string | null;
   orgId: string | null;
 }
 
-type NameTable = typeof deals | typeof persons | typeof organizations;
+type NameTable = typeof deals | typeof leads | typeof persons | typeof organizations;
 
-type LinkEntity = "deal" | "person" | "organization";
+type LinkEntity = "deal" | "lead" | "person" | "organization";
 
 interface LinkSpec {
   entity: LinkEntity;
@@ -122,6 +125,13 @@ function specsFor(tx: DbOrTx): LinkSpec[] {
       matchByName: (v, signal) => matchByName(tx, deals, deals.title, v, signal),
     },
     {
+      entity: "lead",
+      plural: "leads",
+      idKey: "leadPipedriveId",
+      nameKey: "leadTitle",
+      matchByName: (v, signal) => matchByName(tx, leads, leads.title, v, signal),
+    },
+    {
       entity: "person",
       plural: "people",
       idKey: "personPipedriveId",
@@ -145,14 +155,21 @@ export async function resolveRecordLinks(
   values: RecordLinkValues,
   signal: AbortSignal,
 ): Promise<Result<ResolvedRecordLinks, RowError[]>> {
-  const [dealSpec, personSpec, orgSpec] = specsFor(tx) as [LinkSpec, LinkSpec, LinkSpec];
+  const [dealSpec, leadSpec, personSpec, orgSpec] = specsFor(tx) as [
+    LinkSpec,
+    LinkSpec,
+    LinkSpec,
+    LinkSpec,
+  ];
   const deal = await resolveOne(tx, actor, ctx, dealSpec, values, signal);
+  const lead = await resolveOne(tx, actor, ctx, leadSpec, values, signal);
   const person = await resolveOne(tx, actor, ctx, personSpec, values, signal);
   const org = await resolveOne(tx, actor, ctx, orgSpec, values, signal);
-  const errors = [deal, person, org].flatMap((r) => (r.ok ? [] : r.error));
+  const errors = [deal, lead, person, org].flatMap((r) => (r.ok ? [] : r.error));
   if (errors.length > 0) return err(errors);
   return ok({
     dealId: deal.ok ? deal.value : null,
+    leadId: lead.ok ? lead.value : null,
     personId: person.ok ? person.value : null,
     orgId: org.ok ? org.value : null,
   });

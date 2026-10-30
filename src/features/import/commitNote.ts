@@ -10,10 +10,11 @@ import { type ResolvedRecordLinks, resolveRecordLinks } from "./resolveRecordLin
 
 const NO_LINKED_RECORD_MESSAGE = "note has no linked record";
 
-type NoteParent = { entityType: "deal" | "person" | "organization"; entityId: string };
+type NoteParent = { entityType: "deal" | "lead" | "person" | "organization"; entityId: string };
 
 function noteParent(links: ResolvedRecordLinks): NoteParent | null {
   if (links.dealId !== null) return { entityType: "deal", entityId: links.dealId };
+  if (links.leadId !== null) return { entityType: "lead", entityId: links.leadId };
   if (links.personId !== null) return { entityType: "person", entityId: links.personId };
   if (links.orgId !== null) return { entityType: "organization", entityId: links.orgId };
   return null;

@@ -20,6 +20,12 @@ describe("mappingEntityErrors by source", () => {
     expect(mappingEntityErrors(m, "deal", "csv")).toHaveLength(1);
   });
 
+  it("rejects the lead source channel in a pipedrive batch only", () => {
+    const m = mapping({ S: col("lead", "sourceChannel"), I: col("lead", "sourceChannelId") });
+    expect(mappingEntityErrors(m, "lead", "pipedrive")).toHaveLength(2);
+    expect(mappingEntityErrors(m, "lead", "csv")).toEqual([]);
+  });
+
   it("rejects the note target for csv batches only", () => {
     const m = mapping({ Note: col("note", "body") });
     expect(mappingEntityErrors(m, "note", "csv")).toHaveLength(1);

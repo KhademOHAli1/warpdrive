@@ -72,7 +72,7 @@ it("offers the note target fields, with the body-only side note unchanged for cs
 it("keeps csv person, organization and lead field lists free of pipedrive fields", () => {
   expect(keys("person", "csv")).toEqual(["name", "firstName", "lastName", "emails", "phones"]);
   expect(keys("organization", "csv")).not.toContain("pipedriveId");
-  expect(keys("lead", "csv")).toEqual(keys("lead", "pipedrive"));
+  expect(keys("lead", "csv")).not.toContain("pipedriveId");
 });
 
 it("offers the note target only for pipedrive", () => {
@@ -96,11 +96,42 @@ it("requires the primary pipedriveId for pipedrive batches only", () => {
   ]);
 });
 
-it("does not require pipedriveId for leads, which pipedrive batches may also import", () => {
-  expect(requiredFieldsFor("lead", "pipedrive").map((f) => f.field)).toEqual(["title"]);
+it("requires title and pipedriveId for pipedrive leads", () => {
+  expect(requiredFieldsFor("lead", "pipedrive").map((f) => f.field)).toEqual([
+    "title",
+    "pipedriveId",
+  ]);
+  expect(targetsFor("pipedrive")).toEqual([
+    "person",
+    "organization",
+    "deal",
+    "lead",
+    "activity",
+    "note",
+  ]);
 });
 
-it("offers no lead target for a Pipedrive source", () => {
-  expect(targetsFor("pipedrive")).not.toContain("lead");
-  expect(targetsFor("pipedrive")).toEqual(["person", "organization", "deal", "activity", "note"]);
+it("offers the lead target and its Pipedrive fields for pipedrive", () => {
+  expect(targetsFor("pipedrive")).toContain("lead");
+  expect(TARGET_ENTITY_GROUPS.lead).toEqual(["lead", "organization", "person", "note"]);
+  const byField = Object.fromEntries(ENTITY_FIELDS.lead.map((f) => [f.field, f.label]));
+  expect(byField.pipedriveId).toBe("Pipedrive ID");
+  expect(byField.owner).toBe("Owner");
+  expect(byField.labels).toBe("Labels");
+  expect(byField.createdAt).toBe("Created");
+  expect(byField.archived).toBe("Archived");
+  expect(requiredFieldsFor("lead", "pipedrive").map((f) => f.field)).toContain("pipedriveId");
+  expect(requiredFieldsFor("lead", "csv").map((f) => f.field)).not.toContain("pipedriveId");
+});
+
+it("keeps the lead source channel fields CSV-only", () => {
+  expect(keys("lead", "pipedrive")).not.toContain("sourceChannel");
+  expect(keys("lead", "pipedrive")).not.toContain("sourceChannelId");
+  expect(keys("lead", "csv")).toEqual([
+    "title",
+    "value",
+    "expectedCloseDate",
+    "sourceChannel",
+    "sourceChannelId",
+  ]);
 });

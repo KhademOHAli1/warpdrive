@@ -1,6 +1,6 @@
 import { and, eq, isNull } from "drizzle-orm";
 import type { Db } from "@/db/client";
-import { deals, notes, persons } from "@/db/schema";
+import { deals, leads, notes, persons } from "@/db/schema";
 import { deleteActivity } from "@/features/activities/activityDelete";
 import { softDeleteNote } from "@/features/collaboration/notesRepo";
 import { deleteOrg } from "@/features/contacts/deleteOrg";
@@ -72,6 +72,10 @@ async function clearOrgLinks(db: Db, orgId: string, signal: AbortSignal): Promis
     .update(deals)
     .set({ orgId: null })
     .where(and(eq(deals.orgId, orgId), isNull(deals.deletedAt)));
+  await db
+    .update(leads)
+    .set({ orgId: null })
+    .where(and(eq(leads.orgId, orgId), isNull(leads.deletedAt)));
 }
 
 // Soft-delete a note THIS IMPORT created, by the id the row recorded. Returns true when the note is

@@ -7,6 +7,7 @@ import type { ImportSource } from "@/constants/importSources";
 import {
   PIPEDRIVE_ACTIVITY_FIELDS,
   PIPEDRIVE_DEAL_FIELDS,
+  PIPEDRIVE_LEAD_FIELDS,
   PIPEDRIVE_NOTE_FIELDS,
   PIPEDRIVE_ORGANIZATION_FIELDS,
   PIPEDRIVE_PERSON_FIELDS,
@@ -37,6 +38,8 @@ export const PERSON_NAME_PARTS = ["firstName", "lastName"] as const;
 // structured object that would reject a raw CSV cell, so mapRow reassembles the leaves instead of
 // exposing a bare "address" field.
 export const ADDRESS_PREFIX = "address.";
+
+const CSV_ONLY = ["csv"] as const;
 
 export const ENTITY_FIELDS: Record<MappableEntity, readonly StandardImportField[]> = {
   person: [
@@ -73,8 +76,9 @@ export const ENTITY_FIELDS: Record<MappableEntity, readonly StandardImportField[
     { field: "title", label: "Title", required: true },
     { field: "value", label: "Value", required: false },
     { field: "expectedCloseDate", label: "Expected close date", required: false },
-    { field: "sourceChannel", label: "Source channel", required: false },
-    { field: "sourceChannelId", label: "Source channel ID", required: false },
+    { field: "sourceChannel", label: "Source channel", required: false, sources: CSV_ONLY },
+    { field: "sourceChannelId", label: "Source channel ID", required: false, sources: CSV_ONLY },
+    ...PIPEDRIVE_LEAD_FIELDS,
   ],
   activity: [
     { field: "subject", label: "Subject", required: true },
@@ -119,7 +123,7 @@ export const TARGET_ENTITY_GROUPS: Record<ImportTarget, readonly MappableEntity[
   person: ["person", "organization", "note"],
   organization: ["organization", "note"],
   deal: ["deal", "organization", "person", "note"],
-  lead: ["lead", "organization", "note"],
+  lead: ["lead", "organization", "person", "note"],
   activity: ["activity"],
   note: ["note"],
 };
@@ -148,13 +152,14 @@ const PIPEDRIVE_ID_REQUIRED_TARGETS: readonly ImportTarget[] = [
   "person",
   "organization",
   "deal",
+  "lead",
   "activity",
   "note",
 ];
 
 const SOURCE_TARGETS: Record<ImportSource, readonly ImportTarget[]> = {
   csv: ["person", "organization", "deal", "lead", "activity"],
-  pipedrive: ["person", "organization", "deal", "activity", "note"],
+  pipedrive: ["person", "organization", "deal", "lead", "activity", "note"],
 };
 
 export function isFieldOfferedFor(field: StandardImportField, source: ImportSource): boolean {

@@ -34,6 +34,23 @@ const DEAL: SynonymTable = {
   organization: ORG_NAME,
 };
 
+const LEAD: SynonymTable = {
+  id: at("lead", "pipedriveId"),
+  title: at("lead", "title"),
+  "lead title": at("lead", "title"),
+  owner: at("lead", "owner"),
+  "lead owner": at("lead", "owner"),
+  value: at("lead", "value"),
+  label: at("lead", "labels"),
+  labels: at("lead", "labels"),
+  "add time": at("lead", "createdAt"),
+  created: at("lead", "createdAt"),
+  "expected close date": at("lead", "expectedCloseDate"),
+  archived: at("lead", "archived"),
+  "contact person": PERSON_NAME,
+  organization: ORG_NAME,
+};
+
 const PERSON: SynonymTable = {
   id: at("person", "pipedriveId"),
   name: PERSON_NAME,
@@ -53,6 +70,9 @@ const LINKS: SynonymTable = {
   "organization id": at("activity", "orgPipedriveId"),
   "deal title": at("activity", "dealTitle"),
   deal: at("activity", "dealTitle"),
+  "lead id": at("activity", "leadPipedriveId"),
+  "lead title": at("activity", "leadTitle"),
+  lead: at("activity", "leadTitle"),
   "contact person": at("activity", "personName"),
   person: at("activity", "personName"),
   organization: at("activity", "orgName"),
@@ -83,6 +103,7 @@ const NOTE: SynonymTable = {
 
 export const PIPEDRIVE_SYNONYMS: Partial<Record<MappableEntity, SynonymTable>> = {
   deal: DEAL,
+  lead: LEAD,
   person: PERSON,
   organization: ORGANIZATION,
   activity: ACTIVITY,
@@ -95,5 +116,5 @@ export const PIPEDRIVE_HEADER_PREFIX_ENTITIES: Record<string, MappableEntity | n
   organization: "organization",
   activity: "activity",
   note: "note",
-  lead: null,
+  lead: "lead",
 };

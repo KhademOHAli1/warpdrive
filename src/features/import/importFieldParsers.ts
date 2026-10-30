@@ -71,11 +71,15 @@ const doneText = z.string().transform((v, ctx) => {
 
 export const doneFlag = z.union([z.boolean(), doneText]).optional();
 
+export const archivedFlag = doneFlag;
+
 export const pipedriveLinkShape = {
   dealPipedriveId: optionalText,
+  leadPipedriveId: optionalText,
   personPipedriveId: optionalText,
   orgPipedriveId: optionalText,
   dealTitle: optionalText,
+  leadTitle: optionalText,
   personName: optionalText,
   orgName: optionalText,
 };

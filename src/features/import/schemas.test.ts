@@ -99,7 +99,7 @@ describe("mappingEntityErrors", () => {
     expect(errs).toEqual([]);
   });
 
-  it("rejects a person group on a lead import", () => {
+  it("accepts a person group on a lead import", () => {
     const errs = mappingEntityErrors(
       {
         dedupMode: "skip",
@@ -107,8 +107,7 @@ describe("mappingEntityErrors", () => {
       },
       "lead",
     );
-    expect(errs).toHaveLength(1);
-    expect(errs[0]).toContain("person");
+    expect(errs).toEqual([]);
   });
 
   // Notes cannot attach to activities, so the picker never offers the group.

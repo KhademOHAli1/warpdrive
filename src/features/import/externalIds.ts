@@ -8,7 +8,7 @@ import type { RowError } from "./commitHelpers";
 import { liveVisibility } from "./recordVisibility";
 import type { ImportTarget } from "./wizardState";
 
-export type MappedEntity = "person" | "organization" | "deal" | "activity" | "note";
+export type MappedEntity = "person" | "organization" | "deal" | "lead" | "activity" | "note";
 
 export interface ImportContext {
   source: ImportSource;
@@ -29,11 +29,10 @@ export function mappedEntityFor(target: ImportTarget): MappedEntity | null {
     case "person":
     case "organization":
     case "deal":
+    case "lead":
     case "activity":
     case "note":
       return target;
-    case "lead":
-      return null;
   }
 }
 

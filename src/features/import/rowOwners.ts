@@ -68,7 +68,7 @@ async function mayAssign(
   entity: OwnedImportEntity,
   id: string,
 ): Promise<boolean> {
-  if (entity === "deal") return mayTransferOwner(actor, actor.id);
+  if (entity === "deal" || entity === "lead") return mayTransferOwner(actor, actor.id);
   const record = await contactRecord(tx, entity, id);
   return record !== null && canTransferContactOwner(actor, record);
 }
@@ -106,7 +106,7 @@ export async function reassignRowOwners(
   const { target, primaryId, side } = created;
   if (
     primaryId !== null &&
-    (target === "deal" || target === "person" || target === "organization")
+    (target === "deal" || target === "lead" || target === "person" || target === "organization")
   ) {
     warnings.push(
       ...(await reassign(tx, actor, "owner", target, primaryId, mapped.primary, signal)),

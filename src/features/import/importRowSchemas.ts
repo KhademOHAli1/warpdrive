@@ -13,6 +13,7 @@ import {
   personCreateInput,
 } from "@/features/contacts/schemas";
 import {
+  archivedFlag,
   dealStatus,
   doneFlag,
   importDate,
@@ -108,21 +109,20 @@ export const dealImportRowSchema = z.object({
   customFields: z.record(z.string(), z.unknown()).default({}),
 });
 
-// A lead's organization is no longer a lead-level "orgName" cell: it lives in the row's
-// organization group (orgImportGroupSchema) and is resolved to a real orgId at commit time via
-// visibility-scoped find-or-create, since that lookup needs a DB read and the referenced org
-// could change between validate and commit.
 export const leadImportRowSchema = z.object({
   title: z.string().min(1).max(255),
   value: currencyValue,
   expectedCloseDate: z.string().date().nullable().default(null),
-  // The same enum leadCreateInput enforces at commit: a display label ("Outbound") or a typo must
-  // fail here, in preview, not after the user clicks Import.
   sourceChannel: z
     .enum(SOURCE_CHANNEL_KEYS as [string, ...string[]])
     .nullable()
     .default(null),
   sourceChannelId: z.string().trim().min(1).max(255).nullable().default(null),
+  pipedriveId: optionalText,
+  owner: optionalText,
+  labels: labelList,
+  createdAt: optionalImportDate,
+  archived: archivedFlag,
   customFields: z.record(z.string(), z.unknown()).default({}),
 });
 

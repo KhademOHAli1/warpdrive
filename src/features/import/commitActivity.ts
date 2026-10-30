@@ -66,6 +66,21 @@ interface PipedriveExtras {
   options: CreateActivityOptions;
 }
 
+const DEAL_AND_LEAD_MESSAGE = "activity links both a deal and a lead";
+const DEAL_AND_LEAD_LINK_FIELDS = [
+  "dealPipedriveId",
+  "dealTitle",
+  "leadPipedriveId",
+  "leadTitle",
+] as const;
+
+function dealAndLeadConflict(data: ActivityRow): RowError[] {
+  return DEAL_AND_LEAD_LINK_FIELDS.filter((field) => data[field] !== undefined).map((field) => ({
+    field,
+    message: DEAL_AND_LEAD_MESSAGE,
+  }));
+}
+
 async function pipedriveExtras(
   tx: DbOrTx,
   actor: ImportActor,
@@ -74,10 +89,17 @@ async function pipedriveExtras(
   signal: AbortSignal,
 ): Promise<Result<PipedriveExtras, RowError[]>> {
   if (ctx.source !== "pipedrive") {
-    return ok({ links: { dealId: null, personId: null, orgId: null }, done: false, options: {} });
+    return ok({
+      links: { dealId: null, leadId: null, personId: null, orgId: null },
+      done: false,
+      options: {},
+    });
   }
   const resolved = await resolveRecordLinks(tx, actor, ctx, data, signal);
   if (resolved.ok === false) return resolved;
+  if (resolved.value.dealId !== null && resolved.value.leadId !== null) {
+    return err(dealAndLeadConflict(data));
+  }
   const done = data.done === true;
   const options: CreateActivityOptions = {
     scheduleReminder: shouldScheduleReminder(done, data.dueAt),

@@ -1,6 +1,6 @@
 ---
 title: Migrating from Pipedrive
-description: "Move organizations, people, deals, activities, and notes from Pipedrive CSV exports into Warpdrive, in the right order, with owners, links, and history kept."
+description: "Move organizations, people, leads, deals, activities, and notes from Pipedrive CSV exports into Warpdrive, in the right order, with owners, links, and history kept."
 ---
 
 # Migrating from Pipedrive
@@ -22,23 +22,29 @@ Import the files in this order, choosing **Pipedrive export** as the **Source** 
 
 1. Organizations
 2. People
-3. Deals
-4. Activities
-5. Notes
+3. Leads
+4. Deals
+5. Activities
+6. Notes
 
-The order matters because later files link to earlier ones. Pipedrive leads cannot be imported through this path, and the **Note** target only appears when the source is **Pipedrive export**.
+The order matters because later files link to earlier ones. The **Note** target only appears when the source is **Pipedrive export**.
+
+Convert leads to deals only after every file is in. Activities and notes imported later attach to the lead, not to the deal it became.
 
 For each file, Warpdrive pre-matches columns from their headers. Check the mapping before you continue, and fix any column that landed on the wrong field.
 
 ## How records are linked
 
-- **Activities and notes** link to deals, people, and organizations by their Pipedrive IDs when those columns are present in the file, and by exact name otherwise. If a name is ambiguous or matches nothing, the row fails with a message saying which file to import first.
-- **A note attaches to one record:** its deal when it has one, otherwise its person, otherwise its organization.
+- **Leads** link to their person and organization by Pipedrive ID, or by name.
+- **Activities and notes** link to deals, leads, people, and organizations by their Pipedrive IDs when those columns are present in the file, and by exact name otherwise. If a name is ambiguous or matches nothing, the row fails with a message saying which file to import first.
+- **An activity links a deal or a lead, not both.** A row that names both fails.
+- **A note attaches to one record:** its deal when it has one, otherwise its lead, otherwise its person, otherwise its organization.
 - **Owners** are matched to Warpdrive users by email, then by name. If no user matches, the person doing the import becomes the owner and the row shows a warning in the results and in the downloadable report.
 
 ## What is kept
 
 - **Deals** keep their status, won and lost dates, lost reason, labels, and creation date.
+- **Leads** keep their owner, labels, creation date, and archived state. Their source and channel are not carried over.
 - **Activities** keep their done state and done time. Overdue and done imported activities do not send reminders.
 - **Dates without a time zone** are read as UTC.
 
@@ -54,7 +60,7 @@ Re-running a file skips rows whose Pipedrive ID was already imported. If some ro
 
 ## What does not come across
 
-- Leads
+- Lead source and channel
 - Products
 - Files
 - Email history

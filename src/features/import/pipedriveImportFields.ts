@@ -11,9 +11,11 @@ const OWNER = pipedriveField("owner", "Owner");
 
 const LINK_FIELDS: readonly StandardImportField[] = [
   pipedriveField("dealPipedriveId", "Deal ID"),
+  pipedriveField("leadPipedriveId", "Lead ID"),
   pipedriveField("personPipedriveId", "Person ID"),
   pipedriveField("orgPipedriveId", "Organization ID"),
   pipedriveField("dealTitle", "Deal title"),
+  pipedriveField("leadTitle", "Lead title"),
   pipedriveField("personName", "Person name"),
   pipedriveField("orgName", "Organization name"),
 ];
@@ -30,6 +32,14 @@ export const PIPEDRIVE_DEAL_FIELDS: readonly StandardImportField[] = [
   pipedriveField("lostReason", "Lost reason"),
   pipedriveField("labels", "Labels"),
   pipedriveField("createdAt", "Created"),
+];
+
+export const PIPEDRIVE_LEAD_FIELDS: readonly StandardImportField[] = [
+  PIPEDRIVE_ID,
+  OWNER,
+  pipedriveField("labels", "Labels"),
+  pipedriveField("createdAt", "Created"),
+  pipedriveField("archived", "Archived"),
 ];
 
 export const PIPEDRIVE_ACTIVITY_FIELDS: readonly StandardImportField[] = [

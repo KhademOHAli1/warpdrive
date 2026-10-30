@@ -152,14 +152,41 @@ describe("required Pipedrive ID", () => {
     expect(r.ok).toBe(true);
   });
 
-  it("does not require it for leads", () => {
-    const r = validateMappedRow(
+  it("requires it for leads", () => {
+    const blank = validateMappedRow(
       "lead",
       { primary: { title: "T", customFields: {} } },
       [],
       "pipedrive",
     );
-    expect(r.ok).toBe(true);
+    expect(blank.ok).toBe(false);
+    if (!blank.ok) expect(blank.errors.map((e) => e.field)).toContain("pipedriveId");
+    const given = validateMappedRow(
+      "lead",
+      {
+        primary: {
+          title: "T",
+          pipedriveId: "L1",
+          owner: "a@b.c",
+          labels: "Hot, Q1",
+          createdAt: "2026-01-01",
+          archived: "yes",
+          customFields: {},
+        },
+      },
+      [],
+      "pipedrive",
+    );
+    expect(given.ok).toBe(true);
+    if (given.ok) {
+      expect(given.value.primary).toMatchObject({
+        pipedriveId: "L1",
+        owner: "a@b.c",
+        labels: ["Hot", "Q1"],
+        archived: true,
+      });
+      expect(given.value.primary.createdAt).toBeDefined();
+    }
   });
 
   it("requires it on person, organization and activity primaries", () => {

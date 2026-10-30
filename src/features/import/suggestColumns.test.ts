@@ -185,3 +185,61 @@ describe("suggestColumns duplicate matches", () => {
     expect(out.Title).toEqual(un);
   });
 });
+
+describe("suggestColumns pipedrive leads", () => {
+  const eligible = eligibleFields("lead", "pipedrive");
+
+  it("maps Lead - Title, Lead title and Lead - ID onto the lead group", () => {
+    const out = suggestColumns(
+      ["Lead - Title", "Lead - ID", "Lead - Owner", "Lead - Archived", "Person - Name"],
+      "lead",
+      "pipedrive",
+      eligible,
+    );
+    expect(out["Lead - Title"]).toMatchObject({ entity: "lead", field: "title" });
+    expect(out["Lead - ID"]).toMatchObject({ entity: "lead", field: "pipedriveId" });
+    expect(out["Lead - Owner"]).toMatchObject({ entity: "lead", field: "owner" });
+    expect(out["Lead - Archived"]).toMatchObject({ entity: "lead", field: "archived" });
+    expect(out["Person - Name"]).toMatchObject({ entity: "person", field: "name" });
+    const bare = suggestColumns(["Lead title", "Lead owner"], "lead", "pipedrive", eligible);
+    expect(bare["Lead title"]).toMatchObject({ entity: "lead", field: "title" });
+    expect(bare["Lead owner"]).toMatchObject({ entity: "lead", field: "owner" });
+  });
+
+  it("does not suggest the source channel for a Pipedrive batch", () => {
+    const out = suggestColumns(
+      ["Source channel", "Lead - Source channel"],
+      "lead",
+      "pipedrive",
+      eligible,
+    );
+    for (const header of ["Source channel", "Lead - Source channel"]) {
+      expect(out[header]).toEqual({ entity: "lead", field: "", isCustom: false, key: "" });
+    }
+  });
+});
+
+describe("suggestColumns pipedrive lead links", () => {
+  it("maps lead headers on activity and note files", () => {
+    for (const target of ["activity", "note"] as const) {
+      const out = suggestColumns(
+        ["Lead ID", "Lead title"],
+        target,
+        "pipedrive",
+        eligibleFields(target, "pipedrive"),
+      );
+      expect(out["Lead ID"]).toMatchObject({ entity: target, field: "leadPipedriveId" });
+      expect(out["Lead title"]).toMatchObject({ entity: target, field: "leadTitle" });
+    }
+  });
+});
+
+it("maps a bare Lead header to the lead title on an activity file", () => {
+  const out = suggestColumns(
+    ["Lead"],
+    "activity",
+    "pipedrive",
+    eligibleFields("activity", "pipedrive"),
+  );
+  expect(out.Lead).toMatchObject({ entity: "activity", field: "leadTitle" });
+});

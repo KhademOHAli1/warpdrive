@@ -1,32 +1,32 @@
+import { applyImportedLeadHistory } from "@/features/leads/importedHistory";
 import { createLead } from "@/features/leads/leadActions";
 import { leadCreateInput } from "@/features/leads/schemas";
 import { err, ok, type Result } from "@/types/result";
 import type { ImportActor, RowError } from "./commitHelpers";
 import { type applyCreate, authorityError, issuesOf, toEntityCreateSession } from "./commitHelpers";
+import type { ImportContext } from "./externalIds";
 import { leadImportRowSchema } from "./importRowSchemas";
 
-// The transaction type applyCreate/findCandidates run inside (a real Tx, never a bare Db).
 type Tx = Parameters<typeof applyCreate>[0];
 
 export async function applyCreateLead(
   tx: Tx,
   actor: ImportActor,
   mapped: Record<string, unknown>,
-  orgId: string | null,
+  links: { orgId: string | null; personId: string | null },
+  ctx: ImportContext,
   signal: AbortSignal,
 ): Promise<Result<string, RowError[]>> {
   const parsed = leadImportRowSchema.safeParse(mapped);
   if (parsed.success === false) return err(issuesOf(parsed.error));
   const data = parsed.data;
 
-  // Omit the source-channel keys entirely when unmapped: leadCreateInput's enum rejects null-ish
-  // strings, and its own defaults are the right fallback. sourceOrigin is set explicitly to
-  // "imported" so the leads list reflects the true origin instead of leadCreateInput's
-  // "manually_created" default.
   const candidate = {
     title: data.title,
     value: data.value,
-    orgId,
+    orgId: links.orgId,
+    personId: links.personId,
+    labels: data.labels,
     expectedCloseDate: data.expectedCloseDate,
     sourceOrigin: "imported",
     customFields: data.customFields,
@@ -38,5 +38,8 @@ export async function applyCreateLead(
 
   const result = await createLead(tx, toEntityCreateSession(actor), finalParsed.data, signal);
   if (result.ok === false) return err(authorityError(result.error));
+  if (ctx.source === "pipedrive") {
+    await applyImportedLeadHistory(tx, result.value.id, data, signal);
+  }
   return ok(result.value.id);
 }
