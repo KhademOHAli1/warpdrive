@@ -28,7 +28,11 @@ export default async function ConnectionsPage(): Promise<ReactNode> {
   });
   return (
     <SettingsPage>
-      <SettingsHeading title={S.connectedApps} description={S.connectedAppsDescription} />
+      <SettingsHeading
+        scope="personal"
+        title={S.connectedApps}
+        description={S.connectedAppsDescription}
+      />
       {mcpEndpoint !== null ? <McpConnectCard endpointUrl={mcpEndpoint} /> : null}
       <ConnectionsClient
         connections={connections.map((row) => ({

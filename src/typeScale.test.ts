@@ -36,9 +36,12 @@ const NOT_PAGE_TITLES = new Set([
   "app/(auth)/login/page.tsx",
   "features/auth/LoginScreen.tsx",
   "app/oauth/authorize/consent.tsx",
-  "app/(app)/inbox/InboxListClient.tsx",
   "features/email/ThreadPane.tsx",
 ]);
+
+// The inbox's active-folder heading shares a compact workspace toolbar with search and compose.
+// Keep its deliberate named size under audit instead of applying the full-page display scale.
+const COMPACT_WORKSPACE_TITLES = new Map([["features/email/InboxWorkspaceToolbar.tsx", "text-lg"]]);
 
 describe("type scale", () => {
   // The critique measured five uses at 20px or above in the whole app, two of them the same 25px
@@ -54,14 +57,16 @@ describe("type scale", () => {
 
   // Hierarchy was carried almost entirely by weight and colour: ten pages titled themselves at
   // text-lg, one step off body copy, so nothing on screen outranked the controls beside it.
-  it("titles every page at the display size", () => {
+  it("uses the named display or compact-workspace size for every visible page title", () => {
     const offenders = sourceFiles(SRC).flatMap((path) => {
       const rel = path.slice(SRC.length + 1);
       if (NOT_PAGE_TITLES.has(rel)) return [];
       return (
         [...readFileSync(path, "utf8").matchAll(HEADING)]
           .map((m) => (m[1] ?? "").split(/\s+/))
-          .filter((classes) => !classes.includes("text-display"))
+          .filter(
+            (classes) => !classes.includes(COMPACT_WORKSPACE_TITLES.get(rel) ?? "text-display"),
+          )
           // An sr-only h1 exists for the document outline and is never painted, so it has no
           // visual size to get wrong. Surfaces whose title lives in a toolbar use one.
           .filter((classes) => !classes.includes("sr-only"))

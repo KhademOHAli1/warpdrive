@@ -33,7 +33,7 @@ describe("Persian settings workflows", () => {
     );
     expect(screen.getByRole("link", { name: fa.users })).toHaveAttribute("href", "/settings/users");
     expect(screen.getByRole("link", { name: fa.users })).toHaveAttribute("aria-current", "page");
-    expect(screen.getByRole("link", { name: fa.profile })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: fa._hierarchy.profile })).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: fa._enrichment.nav })).not.toBeInTheDocument();
   });
   it("validates an invite in Persian and preserves the entered name and email", () => {

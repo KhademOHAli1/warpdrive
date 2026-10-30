@@ -34,7 +34,11 @@ export default async function VisibilityGroupsPage(): Promise<ReactNode> {
   const rows = await listVisibilityGroups(db, AbortSignal.timeout(5000));
   return (
     <SettingsPage>
-      <SettingsHeading title={L.visibilityGroups} description={L.visibilityGroupsDescription} />
+      <SettingsHeading
+        scope="workspace"
+        title={L.visibilityGroups}
+        description={L.visibilityGroupsDescription}
+      />
       <SettingsCard className="shadow-none">
         <table className="w-full text-sm">
           <thead className={SETTINGS_TABLE_HEAD}>

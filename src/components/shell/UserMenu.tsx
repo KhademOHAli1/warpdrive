@@ -1,5 +1,5 @@
 "use client";
-import { LogOut, Settings, User } from "lucide-react";
+import { ChevronDown, LogOut, Settings, User } from "lucide-react";
 import Link from "next/link";
 import type React from "react";
 import {
@@ -15,6 +15,7 @@ import { APPEARANCE_DEFAULT, type Appearance } from "@/features/theme/appearance
 import { useAppearanceChoice } from "@/features/theme/useAppearanceChoice";
 import { avatarColorClass, initials } from "@/lib/avatar";
 import { cn } from "@/lib/utils";
+import styles from "./TopBar.module.css";
 
 // Language lives in personal settings. Keep sign-out a plain anchor
 // so the router cannot prefetch it while the user is only opening their account menu.
@@ -39,29 +40,30 @@ export function UserMenu({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button
-          type="button"
-          aria-label={account.menu}
-          className={cn(
-            "flex h-8 w-8 items-center justify-center overflow-hidden rounded-full text-xs font-semibold transition-transform active:scale-[0.96]",
-            // Skip the tinted background when a photo fills the circle.
-            hasPhoto
-              ? "outline outline-1 -outline-offset-1 outline-black/10 dark:outline-white/10"
-              : avatarColorClass(userName !== undefined && userName !== "" ? userName : userId),
-          )}
-        >
-          {hasPhoto ? (
-            // biome-ignore lint/performance/noImgElement: tiny header avatar, next/image not warranted
-            <img
-              src={avatarUrl}
-              alt={userName ?? account.heading}
-              className="h-full w-full rounded-full object-cover"
-            />
-          ) : userName !== undefined && userName !== "" ? (
-            initials(userName)
-          ) : (
-            <User aria-hidden="true" className="h-4 w-4" />
-          )}
+        <button type="button" aria-label={account.menu} className={styles.userTrigger}>
+          <span
+            className={cn(
+              "flex h-8 w-8 items-center justify-center overflow-hidden rounded-full text-xs font-semibold",
+              // Skip the tinted background when a photo fills the circle.
+              hasPhoto
+                ? "outline outline-1 -outline-offset-1 outline-black/10 dark:outline-white/10"
+                : avatarColorClass(userName !== undefined && userName !== "" ? userName : userId),
+            )}
+          >
+            {hasPhoto ? (
+              // biome-ignore lint/performance/noImgElement: tiny header avatar, next/image not warranted
+              <img
+                src={avatarUrl}
+                alt={userName ?? account.heading}
+                className="h-full w-full rounded-full object-cover"
+              />
+            ) : userName !== undefined && userName !== "" ? (
+              initials(userName)
+            ) : (
+              <User aria-hidden="true" className="h-4 w-4" />
+            )}
+          </span>
+          <ChevronDown aria-hidden="true" className={styles.caret} />
         </button>
       </DropdownMenuTrigger>
 

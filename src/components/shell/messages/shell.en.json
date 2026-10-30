@@ -21,9 +21,15 @@
     "engagement": "Loading engagement timeline"
   },
   "searchOpen": "Open search",
+  "searchHeaderPlaceholder": "Search your workspace…",
   "searchPlaceholder": "Search deals, people, organizations, leads...",
   "reconnecting": "Reconnecting...",
   "home": "{app} home",
+  "sidebar": {
+    "section": "Workspace",
+    "expandGroup": "Expand {label} navigation",
+    "collapseGroup": "Collapse {label} navigation"
+  },
   "appearance": {
     "title": "Appearance",
     "day": "Light",

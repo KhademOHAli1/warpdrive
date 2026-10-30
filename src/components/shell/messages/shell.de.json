@@ -81,5 +81,11 @@
     "emptyPeople": "Keine Personen",
     "emptyOrganizations": "Keine Organisationen",
     "emptyLeads": "Keine Leads"
+  },
+  "searchHeaderPlaceholder": "Arbeitsbereich durchsuchen…",
+  "sidebar": {
+    "section": "Arbeitsbereich",
+    "expandGroup": "Untermenü für {label} öffnen",
+    "collapseGroup": "Untermenü für {label} schließen"
   }
 }

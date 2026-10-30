@@ -119,5 +119,31 @@
   "lost": "Lost",
   "relatedOrganization": "Related organization",
   "validEmployeeCount": "Employees must be a non-negative whole number",
-  "validRevenue": "Enter a valid non-negative amount with up to two decimal places"
+  "validRevenue": "Enter a valid non-negative amount with up to two decimal places",
+  "directory": {
+    "peopleDescription": "Find people, manage their details, and review your conversations.",
+    "orgsDescription": "Manage organizations and the people and deals connected to them.",
+    "addPerson": "Add person",
+    "addOrg": "Add organization",
+    "searchPeople": "Search by name or email",
+    "searchOrgs": "Search by name or industry",
+    "clearSearch": "Clear search",
+    "clearAll": "Clear search and filters",
+    "filterCount": "{count, plural, one {# active filter} other {# active filters}}",
+    "noMatches": "No contacts match this view",
+    "noMatchesHelp": "Try a different search, adjust your filters, or clear them to see your contacts again.",
+    "emptyPeople": "Your people directory starts here",
+    "emptyPeopleHelp": "Add a person to keep their contact details, conversations, and activity together. You will only see contacts you have access to.",
+    "emptyOrgs": "Bring your organizations together",
+    "emptyOrgsHelp": "Add an organization to connect its people and deals in one place. You will only see organizations you have access to.",
+    "updating": "Updating results…",
+    "retry": "Try again",
+    "openRecord": "Open {name}",
+    "actions": "Contact actions",
+    "notProvided": "Not provided",
+    "backPeople": "Back to people",
+    "backOrgs": "Back to organizations",
+    "personContext": "Person",
+    "orgContext": "Organization"
+  }
 }

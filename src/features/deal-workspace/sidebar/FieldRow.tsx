@@ -1,5 +1,6 @@
 "use client";
 import type React from "react";
+import styles from "./FieldRow.module.css";
 import { useHideEmpty } from "./sectionFilter";
 
 // Shared deal/person/org field row: a two-column grid with one label token and a start-aligned
@@ -28,21 +29,21 @@ export function FieldRow({
       data-testid="field-row"
       // py-1.5 + 20px value line = PD's 32px field-row pitch (values are plain spans now;
       // the old whole-value edit buttons carried 4px of their own padding).
-      className="grid grid-cols-[minmax(0,7rem)_1fr] items-baseline gap-3 py-1.5"
+      className={styles.row}
     >
       <span
-        className={
+        className={`${styles.label} ${
           labelAlign === "left"
             ? "flex items-center justify-start gap-1 text-start text-xs font-medium leading-[18px] text-muted-foreground"
             : "flex items-center justify-end gap-1 text-end text-xs font-medium leading-[18px] text-muted-foreground"
-        }
+        }`}
       >
         {icon}
         {label}
       </span>
       <span
         data-testid="field-row-value"
-        className="min-w-0 break-words text-start text-sm text-foreground"
+        className={`${styles.value} min-w-0 break-words text-start text-sm text-foreground`}
       >
         {children}
       </span>

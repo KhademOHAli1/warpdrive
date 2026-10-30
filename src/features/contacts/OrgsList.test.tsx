@@ -68,7 +68,12 @@ describe("OrgsList", () => {
 
   it("renders the empty state when there are no orgs", () => {
     render(<OrgsList rows={[]} total={0} />);
-    expect(screen.getByText(/no organizations/i)).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Bring your organizations together" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("searchbox", { name: "Search by name or industry" }),
+    ).toBeInTheDocument();
   });
 
   it("wraps the table in a horizontally scrollable container so extra columns don't clip", () => {

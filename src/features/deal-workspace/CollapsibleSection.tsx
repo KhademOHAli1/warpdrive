@@ -35,14 +35,14 @@ export function CollapsibleSection({
           type="button"
           aria-expanded={open}
           onClick={() => setOpen((v) => !v)}
-          className="flex flex-1 items-center gap-2 px-3 py-2 text-base font-semibold text-foreground hover:bg-accent/50"
+          className="flex flex-1 items-center gap-2 px-3 py-2 text-start text-base font-semibold text-foreground hover:bg-accent/50"
         >
           <ChevronDown
             aria-hidden="true"
-            className={cn(
-              "h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform duration-150 ease-out motion-reduce:transition-none",
-              open ? "" : "-rotate-90",
-            )}
+            data-disclosure-chevron
+            data-state={open ? "open" : "closed"}
+            data-rtl-mirror="false"
+            className="h-3.5 w-3.5 shrink-0 text-muted-foreground"
           />
           <bdi dir="auto">{title}</bdi>
         </button>

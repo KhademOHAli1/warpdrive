@@ -8,6 +8,7 @@ import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { trpc } from "@/lib/trpc-client";
 import type { CustomFieldDef } from "@/types/customFields";
 import { OrganizationDetailHeader } from "../../ContactDetailHeader";
+import styles from "../../ContactDetailLayout.module.css";
 import { ContactTimelinePanel, FilesPanel, TabStrip } from "../../contactDetail.shared";
 import { OrgEmailPanel } from "../../OrgEmailPanel";
 import { OrgSidebar } from "./OrgSidebar";
@@ -67,7 +68,7 @@ export function OrgDetailClient({
   }
 
   return (
-    <div className="flex h-full flex-col p-4">
+    <div className={`${styles.root} flex h-full min-w-0 flex-col`}>
       <OrganizationDetailHeader
         entityId={org.id}
         name={org.name}
@@ -88,7 +89,7 @@ export function OrgDetailClient({
         />
       )}
 
-      <div className="grid min-h-0 flex-1 grid-cols-1 gap-6 lg:grid-cols-[35fr_65fr]">
+      <div className={styles.columns}>
         <OrgSidebar
           org={org}
           defs={defs}

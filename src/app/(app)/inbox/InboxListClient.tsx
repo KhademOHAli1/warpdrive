@@ -1,76 +1,26 @@
 "use client";
-
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { DraftsList } from "@/features/email/DraftsList";
-import type { InboxFilter } from "@/features/email/emailReads";
-import { InboxSearchBar } from "@/features/email/InboxSearchBar";
+import { useSearchParams } from "next/navigation";
+import { InboxWorkspace } from "@/features/email/InboxWorkspace";
 import type { FolderKey } from "@/features/email/inboxFolders";
-import { OutboxList } from "@/features/email/OutboxList";
-import { ThreadList } from "@/features/email/ThreadList";
-import { useEmailMessages } from "@/features/email/useEmailMessages";
-import { useInboxRealtime } from "@/features/email/useInboxRealtime";
-import { trpc } from "@/lib/trpc-client";
+import { inboxHref, readInboxLocation } from "@/features/email/inboxLocation";
 
-interface InboxListClientProps {
+export function InboxListClient({
+  selfActorId,
+}: {
   selfActorId: string;
   folder: FolderKey;
-}
-
-export function InboxListClient({ selfActorId, folder }: InboxListClientProps): React.ReactNode {
-  const E = useEmailMessages();
-
-  const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState("");
-  // The quick-filter lives here (not inside ThreadList) so it narrows the in-mail search too: search
-  // results feed the same ThreadList as the inbox, so the active filter must apply to both (codex
-  // review). ThreadList uses it for the inbox feed and the filter toolbar.
-  const [quickFilter, setQuickFilter] = useState<InboxFilter>("all");
-  const isSearching = searchQuery.trim() !== "";
-
-  useInboxRealtime({ selfActorId });
-
-  // In-mail search: while the box holds a non-empty query, results override whichever
-  // folder tab is active (mirrors Gmail's "search overrides folder" behavior). Cleared
-  // query falls back to the normal folder-driven ThreadList query. The active quick-filter narrows
-  // the search server-side (searchInbox reuses the inbox predicate).
-  const searchResults = trpc.email.search.useQuery(
-    { q: searchQuery, filter: quickFilter },
-    { enabled: isSearching },
-  );
-
-  const listPane =
-    folder === "inbox" || folder === "sent" || folder === "archive" ? (
-      <>
-        <div className="shrink-0 border-b p-2">
-          <InboxSearchBar onQuery={setSearchQuery} />
-        </div>
-        <div className="min-h-0 flex-1">
-          <ThreadList
-            folder={folder}
-            quickFilter={quickFilter}
-            onQuickFilterChange={setQuickFilter}
-            threads={isSearching ? (searchResults.data ?? []) : undefined}
-            threadsPending={
-              isSearching && searchResults.data === undefined && searchResults.error === null
-            }
-          />
-        </div>
-      </>
-    ) : folder === "outbox" ? (
-      <OutboxList />
-    ) : (
-      <DraftsList onResume={(d) => router.push(`/inbox/compose?draft=${d.id}`)} />
-    );
-  // The folder rail now lives in the persistent inbox layout (InboxShell), so the list route renders
-  // only its conversation column here. Full-width conversation list (Pipedrive Sales Inbox parity):
-  // no persistent reading pane; a row opens the thread on its own page inside the same shell.
+}): React.ReactNode {
+  const params = useSearchParams();
+  const location = readInboxLocation(params);
   return (
-    <main aria-label={E._extra.inbox} className="flex h-full min-h-0 flex-col">
-      <h1 className="shrink-0 border-b px-4 py-2 text-lg font-semibold">{E.title}</h1>
-      <section aria-label={E._extra.conversations} className="flex min-h-0 min-w-0 flex-1 flex-col">
-        {listPane}
-      </section>
-    </main>
+    <InboxWorkspace
+      selfActorId={selfActorId}
+      location={location}
+      onNavigate={(next, replace = false) => {
+        // Native history updates the App Router's search params without replacing the list subtree.
+        const method = replace ? "replaceState" : "pushState";
+        window.history[method](null, "", inboxHref(next));
+      }}
+    />
   );
 }

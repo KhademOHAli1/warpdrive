@@ -43,7 +43,7 @@ export default async function GoalsSettingsPage(): Promise<ReactNode> {
 
   return (
     <SettingsPage>
-      <SettingsHeading title={L.goals} description={L.goalsDescription} />
+      <SettingsHeading scope="workspace" title={L.goals} description={L.goalsDescription} />
       <GoalsClient
         goals={goalRows}
         baseCurrency={await readBaseCurrency(db, signal)}

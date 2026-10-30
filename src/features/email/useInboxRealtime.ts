@@ -16,18 +16,21 @@ interface UseInboxRealtimeArgs {
   openThreadId?: string;
   // onTrackingEvent: called when an email_tracking event arrives for the open thread.
   onTrackingEvent?: (kind: "open" | "click") => void;
+  onMailboxChanged?: () => void;
 }
 
 export function useInboxRealtime({
   selfActorId,
   openThreadId,
   onTrackingEvent,
+  onMailboxChanged,
 }: UseInboxRealtimeArgs): void {
   const utils = trpc.useUtils();
 
   const onFrame = useCallback(
     (frame: WsFrame) => {
       if (frame.kind === "reconnect") {
+        onMailboxChanged?.();
         // Socket dropped: cover events missed while offline (the old onclose path).
         void utils.email.inbox.list.invalidate();
         if (openThreadId !== undefined) {
@@ -36,12 +39,14 @@ export function useInboxRealtime({
         return;
       }
       if (frame.kind === "resync") {
+        onMailboxChanged?.();
         void utils.email.inbox.list.invalidate();
         return;
       }
       if (frame.kind !== "event" || frame.event === undefined) return;
       const event = frame.event;
       if (event.type === "email_arrived") {
+        onMailboxChanged?.();
         void utils.email.inbox.list.invalidate();
         const data = event.data as { threadId?: string };
         if (openThreadId !== undefined && data.threadId === openThreadId) {
@@ -49,6 +54,7 @@ export function useInboxRealtime({
         }
       }
       if (event.type === "email_tracking") {
+        onMailboxChanged?.();
         if (openThreadId !== undefined) {
           void utils.email.thread.get.invalidate({ threadId: openThreadId });
           const data = event.data as { kind: "open" | "click" };
@@ -56,7 +62,7 @@ export function useInboxRealtime({
         }
       }
     },
-    [utils, openThreadId, onTrackingEvent],
+    [utils, openThreadId, onTrackingEvent, onMailboxChanged],
   );
 
   useRealtimeChannel(wsChannel.user(selfActorId), onFrame);

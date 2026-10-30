@@ -1,0 +1,251 @@
+# Google Calendar web: event creation and lifecycle reference
+
+Research date: **30 October 2026**. Purpose: document the Google Calendar reference workflow before designing or implementing calendar changes in Warpdrive.
+
+This is a documentation inventory, not a statement that Warpdrive implements these features. No provider accounts were connected and no events, invitations, or bookings were created during research. Primary scope is the **desktop web application**. Sources are official Google Help, Workspace and developer documentation. Mobile-only evidence and API contracts are identified separately. **No actual Google Calendar screenshot or live-account visual validation was obtained; that validation is deferred.** A future visual cross-check must not turn a screenshot from one account or release into a universal entitlement or default.
+
+## Evidence and account boundaries
+
+- **Web verified** means Google's desktop Help explicitly documents the interaction. It does not mean an authenticated account was exercised during this research.
+- **Conditional** means the field or action depends on account edition, administrator policy, calendar access, guests, event type or an installed integration.
+- **API only** means a developer contract is documented; it is not proof of a corresponding control in Google's web editor.
+- **Unconfirmed** means the retrieved official sources do not establish the exact label, default, field constraint or current placement. The final checklist tracks these gaps.
+
+Personal Google accounts, Google One subscriptions, Workspace Individual and organization-managed Workspace editions have different capabilities. Administrator policy can further restrict calendar sharing, resources and add-ons. An editor must be interpreted together with the account and selected calendar, not just the language of its labels. [Calendar access permissions](https://support.google.com/calendar/answer/15716974?hl=en), [Calendar settings](https://support.google.com/calendar/answer/6084644?hl=en&co=GENIE.Platform%3DDesktop).
+
+## 1. Entrypoints and editor states
+
+| Entrypoint | Documented path and resulting context | Evidence / limitation |
+| --- | --- | --- |
+| Calendar grid | Click an empty slot, enter details, save; dragging selects a longer interval. People selected through the calendar's people search can supply scheduling context. | [Schedule an event](https://support.google.com/a/users/answer/9491973?hl=en). Exact click versus double-click behavior in every view needs visual confirmation. |
+| Main creation menu | Use the creation menu and choose the event type. The ordinary event path leads to editable event details. | [Screen reader workflow](https://support.google.com/calendar/answer/6101541?hl=en&co=GENIE.Platform%3DDesktop). Available types are account-dependent. |
+| Quick text entry | Where a title-and-time input appears, a phrase containing a time can create the event at that time. | [Create an event](https://support.google.com/calendar/answer/72143?hl=en). Locale-specific natural-language parsing, date ambiguity and Persian input are unconfirmed. |
+| Keyboard | With shortcuts enabled, `c` creates an event; `Shift+C` is documented as a quick creation shortcut. `Esc` returns/discards; the details editor supports platform save shortcuts. | [Keyboard shortcuts](https://support.google.com/calendar/answer/37034?hl=en&co=GENIE.Platform%3DDesktop), [Create an event](https://support.google.com/calendar/answer/72143?hl=en). Confirm the current type chooser visually; an older accessibility passage still mentions reminders. |
+| Expand quick editor | Continue through **More options** for the full event form. Time-zone and attachment instructions explicitly use this transition. | [Event time zones](https://support.google.com/calendar/answer/37064?hl=en&co=GENIE.Platform%3DDesktop), [Attachments](https://support.google.com/calendar/answer/6192039?hl=en&co=GENIE.Platform%3DDesktop). Exact compact-card field inventory/order needs the visual pass. |
+| Existing event | Open the event, use its edit action, change details and save; controls depend on edit permission. | [Create/edit events](https://support.google.com/calendar/answer/72143?hl=en). |
+| Gmail message | Gmail's message menu can create an event in a new Calendar tab. Subject and body are copied; the message recipient is added as an invitee, so review participants before saving. | [Create from a Gmail message](https://support.google.com/mail/answer/13469141?hl=en). Distinct from automatic reservation/flight events. |
+| Meet | Meet's new-meeting menu can open a Calendar event with conferencing details. Creating a meeting link for later is a different operation. | [Meet homepage](https://support.google.com/meet/answer/17302648?hl=en). |
+| Copy / move existing event | An event menu can copy into another calendar; the edit form can move to another calendar owned by the user. | [Transfer/copy events](https://support.google.com/calendar/answer/78739?hl=en). Do not assume copying preserves provider ownership or meeting policies. |
+| Automatic Gmail event | Supported confirmations can generate/update private calendar entries from Gmail when smart-feature settings allow it. These are not ordinary manual creation. | [Events from Gmail](https://support.google.com/calendar/answer/6084018?hl=en). Default enablement is region-dependent; guests cannot be added to these entries. |
+
+The ordinary lifecycle is: **choose time/type → enter details → optionally expand/schedule guests/configure conferencing → save → resolve applicable sharing, series and invitation prompts → event detail view**. This ordering describes the documented operations, not a verified universal order of every modal. Attachment permissions, series scope and invitations are independent decisions; the exact prompt order remains in the checklist.
+
+## 2. Ordinary event field inventory
+
+### Title, dates, time and recurrence
+
+| Field / control | Behavior, default and conditional rules |
+| --- | --- |
+| Title | Editable event name. Empty-title fallback, maximum length, multiline/paste behavior and validation text are unconfirmed by the reviewed Help. Do not infer that the API's optional summary establishes the web form's validation. |
+| Start and end | Separate date/time input is documented. Grid selection supplies the initial interval. Default duration is configurable in event settings; no fixed 30/60-minute default or preset list is established here. Speedy meetings can shorten the scheduled interval. [Settings](https://support.google.com/calendar/answer/6084644?hl=en&co=GENIE.Platform%3DDesktop), [Hybrid work guidance](https://support.google.com/a/users/answer/10985697?hl=en). |
+| All-day | A checkbox switches to an all-day entry displayed above the hourly grid. Cross-day end-date display and whether toggling restores previously entered times require visual checking. [Create an event](https://support.google.com/calendar/answer/72143?hl=en). |
+| Time zone | The full editor allows selecting a city/country time zone and optionally separate zones for start and end, then confirming. Events display in each viewer's local zone. The saved zone and display zone are separate concerns. [Time zones](https://support.google.com/calendar/answer/37064?hl=en&co=GENIE.Platform%3DDesktop). |
+| Repetition | The initial recurrence selector is non-repeating. Users choose a repeat frequency and end condition; existing events can acquire a recurrence. Desktop Help states a limit of **730 occurrences**. [Recurring events](https://support.google.com/calendar/answer/37115?hl=en). |
+| Custom recurrence | The accessibility guide verifies a custom-frequency dialog, repeat interval, weekday selection, date choices and completion action. It does not enumerate every current ordinary-event preset, monthly ordinal/day-of-month choice or end-condition label. These remain visual checklist items rather than guessed labels. [Accessible recurrence editor](https://support.google.com/calendar/answer/6101541?hl=en&co=GENIE.Platform%3DDesktop). |
+| Series edit scope | Saving edits to a recurring event requires choosing the affected events. Single occurrence, following occurrences and whole series must remain distinct concepts. The delete workflow explicitly documents all three scopes; the exact edit options can depend on the change. [Recurring edits](https://support.google.com/calendar/answer/37115?hl=en), [Recurring deletion](https://support.google.com/calendar/answer/37113?hl=en). |
+
+**DST and civil time:** Google documents conversion to UTC for display across zones and warns that government time-zone changes or far-future rules can leave existing events displayed incorrectly. A recurring event's expansion uses one event time zone; separate start/end zones are documented for single events. Preserve a zone identifier and the intended local schedule rather than using an offset as the recurrence rule. The last sentence is an engineering implication of the documented model, not an additional Google editor field. [Time-zone behavior](https://support.google.com/calendar/answer/37064?hl=en&co=GENIE.Platform%3DDesktop), [API time-zone model](https://developers.google.com/workspace/calendar/api/concepts/events-calendars).
+
+**Iranian-calendar boundary:** Google's web settings support an alternate lunar/solar calendar display. This does not establish a Solar-Hijri recurrence editor or an Iranian-calendar recurrence contract. Google's documented recurrence model uses date/time recurrence rules; the retrieved sources do not promise a Persian month/year recurrence that survives synchronization. For Warpdrive's later design, preserving the authored calendar rule separately and exposing any conversion limits is a recommendation, not verified Google parity. [Alternate calendars](https://support.google.com/calendar/answer/13748650?hl=en&co=GENIE.Platform%3DDesktop), [Documented recurrence model](https://developers.google.com/workspace/calendar/api/concepts/events-calendars).
+
+### Guests, attendance and finding time
+
+| Field / operation | Documented behavior and boundary |
+| --- | --- |
+| Guest input | Search contacts by name or enter an email, including a non-Google user. Each guest can be marked optional. Basic invitations support **200 people**; larger audiences use Groups. [Invite guests](https://support.google.com/calendar/answer/37161?hl=en). |
+| Groups | Enter a group email through the guest input. Member visibility affects delivery/expansion. Upcoming guest lists track membership changes; groups permit up to **100,000 guests**, subject to anti-abuse limits. Membership updates for events over 200 guests can take 24 hours. [Group invitations](https://support.google.com/calendar/answer/172013?hl=en). |
+| Required versus optional | Optional is explicitly supported; the availability grid can filter required guests versus all guests. The initial optional state and icon treatment need the visual pass. [Find times](https://support.google.com/calendar/answer/6294878?hl=en). |
+| Guest permissions | Separate controls allow guests to modify the event, invite others and see the guest list. Modification can include time, rooms and attachments. Exact initial checkbox defaults are not all established by current Help. Guest-list visibility defaults on in the link-sharing workflow. [Edit permissions](https://support.google.com/calendar/answer/72143?hl=en), [Inviting others](https://support.google.com/calendar/answer/37161?hl=en), [Guest-list setting](https://support.google.com/calendar/answer/13839531?hl=en). |
+| Availability grid | Add guests, open the availability view, compare shared schedules; maximum **50 guest schedules** displayed. Filters select no/required/all guests and show/hide rooms. Availability requires calendar sharing or relevant organization access. [Find times](https://support.google.com/calendar/answer/6294878?hl=en). |
+| Suggested times | Google documents suggestions and, separately, a Gemini-powered branch that requires an eligible Workspace plan. The latter supports more suggestions and grid filtering, and excludes past ranges, meetings over eight hours and excessively large guest lists. Do not treat that branch as available to every personal account. [Gemini scheduling](https://support.google.com/calendar/answer/16690875?hl=en). |
+| RSVP | Guests can accept, decline or respond tentatively; the event displays response state. Proposed alternate times can be reviewed by the organizer. New-time proposals are unavailable for all-day events and events with over 200 guests. [Track responses](https://support.google.com/calendar/answer/16713792?hl=en), [Proposal restrictions](https://support.google.com/a/users/answer/9296557?hl=en). |
+| Response email toggle | Current Help documents an event/series-level switch controlling email when guests respond. Turning it off also loses external-calendar RSVP statuses and automatic reply emails; Google guests' responses remain visible in the guest list. This differs from personal advance reminders. [Track responses](https://support.google.com/calendar/answer/16713792?hl=en). |
+| Joining location | A guest's in-person/virtual participation response is distinct from required/optional attendance and from the event's physical location. Verify the current response UI and account availability. [Hybrid meeting participation](https://support.google.com/a/users/answer/10985697?hl=en). |
+
+### Location, rooms, description and files
+
+| Field / operation | Documented behavior and boundary |
+| --- | --- |
+| Physical location | Enter location information; Maps can preview place details in a side panel. The Maps workflow can add travel time as another calendar item. Address suggestion selection affects map links. [Maps side panel](https://support.google.com/mail/answer/106237?hl=en), [Meet location links](https://support.google.com/meet/answer/17302648?hl=en). No universal multiple-location picker is established. |
+| Rooms/resources | Work/school account plus configured organization resources. Search or use suggestions; select one or more rooms/resources. Resource booking is separate from free-text location. Conflict detection reaches **12 months**, so later recurring instances may not be checked. A documented duplicate-with-room fallback creates one event **without guests**. [Room booking](https://support.google.com/calendar/answer/143753?hl=en&co=GENIE.Platform%3DDesktop). |
+| Room response | Saving a requested resource does not itself prove acceptance. Review resource response; a room can decline and must be handled as a booking result. Exact capacity/equipment/building filter controls and rejection explanations need account-specific confirmation. [Room booking](https://support.google.com/calendar/answer/143753?hl=en&co=GENIE.Platform%3DDesktop). |
+| Description | The full form has a description area. Google officially introduced rich formatting and links for event descriptions; the present toolbar's complete formatting controls are not exhaustively listed in current Help. Confirm bold/italic/underline, lists, link editing, clearing formatting and paste behavior visually before claiming exact parity. [Official rich-description announcement](https://workspaceupdates.googleblog.com/2017/10/new-calendar-user-interface17.html), [Accessible event fields](https://support.google.com/calendar/answer/6101541?hl=en&co=GENIE.Platform%3DDesktop). |
+| Meeting notes | An agenda/notes document can be created from the description/attachment area, populated from event details and attached/shared with guests, including external guests. This is a document workflow, not plain description text or automatic Meet notes. [Meeting agenda workflow](https://support.google.com/a/users/answer/9491973?hl=en). |
+| Attachments | Add Drive files or upload from the computer through the full form. On save, inaccessible files trigger access choices: link-based access, event-guest access or save without granting access. Permission levels include view/comment/edit. File titles are exposed to people with event-detail access even when opening the file is denied. Removing an attachment requires saving the event. [Attachments and sharing](https://support.google.com/calendar/answer/6192039?hl=en&co=GENIE.Platform%3DDesktop). |
+
+### Calendar, organizer, color, availability and privacy
+
+| Field / state | Documented behavior and boundary |
+| --- | --- |
+| Destination calendar | Select among calendars where creation is allowed. A shared-calendar event can show both calendar and creator. Calendar choice is consequential for access and provider policies. The initial calendar-selection rule across all entrypoints is unconfirmed. [Create in a shared calendar](https://support.google.com/calendar/answer/72143?hl=en). |
+| Creator / organizer / owner | These are not interchangeable editable name fields. An event can be moved between owned calendars or transferred using an ownership action and acceptance link; the old owner remains owner until acceptance, which can take up to 60 days. Transfers over 200 guests are unsupported. Meet policy may change with ownership/calendar. [Transfer events](https://support.google.com/calendar/answer/78739?hl=en). |
+| Event color | A per-event color is supported and can be changed from the event/right-click flow. It is not generally the color every guest sees. [Event colors](https://support.google.com/calendar/answer/72143?hl=en). Exact palette names/counts and custom-color availability need visual confirmation. |
+| Color label / Time Insights | Labels are a separate work/school tracking feature, visible to the user and calendar editors. Current Help permits up to 200 labels and uses the color control beside the calendar name. Organization availability can differ. [Calendar labels](https://support.google.com/calendar/answer/12377581?hl=en). |
+| Free / busy | Availability status is separate from privacy, RSVP and event color. Official visibility documentation confirms different behavior for entries marked free versus busy. Exact ordinary timed/all-day initial defaults and selector labels need a web check; do not borrow the API default as proof. [Visibility and availability](https://support.google.com/calendar/answer/34580?hl=en). |
+| Visibility | Calendar-default access, explicitly public details or private details. Private still permits authorized higher-level editors; inviting guests/rooms can expose some metadata. A recurring series has **one visibility setting**: changing a subset's visibility applies to the series. [Event visibility](https://support.google.com/calendar/answer/34580?hl=en). |
+| Calendar permissions | Calendar-level ACLs, event privacy, guest permissions and file permissions are different layers. Managed accounts can be restricted by administrators. Confirm current role names: Help now distinguishes editors who cannot view private details from editors who can. [Calendar permissions](https://support.google.com/calendar/answer/15716974?hl=en). |
+
+## 3. Conferencing is an expandable workflow
+
+The conferencing field can provision Meet, remove it, or choose an installed conferencing add-on. Google's supported event conferencing slot has **one conference**. Pasting another URL into the description/location can still leave conflicting meeting information. Workspace administrators control permitted add-ons; merely attaching a Zoom/Teams URL is not evidence that Google provisioned that meeting. Automatic Meet addition has its own event setting. [Add/remove conferencing](https://support.google.com/calendar/answer/9896550?hl=en).
+
+| Branch | Verified web control / conditions |
+| --- | --- |
+| Meet connection | A newly added Meet conference receives a meeting code linked to its originating event. That event's guest list controls admission and record access; copied codes can refer to another event's guest list. Repeated meetings retain the relevant code relationship. [Meeting codes](https://support.google.com/calendar/answer/16876004?hl=en). |
+| Access and hosts | Video-call options expose meeting access and host controls. Open/trusted/restricted access have different admission behavior; restricted is unavailable to consumer accounts. Default access differs for Classroom. Some waiting-room-enabled accounts replace the host-first option. These are meeting policies, not guest-list permissions. [Meet scheduling and access](https://support.google.com/meet/answer/9302870?hl=en&co=GENIE.Platform%3DDesktop). |
+| Host management | Calendar can configure host-management controls before the call. One Help page describes this as initially off, while the co-host guide says edition/admin policy can determine the default. Treat the actual account default as unconfirmed. [Host controls](https://support.google.com/meet/answer/16229038?hl=en), [Co-host eligibility/defaults](https://support.google.com/meet/answer/10885841?hl=en&co=GENIE.Platform%3DDesktop). |
+| Co-hosts / artifacts | Eligible subscriptions allow up to 25 co-hosts. Add event guests, configure co-hosts through video-call options, save the nested dialog and the event. Sharing meeting artifacts with co-hosts has a separate checkbox and restrictions; adding someone during the live call does not grant that meeting's artifacts. [Co-host setup](https://support.google.com/meet/answer/10885841?hl=en&co=GENIE.Platform%3DDesktop). |
+| Breakout preparation | Eligible plans can choose a number of rooms and assign named invitees manually or shuffle them before the meeting. Invited group members are not automatically expanded for assignment. Rooms are started during the actual call, not by saving Calendar. [Breakout configuration](https://support.google.com/meet/answer/13054147?hl=en&co=GOOGLE_MEET._MeetingUserType%3DHost). |
+| Attendance reports | Eligible organizers can configure attendance tracking through conference settings. Availability and persistence vary by edition and recurring versus one-time code. [Attendance settings](https://support.google.com/meet/answer/10090454?hl=en). |
+| Automatic records | Conference options can request automatic recording, transcription or Gemini notes when eligible; execution waits for an appropriate host/co-host to join. These are not guaranteed merely because the event saved. Recording requires the subscription/admin permissions described in its guide. [Automatic recording](https://support.google.com/meet/answer/9308681?hl=en), [Notes settings](https://support.google.com/meet/answer/16909639?hl=en). |
+| Notes language / sharing | Gemini notes have language and recipient scopes, including external invitees versus internal invitees versus hosts. Availability depends on an eligible plan; one creation shortcut is documented as English-Calendar-language-only. Do not promise Farsi support from the existence of Calendar localization. [Calendar notes shortcut](https://support.google.com/calendar/answer/9896550?hl=en), [Notes language/sharing](https://support.google.com/meet/answer/16909639?hl=en). |
+| Guest chat | Organization accounts can have event-linked group chat; external guests are excluded. Guest-list visibility affects whether the chat shortcut exists and whether future membership continues syncing. Personal Gmail accounts do not get this feature. [Event guest chat](https://support.google.com/calendar/answer/16699252?hl=en). |
+| Live stream / adaptive meeting | Eligible Workspace editions can add a stream and configure access separately. Adaptive meetings allow viewers/contributors with constrained meeting/stream access combinations. These are gated advanced branches; the entire live-stream experience is not a baseline personal-account field. [Live stream](https://support.google.com/meet/answer/9308630?hl=en&co=GENIE.Platform%3DDesktop), [Adaptive meetings](https://support.google.com/meet/answer/17112016?hl=en). |
+
+Other Meet capabilities such as polls, Q&A, reactions and live presentation tools are not automatically event-creation fields. Only documented pre-meeting controls should enter a Calendar parity inventory. A conferencing integration must declare which options it can actually provision rather than displaying every provider's controls on every event.
+
+## 4. Reminders, save, invitations and subsequent changes
+
+### Personal reminders
+
+Calendar-level defaults apply to newly created events unless customized for the event. Timed-event and all-day default notification groups are configured separately. In an event, users can add, edit or remove reminder rows and select notification versus email and lead time. Browser delivery also depends on notification permission and Calendar remaining open. These settings are personal; another calendar editor does not take over the user's notification preferences. [Notification settings](https://support.google.com/calendar/answer/37242?hl=en&co=GENIE.Platform%3DDesktop).
+
+Up to **five** reminders can be attached to an event. Google guests use their own reminders; non-Google calendar services may use the event-supplied reminders or their own. This is separate from sending invitation/update mail. The default lead time, unit menu, all-day reference time and web validation range must be recorded from the chosen account. [Invitation/reminder behavior](https://support.google.com/calendar/answer/37161?hl=en).
+
+### Commit and communication decisions
+
+1. Complete details and save. An inaccessible attachment may require a file-sharing decision; a recurring edit may require a scope decision. The nested conferencing-settings save is not a substitute for saving the outer event. [Attachments](https://support.google.com/calendar/answer/6192039?hl=en&co=GENIE.Platform%3DDesktop), [Series edits](https://support.google.com/calendar/answer/37115?hl=en), [Nested co-host save](https://support.google.com/meet/answer/10885841?hl=en&co=GENIE.Platform%3DDesktop).
+2. Guest events can prompt to send invitations/updates. Choosing not to email does not mean the event is a private unsent draft. Google guest calendars may still update; unknown-sender and automatic-invitation settings can change whether an event appears. [Invitation delivery](https://support.google.com/calendar/answer/37161?hl=en).
+3. Non-Google calendar recipients still need synchronization mail on creation, updates and deletion. The send/no-send choice cannot be presented as a guarantee that no recipient receives email. [Official external-guest notification policy](https://workspaceupdates.googleblog.com/2018/10/non-google-calendar-users-receive-email-updates.html), [Current external-calendar guidance](https://support.google.com/calendar/answer/15077640?hl=en).
+4. Reopen the event to review guests, RSVP, rooms and conferencing. Guest-response email, reminder email, invitation email and resource acceptance are distinct outcomes. A successful event save alone does not prove all invitees accepted or that a room was booked.
+
+Current Help documents the invitation choice, but does not establish every current modal's exact text, button order, whether changed attendees and unchanged attendees have separate choices, or which minor edits suppress the prompt. Record these during the visual cross-check instead of inventing exact dialog copy.
+
+### Update, cancel, remove and recover
+
+- An organizer deletes an event to cancel it for everyone invited; a guest's removal affects the guest's copy rather than cancelling the meeting for all attendees. Changes can take time to propagate. [Deletion behavior](https://support.google.com/calendar/answer/37113?hl=en).
+- Recurring deletion has single-instance, this-and-following and all-series choices. **This-and-following deletions bypass Trash and cannot be restored.** Other deleted events normally remain in that calendar's Trash for 30 days. Restored events require guests to RSVP again; a former room may no longer be available. [Deletion and restoration](https://support.google.com/calendar/answer/37113?hl=en).
+- Accessible cancellation supports an optional message when guests are invited. Exact non-recurring versus recurring cancellation prompts still need the visual pass. [Cancellation interaction](https://support.google.com/calendar/answer/6101541?hl=en&co=GENIE.Platform%3DDesktop).
+- Personal accounts can share an eligible future primary-calendar event through an invitation link. Anyone holding that link can see details/guest list and join or add guests, even when the normal invite-others permission is disabled. Links have eligibility/expiry rules; this is a deliberate sharing operation, not the event's ordinary internal URL. [Invite via link](https://support.google.com/calendar/answer/13839531?hl=en).
+
+## 5. Special creation types
+
+These are separate workflows; their fields and entitlement rules must not be silently inherited from an ordinary event.
+
+### Task
+
+The web supports creating a task from a grid slot or the creation menu, and through the dedicated Tasks view/list. Current documented fields include title, scheduled start/time and duration, separate deadline, description and task list. A date is needed for grid display; deadlines appear in the all-day area. Advanced controls include color, availability and visibility; DND and automatic decline require a work/school account, and decline requires a busy block. Existing tasks can acquire a time block; repeating tasks cannot have an end time. Timed notifications occur at the scheduled time; date-only tasks/deadlines notify at 09:00 local time. The description-field explanation in Help appears erroneous and needs a visual semantics check. [Tasks on desktop](https://support.google.com/calendar/answer/9901136?hl=en&co=GENIE.Platform%3DDesktop).
+
+Task recurrence has presets/custom rules, interval and end conditions. Shared tasks/subtasks cannot recur; recurring tasks cannot change lists. Calendar deletion distinguishes one, following or all tasks; editing offers one/all. Ending a series cannot be undone by simply re-enabling its recurrence. These are Tasks lifecycle rules, not assumptions about Calendar event recurrence. [Repeating tasks](https://support.google.com/tasks/answer/12132599?hl=en&co=GENIE.Platform%3DDesktop).
+
+### Appointment schedule and booking page
+
+This is a **two-stage availability/booking editor**, followed by a separate booked-appointment lifecycle.
+
+| Editor stage | Verified fields / decisions |
+| --- | --- |
+| Availability | Title, duration including custom duration, general days/time periods/time zone, scheduling window, date-specific adjustments, buffer, daily booking maximum, permission for bookers to invite guests, hosting calendar, calendars checked for conflicts, co-host names/emails/groups. Resource calendars cannot host schedules. Co-host availability is **not checked by default**. |
+| Booking page | Identity/photo/name, location/conferencing (Meet, in-person, phone or unspecified), description, booking form, payments/cancellation, confirmations and reminders. Required name/email inputs can be supplemented with questions. Secondary-calendar pages omit the photo. Then save. Third-party conference links are documented as something to add to the booked event later. |
+
+The two stages and field groups above are documented in [Create an appointment schedule](https://support.google.com/calendar/answer/10729749?hl=en). Specific widget labels, duration presets and new-question input types remain visual checklist items.
+
+Availability has a documented **four-hour minimum notice default**, optional advance-booking horizon, recurring schedule date range and date exceptions. Buffer and daily booking cap have separate enable/value controls. Exceptions can mark a day unavailable or add/remove periods. [Availability controls](https://support.google.com/calendar/answer/11423292?hl=en).
+
+Conflict checking can inspect selected owned/managed/subscribed calendars; multiple-calendar checks are premium. With checking disabled, other events do not suppress slots, but a booked slot is not double-bookable. Help currently conflicts over whether a tentative/Maybe event blocks availability; verify actual behavior instead of adopting a universal RSVP rule. [Conflict-checking rules](https://support.google.com/calendar/answer/16287054?hl=en), [Conflicting availability wording](https://support.google.com/calendar/answer/11423292?hl=en).
+
+| Account tier | Current documented distinction |
+| --- | --- |
+| Personal Google account / Business Starter | One booking page. |
+| Google One Premium / AI Pro / AI Ultra | Premium appointment features such as multiple schedules, automatic email reminders and checking multiple calendars; the comparison does not include Workspace payment/verification/co-host features in this column. |
+| Workspace Individual | Multiple schedules, reminders and multi-calendar checking; payment/verification support, but not the comparison's secondary-calendar/co-host capabilities. |
+| Eligible organization editions | Business Standard/Plus, Enterprise Standard/Plus, Education and Nonprofits receive the corresponding premium organization capabilities, including secondary-calendar schedules and up to 20 co-hosts. Keep the source's broad Education category; do not invent a finer entitlement matrix. |
+| Unsupported editions | Frontline, Essentials and specified discontinued editions cannot create appointment schedules. |
+
+Edition details can change; recheck [Google's premium comparison](https://support.google.com/calendar/answer/16287038?hl=en) before treating any feature as available.
+
+Additional booking branches:
+
+- **Verification:** eligible Workspace users can require email verification; it defaults off. Unsigned bookers receive a PIN, while signed-in Google users have a different prefilled flow. [Booking verification](https://support.google.com/calendar/answer/11902347?hl=en).
+- **Payment:** connect Stripe, enable payment, set amount/currency and optionally a cancellation policy. Admins can restrict it; cancellation does not automatically refund. Disconnecting Stripe removes payment requirements from schedules. [Paid appointments](https://support.google.com/calendar/answer/13762729?hl=en).
+- **Reminders:** up to five booking reminder emails; text is fixed. Premium eligibility applies. Exact initial reminder offsets are unconfirmed. [Schedule creation](https://support.google.com/calendar/answer/10729749?hl=en).
+- **Cancel versus delete schedule:** cancelling a booked appointment emails the booker and frees the slot. Deleting the schedule disables future booking through its link while existing appointments remain. Forwarded confirmation mail can expose a cancellation action. [Appointment cancellation](https://support.google.com/calendar/answer/10737245?hl=en&co=GENIE.Platform%3DDesktop).
+
+### Focus time
+
+Eligible work/school editions are Business Standard/Plus, Enterprise Standard/Plus, Education and Nonprofits. Create from a time slot in Day/Week view; explicit start/end times are required. Controls include repeat, chat DND, meeting auto-decline, visibility and color. Initial DND is on; disabling it informs later blocks. Chat must be enabled and the block under 24 hours for muting. Default decline covers new and existing meetings; users can limit it to new invitations. Color is remembered. A headphones indicator distinguishes the type. [Focus time](https://support.google.com/calendar/answer/11190973?hl=en&co=GENIE.Platform%3DDesktop).
+
+### Out of office
+
+The documented work/school path selects out-of-office creation, dates or partial-day times, optional recurrence, decline settings and response message, then save. Availability features can be administrator-controlled; the cited Help does not establish a complete current per-edition matrix or every decline-option label. Gmail's out-of-office status requires an all-day block or one extending beyond working hours and suitable calendar access. Working hours themselves are a weekly settings schedule, not an out-of-office event. [Working hours/out of office](https://support.google.com/calendar/answer/7638168?hl=en&co=GENIE.Platform%3DDesktop).
+
+### Working location
+
+Whole-day creation chooses dates and home/office/another location; timed creation starts from a slot and can recur. A location chip supports day/range edits and frequency confirmation; timed blocks can be dragged. Weekly default location is a separate working-hours setting. Current eligible editions: Business Standard/Plus, Enterprise Starter/Standard/Plus, Education Fundamentals/Standard/Plus and Nonprofits. Administrator enablement, data/location restrictions and zone detection can affect fields. Working location can be disclosed with calendar sharing, including free/busy access; it is not the same privacy boundary as a regular event's location. [Working location](https://support.google.com/calendar/answer/18616218?hl=en&co=GENIE.Platform%3DDesktop).
+
+### Birthday
+
+Desktop Help verifies Contacts synchronization, visibility/color and a per-account sync control enabled by default. Deleting a calendar birthday does not delete Contacts data. It mentions manual birthdays but does not establish their current desktop creation steps. The Android path documents name, birth date and notification settings; it is **mobile-only evidence**, not proof of a web birthday selector. [Birthdays on desktop](https://support.google.com/calendar/answer/13748346?hl=en&co=GENIE.Platform%3DDesktop), [Birthdays on Android](https://support.google.com/calendar/answer/13748346?hl=en&co=GENIE.Platform%3DAndroid).
+
+The API separately constrains birthday events to private, free, one-day all-day yearly entries with restricted fields. Contact/self birthday dates have different ownership restrictions; February 29 has a specific last-February-day rule. This describes an integration contract, not a verified web UI default. [Birthday API](https://developers.google.com/workspace/calendar/api/guides/event-types).
+
+## 6. Synchronization, import/export and API boundaries
+
+| Mechanism | Verified guarantee / limit |
+| --- | --- |
+| Signed-in calendar client | Some supported clients can add/edit events through Google-account access. Whether a specific client preserves every advanced type or conference policy must be tested separately. [Computer calendar clients](https://support.google.com/calendar/answer/37648?hl=en). |
+| iCal feed | A secret iCal link gives **read-only** calendar access. It is a credential-like secret; it can be reset and may be admin-restricted. A public feed is a different sharing choice. Feed refresh latency is not specified here. [Read-only subscription](https://support.google.com/calendar/answer/37648?hl=en). |
+| File import | Desktop import accepts individual ICS/CSV files into a chosen calendar; the default destination is primary. **Guests and conference data are not imported.** CSV recurrence may become separate one-off events. Import is not a maintained two-way connection. [Import rules](https://support.google.com/calendar/answer/37118?hl=en). |
+| File export | Desktop export produces ICS or a ZIP of per-calendar ICS files. Requires calendar-management/sharing permission; admins may restrict export. It is a copy, not a sync connection. [Export rules](https://support.google.com/calendar/answer/37111?hl=en). |
+| Calendar API sync | Full sync yields a stored token; incremental sync includes deletions. Invalid/expired tokens can return HTTP 410 and require rebuilding the remote mirror. This is backend behavior, not a Google event-creation field. [Incremental sync](https://developers.google.com/workspace/calendar/api/guides/sync). |
+| Calendar API change notifications | HTTPS watch channels signal changes; fetch actual data afterward. Channels expire and need renewal/replacement. Notifications are not the attendee email or personal reminder system. [Push notifications](https://developers.google.com/workspace/calendar/api/guides/push). |
+
+**API-only integration details, not web controls:** event dates use date-only values for all-day entries and date-time values for timed entries; end is exclusive. APIs expose recurrence/instance identities, HTML descriptions, reminder overrides, resource attendees, guest permissions and structured conferencing. The reference limits attachments to 25 and reminder overrides to five with lead time up to four weeks. API defaults and limits must not be presented as independently verified web defaults. [Event resource reference](https://developers.google.com/workspace/calendar/api/v3/reference/events).
+
+Meet provisioning through the Calendar API needs the documented conferencing request/version and can be asynchronous. A saved event can therefore precede ready conference details; pending/failure are meaningful integration states. [Create events/conferences](https://developers.google.com/workspace/calendar/api/guides/create-events).
+
+Recurring integration must distinguish the parent rule from exceptions and retain original occurrence identity when an instance is moved. Changing future instances can require splitting a series; Google warns against implementing whole-series edits as many individual exception updates. [Recurring-event API operations](https://developers.google.com/workspace/calendar/api/guides/recurringevents).
+
+Tasks and appointment schedules have separate UI/lifecycle models; they are not established as ordinary Calendar API event-type values. Do not promise every special workflow from the existence of Calendar's ordinary event API. [Documented API event types](https://developers.google.com/workspace/calendar/api/guides/event-types).
+
+## 7. Visual and behavior uncertainty checklist
+
+Record account type/edition, locale, selected calendar, date and source screenshot for each result. Mark an item unavailable when the target account does not have its prerequisite; do not replace evidence with an imagined control.
+
+- [ ] Enumerate quick-card fields and their order in Day, Week, Month and all-day creation; confirm click/double-click, compact-to-full handoff and whether unsaved values persist.
+- [ ] Record creation menu/type chooser and shortcuts, including whether desktop manual Birthday is available. Do not copy obsolete Reminder options from older instructions.
+- [ ] Record title placeholder/fallback/limit; start/end date formats; duration presets; initial calendar; timed/all-day availability; default visibility and guest-permission values.
+- [ ] Check all-day inclusive UI dates against the exclusive API end; cross-day events; end-before-start handling; toggling all-day and changing start while duration is preserved.
+- [ ] Record date/time keyboard entry, validation and locale parsing; Farsi digits, RTL, alternate calendar display and whether any creation picker truly accepts Iranian calendar dates.
+- [ ] Record both event time-zone controls, separate-zone behavior, DST skipped/duplicated times and recurring wall-time behavior.
+- [ ] Enumerate ordinary recurrence presets, interval units/ranges, weekdays, monthly day versus ordinal options, termination choices and exact occurrence/series edit prompts; confirm 730-occurrence enforcement.
+- [ ] Record contact/group suggestion states, guest removal, optional icon/tooltip, external guest warnings, guest-permission defaults, RSVP email toggle and its external-RSVP warning.
+- [ ] Verify baseline suggestions versus Gemini scheduling, availability permission-denied/unknown states, required-guest filters, resource filters, room rejections and partial series room availability.
+- [ ] Capture rich-description toolbar/paste/link behavior, meeting-notes creation, Drive/upload picker, file type/size/attachment-count errors, access prompts and their order relative to invitation prompts.
+- [ ] Capture event color/label palettes, selected-calendar changes, organizer/creator display, owner-transfer flow and private-event restrictions for each calendar role.
+- [ ] Enumerate permitted conferencing providers and their install/sign-in failures; record Meet automatic-add default, remove/replace flow, linked-code warnings and unsaved nested options.
+- [ ] Check eligible Meet host/co-host, waiting room, record/transcript/notes language, sharing, chat, attendance, breakout and stream controls; preserve unavailable reasons. Reconcile conflicting Help claims about host-management defaults against edition/admin policy.
+- [ ] Enumerate reminder lead-time units/default rows/all-day reference time; test event-level empty/maximum reminders; separate reminder delivery from invitation/update and response email.
+- [ ] Record Save/Send/Don't-send/Cancel wording and state transitions for no guests, new guests, changed guests, minor edits, series edits, attachments and external providers. Verify unknown-sender guest behavior and cancellation messages.
+- [ ] Verify guest removal versus organizer cancellation, single/future/all deletion, Trash availability, restore RSVP reset and room loss.
+- [ ] Check Task duration/deadline/description/list/advanced controls and defaults. The current Task Help description-row explanation is inconsistent; do not copy its apparent typo into product requirements.
+- [ ] Enumerate appointment duration presets, initial window/buffer/booking cap, question input types/required flags, cancellation constraints, reminder offsets, co-host availability and secondary-calendar controls.
+- [ ] Resolve appointment tentative/Maybe conflict rules by actual booking behavior. Two current Help pages disagree; document the tested result with account and conditions.
+- [ ] Test ICS export/import and subscribed feeds with recurrence exceptions, all-day dates, private data, rich description, attachments and meeting links. Document supported round trips and losses; no full-fidelity round trip is assumed.
+
+The checklist is the remaining evidence work for an exact parity specification. This document authorizes no feature implementation, account connection, invitation delivery or booking.
+
+## 8. Warpdrive handoff and deferred implementation
+
+The next product goal is to support the Google Calendar workflow documented above while preserving the current Warpdrive interface and its existing CRM relationships. The user explicitly deferred implementation at this handoff. Do not replace the newer sidebar, settings, contacts or inbox with an older localization checkout when work resumes.
+
+| Area | Current source baseline | Work required before claiming parity |
+| --- | --- | --- |
+| Event editor | [Inline activity composer](../src/features/deal-workspace/composer/ActivityComposerInline.tsx) and a smaller global add dialog. | Verify quick-to-full draft continuity and cover the full field inventory without losing CRM associations. |
+| Data model | [Activity schemas](../src/features/activities/schemas.ts) cover subject, activity type, dates, duration, assignee, guests/participants, note, location, video URL and CRM links. | Model calendars, organizer ownership, attendee response/permissions, recurrence/exceptions, privacy, availability, resource reservations and configurable reminders. Existing guest identifiers do not establish an invitation delivery system. |
+| Video meetings | [Video-call field](../src/features/deal-workspace/composer/VideoCallField.tsx) generates a token-based URL. | A generated URL is not a provisioned Google Meet, Zoom or Teams meeting. Add provider consent, capabilities, provisioning states, update/delete behavior and recovery before presenting these as integrations. |
+| Reminders | [Reminder worker](../src/features/activities/reminders.ts) schedules a fixed lead-time job and re-reads activity existence/completion. | Support user-selected reminders; verify rescheduling, cancellation and stale-job suppression against changed due times. Keep personal reminders separate from invitation and RSVP emails. |
+| External calendars | Current Gmail integration does not establish Calendar synchronization. | Add provider authorization, external event identities, conflict handling, incremental sync, deletion handling and expiring subscription renewal; label one-way feeds and file import/export accurately. |
+| Language and calendar | English, Iranian Persian and German catalogs, RTL, Iranian date pickers and independent regional preferences exist. | Review all new copy contextually in Farsi first, then German. Test mixed-direction addresses/links, Persian digits, local time zones and DST. Define Iranian month/year recurrence explicitly; do not silently convert it to Gregorian recurrence. |
+| Special event types | Ordinary CRM activity categories are not Google Tasks, focus time, working location or booking pages. | Define separate capabilities and lifecycles; preserve account restrictions and availability reasons. |
+
+When work resumes, first close the visual uncertainty checklist on representative personal and eligible Workspace accounts. Then design the complete editor against the reconciled current UI, define the persistence and provider boundaries, and implement vertical workflows with real invitation/sync tests. Acceptance requires create, reopen, edit, cancel and series-exception round trips, permission failures, provider failures and locale review. None of those future capabilities is delivered by this documentation update.

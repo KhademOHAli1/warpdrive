@@ -119,5 +119,31 @@
   "lost": "Verloren",
   "relatedOrganization": "Verknüpfte Organisation",
   "validEmployeeCount": "Die Anzahl der Beschäftigten muss eine nicht negative ganze Zahl sein",
-  "validRevenue": "Geben Sie einen gültigen, nicht negativen Betrag mit höchstens zwei Nachkommastellen ein"
+  "validRevenue": "Geben Sie einen gültigen, nicht negativen Betrag mit höchstens zwei Nachkommastellen ein",
+  "directory": {
+    "peopleDescription": "Personen finden, Kontaktdaten verwalten und Unterhaltungen nachlesen.",
+    "orgsDescription": "Organisationen und ihre verknüpften Personen und Verkaufschancen verwalten.",
+    "addPerson": "Person hinzufügen",
+    "addOrg": "Organisation hinzufügen",
+    "searchPeople": "Nach Namen oder E-Mail-Adresse suchen",
+    "searchOrgs": "Nach Namen oder Branche suchen",
+    "clearSearch": "Suche löschen",
+    "clearAll": "Suche und Filter zurücksetzen",
+    "filterCount": "{count, plural, one {# aktiver Filter} other {# aktive Filter}}",
+    "noMatches": "Keine Kontakte gefunden",
+    "noMatchesHelp": "Versuchen Sie einen anderen Suchbegriff, passen Sie die Filter an oder setzen Sie beides zurück, um Ihre Kontakte wieder zu sehen.",
+    "emptyPeople": "Hier beginnt Ihr Personenverzeichnis",
+    "emptyPeopleHelp": "Fügen Sie eine Person hinzu, um Kontaktdaten, Unterhaltungen und Aktivitäten an einem Ort zu verwalten. Sie sehen nur Kontakte, auf die Sie zugreifen dürfen.",
+    "emptyOrgs": "Organisationen an einem Ort verwalten",
+    "emptyOrgsHelp": "Fügen Sie eine Organisation hinzu, um ihre Personen und Verkaufschancen an einem Ort zu verknüpfen. Sie sehen nur Organisationen, auf die Sie zugreifen dürfen.",
+    "updating": "Ergebnisse werden aktualisiert…",
+    "retry": "Erneut versuchen",
+    "openRecord": "{name} öffnen",
+    "actions": "Kontaktaktionen",
+    "notProvided": "Nicht angegeben",
+    "backPeople": "Zurück zur Personenübersicht",
+    "backOrgs": "Zurück zur Organisationsübersicht",
+    "personContext": "Person",
+    "orgContext": "Organisation"
+  }
 }

@@ -27,7 +27,11 @@ export default async function EmailSyncPage(): Promise<ReactNode> {
 
   return (
     <SettingsPage>
-      <SettingsHeading title={L._emailSync.title} description={L._emailSync.intro} />
+      <SettingsHeading
+        scope="personal"
+        title={L._emailSync.title}
+        description={L._emailSync.intro}
+      />
       <EmailSyncClient
         mailbox={
           mailbox === null

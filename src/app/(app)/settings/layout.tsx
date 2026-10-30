@@ -4,8 +4,7 @@ import { can } from "@/features/permissions/can";
 import { createContext } from "@/server/trpc/context";
 import { SettingsNav } from "./SettingsNav";
 
-// Wraps every /settings/* page with the grouped left secondary menu (Pipedrive settings IA).
-// Company-overview items are shown only to admins / managers.
+// Administrative links remain hidden unless the actor has their existing permission.
 export default async function SettingsLayout({
   children,
 }: {
@@ -17,7 +16,7 @@ export default async function SettingsLayout({
     actor !== null && (actor.type === "admin" || actor.flags.has(PERMISSION_FLAGS.MANAGE));
   const canImport = actor !== null && can(actor, "data.import");
   return (
-    <div className="flex gap-6">
+    <div className="flex flex-col gap-6 md:flex-row md:gap-8">
       <SettingsNav isAdmin={isAdmin} canManageCompany={canManageCompany} canImport={canImport} />
       <div className="min-w-0 flex-1">{children}</div>
     </div>

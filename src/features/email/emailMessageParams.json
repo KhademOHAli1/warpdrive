@@ -21,5 +21,8 @@
   "_extra.conversationCount": ["count"],
   "_extra.scheduleTimeZone": ["zone"],
   "_extra.scheduleUtcOffset": ["offset"],
-  "_extra.scheduleAmbiguousTime": ["offset"]
+  "_extra.scheduleAmbiguousTime": ["offset"],
+  "workspace.selectedLoaded": ["count"],
+  "workspace.earlierMessages": ["count"],
+  "workspace.resumeReply": ["subject"]
 }

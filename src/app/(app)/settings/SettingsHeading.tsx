@@ -9,19 +9,35 @@ export function SettingsHeading({
   title,
   description,
   actions,
+  scope,
 }: {
   title: string;
   description?: React.ReactNode;
   actions?: React.ReactNode;
+  scope?: "personal" | "workspace" | "mixed";
 }): React.ReactNode {
   const L = useSettingsMessages();
+  const scopeLabels = {
+    personal: L._hierarchy.onlyYou,
+    workspace: L._hierarchy.wholeWorkspace,
+    mixed: L._hierarchy.personalShared,
+  };
 
   return (
     <PageHeading
       crumbs={[{ label: L._extra.settingsNav, href: "/settings" }, { label: title }]}
       title={title}
       description={description}
-      actions={actions}
+      actions={
+        <div className="flex flex-wrap items-center justify-end gap-3">
+          {scope !== undefined && (
+            <span className="rounded-full border px-2.5 py-1 text-xs text-muted-foreground">
+              {scopeLabels[scope]}
+            </span>
+          )}
+          {actions}
+        </div>
+      }
     />
   );
 }

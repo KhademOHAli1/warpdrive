@@ -25,7 +25,7 @@ describe("Farsi application shell", () => {
       </LocaleProvider>,
     );
     expect(screen.getByRole("button", { name: "باز کردن جست‌وجو" })).toHaveTextContent(
-      "جست‌وجو در فرصت‌های فروش",
+      "جست‌وجو در فضای کاری…",
     );
   });
 

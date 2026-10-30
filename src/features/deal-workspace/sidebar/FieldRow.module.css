@@ -1,0 +1,22 @@
+.row {
+  container: record-field / inline-size;
+  display: grid;
+  grid-template-columns: minmax(0, min(7rem, 36%)) minmax(0, 1fr);
+  align-items: baseline;
+  column-gap: 0.75rem;
+  row-gap: 0.25rem;
+  padding-block: 0.375rem;
+}
+
+/* Narrow cards need a full value line, not a shrinking sliver beside a fixed label. */
+@container record-field (max-width: 18rem) {
+  .label {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+    text-align: start;
+  }
+
+  .value {
+    grid-column: 1 / -1;
+  }
+}

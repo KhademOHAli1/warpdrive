@@ -5,9 +5,11 @@ import { SharedComposeBar } from "@/features/compose/SharedComposeBar";
 import { MergeDialog } from "@/features/contacts/MergeDialog";
 import type { PersonDetail } from "@/features/contacts/personsRepo";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
+import { RecordLink } from "@/features/navigation/RecordLink";
 import { trpc } from "@/lib/trpc-client";
 import type { CustomFieldDef } from "@/types/customFields";
 import { PersonDetailHeader } from "../../ContactDetailHeader";
+import styles from "../../ContactDetailLayout.module.css";
 import { ContactTimelinePanel, FilesPanel, TabStrip } from "../../contactDetail.shared";
 import { PersonSidebar } from "./PersonSidebar";
 
@@ -63,10 +65,21 @@ export function PersonDetailClient({
   }
 
   return (
-    <div className="flex h-full flex-col p-4">
+    <div className={`${styles.root} flex h-full min-w-0 flex-col`}>
       <PersonDetailHeader
         entityId={person.id}
         name={person.name}
+        subtitle={
+          person.orgId !== null && orgName !== null ? (
+            <RecordLink
+              href={`/contacts/orgs/${person.orgId}`}
+              preview={{ id: person.orgId, title: orgName }}
+              className="hover:text-primary hover:underline"
+            >
+              <bdi dir="auto">{orgName}</bdi>
+            </RecordLink>
+          ) : undefined
+        }
         labels={person.labels}
         followers={followers}
         isFollowedBySelf={isFollowedBySelf}
@@ -84,7 +97,7 @@ export function PersonDetailClient({
         />
       )}
 
-      <div className="grid min-h-0 flex-1 grid-cols-1 gap-6 lg:grid-cols-[35fr_65fr]">
+      <div className={styles.columns}>
         <PersonSidebar
           person={person}
           orgName={orgName}

@@ -45,17 +45,29 @@ interface TipProps {
   label: React.ReactNode;
   children: React.ReactNode;
   side?: React.ComponentPropsWithoutRef<typeof RadixTooltip.TooltipContent>["side"];
+  className?: string;
+  delayDuration?: number;
+  sideOffset?: number;
 }
 
 // Convenience wrapper for the common native-title migration: one hint, one trigger.
 // Self-provides a TooltipProvider (shadcn's current pattern) so a <Tip> works anywhere,
 // including components rendered in isolation under test, without a global provider.
-export function Tip({ label, children, side }: TipProps): React.ReactNode {
+export function Tip({
+  label,
+  children,
+  side,
+  className,
+  delayDuration = 300,
+  sideOffset = 4,
+}: TipProps): React.ReactNode {
   return (
-    <TooltipProvider delayDuration={300}>
+    <TooltipProvider delayDuration={delayDuration}>
       <Tooltip>
         <TooltipTrigger asChild>{children}</TooltipTrigger>
-        <TooltipContent side={side}>{label}</TooltipContent>
+        <TooltipContent side={side} className={className} sideOffset={sideOffset}>
+          {label}
+        </TooltipContent>
       </Tooltip>
     </TooltipProvider>
   );

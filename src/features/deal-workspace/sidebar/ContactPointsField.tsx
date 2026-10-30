@@ -43,7 +43,9 @@ export function ContactPointsValue({
           key={index}
           className="min-w-0 max-w-full break-words"
         >
-          <LinkValue href={href(kind, point.value)}>{point.value}</LinkValue>
+          <bdi dir="ltr">
+            <LinkValue href={href(kind, point.value)}>{point.value}</LinkValue>
+          </bdi>
         </span>
       ))}
     </span>

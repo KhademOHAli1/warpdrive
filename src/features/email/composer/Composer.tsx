@@ -13,6 +13,7 @@ import { ComposerFooter } from "./ComposerFooter";
 import { ComposerHeader } from "./ComposerHeader";
 import type { ComposerContext } from "./composer.types";
 import { mergeRecipientEmail, resolveComposerLinks } from "./composerLinks";
+import { DraftSaveStatus } from "./DraftSaveStatus";
 import { dealDefaultRecipients } from "./dealRecipients";
 import { InsertToolbar } from "./InsertToolbar";
 import { RecipientsRow } from "./RecipientsRow";
@@ -145,7 +146,7 @@ export function Composer({
   const draftIdRef = useRef<string | undefined>(draft?.id);
   // Shared in-flight save promise: lets send await a racing autosave before deleting the draft.
   const draftInFlightRef = useRef<Promise<void> | null>(null);
-  useDraftAutosave({
+  const autosave = useDraftAutosave({
     accountId,
     threadId: resolvedThreadId ?? null,
     subject,
@@ -192,8 +193,6 @@ export function Composer({
     inFlightRef: draftInFlightRef,
   });
 
-  // AttachButton needs an entityId for the upload; use dealId in deal context,
-  // otherwise fall back to accountId as a stable entity anchor.
   const attachEntityId = context?.kind === "deal" ? context.dealId : accountId;
   const attachEntityType =
     context?.kind === "deal" ? ("deal" as const) : ("email_message" as const);
@@ -215,6 +214,7 @@ export function Composer({
         }
       />
       <ComposerErrorAlert error={error} onDismiss={() => setError(null)} />
+      <DraftSaveStatus status={autosave.status} onRetry={autosave.retry} />
       <RecipientsRow
         key={recipientsNonce}
         to={toList}
@@ -225,8 +225,6 @@ export function Composer({
         onBccChange={setBccList}
       />
       <SubjectRow value={subject} onChange={setSubject} />
-      {/* PD places the template / insert-field / signature row directly above the body, not at the
-          top of the composer. */}
       <div className="flex items-center gap-2">
         <InsertToolbar
           key={`toolbar-${recipientsNonce}`}
@@ -253,20 +251,14 @@ export function Composer({
         onChange={setBody}
         ariaLabel={E._extra.email_body}
         insertToken={insertToken}
-        // Frame the editor as a white rounded 14px card to match PD's composer body.
         frameClassName="rounded-md border border-border bg-background text-sm"
-        // PD keeps the composer compact and top-anchored: the editor is a fixed writing area with the
-        // format toolbar docked right below it near the top of the page, NOT a full-viewport box that
-        // pushes the toolbar to the bottom. A modest min-height gives room to write without stretching.
         contentClassName="min-h-40 [&_.ProseMirror]:min-h-40"
       />
-      {/* Confirmed attachments list above the footer action row. */}
       <AttachmentList
         attachments={attachments}
         onRemove={(fileId) => setAttachments((prev) => prev.filter((a) => a.fileId !== fileId))}
       />
       <div className="flex items-center gap-2">
-        {/* Paperclip attach button sits in the left slot of the footer row. */}
         <AttachButton
           entityType={attachEntityType}
           entityId={attachEntityId}

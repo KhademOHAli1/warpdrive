@@ -1,6 +1,6 @@
 "use client";
 import type React from "react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { BulkActionBar } from "@/components/data-table/BulkActionBar";
 import { BulkDeleteButton } from "@/components/data-table/BulkDeleteButton";
 import { ColumnsMenu } from "@/components/data-table/ColumnsMenu";
@@ -8,27 +8,32 @@ import { type ColumnSort, useColumnSort } from "@/components/data-table/useColum
 import { useColumns } from "@/components/data-table/useColumns";
 import { usePersistColumns } from "@/components/data-table/usePersistColumns";
 import { useRowSelection } from "@/components/data-table/useRowSelection";
+import { Button } from "@/components/ui/Button";
 import { DEFAULT_BASE_CURRENCY } from "@/constants/currency";
 import { customFieldColumns } from "@/features/custom-fields/listColumns";
 import {
   type CustomFieldRefLabels,
   CustomFieldRefLabelsProvider,
   EMPTY_REF_LABELS,
-  mergeRefLabels,
 } from "@/features/custom-fields/refLabelsContext";
 import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
-import { trpc } from "@/lib/trpc-client";
 import type { CustomFieldDef } from "@/types/customFields";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { deleteOrgAction } from "./actions";
 import { BulkMergeDialog } from "./BulkMergeDialog";
+import {
+  ContactDirectoryCriteria,
+  ContactDirectoryEmptyState,
+  ContactDirectoryToolbar,
+} from "./ContactDirectorySurface";
 import type { ContactFilterDefinition } from "./contactFilterConfig";
 import { OrgsListToolbar } from "./OrgsListToolbar";
 import { type OrgsListRow, OrgsTable } from "./OrgsTable";
 import { orgColumns } from "./orgColumns";
 import type { OrgSortField } from "./schemas";
+import { useContactSearch } from "./useContactSearch";
+import { useOrgsListPaging } from "./useOrgsListPaging";
 
-const PAGE_SIZE = 50;
 // Stable module reference: passed as useColumnSort's fallback, so `effective` only changes
 // reference when the sort state itself changes (not on every OrgsList re-render).
 const DEFAULT_SORT: ColumnSort<OrgSortField> = { field: "name", dir: "asc" };
@@ -41,6 +46,7 @@ export interface OrgsListProps {
   customFieldDefs?: CustomFieldDef[];
   baseCurrency?: string;
   refLabels?: CustomFieldRefLabels;
+  emptyAction?: React.ReactNode;
 }
 
 // Organizations list for the Contacts nav. Client-side "Load more" pages through the rest
@@ -54,6 +60,7 @@ export function OrgsList({
   customFieldDefs = [],
   baseCurrency = DEFAULT_BASE_CURRENCY,
   refLabels: initialRefLabels = EMPTY_REF_LABELS,
+  emptyAction,
 }: OrgsListProps): React.ReactNode {
   const tContacts = useAppTranslations("contacts");
 
@@ -64,22 +71,6 @@ export function OrgsList({
   );
   const columns = useColumns(catalog, initialColumns);
   usePersistColumns("orgs", columns.order);
-  const utils = trpc.useUtils();
-  // A ref, not a dependency: trpc.useUtils() is documented as stable, but reading through a ref
-  // means fetchPage's identity can't be knocked loose by a caller (e.g. a test double) that
-  // returns a fresh object per render, which would otherwise cascade into reload/the sort-change
-  // effect and re-fire on every render.
-  const utilsRef = useRef(utils);
-  // Written in an effect, not during render: ref writes during render are unsafe under concurrent
-  // rendering. fetchPage only reads utilsRef inside callbacks, which always run after commit.
-  useEffect(() => {
-    utilsRef.current = utils;
-  });
-  const [rows, setRows] = useState<OrgsListRow[]>(initial);
-  const [total, setTotal] = useState(initialTotal);
-  const [refLabels, setRefLabels] = useState(initialRefLabels);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const selection = useRowSelection();
   // Depend on the stable callback, not the selection object, which is recreated every render.
   const clearSelection = selection.clear;
@@ -90,64 +81,15 @@ export function OrgsList({
   // Whether the pair-merge dialog is open (only reachable with exactly two rows selected).
   const [merging, setMerging] = useState(false);
 
-  const fetchPage = useCallback(
-    async (
-      offset: number,
-    ): Promise<{ rows: OrgsListRow[]; total: number; refLabels: CustomFieldRefLabels }> => {
-      const page = await utilsRef.current.client.contacts.listOrgs.query({
-        offset,
-        limit: PAGE_SIZE,
-        sort: effective,
-        filter: filter ?? undefined,
-      });
-      return {
-        rows: page.rows.map((r) => ({
-          id: r.id,
-          name: r.name,
-          address: r.address,
-          customFields: r.customFields,
-          peopleCount: r.peopleCount,
-          closedDeals: r.closedDeals,
-          openDeals: r.openDeals,
-        })),
-        total: page.total,
-        refLabels: page.refLabels,
-      };
-    },
-    [effective, filter],
-  );
-
-  const loadMore = useCallback(async (): Promise<void> => {
-    setLoading(true);
-    setError(null);
-    try {
-      const page = await fetchPage(rows.length);
-      setRows((prev) => [...prev, ...page.rows]);
-      setTotal(page.total);
-      setRefLabels((prev) => mergeRefLabels(prev, page.refLabels));
-    } catch {
-      // The list query has a server-side AbortSignal.timeout, so rejection is realistic.
-      // Surface it inline and leave the button enabled to retry rather than swallow it.
-      setError(tContacts("couldnTLoadMoreOrganizationsPleaseTryAgain"));
-    } finally {
-      setLoading(false);
-    }
-  }, [fetchPage, rows.length, tContacts]);
-
-  const reload = useCallback(async (): Promise<void> => {
-    setLoading(true);
-    setError(null);
-    try {
-      const page = await fetchPage(0);
-      setRows(page.rows);
-      setTotal(page.total);
-      setRefLabels(page.refLabels);
-    } catch {
-      setError(tContacts("couldnTLoadOrganizationsPleaseTryAgain"));
-    } finally {
-      setLoading(false);
-    }
-  }, [fetchPage, tContacts]);
+  const searchInput = useContactSearch();
+  const { rows, total, refLabels, loading, error, setError, loadMore, reload } = useOrgsListPaging({
+    initial,
+    initialTotal,
+    initialRefLabels,
+    sort: effective,
+    filter,
+    search: searchInput.search,
+  });
 
   // Re-query the first page under the new sort. Skip the initial mount: the first page is
   // already seeded server-side under the default sort, so firing here too would double-fetch.
@@ -178,14 +120,13 @@ export function OrgsList({
     if (failedIds.length > 0) setError(tContacts("couldnTDeleteSomeOrganizationsPleaseTryAgain"));
   }
 
-  // Only the truly-empty list (no filter) shows the bare empty state; with a filter active the
-  // toolbar stays so the user can clear/adjust a filter that produced zero matches.
-  if (filter === null && rows.length === 0) {
-    return (
-      <p className="text-sm text-muted-foreground">
-        {tContacts("noOrganizationsAreVisibleToYouYet")}
-      </p>
-    );
+  const narrowed = searchInput.draft.trim() !== "" || filter !== null;
+  const busy = loading || searchInput.settling;
+  function clearCriteria(): void {
+    searchInput.clear();
+    setFilter(null);
+    setSavedViewId(null);
+    selection.clear();
   }
 
   const visibleIds = rows.map((r) => r.id);
@@ -200,12 +141,22 @@ export function OrgsList({
       : null;
 
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex flex-wrap items-center gap-3"></div>
-      <div className="flex items-center justify-between gap-2">
-        <p className="text-xs text-muted-foreground tabular-nums">
-          {tContacts("countLabel", { shown: rows.length, total })}
-        </p>
+    <section aria-busy={busy} className="overflow-hidden rounded-xl border bg-card shadow-sm">
+      <ContactDirectoryToolbar
+        kind="org"
+        draft={searchInput.draft}
+        onSearch={(value) => {
+          searchInput.setDraft(value);
+          selection.clear();
+        }}
+        onSubmit={searchInput.submit}
+        onClear={searchInput.clear}
+        summary={
+          busy
+            ? tContacts("directory.updating")
+            : tContacts("countLabel", { shown: rows.length, total })
+        }
+      >
         <OrgsListToolbar
           filter={filter}
           savedViewId={savedViewId}
@@ -218,7 +169,22 @@ export function OrgsList({
             setFilter(def);
           }}
         />
-      </div>
+
+        <ColumnsMenu
+          catalog={catalog}
+          order={columns.order}
+          visibleKeys={columns.visibleKeys}
+          onToggle={columns.toggle}
+          onReorder={columns.reorder}
+        />
+      </ContactDirectoryToolbar>
+      {narrowed && (
+        <ContactDirectoryCriteria
+          query={searchInput.draft.trim()}
+          count={filter?.conditions.length ?? 0}
+          onClear={clearCriteria}
+        />
+      )}
       {selection.count > 0 && (
         <BulkActionBar count={selection.count} onClear={selection.clear}>
           {mergePair !== null && (
@@ -250,45 +216,59 @@ export function OrgsList({
           onClose={() => setMerging(false)}
         />
       )}
-      <div className="overflow-hidden rounded-sg border bg-card shadow-sm">
-        <CustomFieldRefLabelsProvider value={refLabels}>
-          <OrgsTable
-            rows={rows}
-            sort={effective}
-            onSort={cycle}
-            isSelected={selection.isSelected}
-            allSelected={selection.allSelected(visibleIds)}
-            onToggleRow={selection.toggle}
-            onToggleAll={() => selection.toggleAll(visibleIds)}
-            visibleColumns={columns.visibleColumns}
-            currency={baseCurrency}
-            columnsMenu={
-              <ColumnsMenu
-                catalog={catalog}
-                order={columns.order}
-                visibleKeys={columns.visibleKeys}
-                onToggle={columns.toggle}
-                onReorder={columns.reorder}
-              />
-            }
-          />
-        </CustomFieldRefLabelsProvider>
-      </div>
+      {rows.length === 0 && !busy ? (
+        <ContactDirectoryEmptyState
+          kind="org"
+          narrowed={narrowed}
+          onClear={clearCriteria}
+          action={emptyAction}
+        />
+      ) : (
+        <div>
+          <CustomFieldRefLabelsProvider value={refLabels}>
+            <OrgsTable
+              rows={rows}
+              sort={effective}
+              onSort={cycle}
+              isSelected={selection.isSelected}
+              allSelected={selection.allSelected(visibleIds)}
+              onToggleRow={selection.toggle}
+              onToggleAll={() => selection.toggleAll(visibleIds)}
+              visibleColumns={columns.visibleColumns}
+              currency={baseCurrency}
+            />
+          </CustomFieldRefLabelsProvider>
+        </div>
+      )}
       {error !== null && (
-        <p role="alert" className="self-center text-sm text-red-600">
-          {error}
-        </p>
-      )}
-      {rows.length < total && (
-        <button
-          type="button"
-          disabled={loading}
-          onClick={() => void loadMore()}
-          className="self-center rounded-md border px-4 py-1.5 text-sm hover:bg-accent disabled:opacity-50 active:not-disabled:scale-[0.96] transition-transform"
+        <div
+          role="alert"
+          className="flex flex-wrap items-center justify-between gap-3 border-t px-4 py-3 text-sm text-destructive"
         >
-          {loading ? tContacts("loading") : tContacts("loadMore")}
-        </button>
+          <span>{error}</span>
+          <Button type="button" size="sm" variant="outline" onClick={() => void reload()}>
+            {tContacts("directory.retry")}
+          </Button>
+        </div>
       )}
-    </div>
+      <footer className="flex min-h-14 flex-wrap items-center justify-between gap-3 border-t px-4 py-3">
+        <p className="text-xs text-muted-foreground tabular-nums">
+          {busy
+            ? tContacts("directory.updating")
+            : tContacts("countLabel", { shown: rows.length, total })}
+        </p>
+        {rows.length < total && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={busy}
+            onClick={() => void loadMore()}
+          >
+            {loading ? tContacts("loading") : tContacts("loadMore")}
+          </Button>
+        )}
+      </footer>
+    </section>
   );
 }

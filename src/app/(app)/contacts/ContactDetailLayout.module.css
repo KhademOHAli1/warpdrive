@@ -1,0 +1,19 @@
+.root {
+  container: contact-detail / inline-size;
+  min-width: 0;
+}
+
+.columns {
+  display: grid;
+  min-height: 0;
+  flex: 1;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.5rem;
+}
+
+/* The available record width, including inside a drawer, determines the layout. */
+@container contact-detail (min-width: 56rem) {
+  .columns {
+    grid-template-columns: minmax(20rem, 0.38fr) minmax(0, 0.62fr);
+  }
+}

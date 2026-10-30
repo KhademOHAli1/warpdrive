@@ -85,7 +85,10 @@ function SortableHeader({
   onSort: (field: PersonSortField) => void;
 }): React.ReactNode {
   return (
-    <th className="px-3 py-2 font-semibold">
+    <th
+      aria-sort={sort.field === field ? (sort.dir === "asc" ? "ascending" : "descending") : "none"}
+      className="px-4 py-3 text-start font-medium"
+    >
       <button
         type="button"
         onClick={() => onSort(field)}
@@ -120,8 +123,8 @@ function renderPersonCell(
   switch (col.key) {
     case "name":
       return (
-        <span className="flex items-center gap-2.5 font-medium">
-          <Avatar name={row.name} className="h-6 w-6" />
+        <span className="flex min-w-40 items-center gap-3 font-medium">
+          <Avatar name={row.name} className="size-8 shrink-0" />
           <RecordLink
             href={`/contacts/people/${row.id}`}
             preview={
@@ -129,7 +132,7 @@ function renderPersonCell(
                 ? { id: row.id, title: row.name, subtitle: row.orgName }
                 : { id: row.id, title: row.name }
             }
-            className="text-primary hover:underline"
+            className="text-foreground hover:text-primary hover:underline"
           >
             <bdi dir="auto">{row.name}</bdi>
           </RecordLink>
@@ -148,12 +151,23 @@ function renderPersonCell(
         (row.orgName ?? "")
       );
     case "email":
-      return <bdi dir="ltr">{row.primaryEmail ?? ""}</bdi>;
+      return row.primaryEmail === null ? (
+        "—"
+      ) : (
+        <a href={`mailto:${row.primaryEmail}`} className="hover:text-primary hover:underline">
+          <bdi dir="ltr">{row.primaryEmail}</bdi>
+        </a>
+      );
     case "phone":
-      return (
-        <bdi dir="ltr">
-          {row.phone === null ? "" : usPhoneFormat ? formatUsPhone(row.phone) : row.phone}
-        </bdi>
+      return row.phone === null ? (
+        "—"
+      ) : (
+        <a
+          href={`tel:${row.phone}`}
+          className="whitespace-nowrap hover:text-primary hover:underline"
+        >
+          <bdi dir="ltr">{usPhoneFormat ? formatUsPhone(row.phone) : row.phone}</bdi>
+        </a>
       );
     case "closedDeals":
       return number(row.closedDeals);
@@ -165,9 +179,9 @@ function renderPersonCell(
 function cellClass(col: PeopleColumn): string {
   if (col.customField !== undefined) return customFieldCellClass(col.customField);
   if (col.key === "phone" || col.key === "closedDeals")
-    return "px-3 py-2 tabular-nums text-muted-foreground";
-  if (col.key === "name") return "px-3 py-2";
-  return "px-3 py-2 text-muted-foreground";
+    return "px-4 py-[var(--row-py)] tabular-nums text-muted-foreground";
+  if (col.key === "name") return "px-4 py-[var(--row-py)]";
+  return "px-4 py-[var(--row-py)] text-muted-foreground";
 }
 
 export function PeopleTable({
@@ -194,7 +208,7 @@ export function PeopleTable({
       <div className="overflow-x-auto">
         <table className="w-full border-collapse text-sm">
           <thead>
-            <tr className="border-b bg-muted/60 text-start text-muted-foreground">
+            <tr className="border-b bg-muted/30 text-start text-xs text-muted-foreground">
               <th className="w-8 px-3 py-2">
                 <Checkbox
                   label={tContacts("selectAllPeople")}
@@ -212,7 +226,7 @@ export function PeopleTable({
                     onSort={onSort}
                   />
                 ) : (
-                  <th key={col.key} className="px-3 py-2 font-semibold">
+                  <th key={col.key} className="px-4 py-3 text-start font-medium">
                     {col.header}
                   </th>
                 ),
@@ -221,7 +235,11 @@ export function PeopleTable({
           </thead>
           <tbody>
             {rows.map((row) => (
-              <tr key={row.id} className="border-b last:border-0 hover:bg-muted/50">
+              <tr
+                key={row.id}
+                data-state={isSelected(row.id) ? "selected" : undefined}
+                className="border-b transition-colors last:border-0 hover:bg-muted/30 focus-within:bg-muted/30 data-[state=selected]:bg-primary/5"
+              >
                 <td className="px-3 py-2">
                   <Checkbox
                     label={tContacts("selectRecord", { name: row.name })}

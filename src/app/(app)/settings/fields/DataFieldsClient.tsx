@@ -94,7 +94,7 @@ export function DataFieldsClient({
 
   return (
     <SettingsPage>
-      <SettingsHeading title={S.dataFields} description={L._fields.description} />
+      <SettingsHeading scope="workspace" title={S.dataFields} description={L._fields.description} />
 
       <div className="block">
         <span className="mb-1 block text-sm font-medium">{S.entity}</span>

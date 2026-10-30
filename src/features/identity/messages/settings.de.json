@@ -551,7 +551,12 @@
     },
     "activityGoalDisplayLabel": "{action, select, added {Hinzugefügte Aktivitäten} completed {Erledigte Aktivitäten} other {Aktivitäten}} ({interval})",
     "unknownUser": "Unbekanntes Benutzerkonto",
-    "unknownTeam": "Unbekanntes Team"
+    "unknownTeam": "Unbekanntes Team",
+    "interfaceGroups": {
+      "followUps": "Folgeaktivitäten",
+      "recordDetails": "Datensatzdetails",
+      "displayAndEmail": "Anzeige und E-Mail"
+    }
   },
   "_labels": {
     "builtin": {
@@ -705,5 +710,44 @@
       "undoing": "Wird rückgängig gemacht",
       "undone": "Rückgängig gemacht"
     }
+  },
+  "_hierarchy": {
+    "personal": "Persönlich",
+    "workspace": "Arbeitsbereich",
+    "salesWorkflow": "Vertrieb und Arbeitsabläufe",
+    "email": "E-Mail",
+    "dataIntegrations": "Daten und Integrationen",
+    "profile": "Profil",
+    "profileDescription": "Verwalten Sie Ihr Foto und Ihren Anzeigenamen. Ihre Konto-E-Mail-Adresse wird hier angezeigt.",
+    "regional": "Sprache und Region",
+    "regionalDescription": "Wählen Sie Sprache, Kalender, Zeitzone und Zifferndarstellung.",
+    "appearance": "Darstellung",
+    "appearanceDescription": "Wählen Sie ein Design und die für Sie passende Anzeigedichte.",
+    "workflow": "Arbeitsabläufe",
+    "workflowDescription": "Legen Sie fest, was geschieht, wenn Sie Datensätze erstellen, Aktivitäten abschließen oder Verkaufschancen gewinnen.",
+    "workspaceDetails": "Angaben zum Arbeitsbereich",
+    "workspaceDescription": "Verwalten Sie den Unternehmensnamen und die Standardwährung Ihres Arbeitsbereichs.",
+    "activityTypes": "Aktivitätstypen",
+    "activityTypesDescription": "Legen Sie fest, welche Arten von Aktivitäten Ihr Team planen kann.",
+    "labelsDescription": "Verwalten Sie die Labels, mit denen Ihr Team Datensätze organisiert.",
+    "lostReasonsDescription": "Legen Sie die Gründe fest, die Ihr Team bei verlorenen Verkaufschancen auswählen kann.",
+    "emailContent": "Vorlagen und Signaturen",
+    "onlyYou": "Für Sie persönlich",
+    "wholeWorkspace": "Gesamter Arbeitsbereich",
+    "accountDetailsDescription": "Speichern Sie Ihren Namen unten. Ein neues Foto wird nach dem Hochladen automatisch gespeichert.",
+    "autoSave": "Änderungen werden automatisch gespeichert.",
+    "saveToApply": "Wählen Sie einen Wert aus und speichern Sie, um ihn zu übernehmen.",
+    "theme": "Design",
+    "themeDescription": "Wählen Sie ein helles oder dunkles Design oder übernehmen Sie die Einstellung Ihres Geräts.",
+    "densityDescription": "Legen Sie die Abstände zwischen Zeilen und Bedienelementen fest.",
+    "preview": "Formatvorschau",
+    "previewDescription": "Diese Beispiele aktualisieren sich, sobald Sie Ihre Regionseinstellungen ändern.",
+    "previewDate": "Datum",
+    "previewTime": "Datum und Uhrzeit",
+    "previewNumber": "Zahl",
+    "sectionNavigation": "Kategorie der Einstellungen",
+    "timeZoneHelp": "Gilt für Aktivitätszeiten, geplante E-Mails und Datumsanzeigen.",
+    "activityTargetSaveHint": "Wird beim Verlassen des Feldes oder mit der Eingabetaste gespeichert.",
+    "personalShared": "Persönliche und gemeinsame Inhalte"
   }
 }

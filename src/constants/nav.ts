@@ -13,3 +13,7 @@ export const NAV_ITEMS = [
 ] as const;
 
 export type NavKey = (typeof NAV_ITEMS)[number]["key"];
+
+export const OPEN_SIDEBAR_EVENT = "warpdrive:open-sidebar";
+export const MOBILE_SIDEBAR_ID = "mobile-navigation-panel";
+export const MOBILE_SIDEBAR_TRIGGER_ID = "mobile-navigation-trigger";

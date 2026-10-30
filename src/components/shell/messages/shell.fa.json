@@ -21,9 +21,15 @@
     "engagement": "در حال بارگذاری روند تعامل‌ها"
   },
   "searchOpen": "باز کردن جست‌وجو",
+  "searchHeaderPlaceholder": "جست‌وجو در فضای کاری…",
   "searchPlaceholder": "جست‌وجو در فرصت‌های فروش، افراد، سازمان‌ها و سرنخ‌ها…",
   "reconnecting": "در حال برقراری دوبارهٔ اتصال…",
   "home": "صفحهٔ اصلی {app}",
+  "sidebar": {
+    "section": "فضای کاری",
+    "expandGroup": "باز کردن زیرمنوی {label}",
+    "collapseGroup": "بستن زیرمنوی {label}"
+  },
   "appearance": {
     "title": "ظاهر برنامه",
     "day": "روشن",

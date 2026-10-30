@@ -36,7 +36,11 @@ export default async function PermissionSetsPage(): Promise<ReactNode> {
   const sets = rows.map((ps) => ({ id: ps.id, name: ps.name, flags: ps.flags }));
   return (
     <SettingsPage>
-      <SettingsHeading title={L.permissionSets} description={L.permissionSetsDescription} />
+      <SettingsHeading
+        scope="workspace"
+        title={L.permissionSets}
+        description={L.permissionSetsDescription}
+      />
       <SettingsCard className="shadow-none">
         <table className="w-full text-sm">
           <thead className={SETTINGS_TABLE_HEAD}>

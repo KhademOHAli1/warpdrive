@@ -28,8 +28,8 @@ export default async function AppLayout({ children }: { children: ReactNode }): 
   const jar = await cookies();
   const hasCsrf = jar.get(CSRF_COOKIE) !== undefined;
   // Read the persisted rail state server-side so the nav renders at its correct width on the first
-  // paint (no reload flash). Absent cookie collapses by default; the client reconciles after mount.
-  const navExpanded = jar.get(NAV_PREF_COOKIE)?.value === "1";
+  // paint. New visits use the expanded Finance OS desktop default; mobile uses a drawer.
+  const navExpanded = jar.get(NAV_PREF_COOKIE)?.value !== "0";
   // The avatar name + photo now ride along on the hydrated actor (createContext already read the
   // user row), so the shell no longer re-reads that row per authenticated page. Only the per-user
   // interface preferences remain; default comfortable when no row exists (DealCard/Board read the
@@ -63,15 +63,17 @@ export default async function AppLayout({ children }: { children: ReactNode }): 
               <CsrfRefresher hasCsrf={hasCsrf} />
               {ctx.actor.type === "admin" && <VersionBanner />}
               <ReconnectBanner />
-              <TopBar
-                userId={ctx.actor.id}
-                userName={ctx.actor.name}
-                avatarUrl={ctx.actor.avatarUrl}
-                appearance={parseAppearance(prefs.ui.appearance)}
-              />
               <div className="flex min-h-0 flex-1">
                 <LeftNav initialExpanded={navExpanded} />
-                <main className="min-w-0 flex-1 overflow-auto bg-muted/70 p-6">{children}</main>
+                <div className="flex min-w-0 flex-1 flex-col">
+                  <TopBar
+                    userId={ctx.actor.id}
+                    userName={ctx.actor.name}
+                    avatarUrl={ctx.actor.avatarUrl}
+                    appearance={parseAppearance(prefs.ui.appearance)}
+                  />
+                  <main className="min-w-0 flex-1 overflow-auto bg-muted/70 p-6">{children}</main>
+                </div>
               </div>
               <CommandPalette />
               <GlobalShortcuts />

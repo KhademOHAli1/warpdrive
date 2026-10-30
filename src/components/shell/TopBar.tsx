@@ -5,7 +5,9 @@ import { getAppTranslations } from "@/features/i18n/server";
 import { NotificationsBell } from "@/features/notifications/ui/NotificationsBell";
 import { GlobalAddMenu } from "@/features/quick-add/GlobalAddMenu";
 import type { Appearance } from "@/features/theme/appearance";
+import { MobileNavTrigger } from "./MobileNavTrigger";
 import { SearchTrigger } from "./SearchTrigger";
+import styles from "./TopBar.module.css";
 import { UserMenu } from "./UserMenu";
 
 export async function TopBar({
@@ -21,23 +23,30 @@ export async function TopBar({
 }): Promise<React.ReactNode> {
   const t = await getAppTranslations("shell");
   return (
-    <header className="flex h-14 items-center gap-4 border-b bg-background px-4">
-      <Link
-        href="/pipeline"
-        aria-label={t("home", { app: APP_NAME })}
-        className="w-44 shrink-0 text-base font-semibold tracking-tight transition-opacity hover:opacity-80"
-      >
-        <bdi dir="ltr">{APP_NAME}</bdi>
-      </Link>
-      <div className="mx-auto flex w-full max-w-lg items-center gap-2">
-        <search className="min-w-0 flex-1">
+    <header className={styles.header}>
+      <div className={styles.brandArea}>
+        <MobileNavTrigger />
+        <Link href="/pipeline" aria-label={t("home", { app: APP_NAME })} className={styles.brand}>
+          <span aria-hidden="true" className={styles.mark} dir="ltr">
+            <i />
+            <i />
+            <i />
+          </span>
+          <bdi dir="ltr" className={styles.wordmark}>
+            {APP_NAME}
+          </bdi>
+        </Link>
+      </div>
+      <div className={styles.tools}>
+        <search className={styles.searchSlot}>
           <SearchTrigger />
         </search>
         {/* Global quick-add: opens Deal/Lead/Person/Organization create modals from any page. */}
-        <GlobalAddMenu />
+        <GlobalAddMenu triggerClassName={styles.quickAddTrigger} />
       </div>
-      <div className="flex w-44 shrink-0 items-center justify-end gap-3">
+      <div className={styles.personal}>
         <NotificationsBell userId={userId} />
+        <span aria-hidden="true" className={styles.divider} />
         <UserMenu
           userId={userId}
           userName={userName}

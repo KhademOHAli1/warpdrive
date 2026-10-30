@@ -286,5 +286,24 @@ records, external product names and stored identifiers remain content. No email 
 The verified app runs separately on local port 3103. External OAuth/Gmail delivery and production
 Docker/deployment acceptance remain installation-specific; they are not inferred from local
 translation checks. The user's repository remains an open source fork of sneg55/warpdrive, with
-upstream history and MIT attribution preserved. Concurrent unpublished interface redesign work
-in the original checkout remains separate from this qualified source.
+upstream history and MIT attribution preserved. At this checkpoint the concurrent interface work
+was still separate; the consolidation below supersedes that temporary split.
+
+## Current UI consolidation and calendar handoff, 2026-10-30
+
+The newer sidebar, top bar, settings hierarchy, contact directories and inbox workspace have
+been reconciled with the localized source. All 164 original changed or new paths were backed
+up before reconciliation, including eight intentional deletions. Existing German changes and
+the user's Farsi wording were preserved. The 103 new interface messages have German resources,
+bringing the complete catalogs to 2,528 messages per language across 22 groups.
+
+The combined source passes route generation/typecheck, translation checks, lint and production
+and worker builds. Two stale layout tests were updated to verify the current inbox grid and
+toolbar typography. The preview on port 3103 now uses the reconciled interface, including the
+separate language and region, appearance and workflow settings pages.
+The final complete unit run passed 5,514 tests in 877 files; lint passed with 11 existing
+nonblocking warnings.
+
+The next calendar goal is the [Google Calendar event workflow](google-calendar-event-workflow.md).
+The user requested documentation only at this handoff. Calendar redesign, provider integrations
+and synchronization remain deferred; the document records gaps and future acceptance criteria.

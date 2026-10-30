@@ -37,8 +37,10 @@ const NEW_EMAIL_BUTTON_CLASSES =
 
 export function InboxFolderRail({
   newEmailEnabled,
+  hideComposeOnList = false,
 }: {
   newEmailEnabled: boolean;
+  hideComposeOnList?: boolean;
 }): React.ReactNode {
   const E = useEmailMessages();
   const format = useFormatters();
@@ -50,12 +52,12 @@ export function InboxFolderRail({
   return (
     <nav
       aria-label={E._extra.mail_folders}
-      className="flex w-60 shrink-0 flex-col gap-1 border-e p-3"
+      className="flex h-full w-full min-w-0 flex-col gap-1 border-e p-3"
     >
       {/* A disabled Link has no real-world meaning (it would still be clickable), so the
           no-mailbox state renders a genuinely inert disabled button instead of a navigable
           link; only the enabled state navigates to the full-pane compose route. */}
-      {newEmailEnabled ? (
+      {hideComposeOnList && pathname === "/inbox" ? null : newEmailEnabled ? (
         <Tip label={E._extra.compose_a_new_email}>
           <Link
             href="/inbox/compose"
@@ -86,6 +88,18 @@ export function InboxFolderRail({
           <Link
             key={key}
             href={`/inbox?folder=${key}`}
+            onClick={(event) => {
+              if (
+                pathname !== "/inbox" ||
+                event.metaKey ||
+                event.ctrlKey ||
+                event.shiftKey ||
+                event.altKey
+              )
+                return;
+              event.preventDefault();
+              window.history.pushState(null, "", `/inbox?folder=${key}`);
+            }}
             aria-current={activeFolder === key ? "page" : undefined}
             className={cn(
               "flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm",

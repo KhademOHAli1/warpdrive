@@ -115,10 +115,12 @@ export function InboxAttributeFilters({
   // client-side attribute filters keep working; defaults to "all" (no quick-filter) + a no-op.
   quickFilter = "all",
   onQuickFilterChange = () => {},
+  onClear,
 }: {
   value: AttributeFilterState;
   onChange: (next: AttributeFilterState) => void;
   quickFilter?: InboxFilter;
+  onClear?: () => void;
   onQuickFilterChange?: (next: InboxFilter) => void;
 }): React.ReactNode {
   const E = useEmailMessages();
@@ -183,6 +185,10 @@ export function InboxAttributeFilters({
           // Clear resets BOTH the client-side attribute filters and the server-side quick-filter;
           // resetting only the former left the list narrowed by a still-active quick-filter (codex
           // review). "all" is the no-quick-filter state (the linking tabs regain control).
+          if (onClear) {
+            onClear();
+            return;
+          }
           onChange(NO_ATTRIBUTE_FILTER);
           onQuickFilterChange("all");
         }}

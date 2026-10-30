@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { DOCS_SITE_URL } from "@/constants/docs";
@@ -44,8 +44,12 @@ describe("LeftNav", () => {
     // during SSR) and the client correcting to expanded post-mount, animating the width. With the
     // persisted state passed in as initialExpanded, the server render already reflects it, so there
     // is nothing to correct and nothing to animate.
-    expect(renderToStaticMarkup(<LeftNav initialExpanded />)).toMatch(/w-56\b/);
-    expect(renderToStaticMarkup(<LeftNav initialExpanded={false} />)).toMatch(/w-16\b/);
+    expect(renderToStaticMarkup(<LeftNav initialExpanded />)).toContain(
+      'data-sidebar-state="expanded"',
+    );
+    expect(renderToStaticMarkup(<LeftNav initialExpanded={false} />)).toContain(
+      'data-sidebar-state="collapsed"',
+    );
   });
 
   test("renders all primary destinations as links with a navigation landmark", () => {
@@ -70,12 +74,12 @@ describe("LeftNav", () => {
   });
 
   test("each destination shows a decorative icon (Pipedrive-style icon+label nav)", () => {
-    const { container } = render(<LeftNav />);
-    const links = container.querySelectorAll("nav a");
+    render(<LeftNav />);
+    const links = within(screen.getByRole("navigation", { name: "Primary" })).getAllByRole("link");
     // Every link carries an icon, and icons are aria-hidden so the accessible
     // name stays the label text.
     for (const link of links) {
-      expect(link.querySelector('svg[aria-hidden="true"]')).not.toBeNull();
+      expect(link.querySelector('[aria-hidden="true"]')).not.toBeNull();
     }
     expect(links.length).toBeGreaterThan(0);
   });
@@ -84,16 +88,14 @@ describe("LeftNav", () => {
     setViewport(true);
     render(<LeftNav />);
     expect(screen.getByRole("button", { name: "Collapse sidebar" })).not.toBeNull();
-    expect(screen.getByText("Pipeline").className).not.toContain("sr-only");
-    expect(screen.getByRole("navigation", { name: "Primary" }).className).toMatch(/w-56\b/);
+    expect(screen.getByText("Pipeline").getAttribute("aria-hidden")).toBe("false");
   });
 
   test("defaults to the collapsed rail on a small screen (no stored preference)", () => {
     setViewport(false);
     render(<LeftNav />);
     expect(screen.getByRole("button", { name: "Expand sidebar" })).not.toBeNull();
-    expect(screen.getByText("Pipeline").className).toContain("sr-only");
-    expect(screen.getByRole("navigation", { name: "Primary" }).className).toMatch(/w-16\b/);
+    expect(screen.getByText("Pipeline").getAttribute("aria-hidden")).toBe("true");
   });
 
   test("collapses to icons and expands to full labels via a toggle button", () => {
@@ -102,12 +104,12 @@ describe("LeftNav", () => {
     render(<LeftNav />);
     const toggle = screen.getByRole("button", { name: "Expand sidebar" });
     expect(toggle.getAttribute("aria-expanded")).toBe("false");
-    expect(screen.getByText("Pipeline").className).toContain("sr-only");
+    expect(screen.getByText("Pipeline").getAttribute("aria-hidden")).toBe("true");
 
     fireEvent.click(toggle);
     const collapse = screen.getByRole("button", { name: "Collapse sidebar" });
     expect(collapse.getAttribute("aria-expanded")).toBe("true");
-    expect(screen.getByText("Pipeline").className).not.toContain("sr-only");
+    expect(screen.getByText("Pipeline").getAttribute("aria-hidden")).toBe("false");
   });
 
   test("an explicit expand preference overrides the small-screen default across mounts", () => {
@@ -119,7 +121,7 @@ describe("LeftNav", () => {
 
     render(<LeftNav />);
     expect(screen.getByRole("button", { name: "Collapse sidebar" })).not.toBeNull();
-    expect(screen.getByText("Settings").className).not.toContain("sr-only");
+    expect(screen.getByText("Settings").getAttribute("aria-hidden")).toBe("false");
   });
 
   test("an explicit collapse preference overrides the wide-screen default across mounts", () => {
@@ -131,20 +133,18 @@ describe("LeftNav", () => {
 
     render(<LeftNav />);
     expect(screen.getByRole("button", { name: "Expand sidebar" })).not.toBeNull();
-    expect(screen.getByText("Settings").className).toContain("sr-only");
+    expect(screen.getByText("Settings").getAttribute("aria-hidden")).toBe("true");
   });
 
-  test("is a narrow, dark, icon-only rail (Pipedrive) with visually hidden labels when collapsed", () => {
+  test("keeps collapsed destinations named while hiding their duplicate inline labels", () => {
     setViewport(false);
-    const { container } = render(<LeftNav />);
-    const nav = screen.getByRole("navigation", { name: "Primary" });
-    // Narrow fixed-width rail, not a wide labelled sidebar.
-    expect(nav.className).toMatch(/w-16\b/);
-    // Dark rail surface.
-    expect(nav.className).toMatch(/bg-(slate|zinc|neutral|gray)-9\d0/);
-    // Labels are present for a11y but visually hidden (icon-only look).
-    for (const link of container.querySelectorAll("nav a")) {
-      const label = link.querySelector("span.sr-only");
+    render(<LeftNav />);
+
+    // Collapsed links remain named, while their inline copies leave the accessibility tree.
+    for (const link of within(screen.getByRole("navigation", { name: "Primary" })).getAllByRole(
+      "link",
+    )) {
+      const label = link.querySelector('[data-sidebar-copy-state="collapsed"]');
       expect(label).not.toBeNull();
     }
   });
@@ -212,17 +212,38 @@ describe("LeftNav bracket shortcuts", () => {
     expect(docs.getAttribute("rel")).toContain("noreferrer");
   });
 
-  test("the docs link sits directly above the collapse toggle", () => {
+  test("puts the collapse control before the navigation, as in Finance OS", () => {
     setViewport(true);
     render(<LeftNav />);
     const docs = screen.getByRole("link", { name: "Docs" });
     const toggle = screen.getByRole("button", { name: "Collapse sidebar" });
-    expect(docs.nextElementSibling).toBe(toggle);
+    expect(toggle.compareDocumentPosition(docs) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   test("keeps an accessible name for the docs link on the collapsed rail", () => {
     setViewport(false);
     render(<LeftNav />);
     expect(screen.getByRole("link", { name: "Docs" })).not.toBeNull();
+  });
+});
+
+describe("Finance OS submenu behavior", () => {
+  test("the first click reveals Contacts children before navigating", () => {
+    setViewport(true);
+    render(<LeftNav />);
+    fireEvent.click(screen.getByRole("link", { name: "Contacts" }));
+    expect(
+      screen
+        .getByRole("button", { name: "Collapse Contacts navigation" })
+        .getAttribute("aria-expanded"),
+    ).toBe("true");
+    expect(screen.getByRole("link", { name: "People" }).getAttribute("href")).toBe(
+      "/contacts/people",
+    );
+    expect(screen.getByRole("link", { name: "Organizations" }).getAttribute("href")).toBe(
+      "/contacts/orgs",
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Collapse Contacts navigation" }));
+    expect(screen.queryByRole("link", { name: "People" })).toBeNull();
   });
 });

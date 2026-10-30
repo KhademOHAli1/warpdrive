@@ -17,7 +17,7 @@ import { ContactsNav } from "./ContactsNav";
 afterEach(cleanup);
 
 describe("ContactsNav", () => {
-  it("uses the Settings secondary-navigation icon and active-state treatment", () => {
+  it("keeps section links and their active state while opening a record", () => {
     render(<ContactsNav />);
 
     for (const label of ["People", "Organizations", "Timeline"]) {
@@ -26,14 +26,17 @@ describe("ContactsNav", () => {
 
     const active = screen.getByRole("link", { name: "People" });
     expect(active).toHaveAttribute("aria-current", "page");
-    expect(active).toHaveClass("bg-blue-50", "font-semibold", "text-blue-700");
+    expect(active).toHaveClass("border-primary", "font-semibold", "text-primary");
 
     const idle = screen.getByRole("link", { name: "Organizations" });
-    expect(idle).toHaveClass("font-normal", "text-foreground");
+    expect(idle).toHaveClass("border-transparent", "text-muted-foreground");
   });
 
-  it("uses the same rail width as Settings navigation", () => {
+  it("uses a scrollable horizontal switcher without taking table width", () => {
     render(<ContactsNav />);
-    expect(screen.getByRole("navigation", { name: "Contacts sections" })).toHaveClass("w-56");
+    expect(screen.getByRole("navigation", { name: "Contacts sections" })).toHaveClass(
+      "overflow-x-auto",
+    );
+    expect(screen.getByRole("list")).toHaveClass("flex", "min-w-max");
   });
 });

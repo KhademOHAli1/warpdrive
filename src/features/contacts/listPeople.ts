@@ -12,6 +12,7 @@ import {
   PERSON_COLUMN_SQL,
   PERSON_FILTER_CONFIG,
 } from "./contactFilter";
+import { contactSearchCondition } from "./contactSearch";
 import { closedDealCountsForPeople } from "./peopleDealCounts";
 import { type ContactActor, toVisibleRecord } from "./personsRepo";
 import type { PersonBuiltinSortField, PersonSortField } from "./schemas";
@@ -62,6 +63,7 @@ export async function listPeople(
     limit: number;
     sort?: { field: PersonSortField; dir: "asc" | "desc" };
     filter?: ContactFilterDefinition;
+    search?: string;
   },
   signal: AbortSignal,
 ): Promise<ListPeopleResult> {
@@ -73,8 +75,11 @@ export async function listPeople(
     opts.filter !== undefined
       ? compileContactFilter(opts.filter, PERSON_FILTER_CONFIG, PERSON_COLUMN_SQL)
       : null;
-  const whereClause =
-    filterSql !== null ? and(isNull(persons.deletedAt), filterSql) : isNull(persons.deletedAt);
+  const whereClause = and(
+    isNull(persons.deletedAt),
+    filterSql ?? undefined,
+    contactSearchCondition(opts.search, [persons.name, persons.primaryEmail]),
+  );
 
   const rows = await db
     .select()

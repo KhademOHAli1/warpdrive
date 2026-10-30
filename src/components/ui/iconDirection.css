@@ -1,10 +1,48 @@
-/* Mirror the complete interface icon set, including sidebar pictograms.
- * Keep the rule outside generated shadcn sources so registry updates retain it.
- * :dir respects inherited direction, nested LTR sections and portals.
- * Existing RTL transforms and explicitly direction-selected icons must not flip twice.
+/* Mirror navigation and directional actions, never the complete icon set.
+ * Checks, search, calendars, charts and other pictograms retain their geometry.
+ * :dir respects nested LTR content and portals. Explicit physical choices and
+ * shadcn RTL transforms stay in charge of their own direction.
  */
-svg.lucide:dir(rtl):not([data-rtl-mirror="false"]):not([class*="rtl:rotate-"]):not(
+:is(
+  svg.lucide-arrow-left,
+  svg.lucide-arrow-right,
+  svg.lucide-chevron-left,
+  svg.lucide-chevron-right,
+  svg.lucide-chevrons-left,
+  svg.lucide-chevrons-right,
+  svg.lucide-reply,
+  svg.lucide-reply-all,
+  svg.lucide-forward,
+  svg.lucide-undo-2,
+  svg.lucide-redo-2,
+  svg.lucide-log-in,
+  svg.lucide-log-out,
+  svg.lucide-panel-left-open,
+  svg.lucide-panel-left-close,
+  svg.lucide-panel-right-open,
+  svg.lucide-panel-right-close,
+  [data-finance-icon="chevron-left"],
+  [data-finance-icon="chevron-right"],
+  [data-rtl-mirror="true"]
+):dir(rtl):not([data-rtl-mirror="false"]):not([class*="rtl:rotate-"]):not(
   [class*="rtl:-rotate-"]
 ):not([class*="rtl:scale-"]):not([class*="rtl:-scale-"]) {
   scale: -1 1;
+}
+
+/* A disclosure points into its label while closed, and down while expanded. */
+[data-disclosure-chevron] {
+  rotate: 0deg;
+  transition: rotate 150ms ease-out;
+}
+[data-disclosure-chevron][data-state="closed"] {
+  rotate: -90deg;
+}
+[data-disclosure-chevron][data-state="closed"]:dir(rtl) {
+  rotate: 90deg;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-disclosure-chevron] {
+    transition: none;
+  }
 }

@@ -27,6 +27,7 @@ export default async function ImportPage(): Promise<ReactNode> {
   return (
     <SettingsPage className="max-w-3xl">
       <SettingsHeading
+        scope="workspace"
         title={L.importer.title}
         description={L.importer.subtitle}
         actions={

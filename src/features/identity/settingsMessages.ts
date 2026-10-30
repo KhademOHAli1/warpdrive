@@ -33,6 +33,7 @@ type Source = typeof SETTINGS_STRINGS & {
   _enrichment: Pick<typeof ENRICHMENT_STRINGS, "nav" | "settings" | "outcome">;
   _extra: typeof english._extra;
   _labels: typeof english._labels;
+  _hierarchy: typeof english._hierarchy;
 };
 type ExtraFunctions = {
   stageCount: (count: number) => string;

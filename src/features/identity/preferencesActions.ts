@@ -13,9 +13,11 @@ import {
   COLUMN_VIEW_KEYS,
   type ColumnViewName,
   columnViewInputSchema,
+  type Density,
   dailyActivityTargetSchema,
   dealHeaderBlocksSchema,
   dealSidebarSectionsSchema,
+  densitySchema,
   leadsViewSchema,
   openDetailsAfterCreateSchema,
   type ProfilePrefs,
@@ -45,6 +47,19 @@ export async function updateProfilePreferencesAction(
   if (!a.ok) return a;
   const parsed = profilePrefsSchema.parse(input);
   await setPreferences(db, a.id, parsed, SIG());
+  return { ok: true };
+}
+
+// Display density has its own page. Write only this column so a stale page cannot reset
+// a newer language or timezone choice made elsewhere.
+export async function setDensityAction(
+  input: { density: Density },
+  csrfToken: string | null = null,
+): Promise<PrefActionResult> {
+  const a = await actorId(csrfToken);
+  if (!a.ok) return a;
+  const density = densitySchema.parse(input.density);
+  await setPreferences(db, a.id, { density }, SIG());
   return { ok: true };
 }
 

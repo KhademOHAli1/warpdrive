@@ -54,6 +54,7 @@ export default async function GroupDetailPage({
         {L.visibilityGroups}
       </Link>
       <SettingsHeading
+        scope="workspace"
         title={group.name}
         description={L._extra.manage_who_belongs_to_this_visibility_group}
       />

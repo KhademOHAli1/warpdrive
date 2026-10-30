@@ -10,7 +10,7 @@ import { TemplatesSettingsClient } from "./TemplatesSettingsClient";
 
 export async function generateMetadata() {
   const L = await getServerSettingsMessages();
-  return { title: L.emailTemplates };
+  return { title: L._hierarchy.emailContent };
 }
 
 // Email settings: manage templates (own + shared) and signatures. Reads run with the trusted
@@ -28,7 +28,11 @@ export default async function EmailSettingsPage(): Promise<ReactNode> {
   const canShare = ctx.actor.flags.has("filter.share");
   return (
     <SettingsPage className="max-w-3xl">
-      <SettingsHeading title={L.emailTemplates} description={L._email.description} />
+      <SettingsHeading
+        scope="mixed"
+        title={L._hierarchy.emailContent}
+        description={L._email.description}
+      />
       <TemplatesSettingsClient templates={templates} canShare={canShare} />
       <SignaturesSettingsClient signatures={signatures} />
     </SettingsPage>

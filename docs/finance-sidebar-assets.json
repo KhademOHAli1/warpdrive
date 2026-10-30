@@ -1,0 +1,47 @@
+{
+  "source": "Finance OS frontend/public/assets/icons/pitant",
+  "copiedOn": "2026-10-29",
+  "sha256": {
+    "chart-alt.svg": "c9c0af9a573774d28c9bf4f402e37e2653d22f7d16b82825110814af5bff59f0",
+    "file.svg": "eb270e0748d19af3362c1fa0341c06fbf84dce81897709a260005852dded89cd",
+    "folder-open.svg": "20e740195cce98568846e4023a8091298a48715898d9e94199e38d96aadea2aa",
+    "user-square.svg": "bf44bff323d6936d8a37e5f5a9a4f84e12b183e908389bcbf7865ae129452b5f",
+    "calendar-01.svg": "2ec2d65b2f9d54a5cd06c66cd056c448ca590c49f74b9024391104c0840312ee",
+    "home-02.svg": "d44459c67a95470f630f83aa20abf1a0c29af3530257e797d6bdf5c903766956",
+    "settings-01.svg": "d593199b9e448260f8d7f5e7335820acca1fb15c07a07bfcd004bc7da6f6fef4",
+    "book-alt.svg": "a9bbd73192098189ca6fd543ac54014f4da8e3b679a4a281565fa43ddd7ad105",
+    "chevron-left.svg": "1975746a90c988b67f6fe1b74e4239d8b460eb2110c471b245ea3cf0a58a8ca6",
+    "chevron-right.svg": "bec18ea9971afc7a34972fbbb8cf117d4831a827d50d7291c66aa27368380f89",
+    "chevron-down.svg": "afaa0bab6755eb123c098b04bfb4e46f0e33054eb4ffefac8b012edb5ca130a1",
+    "bars.svg": "f8f47d5b8e951a5bab0f87a439be47e64b1a06596e74012628bcef3b295a04c3",
+    "x-mark.svg": "ccd2fe237c3117c02343a97b9d84d788579f7e3000b0f140b89765d44063ea87",
+    "user-group.svg": "e3f45ed606d9ea5f3a54ed091656f385093967a70960c86ae21428b7cc747c2e"
+  },
+  "crmExtensions": {
+    "description": "Original CRM symbols using the Finance OS 1.5px rounded outline style; these are local additions, not copied Finance OS glyphs.",
+    "sha256": {
+      "pipeline-board.svg": "237fa89a5e73283717de07f8d03f951fc8c6ea8b9af1dec5d79a026920ab12d3",
+      "lead-person-plus.svg": "5d91dc447348a81b4fc7e3ac2cb874202c10a51c1ee652ecb3fc76783937c098",
+      "performance-bars.svg": "cb304676e5eb4f7ac1f08b880b47b519a035885d5864821ef91531b901972a5c",
+      "settings-cog.svg": "ccc3027c3bdb8d27226695b503889754d0a0af010762720c17b627cdc3c65fb3",
+      "guide-open-book.svg": "23f6ffbd7c3b1f24a265e3e2a270df37edaf254b90869f7b097e467c96f705de"
+    }
+  },
+  "sourceSha256": {
+    "chart-alt.svg": "f7ecc6fa06bb2fa0d104388175f3b161ea4a46feb6402e3fa332a60d7d15b5c6",
+    "file.svg": "37998784a1e07667654aa8a392ef297f5c6a49a61a4ca6bc1047f60d82d27813",
+    "folder-open.svg": "1c2ce0f269f219e397c34280bcad09f46ce83f3b008c6f3ddc74bb8c40942b60",
+    "user-square.svg": "72dad658210bb48b5cca6b7ab2130ec1ae443f846a52bcbb5e3a490fc7558f04",
+    "calendar-01.svg": "7daf93ee5989bb49dba4d196d5bc7afc5d845a02a20a997431d721eecf569bab",
+    "home-02.svg": "4d2e6ae9fd32ff84e89ee1594956387dacb31f0e125695013ceb4d5e12418ff9",
+    "settings-01.svg": "83df1cdec02cd1d485ddaeee458e67c1f3fcc31297730219eb68298421893b84",
+    "book-alt.svg": "40460b65ea65f8b1b4707f1214e28f32aa38e8efc72937e0a59d88b2f3961c8e",
+    "chevron-left.svg": "bbbe5dca381b84040277c7c8f4795e16bc34218bed1a9e2c3f7247da0c26eac7",
+    "chevron-right.svg": "05531e2b91d86adc6763aeaf5e8f407c3e8d973437d163ba595dae745ba71221",
+    "chevron-down.svg": "e8656ed69a0a1096ba450e8689c8860af9cd0eedaede614c3372fb40677454a1",
+    "bars.svg": "54cb732a09d3ca8b8b8f20a9950c86e26a09b17de006f7517e3d54381f239a10",
+    "x-mark.svg": "9d3aab189946d9bb12057dca7efc07e99bfea15e3ece289e48be7bd20cd48d25",
+    "user-group.svg": "487f8a1a80452eb487169ceee9ebb82f93c5ec2b779659903229571b52f903f6"
+  },
+  "localAdaptation": "Decorative accessibility attributes added; original SVG geometry is unchanged."
+}

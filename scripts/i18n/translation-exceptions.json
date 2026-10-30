@@ -74,7 +74,8 @@
       "linkedin": "LinkedIn is a product name and is preserved.",
       "website": "Website is a standard German noun for an organization website.",
       "name": "Name is the standard German field label, identical to English.",
-      "personFallback": "Person is the standard German singular entity label, identical to English."
+      "personFallback": "Person is the standard German singular entity label, identical to English.",
+      "directory.personContext": "Person is the standard German singular entity label, identical to English."
     }
   },
   "src/features/deals/messages/sales": {
@@ -118,7 +119,8 @@
       "_extra.fileBytes": "Standard byte units B/KB/MB with unchanged number formatting contract.",
       "_extra.fileKB": "Standard byte units B/KB/MB with unchanged number formatting contract.",
       "_extra.fileMB": "Standard byte units B/KB/MB with unchanged number formatting contract.",
-      "_fieldLabels.person": "Person/Name has the same spelling in German and English."
+      "_fieldLabels.person": "Person/Name has the same spelling in German and English.",
+      "workspace.details": "Details is the standard German plural used for the record details panel."
     }
   },
   "src/features/enrichment/messages/enrichment": {

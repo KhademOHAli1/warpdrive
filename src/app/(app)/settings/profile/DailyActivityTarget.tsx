@@ -118,6 +118,7 @@ export function DailyActivityTarget({ target }: { target: number }): React.React
             commit();
           }}
         />
+        <p className="mt-2 text-sm text-muted-foreground">{L._hierarchy.activityTargetSaveHint}</p>
       </SettingsCardBody>
     </SettingsCard>
   );

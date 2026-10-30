@@ -34,7 +34,7 @@ export default async function UsersPage(): Promise<ReactNode> {
   const setOptions = sets.map((ps) => ({ id: ps.id, name: ps.name }));
   return (
     <SettingsPage>
-      <SettingsHeading title={L.users} description={L.usersDescription} />
+      <SettingsHeading scope="workspace" title={L.users} description={L.usersDescription} />
       <UsersClient
         rows={serializable}
         permissionSets={setOptions}

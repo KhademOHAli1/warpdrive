@@ -1,7 +1,7 @@
 "use client";
 
 import { Forward, Reply, ReplyAll } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Avatar } from "@/components/ui/Avatar";
 import { useEmailMessages } from "@/features/email/useEmailMessages";
 import { Composer } from "./composer/Composer";
@@ -18,6 +18,7 @@ interface ReaderActionsProps {
   // Mode to open in. Omitted by the thread reader, which starts on the footer instead.
   initialMode?: ReplyMode;
   context?: ComposerContext;
+  onComposerChange?: (threadId: string, open: boolean, subject?: string | null) => void;
 }
 
 // Reply / Reply all / Forward for the thread reader. Toggles which mode is active; the
@@ -32,10 +33,14 @@ export function ReaderActions({
   onSent,
   initialMode,
   context,
+  onComposerChange,
 }: ReaderActionsProps): React.ReactNode {
   const E = useEmailMessages();
 
   const [mode, setMode] = useState<ReplyMode | null>(initialMode ?? null);
+  useEffect(() => {
+    onComposerChange?.(threadId, mode !== null, message.subject);
+  }, [mode, threadId, onComposerChange, message.subject]);
 
   if (mode !== null) {
     return (
@@ -44,7 +49,10 @@ export function ReaderActions({
         threadId={mode === "forward" ? undefined : threadId}
         prefill={buildReplyPrefill(mode, message, selfEmail)}
         context={context}
-        onSent={onSent}
+        onSent={() => {
+          setMode(null);
+          onSent?.();
+        }}
         onClose={() => setMode(null)}
       />
     );

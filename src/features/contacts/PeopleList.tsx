@@ -8,6 +8,7 @@ import { type ColumnSort, useColumnSort } from "@/components/data-table/useColum
 import { useColumns } from "@/components/data-table/useColumns";
 import { usePersistColumns } from "@/components/data-table/usePersistColumns";
 import { useRowSelection } from "@/components/data-table/useRowSelection";
+import { Button } from "@/components/ui/Button";
 import { DEFAULT_BASE_CURRENCY } from "@/constants/currency";
 import { customFieldColumns } from "@/features/custom-fields/listColumns";
 import {
@@ -21,6 +22,11 @@ import type { CustomFieldDef } from "@/types/customFields";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { deletePersonAction } from "./actions";
 import { BulkMergeDialog } from "./BulkMergeDialog";
+import {
+  ContactDirectoryCriteria,
+  ContactDirectoryEmptyState,
+  ContactDirectoryToolbar,
+} from "./ContactDirectorySurface";
 import { ContactFilterBuilder } from "./ContactFilterBuilder";
 import { type ContactFilterDefinition, PERSON_FILTER_CONFIG } from "./contactFilterConfig";
 import { personFilterLabels } from "./contactFilterRows";
@@ -28,6 +34,7 @@ import type { PeopleListRow } from "./PeopleTable";
 import { PeopleTable } from "./PeopleTable";
 import { peopleColumns } from "./peopleColumns";
 import type { PersonSortField } from "./schemas";
+import { useContactSearch } from "./useContactSearch";
 import { usePeopleListPaging } from "./usePeopleListPaging";
 
 // Stable module reference: passed as useColumnSort's fallback, so `effective` only changes
@@ -50,6 +57,7 @@ export interface PeopleListProps {
   customFieldDefs?: CustomFieldDef[];
   baseCurrency?: string;
   refLabels?: CustomFieldRefLabels;
+  emptyAction?: React.ReactNode;
 }
 
 // People list for the Contacts nav. Client-side "Load more" pages through the rest of the
@@ -64,6 +72,7 @@ export function PeopleList({
   customFieldDefs = EMPTY_CUSTOM_FIELD_DEFS,
   baseCurrency = DEFAULT_BASE_CURRENCY,
   refLabels: initialRefLabels = EMPTY_REF_LABELS,
+  emptyAction,
 }: PeopleListProps): React.ReactNode {
   const tContacts = useAppTranslations("contacts");
 
@@ -85,6 +94,7 @@ export function PeopleList({
   const [savedViewId, setSavedViewId] = useState<string | null>(null);
   // Whether the pair-merge dialog is open (only reachable with exactly two rows selected).
   const [merging, setMerging] = useState(false);
+  const searchInput = useContactSearch();
   const { rows, total, refLabels, loading, error, setError, loadMore, reload } =
     usePeopleListPaging({
       initial,
@@ -93,6 +103,7 @@ export function PeopleList({
       orgNames,
       sort: effective,
       filter,
+      search: searchInput.search,
     });
 
   // Re-query the first page under the new sort. Skip the initial mount: the first page is
@@ -124,12 +135,13 @@ export function PeopleList({
     if (failedIds.length > 0) setError(tContacts("couldnTDeleteSomePeoplePleaseTryAgain"));
   }
 
-  // Only the truly-empty list (no filter) shows the bare empty state. With a filter active, keep the
-  // toolbar rendered so the user can always clear/adjust the filter that produced zero matches.
-  if (filter === null && rows.length === 0) {
-    return (
-      <p className="text-sm text-muted-foreground">{tContacts("noPeopleAreVisibleToYouYet")}</p>
-    );
+  const narrowed = searchInput.draft.trim() !== "" || filter !== null;
+  const busy = loading || searchInput.settling;
+  function clearCriteria(): void {
+    searchInput.clear();
+    setFilter(null);
+    setSavedViewId(null);
+    selection.clear();
   }
 
   const visibleIds = rows.map((r) => r.id);
@@ -144,36 +156,59 @@ export function PeopleList({
       : null;
 
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex flex-wrap items-center gap-3"></div>
-      <div className="flex items-center justify-between gap-2">
-        <p className="text-xs text-muted-foreground tabular-nums">
-          {tContacts("countLabel", { shown: rows.length, total })}
-        </p>
-        <div className="flex items-center gap-2">
-          <SavedViewControl
-            targetEntity="person"
-            allLabel={tContacts("allPeople")}
-            currentDefinition={filter}
-            selectedViewId={savedViewId}
-            onSelectView={(view) => {
-              setSavedViewId(view?.id ?? null);
-              setFilter(view?.definition ?? null);
-            }}
-          />
-          <ContactFilterBuilder
-            config={PERSON_FILTER_CONFIG}
-            fieldLabels={personFilterLabels(locale)}
-            activeCount={filter?.conditions.length ?? 0}
-            appliedDefinition={filter}
-            onApply={(def) => {
-              // An ad-hoc edit is no longer the saved view, so the picker stops claiming it is.
-              setSavedViewId(null);
-              setFilter(def);
-            }}
-          />
-        </div>
-      </div>
+    <section aria-busy={busy} className="overflow-hidden rounded-xl border bg-card shadow-sm">
+      <ContactDirectoryToolbar
+        kind="person"
+        draft={searchInput.draft}
+        onSearch={(value) => {
+          searchInput.setDraft(value);
+          selection.clear();
+        }}
+        onSubmit={searchInput.submit}
+        onClear={searchInput.clear}
+        summary={
+          busy
+            ? tContacts("directory.updating")
+            : tContacts("countLabel", { shown: rows.length, total })
+        }
+      >
+        <SavedViewControl
+          targetEntity="person"
+          allLabel={tContacts("allPeople")}
+          currentDefinition={filter}
+          selectedViewId={savedViewId}
+          onSelectView={(view) => {
+            setSavedViewId(view?.id ?? null);
+            setFilter(view?.definition ?? null);
+          }}
+        />
+        <ContactFilterBuilder
+          config={PERSON_FILTER_CONFIG}
+          fieldLabels={personFilterLabels(locale)}
+          activeCount={filter?.conditions.length ?? 0}
+          appliedDefinition={filter}
+          onApply={(def) => {
+            // An ad-hoc edit is no longer the saved view, so the picker stops claiming it is.
+            setSavedViewId(null);
+            setFilter(def);
+          }}
+        />
+
+        <ColumnsMenu
+          catalog={catalog}
+          order={columns.order}
+          visibleKeys={columns.visibleKeys}
+          onToggle={columns.toggle}
+          onReorder={columns.reorder}
+        />
+      </ContactDirectoryToolbar>
+      {narrowed && (
+        <ContactDirectoryCriteria
+          query={searchInput.draft.trim()}
+          count={filter?.conditions.length ?? 0}
+          onClear={clearCriteria}
+        />
+      )}
       {selection.count > 0 && (
         <BulkActionBar count={selection.count} onClear={selection.clear}>
           {mergePair !== null && (
@@ -205,45 +240,59 @@ export function PeopleList({
           onClose={() => setMerging(false)}
         />
       )}
-      <div className="overflow-hidden rounded-sg border bg-card shadow-sm">
-        <CustomFieldRefLabelsProvider value={refLabels}>
-          <PeopleTable
-            rows={rows}
-            sort={effective}
-            onSort={cycle}
-            isSelected={selection.isSelected}
-            allSelected={selection.allSelected(visibleIds)}
-            onToggleRow={selection.toggle}
-            onToggleAll={() => selection.toggleAll(visibleIds)}
-            visibleColumns={columns.visibleColumns}
-            currency={baseCurrency}
-            columnsMenu={
-              <ColumnsMenu
-                catalog={catalog}
-                order={columns.order}
-                visibleKeys={columns.visibleKeys}
-                onToggle={columns.toggle}
-                onReorder={columns.reorder}
-              />
-            }
-          />
-        </CustomFieldRefLabelsProvider>
-      </div>
+      {rows.length === 0 && !busy ? (
+        <ContactDirectoryEmptyState
+          kind="person"
+          narrowed={narrowed}
+          onClear={clearCriteria}
+          action={emptyAction}
+        />
+      ) : (
+        <div>
+          <CustomFieldRefLabelsProvider value={refLabels}>
+            <PeopleTable
+              rows={rows}
+              sort={effective}
+              onSort={cycle}
+              isSelected={selection.isSelected}
+              allSelected={selection.allSelected(visibleIds)}
+              onToggleRow={selection.toggle}
+              onToggleAll={() => selection.toggleAll(visibleIds)}
+              visibleColumns={columns.visibleColumns}
+              currency={baseCurrency}
+            />
+          </CustomFieldRefLabelsProvider>
+        </div>
+      )}
       {error !== null && (
-        <p role="alert" className="self-center text-sm text-red-600">
-          {error}
-        </p>
-      )}
-      {rows.length < total && (
-        <button
-          type="button"
-          disabled={loading}
-          onClick={() => void loadMore()}
-          className="self-center rounded-md border px-4 py-1.5 text-sm hover:bg-accent disabled:opacity-50 active:not-disabled:scale-[0.96] transition-transform"
+        <div
+          role="alert"
+          className="flex flex-wrap items-center justify-between gap-3 border-t px-4 py-3 text-sm text-destructive"
         >
-          {loading ? tContacts("loading") : tContacts("loadMore")}
-        </button>
+          <span>{error}</span>
+          <Button type="button" size="sm" variant="outline" onClick={() => void reload()}>
+            {tContacts("directory.retry")}
+          </Button>
+        </div>
       )}
-    </div>
+      <footer className="flex min-h-14 flex-wrap items-center justify-between gap-3 border-t px-4 py-3">
+        <p className="text-xs text-muted-foreground tabular-nums">
+          {busy
+            ? tContacts("directory.updating")
+            : tContacts("countLabel", { shown: rows.length, total })}
+        </p>
+        {rows.length < total && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={busy}
+            onClick={() => void loadMore()}
+          >
+            {loading ? tContacts("loading") : tContacts("loadMore")}
+          </Button>
+        )}
+      </footer>
+    </section>
   );
 }

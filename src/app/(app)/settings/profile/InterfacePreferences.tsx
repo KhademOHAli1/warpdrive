@@ -1,7 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
 import type React from "react";
-import { useRef, useState } from "react";
+import { useId, useRef, useState } from "react";
 import { useActionError } from "@/components/shell/ActionErrorProvider";
 import { Switch } from "@/components/ui/Switch";
 import type { InterfacePrefs } from "@/features/identity/InterfacePrefsProvider";
@@ -12,28 +12,49 @@ import {
 } from "@/features/identity/preferencesActions";
 import type { OpenDetailsAfterCreate, UiFlagKey } from "@/features/identity/preferencesSchema";
 import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
-import { cn } from "@/lib/utils";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { SettingsCard, SettingsCardBody, SettingsCardHeader } from "../SettingsSurface";
 
-// The five scalar flags, in Pipedrive's visual order. openDetailsAfterCreate is rendered separately
-// because it is a parent switch over three per-entity children.
+function PreferenceGroup({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}): React.ReactNode {
+  const titleId = useId();
+  return (
+    <section aria-labelledby={titleId} className="min-w-0 px-5 py-3">
+      <h3 id={titleId} className="mb-1 text-xs font-semibold text-muted-foreground">
+        {title}
+      </h3>
+      {children}
+    </section>
+  );
+}
 
 function Row({
   label,
   checked,
   onToggle,
-  indent = false,
 }: {
   label: string;
   checked: boolean;
   onToggle: (v: boolean) => void;
-  indent?: boolean;
 }): React.ReactNode {
+  const id = useId();
   return (
-    <div className={cn("flex items-center justify-between gap-3", indent && "pl-6")}>
-      <span className="text-sm">{label}</span>
-      <Switch checked={checked} onCheckedChange={onToggle} label={label} />
+    <div className="flex min-h-9 items-start gap-3 py-1.5">
+      <Switch
+        id={id}
+        checked={checked}
+        onCheckedChange={onToggle}
+        label={label}
+        className="mt-0.5 shrink-0"
+      />
+      <label htmlFor={id} className="min-w-0 cursor-pointer text-sm leading-6 text-start">
+        {label}
+      </label>
     </div>
   );
 }
@@ -142,54 +163,54 @@ export function InterfacePreferences({
 
   return (
     <SettingsCard>
-      <SettingsCardHeader
-        title={L.interfaceHeading}
-        description={L._extra.choose_how_creation_navigation_formatting_and_notification}
-      />
-      <SettingsCardBody className="space-y-4">
-        <Row
-          label={L.scheduleFollowUpAfterWon}
-          checked={scheduleFollowUp}
-          onToggle={(v) => void toggleScheduleFollowUp(v)}
-        />
-        <Row
-          label={S.scheduleFollowUpAfterDone}
-          checked={flags.scheduleFollowUpAfterDone}
-          onToggle={(v) => void toggleFlag("scheduleFollowUpAfterDone", v)}
-        />
-        <Row
-          label={S.openDetailsAfterCreate}
-          checked={allOpen}
-          onToggle={(v) => writeOpenDetails(() => ({ leadDeal: v, person: v, org: v }))}
-        />
-        <div className="space-y-2">
+      <SettingsCardHeader title={L._hierarchy.workflow} description={L._hierarchy.autoSave} />
+      <SettingsCardBody className="divide-y p-0">
+        <PreferenceGroup title={L._extra.interfaceGroups.followUps}>
           <Row
-            indent
-            label={S.openDetailsLeadDeal}
-            checked={openDetails.leadDeal}
-            onToggle={(v) => writeOpenDetails((current) => ({ ...current, leadDeal: v }))}
+            label={L.scheduleFollowUpAfterWon}
+            checked={scheduleFollowUp}
+            onToggle={(v) => void toggleScheduleFollowUp(v)}
           />
           <Row
-            indent
-            label={S.openDetailsPerson}
-            checked={openDetails.person}
-            onToggle={(v) => writeOpenDetails((current) => ({ ...current, person: v }))}
+            label={S.scheduleFollowUpAfterDone}
+            checked={flags.scheduleFollowUpAfterDone}
+            onToggle={(v) => void toggleFlag("scheduleFollowUpAfterDone", v)}
           />
+        </PreferenceGroup>
+        <PreferenceGroup title={L._extra.interfaceGroups.recordDetails}>
           <Row
-            indent
-            label={S.openDetailsOrg}
-            checked={openDetails.org}
-            onToggle={(v) => writeOpenDetails((current) => ({ ...current, org: v }))}
+            label={S.openDetailsAfterCreate}
+            checked={allOpen}
+            onToggle={(v) => writeOpenDetails(() => ({ leadDeal: v, person: v, org: v }))}
           />
-        </div>
-        {FLAG_ROWS.map((row) => (
-          <Row
-            key={row.key}
-            label={row.label}
-            checked={flags[row.key]}
-            onToggle={(v) => void toggleFlag(row.key, v)}
-          />
-        ))}
+          <div className="ms-4 border-s ps-7">
+            <Row
+              label={S.openDetailsLeadDeal}
+              checked={openDetails.leadDeal}
+              onToggle={(v) => writeOpenDetails((current) => ({ ...current, leadDeal: v }))}
+            />
+            <Row
+              label={S.openDetailsPerson}
+              checked={openDetails.person}
+              onToggle={(v) => writeOpenDetails((current) => ({ ...current, person: v }))}
+            />
+            <Row
+              label={S.openDetailsOrg}
+              checked={openDetails.org}
+              onToggle={(v) => writeOpenDetails((current) => ({ ...current, org: v }))}
+            />
+          </div>
+        </PreferenceGroup>
+        <PreferenceGroup title={L._extra.interfaceGroups.displayAndEmail}>
+          {FLAG_ROWS.map((row) => (
+            <Row
+              key={row.key}
+              label={row.label}
+              checked={flags[row.key]}
+              onToggle={(v) => void toggleFlag(row.key, v)}
+            />
+          ))}
+        </PreferenceGroup>
       </SettingsCardBody>
     </SettingsCard>
   );

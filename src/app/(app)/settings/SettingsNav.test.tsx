@@ -1,10 +1,10 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-// Active detection reads the pathname; pin it to the Users route.
-vi.mock("next/navigation", () => ({ usePathname: () => "/settings/users" }));
+const route = vi.hoisted(() => ({ pathname: "/settings/users" }));
+vi.mock("next/navigation", () => ({ usePathname: () => route.pathname }));
 vi.mock("next/link", () => ({
   default: ({ href, children, ...rest }: { href: string; children: React.ReactNode }) => (
     <a href={href} {...rest}>
@@ -15,12 +15,15 @@ vi.mock("next/link", () => ({
 
 import { SettingsNav } from "./SettingsNav";
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  route.pathname = "/settings/users";
+});
 
 describe("SettingsNav", () => {
   it("renders a leading icon on each nav item (Pipedrive parity)", () => {
     render(<SettingsNav isAdmin={true} canManageCompany={true} canImport={true} />);
-    const profile = screen.getByRole("link", { name: /Personal preferences/ });
+    const profile = screen.getByRole("link", { name: "Profile" });
     expect(profile.querySelector("svg")).not.toBeNull();
   });
 
@@ -67,8 +70,55 @@ describe("SettingsNav", () => {
 
   it("renders no company section for a user with neither admin nor manage", () => {
     render(<SettingsNav isAdmin={false} canManageCompany={false} canImport={false} />);
-    expect(screen.queryByText("Company overview")).toBeNull();
+    expect(screen.queryByRole("region", { name: "Workspace" })).toBeNull();
+    expect(screen.queryByRole("region", { name: "Sales & workflow" })).toBeNull();
     expect(screen.queryByRole("link", { name: /Users/ })).toBeNull();
     expect(screen.queryByRole("link", { name: /Enrichment/ })).toBeNull();
   });
+});
+
+it("groups each setting by task and keeps company catalogs out of Workspace", () => {
+  render(<SettingsNav isAdmin canManageCompany canImport />);
+  const personal = within(screen.getByRole("region", { name: "Personal" }));
+  expect(personal.getByRole("link", { name: "Language & region" })).toHaveAttribute(
+    "href",
+    "/settings/regional",
+  );
+  expect(personal.getByRole("link", { name: "Appearance" })).toHaveAttribute(
+    "href",
+    "/settings/appearance",
+  );
+  expect(personal.getByRole("link", { name: "Workflow preferences" })).toHaveAttribute(
+    "href",
+    "/settings/workflow",
+  );
+  const sales = within(screen.getByRole("region", { name: "Sales & workflow" }));
+  expect(sales.getByRole("link", { name: "Pipelines" })).toHaveAttribute(
+    "href",
+    "/settings/company/pipelines",
+  );
+  expect(
+    within(screen.getByRole("region", { name: "Workspace" })).queryByRole("link", {
+      name: "Pipelines",
+    }),
+  ).toBeNull();
+});
+
+it("marks only the catalog link active on a nested company route", () => {
+  route.pathname = "/settings/company/pipelines";
+  render(<SettingsNav isAdmin canManageCompany canImport />);
+  expect(screen.getByRole("link", { name: "Pipelines" })).toHaveAttribute("aria-current", "page");
+  expect(screen.getByRole("link", { name: "Workspace details" })).not.toHaveAttribute(
+    "aria-current",
+  );
+  expect(
+    screen.getAllByRole("link").filter((link) => link.hasAttribute("aria-current")),
+  ).toHaveLength(1);
+});
+
+it("keeps import available without exposing workspace administration", () => {
+  render(<SettingsNav isAdmin={false} canManageCompany={false} canImport />);
+  expect(screen.getByRole("link", { name: "Import data" })).toBeInTheDocument();
+  expect(screen.queryByRole("link", { name: "Data fields" })).toBeNull();
+  expect(screen.queryByRole("region", { name: "Workspace" })).toBeNull();
 });

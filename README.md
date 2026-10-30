@@ -148,7 +148,7 @@ using the dev-login route.
 
 ## Languages and regional settings
 
-Select English, Iranian Persian (Farsi), or German in Settings > Personal settings.
+Select English, Iranian Persian (Farsi), or German in Settings > Regional settings.
 Language, calendar and account time zone are independent saved preferences. Persian uses
 right-to-left layout and offers Persian or Latin digits. German uses decimal commas and
 localized dates. Both the Gregorian and Iranian Solar Hijri calendars are available in the
@@ -159,6 +159,19 @@ Translations use whole messages, contextual terminology, ICU plurals and localiz
 labels. See [the localization glossary](docs/i18n-glossary.md) and
 [localization progress and verification](docs/i18n-progress.md). Run `bun run i18n:check` when
 changing interface copy; catalog validity is followed by contextual workflow review.
+
+## Calendar roadmap
+
+The next calendar milestone is the Google Calendar web event workflow, including its
+advanced fields, invitations, recurrence, conferencing and account-dependent options.
+The [workflow specification](docs/google-calendar-event-workflow.md) records the reference
+behavior, current gaps and acceptance criteria. This milestone is documentation only;
+calendar implementation is deferred until work resumes. Google Meet, Zoom, Teams and
+external calendar synchronization are planned capabilities, not current integrations.
+
+The current UI includes the updated sidebar and top bar, separate regional, appearance
+and workflow settings, contact directories and inbox workspace. These changes are kept
+together with the English, Persian and German catalogs.
 
 ## Self-hosting
 

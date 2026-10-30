@@ -6,6 +6,7 @@ import { afterEach, expect, it, vi } from "vitest";
 import { LocaleProvider } from "@/features/i18n/LocaleProvider";
 import type { CalendarSystem } from "@/features/i18n/preferences";
 import type { Locale } from "@/features/i18n/registry";
+import { formatDateTime } from "@/lib/localeFormatting";
 import { useFormatters } from "@/lib/useFormatters";
 import { LanguageSettings } from "./LanguageSettings";
 
@@ -26,6 +27,44 @@ function Preview() {
     </>
   );
 }
+
+it("saves a new timezone with the existing language, calendar and digits, and updates the preview", async () => {
+  const user = userEvent.setup();
+  render(
+    <LocaleProvider locale="fa" calendar="persian" numberingSystem="latn" timeZone="Europe/Berlin">
+      <LanguageSettings />
+    </LocaleProvider>,
+  );
+  await user.click(screen.getByRole("combobox", { name: "منطقه زمانی" }));
+  await user.click(screen.getByRole("option", { name: "Asia/Tehran" }));
+  await waitFor(() =>
+    expect(save).toHaveBeenCalledWith(
+      { locale: "fa", calendar: "persian", numberingSystem: "latn", timeZone: "Asia/Tehran" },
+      "test-csrf",
+    ),
+  );
+  const expected = formatDateTime(
+    "2026-03-21T09:30:00Z",
+    {
+      locale: "fa",
+      calendar: "persian",
+      numberingSystem: "latn",
+      timeZone: "Asia/Tehran",
+    },
+    { hour: "2-digit", minute: "2-digit", hourCycle: "h23" },
+  );
+  expect(screen.getByText(expected)).toBeInTheDocument();
+});
+
+it("keeps an existing timezone outside the suggested list selectable", () => {
+  render(
+    <LocaleProvider timeZone="Pacific/Auckland">
+      <LanguageSettings />
+    </LocaleProvider>,
+  );
+  expect(screen.getByRole("combobox", { name: "Time zone" })).toHaveTextContent("Pacific/Auckland");
+  expect(save).not.toHaveBeenCalled();
+});
 
 it("shows the digit setting only after choosing Farsi", async () => {
   const user = userEvent.setup();

@@ -1,7 +1,9 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
+import { readFileSync } from "node:fs";
 import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, expect, it, vi } from "vitest";
+import styles from "@/features/email/inboxWorkspace.module.css";
 
 // InboxShell is the persistent two-pane frame (rail | content) that the /inbox layout wraps every
 // inbox route in. It renders the folder rail (a client component reading router hooks) beside the
@@ -21,8 +23,20 @@ vi.mock("@/lib/trpc-client", () => ({
 
 import { InboxShell } from "./InboxShell";
 
+let style: HTMLStyleElement;
+beforeEach(() => {
+  style = document.createElement("style");
+  style.textContent = readFileSync("src/features/email/inboxWorkspace.module.css", "utf8").replace(
+    /\.([a-zA-Z][\w-]*)/g,
+    (selector, className: string) =>
+      styles[className] === undefined ? selector : `.${styles[className]}`,
+  );
+  document.head.append(style);
+});
+
 afterEach(() => {
   cleanup();
+  style.remove();
   pathname = "/inbox";
 });
 
@@ -48,7 +62,7 @@ it("wraps its children with the folder rail on the compose route", () => {
   expect(screen.getByTestId("compose-content")).toBeInTheDocument();
 });
 
-it("renders content in a constrained pane to the right of the rail, not full width", () => {
+it("keeps the folder rail beside a shrinkable content track", () => {
   pathname = "/inbox/thread-1";
   render(
     <InboxShell newEmailEnabled={true}>
@@ -57,8 +71,15 @@ it("renders content in a constrained pane to the right of the rail, not full wid
   );
   const nav = screen.getByRole("navigation", { name: "Mail folders" });
   const contentPane = screen.getByTestId("reader-content").parentElement;
-  // Rail and content share one flex row; the content pane flexes (min-w-0 flex-1) so it sits beside
-  // the fixed-width rail instead of spanning the whole viewport.
-  expect(contentPane).toHaveClass("min-w-0", "flex-1");
-  expect(nav.parentElement).toBe(contentPane?.parentElement);
+  const folders = nav.parentElement;
+  const shell = folders?.parentElement;
+  expect(folders).toHaveClass(styles.folders);
+  expect(shell).toBe(contentPane?.parentElement);
+  expect(shell).toHaveStyle({ display: "grid", overflow: "hidden" });
+  if (shell === null || shell === undefined) throw new Error("Inbox grid is missing");
+  // The rail owns a fixed length; minmax lets the content track shrink below its contents.
+  expect(getComputedStyle(shell).gridTemplateColumns).toMatch(
+    /^\d+(?:\.\d+)?(?:rem|px) minmax\(0,\s*1fr\)$/,
+  );
+  expect(contentPane).toHaveStyle({ minWidth: "0", minHeight: "0" });
 });

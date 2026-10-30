@@ -7,6 +7,7 @@ import { listDrafts } from "./draftRepo";
 import * as emailReads from "./emailReads";
 import { listMessagesForContact, listMessagesForDeal } from "./entityMessageReads";
 import { listArchivedThreads, listOutbox, listSentThreads } from "./folderReads";
+import { mailboxWorkspaceInput, readMailboxWorkspace } from "./mailboxWorkspace";
 import { buildMergeContext } from "./mergeContext";
 import { getMessage } from "./messageReads";
 import { inboxUnreadCount } from "./readState";
@@ -48,6 +49,13 @@ const folderPageInput = z.object({
 });
 
 export const emailRouter = router({
+  workspace: router({
+    list: protectedProcedure
+      .input(mailboxWorkspaceInput)
+      .query(({ ctx, input }) =>
+        readMailboxWorkspace(ctx.db, { ...input, actor: ctx.actor }, SIG()),
+      ),
+  }),
   inbox: router({
     list: protectedProcedure
       .input(

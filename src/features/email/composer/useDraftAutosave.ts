@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { captureException, currentRoute } from "@/features/observability/capture";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { deleteDraftAction, saveDraftAction } from "../folderActions";
@@ -44,7 +44,9 @@ function hasContent(d: {
 // if the composer has content, upsert (create when no id yet, update by id thereafter) and
 // record the returned id in the shared ref; if the composer is empty, delete the tracked
 // draft and clear the ref. Last-write-wins across tabs (no conflict resolution).
-export function useDraftAutosave(deps: DraftAutosaveDeps): void {
+export function useDraftAutosave(deps: DraftAutosaveDeps) {
+  const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [retryNonce, setRetryNonce] = useState(0);
   const { accountId, threadId, subject, body, toList, ccList, initialDraftId, draftIdRef } = deps;
   const { visibility, inFlightRef, linkDealId, linkPersonId } = deps;
   // Seed the shared draft id once. Writing a ref during render is unsafe under concurrent
@@ -58,12 +60,11 @@ export function useDraftAutosave(deps: DraftAutosaveDeps): void {
     }
   }, [draftIdRef, initialDraftId]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Retry deliberately saves the same snapshot again.
   useEffect(() => {
     const timer = setTimeout(() => {
-      // Skip if a save is already running: it coalesces concurrent ticks (one composition cannot
-      // produce two INSERTs), and the next edit reschedules once the in-flight save clears.
-      if (inFlightRef.current !== null) return;
       const run = async (): Promise<void> => {
+        setStatus("saving");
         if (hasContent({ subject, body, toList, ccList })) {
           const res = await saveDraftAction(readCsrfToken(), {
             id: draftIdRef.current,
@@ -79,26 +80,33 @@ export function useDraftAutosave(deps: DraftAutosaveDeps): void {
             linkPersonId: linkPersonId ?? null,
           });
           if (res.ok) draftIdRef.current = res.value.id;
+          setStatus(res.ok ? "saved" : "error");
           return;
         }
         const id = draftIdRef.current;
         if (id !== undefined) {
-          await deleteDraftAction(readCsrfToken(), { draftId: id });
-          draftIdRef.current = undefined;
-        }
+          const res = await deleteDraftAction(readCsrfToken(), { draftId: id });
+          if (res.ok) draftIdRef.current = undefined;
+          setStatus(res.ok ? "idle" : "error");
+        } else setStatus("idle");
       };
-      inFlightRef.current = run()
+      // The shared promise includes queued saves, so Send waits for the newest snapshot.
+      const next = (inFlightRef.current ?? Promise.resolve())
+        .then(run)
         .catch((e: unknown) => {
+          setStatus("error");
           captureException(e, { surface: "email-draft-autosave", route: currentRoute() });
         })
         .finally(() => {
-          inFlightRef.current = null;
+          if (inFlightRef.current === next) inFlightRef.current = null;
         });
+      inFlightRef.current = next;
     }, DEBOUNCE_MS);
     return () => clearTimeout(timer);
     // Depend on the tracked primitives (and stable refs) only. NOT the deps object literal, whose
     // fresh identity every render would otherwise reset the debounce on any unrelated re-render.
   }, [
+    retryNonce,
     accountId,
     threadId,
     subject,
@@ -111,4 +119,5 @@ export function useDraftAutosave(deps: DraftAutosaveDeps): void {
     draftIdRef,
     inFlightRef,
   ]);
+  return { status, retry: () => setRetryNonce((value) => value + 1) };
 }

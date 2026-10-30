@@ -48,11 +48,18 @@ the same `dir` value. Popovers, dialogs, sheets, selects and tooltips also recei
 direction at their portal boundary. Menus, radios and tabs use the shared Radix direction context
 for keyboard navigation. Detail sheets open from the right in LTR and from the left in RTL.
 
-`iconDirection.css` mirrors all Lucide interface icons, including the sidebar pictograms,
-using inherited `:dir(rtl)`. It respects nested LTR content and skips icons with an existing
-shadcn RTL rotation/scale. Components that already choose a physical icon from direction,
-such as the sidebar toggle, use `data-rtl-mirror="false"` to avoid a second flip. Keep this
-policy outside the generated primitives when updating shadcn.
+`iconDirection.css` mirrors horizontal navigation and directional actions such as back,
+next, reply and undo using inherited `:dir(rtl)`. Checkmarks, search, calendars, charts,
+sidebar pictograms, editor alignment symbols and vertical arrows keep their original shape.
+A new directional symbol can opt in with `data-rtl-mirror="true"`; do not mirror an entire
+icon family. The policy respects nested LTR content and skips existing shadcn RTL transforms.
+Components that already choose a physical icon from direction, such as the sidebar toggle,
+use `data-rtl-mirror="false"` to avoid a second flip.
+
+Collapsible section chevrons use `data-disclosure-chevron` with their open/closed state:
+closed points toward the label (right in LTR, left in RTL), expanded points down. Static
+section headings have no disclosure icon. Keep these policies outside generated primitives
+so registry updates preserve them.
 
 Three adapters intentionally use a lower-level Radix leaf where the registry component does not
 expose the required API: `Progress` preserves custom maximum/clamping and mirrors its fill in

@@ -64,7 +64,10 @@ function SortableHeader({
   onSort: (field: OrgSortField) => void;
 }): React.ReactNode {
   return (
-    <th className="px-3 py-2 font-semibold">
+    <th
+      aria-sort={sort.field === field ? (sort.dir === "asc" ? "ascending" : "descending") : "none"}
+      className="px-4 py-3 text-start font-medium"
+    >
       <button
         type="button"
         onClick={() => onSort(field)}
@@ -101,9 +104,9 @@ function renderOrgCell(
         <RecordLink
           href={`/contacts/orgs/${row.id}`}
           preview={{ id: row.id, title: row.name }}
-          className="flex items-center gap-2.5 font-medium text-primary hover:underline"
+          className="flex min-w-40 items-center gap-3 font-medium text-foreground hover:text-primary hover:underline"
         >
-          <Avatar name={row.name} className="h-6 w-6 rounded-md" />
+          <Avatar name={row.name} className="size-8 shrink-0 rounded-lg" />
           <bdi dir="auto">{row.name}</bdi>
         </RecordLink>
       );
@@ -123,10 +126,10 @@ function renderOrgCell(
 function cellClass(col: OrgColumn): string {
   if (col.customField !== undefined) return customFieldCellClass(col.customField);
   if (col.key === "peopleCount" || col.key === "closedDeals" || col.key === "openDeals") {
-    return "px-3 py-2 tabular-nums text-muted-foreground";
+    return "px-4 py-[var(--row-py)] tabular-nums text-muted-foreground";
   }
-  if (col.key === "name") return "px-3 py-2";
-  return "px-3 py-2 text-muted-foreground";
+  if (col.key === "name") return "px-4 py-[var(--row-py)]";
+  return "px-4 py-[var(--row-py)] text-muted-foreground";
 }
 
 export function OrgsTable({
@@ -152,7 +155,7 @@ export function OrgsTable({
       <div className="overflow-x-auto">
         <table className="w-full border-collapse text-sm">
           <thead>
-            <tr className="border-b bg-muted/60 text-start text-muted-foreground">
+            <tr className="border-b bg-muted/30 text-start text-xs text-muted-foreground">
               <th className="w-8 px-3 py-2">
                 <Checkbox
                   label={tContacts("selectAllOrganizations")}
@@ -170,7 +173,7 @@ export function OrgsTable({
                     onSort={onSort}
                   />
                 ) : (
-                  <th key={col.key} className="px-3 py-2 font-semibold">
+                  <th key={col.key} className="px-4 py-3 text-start font-medium">
                     {col.header}
                   </th>
                 ),
@@ -179,7 +182,11 @@ export function OrgsTable({
           </thead>
           <tbody>
             {rows.map((row) => (
-              <tr key={row.id} className="border-b last:border-0 hover:bg-muted/50">
+              <tr
+                key={row.id}
+                data-state={isSelected(row.id) ? "selected" : undefined}
+                className="border-b transition-colors last:border-0 hover:bg-muted/30 focus-within:bg-muted/30 data-[state=selected]:bg-primary/5"
+              >
                 <td className="px-3 py-2">
                   <Checkbox
                     label={tContacts("selectRecord", { name: row.name })}

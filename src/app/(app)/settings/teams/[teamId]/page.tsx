@@ -50,6 +50,7 @@ export default async function TeamDetailPage({
         {L.teams}
       </Link>
       <SettingsHeading
+        scope="workspace"
         title={team.name}
         description={L._extra.update_the_team_manager_and_membership}
       />

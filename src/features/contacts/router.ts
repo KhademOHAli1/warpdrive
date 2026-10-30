@@ -34,6 +34,7 @@ export const contactsRouter = router({
         limit: z.number().int().min(1).max(500).default(50),
         sort: personSortInput.optional(),
         filter: personFilterSchema.optional(),
+        search: z.string().trim().max(200).optional(),
       }),
     )
     .query(async ({ ctx, input }) => {
@@ -41,7 +42,13 @@ export const contactsRouter = router({
       const res = await listPeople(
         ctx.db,
         toContactActor(ctx.actor),
-        { offset: input.offset, limit: input.limit, sort: input.sort, filter: input.filter },
+        {
+          offset: input.offset,
+          limit: input.limit,
+          sort: input.sort,
+          filter: input.filter,
+          search: input.search,
+        },
         signal,
       );
       return attachRefLabels(ctx.db, ctx.actor, "person", res, signal);
@@ -88,6 +95,7 @@ export const contactsRouter = router({
         limit: z.number().int().min(1).max(500).default(50),
         sort: orgSortInput.optional(),
         filter: orgFilterSchema.optional(),
+        search: z.string().trim().max(200).optional(),
       }),
     )
     .query(async ({ ctx, input }) => {
@@ -95,7 +103,13 @@ export const contactsRouter = router({
       const res = await listOrgs(
         ctx.db,
         toContactActor(ctx.actor),
-        { offset: input.offset, limit: input.limit, sort: input.sort, filter: input.filter },
+        {
+          offset: input.offset,
+          limit: input.limit,
+          sort: input.sort,
+          filter: input.filter,
+          search: input.search,
+        },
         signal,
       );
       return attachRefLabels(ctx.db, ctx.actor, "organization", res, signal);

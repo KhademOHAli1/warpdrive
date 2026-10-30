@@ -15,6 +15,7 @@ import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { AddLeadModal } from "@/features/leads/AddLeadModal";
 import { isOverlayOpen, isTypingTarget } from "@/features/shortcuts/shortcutTarget";
 import { trpc } from "@/lib/trpc-client";
+import { cn } from "@/lib/utils";
 import { GlobalContactModal } from "./GlobalContactModal";
 import { GlobalNoteModal } from "./GlobalNoteModal";
 
@@ -41,7 +42,11 @@ const ENTRIES: Entry[] = [
 // launch the matching create modal from any page. Built on the shadcn DropdownMenu primitive
 // (focus trap, arrow/Escape nav, portal); the letter shortcuts (L/D/A/P/O) stay wired via an
 // onKeyDown on the content so a single keypress fires the matching modal while the menu is open.
-export function GlobalAddMenu(): React.ReactNode {
+export function GlobalAddMenu({
+  triggerClassName,
+}: {
+  triggerClassName?: string;
+} = {}): React.ReactNode {
   const t = useAppTranslations("quickAdd");
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -117,7 +122,10 @@ export function GlobalAddMenu(): React.ReactNode {
           <button
             type="button"
             aria-label={t("title")}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-emerald-950 shadow-xs transition-colors hover:bg-emerald-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            className={cn(
+              "flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-emerald-950 shadow-xs transition-colors hover:bg-emerald-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+              triggerClassName,
+            )}
           >
             <Plus aria-hidden="true" className="h-[19px] w-[19px]" strokeWidth={2} />
           </button>

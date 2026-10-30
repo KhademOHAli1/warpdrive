@@ -12,3 +12,12 @@ describe("SettingsHeading", () => {
     expect(screen.getByRole("heading", { level: 1, name: "Users" })).not.toBeNull();
   });
 });
+
+it("distinguishes account preferences from workspace configuration", () => {
+  const { rerender } = render(<SettingsHeading title="Users" scope="workspace" />);
+  expect(screen.getByText("Whole workspace")).not.toBeNull();
+  rerender(<SettingsHeading title="Language & region" scope="personal" />);
+  expect(screen.getByText("Only you")).not.toBeNull();
+  rerender(<SettingsHeading title="Templates & signatures" scope="mixed" />);
+  expect(screen.getByText("Personal & shared")).not.toBeNull();
+});

@@ -30,7 +30,8 @@ export default async function OrgsListPage(): Promise<React.ReactNode> {
       <PageHeading
         crumbs={[{ label: t("contacts"), href: "/contacts/people" }, { label: t("organizations") }]}
         title={t("organizations")}
-        actions={<QuickAddContact kind="org" />}
+        description={t("directory.orgsDescription")}
+        actions={<QuickAddContact kind="org" triggerLabel={t("directory.addOrg")} />}
       />
       <Suspense fallback={<ListSectionSkeleton />}>
         <OrgsSection actorId={ctx.actor.id} />
@@ -42,6 +43,7 @@ export default async function OrgsListPage(): Promise<React.ReactNode> {
 // Data region: fetched inside the Suspense boundary so the heading above never waits on it.
 // createContext is React.cache-wrapped, so re-resolving the actor here reuses the page's work.
 async function OrgsSection({ actorId }: { actorId: string }): Promise<React.ReactNode> {
+  const t = await getAppTranslations("contacts");
   const ctx = await createContext();
   const caller = createCaller(ctx);
   const [{ rows, total, refLabels }, prefs, customFieldDefs, baseCurrency] = await Promise.all([
@@ -66,6 +68,7 @@ async function OrgsSection({ actorId }: { actorId: string }): Promise<React.Reac
       customFieldDefs={customFieldDefs}
       baseCurrency={baseCurrency}
       refLabels={refLabels}
+      emptyAction={<QuickAddContact kind="org" triggerLabel={t("directory.addOrg")} />}
     />
   );
 }

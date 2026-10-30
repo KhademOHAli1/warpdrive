@@ -15,20 +15,8 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
-const report = vi.hoisted(() => vi.fn());
-vi.mock("@/components/shell/ActionErrorProvider", () => ({ useActionError: () => report }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
 vi.mock("@/utils/csrfCookie", () => ({ readCsrfToken: () => "csrf" }));
-const { updateProfilePreferencesAction } = vi.hoisted(() => ({
-  updateProfilePreferencesAction: vi.fn(
-    (): Promise<{ ok: true } | { ok: false; error: { id: string } }> =>
-      Promise.resolve({ ok: true }),
-  ),
-}));
-vi.mock("@/features/identity/preferencesActions", () => ({
-  updateProfilePreferencesAction,
-}));
-
 type UpdateProfileResult = { ok: true } | { ok: false; error: { id: string } };
 const { updateUserProfileAction } = vi.hoisted(() => ({
   updateUserProfileAction: vi.fn((): Promise<UpdateProfileResult> => Promise.resolve({ ok: true })),
@@ -43,39 +31,9 @@ vi.mock("@/features/identity/avatar/AvatarUpload", () => ({
 
 import { ProfileClient } from "./ProfileClient";
 
-const TIMEZONE_CHOICE = "America/New_York";
-
 describe("ProfileClient", () => {
-  it("timezone is a branded Select that emits the picked value", () => {
-    render(
-      <ProfileClient
-        name="Jane"
-        email="jane@example.com"
-        avatarUrl={null}
-        timezone="UTC"
-        density="comfortable"
-      />,
-    );
-
-    const trigger = screen.getByLabelText(STRINGS.settings.timezone);
-    expect(trigger.tagName).toBe("BUTTON");
-
-    fireEvent.click(trigger);
-    fireEvent.click(screen.getByText(TIMEZONE_CHOICE));
-
-    expect(trigger).toHaveTextContent(TIMEZONE_CHOICE);
-  });
-
   it("saves an edited display name via updateUserProfileAction", async () => {
-    render(
-      <ProfileClient
-        name="Jane"
-        email="jane@example.com"
-        avatarUrl={null}
-        timezone="UTC"
-        density="comfortable"
-      />,
-    );
+    render(<ProfileClient name="Jane" email="jane@example.com" avatarUrl={null} />);
 
     const nameInput = screen.getByLabelText(STRINGS.settings.name);
     fireEvent.change(nameInput, { target: { value: "Real Name" } });
@@ -91,15 +49,7 @@ describe("ProfileClient", () => {
       ok: false,
       error: { id: "E_USER_002" },
     });
-    render(
-      <ProfileClient
-        name="Jane"
-        email="jane@example.com"
-        avatarUrl={null}
-        timezone="UTC"
-        density="comfortable"
-      />,
-    );
+    render(<ProfileClient name="Jane" email="jane@example.com" avatarUrl={null} />);
 
     fireEvent.change(screen.getByLabelText(STRINGS.settings.name), {
       target: { value: "" },
@@ -109,23 +59,10 @@ describe("ProfileClient", () => {
     await vi.waitFor(() => expect(screen.getByRole("alert")).toHaveTextContent("E_USER_002"));
   });
 
-  it("reports the error id when the preferences save is denied", async () => {
-    updateProfilePreferencesAction.mockResolvedValueOnce({
-      ok: false,
-      error: { id: "E_PERM_001" },
-    });
-    render(
-      <ProfileClient
-        name="Jane"
-        email="jane@example.com"
-        avatarUrl={null}
-        timezone="UTC"
-        density="comfortable"
-      />,
-    );
-
-    fireEvent.click(screen.getByRole("button", { name: STRINGS.settings.save }));
-
-    await vi.waitFor(() => expect(report).toHaveBeenCalledWith("E_PERM_001"));
+  it("keeps regional and appearance controls out of the identity form", () => {
+    render(<ProfileClient name="Jane" email="jane@example.com" avatarUrl={null} />);
+    expect(screen.queryByRole("combobox")).toBeNull();
+    expect(screen.queryByRole("radiogroup")).toBeNull();
+    expect(screen.getByText("jane@example.com")).toBeInTheDocument();
   });
 });

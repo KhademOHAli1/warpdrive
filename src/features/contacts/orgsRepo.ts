@@ -15,6 +15,7 @@ import {
   ORG_COLUMN_SQL,
   ORG_FILTER_CONFIG,
 } from "./contactFilter";
+import { contactSearchCondition } from "./contactSearch";
 import { validateContactCustomFields } from "./customFieldsValidation";
 import { orgCounts } from "./orgCounts";
 import { orgOrderBy } from "./orgSort";
@@ -243,6 +244,7 @@ export async function listOrgs(
     limit: number;
     sort?: { field: OrgSortField; dir: "asc" | "desc" };
     filter?: ContactFilterDefinition;
+    search?: string;
   },
   signal: AbortSignal,
 ): Promise<ListOrgsResult> {
@@ -254,10 +256,11 @@ export async function listOrgs(
     opts.filter !== undefined
       ? compileContactFilter(opts.filter, ORG_FILTER_CONFIG, ORG_COLUMN_SQL)
       : null;
-  const whereClause =
-    filterSql !== null
-      ? and(isNull(organizations.deletedAt), filterSql)
-      : isNull(organizations.deletedAt);
+  const whereClause = and(
+    isNull(organizations.deletedAt),
+    filterSql ?? undefined,
+    contactSearchCondition(opts.search, [organizations.name, organizations.industry]),
+  );
 
   const rows = await db
     .select()

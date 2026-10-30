@@ -21,6 +21,7 @@ import { trpc } from "@/lib/trpc-client";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { trashThreadAction } from "./actions";
 import { archiveThreadAction } from "./folderActions";
+import styles from "./inboxWorkspace.module.css";
 import { invalidateRecordTimelines } from "./invalidateRecordTimelines";
 import type { NeighborFolder } from "./threadNeighbors";
 
@@ -39,9 +40,15 @@ function readFolder(raw: string | null): NeighborFolder {
 export function ReaderTopBar({
   threadId,
   canManage,
+  embedded = false,
+  onBack,
+  onChanged,
 }: {
   threadId: string;
   canManage: boolean;
+  embedded?: boolean;
+  onBack?: () => void;
+  onChanged?: () => void;
 }): React.ReactNode {
   const E = useEmailMessages();
 
@@ -49,7 +56,10 @@ export function ReaderTopBar({
   const reportError = useActionError();
   const utils = trpc.useUtils();
   const folder = readFolder(useSearchParams().get("folder"));
-  const { data: neighbors } = trpc.email.thread.neighbors.useQuery({ threadId, folder });
+  const { data: neighbors } = trpc.email.thread.neighbors.useQuery(
+    { threadId, folder },
+    { enabled: !embedded },
+  );
   const [busy, setBusy] = useState(false);
 
   // Archive/Delete both remove the thread from its list, then navigate to /inbox. The list feeds and
@@ -63,6 +73,7 @@ export function ReaderTopBar({
     // The deal and person timelines read the linked messages separately; refresh them too so a Back
     // to the record does not render the just-trashed email from cache.
     invalidateRecordTimelines(utils);
+    onChanged?.();
   }
 
   async function archive(): Promise<void> {
@@ -71,7 +82,8 @@ export function ReaderTopBar({
     setBusy(false);
     if (res.ok) {
       invalidateFeeds();
-      router.push("/inbox");
+      if (embedded) onBack?.();
+      else router.push("/inbox");
     } else reportError(res.error.id);
   }
 
@@ -87,7 +99,8 @@ export function ReaderTopBar({
       // trashed thread) instead of re-rendering the deleted conversation from a 30s-stale cache; and
       // REPLACE rather than push so the deleted reader route is not left in history at all.
       void utils.email.thread.get.invalidate();
-      router.replace("/inbox");
+      if (embedded) onBack?.();
+      else router.replace("/inbox");
     } else reportError(res.error.id);
   }
 
@@ -97,19 +110,31 @@ export function ReaderTopBar({
   }
 
   return (
-    <div className="flex items-center gap-2 border-b border-border px-4 py-2">
-      <Link
-        href="/inbox"
-        aria-label={E.backToInbox}
-        className="flex items-center gap-1 rounded-md px-2 py-1 text-sm text-muted-foreground transition-transform hover:bg-accent active:scale-[0.96]"
-      >
-        <Chevron dir="left" />
-        {E.back}
-      </Link>
+    <div className="flex flex-wrap items-center gap-2 border-b border-border px-4 py-2">
+      {embedded ? (
+        <button
+          type="button"
+          onClick={onBack}
+          aria-label={E.backToInbox}
+          className={`${styles.back} items-center gap-1 rounded-md px-2 py-1 text-sm hover:bg-accent`}
+        >
+          <Chevron dir="left" />
+          {E.back}
+        </button>
+      ) : (
+        <Link
+          href="/inbox"
+          aria-label={E.backToInbox}
+          className="flex items-center gap-1 rounded-md px-2 py-1 text-sm text-muted-foreground transition-transform hover:bg-accent active:scale-[0.96]"
+        >
+          <Chevron dir="left" />
+          {E.back}
+        </Link>
+      )}
 
       {/* Prev/next + position only for the mailbox owner: neighbors is null for a shared-thread
           viewer (no owner-scoped folder to walk). */}
-      {neighbors != null && (
+      {!embedded && neighbors != null && (
         <div className="flex items-center gap-1">
           <button
             type="button"
