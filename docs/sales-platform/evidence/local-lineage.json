@@ -1,0 +1,619 @@
+{
+  "qualifiesUpgrade": false,
+  "evidenceCeiling": "Read-only source and supplied-export comparison. No database was queried, no migration was run, and upgrade, restore and provider behavior remain unqualified.",
+  "inspections": [
+    {
+      "ok": true,
+      "value": {
+        "label": "candidate",
+        "directory": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-sales-platform-implementation/work/warpdrive-sales",
+        "journalSha256": "4d89be8c2d18d22a088ae592ae0345373b6067e5cefc7bb9da9a3fbb4feaa867",
+        "entries": [
+          {
+            "idx": 0,
+            "tag": "0000_odd_warhawk",
+            "when": 1782766038939,
+            "sha256": "f1c6836c132cdfaaf892736d2ce38a0308bef073735bce8046d38f1bc3070733",
+            "bytes": 7287
+          },
+          {
+            "idx": 1,
+            "tag": "0001_lyrical_paibok",
+            "when": 1782769058769,
+            "sha256": "f354576e9bb24895ec40b8e8c6fd3588f46fdd917ef81567c76a3195e7dec810",
+            "bytes": 205
+          },
+          {
+            "idx": 2,
+            "tag": "0002_serious_giant_man",
+            "when": 1782780240066,
+            "sha256": "65c2b7b7c1e033492b4f1ad388114437677d97d041a9cc844894f51f14e9dcf3",
+            "bytes": 1444
+          },
+          {
+            "idx": 3,
+            "tag": "0003_stale_daredevil",
+            "when": 1782780556631,
+            "sha256": "409d054502bc6ee96b14b37d4bbc5a77ccea0d2fe2f36836ef63114f272ff2d2",
+            "bytes": 4808
+          },
+          {
+            "idx": 4,
+            "tag": "0004_rapid_maginty",
+            "when": 1782780876447,
+            "sha256": "b3b14d7b87bb2d7e048b1589f587541b32b53a4480d6476715daabdad8cba8e2",
+            "bytes": 707
+          },
+          {
+            "idx": 5,
+            "tag": "0005_shallow_prism",
+            "when": 1782815988107,
+            "sha256": "f18edaaf449b375edecd2d3cdeefb459b87288014041576bdb6d06a6851f3b5d",
+            "bytes": 4029
+          },
+          {
+            "idx": 6,
+            "tag": "0006_common_jackpot",
+            "when": 1782816389292,
+            "sha256": "13eab25a4434f32fadd4e18c49eb2a85d3fe8f636afd759345228573b56fe447",
+            "bytes": 2764
+          },
+          {
+            "idx": 7,
+            "tag": "0007_goofy_forge",
+            "when": 1782820808053,
+            "sha256": "3de2fc751aa3a5c65b4a820c87fd3b240bea7c7d9b58bd94a1fefe14fe8c993f",
+            "bytes": 4551
+          },
+          {
+            "idx": 8,
+            "tag": "0008_even_pyro",
+            "when": 1782822387643,
+            "sha256": "f31557103eeec20c4b12808992a1d6a4dd2ca56bdebc0fd27a817ed41eab141b",
+            "bytes": 1237
+          },
+          {
+            "idx": 9,
+            "tag": "0009_young_molecule_man",
+            "when": 1782823212656,
+            "sha256": "6e230b46117570ad5f34c1f5b45e7ceb22a65be32a8862b2c4567f33c903ce50",
+            "bytes": 2347
+          },
+          {
+            "idx": 10,
+            "tag": "0010_perfect_titania",
+            "when": 1782824508237,
+            "sha256": "e5be78f7b8be3cb7e573e85a1a456118e02aaa7c0671fff67c5452e950c0182e",
+            "bytes": 626
+          },
+          {
+            "idx": 11,
+            "tag": "0011_aspiring_venom",
+            "when": 1782825019555,
+            "sha256": "396283fbb00a0ade0b5cf83760c989e04a3a4b4e32b159db4f096c8813fb68c1",
+            "bytes": 711
+          },
+          {
+            "idx": 12,
+            "tag": "0012_legal_ultimo",
+            "when": 1782827170132,
+            "sha256": "f5cfce5c956c14c55392fde7bb8f32c1721fa2912695a313f10ffc406ae74f66",
+            "bytes": 1973
+          },
+          {
+            "idx": 13,
+            "tag": "0013_amusing_screwball",
+            "when": 1782836532326,
+            "sha256": "8242256f07ba9a2a409838e5e518de5790db226b505bc6ffd835241c08c19c3f",
+            "bytes": 7939
+          },
+          {
+            "idx": 14,
+            "tag": "0014_tiresome_george_stacy",
+            "when": 1782854672375,
+            "sha256": "9a3c7539aa07f330bc0085fec6bce2eb3b810edbef364e91ec96fb94471310f3",
+            "bytes": 1418
+          },
+          {
+            "idx": 15,
+            "tag": "0015_robust_silverclaw",
+            "when": 1782911887878,
+            "sha256": "e5776977973b4a234d78d5a60061c563bbc2d2790ee3d60a2afae97c614dfc6e",
+            "bytes": 43
+          },
+          {
+            "idx": 16,
+            "tag": "0016_icy_pretty_boy",
+            "when": 1782913706639,
+            "sha256": "2a99cc056a2d2741af2420829f68ac168134298e956f2550c7daecd4f1eb33d4",
+            "bytes": 80
+          },
+          {
+            "idx": 17,
+            "tag": "0017_panoramic_hammerhead",
+            "when": 1782954374668,
+            "sha256": "ad74fa65440c38c02df6566aade03fa5bb36230c06a55a258e1cd3d48e79cebd",
+            "bytes": 203
+          },
+          {
+            "idx": 18,
+            "tag": "0018_large_callisto",
+            "when": 1782955826407,
+            "sha256": "2d19673c00d2e80b70cecab7fed0d8804ad81293123c203e8d8cb8eeee657304",
+            "bytes": 1912
+          },
+          {
+            "idx": 19,
+            "tag": "0019_petite_gressill",
+            "when": 1782984638905,
+            "sha256": "fa8bd2d7f4df5692b724bd09b8b4ffe8be9df4a3c45247106d771e807783468b",
+            "bytes": 52
+          },
+          {
+            "idx": 20,
+            "tag": "0020_scheduled_send",
+            "when": 1782984700000,
+            "sha256": "e4f9d6b036480f03c8387b9251b6b706613dedcb62200f7faf5a4d31eee849d3",
+            "bytes": 86
+          },
+          {
+            "idx": 21,
+            "tag": "0021_aspiring_abomination",
+            "when": 1783040842581,
+            "sha256": "27f36dae079f92409f83ff83fcad21df0818be7ed6d7fb5117bcf0477d3767f9",
+            "bytes": 669
+          },
+          {
+            "idx": 22,
+            "tag": "0022_unknown_ares",
+            "when": 1783043060420,
+            "sha256": "d8941e9602acce46853bc94f0b81845b0fef85735fd354dd8e1e91042739c73b",
+            "bytes": 717
+          },
+          {
+            "idx": 23,
+            "tag": "0023_lyrical_changeling",
+            "when": 1783045760239,
+            "sha256": "7d6c685ed00f55241ab372316cd2fde7909fa734ac51c94326f383f7ac99e62e",
+            "bytes": 866
+          },
+          {
+            "idx": 24,
+            "tag": "0024_sleepy_captain_stacy",
+            "when": 1783045821101,
+            "sha256": "554b42e45f90b37a31a35c8fe1f90ff9ed78f765235b260d6b8d817f64817fbe",
+            "bytes": 105
+          },
+          {
+            "idx": 25,
+            "tag": "0025_deep_greymalkin",
+            "when": 1783053083216,
+            "sha256": "0cbebbca2d6561f5d5951d1b4d0493792a6377b0fe7660eec8658e4d2d8b537c",
+            "bytes": 588
+          },
+          {
+            "idx": 26,
+            "tag": "0026_glamorous_barracuda",
+            "when": 1783056750860,
+            "sha256": "96c6e7f817fcd27c36138cc217166f6881e538bda5a8f28507e568815b6144dd",
+            "bytes": 79
+          },
+          {
+            "idx": 27,
+            "tag": "0027_abnormal_turbo",
+            "when": 1783093645587,
+            "sha256": "dad0def862735c0e9bd4442966b3af742d56706fe871c9b0b96f4274cb0b61d5",
+            "bytes": 81
+          },
+          {
+            "idx": 28,
+            "tag": "0028_abandoned_beast",
+            "when": 1783094734364,
+            "sha256": "d6c95fa118884ea711e56cb4e773dfb9478dfebc4cc66e98953a32b08560f538",
+            "bytes": 40
+          },
+          {
+            "idx": 29,
+            "tag": "0029_nostalgic_rachel_grey",
+            "when": 1783113186932,
+            "sha256": "4de223c673625831a4b5e2184016a88c023738939c0bd6dd776af7193f23b44e",
+            "bytes": 1103
+          },
+          {
+            "idx": 30,
+            "tag": "0030_sour_silhouette",
+            "when": 1783159594456,
+            "sha256": "f309d66c4df77dfe2ffd9ab3d418a221f53c9917e7f1902c547135ebc385d1c5",
+            "bytes": 125
+          },
+          {
+            "idx": 31,
+            "tag": "0031_bitter_thor_girl",
+            "when": 1783220180156,
+            "sha256": "c11ad28ae1b91e3e529c2afaa7c1c3011ed727ac55c1f754dca608a22edf20e0",
+            "bytes": 452
+          },
+          {
+            "idx": 32,
+            "tag": "0032_freezing_sharon_carter",
+            "when": 1783221027613,
+            "sha256": "9b5a3c3684cdca98c6dc6cf586daf1c2dc718d659dddda6b2e97cbc9529cba64",
+            "bytes": 597
+          },
+          {
+            "idx": 33,
+            "tag": "0033_daily_the_fallen",
+            "when": 1783224075308,
+            "sha256": "ca9c683e3e980299230e6e88c90bdc52794ab19bcbad25d224c381da5589ad14",
+            "bytes": 165
+          },
+          {
+            "idx": 34,
+            "tag": "0034_material_killraven",
+            "when": 1783231553109,
+            "sha256": "27fed3b8e7eaa6553f19b8d0492d7c8ff84f084f930afed6161ccfcac5bad6e9",
+            "bytes": 229
+          },
+          {
+            "idx": 35,
+            "tag": "0035_youthful_the_executioner",
+            "when": 1783235228292,
+            "sha256": "2d9df07b168c76a093f679fb6d65a814d97137697a1401d31b8f8671e0e7d5a1",
+            "bytes": 154
+          },
+          {
+            "idx": 36,
+            "tag": "0036_long_old_lace",
+            "when": 1783237171561,
+            "sha256": "7f3a2090452cd66f22e41f283f58c87cf8bb252ae36111290147d8b1bc26d19b",
+            "bytes": 207
+          },
+          {
+            "idx": 37,
+            "tag": "0037_quiet_molten_man",
+            "when": 1783238653306,
+            "sha256": "5543d06573255a69e66dd810a6945c68045e274b51251ab4f133e2873194dabb",
+            "bytes": 402
+          },
+          {
+            "idx": 38,
+            "tag": "0038_massive_toro",
+            "when": 1783240260860,
+            "sha256": "9ac6ec113e4117951959dc45c8471040f572480b79fe10d1c90b794c1f39fd02",
+            "bytes": 955
+          },
+          {
+            "idx": 39,
+            "tag": "0039_blue_killer_shrike",
+            "when": 1783242100223,
+            "sha256": "283c96f6bd580d5213350d0a6322ea0e0626c26f26bff6a2b095e37439bea78f",
+            "bytes": 507
+          },
+          {
+            "idx": 40,
+            "tag": "0040_first_punisher",
+            "when": 1783261149494,
+            "sha256": "8541fe2739895180101229464a1818876ca67acdc9d2bac0ccdea5067b1c6e9e",
+            "bytes": 764
+          },
+          {
+            "idx": 41,
+            "tag": "0041_mysterious_lily_hollister",
+            "when": 1783353099686,
+            "sha256": "d38b3d0ee1b6f96526ba02ec9a59eaf93eef9705b1a127241f18f8ec43e6a6cf",
+            "bytes": 506
+          },
+          {
+            "idx": 42,
+            "tag": "0042_striped_adam_warlock",
+            "when": 1783443441686,
+            "sha256": "c5c94e9c62a501d1c12f8e891ec2054fb09e2d0b77b0491b89ce40e01463a801",
+            "bytes": 70
+          },
+          {
+            "idx": 43,
+            "tag": "0043_tearful_micromacro",
+            "when": 1783444424593,
+            "sha256": "c85c22430df4b315bc58b4c44e5981c685e468fd60fcb12c9d7fdff172b972ca",
+            "bytes": 58
+          },
+          {
+            "idx": 44,
+            "tag": "0044_person_org_labels",
+            "when": 1783469969978,
+            "sha256": "e98be182f6e9d0169fe8709853d2cc7fc01239e20cb9e31656718dae408d17b4",
+            "bytes": 173
+          },
+          {
+            "idx": 45,
+            "tag": "0045_remarkable_living_mummy",
+            "when": 1783550122930,
+            "sha256": "749c39dd9245d7b85c47ec480954791374c4b76b813dc1bd22033ffe1dd51b20",
+            "bytes": 638
+          },
+          {
+            "idx": 46,
+            "tag": "0046_label_backfill",
+            "when": 1783550210846,
+            "sha256": "2fefb49a6717a7164d04bdfe91cd8595766d8cc70fadb2341653bc8249bb1b52",
+            "bytes": 2668
+          },
+          {
+            "idx": 47,
+            "tag": "0047_optimal_moon_knight",
+            "when": 1783555558460,
+            "sha256": "13f874487d9422a18b0d11bd6aa0c61e9fe2f723423ea53409873c6aa9b79747",
+            "bytes": 288
+          },
+          {
+            "idx": 48,
+            "tag": "0048_loving_the_santerians",
+            "when": 1783624717879,
+            "sha256": "b8141b9676a52a8af7ecfdabcb0bf2115aa70eba03228e7b43b53e1d43d0c7fb",
+            "bytes": 57
+          },
+          {
+            "idx": 49,
+            "tag": "0049_backfill_email_from_name",
+            "when": 1783627263126,
+            "sha256": "3ca6ee56bddcb90eee570372bff7042fd8b835af9443e9883c665e37f5f58081",
+            "bytes": 660
+          },
+          {
+            "idx": 50,
+            "tag": "0050_absurd_goliath",
+            "when": 1783646072101,
+            "sha256": "4560e97e039ac95a9ca2a6ec634df0f42bf3391ca4be6463b39cb6b693b56677",
+            "bytes": 59
+          },
+          {
+            "idx": 51,
+            "tag": "0051_regular_maestro",
+            "when": 1783691391967,
+            "sha256": "303f01a799e5f7339ff529cfa16b11ed2eeaddd79c1f09cb9832ad029b957ea6",
+            "bytes": 147
+          },
+          {
+            "idx": 52,
+            "tag": "0052_short_red_shift",
+            "when": 1783705978996,
+            "sha256": "ccc843673d83f4edbfe3139f147400a2e869d11a1aa2895c05f4f8b6129dcb35",
+            "bytes": 285
+          },
+          {
+            "idx": 53,
+            "tag": "0053_cute_morgan_stark",
+            "when": 1783777778057,
+            "sha256": "d42e029b6f747c9b23dafc46589a9bb6db26264df4f735fe1fac7c3da27fb3cd",
+            "bytes": 77
+          },
+          {
+            "idx": 54,
+            "tag": "0054_fearless_darkstar",
+            "when": 1783789213247,
+            "sha256": "f875bab2cb29e629488d574f8550cff8d5067b01c9655969131f2b1bb6ab73ad",
+            "bytes": 62
+          },
+          {
+            "idx": 55,
+            "tag": "0055_mail_labels",
+            "when": 1783822693177,
+            "sha256": "04a553d7badb72842eed1dd07359647296586ea059f4fc57239d0491a9b98e16",
+            "bytes": 946
+          },
+          {
+            "idx": 56,
+            "tag": "0056_bouncy_sir_ram",
+            "when": 1783828095433,
+            "sha256": "ff873c001a70ed5fbc1ff82b4d6a03516e2ce94350fe6e12e1414859081d05a1",
+            "bytes": 96
+          },
+          {
+            "idx": 57,
+            "tag": "0057_glorious_silk_fever",
+            "when": 1784371451632,
+            "sha256": "d83aedcc56ac3851851f07d08c76fee465e2350d162f9d8eb247dc302ede9557",
+            "bytes": 299
+          },
+          {
+            "idx": 58,
+            "tag": "0058_superb_talkback",
+            "when": 1784672706162,
+            "sha256": "f7417cddab4de12f4370d611422d51cf61c4eb79989561e86c5217e9a638c1e0",
+            "bytes": 2154
+          },
+          {
+            "idx": 59,
+            "tag": "0059_session_token_hash",
+            "when": 1784911920456,
+            "sha256": "69f27b5bef8b10577153ab7f3d6c7bdab3012759237919b1ada5757f1bb29a7c",
+            "bytes": 1097
+          },
+          {
+            "idx": 60,
+            "tag": "0060_label_join_backfill",
+            "when": 1786000000000,
+            "sha256": "af4f24624ac587ae4edc2f77fc12a3c8c6137864a090809a488a249fc24f3d44",
+            "bytes": 5390
+          },
+          {
+            "idx": 61,
+            "tag": "0061_round_war_machine",
+            "when": 1787326165029,
+            "sha256": "aae8f32f1e4170097618785a0e493d607f83402ff39b410fad32e316ea5fd764",
+            "bytes": 143
+          },
+          {
+            "idx": 62,
+            "tag": "0062_young_wendell_vaughn",
+            "when": 1787585568600,
+            "sha256": "2a2cec26eca400ba76bc5f938dd76731446f1ffc2cdea49cbb587da9d07054aa",
+            "bytes": 1621
+          },
+          {
+            "idx": 63,
+            "tag": "0063_first_boomer",
+            "when": 1787591709123,
+            "sha256": "8b431da02b5c5008a433f5f6d6d242ee680d8445a1679ddfa70a0b18bc99936b",
+            "bytes": 77
+          },
+          {
+            "idx": 64,
+            "tag": "0064_email_activities_done",
+            "when": 1787591710123,
+            "sha256": "e1664f18d7b590c8a36c59df3d5605834f0d6d1e098cdd82c281f031c2e39305",
+            "bytes": 481
+          },
+          {
+            "idx": 65,
+            "tag": "0065_outgoing_hedge_knight",
+            "when": 1787601233098,
+            "sha256": "443284b15b16de460a945aedc63e53c02a54bc026b3f96a686b7e33f65d87b89",
+            "bytes": 4279
+          },
+          {
+            "idx": 66,
+            "tag": "0066_typical_makkari",
+            "when": 1787609076100,
+            "sha256": "9f47c6c850236706c9ef2d78acddc0082baf29c38a67d5b662b8b923ccd625b4",
+            "bytes": 412
+          },
+          {
+            "idx": 67,
+            "tag": "0067_flowery_kat_farrell",
+            "when": 1787613657838,
+            "sha256": "9b541927f7c2e0bb46c61a10378b3762fdd75fbbb5efdd18bb111adc05dd4b71",
+            "bytes": 67
+          },
+          {
+            "idx": 68,
+            "tag": "0068_living_hercules",
+            "when": 1787655816074,
+            "sha256": "edc20b77ad355dd612c7f7a6b6d20f4d1d3f237de2d5cac73abc3ba329798f1c",
+            "bytes": 372
+          },
+          {
+            "idx": 69,
+            "tag": "0069_org_search_idx_rebuild",
+            "when": 1787655850631,
+            "sha256": "df8622c4a4becb4ec2582ff382d32609b3481e7b4933c4c1300e357261a40e35",
+            "bytes": 366
+          },
+          {
+            "idx": 70,
+            "tag": "0070_tiny_cyclops",
+            "when": 1787666964838,
+            "sha256": "ccb9383939f256c4d5453d018ea00da004a187c440c04cae101368ee468e29b7",
+            "bytes": 72
+          },
+          {
+            "idx": 71,
+            "tag": "0071_enrichment_person_name_parts",
+            "when": 1787666965838,
+            "sha256": "301d211099ddc1a7473414d843f76a823f66856cedcf7b3c5fa81b317e927ebe",
+            "bytes": 601
+          },
+          {
+            "idx": 72,
+            "tag": "0072_prospect_reveals",
+            "when": 1788196064812,
+            "sha256": "43e39de73f1ab71515098b2a73f2dbf703c8edc7f2183f24c055138af69674b5",
+            "bytes": 1294
+          },
+          {
+            "idx": 73,
+            "tag": "0073_lead_custom_fields",
+            "when": 1788295227278,
+            "sha256": "90c8f331dc75b2d4a21b1ca02cac3fea5776a47d62e1b540e6e67a1195fab0ec",
+            "bytes": 274
+          },
+          {
+            "idx": 74,
+            "tag": "0074_backfill_deal_last_activity",
+            "when": 1788371581000,
+            "sha256": "a247d9d89303622cceb9f9ce8411d3e943c81516b42d4cefac31d9c01b7d8e8b",
+            "bytes": 201
+          },
+          {
+            "idx": 75,
+            "tag": "0075_multicurrency",
+            "when": 1793295544115,
+            "sha256": "93992b723f10bbe31a00456a44fb25098f62ea0a68ab7663554ae00746f5f60d",
+            "bytes": 1040
+          },
+          {
+            "idx": 76,
+            "tag": "0076_activity_civil_dates",
+            "when": 1793298309171,
+            "sha256": "be63f09067128cca47cf8d8ab07bd5396d6328c014072caecfa5d35b8c7d6a55",
+            "bytes": 131
+          },
+          {
+            "idx": 77,
+            "tag": "0077_import_source_warnings_external_ids",
+            "when": 1793435004367,
+            "sha256": "f8c9490807783e918d3aadcb71e0418f881f8f0af967c2f1623526e3d2cdae5c",
+            "bytes": 1098
+          },
+          {
+            "idx": 78,
+            "tag": "0078_awesome_mojo",
+            "when": 1793435004368,
+            "sha256": "fb6dca96e856d54bbab44a24e19de7b7ed2f9ca3ba34105c4aea596e4a2910f7",
+            "bytes": 11306
+          },
+          {
+            "idx": 79,
+            "tag": "0079_magenta_skin",
+            "when": 1793435224165,
+            "sha256": "8bb9a595525356e881ddfadbb1c2a4acdf37a120e79e31641ee6edee4bfdacc6",
+            "bytes": 861
+          },
+          {
+            "idx": 80,
+            "tag": "0080_pretty_blink",
+            "when": 1793436661149,
+            "sha256": "e09032bee5f6a953a70dd13b8187f3cfacaf744e438b86ca047f601e386b21ad",
+            "bytes": 578
+          },
+          {
+            "idx": 81,
+            "tag": "0081_colorful_banshee",
+            "when": 1793437586994,
+            "sha256": "6263a46382afa1e169e6ee8630ef8c7fc5e9e7a4a562405e07acd4b157cde6cb",
+            "bytes": 69
+          },
+          {
+            "idx": 82,
+            "tag": "0082_shocking_beast",
+            "when": 1793439305973,
+            "sha256": "0fdb01ac0d9436df11cac450f9411073de530a28939b2376475d3660e6637a9d",
+            "bytes": 942
+          },
+          {
+            "idx": 83,
+            "tag": "0083_integration_connections",
+            "when": 1793443475394,
+            "sha256": "6ea7f6c7e1f1549e13a15e63a635c23ca97942278631e331daefd67211309acc",
+            "bytes": 2467
+          },
+          {
+            "idx": 84,
+            "tag": "0084_visual_workflows",
+            "when": 1793452709228,
+            "sha256": "5b19873644fd336e925a94dd6666e4735556649967ca5aa086d76ab717860eb5",
+            "bytes": 5108
+          }
+        ],
+        "ledger": {
+          "status": "matching-prefix",
+          "appliedCount": 85,
+          "pendingCount": 0,
+          "issues": []
+        },
+        "qualifiesUpgrade": false
+      }
+    }
+  ],
+  "comparisons": []
+}

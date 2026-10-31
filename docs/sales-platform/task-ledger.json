@@ -1,0 +1,1436 @@
+{
+  "schemaVersion": 1,
+  "baselineCommit": "b8b2708d4076551b803451ce10d4928a87ce35cd",
+  "approvedManifestSha256": "c82698c35f908357da555d6745c05fa8e5bd7ced27a69454d5da4c456adc0b30",
+  "tasks": [
+    {
+      "id": "SP-00.1",
+      "projectId": "SP-00",
+      "status": "in-progress",
+      "owner": "sales-platform",
+      "dependsOn": [],
+      "evidence": [
+        {
+          "path": "docs/sales-platform/baseline.json",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/baseline.sha256",
+          "level": "observed-source"
+        }
+      ],
+      "remainingGates": ["Named maintainer review and full runtime/owner attestation remain open."],
+      "notes": "Five live checkout boundaries captured; isolated committed candidate selected; no dirty peer adoption."
+    },
+    {
+      "id": "SP-00.2",
+      "projectId": "SP-00",
+      "status": "in-progress",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-00.1"],
+      "evidence": [
+        {
+          "path": "docs/sales-platform/current-shell-research.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/verification.md",
+          "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/evidence/board-fa-desktop.png",
+          "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/evidence/board-de-desktop.png",
+          "level": "local-runtime"
+        }
+      ],
+      "remainingGates": [
+        "Complete affected record-screen/theme/state and persisted-preference matrix still required."
+      ],
+      "notes": "Native synthetic sign-in and real FA/DE/EN shell captured; Farsi 390px captured; calendar/timezone persistence observed."
+    },
+    {
+      "id": "SP-00.3",
+      "projectId": "SP-00",
+      "status": "in-progress",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-00.1"],
+      "evidence": [
+        {
+          "path": "docs/sales-platform/migration-inspection.md",
+          "level": "local-unit"
+        },
+        {
+          "path": "docs/sales-platform/evidence/source-lineages.json",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/evidence/local-lineage.json",
+          "level": "local-runtime"
+        }
+      ],
+      "remainingGates": [
+        "Retained-installation ledgers absent.",
+        "WF-0083 and MAIL-dev forward convergence/recovery not qualified.",
+        "New privacy branch migration drift needs allocator-owned reconciliation."
+      ],
+      "notes": "Read-only fail-closed tool implemented; 24 tests pass. Newly created candidate DB ledger matches 85 migrations; no retained path inferred."
+    },
+    {
+      "id": "SP-00.4",
+      "projectId": "SP-00",
+      "status": "in-progress",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-00.1"],
+      "evidence": [
+        {
+          "path": "docs/sales-platform/critical-journeys.json",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/verification.md",
+          "level": "local-runtime"
+        }
+      ],
+      "remainingGates": [
+        "All protected browser/provider/state fixtures and domain-owner review still required."
+      ],
+      "notes": "Twelve journey categories map source tests and explicit missing acceptance evidence."
+    },
+    {
+      "id": "SP-00.5",
+      "projectId": "SP-00",
+      "status": "in-progress",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-00.3", "SP-00.4"],
+      "evidence": [
+        {
+          "path": "docs/sales-platform/README.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/integration-execution/mail-platform-agreement-proposal.md",
+          "level": "observed-source"
+        }
+      ],
+      "remainingGates": [
+        "Existing WF outbox/shared command and MAIL integration interfaces await actual exports/owner acceptance."
+      ],
+      "notes": "Preserves one Better Auth, one WF engine and one IG sender; existing platform allocator and MAIL 0085-0091 reservation retained."
+    },
+    {
+      "id": "SP-00.6",
+      "projectId": "SP-00",
+      "status": "in-progress",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-00.2", "SP-00.3", "SP-00.5"],
+      "evidence": [
+        {
+          "path": "docs/sales-platform/verification.md",
+          "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/evidence/local-restore.json",
+          "level": "local-runtime"
+        }
+      ],
+      "remainingGates": [
+        "Immutable MAIL candidate unavailable.",
+        "Each supported divergent branch upgrade/recovery remains open."
+      ],
+      "notes": "Exact committed platform cut adopted in own clone; PostgreSQL16 integration 82 tests passed; synthetic PostgreSQL18 restore 90 tables and 1862 rows matched."
+    },
+    {
+      "id": "SP-00.7",
+      "projectId": "SP-00",
+      "status": "in-progress",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-00.6"],
+      "evidence": [
+        {
+          "path": "docs/sales-platform/verification.md",
+          "level": "local-unit"
+        }
+      ],
+      "remainingGates": [
+        "Full production web build and complete combined candidate still required."
+      ],
+      "notes": "Pinned Bun 1.4.4 frozen install no changes; typecheck/lint/worker bundling/UI-source audit pass. Inherited broad unit 5897 pass plus expected red collection failure, final tool 44 pass."
+    },
+    {
+      "id": "SP-00.8",
+      "projectId": "SP-00",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-00.4", "SP-00.6", "SP-00.7", "SP-01.8", "SP-15.1"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-01.1",
+      "projectId": "SP-01",
+      "status": "in-progress",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-00.2"],
+      "evidence": [
+        {
+          "path": "docs/sales-platform/current-shell-research.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/verification.md",
+          "level": "local-runtime"
+        }
+      ],
+      "remainingGates": [
+        "Complete screen/state/token exceptions and reviewer matrix still required."
+      ],
+      "notes": "Preserved actual current shell, fonts, adapters, Farsi desktop/mobile and German/English baselines."
+    },
+    {
+      "id": "SP-01.2",
+      "projectId": "SP-01",
+      "status": "waiting-external",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-00.4"],
+      "evidence": [
+        {
+          "path": "docs/sales-platform/approved/UX-RESEARCH.md",
+          "level": "observed-source"
+        }
+      ],
+      "remainingGates": ["Real consenting participants and moderator sessions not available yet."],
+      "notes": "No interviews, timings, completion rates or outcomes invented. Synthetic examples support preparation."
+    },
+    {
+      "id": "SP-01.3",
+      "projectId": "SP-01",
+      "status": "in-progress",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-01.1"],
+      "evidence": [
+        {
+          "path": "docs/sales-platform/current-shell-research.md",
+          "level": "observed-source"
+        }
+      ],
+      "remainingGates": [
+        "Remaining prioritized flow/reference studies and prototype validation still required."
+      ],
+      "notes": "18 Mobbin gallery frames actually inspected: 8 sharing, 6 template, 4 workspace. Missing failure/security/keyboard evidence is recorded."
+    },
+    {
+      "id": "SP-01.4",
+      "projectId": "SP-01",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-01.2"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-01.5",
+      "projectId": "SP-01",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-01.3", "SP-01.4"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-01.6",
+      "projectId": "SP-01",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-01.5"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-01.7",
+      "projectId": "SP-01",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-01.6"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-01.8",
+      "projectId": "SP-01",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-01.7"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-02.1",
+      "projectId": "SP-02",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-00.8", "SP-01.4"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-02.2",
+      "projectId": "SP-02",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-02.1", "SP-15.2"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-02.3",
+      "projectId": "SP-02",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-02.2"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-02.4",
+      "projectId": "SP-02",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-02.3"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-02.5",
+      "projectId": "SP-02",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-02.3"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-02.6",
+      "projectId": "SP-02",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-02.3", "SP-00.5"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-02.7",
+      "projectId": "SP-02",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-02.4", "SP-02.5", "SP-02.6"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-02.8",
+      "projectId": "SP-02",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-02.7", "SP-15.3"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-03.1",
+      "projectId": "SP-03",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-00.8"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-03.2",
+      "projectId": "SP-03",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-03.1", "SP-02.4"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-03.3",
+      "projectId": "SP-03",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-03.2"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-03.4",
+      "projectId": "SP-03",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-03.3"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-03.5",
+      "projectId": "SP-03",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-03.3"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-03.6",
+      "projectId": "SP-03",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-03.3"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-03.7",
+      "projectId": "SP-03",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-03.2", "SP-15.2"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-03.8",
+      "projectId": "SP-03",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-03.4", "SP-03.5", "SP-03.6", "SP-03.7"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-04.1",
+      "projectId": "SP-04",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-00.5", "SP-01.8"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-04.2",
+      "projectId": "SP-04",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-04.1", "SP-02.3"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-04.3",
+      "projectId": "SP-04",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-04.2"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-04.4",
+      "projectId": "SP-04",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-04.3", "SP-02.7"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-04.5",
+      "projectId": "SP-04",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-04.1", "SP-02.2"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-04.6",
+      "projectId": "SP-04",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-04.4", "SP-04.5"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-04.7",
+      "projectId": "SP-04",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-04.4", "SP-04.6"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-04.8",
+      "projectId": "SP-04",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-04.7"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-05.1",
+      "projectId": "SP-05",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-04.1", "SP-01.8"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-05.2",
+      "projectId": "SP-05",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-05.1", "SP-02.2"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-05.3",
+      "projectId": "SP-05",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-05.2"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-05.4",
+      "projectId": "SP-05",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-05.2"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-05.5",
+      "projectId": "SP-05",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-05.3"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-05.6",
+      "projectId": "SP-05",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-05.3", "SP-05.4"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-05.7",
+      "projectId": "SP-05",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-05.4", "SP-03.2", "SP-04.6"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-05.8",
+      "projectId": "SP-05",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-05.5", "SP-05.6", "SP-05.7"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-06.1",
+      "projectId": "SP-06",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-00.5", "SP-01.8"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-06.2",
+      "projectId": "SP-06",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-06.1"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-06.3",
+      "projectId": "SP-06",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-06.2", "SP-02.2"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-06.4",
+      "projectId": "SP-06",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-06.3"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-06.5",
+      "projectId": "SP-06",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-06.2", "SP-05.2"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-06.6",
+      "projectId": "SP-06",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-06.2", "SP-00.5"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-06.7",
+      "projectId": "SP-06",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-06.4", "SP-03.3"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-06.8",
+      "projectId": "SP-06",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-06.5", "SP-06.6", "SP-06.7"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-07.1",
+      "projectId": "SP-07",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-00.5", "SP-04.1"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-07.2",
+      "projectId": "SP-07",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-07.1", "SP-00.6"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-07.3",
+      "projectId": "SP-07",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-07.2", "SP-04.6"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-07.4",
+      "projectId": "SP-07",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-07.3", "SP-01.8"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-07.5",
+      "projectId": "SP-07",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-07.1", "SP-15.3"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-07.6",
+      "projectId": "SP-07",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-07.3", "SP-07.5"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-07.7",
+      "projectId": "SP-07",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-07.4", "SP-07.6"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-07.8",
+      "projectId": "SP-07",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-07.7"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-08.1",
+      "projectId": "SP-08",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-00.5", "SP-01.8"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-08.2",
+      "projectId": "SP-08",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-08.1", "SP-07.2"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-08.3",
+      "projectId": "SP-08",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-08.2", "SP-04.4"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-08.4",
+      "projectId": "SP-08",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-08.3", "SP-03.2"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-08.5",
+      "projectId": "SP-08",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-08.2", "SP-08.4"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-08.6",
+      "projectId": "SP-08",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-08.1", "SP-08.5"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-08.7",
+      "projectId": "SP-08",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-08.4", "SP-08.6", "SP-03.7"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-08.8",
+      "projectId": "SP-08",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-08.7", "SP-15.4"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-09.1",
+      "projectId": "SP-09",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-06.1", "SP-08.1"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-09.2",
+      "projectId": "SP-09",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-09.1", "SP-15.3"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-09.3",
+      "projectId": "SP-09",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-09.2", "SP-03.4"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-09.4",
+      "projectId": "SP-09",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-09.3", "SP-07.3"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-09.5",
+      "projectId": "SP-09",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-09.2", "SP-07.5"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-09.6",
+      "projectId": "SP-09",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-09.2", "SP-06.7"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-09.7",
+      "projectId": "SP-09",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-09.5", "SP-09.6", "SP-08.7"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-09.8",
+      "projectId": "SP-09",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-09.4", "SP-09.7"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-10.1",
+      "projectId": "SP-10",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-01.2", "SP-06.1"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-10.2",
+      "projectId": "SP-10",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-10.1", "SP-06.2"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-10.3",
+      "projectId": "SP-10",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-10.2", "SP-02.2"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-10.4",
+      "projectId": "SP-10",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-10.3"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-10.5",
+      "projectId": "SP-10",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-10.3", "SP-04.8", "SP-07.8"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-10.6",
+      "projectId": "SP-10",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-10.4", "SP-08.7"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-10.7",
+      "projectId": "SP-10",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-10.3", "SP-14.8"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-10.8",
+      "projectId": "SP-10",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-10.5", "SP-10.6"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-11.1",
+      "projectId": "SP-11",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-01.2", "SP-06.1"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-11.2",
+      "projectId": "SP-11",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-11.1", "SP-06.2"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-11.3",
+      "projectId": "SP-11",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-11.2", "SP-05.2"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-11.4",
+      "projectId": "SP-11",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-11.2", "SP-07.5"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-11.5",
+      "projectId": "SP-11",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-11.2", "SP-02.2"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-11.6",
+      "projectId": "SP-11",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-11.3", "SP-11.5"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-11.7",
+      "projectId": "SP-11",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-11.6", "SP-08.7"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-11.8",
+      "projectId": "SP-11",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-11.4", "SP-11.7"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-12.1",
+      "projectId": "SP-12",
+      "status": "in-progress",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-01.2", "SP-07.1"],
+      "evidence": [
+        {
+          "path": "docs/sales-platform/product-signal-source-decision.md",
+          "level": "observed-source"
+        }
+      ],
+      "remainingGates": [
+        "Actual operational source instance/owner, permitted live purpose and retention/suppression contract remain unqualified."
+      ],
+      "notes": "User delegated choice to research/judgment. Default customer-controlled first-party API; synthetic local Warpdrive reference; optional PostHog/Segment mapping."
+    },
+    {
+      "id": "SP-12.2",
+      "projectId": "SP-12",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-12.1", "SP-06.2"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-12.3",
+      "projectId": "SP-12",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-12.2", "SP-15.2"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-12.4",
+      "projectId": "SP-12",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-12.3", "SP-05.4"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-12.5",
+      "projectId": "SP-12",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-12.4", "SP-03.4"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-12.6",
+      "projectId": "SP-12",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-12.5", "SP-07.8"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-12.7",
+      "projectId": "SP-12",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-12.5", "SP-08.7"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-12.8",
+      "projectId": "SP-12",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-12.6", "SP-12.7"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-13.1",
+      "projectId": "SP-13",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-08.1", "SP-01.8"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-13.2",
+      "projectId": "SP-13",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-13.1", "SP-00.5"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-13.3",
+      "projectId": "SP-13",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-13.2", "SP-07.8"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-13.4",
+      "projectId": "SP-13",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-13.2", "SP-08.3"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-13.5",
+      "projectId": "SP-13",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-13.3", "SP-06.2"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-13.6",
+      "projectId": "SP-13",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-13.5", "SP-09.3"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-13.7",
+      "projectId": "SP-13",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-13.4", "SP-13.6", "SP-08.7"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-13.8",
+      "projectId": "SP-13",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-13.7"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-14.1",
+      "projectId": "SP-14",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-01.2", "SP-00.5"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-14.2",
+      "projectId": "SP-14",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-14.1", "SP-15.2"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-14.3",
+      "projectId": "SP-14",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-14.2", "SP-00.6"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-14.4",
+      "projectId": "SP-14",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-14.3", "SP-15.5"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-14.5",
+      "projectId": "SP-14",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-14.4"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-14.6",
+      "projectId": "SP-14",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-14.5", "SP-01.8"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-14.7",
+      "projectId": "SP-14",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-14.6", "SP-15.5"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-14.8",
+      "projectId": "SP-14",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-14.7", "SP-15.7"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-15.1",
+      "projectId": "SP-15",
+      "status": "in-progress",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-00.4"],
+      "evidence": [
+        {
+          "path": "docs/sales-platform/critical-journeys.json",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/verification.md",
+          "level": "local-unit"
+        }
+      ],
+      "remainingGates": [
+        "Remaining exact-candidate functional/browser/provider/release acceptance still required."
+      ],
+      "notes": "Programme guard validates approved hashes, 128 IDs/DAG/evidence, 12 critical journey categories;20 focused tests passed."
+    },
+    {
+      "id": "SP-15.2",
+      "projectId": "SP-15",
+      "status": "in-progress",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-00.5"],
+      "evidence": [
+        {
+          "path": "docs/sales-platform/critical-journeys.json",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/verification.md",
+          "level": "local-runtime"
+        }
+      ],
+      "remainingGates": [
+        "Full new-role/workspace/export/files/MCP threat matrix and independent review remain open."
+      ],
+      "notes": "Existing permission PostgreSQL checks rerun; tooling rejects unsafe evidence paths and malformed lineage; no authority model changed."
+    },
+    {
+      "id": "SP-15.3",
+      "projectId": "SP-15",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-01.6"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-15.4",
+      "projectId": "SP-15",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-02.1", "SP-15.1"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-15.5",
+      "projectId": "SP-15",
+      "status": "in-progress",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-00.3", "SP-15.1"],
+      "evidence": [
+        {
+          "path": "docs/sales-platform/evidence/local-restore.json",
+          "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/evidence/local-disposable-ledger.json",
+          "level": "local-runtime"
+        }
+      ],
+      "remainingGates": [
+        "Retained source lineages, object-store, migration interruption, old-binary compatibility, external receipts and timed recovery targets remain unqualified."
+      ],
+      "notes": "Actual PostgreSQL18 synthetic backup restored into quarantined DB; all 90 table digests and 1862 rows matched. No workers/provider effects started."
+    },
+    {
+      "id": "SP-15.6",
+      "projectId": "SP-15",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-00.5", "SP-15.2"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-15.7",
+      "projectId": "SP-15",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-15.1", "SP-15.2", "SP-15.3", "SP-15.4", "SP-15.5", "SP-15.6"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-15.8",
+      "projectId": "SP-15",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-15.7"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    }
+  ]
+}
