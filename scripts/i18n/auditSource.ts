@@ -37,7 +37,8 @@ function hasRuntimeImport(node: ts.ImportDeclaration): boolean {
 // This finds migration candidates, including bounded local bindings and rendered React state.
 // Arbitrary helpers, imported data and server-returned errors still need feature review.
 export function auditSource(source: string, file: string): SourceFinding[] {
-  const tree = ts.createSourceFile(file, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  const kind = /\.[jt]sx$/.test(file) ? ts.ScriptKind.TSX : ts.ScriptKind.TS;
+  const tree = ts.createSourceFile(file, source, ts.ScriptTarget.Latest, true, kind);
   const findings: SourceFinding[] = [];
   const visibleCopy = visibleCopyResolver(tree);
   const roots: ts.Expression[] = [];

@@ -1,0 +1,7 @@
+// Native endpoint schemas own validation. Hooks narrow their shared context without
+// assuming that the endpoint has a body or treating its untyped fields as trusted values.
+export function hookBody(value: unknown): Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
+}

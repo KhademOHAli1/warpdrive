@@ -5,6 +5,7 @@ import { useRef, useState, useTransition } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { createPermissionSetAction } from "@/features/identity/actions/permission-sets";
+import { IdentityActionError } from "@/features/identity/IdentityActionError";
 import { settingsIdentityError } from "@/features/identity/settingsMessages";
 import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import { readCsrfToken } from "@/utils/csrfCookie";
@@ -66,9 +67,7 @@ export function CreatePermissionSetForm({ onCreated }: Props): React.ReactElemen
           disabled={isPending}
         />
         {error !== null ? (
-          <p role="alert" className="mt-2 text-sm text-red-600">
-            {error}
-          </p>
+          <IdentityActionError message={error} className="mt-2 text-sm text-red-600" />
         ) : null}
       </div>
       <div className="flex justify-end border-t bg-muted/20 px-5 py-3">

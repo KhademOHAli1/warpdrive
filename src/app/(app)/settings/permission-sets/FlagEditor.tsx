@@ -12,6 +12,7 @@ import {
   type TeamScopedCapability,
 } from "@/constants/permissionFlags";
 import { updateFlagsAction } from "@/features/identity/actions/permission-sets";
+import { IdentityActionError } from "@/features/identity/IdentityActionError";
 import {
   settingsIdentityError,
   settingsPermissionLabel,
@@ -159,11 +160,7 @@ export function FlagEditor({ setId, name, flags, onSaved }: Props): React.ReactE
         <Button type="button" onClick={save} disabled={isPending}>
           {isPending ? T.saving : T.save}
         </Button>
-        {error !== null && (
-          <span role="alert" className="text-sm text-red-600">
-            {error}
-          </span>
-        )}
+        {error !== null && <IdentityActionError message={error} className="text-sm text-red-600" />}
       </div>
     </div>
   );

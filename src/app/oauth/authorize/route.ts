@@ -10,9 +10,9 @@ import {
   authorizationPostQueryInput,
   authorizationRequestInput,
   authorizationSearchParams,
-  issueAuthCode,
 } from "@/features/oauth/authorize";
 import { getClient } from "@/features/oauth/clients";
+import { issueSessionAuthCode } from "@/features/oauth/consent";
 
 const consentDecisionInput = z.object({ decision: z.enum(["approve", "deny"]) });
 
@@ -121,15 +121,19 @@ export async function POST(req: NextRequest): Promise<Response> {
     });
   }
 
-  const code = await issueAuthCode(
+  const code = await issueSessionAuthCode(
     db,
+    req.headers,
     {
       clientId: authorization.client_id,
-      userId,
       redirectUri: authorization.redirect_uri,
       codeChallenge: authorization.code_challenge,
     },
     signal,
   );
-  return clientRedirect(authorization.redirect_uri, { code, state: authorization.state });
+  if (!code.ok) return loginRedirect(authorization);
+  return clientRedirect(authorization.redirect_uri, {
+    code: code.value,
+    state: authorization.state,
+  });
 }

@@ -73,7 +73,7 @@ export function UsersClient({ rows, permissionSets, viewerIsAdmin }: Props): Rea
 
   return (
     <div className="space-y-6">
-      <InviteUserForm onInvited={() => router.refresh()} />
+      <InviteUserForm onInvited={() => router.refresh()} viewerIsAdmin={viewerIsAdmin} />
       <div className="space-y-3">
         <UserStatusTabs value={status} onChange={setStatus} />
         <SettingsCard className="shadow-none">

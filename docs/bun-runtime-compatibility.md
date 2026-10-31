@@ -1,5 +1,17 @@
 # Bun runtime compatibility
 
+## Authentication qualification runtime
+
+The application now pins Bun **1.4.4** in `package.json` and the Docker image. The full
+PostgreSQL campaign reproduced an oversized WebSocket message closing with authentication
+code `4401` on 1.4.2: its built-in `ws` implementation ignored the configured `maxPayload`.
+The unchanged six-case WebSocket resource-limit suite passes on 1.4.4, including protocol
+code `1009` for oversized messages. This matches the
+[official 1.4.4 compatibility fixes](https://bun.sh/blog/bun-v1.4.4#ws-behaves-like-the-npm-package-on-node-js).
+Use the pinned runtime for local, CI and deployed authentication qualification. Other projects'
+runtime installations need not change. The older compatibility observations below retain
+their original version context.
+
 The root package pins Bun through `packageManager`. Use `bun install --frozen-lockfile`,
 then the checked-in scripts, which run Next, Vitest and the other CLI tools on Bun.
 

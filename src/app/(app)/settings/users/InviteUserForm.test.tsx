@@ -99,35 +99,18 @@ describe("InviteUserForm error mapping (IDENTITY-02)", () => {
   });
 });
 
-describe("InviteUserForm link invite (no email is sent)", () => {
-  it("after a successful invite, states no email is sent and offers a shareable sign-in link", async () => {
+describe("InviteUserForm delivered invitation", () => {
+  it("confirms queuing and links to delivery tracking without exposing a bearer link", async () => {
     inviteUserAction.mockResolvedValueOnce({ ok: true, userId: "u-9" });
     render(<InviteUserForm onInvited={() => {}} />);
     fireEvent.change(screen.getByLabelText("Email"), { target: { value: "new@example.com" } });
     fireEvent.change(screen.getByLabelText("Name"), { target: { value: "New Person" } });
     fireEvent.click(screen.getByRole("button", { name: /invite/i }));
-
-    const status = await screen.findByRole("status");
-    expect(status).toHaveTextContent(/no email/i);
-    expect(status).toHaveTextContent(/new@example.com/);
-    // A shareable sign-in link is shown (the login URL, since access is Google SSO).
-    const link = screen.getByRole("textbox", { name: /invite link/i });
-    expect((link as HTMLInputElement).value).toContain("/login");
-    expect(screen.getByRole("button", { name: /copy/i })).toBeInTheDocument();
-  });
-
-  it("copies the sign-in link to the clipboard", async () => {
-    const writeText = vi.fn<(text: string) => Promise<void>>(() => Promise.resolve());
-    Object.assign(navigator, { clipboard: { writeText } });
-    inviteUserAction.mockResolvedValueOnce({ ok: true, userId: "u-9" });
-    render(<InviteUserForm onInvited={() => {}} />);
-    fireEvent.change(screen.getByLabelText("Email"), { target: { value: "new@example.com" } });
-    fireEvent.change(screen.getByLabelText("Name"), { target: { value: "New Person" } });
-    fireEvent.click(screen.getByRole("button", { name: /invite/i }));
-
-    await screen.findByRole("status");
-    fireEvent.click(screen.getByRole("button", { name: /copy/i }));
-    await vi.waitFor(() => expect(writeText).toHaveBeenCalled());
-    expect(writeText.mock.calls[0]?.[0]).toContain("/login");
+    expect(await screen.findByRole("status")).toHaveTextContent(/invitation queued/i);
+    expect(screen.getByRole("link", { name: /review invitations/i })).toHaveAttribute(
+      "href",
+      "/settings/security-admin",
+    );
+    expect(screen.queryByRole("textbox", { name: /invite link/i })).not.toBeInTheDocument();
   });
 });

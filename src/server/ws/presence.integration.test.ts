@@ -140,12 +140,17 @@ describe("ws server presence", () => {
     const ch = `deal:${dealId}`;
 
     const wsA = await authedAdmin(adminIdA, adminSessionA);
+    const dealSubscribed = nextMessage(wsA, "subscribed");
+    const initialPresence = nextPresence(wsA, ch);
     wsA.send(JSON.stringify({ kind: "subscribe", channel: ch }));
-    await nextPresence(wsA, ch);
+    // Drain this channel's acknowledgement before waiting for the next subscription.
+    // Otherwise a delayed deal ACK can race the user LISTEN and lose the NOTIFY.
+    await Promise.all([dealSubscribed, initialPresence]);
 
     // Also subscribe to own user channel to trigger a relay event and check seq.
+    const userSubscribed = nextMessage(wsA, "subscribed");
     wsA.send(JSON.stringify({ kind: "subscribe", channel: `user:${adminIdA}` }));
-    await nextMessage(wsA, "subscribed");
+    await userSubscribed;
 
     const eventP = nextMessage(wsA, "event");
     await h.db.execute(

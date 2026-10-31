@@ -3,6 +3,14 @@ import { describe, expect, it, vi } from "vitest";
 import { auditSource } from "./auditSource";
 
 describe("localization source inventory", () => {
+  it("does not classify TypeScript generic functions as JSX interface copy", () => {
+    expect(
+      auditSource(
+        "export const transaction = <R>(callback: () => Promise<R>) => callback();",
+        "src/adapter.ts",
+      ),
+    ).toEqual([]);
+  });
   it("includes custom accessibility role descriptions as user-facing copy", () => {
     expect(
       auditSource('<button aria-roledescription="draggable card" />', "src/Card.tsx").map(

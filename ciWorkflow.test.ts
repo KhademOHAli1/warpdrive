@@ -96,6 +96,7 @@ describe("public Bun CI", () => {
       "bun run typecheck",
       "bun run lint",
       "bun run test:unit --maxWorkers=2",
+      "bun run test:integration --maxWorkers=2",
       "bun run build",
       "bun run build:workers",
     ]);
@@ -139,7 +140,7 @@ describe("public Bun CI", () => {
     expect(env.NODE_ENV).toBe("production");
     expect(env.APP_COMMIT).toMatch(/^\$\{\{\s*github\.sha\s*\}\}$/);
     expect(env.DATABASE_URL).toBe("postgres://build:build@127.0.0.1:5432/build");
-    expect(env.BASE_URL).toBe("http://127.0.0.1:3000");
+    expect(env.BASE_URL).toBe("https://build.example.invalid");
     expect(env.MINIO_ENDPOINT).toBe("http://127.0.0.1:9000");
     expect(env.NEXT_PUBLIC_WS_URL).toBe("ws://127.0.0.1:8080");
     expect(env.GOOGLE_WORKSPACE_DOMAIN).toBe("build.example.invalid");

@@ -1,8 +1,11 @@
 import { createHash, randomBytes } from "node:crypto";
 import { and, eq, gt, isNull, type SQL, sql } from "drizzle-orm";
 import type { Db } from "@/db/client";
-import { sessions, users } from "@/db/schema";
+import { authUsers, sessions, users } from "@/db/schema";
 import { err, ok, type Result } from "@/types/result";
+import { evaluateSessionAccess } from "./better/accessPolicy";
+import { sessionTokenFromCookie } from "./better/sessionToken";
+import { readAuthPolicy } from "./management/policy";
 
 export const SESSION_COOKIE = "wd_sid";
 const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days absolute expiry.
@@ -44,12 +47,20 @@ async function loadLiveSessionWhere(
   db: Db,
   match: SQL | undefined,
   signal: AbortSignal,
+  touch = false,
 ): Promise<Result<{ userId: string; sessionId: string }, "not_found">> {
   signal.throwIfAborted();
   const rows = await db
-    .select({ userId: sessions.userId, sessionId: sessions.id })
+    .select({
+      userId: sessions.userId,
+      sessionId: sessions.id,
+      session: sessions,
+      authUser: authUsers,
+      isAdmin: users.isAdmin,
+    })
     .from(sessions)
     .innerJoin(users, eq(users.id, sessions.userId))
+    .leftJoin(authUsers, eq(authUsers.id, users.id))
     .where(
       and(
         match,
@@ -62,6 +73,28 @@ async function loadLiveSessionWhere(
   signal.throwIfAborted();
   const row = rows[0];
   if (row === undefined) return err("not_found");
+  if (row.session.authMethod !== "legacy") {
+    if (row.authUser === null) return err("not_found");
+    const policy = await readAuthPolicy(db, signal);
+    const now = new Date();
+    const access = evaluateSessionAccess({
+      ...policy,
+      active: true,
+      emailVerified: row.authUser.emailVerified,
+      isAdmin: row.isAdmin,
+      twoFactorEnabled: row.authUser.twoFactorEnabled,
+      assurance: row.session.assurance,
+      lastSeenAt: row.session.lastSeenAt,
+      expiresAt: row.session.expiresAt,
+      createdAt: row.session.createdAt,
+      now,
+    });
+    if (!access.allowed) return err("not_found");
+    if (touch && now.getTime() - row.session.lastSeenAt.getTime() >= 60_000) {
+      await db.update(sessions).set({ lastSeenAt: now }).where(eq(sessions.id, row.sessionId));
+      signal.throwIfAborted();
+    }
+  }
   return ok({ userId: row.userId, sessionId: row.sessionId });
 }
 
@@ -74,7 +107,9 @@ export function loadLiveSessionByToken(
   cookieValue: string,
   signal: AbortSignal,
 ): Promise<Result<{ userId: string; sessionId: string }, "not_found">> {
-  return loadLiveSessionWhere(db, eq(sessions.tokenHash, hashSessionToken(cookieValue)), signal);
+  const raw = sessionTokenFromCookie(cookieValue);
+  if (raw === null) return Promise.resolve(err("not_found"));
+  return loadLiveSessionWhere(db, eq(sessions.tokenHash, hashSessionToken(raw)), signal, true);
 }
 
 /**

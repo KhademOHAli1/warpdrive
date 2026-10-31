@@ -9,6 +9,7 @@ import {
 } from "@/features/identity/visibility-groups.service";
 import { createContext } from "@/server/trpc/context";
 import { err, type Result } from "@/types/result";
+import { requireFreshIdentityAction } from "./fresh";
 import { guardCsrf, runWithActor } from "./shared";
 import { SIG } from "./sig";
 
@@ -20,6 +21,8 @@ export async function createGroupAction(
   if (!csrfOk.ok) return csrfOk;
   const parsed = createGroupInput.safeParse(raw);
   if (!parsed.success) return err("invalid input");
+  const fresh = await requireFreshIdentityAction();
+  if (!fresh.ok) return fresh;
   const { actor } = await createContext();
   return runWithActor(actor, (a) => createVisibilityGroup(db, a, parsed.data, SIG()));
 }
@@ -32,6 +35,8 @@ export async function addGroupMemberAction(
   if (!csrfOk.ok) return csrfOk;
   const parsed = groupMemberInput.safeParse(raw);
   if (!parsed.success) return err("invalid input");
+  const fresh = await requireFreshIdentityAction();
+  if (!fresh.ok) return fresh;
   const { actor } = await createContext();
   return runWithActor(actor, (a) => addGroupMember(db, a, parsed.data, SIG()));
 }
@@ -44,6 +49,8 @@ export async function removeGroupMemberAction(
   if (!csrfOk.ok) return csrfOk;
   const parsed = groupMemberInput.safeParse(raw);
   if (!parsed.success) return err("invalid input");
+  const fresh = await requireFreshIdentityAction();
+  if (!fresh.ok) return fresh;
   const { actor } = await createContext();
   return runWithActor(actor, (a) => removeGroupMember(db, a, parsed.data, SIG()));
 }

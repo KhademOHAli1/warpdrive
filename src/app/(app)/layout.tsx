@@ -1,4 +1,4 @@
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 import { ActionErrorProvider } from "@/components/shell/ActionErrorProvider";
@@ -9,6 +9,7 @@ import { TopBar } from "@/components/shell/TopBar";
 import { NAV_PREF_COOKIE } from "@/constants/cookies";
 import { db } from "@/db/client";
 import { FollowUpPromptProvider } from "@/features/activities/followUpAfterDone";
+import { resolveWorkflowSession } from "@/features/auth/better/sessionPolicy";
 import { CSRF_COOKIE } from "@/features/auth/csrf";
 import { CurrencyProvider } from "@/features/currencies/CurrencyProvider";
 import { InterfacePrefsProvider } from "@/features/identity/InterfacePrefsProvider";
@@ -24,7 +25,12 @@ import { createContext } from "@/server/trpc/context";
 
 export default async function AppLayout({ children }: { children: ReactNode }): Promise<ReactNode> {
   const ctx = await createContext();
-  if (ctx.actor === null) redirect("/login");
+  if (ctx.actor === null) {
+    const pending = await resolveWorkflowSession(db, await headers(), AbortSignal.timeout(5000), {
+      allowPending: true,
+    });
+    redirect(pending === null ? "/login" : "/auth/continue");
+  }
   const jar = await cookies();
   const hasCsrf = jar.get(CSRF_COOKIE) !== undefined;
   // Read the persisted rail state server-side so the nav renders at its correct width on the first

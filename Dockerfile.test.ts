@@ -1,5 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { parseEnv } from "./src/config/env";
+import { testEnvInput } from "./src/test/envInput";
 
 // Docker consumers pass APP_COMMIT as a build arg. Both the build and runtime stages must
 // preserve it; dropping either silently produces unstamped prerendered or dynamic pages.
@@ -40,4 +42,16 @@ describe("Bun dependency patches", () => {
     expect(copyPatches).toBeGreaterThan(-1);
     expect(copyPatches).toBeLessThan(dependencyStage.indexOf("RUN bun install --frozen-lockfile"));
   });
+});
+
+it("build placeholders satisfy the production auth environment without runtime secrets", () => {
+  const build = stage("build");
+  const command = build.slice(
+    build.indexOf("RUN NODE_ENV=production"),
+    build.indexOf("bun run build:docker"),
+  );
+  const values = Object.fromEntries(
+    [...command.matchAll(/\b([A-Z][A-Z0-9_]*)=([^\s\\]+)/g)].map((match) => [match[1], match[2]]),
+  );
+  expect(parseEnv({ ...testEnvInput(), ...values }).ok).toBe(true);
 });

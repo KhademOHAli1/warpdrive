@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/Input";
 import { MultiCombobox } from "@/components/ui/MultiCombobox";
 import { Select } from "@/components/ui/Select";
 import { createTeamAction, setTeamMembersAction } from "@/features/identity/actions/teams";
+import { IdentityActionError } from "@/features/identity/IdentityActionError";
 import { settingsIdentityError } from "@/features/identity/settingsMessages";
 import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import { readCsrfToken } from "@/utils/csrfCookie";
@@ -141,11 +142,7 @@ export function CreateTeamForm({ users, onCreated }: Props): React.ReactElement 
           />
         </div>
 
-        {error !== null && (
-          <p role="alert" className="text-sm text-red-600">
-            {error}
-          </p>
-        )}
+        {error !== null && <IdentityActionError message={error} className="text-sm text-red-600" />}
       </div>
 
       <div className="flex justify-end border-t bg-muted/20 px-5 py-3">
