@@ -18,10 +18,19 @@ restore is verified. Origin still points to a local auth checkout. No push, merg
 public deployment or provider installation is implied by local execution.
 
 BASE and ARCH are complete as their recorded runtime-baseline/design-review tasks.
-CONN-001 through CONN-003 and QA-001 are also complete: **28 of 446 tasks**,
-with 418 remaining planned. [Current provider foundation qualification](provider-contract-qualification.md)
-records the exact source and evidence.
+CONN-001 through CONN-003, CONN-023, QA-001/002 and seven reviewed UX design tasks are complete:
+**37 of 446 tasks**, with 409 remaining planned. [Prior provider foundation qualification](provider-contract-qualification.md)
+records its exact source and evidence. [The current foundation batch](foundation-qualification-20261031.md)
+separates new focused checks from pending broad qualification.
 Design closure does not implement their future grant, event, lifecycle or sandbox behavior.
+
+UX-001 through UX-005, UX-007 and UX-009 have reviewed flow/pattern/copy, fresh Mobbin,
+Farsi terminology and regional/date scenario evidence. Current digit-display restrictions,
+week-start coupling and unsupported recurrence remain explicit. The local fake harness and
+synthetic CRM factory passed their bounded contract/fixture checks and independent review.
+Current-source standalone types passed; broad unit validation was deliberately interrupted
+at critical disk pressure and other broad gates remain pending. These closures do not qualify
+browser geometry, accessibility, live providers or future runtime journeys.
 
 ## BASE evidence
 
@@ -50,11 +59,19 @@ on an installed peer database. See the restart record for the divergent-peer upg
 
 ## Peer work and next action
 
-Committed Better Auth main `8539fe8` is already in ancestry. Committed workflow cut
-`b8f25a4` and clean calendar cut `9f0e9cc` are now ancestors through isolated merges.
-Uncommitted auth help, workflow conditions/editor and independent mail/connection work
-remain peer-owned. Re-inventory those heads and dirty paths before their next adoption.
+Committed Better Auth main `8539fe8`, workflow `b8f25a4` and calendar `9f0e9cc` were in the
+prior qualified ancestry. New clean auth `a1a8f6d` and workflow `d0c83e8` cuts are now adopted
+through `d32b7a7` and `b8b2708`. See [the new source inventory](peer-adoption-20261031.md).
+The mail owner's isolated runtime-safety patch is adopted as `6b71b77`; its larger immutable
+MAIL cut and combined migration candidate are separate pending work. Their focused evidence
+does not extend the prior full qualification to current source. Other dirty peer work remains
+peer-owned. Re-inventory heads and dirty paths before any further adoption.
 Do not reset, stash, bulk-stage or copy the peer dirty trees.
+
+The web preview on 3160 is deliberately stopped during shared disk/swap pressure. The broad
+unit run was also deliberately stopped when free disk reached 373 MiB; its workers exited.
+Source review continues, while test/build campaigns remain held. Use agreed sequential
+windows after stable headroom returns; recheck ownership, free space and restart instructions.
 
 The ARCH design contracts passed independent scenario review after concrete corrections;
 see [architecture acceptance](architecture-review.md) and [evidence taxonomy](evidence-taxonomy.md).

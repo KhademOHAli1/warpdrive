@@ -18,10 +18,19 @@ create a replacement goal or mark it complete merely because BASE has closed.
 6. Follow [English](local-runtime.md), [Farsi](local-runtime.fa.md) or
    [German](local-runtime.de.md) service instructions. The app is port 3160, PostgreSQL
    55436, realtime 8080 and the isolated S3 simulator 9160. Other previews are peer-owned.
-7. App, worker and realtime were deliberately left running at the checkpoint. Treat process
-   IDs and tool session IDs as historical observations; recheck them rather than killing
-   or reusing them blindly. Native PostgreSQL and the labelled S3 container have separate
-   lifecycles. Only stop this profile's exact processes/container/data after ownership checks.
+7. The app on 3160 was deliberately stopped during the 31 October resource-pressure window.
+   Its owned process was verified before shutdown. PostgreSQL, worker and realtime were not
+   deliberately stopped, but their current health must be rechecked. Treat process IDs and
+   tool session IDs as historical observations. Native PostgreSQL and the labelled S3
+   container have separate lifecycles. Only stop this profile's exact processes/container/data
+   after ownership checks. Coordinate finite test windows with the mail owner while disk and
+   swap pressure persists; do not overlap broad suites or builds. A fresh free-space reading
+   of at least 5 GiB is the current agreed minimum before a database campaign, not a guarantee
+   of enough capacity for every build. The adopted runtime-safety patch disables server-action
+   argument logging; keep private diagnostic files outside artifacts.
+   The broad unit campaign was later deliberately terminated at 373 MiB free disk, exit 143;
+   its parent and workers exited. Do not resume any campaign until stable headroom returns.
+   Current broad validation is incomplete, while focused evidence is retained separately.
 8. The guarded service smoke requires empty users/provider data. Once useful fixtures are
    intentionally added, use another disposable qualification profile or adapt its contract
    with explicit tests; do not erase user data to make that smoke pass.
@@ -70,21 +79,29 @@ review only: grant/capability enforcement, the richer lifecycle, transactional o
 real app sandbox and client-trust implementation remain open. Read `architecture-review.md`
 and its three linked contracts before their implementation. CONN-001 source seams and
 QA-001 evidence taxonomy, CONN-002 typed contracts and CONN-003 registry are closed.
-Their current qualification is `provider-contract-qualification.md`: 5,856 unit tests,
+The subsequent reviewed UX design batch, CONN-023 local fake harness and QA-002 synthetic
+fixtures are recorded in `foundation-qualification-20261031.md`. Their focused acceptance
+does not close pending current-source broad regressions or downstream runtime/provider tasks.
+Their prior full qualification is `provider-contract-qualification.md`: 5,856 unit tests,
 116 applicable PostgreSQL tests, build/type/lint/i18n/worker/UI checks and ten actual
 local-service smoke checks passed on source `89adc81`. Existing Slack transport still
 needs test-first adoption of the contract; generic fixture success is not real-provider
 conformance. The CONN package lifecycle exit and other implementation tasks remain open.
 
 Continue UX/QA fixture/journey foundations and the CONN/EVT/Slack vertical slice. Reuse the
-persisted workflow engine and pg-boss, preserving NOTIFY behavior. The workflow peer now has
-a clean newer cut `d0c83e8`; review/adoption and applicable reruns are separate from the
-currently adopted `b8f25a4`. Read and preserve the active independent mail/connection peer
+persisted workflow engine and pg-boss, preserving NOTIFY behavior. New committed auth
+`a1a8f6d` and workflow `d0c83e8` cuts were merged as `d32b7a7` and `b8b2708` after a new
+source inventory. Runtime-safety cut `aab6c3d` from the mail owner was separately adopted as
+`6b71b77`; it adds redacted queue observation/startup diagnostics and private action logging.
+The earlier full qualification does not cover these later changes. Read the current batch
+qualification before claiming a new full pass. Read and preserve the active independent mail/connection peer
 before shared-schema changes; adopt only an immutable handoff. Do not import its dirty tree,
 allocate another competing migration or rebuild its connection/queue/domain engine.
 
-Use `/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/work/qualification`
-as the independent clean qualification checkout. Fetch only reviewable commits from the
+Use `/tmp/warpdrive-integration-qualification-20261031` as the independent clean
+qualification checkout. The clean clone was moved out of Documents after an ownership and
+active-process check, retaining its own Git metadata, source and dependencies. This keeps
+generated build/dependency churn outside the file-provider tree. Fetch only reviewable commits from the
 preview, fast-forward there, install frozen dependencies under pinned Bun and run gates.
 This avoids changing the active app's `.next` directory or staging peer planning edits.
 Its origin is local and is not a public push destination. Existing BASE restore-check and
@@ -99,14 +116,22 @@ they do not block unrelated local foundations or independent provider tracks.
 Ali's direct human approval for coordinating shared interfaces was verified in the mail
 chat, and the prepared `mail-platform-agreement-proposal.md` was sent there. That file
 contains named ownership, exact proposed projection/control/attempt hooks and exclusive
-mail migration reservation 0085 through 0091. No other writer should allocate that range.
+mail migration reservation 0085 through 0091. A later allocator addendum exclusively reserves
+0092 for MAIL delivery observations, followed by a separate notification-binding reservation.
+Read [the current allocation ledger](migration-allocation.md) for the full exclusive range
+before generating any DDL. No other writer should use its reserved slots.
 The mail owner acknowledged ownership and the 0085 through 0091 reservation. Closed API
 mapping review and an immutable combined mail handoff remain pending; do not generalize
 numbering acceptance into completed runtime integration. Preserve accepted/partial/unknown SMTP attempts and native
 mail freshness/generation fences; generic delivery recovery never resubmits accepted DATA.
 Current shared broker/lifecycle/EVT services remain design contracts, not available exports.
-The mail branch now includes auth main refinements at `a1a8f6d`; reconcile that committed
-history separately before later integration and rerun affected gates. No scope expansion,
+The mail branch includes auth main refinements at `a1a8f6d`, now adopted as noted above.
+The immutable MAIL domain source cut is `297c1dd`; its separate combined candidate is still
+pending review. Integrated journal entries 0085 through 0091 must use fresh strictly increasing
+timestamps above platform 0084 (`1793452709228`), while all platform entries through 0084 remain
+byte-for-byte unchanged. The old mail timestamps predate platform 0084 and cannot be reused
+for an integrated upgrade, because the installed Drizzle migrator skips older timestamps.
+This changes candidate source metadata only, never an installed peer ledger. No scope expansion,
 mail source adoption, real-provider action or DDL is implied by this coordination.
 
 ## Incoming peer planning amendment

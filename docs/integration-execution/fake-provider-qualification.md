@@ -1,12 +1,12 @@
-# CONN-023: fake-provider qualification draft
+# CONN-023: local fake-provider qualification
 
-Date: 2026-10-31. **Status: draft; root acceptance and final qualification pending.** The live execution register was read and not changed. Its CONN-023 row is still `planned`.
+Date: 2026-10-31. **Status: local contract acceptance reviewed and accepted by root.** The original author did not change the tracker. The execution owner subsequently marked CONN-023 complete with its bounded evidence; broader current-source regressions remain resource-gated.
 
 Exact acceptance: “Simulate OAuth, refresh, paging, outages and revocation without storing real provider credentials.” Verification: `contract suite`; stage: `local`; dependencies: reviewed ARCH local foundations and CONN-001. This record supplies source review and executed in-process unit/contract evidence. It is not native HTTP/OAuth, real-PostgreSQL ownership, actual-provider or deployment qualification.
 
 ## Reviewed source and reusable entry point
 
-The latest bounded verification ran from `/tmp/warpdrive-integrations-preview-20261031` with Git anchor `6b71b771d921df8930eebc15259ec0648bff0b73`. The ten new `src/test/fakeProvider*.ts` files were uncommitted working-tree additions at that anchor. A passing test result must therefore be attributed to the working-tree source manifest below, not to unchanged commit `6b71b7` alone. Root will record the eventual reviewable commit and final gates before accepting the task.
+The bounded verification ran from `/tmp/warpdrive-integrations-preview-20261031` with Git anchor `6b71b771d921df8930eebc15259ec0648bff0b73`. The ten new `src/test/fakeProvider*.ts` files were uncommitted additions at that anchor, so that run is attributed to the source manifest below. They were subsequently committed unchanged as `45b722b`. Current frozen source `bc40519` passes standalone types; [the batch record](foundation-qualification-20261031.md) distinguishes its interrupted broad unit campaign from the passing bounded contract suite.
 
 `src/test/fakeProvider.ts:12` exports `createFakeProvider(config)`. It returns a typed `ProviderAdapter` with all seven operation slots and fixture controls: `approve`, `bindCredential`, `advanceTime`, `failNext`, `holdNext` and `calls` (`:51-60`). Consumers call `invokeProvider` with a required `AbortSignal`, rather than treating the fixture control methods as application authorization.
 
@@ -96,4 +96,4 @@ SHA-256 values captured immediately before the latest 46-test run:
 - Fixture setup misuse is a programmer/configuration error validated by Zod. Provider operation failures return the shared Result contract; cancellation propagates. Hold controls expose explicit release for deterministic tests and create no external handles or background service.
 - No real-provider credentials were read/stored, no domain/vendor was selected, and no live account action was authorized or attempted. Local fixtures cannot close any live-provider, public-hosting or publication task.
 
-Root acceptance should attach the final immutable source/manifest, independent review, relevant current-tree code gates and these precise local limits to CONN-023. Until that review is recorded, the tracker remains unchanged and completion is not claimed by this draft. QA-003's broader per-adapter simulator contracts, actual adapters, provider grants and application authorization remain separately tracked work.
+Root accepted the exact local task after independent final review and the 46-case combined contract/harness pass, attaching this manifest and the precise limits above. The incomplete broader campaign is not called a pass. QA-003's broader per-adapter simulator contracts, actual adapters, provider grants and application authorization remain separately tracked work.

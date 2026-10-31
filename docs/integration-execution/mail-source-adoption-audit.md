@@ -229,9 +229,11 @@ observations, with design/source/DDL/qualification pending. Neither reservation 
 implementation evidence. Untracked delivery-report parser files in the peer working tree
 are outside these immutable cuts and were not adopted or qualified.
 
-The current allocator ledger is `docs/integration-execution/migration-allocation.md:10`:
-**0085 through 0092 exclusively MAIL; next unreserved 0093 is not allocated.** This
-supersedes older prose in the immutable peer handoff that treated 0092 as available.
+The canonical allocator ledger is `docs/integration-execution/migration-allocation.md`.
+After this source inspection, the allocator also reserved 0093 for MAIL notification-purpose
+binding. Consult that ledger for the current exclusive range and next unreserved number;
+an older handoff's next-slot sentence must not allocate DDL. These reservations supersede
+older prose in the immutable peer handoff that treated 0092 as available.
 Reports remain untrusted account-scoped observations: an arbitrary Message-ID cannot
 authorize association with private outbound content, resend, suppression or workflows.
 
@@ -283,3 +285,9 @@ Decision: the immutable chain is reviewable input for a later controlled adoptio
 dependency, metadata and UI projection reconciliation remain necessary. This document
 does not accept the mutable combined candidate, close MAIL/CONN/EVT implementation,
 change the tracker or authorize another engine, credential store or sender.
+
+Later owner handoff: clean combined candidate `571ba2c` at
+`/Users/ali/Developer/warpdrive-mail-platform`, branch `codex/mail-platform-candidate`,
+was supplied with `docs/mail-integrated-migration-map.md`. Its source metadata and
+platform-0084 upgrade remain independently unqualified by this audit. No candidate source
+was adopted here, and later MAIL follow-ups remain separate reviewable work.
