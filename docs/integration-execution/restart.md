@@ -65,16 +65,25 @@ Do not rename files, manipulate its migration ledger, reset it or claim that pat
 
 ## Next execution batch
 
-All BASE tasks have their own evidence in the live register. Start ARCH-001 through
-ARCH-007: identities, personal/shared authority, capability vocabulary, authoritative
-server evaluator, lifecycle, transactional event ownership and delivery semantics. The
-source audits show the actual seams and gaps, including current broad MCP grants.
+BASE and ARCH have their own evidence in the live register. Architecture closure is design
+review only: grant/capability enforcement, the richer lifecycle, transactional outbox,
+real app sandbox and client-trust implementation remain open. Read `architecture-review.md`
+and its three linked contracts before their implementation. CONN-001 source seams and
+QA-001 evidence taxonomy are closed; provider contracts and registry are being qualified.
 
-Then implement the first UX/QA contracts and the CONN/EVT/Slack vertical slice. Reuse the
-persisted workflow engine at committed `b8f25a4` and existing pg-boss. Preserve current
-NOTIFY behavior while adding the durable CRM event outbox. Read and preserve the active
-independent mail/connection peer before shared-schema changes; adopt only an immutable
-reviewable handoff and qualify it here. Do not import its dirty tree or rebuild its engine.
+Continue UX/QA fixture/journey foundations and the CONN/EVT/Slack vertical slice. Reuse the
+persisted workflow engine and pg-boss, preserving NOTIFY behavior. The workflow peer now has
+a clean newer cut `d0c83e8`; review/adoption and applicable reruns are separate from the
+currently adopted `b8f25a4`. Read and preserve the active independent mail/connection peer
+before shared-schema changes; adopt only an immutable handoff. Do not import its dirty tree,
+allocate another competing migration or rebuild its connection/queue/domain engine.
+
+Use `/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/work/qualification`
+as the independent clean qualification checkout. Fetch only reviewable commits from the
+preview, fast-forward there, install frozen dependencies under pinned Bun and run gates.
+This avoids changing the active app's `.next` directory or staging peer planning edits.
+Its origin is local and is not a public push destination. Existing BASE restore-check and
+output bundle remain a historical verified checkpoint; later outputs identify their own head.
 
 Never close a live-provider, public-hosting or publication task with local fixtures.
 Those later finite tests need actual selected resources and appropriate authorization;

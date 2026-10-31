@@ -17,7 +17,9 @@ The active branch is `codex/integration-platform-preview` in
 restore is verified. Origin still points to a local auth checkout. No push, merge to main,
 public deployment or provider installation is implied by local execution.
 
-BASE is complete: 12 of 446 tasks. The remaining 434 tasks are planned.
+BASE and ARCH are complete as their recorded runtime-baseline/design-review tasks.
+CONN-001 and QA-001 are also complete: 26 of 446 tasks, with CONN-002/003 in progress.
+Design closure does not implement their future grant, event, lifecycle or sandbox behavior.
 
 ## BASE evidence
 
@@ -52,8 +54,9 @@ Uncommitted auth help, workflow conditions/editor and independent mail/connectio
 remain peer-owned. Re-inventory those heads and dirty paths before their next adoption.
 Do not reset, stash, bulk-stage or copy the peer dirty trees.
 
-After BASE qualification closes, implement ARCH-001 through ARCH-007 using the source
-audits, then the first UX/QA contracts and the shared connection/event/Slack slice. Reuse
+The ARCH design contracts passed independent scenario review after concrete corrections;
+see [architecture acceptance](architecture-review.md) and [evidence taxonomy](evidence-taxonomy.md).
+Continue the first UX/QA foundations and shared connection/event/Slack slice under those contracts. Reuse
 the committed workflow engine and pg-boss, retaining realtime notifications. The new durable
 CRM outbox belongs in the mutation transaction; NOTIFY is not a durable event store.
 Coordinate shared connection schema with the independent mail peer via an immutable handoff,
