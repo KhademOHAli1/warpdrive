@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { cn } from "@/lib/utils";
 import { ConnectionOverview } from "./ConnectionOverview";
-import type { Integration } from "./catalog";
+import { INTEGRATIONS, type Integration } from "./catalog";
 import { IntegrationDetails } from "./IntegrationDetails";
 import { IntegrationDirectory } from "./IntegrationDirectory";
 import { McpSetup } from "./McpSetup";
@@ -120,7 +120,14 @@ export function IntegrationHub({
           />
           {services.map((connection) => (
             <div key={connection.id} id={`connection-${connection.id}`} className="scroll-mt-6">
-              <SlackConnection connection={connection} isAdmin={isAdmin} />
+              <SlackConnection
+                connection={connection}
+                isAdmin={isAdmin}
+                onReconnect={() => {
+                  const provider = INTEGRATIONS.find((item) => item.id === "slack");
+                  if (provider) open(provider);
+                }}
+              />
             </div>
           ))}
           {mailbox !== null && (

@@ -67,12 +67,15 @@ export async function configureSlackAction(csrf: string | null, input: unknown) 
   if (!parsed.success) return { ok: false as const, error: "requestFailed" };
   return authenticated(csrf, async (actorId) => {
     const channels = await withSlackConnection(db, actorId, parsed.data.id, listSlackChannels);
-    if (!channels.some((channel) => channel.id === parsed.data.channelId))
-      throw new AppError(ERROR_IDS.CHANNEL_UNAVAILABLE, "channel_unavailable", {});
+    const channel = channels.find((channel) => channel.id === parsed.data.channelId);
+    if (!channel) throw new AppError(ERROR_IDS.CHANNEL_UNAVAILABLE, "channel_unavailable", {});
     await db.transaction(async (tx) => {
       await tx
         .update(integrationConnections)
-        .set({ settings: { channelId: parsed.data.channelId }, updatedAt: new Date() })
+        .set({
+          settings: { channelId: channel.id, channelName: channel.name },
+          updatedAt: new Date(),
+        })
         .where(eq(integrationConnections.id, parsed.data.id));
       await tx
         .insert(integrationEvents)

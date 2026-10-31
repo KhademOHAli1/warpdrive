@@ -18,7 +18,7 @@ export function ConnectionOverview({
 }) {
   const t = useAppTranslations("integrations");
   const needsAttention = services.filter(
-    (row) => row.status !== "connected" || !row.settings.channelId,
+    (row) => row.status !== "connected" || (row.settings.channelId ?? "").length === 0,
   );
   const mailAttention = mailbox !== null && mailbox.status !== "connected";
   const total =

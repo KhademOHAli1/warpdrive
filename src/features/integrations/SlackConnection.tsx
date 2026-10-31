@@ -1,108 +1,77 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
-import { useFormatters } from "@/lib/useFormatters";
-import { readCsrfToken } from "@/utils/csrfCookie";
-import {
-  configureSlackAction,
-  disconnectSlackAction,
-  slackChannelsAction,
-  testSlackAction,
-} from "./actions";
+import { ConnectionBadge } from "./ConnectionBadge";
+import { ConnectionFacts } from "./ConnectionFacts";
+import { INTEGRATIONS } from "./catalog";
+import { IntegrationMark } from "./IntegrationMark";
+import { useSlackConnection } from "./useSlackConnection";
 
 export interface ServiceConnectionView {
   id: string;
   provider: string;
   accountName: string;
   status: string;
-  settings: { channelId?: string };
+  settings: { channelId?: string; channelName?: string };
   lastCheckedAt: string | null;
+  ownerName?: string | null;
+  connectedAt?: string;
+  scopes?: string[];
 }
 
 export function SlackConnection({
   connection,
   isAdmin,
+  onReconnect,
 }: {
   connection: ServiceConnectionView;
   isAdmin: boolean;
+  onReconnect?: () => void;
 }) {
   const t = useAppTranslations("integrations");
-  const format = useFormatters();
-  const router = useRouter();
   const [confirmDisconnect, setConfirmDisconnect] = useState(false);
-  const [channels, setChannels] = useState<{ id: string; name: string }[] | null>(null);
-  const [channelId, setChannelId] = useState(connection.settings.channelId ?? "");
-  const [pending, setPending] = useState(false);
-  const [message, setMessage] = useState<
-    | "checked"
-    | "saved"
-    | "requestFailed"
-    | "freshAuthentication"
-    | "forbidden"
-    | "revocationPending"
-    | null
-  >(null);
-
-  function actionError(error: string) {
-    setMessage(error === "freshAuthentication" ? "freshAuthentication" : "requestFailed");
-  }
-
-  async function run(action: "channels" | "save" | "check" | "disconnect") {
-    setPending(true);
-    setMessage(null);
-    try {
-      const csrf = readCsrfToken();
-      if (action === "channels") {
-        const result = await slackChannelsAction(csrf, connection.id);
-        if (result.ok) setChannels(result.value);
-        else actionError(result.error);
-        return;
-      }
-      const operations = {
-        save: () => configureSlackAction(csrf, { id: connection.id, channelId }),
-        check: () => testSlackAction(csrf, connection.id),
-        disconnect: () => disconnectSlackAction(csrf, connection.id),
-      };
-      const result = await operations[action]();
-      if (!result.ok) {
-        actionError(result.error);
-        return;
-      }
-      if (action === "disconnect" && result.value === false) setMessage("revocationPending");
-      if (action === "save") setMessage("saved");
-      if (action === "check") setMessage("checked");
-      router.refresh();
-    } catch {
-      setMessage("requestFailed");
-    } finally {
-      setPending(false);
-    }
-  }
-
+  const { channels, channelId, setChannelId, pending, message, run } =
+    useSlackConnection(connection);
+  const slack = INTEGRATIONS.find((item) => item.id === "slack");
+  const status =
+    connection.status === "revocation-pending"
+      ? "needsAttention"
+      : connection.status === "disconnected"
+        ? "disconnected"
+        : (connection.settings.channelId ?? "").length === 0
+          ? "finishSetup"
+          : "connected";
   return (
-    <section className="space-y-4 rounded-lg border bg-card p-5">
+    <section className="space-y-5 rounded-xl border bg-card p-5">
       <div className="flex items-start justify-between gap-3">
-        <div>
-          <h2 className="text-sm font-semibold">
-            <bdi>{t("slackAccountTitle", { account: connection.accountName })}</bdi>
-          </h2>
-          <p className="mt-1 text-sm text-muted-foreground">{t("workspace")}</p>
+        <div className="flex min-w-0 items-start gap-3">
+          {slack && <IntegrationMark integration={slack} />}
+          <div className="min-w-0">
+            <h2 className="break-words text-sm font-semibold">
+              <bdi>{connection.accountName}</bdi>
+            </h2>
+            <p className="mt-1 text-xs text-muted-foreground">{t("workspace")}</p>
+          </div>
         </div>
-        <span className="rounded-md bg-muted px-2 py-1 text-xs">
-          {t(connection.status === "connected" ? "connected" : "disconnected")}
-        </span>
+        <ConnectionBadge status={status} />
       </div>
-      <p className="text-xs text-muted-foreground">
-        {t("lastChecked")}:{" "}
-        {connection.lastCheckedAt !== null
-          ? format.dateTime(connection.lastCheckedAt)
-          : t("neverChecked")}
-      </p>
+      <ConnectionFacts connection={connection} />
+      {connection.settings.channelName !== undefined &&
+        (!isAdmin || connection.status !== "connected") && (
+          <p className="text-xs text-muted-foreground">
+            {t("slackChannel")}:{" "}
+            <bdi className="font-medium text-foreground">#{connection.settings.channelName}</bdi>
+          </p>
+        )}
+      {connection.status === "disconnected" && isAdmin && onReconnect && (
+        <Button type="button" onClick={onReconnect}>
+          {t("reconnect")}
+        </Button>
+      )}
       {isAdmin && connection.status === "connected" && (
         <>
           <div className="space-y-2">
@@ -119,7 +88,18 @@ export function SlackConnection({
                     channels?.map((channel) => ({
                       value: channel.id,
                       label: `#${channel.name}`,
-                    })) ?? (channelId ? [{ value: channelId, label: channelId }] : [])
+                    })) ??
+                    (channelId
+                      ? [
+                          {
+                            value: channelId,
+                            label:
+                              connection.settings.channelName !== undefined
+                                ? `#${connection.settings.channelName}`
+                                : channelId,
+                          },
+                        ]
+                      : [])
                   }
                   triggerClassName="min-h-10"
                 />
@@ -182,7 +162,7 @@ export function SlackConnection({
               disabled={pending}
               onClick={() => setConfirmDisconnect(true)}
             >
-              {t("disconnect")}
+              {t("retryRemoval")}
             </Button>
           )}
         </div>
@@ -198,6 +178,11 @@ export function SlackConnection({
           className="text-sm"
         >
           {t(message)}
+          {message === "freshAuthentication" && (
+            <a href="/settings/security" className="ms-2 font-medium text-primary underline">
+              {t("verifyIdentity")}
+            </a>
+          )}
         </p>
       )}
       <ConfirmDialog

@@ -58,7 +58,7 @@
   "callbackConnected": "Slack is connected. Choose a channel to finish setup.",
   "callbackFailed": "Slack could not be connected. Check the app configuration and try again.",
   "account": "Account",
-  "lastChecked": "Last checked",
+  "lastChecked": "Last successful check",
   "neverChecked": "Not checked yet",
   "gmailManage": "Manage email sync",
   "gmailBody": "Connect or reconnect your Gmail mailbox and manage its sync settings.",
@@ -186,5 +186,12 @@
   "gmailCapability3": "Manage and disconnect your own mailbox.",
   "gmailAccess": "Read, organize and send messages in your connected Gmail mailbox. Your Google identity is used to verify the mailbox owner.",
   "gmailSetup": "Your server administrator needs to configure Google OAuth before you can connect a mailbox.",
-  "slackConnectHint": "Continue to Slack to review workspace access."
+  "slackConnectHint": "Continue to Slack to review workspace access.",
+  "connectedBy": "Connected by",
+  "connectedSince": "Connected since",
+  "grantedAccess": "Granted access",
+  "unknownAuthorizer": "Authorizer unavailable",
+  "unknownDate": "Date unavailable",
+  "retryRemoval": "Retry removal",
+  "verifyIdentity": "Verify your identity"
 }

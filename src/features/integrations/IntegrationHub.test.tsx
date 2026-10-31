@@ -48,7 +48,7 @@ it("does not offer a working connector or installation for a planned provider", 
   expect(screen.queryByRole("button", { name: "Connect account" })).not.toBeInTheDocument();
 });
 
-it("opens real connections first and keeps recovery ahead of discovery", async () => {
+it("opens real connections first and keeps recovery ahead of discovery", () => {
   render(
     <IntegrationHub
       {...props}

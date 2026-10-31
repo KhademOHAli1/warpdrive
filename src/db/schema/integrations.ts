@@ -25,7 +25,10 @@ export const integrationConnections = pgTable(
     credentials: encrypted("credentials"),
     status: text("status").notNull().default("connected"),
     scopes: jsonb("scopes").$type<string[]>().notNull().default([]),
-    settings: jsonb("settings").$type<{ channelId?: string }>().notNull().default({}),
+    settings: jsonb("settings")
+      .$type<{ channelId?: string; channelName?: string }>()
+      .notNull()
+      .default({}),
     connectedAt: timestamp("connected_at", { withTimezone: true }).notNull().defaultNow(),
     lastCheckedAt: timestamp("last_checked_at", { withTimezone: true }),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),

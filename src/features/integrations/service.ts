@@ -110,6 +110,8 @@ export async function finishSlackConnection(
           status: "connected",
           scopes: result.scopes,
           ownerId: input.userId,
+          connectedAt: new Date(),
+          lastCheckedAt: null,
           updatedAt: new Date(),
         },
       })
@@ -133,8 +135,11 @@ export async function listServiceConnections(db: Db) {
       settings: integrationConnections.settings,
       connectedAt: integrationConnections.connectedAt,
       lastCheckedAt: integrationConnections.lastCheckedAt,
+      ownerName: users.name,
+      scopes: integrationConnections.scopes,
     })
     .from(integrationConnections)
+    .leftJoin(users, eq(integrationConnections.ownerId, users.id))
     .orderBy(desc(integrationConnections.connectedAt));
 }
 

@@ -26,10 +26,12 @@ export type ConnectionAction =
   | "reconnect"
   | "explorePlanned";
 
+type ConnectionPresentation = { status: ConnectionStatus; action: ConnectionAction };
+
 export function connectionState(
   item: Integration,
   context: ConnectionContext,
-): { status: ConnectionStatus; action: ConnectionAction } {
+): ConnectionPresentation {
   if (item.delivery === "planned") return { status: "planned", action: "explorePlanned" };
   if (item.delivery === "mcp")
     return context.endpoint === null
@@ -44,10 +46,18 @@ export function connectionState(
       ? { status: "ready", action: "connect" }
       : { status: "needsSetup", action: "setupGuide" };
   }
+  return slackState(context);
+}
+
+function slackState(context: ConnectionContext): ConnectionPresentation {
   const { services } = context;
   if (services.some((row) => row.status === "revocation-pending"))
     return { status: "needsAttention", action: "manage" };
-  if (services.some((row) => row.status === "connected" && !row.settings.channelId))
+  if (
+    services.some(
+      (row) => row.status === "connected" && (row.settings.channelId ?? "").length === 0,
+    )
+  )
     return { status: "finishSetup", action: "finishSetup" };
   if (services.some((row) => row.status === "connected"))
     return { status: "connected", action: "manage" };

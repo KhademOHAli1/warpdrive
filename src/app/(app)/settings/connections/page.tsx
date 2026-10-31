@@ -64,6 +64,7 @@ export default async function ConnectionsPage({
         }
         serviceConnections={services.map((connection) => ({
           ...connection,
+          connectedAt: connection.connectedAt.toISOString(),
           lastCheckedAt: connection.lastCheckedAt?.toISOString() ?? null,
         }))}
         gmail={

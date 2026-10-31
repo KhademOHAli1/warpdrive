@@ -58,7 +58,7 @@
   "callbackConnected": "Slack ist verbunden. Wählen Sie einen Kanal, um die Einrichtung abzuschließen.",
   "callbackFailed": "Slack konnte nicht verbunden werden. Prüfen Sie die App-Konfiguration und versuchen Sie es erneut.",
   "account": "Konto",
-  "lastChecked": "Zuletzt geprüft",
+  "lastChecked": "Zuletzt erfolgreich geprüft",
   "neverChecked": "Noch nicht geprüft",
   "gmailManage": "E-Mail-Synchronisierung verwalten",
   "gmailBody": "Verbinden Sie Ihr Gmail-Postfach, stellen Sie die Verbindung wieder her und verwalten Sie die Synchronisierung.",
@@ -186,5 +186,12 @@
   "gmailCapability3": "Das eigene Postfach verwalten und die Verbindung trennen.",
   "gmailAccess": "Nachrichten im verbundenen Gmail-Postfach lesen, organisieren und senden. Ihre Google-Identität dient zur Prüfung der Postfachinhaberschaft.",
   "gmailSetup": "Ihre Serveradministration muss Google OAuth einrichten, bevor Sie ein Postfach verbinden können.",
-  "slackConnectHint": "Weiter zu Slack, um den Workspace-Zugriff zu prüfen."
+  "slackConnectHint": "Weiter zu Slack, um den Workspace-Zugriff zu prüfen.",
+  "connectedBy": "Verbunden durch",
+  "connectedSince": "Verbunden seit",
+  "grantedAccess": "Erteilte Berechtigungen",
+  "unknownAuthorizer": "Verbindende Person nicht verfügbar",
+  "unknownDate": "Datum nicht verfügbar",
+  "retryRemoval": "Entfernen erneut versuchen",
+  "verifyIdentity": "Identität bestätigen"
 }

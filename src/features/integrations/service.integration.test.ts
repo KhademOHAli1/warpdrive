@@ -9,6 +9,7 @@ import {
   beginSlackConnection,
   disconnectSlack,
   finishSlackConnection,
+  listServiceConnections,
   withSlackConnection,
 } from "./service";
 
@@ -29,13 +30,15 @@ beforeEach(async () => {
   env.SLACK_CLIENT_SECRET = "test-secret";
   vi.stubGlobal(
     "fetch",
-    vi.fn<typeof fetch>().mockResolvedValue(
-      Response.json({
-        ok: true,
-        access_token: "synthetic-private-bot-token",
-        scope: "chat:write,channels:read",
-        team: { id: "T001", name: "Synthetic workspace" },
-      }),
+    vi.fn<typeof fetch>().mockImplementation(() =>
+      Promise.resolve(
+        Response.json({
+          ok: true,
+          access_token: "synthetic-private-bot-token",
+          scope: "chat:write,channels:read",
+          team: { id: "T001", name: "Synthetic workspace" },
+        }),
+      ),
     ),
   );
 });
@@ -125,4 +128,30 @@ it("blocks local token use even when upstream revocation is temporarily unavaila
     "integration_not_connected",
   );
   expect(run).not.toHaveBeenCalled();
+});
+
+it("returns actual authorization ownership and scopes without credential material", async () => {
+  await connect();
+  const [view] = await listServiceConnections(testDb.db);
+  expect(view).toMatchObject({
+    ownerName: "Integration admin",
+    scopes: ["chat:write", "channels:read"],
+    accountName: "Synthetic workspace",
+  });
+  expect(view?.connectedAt).toBeInstanceOf(Date);
+  expect(view).not.toHaveProperty("credentials");
+  expect(JSON.stringify(view)).not.toContain("synthetic-private-bot-token");
+});
+
+it("clears a previous successful health check when a workspace authorizes new credentials", async () => {
+  const { id } = await connect();
+  const old = new Date("2020-01-01T00:00:00Z");
+  await testDb.db
+    .update(integrationConnections)
+    .set({ lastCheckedAt: old, connectedAt: old })
+    .where(eq(integrationConnections.id, id));
+  await connect();
+  const [view] = await listServiceConnections(testDb.db);
+  expect(view?.lastCheckedAt).toBeNull();
+  expect(view?.connectedAt.getTime()).toBeGreaterThan(old.getTime());
 });
