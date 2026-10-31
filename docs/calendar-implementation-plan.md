@@ -1,0 +1,53 @@
+# Calendar workflow implementation
+
+Status: first implementation slice on the local `codex/calendar-workflows` branch, based on main `8539fe8`. Updated 31 October 2026.
+
+The product target is the Google Calendar desktop workflow described in [the reference inventory](google-calendar-event-workflow.md). Preserve Warpdrive's current shell, CRM relationships, permission checks, Farsi and German support, independent calendar preferences and Iranian date pickers. This document records implementation progress; it does not claim full Google Calendar parity.
+
+## 1. First slice: ordinary event editor
+
+Implemented locally:
+
+- A creation entry point remains available when a calendar window is empty or filtered.
+- Month cells open a dated draft. Week slots open a timed draft. A new timed draft has an explicit one-hour initial duration, a Warpdrive product default rather than a verified Google default.
+- Quick and detailed modes share one draft. Title, times, location, description, priority and meeting link survive expansion/collapse and all-day toggling.
+- Start/end controls use the existing localized date and time components. Start changes preserve duration across midnight and daylight-saving changes. All-day date ranges retain inclusive civil end dates used by the current activity model.
+- Standalone month/week events reopen through the visibility-checked full-record read. An old cache entry cannot seed the editor before a fresh successful read. A later background-read failure cannot discard an open draft.
+- Description, location, priority and meeting links can be edited; completion, reopening and soft deletion retain the existing activity actions. CRM-linked event chips retain their existing record navigation.
+- Unrelated edits omit temporal fields, preserving stored seconds, milliseconds and repeated-hour offsets. End-only edits preserve the exact start; moving an event uses the actual stored elapsed duration across a repeated hour. Hidden CRM associations and existing participant sets are not overwritten.
+- Meeting links must use HTTPS without URL credentials. The editor accepts an existing meeting link; it does not generate a plausible URL or claim a provisioned meeting.
+- All new visible copy and accessible names exist in contextual Farsi, German and English. Persian inputs retain Iranian dates and Persian digits; URLs and time-zone identifiers retain their direction.
+
+No database migration, dependency change, account connection, invitation, external meeting or live-user-data change is part of this slice. The existing activity model remains the persistence boundary. The global activity composer and the app shell remain outside these changes.
+
+## 2. Required work for the full service, in order
+
+| Priority | Work package | Acceptance boundary |
+| --- | --- | --- |
+| P0 | Reconcile visual uncertainties on representative personal and eligible Workspace accounts | Record account edition/policy, locale and actual field/default/prompt behavior. Official Help is reference evidence, not a live visual cross-check. |
+| P0 | Complete creation and navigation interactions | Day view, drag-to-select intervals, keyboard creation, all-day lane creation, accessible focus management and explicit handling of an unsaved draft when leaving the editor. Preserve the current quick/detail draft continuity. |
+| P0 | Calendar model and authorization | Calendars, owner/organizer, selected calendar, roles/ACLs, event identity, versions, privacy, availability and independent event time zones; migrate existing activities without losing IDs or CRM links. Define conflict-aware edits rather than last-write-wins. |
+| P0 | Recurrence and exceptions | Daily/weekly/monthly/yearly rules, interval, weekdays, ordinal dates, until/count, occurrence identity and single/future/all edit and cancellation scopes. Preserve authored Iranian month/year rules separately; surface unsupported provider conversions. Test leap dates, Nowruz, DST gaps/folds and moved instances. |
+| P0 | Guests and invitation lifecycle | Email/contact entry, required/optional guests, guest-list permissions, organizer versus guest authority, review/send/cancel choices, invitation/update/cancellation mail, idempotency, acceptance/tentative/decline, alternate-time proposals and external guests. Preserve private guest data. |
+| P0 | Reminder service | Personal timed/all-day defaults and overrides, multiple notification/email reminders, rescheduling, cancellation and stale-job suppression. Invitation mail and response mail remain separate workflows. |
+| P1 | Google Calendar and Google Meet | Separate consent and scopes from Gmail/auth; calendar discovery; full/incremental sync including deletions and expired-token rebuild; external identities/ETags/conflicts; channel renewal; asynchronous conference provisioning with pending/failure/retry/update/cancel states. |
+| P1 | Microsoft Calendar and Teams | Provider capabilities, tenant consent, calendar discovery, delta sync and subscription renewal, idempotent provisioning, RSVP and failure recovery. |
+| P1 | Zoom | Account consent, meeting provisioning, host options supported by the account, updates, cancellation and safe retries. |
+| P1 | Scheduling and resources | Permission-aware free/busy, unknown versus busy/permission-denied, required/optional guest filters, suggested times, room/equipment requests and reservation acceptance/rejection. |
+| P1 | Attachments and sharing | Existing storage integration, upload failures and limits, safe rich descriptions, attachment access review before sending invitations, event color, duplication/move and ownership transfer where authorized. |
+| P1 | ICS interoperability | Explicit import/export, read-only subscriptions versus two-way connections, exclusive end-date adapter, recurrence exceptions, secret feed protection and documented round-trip losses. |
+| P2 | Special event lifecycles | Tasks, focus time, out of office, working location, birthdays and appointment schedules have distinct contracts and availability. Implement buffers, booking limits, conflict calendars and cancellation separately from ordinary events. |
+
+Provider-specific controls must describe verified capabilities. A pasted URL does not provision a meeting. An imported file does not establish synchronization. A saved event does not prove invitations, resource reservations or conference provisioning succeeded.
+
+## 3. Validation and limitations
+
+The first slice has unit coverage for Farsi/German/English draft continuity, Persian digits, dates, DST and untouched timestamp preservation; calendar entry points and record links; stale-cache/read-failure behavior; existing completion/follow-up handling; and save-failure draft retention.
+
+Real PostgreSQL 16 tests exercise Farsi/German create, reopen and edit round trips for timed and all-day events, canonical civil dates across display-zone changes, and unrelated-user read/edit denial. The local check uses a disposable, separately initialized PostgreSQL instance because Docker is unavailable, with the repository's real migrations and test database helper. CI retains the normal Docker integration lane.
+
+Verification on 31 October: 536 unit tests across 89 files and 11 real-PostgreSQL tests across four files passed. Type checking, the locale audit and scoped Biome/ESLint checks also passed.
+
+The production webpack build passed with dummy validation configuration, not a live provider deployment. Browser visual checks use the actual editor components, fonts and design-system styles with synthetic records and mocked transport. This proves presentation and local interactions; it is not a signed-in browser/server-action or external-provider acceptance run. The main preview required sign-in, so its authentication state was left unchanged.
+
+Keep the implementation on its separate worktree until it can be reviewed alongside ongoing email/integration changes. Full-service completion requires browser/server/database create/reopen/edit/cancel round trips, recurrence scopes, permission failures, provider failures and contextual language review for every later package above.

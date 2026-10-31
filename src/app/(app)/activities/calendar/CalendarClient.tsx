@@ -1,6 +1,11 @@
 "use client";
+import { Plus } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
+import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
+import { CalendarEventDialog } from "@/features/activities/CalendarEventDialog";
+import { CalendarEventEditDialog } from "@/features/activities/CalendarEventEditDialog";
 import type { CalendarActivity } from "@/features/activities/calendar";
 import {
   type CalendarViewName,
@@ -28,6 +33,7 @@ interface CalendarClientProps {
   // Shown instead of the grid when the window holds nothing. The caller owns the wording because
   // only it knows whether a filter is doing the excluding, and an empty grid says nothing at all.
   empty?: React.ReactNode;
+  onChanged?: () => void;
 }
 
 function tab(active: boolean): string {
@@ -43,6 +49,7 @@ export function CalendarClient({
   activities,
   initialTodayIso = anchorIso,
   empty,
+  onChanged,
 }: CalendarClientProps): React.ReactNode {
   const preferences = useLocalePreferences();
   const setPreferences = useSetLocalePreferences();
@@ -56,12 +63,18 @@ export function CalendarClient({
       ? monthTitle(anchorIso, preferences)
       : t("weekOf", { date: weekTitle(dayIsos[0] ?? anchorIso, preferences) });
   const rtl = preferences.locale === "fa";
+  const [createDate, setCreateDate] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   return (
     // Not <main>: the app shell already owns that landmark, and a second one inside it hides the
     // shell's from assistive tech instead of adding anything.
     <section aria-label={t("title")} className="p-4">
       <header className="mb-4 flex flex-wrap items-center gap-3">
+        <Button onClick={() => setCreateDate(todayIso)}>
+          <Plus className="size-4" aria-hidden />
+          {t("editor.create")}
+        </Button>
         <div className="flex gap-1 rounded-md border border-border p-0.5">
           <Link
             aria-current={view === "week" ? "page" : undefined}
@@ -125,9 +138,25 @@ export function CalendarClient({
           dayIsos={dayIsos}
           activities={activities}
           todayIso={todayIso}
+          onCreate={setCreateDate}
+          onEdit={setEditingId}
         />
       ) : (
         <WeekAgendaGrid dayIsos={dayIsos} activities={activities} />
+      )}
+      {createDate !== null && (
+        <CalendarEventDialog
+          defaultDate={createDate}
+          onClose={() => setCreateDate(null)}
+          onSaved={onChanged}
+        />
+      )}
+      {editingId !== null && (
+        <CalendarEventEditDialog
+          id={editingId}
+          onClose={() => setEditingId(null)}
+          onSaved={() => onChanged?.()}
+        />
       )}
     </section>
   );
