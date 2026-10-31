@@ -39,9 +39,9 @@ it("connects the Persian password form to authentication and continues into poli
     ),
   );
   await waitFor(() => expect(replace).toHaveBeenCalledWith("/auth/mfa"));
-  expect(screen.getByRole("link", { name: "گذرواژه را فراموش کرده‌اید؟" })).toHaveAttribute(
+  expect(screen.getByRole("link", { name: "برای ورود به مشکل خورده‌اید؟" })).toHaveAttribute(
     "href",
-    "/auth/forgot-password",
+    "/auth/help",
   );
 });
 

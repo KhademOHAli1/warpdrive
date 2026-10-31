@@ -14,14 +14,27 @@ These references inform hierarchy and spacing. Warpdrive continues to use its ow
 
 ## Screen structure
 
-| Surface                          | Intended structure                                                                                                                  |
-| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| Sign in, invitation and recovery | Quiet branded frame, one clear task, labeled fields, distinct primary action, secondary alternatives below.                         |
-| MFA enrollment and confirmation  | A focused sequence with setup instructions, code entry and recovery-code acknowledgement. Secrets appear only in the relevant step. |
-| Personal security                | Summaries of sign-in methods and protection status, contextual dialogs for changes, readable device and activity rows.              |
-| Workspace administration         | Searchable account directory, separate request/delivery/activity views, focused invitation, policy and account-detail dialogs.      |
+| Surface                         | Intended structure                                                                                                                  |
+| ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Sign in                         | Quiet branded frame, labeled fields, paired password/passkey actions, one help entry, external providers below when enabled.        |
+| Invitation and recovery         | A focused task with the existing account verification and ownership safeguards.                                                     |
+| MFA enrollment and confirmation | A focused sequence with setup instructions, code entry and recovery-code acknowledgement. Secrets appear only in the relevant step. |
+| Personal security               | Summaries of sign-in methods and protection status, contextual dialogs for changes, readable device and activity rows.              |
+| Workspace administration        | Searchable account directory, separate request/delivery/activity views, focused invitation, policy and account-detail dialogs.      |
 
 Actions that change credentials or access retain their existing server validation and confirmation requirements. Presentation changes must not bypass fresh authentication, mandatory MFA, last-method protections or ownership checks.
+
+## Sign-in help
+
+The login page keeps password and passkey actions together, with stacked buttons on narrow screens. The passkey button never submits the password form or requires an email address. External sign-in providers remain separate. Email and password fields retain password-manager support, visible labels and left-to-right credential entry.
+
+One always-available help link opens `/auth/help`. That page offers password reset when passwords are enabled and the existing administrator-assisted recovery request. Saved recovery codes remain at the verification step after primary authentication. Password reset and factor recovery retain different server safeguards; changing a password does not remove MFA.
+
+After two rejected password submissions, the login page also suggests a password reset. Network errors, throttling, cancelled passkey prompts and provider failures do not count. Changing the email address clears the suggestion. This counter exists only in component memory to guide the interface; the server remains responsible for throttling and account protection.
+
+English, Farsi and German use the same workflow. Farsi consistently calls password reset `بازنشانی گذرواژه`, distinct from recovery of account access. Help navigation preserves a validated return destination without placing an email address or credentials in the URL.
+
+The 31 October 2026 refinement passed all 95 authentication unit tests across 27 files, TypeScript, scoped ESLint/Biome and the localization audit. Chrome review covered Farsi and German desktop layouts, Farsi at 390 pixels and German at 320 pixels, with no horizontal overflow in the German mobile login or help page. A synthetic rejected login verified the first- and second-attempt states against the local authentication endpoint. These checks cover the interface refinement; they do not establish deployment or GDPR compliance.
 
 ## Review checklist
 
