@@ -215,7 +215,8 @@ The [visual workflow builder](docs/workflows/status.md) is in implementation. It
 42-task plan, Mobbin design references, architecture decisions, and verification ledger live
 in `docs/workflows/`. The early-access node builder supports explicit connections, saved
 positions, conditional branches, deal reads, and follow-up tasks, with English/Farsi/German
-editing, simulation, publication, background execution, history, and cancellation. The broader R1 scope is still in progress.
+editing, contextual step creation, undo/redo, simulation, publication, background execution,
+historical graph inspection, and cancellation. The broader R1 scope is still in progress.
 Personal workflow preferences
 in Settings are a separate existing feature.
 

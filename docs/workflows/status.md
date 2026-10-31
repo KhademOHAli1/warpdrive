@@ -1,8 +1,8 @@
 # Visual workflow implementation status
 
 Updated: 31 October 2026. Builder interaction continuation: `codex/workflow-builder-ux`,
-based on `d0c83e8` of `codex/visual-workflows`. The branch incorporates fork main
-`8539fe8`, including Better Auth and its current UI, and remains separate from other active
+based on `d0c83e8` of `codex/visual-workflows`, with fork main `a1a8f6d` merged. The branch incorporates fork main
+`a1a8f6d`, including the latest sign-in/help/recovery interface, and remains separate from other active
 checkouts. No workflow changes have been merged into main by this work.
 
 ## Current milestone
@@ -51,6 +51,11 @@ radius, readable node summaries, explicit step reveal, and 50-edit graph undo/re
 previews stay local until release, so undo does not walk through individual pointer frames.
 A new authorized read endpoint supplies historical version configuration and step metadata
 without recorded CRM outputs. No dependencies, migrations, or queue names changed.
+
+The integrated application and documentation builds, typecheck and server bundles pass.
+The combined workflow/auth-UI/locale unit lane passes 110 tests across 37 files; workflow
+PostgreSQL qualification passes 22 tests across eight files. Pointer/branch execution and
+Farsi/German mobile checks are recorded, with final browser-automation limitations retained.
 
 See [interaction review](builder-interaction-review.md) for the current acceptance record,
 Mobbin observations, qualification results, and known limits. Earlier evidence below is

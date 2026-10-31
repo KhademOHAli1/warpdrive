@@ -35,6 +35,8 @@ drop or release on empty space preserves the original. Inputs already used by an
 cannot be stolen. Dragging a free output onto empty canvas opens the connected-step picker.
 Closing that picker leaves the graph unchanged.
 
+![German action picker on mobile](../../../docs/images/workflows/interaction-review/picker-de-mobile.jpg)
+
 Removing a node removes its incident connections, leaving the remaining
 process for you to reconnect explicitly.
 
@@ -57,7 +59,7 @@ Selecting a step from the selector or issue list brings it into view at a readab
 Keyboard users can select nodes from the step selector; Delete/Backspace on a selected graph
 node removes it. Editing text with Backspace does not remove graph nodes.
 
-![Farsi conditional workflow in focused editing](../../../docs/images/workflows/node-review/graph-fa-focus.jpg)
+![Farsi mobile canvas with condition branches](../../../docs/images/workflows/interaction-review/editor-fa-mobile.jpg)
 
 Captured 31 October 2026 using synthetic local records. The current application shell,
 fonts, colors, and shared controls are retained.
@@ -109,6 +111,8 @@ Choose **View run** to inspect the immutable published graph used for that run. 
 steps and their connected path appear in green; the step list distinguishes completed,
 simulated, not-reached, and failed-cursor states. Selecting a step focuses it on the graph.
 Later draft changes do not alter this historical view. Queued/running details update while open.
+
+![Farsi simulation graph and step results](../../../docs/images/workflows/interaction-review/run-fa.jpg)
 
 Raw CRM inputs/outputs are withheld because historical access may change. Detailed redacted
 step payloads, attempt timing, and manual retry are later milestones.
