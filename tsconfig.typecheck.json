@@ -7,5 +7,5 @@
     "src/app/.well-known/**/*.ts",
     ".next/types/**/*.ts"
   ],
-  "exclude": ["node_modules", "site", "docs-site", ".next/dev", "next-env.d.ts"]
+  "exclude": ["node_modules", "site", "docs-site", ".runtime", ".next/dev", "next-env.d.ts"]
 }
