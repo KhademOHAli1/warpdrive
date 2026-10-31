@@ -125,7 +125,7 @@ Proposed directional hooks, each with required AbortSignal and Result:
 
 1. Mail owns `projectMailConnection(accountId, actorId, signal)`: non-secret projection or
    indistinguishable missing/foreign denial under existing mailbox authority.
-2. Mail owns `executeMailConnectionOperation(domainRef, expectedGeneration, actorId,
+2. Mail owns `executeMailConnectionOperation(domainRef, expectedGeneration, nativeAuthority,
    operation: MailControlOperationV1, input, signal)`: revalidate current native/domain authority and generation,
    then delegate to existing domain service. Input is the exact Zod-validated control shape,
    never a raw send body. Connect/reconnect/credential replacement remain the existing native
@@ -139,6 +139,14 @@ Proposed directional hooks, each with required AbortSignal and Result:
    state and attempts. Map paused to paused, invalid credentials to reauthorization-required,
    local key/transport outage to degraded, revoke failure to revocation-pending, successful
    removal to tombstone. Do not relabel accepted/unknown mail submission as connection state.
+
+`nativeAuthority` is the server-authenticated context produced by MAIL's existing native
+session/freshness resolver, not a client-supplied actor ID, session ID, timestamp or allow
+flag. The domain hook rechecks that native session's active owner, current MFA/freshness
+policy and account generation before/after relevant I/O. Browser/API entry must establish
+possession through the existing native resolver before constructing the context; a worker,
+MCP bearer or supplied actor ID cannot fabricate it. Automated maintenance uses its own
+explicit bounded service contract and never falls back to the human-control hook.
 
 These are reviewable interface names and shapes, not live exports. Exact closed operation,
 state/reason and error mappings should be agreed against the immutable mail cut before code
