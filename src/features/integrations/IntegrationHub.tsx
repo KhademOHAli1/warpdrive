@@ -164,11 +164,12 @@ export function IntegrationHub({
       {selected !== null && (
         <IntegrationDetails
           integration={selected}
-          name={selected.name}
           endpoint={endpoint}
           serverOrigin={serverOrigin}
           slackConfigured={slackConfigured}
           isAdmin={isAdmin}
+          gmailControls={gmail}
+          gmailConfigured={gmailConfigured || mailbox !== null}
           returnFocus={trigger}
           onClose={() => setSelected(null)}
         />

@@ -176,5 +176,15 @@
   "review": "Prüfen",
   "channelNeeded": "Wählen Sie einen öffentlichen Kanal, um die Einrichtung abzuschließen.",
   "connectionRemoved": "Diese Workspace-Verbindung wurde getrennt. Sie können sie bei Bedarf erneut herstellen.",
-  "reviewGmail": "Gmail-Verbindung prüfen"
+  "reviewGmail": "Gmail-Verbindung prüfen",
+  "serverSetup": "Servereinrichtung",
+  "slackCapability1": "Einen öffentlichen Kanal auswählen, dem die App beigetreten ist.",
+  "slackCapability2": "Den Zugriff auf den verbundenen Slack-Workspace prüfen.",
+  "slackCapability3": "Die Verbindung verwalten und ihren Zugriff widerrufen.",
+  "gmailCapability1": "Kunden-E-Mails bei den passenden CRM-Datensätzen aufbewahren.",
+  "gmailCapability2": "Nachrichten und Postfachaktivitäten synchronisieren.",
+  "gmailCapability3": "Das eigene Postfach verwalten und die Verbindung trennen.",
+  "gmailAccess": "Nachrichten im verbundenen Gmail-Postfach lesen, organisieren und senden. Ihre Google-Identität dient zur Prüfung der Postfachinhaberschaft.",
+  "gmailSetup": "Ihre Serveradministration muss Google OAuth einrichten, bevor Sie ein Postfach verbinden können.",
+  "slackConnectHint": "Weiter zu Slack, um den Workspace-Zugriff zu prüfen."
 }

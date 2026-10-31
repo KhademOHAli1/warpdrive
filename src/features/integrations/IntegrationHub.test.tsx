@@ -89,6 +89,29 @@ it("explains both missing Slack configuration and administrator access", async (
   expect(screen.getByRole("button", { name: "Connect account" })).toBeDisabled();
 });
 
+it("keeps operator configuration collapsed and restores focus after provider details close", async () => {
+  render(<IntegrationHub {...props} isAdmin serverOrigin="http://localhost:3150" />);
+  const user = userEvent.setup();
+  const trigger = screen.getByRole("button", { name: "Setup guide: Slack" });
+  await user.click(trigger);
+  expect(screen.getByRole("heading", { name: "What you can do" })).toBeVisible();
+  expect(screen.queryByLabelText("OAuth redirect URL")).not.toBeInTheDocument();
+  await user.click(screen.getByRole("button", { name: "Server setup" }));
+  expect(screen.getByLabelText("OAuth redirect URL")).toHaveValue(
+    "http://localhost:3150/api/integrations/slack/callback",
+  );
+  await user.keyboard("{Escape}");
+  expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  expect(trigger).toHaveFocus();
+});
+
+it("includes real mailbox controls and explicit Gmail access in the provider flow", async () => {
+  render(<IntegrationHub {...props} gmailConfigured />);
+  await userEvent.setup().click(screen.getByRole("button", { name: "Connect account: Gmail" }));
+  expect(screen.getByRole("dialog")).toHaveTextContent("Gmail account controls");
+  expect(screen.getByRole("dialog")).toHaveTextContent("Read, organize and send messages");
+});
+
 it.each([
   {
     locale: "fa" as const,

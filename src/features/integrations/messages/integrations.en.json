@@ -176,5 +176,15 @@
   "review": "Review",
   "channelNeeded": "Choose a public channel to finish setup.",
   "connectionRemoved": "Disconnected. Reconnect this workspace when you need it.",
-  "reviewGmail": "Review Gmail connection"
+  "reviewGmail": "Review Gmail connection",
+  "serverSetup": "Server setup",
+  "slackCapability1": "Choose a public channel your app has joined.",
+  "slackCapability2": "Verify access to the connected Slack workspace.",
+  "slackCapability3": "Manage the connection and revoke its access.",
+  "gmailCapability1": "Keep customer email alongside the right CRM records.",
+  "gmailCapability2": "Synchronize messages and mailbox activity.",
+  "gmailCapability3": "Manage and disconnect your own mailbox.",
+  "gmailAccess": "Read, organize and send messages in your connected Gmail mailbox. Your Google identity is used to verify the mailbox owner.",
+  "gmailSetup": "Your server administrator needs to configure Google OAuth before you can connect a mailbox.",
+  "slackConnectHint": "Continue to Slack to review workspace access."
 }
