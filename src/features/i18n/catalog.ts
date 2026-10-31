@@ -48,6 +48,9 @@ import filesPersian from "@/features/files/messages/files.fa.json";
 import settingsGerman from "@/features/identity/messages/settings.de.json";
 import settingsEnglish from "@/features/identity/messages/settings.en.json";
 import settingsPersian from "@/features/identity/messages/settings.fa.json";
+import integrationsGerman from "@/features/integrations/messages/integrations.de.json";
+import integrationsEnglish from "@/features/integrations/messages/integrations.en.json";
+import integrationsPersian from "@/features/integrations/messages/integrations.fa.json";
 import leadsGerman from "@/features/leads/messages/leads.de.json";
 import leadsEnglish from "@/features/leads/messages/leads.en.json";
 import leadsPersian from "@/features/leads/messages/leads.fa.json";
@@ -72,6 +75,7 @@ import type { Locale } from "./registry";
 
 const english = {
   ...en,
+  integrations: integrationsEnglish,
   utilities: utilitiesEnglish,
   enrichment: enrichmentEnglish,
   stats: statsEnglish,
@@ -97,6 +101,7 @@ const english = {
 };
 const persian: typeof english = mergeMessages(english, {
   ...fa,
+  integrations: integrationsPersian,
   utilities: utilitiesPersian,
   enrichment: enrichmentPersian,
   stats: statsPersian,
@@ -122,6 +127,7 @@ const persian: typeof english = mergeMessages(english, {
 });
 const german: typeof english = mergeMessages(english, {
   ...de,
+  integrations: integrationsGerman,
   utilities: utilitiesGerman,
   enrichment: enrichmentGerman,
   stats: statsGerman,

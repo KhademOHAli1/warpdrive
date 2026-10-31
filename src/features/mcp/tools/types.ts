@@ -28,7 +28,9 @@ export class ToolRegistry {
 }
 
 export function toolResult(value: unknown): CallToolResult {
-  return { content: [{ type: "text", text: JSON.stringify(value) }] };
+  // Keep the text fallback for older hosts, and expose the same JSON-safe data to app views.
+  const data: unknown = value === undefined ? null : JSON.parse(JSON.stringify(value));
+  return { content: [{ type: "text", text: JSON.stringify(data) }], structuredContent: { data } };
 }
 
 export function toolError(error: unknown): CallToolResult {
@@ -73,7 +75,18 @@ export function registerTool<Shape extends z.ZodRawShape>(
 
   server.registerTool(
     definition.name,
-    { description: definition.description, inputSchema: definition.inputSchema },
+    {
+      description: definition.description,
+      inputSchema: definition.inputSchema,
+      outputSchema: z.object({ data: z.unknown() }),
+      annotations: {
+        readOnlyHint: /^(?:search|list_|get_|pipeline_summary)/.test(definition.name),
+        destructiveHint:
+          definition.name === "delete_email_draft" || definition.name === "archive_lead",
+        idempotentHint: /^(?:search|list_|get_|pipeline_summary)/.test(definition.name),
+        openWorldHint: false,
+      },
+    },
     (input, ctx) =>
       invoke(input, AbortSignal.any([ctx.mcpReq.signal, AbortSignal.timeout(15_000)])),
   );

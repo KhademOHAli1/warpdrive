@@ -62,7 +62,9 @@ The remote MCP endpoint is:
 https://<domain>/api/mcp
 ```
 
-Signed-in users can find this URL in Warpdrive under Settings, then Connected apps: the "Connect an AI client" card shows the server URL with a copy button and the Claude Desktop steps below. The card is hidden when `MCP_ENABLED=false`.
+Signed-in users can find this URL under Settings > Connected apps > AI clients. The setup panel includes ChatGPT, Claude and generic MCP instructions with a copy button. The directory remains visible when `MCP_ENABLED=false` and explains that an administrator must enable the server first.
+
+The local preview does not expose an internet endpoint. Cloud-hosted clients need a reachable HTTPS deployment before they can connect. See [Connections and client packages](integrations.md) for package generation and provider setup, and the [platform plan](integration-platform-plan.md) for the remaining work.
 
 Warpdrive supports stateless MCP 2026-07-28 requests and 2025-era Streamable HTTP at the same endpoint, plus OAuth discovery, dynamic client registration, authorization code flow, and PKCE with S256. Each request authenticates its bearer token and uses that user's current permissions. The older HTTP+SSE transport is not served.
 
@@ -107,10 +109,14 @@ Write tools:
 
 MCP acts as the user who completed OAuth. Existing Warpdrive visibility rules and permission flags apply to every tool call. A user who cannot see a record cannot read it through MCP, and a user without a required edit or create permission receives the same denial through MCP.
 
+Access tokens are bound to the configured `/api/mcp` resource audience. Tool responses include structured data alongside a text fallback, and tools advertise read-only or destructive hints where appropriate. These hints help clients present actions; they do not replace authorization. Separate per-client read/write scopes remain planned.
+
 Review write-tool requests in the client before approving them. The only delete tool removes the authenticated user's own unsent email draft.
 
 ## Revoke a connection
 
 In Warpdrive, open Settings, then Connected apps. Select Revoke beside a client to revoke all of its access and refresh tokens for your account. The client must complete OAuth again before it can use Warpdrive.
+
+A connection remains listed while it has a valid refresh token, even after its short-lived access token expires, so the user can still revoke it.
 
 You can also remove the connector configuration from the client's Connectors settings.

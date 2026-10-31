@@ -49,6 +49,7 @@ export async function issueAccessToken(
     .setSubject(owner.userId)
     .setJti(jti)
     .setIssuer(env.BASE_URL)
+    .setAudience(`${env.BASE_URL.replace(/\/$/, "")}/api/mcp`)
     .setIssuedAt(issuedAtSeconds)
     .setExpirationTime(issuedAtSeconds + ACCESS_TOKEN_TTL_SECONDS)
     .sign(signingKey);
@@ -69,6 +70,7 @@ export async function verifyAccessToken(
     ({ payload } = await jwtVerify(token, signingKey, {
       algorithms: [OAUTH_JWT_ALGORITHM],
       issuer: env.BASE_URL,
+      audience: `${env.BASE_URL.replace(/\/$/, "")}/api/mcp`,
     }));
   } catch {
     return err(tokenError("access token is invalid or expired"));

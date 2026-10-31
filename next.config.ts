@@ -100,6 +100,7 @@ export default createNextIntlPlugin({
       "./src/features/enrichment/messages/enrichment.en.json",
       "./src/features/stats/messages/stats.en.json",
       "./src/features/auth/messages/authScreens.en.json",
+      "./src/features/integrations/messages/integrations.en.json",
       "./src/features/custom-fields/messages/customFields.en.json",
       "./src/features/files/messages/files.en.json",
       "./src/features/email/messages/email.en.json",
