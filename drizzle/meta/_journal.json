@@ -547,6 +547,13 @@
       "when": 1793435004367,
       "tag": "0077_import_source_warnings_external_ids",
       "breakpoints": true
+    },
+    {
+      "idx": 78,
+      "version": "7",
+      "when": 1793441824851,
+      "tag": "0078_visual_workflow_definitions",
+      "breakpoints": true
     }
   ]
 }

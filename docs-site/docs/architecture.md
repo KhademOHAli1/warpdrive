@@ -25,7 +25,8 @@ just want to use it, start with the feature pages instead.
 | Object storage | MinIO, S3-compatible |
 | Email | Gmail API over OAuth |
 | Auth | Google SSO |
-| Package manager | Bun |
+| Runtime and package manager | Bun, version declared in each package |
+| Localization | next-intl/use-intl, English/Farsi/German, locale-aware shared controls |
 
 Custom fields are stored as JSONB rather than as migrated columns, which is what lets
 administrators add fields without a schema change.
@@ -115,3 +116,25 @@ that is exactly the failure a CRM cannot afford.
 ## Contributing
 
 See [Contributing](./contributing.md).
+
+## Workflow automation foundation
+
+The in-progress workflow subsystem lives in `src/features/workflows/`. Its initial
+increment defines a bounded versioned graph, registered configuration/input/output
+schemas, predecessor references, owner/capability checks, revision-checked drafts,
+and immutable publication backed by PostgreSQL. Application UI and action execution
+are separate milestones and are not enabled by those tables or permission flags.
+
+The planned engine will persist events, runs, steps, effects, and waits and use the
+existing pg-boss worker. PostgreSQL NOTIFY is the real-time notification layer;
+a durable workflow trigger must be saved transactionally with its CRM mutation.
+See [Visual workflows](./features/automations.md) for availability and the repository's
+`docs/workflows/architecture.md` for current contracts and qualification boundaries.
+
+## Locale and time boundaries
+
+The root document and locale provider coordinate language and direction, including
+Radix portals. Farsi uses local Vazirmatn; Latin UI uses local Inter. Language,
+calendar, numbering system, and account timezone are independent preferences.
+Preserve canonical API/CSV values and distinguish timed instants from all-day dates.
+Calendar-aware recurring automation remains separate from calendar display/input.

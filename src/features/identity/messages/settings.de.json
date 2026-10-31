@@ -709,7 +709,13 @@
       "contact_merge": "Kontakte zusammenführen",
       "activity_edit": "Aktivitäten bearbeiten",
       "activity_delete": "Aktivitäten löschen",
-      "record_share": "Datensätze teilen"
+      "record_share": "Datensätze teilen",
+      "workflow_view": "Eigene Workflows ansehen",
+      "workflow_create": "Workflows erstellen",
+      "workflow_edit": "Eigene Workflow-Entwürfe bearbeiten",
+      "workflow_publish": "Eigene Workflows veröffentlichen und aktivieren",
+      "workflow_run": "Eigene Workflows ausführen",
+      "workflow_cancel": "Eigene Workflow-Ausführungen abbrechen"
     },
     "icons": {
       "call": "Anruf",
