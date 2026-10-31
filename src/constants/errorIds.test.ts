@@ -9,11 +9,13 @@ describe("error IDs", () => {
     // Phase 1-2: AUTH, PERM, DEAL, PIPELINE, CONTACT, DB, WS. Phase 3 adds CF, NOTE,
     // IMPORT, ACTIVITY, USER. Phase 4 adds GMAIL, SYNC, FILE. Phase 5 adds NOTIF, SEARCH, STATS.
     // JOBS covers the background-queue boundary. OAUTH covers the MCP authorization server.
+    // INTEGRATION covers shared provider connection and Slack lifecycle failures.
     // GOAL covers quota goals and their progress. ENRICH covers the lead-research providers.
     // UI covers design-system invariants, e.g. a chart part rendered outside its container.
     const domains = [
       "AUTH",
       "OAUTH",
+      "INTEGRATION",
       "GMAIL",
       "SYNC",
       "FILE",
