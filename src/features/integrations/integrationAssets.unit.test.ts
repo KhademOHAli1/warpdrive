@@ -7,6 +7,7 @@ it("ships self-contained SVGs for the recognizable provider marks", () => {
     const svg = readFileSync(`public/integrations/${id}.svg`, "utf8");
     expect(svg).toContain("<svg");
     expect(svg).toContain("viewBox=");
+    expect(svg).toMatch(/<title[ >]/);
     expect(svg).not.toMatch(/<script|<foreignObject|onload=|href=["']https?:/i);
   }
 });

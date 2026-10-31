@@ -57,7 +57,11 @@ export function McpSetup({
   }
 
   return (
-    <div className={compact ? "space-y-5" : "space-y-5 rounded-lg border bg-card p-5"}>
+    <div
+      className={
+        compact ? "@container space-y-5" : "@container space-y-5 rounded-xl border bg-card p-5"
+      }
+    >
       {!compact && (
         <div>
           <h2 className="text-base font-semibold">{t("mcpTitle")}</h2>
@@ -105,9 +109,16 @@ export function McpSetup({
         </p>
       )}
       <Tabs defaultValue={initialClient}>
-        <TabsList className="flex-wrap gap-1" aria-label={t("ai")}>
+        <TabsList
+          className="flex-wrap gap-1 group-data-horizontal/tabs:h-auto"
+          aria-label={t("ai")}
+        >
           {clients.map((client) => (
-            <TabsTrigger key={client.id} value={client.id} className={PILL_TAB}>
+            <TabsTrigger
+              key={client.id}
+              value={client.id}
+              className={`${PILL_TAB} h-auto gap-2 px-3 py-2`}
+            >
               {INTEGRATIONS.filter((item) => item.id === client.id).map((item) => (
                 <IntegrationMark key={item.id} integration={item} compact />
               ))}

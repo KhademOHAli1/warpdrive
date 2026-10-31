@@ -208,5 +208,6 @@
   "meetingAccess": "Reads relevant CRM contacts, deals and activities.",
   "pipelineAccess": "Reads pipeline records and activity. This example asks for no changes.",
   "draftAccess": "Reads CRM context and can create an unsent draft. Review the draft before sending.",
-  "currentGrant": "This connection exposes all MCP tools your CRM role permits. A separate read-only connection is not yet available."
+  "currentGrant": "This connection exposes all MCP tools your CRM role permits. A separate read-only connection is not yet available.",
+  "filterCategory": "Integration category"
 }

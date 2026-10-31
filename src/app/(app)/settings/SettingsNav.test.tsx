@@ -1,10 +1,14 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
 import { cleanup, render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-const route = vi.hoisted(() => ({ pathname: "/settings/users" }));
-vi.mock("next/navigation", () => ({ usePathname: () => route.pathname }));
+const route = vi.hoisted(() => ({ pathname: "/settings/users", push: vi.fn() }));
+vi.mock("next/navigation", () => ({
+  usePathname: () => route.pathname,
+  useRouter: () => ({ push: route.push }),
+}));
 vi.mock("next/link", () => ({
   default: ({ href, children, ...rest }: { href: string; children: React.ReactNode }) => (
     <a href={href} {...rest}>
@@ -18,6 +22,18 @@ import { SettingsNav } from "./SettingsNav";
 afterEach(() => {
   cleanup();
   route.pathname = "/settings/users";
+  route.push.mockClear();
+});
+
+it("provides a compact section selector with the same permission gates and routes", async () => {
+  route.pathname = "/settings/connections";
+  render(<SettingsNav isAdmin={false} canManageCompany={false} canImport={false} />);
+  const user = userEvent.setup();
+  await user.click(screen.getByRole("combobox", { name: "Settings sections" }));
+  expect(screen.queryByRole("option", { name: "Security administration" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("option", { name: "Enrichment" })).not.toBeInTheDocument();
+  await user.click(screen.getByRole("option", { name: "Language & region" }));
+  expect(route.push).toHaveBeenCalledWith("/settings/regional");
 });
 
 describe("SettingsNav", () => {

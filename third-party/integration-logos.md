@@ -28,3 +28,5 @@ CC0-1.0 license retained in `simple-icons-LICENSE.txt`. Brand colors use the ups
 - `public/integrations/calendly.svg`: `icons/calendly.svg`
 - `public/integrations/cal-com.svg`: `icons/caldotcom.svg`
 - `public/integrations/zapier.svg`: `icons/zapier.svg`
+
+Missing SVG title elements were added for standalone accessibility. Geometry and provider colors are preserved.

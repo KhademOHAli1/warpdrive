@@ -41,7 +41,7 @@ export function McpWorkflowExamples({ compact }: { compact: boolean }) {
         <h3 className="text-sm font-semibold">{t("tryWorkflow")}</h3>
         <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{t("workflowBody")}</p>
       </div>
-      <div className={cn("grid gap-2", !compact && "sm:grid-cols-3")}>
+      <div className={cn("grid gap-2", !compact && "@lg:grid-cols-3")}>
         {workflows.map((workflow) => (
           <Button
             key={workflow.id}

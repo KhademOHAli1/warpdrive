@@ -30,6 +30,11 @@ logos, or interface code are redistributed with the open-source application.
 
 ## Deferred design work
 
+The [eight-step UI refinement](integration-ui-polish.md) adds recognizable local provider
+marks, individual app identities, connection-specific actions, a secondary roadmap section,
+focused permission summaries, management metadata and concrete AI workflow examples. Mobile
+review led to compact settings/category selectors and container-aware card/tab layouts.
+
 The marketplace tab explains its next-stage status. It has no false installation controls.
 Full app-detail, permission-review, install/update/uninstall, publisher and developer screens
 must be designed alongside their real extension runtime, following the programme backlog.

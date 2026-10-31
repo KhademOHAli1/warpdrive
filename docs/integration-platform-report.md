@@ -3,6 +3,10 @@
 Status: local foundation preview, 2026-10-31. No public deployment, live Slack installation,
 ChatGPT/Claude cloud connection, provider approval or marketplace publication was performed.
 
+The subsequent eight-step UI refinement is complete. See
+[Connections UI refinement](integration-ui-polish.md) for the changes, browser review and
+current verification scope. Its portable handoff supersedes the first preview's UI evidence.
+
 ## Delivered behavior
 
 - Connected apps now has a searchable directory, category filters, My connections,
@@ -33,8 +37,8 @@ used the declared Bun 1.4.4 runtime.
 | Check                                       | Result                                                                   |
 | ------------------------------------------- | ------------------------------------------------------------------------ |
 | Next.js production build, Webpack           | Passed, including generated page type validation                         |
-| Focused unit tests                          | 38 passed in 9 files                                                     |
-| PostgreSQL, MCP and OAuth integration tests | 41 passed in 13 files                                                    |
+| Focused unit tests                          | 89 passed in 16 files                                                    |
+| PostgreSQL, MCP and OAuth integration tests | 43 passed in 13 files                                                    |
 | TypeScript check                            | Passed                                                                   |
 | i18n catalog/source audit                   | No catalog issues or new source findings; 6 existing reviewed exceptions |
 | ESLint                                      | Passed                                                                   |
@@ -50,9 +54,10 @@ coverage includes OAuth replay/session binding, encrypted credentials, loss of a
 authority, upstream revocation failure, resource audience rejection, refresh-token visibility,
 Persian search and callback status spoof prevention.
 
-The directory was visually inspected in German. Browser input was paused after the user
-changed Chrome state. Final Farsi RTL, narrow-screen and assistive-technology visual review
-remain open; automated localized UI tests do not establish those outcomes.
+The refined directory and flows were inspected in English, Farsi RTL and German using an
+isolated browser test session, including narrow layouts and light/dark rendering. See the
+UI refinement report for specific checks and limits. Formal screen-reader qualification
+remains open.
 
 ## Run the isolated local preview
 

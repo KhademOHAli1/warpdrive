@@ -208,5 +208,6 @@
   "meetingAccess": "Liest relevante CRM-Kontakte, Deals und Aktivitäten.",
   "pipelineAccess": "Liest Pipeline-Daten und Aktivitäten. Dieses Beispiel fordert keine Änderungen an.",
   "draftAccess": "Liest CRM-Kontext und kann einen ungesendeten Entwurf erstellen. Prüfen Sie ihn vor dem Senden.",
-  "currentGrant": "Diese Verbindung stellt alle MCP-Werkzeuge bereit, die Ihre CRM-Rolle erlaubt. Eine separate Verbindung mit reinem Lesezugriff ist noch nicht verfügbar."
+  "currentGrant": "Diese Verbindung stellt alle MCP-Werkzeuge bereit, die Ihre CRM-Rolle erlaubt. Eine separate Verbindung mit reinem Lesezugriff ist noch nicht verfügbar.",
+  "filterCategory": "Integrationskategorie"
 }

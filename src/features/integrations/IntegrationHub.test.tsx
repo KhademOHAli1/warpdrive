@@ -82,6 +82,45 @@ it("lets an empty workspace discover supported apps without a wall of roadmap ca
   expect(screen.queryByRole("heading", { name: "Dropbox" })).not.toBeInTheDocument();
 });
 
+it("does not present an intentionally disconnected workspace as an active warning", () => {
+  render(
+    <IntegrationHub
+      {...props}
+      serviceConnections={[
+        {
+          id: "removed",
+          provider: "slack",
+          accountName: "Removed workspace",
+          status: "disconnected",
+          settings: {},
+          lastCheckedAt: null,
+        },
+      ]}
+    />,
+  );
+  expect(screen.getByRole("heading", { name: "Removed workspace" })).toBeVisible();
+  expect(screen.queryByRole("region", { name: "Needs attention" })).not.toBeInTheDocument();
+});
+
+it("formats the connection count with the selected Persian numbering system", () => {
+  render(
+    <LocaleProvider locale="fa">
+      <IntegrationHub {...props} mailbox={{ status: "connected" }} />
+    </LocaleProvider>,
+  );
+  expect(screen.getByRole("tab", { name: "اتصال‌های من" })).toHaveTextContent("۱");
+});
+
+it("filters through the compact category control and reveals the requested roadmap apps", async () => {
+  render(<IntegrationHub {...props} />);
+  const user = userEvent.setup();
+  await user.click(screen.getByRole("combobox", { name: "Integration category" }));
+  await user.click(screen.getByRole("option", { name: "Files" }));
+  expect(screen.getByRole("heading", { name: "Google Drive" })).toBeVisible();
+  expect(screen.getByRole("heading", { name: "OneDrive" })).toBeVisible();
+  expect(screen.queryByRole("heading", { name: "ChatGPT" })).not.toBeInTheDocument();
+});
+
 it("explains both missing Slack configuration and administrator access", async () => {
   render(<IntegrationHub {...props} />);
   await userEvent.setup().click(screen.getByRole("button", { name: "Setup guide: Slack" }));

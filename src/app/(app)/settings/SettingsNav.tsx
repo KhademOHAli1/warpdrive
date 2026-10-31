@@ -19,10 +19,11 @@ import {
   Users,
   UsersRound,
 } from "lucide-react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import type React from "react";
 import { useId } from "react";
 import { SecondaryNavLink } from "@/components/navigation/SecondaryNavLink";
+import { Select } from "@/components/ui/Select";
 import { authScreensMessagesForLocale } from "@/features/auth/authScreensMessages";
 import { managementMessagesForLocale } from "@/features/auth/management/messages";
 import { useLocale } from "@/features/i18n/LocaleProvider";
@@ -56,6 +57,7 @@ export function SettingsNav({
   const H = L._hierarchy;
   const id = useId();
   const pathname = usePathname();
+  const router = useRouter();
   const sections: NavSection[] = [
     {
       id: "personal",
@@ -127,32 +129,48 @@ export function SettingsNav({
     .sort((a, b) => b.href.length - a.href.length)[0]?.href;
 
   return (
-    <nav
-      aria-label={L._extra.settingsSections}
-      className="w-full shrink-0 space-y-6 md:sticky md:top-4 md:max-h-[calc(100dvh-6rem)] md:w-60 md:self-start md:overflow-y-auto md:pe-2"
-    >
-      {sections.map((section) => (
-        <section key={section.id} aria-labelledby={`${id}-${section.id}`}>
-          <h2
-            id={`${id}-${section.id}`}
-            className="mb-2 px-2 text-xs font-semibold text-muted-foreground"
-          >
-            {section.title}
-          </h2>
-          <ul className="space-y-0.5">
-            {section.items.map((item) => (
-              <li key={item.href}>
-                <SecondaryNavLink
-                  href={item.href}
-                  label={item.label}
-                  icon={item.icon}
-                  active={activeHref === item.href}
-                />
-              </li>
-            ))}
-          </ul>
-        </section>
-      ))}
-    </nav>
+    <div className="w-full shrink-0 md:sticky md:top-4 md:max-h-[calc(100dvh-6rem)] md:w-60 md:self-start md:overflow-y-auto md:pe-2">
+      <div className="md:hidden">
+        <Select
+          ariaLabel={L._extra.settingsSections}
+          value={activeHref ?? ""}
+          placeholder={L._extra.settingsSections}
+          onChange={(href) => router.push(href)}
+          triggerClassName="min-h-11 bg-card"
+          options={sections.flatMap((section) =>
+            section.items.map((item) => ({
+              value: item.href,
+              label: item.label,
+              group: section.title,
+              icon: <item.icon className="size-4 shrink-0" aria-hidden="true" />,
+            })),
+          )}
+        />
+      </div>
+      <nav aria-label={L._extra.settingsSections} className="hidden space-y-6 md:block">
+        {sections.map((section) => (
+          <section key={section.id} aria-labelledby={`${id}-${section.id}`}>
+            <h2
+              id={`${id}-${section.id}`}
+              className="mb-2 px-2 text-xs font-semibold text-muted-foreground"
+            >
+              {section.title}
+            </h2>
+            <ul className="space-y-0.5">
+              {section.items.map((item) => (
+                <li key={item.href}>
+                  <SecondaryNavLink
+                    href={item.href}
+                    label={item.label}
+                    icon={item.icon}
+                    active={activeHref === item.href}
+                  />
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
+      </nav>
+    </div>
   );
 }

@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/Collapsible";
 import { Input } from "@/components/ui/Input";
+import { Select } from "@/components/ui/Select";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { cn } from "@/lib/utils";
 import {
@@ -35,9 +36,9 @@ export function IntegrationDirectory({
   const visible = filterIntegrations(query, category, searchText);
   const available = visible.filter((item) => item.delivery !== "planned");
   const planned = visible.filter((item) => item.delivery === "planned");
-  const revealPlanned = showPlanned || query.trim().length > 0;
+  const revealPlanned = showPlanned || query.trim().length > 0 || category !== "all";
   const cards = (items: Integration[]) => (
-    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+    <div className="grid gap-4 @lg:grid-cols-2 @3xl:grid-cols-3">
       {items.map((item) => (
         <IntegrationCard
           key={item.id}
@@ -51,7 +52,7 @@ export function IntegrationDirectory({
   );
 
   return (
-    <div className="space-y-7">
+    <div className="@container space-y-7">
       <div className="space-y-4">
         <div className="relative max-w-md">
           <Search
@@ -70,7 +71,22 @@ export function IntegrationDirectory({
             className="min-h-10 bg-card ps-9"
           />
         </div>
-        <fieldset className="flex flex-wrap gap-1.5" aria-label={t("all")}>
+        <div className="@lg:hidden">
+          <Select
+            ariaLabel={t("filterCategory")}
+            value={category}
+            onChange={(value) => {
+              const next = INTEGRATION_CATEGORIES.find((item) => item === value);
+              if (next !== undefined) setCategory(next);
+            }}
+            options={INTEGRATION_CATEGORIES.map((item) => ({
+              value: item,
+              label: t(item === "ai" ? "aiCategory" : item),
+            }))}
+            triggerClassName="min-h-11 bg-card"
+          />
+        </div>
+        <fieldset className="hidden flex-wrap gap-1.5 @lg:flex" aria-label={t("all")}>
           {INTEGRATION_CATEGORIES.map((item) => (
             <Button
               key={item}

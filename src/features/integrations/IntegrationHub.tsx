@@ -8,6 +8,7 @@ import {
 } from "@/app/(app)/settings/connections/ConnectionsClient";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
+import { useFormatters } from "@/lib/useFormatters";
 import { cn } from "@/lib/utils";
 import { ConnectionOverview } from "./ConnectionOverview";
 import { INTEGRATIONS, type Integration } from "./catalog";
@@ -31,7 +32,7 @@ export interface IntegrationHubProps {
 }
 
 const TAB_STYLE =
-  "min-h-11 flex-none rounded-none border-0 px-3 py-2.5 text-muted-foreground data-active:bg-transparent data-active:shadow-none dark:data-active:bg-transparent data-[state=active]:font-medium data-[state=active]:text-foreground after:bg-primary";
+  "h-auto min-h-11 flex-none justify-start whitespace-normal rounded-none border-0 px-3 py-2.5 text-start text-muted-foreground data-active:bg-transparent data-active:shadow-none dark:data-active:bg-transparent data-[state=active]:font-medium data-[state=active]:text-foreground after:bg-primary @2xl:whitespace-nowrap";
 
 export function IntegrationHub({
   endpoint,
@@ -47,6 +48,7 @@ export function IntegrationHub({
   callbackResult,
 }: IntegrationHubProps) {
   const t = useAppTranslations("integrations");
+  const format = useFormatters();
   const [selected, setSelected] = useState<Integration | null>(null);
   const hasConnections =
     serviceConnections.length > 0 || aiConnections.length > 0 || mailbox !== null;
@@ -65,10 +67,14 @@ export function IntegrationHub({
     setSelected(integration);
   }
   return (
-    <div className="min-w-0 space-y-6">
+    <div className="@container min-w-0 space-y-6">
       <Tabs value={tab} onValueChange={setTab}>
         <div className="overflow-x-auto border-b">
-          <TabsList variant="line" aria-label={t("title")} className="w-max min-w-full gap-2">
+          <TabsList
+            variant="line"
+            aria-label={t("title")}
+            className="grid w-full grid-cols-2 gap-1 group-data-horizontal/tabs:h-auto @2xl:flex @2xl:w-max @2xl:min-w-full @2xl:gap-2"
+          >
             <TabsTrigger value="connections" className={TAB_STYLE}>
               {t("connections")}
               {hasConnections && (
@@ -76,7 +82,9 @@ export function IntegrationHub({
                   aria-hidden="true"
                   className="ms-2 rounded bg-muted px-1.5 py-0.5 text-[11px]"
                 >
-                  {services.length + aiConnections.length + (mailbox !== null ? 1 : 0)}
+                  {format.number(
+                    services.length + aiConnections.length + (mailbox !== null ? 1 : 0),
+                  )}
                 </span>
               )}
             </TabsTrigger>
