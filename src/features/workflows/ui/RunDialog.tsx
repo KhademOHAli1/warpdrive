@@ -83,6 +83,7 @@ export function RunDialog({
             {t("publishedHint")}
           </p>
           <Input
+            dir="auto"
             aria-label={t("search")}
             placeholder={t("search")}
             value={query}
@@ -95,17 +96,28 @@ export function RunDialog({
             ariaLabel={t("deal")}
             placeholder={t("deal")}
             options={options}
-            disabled={pending}
+            disabled={pending || options.length === 0}
             onChange={(value) => {
               setDealId(value);
               setChosen(options.find((option) => option.value === value) ?? null);
             }}
           />
-          {query.trim().length > 1 && options.length === 0 && !search.isFetching && (
+          {query.trim().length < 2 && (
+            <p className="text-sm text-muted-foreground">{t("searchHint")}</p>
+          )}
+          {search.isFetching && (
             <p role="status" className="text-sm text-muted-foreground">
-              {t("noResults")}
+              {t("searchLoading")}
             </p>
           )}
+          {query.trim().length > 1 &&
+            options.length === 0 &&
+            !search.isFetching &&
+            !search.isError && (
+              <p role="status" className="text-sm text-muted-foreground">
+                {t("noResults")}
+              </p>
+            )}
           {search.isError && (
             <p role="alert" className="text-sm text-destructive">
               {t("loadError")}

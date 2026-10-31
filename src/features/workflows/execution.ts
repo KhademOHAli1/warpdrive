@@ -65,8 +65,10 @@ export async function advanceWorkflowRun(db: Db, runId: string, signal: AbortSig
       simulated: run.mode === "simulation",
       output: result.value,
     });
+    const port =
+      node.type === "condition" ? (result.value.result === true ? "true" : "false") : "next";
     const next = version?.definition.edges.find(
-      (edge) => edge.from === node.id && edge.port === "next",
+      (edge) => edge.from === node.id && edge.port === port,
     );
     const status = next === undefined ? ("succeeded" as const) : ("running" as const);
     await tx

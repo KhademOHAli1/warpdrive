@@ -1,6 +1,6 @@
 # Workflow operations
 
-This early-access implementation supports database-only manual deal follow-up flows.
+This early-access implementation supports database-only manual deal follow-up flows, including exclusive text/boolean branches.
 See [architecture](architecture.md), [status](status.md), and the
 [user guide](../../docs-site/docs/features/automations.md) for the exact boundary.
 

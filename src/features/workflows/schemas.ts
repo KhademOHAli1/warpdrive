@@ -36,11 +36,22 @@ export const nodeSchema = z.strictObject({
   type: z.enum(nodeTypes),
   version: z.literal(1),
   name: z.string().trim().min(1).max(120),
+  nameMode: z.enum(["automatic", "custom"]).optional(),
   config: z.record(z.string(), z.json()),
 });
 
 export const definitionSchema = z.strictObject({
   schemaVersion: z.literal(1),
+  layout: z
+    .record(
+      identifier,
+      z.strictObject({
+        x: z.number().finite().min(-100000).max(100000),
+        y: z.number().finite().min(-100000).max(100000),
+      }),
+    )
+    .refine((positions) => Object.keys(positions).length <= 100)
+    .optional(),
   nodes: z.array(nodeSchema).min(1).max(100),
   edges: z
     .array(
@@ -55,6 +66,11 @@ export const definitionSchema = z.strictObject({
 
 export type WorkflowDefinition = z.infer<typeof definitionSchema>;
 export type WorkflowNode = z.infer<typeof nodeSchema>;
+export type WorkflowEdge = WorkflowDefinition["edges"][number];
+export interface NodePosition {
+  x: number;
+  y: number;
+}
 export interface DefinitionIssue {
   code: string;
   nodeId?: string;

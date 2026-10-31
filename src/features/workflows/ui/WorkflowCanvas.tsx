@@ -2,105 +2,208 @@
 
 import {
   Background,
+  type Connection,
   Controls,
-  Handle,
+  type Edge,
+  type EdgeChange,
   MarkerType,
-  type Node,
-  type NodeProps,
-  Position,
+  type NodeChange,
   ReactFlow,
 } from "@xyflow/react";
-import { CirclePlay, Database, ListTodo } from "lucide-react";
-import { useAppTranslations } from "@/features/i18n/LocaleProvider";
-import type { WorkflowDefinition, WorkflowNode } from "../schemas";
+import type { Dispatch, SetStateAction } from "react";
+import { useState } from "react";
+import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
+import {
+  type ConnectionProblem,
+  connectNodes,
+  disconnectNodes,
+  edgeId,
+  moveNode,
+  removeNode,
+} from "../graphEditor";
+import { positionFor } from "../nodeLayout";
+import { displayNodeName } from "../nodeNames";
+import type { WorkflowDefinition, WorkflowEdge } from "../schemas";
+import { ResponsiveViewport } from "./ResponsiveViewport";
+import { type CanvasNode, WorkflowNodeCard } from "./WorkflowNodeCard";
 import "@xyflow/react/dist/style.css";
 import "./workflowCanvas.css";
 
-type FlowNode = Node<{ node: WorkflowNode; index: number }, "workflow">;
-function WorkflowCard({ data, selected }: NodeProps<FlowNode>) {
-  const t = useAppTranslations("workflows");
-  const type = data.node.type;
-  const Icon =
-    type === "trigger.manual" ? CirclePlay : type === "record.read" ? Database : ListTodo;
-  const label =
-    type === "trigger.manual" ? t("start") : type === "record.read" ? t("read") : t("task");
-  return (
-    <section
-      className={`w-72 rounded-lg border bg-card px-5 py-4 text-start shadow-sm ${selected ? "border-primary ring-2 ring-primary/15" : "border-border"}`}
-    >
-      {type !== "trigger.manual" && (
-        <Handle type="target" position={Position.Top} isConnectable={false} />
-      )}
-      <div className="flex items-center gap-3">
-        <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
-          <Icon className="size-5" />
-        </span>
-        <div className="min-w-0">
-          <p className="text-xs text-muted-foreground">{label}</p>
-          <p className="mt-1 truncate text-sm font-semibold">{data.node.name}</p>
-        </div>
-      </div>
-      <Handle type="source" position={Position.Bottom} isConnectable={false} />
-    </section>
-  );
+const nodeTypes = { workflow: WorkflowNodeCard };
+type CanvasEdge = Edge<{ spec: WorkflowEdge }>;
+function asEdge(connection: Connection): WorkflowEdge | null {
+  const port = connection.sourceHandle ?? "next";
+  if (!["next", "true", "false"].includes(port)) return null;
+  return { from: connection.source, to: connection.target, port: port as WorkflowEdge["port"] };
 }
-const nodeTypes = { workflow: WorkflowCard };
 
 export function WorkflowCanvas({
   definition,
   selected,
+  selectedEdge,
   onSelect,
+  onSelectEdge,
+  onChange,
+  onProblem,
+  editable,
+  invalidNodes,
+  layoutRevision,
 }: {
   definition: WorkflowDefinition;
   selected: string;
+  selectedEdge: string | null;
   onSelect: (id: string) => void;
+  onSelectEdge: (id: string | null) => void;
+  onChange: Dispatch<SetStateAction<WorkflowDefinition>>;
+  onProblem: (problem: ConnectionProblem | null) => void;
+  editable: boolean;
+  invalidNodes: Set<string>;
+  layoutRevision: number;
 }) {
   const t = useAppTranslations("workflows");
-  const nodes: FlowNode[] = definition.nodes.map((node, index) => ({
+  const locale = useLocale();
+  const [dragging, setDragging] = useState(false);
+  const [measurements, setMeasurements] = useState(
+    new Map<string, { width: number; height: number }>(),
+  );
+  function nameFor(id: string) {
+    const node = definition.nodes.find((item) => item.id === id);
+    return node === undefined ? t("unavailableValue") : displayNodeName(node, locale);
+  }
+  const nodes: CanvasNode[] = definition.nodes.map((node, index) => ({
     id: node.id,
     type: "workflow",
-    data: { node, index },
-    position: { x: 0, y: index * 132 },
-    selected: selected === node.id,
-    ariaLabel: node.name,
+    data: { node, invalid: invalidNodes.has(node.id), index },
+    position: positionFor(definition, node.id),
+    measured: measurements.get(node.id),
+    selected: selectedEdge === null && selected === node.id,
+    deletable: editable && !node.type.startsWith("trigger."),
+    ariaLabel: displayNodeName(node, locale),
   }));
-  const edges = definition.edges.map((edge) => ({
-    id: `${edge.from}-${edge.port}-${edge.to}`,
-    source: edge.from,
-    target: edge.to,
+  const edges: CanvasEdge[] = definition.edges.map((spec) => ({
+    id: edgeId(spec),
+    source: spec.from,
+    target: spec.to,
+    sourceHandle: spec.port,
+    targetHandle: "in",
     type: "smoothstep",
+    data: { spec },
+    selected: selectedEdge === edgeId(spec),
     markerEnd: { type: MarkerType.ArrowClosed },
-    ariaLabel: t("edgeDescription"),
+    label: spec.port === "next" ? undefined : t(spec.port === "true" ? "truePort" : "falsePort"),
+    ariaLabel: t("connectionName", { from: nameFor(spec.from), to: nameFor(spec.to) }),
+    deletable: editable,
+    reconnectable: editable,
+    interactionWidth: 28,
   }));
+  function connect(connection: Connection, previous?: WorkflowEdge) {
+    const spec = asEdge(connection);
+    if (!editable || spec === null) return;
+    const result = connectNodes(definition, spec, previous);
+    if (!result.ok) {
+      onProblem(result.error);
+      return;
+    }
+    onChange(result.value);
+    onProblem(null);
+    onSelectEdge(edgeId(spec));
+  }
+  function recordMeasurement(id: string, dimensions: { width: number; height: number }) {
+    setMeasurements((previous) => {
+      const current = previous.get(id);
+      if (current?.width === dimensions.width && current.height === dimensions.height)
+        return previous;
+      return new Map(previous).set(id, dimensions);
+    });
+  }
+  function applyGraphNodeChange(change: NodeChange<CanvasNode>) {
+    if (!editable) return;
+    if (change.type === "position" && change.position !== undefined) {
+      const position = change.position;
+      onChange((graph) => moveNode(graph, change.id, position));
+    }
+    if (change.type === "remove") {
+      onChange((graph) => removeNode(graph, change.id));
+      onSelect(definition.nodes.find((node) => node.id !== change.id)?.id ?? "start");
+    }
+  }
+  function nodeChanges(changes: NodeChange<CanvasNode>[]) {
+    for (const change of changes) {
+      if (change.type === "dimensions" && change.dimensions !== undefined)
+        recordMeasurement(change.id, change.dimensions);
+      if (change.type === "select" && change.selected) {
+        onSelect(change.id);
+        onSelectEdge(null);
+      }
+      applyGraphNodeChange(change);
+    }
+  }
+  function edgeChanges(changes: EdgeChange<CanvasEdge>[]) {
+    for (const change of changes) {
+      if (change.type === "select" && change.selected) onSelectEdge(change.id);
+      if (change.type === "remove" && editable) {
+        const spec = definition.edges.find((edge) => edgeId(edge) === change.id);
+        if (spec !== undefined) onChange((graph) => disconnectNodes(graph, spec));
+        onSelectEdge(null);
+      }
+    }
+  }
   return (
     <section
-      className="workflow-canvas relative h-[clamp(380px,calc(100dvh-360px),650px)] min-w-0 bg-muted/25"
+      dir="ltr"
       aria-label={t("canvas")}
+      className="workflow-canvas relative h-[440px] min-w-0 bg-muted/20 xl:h-auto xl:min-h-0 xl:flex-1"
+      data-dragging={dragging}
     >
       <ReactFlow
+        key={layoutRevision}
         nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}
         fitView
-        fitViewOptions={{ padding: 0.15 }}
-        nodesDraggable={false}
-        nodesConnectable={false}
-        deleteKeyCode={null}
-        nodesFocusable={false}
-        edgesFocusable={false}
-        disableKeyboardA11y
-        onNodeClick={(_, node) => onSelect(node.id)}
+        minZoom={0.1}
+        fitViewOptions={{ padding: 0.2, maxZoom: 1.1 }}
+        nodeExtent={[
+          [-100000, -100000],
+          [100000, 100000],
+        ]}
+        nodesDraggable={editable}
+        nodesConnectable={editable}
+        edgesReconnectable={editable}
+        onNodesChange={nodeChanges}
+        onEdgesChange={edgeChanges}
+        onConnect={connect}
+        onReconnect={(edge, connection) => connect(connection, edge.data?.spec)}
+        onNodeClick={(_, node) => {
+          onSelect(node.id);
+          onSelectEdge(null);
+        }}
+        onEdgeClick={(_, edge) => onSelectEdge(edge.id)}
+        onPaneClick={() => onSelectEdge(null)}
+        onNodeDragStart={() => setDragging(true)}
+        onNodeDragStop={() => setDragging(false)}
+        multiSelectionKeyCode={null}
+        selectionKeyCode={null}
+        deleteKeyCode={editable ? ["Backspace", "Delete"] : null}
         ariaLabelConfig={{
-          "controls.ariaLabel": t("canvas"),
+          "controls.ariaLabel": t("canvasTools"),
+          "node.a11yDescription.default": t("nodeKeyboard"),
           "node.a11yDescription.keyboardDisabled": t("nodeDescription"),
-          "edge.a11yDescription.default": t("edgeDescription"),
+          "node.a11yDescription.ariaLiveMessage": ({ x, y }) =>
+            t("nodeMoved", { x: String(Math.round(x)), y: String(Math.round(y)) }),
+          "edge.a11yDescription.default": t("edgeKeyboard"),
+          "handle.ariaLabel": t("connectHint"),
           "controls.zoomIn.ariaLabel": t("zoomIn"),
           "controls.zoomOut.ariaLabel": t("zoomOut"),
           "controls.fitView.ariaLabel": t("fitView"),
         }}
       >
+        <ResponsiveViewport />
         <Background gap={22} size={1} />
-        <Controls showInteractive={false} />
+        <Controls
+          showInteractive={false}
+          position={locale === "fa" ? "bottom-right" : "bottom-left"}
+        />
       </ReactFlow>
     </section>
   );

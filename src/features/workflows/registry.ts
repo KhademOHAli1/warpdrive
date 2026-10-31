@@ -8,6 +8,13 @@ interface ActionSpec {
   effect: "none" | "database" | "wait";
 }
 const entity = z.enum(["deal", "lead", "person", "organization"]);
+export const conditionConfigSchema = z
+  .strictObject({
+    left: bindingSchema,
+    operator: z.enum(["exists", "equals", "notEquals", "greaterThan", "contains"]),
+    right: bindingSchema.optional(),
+  })
+  .refine((value) => value.operator === "exists" || value.right !== undefined);
 const recordOutputs: Record<string, ValueType> = {
   id: "string",
   title: "string",
@@ -56,13 +63,7 @@ export const actionRegistry: Record<WorkflowNode["type"], ActionSpec> = {
     effect: "database",
   },
   condition: {
-    config: z
-      .strictObject({
-        left: bindingSchema,
-        operator: z.enum(["exists", "equals", "notEquals", "greaterThan", "contains"]),
-        right: bindingSchema.optional(),
-      })
-      .refine((value) => value.operator === "exists" || value.right !== undefined),
+    config: conditionConfigSchema,
     inputs: {},
     outputs: { result: "boolean" },
     effect: "none",

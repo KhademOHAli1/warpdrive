@@ -1,8 +1,8 @@
 import { expect, it } from "vitest";
 import { validateDefinition } from "./definition";
-import { appendTask, initialDefinition, removeTask } from "./editorModel";
+import { initialDefinition } from "./editorModel";
 
-it("creates a valid localized flow and preserves bindings when tasks are added and removed", () => {
+it("creates a valid localized follow-up template with explicit edges", () => {
   const labels = {
     start: "شروع دستی",
     read: "خواندن اطلاعات معامله",
@@ -11,11 +11,9 @@ it("creates a valid localized flow and preserves bindings when tasks are added a
   };
   const original = initialDefinition(labels);
   expect(validateDefinition(original).ok).toBe(true);
-  const added = appendTask(original, "task2", labels.task, "Nachfassen");
-  expect(validateDefinition(added).ok).toBe(true);
   expect(original.nodes).toHaveLength(3);
-  const removed = removeTask(added, "task");
-  expect(removed.nodes).toHaveLength(3);
-  expect(validateDefinition(removed).ok).toBe(true);
-  expect(removeTask(removed, "read")).toEqual(removed);
+  expect(original.edges).toEqual([
+    { from: "start", to: "read", port: "next" },
+    { from: "read", to: "task", port: "next" },
+  ]);
 });

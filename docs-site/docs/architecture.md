@@ -122,7 +122,9 @@ See [Contributing](./contributing.md).
 The in-progress workflow subsystem lives in `src/features/workflows/`. It includes
 a bounded versioned graph, typed references, owner/capability checks, revision-checked
 drafts, immutable publication, and a localized visual editor. The initial executable
-path starts manually, reads a visible deal, and creates follow-up tasks.
+path starts manually, reads a visible deal, follows exclusive text/boolean conditions,
+and creates follow-up tasks. Nodes have explicit editable connections and saved positions;
+per-node connection controls complement the draggable canvas.
 
 Run admission pins a published version. CRM database effects and step progress share
 a transaction, and pg-boss startup/minutely reconciliation recovers persisted cursors.

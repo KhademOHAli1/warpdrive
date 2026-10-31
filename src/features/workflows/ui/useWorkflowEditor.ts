@@ -9,6 +9,8 @@ import { pauseWorkflowAction, publishWorkflowAction, saveWorkflowAction } from "
 import { validateDefinition } from "../definition";
 
 export type WorkflowDetail = RouterOutputs["workflows"]["get"];
+type NoticeKey = "saved" | "published" | "pauseSaved" | "runStarted";
+type ErrorKey = "fresh_auth_required" | "conflict" | "invalid" | "notReady" | "error";
 export function useWorkflowEditor(initial: WorkflowDetail) {
   const t = useAppTranslations("workflows");
   const [name, setName] = useState(initial.name);
@@ -20,8 +22,8 @@ export function useWorkflowEditor(initial: WorkflowDetail) {
   const [active, setActive] = useState(initial.active);
   const [number, setNumber] = useState(initial.publishedNumber);
   const [pending, setPending] = useState(false);
-  const [notice, setNotice] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<NoticeKey | null>(null);
+  const [error, setError] = useState<ErrorKey | null>(null);
   const dirty = saved !== JSON.stringify({ name, definition });
   const validation = validateDefinition(definition);
   const issues = validation.ok ? [] : validation.error;
@@ -39,15 +41,13 @@ export function useWorkflowEditor(initial: WorkflowDetail) {
       return;
     }
     setError(
-      t(
-        code === ERROR_IDS.WORKFLOW_CONFLICT
-          ? "conflict"
-          : code === ERROR_IDS.WORKFLOW_INVALID
-            ? "invalid"
-            : code === ERROR_IDS.WORKFLOW_NOT_READY
-              ? "notReady"
-              : "error",
-      ),
+      code === ERROR_IDS.WORKFLOW_CONFLICT
+        ? "conflict"
+        : code === ERROR_IDS.WORKFLOW_INVALID
+          ? "invalid"
+          : code === ERROR_IDS.WORKFLOW_NOT_READY
+            ? "notReady"
+            : "error",
     );
   }
   async function save() {
@@ -81,7 +81,7 @@ export function useWorkflowEditor(initial: WorkflowDetail) {
         }
         setNumber(result.value.number);
         setActive(true);
-        setNotice(t("published"));
+        setNotice("published");
       } else if (operation === "pause") {
         const result = await pauseWorkflowAction(initial.id, currentRevision, readCsrfToken());
         if (!result.ok) {
@@ -90,10 +90,10 @@ export function useWorkflowEditor(initial: WorkflowDetail) {
         }
         setRevision(result.value.revision);
         setActive(false);
-        setNotice(t("paused"));
-      } else setNotice(t("saved"));
+        setNotice("pauseSaved");
+      } else setNotice("saved");
     } catch {
-      setError(t("error"));
+      setError("error");
     } finally {
       setPending(false);
     }
@@ -106,9 +106,9 @@ export function useWorkflowEditor(initial: WorkflowDetail) {
     active,
     number,
     pending,
-    notice,
+    notice: notice === null ? null : t(notice),
     setNotice,
-    error,
+    error: error === null ? null : error === "fresh_auth_required" ? error : t(error),
     dirty,
     issues,
     perform,
