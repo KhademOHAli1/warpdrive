@@ -11,6 +11,7 @@ import { registerEmailNotificationWorker } from "@/features/notifications/email/
 import { registerReleaseCheckJob } from "@/features/release/job";
 import { registerWorkflowJobs } from "@/features/workflows/worker";
 import { setBoss } from "@/jobs/boss";
+import { observeBossErrors } from "@/jobs/bossObserver";
 
 // Register all job handlers and schedules. Called after boss.start() and
 // setBoss() so producers see the live boss before handlers are registered.
@@ -32,6 +33,7 @@ export async function registerAllJobs(boss: PgBossType): Promise<void> {
 // can enqueue, then registers all job handlers and cron schedules.
 export async function startWorker(): Promise<PgBoss> {
   const boss = new PgBoss(env.DATABASE_URL);
+  observeBossErrors(boss, "worker");
   await boss.start();
   // Publish the live boss before registering handlers so producers that run
   // during registration (e.g. initial sync enqueues) already see a live boss.

@@ -59,6 +59,8 @@ function securityHeaders(directives: string[]): { key: string; value: string }[]
 }
 
 const nextConfig: NextConfig = {
+  // Action arguments include credentials, CSRF tokens and private email content.
+  logging: { serverFunctions: false },
   // Its server DOM depends on packages with mixed module formats; load it through Bun.
   serverExternalPackages: ["pg", "pg-boss", "isomorphic-dompurify"],
   // HSTS is set by Caddy, not here: it terminates TLS and so is the layer that knows the
