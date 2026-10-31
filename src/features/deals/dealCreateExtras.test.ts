@@ -85,7 +85,7 @@ describe("createDeal extras (label / source / owner override)", () => {
     });
   });
 
-  it("honors ownerId when the actor holds deal.changeOwner", async () => {
+  it("honors ownerId when the actor holds deal.changeOwner_any", async () => {
     await withTestDb(async (db) => {
       await seedSettings(db);
       const creator = await seedUser(db);
@@ -93,7 +93,7 @@ describe("createDeal extras (label / source / owner override)", () => {
       const p = await seedPipelineWithStages(db, ["Qualified"]);
       const r = await createDeal(
         db,
-        session(creator.id, { "deal.changeOwner": true }),
+        session(creator.id, { "deal.changeOwner_any": true }),
         {
           title: "Assigned deal",
           pipelineId: p.pipeline.id,
@@ -109,7 +109,7 @@ describe("createDeal extras (label / source / owner override)", () => {
     });
   });
 
-  it("ignores ownerId when the actor lacks deal.changeOwner (creator owns it)", async () => {
+  it("ignores ownerId when the actor lacks deal.changeOwner_any (creator owns it)", async () => {
     await withTestDb(async (db) => {
       await seedSettings(db);
       const creator = await seedUser(db);
@@ -140,7 +140,7 @@ describe("createDeal extras (label / source / owner override)", () => {
       const p = await seedPipelineWithStages(db, ["Qualified"]);
       const r = await createDeal(
         db,
-        session(creator.id, { "deal.changeOwner": true }),
+        session(creator.id, { "deal.changeOwner_any": true }),
         {
           title: "Ghost owner",
           pipelineId: p.pipeline.id,

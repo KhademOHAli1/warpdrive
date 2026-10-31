@@ -237,7 +237,7 @@ it("rejects a mapping whose column targets an entity the import cannot write", a
       created.value.batchId,
       {
         dedupMode: "skip",
-        columns: { Title: { entity: "person", field: "name", isCustom: false, key: "" } },
+        columns: { Title: { entity: "deal", field: "title", isCustom: false, key: "" } },
       },
       signal,
     );

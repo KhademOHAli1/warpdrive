@@ -6,8 +6,9 @@ import type { Db } from "@/db/client";
 import { db as prodDb } from "@/db/client";
 import { importBatches, importRows } from "@/db/schema";
 import { ok, type Result } from "@/types/result";
-import { narrowTarget } from "./batchHelpers";
+import { narrowSource, narrowTarget } from "./batchHelpers";
 import type { ImportActor } from "./commit";
+import type { ImportContext } from "./externalIds";
 import { loadImportActor } from "./importActor";
 import { enqueueBatchJob, registerBatchWorker } from "./jobRunner";
 import { publishImportProgress, shouldEmit } from "./progress";
@@ -27,10 +28,19 @@ export async function undoBatch(
   signal: AbortSignal,
 ): Promise<Result<{ deleted: number }, AppError>> {
   const [batchRow] = await db
-    .select({ t: importBatches.targetEntity, status: importBatches.status })
+    .select({
+      t: importBatches.targetEntity,
+      status: importBatches.status,
+      source: importBatches.source,
+    })
     .from(importBatches)
     .where(eq(importBatches.id, batchId));
   const target = narrowTarget(batchRow?.t ?? "person");
+  const ctx: ImportContext = {
+    source: narrowSource(batchRow?.source ?? "csv"),
+    batchId,
+    createMissingStages: false,
+  };
   // Remember the pre-undo status so we can restore it if the undo could not remove
   // everything (e.g. the actor lacks the delete flag for some rows): the batch must not
   // claim "undone" while created records are still live.
@@ -86,7 +96,7 @@ export async function undoBatch(
   let lastEmitted = 0;
   for (const row of rows) {
     signal.throwIfAborted();
-    if (await undoOneRow(db, actor, target, row, side, signal)) deleted += 1;
+    if (await undoOneRow(db, actor, target, row, side, ctx, signal)) deleted += 1;
     processed += 1;
     if (shouldEmit(processed, rows.length, lastEmitted)) {
       await publishImportProgress(

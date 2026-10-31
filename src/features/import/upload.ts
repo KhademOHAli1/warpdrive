@@ -3,23 +3,29 @@ import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { env } from "@/config/env";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
+import { DEFAULT_IMPORT_SOURCE, IMPORT_SOURCES } from "@/constants/importSources";
 import { PGBOSS_QUEUE_IMPORT_PREPARE } from "@/constants/jobNames";
 import type { Db } from "@/db/client";
 import { importBatches } from "@/db/schema";
 import { buildObjectKey, confirmedObjectKey } from "@/features/files/keys";
 import type { PresignedPost, StorageClient } from "@/features/files/storage";
 import { err, ok, type Result } from "@/types/result";
+import { IMPORT_TARGETS, targetsFor } from "./importFields";
 import { enqueueBatchJob } from "./jobRunner";
 
-const IMPORT_TARGETS = ["person", "organization", "deal", "lead", "activity"] as const;
-
-const requestImportUploadInput = z.object({
-  targetEntity: z.enum(IMPORT_TARGETS),
-  filename: z.string().min(1).max(255),
-  contentType: z.literal("text/csv"),
-  size: z.number().int().positive().max(env.MAX_FILE_BYTES),
-});
-export type RequestImportUploadInput = z.infer<typeof requestImportUploadInput>;
+const requestImportUploadInput = z
+  .object({
+    targetEntity: z.enum(IMPORT_TARGETS),
+    source: z.enum(IMPORT_SOURCES).default(DEFAULT_IMPORT_SOURCE),
+    filename: z.string().min(1).max(255),
+    contentType: z.literal("text/csv"),
+    size: z.number().int().positive().max(env.MAX_FILE_BYTES),
+  })
+  .refine((input) => targetsFor(input.source).includes(input.targetEntity), {
+    path: ["targetEntity"],
+    message: "this import source cannot target that entity",
+  });
+export type RequestImportUploadInput = z.input<typeof requestImportUploadInput>;
 
 // Import CSVs get their own object namespace (not an entity attachment). buildObjectKey
 // accepts a free-form entityType string, so no coupling to the files FileEntityType enum.
@@ -39,6 +45,7 @@ export async function requestImportUpload(
     .values({
       targetEntity: input.targetEntity,
       filename: input.filename,
+      source: input.source,
       status: "uploaded",
       createdBy: args.actorId,
     })

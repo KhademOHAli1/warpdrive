@@ -18,6 +18,7 @@ function toAuthUser(actor: DealVisibilitySession): AuthUser {
     type: actor.isAdmin ? "admin" : "regular",
     isActive: actor.isActive,
     groupIds: new Set(actor.visibilityGroupIds),
+    managedUserIds: new Set(actor.managedUserIds ?? []),
   };
 }
 

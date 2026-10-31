@@ -32,6 +32,10 @@ export const importRows = pgTable(
       .$type<{ field: string; message: string }[]>()
       .notNull()
       .default(sql`'[]'::jsonb`),
+    warnings: jsonb("warnings")
+      .$type<{ field: string; message: string }[]>()
+      .notNull()
+      .default(sql`'[]'::jsonb`),
     createdEntityId: uuid("created_entity_id"),
     // Records a row created as a SIDE EFFECT of its primary entity. Each is null when the row
     // linked to a pre-existing record instead of creating one. Undo removes them too, or an

@@ -92,6 +92,8 @@ export const ERROR_IDS = {
   IMPORT_NOT_UNDOABLE: "E_IMPORT_006", // undo requested on a batch not in completed/partial
   IMPORT_BAD_STATE: "E_IMPORT_007", // mapping/commit requested on a batch in an illegal status
   IMPORT_MAPPING_ENTITY_INVALID: "E_IMPORT_008", // mapped column targets an entity this import cannot write
+  IMPORT_LINKED_RECORD_UNAVAILABLE: "E_IMPORT_009",
+  IMPORT_EXTERNAL_ID_UNMAPPED: "E_IMPORT_010",
   // USER (reference)
   USER_NOT_FOUND: "E_USER_001", // referenced user not found or inactive
   USER_PROFILE_INVALID: "E_USER_002", // profile update input failed Zod validation

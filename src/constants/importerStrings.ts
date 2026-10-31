@@ -17,6 +17,13 @@ export const IMPORTER_STRINGS = {
   deal: "Deals",
   lead: "Leads",
   activity: "Activities",
+  note: "Notes",
+  source: "Source",
+  sourceCsv: "CSV file",
+  sourcePipedrive: "Pipedrive export",
+  createMissingStages: "Create missing pipelines and stages",
+  createMissingStagesHint:
+    "Pipelines and stages named in the file but not set up here are created, in the order the file first names them.",
   rowsDetected: (n: number) => `${n} rows detected`,
   continue: "Continue",
   dedup: "When a matching contact already exists",
@@ -32,6 +39,7 @@ export const IMPORTER_STRINGS = {
   valid: (n: number) => `${n} valid`,
   withErrors: (n: number) => `${n} with errors`,
   rowErrors: "Rows with errors",
+  rowWarnings: "Rows with warnings",
   commitButton: (n: number) => `Import ${n} valid rows`,
   importing: "Importing...",
   result: (imported: number, skipped: number, invalid: number) =>

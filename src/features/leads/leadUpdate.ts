@@ -10,6 +10,7 @@ import { users } from "@/db/schema/identity";
 import { leads } from "@/db/schema/leads";
 import { validateCustomFieldsPartial } from "@/features/custom-fields/validateForTarget";
 import { syncEntityLabelNames } from "@/features/labels/labelsRepo.entities";
+import { mayTransferOwner, toTransferActor } from "@/features/permissions/mayTransferOwner";
 import { err, ok, type Result } from "@/types/result";
 import type { LeadSession } from "./leadActions";
 import { type LeadUpdateInput, leadUpdateInput } from "./schemas";
@@ -39,16 +40,22 @@ function buildPatch(
   return patch;
 }
 
-// Owner reassignment is permission-gated (mirrors bulkUpdateLeads/resolveOwnerId): only admins or
-// holders of deal.changeOwner may reassign, and the target must be an active user.
 async function checkOwnerChange(
   db: Db,
   session: LeadSession,
+  leadId: string,
   ownerId: string,
   signal: AbortSignal,
 ): Promise<Result<void, AppError>> {
-  const canReassign = session.isAdmin || session.flags["deal.changeOwner"] === true;
-  if (!canReassign) {
+  const [current] = await db
+    .select({ ownerId: leads.ownerId })
+    .from(leads)
+    .where(and(eq(leads.id, leadId), isNull(leads.deletedAt), leadVisibilityClause(session)));
+  signal.throwIfAborted();
+  if (current === undefined) {
+    return err(new AppError(ERROR_IDS.LEAD_NOT_FOUND, "Lead not found or not visible", { leadId }));
+  }
+  if (!mayTransferOwner(toTransferActor(session), current.ownerId)) {
     return err(
       new AppError(ERROR_IDS.PERM_DENIED, "lead owner change requires deal.changeOwner", {
         userId: session.userId,
@@ -86,7 +93,7 @@ export async function updateLead(
   signal.throwIfAborted();
 
   if (input.ownerId !== undefined) {
-    const ownerCheck = await checkOwnerChange(db, session, input.ownerId, signal);
+    const ownerCheck = await checkOwnerChange(db, session, input.leadId, input.ownerId, signal);
     if (!ownerCheck.ok) return ownerCheck;
   }
 

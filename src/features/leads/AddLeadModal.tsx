@@ -2,6 +2,7 @@
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { useState } from "react";
+import { HiddenRecordNotice } from "@/components/HiddenRecordNotice";
 import { useCompanyCurrency } from "@/features/currencies/CurrencyProvider";
 import {
   CustomFieldCreateFields,
@@ -48,6 +49,7 @@ export function AddLeadModal({
   const [valueLocale, setValueLocale] = useState(locale);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const [hiddenTitle, setHiddenTitle] = useState<string | null>(null);
 
   const peopleQ = trpc.contacts.personOptions.useQuery();
   const orgsQ = trpc.contacts.orgOptions.useQuery();
@@ -90,6 +92,16 @@ export function AddLeadModal({
         ? customFieldCreateError(personFieldsQ.data ?? [], state.personCustomFields, locale)
         : null)
     );
+  }
+
+  function finishCreation(created: { id: string } | null, title: string): void {
+    onCreated();
+    if (created === null) {
+      setHiddenTitle(title);
+      return;
+    }
+    onClose();
+    if (openDetailsAfterCreate.leadDeal) router.push(`/leads/${created.id}`);
   }
 
   async function submit(): Promise<void> {
@@ -178,14 +190,16 @@ export function AddLeadModal({
         setError(tLeads("createError", { errorId: result.error.id }));
         return;
       }
-      onCreated();
-      onClose();
       // "Open details view after creating a new item" (personal preference): leads share the
       // lead/deal flag with deals. Otherwise the caller's onCreated handles the refresh.
-      if (openDetailsAfterCreate.leadDeal) router.push(`/leads/${result.value.id}`);
+      finishCreation(result.value, parsed.input.title);
     } finally {
       setPending(false);
     }
+  }
+
+  if (hiddenTitle !== null) {
+    return <HiddenRecordNotice entityLabel="Lead" title={hiddenTitle} onDismiss={onClose} />;
   }
 
   return (

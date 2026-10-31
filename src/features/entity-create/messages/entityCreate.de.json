@@ -5,5 +5,10 @@
   "save": "Speichern",
   "saving": "Wird gespeichert...",
   "createOrgError": "Organisation konnte nicht erstellt werden ({errorId})",
-  "createPersonError": "Person konnte nicht erstellt werden ({errorId})"
+  "createPersonError": "Person konnte nicht erstellt werden ({errorId})",
+  "hiddenDealTitle": "Verkaufschance angelegt, Zugriff eingeschränkt",
+  "hiddenLeadTitle": "Lead angelegt, Zugriff eingeschränkt",
+  "hiddenDealDescription": "„{title}“ wurde gespeichert und einer anderen Person zugewiesen. Aufgrund Ihrer Sichtbarkeitsrechte können Sie diese Verkaufschance nicht öffnen. Wenden Sie sich bei Bedarf an die zuständige Person oder die Administration.",
+  "hiddenLeadDescription": "„{title}“ wurde gespeichert und einer anderen Person zugewiesen. Aufgrund Ihrer Sichtbarkeitsrechte können Sie diesen Lead nicht öffnen. Wenden Sie sich bei Bedarf an die zuständige Person oder die Administration.",
+  "acknowledge": "Verstanden"
 }

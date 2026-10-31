@@ -1,17 +1,19 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { afterEach, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, expect, it, vi } from "vitest";
 
 afterEach(cleanup);
 
 const getBatch = vi.fn();
 const getResult = vi.fn();
+const listRows = vi.fn();
 vi.mock("@/lib/trpc-client", () => ({
   trpc: {
     import: {
       getBatch: { useQuery: (...a: unknown[]) => getBatch(...a) },
       getResult: { useQuery: (...a: unknown[]) => getResult(...a) },
+      listRows: { useQuery: (...a: unknown[]) => listRows(...a) },
     },
   },
 }));
@@ -21,6 +23,10 @@ vi.mock("@/features/import/useImportProgress", () => ({
 }));
 
 import { CommitStep } from "./CommitStep";
+
+beforeEach(() => {
+  listRows.mockReturnValue({ data: [] });
+});
 
 it("shows the completed status and the exact server-computed split", () => {
   getBatch.mockReturnValue({ data: { status: "completed" } });
@@ -46,4 +52,26 @@ it("shows the importing status while the commit job runs", () => {
   getResult.mockReturnValue({ data: undefined });
   render(<CommitStep batchId="b1" onReset={vi.fn()} />);
   expect(screen.getByText("Importing...")).toBeInTheDocument();
+});
+
+it("lists the warnings of imported rows after the commit", () => {
+  getBatch.mockReturnValue({ data: { status: "completed" } });
+  getResult.mockReturnValue({ data: { imported: 2, skipped: 0, invalid: 0, total: 2 } });
+  listRows.mockReturnValue({
+    data: [
+      {
+        id: "r1",
+        rowNumber: 4,
+        status: "imported",
+        errors: [],
+        warnings: [{ field: "owner", message: "owner not found" }],
+      },
+      { id: "r2", rowNumber: 5, status: "imported", errors: [], warnings: [] },
+    ],
+  });
+  render(<CommitStep batchId="b1" onReset={vi.fn()} />);
+  expect(screen.getByText("Rows with warnings")).toBeInTheDocument();
+  expect(screen.getByText("owner: owner not found")).toBeInTheDocument();
+  expect(screen.getByText("#4")).toBeInTheDocument();
+  expect(screen.queryByText("#5")).not.toBeInTheDocument();
 });

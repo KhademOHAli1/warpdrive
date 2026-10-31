@@ -77,12 +77,12 @@ it("exports only invalid/failed rows in the viewer's locale, preserving raw CSV 
       `attachment; filename="import-${BATCH_ID}-errors.csv"`,
     );
     expect(new TextDecoder().decode(await fa.arrayBuffer())).toBe(
-      "row,errors,Name,Email\n12,ایمیل: یک نشانی ایمیل معتبر وارد کنید.,علی,'=CMD\n15,ردیف: این رکورد دیگر وجود ندارد.,fifteen,",
+      "row,errors,warnings,Name,Email\n12,ایمیل: یک نشانی ایمیل معتبر وارد کنید.,,علی,'=CMD\n15,ردیف: این رکورد دیگر وجود ندارد.,,fifteen,",
     );
     requestState.preferences = { locale: "en", calendar: "gregory", timeZone: "UTC" };
     const en = await report();
     expect(await en.text()).toBe(
-      "row,errors,Name,Email\n12,Email: Enter a valid email address.,علی,'=CMD\n15,Row: This record no longer exists.,fifteen,",
+      "row,errors,warnings,Name,Email\n12,Email: Enter a valid email address.,,علی,'=CMD\n15,Row: This record no longer exists.,,fifteen,",
     );
     const [persisted] = await db.select().from(importRows).where(eq(importRows.rowNumber, 12));
     expect(persisted?.errors).toEqual(storedErrors);
@@ -157,7 +157,7 @@ it("resolves custom diagnostic labels from current authorized metadata and hides
       ],
     });
     expect(await (await report()).text()).toBe(
-      "row,errors,Customer\n2,شناسه مشتری: تکمیل این فیلد ضروری است.; فیلد سفارشی: مقدار واردشده معتبر نیست. قالب داده و فیلدهای ضروری را بررسی کنید.,",
+      "row,errors,warnings,Customer\n2,شناسه مشتری: تکمیل این فیلد ضروری است.; فیلد سفارشی: مقدار واردشده معتبر نیست. قالب داده و فیلدهای ضروری را بررسی کنید.,,",
     );
   });
 });

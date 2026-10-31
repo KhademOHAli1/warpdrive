@@ -119,7 +119,7 @@ describe("createLead", () => {
       expect(ignored.ok && ignored.value).toBeTruthy();
       const honored = await createLead(
         db,
-        session(creator.id, { flags: { "deal.create": true, "deal.changeOwner": true } }),
+        session(creator.id, { flags: { "deal.create": true, "deal.changeOwner_any": true } }),
         { title: "B", ownerId: target.id },
         sig(),
       );

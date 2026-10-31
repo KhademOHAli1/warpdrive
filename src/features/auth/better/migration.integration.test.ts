@@ -35,7 +35,7 @@ test("legacy cutover preserves CRM identity and preferences and invalidates ever
       ),
     })
     .parse(JSON.parse(readFileSync(join(folder, "meta/_journal.json"), "utf8")));
-  const entries = journal.entries.filter((entry) => entry.idx < 77);
+  const entries = journal.entries.filter((entry) => entry.idx < 78);
   mkdirSync(join(baseline, "meta"));
   writeFileSync(join(baseline, "meta/_journal.json"), JSON.stringify({ ...journal, entries }));
   for (const entry of entries)

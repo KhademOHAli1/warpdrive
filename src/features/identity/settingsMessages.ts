@@ -48,6 +48,9 @@ type ExtraFunctions = {
     unknown: (kind: string, value: string) => string;
     ambiguous: (count: number) => string;
   };
+  importWarnings: Omit<typeof english._extra.importWarnings, "unassigned"> & {
+    unassigned: (value: string, reason: string) => string;
+  };
 };
 export type SettingsMessages = Omit<Localized<Source>, "_extra"> & {
   _extra: Omit<Localized<Source["_extra"]>, keyof ExtraFunctions> & ExtraFunctions;

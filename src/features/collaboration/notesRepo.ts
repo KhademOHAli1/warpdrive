@@ -33,11 +33,16 @@ function toRefActor(actor: AuthUser): {
   };
 }
 
+export interface CreateNoteOptions {
+  createdAtOverride?: Date;
+}
+
 export async function createNote(
   db: Db,
   actor: AuthUser,
   input: NoteCreateInput,
   signal: AbortSignal,
+  options: CreateNoteOptions = {},
 ): Promise<Result<Note, AppError>> {
   signal.throwIfAborted();
 
@@ -59,6 +64,9 @@ export async function createNote(
         body: input.body,
         pinned: input.pinned,
         authorId: actor.id,
+        ...(options.createdAtOverride === undefined
+          ? {}
+          : { createdAt: options.createdAtOverride }),
       })
       .returning();
 

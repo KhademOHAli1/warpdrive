@@ -141,8 +141,13 @@ is missing, and because two items are load-bearing assumptions rather than setti
 
 Session cookies are now stored as a sha256 digest rather than in the clear, which means existing
 session rows cannot be carried forward (the pre-image is by construction unrecoverable). The
-migration deletes them. Everyone signed in is signed out once and logs back in through Google
-SSO. Nothing else is affected.
+migration deletes them. Users sign in again with a configured authentication method.
+
+The Better Auth cutover also revokes pre-cutover sessions and MCP grants. Existing CRM UUIDs,
+permissions and preferences are retained. Administrators finish strong authentication before
+receiving application access; MCP clients obtain fresh consent. Old verification links require
+a new message. Follow the [migration report](auth-implementation-report.md) and
+[operator runbook](auth-operations.md) when planning this upgrade.
 
 ## Local development against this stack
 

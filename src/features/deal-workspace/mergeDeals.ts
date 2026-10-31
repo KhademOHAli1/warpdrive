@@ -4,7 +4,7 @@
 // email threads, files, participants, followers, followers/participants deduped). S is then
 // soft-deleted and the merge is logged on T. Both deals must be visible+editable by the actor, and
 // each is CAS-locked on its updatedAt so a stale header cannot merge a concurrently-modified deal.
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, isNull, sql } from "drizzle-orm";
 import { z } from "zod";
 import { BOARD_EVENT, dealChannel, dealMovedChannel } from "@/constants/boardChannels";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
@@ -12,6 +12,8 @@ import type { Db } from "@/db/client";
 import { deals } from "@/db/schema/deals";
 import { recordChange } from "@/features/collaboration/changeLog";
 import { loadEditableDeal } from "@/features/deals/dealAuth";
+import { lockImportMutation } from "@/features/import/importLock";
+import { repointMappings } from "@/features/import/repointMappings";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { publishBoardEvent } from "@/server/realtime/events";
 import { err, ok, type Result } from "@/types/result";
@@ -39,6 +41,7 @@ async function casTouch(
     .where(
       and(
         eq(deals.id, id),
+        isNull(deals.deletedAt),
         sql`date_trunc('milliseconds', ${deals.updatedAt}) = ${expected}::timestamptz`,
       ),
     )
@@ -72,7 +75,7 @@ export async function mergeDeals(
 
   try {
     return await db.transaction(async (tx) => {
-      // CAS both first so a stale precondition fails before any re-parenting.
+      await lockImportMutation(tx, signal);
       await casTouch(tx, input.targetDealId, input.expectedTargetUpdatedAt);
       const now = new Date();
       const [deleted] = await tx
@@ -81,6 +84,7 @@ export async function mergeDeals(
         .where(
           and(
             eq(deals.id, input.sourceDealId),
+            isNull(deals.deletedAt),
             sql`date_trunc('milliseconds', ${deals.updatedAt}) = ${input.expectedSourceUpdatedAt}::timestamptz`,
           ),
         )
@@ -88,6 +92,7 @@ export async function mergeDeals(
       if (deleted === undefined) throw new MergeConflict();
 
       await repointDealChildren(tx, input.sourceDealId, input.targetDealId, signal);
+      await repointMappings(tx, "deal", input.targetDealId, input.sourceDealId, signal);
 
       await recordChange(
         tx,

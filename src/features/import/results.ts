@@ -42,7 +42,7 @@ export async function getBatchResult(
   return ok({ imported, skipped, invalid, total });
 }
 
-export type BatchSummary = Pick<
+export type BatchSummary = { warnedRows: number } & Pick<
   ImportBatch,
   | "id"
   | "filename"
@@ -72,6 +72,12 @@ export async function listBatches(
       totalRows: importBatches.totalRows,
       importedRows: importBatches.importedRows,
       errorRows: importBatches.errorRows,
+      warnedRows: sql<number>`(
+        select count(*)::int from import_rows ir
+        where ir.batch_id = import_batches.id
+          and ir.status = 'imported'
+          and ir.warnings <> '[]'::jsonb
+      )`,
       createdAt: importBatches.createdAt,
       undoneAt: importBatches.undoneAt,
     })

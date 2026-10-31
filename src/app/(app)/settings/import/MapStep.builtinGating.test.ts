@@ -32,4 +32,9 @@ describe("buildColumnOptions built-in gating", () => {
     const v = values(buildColumnOptions("organization", [], hidden));
     expect(v).toContain("s:organization:name");
   });
+
+  it("offers pipedrive-only fields only for a pipedrive source", () => {
+    expect(values(buildColumnOptions("deal", [], {}))).not.toContain("s:deal:pipedriveId");
+    expect(values(buildColumnOptions("deal", [], {}, "pipedrive"))).toContain("s:deal:pipedriveId");
+  });
 });

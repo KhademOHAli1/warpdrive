@@ -1,22 +1,10 @@
-import type { z } from "zod";
-import { personCreateInput } from "@/features/contacts/schemas";
-import { buildCustomFieldsSchema } from "@/features/custom-fields/validate";
-import type { CustomFieldDef } from "@/types/customFields";
 import type { MappedRow } from "@/types/import";
-import { assertNever } from "@/types/result";
 import { ADDRESS_PREFIX, PERSON_NAME_PARTS, primaryEntityOf } from "./importFields";
-import {
-  activityImportRowSchema,
-  dealImportRowSchema,
-  leadImportRowSchema,
-  noteImportGroupSchema,
-  orgImportGroupSchema,
-  personImportGroupSchema,
-} from "./importRowSchemas";
 import { buildRowNoteBody } from "./rowNote";
 import type { ResolvedColumnMapping } from "./schemas";
 import type { ImportTarget } from "./wizardState";
 
+export { validateMappedRow } from "./validateMappedRow";
 // Defined in src/types so the Drizzle schema can type importRows.mapped without an import cycle.
 export type { MappedRow };
 
@@ -54,6 +42,15 @@ function deriveDisplayName(group: Record<string, unknown> | undefined): void {
   if (parts.length > 0) group.name = parts.join(" ");
 }
 
+const DATE_ONLY = /^\d{4}-\d{2}-\d{2}$/;
+
+function mergeDueTime(primary: Record<string, unknown>): void {
+  const { dueAt, dueTime } = primary;
+  if (typeof dueAt !== "string" || typeof dueTime !== "string") return;
+  if (DATE_ONLY.test(dueAt.trim())) primary.dueAt = `${dueAt.trim()} ${dueTime.trim()}`;
+  delete primary.dueTime;
+}
+
 // Where the cells of one row accumulate as the mapping is walked.
 interface RowGroups {
   primary: Record<string, unknown>;
@@ -75,7 +72,7 @@ function routeCell(
     return;
   }
   if (col.field === "") return;
-  if (col.entity === "note") {
+  if (col.entity === "note" && primaryEntity !== "note") {
     if (col.field === "body") acc.noteBody = cell;
     return;
   }
@@ -108,77 +105,15 @@ export function applyMapping(
 
   acc.primary.customFields = acc.customFields;
   if (primaryEntity === "person") deriveDisplayName(acc.primary);
+  if (primaryEntity === "activity") mergeDueTime(acc.primary);
   deriveDisplayName(acc.related.person);
 
   const out: MappedRow = { primary: acc.primary };
   if (acc.related.organization !== undefined) out.organization = acc.related.organization;
   if (acc.related.person !== undefined) out.person = acc.related.person;
 
+  if (primaryEntity === "note") return out;
   const body = buildRowNoteBody(raw, mapping, acc.noteBody, headers);
   if (body !== null) out.note = { body };
   return out;
-}
-
-type ValidateResult =
-  | { ok: true; value: MappedRow }
-  | { ok: false; errors: { field: string; message: string }[] };
-
-function issuesOf(error: z.ZodError, prefix = ""): { field: string; message: string }[] {
-  return error.issues.map((i) => ({
-    field: `${prefix}${i.path.join(".")}`,
-    message: i.message,
-  }));
-}
-
-function primarySchema(target: ImportTarget, cfSchema: z.ZodTypeAny): z.ZodTypeAny {
-  switch (target) {
-    case "person":
-      return personCreateInput.extend({ customFields: cfSchema });
-    case "organization":
-      // NOT orgCreateInput: it declares only name/address/customFields, so Zod would strip the
-      // firmographics the picker now offers (domain, industry, employeeCount, ...) and the import
-      // would silently drop every one. commit creates the org, then writes these via updateOrg.
-      return orgImportGroupSchema.extend({ customFields: cfSchema });
-    case "deal":
-      return dealImportRowSchema.extend({ customFields: cfSchema });
-    case "lead":
-      return leadImportRowSchema.extend({ customFields: cfSchema });
-    case "activity":
-      return activityImportRowSchema.extend({ customFields: cfSchema });
-    default:
-      return assertNever(target);
-  }
-}
-
-export function validateMappedRow(
-  target: ImportTarget,
-  mapped: MappedRow,
-  defs: CustomFieldDef[],
-): ValidateResult {
-  const cfSchema = buildCustomFieldsSchema(defs);
-  const errors: { field: string; message: string }[] = [];
-  const out: MappedRow = { primary: {} };
-
-  const primary = primarySchema(target, cfSchema).safeParse(mapped.primary);
-  if (primary.success) out.primary = primary.data as Record<string, unknown>;
-  else errors.push(...issuesOf(primary.error));
-
-  if (mapped.organization !== undefined) {
-    const org = orgImportGroupSchema.safeParse(mapped.organization);
-    if (org.success) out.organization = org.data;
-    else errors.push(...issuesOf(org.error, "organization."));
-  }
-  if (mapped.person !== undefined) {
-    const person = personImportGroupSchema.safeParse(mapped.person);
-    if (person.success) out.person = person.data;
-    else errors.push(...issuesOf(person.error, "person."));
-  }
-  if (mapped.note !== undefined) {
-    const note = noteImportGroupSchema.safeParse(mapped.note);
-    if (note.success) out.note = note.data;
-    else errors.push(...issuesOf(note.error, "note."));
-  }
-
-  if (errors.length > 0) return { ok: false, errors };
-  return { ok: true, value: out };
 }

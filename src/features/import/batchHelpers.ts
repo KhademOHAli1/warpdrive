@@ -1,9 +1,11 @@
 import { eq } from "drizzle-orm";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
+import { IMPORT_SOURCES, type ImportSource } from "@/constants/importSources";
 import type { Db } from "@/db/client";
 import { type ImportBatch, importBatches } from "@/db/schema";
 import { err, ok, type Result } from "@/types/result";
 import type { ImportActor } from "./commit";
+import { IMPORT_TARGETS } from "./importFields";
 import type { ImportTarget } from "./wizardState";
 
 // Ownership-load a batch: a batch you do not own is indistinguishable from absent
@@ -23,11 +25,14 @@ export async function loadOwnedBatch(
   return ok(batch);
 }
 
-const IMPORT_TARGETS = ["person", "organization", "deal", "lead", "activity"] as const;
-
 // Narrow the table's text target_entity to a known ImportTarget. A stored value outside this
 // set is a data invariant violation (nothing but the app itself writes this column).
 export function narrowTarget(target: string): ImportTarget {
   if ((IMPORT_TARGETS as readonly string[]).includes(target)) return target as ImportTarget;
   throw new AppError(ERROR_IDS.DB_INVARIANT, "import batch has an unknown target", { target });
+}
+
+export function narrowSource(source: string): ImportSource {
+  if ((IMPORT_SOURCES as readonly string[]).includes(source)) return source as ImportSource;
+  throw new AppError(ERROR_IDS.DB_INVARIANT, "import batch has an unknown source", { source });
 }

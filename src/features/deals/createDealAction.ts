@@ -6,11 +6,12 @@ import { users } from "@/db/schema";
 import { guardCsrf } from "@/features/identity/actions/shared";
 import { SIG } from "@/features/identity/actions/sig";
 import { createContext } from "@/server/trpc/context";
+import { isDealVisibleToSession } from "./createdVisibility";
 import { createDeal } from "./dealActions";
 import type { DealCreateInput } from "./schemas";
 
 export type CreateDealResult =
-  | { ok: true; deal: { id: string; updatedAt: string } }
+  | { ok: true; deal: { id: string; updatedAt: string } | null }
   | { ok: false; error: { id: string } };
 
 // CSRF-guarded deal create action.
@@ -54,6 +55,10 @@ export async function createDealAction(
 
   const result = await createDeal(db, session, input, SIG());
   if (!result.ok) return { ok: false, error: { id: result.error.id } };
+
+  if (!(await isDealVisibleToSession(db, session, result.value.id, SIG()))) {
+    return { ok: true, deal: null };
+  }
 
   return {
     ok: true,

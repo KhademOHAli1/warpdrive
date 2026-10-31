@@ -1,7 +1,8 @@
 import { and, eq, isNull } from "drizzle-orm";
 import type { Db } from "@/db/client";
-import { activities, deals, leads, notes, organizations, persons } from "@/db/schema";
+import { deals, leads, notes, persons } from "@/db/schema";
 import { deleteActivity } from "@/features/activities/activityDelete";
+import { softDeleteNote } from "@/features/collaboration/notesRepo";
 import { deleteOrg } from "@/features/contacts/deleteOrg";
 import { deletePerson } from "@/features/contacts/deletePerson";
 import { deleteDeal } from "@/features/deals/deleteDeal";
@@ -9,6 +10,9 @@ import { bulkUpdateLeads } from "@/features/leads/leadBulk";
 import { assertNever } from "@/types/result";
 import type { ImportActor } from "./commit";
 import { toEntityCreateSession } from "./commitHelpers";
+import { deleteMappingsForRecords, type ImportContext } from "./externalIds";
+import { lockImportMutation } from "./importLock";
+import { alreadyGone } from "./undoGone";
 import type { ImportTarget } from "./wizardState";
 
 // Tally of the org/person/note records an import created alongside its primary entities. `undone`
@@ -27,30 +31,6 @@ export interface UndoRow {
   noteId: string | null;
 }
 
-// The table each import target's primary record lives in, for the already-gone check.
-const PRIMARY_TABLES = {
-  person: persons,
-  organization: organizations,
-  deal: deals,
-  lead: leads,
-  activity: activities,
-} as const;
-
-// Whether a record is already gone (soft-deleted or absent). Undo walks many rows outside a single
-// transaction, so a retry can find a record its previous attempt already removed. That is NOT a
-// permission denial: the record IS undone, so it counts toward fullyUndone.
-async function alreadyGone(
-  db: Db,
-  target: ImportTarget,
-  id: string,
-  signal: AbortSignal,
-): Promise<boolean> {
-  signal.throwIfAborted();
-  const table = PRIMARY_TABLES[target];
-  const [row] = await db.select({ deletedAt: table.deletedAt }).from(table).where(eq(table.id, id));
-  return row === undefined || row.deletedAt !== null;
-}
-
 // Remove the contacts a row created as a side effect of linking. A contact already soft-deleted by
 // a prior undo attempt counts as removed (the delete authority 404s on it, but it IS gone).
 async function removeSideContacts(
@@ -58,16 +38,19 @@ async function removeSideContacts(
   actor: ImportActor,
   row: UndoRow,
   side: SideRemoval,
+  removedIds: string[],
   signal: AbortSignal,
 ): Promise<void> {
   if (row.personId !== null) {
     const r = await deletePerson(db, actor, row.personId, signal);
     side.attempted += 1;
+    if (r.ok) removedIds.push(row.personId);
     if (r.ok || (await alreadyGone(db, "person", row.personId, signal))) side.removed += 1;
   }
   if (row.orgId !== null) {
     const r = await deleteOrg(db, actor, row.orgId, signal);
     side.attempted += 1;
+    if (r.ok) removedIds.push(row.orgId);
     if (r.ok || (await alreadyGone(db, "organization", row.orgId, signal))) {
       side.removed += 1;
       await clearOrgLinks(db, row.orgId, signal);
@@ -89,6 +72,10 @@ async function clearOrgLinks(db: Db, orgId: string, signal: AbortSignal): Promis
     .update(deals)
     .set({ orgId: null })
     .where(and(eq(deals.orgId, orgId), isNull(deals.deletedAt)));
+  await db
+    .update(leads)
+    .set({ orgId: null })
+    .where(and(eq(leads.orgId, orgId), isNull(leads.deletedAt)));
 }
 
 // Soft-delete a note THIS IMPORT created, by the id the row recorded. Returns true when the note is
@@ -140,31 +127,41 @@ async function deleteOne(
       );
       return r.ok && r.value.updated > 0;
     }
+    case "note":
+      return (await softDeleteNote(db, actor, id, signal)).ok;
     default:
       return assertNever(target);
   }
 }
 
-// Undo one imported row: the PRIMARY record first, and its side effects only once that record is
-// actually gone. Returns true when the row HAD a primary and it is now gone (for the primary tally).
-//
-// A row whose primary is still live because the actor lacks the per-entity delete flag must keep
-// its note and its created contacts: stripping the note off a still-live imported record would be
-// silent data loss with nothing undone in exchange. The batch then reverts to its prior status and
-// Undo stays available for an actor who does have the flag.
-//
-// A row with NO primary to delete (an "update"-mode row that edited a pre-existing contact) still
-// owns whatever org/note it created, and those must come out.
-export async function undoOneRow(
+export function undoOneRow(
   db: Db,
   actor: ImportActor,
   target: ImportTarget,
   row: UndoRow,
   side: SideRemoval,
+  ctx: ImportContext,
   signal: AbortSignal,
 ): Promise<boolean> {
+  return db.transaction(async (tx) => {
+    await lockImportMutation(tx, signal);
+    return undoRowLocked(tx, actor, target, row, side, ctx, signal);
+  });
+}
+
+async function undoRowLocked(
+  db: Db,
+  actor: ImportActor,
+  target: ImportTarget,
+  row: UndoRow,
+  side: SideRemoval,
+  ctx: ImportContext,
+  signal: AbortSignal,
+): Promise<boolean> {
+  const removedIds: string[] = [];
   if (row.id !== null) {
     const deleted = await deleteOne(db, actor, target, row.id, signal);
+    if (deleted) removedIds.push(row.id);
     const primaryGone = deleted || (await alreadyGone(db, target, row.id, signal));
     // A live primary the actor could not delete: leave its side effects untouched.
     if (!primaryGone) return false;
@@ -174,6 +171,9 @@ export async function undoOneRow(
     side.attempted += 1;
     if (await softDeleteCreatedNote(db, row.noteId)) side.removed += 1;
   }
-  await removeSideContacts(db, actor, row, side, signal);
+  await removeSideContacts(db, actor, row, side, removedIds, signal);
+  if (ctx.source === "pipedrive") {
+    await deleteMappingsForRecords(db, ctx.batchId, removedIds, signal);
+  }
   return row.id !== null;
 }

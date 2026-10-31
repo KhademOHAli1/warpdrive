@@ -24,6 +24,7 @@ export * from "./goals";
 export * from "./hiddenBuiltinFields";
 export * from "./identity";
 export * from "./importBatches";
+export * from "./importExternalIds";
 export * from "./importRows";
 export * from "./labels";
 export * from "./leads";

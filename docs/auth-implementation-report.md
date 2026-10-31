@@ -1,6 +1,8 @@
 # Better Auth implementation and qualification
 
-Prepared 31 October 2026 against the current fork baseline `01dd1dd`. The scope is the
+Prepared 31 October 2026 from fork baseline `01dd1dd`, then merged with latest main `d37518a`
+and its upstream import/permission updates. The upstream migration 0077 is preserved;
+authentication migrations follow as 0078 through 0082. The scope is the
 [approved twenty-task plan](auth-implementation-plan.md). This report records source changes,
 local qualification and the controls needed for deployment. Production activation requires
 the installation's real provider, SMTP, domain and backup checks below.
@@ -49,7 +51,7 @@ revocation. Tightening MFA policy invalidates existing grants; clients must auth
 
 ## Migration and backup rehearsal
 
-`migration.integration.test.ts` builds the pre-authentication schema through migration 0076,
+`migration.integration.test.ts` builds the pre-authentication schema through migration 0077,
 inserts established and invited users plus existing CRM ownership/preferences and old access
 grants, then applies the new migrations. It verifies unchanged CRM identities, names, roles,
 ownership and locale preferences, exact Google subject binding, no identity for an unclaimed
@@ -63,9 +65,9 @@ probe database was removed after comparison. The encrypted-factor/session backup
 private local test artifact and is excluded from Git. This small fixture rehearsal does not
 establish restore time or capacity for a production database.
 
-## Qualification record
+## Qualification record after merging main
 
-- Complete unit suite on Bun 1.4.4: **5,588 tests across 906 files passed**.
+- Complete merged-tree unit suite on Bun 1.4.4: **5,713 tests across 918 files passed**.
 - Focused UI suite: **52 tests across 17 files passed**, including progressive disclosure,
   Farsi/German text, dialog dismissal, focus restoration and expired-freshness recovery.
 - Real native WebAuthn, TOTP and controlled OIDC qualification covers origin/issuer/PKCE/nonce,
@@ -76,10 +78,13 @@ establish restore time or capacity for a production database.
   actual POST logout, protected redirects, Iranian dates/digits, desktop/narrow layouts and
   keyboard focus were exercised. New credentials are tested through native protocol fixtures.
 
-Final combined PostgreSQL suite: **1,927 tests across 429 files passed** on Bun 1.4.4.
-The Next production build and all five server/operator entrypoints also built successfully.
+Final combined merged-tree PostgreSQL suite on Bun 1.4.4: **2,048 tests across 456 files
+passed** in 140.00 seconds.
+
+Merged-tree TypeScript, Biome and ESLint checks passed. The Next production application,
+all five server/operator entrypoints and the documentation site also built successfully.
 Tests use isolated databases; no production users, real invitations or operational provider
-consent were changed. GitHub CI validates the published source separately.
+consent were changed. GitHub CI outcomes are separate from these local results.
 
 ## Hardening regressions
 
@@ -104,12 +109,16 @@ runtime, as detailed in [runtime compatibility](bun-runtime-compatibility.md).
    values. Passkeys remain bound to the chosen domain.
 3. Apply migrations during the agreed cutover. Existing sessions and MCP grants require fresh
    sign-in/authorization. Preserve UUIDs and reconcile existing Google subjects before rollout.
-4. Exercise real Google/Microsoft/configured OIDC accounts and mailbox delivery in the target
-   installation. Controlled local OIDC and captured mail do not prove external tenant or SMTP
-   configuration.
+4. Exercise real Google/Microsoft/configured OIDC accounts and SMTP delivery in the target
+   installation, including the intended first administrator's invitation and verification.
+   Configure Gmail consent separately if used. Controlled local OIDC and captured mail do not
+   prove external tenant, mailbox or SMTP configuration. Verify passkey enrollment and sign-in
+   on the installation's intended physical devices and browsers; synthetic protocol fixtures
+   do not establish device compatibility.
 5. Retain the remaining dependency findings and their reachability limits from
-   [the dependency review](auth-dependency-review.md). The audit currently retains nine baseline
-   advisories; no clean-audit claim is made.
+   [the dependency review](auth-dependency-review.md). The recorded audit retains nine scanner
+   entries across six package names, including runtime MinIO paths and development tooling;
+   no clean-audit claim is made.
 
 Rollback requires restoring the matching application version, database and stable keys from
 the pre-cutover backup. Keep access disabled while reconciling a rollback; do not restore old

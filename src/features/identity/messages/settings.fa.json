@@ -258,7 +258,14 @@
     "undo": "برگرداندن",
     "undoing": "در حال برگرداندن...",
     "undone": "برگردانده شد",
-    "resultCounts": "{imported, number} مورد وارد شد و {errors, number} خطا رخ داد"
+    "resultCounts": "{imported, number} مورد وارد شد و {errors, number} خطا رخ داد",
+    "note": "یادداشت‌ها",
+    "source": "منبع داده",
+    "sourceCsv": "فایل CSV",
+    "sourcePipedrive": "خروجی Pipedrive",
+    "createMissingStages": "ایجاد مسیرها و مراحل فروشِ موجود در فایل",
+    "createMissingStagesHint": "مسیرها و مراحلی که در فایل آمده‌اند و هنوز اینجا وجود ندارند، به ترتیبِ نخستین حضورشان در فایل ایجاد می‌شوند.",
+    "rowWarnings": "ردیف‌های نیازمند بررسی"
   },
   "_identity": {
     "flagEditor": {
@@ -557,7 +564,15 @@
     },
     "activityGoalDisplayLabel": "{action, select, added {فعالیت‌های ایجادشده} completed {فعالیت‌های انجام‌شده} other {فعالیت‌ها}}، {interval}",
     "unknownUser": "کاربر نامشخص",
-    "unknownTeam": "تیم نامشخص"
+    "unknownTeam": "تیم نامشخص",
+    "importWarnings": {
+      "generic": "این ردیف با یک هشدار وارد شد. مقادیر نگاشت‌شده و مسئول رکورد را بررسی کنید.",
+      "noMatchingUser": "کاربر مطابقی پیدا نشد",
+      "multipleUsers": "چند کاربر با این مقدار مطابقت دارند",
+      "notPermitted": "اجازهٔ این انتساب را ندارید",
+      "unassigned": "«{value}» به‌عنوان مسئول تعیین نشد: {reason}.",
+      "historyFallback": "زمان اصلی در فایل موجود نیست؛ یک زمان جایگزین ثبت شد."
+    }
   },
   "_labels": {
     "builtin": {
@@ -611,7 +626,27 @@
       "company_domain": "دامنه شرکت",
       "website_url": "نشانی وب‌سایت",
       "description": "توضیحات",
-      "founded_year": "سال تأسیس"
+      "founded_year": "سال تأسیس",
+      "pipedrive_id": "شناسه در Pipedrive",
+      "deal_id": "شناسه فرصت فروش",
+      "lead_id": "شناسه سرنخ",
+      "person_id": "شناسه فرد",
+      "organization_id": "شناسه سازمان",
+      "deal_title": "عنوان فرصت فروش",
+      "lead_title": "عنوان سرنخ",
+      "person_name": "نام فرد",
+      "organization_name": "نام سازمان",
+      "won_time": "زمان موفقیت فروش",
+      "lost_time": "زمان از دست رفتن فروش",
+      "lost_reason": "دلیل از دست رفتن فروش",
+      "archived": "بایگانی‌شده",
+      "assigned_to": "مسئول انجام",
+      "done_time": "زمان انجام",
+      "due_time": "زمان سررسید",
+      "created": "زمان ایجاد",
+      "labels": "برچسب‌ها",
+      "status": "وضعیت",
+      "done": "انجام‌شده"
     },
     "types": {
       "text": "متن کوتاه",

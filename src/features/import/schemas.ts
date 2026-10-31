@@ -1,7 +1,15 @@
 import { z } from "zod";
+import { DEFAULT_IMPORT_SOURCE, type ImportSource } from "@/constants/importSources";
 import { DEDUP_MODES } from "@/constants/importStatus";
 import type { MappableEntity } from "./importFields";
-import { primaryEntityOf, TARGET_ENTITY_GROUPS } from "./importFields";
+import {
+  ENTITY_FIELDS,
+  isFieldOfferedFor,
+  isFieldOfferedInGroup,
+  primaryEntityOf,
+  TARGET_ENTITY_GROUPS,
+  targetsFor,
+} from "./importFields";
 import type { ImportTarget } from "./wizardState";
 
 const MAPPABLE_ENTITIES = [
@@ -28,10 +36,10 @@ export const columnMappingSchema = z.object({
   columns: z.record(z.string(), columnChoiceSchema),
   options: z
     .object({
-      // Collect every unmapped, non-empty cell into a note on the created record.
       rowNoteFromUnmapped: z.boolean().default(false),
+      createMissingStages: z.boolean().default(false),
     })
-    .default({ rowNoteFromUnmapped: false }),
+    .default({ rowNoteFromUnmapped: false, createMissingStages: false }),
 });
 
 export type ColumnMapping = z.infer<typeof columnMappingSchema>;
@@ -78,20 +86,58 @@ function resolveChoice(
 // could put a Person group on a Lead import: commit would find-or-create that person, link it to
 // nothing (a lead has no personId in this flow), and leave an orphan contact behind. A column with
 // no entity is legacy and resolves to the primary, which is always allowed.
-export function mappingEntityErrors(mapping: unknown, target: ImportTarget): string[] {
+export function mappingEntityErrors(
+  mapping: unknown,
+  target: ImportTarget,
+  source: ImportSource = DEFAULT_IMPORT_SOURCE,
+): string[] {
   const parsed = columnMappingSchema.safeParse(mapping);
   if (parsed.success === false) return ["mapping is not a valid column mapping"];
+  if (!targetsFor(source).includes(target)) {
+    return [`a ${source} import cannot target ${target}`];
+  }
   const allowed = new Set<MappableEntity>(TARGET_ENTITY_GROUPS[target]);
   const errors: string[] = [];
+  if (parsed.data.options.createMissingStages && !(source === "pipedrive" && target === "deal")) {
+    errors.push("creating missing stages is only available to a pipedrive deal import");
+  }
   for (const [header, choice] of Object.entries(parsed.data.columns)) {
-    if (choice.entity === undefined) continue;
-    if (!allowed.has(choice.entity)) {
+    const entity = choice.entity ?? primaryEntityOf(target);
+    if (choice.entity !== undefined && !allowed.has(choice.entity)) {
       errors.push(
         `column "${header}" targets ${choice.entity}, which a ${target} import cannot write`,
+      );
+    } else if (isSourceOnlyField(entity, choice, source)) {
+      errors.push(
+        `column "${header}" maps ${entity}.${choice.field}, which a ${source} import does not offer`,
+      );
+    } else if (isOutsideGroupFields(entity, target, choice)) {
+      errors.push(
+        `column "${header}" maps ${entity}.${choice.field}, which a ${target} import cannot write`,
       );
     }
   }
   return errors;
+}
+
+function isOutsideGroupFields(
+  entity: MappableEntity,
+  target: ImportTarget,
+  choice: { field: string; isCustom: boolean },
+): boolean {
+  if (choice.isCustom || choice.field === "") return false;
+  const field = ENTITY_FIELDS[entity].find((f) => f.field === choice.field);
+  return field !== undefined && !isFieldOfferedInGroup(entity, target, field);
+}
+
+function isSourceOnlyField(
+  entity: MappableEntity,
+  choice: { field: string; isCustom: boolean },
+  source: ImportSource,
+): boolean {
+  if (choice.isCustom || choice.field === "") return false;
+  const field = ENTITY_FIELDS[entity].find((f) => f.field === choice.field);
+  return field !== undefined && !isFieldOfferedFor(field, source);
 }
 
 // Fill in the entity every column belongs to, so downstream code never has to know that older

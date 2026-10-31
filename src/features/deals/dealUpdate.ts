@@ -15,6 +15,7 @@ import { loadEditableDeal } from "./dealAuth";
 import { validateDealCustomFieldsPartial } from "./dealCustomFieldsValidation";
 import { logDealUpdateChanges } from "./dealUpdateChangeLog";
 import { type DealUpdateInput, dealUpdateInput } from "./schemas";
+import { applyStatusTransition, type DealPatch } from "./statusTransition";
 
 // Shape assertReferenceVisible expects, built from the acting PermSetUser (mirrors
 // participants.ts). Admin bypasses contact visibility inside canSee.
@@ -57,33 +58,6 @@ async function assertContactTargetsVisible(
     if (r.ok === false) return r;
   }
   return ok(undefined);
-}
-
-type DealPatch = Partial<typeof deals.$inferInsert>;
-
-// Apply won/lost/open status transition: stamps or clears wonTime/lostTime/lostReason.
-function applyStatusTransition(
-  patch: DealPatch,
-  status: "open" | "won" | "lost",
-  lostReason: string | undefined,
-  now: Date,
-): void {
-  patch.status = status;
-  if (status === "won") {
-    patch.wonTime = now;
-    patch.lostTime = null;
-    patch.lostReason = null;
-  } else if (status === "lost") {
-    patch.lostTime = now;
-    patch.lostReason =
-      lostReason !== undefined && lostReason.trim() !== "" ? lostReason.trim() : null;
-    patch.wonTime = null;
-  } else {
-    // status = 'open': clear both timestamps and reason.
-    patch.wonTime = null;
-    patch.lostTime = null;
-    patch.lostReason = null;
-  }
 }
 
 // Build the column patch from validated input. Status transitions stamp/clear timestamps.

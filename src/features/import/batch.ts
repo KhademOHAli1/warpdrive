@@ -1,9 +1,9 @@
 import { and, eq, inArray } from "drizzle-orm";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
-import { type ImportBatch, type ImportRow, importBatches, importRows } from "@/db/schema";
+import { importBatches, importRows } from "@/db/schema";
 import { err, ok, type Result } from "@/types/result";
-import { loadOwnedBatch, narrowTarget } from "./batchHelpers";
+import { loadOwnedBatch, narrowSource, narrowTarget } from "./batchHelpers";
 import { commitRow, type ImportActor } from "./commit";
 import { finalizeBatch } from "./finalize";
 import { publishImportProgress, shouldEmit } from "./progress";
@@ -12,6 +12,7 @@ import type { ImportTarget } from "./wizardState";
 
 // validateBatch lives in its own module (batch.ts hit the file-size cap) but stays part of this
 // module's public surface: validateJob and the wizard pipeline import it from here.
+export { getBatch, listRows } from "./batchRead";
 export { validateBatch } from "./validateBatch";
 
 export type CreateBatchArgs = {
@@ -70,7 +71,11 @@ export async function setMapping(
   if (owned.ok === false) return owned;
   // The mapping is client-supplied. Reject columns aimed at an entity this target cannot write
   // before it is ever persisted, or commit would create related records nothing links to.
-  const entityErrors = mappingEntityErrors(mapping, narrowTarget(owned.value.targetEntity));
+  const entityErrors = mappingEntityErrors(
+    mapping,
+    narrowTarget(owned.value.targetEntity),
+    narrowSource(owned.value.source),
+  );
   if (entityErrors.length > 0) {
     return err(
       new AppError(ERROR_IDS.IMPORT_MAPPING_ENTITY_INVALID, entityErrors[0] ?? "invalid mapping", {
@@ -124,7 +129,8 @@ export async function commitBatch(
   const rows = await db
     .select({ id: importRows.id })
     .from(importRows)
-    .where(and(eq(importRows.batchId, batchId), eq(importRows.status, "valid")));
+    .where(and(eq(importRows.batchId, batchId), eq(importRows.status, "valid")))
+    .orderBy(importRows.rowNumber);
 
   let imported = 0;
   let skipped = 0;
@@ -164,31 +170,4 @@ export async function commitBatch(
     await finalizeBatch(db, batchId);
   }
   return ok({ imported, skipped, invalid });
-}
-
-// Read a single batch (ownership-gated) for the router.
-export async function getBatch(
-  db: Db,
-  actor: ImportActor,
-  batchId: string,
-  signal: AbortSignal,
-): Promise<Result<ImportBatch, AppError>> {
-  return loadOwnedBatch(db, actor, batchId, signal);
-}
-
-// List a batch's rows (ownership-gated) for the router.
-export async function listRows(
-  db: Db,
-  actor: ImportActor,
-  batchId: string,
-  signal: AbortSignal,
-): Promise<Result<ImportRow[], AppError>> {
-  const owned = await loadOwnedBatch(db, actor, batchId, signal);
-  if (owned.ok === false) return owned;
-  const rows = await db
-    .select()
-    .from(importRows)
-    .where(eq(importRows.batchId, batchId))
-    .orderBy(importRows.rowNumber);
-  return ok(rows);
 }

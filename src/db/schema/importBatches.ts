@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm";
 import { integer, jsonb, pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { DEFAULT_IMPORT_SOURCE, type ImportSource } from "@/constants/importSources";
 import { IMPORT_STATUS } from "@/constants/importStatus";
 import { users } from "./identity";
 
@@ -10,6 +11,7 @@ export const importBatches = pgTable("import_batches", {
   id: uuid("id").primaryKey().defaultRandom(),
   targetEntity: text("target_entity").notNull(),
   filename: text("filename").notNull(),
+  source: text("source").$type<ImportSource>().notNull().default(DEFAULT_IMPORT_SOURCE),
   s3Key: text("s3_key"),
   columnMapping: jsonb("column_mapping")
     .$type<Record<string, unknown>>()
