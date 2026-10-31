@@ -1,0 +1,43 @@
+$ bun --bun vitest run --project unit src/features/agency-projects/assignmentSchemas.test.ts "--maxWorkers=1"
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+  - ESM syntax in a file loaded as CommonJS (vitest.classify.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.5 /Users/ali/Developer/warpdrive-agency-projects
+
+ ❯ |unit| src/features/agency-projects/assignmentSchemas.test.ts (70 tests | 2 failed) 19ms
+   ❯ assignment boundary and recorded provenance (70)
+     × rejects an unsafe or ambiguous reference ref line 3ms
+     × rejects an unsafe or ambiguous reference ref line 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| src/features/agency-projects/assignmentSchemas.test.ts > assignment boundary and recorded provenance > rejects an unsafe or ambiguous reference ref line
+ FAIL  |unit| src/features/agency-projects/assignmentSchemas.test.ts > assignment boundary and recorded provenance > rejects an unsafe or ambiguous reference ref line
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/features/agency-projects/assignmentSchemas.test.ts:204:7
+    202|         submittedVersionReference,
+    203|       }).success,
+    204|     ).toBe(false);
+       |       ^
+    205|     expect(
+    206|       assignmentCommandSchema.safeParse({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 68 passed (70)
+   Start at  17:23:06
+   Duration  138ms (transform 39%, import 26%, tests 25%, setup 6%, worker 3%)
+
+error: "vitest" exited with code 1
+error: script "test:unit" exited with code 1

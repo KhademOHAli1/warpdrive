@@ -1,0 +1,144 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-10-31T16:27:19.326048+00:00",
+  "base": "97bf00eff9b23ac62e74b6901c528d06b05ef09a",
+  "environment": {
+    "bun": "1.4.4",
+    "vitest": "5.0.5",
+    "workers": 1
+  },
+  "sourceHashes": {
+    "src/features/agency-projects/assignmentBoundaryJourney.test.ts": "beb2b35fc4929c993511df0be34e3102e909b3a302197117b7a76ad143381fd1",
+    "src/features/agency-projects/assignmentFixtures.ts": "62d2b9fa6ec66206e021dde3cd465fbcdf8986a14d052c3fdad08c731912b25c",
+    "src/features/agency-projects/assignmentLifecycle.test.ts": "9b6c5d3c176d84c83cd5522df8df81ac9ca8193627076fec5d3b914bafefc483",
+    "src/features/agency-projects/assignmentLifecycle.ts": "f73b067b083bc9b801f32788b88fdd27dd69ba0f9420488b5fbefbcac2445988",
+    "src/features/agency-projects/assignmentSchemas.test.ts": "5be393aa2f56883a4cd27efff2976cbbe5b202a69a4cadb3a4e719d7b1b990cf",
+    "src/features/agency-projects/assignmentSchemas.ts": "6d90de3799b035f0d607c5d62335bb72bc2e0860102629fd6ba86a0325bfd187",
+    "src/features/agency-projects/assignmentVersion.test.ts": "a35c16e479aeccff57ac0f0d05e12b464941092413c46699a484f1312165adff",
+    "src/features/agency-projects/projectLifecycle.test.ts": "49bd9b7c3b99d293be7d4a4e052325ad572f401c34adfefbb37130724c83b8f5",
+    "src/features/agency-projects/projectLifecycle.ts": "e535c05920128b9e5b0bff1e4fe3dad566d42582f9a1c5c7afc22e4cc0f153d4",
+    "src/features/agency-projects/projectSchemas.test.ts": "b3b9c0a0ff1f55a7d74fd0e465be70c9113157e335b0bef11a798c8b89401db6",
+    "src/features/agency-projects/projectSchemas.ts": "3009adc5370e735f0e8f8214f7435f112859f1d73e4bebecbd9bb4a8b23922c5",
+    "src/features/agency-projects/templates/templateManifest.test-support.ts": "4eb43d26a7b6cf2b5593f7a8f768131d52c7e445da9b9c01b3f52ed2f2e389c4",
+    "src/features/agency-projects/templates/templateManifest.test.ts": "527e057c9a35d1f14dfc96a078be9df91a2748d5d7eb927677f184e10d8d95e0",
+    "src/features/agency-projects/templates/templateManifest.ts": "5d783a9f9c1944ee07b869cd4787c49ac257e3287097f8f2893761860bbf580c",
+    "src/features/agency-projects/templates/templateManifestGraph.test.ts": "3f45e0fa05ad2fe39749dc2380a8f5bdc12de7d27e72a53b3eca1a9141250391",
+    "src/features/agency-projects/templates/templateManifestGraph.ts": "cd9510b3a3bf4883db827da0f212953915ad154c238f007da7cfe9a888cb9113",
+    "src/features/agency-projects/templates/templateManifestSchemas.ts": "61f18441b4713fb68ea21c736f22d8cb960cf37d3ab2e105603dba8efb404673",
+    "src/features/agency-projects/valueSchemas.ts": "70d076628355e0180e531763040dddb834c14b393984a1e8bc135473454b7330"
+  },
+  "checks": [
+    {
+      "name": "submission version assertion red",
+      "exitCode": 1,
+      "failed": 4,
+      "passed": 64,
+      "log": "evidence/assignment-version-red.log"
+    },
+    {
+      "name": "project C1 assertion and missing assignment boundary red",
+      "exitCode": 1,
+      "failedTests": 1,
+      "passedTests": 27,
+      "failedSuites": 2,
+      "log": "evidence/assignment-schema-red.log"
+    },
+    {
+      "name": "UUID canonical identity assertion red",
+      "exitCode": 1,
+      "failed": 2,
+      "passed": 67,
+      "log": "evidence/assignment-uuid-red.log"
+    },
+    {
+      "name": "root feature unit selection",
+      "exitCode": 0,
+      "passed": 228,
+      "files": 6,
+      "log": "evidence/agency-root-unit-2.log"
+    },
+    {
+      "name": "narrow TypeScript",
+      "exitCode": 0,
+      "log": "evidence/agency-types-2.log",
+      "config": "evidence/tsconfig.agency.json.txt"
+    },
+    {
+      "name": "unchanged type-aware ESLint rules with narrow TypeScript program",
+      "exitCode": 0,
+      "log": "evidence/agency-eslint-2.log",
+      "config": "evidence/agency-eslint.mjs.txt"
+    },
+    {
+      "name": "Biome root feature files",
+      "exitCode": 0,
+      "files": 12
+    },
+    {
+      "name": "cache-backed frozen dependency restore with lifecycle scripts disabled",
+      "exitCode": 0,
+      "secondsReported": 3.01,
+      "packagesReported": 1013,
+      "log": "evidence/agency-dependency-restore.log"
+    },
+    {
+      "name": "reference line-separator assertion red",
+      "exitCode": 1,
+      "failed": 2,
+      "passed": 68,
+      "log": "evidence/assignment-reference-lines-red.log"
+    },
+    {
+      "name": "template graph assertion red",
+      "exitCode": 1,
+      "failed": 13,
+      "passed": 35,
+      "log": "evidence/template-manifest-red-graph.log"
+    },
+    {
+      "name": "template controls and later-stage review assertion red",
+      "exitCode": 1,
+      "failed": 6,
+      "passed": 49,
+      "log": "evidence/template-manifest-red-controls-stage.log"
+    },
+    {
+      "name": "latest complete feature selection",
+      "command": "PATH=\"$PWD/.runtime/bin:$PATH\" bun run test:unit src/features/agency-projects --maxWorkers=1",
+      "exitCode": 0,
+      "passed": 285,
+      "files": 8,
+      "log": "evidence/agency-domain-unit.log"
+    },
+    {
+      "name": "latest narrow TypeScript, including templates",
+      "exitCode": 0,
+      "log": "evidence/agency-domain-types.log",
+      "config": "evidence/tsconfig.agency.json.txt"
+    },
+    {
+      "name": "latest unchanged type-aware ESLint rules, feature-only program",
+      "exitCode": 0,
+      "log": "evidence/agency-domain-eslint.log",
+      "config": "evidence/agency-eslint.mjs.txt"
+    },
+    {
+      "name": "latest Biome feature check",
+      "exitCode": 0,
+      "files": 18
+    }
+  ],
+  "review": [
+    "Read-only independent review: nullable submitted-version matrix, strict browser/server actor split and old/new receipt references coherent. UUID case issue reproduced and corrected.",
+    "Workspace state proposal updated for no-submission and last-submitted-version states. Native-language/rendered review pending.",
+    "Independent template review: graph/reference/role/stage checks reviewed; C1 gap reproduced and corrected, later-stage review allowed. Native language/rendering and immutable publication remain pending."
+  ],
+  "limits": [
+    "No enabled route, persistent writer, shared capability grant, activity bridge, workflow, sender or quotation consumer.",
+    "No full-repository type/lint/unit/build, real PostgreSQL, native UI/auth, migration/restore, provider, pilot or release acceptance evidence.",
+    "Shared reviews and accepted combined lineage remain pending; no migration number requested.",
+    "Manifest publication immutability, identity mapping, exact date preview, installation idempotency and override/restore semantics remain unimplemented.",
+    "Parsed template data is not a persisted immutable publication, an activated workflow or proof of feasible scheduling."
+  ],
+  "scope": "All feature-local domain policies, ingress schemas and template validation in src/features/agency-projects; no runtime routes or writers enabled"
+}

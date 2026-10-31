@@ -1,0 +1,57 @@
+$ bun --bun vitest run --project unit src/features/agency-projects/assignmentBoundaryJourney.test.ts src/features/agency-projects/assignmentSchemas.test.ts "--maxWorkers=1"
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+  - ESM syntax in a file loaded as CommonJS (vitest.classify.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.5 /Users/ali/Developer/warpdrive-agency-projects
+
+ ❯ |unit| src/features/agency-projects/assignmentSchemas.test.ts (68 tests | 1 failed) 15ms
+   ❯ assignment boundary and recorded provenance (68)
+     × normalizes UUID spellings without changing external reference identity 1ms
+ ❯ |unit| src/features/agency-projects/assignmentBoundaryJourney.test.ts (1 test | 1 failed) 6ms
+   × keeps canonical CRM UUIDs through first submission, changes and exact-version approval 5ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| src/features/agency-projects/assignmentBoundaryJourney.test.ts > keeps canonical CRM UUIDs through first submission, changes and exact-version approval
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ apply src/features/agency-projects/assignmentBoundaryJourney.test.ts:17:23
+     15|     const command = assignmentCommandSchema.parse({ ...action, recorde…
+     16|     const result = transitionAssignment(current, command, "active");
+     17|     expect(result.ok).toBe(true);
+       |                       ^
+     18|     if (!result.ok) return;
+     19|     current = assignmentSnapshotSchema.parse(result.value.next);
+ ❯ src/features/agency-projects/assignmentBoundaryJourney.test.ts:21:3
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |unit| src/features/agency-projects/assignmentSchemas.test.ts > assignment boundary and recorded provenance > normalizes UUID spellings without changing external reference identity
+ZodError: [
+  {
+    "code": "custom",
+    "path": [
+      "acceptance",
+      "freelancerContactId"
+    ],
+    "message": "Acceptance must identify the selected contact"
+  }
+]
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  2 failed | 67 passed (69)
+   Start at  17:16:25
+   Duration  212ms (import 35%, transform 34%, tests 20%, setup 6%, worker 4%)
+
+error: "vitest" exited with code 1
+error: script "test:unit" exited with code 1

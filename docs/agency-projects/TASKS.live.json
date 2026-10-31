@@ -114,8 +114,8 @@
     "dependencies": "AP-00.2",
     "owner": "Agency implementation chat; shared edits require owner review",
     "status": "active",
-    "evidence": "source-baseline.json; proposed web3192/WS8192/PG55492, none started. Disk 2.6 GiB; no heavy checks.",
-    "remaining": "Platform reservation and >=5 GiB stable headroom required before PG campaign.",
+    "evidence": "Owned dependencies restored cache-backed in3.01s after3.5GiB recovery. Only tiny one-worker units, no Agency service/PG/build. Last observed4.9GiB; owner window/API requests pending.",
+    "remaining": "No Agency runtime/DB started. Proposed ports not yet acknowledged. Coordinated >=5GiB stable heavy window and accepted interfaces required before PG/build campaigns.",
     "accepted": false
   },
   {
@@ -164,10 +164,10 @@
     "expected_passing_tests": "T25/T26: loading, empty, error, retry, read-only, conflict and archived designs exist in FA/DE/EN.",
     "dependencies": "AP-01.1",
     "owner": "Agency implementation chat; shared edits require owner review",
-    "status": "planned",
-    "evidence": "Not implemented or qualified",
-    "remaining": "Original outcome, dependencies and applicable acceptance tests remain",
-    "accepted": false
+    "status": "active",
+    "evidence": "workspace-state-spec.md: implementation-ready proposed current-shell states, Farsi/German/English draft copy, 390px/RTL/keyboard/draft/focus recovery.",
+    "accepted": false,
+    "remaining": "Owner/native-language review, actual catalogs, rendered/native UI and applicable implementation acceptance remain pending."
   },
   {
     "id": "AP-01.3",
@@ -181,10 +181,10 @@
     "expected_passing_tests": "T25/T26: draft preservation, focus order, Escape, return focus and long translated copy are specified.",
     "dependencies": "AP-01.1",
     "owner": "Agency implementation chat; shared edits require owner review",
-    "status": "planned",
-    "evidence": "Not implemented or qualified",
-    "remaining": "Original outcome, dependencies and applicable acceptance tests remain",
-    "accepted": false
+    "status": "active",
+    "evidence": "workspace-state-spec.md: implementation-ready proposed current-shell states, Farsi/German/English draft copy, 390px/RTL/keyboard/draft/focus recovery.",
+    "accepted": false,
+    "remaining": "Owner/native-language review, actual catalogs, rendered/native UI and applicable implementation acceptance remain pending."
   },
   {
     "id": "AP-01.4",
@@ -198,10 +198,10 @@
     "expected_passing_tests": "T13/T14/T25: no visual state implies an external client authenticated or signed when staff recorded it.",
     "dependencies": "AP-01.2",
     "owner": "Agency implementation chat; shared edits require owner review",
-    "status": "planned",
-    "evidence": "Not implemented or qualified",
-    "remaining": "Original outcome, dependencies and applicable acceptance tests remain",
-    "accepted": false
+    "status": "active",
+    "evidence": "workspace-state-spec.md: implementation-ready proposed current-shell states, Farsi/German/English draft copy, 390px/RTL/keyboard/draft/focus recovery.",
+    "accepted": false,
+    "remaining": "Owner/native-language review, actual catalogs, rendered/native UI and applicable implementation acceptance remain pending."
   },
   {
     "id": "AP-01.5",
@@ -215,10 +215,10 @@
     "expected_passing_tests": "T25: ICU/key parity passes; native-language review evidence is retained or clearly pending.",
     "dependencies": "AP-01.2;AP-01.3;AP-01.4",
     "owner": "Agency implementation chat; shared edits require owner review",
-    "status": "planned",
-    "evidence": "Not implemented or qualified",
-    "remaining": "Original outcome, dependencies and applicable acceptance tests remain",
-    "accepted": false
+    "status": "active",
+    "evidence": "workspace-state-spec.md: implementation-ready proposed current-shell states, Farsi/German/English draft copy, 390px/RTL/keyboard/draft/focus recovery.",
+    "accepted": false,
+    "remaining": "Owner/native-language review, actual catalogs, rendered/native UI and applicable implementation acceptance remain pending."
   },
   {
     "id": "AP-01.6",
@@ -232,10 +232,10 @@
     "expected_passing_tests": "T26: dialogs trap/restore focus, controls have specific names and no unintended horizontal overflow.",
     "dependencies": "AP-01.2;AP-01.3",
     "owner": "Agency implementation chat; shared edits require owner review",
-    "status": "planned",
-    "evidence": "Not implemented or qualified",
-    "remaining": "Original outcome, dependencies and applicable acceptance tests remain",
-    "accepted": false
+    "status": "active",
+    "evidence": "workspace-state-spec.md: implementation-ready proposed current-shell states, Farsi/German/English draft copy, 390px/RTL/keyboard/draft/focus recovery.",
+    "accepted": false,
+    "remaining": "Owner/native-language review, actual catalogs, rendered/native UI and applicable implementation acceptance remain pending."
   },
   {
     "id": "AP-01.7",
@@ -284,7 +284,7 @@
     "dependencies": "AP-00.3;AP-00.6",
     "owner": "Agency implementation chat; shared edits require owner review",
     "status": "active",
-    "evidence": "domain-review-proposal.md and 27 strict project command/snapshot boundary tests; coherent archive and exact revision validation.",
+    "evidence": "285 feature-scoped unit cases pass, including strict project/assignment provenance and template structure. Canonical UUID spellings and exact external version identity are preserved.",
     "remaining": "Full additive schema, FKs, SQL/owner review and other domain boundaries pending.",
     "accepted": false
   },
@@ -590,8 +590,8 @@
     "dependencies": "AP-04.2",
     "owner": "Agency implementation chat; shared edits require owner review",
     "status": "active",
-    "evidence": "64 pure assignment policy cases pass after 25 failed / 39 passed assertion red; staff-recorded provenance, full transition graph and exact internal approval version.",
-    "remaining": "Boundary Zod schema and real actor/ownership/permission checks, DB CAS/history, version-specific reopening, native journey and acceptance pending.",
+    "evidence": "Test-first explicit submission-version correction and full accept/submit/change/resubmit/approve journey; strict browser/server actor split; genuine version/UUID reds retained.",
+    "remaining": "Actual native authority/contact/version ownership, DB CAS/history, version-specific reopening, activity/privacy bridge and native journey pending.",
     "accepted": false
   },
   {
@@ -691,10 +691,10 @@
     "expected_passing_tests": "T01/T11/T12: invalid references, cycles, unknown actions and unsupported versions are rejected.",
     "dependencies": "AP-02.1;AP-00.6",
     "owner": "Agency implementation chat; shared edits require owner review",
-    "status": "planned",
-    "evidence": "Not implemented or qualified",
-    "remaining": "Original outcome, dependencies and applicable acceptance tests remain",
-    "accepted": false
+    "status": "active",
+    "evidence": "55 test-first manifest/graph cases pass, including strict bounded FA/DE/EN data, roles/references, cycles, stage ancestry and controls; integrated feature selection285 passes.",
+    "accepted": false,
+    "remaining": "Published-version persistence immutability, full domain/owner contracts, mapping/install/date preview, upgrade/restore and acceptance remain open."
   },
   {
     "id": "AP-05.2",
@@ -1372,7 +1372,7 @@
     "dependencies": "AP-00.8",
     "owner": "Agency implementation chat; shared edits require owner review",
     "status": "active",
-    "evidence": "154 scoped pure unit tests pass (3 files); meaningful project and assignment assertion reds retained; narrow type-aware lint, scoped TypeScript and Biome pass.",
+    "evidence": "285 cases across8 feature files pass; scoped TypeScript, unchanged type-aware lint rules and Biome18 files pass. Version, UUID, control/line and template graph assertion reds retained.",
     "remaining": "Ongoing per-increment evidence; this does not close PG/native/provider gates.",
     "accepted": false
   },

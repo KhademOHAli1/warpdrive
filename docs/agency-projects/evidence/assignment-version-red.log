@@ -1,0 +1,167 @@
+$ bun --bun vitest run --project unit src/features/agency-projects/assignmentLifecycle.test.ts "--maxWorkers=1"
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+  - ESM syntax in a file loaded as CommonJS (vitest.classify.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.5 /Users/ali/Developer/warpdrive-agency-projects
+
+ ❯ |unit| src/features/agency-projects/assignmentLifecycle.test.ts (68 tests | 4 failed) 11ms
+   ❯ assignment lifecycle policy v1 (68)
+     × records the first actual submission after acceptance without inventing an earlier version 5ms
+     × records the new submitted version and retains the prior reference in the receipt 1ms
+     × requires an identified submitted version 1ms
+     × requires an identified submitted version 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| src/features/agency-projects/assignmentLifecycle.test.ts > assignment lifecycle policy v1 > records the first actual submission after acceptance without inventing an earlier version
+AssertionError: expected { ok: true, value: { …(2) } } to match object { ok: true, value: { …(2) } }
+(13 matching properties omitted from actual)
+
+- Expected
++ Received
+
+@@ -9,13 +9,23 @@
+          "source": "staff-recorded",
+        },
+        "approval": null,
+        "revision": 4,
+        "state": "submitted",
+-       "versionReference": "مدل-۱ / Modell-v1",
++       "versionReference": null,
+      },
+      "receipt": {
+-       "previousVersionReference": null,
+-       "versionReference": "مدل-۱ / Modell-v1",
++       "action": "submit",
++       "from": "working",
++       "policyVersion": 1,
++       "previousRevision": 3,
++       "provenance": {
++         "recordedByUserId": "staff-producer",
++         "source": "staff-recorded",
++       },
++       "reason": null,
++       "recordedByUserId": "staff-producer",
++       "revision": 4,
++       "to": "submitted",
+      },
+    },
+  }
+
+ ❯ src/features/agency-projects/assignmentLifecycle.test.ts:95:23
+     93|       "active",
+     94|     );
+     95|     expect(submitted).toMatchObject({
+       |                       ^
+     96|       ok: true,
+     97|       value: {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  |unit| src/features/agency-projects/assignmentLifecycle.test.ts > assignment lifecycle policy v1 > records the new submitted version and retains the prior reference in the receipt
+AssertionError: expected { ok: true, value: { …(2) } } to match object { ok: true, value: { …(2) } }
+(20 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "ok": true,
+    "value": {
+      "next": {
+        "approval": null,
+-       "versionReference": "model-v2",
++       "versionReference": "model-v1",
+      },
+      "receipt": {
+-       "previousVersionReference": "model-v1",
+-       "versionReference": "model-v2",
++       "action": "submit",
++       "from": "working",
++       "policyVersion": 1,
++       "previousRevision": 2,
++       "provenance": {
++         "recordedByUserId": "staff-producer",
++         "source": "staff-recorded",
++       },
++       "reason": null,
++       "recordedByUserId": "staff-producer",
++       "revision": 3,
++       "to": "submitted",
+      },
+    },
+  }
+
+ ❯ src/features/agency-projects/assignmentLifecycle.test.ts:110:8
+    108|       { action: "submit", expectedRevision: 2, recordedByUserId: staff…
+    109|       "active",
+    110|     )).toMatchObject({
+       |        ^
+    111|       ok: true,
+    112|       value: {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  |unit| src/features/agency-projects/assignmentLifecycle.test.ts > assignment lifecycle policy v1 > requires an identified submitted version
+ FAIL  |unit| src/features/agency-projects/assignmentLifecycle.test.ts > assignment lifecycle policy v1 > requires an identified submitted version
+AssertionError: expected { ok: true, value: { …(2) } } to deeply equal { ok: false, …(1) }
+
+- Expected
++ Received
+
+  {
+-   "error": "submission_version_required",
+-   "ok": false,
++   "ok": true,
++   "value": {
++     "next": {
++       "acceptance": {
++         "evidenceReference": "call-note-42",
++         "freelancerContactId": "freelancer-person",
++         "recordedByUserId": "staff-producer",
++         "source": "staff-recorded",
++       },
++       "approval": null,
++       "freelancerContactId": "freelancer-person",
++       "internalOwnerUserId": "staff-producer",
++       "revision": 3,
++       "state": "submitted",
++       "versionReference": "model-v1",
++     },
++     "receipt": {
++       "action": "submit",
++       "from": "working",
++       "policyVersion": 1,
++       "previousRevision": 2,
++       "provenance": {
++         "recordedByUserId": "staff-producer",
++         "source": "staff-recorded",
++       },
++       "reason": null,
++       "recordedByUserId": "staff-producer",
++       "revision": 3,
++       "to": "submitted",
++     },
++   },
+  }
+
+ ❯ src/features/agency-projects/assignmentLifecycle.test.ts:124:8
+    122|       { action: "submit", expectedRevision: 2, recordedByUserId: staff…
+    123|       "active",
+    124|     )).toEqual({ ok: false, error: "submission_version_required" });
+       |        ^
+    125|   });
+    126|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 64 passed (68)
+   Start at  17:08:19
+   Duration  113ms (transform 54%, tests 23%, import 10%, setup 7%, worker 5%)
+
+error: "vitest" exited with code 1
+error: script "test:unit" exited with code 1

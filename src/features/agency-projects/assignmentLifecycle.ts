@@ -33,7 +33,7 @@ export type AssignmentSnapshot = Readonly<{
   revision: number;
   freelancerContactId: string;
   internalOwnerUserId: string;
-  versionReference: string;
+  versionReference: string | null;
   acceptance: StaffRecordedAcceptance | null;
   approval: InternalApproval | null;
 }>;
@@ -46,8 +46,9 @@ export type AssignmentCommand = CommandBase &
         evidenceReference: string;
       }>
     | Readonly<{ action: "approve"; reviewedVersionReference: string }>
+    | Readonly<{ action: "submit"; submittedVersionReference: string }>
     | Readonly<{ action: "cancel" | "request-changes"; reason: string }>
-    | Readonly<{ action: "submit" | "begin-review" | "resume-work" }>
+    | Readonly<{ action: "begin-review" | "resume-work" }>
   );
 type AssignmentFailure =
   | "revision_conflict"
@@ -58,6 +59,7 @@ type AssignmentFailure =
   | "acceptance_contact_mismatch"
   | "acceptance_evidence_required"
   | "review_version_conflict"
+  | "submission_version_required"
   | "revision_exhausted";
 type TransitionReceipt = Readonly<{
   policyVersion: 1;
@@ -68,6 +70,8 @@ type TransitionReceipt = Readonly<{
   revision: number;
   recordedByUserId: string;
   reason: string | null;
+  previousVersionReference: string | null;
+  versionReference: string | null;
   provenance:
     | StaffRecordedAcceptance
     | Readonly<{ source: "staff-recorded"; recordedByUserId: string }>;
@@ -97,6 +101,8 @@ function evidenceFailure(
   command: AssignmentCommand,
 ): AssignmentFailure | null {
   if (command.recordedByUserId.trim().length === 0) return "actor_required";
+  if (command.action === "submit" && command.submittedVersionReference.trim().length === 0)
+    return "submission_version_required";
   if (command.action === "record-acceptance") {
     if (command.freelancerContactId !== current.freelancerContactId)
       return "acceptance_contact_mismatch";
@@ -131,6 +137,8 @@ export function transitionAssignment(
   if (failure !== null) return err(failure);
   if (current.revision >= Number.MAX_SAFE_INTEGER) return err("revision_exhausted");
   const revision = current.revision + 1;
+  const versionReference =
+    command.action === "submit" ? command.submittedVersionReference : current.versionReference;
   const provenance =
     command.action === "record-acceptance"
       ? {
@@ -144,6 +152,7 @@ export function transitionAssignment(
     ...current,
     state: to,
     revision,
+    versionReference,
     acceptance:
       command.action === "record-acceptance"
         ? {
@@ -172,6 +181,8 @@ export function transitionAssignment(
       previousRevision: current.revision,
       revision,
       recordedByUserId: command.recordedByUserId,
+      previousVersionReference: current.versionReference,
+      versionReference,
       reason:
         command.action === "cancel" || command.action === "request-changes"
           ? command.reason.trim()

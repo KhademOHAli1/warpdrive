@@ -7,7 +7,7 @@
     ]
   },
   "include": [
-    "../src/features/agency-projects/*.ts"
+    "../src/features/agency-projects/**/*.ts"
   ],
   "exclude": []
 }

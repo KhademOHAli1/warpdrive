@@ -1,52 +1,16 @@
 import { describe, expect, it } from "vitest";
 import {
+  acceptance,
+  command,
+  freelancerContactId,
+  snapshot,
+  staffUserId,
+} from "./assignmentFixtures";
+import {
   type AssignmentAction,
-  type AssignmentCommand,
-  type AssignmentSnapshot,
   type AssignmentState,
   transitionAssignment,
 } from "./assignmentLifecycle";
-
-const staffUserId = "staff-producer";
-const freelancerContactId = "freelancer-person";
-const acceptance = Object.freeze({
-  source: "staff-recorded" as const,
-  recordedByUserId: staffUserId,
-  freelancerContactId,
-  evidenceReference: "call-note-42",
-});
-
-function snapshot(state: AssignmentState = "awaiting-acceptance"): AssignmentSnapshot {
-  return {
-    state,
-    revision: 2,
-    freelancerContactId,
-    internalOwnerUserId: staffUserId,
-    versionReference: "model-v1",
-    acceptance: state === "awaiting-acceptance" ? null : acceptance,
-    approval:
-      state === "approved"
-        ? { kind: "internal", recordedByUserId: staffUserId, versionReference: "model-v1" }
-        : null,
-  };
-}
-
-function command(action: AssignmentAction): AssignmentCommand {
-  const base = { expectedRevision: 2, recordedByUserId: staffUserId };
-  switch (action) {
-    case "record-acceptance":
-      return { ...base, action, freelancerContactId, evidenceReference: "call-note-42" };
-    case "approve":
-      return { ...base, action, reviewedVersionReference: "model-v1" };
-    case "request-changes":
-    case "cancel":
-      return { ...base, action, reason: "بازبینی / Kundenkorrektur" };
-    case "submit":
-    case "begin-review":
-    case "resume-work":
-      return { ...base, action };
-  }
-}
 
 const states: AssignmentState[] = [
   "awaiting-acceptance",

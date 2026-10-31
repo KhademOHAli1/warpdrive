@@ -64,7 +64,7 @@ describe("project policy boundary", () => {
     ).toEqual({ state: "archived", revision: 2, archivedFrom: "completed" });
   });
 
-  it.each(["x".repeat(2001), "reason\u0000hidden"])(
+  it.each(["x".repeat(2001), "reason\u0000hidden", "reason\u0085hidden"])(
     "rejects unbounded or control-containing reasons",
     (reason) => {
       expect(

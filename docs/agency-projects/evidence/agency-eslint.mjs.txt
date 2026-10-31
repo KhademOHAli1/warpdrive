@@ -1,3 +1,3 @@
 import base from "../eslint.config.mjs";
 import { fileURLToPath } from "node:url";
-export default [...base, { files: ["src/features/agency-projects/*.ts"], languageOptions: { parserOptions: { projectService: false, project: fileURLToPath(new URL("./tsconfig.agency.json", import.meta.url)) } } }];
+export default [...base, { files: ["src/features/agency-projects/**/*.ts"], languageOptions: { parserOptions: { projectService: false, project: fileURLToPath(new URL("./tsconfig.agency.json", import.meta.url)) } } }];
