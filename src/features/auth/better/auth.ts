@@ -83,6 +83,10 @@ export function createBetterAuth(db: Db, config: Env = env) {
       { revokedField: "revokedAt" },
     ),
     advanced: {
+      // Keep production protections active in qualification runs as well. The SDK otherwise
+      // disables origin checks automatically when it detects a test environment.
+      disableOriginCheck: false,
+      disableCSRFCheck: false,
       // Keep the existing host-only wd_sid name across local HTTP and production HTTPS.
       // Secure remains explicitly enforced on every native cookie in HTTPS deployments.
       useSecureCookies: false,
