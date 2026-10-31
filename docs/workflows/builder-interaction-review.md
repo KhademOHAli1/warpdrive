@@ -30,17 +30,17 @@ MFA/provider onboarding. No provider messages or production deployment are invol
 
 ## Browser and runtime acceptance matrix
 
-| Scenario | Result / evidence |
-| --- | --- |
-| Free output dragged to empty canvas | Observed in Chrome: contextual picker identifies source and automatically connects the selected condition. |
-| Search and independent branch creation | English filtering, no-result recovery, and both branch-specific creations observed. Six-node/five-edge graph saved. |
-| Card/port drawing, occupied inputs, cancelled moves | See detailed results below. |
-| Undo/redo, complete-drag history, deletion restoration | Observed atomic insertion undo/redo, rejected/cancelled connection preservation, card-drop reconnection undo, and one-undo restoration of a node drag. |
-| Save/reload and locale switching preserve graph/content | EN to FA to DE to FA retained the six-node graph, a Persian unsaved workflow name, Persian task text and German custom content. Saves confirmed in PostgreSQL. Final cold reload after integration remains pending. |
-| Farsi RTL, German, mobile, light/dark | Farsi/German desktop and 390x844 layouts inspected; page width stayed 390px with no horizontal document overflow. Dark theme captured. Final light-theme inspection remains pending because browser automation timed out. |
-| Simulation keeps no task changes | Completed via Farsi UI and real worker; zero retained activities afterwards. |
-| Live matching/non-matching paths create intended tasks | Both real runs completed via Farsi/German UI. Open deal: common review + Persian follow-up. Won fixture: common review + German result task. Four total tasks, no duplicate or wrong-branch task. |
-| Historical graph stays pinned after draft changes | PostgreSQL regression and browser inspection pass: draft changed to notEquals while historical version 1 still displayed equals. |
+| Scenario                                                | Result / evidence                                                                                                                                                                                                         |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Free output dragged to empty canvas                     | Observed in Chrome: contextual picker identifies source and automatically connects the selected condition.                                                                                                                |
+| Search and independent branch creation                  | English filtering, no-result recovery, and both branch-specific creations observed. Six-node/five-edge graph saved.                                                                                                       |
+| Card/port drawing, occupied inputs, cancelled moves     | See detailed results below.                                                                                                                                                                                               |
+| Undo/redo, complete-drag history, deletion restoration  | Observed atomic insertion undo/redo, rejected/cancelled connection preservation, card-drop reconnection undo, and one-undo restoration of a node drag.                                                                    |
+| Save/reload and locale switching preserve graph/content | EN to FA to DE to FA retained the six-node graph, a Persian unsaved workflow name, Persian task text and German custom content. Saves confirmed in PostgreSQL. Final cold reload after integration remains pending.       |
+| Farsi RTL, German, mobile, light/dark                   | Farsi/German desktop and 390x844 layouts inspected; page width stayed 390px with no horizontal document overflow. Dark theme captured. Final light-theme inspection remains pending because browser automation timed out. |
+| Simulation keeps no task changes                        | Completed via Farsi UI and real worker; zero retained activities afterwards.                                                                                                                                              |
+| Live matching/non-matching paths create intended tasks  | Both real runs completed via Farsi/German UI. Open deal: common review + Persian follow-up. Won fixture: common review + German result task. Four total tasks, no duplicate or wrong-branch task.                         |
+| Historical graph stays pinned after draft changes       | PostgreSQL regression and browser inspection pass: draft changed to notEquals while historical version 1 still displayed equals.                                                                                          |
 
 ## Qualification
 
