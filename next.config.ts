@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
+import { applyDevelopmentCachePolicy } from "./src/config/developmentCache";
 
 // Security response headers, applied to every route.
 //
@@ -59,6 +60,9 @@ function securityHeaders(directives: string[]): { key: string; value: string }[]
 }
 
 const nextConfig: NextConfig = {
+  webpack(config: Record<string, unknown>, context: { dev: boolean }) {
+    return applyDevelopmentCachePolicy(config, context.dev);
+  },
   // Action arguments include credentials, CSRF tokens and private email content.
   logging: { serverFunctions: false },
   // Its server DOM depends on packages with mixed module formats; load it through Bun.

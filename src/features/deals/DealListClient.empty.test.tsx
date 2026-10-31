@@ -103,7 +103,19 @@ it("does not claim the pipeline holds deals when it holds none", async () => {
   renderClient({ rows: [], total: 0 });
   applyFilter();
 
-  await waitFor(() => expect(screen.getByRole("status")).toBeInTheDocument());
+  // The checking state is also a live status. Assert the completed query's empty state.
+  await waitFor(() =>
+    expect(screen.getByRole("status")).toHaveTextContent(STRINGS.dealsList.emptyBody),
+  );
+  expect(listQueryMock).toHaveBeenCalledWith(
+    expect.objectContaining({
+      definition: {
+        combinator: "and",
+        conditions: [{ field: "title", op: "contains", value: "zzz" }],
+      },
+    }),
+    expect.objectContaining({ signal: expect.any(AbortSignal) }),
+  );
   const empty = screen.getByRole("status");
   expect(empty).not.toHaveTextContent(STRINGS.dealsList.emptyFilteredBody);
   expect(empty).toHaveTextContent(STRINGS.dealsList.emptyBody);

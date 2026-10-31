@@ -135,6 +135,7 @@ describe("board restored with a persisted filter", () => {
     await waitFor(() => expect(boardQuery).toHaveBeenCalled());
     expect(boardQuery).toHaveBeenCalledWith(
       expect.objectContaining({ pipelineId: PIPE, timeZone: expect.any(String) }),
+      expect.objectContaining({ signal: expect.any(AbortSignal) }),
     );
   });
 
@@ -165,6 +166,7 @@ describe("board remounted from the in-tab view memory", () => {
     await waitFor(() => expect(boardQuery).toHaveBeenCalled());
     expect(boardQuery).toHaveBeenCalledWith(
       expect.objectContaining({ pipelineId: PIPE, definition: VALUE_FILTER }),
+      expect.objectContaining({ signal: expect.any(AbortSignal) }),
     );
   });
 });
@@ -192,9 +194,13 @@ describe("date context preference changes", () => {
     await waitFor(() =>
       expect(boardQuery).toHaveBeenCalledWith(
         expect.objectContaining({ timeZone: "Asia/Tehran", locale: "fa", calendar: "persian" }),
+        expect.objectContaining({ signal: expect.any(AbortSignal) }),
       ),
     );
-    expect(qc.getQueryData(BOARD_QUERY_KEY(PIPE))).toEqual({ cards: [] });
+    // Scope receipts extend the value; the load-bearing query identity stays the pipeline key.
+    expect(qc.getQueryData(BOARD_QUERY_KEY(PIPE))).toMatchObject({ cards: [] });
+    expect(qc.getQueryCache().getAll()).toHaveLength(1);
+    expect(qc.getQueryCache().getAll()[0]?.queryKey).toEqual(BOARD_QUERY_KEY(PIPE));
   });
   test("does not refetch a non-date filter for calendar or timezone changes", async () => {
     savePreferences.mockResolvedValueOnce({ ok: true });
