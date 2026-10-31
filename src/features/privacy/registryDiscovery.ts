@@ -4,6 +4,7 @@ import { join, relative } from "node:path";
 import ts from "typescript";
 import { err, ok, type Result } from "@/types/result";
 import { discoverBoundaryCall } from "./registryBoundaryDiscovery";
+import { collectImportBoundaries, discoverImportedBoundary } from "./registryImportBoundaries";
 import { collectTableBindings, discoverTableCall } from "./registryTableDiscovery";
 import type { DiscoveredInventoryItem, InventoryKind, InventorySource } from "./registryTypes";
 
@@ -86,6 +87,7 @@ export function discoverInventorySources(
     signal.throwIfAborted();
     const initialCount = items.size;
     const tableBindings = collectTableBindings(file);
+    const importBoundaries = collectImportBoundaries(file);
     function visit(node: ts.Node): void {
       if (
         ts.isVariableDeclaration(node) &&
@@ -102,6 +104,7 @@ export function discoverInventorySources(
         add("derived", file.fileName, file);
       if (ts.isCallExpression(node)) {
         discoverBoundaryCall(node, file, strings, add);
+        discoverImportedBoundary(node, file, importBoundaries, add);
         discoverTableCall(node, file, tableBindings, add);
       }
       if (

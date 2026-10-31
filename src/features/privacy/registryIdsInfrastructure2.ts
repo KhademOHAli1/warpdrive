@@ -1,6 +1,5 @@
 // Reviewed identifiers. New or changed boundaries require inventory review, never automatic acceptance.
 export const infrastructureIds2: string[] = [
-  "sourceReview:src/features/permissions/types.ts#414cb0ef0a10c8f65b19056d8d927ad053e062e5b18095060f020cdaf239b810",
   "sourceReview:src/features/realtime/wsMultiplexer.ts#548410e96afd6613932f10df54a1e06ffeb7660e5b17af3c0b8c2c6e9f668733",
   "sourceReview:src/features/release/constants.ts#bc4c49f52abc86327d93a0fbec44db533923785e647d695a117194eeaecb7342",
   "sourceReview:src/features/release/githubReleases.ts#72a981b2954acc4b1cea5448816d5acd6144d1a215d7a2126ed00a0f0a733866",

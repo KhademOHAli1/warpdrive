@@ -56,3 +56,31 @@ describe("filesystem and socket effect boundaries", () => {
     ).toContain(id);
   });
 });
+
+describe("imported Node transport and filesystem boundaries", () => {
+  it.each([
+    [
+      'import { request as sendTls } from "node:https"; sendTls(target, options);',
+      "external:src/features/new/edge.ts#https.request",
+    ],
+    [
+      'import * as transport from "node:http"; transport.get(target);',
+      "external:src/features/new/edge.ts#http.get",
+    ],
+    [
+      'import { open as openConfig } from "node:fs/promises"; await openConfig(configPath, "r");',
+      "objectNamespace:filesystem:src/features/new/edge.ts#open:configPath",
+    ],
+    [
+      'import filesystem from "node:fs"; filesystem.readFileSync("subject.json");',
+      "objectNamespace:filesystem:src/features/new/edge.ts#readFileSync:subject.json",
+    ],
+  ])("discovers imported boundary %s", (source, id) => {
+    expect(
+      discoverInventorySources(
+        [{ path: "src/features/new/edge.ts", source }],
+        AbortSignal.timeout(1000),
+      ).map((item) => item.id),
+    ).toContain(id);
+  });
+});

@@ -11,6 +11,21 @@ export interface PrivacyActor {
   sessionId: string;
 }
 
+function hasFutureAuthentication(
+  session: Pick<
+    typeof sessions.$inferSelect,
+    "freshAuthenticatedAt" | "mfaVerifiedAt" | "assurance"
+  >,
+  now: number,
+): boolean {
+  return (
+    (session.freshAuthenticatedAt !== null && session.freshAuthenticatedAt.getTime() > now) ||
+    (session.assurance === "mfa" &&
+      session.mfaVerifiedAt !== null &&
+      session.mfaVerifiedAt.getTime() > now)
+  );
+}
+
 export async function currentPrivacySession(db: Db, actor: PrivacyActor, signal: AbortSignal) {
   const [user] = await db
     .select()
@@ -53,6 +68,7 @@ export async function currentPrivacySession(db: Db, actor: PrivacyActor, signal:
   signal.throwIfAborted();
   const now = new Date();
   return (
+    !hasFutureAuthentication(session, now.getTime()) &&
     evaluateSessionAccess({
       ...policy,
       active: user.isActive,

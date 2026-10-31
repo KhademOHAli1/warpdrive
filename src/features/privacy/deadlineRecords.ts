@@ -1,3 +1,4 @@
+import { Temporal } from "@js-temporal/polyfill";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import type { Db } from "@/db/client";
@@ -158,6 +159,14 @@ export async function extendPrivacyDeadlineRecord(
         if (!snapshot.ok) return snapshot;
         const extended = extendPrivacyDeadline(snapshot.value, request.extension);
         if (!extended.ok) return extended;
+        const notice = extended.value.extensions.find(
+          (entry) => entry.noticeReference === request.extension.noticeReference,
+        );
+        if (
+          notice === undefined ||
+          Temporal.Instant.compare(notice.noticeRecordedAt, Temporal.Now.instant()) > 0
+        )
+          return err("notice_invalid" as const);
         const result = {
           deadline: extended.value,
           recordVersion: record.version + 1,

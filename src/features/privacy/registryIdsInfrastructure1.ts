@@ -79,7 +79,6 @@ export const infrastructureIds1: string[] = [
   "sourceReview:src/components/data-table/ColumnsMenuSortableList.tsx#482b9cafbc2fb7a316bfc5a189581c0a7c5a4652a1c09dd3a24e94d89fd7b966",
   "sourceReview:src/components/data-table/useColumns.ts#3e5e8b92407f90b3ba1abd2dd23999a4744cfb88ceeb35db1c6496e709e279a5",
   "sourceReview:src/components/data-table/useRowSelection.ts#75fdde1c30e51f3f7f82af9ae6d958a2979cca737ffe1c879afd94e64283546d",
-  "sourceReview:src/config/env.ts#116f5bfa9802728158a89a8a2636703552a60a111e5c23ff732ef44af59bf1ed",
   "sourceReview:src/constants/dealSidebarSections.ts#a2fc9117cf462cb5fc0cc14088d72cffd0bc05c27659fa099230dfd3afda0d50",
   "sourceReview:src/constants/fileEntityTypes.ts#f84afcd59f39b977a3be84ae66da8952b85d4d3d8834a1a3233032b742ca64af",
   "sourceReview:src/constants/filterOps.ts#aebe2848b86d030bbf1fe4289ebbb5df14ca1df7037a90b34565092ffaebe80d",
@@ -140,4 +139,5 @@ export const infrastructureIds1: string[] = [
   "sourceReview:src/features/permissions/actions-meta.ts#ba455ca84dcd28446138edee51402b6e4c27c83be162cb0c449e68221123f052",
   "sourceReview:src/features/permissions/mayTransferOwner.ts#6e4b6f49fb8e339ff56a541f54f476f5e8b07a2db591716932de3c0af4cd8fde",
   "sourceReview:src/features/permissions/referenceCheck.ts#5ec259d9641900c269f19147406ab460463da313bf4c0b1c93127b24c9b03416",
+  "sourceReview:src/features/permissions/types.ts#414cb0ef0a10c8f65b19056d8d927ad053e062e5b18095060f020cdaf239b810",
 ];
