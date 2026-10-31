@@ -582,6 +582,48 @@
       "when": 1793439305973,
       "tag": "0082_shocking_beast",
       "breakpoints": true
+    },
+    {
+      "idx": 83,
+      "version": "7",
+      "when": 1793446537651,
+      "tag": "0083_natural_deathstrike",
+      "breakpoints": true
+    },
+    {
+      "idx": 84,
+      "version": "7",
+      "when": 1793447063979,
+      "tag": "0084_military_loki",
+      "breakpoints": true
+    },
+    {
+      "idx": 85,
+      "version": "7",
+      "when": 1793448196423,
+      "tag": "0085_cooing_night_nurse",
+      "breakpoints": true
+    },
+    {
+      "idx": 86,
+      "version": "7",
+      "when": 1793451580903,
+      "tag": "0086_early_tomas",
+      "breakpoints": true
+    },
+    {
+      "idx": 87,
+      "version": "7",
+      "when": 1793451892308,
+      "tag": "0087_cool_stryfe",
+      "breakpoints": true
+    },
+    {
+      "idx": 88,
+      "version": "7",
+      "when": 1793452405456,
+      "tag": "0088_skinny_slyde",
+      "breakpoints": true
     }
   ]
 }

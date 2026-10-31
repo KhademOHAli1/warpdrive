@@ -21,8 +21,11 @@ import { trpc } from "@/lib/trpc-client";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { trashThreadAction } from "./actions";
 import { archiveThreadAction } from "./folderActions";
+import type { ThreadMailCapabilities } from "./imapThreadOperationsCapabilities";
+import { ImapThreadMoveDialog } from "./imapThreadOperationsDialog";
 import styles from "./inboxWorkspace.module.css";
 import { invalidateRecordTimelines } from "./invalidateRecordTimelines";
+import { MailOperationHint } from "./MailOperationHint";
 import type { NeighborFolder } from "./threadNeighbors";
 
 // The list appends ?folder= when opening a thread; default to inbox and ignore anything else so a
@@ -43,12 +46,16 @@ export function ReaderTopBar({
   embedded = false,
   onBack,
   onChanged,
+  mailCapabilities,
+  mailProvider,
 }: {
   threadId: string;
   canManage: boolean;
   embedded?: boolean;
   onBack?: () => void;
   onChanged?: () => void;
+  mailCapabilities?: ThreadMailCapabilities;
+  mailProvider?: string;
 }): React.ReactNode {
   const E = useEmailMessages();
 
@@ -173,13 +180,33 @@ export function ReaderTopBar({
             {E.archive}
           </button>
 
+          {mailProvider === "imap_smtp" && (
+            <ImapThreadMoveDialog
+              key={threadId}
+              threadId={threadId}
+              enabled={!busy && mailCapabilities?.move === true}
+              onRefresh={() => {
+                invalidateFeeds();
+                void utils.email.thread.get.invalidate();
+              }}
+              onMoved={() => {
+                invalidateFeeds();
+                void utils.email.thread.get.invalidate();
+                if (embedded) onBack?.();
+                else router.replace("/inbox");
+              }}
+            />
+          )}
+
           <AlertDialog>
-            <AlertDialogTrigger
-              disabled={busy}
-              className="rounded-md border border-border px-3 py-1 text-sm text-destructive transition-transform hover:bg-destructive/10 active:scale-[0.96] disabled:opacity-50"
-            >
-              {E.delete}
-            </AlertDialogTrigger>
+            <MailOperationHint enabled={mailCapabilities?.trash !== false}>
+              <AlertDialogTrigger
+                disabled={busy || mailCapabilities?.trash === false}
+                className="rounded-md border border-border px-3 py-1 text-sm text-destructive transition-transform hover:bg-destructive/10 active:scale-[0.96] disabled:opacity-50"
+              >
+                {E.delete}
+              </AlertDialogTrigger>
+            </MailOperationHint>
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>{E.deleteConfirmTitle}</AlertDialogTitle>

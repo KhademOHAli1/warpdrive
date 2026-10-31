@@ -6,16 +6,29 @@ import { LocaleProvider } from "@/features/i18n/LocaleProvider";
 import type { SecurityStatus } from "../better/contracts";
 import { FreshVerification } from "./FreshVerification";
 
-const { verifyTotp } = vi.hoisted(() => ({ verifyTotp: vi.fn() }));
+const { verifyTotp, signInSocial, retryProviders, providerConfig } = vi.hoisted(() => ({
+  verifyTotp: vi.fn(),
+  signInSocial: vi.fn(),
+  retryProviders: vi.fn(),
+  providerConfig: { providers: [] as { id: string; name: string }[], failed: false },
+}));
 vi.mock("../better/client", () => ({
-  authClient: { twoFactor: { verifyTotp }, signIn: { passkey: vi.fn(), social: vi.fn() } },
+  authClient: { twoFactor: { verifyTotp }, signIn: { passkey: vi.fn(), social: signInSocial } },
 }));
 vi.mock("./useAccountStatus", () => ({
-  useAuthProviders: () => ({ config: { providers: [], emailPassword: true, passkeys: true } }),
+  useAuthProviders: () => ({
+    config: providerConfig.failed
+      ? null
+      : { providers: providerConfig.providers, emailPassword: true, passkeys: true },
+    error: providerConfig.failed,
+    retry: retryProviders,
+  }),
 }));
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
+  providerConfig.providers = [];
+  providerConfig.failed = false;
 });
 const status: SecurityStatus = {
   authenticated: true,
@@ -73,4 +86,64 @@ it("does not offer password-only factor changes to a regular account with an enr
   );
   expect(screen.queryByLabelText("Aktuelles Passwort")).toBeNull();
   expect(screen.getByRole("button", { name: "Mit Passkey bestätigen" })).toBeInTheDocument();
+});
+
+for (const [returnTo, expected] of [
+  [undefined, "/auth/continue?returnTo=/settings/security"],
+  ["/settings/email-sync", "/auth/continue?returnTo=%2Fsettings%2Femail-sync"],
+  ["https://outside.example/path", "/auth/continue?returnTo=%2Fpipeline"],
+  ["//outside.example/path", "/auth/continue?returnTo=%2Fpipeline"],
+  ["/%2Foutside.example/path", "/auth/continue?returnTo=%2Fpipeline"],
+  ["/%255Coutside.example/path", "/auth/continue?returnTo=%2Fpipeline"],
+  ["/%61uth/continue", "/auth/continue?returnTo=%2Fpipeline"],
+] as const) {
+  it(`keeps social reauthentication return destinations safe: ${String(returnTo)}`, async () => {
+    providerConfig.providers = [{ id: "google", name: "Google" }];
+    signInSocial.mockResolvedValue({ data: {}, error: null });
+    render(
+      <LocaleProvider locale="de">
+        <FreshVerification
+          status={{
+            ...status,
+            accounts: [{ id: "google-account", providerId: "google", accountId: "subject" }],
+          }}
+          returnTo={returnTo}
+          refresh={vi.fn()}
+        />
+      </LocaleProvider>,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Mit Google bestätigen" }));
+    await waitFor(() =>
+      expect(signInSocial).toHaveBeenCalledWith({ provider: "google", callbackURL: expected }),
+    );
+  });
+}
+
+it("offers recovery when method discovery fails for a passkey-only account", () => {
+  providerConfig.failed = true;
+  render(
+    <LocaleProvider locale="de">
+      <FreshVerification
+        status={{
+          ...status,
+          user: { ...status.user, isAdmin: false },
+          hasPassword: false,
+          twoFactorEnabled: false,
+          passkeys: [
+            {
+              id: "key",
+              name: "Device",
+              createdAt: "2026-10-31T08:00:00Z",
+              deviceType: "singleDevice",
+              backedUp: false,
+            },
+          ],
+        }}
+        refresh={vi.fn()}
+      />
+    </LocaleProvider>,
+  );
+  expect(screen.getByRole("alert")).toBeVisible();
+  fireEvent.click(screen.getByRole("button", { name: "Erneut versuchen" }));
+  expect(retryProviders).toHaveBeenCalledOnce();
 });

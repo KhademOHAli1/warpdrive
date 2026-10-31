@@ -66,6 +66,42 @@
     "partialStage": {
       "title": "Einige Verkaufschancen wurden nicht verschoben",
       "body": "Gewonnene und verlorene Verkaufschancen sowie solche ohne Bearbeitungsberechtigung haben ihre bisherige Phase behalten. Die übrigen wurden verschoben."
+    },
+    "mailConnection": {
+      "title": "Postfach nicht verfügbar",
+      "body": "Prüfen Sie die Verbindung und den aktuellen Status des Postfachs in den Einstellungen."
+    },
+    "mailInvalid": {
+      "title": "Postfach-Einstellungen prüfen",
+      "body": "Verbinden Sie das Postfach erneut oder bitten Sie Ihre Administration, die Zugangsdaten zu prüfen."
+    },
+    "mailSync": {
+      "title": "Postfach konnte nicht synchronisiert werden",
+      "body": "Prüfen Sie den Verbindungsstatus. Starten Sie die Synchronisierung erneut, sobald die Ursache behoben ist."
+    },
+    "mailRejected": {
+      "title": "Nachricht wurde nicht übermittelt",
+      "body": "Der Mailserver hat diese Nachricht abgelehnt. Prüfen Sie Empfänger und Verbindungseinstellungen, bevor Sie es erneut versuchen."
+    },
+    "mailUnknown": {
+      "title": "Versandergebnis noch nicht bestätigt",
+      "body": "Der Server könnte die Nachricht bereits angenommen haben. Prüfen Sie zuerst ihren Status, bevor Sie weitere Schritte ausführen."
+    },
+    "mailUnsupported": {
+      "title": "Aktion für dieses Postfach nicht verfügbar",
+      "body": "Das Postfach unterstützt diese Aktion nicht oder gewährt die erforderlichen Zugriffsrechte nicht."
+    },
+    "mailChanged": {
+      "title": "Postfachverbindung wurde geändert",
+      "body": "Aktualisieren Sie das Postfach und prüfen Sie den aktuellen Verbindungsstatus, bevor Sie fortfahren."
+    },
+    "mailWriteUnknown": {
+      "title": "Änderung noch nicht bestätigt",
+      "body": "Der Mailserver könnte die Änderung bereits angewendet haben. Aktualisieren Sie das Postfach und prüfen Sie den Zustand, bevor Sie es erneut versuchen."
+    },
+    "mailWritePartial": {
+      "title": "Ein Teil der Änderungen wurde bestätigt",
+      "body": "Andere Änderungen sind noch unbestätigt. Aktualisieren Sie das Postfach und prüfen Sie die verbleibenden Nachrichten, bevor Sie fortfahren."
     }
   },
   "search": {

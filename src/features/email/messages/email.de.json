@@ -1,4 +1,20 @@
 {
+  "remoteActions": {
+    "unavailable": "Diese Aktion ist für dieses Postfach oder diesen Ordner derzeit nicht verfügbar. Prüfen Sie die Verbindung und Schreibrechte.",
+    "move": "In Ordner verschieben",
+    "moveTitle": "Unterhaltung verschieben",
+    "moveDescription": "Wählen Sie einen Ordner in diesem E-Mail-Konto.",
+    "folder": "Zielordner",
+    "chooseFolder": "Ordner auswählen",
+    "loading": "Ordner werden geladen…",
+    "empty": "Keine beschreibbaren Ordner verfügbar.",
+    "outsideView": "Dieser Ordner wird nicht synchronisiert. Die Unterhaltung verschwindet aus dieser Ansicht.",
+    "confirm": "Unterhaltung verschieben",
+    "moving": "Wird verschoben…",
+    "cancel": "Abbrechen",
+    "refreshBeforeRetry": "Der Server hat möglicherweise bereits Änderungen vorgenommen. Aktualisieren Sie die Unterhaltung, bevor Sie es erneut versuchen.",
+    "refresh": "Unterhaltung aktualisieren"
+  },
   "title": "Posteingang",
   "composeTitle": "Neue E-Mail",
   "loadingDraft": "Entwurf wird geladen...",

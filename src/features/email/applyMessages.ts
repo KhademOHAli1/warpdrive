@@ -6,8 +6,13 @@ import { notifyDealEmailReceived } from "@/features/notifications/wire";
 import type { AuthUser } from "@/features/permissions/types";
 import { publishEvent } from "@/server/notify";
 import type { DbOrTx } from "@/server/realtime/channelVersions";
-import { ok, type Result } from "@/types/result";
+import { err, ok, type Result } from "@/types/result";
 import type { GmailClient } from "./gmailClient";
+import {
+  gmailConnectionChanged,
+  readGmailConnection,
+  withGmailConnection,
+} from "./gmailConnectionFence";
 import { resolveLink } from "./linking";
 import { messageGoneFromMailbox } from "./messageGone";
 import { parseGmailMessage } from "./mimeParse";
@@ -24,6 +29,7 @@ export async function applyMessageIds(
     owner: AuthUser;
     gmail: GmailClient;
     signal: AbortSignal;
+    expectedGeneration?: number;
     // When provided, the gmail THREAD id of every added message is collected here so the caller can
     // re-evaluate each touched thread's whole-thread trash state (P4). Both directions need it: a
     // new message arriving already in TRASH (a Gmail filter with "Delete it") should trash the
@@ -34,6 +40,15 @@ export async function applyMessageIds(
   ids: string[],
 ): Promise<Result<number, AppError>> {
   args.signal.throwIfAborted();
+  const connection = await readGmailConnection(
+    args.db,
+    args.accountId,
+    args.signal,
+    args.expectedGeneration,
+  );
+  if (connection === null || connection.user_id !== args.owner.id)
+    return err(gmailConnectionChanged());
+  const generation = connection.connection_generation;
   let applied = 0;
 
   // Gmail history replays messages we SENT as messagesAdded, and every applied message is
@@ -62,57 +77,64 @@ export async function applyMessageIds(
     const parsed = parseGmailMessage(fetched.value);
     args.touchedThreadIds?.add(parsed.threadId);
 
-    const inserted = await args.db.transaction(async (tx) => {
-      const thread = await upsertThread(tx, args, parsed.threadId, parsed);
-      const threadId = thread.id;
-      const msgRows = await tx.execute(sql`
+    const inserted = await withGmailConnection(
+      args.db,
+      args.accountId,
+      generation,
+      args.signal,
+      async (tx) => {
+        const thread = await upsertThread(tx, args, parsed.threadId, parsed);
+        const threadId = thread.id;
+        const msgRows = await tx.execute(sql`
         INSERT INTO email_messages
-          (thread_id, account_id, gmail_message_id, direction, from_email, from_name, to_emails, cc_emails, subject, snippet, body_html, body_text, sent_at)
+          (thread_id, account_id, gmail_message_id, provider_message_id, direction, from_email, from_name, to_emails, cc_emails, subject, snippet, body_html, body_text, sent_at)
         VALUES (
-          ${threadId}, ${args.accountId}, ${parsed.gmailMessageId}, 'inbound', ${parsed.fromEmail}, ${parsed.fromName},
+          ${threadId}, ${args.accountId}, ${parsed.gmailMessageId}, ${parsed.gmailMessageId}, 'inbound', ${parsed.fromEmail}, ${parsed.fromName},
           ${JSON.stringify(parsed.toEmails)}::jsonb, ${JSON.stringify(parsed.ccEmails)}::jsonb,
           ${parsed.subject}, ${parsed.snippet}, ${parsed.bodyHtml}, ${parsed.bodyText}, ${parsed.sentAt}
         )
         ON CONFLICT (account_id, gmail_message_id) DO NOTHING
         RETURNING id
       `);
-      const row = msgRows.rows[0] as { id: string } | undefined;
-      if (row === undefined) return false; // already applied: no-op, no event
+        const row = msgRows.rows[0] as { id: string } | undefined;
+        if (row === undefined) return false; // already applied: no-op, no event
 
-      for (const a of parsed.attachments) {
-        await tx.execute(sql`
+        for (const a of parsed.attachments) {
+          await tx.execute(sql`
           INSERT INTO email_message_attachments (message_id, account_id, gmail_attachment_id, filename, mime_type, size_bytes)
           VALUES (${row.id}, ${args.accountId}, ${a.gmailAttachmentId}, ${a.filename}, ${a.mimeType}, ${a.sizeBytes})
         `);
-      }
+        }
 
-      // Publish in the SAME tx so a rollback emits nothing (ops A4). Ids only.
-      await publishEvent(
-        tx,
-        {
-          v: 1,
-          channel: wsChannel.user(args.owner.id),
-          ts: new Date().toISOString(),
-          actorId: null,
-          type: "email_arrived",
-          data: { messageId: row.id, threadId, accountId: args.accountId },
-        },
-        args.signal,
-      );
+        // Publish in the SAME tx so a rollback emits nothing (ops A4). Ids only.
+        await publishEvent(
+          tx,
+          {
+            v: 1,
+            channel: wsChannel.user(args.owner.id),
+            ts: new Date().toISOString(),
+            actorId: null,
+            type: "email_arrived",
+            data: { messageId: row.id, threadId, accountId: args.accountId },
+          },
+          args.signal,
+        );
 
-      if (thread.dealId !== null && isSelfSent(parsed.fromEmail, ownAddress) === false) {
-        arrivals.push({
-          dealId: thread.dealId,
-          threadId,
-          messageId: row.id,
-          subject: parsed.subject,
-          fromEmail: parsed.fromEmail,
-        });
-      }
-      return true;
-    });
+        if (thread.dealId !== null && isSelfSent(parsed.fromEmail, ownAddress) === false) {
+          arrivals.push({
+            dealId: thread.dealId,
+            threadId,
+            messageId: row.id,
+            subject: parsed.subject,
+            fromEmail: parsed.fromEmail,
+          });
+        }
+        return true;
+      },
+    );
 
-    if (inserted) applied += 1;
+    if (!inserted.ok) return inserted;
+    if (inserted.value) applied += 1;
   }
 
   await notifyArrivals(args.db, arrivals, args.signal);
@@ -204,8 +226,8 @@ async function upsertThread(
   const dealId = link.kind === "linked" ? link.dealId : null;
 
   const created = await tx.execute(sql`
-    INSERT INTO email_threads (gmail_thread_id, account_id, subject, person_id, deal_id, last_message_at)
-    VALUES (${gmailThreadId}, ${args.accountId}, ${parsed.subject}, ${personId}, ${dealId}, ${parsed.sentAt})
+    INSERT INTO email_threads (gmail_thread_id, provider_thread_id, account_id, subject, person_id, deal_id, last_message_at)
+    VALUES (${gmailThreadId}, ${gmailThreadId}, ${args.accountId}, ${parsed.subject}, ${personId}, ${dealId}, ${parsed.sentAt})
     ON CONFLICT (account_id, gmail_thread_id) DO UPDATE SET updated_at=now()
     RETURNING id, deal_id
   `);

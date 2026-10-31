@@ -5,6 +5,7 @@ import { buildCustomFieldsSchema } from "@/features/custom-fields/validate";
 import type { CustomFieldDef } from "@/types/customFields";
 import type { MappedRow } from "@/types/import";
 import { assertNever } from "@/types/result";
+import type { ImportDateOptions } from "./importDateConventions";
 import { optionalText } from "./importFieldParsers";
 import { PIPEDRIVE_ID_FIELD, requiredFieldsFor } from "./importFields";
 import {
@@ -17,6 +18,7 @@ import {
   orgImportGroupSchema,
   personImportGroupSchema,
 } from "./importRowSchemas";
+import { normalizeImportDates } from "./normalizeImportDates";
 import type { ImportTarget } from "./wizardState";
 
 interface RowIssue {
@@ -79,7 +81,7 @@ function strayDueTimeIssues(target: ImportTarget, raw: Record<string, unknown>):
   return [];
 }
 
-export function validateMappedRow(
+function validateCanonicalMappedRow(
   target: ImportTarget,
   mapped: MappedRow,
   defs: CustomFieldDef[],
@@ -116,4 +118,17 @@ export function validateMappedRow(
 
   if (errors.length > 0) return { ok: false, errors };
   return { ok: true, value: out };
+}
+
+export function validateMappedRow(
+  target: ImportTarget,
+  mapped: MappedRow,
+  defs: CustomFieldDef[],
+  source: ImportSource = DEFAULT_IMPORT_SOURCE,
+  options: ImportDateOptions = {},
+): ValidateResult {
+  const dates = normalizeImportDates(target, mapped, defs, options);
+  return dates.ok
+    ? validateCanonicalMappedRow(target, dates.value, defs, source)
+    : { ok: false, errors: dates.error };
 }

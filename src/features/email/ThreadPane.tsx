@@ -10,6 +10,7 @@ import { readCsrfToken } from "@/utils/csrfCookie";
 import { InboxReaderSidebar } from "./InboxReaderSidebar";
 import styles from "./inboxWorkspace.module.css";
 import { invalidateRecordTimelines } from "./invalidateRecordTimelines";
+import { MailOperationHint } from "./MailOperationHint";
 import { primaryCounterparty } from "./primaryCounterparty";
 import { ReaderConversation } from "./ReaderConversation";
 import { ReaderTopBar } from "./ReaderTopBar";
@@ -65,6 +66,7 @@ export function ThreadPane({
 
   useEffect(() => {
     if (data === undefined) return;
+    if (data.mailCapabilities?.markRead === false) return;
     if (markedReadForThreadId.current === threadId) return;
     markedReadForThreadId.current = threadId;
     void markThreadReadAction(readCsrfToken(), { threadId }).then((res) => {
@@ -91,6 +93,7 @@ export function ThreadPane({
   }
 
   async function handleMarkUnread(): Promise<void> {
+    if (data?.mailCapabilities?.markRead === false) return;
     const res = await markThreadUnreadAction(readCsrfToken(), { threadId });
     if (!res.ok) {
       setMarkUnreadError(E.errorMarkUnread);
@@ -151,7 +154,7 @@ export function ThreadPane({
       subject={inboxThread.subject}
       primaryEmail={primaryEmail}
       primaryName={primaryName}
-      canCompose={canCompose}
+      canCompose={canCompose && data.mailCapabilities?.send !== false}
       onLinked={handleThreadChanged}
     />
   );
@@ -161,6 +164,8 @@ export function ThreadPane({
       <ReaderTopBar
         threadId={inboxThread.id}
         canManage={canCompose}
+        mailCapabilities={data.mailCapabilities}
+        mailProvider={data.mailProvider}
         embedded={embedded}
         onBack={onClose}
         onChanged={onChanged}
@@ -209,13 +214,16 @@ export function ThreadPane({
                 </PopoverContent>
               </Popover>
             )}
-            <button
-              type="button"
-              onClick={() => void handleMarkUnread()}
-              className="shrink-0 rounded-md px-2 py-1 text-xs text-muted-foreground transition-transform hover:bg-accent active:scale-[0.96]"
-            >
-              {E.markAsUnread}
-            </button>
+            <MailOperationHint enabled={data.mailCapabilities?.markRead !== false}>
+              <button
+                type="button"
+                disabled={data.mailCapabilities?.markRead === false}
+                onClick={() => void handleMarkUnread()}
+                className="shrink-0 rounded-md px-2 py-1 text-xs text-muted-foreground transition-transform hover:bg-accent active:scale-[0.96]"
+              >
+                {E.markAsUnread}
+              </button>
+            </MailOperationHint>
           </div>
         </div>
         <div className="flex items-center gap-2 mt-1 flex-wrap">
@@ -260,7 +268,7 @@ export function ThreadPane({
               messages={messages}
               allowRemote={allowRemote}
               onShowRemote={() => setAllowRemote(true)}
-              canCompose={canCompose}
+              canCompose={canCompose && data.mailCapabilities?.send !== false}
               ownerEmail={ownerEmail}
               accountId={accountId}
               threadId={threadId}

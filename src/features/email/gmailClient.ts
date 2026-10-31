@@ -89,7 +89,11 @@ async function gmailFetch<T>(
   try {
     return ok(schema.parse(body));
   } catch {
-    return err(new AppError("E_GMAIL_001", "gmail response failed schema validation", { body }));
+    return err(
+      new AppError("E_GMAIL_001", "gmail response failed schema validation", {
+        status: res.status,
+      }),
+    );
   }
 }
 
@@ -141,7 +145,7 @@ export function createGmailClient(accessToken: string): GmailClient {
     },
 
     searchByRfc822({ messageIdHeader, signal }) {
-      const p = new URLSearchParams({ q: `rfc822msgid:${messageIdHeader}` });
+      const p = new URLSearchParams({ q: `in:sent rfc822msgid:${messageIdHeader}` });
       return gmailFetch(
         `${API}/messages?${p.toString()}`,
         { headers: auth },

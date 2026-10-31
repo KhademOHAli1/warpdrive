@@ -1,6 +1,16 @@
 // Stable error-ID registry. Append-only: one ID per distinct cause; retired IDs
 // stay searchable (commented) and are never reused or renumbered.
 export const ERROR_IDS = {
+  // Provider-neutral customer email.
+  MAIL_CONNECTION_UNAVAILABLE: "E_MAIL_001",
+  MAIL_CONNECTION_INVALID: "E_MAIL_002",
+  MAIL_SYNC_FAILED: "E_MAIL_003",
+  MAIL_SEND_REJECTED: "E_MAIL_004",
+  MAIL_SEND_UNKNOWN: "E_MAIL_005",
+  MAIL_CAPABILITY_DENIED: "E_MAIL_006",
+  MAIL_CONNECTION_CHANGED: "E_MAIL_007",
+  MAIL_WRITE_UNKNOWN: "E_MAIL_008",
+  MAIL_WRITE_PARTIAL: "E_MAIL_009",
   // AUTH
   AUTH_LOGIN_REJECTED: "E_AUTH_001", // domain / email_verified / signature check failed
   AUTH_STATE_MISMATCH: "E_AUTH_002", // OAuth state/nonce/PKCE mismatch

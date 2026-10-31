@@ -1,8 +1,8 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { useEmailMessages } from "@/features/email/useEmailMessages";
-import { isValidEmail } from "@/lib/isValidEmail";
 import { trpc } from "@/lib/trpc-client";
+import { isValidMailRecipient } from "../recipientAddress";
 
 // Must match contacts router max (src/features/contacts/router.ts listPeople max:500).
 // Fetch the full allowed page so all contacts are available for autocomplete.
@@ -61,7 +61,7 @@ export function RecipientField({ label, values, onChange }: RecipientFieldProps)
       writeQuery("");
       return;
     }
-    if (!isValidEmail(trimmed)) {
+    if (!isValidMailRecipient(trimmed)) {
       setError(E._extra.enter_a_valid_email_address);
       return;
     }

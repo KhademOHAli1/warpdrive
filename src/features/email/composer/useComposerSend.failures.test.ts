@@ -114,7 +114,7 @@ it("marks a scheduled send so the two paths can be told apart in telemetry", asy
 });
 
 it("says nothing to telemetry when the send succeeds", async () => {
-  sendMock.mockResolvedValue({ ok: true, value: {} });
+  sendMock.mockResolvedValue({ ok: true, value: { status: "sent" } });
   await buildSendHandlers(makeDeps()).handleSend();
   expect(captureMock).not.toHaveBeenCalled();
 });

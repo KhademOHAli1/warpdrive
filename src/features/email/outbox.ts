@@ -6,6 +6,8 @@ import type { Db } from "@/db/client";
 import type { StorageClient } from "@/features/files/storage";
 import { err, ok, type Result } from "@/types/result";
 import type { GmailClient } from "./gmailClient";
+import { gmailConnectionChanged } from "./gmailConnectionFence";
+import { isGmailSendCurrent, releaseUnsubmittedGmailClaim } from "./gmailSendFence";
 import { buildMime, deriveMessageId, type MimeAttachment, toRawBase64 } from "./mime";
 import { claim, loadAttempt, loadSendInputs, type SendPayload, stamp } from "./outboxClaim";
 import { markSent, reconcile, type SendOutcome } from "./outboxReconcile";
@@ -48,16 +50,20 @@ export async function enqueueSend(
     payload: SendPayload;
     threadId?: string | null;
     scheduledAt?: Date | null;
+    requiresPreparation?: boolean;
   },
 ): Promise<Result<{ attemptId: string; replay: boolean }, AppError>> {
   const header = deriveMessageId({
     accountId: args.accountId,
     idempotencyKey: args.idempotencyKey,
-    domain: env.GOOGLE_WORKSPACE_DOMAIN,
+    domain: new URL(env.BASE_URL).hostname,
   });
   await db.execute(sql`
-    INSERT INTO email_send_attempts (idempotency_key, message_id_header, account_id, thread_id, payload, status, scheduled_at)
-    VALUES (${args.idempotencyKey}, ${header}, ${args.accountId}, ${args.threadId ?? null}, ${JSON.stringify(args.payload)}::jsonb, 'pending', ${args.scheduledAt ?? null})
+    INSERT INTO email_send_attempts (idempotency_key, message_id_header, account_id, thread_id, payload, status, scheduled_at, connection_generation, payload_prepared)
+    SELECT ${args.idempotencyKey}, ${header}, id, ${args.threadId ?? null},
+      ${JSON.stringify(args.payload)}::jsonb || jsonb_build_object('fromName',display_name),
+      'pending', ${args.scheduledAt ?? null}, connection_generation, ${args.requiresPreparation !== true}
+    FROM email_accounts WHERE id=${args.accountId}
     ON CONFLICT (account_id, idempotency_key) DO NOTHING
   `);
 
@@ -87,6 +93,7 @@ export async function processSendAttempt(
     signal: AbortSignal;
     now?: number;
     windowMs?: number;
+    expectedGeneration?: number;
   },
 ): Promise<Result<SendOutcome, AppError>> {
   args.signal.throwIfAborted();
@@ -101,6 +108,16 @@ export async function processSendAttempt(
   if (existing.status === "sent") {
     return ok({ status: "sent", gmailMessageId: existing.gmail_message_id ?? undefined });
   }
+  if (
+    !(await isGmailSendCurrent(
+      db,
+      args.accountId,
+      existing.connection_generation,
+      args.signal,
+      args.expectedGeneration,
+    ))
+  )
+    return err(gmailConnectionChanged());
 
   // (c) branch on send_started_at: a stamped row may have been accepted -> reconcile,
   // never blind re-send. Do this BEFORE claiming so a stamped row can never re-send.
@@ -150,11 +167,20 @@ export async function processSendAttempt(
 
   // (e) stamp send_started_at and COMMIT before the Gmail send. A lost stamp race is
   // expected contention (E_GMAIL_008), not an API failure.
-  const stamped = await stamp(db, existing.id, token, args.signal);
-  if (!stamped) return err(new AppError("E_GMAIL_008", "stamp race lost", { id: existing.id }));
-
   const attResult = await fetchAttachmentBytes(payload, args.storage, args.signal);
-  if (!attResult.ok) return attResult;
+  if (!attResult.ok) {
+    await releaseUnsubmittedGmailClaim(db, existing.id, token, args.signal);
+    return attResult;
+  }
+  const stamped = await stamp(db, existing.id, token, args.signal, args.expectedGeneration);
+  if (!stamped) {
+    await releaseUnsubmittedGmailClaim(db, existing.id, token, args.signal);
+    return err(
+      new AppError("E_GMAIL_008", "stamp race lost or mailbox authority changed", {
+        id: existing.id,
+      }),
+    );
+  }
 
   // (f) build MIME with the FIXED Message-ID, then send with NO DB tx held open.
   const mime = buildMime({

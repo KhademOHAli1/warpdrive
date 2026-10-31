@@ -56,6 +56,25 @@ describe("assertMailboxOwner", () => {
 });
 
 describe("getActorMailbox", () => {
+  it("prefers an available sender over a paused default without hiding retained offline history", async () => {
+    await withTestDb(async (db) => {
+      const owner = await seedUser(db);
+      const paused = await seedAccount(db, owner.id, "paused@mail.test");
+      const active = await seedAccount(db, owner.id, "active@mail.test");
+      await db.execute(
+        sql`UPDATE email_accounts SET is_default=true,paused=true WHERE id=${paused}`,
+      );
+      expect(await getActorMailbox(db, owner.id, new AbortController().signal)).toEqual({
+        id: active,
+        emailAddress: "active@mail.test",
+      });
+      await db.execute(sql`UPDATE email_accounts SET status='disconnected' WHERE id=${active}`);
+      expect(await getActorMailbox(db, owner.id, new AbortController().signal)).toEqual({
+        id: paused,
+        emailAddress: "paused@mail.test",
+      });
+    });
+  });
   it("returns the actor's connected mailbox id and address", async () => {
     await withTestDb(async (db) => {
       const u = await seedUser(db);

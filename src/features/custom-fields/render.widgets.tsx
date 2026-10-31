@@ -38,6 +38,7 @@ export function CustomFieldFormControl({
   def,
   value,
   onChange,
+  currency,
   hideValidationMessage,
 }: ControlProps) {
   const id = `cf-${def.key}`;
@@ -66,6 +67,7 @@ export function CustomFieldFormControl({
           def={def}
           value={value}
           onChange={onChange}
+          currency={currency}
           hideValidationMessage={hideValidationMessage}
           step="0.01"
           min={0}

@@ -1,5 +1,6 @@
 import { findSimilarOptions } from "@/features/entity-create/similarMatch";
-import { normalizeDigits } from "@/utils/normalizeNumberInput";
+import { comparePhoneInputs } from "@/utils/phoneMatching";
+import type { PhoneCountry } from "@/utils/phoneNormalization";
 
 // A visible person reduced to the fields the deal Person panel can match a typed draft against.
 export interface PersonMatchOption {
@@ -13,6 +14,7 @@ export interface PersonDraft {
   name: string;
   email: string;
   phone: string;
+  phoneCountry?: PhoneCountry;
 }
 
 // Which typed field pointed at this person. Ordered strongest first: an email is an identity, a
@@ -24,15 +26,6 @@ export interface PersonMatch {
   reason: PersonMatchReason;
 }
 
-// Phone numbers are stored however they were typed ("+1 (619) 555-0134"), so compare digits only.
-// Below this many digits the input is an extension or a fragment, and would collide with unrelated
-// numbers that happen to share a tail.
-const MIN_PHONE_DIGITS = 7;
-
-function digits(s: string): string {
-  return normalizeDigits(s).replace(/\D+/g, "");
-}
-
 // Only a complete address is an identity claim; "steve" is still mid-typing.
 function byEmail(email: string, options: PersonMatchOption[]): PersonMatchOption[] {
   const q = email.trim().toLowerCase();
@@ -40,17 +33,15 @@ function byEmail(email: string, options: PersonMatchOption[]): PersonMatchOption
   return options.filter((o) => o.emails.some((e) => e.trim().toLowerCase() === q));
 }
 
-// Compared on the shared tail rather than for equality, so a stored "+1 (619) 555-0134" still
-// matches a typed "619-555-0134": the same line is routinely written with and without its country
-// code. Both sides must clear the digit floor, so a short fragment cannot swallow a long number.
-function byPhone(phone: string, options: PersonMatchOption[]): PersonMatchOption[] {
-  const q = digits(phone);
-  if (q.length < MIN_PHONE_DIGITS) return [];
-  return options.filter((o) =>
-    o.phones.some((p) => {
-      const d = digits(p);
-      return d.length >= MIN_PHONE_DIGITS && (d.endsWith(q) || q.endsWith(d));
-    }),
+// Every suggestion is reviewed by the user. Complete international identities
+// compare exactly; country-less legacy suffixes remain review hints only.
+function byPhone(
+  phone: string,
+  options: PersonMatchOption[],
+  country?: PhoneCountry,
+): PersonMatchOption[] {
+  return options.filter((option) =>
+    option.phones.some((stored) => comparePhoneInputs(phone, stored, country) !== "different"),
   );
 }
 
@@ -69,7 +60,7 @@ export function findPersonMatches(draft: PersonDraft, options: PersonMatchOption
   const matches = new Map<string, PersonMatch>();
   const bySignal: Array<[PersonMatchReason, PersonMatchOption[]]> = [
     ["email", byEmail(draft.email, options)],
-    ["phone", byPhone(draft.phone, options)],
+    ["phone", byPhone(draft.phone, options, draft.phoneCountry)],
     ["name", byName(draft.name, options)],
   ];
   for (const [reason, found] of bySignal) {

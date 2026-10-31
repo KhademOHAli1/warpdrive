@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { z } from "zod";
 import { err, ok, type Result } from "@/types/result";
 import { authEnvShape } from "./authEnv";
+import { mailEnvShape } from "./mailEnv";
 
 // Secret vars may be supplied as <VAR>_FILE pointing at a Docker secret file.
 const SECRET_FILE_VARS = [
@@ -15,6 +16,7 @@ const SECRET_FILE_VARS = [
   "AUTH_SMTP_PASSWORD",
   "AUTH_MICROSOFT_CLIENT_SECRET",
   "AUTH_OIDC_PROVIDERS",
+  "MAIL_INTERNAL_ENDPOINTS",
 ] as const;
 
 function resolveFileVars(raw: NodeJS.ProcessEnv): Record<string, string | undefined> {
@@ -32,6 +34,7 @@ const boolFromString = z.enum(["true", "false"]).transform((v) => v === "true");
 
 const base = z.object({
   ...authEnvShape,
+  ...mailEnvShape,
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   GOOGLE_OAUTH_CLIENT_ID: z.string().default(""),
   GOOGLE_OAUTH_CLIENT_SECRET: z.string().default(""),

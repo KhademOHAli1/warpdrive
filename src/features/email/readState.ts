@@ -5,21 +5,27 @@ import { emailAccounts, emailThreadReads, emailThreads } from "@/db/schema";
 import type { AuthUser } from "@/features/permissions/types";
 import { err, ok, type Result } from "@/types/result";
 import { canSeeEmail, type ThreadVisibilityRow } from "./emailVisibility";
+import { runImapThreadOperation } from "./imapThreadOperations";
+import type { ImapThreadOperationDeps } from "./imapThreadOperationsTypes";
 
 // Load the thread's visibility-relevant columns; null if missing. canSeeEmail resolves the
 // owning account (and, for shared threads, the linked deal/person) itself from these fields,
 // so no separate owner lookup is needed here (unlike the illustrative brief draft).
-async function loadThread(db: Db, threadId: string): Promise<ThreadVisibilityRow | null> {
+async function loadThread(db: Db, threadId: string, signal: AbortSignal) {
   const rows = await db
     .select({
       accountId: emailThreads.accountId,
       visibility: emailThreads.visibility,
       dealId: emailThreads.dealId,
       personId: emailThreads.personId,
+      ownerUserId: emailAccounts.userId,
+      provider: emailAccounts.provider,
     })
     .from(emailThreads)
+    .innerJoin(emailAccounts, eq(emailAccounts.id, emailThreads.accountId))
     .where(eq(emailThreads.id, threadId));
   const r = rows[0];
+  signal.throwIfAborted();
   return r === undefined ? null : r;
 }
 
@@ -41,10 +47,19 @@ export async function markThreadRead(
   db: Db,
   args: { actor: AuthUser; threadId: string },
   signal: AbortSignal,
+  deps: ImapThreadOperationDeps = {},
 ): Promise<Result<{ threadId: string }, AppError>> {
   signal.throwIfAborted();
-  const bad = await gate(db, args.actor, await loadThread(db, args.threadId), signal);
+  const thread = await loadThread(db, args.threadId, signal);
+  const bad = await gate(db, args.actor, thread, signal);
   if (bad !== null) return err(bad);
+  if (thread?.provider === "imap_smtp" && thread.ownerUserId === args.actor.id)
+    return runImapThreadOperation(
+      db,
+      { ...args, operation: { kind: "read", read: true } },
+      signal,
+      deps,
+    );
   signal.throwIfAborted();
   await db
     .insert(emailThreadReads)
@@ -60,10 +75,19 @@ export async function markThreadUnread(
   db: Db,
   args: { actor: AuthUser; threadId: string },
   signal: AbortSignal,
+  deps: ImapThreadOperationDeps = {},
 ): Promise<Result<{ threadId: string }, AppError>> {
   signal.throwIfAborted();
-  const bad = await gate(db, args.actor, await loadThread(db, args.threadId), signal);
+  const thread = await loadThread(db, args.threadId, signal);
+  const bad = await gate(db, args.actor, thread, signal);
   if (bad !== null) return err(bad);
+  if (thread?.provider === "imap_smtp" && thread.ownerUserId === args.actor.id)
+    return runImapThreadOperation(
+      db,
+      { ...args, operation: { kind: "read", read: false } },
+      signal,
+      deps,
+    );
   signal.throwIfAborted();
   await db
     .delete(emailThreadReads)

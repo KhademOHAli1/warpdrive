@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import type { Db } from "@/db/client";
+import type { DbOrTx } from "@/server/realtime/channelVersions";
 
 // Gmail labels that take a message out of the mailbox's live view. SPAM is here for the same reason
 // TRASH is: Gmail reports a spam delivery as an ordinary messagesAdded event (the message carries
@@ -19,7 +19,7 @@ function isThreadFullyTrashed(messages: { labelIds: string[] }[]): boolean {
 // Stamp trashed_at on one thread (only a fresh row, so a WD-initiated stamp is preserved). Used both
 // for a fully-trashed conversation and for a purged thread (getThread 404: gone from Gmail, hide it).
 export async function markThreadTrashed(
-  db: Db,
+  db: DbOrTx,
   accountId: string,
   gmailThreadId: string,
 ): Promise<void> {
@@ -34,7 +34,7 @@ export async function markThreadTrashed(
 // threads), so both derive trashed_at identically. Stamp only a fresh row (idempotent, preserves a
 // WD-initiated stamp); clear unconditionally on restore.
 export async function reconcileThreadTrash(
-  db: Db,
+  db: DbOrTx,
   accountId: string,
   gmailThreadId: string,
   messages: { labelIds: string[] }[],

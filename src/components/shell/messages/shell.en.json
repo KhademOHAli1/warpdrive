@@ -72,6 +72,42 @@
     "partialStage": {
       "title": "Some deals weren't moved",
       "body": "Won, lost, and deals you can't edit kept their stage. The rest moved."
+    },
+    "mailConnection": {
+      "title": "Mailbox unavailable",
+      "body": "Check the mailbox connection and its current status in Settings."
+    },
+    "mailInvalid": {
+      "title": "Mailbox settings need attention",
+      "body": "Reconnect the mailbox or ask your administrator to review its credentials."
+    },
+    "mailSync": {
+      "title": "Mailbox sync paused",
+      "body": "Check the connection status and retry synchronization when the problem is resolved."
+    },
+    "mailRejected": {
+      "title": "Message was not submitted",
+      "body": "The mail server rejected this message. Review the recipients and connection settings before trying again."
+    },
+    "mailUnknown": {
+      "title": "Send result is not confirmed",
+      "body": "The server may have accepted this message. Check its status before taking any further action."
+    },
+    "mailUnsupported": {
+      "title": "Action unavailable for this mailbox",
+      "body": "This mailbox does not support the requested action or does not grant the required access."
+    },
+    "mailChanged": {
+      "title": "Mailbox connection changed",
+      "body": "Refresh the mailbox to review its current connection before continuing."
+    },
+    "mailWriteUnknown": {
+      "title": "Change is not yet confirmed",
+      "body": "The mail server may have applied this change. Refresh the mailbox and confirm its state before trying again."
+    },
+    "mailWritePartial": {
+      "title": "Some changes were confirmed",
+      "body": "Other changes are still unconfirmed. Refresh the mailbox and review the remaining messages before continuing."
     }
   },
   "search": {

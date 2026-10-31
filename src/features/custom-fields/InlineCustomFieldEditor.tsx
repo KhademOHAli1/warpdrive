@@ -44,6 +44,7 @@ export function InlineCustomFieldEditor({
     <div ref={fieldsRef} className="flex flex-col gap-1.5">
       <CustomFieldFormControl
         def={def}
+        currency={currency}
         hideValidationMessage
         value={field.draft}
         onChange={(next) => field.setDraft(next)}
