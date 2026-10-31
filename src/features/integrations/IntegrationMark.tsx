@@ -1,20 +1,30 @@
 import { Plug } from "lucide-react";
 import Image from "next/image";
+import { cn } from "@/lib/utils";
 import type { Integration } from "./catalog";
 
-export function IntegrationMark({ integration }: { integration: Integration }) {
+export function IntegrationMark({
+  integration,
+  compact = false,
+}: {
+  integration: Integration;
+  compact?: boolean;
+}) {
   return (
     <span
       aria-hidden="true"
-      className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-white shadow-xs ring-1 ring-black/8"
+      className={cn(
+        "flex shrink-0 items-center justify-center bg-white ring-1 ring-black/8",
+        compact ? "size-7 rounded-md" : "size-11 rounded-xl shadow-xs",
+      )}
     >
       {integration.id !== "other-mcp" ? (
         <Image
           src={`/integrations/${integration.id}.svg`}
-          width={24}
-          height={24}
+          width={compact ? 16 : 24}
+          height={compact ? 16 : 24}
           alt=""
-          className="size-6 object-contain"
+          className={cn("object-contain", compact ? "size-4" : "size-6")}
         />
       ) : (
         <Plug className="size-6 text-neutral-600" />

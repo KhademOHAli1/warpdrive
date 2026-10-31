@@ -193,5 +193,20 @@
   "unknownAuthorizer": "Verbindende Person nicht verfügbar",
   "unknownDate": "Datum nicht verfügbar",
   "retryRemoval": "Entfernen erneut versuchen",
-  "verifyIdentity": "Identität bestätigen"
+  "verifyIdentity": "Identität bestätigen",
+  "tryWorkflow": "Mit einer konkreten Aufgabe starten",
+  "workflowBody": "Wählen Sie ein Beispiel, kopieren Sie die Anfrage und verwenden Sie sie im verbundenen Assistenten. Hier wird nichts ausgeführt.",
+  "meetingTitle": "Besprechung vorbereiten",
+  "pipelineTitle": "Meine Pipeline prüfen",
+  "draftTitle": "Follow-up entwerfen",
+  "promptPreview": "Vorschau der Anfrage",
+  "copyPrompt": "Anfrage kopieren",
+  "promptCopied": "Anfrage kopiert. Fügen Sie sie in Ihren verbundenen Assistenten ein.",
+  "meetingPrompt": "Hilf mir, mein nächstes Kundengespräch vorzubereiten. Finde den passenden Kontakt, Deal und die letzten Aktivitäten, fasse den Kontext zusammen und schlage eine kurze Agenda vor. Frage nach, wenn Datum oder Zeitzone unklar sind.",
+  "pipelinePrompt": "Prüfe meine Vertriebspipeline. Zeige festgefahrene Deals, überfällige Aktivitäten und den sinnvollsten nächsten Schritt pro Deal. Belege deine Empfehlungen mit den passenden CRM-Datensätzen. Ändere keine Datensätze.",
+  "draftPrompt": "Hilf mir, ein Follow-up für einen Kunden zu entwerfen. Kläre zuerst Kontakt und Deal mit mir und erstelle anhand des aktuellen CRM-Kontexts einen E-Mail-Entwurf zur Prüfung, ohne die Nachricht zu senden.",
+  "meetingAccess": "Liest relevante CRM-Kontakte, Deals und Aktivitäten.",
+  "pipelineAccess": "Liest Pipeline-Daten und Aktivitäten. Dieses Beispiel fordert keine Änderungen an.",
+  "draftAccess": "Liest CRM-Kontext und kann einen ungesendeten Entwurf erstellen. Prüfen Sie ihn vor dem Senden.",
+  "currentGrant": "Diese Verbindung stellt alle MCP-Werkzeuge bereit, die Ihre CRM-Rolle erlaubt. Eine separate Verbindung mit reinem Lesezugriff ist noch nicht verfügbar."
 }

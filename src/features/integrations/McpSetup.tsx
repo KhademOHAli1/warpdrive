@@ -6,6 +6,9 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { PILL_TAB, Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
+import { INTEGRATIONS } from "./catalog";
+import { IntegrationMark } from "./IntegrationMark";
+import { McpWorkflowExamples } from "./McpWorkflowExamples";
 
 const clients = [
   {
@@ -61,6 +64,7 @@ export function McpSetup({
           <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{t("mcpBody")}</p>
         </div>
       )}
+      <McpWorkflowExamples compact={compact} />
       {endpoint !== null ? (
         <div className="space-y-2">
           <label htmlFor={id} className="text-sm font-medium">
@@ -104,6 +108,9 @@ export function McpSetup({
         <TabsList className="flex-wrap gap-1" aria-label={t("ai")}>
           {clients.map((client) => (
             <TabsTrigger key={client.id} value={client.id} className={PILL_TAB}>
+              {INTEGRATIONS.filter((item) => item.id === client.id).map((item) => (
+                <IntegrationMark key={item.id} integration={item} compact />
+              ))}
               {client.label}
             </TabsTrigger>
           ))}
@@ -129,7 +136,10 @@ export function McpSetup({
       </Tabs>
       <p className="flex items-start gap-2 border-t pt-4 text-sm leading-relaxed text-muted-foreground">
         <ShieldCheck className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-        {t("mcpAccess")}
+        <span>
+          {t("mcpAccess")}
+          <span className="mt-2 block">{t("currentGrant")}</span>
+        </span>
       </p>
     </div>
   );

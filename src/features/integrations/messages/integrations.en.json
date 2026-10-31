@@ -193,5 +193,20 @@
   "unknownAuthorizer": "Authorizer unavailable",
   "unknownDate": "Date unavailable",
   "retryRemoval": "Retry removal",
-  "verifyIdentity": "Verify your identity"
+  "verifyIdentity": "Verify your identity",
+  "tryWorkflow": "Start with a real task",
+  "workflowBody": "Choose an example, copy the prompt and use it in your connected assistant. Nothing runs here.",
+  "meetingTitle": "Prepare for a meeting",
+  "pipelineTitle": "Review my pipeline",
+  "draftTitle": "Draft a follow-up",
+  "promptPreview": "Prompt preview",
+  "copyPrompt": "Copy prompt",
+  "promptCopied": "Prompt copied. Paste it into your connected assistant.",
+  "meetingPrompt": "Help me prepare for my next customer meeting. Find the relevant contact, deal and recent activities, summarize the context, and suggest a short agenda. Ask me to clarify the date and time zone if needed.",
+  "pipelinePrompt": "Review my sales pipeline. Show stalled deals, overdue activities and the most useful next action for each deal. Cite the CRM records behind your recommendations. Do not change records.",
+  "draftPrompt": "Help me draft a follow-up for a customer. First confirm the contact and deal, then use recent CRM context to prepare an unsent email draft for my review. Do not send the message.",
+  "meetingAccess": "Reads relevant CRM contacts, deals and activities.",
+  "pipelineAccess": "Reads pipeline records and activity. This example asks for no changes.",
+  "draftAccess": "Reads CRM context and can create an unsent draft. Review the draft before sending.",
+  "currentGrant": "This connection exposes all MCP tools your CRM role permits. A separate read-only connection is not yet available."
 }
