@@ -9,7 +9,7 @@ export const INTEGRATION_CATEGORIES = [
 ] as const;
 export type IntegrationCategory = (typeof INTEGRATION_CATEGORIES)[number];
 
-export const INTEGRATIONS = [
+const integrationDefinitions = [
   { id: "chatgpt", name: "ChatGPT", category: "ai", delivery: "mcp" },
   { id: "claude", name: "Claude", category: "ai", delivery: "mcp" },
   { id: "other-mcp", name: "MCP", category: "ai", delivery: "mcp" },
@@ -32,6 +32,21 @@ export const INTEGRATIONS = [
   { id: "whatsapp", name: "WhatsApp Business", category: "communication", delivery: "planned" },
   { id: "stripe", name: "Stripe", category: "business", delivery: "planned" },
 ] as const;
+
+type IntegrationDefinition = (typeof integrationDefinitions)[number];
+
+function describeIntegration<T extends IntegrationDefinition>(provider: T) {
+  return {
+    ...provider,
+    // Local implementation does not imply server configuration or a live provider grant.
+    availability: provider.delivery === "planned" ? ("planned" as const) : ("local" as const),
+    authTypes: provider.delivery === "planned" ? ([] as const) : (["oauth2"] as const),
+    asset: provider.id === "other-mcp" ? null : (`/integrations/${provider.id}.svg` as const),
+    descriptionKey: `providers.${provider.id}.description` as const,
+  };
+}
+
+export const INTEGRATIONS = integrationDefinitions.map(describeIntegration);
 
 export type Integration = (typeof INTEGRATIONS)[number];
 export type IntegrationId = Integration["id"];

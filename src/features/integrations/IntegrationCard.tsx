@@ -33,7 +33,7 @@ export function IntegrationCard({
         </div>
       </div>
       <p className="mb-5 mt-4 flex-1 text-sm leading-relaxed text-muted-foreground">
-        {t(`providers.${integration.id}.description`)}
+        {t(integration.descriptionKey)}
       </p>
       <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 border-t border-border/50 pt-3">
         <ConnectionBadge status={state.status} />

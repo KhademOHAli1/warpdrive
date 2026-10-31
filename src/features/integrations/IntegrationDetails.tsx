@@ -84,7 +84,7 @@ export function IntegrationDetails({
             </div>
           </div>
           <DialogDescription className="mt-4 text-sm leading-relaxed">
-            {t(`providers.${integration.id}.description`)}
+            {t(integration.descriptionKey)}
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-6 p-5 sm:p-6">

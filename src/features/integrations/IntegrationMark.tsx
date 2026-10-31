@@ -15,13 +15,13 @@ export function IntegrationMark({
       aria-hidden="true"
       className={cn(
         "flex shrink-0 items-center justify-center ring-1",
-        integration.id === "other-mcp" ? "bg-muted ring-border" : "bg-white ring-black/8",
+        integration.asset === null ? "bg-muted ring-border" : "bg-white ring-black/8",
         compact ? "size-7 rounded-md" : "size-11 rounded-xl shadow-xs",
       )}
     >
-      {integration.id !== "other-mcp" ? (
+      {integration.asset !== null ? (
         <Image
-          src={`/integrations/${integration.id}.svg`}
+          src={integration.asset}
           width={compact ? 16 : 24}
           height={compact ? 16 : 24}
           alt=""

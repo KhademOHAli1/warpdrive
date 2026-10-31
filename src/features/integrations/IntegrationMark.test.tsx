@@ -21,3 +21,12 @@ it.each(["chatgpt", "claude", "gmail", "slack", "google-calendar", "microsoft365
     expect(container.textContent).toBe("");
   },
 );
+
+it("uses the asset selected by the provider registry", () => {
+  const provider = INTEGRATIONS.find(({ id }) => id === "slack");
+  if (!provider) throw new Error("Missing Slack fixture");
+  const { container } = render(
+    <IntegrationMark integration={{ ...provider, asset: "/integrations/claude.svg" }} />,
+  );
+  expect(container.querySelector("img")).toHaveAttribute("src", "/integrations/claude.svg");
+});
