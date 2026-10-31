@@ -45,3 +45,9 @@ gates. Never count the previously interrupted broad unit run as a pass.
 
 Current completed count stays 37; 409 tasks remain planned. The static reviews, prepared
 test and unqualified source merge are progress toward those tasks, not additional closures.
+
+Later bounded exception: a one-file, one-worker SVG unit profile used existing dependencies
+above a 3 GiB lightweight floor with a live disk/deadline watchdog. Its owner red/green
+completed; an independent rerun was correctly interrupted when disk fell below 3 GiB.
+See `provider-svg-guard-qualification.md`. This does not relax the 5 GiB stable-headroom
+requirement for database/build/install/broad campaigns or claim those missing gates passed.
