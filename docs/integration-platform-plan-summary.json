@@ -202,5 +202,6 @@
       "dependencies": ["BASE"],
       "exit": "A contributor can reproduce the local setup, add a provider safely and understand which releases and integrations are actually supported."
     }
-  ]
+  ],
+  "package_dependency_scope": "local-foundation: reviewed contracts and locally verified foundations, excluding external live-hosting/publication gates"
 }

@@ -6,7 +6,10 @@ This register does not authorize deployment, provider messaging or publication. 
 
 The [CSV export](integration-platform-tasks.csv) contains the same IDs, acceptance criteria, owners, dependencies, verification and stage flags.
 Role owners are proposed responsibilities, not assigned people. Estimates remain unestimated until BASE-012.
-Dependencies below are minimum initial constraints. Refine task-level ordering after each design/spike; a package gate requires its acceptance evidence.
+Dependencies below are minimum initial constraints. Refine task-level ordering after each design/spike.
+Package prerequisites mean reviewed contracts and locally verified foundations, excluding optional live-provider, hosting and publication gates.
+The CSV marks this as `dependency_scope=local-foundation`. Specific external release gates still require their own evidence.
+Each EXP provider has an independent specify -> implement -> local qualification -> live qualification chain.
 After issue import, record the tracker URL in the project plan and use it as the execution status source; retain these dated files as the starting snapshot.
 
 ## Index

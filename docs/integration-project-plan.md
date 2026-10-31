@@ -98,8 +98,14 @@ flowchart LR
 ```
 
 The graph shows major dependencies. Package-level prerequisites are in the task register and
-CSV. R2 engineering can proceed after ARCH while R1 is developed. Extra providers do not block
-MCP or the app SDK just because they share a later release label.
+CSV. They mean reviewed contracts and locally verified foundations (`dependency_scope=local-foundation`),
+not completion of that package's live-provider, hosting or publication tasks. This lets local SDK,
+Microsoft and advanced Slack development proceed without waiting for unrelated external approvals.
+A supported release still requires its own applicable external gate.
+
+R2 engineering can proceed after ARCH while R1 is developed. Each EXP provider has an independent
+specify, implement, local-test and live-test chain; one provider's approval does not block another.
+Extra providers do not block MCP or the app SDK just because they share a later release label.
 
 ## First execution batch
 
