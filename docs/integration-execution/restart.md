@@ -38,14 +38,16 @@ create a replacement goal or mark it complete merely because BASE has closed.
 ## Independent source restoration
 
 Durable artifacts are in:
-`/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/arch-20261031`.
+`/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/foundation-20261031`.
 They contain source and sanitized evidence only. The checksum manifest and Git bundle
 verification are part of BASE-011. The archive is a convenient current tree; the bundle
-retains reviewable history and both reconciliation merges.
+retains reviewable history and reconciliation commits. This is a 37-task source/evidence
+checkpoint with incomplete current broad regression gates, not a fully qualified release.
+The older BASE/ARCH directories remain historical evidence, not the current source export.
 
 ```sh
-git bundle verify /Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/arch-20261031/warpdrive-integration-program.bundle
-git clone --branch codex/integration-platform-preview /Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/arch-20261031/warpdrive-integration-program.bundle /new/isolated/checkout
+git bundle verify /Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/foundation-20261031/warpdrive-integration-program.bundle
+git clone --branch codex/integration-platform-preview /Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/foundation-20261031/warpdrive-integration-program.bundle /new/isolated/checkout
 cd /new/isolated/checkout
 # Verify the exact head against HANDOFF.md and checksums before proceeding.
 export PATH=/tmp/warpdrive-bun144/bin:$PATH
