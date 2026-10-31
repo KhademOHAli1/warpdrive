@@ -1,0 +1,1127 @@
+$ bun --bun vitest run --project unit src/features/agency-projects/projectLifecycle.test.ts "--maxWorkers=1"
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+  - ESM syntax in a file loaded as CommonJS (vitest.classify.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.5 /Users/ali/Developer/warpdrive-agency-projects
+
+ ❯ |unit| src/features/agency-projects/projectLifecycle.test.ts (63 tests | 56 failed) 23ms
+   ❯ project lifecycle policy v1 (63)
+     × planned hold: forbidden 4ms
+     × planned resume: forbidden 1ms
+     × planned complete: forbidden 1ms
+     × planned cancel: canceled 1ms
+     × planned archive: archived 0ms
+     × planned restore: forbidden 1ms
+     × planned reopen: forbidden 0ms
+     × active start: forbidden 0ms
+     × active hold: on-hold 1ms
+     × active resume: forbidden 0ms
+     × active complete: completed 0ms
+     × active cancel: canceled 0ms
+     × active archive: archived 0ms
+     × active restore: forbidden 0ms
+     × active reopen: forbidden 0ms
+     × on-hold start: forbidden 0ms
+     × on-hold hold: forbidden 0ms
+     × on-hold complete: forbidden 0ms
+     × on-hold cancel: canceled 0ms
+     × on-hold archive: archived 0ms
+     × on-hold restore: forbidden 0ms
+     × on-hold reopen: forbidden 0ms
+     × completed start: forbidden 0ms
+     × completed hold: forbidden 0ms
+     × completed resume: forbidden 0ms
+     × completed complete: forbidden 0ms
+     × completed cancel: forbidden 0ms
+     × completed archive: archived 0ms
+     × completed restore: forbidden 0ms
+     × completed reopen: planned 0ms
+     × canceled start: forbidden 0ms
+     × canceled hold: forbidden 0ms
+     × canceled resume: forbidden 0ms
+     × canceled complete: forbidden 0ms
+     × canceled cancel: forbidden 0ms
+     × canceled archive: archived 1ms
+     × canceled restore: forbidden 3ms
+     × canceled reopen: planned 0ms
+     × archived start: forbidden 0ms
+     × archived hold: forbidden 0ms
+     × archived resume: forbidden 0ms
+     × archived complete: forbidden 0ms
+     × archived cancel: forbidden 0ms
+     × archived archive: forbidden 0ms
+     × archived restore: completed 0ms
+     × archived reopen: forbidden 0ms
+     × requires a recorded reason for hold 0ms
+     × requires a recorded reason for cancel 0ms
+     × requires a recorded reason for archive 0ms
+     × requires a recorded reason for restore 0ms
+     × requires a recorded reason for reopen 0ms
+     × restores archived planned without silently reopening terminal work 0ms
+     × restores archived on-hold without silently reopening terminal work 0ms
+     × restores archived completed without silently reopening terminal work 0ms
+     × restores archived canceled without silently reopening terminal work 0ms
+     × does not exceed the representable revision range 0ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 56 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| src/features/agency-projects/projectLifecycle.test.ts > project lifecycle policy v1 > planned hold: forbidden
+ FAIL  |unit| src/features/agency-projects/projectLifecycle.test.ts > project lifecycle policy v1 > planned resume: forbidden
+ FAIL  |unit| src/features/agency-projects/projectLifecycle.test.ts > project lifecycle policy v1 > planned complete: forbidden
+ FAIL  |unit| src/features/agency-projects/projectLifecycle.test.ts > project lifecycle policy v1 > planned restore: forbidden
+ FAIL  |unit| src/features/agency-projects/projectLifecycle.test.ts > project lifecycle policy v1 > planned reopen: forbidden
+AssertionError: expected { ok: true, value: { …(2) } } to deeply equal { ok: false, …(1) }
+
+- Expected
++ Received
+
+  {
+-   "error": "invalid_transition",
+-   "ok": false,
++   "ok": true,
++   "value": {
++     "next": {
++       "archivedFrom": null,
++       "revision": 10,
++       "state": "active",
++     },
++     "receipt": {
++       "action": "start",
++       "from": "planned",
++       "policyVersion": 1,
++       "previousRevision": 9,
++       "reason": null,
++       "revision": 10,
++       "to": "active",
++     },
++   },
+  }
+
+ ❯ src/features/agency-projects/projectLifecycle.test.ts:66:26
+     64|         });
+     65|         if (to === undefined) {
+     66|           expect(result).toEqual({ ok: false, error: "invalid_transiti…
+       |                          ^
+     67|         } else {
+     68|           expect(result).toMatchObject({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/56]⎯
+
+ FAIL  |unit| src/features/agency-projects/projectLifecycle.test.ts > project lifecycle policy v1 > planned cancel: canceled
+AssertionError: expected { ok: true, value: { …(2) } } to match object { ok: true, value: { …(2) } }
+(2 matching properties omitted from actual)
+
+- Expected
++ Received
+
+@@ -2,16 +2,16 @@
+    "ok": true,
+    "value": {
+      "next": {
+        "archivedFrom": null,
+        "revision": 10,
+-       "state": "canceled",
++       "state": "active",
+      },
+      "receipt": {
+        "from": "planned",
+        "policyVersion": 1,
+        "previousRevision": 9,
+        "revision": 10,
+-       "to": "canceled",
++       "to": "active",
+      },
+    },
+  }
+
+ ❯ src/features/agency-projects/projectLifecycle.test.ts:68:26
+     66|           expect(result).toEqual({ ok: false, error: "invalid_transiti…
+     67|         } else {
+     68|           expect(result).toMatchObject({
+       |                          ^
+     69|             ok: true,
+     70|             value: {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/56]⎯
+
+ FAIL  |unit| src/features/agency-projects/projectLifecycle.test.ts > project lifecycle policy v1 > planned archive: archived
+AssertionError: expected { ok: true, value: { …(2) } } to match object { ok: true, value: { …(2) } }
+(2 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "ok": true,
+    "value": {
+      "next": {
+-       "archivedFrom": "planned",
++       "archivedFrom": null,
+        "revision": 10,
+-       "state": "archived",
++       "state": "active",
+      },
+      "receipt": {
+        "from": "planned",
+        "policyVersion": 1,
+        "previousRevision": 9,
+        "revision": 10,
+-       "to": "archived",
++       "to": "active",
+      },
+    },
+  }
+
+ ❯ src/features/agency-projects/projectLifecycle.test.ts:68:26
+     66|           expect(result).toEqual({ ok: false, error: "invalid_transiti…
+     67|         } else {
+     68|           expect(result).toMatchObject({
+       |                          ^
+     69|             ok: true,
+     70|             value: {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/56]⎯
+
+ FAIL  |unit| src/features/agency-projects/projectLifecycle.test.ts > project lifecycle policy v1 > active start: forbidden
+ FAIL  |unit| src/features/agency-projects/projectLifecycle.test.ts > project lifecycle policy v1 > active resume: forbidden
+ FAIL  |unit| src/features/agency-projects/projectLifecycle.test.ts > project lifecycle policy v1 > active restore: forbidden
+ FAIL  |unit| src/features/agency-projects/projectLifecycle.test.ts > project lifecycle policy v1 > active reopen: forbidden
+AssertionError: expected { ok: true, value: { …(2) } } to deeply equal { ok: false, …(1) }
+
+- Expected
++ Received
+
+  {
+-   "error": "invalid_transition",
+-   "ok": false,
++   "ok": true,
++   "value": {
++     "next": {
++       "archivedFrom": null,
++       "revision": 10,
++       "state": "active",
++     },
++     "receipt": {
++       "action": "start",
++       "from": "active",
++       "policyVersion": 1,
++       "previousRevision": 9,
++       "reason": null,
++       "revision": 10,
++       "to": "active",
++     },
++   },
+  }
+
+ ❯ src/features/agency-projects/projectLifecycle.test.ts:66:26
+     64|         });
+     65|         if (to === undefined) {
+     66|           expect(result).toEqual({ ok: false, error: "invalid_transiti…
+       |                          ^
+     67|         } else {
+     68|           expect(result).toMatchObject({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/56]⎯
+
+ FAIL  |unit| src/features/agency-projects/projectLifecycle.test.ts > project lifecycle policy v1 > active hold: on-hold
+AssertionError: expected { ok: true, value: { …(2) } } to match object { ok: true, value: { …(2) } }
+(2 matching properties omitted from actual)
+
+- Expected
++ Received
+
+@@ -2,16 +2,16 @@
+    "ok": true,
+    "value": {
+      "next": {
+        "archivedFrom": null,
+        "revision": 10,
+-       "state": "on-hold",
++       "state": "active",
+      },
+      "receipt": {
+        "from": "active",
+        "policyVersion": 1,
+        "previousRevision": 9,
+        "revision": 10,
+-       "to": "on-hold",
++       "to": "active",
+      },
+    },
+  }
+
+ ❯ src/features/agency-projects/projectLifecycle.test.ts:68:26
+     66|           expect(result).toEqual({ ok: false, error: "invalid_transiti…
+     67|         } else {
+     68|           expect(result).toMatchObject({
+       |                          ^
+     69|             ok: true,
+     70|             value: {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/56]⎯
+
+ FAIL  |unit| src/features/agency-projects/projectLifecycle.test.ts > project lifecycle policy v1 > active complete: completed
+AssertionError: expected { ok: true, value: { …(2) } } to match object { ok: true, value: { …(2) } }
+(2 matching properties omitted from actual)
+
+- Expected
++ Received
+
+@@ -2,16 +2,16 @@
+    "ok": true,
+    "value": {
+      "next": {
+        "archivedFrom": null,
+        "revision": 10,
+-       "state": "completed",
++       "state": "active",
+      },
+      "receipt": {
+        "from": "active",
+        "policyVersion": 1,
+        "previousRevision": 9,
+        "revision": 10,
+-       "to": "completed",
++       "to": "active",
+      },
+    },
+  }
+
+ ❯ src/features/agency-projects/projectLifecycle.test.ts:68:26
+     66|           expect(result).toEqual({ ok: false, error: "invalid_transiti…
+     67|         } else {
+     68|           expect(result).toMatchObject({
+       |                          ^
+     69|             ok: true,
+     70|             value: {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/56]⎯
+
+ FAIL  |unit| src/features/agency-projects/projectLifecycle.test.ts > project lifecycle policy v1 > active cancel: canceled
+AssertionError: expected { ok: true, value: { …(2) } } to match object { ok: true, value: { …(2) } }
+(2 matching properties omitted from actual)
+
+- Expected
++ Received
+
+@@ -2,16 +2,16 @@
+    "ok": true,
+    "value": {
+      "next": {
+        "archivedFrom": null,
+        "revision": 10,
+-       "state": "canceled",
++       "state": "active",
+      },
+      "receipt": {
+        "from": "active",
+        "policyVersion": 1,
+        "previousRevision": 9,
+        "revision": 10,
+-       "to": "canceled",
++       "to": "active",
+      },
+    },
+  }
+
+ ❯ src/features/agency-projects/projectLifecycle.test.ts:68:26
+     66|           expect(result).toEqual({ ok: false, error: "invalid_transiti…
+     67|         } else {
+     68|           expect(result).toMatchObject({
+       |                          ^
+     69|             ok: true,
+     70|             value: {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/56]⎯
+
+ FAIL  |unit| src/features/agency-projects/projectLifecycle.test.ts > project lifecycle policy v1 > active archive: archived
+AssertionError: expected { ok: true, value: { …(2) } } to match object { ok: true, value: { …(2) } }
+(2 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "ok": true,
+    "value": {
+      "next": {
+-       "archivedFrom": "active",
++       "archivedFrom": null,
+        "revision": 10,
+-       "state": "archived",
++       "state": "active",
+      },
+      "receipt": {
+        "from": "active",
+        "policyVersion": 1,
+        "previousRevision": 9,
+        "revision": 10,
+-       "to": "archived",
++       "to": "active",
+      },
+    },
+  }
+
+ ❯ src/features/agency-projects/projectLifecycle.test.ts:68:26
+     66|           expect(result).toEqual({ ok: false, error: "invalid_transiti…
+     67|         } else {
+     68|           expect(result).toMatchObject({
+       |                          ^
+     69|             ok: true,
+     70|             value: {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/56]⎯
+
+ FAIL  |unit| src/features/agency-projects/projectLifecycle.test.ts > project lifecycle policy v1 > on-hold start: forbidden
+ FAIL  |unit| src/features/agency-projects/projectLifecycle.test.ts > project lifecycle policy v1 > on-hold hold: forbidden
+ FAIL  |unit| src/features/agency-projects/projectLifecycle.test.ts > project lifecycle policy v1 > on-hold complete: forbidden
+ FAIL  |unit| src/features/agency-projects/projectLifecycle.test.ts > project lifecycle policy v1 > on-hold restore: forbidden
+ FAIL  |unit| src/features/agency-projects/projectLifecycle.test.ts > project lifecycle policy v1 > on-hold reopen: forbidden
+AssertionError: expected { ok: true, value: { …(2) } } to deeply equal { ok: false, …(1) }
+
+- Expected
++ Received
+
+  {
+-   "error": "invalid_transition",
+-   "ok": false,
++   "ok": true,
++   "value": {
++     "next": {
++       "archivedFrom": null,
++       "revision": 10,
++       "state": "active",
++     },
++     "receipt": {
++       "action": "start",
++       "from": "on-hold",
++       "policyVersion": 1,
++       "previousRevision": 9,
++       "reason": null,
++       "revision": 10,
++       "to": "active",
++     },
++   },
+  }
+
+ ❯ src/features/agency-projects/projectLifecycle.test.ts:66:26
+     64|         });
+     65|         if (to === undefined) {
+     66|           expect(result).toEqual({ ok: false, error: "invalid_transiti…
+       |                          ^
+     67|         } else {
+     68|           expect(result).toMatchObject({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/56]⎯
+
+ FAIL  |unit| src/features/agency-projects/projectLifecycle.test.ts > project lifecycle policy v1 > on-hold cancel: canceled
+AssertionError: expected { ok: true, value: { …(2) } } to match object { ok: true, value: { …(2) } }
+(2 matching properties omitted from actual)
+
+- Expected
++ Received
+
+@@ -2,16 +2,16 @@
+    "ok": true,
+    "value": {
+      "next": {
+        "archivedFrom": null,
+        "revision": 10,
+-       "state": "canceled",
++       "state": "active",
+      },
+      "receipt": {
+        "from": "on-hold",
+        "policyVersion": 1,
+        "previousRevision": 9,
+        "revision": 10,
+-       "to": "canceled",
++       "to": "active",
+      },
+    },
+  }
+
+ ❯ src/features/agency-projects/projectLifecycle.test.ts:68:26
+     66|           expect(result).toEqual({ ok: false, error: "invalid_transiti…
+     67|         } else {
+     68|           expect(result).toMatchObject({
+       |                          ^
+     69|             ok: true,
+     70|             value: {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/56]⎯
+
+ FAIL  |unit| src/features/agency-projects/projectLifecycle.test.ts > project lifecycle policy v1 > on-hold archive: archived
+AssertionError: expected { ok: true, value: { …(2) } } to match object { ok: true, value: { …(2) } }
+(2 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "ok": true,
+    "value": {
+      "next": {
+-       "archivedFrom": "on-hold",
++       "archivedFrom": null,
+        "revision": 10,
+-       "state": "archived",
++       "state": "active",
+      },
+      "receipt": {
+        "from": "on-hold",
+        "policyVersion": 1,
+        "previousRevision": 9,
+        "revision": 10,
+-       "to": "archived",
++       "to": "active",
+      },
+    },
+  }
+
+ ❯ src/features/agency-projects/projectLifecycle.test.ts:68:26
+     66|           expect(result).toEqual({ ok: false, error: "invalid_transiti…
+     67|         } else {
+     68|           expect(result).toMatchObject({
+       |                          ^
+     69|             ok: true,
+     70|             value: {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/56]⎯
+
+ FAIL  |unit| src/features/agency-projects/projectLifecycle.test.ts > project lifecycle policy v1 > completed start: forbidden
+ FAIL  |unit| src/features/agency-projects/projectLifecycle.test.ts > project lifecycle policy v1 > completed hold: forbidden
+ FAIL  |unit| src/features/agency-projects/projectLifecycle.test.ts > project lifecycle policy v1 > completed resume: forbidden
+ FAIL  |unit| src/features/agency-projects/projectLifecycle.test.ts > project lifecycle policy v1 > completed complete: forbidden
+ FAIL  |unit| src/features/agency-projects/projectLifecycle.test.ts > project lifecycle policy v1 > completed cancel: forbidden
+ FAIL  |unit| src/features/agency-projects/projectLifecycle.test.ts > project lifecycle policy v1 > completed restore: forbidden
+AssertionError: expected { ok: true, value: { …(2) } } to deeply equal { ok: false, …(1) }
+
+- Expected
++ Received
+
+  {
+-   "error": "invalid_transition",
+-   "ok": false,
++   "ok": true,
++   "value": {
++     "next": {
++       "archivedFrom": null,
++       "revision": 10,
++       "state": "active",
++     },
++     "receipt": {
++       "action": "start",
++       "from": "completed",
++       "policyVersion": 1,
++       "previousRevision": 9,
++       "reason": null,
++       "revision": 10,
++       "to": "active",
++     },
++   },
+  }
+
+ ❯ src/features/agency-projects/projectLifecycle.test.ts:66:26
+     64|         });
+     65|         if (to === undefined) {
+     66|           expect(result).toEqual({ ok: false, error: "invalid_transiti…
+       |                          ^
+     67|         } else {
+     68|           expect(result).toMatchObject({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/56]⎯
+
+ FAIL  |unit| src/features/agency-projects/projectLifecycle.test.ts > project lifecycle policy v1 > completed archive: archived
+AssertionError: expected { ok: true, value: { …(2) } } to match object { ok: true, value: { …(2) } }
+(2 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "ok": true,
+    "value": {
+      "next": {
+-       "archivedFrom": "completed",
++       "archivedFrom": null,
+        "revision": 10,
+-       "state": "archived",
++       "state": "active",
+      },
+      "receipt": {
+        "from": "completed",
+        "policyVersion": 1,
+        "previousRevision": 9,
+        "revision": 10,
+-       "to": "archived",
++       "to": "active",
+      },
+    },
+  }
+
+ ❯ src/features/agency-projects/projectLifecycle.test.ts:68:26
+     66|           expect(result).toEqual({ ok: false, error: "invalid_transiti…
+     67|         } else {
+     68|           expect(result).toMatchObject({
+       |                          ^
+     69|             ok: true,
+     70|             value: {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/56]⎯
+
+ FAIL  |unit| src/features/agency-projects/projectLifecycle.test.ts > project lifecycle policy v1 > completed reopen: planned
+AssertionError: expected { ok: true, value: { …(2) } } to match object { ok: true, value: { …(2) } }
+(2 matching properties omitted from actual)
+
+- Expected
++ Received
+
+@@ -2,16 +2,16 @@
+    "ok": true,
+    "value": {
+      "next": {
+        "archivedFrom": null,
+        "revision": 10,
+-       "state": "planned",
++       "state": "active",
+      },
+      "receipt": {
+        "from": "completed",
+        "policyVersion": 1,
+        "previousRevision": 9,
+        "revision": 10,
+-       "to": "planned",
++       "to": "active",
+      },
+    },
+  }
+
+ ❯ src/features/agency-projects/projectLifecycle.test.ts:68:26
+     66|           expect(result).toEqual({ ok: false, error: "invalid_transiti…
+     67|         } else {
+     68|           expect(result).toMatchObject({
+       |                          ^
+     69|             ok: true,
+     70|             value: {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/56]⎯
+
+ FAIL  |unit| src/features/agency-projects/projectLifecycle.test.ts > project lifecycle policy v1 > canceled start: forbidden
+ FAIL  |unit| src/features/agency-projects/projectLifecycle.test.ts > project lifecycle policy v1 > canceled hold: forbidden
+ FAIL  |unit| src/features/agency-projects/projectLifecycle.test.ts > project lifecycle policy v1 > canceled resume: forbidden
+ FAIL  |unit| src/features/agency-projects/projectLifecycle.test.ts > project lifecycle policy v1 > canceled complete: forbidden
+ FAIL  |unit| src/features/agency-projects/projectLifecycle.test.ts > project lifecycle policy v1 > canceled cancel: forbidden
+AssertionError: expected { ok: true, value: { …(2) } } to deeply equal { ok: false, …(1) }
+
+- Expected
++ Received
+
+  {
+-   "error": "invalid_transition",
+-   "ok": false,
++   "ok": true,
++   "value": {
++     "next": {
++       "archivedFrom": null,
++       "revision": 10,
++       "state": "active",
++     },
++     "receipt": {
++       "action": "start",
++       "from": "canceled",
++       "policyVersion": 1,
++       "previousRevision": 9,
++       "reason": null,
++       "revision": 10,
++       "to": "active",
++     },
++   },
+  }
+
+ ❯ src/features/agency-projects/projectLifecycle.test.ts:66:26
+     64|         });
+     65|         if (to === undefined) {
+     66|           expect(result).toEqual({ ok: false, error: "invalid_transiti…
+       |                          ^
+     67|         } else {
+     68|           expect(result).toMatchObject({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/56]⎯
+
+ FAIL  |unit| src/features/agency-projects/projectLifecycle.test.ts > project lifecycle policy v1 > canceled archive: archived
+AssertionError: expected { ok: true, value: { …(2) } } to match object { ok: true, value: { …(2) } }
+(2 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "ok": true,
+    "value": {
+      "next": {
+-       "archivedFrom": "canceled",
++       "archivedFrom": null,
+        "revision": 10,
+-       "state": "archived",
++       "state": "active",
+      },
+      "receipt": {
+        "from": "canceled",
+        "policyVersion": 1,
+        "previousRevision": 9,
+        "revision": 10,
+-       "to": "archived",
++       "to": "active",
+      },
+    },
+  }
+
+ ❯ src/features/agency-projects/projectLifecycle.test.ts:68:26
+     66|           expect(result).toEqual({ ok: false, error: "invalid_transiti…
+     67|         } else {
+     68|           expect(result).toMatchObject({
+       |                          ^
+     69|             ok: true,
+     70|             value: {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/56]⎯
+
+ FAIL  |unit| src/features/agency-projects/projectLifecycle.test.ts > project lifecycle policy v1 > canceled restore: forbidden
+AssertionError: expected { ok: true, value: { …(2) } } to deeply equal { ok: false, …(1) }
+
+- Expected
++ Received
+
+  {
+-   "error": "invalid_transition",
+-   "ok": false,
++   "ok": true,
++   "value": {
++     "next": {
++       "archivedFrom": null,
++       "revision": 10,
++       "state": "active",
++     },
++     "receipt": {
++       "action": "start",
++       "from": "canceled",
++       "policyVersion": 1,
++       "previousRevision": 9,
++       "reason": null,
++       "revision": 10,
++       "to": "active",
++     },
++   },
+  }
+
+ ❯ <anonymous> src/features/agency-projects/projectLifecycle.test.ts:112:54
+    112|   });
+    113|
+    114|   it("fences replay of an already applied logical command", () => {
+       |                                               ^
+    115|     const current = { state: "planned" as const, revision: 7, archived…
+    116|     const command = { action: "start" as const, expectedRevision: 7 };
+ ❯ new Promise native:1:11
+ ❯ new Promise native:1:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/56]⎯
+
+ FAIL  |unit| src/features/agency-projects/projectLifecycle.test.ts > project lifecycle policy v1 > canceled reopen: planned
+AssertionError: expected { ok: true, value: { …(2) } } to match object { ok: true, value: { …(2) } }
+(2 matching properties omitted from actual)
+
+- Expected
++ Received
+
+@@ -2,16 +2,16 @@
+    "ok": true,
+    "value": {
+      "next": {
+        "archivedFrom": null,
+        "revision": 10,
+-       "state": "planned",
++       "state": "active",
+      },
+      "receipt": {
+        "from": "canceled",
+        "policyVersion": 1,
+        "previousRevision": 9,
+        "revision": 10,
+-       "to": "planned",
++       "to": "active",
+      },
+    },
+  }
+
+ ❯ src/features/agency-projects/projectLifecycle.test.ts:68:26
+     66|           expect(result).toEqual({ ok: false, error: "invalid_transiti…
+     67|         } else {
+     68|           expect(result).toMatchObject({
+       |                          ^
+     69|             ok: true,
+     70|             value: {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/56]⎯
+
+ FAIL  |unit| src/features/agency-projects/projectLifecycle.test.ts > project lifecycle policy v1 > archived start: forbidden
+ FAIL  |unit| src/features/agency-projects/projectLifecycle.test.ts > project lifecycle policy v1 > archived hold: forbidden
+ FAIL  |unit| src/features/agency-projects/projectLifecycle.test.ts > project lifecycle policy v1 > archived resume: forbidden
+ FAIL  |unit| src/features/agency-projects/projectLifecycle.test.ts > project lifecycle policy v1 > archived complete: forbidden
+ FAIL  |unit| src/features/agency-projects/projectLifecycle.test.ts > project lifecycle policy v1 > archived cancel: forbidden
+ FAIL  |unit| src/features/agency-projects/projectLifecycle.test.ts > project lifecycle policy v1 > archived archive: forbidden
+ FAIL  |unit| src/features/agency-projects/projectLifecycle.test.ts > project lifecycle policy v1 > archived reopen: forbidden
+AssertionError: expected { ok: true, value: { …(2) } } to deeply equal { ok: false, …(1) }
+
+- Expected
++ Received
+
+  {
+-   "error": "invalid_transition",
+-   "ok": false,
++   "ok": true,
++   "value": {
++     "next": {
++       "archivedFrom": null,
++       "revision": 10,
++       "state": "active",
++     },
++     "receipt": {
++       "action": "start",
++       "from": "archived",
++       "policyVersion": 1,
++       "previousRevision": 9,
++       "reason": null,
++       "revision": 10,
++       "to": "active",
++     },
++   },
+  }
+
+ ❯ src/features/agency-projects/projectLifecycle.test.ts:66:26
+     64|         });
+     65|         if (to === undefined) {
+     66|           expect(result).toEqual({ ok: false, error: "invalid_transiti…
+       |                          ^
+     67|         } else {
+     68|           expect(result).toMatchObject({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/56]⎯
+
+ FAIL  |unit| src/features/agency-projects/projectLifecycle.test.ts > project lifecycle policy v1 > archived restore: completed
+AssertionError: expected { ok: true, value: { …(2) } } to match object { ok: true, value: { …(2) } }
+(2 matching properties omitted from actual)
+
+- Expected
++ Received
+
+@@ -2,16 +2,16 @@
+    "ok": true,
+    "value": {
+      "next": {
+        "archivedFrom": null,
+        "revision": 10,
+-       "state": "completed",
++       "state": "active",
+      },
+      "receipt": {
+        "from": "archived",
+        "policyVersion": 1,
+        "previousRevision": 9,
+        "revision": 10,
+-       "to": "completed",
++       "to": "active",
+      },
+    },
+  }
+
+ ❯ src/features/agency-projects/projectLifecycle.test.ts:68:26
+     66|           expect(result).toEqual({ ok: false, error: "invalid_transiti…
+     67|         } else {
+     68|           expect(result).toMatchObject({
+       |                          ^
+     69|             ok: true,
+     70|             value: {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/56]⎯
+
+ FAIL  |unit| src/features/agency-projects/projectLifecycle.test.ts > project lifecycle policy v1 > requires a recorded reason for hold
+ FAIL  |unit| src/features/agency-projects/projectLifecycle.test.ts > project lifecycle policy v1 > requires a recorded reason for cancel
+ FAIL  |unit| src/features/agency-projects/projectLifecycle.test.ts > project lifecycle policy v1 > requires a recorded reason for archive
+AssertionError: expected { ok: true, value: { …(2) } } to deeply equal { ok: false, error: 'reason_required' }
+
+- Expected
++ Received
+
+  {
+-   "error": "reason_required",
+-   "ok": false,
++   "ok": true,
++   "value": {
++     "next": {
++       "archivedFrom": null,
++       "revision": 2,
++       "state": "active",
++     },
++     "receipt": {
++       "action": "start",
++       "from": "active",
++       "policyVersion": 1,
++       "previousRevision": 1,
++       "reason": null,
++       "revision": 2,
++       "to": "active",
++     },
++   },
+  }
+
+ ❯ src/features/agency-projects/projectLifecycle.test.ts:88:10
+     86|         : { state, revision: 1, archivedFrom: null };
+     87|       expect(transitionProject(current, { action, expectedRevision: 1,…
+     88|         .toEqual({ ok: false, error: "reason_required" });
+       |          ^
+     89|     },
+     90|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/56]⎯
+
+ FAIL  |unit| src/features/agency-projects/projectLifecycle.test.ts > project lifecycle policy v1 > requires a recorded reason for restore
+AssertionError: expected { ok: true, value: { …(2) } } to deeply equal { ok: false, error: 'reason_required' }
+
+- Expected
++ Received
+
+  {
+-   "error": "reason_required",
+-   "ok": false,
++   "ok": true,
++   "value": {
++     "next": {
++       "archivedFrom": null,
++       "revision": 2,
++       "state": "active",
++     },
++     "receipt": {
++       "action": "start",
++       "from": "archived",
++       "policyVersion": 1,
++       "previousRevision": 1,
++       "reason": null,
++       "revision": 2,
++       "to": "active",
++     },
++   },
+  }
+
+ ❯ src/features/agency-projects/projectLifecycle.test.ts:88:10
+     86|         : { state, revision: 1, archivedFrom: null };
+     87|       expect(transitionProject(current, { action, expectedRevision: 1,…
+     88|         .toEqual({ ok: false, error: "reason_required" });
+       |          ^
+     89|     },
+     90|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/56]⎯
+
+ FAIL  |unit| src/features/agency-projects/projectLifecycle.test.ts > project lifecycle policy v1 > requires a recorded reason for reopen
+AssertionError: expected { ok: true, value: { …(2) } } to deeply equal { ok: false, error: 'reason_required' }
+
+- Expected
++ Received
+
+  {
+-   "error": "reason_required",
+-   "ok": false,
++   "ok": true,
++   "value": {
++     "next": {
++       "archivedFrom": null,
++       "revision": 2,
++       "state": "active",
++     },
++     "receipt": {
++       "action": "start",
++       "from": "completed",
++       "policyVersion": 1,
++       "previousRevision": 1,
++       "reason": null,
++       "revision": 2,
++       "to": "active",
++     },
++   },
+  }
+
+ ❯ src/features/agency-projects/projectLifecycle.test.ts:88:10
+     86|         : { state, revision: 1, archivedFrom: null };
+     87|       expect(transitionProject(current, { action, expectedRevision: 1,…
+     88|         .toEqual({ ok: false, error: "reason_required" });
+       |          ^
+     89|     },
+     90|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/56]⎯
+
+ FAIL  |unit| src/features/agency-projects/projectLifecycle.test.ts > project lifecycle policy v1 > restores archived planned without silently reopening terminal work
+AssertionError: expected { ok: true, value: { …(2) } } to match object { ok: true, value: { next: { …(3) } } }
+(8 matching properties omitted from actual)
+
+- Expected
++ Received
+
+@@ -2,9 +2,9 @@
+    "ok": true,
+    "value": {
+      "next": {
+        "archivedFrom": null,
+        "revision": 5,
+-       "state": "planned",
++       "state": "active",
+      },
+    },
+  }
+
+ ❯ src/features/agency-projects/projectLifecycle.test.ts:101:24
+     99|       const receipt = structuredClone(archived.value.receipt);
+    100|       const restored = transitionProject(archived.value.next, { action…
+    101|       expect(restored).toMatchObject({ ok: true, value: { next: { stat…
+       |                        ^
+    102|       expect(current).toEqual({ state, revision: 3, archivedFrom: null…
+    103|       expect(archived.value.receipt).toEqual(receipt);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/56]⎯
+
+ FAIL  |unit| src/features/agency-projects/projectLifecycle.test.ts > project lifecycle policy v1 > restores archived on-hold without silently reopening terminal work
+AssertionError: expected { ok: true, value: { …(2) } } to match object { ok: true, value: { next: { …(3) } } }
+(8 matching properties omitted from actual)
+
+- Expected
++ Received
+
+@@ -2,9 +2,9 @@
+    "ok": true,
+    "value": {
+      "next": {
+        "archivedFrom": null,
+        "revision": 5,
+-       "state": "on-hold",
++       "state": "active",
+      },
+    },
+  }
+
+ ❯ src/features/agency-projects/projectLifecycle.test.ts:101:24
+     99|       const receipt = structuredClone(archived.value.receipt);
+    100|       const restored = transitionProject(archived.value.next, { action…
+    101|       expect(restored).toMatchObject({ ok: true, value: { next: { stat…
+       |                        ^
+    102|       expect(current).toEqual({ state, revision: 3, archivedFrom: null…
+    103|       expect(archived.value.receipt).toEqual(receipt);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/56]⎯
+
+ FAIL  |unit| src/features/agency-projects/projectLifecycle.test.ts > project lifecycle policy v1 > restores archived completed without silently reopening terminal work
+AssertionError: expected { ok: true, value: { …(2) } } to match object { ok: true, value: { next: { …(3) } } }
+(8 matching properties omitted from actual)
+
+- Expected
++ Received
+
+@@ -2,9 +2,9 @@
+    "ok": true,
+    "value": {
+      "next": {
+        "archivedFrom": null,
+        "revision": 5,
+-       "state": "completed",
++       "state": "active",
+      },
+    },
+  }
+
+ ❯ src/features/agency-projects/projectLifecycle.test.ts:101:24
+     99|       const receipt = structuredClone(archived.value.receipt);
+    100|       const restored = transitionProject(archived.value.next, { action…
+    101|       expect(restored).toMatchObject({ ok: true, value: { next: { stat…
+       |                        ^
+    102|       expect(current).toEqual({ state, revision: 3, archivedFrom: null…
+    103|       expect(archived.value.receipt).toEqual(receipt);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[26/56]⎯
+
+ FAIL  |unit| src/features/agency-projects/projectLifecycle.test.ts > project lifecycle policy v1 > restores archived canceled without silently reopening terminal work
+AssertionError: expected { ok: true, value: { …(2) } } to match object { ok: true, value: { next: { …(3) } } }
+(8 matching properties omitted from actual)
+
+- Expected
++ Received
+
+@@ -2,9 +2,9 @@
+    "ok": true,
+    "value": {
+      "next": {
+        "archivedFrom": null,
+        "revision": 5,
+-       "state": "canceled",
++       "state": "active",
+      },
+    },
+  }
+
+ ❯ src/features/agency-projects/projectLifecycle.test.ts:101:24
+     99|       const receipt = structuredClone(archived.value.receipt);
+    100|       const restored = transitionProject(archived.value.next, { action…
+    101|       expect(restored).toMatchObject({ ok: true, value: { next: { stat…
+       |                        ^
+    102|       expect(current).toEqual({ state, revision: 3, archivedFrom: null…
+    103|       expect(archived.value.receipt).toEqual(receipt);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[27/56]⎯
+
+ FAIL  |unit| src/features/agency-projects/projectLifecycle.test.ts > project lifecycle policy v1 > does not exceed the representable revision range
+AssertionError: expected { ok: true, value: { …(2) } } to deeply equal { ok: false, …(1) }
+
+- Expected
++ Received
+
+  {
+-   "error": "revision_exhausted",
+-   "ok": false,
++   "ok": true,
++   "value": {
++     "next": {
++       "archivedFrom": null,
++       "revision": 9007199254740992,
++       "state": "active",
++     },
++     "receipt": {
++       "action": "start",
++       "from": "planned",
++       "policyVersion": 1,
++       "previousRevision": 9007199254740991,
++       "reason": null,
++       "revision": 9007199254740992,
++       "to": "active",
++     },
++   },
+  }
+
+ ❯ src/features/agency-projects/projectLifecycle.test.ts:127:8
+    125|       { state: "planned", revision: Number.MAX_SAFE_INTEGER, archivedF…
+    126|       { action: "start", expectedRevision: Number.MAX_SAFE_INTEGER },
+    127|     )).toEqual({ ok: false, error: "revision_exhausted" });
+       |        ^
+    128|   });
+    129| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[28/56]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  56 failed | 7 passed (63)
+   Start at  16:51:07
+   Duration  267ms (transform 40%, tests 38%, import 10%, setup 7%, worker 5%, environment 1%)
+
+error: "vitest" exited with code 1
+error: script "test:unit" exited with code 1

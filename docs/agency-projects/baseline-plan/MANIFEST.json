@@ -1,0 +1,69 @@
+{
+  "version": 1,
+  "prepared_date": "2026-10-31",
+  "timezone": "Europe/Berlin",
+  "scope": "Agency Projects planning package; not release qualification",
+  "validation": {
+    "work_packages": 12,
+    "tasks": 96,
+    "test_families": 36,
+    "csv_json_equal": true,
+    "dependency_dag_valid": true,
+    "outcome_test_coverage_complete": true,
+    "application_tests_executed_by_planning_chat": false
+  },
+  "files": {
+    "ARCHITECTURE.md": {
+      "bytes": 11318,
+      "sha256": "b30abd6de61aec1e6e9d0cabc668ac0870a29990a5d9b3c287d89ba397facd47"
+    },
+    "BRANCH-SNAPSHOT.json": {
+      "bytes": 24747,
+      "sha256": "8e772e18efe44a0d30b260222bfb18b43f748a665f35f59a85613209b68dbf7a"
+    },
+    "COORDINATION.md": {
+      "bytes": 11251,
+      "sha256": "f4c212a8b213ceff173bf8f962b5836a28403912a46061f1805add1f383d0b43"
+    },
+    "DECISIONS.md": {
+      "bytes": 4591,
+      "sha256": "662f2be6e311358562a4157b2b4a20ade8ca631908d26e025a7161c547b7a069"
+    },
+    "HANDOFF.md": {
+      "bytes": 8642,
+      "sha256": "d37b32faf38caeb5479758b26770b74585053d2c0b6a960a7bb73884c58d5555"
+    },
+    "PRD-Warpdrive-Agency-Projects.md": {
+      "bytes": 11237,
+      "sha256": "2a1eb68b69cb74458677dd4461a27ba37c7d15e3ba912a820adbf09b4f8c552c"
+    },
+    "PROJECTS.md": {
+      "bytes": 32728,
+      "sha256": "a1717127d6f55c1b1c5c2aa14aede811b36c2c7da9f983e58a0860afe1c88f61"
+    },
+    "README.md": {
+      "bytes": 4049,
+      "sha256": "325fba86a46f1d0bd3577ae10bde7f4568041c56ae9b8214e4205304fa4de419"
+    },
+    "TASKS.csv": {
+      "bytes": 44811,
+      "sha256": "99a61fa49fd92aecf0988ac8d622ad12b19483dd04008ced47a5be66b9d1fbb9"
+    },
+    "TASKS.json": {
+      "bytes": 69716,
+      "sha256": "6f1e1fe9b16b789930f3621fd0604f1e02bde7bf6e20d1b6e9167aa3f40e95d8"
+    },
+    "TEST-MATRIX.md": {
+      "bytes": 14257,
+      "sha256": "bfa9c0407d1962a1b708f71f5787848bf19d02aab9bb1c2bbba2bf3099112796"
+    },
+    "build_plan.py": {
+      "bytes": 34088,
+      "sha256": "1ddfa6d37da60514204209266c9cb79c95be980192fd17f41252efdc7ae0edef"
+    },
+    "validate_plan.py": {
+      "bytes": 3855,
+      "sha256": "78071d960818868e3b30756e51a2c7a68b9b877d59e28689dce853f59f89d6a6"
+    }
+  }
+}

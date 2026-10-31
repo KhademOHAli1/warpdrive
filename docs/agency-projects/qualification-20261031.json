@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-10-31T16:00:03.377467+00:00",
+  "base": "67eb151f228d9a2866d51266420e9fb915a77739",
+  "environment": {
+    "bun": "1.4.4",
+    "vitest": "5.0.5",
+    "workers": 1,
+    "database": "none",
+    "providers": "none"
+  },
+  "sourceHashes": {
+    "src/features/agency-projects/assignmentLifecycle.test.ts": "2d6f2380b891bdf8fe0bf456cf638c121ebe79eb27b87f18e8ac74210f063873",
+    "src/features/agency-projects/assignmentLifecycle.ts": "9d61647f92d904bc8832e73dfc1869ea35eca10ce9604aba7dca8f745f02faf4",
+    "src/features/agency-projects/projectLifecycle.test.ts": "49bd9b7c3b99d293be7d4a4e052325ad572f401c34adfefbb37130724c83b8f5",
+    "src/features/agency-projects/projectLifecycle.ts": "e535c05920128b9e5b0bff1e4fe3dad566d42582f9a1c5c7afc22e4cc0f153d4",
+    "src/features/agency-projects/projectSchemas.test.ts": "44b58b0f5e205597e1cb1612b12a7979fc3f5b6c768a942b80e71ffb01908d71",
+    "src/features/agency-projects/projectSchemas.ts": "593052eea2510bd3592a850613c9bbb0b1ebc558b078219f480e67e5899af833"
+  },
+  "checks": [
+    {
+      "name": "project assertion red",
+      "exitCode": 1,
+      "failed": 56,
+      "passed": 7,
+      "log": "evidence/project-red-transitions.log"
+    },
+    {
+      "name": "assignment assertion red",
+      "exitCode": 1,
+      "failed": 25,
+      "passed": 39,
+      "log": "evidence/assignment-red-policy.log"
+    },
+    {
+      "name": "final scoped unit",
+      "command": "PATH=\"$PWD/.runtime/bin:$PATH\" bun run test:unit src/features/agency-projects --maxWorkers=1",
+      "exitCode": 0,
+      "files": 3,
+      "passed": 154,
+      "log": "evidence/agency-final-unit.log"
+    },
+    {
+      "name": "scoped TypeScript",
+      "command": "PATH=\"$PWD/.runtime/bin:$PATH\" bun --bun tsc --noEmit -p .runtime/tsconfig.agency.json",
+      "exitCode": 0,
+      "log": "evidence/agency-types.log",
+      "config": "evidence/tsconfig.agency.json.txt"
+    },
+    {
+      "name": "scoped type-aware ESLint",
+      "command": "PATH=\"$PWD/.runtime/bin:$PATH\" bun --bun eslint src/features/agency-projects --config .runtime/agency-eslint.mjs --max-warnings=0",
+      "exitCode": 0,
+      "log": "evidence/agency-eslint.log",
+      "config": "evidence/agency-eslint.mjs.txt"
+    },
+    {
+      "name": "scoped Biome",
+      "command": "PATH=\"$PWD/.runtime/bin:$PATH\" bun --bun biome check --write src/features/agency-projects",
+      "exitCode": 0,
+      "files": 6
+    },
+    {
+      "name": "Git connectivity and tracked diff whitespace",
+      "exitCode": 0
+    }
+  ],
+  "limits": [
+    "No full repository type/lint/unit/build gate. ESLint uses unchanged rules but a narrow TypeScript program.",
+    "No PostgreSQL, migration, native auth/UI, provider, pilot, production or acceptance claim.",
+    "No current shared feature or effect enabled. All 96 original task acceptance flags remain false.",
+    "Peer owner reviews and accepted combined lineage pending."
+  ]
+}

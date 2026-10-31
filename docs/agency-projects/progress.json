@@ -1,0 +1,97 @@
+{
+  "schemaVersion": 1,
+  "updatedAt": "2026-10-31T16:00:03.377467+00:00",
+  "statusMeaning": "Evidence level only. A source-verified task is not accepted or complete. All 96 acceptance flags remain false.",
+  "tasks": {
+    "AP-00.1": {
+      "status": "source-verified",
+      "evidence": "source-baseline.json; exact heads, dirty paths, remotes, main and listener inventory retained.",
+      "remaining": "Peer private applied ledgers intentionally unavailable; owner receipts required before migration.",
+      "accepted": false
+    },
+    "AP-00.2": {
+      "status": "source-verified",
+      "evidence": "source-baseline.json; independent Git objects, origin/upstream; owned Bun 1.4.4 and frozen install with scripts disabled.",
+      "remaining": "Release install and complete runtime profile still pending.",
+      "accepted": false
+    },
+    "AP-00.3": {
+      "status": "active",
+      "evidence": "Six ownership/API requests sent on 2026-10-31. Immutable COORDINATION has previous owner replies.",
+      "remaining": "Current six responses and concrete extension acceptance pending.",
+      "accepted": false
+    },
+    "AP-00.6": {
+      "status": "active",
+      "evidence": "domain-review-proposal.md; actual APIs separated from proposed interfaces.",
+      "remaining": "Calendar/project authority and durable admission acceptance pending.",
+      "accepted": false
+    },
+    "AP-00.7": {
+      "status": "active",
+      "evidence": "source-baseline.json; proposed web3192/WS8192/PG55492, none started. Disk 2.6 GiB; no heavy checks.",
+      "remaining": "Platform reservation and >=5 GiB stable headroom required before PG campaign.",
+      "accepted": false
+    },
+    "AP-00.8": {
+      "status": "active",
+      "evidence": "Pure project lifecycle and strict schema increments executed test-first; evidence/ logs.",
+      "remaining": "More source increments and shared owner responses remain.",
+      "accepted": false
+    },
+    "AP-01.1": {
+      "status": "active",
+      "evidence": "ui-source-inventory.md tied to committed base and dirty Settings handoff.",
+      "remaining": "Latest committed Settings/Sales adoption and native captures pending.",
+      "accepted": false
+    },
+    "AP-02.1": {
+      "status": "active",
+      "evidence": "domain-review-proposal.md and 27 strict project command/snapshot boundary tests; coherent archive and exact revision validation.",
+      "remaining": "Full additive schema, FKs, SQL/owner review and other domain boundaries pending.",
+      "accepted": false
+    },
+    "AP-02.2": {
+      "status": "active",
+      "evidence": "domain-review-proposal.md proposed access truth table; no grant API invented.",
+      "remaining": "Owner-reviewed shared project permission extension and full deny evidence pending.",
+      "accepted": false
+    },
+    "AP-02.4": {
+      "status": "active",
+      "evidence": "63 pure project policy cases pass after 56 failing transition cases. Archive/restore preserves prior state.",
+      "remaining": "No persistence, immutable DB history, actor authorization, real race or release acceptance yet.",
+      "accepted": false
+    },
+    "AP-04.3": {
+      "status": "active",
+      "evidence": "64 pure assignment policy cases pass after 25 failed / 39 passed assertion red; staff-recorded provenance, full transition graph and exact internal approval version.",
+      "remaining": "Boundary Zod schema and real actor/ownership/permission checks, DB CAS/history, version-specific reopening, native journey and acceptance pending.",
+      "accepted": false
+    },
+    "AP-08.1": {
+      "status": "active",
+      "evidence": "domain-review-proposal.md explicit proposed subject/store/writer inventory.",
+      "remaining": "Privacy owner review and actual registry/adapters/fences pending.",
+      "accepted": false
+    },
+    "AP-09.1": {
+      "status": "active",
+      "evidence": "MAIL quotation/cost contract request sent; source model remains gated.",
+      "remaining": "Actual reviewed IG-12/13 quotation/cost contract pending; no substitute finance engine.",
+      "accepted": false
+    },
+    "AP-10.1": {
+      "status": "active",
+      "evidence": "154 scoped pure unit tests pass (3 files); meaningful project and assignment assertion reds retained; narrow type-aware lint, scoped TypeScript and Biome pass.",
+      "remaining": "Ongoing per-increment evidence; this does not close PG/native/provider gates.",
+      "accepted": false
+    },
+    "AP-11.1": {
+      "status": "source-verified",
+      "evidence": "Immutable original 96-task register preserved; live ledger and DAG/hash validation maintained.",
+      "remaining": "Ongoing task updates and release acceptance remain.",
+      "accepted": false
+    }
+  }
+}

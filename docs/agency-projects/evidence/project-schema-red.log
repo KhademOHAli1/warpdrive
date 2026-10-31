@@ -1,0 +1,24 @@
+$ bun --bun vitest run --project unit src/features/agency-projects/projectSchemas.test.ts "--maxWorkers=1"
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+  - ESM syntax in a file loaded as CommonJS (vitest.classify.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.5 /Users/ali/Developer/warpdrive-agency-projects
+
+ ❯ |unit| src/features/agency-projects/projectSchemas.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| src/features/agency-projects/projectSchemas.test.ts [ src/features/agency-projects/projectSchemas.test.ts ]
+Error: Cannot find module './projectSchemas' imported from /Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/projectSchemas.test.ts
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  no tests
+   Start at  16:53:40
+   Duration  368ms (transform 49%, setup 36%, worker 14%, environment 2%)
+
+error: "vitest" exited with code 1
+error: script "test:unit" exited with code 1

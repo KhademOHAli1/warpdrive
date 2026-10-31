@@ -1,0 +1,690 @@
+$ bun --bun vitest run --project unit src/features/agency-projects/assignmentLifecycle.test.ts "--maxWorkers=1"
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+  - ESM syntax in a file loaded as CommonJS (vitest.classify.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.5 /Users/ali/Developer/warpdrive-agency-projects
+
+ ❯ |unit| src/features/agency-projects/assignmentLifecycle.test.ts (64 tests | 25 failed) 31ms
+   ❯ assignment lifecycle policy v1 (64)
+     × awaiting-acceptance record-acceptance: working 7ms
+     × awaiting-acceptance cancel: canceled 1ms
+     × working submit: submitted 1ms
+     × working cancel: canceled 2ms
+     × submitted begin-review: internal-review 1ms
+     × submitted cancel: canceled 1ms
+     × internal-review request-changes: changes-requested 0ms
+     × internal-review approve: approved 0ms
+     × internal-review cancel: canceled 1ms
+     × changes-requested resume-work: working 1ms
+     × changes-requested cancel: canceled 1ms
+     × records externally received acceptance as staff evidence, without external authentication 1ms
+     × rejects evidence about a different freelancer contact 0ms
+     × requires acceptance evidence and a recording staff actor 0ms
+     × fences progress while the project is planned, preserving cancellation cleanup 0ms
+     × fences progress while the project is on-hold, preserving cancellation cleanup 0ms
+     × fences progress while the project is completed, preserving cancellation cleanup 0ms
+     × fences progress while the project is canceled, preserving cancellation cleanup 0ms
+     × fences progress while the project is archived, preserving cancellation cleanup 0ms
+     × requires a reason for request-changes 0ms
+     × requires a reason for cancel 0ms
+     × binds internal approval to the reviewed version exactly 0ms
+     × preserves acceptance provenance through review changes and another submission 1ms
+     × rejects replay instead of incrementing a second time 1ms
+     × does not overflow the representable revision range 1ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 25 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| src/features/agency-projects/assignmentLifecycle.test.ts > assignment lifecycle policy v1 > awaiting-acceptance record-acceptance: working
+AssertionError: expected { ok: false, …(1) } to match object { ok: true, value: { …(2) } }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "next": {
+-       "freelancerContactId": "freelancer-person",
+-       "internalOwnerUserId": "staff-producer",
+-       "revision": 3,
+-       "state": "working",
+-     },
+-     "receipt": {
+-       "action": "record-acceptance",
+-       "from": "awaiting-acceptance",
+-       "policyVersion": 1,
+-       "previousRevision": 2,
+-       "recordedByUserId": "staff-producer",
+-       "revision": 3,
+-       "to": "working",
+-     },
+-   },
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/assignmentLifecycle.test.ts:79:26
+     77|           expect(result).toEqual({ ok: false, error: "invalid_transiti…
+     78|         } else {
+     79|           expect(result).toMatchObject({
+       |                          ^
+     80|             ok: true,
+     81|             value: {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/25]⎯
+
+ FAIL  |unit| src/features/agency-projects/assignmentLifecycle.test.ts > assignment lifecycle policy v1 > awaiting-acceptance cancel: canceled
+AssertionError: expected { ok: false, …(1) } to match object { ok: true, value: { …(2) } }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "next": {
+-       "freelancerContactId": "freelancer-person",
+-       "internalOwnerUserId": "staff-producer",
+-       "revision": 3,
+-       "state": "canceled",
+-     },
+-     "receipt": {
+-       "action": "cancel",
+-       "from": "awaiting-acceptance",
+-       "policyVersion": 1,
+-       "previousRevision": 2,
+-       "recordedByUserId": "staff-producer",
+-       "revision": 3,
+-       "to": "canceled",
+-     },
+-   },
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/assignmentLifecycle.test.ts:79:26
+     77|           expect(result).toEqual({ ok: false, error: "invalid_transiti…
+     78|         } else {
+     79|           expect(result).toMatchObject({
+       |                          ^
+     80|             ok: true,
+     81|             value: {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/25]⎯
+
+ FAIL  |unit| src/features/agency-projects/assignmentLifecycle.test.ts > assignment lifecycle policy v1 > working submit: submitted
+AssertionError: expected { ok: false, …(1) } to match object { ok: true, value: { …(2) } }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "next": {
+-       "freelancerContactId": "freelancer-person",
+-       "internalOwnerUserId": "staff-producer",
+-       "revision": 3,
+-       "state": "submitted",
+-     },
+-     "receipt": {
+-       "action": "submit",
+-       "from": "working",
+-       "policyVersion": 1,
+-       "previousRevision": 2,
+-       "recordedByUserId": "staff-producer",
+-       "revision": 3,
+-       "to": "submitted",
+-     },
+-   },
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/assignmentLifecycle.test.ts:79:26
+     77|           expect(result).toEqual({ ok: false, error: "invalid_transiti…
+     78|         } else {
+     79|           expect(result).toMatchObject({
+       |                          ^
+     80|             ok: true,
+     81|             value: {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/25]⎯
+
+ FAIL  |unit| src/features/agency-projects/assignmentLifecycle.test.ts > assignment lifecycle policy v1 > working cancel: canceled
+AssertionError: expected { ok: false, …(1) } to match object { ok: true, value: { …(2) } }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "next": {
+-       "freelancerContactId": "freelancer-person",
+-       "internalOwnerUserId": "staff-producer",
+-       "revision": 3,
+-       "state": "canceled",
+-     },
+-     "receipt": {
+-       "action": "cancel",
+-       "from": "working",
+-       "policyVersion": 1,
+-       "previousRevision": 2,
+-       "recordedByUserId": "staff-producer",
+-       "revision": 3,
+-       "to": "canceled",
+-     },
+-   },
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/assignmentLifecycle.test.ts:79:26
+     77|           expect(result).toEqual({ ok: false, error: "invalid_transiti…
+     78|         } else {
+     79|           expect(result).toMatchObject({
+       |                          ^
+     80|             ok: true,
+     81|             value: {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/25]⎯
+
+ FAIL  |unit| src/features/agency-projects/assignmentLifecycle.test.ts > assignment lifecycle policy v1 > submitted begin-review: internal-review
+AssertionError: expected { ok: false, …(1) } to match object { ok: true, value: { …(2) } }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "next": {
+-       "freelancerContactId": "freelancer-person",
+-       "internalOwnerUserId": "staff-producer",
+-       "revision": 3,
+-       "state": "internal-review",
+-     },
+-     "receipt": {
+-       "action": "begin-review",
+-       "from": "submitted",
+-       "policyVersion": 1,
+-       "previousRevision": 2,
+-       "recordedByUserId": "staff-producer",
+-       "revision": 3,
+-       "to": "internal-review",
+-     },
+-   },
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/assignmentLifecycle.test.ts:79:26
+     77|           expect(result).toEqual({ ok: false, error: "invalid_transiti…
+     78|         } else {
+     79|           expect(result).toMatchObject({
+       |                          ^
+     80|             ok: true,
+     81|             value: {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/25]⎯
+
+ FAIL  |unit| src/features/agency-projects/assignmentLifecycle.test.ts > assignment lifecycle policy v1 > submitted cancel: canceled
+AssertionError: expected { ok: false, …(1) } to match object { ok: true, value: { …(2) } }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "next": {
+-       "freelancerContactId": "freelancer-person",
+-       "internalOwnerUserId": "staff-producer",
+-       "revision": 3,
+-       "state": "canceled",
+-     },
+-     "receipt": {
+-       "action": "cancel",
+-       "from": "submitted",
+-       "policyVersion": 1,
+-       "previousRevision": 2,
+-       "recordedByUserId": "staff-producer",
+-       "revision": 3,
+-       "to": "canceled",
+-     },
+-   },
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/assignmentLifecycle.test.ts:79:26
+     77|           expect(result).toEqual({ ok: false, error: "invalid_transiti…
+     78|         } else {
+     79|           expect(result).toMatchObject({
+       |                          ^
+     80|             ok: true,
+     81|             value: {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/25]⎯
+
+ FAIL  |unit| src/features/agency-projects/assignmentLifecycle.test.ts > assignment lifecycle policy v1 > internal-review request-changes: changes-requested
+AssertionError: expected { ok: false, …(1) } to match object { ok: true, value: { …(2) } }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "next": {
+-       "freelancerContactId": "freelancer-person",
+-       "internalOwnerUserId": "staff-producer",
+-       "revision": 3,
+-       "state": "changes-requested",
+-     },
+-     "receipt": {
+-       "action": "request-changes",
+-       "from": "internal-review",
+-       "policyVersion": 1,
+-       "previousRevision": 2,
+-       "recordedByUserId": "staff-producer",
+-       "revision": 3,
+-       "to": "changes-requested",
+-     },
+-   },
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/assignmentLifecycle.test.ts:79:26
+     77|           expect(result).toEqual({ ok: false, error: "invalid_transiti…
+     78|         } else {
+     79|           expect(result).toMatchObject({
+       |                          ^
+     80|             ok: true,
+     81|             value: {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/25]⎯
+
+ FAIL  |unit| src/features/agency-projects/assignmentLifecycle.test.ts > assignment lifecycle policy v1 > internal-review approve: approved
+AssertionError: expected { ok: false, …(1) } to match object { ok: true, value: { …(2) } }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "next": {
+-       "freelancerContactId": "freelancer-person",
+-       "internalOwnerUserId": "staff-producer",
+-       "revision": 3,
+-       "state": "approved",
+-     },
+-     "receipt": {
+-       "action": "approve",
+-       "from": "internal-review",
+-       "policyVersion": 1,
+-       "previousRevision": 2,
+-       "recordedByUserId": "staff-producer",
+-       "revision": 3,
+-       "to": "approved",
+-     },
+-   },
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/assignmentLifecycle.test.ts:79:26
+     77|           expect(result).toEqual({ ok: false, error: "invalid_transiti…
+     78|         } else {
+     79|           expect(result).toMatchObject({
+       |                          ^
+     80|             ok: true,
+     81|             value: {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/25]⎯
+
+ FAIL  |unit| src/features/agency-projects/assignmentLifecycle.test.ts > assignment lifecycle policy v1 > internal-review cancel: canceled
+AssertionError: expected { ok: false, …(1) } to match object { ok: true, value: { …(2) } }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "next": {
+-       "freelancerContactId": "freelancer-person",
+-       "internalOwnerUserId": "staff-producer",
+-       "revision": 3,
+-       "state": "canceled",
+-     },
+-     "receipt": {
+-       "action": "cancel",
+-       "from": "internal-review",
+-       "policyVersion": 1,
+-       "previousRevision": 2,
+-       "recordedByUserId": "staff-producer",
+-       "revision": 3,
+-       "to": "canceled",
+-     },
+-   },
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/assignmentLifecycle.test.ts:79:26
+     77|           expect(result).toEqual({ ok: false, error: "invalid_transiti…
+     78|         } else {
+     79|           expect(result).toMatchObject({
+       |                          ^
+     80|             ok: true,
+     81|             value: {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/25]⎯
+
+ FAIL  |unit| src/features/agency-projects/assignmentLifecycle.test.ts > assignment lifecycle policy v1 > changes-requested resume-work: working
+AssertionError: expected { ok: false, …(1) } to match object { ok: true, value: { …(2) } }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "next": {
+-       "freelancerContactId": "freelancer-person",
+-       "internalOwnerUserId": "staff-producer",
+-       "revision": 3,
+-       "state": "working",
+-     },
+-     "receipt": {
+-       "action": "resume-work",
+-       "from": "changes-requested",
+-       "policyVersion": 1,
+-       "previousRevision": 2,
+-       "recordedByUserId": "staff-producer",
+-       "revision": 3,
+-       "to": "working",
+-     },
+-   },
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/assignmentLifecycle.test.ts:79:26
+     77|           expect(result).toEqual({ ok: false, error: "invalid_transiti…
+     78|         } else {
+     79|           expect(result).toMatchObject({
+       |                          ^
+     80|             ok: true,
+     81|             value: {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/25]⎯
+
+ FAIL  |unit| src/features/agency-projects/assignmentLifecycle.test.ts > assignment lifecycle policy v1 > changes-requested cancel: canceled
+AssertionError: expected { ok: false, …(1) } to match object { ok: true, value: { …(2) } }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "next": {
+-       "freelancerContactId": "freelancer-person",
+-       "internalOwnerUserId": "staff-producer",
+-       "revision": 3,
+-       "state": "canceled",
+-     },
+-     "receipt": {
+-       "action": "cancel",
+-       "from": "changes-requested",
+-       "policyVersion": 1,
+-       "previousRevision": 2,
+-       "recordedByUserId": "staff-producer",
+-       "revision": 3,
+-       "to": "canceled",
+-     },
+-   },
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/assignmentLifecycle.test.ts:79:26
+     77|           expect(result).toEqual({ ok: false, error: "invalid_transiti…
+     78|         } else {
+     79|           expect(result).toMatchObject({
+       |                          ^
+     80|             ok: true,
+     81|             value: {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/25]⎯
+
+ FAIL  |unit| src/features/agency-projects/assignmentLifecycle.test.ts > assignment lifecycle policy v1 > records externally received acceptance as staff evidence, without external authentication
+AssertionError: expected { ok: false, …(1) } to match object { ok: true, value: { …(2) } }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "next": {
+-       "acceptance": {
+-         "evidenceReference": "call-note-42",
+-         "freelancerContactId": "freelancer-person",
+-         "recordedByUserId": "staff-producer",
+-         "source": "staff-recorded",
+-       },
+-     },
+-     "receipt": {
+-       "provenance": {
+-         "evidenceReference": "call-note-42",
+-         "freelancerContactId": "freelancer-person",
+-         "recordedByUserId": "staff-producer",
+-         "source": "staff-recorded",
+-       },
+-     },
+-   },
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/assignmentLifecycle.test.ts:94:20
+     92|   it("records externally received acceptance as staff evidence, withou…
+     93|     const result = transitionAssignment(snapshot(), command("record-ac…
+     94|     expect(result).toMatchObject({ ok: true, value: {
+       |                    ^
+     95|       next: { acceptance },
+     96|       receipt: { provenance: { source: "staff-recorded", recordedByUse…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/25]⎯
+
+ FAIL  |unit| src/features/agency-projects/assignmentLifecycle.test.ts > assignment lifecycle policy v1 > rejects evidence about a different freelancer contact
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: false, …(1) }
+
+- Expected
++ Received
+
+  {
+-   "error": "acceptance_contact_mismatch",
++   "error": "invalid_transition",
+    "ok": false,
+  }
+
+ ❯ src/features/agency-projects/assignmentLifecycle.test.ts:106:19
+    104|     expect(transitionAssignment(snapshot(), {
+    105|       ...command("record-acceptance"), action: "record-acceptance", fr…
+    106|     }, "active")).toEqual({ ok: false, error: "acceptance_contact_mism…
+       |                   ^
+    107|   });
+    108|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/25]⎯
+
+ FAIL  |unit| src/features/agency-projects/assignmentLifecycle.test.ts > assignment lifecycle policy v1 > requires acceptance evidence and a recording staff actor
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: false, …(1) }
+
+- Expected
++ Received
+
+  {
+-   "error": "acceptance_evidence_required",
++   "error": "invalid_transition",
+    "ok": false,
+  }
+
+ ❯ src/features/agency-projects/assignmentLifecycle.test.ts:112:19
+    110|     expect(transitionAssignment(snapshot(), {
+    111|       action: "record-acceptance", expectedRevision: 2, recordedByUser…
+    112|     }, "active")).toEqual({ ok: false, error: "acceptance_evidence_req…
+       |                   ^
+    113|     expect(transitionAssignment(snapshot(), { ...command("record-accep…
+    114|       .toEqual({ ok: false, error: "actor_required" });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/25]⎯
+
+ FAIL  |unit| src/features/agency-projects/assignmentLifecycle.test.ts > assignment lifecycle policy v1 > fences progress while the project is planned, preserving cancellation cleanup
+ FAIL  |unit| src/features/agency-projects/assignmentLifecycle.test.ts > assignment lifecycle policy v1 > fences progress while the project is on-hold, preserving cancellation cleanup
+ FAIL  |unit| src/features/agency-projects/assignmentLifecycle.test.ts > assignment lifecycle policy v1 > fences progress while the project is completed, preserving cancellation cleanup
+ FAIL  |unit| src/features/agency-projects/assignmentLifecycle.test.ts > assignment lifecycle policy v1 > fences progress while the project is canceled, preserving cancellation cleanup
+ FAIL  |unit| src/features/agency-projects/assignmentLifecycle.test.ts > assignment lifecycle policy v1 > fences progress while the project is archived, preserving cancellation cleanup
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: false, …(1) }
+
+- Expected
++ Received
+
+  {
+-   "error": "project_not_active",
++   "error": "invalid_transition",
+    "ok": false,
+  }
+
+ ❯ src/features/agency-projects/assignmentLifecycle.test.ts:121:10
+    119|     (projectState) => {
+    120|       expect(transitionAssignment(snapshot("working"), command("submit…
+    121|         .toEqual({ ok: false, error: "project_not_active" });
+       |          ^
+    122|       expect(transitionAssignment(snapshot("working"), command("cancel…
+    123|         .toMatchObject({ ok: true, value: { next: { state: "canceled" …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/25]⎯
+
+ FAIL  |unit| src/features/agency-projects/assignmentLifecycle.test.ts > assignment lifecycle policy v1 > requires a reason for request-changes
+ FAIL  |unit| src/features/agency-projects/assignmentLifecycle.test.ts > assignment lifecycle policy v1 > requires a reason for cancel
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: false, error: 'reason_required' }
+
+- Expected
++ Received
+
+  {
+-   "error": "reason_required",
++   "error": "invalid_transition",
+    "ok": false,
+  }
+
+ ❯ src/features/agency-projects/assignmentLifecycle.test.ts:129:8
+    127|   it.each(["request-changes", "cancel"] as const)("requires a reason f…
+    128|     expect(transitionAssignment(snapshot("internal-review"), { ...comm…
+    129|       .toEqual({ ok: false, error: "reason_required" });
+       |        ^
+    130|   });
+    131|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/25]⎯
+
+ FAIL  |unit| src/features/agency-projects/assignmentLifecycle.test.ts > assignment lifecycle policy v1 > binds internal approval to the reviewed version exactly
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: false, …(1) }
+
+- Expected
++ Received
+
+  {
+-   "error": "review_version_conflict",
++   "error": "invalid_transition",
+    "ok": false,
+  }
+
+ ❯ src/features/agency-projects/assignmentLifecycle.test.ts:136:19
+    134|     expect(transitionAssignment(current, {
+    135|       ...command("approve"), action: "approve", reviewedVersionReferen…
+    136|     }, "active")).toEqual({ ok: false, error: "review_version_conflict…
+       |                   ^
+    137|     expect(transitionAssignment(current, command("approve"), "active"))
+    138|       .toMatchObject({ ok: true, value: { next: { approval: { kind: "i…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/25]⎯
+
+ FAIL  |unit| src/features/agency-projects/assignmentLifecycle.test.ts > assignment lifecycle policy v1 > preserves acceptance provenance through review changes and another submission
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/features/agency-projects/assignmentLifecycle.test.ts:144:26
+    142|     const current = Object.freeze(snapshot("internal-review"));
+    143|     const requested = transitionAssignment(current, command("request-c…
+    144|     expect(requested.ok).toBe(true);
+       |                          ^
+    145|     if (!requested.ok) return;
+    146|     const previousReceipt = structuredClone(requested.value.receipt);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/25]⎯
+
+ FAIL  |unit| src/features/agency-projects/assignmentLifecycle.test.ts > assignment lifecycle policy v1 > rejects replay instead of incrementing a second time
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/features/agency-projects/assignmentLifecycle.test.ts:155:22
+    153|   it("rejects replay instead of incrementing a second time", () => {
+    154|     const first = transitionAssignment(snapshot(), command("record-acc…
+    155|     expect(first.ok).toBe(true);
+       |                      ^
+    156|     if (!first.ok) return;
+    157|     expect(transitionAssignment(first.value.next, command("record-acce…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/25]⎯
+
+ FAIL  |unit| src/features/agency-projects/assignmentLifecycle.test.ts > assignment lifecycle policy v1 > does not overflow the representable revision range
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: false, …(1) }
+
+- Expected
++ Received
+
+  {
+-   "error": "revision_exhausted",
++   "error": "invalid_transition",
+    "ok": false,
+  }
+
+ ❯ src/features/agency-projects/assignmentLifecycle.test.ts:164:19
+    162|     expect(transitionAssignment({ ...snapshot(), revision: Number.MAX_…
+    163|       ...command("record-acceptance"), expectedRevision: Number.MAX_SA…
+    164|     }, "active")).toEqual({ ok: false, error: "revision_exhausted" });
+       |                   ^
+    165|   });
+    166| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/25]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  25 failed | 39 passed (64)
+   Start at  16:54:36
+   Duration  268ms (transform 46%, tests 33%, import 10%, setup 7%, worker 3%)
+
+error: "vitest" exited with code 1
+error: script "test:unit" exited with code 1

@@ -1,0 +1,3 @@
+# Preserve the original baseline CSV and raw command evidence byte-for-byte.
+baseline-plan/TASKS.csv -text whitespace=cr-at-eol
+evidence/*.log -text whitespace=-blank-at-eof
