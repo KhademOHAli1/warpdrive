@@ -25,7 +25,8 @@ just want to use it, start with the feature pages instead.
 | Object storage | MinIO, S3-compatible |
 | Email | Gmail API over OAuth |
 | Auth | Better Auth, invitation-only with configured email/password, passkeys or Google/Microsoft/OIDC sign-in; mandatory administrator MFA |
-| Package manager | Bun |
+| Runtime and package manager | Bun, version declared in each package |
+| Localization | next-intl/use-intl, English/Farsi/German, locale-aware shared controls |
 
 Custom fields are stored as JSONB rather than as migrated columns, which is what lets
 administrators add fields without a schema change.
@@ -115,3 +116,30 @@ that is exactly the failure a CRM cannot afford.
 ## Contributing
 
 See [Contributing](./contributing.md).
+
+## Workflow automation
+
+The in-progress workflow subsystem lives in `src/features/workflows/`. It includes
+a bounded versioned graph, typed references, owner/capability checks, revision-checked
+drafts, immutable publication, and a localized visual editor. The initial executable
+path starts manually, reads a visible deal, and creates follow-up tasks.
+
+Run admission pins a published version. CRM database effects and step progress share
+a transaction, and pg-boss startup/minutely reconciliation recovers persisted cursors.
+Simulation invokes the same CRM validation in a rolled-back savepoint. Publication
+requires the existing fresh-authentication check. Historical payloads are excluded
+from UI responses because record visibility can change.
+
+The planned engine will persist events, runs, steps, effects, and waits and use the
+existing pg-boss worker. PostgreSQL NOTIFY is the real-time notification layer;
+a durable workflow trigger must be saved transactionally with its CRM mutation.
+See [Visual workflows](./features/automations.md) for availability and the repository's
+`docs/workflows/architecture.md` for current contracts and qualification boundaries.
+
+## Locale and time boundaries
+
+The root document and locale provider coordinate language and direction, including
+Radix portals. Farsi uses local Vazirmatn; Latin UI uses local Inter. Language,
+calendar, numbering system, and account timezone are independent preferences.
+Preserve canonical API/CSV values and distinguish timed instants from all-day dates.
+Calendar-aware recurring automation remains separate from calendar display/input.

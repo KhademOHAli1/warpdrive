@@ -11,6 +11,12 @@ export const GLOBAL_FLAGS = [
   "pipeline.manage",
   "metadata.manage",
   "goals.manage",
+  "workflow.view",
+  "workflow.create",
+  "workflow.edit",
+  "workflow.publish",
+  "workflow.run",
+  "workflow.cancel",
   "permissions.manage",
   // Team-manager visibility: the set holder can SEE records owned by members of any team they
   // manage (teams.managerId), across entities. Inert unless the holder actually manages a team.
@@ -63,6 +69,7 @@ export const PERMISSION_FLAGS = {
 
 // Granting any of these to a set requires the actor to be an admin (permissions spec 5.2).
 export const HIGH_RISK_FLAGS = [
+  "workflow.publish",
   "permissions.manage",
   "pipeline.manage",
   "metadata.manage",

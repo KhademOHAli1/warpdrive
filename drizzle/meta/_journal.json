@@ -589,6 +589,13 @@
       "when": 1793443475394,
       "tag": "0083_integration_connections",
       "breakpoints": true
+    },
+    {
+      "idx": 84,
+      "version": "7",
+      "when": 1793452709228,
+      "tag": "0084_visual_workflows",
+      "breakpoints": true
     }
   ]
 }

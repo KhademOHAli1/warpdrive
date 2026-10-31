@@ -12,8 +12,10 @@ team. It covers pipeline management, a deal workspace, contacts and organization
 two-way Gmail, contact enrichment, user management, notifications, and a
 performance page with sales metrics and quota goals.
 
-It runs entirely on infrastructure you control. There is no per-seat bill and no
-vendor holding your customer data.
+The application and core CRM storage run on infrastructure you control. Connected
+mailbox and enrichment providers process the data used by those integrations. This
+maintained fork keeps upstream history and MIT attribution, and adds Bun plus
+Farsi/German localization.
 
 ## What it does
 
@@ -33,12 +35,22 @@ vendor holding your customer data.
 - **AI access.** An OAuth-protected MCP server so assistants can read and update the
   CRM under each user's own permissions.
 - **Administration.** Users, teams, permission sets, and visibility groups.
+- **Languages and region.** English, Farsi RTL, and German; independent Gregorian/
+  Iranian calendar, timezone, and digit preferences. See [Regional settings](./features/regional-settings.md).
+- **Currencies.** Native amounts on leads/deals and separate currency totals, without
+  exchange-rate conversion.
 
-## What it is not
+## Implementation scope
 
-Warpdrive reimplements the business-development portion of a CRM. It deliberately
-leaves out products and projects, documents, invoicing, forecast views, and
-multi-currency. If your team needs those, this is not the right tool.
+Visual workflow automation is being implemented in stages. An early-access editor
+supports manual deal follow-up workflows, simulation, publication, background execution,
+and run history. Automatic triggers and advanced actions remain in development. See
+[Visual workflows](./features/automations.md) for the current boundary.
+
+The Google Calendar event editor, external calendar synchronization, conferencing
+providers, and advanced pipeline Insights have separate specifications. They are
+planned capabilities, not available integrations. Existing scheduled email,
+activity reminders, and basic performance reports remain available.
 
 ## Single-tenant by design
 
@@ -56,4 +68,5 @@ permissions model comprehensible and the queries simple.
 ## License
 
 MIT. The source lives at
-[github.com/sneg55/warpdrive](https://github.com/sneg55/warpdrive).
+[github.com/KhademOHAli1/warpdrive](https://github.com/KhademOHAli1/warpdrive),
+with upstream attribution to [sneg55/warpdrive](https://github.com/sneg55/warpdrive).

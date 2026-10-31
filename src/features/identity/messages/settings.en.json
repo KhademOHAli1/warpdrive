@@ -710,7 +710,13 @@
       "contact_merge": "contact.merge",
       "activity_edit": "activity.edit",
       "activity_delete": "activity.delete",
-      "record_share": "record.share"
+      "record_share": "record.share",
+      "workflow_view": "View own workflows",
+      "workflow_create": "Create workflows",
+      "workflow_edit": "Edit own workflow drafts",
+      "workflow_publish": "Publish and activate own workflows",
+      "workflow_run": "Run own workflows",
+      "workflow_cancel": "Cancel own workflow runs"
     },
     "icons": {
       "call": "call",

@@ -10,6 +10,7 @@ export const NAV_ITEMS = [
   // The /settings index redirects by role (admins -> company settings, everyone else -> personal
   // preferences), so a non-admin never lands on an admin-only page.
   { href: "/settings", key: "settings", section: "/settings" },
+  { href: "/workflows", key: "workflows", section: "/workflows" },
 ] as const;
 
 export type NavKey = (typeof NAV_ITEMS)[number]["key"];

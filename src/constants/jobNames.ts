@@ -33,3 +33,6 @@ export const PGBOSS_QUEUE_IMPORT_VALIDATE = "import.validate";
 export const PGBOSS_QUEUE_IMPORT_COMMIT = "import.commit";
 export const PGBOSS_QUEUE_IMPORT_UNDO = "import.undo";
 export const IMPORT_JOB_TIMEOUT_MS = 5 * 60 * 1000;
+
+export const PGBOSS_QUEUE_WORKFLOW_RUN = "workflow.run";
+export const PGBOSS_QUEUE_WORKFLOW_RECONCILE = "workflow.reconcile";

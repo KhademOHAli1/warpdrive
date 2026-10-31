@@ -1,5 +1,6 @@
 "use client";
 
+import { GitBranch } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { Tip } from "@/components/ui/tooltip";
 import { DOCS_SITE_URL } from "@/constants/docs";
@@ -27,6 +28,7 @@ const ICONS: Record<NavKey, typeof PipelineIcon> = {
   inbox: InboxIcon,
   dashboard: DashboardIcon,
   settings: SettingsIcon,
+  workflows: GitBranch,
 };
 
 export function SidebarMenu({

@@ -13,6 +13,15 @@ reverse proxy that terminates TLS with automatic Let's Encrypt certificates. One
 
 ## Prerequisites
 
+Use the maintained fork's current `.env.example`, package manifests, and migration
+journal as the configuration source. Bun is the declared application runtime and
+package manager; local development needs the version in `package.json`.
+
+The inherited Compose storage image references require operator review before a
+fresh installation. The root README records the known MinIO image availability
+limitation; an S3-compatible deployment needs valid image/service configuration,
+credentials, bucket provisioning, and browser-reachable upload URLs.
+
 - A Linux box with Docker and the Compose plugin.
 - A domain name with an `A`/`AAAA` record pointing at the box's public IP, for the
   application's HTTPS origin and authentication callbacks.

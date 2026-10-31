@@ -144,7 +144,8 @@
   },
   "src/features/i18n/messages/": {
     "de": {
-      "nav.leads": "Leads is the established German CRM plural, used consistently across the interface."
+      "nav.leads": "Leads is the established German CRM plural, used consistently across the interface.",
+      "nav.workflows": "Workflows is the established German product term for configurable business automation."
     }
   },
   "src/features/leads/messages/leads": {
@@ -174,6 +175,12 @@
     "de": {
       "name": "Name is the standard German field label and matches the English spelling.",
       "system": "System is the German noun for a system actor and matches the English spelling."
+    }
+  },
+  "src/features/workflows/messages/workflows": {
+    "de": {
+      "title": "Workflows is the established German term used consistently in navigation and headings.",
+      "simulationMode": "Simulation is the correct German noun and is spelled identically in English."
     }
   }
 }

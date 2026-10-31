@@ -710,7 +710,13 @@
       "contact_merge": "ادغام مخاطبان",
       "activity_edit": "ویرایش فعالیت",
       "activity_delete": "حذف فعالیت",
-      "record_share": "اشتراک‌گذاری اطلاعات"
+      "record_share": "اشتراک‌گذاری اطلاعات",
+      "workflow_view": "مشاهدهٔ گردش‌کارهای خود",
+      "workflow_create": "ساخت گردش‌کار",
+      "workflow_edit": "ویرایش پیش‌نویس گردش‌کارهای خود",
+      "workflow_publish": "انتشار و فعال‌سازی گردش‌کارهای خود",
+      "workflow_run": "اجرای گردش‌کارهای خود",
+      "workflow_cancel": "لغو اجراهای گردش‌کارهای خود"
     },
     "icons": {
       "call": "تماس",
