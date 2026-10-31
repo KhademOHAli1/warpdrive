@@ -196,8 +196,9 @@ changing interface copy; catalog validity is followed by contextual workflow rev
 The next calendar milestone is the Google Calendar web event workflow, including its
 advanced fields, invitations, recurrence, conferencing and account-dependent options.
 The [workflow specification](docs/google-calendar-event-workflow.md) records the reference
-behavior, current gaps and acceptance criteria. This milestone is documentation only;
-calendar implementation is deferred until work resumes. Google Meet, Zoom, Teams and
+behavior, current gaps and acceptance criteria.
+The [implementation plan](docs/calendar-implementation-plan.md) tracks the first localized
+event-editor slice and the remaining service work. Google Meet, Zoom, Teams and
 external calendar synchronization are planned capabilities, not current integrations.
 
 The current UI includes the updated sidebar and top bar, separate regional, appearance
