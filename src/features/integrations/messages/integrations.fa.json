@@ -165,5 +165,16 @@
   "finishSetup": "تکمیل راه‌اندازی",
   "reconnect": "اتصال دوباره",
   "explorePlanned": "مشاهدهٔ برنامهٔ توسعه",
-  "needsAttention": "نیازمند بررسی"
+  "needsAttention": "نیازمند بررسی",
+  "availableIntegrations": "اتصال‌های آمادهٔ استفاده",
+  "availableBody": "ابزارهای روزمره‌تان را متصل کنید. کنترل دسترسی حساب‌ها در اختیار شماست.",
+  "exploreRoadmap": "اتصال‌های در برنامهٔ توسعه",
+  "roadmapBody": "{count, plural, one {# اتصال در برنامه است.} other {# اتصال در برنامه است.}} ببینید در ادامه چه امکاناتی اضافه می‌شود.",
+  "workspaceTools": "ابزارهای متصل به فضای کاری شما",
+  "activeConnections": "{count, plural, =0 {هنوز اتصال فعالی ندارید.} other {# اتصال فعال دارید.}}",
+  "addConnection": "افزودن اتصال",
+  "review": "بررسی",
+  "channelNeeded": "برای تکمیل راه‌اندازی، یک کانال عمومی انتخاب کنید.",
+  "connectionRemoved": "این فضای کاری قطع شده است. هر وقت نیاز داشتید دوباره آن را متصل کنید.",
+  "reviewGmail": "بررسی اتصال Gmail"
 }

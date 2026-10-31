@@ -165,5 +165,16 @@
   "finishSetup": "Finish setup",
   "reconnect": "Reconnect",
   "explorePlanned": "View roadmap",
-  "needsAttention": "Needs attention"
+  "needsAttention": "Needs attention",
+  "availableIntegrations": "Available integrations",
+  "availableBody": "Connect the tools you use today. Account access stays under your control.",
+  "exploreRoadmap": "Explore planned integrations",
+  "roadmapBody": "{count, plural, one {# planned integration.} other {# planned integrations.}} Preview what is coming next.",
+  "workspaceTools": "Your workspace, connected",
+  "activeConnections": "{count, plural, =0 {No active connections yet.} one {# active connection.} other {# active connections.}}",
+  "addConnection": "Add a connection",
+  "review": "Review",
+  "channelNeeded": "Choose a public channel to finish setup.",
+  "connectionRemoved": "Disconnected. Reconnect this workspace when you need it.",
+  "reviewGmail": "Review Gmail connection"
 }

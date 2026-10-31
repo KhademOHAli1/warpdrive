@@ -165,5 +165,16 @@
   "finishSetup": "Einrichtung abschließen",
   "reconnect": "Erneut verbinden",
   "explorePlanned": "Entwicklungsplan ansehen",
-  "needsAttention": "Prüfung erforderlich"
+  "needsAttention": "Prüfung erforderlich",
+  "availableIntegrations": "Verfügbare Integrationen",
+  "availableBody": "Verbinden Sie Ihre täglichen Werkzeuge. Sie behalten die Kontrolle über den Kontozugriff.",
+  "exploreRoadmap": "Geplante Integrationen entdecken",
+  "roadmapBody": "{count, plural, one {# geplante Integration.} other {# geplante Integrationen.}} Ein Ausblick auf die nächsten Erweiterungen.",
+  "workspaceTools": "Ihre verbundenen Arbeitswerkzeuge",
+  "activeConnections": "{count, plural, =0 {Noch keine aktiven Verbindungen.} one {# aktive Verbindung.} other {# aktive Verbindungen.}}",
+  "addConnection": "Verbindung hinzufügen",
+  "review": "Prüfen",
+  "channelNeeded": "Wählen Sie einen öffentlichen Kanal, um die Einrichtung abzuschließen.",
+  "connectionRemoved": "Diese Workspace-Verbindung wurde getrennt. Sie können sie bei Bedarf erneut herstellen.",
+  "reviewGmail": "Gmail-Verbindung prüfen"
 }
