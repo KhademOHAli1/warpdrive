@@ -188,6 +188,8 @@ export const ERROR_IDS = {
   WORKFLOW_INVALID: "E_WORKFLOW_002", // invalid graph or action input
   WORKFLOW_CONFLICT: "E_WORKFLOW_003", // stale draft revision
   WORKFLOW_WRITE_FAILED: "E_WORKFLOW_004", // insert returned no persisted row
+  WORKFLOW_NOT_READY: "E_WORKFLOW_005", // action contract has no qualified execution handler
+  WORKFLOW_BINDING_MISSING: "E_WORKFLOW_006", // referenced value is unavailable at execution
 
   // UI
   UI_CHART_CONTEXT_MISSING: "E_UI_001", // a chart part rendered outside its ChartContainer

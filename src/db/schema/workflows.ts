@@ -57,6 +57,7 @@ export const workflowVersions = pgTable(
   },
   (t) => [
     unique("workflow_version_number_unique").on(t.workflowId, t.number),
+    unique("workflow_version_identity_unique").on(t.id, t.workflowId),
     check("workflow_version_number_positive", sql`${t.number} > 0`),
   ],
 );

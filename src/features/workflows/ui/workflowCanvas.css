@@ -1,0 +1,22 @@
+.workflow-canvas {
+  --xy-background-color: transparent;
+  --xy-background-pattern-dots-color: var(--border);
+  --xy-edge-stroke: var(--muted-foreground);
+  --xy-edge-stroke-selected: var(--primary);
+  --xy-controls-button-background-color: var(--card);
+  --xy-controls-button-color: var(--foreground);
+  --xy-controls-button-border-color: var(--border);
+  --xy-controls-button-background-color-hover: var(--accent);
+  --xy-node-border: 0;
+  --xy-handle-background-color: var(--card);
+  --xy-handle-border-color: var(--muted-foreground);
+}
+.workflow-canvas .react-flow__node {
+  cursor: pointer;
+}
+.workflow-canvas .react-flow__controls {
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  box-shadow: none;
+}

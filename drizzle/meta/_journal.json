@@ -554,6 +554,13 @@
       "when": 1793441824851,
       "tag": "0078_visual_workflow_definitions",
       "breakpoints": true
+    },
+    {
+      "idx": 79,
+      "version": "7",
+      "when": 1793444005468,
+      "tag": "0079_workflow_manual_execution",
+      "breakpoints": true
     }
   ]
 }

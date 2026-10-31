@@ -7,6 +7,7 @@ import { registerReaperJob } from "@/features/files/reaper";
 import { registerImportWorkers } from "@/features/import/registerImportWorkers";
 import { registerEmailNotificationWorker } from "@/features/notifications/email/job";
 import { registerReleaseCheckJob } from "@/features/release/job";
+import { registerWorkflowJobs } from "@/features/workflows/worker";
 import { setBoss } from "@/jobs/boss";
 
 // Register all job handlers and schedules. Called after boss.start() and
@@ -21,6 +22,8 @@ export async function registerAllJobs(boss: PgBossType): Promise<void> {
   await registerReminderWorker(boss);
   // Update-check cron (OSS self-hosters). No-op when DISABLE_UPDATE_CHECK is set.
   await registerReleaseCheckJob(boss);
+  const { db } = await import("@/db/client");
+  await registerWorkflowJobs(boss, db);
 }
 
 // Compose `worker` service. Boots pg-boss, publishes the singleton so producers

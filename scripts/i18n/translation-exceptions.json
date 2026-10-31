@@ -144,7 +144,8 @@
   },
   "src/features/i18n/messages/": {
     "de": {
-      "nav.leads": "Leads is the established German CRM plural, used consistently across the interface."
+      "nav.leads": "Leads is the established German CRM plural, used consistently across the interface.",
+      "nav.workflows": "Workflows is the established German product term for configurable business automation."
     }
   },
   "src/features/leads/messages/leads": {
@@ -168,6 +169,12 @@
   "src/features/stats/messages/stats": {
     "de": {
       "ownerGroupTeams": "Teams is the standard German plural of Team."
+    }
+  },
+  "src/features/workflows/messages/workflows": {
+    "de": {
+      "title": "Workflows is the established German term used consistently in navigation and headings.",
+      "simulationMode": "Simulation is the correct German noun and is spelled identically in English."
     }
   }
 }

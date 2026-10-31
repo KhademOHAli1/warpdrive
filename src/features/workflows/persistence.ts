@@ -7,6 +7,7 @@ import type { PermSetUser } from "@/features/permissions/effective";
 import { err, ok } from "@/types/result";
 import { canWorkflow } from "./access";
 import { validateDefinition } from "./definition";
+import { executableDefinition } from "./readiness";
 import { definitionSchema } from "./schemas";
 
 const nameSchema = z.string().trim().min(1).max(120);
@@ -94,6 +95,7 @@ export async function publishWorkflow(
     if (current.revision !== revision) return err(ERROR_IDS.WORKFLOW_CONFLICT);
     const definition = validateDefinition(current.draft);
     if (!definition.ok) return err(ERROR_IDS.WORKFLOW_INVALID);
+    if (!executableDefinition(definition.value)) return err(ERROR_IDS.WORKFLOW_NOT_READY);
     if (current.publishedNumber !== null) {
       const [existing] = await tx
         .select()
