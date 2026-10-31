@@ -20,7 +20,7 @@ export function BuilderFrame({
   return (
     <Dialog open onOpenChange={onExpandedChange}>
       <DialogContent
-        className="flex h-[calc(100dvh-24px)] w-[calc(100vw-24px)] max-w-none flex-col gap-0 overflow-auto rounded-xl p-0 sm:max-w-none"
+        className="flex h-[calc(100dvh-24px)] w-[calc(100vw-24px)] max-w-none flex-col gap-0 overflow-hidden rounded-xl p-0 sm:max-w-none"
         onCloseAutoFocus={(event) => {
           event.preventDefault();
           returnFocus.current?.focus();
@@ -28,7 +28,7 @@ export function BuilderFrame({
       >
         <DialogTitle className="sr-only">{t("canvas")}</DialogTitle>
         <DialogDescription className="sr-only">{t("focusHint")}</DialogDescription>
-        <div className="min-h-0 flex-1">{children}</div>
+        <div className="min-h-0 flex-1 overflow-y-auto">{children}</div>
       </DialogContent>
     </Dialog>
   );

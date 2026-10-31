@@ -1,7 +1,8 @@
 "use client";
 
 import { Handle, type Node, type NodeProps, Position } from "@xyflow/react";
-import { CirclePlay, Database, GitBranch, ListTodo, TriangleAlert } from "lucide-react";
+import { CirclePlay, Database, GitBranch, ListTodo, Plus, TriangleAlert } from "lucide-react";
+import { Button } from "@/components/ui/Button";
 import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
 import { directionForLocale } from "@/features/i18n/registry";
 import { useFormatters } from "@/lib/useFormatters";
@@ -9,8 +10,20 @@ import { cn } from "@/lib/utils";
 import { portsFor } from "../graphEditor";
 import { displayNodeName, nodeLabelKeys } from "../nodeNames";
 import type { WorkflowNode } from "../schemas";
+import { NodeSummary } from "./NodeSummary";
+import type { AddFromOutput } from "./useConnectionGestures";
 
-export type CanvasNode = Node<{ node: WorkflowNode; invalid: boolean; index: number }, "workflow">;
+export type CanvasNode = Node<
+  {
+    node: WorkflowNode;
+    invalid: boolean;
+    index: number;
+    completed?: boolean;
+    outputs?: string[];
+    onAdd?: AddFromOutput;
+  },
+  "workflow"
+>;
 export function WorkflowNodeCard({ data, selected, isConnectable }: NodeProps<CanvasNode>) {
   const t = useAppTranslations("workflows");
   const locale = useLocale();
@@ -32,6 +45,7 @@ export function WorkflowNodeCard({ data, selected, isConnectable }: NodeProps<Ca
         "relative w-72 rounded-xl border bg-card p-5 text-start shadow-sm",
         selected ? "border-primary ring-2 ring-primary/20" : "border-border",
         data.invalid && "border-destructive/60",
+        data.completed === true && "border-success/60",
       )}
     >
       {!node.type.startsWith("trigger.") && (
@@ -59,6 +73,10 @@ export function WorkflowNodeCard({ data, selected, isConnectable }: NodeProps<Ca
           <TriangleAlert className="size-4 shrink-0 text-destructive" aria-label={t("invalid")} />
         )}
       </div>
+      <NodeSummary node={node} />
+      {data.completed === true && (
+        <p className="mt-2 text-xs font-medium text-success">{t("stepCompleted")}</p>
+      )}
       {ports.length > 1 && (
         <div
           dir="ltr"
@@ -69,6 +87,34 @@ export function WorkflowNodeCard({ data, selected, isConnectable }: NodeProps<Ca
               {t(port === "true" ? "truePort" : "falsePort")}
             </span>
           ))}
+        </div>
+      )}
+      {data.onAdd !== undefined && ports.some((port) => data.outputs?.includes(port) !== true) && (
+        <div dir="ltr" className="nodrag nopan mt-3 flex gap-2 border-t pt-3">
+          {ports
+            .filter((port) => data.outputs?.includes(port) !== true)
+            .map((port) => (
+              <Button
+                key={port}
+                variant="ghost"
+                size="sm"
+                dir={directionForLocale(locale)}
+                className="h-auto min-h-8 min-w-0 flex-1 gap-1 whitespace-normal px-2 py-1.5 text-xs"
+                aria-label={t("addAfter", {
+                  name: displayNodeName(node, locale),
+                  port: t(
+                    port === "true" ? "truePort" : port === "false" ? "falsePort" : "nextPort",
+                  ),
+                })}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  data.onAdd?.({ from: node.id, port });
+                }}
+              >
+                <Plus className="size-3.5 shrink-0" />
+                {t(port === "true" ? "truePort" : port === "false" ? "falsePort" : "nextPort")}
+              </Button>
+            ))}
         </div>
       )}
       {ports.map((port, index) => (

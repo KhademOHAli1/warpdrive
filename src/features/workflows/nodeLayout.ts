@@ -10,7 +10,7 @@ export function positionFor(graph: WorkflowDefinition, id: string): NodePosition
         Math.max(
           0,
           graph.nodes.findIndex((node) => node.id === id),
-        ) * 180,
+        ) * 260,
     }
   );
 }
@@ -39,7 +39,7 @@ export function arrangeGraph(graph: WorkflowDefinition): WorkflowDefinition {
   }
   function place(id: string, left: number, depth: number) {
     if (positions.has(id)) return;
-    positions.set(id, { x: left + ((width(id) - 1) * 360) / 2, y: depth * 180 });
+    positions.set(id, { x: left + ((width(id) - 1) * 360) / 2, y: depth * 260 });
     let nextLeft = left;
     for (const next of children(id)) {
       place(next, nextLeft, depth + 1);

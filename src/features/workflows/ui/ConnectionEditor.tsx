@@ -1,11 +1,14 @@
 "use client";
 
+import { Plus } from "lucide-react";
+import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
 import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
 import { useFormatters } from "@/lib/useFormatters";
 import { type ConnectionProblem, connectNodes, disconnectNodes, portsFor } from "../graphEditor";
 import { displayNodeName } from "../nodeNames";
 import type { WorkflowDefinition, WorkflowNode } from "../schemas";
+import type { AddFromOutput } from "./useConnectionGestures";
 
 export function ConnectionEditor({
   definition,
@@ -13,12 +16,14 @@ export function ConnectionEditor({
   editable,
   onChange,
   onProblem,
+  onAdd,
 }: {
   definition: WorkflowDefinition;
   node: WorkflowNode;
   editable: boolean;
   onChange: (graph: WorkflowDefinition) => void;
   onProblem: (problem: ConnectionProblem | null) => void;
+  onAdd?: AddFromOutput;
 }) {
   const t = useAppTranslations("workflows");
   const locale = useLocale();
@@ -70,6 +75,18 @@ export function ConnectionEditor({
                 onProblem(null);
               }}
             />
+            {existing === undefined && onAdd !== undefined && (
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!editable || definition.nodes.length >= 100}
+                className="w-full"
+                onClick={() => onAdd({ from: node.id, port })}
+              >
+                <Plus className="size-3.5" />
+                {t("addConnectedStep")}
+              </Button>
+            )}
           </div>
         );
       })}

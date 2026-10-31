@@ -1,6 +1,7 @@
 # Visual workflow implementation status
 
-Updated: 31 October 2026. Branch: `codex/visual-workflows`. The branch incorporates fork main
+Updated: 31 October 2026. Builder interaction continuation: `codex/workflow-builder-ux`,
+based on `d0c83e8` of `codex/visual-workflows`. The branch incorporates fork main
 `8539fe8`, including Better Auth and its current UI, and remains separate from other active
 checkouts. No workflow changes have been merged into main by this work.
 
@@ -9,7 +10,7 @@ checkouts. No workflow changes have been merged into main by this work.
 The connectable manual node builder is implemented: choose a blank canvas or follow-up
 template, insert nodes, drag/save positions, draw/reconnect/remove edges, configure exclusive
 conditions and ancestor mappings, save, publish with fresh authentication, choose a visible
-deal, simulate or execute in the background, inspect coarse history, and cancel. A focused
+deal, simulate or execute in the background, inspect history and its immutable execution graph, and cancel. A focused
 canvas and per-node connection selects complement the regular editor. English, Farsi RTL,
 and German retain the existing application shell.
 
@@ -34,13 +35,26 @@ refreshed. The index now also links the merged authentication documentation.
 | WF-011     | Transactional CRM trigger outbox not implemented.                                                                                                                                                                                                                                                               |
 | WF-012–014 | Manual admission deduplication, version pinning, resumable cursor, worker boot/minutely reconciliation, current authority, and atomic database effects implemented. Automatic dispatch, waits, external effects, ambiguous outcomes, quotas, and needs-review remain.                                           |
 | WF-015     | Manual deal-to-task slice verified with real PostgreSQL and real pg-boss, plus the browser journey. See evidence below.                                                                                                                                                                                         |
-| WF-016–020 | Library/routes, blank/follow-up creation, connectable draggable nodes, persisted positions, explicit edge reconnection/deletion, auto-layout, focused view, step/connection controls, and typed ancestor mappings implemented. Library search/filter, undo/redo, richer lifecycle, and dynamic metadata remain. |
+| WF-016–020 | Library/routes, blank/follow-up creation, connectable draggable nodes, persisted positions, explicit edge reconnection/deletion, auto-layout, focused view, step/connection controls, and typed ancestor mappings implemented. Contextual searchable next-step creation, forgiving port/card drops, atomic output moves, readable summaries, explicit step reveal, and bounded undo/redo are implemented. Library search/filter, richer lifecycle, and dynamic metadata remain. |
 | WF-021     | Deal read and undated self-assigned task creation implemented. Other CRM actions remain.                                                                                                                                                                                                                        |
 | WF-022–024 | Basic exclusive text/boolean conditions and both branch paths implemented and tested. Grouped AND/OR filters, money/numeric comparison semantics, durable delays, and controlled email remain.                                                                                                                  |
-| WF-025–028 | Published-version simulation, publication validation/fresh authentication, coarse run history, polling, and cancellation implemented. Draft simulation, impact review, payload inspection, manual retry, and alerts remain.                                                                                     |
+| WF-025–028 | Published-version simulation, publication validation/fresh authentication, run history, immutable graph/step-result inspection, polling, and cancellation implemented. Draft simulation, impact review, payload inspection, manual retry, and alerts remain.                                                                                     |
 | WF-029–038 | Three complete R1 acceptance templates, calendar recurrence/business calendars, webhooks, provider actions, approvals, iterators/parallelism, sub-workflows, and extensions remain.                                                                                                                             |
 | WF-039–040 | Initial English/Farsi/German catalogs, localized formatters, RTL, shared Radix controls, keyboard step selection, and browser checks implemented. Full state/accessibility review remains a release gate.                                                                                                       |
 | WF-041–042 | Initial local qualification and documentation recorded. Retention, budgets, infrastructure failure handling, complete security/operations review, and production release remain open.                                                                                                                           |
+
+## Builder interaction continuation
+
+The interaction milestone adds connected-step creation from free outputs or empty-canvas
+drops, source-aware defaults, protected reconnection, 36px handle hit areas, a 32px snap
+radius, readable node summaries, explicit step reveal, and 50-edit graph undo/redo. Drag
+previews stay local until release, so undo does not walk through individual pointer frames.
+A new authorized read endpoint supplies historical version configuration and step metadata
+without recorded CRM outputs. No dependencies, migrations, or queue names changed.
+
+See [interaction review](builder-interaction-review.md) for the current acceptance record,
+Mobbin observations, qualification results, and known limits. Earlier evidence below is
+retained as baseline evidence; it does not by itself qualify this continuation.
 
 ## Verification
 

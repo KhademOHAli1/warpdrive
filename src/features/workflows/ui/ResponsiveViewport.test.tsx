@@ -27,3 +27,16 @@ it("preserves the camera across ordinary rerenders and small width changes", () 
   view.rerender(<ResponsiveViewport />);
   expect(flow.fitView).not.toHaveBeenCalled();
 });
+it("reveals an offscreen step at a readable scale only for an explicit navigation request", () => {
+  const view = render(<ResponsiveViewport reveal={{ id: "task", nonce: 1 }} />);
+  expect(flow.fitView).toHaveBeenLastCalledWith({
+    nodes: [{ id: "task" }],
+    padding: 0.6,
+    minZoom: 0.8,
+    maxZoom: 1,
+    duration: 180,
+  });
+  flow.fitView.mockClear();
+  view.rerender(<ResponsiveViewport reveal={{ id: "task", nonce: 1 }} />);
+  expect(flow.fitView).not.toHaveBeenCalled();
+});
