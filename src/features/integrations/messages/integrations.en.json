@@ -103,31 +103,52 @@
       "description": "Connect a workspace and choose a channel for CRM updates."
     },
     "google-calendar": {
-      "description": "Planned: calendar sync, invitations, and Google Meet links."
+      "description": "calendar sync, invitations, and Google Meet links."
     },
     "microsoft365": {
-      "description": "Planned: Outlook mail, calendar sync, and Teams meetings."
+      "description": "Outlook mail, calendar sync, and Teams meetings."
     },
     "zoom": {
-      "description": "Planned: create and manage meetings linked to CRM records."
+      "description": "create and manage meetings linked to CRM records."
     },
-    "automation": {
-      "description": "Planned: connect workflows using APIs, triggers, and webhooks."
+    "n8n": {
+      "description": "Build CRM workflows with self-hosted automation."
     },
-    "storage": {
-      "description": "Planned: connect cloud documents to people, companies, and deals."
+    "make": {
+      "description": "Connect CRM activity to your Make scenarios."
     },
-    "delivery": {
-      "description": "Planned: link customer requests to issues and project work."
+    "zapier": {
+      "description": "Connect CRM triggers and actions to your Zaps."
     },
-    "booking": {
-      "description": "Planned: turn bookings into CRM meetings and follow-ups."
+    "google-drive": {
+      "description": "Link Google Drive documents to customers and deals."
     },
-    "messaging": {
-      "description": "Planned: connect customer messages and call activity."
+    "onedrive": {
+      "description": "Keep OneDrive files alongside the right CRM records."
     },
-    "commerce": {
-      "description": "Planned: connect payments, invoices, proposals, and signatures."
+    "dropbox": {
+      "description": "Connect Dropbox files to customer conversations."
+    },
+    "github": {
+      "description": "Link customer requests to GitHub issues."
+    },
+    "linear": {
+      "description": "Connect customer feedback to Linear issues."
+    },
+    "jira": {
+      "description": "Track customer-related work in Jira."
+    },
+    "calendly": {
+      "description": "Bring Calendly bookings into your CRM."
+    },
+    "cal-com": {
+      "description": "Connect Cal.com bookings and follow-ups."
+    },
+    "whatsapp": {
+      "description": "Connect authorized WhatsApp customer messaging."
+    },
+    "stripe": {
+      "description": "Bring customer payment status into the CRM."
     }
   },
   "revocationPending": "Disconnected locally. Slack could not confirm revocation. Retry disconnecting to finish removing its access.",
@@ -138,7 +159,5 @@
   "slackSetupStep3": "Set SLACK_CLIENT_ID and SLACK_CLIENT_SECRET in your server configuration, then restart Warpdrive.",
   "slackSetupStep4": "Keep Slack token rotation disabled for this first connector release.",
   "slackCallback": "OAuth redirect URL",
-  "slackApps": "Open Slack app settings",
-  "messagingName": "WhatsApp Business · Telephony",
-  "commerceName": "Stripe · Accounting · E-signatures"
+  "slackApps": "Open Slack app settings"
 }

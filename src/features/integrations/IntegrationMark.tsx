@@ -2,23 +2,13 @@ import { Plug } from "lucide-react";
 import Image from "next/image";
 import type { Integration } from "./catalog";
 
-const brandIds = new Set([
-  "chatgpt",
-  "claude",
-  "gmail",
-  "slack",
-  "google-calendar",
-  "microsoft365",
-  "zoom",
-]);
-
 export function IntegrationMark({ integration }: { integration: Integration }) {
   return (
     <span
       aria-hidden="true"
       className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-white shadow-xs ring-1 ring-black/8"
     >
-      {brandIds.has(integration.id) ? (
+      {integration.id !== "other-mcp" ? (
         <Image
           src={`/integrations/${integration.id}.svg`}
           width={24}

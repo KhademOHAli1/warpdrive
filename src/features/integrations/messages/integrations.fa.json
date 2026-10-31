@@ -111,23 +111,44 @@
     "zoom": {
       "description": "در برنامهٔ توسعه: ایجاد و مدیریت جلسه‌های مرتبط با اطلاعات CRM."
     },
-    "automation": {
-      "description": "در برنامهٔ توسعه: اتصال گردش‌کارها با API، رویدادها و وب‌هوک‌ها."
+    "n8n": {
+      "description": "گردش کارهای CRM را با ابزار اتوماسیون روی سرور خودتان بسازید."
     },
-    "storage": {
-      "description": "در برنامهٔ توسعه: پیوند فایل‌های ابری با اشخاص، شرکت‌ها و معامله‌ها."
+    "make": {
+      "description": "فعالیت‌های CRM را به سناریوهای Make متصل کنید."
     },
-    "delivery": {
-      "description": "در برنامهٔ توسعه: پیوند درخواست مشتریان با کارهای پروژه."
+    "zapier": {
+      "description": "رویدادها و عملیات CRM را در گردش کارهای Zapier به کار بگیرید."
     },
-    "booking": {
-      "description": "در برنامهٔ توسعه: تبدیل رزروها به جلسه و پیگیری در CRM."
+    "google-drive": {
+      "description": "سندهای Google Drive را به مشتریان و فرصت‌های فروش پیوند دهید."
     },
-    "messaging": {
-      "description": "در برنامهٔ توسعه: ثبت پیام‌های مشتریان و سابقهٔ تماس‌ها."
+    "onedrive": {
+      "description": "فایل‌های OneDrive را کنار اطلاعات مرتبط در CRM قرار دهید."
     },
-    "commerce": {
-      "description": "در برنامهٔ توسعه: اتصال پرداخت، صورت‌حساب، پیشنهاد و امضای الکترونیکی."
+    "dropbox": {
+      "description": "فایل‌های Dropbox را به گفت‌وگوهای مشتریان پیوند دهید."
+    },
+    "github": {
+      "description": "درخواست‌های مشتریان را به ایشوهای GitHub پیوند دهید."
+    },
+    "linear": {
+      "description": "بازخورد مشتریان را به تسک‌های Linear پیوند دهید."
+    },
+    "jira": {
+      "description": "کارهای مرتبط با مشتریان را در Jira دنبال کنید."
+    },
+    "calendly": {
+      "description": "قرارهای رزروشده در Calendly را وارد CRM کنید."
+    },
+    "cal-com": {
+      "description": "رزروها و پیگیری‌های Cal.com را به CRM متصل کنید."
+    },
+    "whatsapp": {
+      "description": "پیام‌رسانی مجاز با مشتریان در WhatsApp را به CRM متصل کنید."
+    },
+    "stripe": {
+      "description": "وضعیت پرداخت مشتریان را در CRM ببینید."
     }
   },
   "revocationPending": "اتصال در Warpdrive قطع شد، اما لغو مجوز در Slack تأیید نشد. برای تکمیل لغو دسترسی، دوباره قطع اتصال را بزنید.",
@@ -138,7 +159,5 @@
   "slackSetupStep3": "مقادیر SLACK_CLIENT_ID و SLACK_CLIENT_SECRET را در تنظیمات سرور وارد کنید و Warpdrive را دوباره راه‌اندازی کنید.",
   "slackSetupStep4": "در نسخهٔ نخست این اتصال، چرخش خودکار توکن Slack را فعال نکنید.",
   "slackCallback": "نشانی بازگشت OAuth",
-  "slackApps": "باز کردن تنظیمات برنامه در Slack",
-  "messagingName": "واتس‌اپ بیزینس و تلفن",
-  "commerceName": "پرداخت، حسابداری و امضای الکترونیکی"
+  "slackApps": "باز کردن تنظیمات برنامه در Slack"
 }

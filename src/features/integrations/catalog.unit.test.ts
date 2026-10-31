@@ -13,3 +13,25 @@ it.each(["همگام سازی", "تقويم كاري"])(
     );
   },
 );
+
+it.each([
+  ["Google Drive", "google-drive"],
+  ["OneDrive", "onedrive"],
+  ["Dropbox", "dropbox"],
+  ["n8n", "n8n"],
+  ["Make", "make"],
+  ["Zapier", "zapier"],
+  ["GitHub", "github"],
+  ["Linear", "linear"],
+  ["Jira", "jira"],
+  ["Calendly", "calendly"],
+  ["Cal.com", "cal-com"],
+  ["WhatsApp", "whatsapp"],
+  ["Stripe", "stripe"],
+])("finds %s as an individual provider", (query, id) => {
+  const text = Object.fromEntries(INTEGRATIONS.map((item) => [item.id, ""])) as Record<
+    IntegrationId,
+    string
+  >;
+  expect(filterIntegrations(query, "all", text).map((item) => item.id)).toEqual([id]);
+});

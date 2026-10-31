@@ -103,31 +103,52 @@
       "description": "Verbinden Sie einen Workspace und wählen Sie einen Kanal für CRM-Meldungen."
     },
     "google-calendar": {
-      "description": "Geplant: Kalendersynchronisierung, Einladungen und Google-Meet-Links."
+      "description": "Kalendersynchronisierung, Einladungen und Google-Meet-Links."
     },
     "microsoft365": {
-      "description": "Geplant: Outlook-E-Mail, Kalendersynchronisierung und Teams-Besprechungen."
+      "description": "Outlook-E-Mail, Kalendersynchronisierung und Teams-Besprechungen."
     },
     "zoom": {
-      "description": "Geplant: Besprechungen erstellen, verwalten und mit CRM-Datensätzen verknüpfen."
+      "description": "Besprechungen erstellen, verwalten und mit CRM-Datensätzen verknüpfen."
     },
-    "automation": {
-      "description": "Geplant: Workflows über APIs, Auslöser und Webhooks verbinden."
+    "n8n": {
+      "description": "CRM-Abläufe mit selbst gehosteter Automatisierung verbinden."
     },
-    "storage": {
-      "description": "Geplant: Cloud-Dokumente mit Personen, Unternehmen und Deals verknüpfen."
+    "make": {
+      "description": "CRM-Ereignisse mit Ihren Make-Szenarien verbinden."
     },
-    "delivery": {
-      "description": "Geplant: Kundenanfragen mit Tickets und Projektarbeit verknüpfen."
+    "zapier": {
+      "description": "CRM-Auslöser und Aktionen in Ihren Zaps verwenden."
     },
-    "booking": {
-      "description": "Geplant: Buchungen in CRM-Besprechungen und Follow-ups übernehmen."
+    "google-drive": {
+      "description": "Google-Drive-Dokumente mit Kunden und Deals verknüpfen."
     },
-    "messaging": {
-      "description": "Geplant: Kundennachrichten und Anrufaktivitäten verbinden."
+    "onedrive": {
+      "description": "OneDrive-Dateien den passenden CRM-Datensätzen zuordnen."
     },
-    "commerce": {
-      "description": "Geplant: Zahlungen, Rechnungen, Angebote und Unterschriften verbinden."
+    "dropbox": {
+      "description": "Dropbox-Dateien mit Kundengesprächen verknüpfen."
+    },
+    "github": {
+      "description": "Kundenanfragen mit GitHub-Issues verknüpfen."
+    },
+    "linear": {
+      "description": "Kundenfeedback mit Linear-Issues verbinden."
+    },
+    "jira": {
+      "description": "Kundenbezogene Aufgaben in Jira verfolgen."
+    },
+    "calendly": {
+      "description": "Calendly-Buchungen in Ihr CRM übernehmen."
+    },
+    "cal-com": {
+      "description": "Cal.com-Buchungen und Folgeaufgaben verbinden."
+    },
+    "whatsapp": {
+      "description": "Autorisierte WhatsApp-Kundennachrichten anbinden."
+    },
+    "stripe": {
+      "description": "Den Zahlungsstatus Ihrer Kunden im CRM sehen."
     }
   },
   "revocationPending": "In Warpdrive getrennt. Slack konnte den Widerruf noch nicht bestätigen. Wiederholen Sie das Trennen, um den Zugriff vollständig zu entfernen.",
@@ -138,7 +159,5 @@
   "slackSetupStep3": "Hinterlegen Sie SLACK_CLIENT_ID und SLACK_CLIENT_SECRET in der Serverkonfiguration und starten Sie Warpdrive neu.",
   "slackSetupStep4": "Lassen Sie die Slack-Token-Rotation für diese erste Connector-Version deaktiviert.",
   "slackCallback": "OAuth-Weiterleitungs-URL",
-  "slackApps": "Slack-App-Einstellungen öffnen",
-  "messagingName": "WhatsApp Business · Telefonie",
-  "commerceName": "Stripe · Buchhaltung · E-Signaturen"
+  "slackApps": "Slack-App-Einstellungen öffnen"
 }

@@ -11,3 +11,20 @@ the corresponding providers and do not imply endorsement. Assets are served loca
 - `public/integrations/google-calendar.svg`: `logos/google-calendar-2020.svg`
 - `public/integrations/microsoft365.svg`: `logos/microsoft-icon.svg`
 - `public/integrations/zoom.svg`: `logos/zoom-icon.svg`
+- `public/integrations/n8n.svg`: `logos/n8n-icon.svg`
+- `public/integrations/google-drive.svg`: `logos/google-drive-2020.svg`
+- `public/integrations/onedrive.svg`: `logos/microsoft-onedrive.svg`
+- `public/integrations/dropbox.svg`: `logos/dropbox.svg`
+- `public/integrations/github.svg`: `logos/github-icon.svg`
+- `public/integrations/linear.svg`: `logos/linear-icon.svg`
+- `public/integrations/jira.svg`: `logos/jira.svg`
+- `public/integrations/whatsapp.svg`: `logos/whatsapp-icon.svg`
+- `public/integrations/stripe.svg`: `logos/stripe.svg`
+
+Additional marks from [Simple Icons](https://github.com/simple-icons/simple-icons), revision `90646e4bf7f3b89df6c37e65baf3e7bc759a517c`.
+CC0-1.0 license retained in `simple-icons-LICENSE.txt`. Brand colors use the upstream metadata.
+
+- `public/integrations/make.svg`: `icons/make.svg`
+- `public/integrations/calendly.svg`: `icons/calendly.svg`
+- `public/integrations/cal-com.svg`: `icons/caldotcom.svg`
+- `public/integrations/zapier.svg`: `icons/zapier.svg`

@@ -69,8 +69,6 @@ export function IntegrationHub({
   }
 
   function displayName(item: Integration) {
-    if (item.id === "messaging") return t("messagingName");
-    if (item.id === "commerce") return t("commerceName");
     return item.name;
   }
 
