@@ -8,6 +8,7 @@ import { can } from "@/features/permissions/can";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { assertReferenceVisible } from "@/features/permissions/referenceCheck";
 import { err, ok, type Result } from "@/types/result";
+import { evaluateCondition } from "./condition";
 import { executableNode } from "./readiness";
 import { stringBinding, uuidBinding } from "./runBindings";
 import type { RunOutputs, StepOutput } from "./runTypes";
@@ -36,6 +37,7 @@ export async function executeRunNode(
   signal.throwIfAborted();
   if (!executableNode(node)) return err(ERROR_IDS.WORKFLOW_NOT_READY);
   if (node.type === "trigger.manual") return ok({ recordId: trigger.recordId });
+  if (node.type === "condition") return evaluateCondition(node.config, outputs);
   if (node.type === "record.read" && node.config.entity === "deal") {
     const id = uuidBinding(node.config.recordId, outputs);
     if (!id.ok) return id;

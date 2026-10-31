@@ -4,6 +4,11 @@ import type { WorkflowDefinition, WorkflowNode } from "./schemas";
 // fail closed until an action's complete configuration has a qualified handler.
 export function executableNode(node: WorkflowNode): boolean {
   if (node.type === "trigger.manual") return true;
+  if (node.type === "condition")
+    return (
+      typeof node.config.operator === "string" &&
+      ["exists", "equals", "notEquals", "contains"].includes(node.config.operator)
+    );
   if (node.type === "record.read") return node.config.entity === "deal";
   if (node.type === "activity.create")
     return Object.keys(node.config).every((key) => key === "subject" || key === "dealId");

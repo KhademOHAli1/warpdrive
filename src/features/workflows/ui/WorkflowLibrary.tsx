@@ -15,12 +15,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/Input";
+import { Select } from "@/components/ui/Select";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { trpc } from "@/lib/trpc-client";
 import { useFormatters } from "@/lib/useFormatters";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { createWorkflowAction } from "../actions";
-import { initialDefinition } from "../editorModel";
+import { initialBlankDefinition, initialDefinition } from "../editorModel";
 
 export function WorkflowLibrary({ canCreate }: { canCreate: boolean }) {
   const t = useAppTranslations("workflows");
@@ -28,6 +29,7 @@ export function WorkflowLibrary({ canCreate }: { canCreate: boolean }) {
   const router = useRouter();
   const list = trpc.workflows.list.useQuery();
   const [open, setOpen] = useState(false);
+  const [template, setTemplate] = useState("followUp");
   const [name, setName] = useState("");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState(false);
@@ -39,12 +41,15 @@ export function WorkflowLibrary({ canCreate }: { canCreate: boolean }) {
       const result = await createWorkflowAction(
         {
           name,
-          definition: initialDefinition({
-            start: t("start"),
-            read: t("read"),
-            task: t("task"),
-            subject: t("subject"),
-          }),
+          definition:
+            template === "blank"
+              ? initialBlankDefinition(t("start"))
+              : initialDefinition({
+                  start: t("start"),
+                  read: t("read"),
+                  task: t("task"),
+                  subject: t("subject"),
+                }),
         },
         readCsrfToken(),
       );
@@ -119,7 +124,7 @@ export function WorkflowLibrary({ canCreate }: { canCreate: boolean }) {
                 <div className="rounded-lg border bg-muted/40 p-3 text-primary">
                   <GitBranch className="size-5" />
                 </div>
-                <span className="truncate text-sm font-semibold">{row.name}</span>
+                <bdi className="block truncate text-sm font-semibold">{row.name}</bdi>
               </div>
               <Badge variant={row.active ? "success" : "secondary"}>
                 {row.active ? t("active") : row.publishedNumber === null ? t("draft") : t("paused")}
@@ -141,7 +146,7 @@ export function WorkflowLibrary({ canCreate }: { canCreate: boolean }) {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{t("new")}</DialogTitle>
-            <DialogDescription>{t("emptyHint")}</DialogDescription>
+            <DialogDescription>{t("createHint")}</DialogDescription>
           </DialogHeader>
           <form
             onSubmit={(event) => {
@@ -151,10 +156,24 @@ export function WorkflowLibrary({ canCreate }: { canCreate: boolean }) {
             className="space-y-5"
           >
             <div className="space-y-2">
+              <p className="text-sm font-medium">{t("template")}</p>
+              <Select
+                ariaLabel={t("template")}
+                value={template}
+                disabled={pending}
+                options={[
+                  { value: "followUp", label: t("followUpTemplate") },
+                  { value: "blank", label: t("blankTemplate") },
+                ]}
+                onChange={setTemplate}
+              />
+            </div>
+            <div className="space-y-2">
               <label className="text-sm font-medium" htmlFor={id}>
                 {t("name")}
               </label>
               <Input
+                dir="auto"
                 id={id}
                 value={name}
                 maxLength={120}

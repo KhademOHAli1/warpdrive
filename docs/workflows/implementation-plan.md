@@ -1,6 +1,6 @@
 # Visual workflows: implementation plan
 
-Date: 31 October 2026. Status: approved for implementation; work has started. See [the status ledger](status.md) for current task evidence.
+Date: 31 October 2026. Status: approved for implementation; work has started. A connectable manual builder with exclusive conditions is implemented; broader R1 tasks remain open. See [the status ledger](status.md) for current task evidence.
 
 ## Objective
 

@@ -43,7 +43,7 @@ Farsi/German localization.
 ## Implementation scope
 
 Visual workflow automation is being implemented in stages. An early-access editor
-supports manual deal follow-up workflows, simulation, publication, background execution,
+supports connectable nodes, conditional manual deal follow-up workflows, simulation, publication, background execution,
 and run history. Automatic triggers and advanced actions remain in development. See
 [Visual workflows](./features/automations.md) for the current boundary.
 

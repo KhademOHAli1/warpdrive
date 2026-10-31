@@ -20,7 +20,13 @@ it.each(["fa", "de"] as const)(
     const onChange = vi.fn();
     render(
       <LocaleProvider locale={locale}>
-        <NodeInspector node={node} editable onChange={onChange} onRemove={vi.fn()} />
+        <NodeInspector
+          definition={definition}
+          node={node}
+          editable
+          onChange={onChange}
+          onRemove={vi.fn()}
+        />
       </LocaleProvider>,
     );
     const label = locale === "fa" ? "عنوان کار" : "Aufgabentitel";

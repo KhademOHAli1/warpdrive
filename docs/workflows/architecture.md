@@ -1,10 +1,13 @@
 # Visual workflow architecture
 
-Status: initial manual-run implementation, 31 October 2026. Integration baseline: fork main `8539fe8`, including Better Auth and its current UI. The first editor and worker are implemented; the complete R1 acceptance scope remains in progress.
+Status: connectable manual node builder with exclusive conditions, 31 October 2026. Integration baseline: fork main `8539fe8`, including Better Auth and its current UI. The first editor and worker are implemented; the complete R1 acceptance scope remains in progress.
 
 ## Definitions
 
-`src/features/workflows/schemas.ts` defines a language-neutral graph format. A published definition has a single entry trigger, at most 100 nodes and 200 edges, stable node IDs, registered action types/versions, and explicit output ports. Display names are user-authored, so Persian and German names are preserved.
+`src/features/workflows/schemas.ts` defines a language-neutral graph format. A published definition has a single entry trigger, at most 100 nodes and 200 edges, stable node IDs, registered action types/versions, and explicit output ports. Custom display names preserve Persian and German content. Optional `nameMode` distinguishes
+automatic localized titles from custom names. Known generated titles in older drafts display
+in the current locale without rewriting custom content. Optional bounded `layout` coordinates
+persist node positions; these remain independent of language and RTL panel placement.
 
 `registry.ts` declares configuration schemas and typed inputs/outputs for the first action vocabulary. A registry entry describes a contract; it is not evidence that an executable handler or provider integration exists. Current entries cover manual/record triggers, record reads, activity creation, conditions, delays, and notifications.
 
@@ -26,7 +29,11 @@ The manual executor rehydrates its initiating user before each step and uses cur
 
 ## Initial manual execution
 
-The enabled path is manual start, visible deal read, and one or more undated task creations. Tasks are assigned to the initiating user and linked to the chosen deal. Unsupported actions and activity fields are rejected at publication and execution. Registry contracts for later capabilities do not enable those actions.
+The enabled path is manual start, visible deal read, exclusive text/boolean conditions, and
+undated task creation. `condition.ts` supports exists, strict equals/notEquals, and string
+contains; numeric comparisons remain blocked. The executor follows exactly one `true` or
+`false` edge according to the persisted result. Missing references fail the run instead of
+silently selecting a false branch. Binding resolution accepts only own completed-output keys. Tasks are assigned to the initiating user and linked to the chosen deal. Unsupported actions and activity fields are rejected at publication and execution. Registry contracts for later capabilities do not enable those actions.
 
 Admissions use a caller-generated request key, pin an immutable published version, and persist the cursor before enqueueing. Reusing a key with different inputs is rejected. A pg-boss worker resumes the persisted cursor; startup and minutely reconciliation recover missed enqueues. Competing workers lock the run row. CRM database effects, step completion, and cursor advancement commit in the same transaction, so failure rolls back the effect as well as progress.
 
@@ -34,7 +41,16 @@ Simulation invokes the same canonical CRM service inside a rolled-back savepoint
 
 Cancellation records who cancelled and when, and prevents subsequent steps. It does not undo already committed tasks. Pausing prevents new admission; existing runs continue unless explicitly cancelled. Permission revocation and user deactivation are checked again at every resumed step.
 
-The initial library and editor use the existing application shell, theme tokens, Radix adapters, locale formatting, and local fonts. React Flow 12.12.0 is MIT licensed and supports the application's React peer versions. Its vertical graph has an equivalent keyboard-accessible step selector; configuration supports literal task titles and mapped deal titles. English, Farsi, and German catalogs are registered with the existing translation checker.
+The initial library and editor use the existing application shell, theme tokens, Radix adapters, locale formatting, and local fonts. React Flow 12.12.0 is MIT licensed and supports the application's React peer versions. Nodes can be inserted unconnected, dragged, connected, reconnected, and removed without
+implicit rewiring. `graphEditor.ts` checks ports, occupied inputs/outputs, trigger targets,
+and cycles before changing the graph. `nodeLayout.ts` arranges trees and disconnected roots.
+React Flow measurements are retained separately from persisted layout so selection and
+language changes do not repeatedly invalidate node initialization. Substantial canvas-width
+changes refit the graph; ordinary rerenders and language changes retain the camera. A shared Radix dialog
+provides focused editing, Escape dismissal, and focus restoration. Per-node/edge selects
+provide an alternative to drawing connections. Configuration maps only compatible ancestor
+outputs. English, Farsi, and German catalogs use the existing translation checker; editor
+feedback stores translation keys so live language changes update existing messages.
 
 ## Further execution work
 
@@ -42,7 +58,7 @@ CRM events must be saved in an outbox in the same transaction as each mutation. 
 
 Database-only actions should commit effects with progress where possible. External effects need stable effect identities, provider idempotency where supported, and explicit reconciliation for ambiguous outcomes. Existing email outbox behavior is a reusable boundary; general exactly-once external delivery is not promised.
 
-The current UI is an early-access manual workflow builder, not the complete R1 release. CRM triggers/outbox, branches, durable waits, notifications, email, richer CRM actions, detailed payload inspection, retention, and operational limits still require implementation and qualification.
+The current UI is an early-access manual workflow builder, not the complete R1 release. CRM triggers/outbox, grouped conditions, durable waits, notifications, email, richer CRM actions, detailed payload inspection, retention, and operational limits still require implementation and qualification.
 
 Primary library references: [React Flow custom nodes](https://reactflow.dev/learn/customization/custom-nodes), [React Flow accessibility](https://reactflow.dev/learn/advanced-use/accessibility), and [pg-boss workers](https://github.com/timgit/pg-boss/blob/master/docs/api/workers.md).
 
