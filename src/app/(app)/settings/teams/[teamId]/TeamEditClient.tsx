@@ -11,6 +11,7 @@ import {
   setTeamMembersAction,
   updateTeamAction,
 } from "@/features/identity/actions/teams";
+import { IdentityActionError } from "@/features/identity/IdentityActionError";
 import { settingsIdentityError } from "@/features/identity/settingsMessages";
 import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import { readCsrfToken } from "@/utils/csrfCookie";
@@ -155,11 +156,7 @@ export function TeamEditClient({
           />
         </div>
 
-        {error !== null && (
-          <p role="alert" className="text-sm text-red-600">
-            {error}
-          </p>
-        )}
+        {error !== null && <IdentityActionError message={error} className="text-sm text-red-600" />}
       </SettingsCardBody>
 
       <SettingsCardFooter className="justify-between">

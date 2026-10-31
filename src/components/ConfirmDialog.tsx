@@ -1,5 +1,6 @@
 "use client";
 import type React from "react";
+import { useRef } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -45,9 +46,22 @@ export function ConfirmDialog({
   pending = false,
 }: ConfirmDialogProps): React.ReactNode {
   const t = useAppTranslations("shell.inline");
+  const returnFocus = useRef<HTMLElement | null>(null);
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent className="max-w-md">
+      <AlertDialogContent
+        className="max-w-md"
+        onOpenAutoFocus={() => {
+          const active = document.activeElement;
+          returnFocus.current = active instanceof HTMLElement ? active : null;
+        }}
+        onCloseAutoFocus={(event) => {
+          if (returnFocus.current?.isConnected === true) {
+            event.preventDefault();
+            returnFocus.current.focus();
+          }
+        }}
+      >
         <AlertDialogHeader>
           <AlertDialogTitle>{title}</AlertDialogTitle>
           <AlertDialogDescription>{description}</AlertDialogDescription>

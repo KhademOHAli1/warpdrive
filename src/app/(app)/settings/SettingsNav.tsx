@@ -23,6 +23,9 @@ import { usePathname } from "next/navigation";
 import type React from "react";
 import { useId } from "react";
 import { SecondaryNavLink } from "@/components/navigation/SecondaryNavLink";
+import { authScreensMessagesForLocale } from "@/features/auth/authScreensMessages";
+import { managementMessagesForLocale } from "@/features/auth/management/messages";
+import { useLocale } from "@/features/i18n/LocaleProvider";
 import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 
 interface NavItem {
@@ -47,6 +50,9 @@ export function SettingsNav({
   canImport: boolean;
 }): React.ReactNode {
   const L = useSettingsMessages();
+  const locale = useLocale();
+  const securityLabel = authScreensMessagesForLocale(locale).flow.securityTitle;
+  const managementLabel = managementMessagesForLocale(locale).title;
   const H = L._hierarchy;
   const id = useId();
   const pathname = usePathname();
@@ -56,13 +62,14 @@ export function SettingsNav({
       title: H.personal,
       items: [
         { href: "/settings/profile", label: H.profile, icon: User },
+        { href: "/settings/security", label: securityLabel, icon: ShieldCheck },
         { href: "/settings/regional", label: H.regional, icon: Globe2 },
         { href: "/settings/appearance", label: H.appearance, icon: Palette },
         { href: "/settings/workflow", label: H.workflow, icon: ListChecks },
         { href: "/settings/notifications", label: L.notifications, icon: Bell },
       ],
     },
-    ...(canManageCompany
+    ...(isAdmin || canManageCompany
       ? [
           {
             id: "workspace",
@@ -70,6 +77,7 @@ export function SettingsNav({
             items: [
               { href: "/settings/company", label: H.workspaceDetails, icon: Building2 },
               { href: "/settings/users", label: L.users, icon: Users },
+              { href: "/settings/security-admin", label: managementLabel, icon: ShieldCheck },
               { href: "/settings/teams", label: L.teams, icon: UsersRound },
               { href: "/settings/permission-sets", label: L.permissionSets, icon: ShieldCheck },
               { href: "/settings/visibility-groups", label: L.visibilityGroups, icon: Eye },
@@ -100,7 +108,7 @@ export function SettingsNav({
       id: "data",
       title: H.dataIntegrations,
       items: [
-        ...(canManageCompany
+        ...(isAdmin || canManageCompany
           ? [{ href: "/settings/fields", label: L.dataFields, icon: Table2 }]
           : []),
         ...(canImport ? [{ href: "/settings/import", label: L.importData, icon: Upload }] : []),

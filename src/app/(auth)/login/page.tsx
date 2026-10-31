@@ -8,9 +8,19 @@ export async function generateMetadata() {
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ error?: string | string[] }>;
+  searchParams?: Promise<{
+    error?: string | string[];
+    returnTo?: string | string[];
+    next?: string | string[];
+  }>;
 }): Promise<ReactNode> {
   const query = await searchParams;
   // Only the callback's allow-listed display flag is interpreted; arbitrary URL values are never rendered.
-  return <LoginScreen failed={query?.error === "auth_failed"} />;
+  const returnTo =
+    typeof query?.returnTo === "string"
+      ? query.returnTo
+      : typeof query?.next === "string"
+        ? query.next
+        : undefined;
+  return <LoginScreen failed={query?.error === "auth_failed"} returnTo={returnTo} />;
 }

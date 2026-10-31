@@ -30,6 +30,7 @@ type Condition = FilterDefinition["conditions"][number];
 const SEED_CLOSE_DATE = "2026-09-30";
 // deals.labels is a text[] of label NAMES, not catalog ids, so the filter value is the name.
 const SEED_LABEL = "Hot";
+const SEED_CURRENCY = "USD";
 
 // Ids only the running seed knows, so their conditions cannot be plain constants.
 interface SeedRefs {
@@ -46,6 +47,7 @@ function representativeCondition(field: AstField, seed: SeedRefs): Condition {
     title: { field: "title", op: "contains", value: "Alpha" },
     orgName: { field: "orgName", op: "contains", value: "Apex" },
     value: { field: "value", op: "gt", value: 0 },
+    currency: { field: "currency", op: "eq", value: SEED_CURRENCY },
     ownerId: { field: "ownerId", op: "eq", value: seed.ownerId },
     stageId: { field: "stageId", op: "eq", value: seed.stageId },
     status: { field: "status", op: "eq", value: "open" },
@@ -124,6 +126,7 @@ describe("board filter builder invariants (finder #4)", () => {
           {
             title: s.title,
             value: s.value,
+            currency: SEED_CURRENCY,
             pipelineId: p.pipeline.id,
             stageId: p.stages[0]!.id,
             orgId: s.orgId ?? null,

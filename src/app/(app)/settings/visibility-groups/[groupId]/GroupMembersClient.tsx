@@ -5,6 +5,7 @@ import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/Button";
 import { Combobox, type ComboboxOption } from "@/components/ui/Combobox";
 import { addGroupMemberAction, removeGroupMemberAction } from "@/features/identity/actions/groups";
+import { IdentityActionError } from "@/features/identity/IdentityActionError";
 import { settingsIdentityError } from "@/features/identity/settingsMessages";
 import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import { readCsrfToken } from "@/utils/csrfCookie";
@@ -120,11 +121,7 @@ export function GroupMembersClient({ groupId, members, allUsers }: Props): React
           </Button>
         </div>
 
-        {error !== null && (
-          <p role="alert" className="text-sm text-red-600">
-            {error}
-          </p>
-        )}
+        {error !== null && <IdentityActionError message={error} className="text-sm text-red-600" />}
       </SettingsCardBody>
     </SettingsCard>
   );

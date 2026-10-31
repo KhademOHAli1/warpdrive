@@ -3,16 +3,20 @@
 This fork owns [`.github/workflows/ci.yml`](../.github/workflows/ci.yml). Branch pushes,
 ordinary pull requests and manual runs check all three packages on hosted Ubuntu runners.
 
-| Job            | Checks                                                                                                                                          |
-| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| CRM            | Frozen install, route/message type generation and typecheck, translation audit/lint, unit tests, Next production build, server-entrypoint build |
-| Marketing site | Frozen install, route type generation, typecheck, tests, static build                                                                           |
-| Documentation  | Frozen install, typecheck, Docusaurus build                                                                                                     |
+| Job            | Checks                                                                                                                                                                             |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| CRM            | Frozen install, route/message type generation and typecheck, translation audit/lint, unit tests, real PostgreSQL integration tests, Next production build, server-entrypoint build |
+| Marketing site | Frozen install, route type generation, typecheck, tests, static build                                                                                                              |
+| Documentation  | Frozen install, typecheck, Docusaurus build                                                                                                                                        |
 
 The CRM `typecheck` script runs Next type generation before TypeScript. It precedes lint so a
 clean checkout has the route and message declarations needed by type-aware rules. Independent
 packages use their own directories, lockfiles and actual package scripts; the documentation
 package does not currently provide a test script.
+
+The CRM integration suite starts disposable PostgreSQL through Testcontainers on the hosted
+runner's Docker daemon. Fixture databases are reclaimed after closing without forcing live
+external listeners off their connections. Production databases and credentials are not used.
 
 ## Bun and action versions
 

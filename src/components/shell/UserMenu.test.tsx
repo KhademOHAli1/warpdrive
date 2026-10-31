@@ -55,7 +55,10 @@ describe("UserMenu", () => {
     // The menu is headed "My account", so Settings lands on the signed-in user's own
     // preferences. It used to open the company user roster, which is administration.
     expect(settings.getAttribute("href")).toBe("/settings/profile");
-    expect(logout.getAttribute("href")).toBe("/auth/logout");
+    expect(logout.closest("form")).toHaveAttribute("method", "post");
+    expect(logout.closest("form")).toHaveAttribute("action", "/auth/logout");
+    expect(logout).toHaveAttribute("type", "submit");
+    expect(logout.closest("form")?.querySelector('input[name="csrfToken"]')).not.toBeNull();
   });
 
   it("keeps language preferences in settings rather than a separate menu toggle", async () => {

@@ -122,3 +122,20 @@ it("keeps import available without exposing workspace administration", () => {
   expect(screen.queryByRole("link", { name: "Data fields" })).toBeNull();
   expect(screen.queryByRole("region", { name: "Workspace" })).toBeNull();
 });
+
+it("exposes personal security to every account and gates workspace security administration", () => {
+  const { unmount } = render(
+    <SettingsNav isAdmin={false} canManageCompany={false} canImport={false} />,
+  );
+  expect(screen.getByRole("link", { name: "Account security" })).toHaveAttribute(
+    "href",
+    "/settings/security",
+  );
+  expect(screen.queryByRole("link", { name: "Security administration" })).toBeNull();
+  unmount();
+  render(<SettingsNav isAdmin={false} canManageCompany canImport={false} />);
+  expect(screen.getByRole("link", { name: "Security administration" })).toHaveAttribute(
+    "href",
+    "/settings/security-admin",
+  );
+});

@@ -291,7 +291,8 @@
     "reactivateAdmin": "Only an administrator can reactivate users.",
     "selfPermissionSet": "You can't edit your own permission set.",
     "notFound": "That record no longer exists.",
-    "invalidInput": "Some of the details entered are invalid."
+    "invalidInput": "Some of the details entered are invalid.",
+    "freshAuthentication": "Confirm your identity again in Settings > Security, then retry this change."
   },
   "_email": {
     "description": "Manage reusable templates and signatures for outgoing email.",

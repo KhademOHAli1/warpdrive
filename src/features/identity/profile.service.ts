@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
-import { users } from "@/db/schema";
+import { authUsers, users } from "@/db/schema";
 import { err, ok, type Result } from "@/types/result";
 
 const profileInput = z.object({ name: z.string().trim().min(1).max(255) });
@@ -18,7 +18,14 @@ export async function updateUserProfile(
   if (!parsed.success) {
     return err(new AppError(ERROR_IDS.USER_PROFILE_INVALID, "invalid profile input", {}));
   }
-  await db.update(users).set({ name: parsed.data.name }).where(eq(users.id, input.actorId));
+  await db.transaction(async (tx) => {
+    await tx.update(users).set({ name: parsed.data.name }).where(eq(users.id, input.actorId));
+    await tx
+      .update(authUsers)
+      .set({ name: parsed.data.name })
+      .where(eq(authUsers.id, input.actorId));
+    signal.throwIfAborted();
+  });
   signal.throwIfAborted();
   return ok({ name: parsed.data.name });
 }

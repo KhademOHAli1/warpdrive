@@ -18,6 +18,9 @@ import { CALENDAR_MESSAGES } from "@/features/activities/calendarMessages";
 import activitiesGerman from "@/features/activities/messages/activities.de.json";
 import activitiesEnglish from "@/features/activities/messages/activities.en.json";
 import activitiesPersian from "@/features/activities/messages/activities.fa.json";
+import managementGerman from "@/features/auth/management/messages/authManagement.de.json";
+import managementEnglish from "@/features/auth/management/messages/authManagement.en.json";
+import managementPersian from "@/features/auth/management/messages/authManagement.fa.json";
 import authGerman from "@/features/auth/messages/authScreens.de.json";
 import authEnglish from "@/features/auth/messages/authScreens.en.json";
 import authPersian from "@/features/auth/messages/authScreens.fa.json";
@@ -73,6 +76,7 @@ const english = {
   enrichment: enrichmentEnglish,
   stats: statsEnglish,
   authScreens: authEnglish,
+  authManagement: managementEnglish,
   customFields: customEnglish,
   files: filesEnglish,
   email: emailEnglish,
@@ -97,6 +101,7 @@ const persian: typeof english = mergeMessages(english, {
   enrichment: enrichmentPersian,
   stats: statsPersian,
   authScreens: authPersian,
+  authManagement: managementPersian,
   customFields: customPersian,
   files: filesPersian,
   email: emailPersian,
@@ -121,6 +126,7 @@ const german: typeof english = mergeMessages(english, {
   enrichment: enrichmentGerman,
   stats: statsGerman,
   authScreens: authGerman,
+  authManagement: managementGerman,
   customFields: customGerman,
   files: filesGerman,
   email: emailGerman,

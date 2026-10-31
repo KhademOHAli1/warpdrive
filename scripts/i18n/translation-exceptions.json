@@ -167,5 +167,11 @@
     "de": {
       "ownerGroupTeams": "Teams is the standard German plural of Team."
     }
+  },
+  "src/features/auth/management/messages/authManagement": {
+    "de": {
+      "name": "Name is the standard German field label and matches the English spelling.",
+      "system": "System is the German noun for a system actor and matches the English spelling."
+    }
   }
 }

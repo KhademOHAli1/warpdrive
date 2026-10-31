@@ -1,5 +1,4 @@
 import { sql } from "drizzle-orm";
-import { Pool } from "pg";
 import { afterAll, beforeAll, expect, it } from "vitest";
 import type { AuthUser } from "@/features/permissions/types";
 import { makeTestDb } from "@/test/db";
@@ -45,18 +44,6 @@ beforeAll(async () => {
 });
 afterAll(async () => {
   await h?.close();
-  if (h?.url !== undefined) {
-    const url = new URL(h.url);
-    const name = url.pathname.slice(1);
-    if (!/^t_[a-f0-9]{32}$/.test(name)) return;
-    url.pathname = "/postgres";
-    const admin = new Pool({ connectionString: url.toString(), max: 1 });
-    try {
-      await admin.query(`DROP DATABASE "${name}" WITH (FORCE)`);
-    } finally {
-      await admin.end();
-    }
-  }
 });
 const signal = () => new AbortController().signal;
 

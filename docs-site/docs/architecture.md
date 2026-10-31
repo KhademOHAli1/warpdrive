@@ -24,7 +24,7 @@ just want to use it, start with the feature pages instead.
 | Background jobs | pg-boss |
 | Object storage | MinIO, S3-compatible |
 | Email | Gmail API over OAuth |
-| Auth | Google SSO |
+| Auth | Better Auth, invitation-only with configured email/password, passkeys or Google/Microsoft/OIDC sign-in; mandatory administrator MFA |
 | Package manager | Bun |
 
 Custom fields are stored as JSONB rather than as migrated columns, which is what lets

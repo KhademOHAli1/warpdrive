@@ -291,7 +291,8 @@
     "reactivateAdmin": "Nur Personen mit Administrationsrechten können Benutzerkonten reaktivieren.",
     "selfPermissionSet": "Sie können Ihren eigenen Berechtigungssatz nicht ändern.",
     "notFound": "Dieser Datensatz ist nicht mehr vorhanden.",
-    "invalidInput": "Einige Angaben sind ungültig."
+    "invalidInput": "Einige Angaben sind ungültig.",
+    "freshAuthentication": "Bestätigen Sie Ihre Identität unter Einstellungen > Sicherheit erneut und wiederholen Sie die Änderung."
   },
   "_email": {
     "description": "Wiederverwendbare Vorlagen und Signaturen für ausgehende E-Mails verwalten.",

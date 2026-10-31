@@ -101,6 +101,7 @@ export function settingsMessagesForLocale(
 
 const ERROR_KEY: Record<string, keyof typeof IDENTITY_ERROR_MESSAGES> = {
   unauthorized: "permission",
+  fresh_auth_required: "freshAuthentication",
   "permissions.manage required": "permission",
   "admin required to change admin role": "permission",
   "admin required to deactivate users": "permission",

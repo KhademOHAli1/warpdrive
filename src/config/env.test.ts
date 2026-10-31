@@ -39,6 +39,9 @@ describe("env boundary", () => {
       NODE_ENV: "production",
       SEED_ADMIN_EMAIL: "admin@example.com",
       ALLOW_FIRST_LOGIN_ADMIN: "false",
+      AUTH_SECRET: "test-only-production-auth-secret-over-thirty-two-characters",
+      AUTH_MAIL_TRANSPORT: "smtp",
+      AUTH_SMTP_HOST: "smtp.example.invalid",
     });
     expect(result.ok).toBe(true);
   });

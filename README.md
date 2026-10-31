@@ -19,7 +19,7 @@
 
 warpdrive reimplements the core business-development workflow of Pipedrive as software you
 run yourself. It is **single-tenant and self-hosted**: your own box, your own Postgres and
-object storage, authenticated with your own Google Workspace. Your customer data never
+object storage, with invitation-only authentication powered by Better Auth. Your customer data never
 leaves your infrastructure, and there is no per-seat bill.
 
 The information architecture and workflows follow the tools BD teams already know, but all
@@ -69,6 +69,8 @@ It retains the upstream relationship, history and MIT attribution.
 
 **Team and platform**
 - Role-based permissions, teams, and user management
+- Invitation-only onboarding, configurable sign-in methods, and mandatory strong authentication for administrators
+- Personal security settings for passkeys, authenticator apps, recovery codes, and device sessions
 - Notifications and basic pipeline stats (funnel, deal and activity performance)
 - Realtime updates across the board, inbox, notifications, and presence over WebSocket
 
@@ -122,7 +124,7 @@ goal is a focused, self-hosted CRM, not a feature-for-feature clone.
 Next.js (App Router) and React with TypeScript, Drizzle ORM on Postgres, tRPC with TanStack
 Query, Next server actions, shadcn/ui with Tailwind, dnd-kit for the board, Zustand for
 board-local state, a self-hosted WebSocket server backed by Postgres LISTEN/NOTIFY, MinIO
-(or any S3-compatible store) for files, and the Gmail API via Google OAuth. Package manager:
+(or any S3-compatible store) for files, Better Auth for authentication, and the Gmail API via Google OAuth. Package manager:
 Bun.
 
 ## Quickstart (local development)
@@ -142,9 +144,34 @@ bun run db:migrate
 bun run dev
 ```
 
-The app runs at `http://localhost:3000`. Google sign-in and Gmail need an OAuth client (see
-[`docs/deploy.md`](docs/deploy.md)); for local exploration you can sign in without Google
-using the dev-login route.
+The app runs at `http://localhost:3000`. Configure `.env` with a dedicated `AUTH_SECRET`,
+`SEED_ADMIN_EMAIL`, and working SMTP delivery for normal onboarding. Start the background
+worker in a separate terminal with the same environment:
+
+```bash
+bun src/entrypoints/worker.ts
+```
+
+After migration, queue the first administrator's invitation from the source checkout:
+
+```bash
+bun run auth:operator bootstrap --email owner@example.com --name "Workspace owner" --locale fa --confirm
+```
+
+Use the address configured in `SEED_ADMIN_EMAIL`. Complete invitation acceptance, email
+verification and administrator MFA through the normal UI. The
+[authentication operator runbook](docs/auth-operations.md) covers bootstrap, invitation
+renewal, mail delivery and recovery. The default development mail transport, `capture`,
+does not deliver messages; use SMTP to exercise the complete email workflows.
+
+Sign-in can use email/password, passkeys, Google, Microsoft or configured OIDC providers,
+according to the installation's enabled methods. Google sign-in is optional; Gmail mailbox
+access has its own Google OAuth consent. See the [deployment guide](docs/deploy.md) for configuration.
+
+For development-only CRM exploration, `/auth/dev-login?email=developer@example.com` is
+available when `ALLOW_FIRST_LOGIN_ADMIN=true` outside production. This synthetic helper
+does not exercise Better Auth onboarding or security workflows. Keep the flag `false`
+for normal authentication testing and production.
 
 ## Languages and regional settings
 
@@ -179,13 +206,24 @@ The repo ships a single-box Docker topology (app, WebSocket server, background w
 Postgres, MinIO, and Caddy for automatic HTTPS):
 
 ```bash
-cp .env.example .env    # fill in domain, Google OAuth, storage, and secrets
+cp .env.example .env    # fill in domain, authentication, SMTP, storage, and secrets
 docker compose up -d --build
 ```
 
 Caddy provisions TLS for your domain automatically; Postgres and MinIO stay on the internal
-network. See [`docs/deploy.md`](docs/deploy.md) for the full guide, including Google OAuth
-setup, the `s3.` subdomain for file uploads, and every required environment variable.
+network. Queue the first administrator's invitation from the host using the packaged operator:
+
+```bash
+docker compose exec app bun dist/auth-operator.mjs bootstrap --email owner@example.com --name "Workspace owner" --locale fa --confirm
+```
+
+Bootstrap is one-use and creates no password or authenticated session. The recipient completes
+onboarding and mandatory administrator MFA in the UI. Production requires HTTPS and working
+SMTP; keep `ALLOW_FIRST_LOGIN_ADMIN=false`. See the [operator runbook](docs/auth-operations.md)
+for source and container commands, and the [deployment guide](docs/deploy.md) for configured
+sign-in providers, separate Gmail consent, the `s3.` upload subdomain and required variables.
+Before upgrading an existing installation, read the
+[authentication migration report](docs/auth-implementation-report.md).
 
 ## Tests
 

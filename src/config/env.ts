@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { z } from "zod";
 import { err, ok, type Result } from "@/types/result";
+import { authEnvShape } from "./authEnv";
 
 // Secret vars may be supplied as <VAR>_FILE pointing at a Docker secret file.
 const SECRET_FILE_VARS = [
@@ -10,6 +11,10 @@ const SECRET_FILE_VARS = [
   "MINIO_SECRET_KEY",
   "DATABASE_URL",
   "OAUTH_SIGNING_KEY",
+  "AUTH_SECRET",
+  "AUTH_SMTP_PASSWORD",
+  "AUTH_MICROSOFT_CLIENT_SECRET",
+  "AUTH_OIDC_PROVIDERS",
 ] as const;
 
 function resolveFileVars(raw: NodeJS.ProcessEnv): Record<string, string | undefined> {
@@ -26,10 +31,11 @@ function resolveFileVars(raw: NodeJS.ProcessEnv): Record<string, string | undefi
 const boolFromString = z.enum(["true", "false"]).transform((v) => v === "true");
 
 const base = z.object({
+  ...authEnvShape,
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
-  GOOGLE_OAUTH_CLIENT_ID: z.string().min(1),
-  GOOGLE_OAUTH_CLIENT_SECRET: z.string().min(1),
-  GOOGLE_WORKSPACE_DOMAIN: z.string().min(1),
+  GOOGLE_OAUTH_CLIENT_ID: z.string().default(""),
+  GOOGLE_OAUTH_CLIENT_SECRET: z.string().default(""),
+  GOOGLE_WORKSPACE_DOMAIN: z.string().default(""),
   BASE_URL: z.string().url(),
   DATABASE_URL: z.string().min(1),
   WS_TICKET_SECRET: z.string().min(32),
@@ -86,6 +92,27 @@ const schema = base.superRefine((v, ctx) => {
     });
   }
   if (v.NODE_ENV === "production") {
+    if (!URL.canParse(v.BASE_URL) || new URL(v.BASE_URL).protocol !== "https:") {
+      ctx.addIssue({
+        code: "custom",
+        path: ["BASE_URL"],
+        message: "production authentication requires an HTTPS BASE_URL",
+      });
+    }
+    if (v.AUTH_SECRET.length < 32) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["AUTH_SECRET"],
+        message: "AUTH_SECRET of at least 32 high-entropy characters is required in production",
+      });
+    }
+    if (v.AUTH_MAIL_TRANSPORT !== "smtp" || v.AUTH_SMTP_HOST === "") {
+      ctx.addIssue({
+        code: "custom",
+        path: ["AUTH_MAIL_TRANSPORT"],
+        message: "production authentication requires configured SMTP delivery",
+      });
+    }
     if (v.ALLOW_FIRST_LOGIN_ADMIN) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,

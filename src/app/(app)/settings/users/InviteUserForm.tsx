@@ -1,19 +1,19 @@
 "use client";
 
 import { UserPlus } from "lucide-react";
+import Link from "next/link";
 import { useRef, useState, useTransition } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Switch } from "@/components/ui/Switch";
 import { ERROR_IDS } from "@/constants/errorIds";
+import { managementMessagesForLocale } from "@/features/auth/management/messages";
+import { useLocale } from "@/features/i18n/LocaleProvider";
 import { inviteUserAction } from "@/features/identity/actions/invite";
+import { IdentityActionError } from "@/features/identity/IdentityActionError";
 import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import { isValidEmail } from "@/lib/isValidEmail";
 import { readCsrfToken } from "@/utils/csrfCookie";
-
-// warpdrive has no outbound email/invite delivery: inviteUser only pre-authorizes the email for
-// Google SSO adoption on first login. So we never silently imply an email was sent. Instead we
-// surface the shareable sign-in link (the app login URL) for the admin to pass along themselves.
 
 interface FieldErrors {
   email: string | null;
@@ -24,15 +24,18 @@ const NO_FIELD_ERRORS: FieldErrors = { email: null, name: null };
 
 interface Props {
   onInvited: () => void;
+  viewerIsAdmin?: boolean;
 }
 
-export function InviteUserForm({ onInvited }: Props): React.ReactElement {
+export function InviteUserForm({ onInvited, viewerIsAdmin = false }: Props): React.ReactElement {
   const L = useSettingsMessages();
+  const M = managementMessagesForLocale(useLocale());
 
   const MESSAGES: Record<string, string> = {
     [ERROR_IDS.AUTH_EMAIL_TAKEN]: L._extra.that_email_is_already_registered,
     [ERROR_IDS.PERM_DENIED]: L._extra.you_do_not_have_permission_to_invite_users,
     [ERROR_IDS.AUTH_INVITE_INPUT_INVALID]: L._extra.enter_a_valid_email_and_name,
+    [ERROR_IDS.AUTH_POLICY_DENIED]: L._errors.freshAuthentication,
   };
 
   const T = {
@@ -46,14 +49,8 @@ export function InviteUserForm({ onInvited }: Props): React.ReactElement {
     admin: L._extra.admin,
     invite: L._extra.invite,
     inviting: L._extra.inviting,
-    inviteLinkLabel: L._extra.invite_link,
-    copy: L._extra.copy_link,
-    copied: L._extra.copied,
   } as const;
 
-  function noEmailNotice(name: string, email: string): string {
-    return L._extra.noEmailNotice(name, email);
-  }
   function inviteErrorMessage(id: string): string {
     return MESSAGES[id] ?? L._errors.generic;
   }
@@ -71,9 +68,8 @@ export function InviteUserForm({ onInvited }: Props): React.ReactElement {
   const [error, setError] = useState<string | null>(null);
   // Per-field validation, shown inline instead of the browser's own validation bubble.
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>(NO_FIELD_ERRORS);
-  // Set on a successful invite so we can surface the no-email notice + shareable link.
+  // Delivery status is tracked without exposing the invitation bearer credential.
   const [invited, setInvited] = useState<{ name: string; email: string } | null>(null);
-  const [copied, setCopied] = useState(false);
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>): void {
     e.preventDefault();
@@ -93,17 +89,9 @@ export function InviteUserForm({ onInvited }: Props): React.ReactElement {
       if (emailRef.current !== null) emailRef.current.value = "";
       if (nameRef.current !== null) nameRef.current.value = "";
       setIsAdmin(false);
-      setCopied(false);
       setInvited({ name, email });
       onInvited();
     });
-  }
-
-  const loginUrl = typeof window === "undefined" ? "/login" : `${window.location.origin}/login`;
-
-  async function copyLink(): Promise<void> {
-    await navigator.clipboard.writeText(loginUrl);
-    setCopied(true);
   }
 
   return (
@@ -133,6 +121,7 @@ export function InviteUserForm({ onInvited }: Props): React.ReactElement {
               ref={emailRef}
               id="invite-email"
               type="email"
+              dir="ltr"
               required
               aria-invalid={fieldErrors.email !== null}
               aria-describedby={fieldErrors.email !== null ? "invite-email-error" : undefined}
@@ -169,38 +158,22 @@ export function InviteUserForm({ onInvited }: Props): React.ReactElement {
             )}
           </div>
         </div>
-        <span className="flex items-center gap-2 text-sm">
-          <Switch checked={isAdmin} onCheckedChange={setIsAdmin} label={T.admin} />
-          {T.admin}
-        </span>
-        {error !== null && (
-          <p role="alert" className="text-sm text-red-600">
-            {error}
-          </p>
+        {viewerIsAdmin && (
+          <span className="flex items-center gap-2 text-sm">
+            <Switch checked={isAdmin} onCheckedChange={setIsAdmin} label={T.admin} />
+            {T.admin}
+          </span>
         )}
+        {error !== null && <IdentityActionError message={error} className="text-sm text-red-600" />}
         {invited !== null && (
-          <div role="status" className="flex flex-col gap-2 rounded-md border bg-muted/40 p-3">
-            <p className="text-sm text-muted-foreground">
-              {noEmailNotice(invited.name, invited.email)}
+          <div role="status" className="space-y-2 rounded-md border bg-muted/40 p-3 text-sm">
+            <p>{M.invitationQueued}</p>
+            <p>
+              <bdi dir="ltr">{invited.email}</bdi>
             </p>
-            <div className="flex items-center gap-2">
-              <Input
-                readOnly
-                aria-label={T.inviteLinkLabel}
-                value={loginUrl}
-                onFocus={(e) => e.currentTarget.select()}
-                className="min-w-0 flex-1 bg-background"
-              />
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="shrink-0"
-                onClick={() => void copyLink()}
-              >
-                {copied ? T.copied : T.copy}
-              </Button>
-            </div>
+            <Link href="/settings/security-admin" className="underline">
+              {M.reviewInvitations}
+            </Link>
           </div>
         )}
       </div>

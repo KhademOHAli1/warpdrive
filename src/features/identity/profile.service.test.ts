@@ -1,12 +1,33 @@
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { ERROR_IDS } from "@/constants/errorIds";
-import { users } from "@/db/schema";
+import { authUsers, users } from "@/db/schema";
 import { withTestDb } from "@/db/testing";
 import { seedUser } from "@/db/testing/factories";
+import { authDatabaseHooks } from "@/features/auth/better/databaseHooks";
 import { updateUserProfile } from "./profile.service";
 
 describe("updateUserProfile", () => {
+  it("keeps the authentication display name aligned without reverting profile edits on a factor update", async () => {
+    await withTestDb(async (db) => {
+      const user = await seedUser(db, { name: "Old Name" });
+      const [identity] = await db
+        .insert(authUsers)
+        .values({ id: user.id, email: user.email, name: user.name, emailVerified: true })
+        .returning();
+      await updateUserProfile(
+        db,
+        { actorId: user.id, name: "Real Name" },
+        AbortSignal.timeout(2000),
+      );
+      const [updated] = await db.select().from(authUsers).where(eq(authUsers.id, user.id));
+      expect(updated?.name).toBe("Real Name");
+      const after = authDatabaseHooks(db).user?.update?.after;
+      await after?.(identity!, null);
+      const [profile] = await db.select().from(users).where(eq(users.id, user.id));
+      expect(profile?.name).toBe("Real Name");
+    });
+  });
   it("persists the new display name", async () => {
     await withTestDb(async (db) => {
       const u = await seedUser(db, { name: "Old Name" });

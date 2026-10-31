@@ -35,6 +35,7 @@ const NOT_PAGE_TITLES = new Set([
   "app/global-error.tsx",
   "app/(auth)/login/page.tsx",
   "features/auth/LoginScreen.tsx",
+  "features/auth/ui/AuthFrame.tsx",
   "app/oauth/authorize/consent.tsx",
   "features/email/ThreadPane.tsx",
 ]);

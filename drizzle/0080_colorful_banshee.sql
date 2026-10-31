@@ -1,0 +1,1 @@
+ALTER TABLE "auth_recovery_requests" ADD COLUMN "reason_enc" "bytea";

@@ -24,6 +24,18 @@
       "file": "src/features/notifications/ui/notificationText.ts",
       "text": "@/constants/notifyStrings",
       "reason": "Legacy notification payloads persist these exact English summaries. This import is compared only as a protocol value; display text is mapped to typed localized messages. Keep compatibility with existing records."
+    },
+    {
+      "id": "824d89be5f49e37d2eba",
+      "file": "src/features/auth/ui/AuthFrame.tsx",
+      "text": "Warpdrive",
+      "reason": "Warpdrive is the invariant product wordmark, consistent with the existing application shell. All surrounding authentication instructions and controls use localized catalogs."
+    },
+    {
+      "id": "aa1d2c6e391585e9c636",
+      "file": "src/features/auth/management/ui/AdministrationRecords.tsx",
+      "text": "Google",
+      "reason": "Google is the provider product name in a connected integration row. The row status and actions are localized for each interface language."
     }
   ]
 }

@@ -1,7 +1,10 @@
-import { and, eq, isNull, sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import type { PermissionFlagKey } from "@/constants/permissionFlags";
 import type { Db } from "@/db/client";
-import { permissionSets, sessions, users } from "@/db/schema";
+import { permissionSets, users } from "@/db/schema";
+import { lockAuthAccount } from "@/features/auth/better/accountLock";
+import { lockMcpGrants, revokeMcpGrants } from "@/features/auth/management/mcpGrants";
+import { revokeUserAccess } from "@/features/auth/management/offboarding";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { err, ok, type Result } from "@/types/result";
 import { recordAudit } from "./audit";
@@ -70,18 +73,20 @@ export async function assignPermissionSet(
   }
 
   signal.throwIfAborted();
-  await db.update(users).set({ permissionSetId: input.setId }).where(eq(users.id, input.userId));
-  await recordAudit(
-    db,
-    {
-      actorId: actor.id,
-      targetType: "user",
-      targetId: input.userId,
-      action: "user.assign_permission_set",
-      after: { setId: input.setId },
-    },
-    signal,
-  );
+  await db.transaction(async (tx) => {
+    await tx.update(users).set({ permissionSetId: input.setId }).where(eq(users.id, input.userId));
+    await recordAudit(
+      tx,
+      {
+        actorId: actor.id,
+        targetType: "user",
+        targetId: input.userId,
+        action: "user.assign_permission_set",
+        after: { setId: input.setId },
+      },
+      signal,
+    );
+  });
   return ok(true);
 }
 
@@ -102,32 +107,48 @@ export async function setUserAdmin(
   if (input.isAdmin === false) {
     signal.throwIfAborted();
     const result = await db.transaction(async (tx): Promise<Result<true, string>> => {
+      // Match promotion/deactivation lock order before scanning mutable administrator rows.
+      await lockAuthAccount(tx, input.userId, signal);
+      await lockMcpGrants(tx, signal);
       const locked = await tx.execute(
-        sql`SELECT id FROM users WHERE is_admin = true AND is_active = true FOR UPDATE`,
+        sql`SELECT id FROM users WHERE is_admin = true AND is_active = true AND invited_at IS NULL FOR UPDATE`,
       );
       const [target] = await tx
-        .select({ isAdmin: users.isAdmin })
+        .select({ isAdmin: users.isAdmin, isActive: users.isActive, invitedAt: users.invitedAt })
         .from(users)
         .where(eq(users.id, input.userId))
         .limit(1);
       if (target === undefined) return err("not_found");
       const demoteGate = canDemoteAdmin({
-        targetIsAdmin: target.isAdmin,
+        targetIsAdmin: target.isAdmin && target.isActive && target.invitedAt === null,
         isDemotion: true,
         activeAdminCount: locked.rows.length,
       });
       if (demoteGate.ok === false) return demoteGate;
       await tx.update(users).set({ isAdmin: false }).where(eq(users.id, input.userId));
+      await recordAdminChange(tx, actor.id, input.userId, false, signal);
       return ok(true);
     });
     if (result.ok === false) return result;
-    await recordAdminChange(db, actor.id, input.userId, false, signal);
     return ok(true);
   }
 
   signal.throwIfAborted();
-  await db.update(users).set({ isAdmin: true }).where(eq(users.id, input.userId));
-  await recordAdminChange(db, actor.id, input.userId, true, signal);
+  const promoted = await db.transaction(async (tx) => {
+    await lockAuthAccount(tx, input.userId, signal);
+    await lockMcpGrants(tx, signal);
+    const [target] = await tx
+      .select({ isAdmin: users.isAdmin })
+      .from(users)
+      .where(eq(users.id, input.userId))
+      .for("update");
+    if (target === undefined) return err("not_found");
+    await tx.update(users).set({ isAdmin: true }).where(eq(users.id, input.userId));
+    if (!target.isAdmin) await revokeMcpGrants(tx, input.userId, signal);
+    await recordAdminChange(tx, actor.id, input.userId, true, signal);
+    return ok(true);
+  });
+  if (!promoted.ok) return promoted;
   return ok(true);
 }
 
@@ -162,44 +183,50 @@ export async function setUserActive(
   if (input.isActive === false) {
     signal.throwIfAborted();
     const result = await db.transaction(async (tx): Promise<Result<true, string>> => {
+      await lockAuthAccount(tx, input.userId, signal);
+      await lockMcpGrants(tx, signal);
       const locked = await tx.execute(
-        sql`SELECT id FROM users WHERE is_admin = true AND is_active = true FOR UPDATE`,
+        sql`SELECT id FROM users WHERE is_admin = true AND is_active = true AND invited_at IS NULL FOR UPDATE`,
       );
       const [target] = await tx
-        .select({ isAdmin: users.isAdmin })
+        .select({ isAdmin: users.isAdmin, isActive: users.isActive, invitedAt: users.invitedAt })
         .from(users)
         .where(eq(users.id, input.userId))
         .limit(1);
       if (target === undefined) return err("not_found");
       const gate = canDeactivateUser(actor, {
         targetUserId: input.userId,
-        targetIsAdmin: target.isAdmin,
+        targetIsAdmin: target.isAdmin && target.isActive && target.invitedAt === null,
         activeAdminCount: locked.rows.length,
       });
       if (gate.ok === false) return gate;
       await tx.update(users).set({ isActive: false }).where(eq(users.id, input.userId));
-      await tx
-        .update(sessions)
-        .set({ revokedAt: new Date() })
-        .where(and(eq(sessions.userId, input.userId), isNull(sessions.revokedAt)));
+      await revokeUserAccess(tx, input.userId, signal);
+      await recordAudit(
+        tx,
+        {
+          actorId: actor.id,
+          targetType: "user",
+          targetId: input.userId,
+          action: "user.deactivate",
+        },
+        signal,
+      );
       return ok(true);
     });
     if (result.ok === false) return result;
-    await recordAudit(
-      db,
-      { actorId: actor.id, targetType: "user", targetId: input.userId, action: "user.deactivate" },
-      signal,
-    );
     return ok(true);
   }
 
   if (actor.type !== "admin") return err("admin required to reactivate users");
   signal.throwIfAborted();
-  await db.update(users).set({ isActive: true }).where(eq(users.id, input.userId));
-  await recordAudit(
-    db,
-    { actorId: actor.id, targetType: "user", targetId: input.userId, action: "user.activate" },
-    signal,
-  );
+  await db.transaction(async (tx) => {
+    await tx.update(users).set({ isActive: true }).where(eq(users.id, input.userId));
+    await recordAudit(
+      tx,
+      { actorId: actor.id, targetType: "user", targetId: input.userId, action: "user.activate" },
+      signal,
+    );
+  });
   return ok(true);
 }
