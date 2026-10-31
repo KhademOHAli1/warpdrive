@@ -40,16 +40,16 @@ Funnel, performance, duration and progress are established CRM report families; 
 [Pipedrive's report overview](https://support.pipedrive.com/en/article/insights-report-types).
 The following are proposed Warpdrive capabilities, not claims about another product's UI.
 
-| Area | Questions answered | Proposed presentation and interaction |
-| --- | --- | --- |
-| Advanced funnel | Where do deals drop out? How did conversion change? Which deals skipped stages or reopened? | Horizontal stage bars with counts, count/value toggle, overall and consecutive-stage conversion, loss counts, sample sizes and previous-cohort comparison. Clicking a segment opens its deals. |
-| Bottlenecks and aging | Which stages take longest? Which open deals are unusually old? | Median and upper-percentile duration, age distribution and stage-by-owner heatmap. Separate completed stage stays from the current age of open deals. |
-| Pipeline movement | Why did the open pipeline grow or shrink? | Value waterfall from opening to closing inventory, separating new deals, value changes, wins, losses, reopenings, transfers and removals. Each component has a matching deal list. |
-| Forecast and coverage | What might close in the selected period? Is enough pipeline available to meet the target? | Monthly forecast against target, conservative/base/optimistic scenarios, coverage ratio and close-date slippage. Show the assumptions and source of probabilities. |
-| Team performance | How do owners and teams compare on outcomes and follow-through? | Table with won value, win rate, median deal size, median sales cycle and overdue follow-ups, with small trends and sample counts. Segment comparisons to account for different deal mixes. |
-| Source quality | Which acquisition channels produce valuable, successful deals? | Source-by-cohort comparison of deal count, conversion, won value and time to close. Acquisition cost metrics require a separate reliable cost source. |
-| Deal health | Which opportunities need action now, and why? | Prioritized list of overdue follow-ups, missing next activities, excessive stage age and repeated close-date changes. Explain each reason and open the deal or activity editor. |
-| Forecast accuracy | How reliable were previous forecasts? | Saved forecast versus actual outcomes, error by period and segment, and deals that slipped into a later period. Requires forecasts preserved before their target period ends. |
+| Area                  | Questions answered                                                                          | Proposed presentation and interaction                                                                                                                                                          |
+| --------------------- | ------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Advanced funnel       | Where do deals drop out? How did conversion change? Which deals skipped stages or reopened? | Horizontal stage bars with counts, count/value toggle, overall and consecutive-stage conversion, loss counts, sample sizes and previous-cohort comparison. Clicking a segment opens its deals. |
+| Bottlenecks and aging | Which stages take longest? Which open deals are unusually old?                              | Median and upper-percentile duration, age distribution and stage-by-owner heatmap. Separate completed stage stays from the current age of open deals.                                          |
+| Pipeline movement     | Why did the open pipeline grow or shrink?                                                   | Value waterfall from opening to closing inventory, separating new deals, value changes, wins, losses, reopenings, transfers and removals. Each component has a matching deal list.             |
+| Forecast and coverage | What might close in the selected period? Is enough pipeline available to meet the target?   | Monthly forecast against target, conservative/base/optimistic scenarios, coverage ratio and close-date slippage. Show the assumptions and source of probabilities.                             |
+| Team performance      | How do owners and teams compare on outcomes and follow-through?                             | Table with won value, win rate, median deal size, median sales cycle and overdue follow-ups, with small trends and sample counts. Segment comparisons to account for different deal mixes.     |
+| Source quality        | Which acquisition channels produce valuable, successful deals?                              | Source-by-cohort comparison of deal count, conversion, won value and time to close. Acquisition cost metrics require a separate reliable cost source.                                          |
+| Deal health           | Which opportunities need action now, and why?                                               | Prioritized list of overdue follow-ups, missing next activities, excessive stage age and repeated close-date changes. Explain each reason and open the deal or activity editor.                |
+| Forecast accuracy     | How reliable were previous forecasts?                                                       | Saved forecast versus actual outcomes, error by period and segment, and deals that slipped into a later period. Requires forecasts preserved before their target period ends.                  |
 
 Activity volume should be presented beside outcomes. Associations between activities and wins
 must not be described as proof that an activity caused a sale. Initial health indicators should
@@ -105,18 +105,18 @@ Beta expansion   Ali       No next activity         Schedule >
 
 ## Metric definitions
 
-| Metric | Required meaning |
-| --- | --- |
-| Open pipeline | Count and value of open deals at the stated snapshot time, within the explicit archive and visibility policy. A historical value requires a historical snapshot or reconstruction. |
-| Won in period | Value and count of wins whose closing event falls inside the selected period; label any later reopenings or restatements consistently. |
-| Closed-deal win rate | Won / (won + lost) for the closing period. Open deals do not enter this denominator. No closed deals means unavailable, not zero percent. |
-| Cohort conversion | Deals in the selected created-date cohort that reached a specified stage / eligible cohort entrants. Show still-open deals and the observation date so an immature cohort is not mistaken for a completed result. |
-| Consecutive-stage conversion | Deals from the same cohort progressing from stage A to stage B / eligible entrants to A. State whether the report measures actual recorded entry or inferred passage through skipped stages. |
-| Stage duration and age | Duration is a completed stay's exit minus entry; age is elapsed time in the current open stay. Keep them separate and define how repeat visits contribute. Show median, upper percentile and sample count. |
-| Sales cycle | Creation to the defined closing event for the selected closed population. Distinguish won-only from all closed deals and define reopening behavior. |
-| Weighted pipeline and period forecast | Weighted pipeline uses documented win probabilities. A forecast for a particular period additionally needs assumptions about closing within that period. Display scenarios as estimates, not guaranteed revenue. |
-| Pipeline coverage | Eligible open pipeline value / remaining target for the same scope, currency and period. Show unavailable when the target is missing or the denominator is non-positive. |
-| Forecast error | Compare the forecast saved at a stated cutoff with the subsequently observed outcome. State the error formula; handle zero actual value without an undefined percentage. |
+| Metric                                | Required meaning                                                                                                                                                                                                  |
+| ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Open pipeline                         | Count and value of open deals at the stated snapshot time, within the explicit archive and visibility policy. A historical value requires a historical snapshot or reconstruction.                                |
+| Won in period                         | Value and count of wins whose closing event falls inside the selected period; label any later reopenings or restatements consistently.                                                                            |
+| Closed-deal win rate                  | Won / (won + lost) for the closing period. Open deals do not enter this denominator. No closed deals means unavailable, not zero percent.                                                                         |
+| Cohort conversion                     | Deals in the selected created-date cohort that reached a specified stage / eligible cohort entrants. Show still-open deals and the observation date so an immature cohort is not mistaken for a completed result. |
+| Consecutive-stage conversion          | Deals from the same cohort progressing from stage A to stage B / eligible entrants to A. State whether the report measures actual recorded entry or inferred passage through skipped stages.                      |
+| Stage duration and age                | Duration is a completed stay's exit minus entry; age is elapsed time in the current open stay. Keep them separate and define how repeat visits contribute. Show median, upper percentile and sample count.        |
+| Sales cycle                           | Creation to the defined closing event for the selected closed population. Distinguish won-only from all closed deals and define reopening behavior.                                                               |
+| Weighted pipeline and period forecast | Weighted pipeline uses documented win probabilities. A forecast for a particular period additionally needs assumptions about closing within that period. Display scenarios as estimates, not guaranteed revenue.  |
+| Pipeline coverage                     | Eligible open pipeline value / remaining target for the same scope, currency and period. Show unavailable when the target is missing or the denominator is non-positive.                                          |
+| Forecast error                        | Compare the forecast saved at a stated cutoff with the subsequently observed outcome. State the error formula; handle zero actual value without an undefined percentage.                                          |
 
 Always expose numerator, denominator, population and date basis in the report explanation.
 Distinguish percentage-point changes from relative percentage changes. Keep unavailable values

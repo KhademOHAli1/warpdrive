@@ -4,7 +4,7 @@ import type { Db } from "@/db/client";
 import { importBatches, importRows } from "@/db/schema";
 import { listDefs } from "@/features/custom-fields/defsRepo";
 import { err, ok, type Result } from "@/types/result";
-import { loadOwnedBatch, narrowTarget } from "./batchHelpers";
+import { loadOwnedBatch, narrowSource, narrowTarget } from "./batchHelpers";
 import type { ImportActor } from "./commit";
 import { tallyRows } from "./finalize";
 import { applyMapping, validateMappedRow } from "./mapRow";
@@ -32,7 +32,8 @@ export async function validateBatch(
   // normalizeMapping (not the raw parse) so a batch mapped before cross-entity mapping existed,
   // whose columns carry no `entity`, still resolves to the same destinations.
   const mapping = normalizeMapping(batch.columnMapping, target);
-  const defs = await listDefs(db, target, {}, signal);
+  const source = narrowSource(batch.source);
+  const defs = target === "note" ? [] : await listDefs(db, target, {}, signal);
   signal.throwIfAborted();
 
   // Fold the "validating" flip, row updates, and final "ready" flip into one tx so a
@@ -71,7 +72,7 @@ export async function validateBatch(
       // lines in column order; row.raw's own key order is unreliable once round-tripped through
       // JSONB. Falls back to raw order for legacy batches with no stored headers.
       const mapped = applyMapping(row.raw, mapping, target, batch.headers ?? undefined);
-      const r = validateMappedRow(target, mapped, defs);
+      const r = validateMappedRow(target, mapped, defs, source);
       if (r.ok) {
         await tx
           .update(importRows)

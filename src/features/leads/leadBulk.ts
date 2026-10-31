@@ -5,6 +5,7 @@ import type * as schema from "@/db/schema";
 import { users } from "@/db/schema";
 import { leads } from "@/db/schema/leads";
 import { syncEntityLabelNames } from "@/features/labels/labelsRepo.entities";
+import { mayTransferOwner, toTransferActor } from "@/features/permissions/mayTransferOwner";
 import { err, ok, type Result } from "@/types/result";
 import type { LeadSession } from "./leadActions";
 import { type BulkUpdateLeadsInput, bulkUpdateLeadsInput } from "./schemas";
@@ -35,12 +36,11 @@ export async function bulkUpdateLeads(
   const input = bulkUpdateLeadsInput.parse(raw);
   signal.throwIfAborted();
 
-  // Owner reassignment is permission-gated (mirrors resolveOwnerId on create and the deal
-  // changeOwner action): only admins or holders of deal.changeOwner may reassign, and the target
-  // must be an active user. Visibility alone is NOT sufficient for owner change.
+  const transferActor = toTransferActor(session);
+  const ownerScopedToSelf =
+    input.change.ownerId !== undefined && !mayTransferOwner(transferActor, null);
   if (input.change.ownerId !== undefined) {
-    const canReassign = session.isAdmin || session.flags["deal.changeOwner"] === true;
-    if (!canReassign) {
+    if (!mayTransferOwner(transferActor, session.userId)) {
       return err(
         new AppError(ERROR_IDS.PERM_DENIED, "bulk owner change requires deal.changeOwner", {}),
       );
@@ -60,29 +60,25 @@ export async function bulkUpdateLeads(
   }
 
   const uniqueIds = [...new Set(input.ids)];
-  // Restore (deleted:false) targets soft-deleted rows; every other change targets live rows.
   const includeDeleted = input.change.deleted === false;
-  const gate = includeDeleted
-    ? and(inArray(leads.id, uniqueIds), leadVisibilityClause(session))
-    : and(inArray(leads.id, uniqueIds), isNull(leads.deletedAt), leadVisibilityClause(session));
+  const predicates = [inArray(leads.id, uniqueIds), leadVisibilityClause(session)];
+  if (!includeDeleted) predicates.push(isNull(leads.deletedAt));
+  if (ownerScopedToSelf) predicates.push(eq(leads.ownerId, session.userId));
 
-  const visible = await db.select({ id: leads.id }).from(leads).where(gate);
+  const updatedRows = await db
+    .update(leads)
+    .set(buildSet(input.change))
+    .where(and(...predicates))
+    .returning({ id: leads.id });
   signal.throwIfAborted();
-  const visibleIds = visible.map((r) => r.id);
+  const updatedIds = updatedRows.map((r) => r.id);
 
-  if (visibleIds.length > 0) {
-    await db.update(leads).set(buildSet(input.change)).where(inArray(leads.id, visibleIds));
-    signal.throwIfAborted();
-    // A bulk label change rewrites the array on every visible row, so the catalog links have to
-    // follow for each of them. Sequential on purpose: the first unknown name adopts a catalog row
-    // that the rest then reuse, so concurrent syncs would race on the same adoption.
-    const bulkLabels = input.change.labels;
-    if (bulkLabels !== undefined) {
-      for (const id of visibleIds) {
-        await syncEntityLabelNames(db, "lead", id, bulkLabels, signal);
-      }
+  const bulkLabels = input.change.labels;
+  if (bulkLabels !== undefined) {
+    for (const id of updatedIds) {
+      await syncEntityLabelNames(db, "lead", id, bulkLabels, signal);
     }
   }
 
-  return ok({ updated: visibleIds.length, skipped: uniqueIds.length - visibleIds.length });
+  return ok({ updated: updatedIds.length, skipped: uniqueIds.length - updatedIds.length });
 }

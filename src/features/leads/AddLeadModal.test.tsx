@@ -222,6 +222,31 @@ describe("AddLeadModal", () => {
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
     await waitFor(() => expect(routerPush).toHaveBeenCalledWith("/leads/l1"));
   });
+
+  it("tells the creator the lead was created but is hidden from them, and closes on OK", async () => {
+    createLeadAction.mockResolvedValueOnce({ ok: true as const, value: null } as never);
+    const onClose = vi.fn();
+    render(
+      <InterfacePrefsProvider
+        value={{
+          ...INTERFACE_PREFS_DEFAULT,
+          openDetailsAfterCreate: { leadDeal: true, person: false, org: false },
+        }}
+      >
+        <AddLeadModal onClose={onClose} onCreated={vi.fn()} />
+      </InterfacePrefsProvider>,
+    );
+    fireEvent.change(screen.getByLabelText("Lead title"), { target: { value: "Handed away" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+    const notice = await screen.findByRole("alertdialog");
+    expect(notice).toHaveTextContent("Lead created, but you can't see it");
+    expect(notice).toHaveTextContent("Handed away");
+    expect(onClose).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "OK" }));
+    await waitFor(() => expect(onClose).toHaveBeenCalled());
+    expect(routerPush).not.toHaveBeenCalled();
+    expect(screen.queryByText(/Could not create lead/)).toBeNull();
+  });
 });
 
 it("validates custom numeric drafts before creating inline contacts", () => {

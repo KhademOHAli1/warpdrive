@@ -42,7 +42,9 @@
       "_labels.builtin.name": "Name is the standard German field label, identical to English.",
       "_labels.builtin.label": "Label is the established German CRM term for a record label, consistent with Labels elsewhere.",
       "_labels.builtin.person": "Person is the standard German singular entity label, identical to English.",
-      "_labels.builtin.lead": "Lead is the agreed German CRM term; it does not mean a leadership role."
+      "_labels.builtin.lead": "Lead is the agreed German CRM term; it does not mean a leadership role.",
+      "_labels.builtin.labels": "Labels is the established German interface term for CRM labels.",
+      "_labels.builtin.status": "Status is the same established German noun."
     }
   },
   "src/components/filters/messages/filters": {

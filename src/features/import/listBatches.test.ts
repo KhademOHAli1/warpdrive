@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { importBatches } from "@/db/schema";
+import { importBatches, importRows } from "@/db/schema";
 import { withTestDb } from "@/db/testing";
 import { seedUser } from "@/db/testing/factories";
 import { hydrateActor } from "@/server/hydrateActor";
@@ -59,5 +59,23 @@ it("lists only undo-able imports (completed/partial), hiding abandoned and faile
     const actor = toImportActor((await hydrateActor(db, me.id, AbortSignal.timeout(5000)))!);
     const r = await listBatches(db, actor, AbortSignal.timeout(5000));
     expect(r.ok && [...r.value.map((b) => b.filename)].sort()).toEqual(["done.csv", "part.csv"]);
+  });
+});
+
+it("counts imported rows that carry warnings without touching the error count", async () => {
+  await withTestDb(async (db) => {
+    const me = await seedUser(db, {});
+    const [batch] = await db
+      .insert(importBatches)
+      .values({ targetEntity: "person", filename: "w.csv", status: "completed", createdBy: me.id })
+      .returning();
+    const warnings = [{ field: "x", message: "careful" }];
+    await db.insert(importRows).values([
+      { batchId: batch?.id as string, rowNumber: 1, raw: {}, status: "imported", warnings },
+      { batchId: batch?.id as string, rowNumber: 2, raw: {}, status: "imported" },
+    ]);
+    const actor = toImportActor((await hydrateActor(db, me.id, AbortSignal.timeout(5000)))!);
+    const r = await listBatches(db, actor, AbortSignal.timeout(5000));
+    expect(r.ok && r.value[0]).toMatchObject({ warnedRows: 1, errorRows: 0 });
   });
 });

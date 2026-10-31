@@ -76,7 +76,9 @@ it("uploads via the presign handshake, then advances to the map step", async () 
     <ImportWizard personDefs={[]} orgDefs={[]} dealDefs={[]} activityDefs={[]} leadDefs={[]} />,
   );
   const file = new File(["name\nJane\n"], "c.csv", { type: "text/csv" });
-  fireEvent.change(screen.getByLabelText("CSV file"), { target: { files: [file] } });
+  fireEvent.change(screen.getByLabelText("CSV file", { selector: "input[type=file]" }), {
+    target: { files: [file] },
+  });
 
   await waitFor(() => expect(actions.requestImportUploadAction).toHaveBeenCalledOnce());
   expect(actions.confirmImportUploadAction).toHaveBeenCalledWith("b1", "csrf");
@@ -93,7 +95,9 @@ it("surfaces an error banner when the upload request fails", async () => {
     <ImportWizard personDefs={[]} orgDefs={[]} dealDefs={[]} activityDefs={[]} leadDefs={[]} />,
   );
   const file = new File(["name\nJane\n"], "c.csv", { type: "text/csv" });
-  fireEvent.change(screen.getByLabelText("CSV file"), { target: { files: [file] } });
+  fireEvent.change(screen.getByLabelText("CSV file", { selector: "input[type=file]" }), {
+    target: { files: [file] },
+  });
   await waitFor(() => expect(screen.getByRole("alert")).toBeInTheDocument());
 });
 
@@ -123,9 +127,45 @@ it("offers a lead custom field in the map step when the target is lead", async (
   );
   fireEvent.click(screen.getByLabelText("Leads"));
   const file = new File(["grade\nA\n"], "c.csv", { type: "text/csv" });
-  fireEvent.change(screen.getByLabelText("CSV file"), { target: { files: [file] } });
+  fireEvent.change(screen.getByLabelText("CSV file", { selector: "input[type=file]" }), {
+    target: { files: [file] },
+  });
 
   await waitFor(() => expect(screen.getByLabelText("Maps to: grade")).toBeInTheDocument());
   fireEvent.click(screen.getByLabelText("Maps to: grade"));
   expect(screen.getByRole("option", { name: "Grade" })).toBeInTheDocument();
+});
+
+it("seeds the map step from label suggestions for a csv source", async () => {
+  render(
+    <ImportWizard personDefs={[]} orgDefs={[]} dealDefs={[]} activityDefs={[]} leadDefs={[]} />,
+  );
+  const file = new File(["name\nJane\n"], "c.csv", { type: "text/csv" });
+  fireEvent.change(screen.getByLabelText("CSV file", { selector: "input[type=file]" }), {
+    target: { files: [file] },
+  });
+  await waitFor(() =>
+    expect(screen.getByLabelText("Maps to: name")).toHaveTextContent("Person[Name] *"),
+  );
+});
+
+it("creates a pipedrive batch and gates Continue on the Pipedrive ID", async () => {
+  render(
+    <ImportWizard personDefs={[]} orgDefs={[]} dealDefs={[]} activityDefs={[]} leadDefs={[]} />,
+  );
+  fireEvent.click(screen.getByRole("radio", { name: "Pipedrive export" }));
+  const file = new File(["name\nJane\n"], "c.csv", { type: "text/csv" });
+  fireEvent.change(screen.getByLabelText("CSV file", { selector: "input[type=file]" }), {
+    target: { files: [file] },
+  });
+  await waitFor(() =>
+    expect(actions.requestImportUploadAction).toHaveBeenCalledWith(
+      expect.objectContaining({ source: "pipedrive" }),
+      "csrf",
+    ),
+  );
+  await waitFor(() =>
+    expect(screen.getByLabelText("Maps to: name")).toHaveTextContent("Person[Name] *"),
+  );
+  expect(screen.getByRole("button", { name: "Continue" })).toBeDisabled();
 });

@@ -3,6 +3,7 @@ import { isTerminalImportStatus } from "@/constants/importStatus";
 import {
   ENTITY_FIELDS,
   ENTITY_LABELS,
+  fieldsFor,
   primaryEntityOf,
   qualifiedFieldLabel,
   STANDARD_IMPORT_FIELDS,
@@ -72,7 +73,7 @@ it("offers address subfields as dotted leaves, never a bare address field", () =
 });
 
 it("offers a note body", () => {
-  expect(ENTITY_FIELDS.note.map((f) => f.field)).toEqual(["body"]);
+  expect(fieldsFor("note", "csv").map((f) => f.field)).toEqual(["body"]);
   expect(ENTITY_FIELDS.note[0]?.required).toBe(false);
 });
 
@@ -83,7 +84,7 @@ it("no longer carries the orgName pseudo-field on lead", () => {
 });
 
 it("groups each target with the entities it may write", () => {
-  expect(TARGET_ENTITY_GROUPS.lead).toEqual(["lead", "organization", "note"]);
+  expect(TARGET_ENTITY_GROUPS.lead).toEqual(["lead", "organization", "person", "note"]);
   expect(TARGET_ENTITY_GROUPS.deal).toEqual(["deal", "organization", "person", "note"]);
   expect(TARGET_ENTITY_GROUPS.person).toEqual(["person", "organization", "note"]);
   expect(TARGET_ENTITY_GROUPS.organization).toEqual(["organization", "note"]);

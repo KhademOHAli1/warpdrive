@@ -2,9 +2,10 @@
 import { UploadCloud } from "lucide-react";
 import { type Dispatch, useState } from "react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/RadioGroup";
+import type { ImportSource } from "@/constants/importSources";
 import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import { confirmImportUploadAction, requestImportUploadAction } from "@/features/import/actions";
-import { MAX_IMPORT_CSV_BYTES } from "@/features/import/importFields";
+import { MAX_IMPORT_CSV_BYTES, targetsFor } from "@/features/import/importFields";
 import type { ImportTarget, WizardAction, WizardState } from "@/features/import/wizardState";
 import { cn } from "@/lib/utils";
 import { readCsrfToken } from "@/utils/csrfCookie";
@@ -25,6 +26,12 @@ export function UploadStep({ state, dispatch, busy, onError }: UploadStepProps):
     { value: "deal", label: IMP.deal },
     { value: "lead", label: IMP.lead },
     { value: "activity", label: IMP.activity },
+    { value: "note", label: IMP.note },
+  ];
+
+  const SOURCES: { value: ImportSource; label: string }[] = [
+    { value: "csv", label: IMP.sourceCsv },
+    { value: "pipedrive", label: IMP.sourcePipedrive },
   ];
 
   const [fileError, setFileError] = useState<string | null>(null);
@@ -41,11 +48,13 @@ export function UploadStep({ state, dispatch, busy, onError }: UploadStepProps):
     }
     setFileError(null);
     setUploading(true);
+    const { source, target } = state;
     try {
       const csrf = readCsrfToken();
       const req = await requestImportUploadAction(
         {
-          targetEntity: state.target,
+          targetEntity: target,
+          source,
           filename: file.name,
           contentType: "text/csv",
           size: file.size,
@@ -69,7 +78,7 @@ export function UploadStep({ state, dispatch, busy, onError }: UploadStepProps):
         onError(done.error.id);
         return;
       }
-      dispatch({ type: "uploaded", batchId: req.value.batchId });
+      dispatch({ type: "uploaded", batchId: req.value.batchId, source, target });
     } catch {
       onError("E_IMPORT_UPLOAD");
     } finally {
@@ -87,14 +96,42 @@ export function UploadStep({ state, dispatch, busy, onError }: UploadStepProps):
   return (
     <section className="space-y-6">
       <fieldset className="space-y-2">
+        <legend className="mb-1 text-sm font-medium">{IMP.source}</legend>
+        <RadioGroup
+          value={state.source}
+          onValueChange={(v) => dispatch({ type: "setSource", source: v as ImportSource })}
+          aria-label={IMP.source}
+          disabled={disabled}
+          className="grid grid-cols-2 gap-2"
+        >
+          {SOURCES.map((o) => (
+            <label
+              key={o.value}
+              htmlFor={`import-source-${o.value}`}
+              className={cn(
+                "flex cursor-pointer items-center gap-2 rounded-md border px-3 py-2.5 text-sm transition-colors",
+                state.source === o.value
+                  ? "border-primary bg-accent"
+                  : "border-border bg-card hover:bg-accent/60",
+              )}
+            >
+              <RadioGroupItem value={o.value} id={`import-source-${o.value}`} />
+              <span className="font-medium">{o.label}</span>
+            </label>
+          ))}
+        </RadioGroup>
+      </fieldset>
+
+      <fieldset className="space-y-2">
         <legend className="mb-1 text-sm font-medium">{IMP.entity}</legend>
         <RadioGroup
           value={state.target}
           onValueChange={(v) => dispatch({ type: "setTarget", target: v as ImportTarget })}
           aria-label={IMP.entity}
+          disabled={disabled}
           className="grid grid-cols-2 gap-2 sm:grid-cols-3"
         >
-          {TARGETS.map((t) => {
+          {TARGETS.filter((t) => targetsFor(state.source).includes(t.value)).map((t) => {
             const selected = state.target === t.value;
             return (
               <label

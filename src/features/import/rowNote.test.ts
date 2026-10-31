@@ -7,7 +7,7 @@ const mapping = (
   rowNoteFromUnmapped = true,
 ): ResolvedColumnMapping => ({
   dedupMode: "skip",
-  options: { rowNoteFromUnmapped },
+  options: { rowNoteFromUnmapped, createMissingStages: false },
   columns,
 });
 

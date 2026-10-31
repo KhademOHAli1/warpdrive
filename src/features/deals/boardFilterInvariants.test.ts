@@ -46,6 +46,7 @@ function representativeCondition(field: AstField, seed: SeedRefs): Condition {
     title: { field: "title", op: "contains", value: "Alpha" },
     orgName: { field: "orgName", op: "contains", value: "Apex" },
     value: { field: "value", op: "gt", value: 0 },
+    currency: { field: "currency", op: "eq", value: "USD" },
     ownerId: { field: "ownerId", op: "eq", value: seed.ownerId },
     stageId: { field: "stageId", op: "eq", value: seed.stageId },
     status: { field: "status", op: "eq", value: "open" },

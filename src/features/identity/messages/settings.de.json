@@ -258,7 +258,14 @@
     "undo": "Rückgängig machen",
     "undoing": "Wird rückgängig gemacht…",
     "undone": "Rückgängig gemacht",
-    "resultCounts": "{imported, number} importiert, {errors, number} Fehler"
+    "resultCounts": "{imported, number} importiert, {errors, number} Fehler",
+    "note": "Notizen",
+    "source": "Datenquelle",
+    "sourceCsv": "CSV-Datei",
+    "sourcePipedrive": "Pipedrive-Export",
+    "createMissingStages": "Fehlende Vertriebspipelines und Phasen anlegen",
+    "createMissingStagesHint": "Pipelines und Phasen aus der Datei, die hier noch fehlen, werden in der Reihenfolge ihres ersten Auftretens angelegt.",
+    "rowWarnings": "Zeilen mit Hinweisen"
   },
   "_identity": {
     "flagEditor": {
@@ -556,6 +563,14 @@
       "followUps": "Folgeaktivitäten",
       "recordDetails": "Datensatzdetails",
       "displayAndEmail": "Anzeige und E-Mail"
+    },
+    "importWarnings": {
+      "generic": "Diese Zeile wurde mit einem Hinweis importiert. Prüfen Sie die zugeordneten Werte und die zuständige Person.",
+      "noMatchingUser": "kein passender Benutzer gefunden",
+      "multipleUsers": "mehrere Benutzer stimmen überein",
+      "notPermitted": "keine Berechtigung für diese Zuweisung",
+      "unassigned": "„{value}“ wurde nicht zugewiesen: {reason}.",
+      "historyFallback": "Der ursprüngliche Zeitpunkt fehlt; ein Ersatzzeitpunkt wurde verwendet."
     }
   },
   "_labels": {
@@ -610,7 +625,27 @@
       "company_domain": "Unternehmensdomain",
       "website_url": "Website-URL",
       "description": "Beschreibung",
-      "founded_year": "Gründungsjahr"
+      "founded_year": "Gründungsjahr",
+      "pipedrive_id": "Pipedrive-Kennung",
+      "deal_id": "Verkaufschancen-ID",
+      "lead_id": "Lead-ID",
+      "person_id": "Personen-ID",
+      "organization_id": "Organisations-ID",
+      "deal_title": "Titel der Verkaufschance",
+      "lead_title": "Lead-Titel",
+      "person_name": "Name der Person",
+      "organization_name": "Name der Organisation",
+      "won_time": "Zeitpunkt des Abschlusses",
+      "lost_time": "Zeitpunkt des Verlusts",
+      "lost_reason": "Verlustgrund",
+      "archived": "Archiviert",
+      "assigned_to": "Zugewiesen an",
+      "done_time": "Erledigt am",
+      "due_time": "Fälligkeitszeit",
+      "created": "Erstellt am",
+      "labels": "Labels",
+      "status": "Status",
+      "done": "Erledigt"
     },
     "types": {
       "text": "Text",

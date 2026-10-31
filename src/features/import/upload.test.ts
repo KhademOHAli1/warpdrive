@@ -74,3 +74,79 @@ it("confirm denies a non-owner and rejects an oversized object", async () => {
     expect(tooBig.ok).toBe(false);
   });
 });
+
+it("stores the source on the batch and defaults it to csv", async () => {
+  await withTestDb(async (db) => {
+    const user = await seedUser(db, {});
+    const base = {
+      targetEntity: "deal",
+      filename: "d.csv",
+      contentType: "text/csv",
+      size: 10,
+    } as const;
+    const pd = await requestImportUpload(
+      db,
+      { actorId: user.id, storage: fakeStorage(), input: { ...base, source: "pipedrive" } },
+      AbortSignal.timeout(5000),
+    );
+    const plain = await requestImportUpload(
+      db,
+      { actorId: user.id, storage: fakeStorage(), input: base },
+      AbortSignal.timeout(5000),
+    );
+    const sourceOf = async (r: typeof pd): Promise<string | undefined> => {
+      const [b] = await db
+        .select()
+        .from(importBatches)
+        .where(eq(importBatches.id, r.ok ? r.value.batchId : ""));
+      return b?.source;
+    };
+    expect(await sourceOf(pd)).toBe("pipedrive");
+    expect(await sourceOf(plain)).toBe("csv");
+  });
+});
+
+it("rejects an unknown source", async () => {
+  await withTestDb(async (db) => {
+    const user = await seedUser(db, {});
+    const input = {
+      targetEntity: "deal",
+      filename: "d.csv",
+      contentType: "text/csv",
+      size: 10,
+      source: "salesforce",
+    } as unknown as Parameters<typeof requestImportUpload>[1]["input"];
+    await expect(
+      requestImportUpload(
+        db,
+        { actorId: user.id, storage: fakeStorage(), input },
+        AbortSignal.timeout(5000),
+      ),
+    ).rejects.toThrow();
+  });
+});
+
+it("accepts the note target for pipedrive and rejects it for csv", async () => {
+  await withTestDb(async (db) => {
+    const user = await seedUser(db, {});
+    const input = {
+      targetEntity: "note",
+      filename: "n.csv",
+      contentType: "text/csv",
+      size: 10,
+    } as const;
+    const pd = await requestImportUpload(
+      db,
+      { actorId: user.id, storage: fakeStorage(), input: { ...input, source: "pipedrive" } },
+      AbortSignal.timeout(5000),
+    );
+    expect(pd.ok).toBe(true);
+    await expect(
+      requestImportUpload(
+        db,
+        { actorId: user.id, storage: fakeStorage(), input },
+        AbortSignal.timeout(5000),
+      ),
+    ).rejects.toThrow();
+  });
+});

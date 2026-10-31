@@ -2,6 +2,7 @@
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { useMemo, useState } from "react";
+import { HiddenRecordNotice } from "@/components/HiddenRecordNotice";
 import { useCompanyCurrency } from "@/features/currencies/CurrencyProvider";
 import {
   CustomFieldCreateFields,
@@ -54,8 +55,13 @@ export interface AddDealModalProps {
   suppressDetailNav?: boolean;
 }
 
-function shouldOpenDealDetails(openAfterCreate: boolean, suppressDetailNav: boolean): boolean {
-  return openAfterCreate && !suppressDetailNav;
+function dealDetailsPath(
+  deal: { id: string } | null,
+  openAfterCreate: boolean,
+  suppressDetailNav: boolean,
+): string | null {
+  if (deal === null || !openAfterCreate || suppressDetailNav) return null;
+  return `/deals/${deal.id}`;
 }
 
 export function AddDealModal(props: AddDealModalProps): React.ReactNode {
@@ -77,6 +83,7 @@ export function AddDealModal(props: AddDealModalProps): React.ReactNode {
   const [valueLocale, setValueLocale] = useState(locale);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const [hiddenTitle, setHiddenTitle] = useState<string | null>(null);
 
   const peopleQ = trpc.contacts.personOptions.useQuery();
   const orgsQ = trpc.contacts.orgOptions.useQuery();
@@ -117,6 +124,18 @@ export function AddDealModal(props: AddDealModalProps): React.ReactNode {
     () => pipelines.find((p) => p.id === state.pipelineId)?.stages ?? [],
     [pipelines, state.pipelineId],
   );
+
+  function finishCreate(deal: { id: string } | null, title: string): void {
+    if (deal === null) {
+      router.refresh();
+      setHiddenTitle(title);
+      return;
+    }
+    onCreated(deal.id, title);
+    onClose();
+    const detailsPath = dealDetailsPath(deal, openDetailsAfterCreate.leadDeal, suppressDetailNav);
+    if (detailsPath !== null) router.push(detailsPath);
+  }
 
   async function submit(): Promise<void> {
     setError(null);
@@ -191,18 +210,14 @@ export function AddDealModal(props: AddDealModalProps): React.ReactNode {
         setError(translateSales("computed.createDealFailed", { id: result.error.id }));
         return;
       }
-      onCreated(result.deal.id, parsed.input.title);
-      onClose();
-      // "Open details view after creating a new item" (personal preference): jump to the new deal
-      // when the lead/deal flag is on. Otherwise the caller's onCreated handles the refresh.
-      // suppressDetailNav opts a caller out entirely (e.g. the inbox compose sidebar, where the
-      // deal link is unsent local state that a full-page nav would abandon).
-      if (shouldOpenDealDetails(openDetailsAfterCreate.leadDeal, suppressDetailNav)) {
-        router.push(`/deals/${result.deal.id}`);
-      }
+      finishCreate(result.deal, parsed.input.title);
     } finally {
       setPending(false);
     }
+  }
+
+  if (hiddenTitle !== null) {
+    return <HiddenRecordNotice entityLabel="Deal" title={hiddenTitle} onDismiss={onClose} />;
   }
 
   return (

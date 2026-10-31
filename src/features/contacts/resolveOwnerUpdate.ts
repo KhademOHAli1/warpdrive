@@ -4,18 +4,9 @@ import type { Db } from "@/db/client";
 import { users } from "@/db/schema";
 import { can } from "@/features/permissions/can";
 import type { PermSetUser } from "@/features/permissions/effective";
+import { mayTransferOwner } from "@/features/permissions/mayTransferOwner";
 import type { VisibleRecord } from "@/features/permissions/types";
 import { err, ok, type Result } from "@/types/result";
-
-// May this actor transfer ownership of a record currently owned by currentOwnerId? deal.changeOwner
-// is the generic owner-assign capability (ownership-scoped, stored as _own/_any pairs): _any reassigns
-// any record, _own only records the actor already owns; admin is unconditional. Shared by the server
-// resolver below and the detail-page loaders so the write gate and the UI gate can never diverge.
-function mayTransferOwner(actor: PermSetUser, currentOwnerId: string | null): boolean {
-  if (actor.type === "admin") return true;
-  if (actor.flags.has("deal.changeOwner_any")) return true;
-  return actor.flags.has("deal.changeOwner_own") && currentOwnerId === actor.id;
-}
 
 // Whether to SHOW the owner-transfer control on a contact. mayTransferOwner alone is not enough: the
 // write path (updatePerson/updateOrg) rejects at its contact.edit gate before resolveOwnerUpdate

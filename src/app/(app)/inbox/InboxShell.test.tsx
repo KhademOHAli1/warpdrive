@@ -73,7 +73,9 @@ it("keeps the folder rail beside a shrinkable content track", () => {
   const contentPane = screen.getByTestId("reader-content").parentElement;
   const folders = nav.parentElement;
   const shell = folders?.parentElement;
-  expect(folders).toHaveClass(styles.folders);
+  const foldersClass = styles.folders;
+  if (foldersClass === undefined) throw new Error("Inbox folder class is missing");
+  expect(folders).toHaveClass(foldersClass);
   expect(shell).toBe(contentPane?.parentElement);
   expect(shell).toHaveStyle({ display: "grid", overflow: "hidden" });
   if (shell === null || shell === undefined) throw new Error("Inbox grid is missing");

@@ -258,7 +258,14 @@
     "undo": "Undo",
     "undoing": "Undoing...",
     "undone": "Undone",
-    "resultCounts": "{imported, number} imported, {errors, number} errors"
+    "resultCounts": "{imported, number} imported, {errors, number} errors",
+    "note": "Notes",
+    "source": "Source",
+    "sourceCsv": "CSV file",
+    "sourcePipedrive": "Pipedrive export",
+    "createMissingStages": "Create missing pipelines and stages",
+    "createMissingStagesHint": "Pipelines and stages named in the file but not set up here are created, in the order the file first names them.",
+    "rowWarnings": "Rows with warnings"
   },
   "_identity": {
     "flagEditor": {
@@ -556,7 +563,15 @@
     },
     "activityGoalDisplayLabel": "{action, select, added {Activities added} completed {Activities completed} other {Activities}}, {interval}",
     "unknownUser": "Unknown user",
-    "unknownTeam": "Unknown team"
+    "unknownTeam": "Unknown team",
+    "importWarnings": {
+      "generic": "This row was imported with a warning. Review the mapped values and record ownership.",
+      "noMatchingUser": "no matching user",
+      "multipleUsers": "several users match",
+      "notPermitted": "not permitted",
+      "unassigned": "“{value}” was not assigned: {reason}.",
+      "historyFallback": "The original timestamp is missing; a fallback timestamp was used."
+    }
   },
   "_labels": {
     "builtin": {
@@ -610,7 +625,27 @@
       "company_domain": "Company domain",
       "website_url": "Website URL",
       "description": "Description",
-      "founded_year": "Founded year"
+      "founded_year": "Founded year",
+      "pipedrive_id": "Pipedrive ID",
+      "deal_id": "Deal ID",
+      "lead_id": "Lead ID",
+      "person_id": "Person ID",
+      "organization_id": "Organization ID",
+      "deal_title": "Deal title",
+      "lead_title": "Lead title",
+      "person_name": "Person name",
+      "organization_name": "Organization name",
+      "won_time": "Won time",
+      "lost_time": "Lost time",
+      "lost_reason": "Lost reason",
+      "archived": "Archived",
+      "assigned_to": "Assigned to",
+      "done_time": "Done time",
+      "due_time": "Due time",
+      "created": "Created",
+      "labels": "Labels",
+      "status": "Status",
+      "done": "Done"
     },
     "types": {
       "text": "text",

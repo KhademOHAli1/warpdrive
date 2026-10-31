@@ -3,6 +3,7 @@ export const PGBOSS_QUEUE_ACTIVITY_REMINDER = "activity.reminder";
 
 // Minutes before an activity's dueAt that the reminder fires.
 export const REMINDER_LEAD_MINUTES = 10;
+export const IMPORT_REMINDER_MIN_LEAD_MS = 60_000;
 
 // Email job queues are FIXED names (NOT per-account). Per-mailbox identity goes in the
 // job DATA + singletonKey=accountId (dedups re-enqueues), so one queue serves all

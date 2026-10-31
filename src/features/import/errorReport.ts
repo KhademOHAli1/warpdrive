@@ -1,10 +1,12 @@
 import { escapeCsv } from "./csvSafe";
 import { formatImportDiagnostic, type ImportDiagnosticOptions } from "./diagnosticFormatter";
+import { formatImportWarning } from "./warningFormatter";
 
 export interface ErrorReportRow {
   rowNumber: number;
   raw: Record<string, string>;
   errors: { field: string; message: string }[];
+  warnings?: { field: string; message: string }[];
 }
 
 // Columns: row number, flattened errors, then every raw header seen in first-seen order.
@@ -22,10 +24,13 @@ export function buildErrorCsv(
       }
     }
   }
-  const head = ["row", "errors", ...headers].map(escapeCsv).join(",");
+  const head = ["row", "errors", "warnings", ...headers].map(escapeCsv).join(",");
   const lines = rows.map((r) => {
     const reasons = r.errors.map((e) => formatImportDiagnostic(e, options)).join("; ");
-    const cells = [String(r.rowNumber), reasons, ...headers.map((h) => r.raw[h] ?? "")];
+    const warnings = (r.warnings ?? [])
+      .map((warning) => formatImportWarning(warning, options))
+      .join("; ");
+    const cells = [String(r.rowNumber), reasons, warnings, ...headers.map((h) => r.raw[h] ?? "")];
     return cells.map(escapeCsv).join(",");
   });
   return [head, ...lines].join("\n");

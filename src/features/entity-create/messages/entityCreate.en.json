@@ -5,5 +5,10 @@
   "save": "Save",
   "saving": "Saving...",
   "createOrgError": "Could not create organization ({errorId})",
-  "createPersonError": "Could not create person ({errorId})"
+  "createPersonError": "Could not create person ({errorId})",
+  "hiddenDealTitle": "Deal created, but you can't see it",
+  "hiddenLeadTitle": "Lead created, but you can't see it",
+  "hiddenDealDescription": "“{title}” was saved and assigned to another owner. Your visibility settings do not let you open this deal. Ask its owner or an administrator if you need access.",
+  "hiddenLeadDescription": "“{title}” was saved and assigned to another owner. Your visibility settings do not let you open this lead. Ask its owner or an administrator if you need access.",
+  "acknowledge": "OK"
 }

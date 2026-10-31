@@ -1,7 +1,9 @@
 import type { McpServer } from "@modelcontextprotocol/server";
 import type { Db } from "@/db/client";
+import { isDealVisibleToSession } from "@/features/deals/createdVisibility";
 import { createDeal, moveDeal, updateDeal } from "@/features/deals/dealActions";
 import { dealCreateInput, dealMoveInput, dealUpdateInput } from "@/features/deals/schemas";
+import { isLeadVisibleToSession } from "@/features/leads/createdVisibility";
 import { archiveLead, createLead } from "@/features/leads/leadActions";
 import { convertLead } from "@/features/leads/leadConvert";
 import { updateLead } from "@/features/leads/leadUpdate";
@@ -19,6 +21,7 @@ import {
   resultToTool,
   type ToolRegistry,
   toolError,
+  toolResult,
 } from "./types";
 
 export function registerDealWriteTools(
@@ -35,7 +38,12 @@ export function registerDealWriteTools(
       const actor = getToolActor(getCtx);
       if (!actor.ok) return toolError(actor.error);
       const session = await buildEntityCreateSession(db, actor.value, signal);
-      return resultToTool(await createDeal(db, session, input, signal));
+      const created = await createDeal(db, session, input, signal);
+      if (!created.ok) return resultToTool(created);
+      if (!(await isDealVisibleToSession(db, session, created.value.id, signal))) {
+        return toolResult({ created: true });
+      }
+      return resultToTool(created);
     },
   });
   registerTool(server, registry, {
@@ -66,7 +74,12 @@ export function registerDealWriteTools(
       const actor = getToolActor(getCtx);
       if (!actor.ok) return toolError(actor.error);
       const session = await buildEntityCreateSession(db, actor.value, signal);
-      return resultToTool(await createLead(db, session, input, signal));
+      const created = await createLead(db, session, input, signal);
+      if (!created.ok) return resultToTool(created);
+      if (!(await isLeadVisibleToSession(db, session, created.value.id, signal))) {
+        return toolResult({ created: true });
+      }
+      return resultToTool(created);
     },
   });
   registerTool(server, registry, {
