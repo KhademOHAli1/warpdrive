@@ -7,8 +7,7 @@ import { type LocalePreferences, localePreferencesSchema } from "@/features/i18n
 import { getPreferences } from "@/features/identity/preferencesRepo";
 import type { FilterCompileOptions } from "@/features/saved-filters/filterAst";
 import { hasDateCondition } from "@/features/saved-filters/filterFields";
-import { parseSavedFilterDefinition } from "@/features/saved-filters/parseDefinition";
-import { listSavedFilterViews } from "@/features/saved-filters/savedFilterList";
+import { listCompatibleSavedFilterViews } from "@/features/saved-filters/savedFilterList";
 import { type FilterDefinition, filterDefinition } from "@/features/saved-filters/schemas";
 import { protectedProcedure, router } from "@/server/trpc/trpc";
 import type { DealVisibilitySession } from "@/types/session";
@@ -128,7 +127,5 @@ export const dealRouter = router({
   // AST saved filters visible to the actor: own filters plus every shared one. A thin wrapper over
   // the shared saved-view read, kept as its own route because the board's query key is load-bearing
   // and deal-parsed so the client still receives a FilterDefinition.
-  savedFilters: protectedProcedure.query(({ ctx }) =>
-    listSavedFilterViews(ctx, "deal", parseSavedFilterDefinition),
-  ),
+  savedFilters: protectedProcedure.query(({ ctx }) => listCompatibleSavedFilterViews(ctx, "deal")),
 });

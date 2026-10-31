@@ -89,7 +89,10 @@ export function BoardFilterMenu(props: BoardFilterMenuProps): React.ReactNode {
   // The entry names what the dialog it opens will do, since the dialog seeds itself from the
   // selected filter: opening "Create new filter" onto an Edit form misreports the outcome.
   const selectedFilter = savedFilters.find((f) => f.id === selectedFilterId);
-  const createEntryLabel = filterSaveCopy(filterSaveMode(selectedFilter), locale).title;
+  const createEntryLabel = filterSaveCopy(
+    filterSaveMode(selectedFilter?.availability === "unavailable" ? undefined : selectedFilter),
+    locale,
+  ).title;
   const ordered = [...savedFilters].sort((a, b) => Number(b.favorite) - Number(a.favorite));
 
   function clearAll(): void {

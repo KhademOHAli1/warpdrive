@@ -180,6 +180,13 @@ describe("board toolbar view restored from the saved preference", () => {
     await user.click(screen.getByLabelText("Filter"));
     await user.click(screen.getByRole("menuitem", { name: "Clear filter" }));
     expect(screen.getByLabelText("Filter")).not.toHaveTextContent("1");
+    // A missing transport result must stay a query failure, not a successful scope receipt.
+    await waitFor(() =>
+      expect(screen.getByRole("alert")).toHaveTextContent(
+        "Could not load this view. Your selected conditions are unchanged.",
+      ),
+    );
+    expect(screen.getByRole("button", { name: "Try again" })).toBeInTheDocument();
   });
 });
 

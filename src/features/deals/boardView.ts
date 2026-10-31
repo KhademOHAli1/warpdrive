@@ -1,4 +1,5 @@
 import type { FilterDefinition } from "@/features/saved-filters/schemas";
+import { missingSavedView } from "@/features/saved-filters/viewAvailability";
 import type { BoardSortKey, SortDirection } from "./boardSort";
 import { DEFAULT_SORT_DIRECTION, DEFAULT_SORT_KEY } from "./boardSort";
 import type { SavedFilterView } from "./savedFilterView";
@@ -43,8 +44,8 @@ export function toBoardViewPref(view: BoardViewState): BoardViewPref {
 }
 
 // Rebuilds the runtime view from the stored preference. The stored saved-filter id is resolved
-// against the filters the actor can currently see; an unresolvable id (deleted, unshared) is
-// dropped rather than leaving the board pointing at a filter it cannot apply.
+// against current rows. A missing selection remains unavailable until explicit recovery;
+// clearing it automatically would silently widen the requested view.
 export function boardViewFromPref(
   stored: BoardViewPref | undefined,
   visibleFilters: readonly SavedFilterView[],
@@ -53,7 +54,8 @@ export function boardViewFromPref(
   const savedFilter =
     stored.savedFilterId === null
       ? null
-      : (visibleFilters.find((f) => f.id === stored.savedFilterId) ?? null);
+      : (visibleFilters.find((f) => f.id === stored.savedFilterId) ??
+        missingSavedView(stored.savedFilterId));
   return {
     ownerId: stored.ownerId,
     sortKey: stored.sortKey,
@@ -71,6 +73,7 @@ export function isBoardFiltered(view: BoardViewState): boolean {
 
 // The filter definition the board query must apply, matching the precedence the client uses:
 // ad-hoc conditions win over the saved view.
-export function boardViewDefinition(view: BoardViewState): FilterDefinition | undefined {
+export function boardViewDefinition(view: BoardViewState): FilterDefinition | undefined | null {
+  if (view.savedFilter?.availability === "unavailable") return null;
   return view.conditions ?? view.savedFilter?.definition;
 }

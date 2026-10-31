@@ -1,0 +1,11 @@
+{
+  "title": "This saved view is unavailable",
+  "body": "Its original conditions have been kept. Choose another saved view, or explicitly show all permitted records.",
+  "showAll": "Show all permitted records",
+  "unavailableLabel": "Unavailable",
+  "checkingTitle": "Checking this saved view",
+  "checkingBody": "The saved conditions are being checked before records are shown.",
+  "queryError": "Could not load this view. Your selected conditions are unchanged.",
+  "retry": "Try again",
+  "missingBody": "This saved view was removed or is no longer available to you. Choose another saved view or explicitly show all permitted records."
+}

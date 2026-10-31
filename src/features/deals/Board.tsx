@@ -10,15 +10,14 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
-import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useLocalePreferencePending, useLocalePreferences } from "@/features/i18n/LocaleProvider";
+import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import { useLabelColorResolver } from "@/features/labels/useLabelColorResolver";
 import { capture, currentRoute } from "@/features/observability/capture";
 import { EVENTS } from "@/features/observability/events";
-import { hasDateCondition } from "@/features/saved-filters/filterFields";
+import { SavedViewPending } from "@/features/saved-filters/SavedViewPending";
+import { SavedViewUnavailable } from "@/features/saved-filters/SavedViewUnavailable";
 import type { FilterDefinition } from "@/features/saved-filters/schemas";
-import { trpc } from "@/lib/trpc-client";
 import { BoardEmpty } from "./BoardEmpty";
 import { BoardHeader } from "./BoardHeader";
 import { BoardStages } from "./BoardStages";
@@ -28,33 +27,30 @@ import type { BoardProps } from "./boardTypes";
 import { isBoardFiltered } from "./boardView";
 import { DealCard } from "./DealCard";
 import { DragDropZones, zoneTransition } from "./DragDropZones";
-import { dateFilterContextKey } from "./dealListQueryKey";
 import { resolveNeighbors } from "./dragNeighbors";
 import { MoveDealDialog } from "./MoveDealDialog";
 import { NewDealButton } from "./NewDealButton";
 import { useBoardDerived } from "./useBoardDerived";
+import { useBoardPageQuery } from "./useBoardPageQuery";
 import { useBoardRealtime } from "./useBoardRealtime";
 import { useBoardView } from "./useBoardView";
 import { useDealClose } from "./useDealClose";
-import { BOARD_QUERY_KEY, useDealMove } from "./useDealMove";
+import { useDealMove } from "./useDealMove";
 
 export type { BoardProps } from "./boardTypes";
 
 export function Board(props: BoardProps): React.ReactNode {
-  const preferences = useLocalePreferences();
-  const { locale, calendar, timeZone } = preferences;
-  const preferencePending = useLocalePreferencePending();
+  const { locale } = useLocalePreferences();
   const { pipelineId, selfActorId, stages, cards, pipelines, density, baseCurrency } = props;
   const { serverNow } = props;
   const { move } = useDealMove(pipelineId);
   const { close } = useDealClose(pipelineId);
   useBoardRealtime(pipelineId, selfActorId);
-  const utils = trpc.useUtils();
   const resolveLabels = useLabelColorResolver("deal");
   // Toolbar view (owner filter, saved/ad-hoc filter, sort), seeded from the user's saved
   // preference and written back on every change.
   const view = useBoardView(props.initialView);
-  const { ownerId: selectedOwnerId, savedFilter, conditions: inlineDefinition } = view;
+  const { ownerId: selectedOwnerId, savedFilter } = view;
   const { sortKey, sortDir: sortDirection } = view;
   // A not-yet-saved filter definition being previewed from the create-filter modal. When set it
   // overrides the saved filter for the board query, so the board shows the in-progress result
@@ -68,54 +64,13 @@ export function Board(props: BoardProps): React.ReactNode {
   // Deal id awaiting a Move stage pick (set when a card is dropped on the Move zone).
   const [moveDealId, setMoveDealId] = useState<string | null>(null);
 
-  // Subscribe to the shared board cache so an optimistic move (useDealMove) or a realtime
-  // event (useBoardRealtime) re-renders the board immediately, without a reload. Seeded from
-  // the server-rendered cards; invalidation reconciles via the tRPC board query. This closes
-  // the bug where a dropped card only appeared in its new column after an F5.
-  const activeDefinition = previewDefinition ?? inlineDefinition ?? savedFilter?.definition;
-  const dateContext = hasDateCondition(activeDefinition) ? dateFilterContextKey(preferences) : null;
-  const datePreferencePending = dateContext !== null && preferencePending;
-  const boardQuery = useQuery({
-    enabled: !datePreferencePending,
-    queryKey: BOARD_QUERY_KEY(pipelineId),
-    queryFn: () =>
-      utils.client.deal.board.query({
-        pipelineId,
-        definition: activeDefinition,
-        timeZone,
-        locale,
-        calendar,
-      }),
-    initialData: { cards },
-    initialDataUpdatedAt: hasDateCondition(activeDefinition) ? 0 : undefined,
-    refetchOnMount: view.restored ? "always" : true,
-    staleTime: 5_000,
-  });
-  const liveCards = boardQuery.data.cards;
-  const refetch = boardQuery.refetch;
-  // Re-run the (same-key) board query when the applied saved filter changes so filtering is
-  // server-side while realtime patching + optimistic moves keep matching the single cache key.
-  // Skip the first run: the query is already seeded with the SSR cards for the initial (null)
-  // filter, so refetching on mount would be a redundant round trip that discards initialData.
-  // savedFilter is a deliberate trigger dep (the queryFn closes over its definition), not used
-  // in the body, so biome's exhaustive-deps check is suppressed here on purpose.
-  const filterMounted = useRef(false);
-  // biome-ignore lint/correctness/useExhaustiveDependencies: savedFilter/previewDefinition/dateContext are intentional refetch triggers
-  useEffect(() => {
-    if (!filterMounted.current) {
-      filterMounted.current = true;
-      return;
-    }
-    if (datePreferencePending) return;
-    void refetch();
-  }, [
-    savedFilter,
+  const { viewUnavailable, viewPending, liveCards, refetch, queryError } = useBoardPageQuery({
+    pipelineId,
+    view,
     previewDefinition,
-    inlineDefinition,
-    dateContext,
-    datePreferencePending,
-    refetch,
-  ]);
+    cards,
+    initialView: props.initialView,
+  });
 
   // All display derivations (owner + saved-filter + quick-condition narrowing, per-stage sums,
   // board total, per-column sorting) live in one hook. Drag math still reads raw liveCards.
@@ -237,65 +192,85 @@ export function Board(props: BoardProps): React.ReactNode {
         view={view}
         addSlot={addDeal}
         onPreviewFilter={setPreviewDefinition}
+        totalsUnavailable={viewUnavailable || viewPending}
         canManagePipelines={props.canManagePipelines}
       />
 
-      <DndContext
-        // Stable, deterministic id so dnd-kit's accessibility ids (aria-describedby /
-        // live-region) match between the server and client render. Without it dnd-kit
-        // falls back to an internal counter that diverges under SSR and trips a React
-        // hydration mismatch on the board.
-        id={`board-${pipelineId}`}
-        sensors={sensors}
-        onDragStart={onDragStart}
-        onDragCancel={() => {
-          capture(EVENTS.boardDragCancelled, { route: currentRoute() });
-          setDragActive(false);
-          setActiveId(null);
-        }}
-        onDragEnd={onDragEnd}
-        accessibility={{ announcements: boardAnnouncements(cardTitleById, stageNameById, locale) }}
-      >
-        {emptyKind !== "none" && (
-          <BoardEmpty kind={emptyKind} onClearFilters={view.clearFilters} addSlot={addDeal} />
-        )}
-        {/* Only a board proven to be hiding cards drops its columns: the other two states may be
+      {viewUnavailable ? (
+        <SavedViewUnavailable
+          missing={
+            savedFilter?.availability === "unavailable" && savedFilter.problem.kind === "missing"
+          }
+          name={savedFilter?.name}
+          onClear={view.clearFilters}
+        />
+      ) : viewPending ? (
+        <SavedViewPending
+          error={queryError}
+          onRetry={() => {
+            void refetch();
+          }}
+        />
+      ) : (
+        <DndContext
+          // Stable, deterministic id so dnd-kit's accessibility ids (aria-describedby /
+          // live-region) match between the server and client render. Without it dnd-kit
+          // falls back to an internal counter that diverges under SSR and trips a React
+          // hydration mismatch on the board.
+          id={`board-${pipelineId}`}
+          sensors={sensors}
+          onDragStart={onDragStart}
+          onDragCancel={() => {
+            capture(EVENTS.boardDragCancelled, { route: currentRoute() });
+            setDragActive(false);
+            setActiveId(null);
+          }}
+          onDragEnd={onDragEnd}
+          accessibility={{
+            announcements: boardAnnouncements(cardTitleById, stageNameById, locale),
+          }}
+        >
+          {emptyKind !== "none" && (
+            <BoardEmpty kind={emptyKind} onClearFilters={view.clearFilters} addSlot={addDeal} />
+          )}
+          {/* Only a board proven to be hiding cards drops its columns: the other two states may be
             an empty pipeline, whose columns are still the drop targets. */}
-        {emptyKind !== "filtered" && (
-          <BoardStages
-            stages={stages}
-            sumsByStage={sumsByStage}
-            sortedByStage={sortedByStage}
-            density={density}
-            now={now}
-            pipelineId={pipelineId}
-            pipelines={pipelines}
-            baseCurrency={baseCurrency}
-          />
-        )}
-
-        {/* Bottom Delete/Lost/Won/Move action bar, revealed only during a drag (Pipedrive). */}
-        <DragDropZones active={dragActive} />
-
-        {/* Lifted card that follows the pointer while dragging (Pipedrive floats the card and
-            leaves a dimmed placeholder in the column, which preserves the lane's layout). */}
-        <DragOverlay>
-          {activeCard !== undefined ? (
-            <DealCard
-              card={activeCard}
-              currency={baseCurrency}
-              ownerName={activeCard.ownerName ?? "?"}
-              personName={activeCard.personName ?? null}
-              orgName={activeCard.orgName ?? null}
-              labels={resolveLabels(activeCard.labels)}
-              rottingDays={null}
+          {emptyKind !== "filtered" && (
+            <BoardStages
+              stages={stages}
+              sumsByStage={sumsByStage}
+              sortedByStage={sortedByStage}
               density={density}
               now={now}
-              elevated
+              pipelineId={pipelineId}
+              pipelines={pipelines}
+              baseCurrency={baseCurrency}
             />
-          ) : null}
-        </DragOverlay>
-      </DndContext>
+          )}
+
+          {/* Bottom Delete/Lost/Won/Move action bar, revealed only during a drag (Pipedrive). */}
+          <DragDropZones active={dragActive} />
+
+          {/* Lifted card that follows the pointer while dragging (Pipedrive floats the card and
+            leaves a dimmed placeholder in the column, which preserves the lane's layout). */}
+          <DragOverlay>
+            {activeCard !== undefined ? (
+              <DealCard
+                card={activeCard}
+                currency={baseCurrency}
+                ownerName={activeCard.ownerName ?? "?"}
+                personName={activeCard.personName ?? null}
+                orgName={activeCard.orgName ?? null}
+                labels={resolveLabels(activeCard.labels)}
+                rottingDays={null}
+                density={density}
+                now={now}
+                elevated
+              />
+            ) : null}
+          </DragOverlay>
+        </DndContext>
+      )}
 
       {moveDealId !== null && (
         <MoveDealDialog

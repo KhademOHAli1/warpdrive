@@ -1,5 +1,4 @@
 "use client";
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { ColumnsMenu } from "@/components/data-table/ColumnsMenu";
 import type { ColumnDef } from "@/components/data-table/columnModel";
@@ -11,7 +10,6 @@ import { customFieldColumns } from "@/features/custom-fields/listColumns";
 import {
   type CustomFieldRefLabels,
   CustomFieldRefLabelsProvider,
-  EMPTY_REF_LABELS,
 } from "@/features/custom-fields/refLabelsContext";
 import type { CustomFieldSortKey } from "@/features/custom-fields/sortKey";
 import {
@@ -19,27 +17,25 @@ import {
   useLocalePreferencePending,
   useLocalePreferences,
 } from "@/features/i18n/LocaleProvider";
-import { hasDateCondition } from "@/features/saved-filters/filterFields";
-import type { FilterDefinition } from "@/features/saved-filters/schemas";
-import { trpc } from "@/lib/trpc-client";
+import { SavedViewPending } from "@/features/saved-filters/SavedViewPending";
+import { SavedViewUnavailable } from "@/features/saved-filters/SavedViewUnavailable";
 import type { CustomFieldDef } from "@/types/customFields";
 import { BoardFilterControl } from "./BoardFilterControl";
 import { BoardSortControl } from "./BoardSortControl";
 import { BoardToolbar } from "./BoardToolbar";
 import { distinctBoardOwners, matchesOwnerFilter } from "./boardFilter";
 import { DEFAULT_SORT_DIRECTION, DEFAULT_SORT_KEY, type SortDirection } from "./boardSort";
-import { type BoardViewState, boardViewDefinition, DEFAULT_BOARD_VIEW } from "./boardView";
+import type { BoardViewState } from "./boardView";
 import { DealFilterBuilder } from "./DealFilterBuilder";
 import type { DealListProps } from "./DealList";
 import { DealList } from "./DealList";
 import { DealsEmpty } from "./DealsEmpty";
 import { dealListColumns } from "./dealListColumns";
-import { dealListQueryKey } from "./dealListQueryKey";
 import { type DealListSortKey, sortRows } from "./dealListSort";
-import { fetchDealListRows } from "./fetchDealListRows";
 import { NewDealButton } from "./NewDealButton";
 import { useBoardView } from "./useBoardView";
 import { useDealListActions } from "./useDealListActions";
+import { useDealListPageQuery } from "./useDealListPageQuery";
 import { useDealListRefLabels } from "./useDealListRefLabels";
 
 // Stable empty array: a new [] each render would churn the useMemo dependencies below.
@@ -91,10 +87,6 @@ export function resolveDealListFooter(args: {
     : { total: args.serverTotal, totalValue: args.serverTotalValue, filtered: false };
 }
 
-function sameDefinition(a: FilterDefinition | undefined, b: FilterDefinition | undefined): boolean {
-  return JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
-}
-
 export function DealListClient({
   initial,
   variant = "list",
@@ -107,7 +99,6 @@ export function DealListClient({
   const { pipelineId, stages, pipelines, baseCurrency } = initial;
   const currency = baseCurrency ?? DEFAULT_BASE_CURRENCY;
   const actions = useDealListActions();
-  const utils = trpc.useUtils();
   const view = useBoardView(initial.initialView);
   const { ownerId: selectedOwnerId, savedFilter, conditions: inlineDefinition } = view;
   const {
@@ -115,7 +106,6 @@ export function DealListClient({
     setSavedFilter,
     setConditions: setInlineDefinition,
   } = view;
-  const activeDefinition = inlineDefinition ?? savedFilter?.definition;
   const [sortKey, setSortKey] = useState<DealListSortKey>(DEFAULT_SORT_KEY);
   const [sortDirection, setSortDirection] = useState<SortDirection>(DEFAULT_SORT_DIRECTION);
   const catalog = useMemo<(ColumnDef & { sortField?: CustomFieldSortKey })[]>(
@@ -134,45 +124,19 @@ export function DealListClient({
   const columns = useColumns(catalog, initial.initialColumns);
   usePersistColumns("dealsList", columns.order);
 
+  const { activeDefinition, viewUnavailable, data, isPlaceholderData, isError, retry } =
+    useDealListPageQuery({
+      view,
+      initial,
+      pipelineId,
+      variant,
+      preferences,
+      preferencePending,
+    });
   const isUnfiltered = activeDefinition === undefined;
-  const seededForThisView = sameDefinition(
-    activeDefinition,
-    boardViewDefinition(initial.initialView ?? DEFAULT_BOARD_VIEW),
-  );
-  const listQuery = useQuery({
-    queryKey: dealListQueryKey(pipelineId, variant, activeDefinition, preferences),
-    enabled: !hasDateCondition(activeDefinition) || !preferencePending,
-    queryFn: () =>
-      fetchDealListRows(utils, {
-        pipelineId,
-        archived: variant === "archived",
-        definition: activeDefinition,
-        preferences,
-      }),
-    initialData: seededForThisView
-      ? {
-          rows: initial.rows,
-          total: initial.total,
-          totalValue: initial.totalValue,
-          currencyTotals: initial.currencyTotals ?? [],
-          refLabels: initial.refLabels ?? EMPTY_REF_LABELS,
-        }
-      : undefined,
-    initialDataUpdatedAt:
-      hasDateCondition(activeDefinition) || initial.rows.length < initial.total ? 0 : undefined,
-    placeholderData: keepPreviousData,
-    staleTime: 5_000,
-  });
-  // Undefined only for the first render of a filtered key before its fetch resolves (initialData is
-  // withheld for filtered keys); fall back to empty rows / server totals until the data arrives.
-  const data = listQuery.data;
   // Stable identity while data is absent, so the useMemos below do not rebuild every render.
   const rows = data?.rows ?? EMPTY_ROWS;
-  const refLabels = useDealListRefLabels(
-    initial.refLabels,
-    data?.refLabels,
-    listQuery.isPlaceholderData,
-  );
+  const refLabels = useDealListRefLabels(initial.refLabels, data?.refLabels, isPlaceholderData);
 
   const owners = useMemo(() => distinctBoardOwners(rows, locale), [rows, locale]);
   const shownRows = useMemo(() => {
@@ -214,52 +178,76 @@ export function DealListClient({
 
   const clearFilters = view.clearFilters;
 
+  const toolbar = (
+    <BoardToolbar
+      pipelineId={pipelineId}
+      pipelines={pipelines}
+      totalValue={footer.totalValue}
+      currencyTotals={currencyTotals}
+      dealCount={footer.total}
+      currency={currency}
+      activeView={variant}
+      totalsUnavailable={viewUnavailable || data === undefined}
+      canManagePipelines={initial.canManagePipelines}
+      createSlot={addDeal}
+      sortSlot={
+        <BoardSortControl<DealListSortKey>
+          sortKey={sortKey}
+          direction={sortDirection}
+          onKeyChange={setSortKey}
+          onToggleDirection={() => setSortDirection((d) => (d === "asc" ? "desc" : "asc"))}
+          extraOptions={extraSortOptions}
+        />
+      }
+      filterSlot={
+        <>
+          <DealFilterBuilder
+            stages={stages}
+            activeCount={inlineDefinition?.conditions.length ?? 0}
+            appliedDefinition={inlineDefinition}
+            onApply={setInlineDefinition}
+          />
+          <BoardFilterControl
+            owners={owners}
+            stages={stages}
+            selectedOwnerId={selectedOwnerId}
+            onSelectOwner={setSelectedOwnerId}
+            selectedFilterId={savedFilter?.id ?? null}
+            appliedFilter={savedFilter}
+            onSelectFilter={setSavedFilter}
+            appliedDefinition={inlineDefinition}
+            onApplyDefinition={setInlineDefinition}
+            // The list keeps its own ad-hoc Filter builder, so this menu is the saved-filter
+            // picker and the badge stays on the builder.
+            triggerLabel={translateSales("saved_filters_f52bc")}
+          />
+        </>
+      }
+    />
+  );
+  if (viewUnavailable)
+    return (
+      <>
+        {toolbar}
+        <SavedViewUnavailable
+          missing={
+            savedFilter?.availability === "unavailable" && savedFilter.problem.kind === "missing"
+          }
+          name={savedFilter?.name}
+          onClear={clearFilters}
+        />
+      </>
+    );
+  if (data === undefined)
+    return (
+      <>
+        {toolbar}
+        <SavedViewPending error={isError} onRetry={retry} />
+      </>
+    );
   return (
     <>
-      <BoardToolbar
-        pipelineId={pipelineId}
-        pipelines={pipelines}
-        totalValue={footer.totalValue}
-        currencyTotals={currencyTotals}
-        dealCount={footer.total}
-        currency={currency}
-        activeView={variant}
-        canManagePipelines={initial.canManagePipelines}
-        createSlot={addDeal}
-        sortSlot={
-          <BoardSortControl<DealListSortKey>
-            sortKey={sortKey}
-            direction={sortDirection}
-            onKeyChange={setSortKey}
-            onToggleDirection={() => setSortDirection((d) => (d === "asc" ? "desc" : "asc"))}
-            extraOptions={extraSortOptions}
-          />
-        }
-        filterSlot={
-          <>
-            <DealFilterBuilder
-              stages={stages}
-              activeCount={inlineDefinition?.conditions.length ?? 0}
-              appliedDefinition={inlineDefinition}
-              onApply={setInlineDefinition}
-            />
-            <BoardFilterControl
-              owners={owners}
-              stages={stages}
-              selectedOwnerId={selectedOwnerId}
-              onSelectOwner={setSelectedOwnerId}
-              selectedFilterId={savedFilter?.id ?? null}
-              appliedFilter={savedFilter}
-              onSelectFilter={setSavedFilter}
-              appliedDefinition={inlineDefinition}
-              onApplyDefinition={setInlineDefinition}
-              // The list keeps its own ad-hoc Filter builder, so this menu is the saved-filter
-              // picker and the badge stays on the builder.
-              triggerLabel={translateSales("saved_filters_f52bc")}
-            />
-          </>
-        }
-      />
+      {toolbar}
       {footer.filtered ? (
         <p
           role="status"
@@ -284,15 +272,13 @@ export function DealListClient({
           onUnarchive={variant === "archived" ? actions.unarchive : undefined}
           filtered={emptiedByFilter}
           empty={
-            data === undefined ? undefined : (
-              <DealsEmpty
-                variant={variant}
-                pipelineId={pipelineId}
-                filtered={emptiedByFilter}
-                onClearFilters={clearFilters}
-                addSlot={addDeal}
-              />
-            )
+            <DealsEmpty
+              variant={variant}
+              pipelineId={pipelineId}
+              filtered={emptiedByFilter}
+              onClearFilters={clearFilters}
+              addSlot={addDeal}
+            />
           }
           visibleColumns={columns.visibleColumns}
           columnsMenu={

@@ -20,6 +20,7 @@ export interface UseLeadListParams {
   nextActivity: LeadNextActivityBucket | null;
   // Ad-hoc inline condition builder (additive to the structured owner/label/next-activity filters).
   condition: LeadConditionInput | null;
+  enabled?: boolean;
 }
 
 export interface UseLeadListResult {
@@ -29,6 +30,7 @@ export interface UseLeadListResult {
   // True while the first page is still in flight. Zero rows in that window is not an empty
   // inbox, and the two must not render the same message.
   isLoading: boolean;
+  error: boolean;
   canLoadMore: boolean;
   loadMore: () => void;
   // Reset to the first page and re-fetch fresh. Used after a mutation (archive, convert,
@@ -41,8 +43,10 @@ export interface UseLeadListResult {
 // single 200-row page LeadsInbox was capped to.
 export function useLeadList(params: UseLeadListParams): UseLeadListResult {
   const utils = trpc.useUtils();
+  const enabled = params.enabled !== false;
   const [offset, setOffset] = useState(0);
   const [rows, setRows] = useState<LeadRow[]>([]);
+  const [deliveredKey, setDeliveredKey] = useState<string | null>(null);
   const [refLabels, setRefLabels] = useState<CustomFieldRefLabels>(EMPTY_REF_LABELS);
   // Offset -> the dataUpdatedAt stamp of the delivery merged for it. Storing the stamp rather than
   // just the offset tells a benign re-run of the merge effect (same delivery, unchanged stamp) apart
@@ -65,7 +69,7 @@ export function useLeadList(params: UseLeadListParams): UseLeadListResult {
     // Keep the current page's data (and its `total`) while an offset bump re-keys the query and the
     // next page loads. Without this, listQ.data is undefined mid-fetch, so total collapses to 0 and
     // the header briefly flips to "0 leads" / canLoadMore false until the page arrives.
-    { placeholderData: keepPreviousData },
+    { placeholderData: keepPreviousData, enabled },
   );
 
   // Signature of every query input EXCEPT offset. When it changes (filter, sort, or a structured
@@ -83,6 +87,14 @@ export function useLeadList(params: UseLeadListParams): UseLeadListResult {
   const isPlaceholder = listQ.isPlaceholderData;
   const stamp = listQ.dataUpdatedAt;
   useEffect(() => {
+    if (!enabled) {
+      merged.current = new Map();
+      if (offset !== 0) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- unavailable-view admission resets the paging machine before future reads
+        setOffset(0);
+      }
+      return;
+    }
     const data = listQ.data;
     if (data === undefined) return;
     // A non-offset input changed: restart paging. If we are past page one, rewind to offset 0 and
@@ -93,7 +105,6 @@ export function useLeadList(params: UseLeadListParams): UseLeadListResult {
       if (offset !== 0) {
         // A paging state machine reacting to fetched data, not state derived from props. Rewinding
         // re-keys the query so the effect re-runs with the first page.
-        // eslint-disable-next-line react-hooks/set-state-in-effect -- rewind driven by fetched data
         setOffset(0);
         return;
       }
@@ -109,6 +120,7 @@ export function useLeadList(params: UseLeadListParams): UseLeadListResult {
     // re-render with a fresh data reference from double-appending.
     if (offset === 0) {
       merged.current = new Map([[0, stamp]]);
+      setDeliveredKey(resetKey);
       setRows(data.rows);
       setRefLabels(data.refLabels);
       return;
@@ -126,30 +138,34 @@ export function useLeadList(params: UseLeadListParams): UseLeadListResult {
       return;
     }
     merged.current.set(offset, stamp);
+    setDeliveredKey(resetKey);
     setRows((prev) => [...prev, ...data.rows]);
     setRefLabels((prev) => mergeRefLabels(prev, data.refLabels));
-  }, [listQ.data, isPlaceholder, stamp, offset, resetKey]);
+  }, [enabled, listQ.data, isPlaceholder, stamp, offset, resetKey]);
 
-  const total = listQ.data?.total ?? 0;
+  const currentQuery = enabled && deliveredKey === resetKey;
+  const total = currentQuery ? (listQ.data?.total ?? 0) : 0;
 
   const loadMore = useCallback(() => {
-    setOffset((prev) => prev + LEADS_PAGE_LIMIT);
-  }, []);
+    if (currentQuery) setOffset((prev) => prev + LEADS_PAGE_LIMIT);
+  }, [currentQuery]);
 
   const refetch = useCallback(async () => {
+    if (!enabled) return;
     merged.current = new Map();
     setRows([]);
     setRefLabels(EMPTY_REF_LABELS);
     setOffset(0);
     await utils.lead.list.invalidate();
-  }, [utils]);
+  }, [enabled, utils]);
 
   return {
-    rows,
+    rows: currentQuery ? rows : [],
     total,
-    refLabels,
-    isLoading: listQ.isLoading === true,
-    canLoadMore: rows.length < total,
+    refLabels: currentQuery ? refLabels : EMPTY_REF_LABELS,
+    isLoading: enabled && (listQ.isLoading === true || (!currentQuery && listQ.isError !== true)),
+    error: enabled && listQ.isError === true,
+    canLoadMore: currentQuery && listQ.isError !== true && rows.length < total,
     loadMore,
     refetch,
   };

@@ -23,17 +23,23 @@ interface DealListFetchArgs {
 export async function fetchDealListRows(
   utils: ReturnType<typeof trpc.useUtils>,
   args: DealListFetchArgs,
+  signal: AbortSignal,
 ): Promise<DealListPage> {
-  const res = await utils.client.deal.list.query({
-    pipelineId: args.pipelineId,
-    offset: 0,
-    limit: 500,
-    archived: args.archived ? true : undefined,
-    definition: args.definition,
-    timeZone: args.preferences?.timeZone ?? "UTC",
-    calendar: args.preferences?.calendar,
-    locale: args.preferences?.locale,
-  });
+  signal.throwIfAborted();
+  const res = await utils.client.deal.list.query(
+    {
+      pipelineId: args.pipelineId,
+      offset: 0,
+      limit: 500,
+      archived: args.archived ? true : undefined,
+      definition: args.definition,
+      timeZone: args.preferences?.timeZone ?? "UTC",
+      calendar: args.preferences?.calendar,
+      locale: args.preferences?.locale,
+    },
+    { signal },
+  );
+  signal.throwIfAborted();
   return {
     rows: res.rows.map((r) => ({ ...r, updatedAt: r.updatedAt.toISOString() })),
     total: res.total,

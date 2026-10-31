@@ -1,14 +1,16 @@
 "use client";
 import type React from "react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useActionError } from "@/components/shell/ActionErrorProvider";
 import { trpc } from "@/lib/trpc-client";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { SavedViewMenu } from "./SavedViewMenu";
+import { SavedViewUnavailable } from "./SavedViewUnavailable";
 import { SaveViewDialog } from "./SaveViewDialog";
 import type { SavedView, SavedViewDefinition } from "./savedView";
 import type { SavedFilterTargetEntity } from "./schemas";
 import { removeSavedFilterAction, toggleFavoriteAction } from "./serverActions";
+import { missingSavedView } from "./viewAvailability";
 
 interface SavedViewControlProps {
   targetEntity: SavedFilterTargetEntity;
@@ -17,6 +19,7 @@ interface SavedViewControlProps {
   // Conditions the list's filter builder currently has applied, offered as the body of a new view.
   currentDefinition: SavedViewDefinition | null;
   selectedViewId: string | null;
+  selectedView?: SavedView | null;
   onSelectView: (view: SavedView | null) => void;
 }
 
@@ -28,6 +31,7 @@ export function SavedViewControl({
   allLabel,
   currentDefinition,
   selectedViewId,
+  selectedView,
   onSelectView,
 }: SavedViewControlProps): React.ReactNode {
   const utils = trpc.useUtils();
@@ -35,6 +39,28 @@ export function SavedViewControl({
   const query = trpc.savedFilters.listByTarget.useQuery({ targetEntity }, { staleTime: 10_000 });
   const [saving, setSaving] = useState(false);
   const views: SavedView[] = query.data ?? [];
+  const resolved = query.data !== undefined && query.isFetching !== true && query.isStale !== true;
+  const found = resolved ? views.find((view) => view.id === selectedViewId) : undefined;
+  const missing: SavedView | null =
+    selectedViewId === null || !resolved || found !== undefined
+      ? null
+      : missingSavedView(selectedViewId, selectedView?.name);
+  const selected = found ?? missing ?? selectedView;
+  const lastReported = useRef<string | null>(null);
+  useEffect(() => {
+    if (selectedViewId === null) lastReported.current = null;
+    if (!resolved || selectedViewId === null || selected === undefined || selected === null) return;
+    const key = JSON.stringify(selected);
+    if (lastReported.current === key) return;
+    if (selected.availability === "unavailable") {
+      if (currentDefinition === null && selectedView?.availability === "unavailable") return;
+    } else if (JSON.stringify(selected.definition) === JSON.stringify(currentDefinition)) {
+      lastReported.current = null;
+      return;
+    }
+    lastReported.current = key;
+    onSelectView(selected);
+  }, [resolved, selectedViewId, selected, selectedView, currentDefinition, onSelectView]);
   const savable =
     currentDefinition !== null && currentDefinition.conditions.length > 0
       ? currentDefinition
@@ -53,9 +79,9 @@ export function SavedViewControl({
       reportError(r.error.id);
       return;
     }
-    // Otherwise the list keeps filtering by a view that no longer exists.
-    if (selectedViewId === id) onSelectView(null);
-    await utils.savedFilters.listByTarget.invalidate({ targetEntity });
+    const refreshing = utils.savedFilters.listByTarget.invalidate({ targetEntity });
+    if (selectedViewId === id) onSelectView(missingSavedView(id, selected?.name));
+    await refreshing;
   }
 
   return (
@@ -71,6 +97,13 @@ export function SavedViewControl({
         onDelete={(id) => void removeView(id)}
         onSaveCurrent={() => setSaving(true)}
       />
+      {selected?.availability === "unavailable" && (
+        <SavedViewUnavailable
+          missing={selected.problem.kind === "missing"}
+          name={selected.name}
+          onClear={() => onSelectView(null)}
+        />
+      )}
       {saving && savable !== null && (
         <SaveViewDialog
           targetEntity={targetEntity}

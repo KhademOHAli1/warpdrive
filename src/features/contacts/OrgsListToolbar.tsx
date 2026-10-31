@@ -10,6 +10,7 @@ import { orgFilterLabels } from "./contactFilterRows";
 export interface OrgsListToolbarProps {
   filter: ContactFilterDefinition | null;
   savedViewId: string | null;
+  selectedView?: SavedView | null;
   onSelectView: (view: SavedView | null) => void;
   onApplyFilter: (def: ContactFilterDefinition | null) => void;
 }
@@ -17,6 +18,7 @@ export interface OrgsListToolbarProps {
 export function OrgsListToolbar({
   filter,
   savedViewId,
+  selectedView,
   onSelectView,
   onApplyFilter,
 }: OrgsListToolbarProps): React.ReactNode {
@@ -30,6 +32,7 @@ export function OrgsListToolbar({
         allLabel={tContacts("allOrganizations")}
         currentDefinition={filter}
         selectedViewId={savedViewId}
+        selectedView={selectedView}
         onSelectView={onSelectView}
       />
       <ContactFilterBuilder

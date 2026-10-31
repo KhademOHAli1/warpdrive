@@ -18,6 +18,7 @@ import {
 } from "@/features/custom-fields/refLabelsContext";
 import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
 import { SavedViewControl } from "@/features/saved-filters/SavedViewControl";
+import type { SavedView } from "@/features/saved-filters/savedView";
 import type { CustomFieldDef } from "@/types/customFields";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { deletePersonAction } from "./actions";
@@ -91,7 +92,9 @@ export function PeopleList({
   // sort/filter-change effect reloads on that dependency).
   const [filter, setFilter] = useState<ContactFilterDefinition | null>(null);
   // The saved view the filter came from, so the picker can show which one is applied.
-  const [savedViewId, setSavedViewId] = useState<string | null>(null);
+  const [savedView, setSavedView] = useState<SavedView | null>(null);
+  const savedViewId = savedView?.id ?? null;
+  const blocked = savedView?.availability === "unavailable";
   // Whether the pair-merge dialog is open (only reachable with exactly two rows selected).
   const [merging, setMerging] = useState(false);
   const searchInput = useContactSearch();
@@ -103,6 +106,7 @@ export function PeopleList({
       orgNames,
       sort: effective,
       filter,
+      enabled: !blocked,
       search: searchInput.search,
     });
 
@@ -119,6 +123,7 @@ export function PeopleList({
   }, [reload, clearSelection]);
 
   async function bulkDelete(): Promise<void> {
+    if (blocked) return;
     const ids = [...selection.selected];
     if (ids.length === 0) return;
     const outcomes = await Promise.all(
@@ -140,7 +145,7 @@ export function PeopleList({
   function clearCriteria(): void {
     searchInput.clear();
     setFilter(null);
-    setSavedViewId(null);
+    setSavedView(null);
     selection.clear();
   }
 
@@ -167,9 +172,11 @@ export function PeopleList({
         onSubmit={searchInput.submit}
         onClear={searchInput.clear}
         summary={
-          busy
-            ? tContacts("directory.updating")
-            : tContacts("countLabel", { shown: rows.length, total })
+          blocked
+            ? null
+            : busy
+              ? tContacts("directory.updating")
+              : tContacts("countLabel", { shown: rows.length, total })
         }
       >
         <SavedViewControl
@@ -177,9 +184,12 @@ export function PeopleList({
           allLabel={tContacts("allPeople")}
           currentDefinition={filter}
           selectedViewId={savedViewId}
+          selectedView={savedView}
           onSelectView={(view) => {
-            setSavedViewId(view?.id ?? null);
+            setSavedView(view);
             setFilter(view?.definition ?? null);
+            selection.clear();
+            setMerging(false);
           }}
         />
         <ContactFilterBuilder
@@ -189,8 +199,10 @@ export function PeopleList({
           appliedDefinition={filter}
           onApply={(def) => {
             // An ad-hoc edit is no longer the saved view, so the picker stops claiming it is.
-            setSavedViewId(null);
+            setSavedView(null);
             setFilter(def);
+            selection.clear();
+            setMerging(false);
           }}
         />
 
@@ -202,14 +214,14 @@ export function PeopleList({
           onReorder={columns.reorder}
         />
       </ContactDirectoryToolbar>
-      {narrowed && (
+      {!blocked && narrowed && (
         <ContactDirectoryCriteria
           query={searchInput.draft.trim()}
           count={filter?.conditions.length ?? 0}
           onClear={clearCriteria}
         />
       )}
-      {selection.count > 0 && (
+      {!blocked && selection.count > 0 && (
         <BulkActionBar count={selection.count} onClear={selection.clear}>
           {mergePair !== null && (
             <button
@@ -240,7 +252,7 @@ export function PeopleList({
           onClose={() => setMerging(false)}
         />
       )}
-      {rows.length === 0 && !busy ? (
+      {blocked || (rows.length === 0 && error !== null) ? null : rows.length === 0 && !busy ? (
         <ContactDirectoryEmptyState
           kind="person"
           narrowed={narrowed}
@@ -264,7 +276,7 @@ export function PeopleList({
           </CustomFieldRefLabelsProvider>
         </div>
       )}
-      {error !== null && (
+      {!blocked && error !== null && (
         <div
           role="alert"
           className="flex flex-wrap items-center justify-between gap-3 border-t px-4 py-3 text-sm text-destructive"
@@ -275,24 +287,26 @@ export function PeopleList({
           </Button>
         </div>
       )}
-      <footer className="flex min-h-14 flex-wrap items-center justify-between gap-3 border-t px-4 py-3">
-        <p className="text-xs text-muted-foreground tabular-nums">
-          {busy
-            ? tContacts("directory.updating")
-            : tContacts("countLabel", { shown: rows.length, total })}
-        </p>
-        {rows.length < total && (
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={busy}
-            onClick={() => void loadMore()}
-          >
-            {loading ? tContacts("loading") : tContacts("loadMore")}
-          </Button>
-        )}
-      </footer>
+      {!blocked && (
+        <footer className="flex min-h-14 flex-wrap items-center justify-between gap-3 border-t px-4 py-3">
+          <p className="text-xs text-muted-foreground tabular-nums">
+            {busy
+              ? tContacts("directory.updating")
+              : tContacts("countLabel", { shown: rows.length, total })}
+          </p>
+          {rows.length < total && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={busy}
+              onClick={() => void loadMore()}
+            >
+              {loading ? tContacts("loading") : tContacts("loadMore")}
+            </Button>
+          )}
+        </footer>
+      )}
     </section>
   );
 }

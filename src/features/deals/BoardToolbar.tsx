@@ -18,6 +18,7 @@ export interface BoardToolbarProps {
   totalValue: string | null;
   currencyTotals?: CurrencyTotal[];
   dealCount: number;
+  totalsUnavailable?: boolean;
   currency?: string;
   // Which of the three views (Board | List | Archive) is active, so the switcher marks the right
   // tab. Defaults to the board so existing board callers need no change.
@@ -87,12 +88,14 @@ export function BoardToolbar(props: BoardToolbarProps): React.ReactNode {
         {createSlot}
 
         <div className="ms-auto flex items-center gap-3">
-          <BoardSummary
-            totalValue={totalValue}
-            currencyTotals={props.currencyTotals}
-            dealCount={dealCount}
-            currency={props.currency}
-          />
+          {props.totalsUnavailable !== true && (
+            <BoardSummary
+              totalValue={totalValue}
+              currencyTotals={props.currencyTotals}
+              dealCount={dealCount}
+              currency={props.currency}
+            />
+          )}
           <PipelineSelect
             pipelineId={pipelineId}
             pipelines={pipelines}

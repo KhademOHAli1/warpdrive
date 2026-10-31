@@ -212,3 +212,25 @@ describe("SavedViewControl", () => {
     expect(toggleFavoriteAction).toHaveBeenCalledWith("v1", "csrf");
   });
 });
+
+it("revalidates an active selection becoming unavailable without clearing it", () => {
+  const unavailable = view({
+    availability: "unavailable",
+    definition: null,
+    problem: { kind: "unsupported", code: "unsupported-field" },
+  });
+  listData.mockReturnValue([unavailable]);
+  const onSelectView = vi.fn();
+  render(
+    <SavedViewControl
+      targetEntity="person"
+      allLabel="All people"
+      currentDefinition={DEFINITION}
+      selectedViewId="v1"
+      onSelectView={onSelectView}
+    />,
+  );
+  expect(onSelectView).toHaveBeenCalledWith(unavailable);
+  expect(onSelectView).not.toHaveBeenCalledWith(null);
+  expect(screen.getByRole("alert")).toBeInTheDocument();
+});

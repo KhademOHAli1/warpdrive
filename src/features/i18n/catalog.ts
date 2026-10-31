@@ -57,9 +57,15 @@ import leadsPersian from "@/features/leads/messages/leads.fa.json";
 import notificationsGerman from "@/features/notifications/messages/notifications.de.json";
 import notificationsEnglish from "@/features/notifications/messages/notifications.en.json";
 import notificationsPersian from "@/features/notifications/messages/notifications.fa.json";
+import pipelineLifecycleGerman from "@/features/pipelines/messages/lifecycle.de.json";
+import pipelineLifecycleEnglish from "@/features/pipelines/messages/lifecycle.en.json";
+import pipelineLifecyclePersian from "@/features/pipelines/messages/lifecycle.fa.json";
 import quickGerman from "@/features/quick-add/messages/quickAdd.de.json";
 import quickEnglish from "@/features/quick-add/messages/quickAdd.en.json";
 import quickPersian from "@/features/quick-add/messages/quickAdd.fa.json";
+import viewCompatibilityGerman from "@/features/saved-filters/messages/viewCompatibility.de.json";
+import viewCompatibilityEnglish from "@/features/saved-filters/messages/viewCompatibility.en.json";
+import viewCompatibilityPersian from "@/features/saved-filters/messages/viewCompatibility.fa.json";
 import statsGerman from "@/features/stats/messages/stats.de.json";
 import statsEnglish from "@/features/stats/messages/stats.en.json";
 import statsPersian from "@/features/stats/messages/stats.fa.json";
@@ -78,6 +84,8 @@ import type { Locale } from "./registry";
 
 const english = {
   ...en,
+  pipelineLifecycle: pipelineLifecycleEnglish,
+  viewCompatibility: viewCompatibilityEnglish,
   integrations: integrationsEnglish,
   workflows: workflowsEnglish,
   utilities: utilitiesEnglish,
@@ -105,6 +113,8 @@ const english = {
 };
 const persian: typeof english = mergeMessages(english, {
   ...fa,
+  pipelineLifecycle: pipelineLifecyclePersian,
+  viewCompatibility: viewCompatibilityPersian,
   integrations: integrationsPersian,
   workflows: workflowsPersian,
   utilities: utilitiesPersian,
@@ -132,6 +142,8 @@ const persian: typeof english = mergeMessages(english, {
 });
 const german: typeof english = mergeMessages(english, {
   ...de,
+  pipelineLifecycle: pipelineLifecycleGerman,
+  viewCompatibility: viewCompatibilityGerman,
   integrations: integrationsGerman,
   workflows: workflowsGerman,
   utilities: utilitiesGerman,
