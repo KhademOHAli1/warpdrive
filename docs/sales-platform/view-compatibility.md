@@ -1,9 +1,11 @@
 # Saved-view definition compatibility
 
 SP-03.1 candidate implementation: compatible decoding and stored-view read/recovery gating.
-Source, focused component/cache checks and isolated PostgreSQL route tests establish the evidence
-below. Retained-installation migration, full revocation/export coverage, native-language browser
-review, pilot acceptance and production operation remain separate gates.
+The current application-source checkpoint is `c655b8e3aa0d9aada5ac3c533bef13688b8ec700`.
+Source, unit/component/cache checks, isolated PostgreSQL routes and the declared synthetic native
+journey establish the evidence below. Retained-installation migration, full revocation/export
+coverage, human native-language review, pilot acceptance and production operation remain separate
+gates. [Checkpoint verification](verification.md) records the full run and earlier failures.
 
 ## Observed contracts and callers
 
@@ -108,12 +110,45 @@ Board/list requests pass query cancellation signals to the existing tRPC transpo
 
 People, organizations and leads use the same availability union. Their parent selection/paging
 integration is owned by the adjacent entity-list slice, including cached rows/counts/reference
-labels, in-flight invalidation and lead export admission. Validate both slices together before
-accepting the complete cross-entity journey.
+labels, in-flight invalidation and lead export admission. Their combined unit run is recorded
+below. That does not establish every cross-entity browser, export or revocation scenario.
 
 FA/DE/EN recovery messages live in `messages/viewCompatibility.*.json`; record names use bidi
 isolation and remain authored text. Component tests do not establish native-language usability,
 screen-reader acceptance or real-device qualification.
+
+## Current local evidence and failure history
+
+The exact checkpoint's final full unit run passed 6020 tests across 966 files. The affected
+PostgreSQL batch passed 239 tests across 50 files. Those totals cover the combined candidate;
+they are not counts of newly authored saved-view tests. Typecheck and full lint passed, with
+11 warnings and 9 informational notes retained. The optimized web build and worker/WS/operator
+bundles also passed; no production service was started or deployed by those build checks.
+
+The native Farsi journey selected a synthetic unsupported version-99 view. Cards and monetary
+totals stayed blocked, the selection remained blocked after hard reload, and explicit recovery
+showed 29 permitted open cards. The raw JSONB definition was unchanged. Evidence:
+[journey record](evidence/r1-lifecycle/native-journey.json) and
+[blocked-view capture](evidence/r1-lifecycle/unavailable-view-fa.png).
+
+The initial document's RSC bootstrap had already delivered permitted data before the view switch.
+The native observation does not retract those bytes or prove every cache/export surface; the
+blocked hard reload separately omitted the initial card/amount payload. This is a synthetic local
+Farsi flow, not human contextual-language/accessibility review or complete FA/DE/EN acceptance.
+
+A quiesced synthetic database dump/restore on this checkpoint reconciled counts and ordered row
+digests for all 103 `public`, `drizzle` and `pgboss` tables, 1885 rows in total. See the
+[restore manifest](evidence/r1-lifecycle/restore.json). This includes stored saved filters and
+preferences, but does not establish object-byte restoration, a divergent legacy upgrade,
+in-flight queue/external-delivery recovery, RTO/RPO targets or older-binary rollback.
+
+The first slice-wide attempt failed: 3 files, 5 tests and one unhandled render error. Its board
+wrapper could turn an absent RPC result into a successful-looking scope receipt without cards;
+that defect was fixed so the query-error/retry path remains usable. Date-refetch assertions were
+updated to verify cancellation options and the unchanged shared cache key, and the empty-state
+test now waits for a completed response instead of treating a transient checking status as empty.
+The original filter/date/empty semantics assertions were retained. The later 966-file rerun passed;
+see [verification history](verification.md#earlier-unsuccessful-slice-wide-attempt).
 
 ## Remaining gates
 
@@ -123,9 +158,10 @@ screen-reader acceptance or real-device qualification.
 3. Exercise permission changes, field loss, server-side export/search/cache/realtime surfaces and
    shared-view contributing records under each executing viewer's current authority. Decoding
    and sharing definitions never grant record access.
-4. Review actual FA/DE/EN recovery, unsaved edits, locale switches, narrow/theme layouts, keyboard
-   and screen-reader behavior on the exact combined candidate.
-5. Rehearse installation/recovery and pilot acceptance before enabling the broader SP-03 roadmap.
+4. Extend the observed Farsi recovery journey to complete FA/DE/EN review, unsaved edits, locale
+   switches, narrow/theme layouts, keyboard and screen-reader behavior on the exact candidate.
+5. Extend the synthetic restore proof to the supported retained installation shapes, object files,
+   interruption/queue/unknown-effect recovery and a measured pilot before broader SP-03 acceptance.
 
 Focused verification:
 

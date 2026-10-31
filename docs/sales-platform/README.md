@@ -40,9 +40,18 @@ independently use 0092 or combine dirty MAIL snapshots. See the existing
 - `verification.md` records rerun commands and candidate evidence separately
   from inherited historical reports.
 
-The initial implementation is R0 preservation and SP-15 qualification tooling.
-R1 schema and production enablement wait for applicable lineage, design and
-recovery gates. Unblocked source, policy, prototype and test work continues.
+The R0 preservation tools are followed by a committed R1 increment: opt-in
+pipeline archive/restore in the existing settings shell and compatible saved-view
+decoding with persistent recovery across deal, people, organization and lead
+screens. Application source checkpoint is
+`c655b8e3aa0d9aada5ac3c533bef13688b8ec700`. It includes the reviewed platform
+`6b71b771d921df8930eebc15259ec0648bff0b73` queue diagnostics and private action
+logging patch. The original baseline above remains historical provenance.
+
+The new directory is disabled by default. No Sales migration or new authority
+model was introduced. R1 schema and production enablement still wait for the
+applicable lineage, design and recovery gates. See `pipeline-lifecycle-contract.md`,
+`view-compatibility.md` and `verification.md` for actual behavior and open work.
 
 ## Preservation contract
 

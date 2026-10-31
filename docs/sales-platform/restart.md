@@ -12,6 +12,10 @@ approval. The original roadmap and acceptance criteria remain in `approved/`.
   latest main/auth `a1a8f6da` and workflow `d0c83e8`.
 - Fork/upstream remotes remain `KhademOHAli1/warpdrive` and `sneg55/warpdrive`.
 - Own pinned Bun: `.runtime/bin/bun`, version 1.4.4. No global runtime changed.
+- Current qualified application source checkpoint:
+  `c655b8e3aa0d9aada5ac3c533bef13688b8ec700`.
+- Reviewed platform patch `6b71b771d921df8930eebc15259ec0648bff0b73` is merged
+  in `dcc6d2911ba27f60a9ae6986b1cb0a61cbc2d440`; no dirty peer files adopted.
 
 Read `AGENTS.md`, `CLAUDE.md`, the relevant installed Next guide and current
 ownership/status before edits. New application behavior is test-first. Use real
@@ -24,20 +28,29 @@ inherited reports and records remaining acceptance gates.
 
 ## Current evidence and next work
 
-Read-only migration and programme guards have 44 passing focused tests. The
-PostgreSQL 16 integration batch passed 82 tests. Typecheck, full lint, worker
-bundling and the 23-file UI source audit passed. The earlier broad unit run had
-5897 passing tests plus one newly collected red-phase tool suite; its corrected
-focused suite passed. Do not call that earlier broad run all-green.
+At the R1 application checkpoint, the full unit suite passed 6020 tests in 966
+files, and the affected real-PostgreSQL integration batch passed 239 tests in 50
+files. Full typecheck and lint, production webpack build, worker/WS/operator
+bundles and the UI source audit passed. Historical R0 checks and the initial
+failed R1 attempt remain separately documented in `verification.md` and
+`evidence/r1-lifecycle/qualification.json`. Do not infer newer candidate results
+from a historical pass.
 
-The actual synthetic PostgreSQL 18 combined ledger matches 85 migrations. A
-quarantined restore matched all 90 tables and 1862 rows. Native Better Auth sign-in
-and FA/DE/EN current-shell captures exist in `evidence/`. No provider, real-user,
-object-store restore, performance target or production release is qualified.
+The synthetic PostgreSQL 18 combined ledger matches 85 migrations. The R1
+quarantined restore matched all 103 public/drizzle/pgboss tables and 1885 rows by
+count and digest. Native Better Auth sign-in, fresh password proof, archive and
+restore, FA/DE/EN directory captures, Farsi mobile, and unsupported-view recovery
+exist in `evidence/r1-lifecycle/`. No provider, real-user, object-store restore,
+performance target or production release is qualified.
 
-Continue the first current-shell vertical slice: pipeline lifecycle and legacy
-scope explanations, view compatibility and safe basic templates. Start with the
-current policy truth table and original complete-state prototypes. Preserve the
+Continue pipeline creation/rename/duplicate and existing-scope access explanation
+before admitting new owner roles or template installation. Archive/restore uses
+native fresh proof, transaction-time actor/membership locks, CAS, scoped counts
+and existing audit. Deal creation rechecks the pipeline under a shared row lock.
+Saved-view recovery preserves raw unsupported definitions and prevents an
+implicit broader query. These are partial increments; sharing, durable create
+intent idempotency, transfer and complete cross-surface revocation remain open.
+Start with the current policy truth table and original complete-state prototypes. Preserve the
 existing create/edit services, SettingsCard, Dialog, sidebar, board, Inter and
 Vazirmatn. Keep R0/G1 gates explicit while preparing and testing unblocked source
 increments; do not expose unqualified new authority or effect behavior.
@@ -70,15 +83,22 @@ When needed, check port ownership before starting this profile:
 PATH="$PWD/.runtime/bin:$PATH" bun --env-file=.runtime/sales.env --bun next dev --webpack --hostname 127.0.0.1 --port 3176
 ```
 
+The task-owned Next preview and PostgreSQL 55461 were stopped after native UI
+and restore evidence. Verify current ownership before starting anything.
 Do not start the committed WS entrypoint: it hardcodes 8080, which belongs to the
-peer platform. No general worker or S3 service was started for this baseline.
+peer platform. No general outbound worker or S3 service was started. Native
+development instrumentation did start the existing import workers only.
 The rich seed contains synthetic connected Gmail rows, so do not boot a broad
 worker or imply provider qualification. Reuse native sign-in, not legacy dev-login
 or a forged session. For repeated browser work, use a separate tab and preserve
 peer sessions.
 
-Cold dev navigation hit an actual timeout under host load near 52 on 11 logical
-CPUs. Warm operations succeeded. Database probes did not identify a lock or slow
-preferences query. Preserve this limitation; do not increase timeouts or weaken
-auth to hide it. Keep heavy verification finite and avoid duplicate broad runs
-unless new changes or failures justify them.
+Cold dev navigation hit timeouts under host load near 52 to 65 on 11 logical
+CPUs. Later explicit ENOSPC cache writes caused auth route failures. Only this
+checkout's regenerable `.next` cache was removed. A tested development cache
+policy uses memory when available workspace space is below 4 GiB or cannot be
+read, preserving production and normal-space defaults. Cleanup also freed space;
+do not attribute native recovery solely to the policy. Warm native fresh-proof
+and archive/restore then succeeded. No auth or timeout rule was weakened.
+Keep heavy verification finite and avoid duplicate broad runs unless new
+changes or failures justify them. Never delete peer caches, databases or VMs.

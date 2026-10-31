@@ -1,11 +1,93 @@
-# R0 foundation verification
+# Sales-platform checkpoint verification
 
-31 October 2026, Europe/Berlin. Application source is the exact committed
+31 October 2026, Europe/Berlin. Application source is frozen at
+`c655b8e3aa0d9aada5ac3c533bef13688b8ec700` on the task-owned sales branch.
+This checkpoint extends the preserved shell with guarded pipeline lifecycle and
+recoverable saved views. It reuses existing authentication, authorization,
+queries, optimistic cache/realtime machinery and integrations. The programme
+and production-release acceptance remain open.
+
+## Current checkpoint evidence
+
+| Check | Actual result | Evidence ceiling |
+| --- | --- | --- |
+| Full root unit suite | 966 files, 6020 tests passed | Terminal successful rerun in `.runtime/sales-evidence/slice-unit-final.log`; unit evidence, not every DB/provider path |
+| Affected PostgreSQL integration batch | 50 files, 239 tests passed | Pipelines, saved filters, deals, permissions and queue-observer integration in the finite PostgreSQL Testcontainers profile; `.runtime/sales-evidence/slice-db-final.log` |
+| Type generation and full TypeScript | Passed, terminal exit 0 confirmed | `.runtime/sales-evidence/slice-typecheck-final.log`; route generation plus silent successful `tsc` |
+| Full lint | Passed, terminal exit 0 confirmed; 11 warnings and 9 informational notes remain | i18n, Biome and typed ESLint in `.runtime/sales-evidence/slice-lint-final.log`; no automatic fixes applied by this final check |
+| Native lifecycle and unsupported-view journey | Pipeline archive/restore persisted with one audit each; unsupported Farsi view stayed blocked through hard reload; explicit clear restored 29 permitted open cards | Task-owned synthetic profile and existing native Better Auth UI only; [journey record](evidence/r1-lifecycle/native-journey.json) and captures below |
+| Quarantined database restore | All 103 tables and 1885 rows matched counts and ordered row digests across `public`, `drizzle` and `pgboss` | Synthetic PostgreSQL 18.1 with frontend/import producer quiesced; [restore manifest](evidence/r1-lifecycle/restore.json), source commit `c655b8e` |
+| Optimized production web build | Passed, terminal exit 0 confirmed on `c655b8e` | Private synthetic build environment; `.runtime/sales-evidence/r1-web-build.log`; no production service start, deployment, provider operation or performance acceptance |
+| Worker/WS/operator bundling | Passed, terminal exit 0 confirmed | `.runtime/sales-evidence/r1-workers.log`; build artifacts only, no worker/provider operation inferred |
+| UI registry source audit | All 23 pristine registry files verified, terminal exit 0 | `.runtime/sales-evidence/r1-ui-audit.log`; local hash check, not remote update or accessibility qualification |
+
+The local restore includes the 85 applied Drizzle rows and pg-boss tables. Empty
+job tables matching an empty restored queue do not establish crash recovery of
+in-flight work. Database file/attachment rows matching their digests do not
+establish restoration of object bytes. No object files, real external-delivery
+outcomes, divergent legacy upgrades, RTO/RPO target or older-binary rollback was
+qualified. The general outbound worker was not started; existing native
+instrumentation's import workers and producers were quiesced for the snapshot.
+
+## Native checkpoint journeys and limits
+
+The native task profile used synthetic records and the existing password sign-in
+and account-security re-verification flow. Expired proof was rejected. After
+native password re-verification, archive and restore succeeded with one audit
+for each action; no authentication policy was relaxed.
+
+Original captures in the preserved current shell include:
+
+- [English pipeline directory](evidence/r1-lifecycle/directory-en.png), retaining the authored Farsi/German pipeline name.
+- [Farsi directory](evidence/r1-lifecycle/directory-fa.png) and [390-pixel directory](evidence/r1-lifecycle/directory-fa-mobile.png).
+- [German archive confirmation](evidence/r1-lifecycle/archive-confirm-de.png), [archived state](evidence/r1-lifecycle/archived-de.png) and [restored state](evidence/r1-lifecycle/restored-de.png).
+- [Fresh proof required](evidence/r1-lifecycle/fresh-proof-required-de.png), showing the existing security boundary.
+- [Unavailable Farsi saved view](evidence/r1-lifecycle/unavailable-view-fa.png), with persistent recovery and suppressed cards/totals.
+
+The unsupported synthetic definition used version 99. Selecting it retained the
+selection and blocked visible cards and totals. A hard reload remained blocked
+and omitted the initial card/amount payload. Explicit recovery then showed 29
+permitted open cards. The raw JSONB definition was unchanged. See the
+[journey record](evidence/r1-lifecycle/native-journey.json).
+
+The original in-document RSC bootstrap had already delivered permitted data
+before the view switch. This journey does not claim to retract previously
+delivered bytes; the blocked hard-reload observation is separate. Browser
+captures show selected local flows, not native human language review, full
+accessibility, provider operation, pilot use or global R1 acceptance.
+
+## Earlier unsuccessful slice-wide attempt
+
+The first slice-wide run in `.runtime/sales-evidence/slice-unit-all.log` ended
+with 960 passing files and 3 failing files, 6005 passing tests and 5 failing
+tests, plus one unhandled render error. It was not a successful broad run.
+
+- `Board.viewPersistence.test.tsx` exposed a real wrapper defect: spreading an
+  absent RPC result created a successful-looking scope receipt without cards,
+  which crashed board derivation. Reading required result data before attaching
+  the receipt keeps that condition in the query-error/retry state. The original
+  clear-filter assertion remained and retry behavior was added to the test.
+- Three date-refetch assertions expected one RPC argument and an exact old
+  cache-value shape. The required requests were already sent with the saved
+  locale/calendar/timezone. Tests now also assert cancellation signals and the
+  same single load-bearing cache key while allowing internal scope receipts.
+- The empty-list test awaited any live status and read the new checking state
+  before query completion. It now awaits the completed empty response, retains
+  the assertion that an empty pipeline is not described as holding excluded
+  deals, and verifies the filter request and cancellation signal.
+
+Focused reproductions preceded those fixes. The final 966-file, 6020-test unit
+run above supersedes this failed attempt for the frozen checkpoint. Historical
+R0 evidence below remains separately scoped.
+
+## Historical R0 foundation checkpoint
+
+31 October 2026, Europe/Berlin. The R0 application source was the committed
 combined checkpoint `b8b2708d4076551b803451ce10d4928a87ce35cd`. The sales additions
-are read-only inspection/ledger tooling and documentation, not a new domain
-schema, workflow engine, sender, auth authority or production release.
+at that stage were read-only inspection/ledger tooling and documentation. These
+results describe that earlier scope, before the lifecycle and saved-view slice.
 
-## Rerun evidence
+### R0 rerun evidence
 
 | Check                               | Actual result                                                                                                                      | Evidence ceiling                                                                                                        |
 | ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
@@ -24,8 +106,8 @@ schema, workflow engine, sender, auth authority or production release.
 The broad unit run began while another agent was in its required red phase.
 Its failure was the missing `migrationLineage` module, not an inherited application
 assertion failure. The final focused 44-test run passed after implementation.
-No later application source change was made. Do not report this as a second
-all-green broad unit run.
+At R0, a second all-green broad unit run was not claimed. Subsequent domain
+changes and the successful frozen-checkpoint rerun are recorded above.
 
 Commands use the task-owned `.runtime/bin/bun` (1.4.4) first on PATH:
 
@@ -47,7 +129,7 @@ They are excluded from deliverables, as are native synthetic credentials,
 session values, capture-mail state and generated keys. The shipped ledger
 export contains only migration IDs, timestamps and SQL hashes.
 
-## Actual current-shell browser baseline
+### R0 current-shell browser baseline
 
 A separate loopback Next development server and PostgreSQL profile were created
 for synthetic data only. Native credential setup uses the existing Better Auth
@@ -82,11 +164,12 @@ locks/deadlocks, and 17 cluster connections against max 100. Host load was about
 resource/dev-process explanation, but exact JavaScript causation is unproven.
 No auth or timeout rule was weakened. Performance acceptance remains open.
 
-No full production web build, dark-theme matrix, 768/1280 widths, 200/400 percent
-reflow, screen-reader run, moderated usability study or contextual native-review
-sign-off is claimed. These are baseline observations, not R1 UI acceptance.
+That baseline did not establish a full production web build, dark-theme matrix,
+768/1280 widths, 200/400 percent reflow, screen-reader run, moderated usability
+study or contextual native-review sign-off. It remains baseline evidence, not
+complete R1 UI acceptance.
 
-## Remaining release gates
+## Remaining programme and release gates
 
 - Actual retained-installation ledgers and supported WF-0083/MAIL-dev convergence
   and recovery; no source-file match can replace them.
@@ -102,5 +185,5 @@ sign-off is claimed. These are baseline observations, not R1 UI acceptance.
 - Full adversarial surface isolation before independent workspaces or external
   partner access is enabled.
 
-The full programme goal remains active. None of its 128 broad parent tasks is
-closed by these foundation increments alone.
+The full programme goal remains active. These local increments and passing checks do not by themselves close its broad
+parent tasks or establish global release acceptance.
