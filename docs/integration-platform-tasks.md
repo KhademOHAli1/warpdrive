@@ -1,6 +1,12 @@
 # Integration platform task register
 
-Planning snapshot v1.0, 2026-10-31. 446 future tasks in 23 work packages. All tasks below are planned.
+Execution activated on 31 October 2026. This file retains the dated planning snapshot.
+The single live status source is [the execution register](integration-execution/tasks.csv);
+see [current evidence and restart guidance](integration-execution/README.md).
+
+Planning snapshot v1.1, 2026-10-31. 586 planned task slots in 24 work packages. Task states below remain planned; actual implementation evidence is maintained separately.
+
+The active execution register retains its actual states; the 140 added planning rows and priority/dependency overrides await one owner-controlled reconciliation, as described in the coordination handoff. The user-requested coordination amendment preserves all original 446 IDs and adds eight independent-mail tasks, 12 shared SMS tasks and 120 conditional stage tasks for 30 SMS candidates. Provider candidates are not promised shipped integrations. See [scope/ownership reconciliation](integration-coordination.md) and the [provider inventory](integration-sms-providers.md).
 The existing local foundation and completed UI refinement are recorded separately in the [project plan](integration-project-plan.md).
 This register does not authorize deployment, provider messaging or publication. Current work remains local.
 
@@ -26,7 +32,7 @@ After issue import, record the tracker URL in the project plan and use it as the
 | [AISEC](#aisec) MCP and application authorization            | R2        | P0       | 24    | Security + platform                        |
 | [MCP](#mcp) Complete the CRM MCP capability surface          | R2        | P1       | 22    | MCP + domain owners                        |
 | [CLIENT](#client) ChatGPT, Claude and supporting client apps | R2        | P1       | 20    | MCP + client UX                            |
-| [MAIL](#mail) Mail integration hardening                     | R3        | P1       | 12    | Email + integrations                       |
+| [MAIL](#mail) Mail integration hardening                     | IR1       | P0       | 20    | Email + integrations                       |
 | [CAL](#cal) Calendar domain and event workflow               | R3        | P0       | 22    | Calendar + localization                    |
 | [GOOG](#goog) Google Calendar and Google Meet                | R3        | P1       | 20    | Google integrations                        |
 | [MS](#ms) Microsoft 365, Outlook and Teams                   | R4        | P1       | 16    | Microsoft integrations                     |
@@ -34,11 +40,13 @@ After issue import, record the tracker URL in the project plan and use it as the
 | [API](#api) Public API and signed webhooks                   | R5        | P1       | 20    | Platform + developer experience            |
 | [AUTO](#auto) Workflow and automation integrations           | R5        | P2       | 12    | Workflows + integrations                   |
 | [EXP](#exp) Additional provider delivery tracks              | R6        | P2       | 52    | Provider owners                            |
+| [SMS](#sms) Verified Iranian SMS provider coverage           | IR2 / IR3 | P0 / P1  | 132   | SMS domain + provider owners               |
 | [SDK](#sdk) Application SDK and isolated extension runtime   | R6        | P1       | 24    | Platform + security + developer experience |
 | [STORE](#store) Marketplace and app management               | R7        | P2       | 22    | App platform + product                     |
 | [OPS](#ops) Self-hosting, observability and operations       | CROSS     | P0       | 18    | Operations + platform                      |
 | [QA](#qa) Shared verification and release acceptance         | CROSS     | P0       | 18    | QA + security + domain owners              |
 | [OSS](#oss) Open-source distribution and maintenance         | CROSS     | P1       | 12    | Maintainers + developer experience         |
+
 
 <a id="base"></a>
 ## BASE: Reconcile the preview with current development
@@ -547,35 +555,54 @@ All tasks also require the shared [definition of done](integration-project-plan.
 
 Preserve Gmail behavior while moving account management onto the shared lifecycle and preparing for more providers.
 
-Milestone: **R3**. Default priority: **P1**. Responsibility: **Email + integrations**.
+Milestone: **IR1**. Default priority: **P0**. Responsibility: **Email + integrations**.
+
+The approved independent-email slice starts early after reviewed shared contracts. MAIL-012 retains its separate Gmail live-provider gate; implementation records from the ongoing email branch must be reconciled rather than duplicated.
 Package dependencies: CONN.
 
 **Exit criterion:** Existing mail flows remain intact and multi-account or shared-mailbox changes follow explicit ownership and migration rules.
 
-- [ ] **MAIL-001** [P1; local] Inventory Gmail behavior and ownership.
+- [ ] **MAIL-001** [P0; local] Inventory Gmail behavior and ownership.
   Acceptance: Record sync, drafts, send, scheduled send, tracking, domain restrictions and current single-mailbox assumptions. Verification: source review.
-- [ ] **MAIL-002** [P1; local] Define the multi-account policy.
+- [ ] **MAIL-002** [P0; local] Define the multi-account policy.
   Acceptance: Decide personal, shared and delegated mailbox ownership and duplicate-address behavior before relaxing existing constraints. Verification: design scenarios.
-- [ ] **MAIL-003** [P1; local] Migrate mailbox connection metadata.
+- [ ] **MAIL-003** [P0; local] Migrate mailbox connection metadata.
   Acceptance: Preserve account IDs, history, queued sends, ownership and credential references without duplicating messages. Verification: PostgreSQL migration.
-- [ ] **MAIL-004** [P1; local] Implement account selection in mail workflows.
+- [ ] **MAIL-004** [P0; local] Implement account selection in mail workflows.
   Acceptance: Make the sending/sync account explicit and prevent accidental use of another member's mailbox. Verification: ownership integration.
-- [ ] **MAIL-005** [P1; local] Unify Gmail reconnect and health.
+- [ ] **MAIL-005** [P0; local] Unify Gmail reconnect and health.
   Acceptance: Surface last sync, last check, authorization failure and stale synchronization as distinct states. Verification: worker and UI tests.
-- [ ] **MAIL-006** [P1; local] Preserve safe send and draft boundaries.
+- [ ] **MAIL-006** [P0; local] Preserve safe send and draft boundaries.
   Acceptance: Keep unsent drafts, scheduled sends, approval policy and permission checks consistent through integrations and MCP. Verification: send regressions.
-- [ ] **MAIL-007** [P1; local] Implement import and sync controls.
+- [ ] **MAIL-007** [P0; local] Implement import and sync controls.
   Acceptance: Define date/sender filters, historical import limits, exclusions and cancellation without leaking excluded content. Verification: sync integration.
-- [ ] **MAIL-008** [P1; local] Review disconnect and retained data.
+- [ ] **MAIL-008** [P0; local] Review disconnect and retained data.
   Acceptance: Explain token revocation, queued-send cancellation and whether already imported CRM records remain. Verification: removal scenarios.
-- [ ] **MAIL-009** [P1; local] Implement connection and sync diagnostics.
+- [ ] **MAIL-009** [P0; local] Implement connection and sync diagnostics.
   Acceptance: Show actionable, localized failures without logging message bodies or credentials by default. Verification: browser and leakage tests.
-- [ ] **MAIL-010** [P1; local] Qualify multi-account regressions.
+- [ ] **MAIL-010** [P0; local] Qualify multi-account regressions.
   Acceptance: Exercise duplicate connections, reconnect, owner changes, partial imports and concurrent send/sync operations. Verification: real PostgreSQL suite.
-- [ ] **MAIL-011** [P1; local] Update operator and user guides.
+- [ ] **MAIL-011** [P0; local] Update operator and user guides.
   Acceptance: Cover Google app setup, account policy, sync recovery and mailbox selection in FA/DE/EN. Verification: walkthrough.
 - [ ] **MAIL-012** [P1; live-provider] Validate approved Google mail accounts.
   Acceptance: Use bounded synthetic mail to verify consent, sync, drafts, sending where authorized, refresh and revocation. Verification: live provider.
+
+- [ ] **MAIL-013** [P0; local] Qualify independent mail protocols on Bun.
+  Acceptance: Pin supported IMAP/SMTP and MIME library profiles, TLS and safe-endpoint behavior on the declared Bun runtime; preserve existing Gmail and auth boundaries. Reuse CONN policy, credentials and lifecycle contracts rather than creating another registry. Verification: Bun and controlled TLS protocol tests.
+- [ ] **MAIL-014** [P0; local] Implement independent IMAP synchronization.
+  Acceptance: Use account/folder/UIDVALIDITY/UID identities, explicit folder capabilities, resumable bounded history and cursor-reset recovery. Preserve ownership and reject duplicate Gmail-API/IMAP identities unless an explicit verified migration is performed. Verification: protocol and PostgreSQL integration.
+- [ ] **MAIL-015** [P0; local] Implement SMTP submission and MIME authoring.
+  Acceptance: Reuse the existing durable mail outbox for authorized compose/reply/forward and scheduling; qualify TLS, attachments, partial recipients and Sent copies. Preserve uncertain outcomes without blind retries or a claim of recipient delivery from submission acceptance. Verification: protocol and outbox fault tests.
+- [ ] **MAIL-016** [P0; local] Qualify independent mail content and attachments.
+  Acceptance: Decode Persian/German MIME headers, bodies and filenames with bounded resources and safe HTML; downloads retain actor/mailbox/attachment visibility checks and use provider-neutral locators. Verification: MIME, leakage and attachment integration.
+- [ ] **MAIL-017** [P0; local] Qualify remote mail capabilities and local archive.
+  Acceptance: Expose read-only and supported flag/move/trash/Sent operations accurately, reject unsupported writes server-side and keep local CRM archive distinct from remote deletion. Verification: mailbox and capability integration.
+- [ ] **MAIL-018** [P0; local] Qualify independent mail offboarding and recovery.
+  Acceptance: Fence old sync/send/refresh jobs on pause, disconnect, suspension or credential replacement; reuse CONN/offboarding workers. Show any provider-side manual revocation action, since local password deletion does not revoke the remote credential. Verification: concurrency and offboarding fault tests.
+- [ ] **MAIL-019** [P0; local] Complete independent mail UI and operator flows.
+  Acceptance: Retain the current UI and CONN management patterns; include multiple personal mailboxes, explicit default sender, editable Inbox/Sent 90-day history defaults and complete FA/DE/EN setup, error, recovery and keyboard/mobile states. Shared/delegated policy remains separately qualified. Verification: FA/DE/EN browser and workflow tests.
+- [ ] **MAIL-020** [P0; live-provider] Validate approved independent mail installations.
+  Acceptance: On approved test resources, verify Google-free core login and customer email, initial/history sync, sending, recovery and restore. Record self-hosted and external-service evidence separately; no unapproved customer account or live message is authorized by this planning task. Verification: finite authorized provider acceptance.
 
 All tasks also require the shared [definition of done](integration-project-plan.md#definition-of-done).
 
@@ -696,6 +723,8 @@ Add Microsoft account, tenant, mail, calendar and Teams workflows without assumi
 
 Milestone: **R4**. Default priority: **P1**. Responsibility: **Microsoft integrations**.
 Package dependencies: MAIL, CAL, CONN, EVT.
+
+Task-level exception: MS-001 through MS-005 are the approved independent mail subtrack (IR3) and depend on MAIL/CONN/EVT local foundations. CAL remains a prerequisite for calendar/Teams/shared-resource work, not a blocker for mail-only engineering.
 
 **Exit criterion:** Selected Microsoft resources use the common lifecycle and show tenant/permission constraints with documented synchronization semantics.
 
@@ -869,6 +898,8 @@ Deliver each additional named provider independently; telephony, accounting and 
 Milestone: **R6**. Default priority: **P2**. Responsibility: **Provider owners**.
 Package dependencies: CONN, EVT, API, UX.
 
+Task-level exception: EXP-041 through EXP-048 are the approved P1 / IR3 PBX and conditional accounting tracks. They consume CONN/EVT/UX foundations and applicable ingress/security contracts, rather than waiting for the entire public API or marketplace. The other EXP tracks keep their original priorities and dependencies.
+
 **Exit criterion:** Every released provider has its own supported workflows, local contract tests, localized management flow and live qualification record.
 
 - [ ] **EXP-001** [P2; local] Specify Google Drive workflows.
@@ -951,21 +982,21 @@ Package dependencies: CONN, EVT, API, UX.
   Acceptance: Exercise the stated workflow, permissions, duplicates, provider outages and FA/DE/EN screens using synthetic fixtures. Verification: provider contract and browser.
 - [ ] **EXP-040** [P3; live-provider] Validate approved Stripe resources live.
   Acceptance: Record the selected vendor/account, finite actions, cleanup, verified limitations and release evidence before listing the connector as supported. Verification: live provider.
-- [ ] **EXP-041** [P3; decision] Specify Telephony provider workflows.
+- [ ] **EXP-041** [P1; decision] Specify Telephony provider workflows.
   Acceptance: Select a provider and initial call/logging workflow based on target users, supported regions, licensing and current API capabilities. Produce a provider capability and ownership contract before implementation. Verification: provider/design review.
-- [ ] **EXP-042** [P3; local] Implement Telephony provider adapter and configuration.
+- [ ] **EXP-042** [P1; local] Implement Telephony provider adapter and configuration.
   Acceptance: Use CONN, EVT and API contracts for account/resource selection, refresh, health, reconnect and removal. Verification: adapter and PostgreSQL tests.
-- [ ] **EXP-043** [P3; local] Qualify Telephony provider locally.
+- [ ] **EXP-043** [P1; local] Qualify Telephony provider locally.
   Acceptance: Exercise the stated workflow, permissions, duplicates, provider outages and FA/DE/EN screens using synthetic fixtures. Verification: provider contract and browser.
-- [ ] **EXP-044** [P3; live-provider] Validate approved Telephony provider resources live.
+- [ ] **EXP-044** [P1; live-provider] Validate approved Telephony provider resources live.
   Acceptance: Record the selected vendor/account, finite actions, cleanup, verified limitations and release evidence before listing the connector as supported. Verification: live provider.
-- [ ] **EXP-045** [P3; decision] Specify Accounting provider workflows.
+- [ ] **EXP-045** [P1; decision] Specify Accounting provider workflows.
   Acceptance: Select a provider and initial customer/invoice-status workflow with explicit source authority and no unsupported financial operations. Produce a provider capability and ownership contract before implementation. Verification: provider/design review.
-- [ ] **EXP-046** [P3; local] Implement Accounting provider adapter and configuration.
+- [ ] **EXP-046** [P1; local] Implement Accounting provider adapter and configuration.
   Acceptance: Use CONN, EVT and API contracts for account/resource selection, refresh, health, reconnect and removal. Verification: adapter and PostgreSQL tests.
-- [ ] **EXP-047** [P3; local] Qualify Accounting provider locally.
+- [ ] **EXP-047** [P1; local] Qualify Accounting provider locally.
   Acceptance: Exercise the stated workflow, permissions, duplicates, provider outages and FA/DE/EN screens using synthetic fixtures. Verification: provider contract and browser.
-- [ ] **EXP-048** [P3; live-provider] Validate approved Accounting provider resources live.
+- [ ] **EXP-048** [P1; live-provider] Validate approved Accounting provider resources live.
   Acceptance: Record the selected vendor/account, finite actions, cleanup, verified limitations and release evidence before listing the connector as supported. Verification: live provider.
 - [ ] **EXP-049** [P3; decision] Specify E-signature provider workflows.
   Acceptance: Select a provider and proposal/signature-status workflow with explicit document access and signer/event verification. Produce a provider capability and ownership contract before implementation. Verification: provider/design review.
@@ -975,6 +1006,285 @@ Package dependencies: CONN, EVT, API, UX.
   Acceptance: Exercise the stated workflow, permissions, duplicates, provider outages and FA/DE/EN screens using synthetic fixtures. Verification: provider contract and browser.
 - [ ] **EXP-052** [P3; live-provider] Validate approved E-signature provider resources live.
   Acceptance: Record the selected vendor/account, finite actions, cleanup, verified limitations and release evidence before listing the connector as supported. Verification: live provider.
+
+All tasks also require the shared [definition of done](integration-project-plan.md#definition-of-done).
+
+<a id="sms"></a>
+## SMS: Verified Iranian SMS provider coverage
+
+User-requested expansion: deliver as many independently verifiable Iranian SMS providers as practical. Initial qualified SMS follows independent email; broad candidate delivery runs at the end of the approved P1 tranche.
+
+Milestone: **IR2 / IR3**. Default priority: **P0** for shared foundations and the initial provider; **P1** for expansion. Responsibility: **SMS domain + provider owners**.
+Package dependencies: CONN, EVT, UX (reviewed local foundations only).
+
+**Exit criterion:** Each selected provider closes its own specification, implementation, local and authorized live qualification before supported claims. Discovery leads can be excluded with evidence; one provider's unavailable API/account does not block others. Existing UI, Better Auth and FA/DE/EN requirements apply throughout.
+
+The 30-provider inventory is a dated discovery set, not an exhaustive national register, 30 independent backends or a guarantee that 30 connectors ship. Shared API-family reuse requires compatibility evidence. Full details and stage IDs are in [the provider inventory](integration-sms-providers.md).
+
+- [ ] **SMS-001** [P0; local] Record SMS ownership and handoff boundaries.
+  Acceptance: Map SMS-domain files and migration responsibility to actual current writers under BASE-001/002. CONN owns the shared lifecycle and EVT owns delivery/rule infrastructure; preserve ongoing email, calendar, auth and platform work. Verification: ownership review.
+- [ ] **SMS-002** [P0; local] Define the SMS domain capability contract.
+  Acceptance: Extend the common provider contract with explicit send, template, receipt, inbound, sender and balance capabilities. Avoid another provider SDK, registry or permission evaluator; declarations are limited to verified API/version/account support. Verification: domain and capability design review.
+- [ ] **SMS-003** [P0; local] Connect SMS intent to shared delivery infrastructure.
+  Acceptance: Use existing pg-boss/outbox and EVT intent, correlation, retries, deduplication and cancellation contracts. Do not create another queue or workflow engine; uncertain upstream effects remain distinguishable from safe retry. Verification: transaction and delivery fault tests.
+- [ ] **SMS-004** [P0; local] Reuse regional recipient and text handling.
+  Acceptance: Reuse the approved Iranian/German phone, original-input and locale helpers. Preserve recipient country, message bytes, Persian/German text and template parameters; expose provider-based segment/cost estimates without inventing billing guarantees. Verification: FA/DE domain and encoding tests.
+- [ ] **SMS-005** [P0; local] Enforce sender, recipient and spending policy.
+  Acceptance: Apply current actor/record visibility, sender-line entitlement, suppression, explicit send confirmation and account budgets before dispatch. Preview and dry-run do not send messages or incur provider charges. Verification: authorization, budget and preview tests.
+- [ ] **SMS-006** [P0; local] Define receipt and inbound reconciliation.
+  Acceptance: Validate provider payloads and replay/ordering behavior. Use verified signatures where supported; otherwise treat callbacks as untrusted hints and reconcile authoritative provider state before applying changes. Account for lookup retention and inbound read-state effects. Verification: callback, replay and reconciliation tests.
+- [ ] **SMS-007** [P0; local] Compose SMS management into the common UI.
+  Acceptance: Reuse CONN-022 setup, ownership, status, credential rotation and removal. Add SMS-specific compose/review/history controls without replacing the current shell or creating another Connections page. Verification: FA/DE/EN browser and permission tests.
+- [ ] **SMS-008** [P0; local] Build shared SMS fault and restart fixtures.
+  Acceptance: Exercise actual adapter boundaries with explicit contract fixtures: partial failures, throttling, ambiguous sends, duplicate jobs/receipts, offline recovery and suspension. Local contract tests do not establish live provider compatibility. Verification: provider contracts and PostgreSQL faults.
+- [ ] **SMS-009** [P0; local] Review SMS copy, accessibility and operations.
+  Acceptance: Cover all SMS setup/send/receipt/inbound/error/recovery states and operator instructions in natural FA/DE/EN, using the shared UX glossary and QA evidence. Preserve current RTL/LTR, mobile, themes and focus behavior. Verification: localized UI, keyboard and operator review.
+- [ ] **SMS-010** [P0; local] Maintain the broad provider qualification inventory.
+  Acceptance: Record the 30 discovery candidates with source, API version, account requirements, API-family reuse and selected/excluded reasons. Qualify as many providers as verifiable, add future candidates without renumbering IDs, and never equate a catalog entry with support. Verification: provider inventory review.
+- [ ] **SMS-011** [P0; local] Maintain per-provider capability and evidence records.
+  Acceptance: Track specification, implementation, local and live evidence independently for every selected provider. Unverifiable candidates remain excluded or pending with reasons and do not block others; shared backends require demonstrated compatibility. Verification: capability and evidence audit.
+- [ ] **SMS-012** [P0; local] Reconcile SMS progress with the master goal and register.
+  Acceptance: Keep one execution record and ownership map; link original IG-07/15 to SMS work instead of duplicate tasks. Deliver initial qualified SMS after independent email; expand remaining verified providers at the end of the approved P1 tranche. This file does not activate a persistent goal. Verification: planning and handoff review.
+- [ ] **SMS-013** [P0; local] Qualify Kavenegar / کاوه نگار API and scope.
+  Acceptance: Provider ID kavenegar: verify current official API/version, supplier/account identity, sender and inbound/receipt entitlements, pricing units, callback authenticity and licensing. Source lead: https://kavenegar.com/rest.html. Record selected, pending or excluded with reasons. A failed specification does not authorize implementation or a supported listing. Verification: official contract and scope review.
+- [ ] **SMS-014** [P0; local] Implement qualified Kavenegar / کاوه نگار adapter.
+  Acceptance: For kavenegar only after successful specification, implement the verified capability subset through CONN, EVT and the SMS domain. Reuse an API-family adapter only after contract compatibility is demonstrated. Preserve security, uncertainty and FA/DE/EN management semantics. Verification: adapter and PostgreSQL integration.
+- [ ] **SMS-015** [P0; local] Qualify Kavenegar / کاوه نگار locally.
+  Acceptance: For kavenegar, exercise its actual adapter contract, credentials and error mapping with synthetic fixtures; cover duplicates, quotas, receipts/inbound where supported, unknown outcomes, offboarding and FA/DE/EN workflows. Local success is not live compatibility. Verification: contract, fault and localized workflow suite.
+- [ ] **SMS-016** [P0; live-provider] Validate authorized Kavenegar / کاوه نگار profile live.
+  Acceptance: For kavenegar, require separately authorized account, sender/test numbers and finite actions. Record API/account profile, observed send and supported receipt/inbound behavior, cleanup, costs and limitations before advertising that profile as supported. Unavailable authorization leaves this gate open. Verification: finite authorized live-provider matrix.
+- [ ] **SMS-017** [P1; local] Qualify Melipayamak / ملی پیامک API and scope.
+  Acceptance: Provider ID melipayamak: verify current official API/version, supplier/account identity, sender and inbound/receipt entitlements, pricing units, callback authenticity and licensing. Source lead: https://www.melipayamak.com/api/. Record selected, pending or excluded with reasons. A failed specification does not authorize implementation or a supported listing. Verification: official contract and scope review.
+- [ ] **SMS-018** [P1; local] Implement qualified Melipayamak / ملی پیامک adapter.
+  Acceptance: For melipayamak only after successful specification, implement the verified capability subset through CONN, EVT and the SMS domain. Reuse an API-family adapter only after contract compatibility is demonstrated. Preserve security, uncertainty and FA/DE/EN management semantics. Verification: adapter and PostgreSQL integration.
+- [ ] **SMS-019** [P1; local] Qualify Melipayamak / ملی پیامک locally.
+  Acceptance: For melipayamak, exercise its actual adapter contract, credentials and error mapping with synthetic fixtures; cover duplicates, quotas, receipts/inbound where supported, unknown outcomes, offboarding and FA/DE/EN workflows. Local success is not live compatibility. Verification: contract, fault and localized workflow suite.
+- [ ] **SMS-020** [P1; live-provider] Validate authorized Melipayamak / ملی پیامک profile live.
+  Acceptance: For melipayamak, require separately authorized account, sender/test numbers and finite actions. Record API/account profile, observed send and supported receipt/inbound behavior, cleanup, costs and limitations before advertising that profile as supported. Unavailable authorization leaves this gate open. Verification: finite authorized live-provider matrix.
+- [ ] **SMS-021** [P1; local] Qualify SMS.ir API and scope.
+  Acceptance: Provider ID sms_ir: verify current official API/version, supplier/account identity, sender and inbound/receipt entitlements, pricing units, callback authenticity and licensing. Source lead: https://github.com/ipecompany/SmsPanelV2.nodejs. Record selected, pending or excluded with reasons. A failed specification does not authorize implementation or a supported listing. Verification: official contract and scope review.
+- [ ] **SMS-022** [P1; local] Implement qualified SMS.ir adapter.
+  Acceptance: For sms_ir only after successful specification, implement the verified capability subset through CONN, EVT and the SMS domain. Reuse an API-family adapter only after contract compatibility is demonstrated. Preserve security, uncertainty and FA/DE/EN management semantics. Verification: adapter and PostgreSQL integration.
+- [ ] **SMS-023** [P1; local] Qualify SMS.ir locally.
+  Acceptance: For sms_ir, exercise its actual adapter contract, credentials and error mapping with synthetic fixtures; cover duplicates, quotas, receipts/inbound where supported, unknown outcomes, offboarding and FA/DE/EN workflows. Local success is not live compatibility. Verification: contract, fault and localized workflow suite.
+- [ ] **SMS-024** [P1; live-provider] Validate authorized SMS.ir profile live.
+  Acceptance: For sms_ir, require separately authorized account, sender/test numbers and finite actions. Record API/account profile, observed send and supported receipt/inbound behavior, cleanup, costs and limitations before advertising that profile as supported. Unavailable authorization leaves this gate open. Verification: finite authorized live-provider matrix.
+- [ ] **SMS-025** [P1; local] Qualify IPPanel API and scope.
+  Acceptance: Provider ID ippanel: verify current official API/version, supplier/account identity, sender and inbound/receipt entitlements, pricing units, callback authenticity and licensing. Source lead: https://ippanelcom.github.io/Edge-Document/docs/. Record selected, pending or excluded with reasons. A failed specification does not authorize implementation or a supported listing. Verification: official contract and scope review.
+- [ ] **SMS-026** [P1; local] Implement qualified IPPanel adapter.
+  Acceptance: For ippanel only after successful specification, implement the verified capability subset through CONN, EVT and the SMS domain. Reuse an API-family adapter only after contract compatibility is demonstrated. Preserve security, uncertainty and FA/DE/EN management semantics. Verification: adapter and PostgreSQL integration.
+- [ ] **SMS-027** [P1; local] Qualify IPPanel locally.
+  Acceptance: For ippanel, exercise its actual adapter contract, credentials and error mapping with synthetic fixtures; cover duplicates, quotas, receipts/inbound where supported, unknown outcomes, offboarding and FA/DE/EN workflows. Local success is not live compatibility. Verification: contract, fault and localized workflow suite.
+- [ ] **SMS-028** [P1; live-provider] Validate authorized IPPanel profile live.
+  Acceptance: For ippanel, require separately authorized account, sender/test numbers and finite actions. Record API/account profile, observed send and supported receipt/inbound behavior, cleanup, costs and limitations before advertising that profile as supported. Unavailable authorization leaves this gate open. Verification: finite authorized live-provider matrix.
+- [ ] **SMS-029** [P1; local] Qualify Faraz SMS / فراز اس ام اس API and scope.
+  Acceptance: Provider ID farazsms: verify current official API/version, supplier/account identity, sender and inbound/receipt entitlements, pricing units, callback authenticity and licensing. Source lead: https://farazsms.com/. Record selected, pending or excluded with reasons. A failed specification does not authorize implementation or a supported listing. Verification: official contract and scope review.
+- [ ] **SMS-030** [P1; local] Implement qualified Faraz SMS / فراز اس ام اس adapter.
+  Acceptance: For farazsms only after successful specification, implement the verified capability subset through CONN, EVT and the SMS domain. Reuse an API-family adapter only after contract compatibility is demonstrated. Preserve security, uncertainty and FA/DE/EN management semantics. Verification: adapter and PostgreSQL integration.
+- [ ] **SMS-031** [P1; local] Qualify Faraz SMS / فراز اس ام اس locally.
+  Acceptance: For farazsms, exercise its actual adapter contract, credentials and error mapping with synthetic fixtures; cover duplicates, quotas, receipts/inbound where supported, unknown outcomes, offboarding and FA/DE/EN workflows. Local success is not live compatibility. Verification: contract, fault and localized workflow suite.
+- [ ] **SMS-032** [P1; live-provider] Validate authorized Faraz SMS / فراز اس ام اس profile live.
+  Acceptance: For farazsms, require separately authorized account, sender/test numbers and finite actions. Record API/account profile, observed send and supported receipt/inbound behavior, cleanup, costs and limitations before advertising that profile as supported. Unavailable authorization leaves this gate open. Verification: finite authorized live-provider matrix.
+- [ ] **SMS-033** [P1; local] Qualify Mediana / مدیانا API and scope.
+  Acceptance: Provider ID mediana: verify current official API/version, supplier/account identity, sender and inbound/receipt entitlements, pricing units, callback authenticity and licensing. Source lead: https://apidoc.mediana.ir/. Record selected, pending or excluded with reasons. A failed specification does not authorize implementation or a supported listing. Verification: official contract and scope review.
+- [ ] **SMS-034** [P1; local] Implement qualified Mediana / مدیانا adapter.
+  Acceptance: For mediana only after successful specification, implement the verified capability subset through CONN, EVT and the SMS domain. Reuse an API-family adapter only after contract compatibility is demonstrated. Preserve security, uncertainty and FA/DE/EN management semantics. Verification: adapter and PostgreSQL integration.
+- [ ] **SMS-035** [P1; local] Qualify Mediana / مدیانا locally.
+  Acceptance: For mediana, exercise its actual adapter contract, credentials and error mapping with synthetic fixtures; cover duplicates, quotas, receipts/inbound where supported, unknown outcomes, offboarding and FA/DE/EN workflows. Local success is not live compatibility. Verification: contract, fault and localized workflow suite.
+- [ ] **SMS-036** [P1; live-provider] Validate authorized Mediana / مدیانا profile live.
+  Acceptance: For mediana, require separately authorized account, sender/test numbers and finite actions. Record API/account profile, observed send and supported receipt/inbound behavior, cleanup, costs and limitations before advertising that profile as supported. Unavailable authorization leaves this gate open. Verification: finite authorized live-provider matrix.
+- [ ] **SMS-037** [P1; local] Qualify Ghasedak / قاصدک API and scope.
+  Acceptance: Provider ID ghasedak: verify current official API/version, supplier/account identity, sender and inbound/receipt entitlements, pricing units, callback authenticity and licensing. Source lead: https://ghasedak.me/docs. Record selected, pending or excluded with reasons. A failed specification does not authorize implementation or a supported listing. Verification: official contract and scope review.
+- [ ] **SMS-038** [P1; local] Implement qualified Ghasedak / قاصدک adapter.
+  Acceptance: For ghasedak only after successful specification, implement the verified capability subset through CONN, EVT and the SMS domain. Reuse an API-family adapter only after contract compatibility is demonstrated. Preserve security, uncertainty and FA/DE/EN management semantics. Verification: adapter and PostgreSQL integration.
+- [ ] **SMS-039** [P1; local] Qualify Ghasedak / قاصدک locally.
+  Acceptance: For ghasedak, exercise its actual adapter contract, credentials and error mapping with synthetic fixtures; cover duplicates, quotas, receipts/inbound where supported, unknown outcomes, offboarding and FA/DE/EN workflows. Local success is not live compatibility. Verification: contract, fault and localized workflow suite.
+- [ ] **SMS-040** [P1; live-provider] Validate authorized Ghasedak / قاصدک profile live.
+  Acceptance: For ghasedak, require separately authorized account, sender/test numbers and finite actions. Record API/account profile, observed send and supported receipt/inbound behavior, cleanup, costs and limitations before advertising that profile as supported. Unavailable authorization leaves this gate open. Verification: finite authorized live-provider matrix.
+- [ ] **SMS-041** [P1; local] Qualify NikSMS / نیک اس ام اس API and scope.
+  Acceptance: Provider ID niksms: verify current official API/version, supplier/account identity, sender and inbound/receipt entitlements, pricing units, callback authenticity and licensing. Source lead: https://niksms.com/fa/api-sms. Record selected, pending or excluded with reasons. A failed specification does not authorize implementation or a supported listing. Verification: official contract and scope review.
+- [ ] **SMS-042** [P1; local] Implement qualified NikSMS / نیک اس ام اس adapter.
+  Acceptance: For niksms only after successful specification, implement the verified capability subset through CONN, EVT and the SMS domain. Reuse an API-family adapter only after contract compatibility is demonstrated. Preserve security, uncertainty and FA/DE/EN management semantics. Verification: adapter and PostgreSQL integration.
+- [ ] **SMS-043** [P1; local] Qualify NikSMS / نیک اس ام اس locally.
+  Acceptance: For niksms, exercise its actual adapter contract, credentials and error mapping with synthetic fixtures; cover duplicates, quotas, receipts/inbound where supported, unknown outcomes, offboarding and FA/DE/EN workflows. Local success is not live compatibility. Verification: contract, fault and localized workflow suite.
+- [ ] **SMS-044** [P1; live-provider] Validate authorized NikSMS / نیک اس ام اس profile live.
+  Acceptance: For niksms, require separately authorized account, sender/test numbers and finite actions. Record API/account profile, observed send and supported receipt/inbound behavior, cleanup, costs and limitations before advertising that profile as supported. Unavailable authorization leaves this gate open. Verification: finite authorized live-provider matrix.
+- [ ] **SMS-045** [P1; local] Qualify ParsGreen / پارس گرین API and scope.
+  Acceptance: Provider ID parsgreen: verify current official API/version, supplier/account identity, sender and inbound/receipt entitlements, pricing units, callback authenticity and licensing. Source lead: https://www.parsgreen.com/. Record selected, pending or excluded with reasons. A failed specification does not authorize implementation or a supported listing. Verification: official contract and scope review.
+- [ ] **SMS-046** [P1; local] Implement qualified ParsGreen / پارس گرین adapter.
+  Acceptance: For parsgreen only after successful specification, implement the verified capability subset through CONN, EVT and the SMS domain. Reuse an API-family adapter only after contract compatibility is demonstrated. Preserve security, uncertainty and FA/DE/EN management semantics. Verification: adapter and PostgreSQL integration.
+- [ ] **SMS-047** [P1; local] Qualify ParsGreen / پارس گرین locally.
+  Acceptance: For parsgreen, exercise its actual adapter contract, credentials and error mapping with synthetic fixtures; cover duplicates, quotas, receipts/inbound where supported, unknown outcomes, offboarding and FA/DE/EN workflows. Local success is not live compatibility. Verification: contract, fault and localized workflow suite.
+- [ ] **SMS-048** [P1; live-provider] Validate authorized ParsGreen / پارس گرین profile live.
+  Acceptance: For parsgreen, require separately authorized account, sender/test numbers and finite actions. Record API/account profile, observed send and supported receipt/inbound behavior, cleanup, costs and limitations before advertising that profile as supported. Unavailable authorization leaves this gate open. Verification: finite authorized live-provider matrix.
+- [ ] **SMS-049** [P1; local] Qualify Payam Resan / پیام رسان API and scope.
+  Acceptance: Provider ID payam_resan: verify current official API/version, supplier/account identity, sender and inbound/receipt entitlements, pricing units, callback authenticity and licensing. Source lead: https://payam-resan.com/. Record selected, pending or excluded with reasons. A failed specification does not authorize implementation or a supported listing. Verification: official contract and scope review.
+- [ ] **SMS-050** [P1; local] Implement qualified Payam Resan / پیام رسان adapter.
+  Acceptance: For payam_resan only after successful specification, implement the verified capability subset through CONN, EVT and the SMS domain. Reuse an API-family adapter only after contract compatibility is demonstrated. Preserve security, uncertainty and FA/DE/EN management semantics. Verification: adapter and PostgreSQL integration.
+- [ ] **SMS-051** [P1; local] Qualify Payam Resan / پیام رسان locally.
+  Acceptance: For payam_resan, exercise its actual adapter contract, credentials and error mapping with synthetic fixtures; cover duplicates, quotas, receipts/inbound where supported, unknown outcomes, offboarding and FA/DE/EN workflows. Local success is not live compatibility. Verification: contract, fault and localized workflow suite.
+- [ ] **SMS-052** [P1; live-provider] Validate authorized Payam Resan / پیام رسان profile live.
+  Acceptance: For payam_resan, require separately authorized account, sender/test numbers and finite actions. Record API/account profile, observed send and supported receipt/inbound behavior, cleanup, costs and limitations before advertising that profile as supported. Unavailable authorization leaves this gate open. Verification: finite authorized live-provider matrix.
+- [ ] **SMS-053** [P1; local] Qualify Farapayamak / فراپیامک API and scope.
+  Acceptance: Provider ID farapayamak: verify current official API/version, supplier/account identity, sender and inbound/receipt entitlements, pricing units, callback authenticity and licensing. Source lead: https://farapayamak.ir/content/webservice/. Record selected, pending or excluded with reasons. A failed specification does not authorize implementation or a supported listing. Verification: official contract and scope review.
+- [ ] **SMS-054** [P1; local] Implement qualified Farapayamak / فراپیامک adapter.
+  Acceptance: For farapayamak only after successful specification, implement the verified capability subset through CONN, EVT and the SMS domain. Reuse an API-family adapter only after contract compatibility is demonstrated. Preserve security, uncertainty and FA/DE/EN management semantics. Verification: adapter and PostgreSQL integration.
+- [ ] **SMS-055** [P1; local] Qualify Farapayamak / فراپیامک locally.
+  Acceptance: For farapayamak, exercise its actual adapter contract, credentials and error mapping with synthetic fixtures; cover duplicates, quotas, receipts/inbound where supported, unknown outcomes, offboarding and FA/DE/EN workflows. Local success is not live compatibility. Verification: contract, fault and localized workflow suite.
+- [ ] **SMS-056** [P1; live-provider] Validate authorized Farapayamak / فراپیامک profile live.
+  Acceptance: For farapayamak, require separately authorized account, sender/test numbers and finite actions. Record API/account profile, observed send and supported receipt/inbound behavior, cleanup, costs and limitations before advertising that profile as supported. Unavailable authorization leaves this gate open. Verification: finite authorized live-provider matrix.
+- [ ] **SMS-057** [P1; local] Qualify RayganSMS / رایگان اس ام اس API and scope.
+  Acceptance: Provider ID raygansms: verify current official API/version, supplier/account identity, sender and inbound/receipt entitlements, pricing units, callback authenticity and licensing. Source lead: https://raygansms.com/webservice/. Record selected, pending or excluded with reasons. A failed specification does not authorize implementation or a supported listing. Verification: official contract and scope review.
+- [ ] **SMS-058** [P1; local] Implement qualified RayganSMS / رایگان اس ام اس adapter.
+  Acceptance: For raygansms only after successful specification, implement the verified capability subset through CONN, EVT and the SMS domain. Reuse an API-family adapter only after contract compatibility is demonstrated. Preserve security, uncertainty and FA/DE/EN management semantics. Verification: adapter and PostgreSQL integration.
+- [ ] **SMS-059** [P1; local] Qualify RayganSMS / رایگان اس ام اس locally.
+  Acceptance: For raygansms, exercise its actual adapter contract, credentials and error mapping with synthetic fixtures; cover duplicates, quotas, receipts/inbound where supported, unknown outcomes, offboarding and FA/DE/EN workflows. Local success is not live compatibility. Verification: contract, fault and localized workflow suite.
+- [ ] **SMS-060** [P1; live-provider] Validate authorized RayganSMS / رایگان اس ام اس profile live.
+  Acceptance: For raygansms, require separately authorized account, sender/test numbers and finite actions. Record API/account profile, observed send and supported receipt/inbound behavior, cleanup, costs and limitations before advertising that profile as supported. Unavailable authorization leaves this gate open. Verification: finite authorized live-provider matrix.
+- [ ] **SMS-061** [P1; local] Qualify SunWay / سان وی API and scope.
+  Acceptance: Provider ID sunway: verify current official API/version, supplier/account identity, sender and inbound/receipt entitlements, pricing units, callback authenticity and licensing. Source lead: https://sunwaysms.com/. Record selected, pending or excluded with reasons. A failed specification does not authorize implementation or a supported listing. Verification: official contract and scope review.
+- [ ] **SMS-062** [P1; local] Implement qualified SunWay / سان وی adapter.
+  Acceptance: For sunway only after successful specification, implement the verified capability subset through CONN, EVT and the SMS domain. Reuse an API-family adapter only after contract compatibility is demonstrated. Preserve security, uncertainty and FA/DE/EN management semantics. Verification: adapter and PostgreSQL integration.
+- [ ] **SMS-063** [P1; local] Qualify SunWay / سان وی locally.
+  Acceptance: For sunway, exercise its actual adapter contract, credentials and error mapping with synthetic fixtures; cover duplicates, quotas, receipts/inbound where supported, unknown outcomes, offboarding and FA/DE/EN workflows. Local success is not live compatibility. Verification: contract, fault and localized workflow suite.
+- [ ] **SMS-064** [P1; live-provider] Validate authorized SunWay / سان وی profile live.
+  Acceptance: For sunway, require separately authorized account, sender/test numbers and finite actions. Record API/account profile, observed send and supported receipt/inbound behavior, cleanup, costs and limitations before advertising that profile as supported. Unavailable authorization leaves this gate open. Verification: finite authorized live-provider matrix.
+- [ ] **SMS-065** [P1; local] Qualify Behresaan / به رسان API and scope.
+  Acceptance: Provider ID behresaan: verify current official API/version, supplier/account identity, sender and inbound/receipt entitlements, pricing units, callback authenticity and licensing. Source lead: https://www.behresaan.ir/مستند-وب-سرویس/. Record selected, pending or excluded with reasons. A failed specification does not authorize implementation or a supported listing. Verification: official contract and scope review.
+- [ ] **SMS-066** [P1; local] Implement qualified Behresaan / به رسان adapter.
+  Acceptance: For behresaan only after successful specification, implement the verified capability subset through CONN, EVT and the SMS domain. Reuse an API-family adapter only after contract compatibility is demonstrated. Preserve security, uncertainty and FA/DE/EN management semantics. Verification: adapter and PostgreSQL integration.
+- [ ] **SMS-067** [P1; local] Qualify Behresaan / به رسان locally.
+  Acceptance: For behresaan, exercise its actual adapter contract, credentials and error mapping with synthetic fixtures; cover duplicates, quotas, receipts/inbound where supported, unknown outcomes, offboarding and FA/DE/EN workflows. Local success is not live compatibility. Verification: contract, fault and localized workflow suite.
+- [ ] **SMS-068** [P1; live-provider] Validate authorized Behresaan / به رسان profile live.
+  Acceptance: For behresaan, require separately authorized account, sender/test numbers and finite actions. Record API/account profile, observed send and supported receipt/inbound behavior, cleanup, costs and limitations before advertising that profile as supported. Unavailable authorization leaves this gate open. Verification: finite authorized live-provider matrix.
+- [ ] **SMS-069** [P1; local] Qualify Asanak / آسانک API and scope.
+  Acceptance: Provider ID asanak: verify current official API/version, supplier/account identity, sender and inbound/receipt entitlements, pricing units, callback authenticity and licensing. Source lead: https://www.asanak.com/. Record selected, pending or excluded with reasons. A failed specification does not authorize implementation or a supported listing. Verification: official contract and scope review.
+- [ ] **SMS-070** [P1; local] Implement qualified Asanak / آسانک adapter.
+  Acceptance: For asanak only after successful specification, implement the verified capability subset through CONN, EVT and the SMS domain. Reuse an API-family adapter only after contract compatibility is demonstrated. Preserve security, uncertainty and FA/DE/EN management semantics. Verification: adapter and PostgreSQL integration.
+- [ ] **SMS-071** [P1; local] Qualify Asanak / آسانک locally.
+  Acceptance: For asanak, exercise its actual adapter contract, credentials and error mapping with synthetic fixtures; cover duplicates, quotas, receipts/inbound where supported, unknown outcomes, offboarding and FA/DE/EN workflows. Local success is not live compatibility. Verification: contract, fault and localized workflow suite.
+- [ ] **SMS-072** [P1; live-provider] Validate authorized Asanak / آسانک profile live.
+  Acceptance: For asanak, require separately authorized account, sender/test numbers and finite actions. Record API/account profile, observed send and supported receipt/inbound behavior, cleanup, costs and limitations before advertising that profile as supported. Unavailable authorization leaves this gate open. Verification: finite authorized live-provider matrix.
+- [ ] **SMS-073** [P1; local] Qualify Modir Payamak / مدیر پیامک API and scope.
+  Acceptance: Provider ID modirpayamak: verify current official API/version, supplier/account identity, sender and inbound/receipt entitlements, pricing units, callback authenticity and licensing. Source lead: https://modirpayamak.com/. Record selected, pending or excluded with reasons. A failed specification does not authorize implementation or a supported listing. Verification: official contract and scope review.
+- [ ] **SMS-074** [P1; local] Implement qualified Modir Payamak / مدیر پیامک adapter.
+  Acceptance: For modirpayamak only after successful specification, implement the verified capability subset through CONN, EVT and the SMS domain. Reuse an API-family adapter only after contract compatibility is demonstrated. Preserve security, uncertainty and FA/DE/EN management semantics. Verification: adapter and PostgreSQL integration.
+- [ ] **SMS-075** [P1; local] Qualify Modir Payamak / مدیر پیامک locally.
+  Acceptance: For modirpayamak, exercise its actual adapter contract, credentials and error mapping with synthetic fixtures; cover duplicates, quotas, receipts/inbound where supported, unknown outcomes, offboarding and FA/DE/EN workflows. Local success is not live compatibility. Verification: contract, fault and localized workflow suite.
+- [ ] **SMS-076** [P1; live-provider] Validate authorized Modir Payamak / مدیر پیامک profile live.
+  Acceptance: For modirpayamak, require separately authorized account, sender/test numbers and finite actions. Record API/account profile, observed send and supported receipt/inbound behavior, cleanup, costs and limitations before advertising that profile as supported. Unavailable authorization leaves this gate open. Verification: finite authorized live-provider matrix.
+- [ ] **SMS-077** [P1; local] Qualify Taban SMS / تابان اس ام اس API and scope.
+  Acceptance: Provider ID tabansms: verify current official API/version, supplier/account identity, sender and inbound/receipt entitlements, pricing units, callback authenticity and licensing. Source lead: https://tabansms.com/. Record selected, pending or excluded with reasons. A failed specification does not authorize implementation or a supported listing. Verification: official contract and scope review.
+- [ ] **SMS-078** [P1; local] Implement qualified Taban SMS / تابان اس ام اس adapter.
+  Acceptance: For tabansms only after successful specification, implement the verified capability subset through CONN, EVT and the SMS domain. Reuse an API-family adapter only after contract compatibility is demonstrated. Preserve security, uncertainty and FA/DE/EN management semantics. Verification: adapter and PostgreSQL integration.
+- [ ] **SMS-079** [P1; local] Qualify Taban SMS / تابان اس ام اس locally.
+  Acceptance: For tabansms, exercise its actual adapter contract, credentials and error mapping with synthetic fixtures; cover duplicates, quotas, receipts/inbound where supported, unknown outcomes, offboarding and FA/DE/EN workflows. Local success is not live compatibility. Verification: contract, fault and localized workflow suite.
+- [ ] **SMS-080** [P1; live-provider] Validate authorized Taban SMS / تابان اس ام اس profile live.
+  Acceptance: For tabansms, require separately authorized account, sender/test numbers and finite actions. Record API/account profile, observed send and supported receipt/inbound behavior, cleanup, costs and limitations before advertising that profile as supported. Unavailable authorization leaves this gate open. Verification: finite authorized live-provider matrix.
+- [ ] **SMS-081** [P1; local] Qualify TSMS / طوبی API and scope.
+  Acceptance: Provider ID tsms: verify current official API/version, supplier/account identity, sender and inbound/receipt entitlements, pricing units, callback authenticity and licensing. Source lead: https://tsms.ir/. Record selected, pending or excluded with reasons. A failed specification does not authorize implementation or a supported listing. Verification: official contract and scope review.
+- [ ] **SMS-082** [P1; local] Implement qualified TSMS / طوبی adapter.
+  Acceptance: For tsms only after successful specification, implement the verified capability subset through CONN, EVT and the SMS domain. Reuse an API-family adapter only after contract compatibility is demonstrated. Preserve security, uncertainty and FA/DE/EN management semantics. Verification: adapter and PostgreSQL integration.
+- [ ] **SMS-083** [P1; local] Qualify TSMS / طوبی locally.
+  Acceptance: For tsms, exercise its actual adapter contract, credentials and error mapping with synthetic fixtures; cover duplicates, quotas, receipts/inbound where supported, unknown outcomes, offboarding and FA/DE/EN workflows. Local success is not live compatibility. Verification: contract, fault and localized workflow suite.
+- [ ] **SMS-084** [P1; live-provider] Validate authorized TSMS / طوبی profile live.
+  Acceptance: For tsms, require separately authorized account, sender/test numbers and finite actions. Record API/account profile, observed send and supported receipt/inbound behavior, cleanup, costs and limitations before advertising that profile as supported. Unavailable authorization leaves this gate open. Verification: finite authorized live-provider matrix.
+- [ ] **SMS-085** [P1; local] Qualify Iran Payamak / ایران پیامک API and scope.
+  Acceptance: Provider ID iranpayamak: verify current official API/version, supplier/account identity, sender and inbound/receipt entitlements, pricing units, callback authenticity and licensing. Source lead: https://iranpayamak.com/. Record selected, pending or excluded with reasons. A failed specification does not authorize implementation or a supported listing. Verification: official contract and scope review.
+- [ ] **SMS-086** [P1; local] Implement qualified Iran Payamak / ایران پیامک adapter.
+  Acceptance: For iranpayamak only after successful specification, implement the verified capability subset through CONN, EVT and the SMS domain. Reuse an API-family adapter only after contract compatibility is demonstrated. Preserve security, uncertainty and FA/DE/EN management semantics. Verification: adapter and PostgreSQL integration.
+- [ ] **SMS-087** [P1; local] Qualify Iran Payamak / ایران پیامک locally.
+  Acceptance: For iranpayamak, exercise its actual adapter contract, credentials and error mapping with synthetic fixtures; cover duplicates, quotas, receipts/inbound where supported, unknown outcomes, offboarding and FA/DE/EN workflows. Local success is not live compatibility. Verification: contract, fault and localized workflow suite.
+- [ ] **SMS-088** [P1; live-provider] Validate authorized Iran Payamak / ایران پیامک profile live.
+  Acceptance: For iranpayamak, require separately authorized account, sender/test numbers and finite actions. Record API/account profile, observed send and supported receipt/inbound behavior, cleanup, costs and limitations before advertising that profile as supported. Unavailable authorization leaves this gate open. Verification: finite authorized live-provider matrix.
+- [ ] **SMS-089** [P1; local] Qualify Samaneh Payamak Melli / سامانه پیامک ملی API and scope.
+  Acceptance: Provider ID sms_meli: verify current official API/version, supplier/account identity, sender and inbound/receipt entitlements, pricing units, callback authenticity and licensing. Source lead: https://www.sms-meli.com/webservice/. Record selected, pending or excluded with reasons. A failed specification does not authorize implementation or a supported listing. Verification: official contract and scope review.
+- [ ] **SMS-090** [P1; local] Implement qualified Samaneh Payamak Melli / سامانه پیامک ملی adapter.
+  Acceptance: For sms_meli only after successful specification, implement the verified capability subset through CONN, EVT and the SMS domain. Reuse an API-family adapter only after contract compatibility is demonstrated. Preserve security, uncertainty and FA/DE/EN management semantics. Verification: adapter and PostgreSQL integration.
+- [ ] **SMS-091** [P1; local] Qualify Samaneh Payamak Melli / سامانه پیامک ملی locally.
+  Acceptance: For sms_meli, exercise its actual adapter contract, credentials and error mapping with synthetic fixtures; cover duplicates, quotas, receipts/inbound where supported, unknown outcomes, offboarding and FA/DE/EN workflows. Local success is not live compatibility. Verification: contract, fault and localized workflow suite.
+- [ ] **SMS-092** [P1; live-provider] Validate authorized Samaneh Payamak Melli / سامانه پیامک ملی profile live.
+  Acceptance: For sms_meli, require separately authorized account, sender/test numbers and finite actions. Record API/account profile, observed send and supported receipt/inbound behavior, cleanup, costs and limitations before advertising that profile as supported. Unavailable authorization leaves this gate open. Verification: finite authorized live-provider matrix.
+- [ ] **SMS-093** [P1; local] Qualify KPanel / کاپنل API and scope.
+  Acceptance: Provider ID kpanel: verify current official API/version, supplier/account identity, sender and inbound/receipt entitlements, pricing units, callback authenticity and licensing. Source lead: https://kpanel.ir/lab/. Record selected, pending or excluded with reasons. A failed specification does not authorize implementation or a supported listing. Verification: official contract and scope review.
+- [ ] **SMS-094** [P1; local] Implement qualified KPanel / کاپنل adapter.
+  Acceptance: For kpanel only after successful specification, implement the verified capability subset through CONN, EVT and the SMS domain. Reuse an API-family adapter only after contract compatibility is demonstrated. Preserve security, uncertainty and FA/DE/EN management semantics. Verification: adapter and PostgreSQL integration.
+- [ ] **SMS-095** [P1; local] Qualify KPanel / کاپنل locally.
+  Acceptance: For kpanel, exercise its actual adapter contract, credentials and error mapping with synthetic fixtures; cover duplicates, quotas, receipts/inbound where supported, unknown outcomes, offboarding and FA/DE/EN workflows. Local success is not live compatibility. Verification: contract, fault and localized workflow suite.
+- [ ] **SMS-096** [P1; live-provider] Validate authorized KPanel / کاپنل profile live.
+  Acceptance: For kpanel, require separately authorized account, sender/test numbers and finite actions. Record API/account profile, observed send and supported receipt/inbound behavior, cleanup, costs and limitations before advertising that profile as supported. Unavailable authorization leaves this gate open. Verification: finite authorized live-provider matrix.
+- [ ] **SMS-097** [P1; local] Qualify Yekta Payamak / یکتا پیامک API and scope.
+  Acceptance: Provider ID yektapayamak: verify current official API/version, supplier/account identity, sender and inbound/receipt entitlements, pricing units, callback authenticity and licensing. Source lead: https://yektapayamak.com/wp-content/uploads/2024/02/api_docs.pdf. Record selected, pending or excluded with reasons. A failed specification does not authorize implementation or a supported listing. Verification: official contract and scope review.
+- [ ] **SMS-098** [P1; local] Implement qualified Yekta Payamak / یکتا پیامک adapter.
+  Acceptance: For yektapayamak only after successful specification, implement the verified capability subset through CONN, EVT and the SMS domain. Reuse an API-family adapter only after contract compatibility is demonstrated. Preserve security, uncertainty and FA/DE/EN management semantics. Verification: adapter and PostgreSQL integration.
+- [ ] **SMS-099** [P1; local] Qualify Yekta Payamak / یکتا پیامک locally.
+  Acceptance: For yektapayamak, exercise its actual adapter contract, credentials and error mapping with synthetic fixtures; cover duplicates, quotas, receipts/inbound where supported, unknown outcomes, offboarding and FA/DE/EN workflows. Local success is not live compatibility. Verification: contract, fault and localized workflow suite.
+- [ ] **SMS-100** [P1; live-provider] Validate authorized Yekta Payamak / یکتا پیامک profile live.
+  Acceptance: For yektapayamak, require separately authorized account, sender/test numbers and finite actions. Record API/account profile, observed send and supported receipt/inbound behavior, cleanup, costs and limitations before advertising that profile as supported. Unavailable authorization leaves this gate open. Verification: finite authorized live-provider matrix.
+- [ ] **SMS-101** [P1; local] Qualify Arad ITC / آراد API and scope.
+  Acceptance: Provider ID arad: verify current official API/version, supplier/account identity, sender and inbound/receipt entitlements, pricing units, callback authenticity and licensing. Source lead: https://github.com/araditc/arad.sms.core.api.document/wiki. Record selected, pending or excluded with reasons. A failed specification does not authorize implementation or a supported listing. Verification: official contract and scope review.
+- [ ] **SMS-102** [P1; local] Implement qualified Arad ITC / آراد adapter.
+  Acceptance: For arad only after successful specification, implement the verified capability subset through CONN, EVT and the SMS domain. Reuse an API-family adapter only after contract compatibility is demonstrated. Preserve security, uncertainty and FA/DE/EN management semantics. Verification: adapter and PostgreSQL integration.
+- [ ] **SMS-103** [P1; local] Qualify Arad ITC / آراد locally.
+  Acceptance: For arad, exercise its actual adapter contract, credentials and error mapping with synthetic fixtures; cover duplicates, quotas, receipts/inbound where supported, unknown outcomes, offboarding and FA/DE/EN workflows. Local success is not live compatibility. Verification: contract, fault and localized workflow suite.
+- [ ] **SMS-104** [P1; live-provider] Validate authorized Arad ITC / آراد profile live.
+  Acceptance: For arad, require separately authorized account, sender/test numbers and finite actions. Record API/account profile, observed send and supported receipt/inbound behavior, cleanup, costs and limitations before advertising that profile as supported. Unavailable authorization leaves this gate open. Verification: finite authorized live-provider matrix.
+- [ ] **SMS-105** [P1; local] Qualify Najva / نجوا API and scope.
+  Acceptance: Provider ID najva: verify current official API/version, supplier/account identity, sender and inbound/receipt entitlements, pricing units, callback authenticity and licensing. Source lead: https://www.najva.com/. Record selected, pending or excluded with reasons. A failed specification does not authorize implementation or a supported listing. Verification: official contract and scope review.
+- [ ] **SMS-106** [P1; local] Implement qualified Najva / نجوا adapter.
+  Acceptance: For najva only after successful specification, implement the verified capability subset through CONN, EVT and the SMS domain. Reuse an API-family adapter only after contract compatibility is demonstrated. Preserve security, uncertainty and FA/DE/EN management semantics. Verification: adapter and PostgreSQL integration.
+- [ ] **SMS-107** [P1; local] Qualify Najva / نجوا locally.
+  Acceptance: For najva, exercise its actual adapter contract, credentials and error mapping with synthetic fixtures; cover duplicates, quotas, receipts/inbound where supported, unknown outcomes, offboarding and FA/DE/EN workflows. Local success is not live compatibility. Verification: contract, fault and localized workflow suite.
+- [ ] **SMS-108** [P1; live-provider] Validate authorized Najva / نجوا profile live.
+  Acceptance: For najva, require separately authorized account, sender/test numbers and finite actions. Record API/account profile, observed send and supported receipt/inbound behavior, cleanup, costs and limitations before advertising that profile as supported. Unavailable authorization leaves this gate open. Verification: finite authorized live-provider matrix.
+- [ ] **SMS-109** [P1; local] Qualify WebOne SMS / وب وان API and scope.
+  Acceptance: Provider ID webone: verify current official API/version, supplier/account identity, sender and inbound/receipt entitlements, pricing units, callback authenticity and licensing. Source lead: https://webone-sms.ir/. Record selected, pending or excluded with reasons. A failed specification does not authorize implementation or a supported listing. Verification: official contract and scope review.
+- [ ] **SMS-110** [P1; local] Implement qualified WebOne SMS / وب وان adapter.
+  Acceptance: For webone only after successful specification, implement the verified capability subset through CONN, EVT and the SMS domain. Reuse an API-family adapter only after contract compatibility is demonstrated. Preserve security, uncertainty and FA/DE/EN management semantics. Verification: adapter and PostgreSQL integration.
+- [ ] **SMS-111** [P1; local] Qualify WebOne SMS / وب وان locally.
+  Acceptance: For webone, exercise its actual adapter contract, credentials and error mapping with synthetic fixtures; cover duplicates, quotas, receipts/inbound where supported, unknown outcomes, offboarding and FA/DE/EN workflows. Local success is not live compatibility. Verification: contract, fault and localized workflow suite.
+- [ ] **SMS-112** [P1; live-provider] Validate authorized WebOne SMS / وب وان profile live.
+  Acceptance: For webone, require separately authorized account, sender/test numbers and finite actions. Record API/account profile, observed send and supported receipt/inbound behavior, cleanup, costs and limitations before advertising that profile as supported. Unavailable authorization leaves this gate open. Verification: finite authorized live-provider matrix.
+- [ ] **SMS-113** [P1; local] Qualify Novin Pardaz / نوین پرداز API and scope.
+  Acceptance: Provider ID npsms: verify current official API/version, supplier/account identity, sender and inbound/receipt entitlements, pricing units, callback authenticity and licensing. Source lead: https://npsms.ir/. Record selected, pending or excluded with reasons. A failed specification does not authorize implementation or a supported listing. Verification: official contract and scope review.
+- [ ] **SMS-114** [P1; local] Implement qualified Novin Pardaz / نوین پرداز adapter.
+  Acceptance: For npsms only after successful specification, implement the verified capability subset through CONN, EVT and the SMS domain. Reuse an API-family adapter only after contract compatibility is demonstrated. Preserve security, uncertainty and FA/DE/EN management semantics. Verification: adapter and PostgreSQL integration.
+- [ ] **SMS-115** [P1; local] Qualify Novin Pardaz / نوین پرداز locally.
+  Acceptance: For npsms, exercise its actual adapter contract, credentials and error mapping with synthetic fixtures; cover duplicates, quotas, receipts/inbound where supported, unknown outcomes, offboarding and FA/DE/EN workflows. Local success is not live compatibility. Verification: contract, fault and localized workflow suite.
+- [ ] **SMS-116** [P1; live-provider] Validate authorized Novin Pardaz / نوین پرداز profile live.
+  Acceptance: For npsms, require separately authorized account, sender/test numbers and finite actions. Record API/account profile, observed send and supported receipt/inbound behavior, cleanup, costs and limitations before advertising that profile as supported. Unavailable authorization leaves this gate open. Verification: finite authorized live-provider matrix.
+- [ ] **SMS-117** [P1; local] Qualify Magfa / مگفا API and scope.
+  Acceptance: Provider ID magfa: verify current official API/version, supplier/account identity, sender and inbound/receipt entitlements, pricing units, callback authenticity and licensing. Source lead: https://messaging.magfa.com/. Record selected, pending or excluded with reasons. A failed specification does not authorize implementation or a supported listing. Verification: official contract and scope review.
+- [ ] **SMS-118** [P1; local] Implement qualified Magfa / مگفا adapter.
+  Acceptance: For magfa only after successful specification, implement the verified capability subset through CONN, EVT and the SMS domain. Reuse an API-family adapter only after contract compatibility is demonstrated. Preserve security, uncertainty and FA/DE/EN management semantics. Verification: adapter and PostgreSQL integration.
+- [ ] **SMS-119** [P1; local] Qualify Magfa / مگفا locally.
+  Acceptance: For magfa, exercise its actual adapter contract, credentials and error mapping with synthetic fixtures; cover duplicates, quotas, receipts/inbound where supported, unknown outcomes, offboarding and FA/DE/EN workflows. Local success is not live compatibility. Verification: contract, fault and localized workflow suite.
+- [ ] **SMS-120** [P1; live-provider] Validate authorized Magfa / مگفا profile live.
+  Acceptance: For magfa, require separately authorized account, sender/test numbers and finite actions. Record API/account profile, observed send and supported receipt/inbound behavior, cleanup, costs and limitations before advertising that profile as supported. Unavailable authorization leaves this gate open. Verification: finite authorized live-provider matrix.
+- [ ] **SMS-121** [P1; local] Qualify Amoot SMS / آموت API and scope.
+  Acceptance: Provider ID amoot: verify current official API/version, supplier/account identity, sender and inbound/receipt entitlements, pricing units, callback authenticity and licensing. Source lead: https://portal.amootsms.com/. Record selected, pending or excluded with reasons. A failed specification does not authorize implementation or a supported listing. Verification: official contract and scope review.
+- [ ] **SMS-122** [P1; local] Implement qualified Amoot SMS / آموت adapter.
+  Acceptance: For amoot only after successful specification, implement the verified capability subset through CONN, EVT and the SMS domain. Reuse an API-family adapter only after contract compatibility is demonstrated. Preserve security, uncertainty and FA/DE/EN management semantics. Verification: adapter and PostgreSQL integration.
+- [ ] **SMS-123** [P1; local] Qualify Amoot SMS / آموت locally.
+  Acceptance: For amoot, exercise its actual adapter contract, credentials and error mapping with synthetic fixtures; cover duplicates, quotas, receipts/inbound where supported, unknown outcomes, offboarding and FA/DE/EN workflows. Local success is not live compatibility. Verification: contract, fault and localized workflow suite.
+- [ ] **SMS-124** [P1; live-provider] Validate authorized Amoot SMS / آموت profile live.
+  Acceptance: For amoot, require separately authorized account, sender/test numbers and finite actions. Record API/account profile, observed send and supported receipt/inbound behavior, cleanup, costs and limitations before advertising that profile as supported. Unavailable authorization leaves this gate open. Verification: finite authorized live-provider matrix.
+- [ ] **SMS-125** [P1; local] Qualify Kandoo / کندو API and scope.
+  Acceptance: Provider ID kandoo: verify current official API/version, supplier/account identity, sender and inbound/receipt entitlements, pricing units, callback authenticity and licensing. Source lead: https://techrasa.com/fa/wp-content/uploads/2024/11/TechRasa-Insight-Iran-MarTech-2024-Report.pdf. Record selected, pending or excluded with reasons. A failed specification does not authorize implementation or a supported listing. Verification: official contract and scope review.
+- [ ] **SMS-126** [P1; local] Implement qualified Kandoo / کندو adapter.
+  Acceptance: For kandoo only after successful specification, implement the verified capability subset through CONN, EVT and the SMS domain. Reuse an API-family adapter only after contract compatibility is demonstrated. Preserve security, uncertainty and FA/DE/EN management semantics. Verification: adapter and PostgreSQL integration.
+- [ ] **SMS-127** [P1; local] Qualify Kandoo / کندو locally.
+  Acceptance: For kandoo, exercise its actual adapter contract, credentials and error mapping with synthetic fixtures; cover duplicates, quotas, receipts/inbound where supported, unknown outcomes, offboarding and FA/DE/EN workflows. Local success is not live compatibility. Verification: contract, fault and localized workflow suite.
+- [ ] **SMS-128** [P1; live-provider] Validate authorized Kandoo / کندو profile live.
+  Acceptance: For kandoo, require separately authorized account, sender/test numbers and finite actions. Record API/account profile, observed send and supported receipt/inbound behavior, cleanup, costs and limitations before advertising that profile as supported. Unavailable authorization leaves this gate open. Verification: finite authorized live-provider matrix.
+- [ ] **SMS-129** [P1; local] Qualify SMSFA / اس ام اس فا API and scope.
+  Acceptance: Provider ID smsfa: verify current official API/version, supplier/account identity, sender and inbound/receipt entitlements, pricing units, callback authenticity and licensing. Source lead: https://dev.to/smsfa/sms-2j2i. Record selected, pending or excluded with reasons. A failed specification does not authorize implementation or a supported listing. Verification: official contract and scope review.
+- [ ] **SMS-130** [P1; local] Implement qualified SMSFA / اس ام اس فا adapter.
+  Acceptance: For smsfa only after successful specification, implement the verified capability subset through CONN, EVT and the SMS domain. Reuse an API-family adapter only after contract compatibility is demonstrated. Preserve security, uncertainty and FA/DE/EN management semantics. Verification: adapter and PostgreSQL integration.
+- [ ] **SMS-131** [P1; local] Qualify SMSFA / اس ام اس فا locally.
+  Acceptance: For smsfa, exercise its actual adapter contract, credentials and error mapping with synthetic fixtures; cover duplicates, quotas, receipts/inbound where supported, unknown outcomes, offboarding and FA/DE/EN workflows. Local success is not live compatibility. Verification: contract, fault and localized workflow suite.
+- [ ] **SMS-132** [P1; live-provider] Validate authorized SMSFA / اس ام اس فا profile live.
+  Acceptance: For smsfa, require separately authorized account, sender/test numbers and finite actions. Record API/account profile, observed send and supported receipt/inbound behavior, cleanup, costs and limitations before advertising that profile as supported. Unavailable authorization leaves this gate open. Verification: finite authorized live-provider matrix.
 
 All tasks also require the shared [definition of done](integration-project-plan.md#definition-of-done).
 

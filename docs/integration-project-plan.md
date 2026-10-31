@@ -1,8 +1,12 @@
 # Integration, MCP and app-platform project plan
 
-Version 1.0, 2026-10-31. Status: proposed execution plan, documentation only.
+Execution activated on 31 October 2026. This file retains the dated planning snapshot.
+The single live status source is [the execution register](integration-execution/tasks.csv);
+see [current evidence and restart guidance](integration-execution/README.md).
 
-This plan turns the integration programme into **446 future tasks across 23 work packages**.
+Version 1.1, 2026-10-31. Status: proposed execution plan, documentation only.
+
+This plan turns the integration programme into **586 planned task slots across 24 work packages**.
 It preserves the completed local work and sets observable delivery milestones for Slack,
 secure MCP clients, calendar providers, developer integrations and the later marketplace.
 All new tasks are planned. Creating this plan does not start their implementation.
@@ -11,6 +15,8 @@ All new tasks are planned. Creating this plan does not start their implementatio
 
 - [Detailed task register](integration-platform-tasks.md): checkboxes, task IDs, acceptance criteria and verification methods.
 - [Task import CSV](integration-platform-tasks.csv): the same tasks with priorities, role owners, dependencies, stages and estimate fields.
+- [SMS provider inventory](integration-sms-providers.md): 30 research candidates, independent stage IDs and unqualified status.
+- [Scope and ownership reconciliation](integration-coordination.md): the common ownership boundary, early priorities and goal wording.
 - [Machine-readable summary](integration-platform-plan-summary.json): counts, work packages, dependency graph and package exit criteria.
 - [Existing platform overview](integration-platform-plan.md): scope and earlier work-package identifiers retained for prior handoffs.
 - [Completed UI refinement](integration-ui-polish.md) and [foundation report](integration-platform-report.md): historical implementation and evidence.
@@ -18,6 +24,12 @@ All new tasks are planned. Creating this plan does not start their implementatio
 The Markdown register and CSV are matching starting snapshots. If tasks are imported into
 an issue tracker, record that tracker here and make it the execution-status source. Do not
 maintain contradictory live completion counts in a dated export.
+
+## Coordination amendment, 31 October 2026
+
+The approved local-email/P0-P1 work and the broader platform programme now share [one coordination map](integration-coordination.md). Original 446 IDs are retained; eight independent-mail tasks and 132 conditional SMS tasks are added. The [SMS inventory](integration-sms-providers.md) holds 30 candidates with separate qualification chains, not a promise of 30 supported connectors.
+
+Independent mail is the early P0 track (IR1), initial SMS follows (IR2), and the approved P1 operational track plus remaining verified SMS expansion uses IR3. CONN/EVT retain common lifecycle/delivery ownership. MAIL/MS/EXP task-level priority and dependency overrides are recorded in CSV/JSON. Current email implementation must be reconciled, not duplicated. This amendment changes documentation and goal wording only; it does not activate a goal or approve broader/live work. The active execution CSV is not rewritten by this amendment: import the 140 added planning rows and explicit overrides once through its owner, preserving all current progress, evidence and file ownership. See `integration-execution/coordination-handoff.md`.
 
 ## Current baseline
 
@@ -37,7 +49,7 @@ claim that GitHub or parallel development has stopped changing. BASE rechecks th
 | Existing verification | At the UI refinement head: production build, 89 focused unit tests and 43 integration tests passed; type/lint/i18n checks passed. | Those results apply to that source head. This documentation-only change validates plan structure and formatting, not a new runtime release. |
 | Marketplace/app SDK   | Roadmap preview and proposed capability inventory.                                                                                | No untrusted app runtime, operational store or public distribution has been delivered.                                                      |
 
-The existing preview is completed work, not counted among the 446 new tasks. No live provider
+The existing preview is completed work, not counted among the 586 planned task slots. No live provider
 connection, public domain, network tunnel or marketplace publication is assumed. Local development
 and simulated-provider testing continue under the user's local-preview choice.
 
@@ -71,17 +83,20 @@ Milestones describe reviewable outcomes, not promised calendar dates. Each requi
 quality gate and the relevant work-package exit criteria. Work can overlap where dependency and
 ownership boundaries permit; release labels do not require a second implementation of shared systems.
 
-| Milestone | Reviewable outcome                                                | Principal packages                              | Exit demonstration                                                                                                                                                 |
-| --------- | ----------------------------------------------------------------- | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| R0        | Reconciled baseline and agreed contracts.                         | BASE, ARCH; start UX/QA/OPS/OSS.                | Reproduce the current app and tests from an isolated checkout, identify existing workflow ownership, and review architecture/permission decisions.                 |
-| R1        | Useful Slack notifications on reliable shared infrastructure.     | CONN, EVT, SLK.                                 | Create/update a synthetic deal, match a rule, preview a safe Slack message, simulate delivery, inspect history, then exercise failure and revocation recovery.     |
-| R2        | Secure, useful MCP and client experiences.                        | AISEC, MCP, CLIENT.                             | Complete client-simulator consent; demonstrate read-only denials, approved writes, refresh/revoke, localized workflows and supported rich-view/text fallback.      |
-| R3        | Mail/calendar foundations and Google Calendar/Meet.               | MAIL, CAL, GOOG.                                | Create/edit/cancel and synchronize synthetic events, including all-day dates, recurrence, guests, conflicts and conference lifecycle in FA/DE.                     |
-| R4        | Microsoft 365/Teams and Zoom.                                     | MS, ZOOM.                                       | Demonstrate each supported provider workflow and its ownership, entitlement and failure behavior independently.                                                    |
-| R5        | Supported developer integrations and advanced Slack interaction.  | API, AUTO, SLKX.                                | Use scoped REST/GraphQL clients, signed events and automation steps; verify a signed user-initiated Slack action cannot exceed CRM access.                         |
-| R6        | Independent provider tracks and privately installed applications. | EXP, SDK.                                       | Ship selected providers independently and install/update/disable/uninstall a reference private app in real isolation.                                              |
-| R7        | Operational marketplace and public distribution, when chosen.     | STORE plus applicable OPS/QA/OSS release gates. | Review app permissions, install/configure, review an update, recover a failed migration and remove the app; public hosting/publication require their own evidence. |
-| CROSS     | Quality, localization, operations and maintenance throughout.     | UX, OPS, QA, OSS.                               | Every milestone includes current localized workflows, tests, diagnostics, recovery and documented support boundaries.                                              |
+| Milestone | Reviewable outcome                                                | Principal packages                                                        | Exit demonstration                                                                                                                                                 |
+| --------- | ----------------------------------------------------------------- | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| R0        | Reconciled baseline and agreed contracts.                         | BASE, ARCH; start UX/QA/OPS/OSS.                                          | Reproduce the current app and tests from an isolated checkout, identify existing workflow ownership, and review architecture/permission decisions.                 |
+| R1        | Useful Slack notifications on reliable shared infrastructure.     | CONN, EVT, SLK.                                                           | Create/update a synthetic deal, match a rule, preview a safe Slack message, simulate delivery, inspect history, then exercise failure and revocation recovery.     |
+| R2        | Secure, useful MCP and client experiences.                        | AISEC, MCP, CLIENT.                                                       | Complete client-simulator consent; demonstrate read-only denials, approved writes, refresh/revoke, localized workflows and supported rich-view/text fallback.      |
+| R3        | Mail/calendar foundations and Google Calendar/Meet.               | MAIL, CAL, GOOG.                                                          | Create/edit/cancel and synchronize synthetic events, including all-day dates, recurrence, guests, conflicts and conference lifecycle in FA/DE.                     |
+| R4        | Microsoft 365/Teams and Zoom.                                     | MS, ZOOM.                                                                 | Demonstrate each supported provider workflow and its ownership, entitlement and failure behavior independently.                                                    |
+| R5        | Supported developer integrations and advanced Slack interaction.  | API, AUTO, SLKX.                                                          | Use scoped REST/GraphQL clients, signed events and automation steps; verify a signed user-initiated Slack action cannot exceed CRM access.                         |
+| R6        | Independent provider tracks and privately installed applications. | EXP, SDK.                                                                 | Ship selected providers independently and install/update/disable/uninstall a reference private app in real isolation.                                              |
+| R7        | Operational marketplace and public distribution, when chosen.     | STORE plus applicable OPS/QA/OSS release gates.                           | Review app permissions, install/configure, review an update, recover a failed migration and remove the app; public hosting/publication require their own evidence. |
+| IR1       | Approved early independent mail (P0).                             | MAIL, reviewed CONN contracts, UX/QA/OPS.                                 | Preserve Gmail and complete independent IMAP/SMTP workflows, migration, recovery and FA/DE/EN acceptance.                                                          |
+| IR2       | Initial qualified Iranian SMS after mail (P0).                    | SMS common domain and initial candidate; CONN/EVT/UX foundations.         | Demonstrate supported sending, receipt/inbound behavior, unknown-outcome recovery and safe offboarding.                                                            |
+| IR3       | Approved operational tranche and final SMS expansion (P1).        | MS mail-only path, selected EXP PBX/accounting; remaining SMS candidates. | Reuse the shared platform; deliver as many independently verifiable providers as practical, with per-profile evidence and no unsupported claims.                   |
+| CROSS     | Quality, localization, operations and maintenance throughout.     | UX, OPS, QA, OSS.                                                         | Every milestone includes current localized workflows, tests, diagnostics, recovery and documented support boundaries.                                              |
 
 ```mermaid
 flowchart LR
@@ -95,6 +110,10 @@ flowchart LR
   R1 --> EXP["R6: selected provider tracks"]
   R5 --> EXP
   SDK --> R7["R7: marketplace"]
+  R0 --> IR1["IR1: independent mail first"]
+  R1 --> IR1
+  IR1 --> IR2["IR2: initial qualified SMS"]
+  IR2 --> IR3["IR3: approved operations and final SMS expansion"]
 ```
 
 The graph shows major dependencies. Package-level prerequisites are in the task register and
@@ -106,6 +125,8 @@ A supported release still requires its own applicable external gate.
 R2 engineering can proceed after ARCH while R1 is developed. Each EXP provider has an independent
 specify, implement, local-test and live-test chain; one provider's approval does not block another.
 Extra providers do not block MCP or the app SDK just because they share a later release label.
+
+IR1/IR2/IR3 describe the approved parallel local-delivery slice. The R1 arrow means reviewed CONN/EVT foundations, not completion of Slack or unrelated provider/live gates. See the coordination amendment for exact task-level exceptions.
 
 ## First execution batch
 
