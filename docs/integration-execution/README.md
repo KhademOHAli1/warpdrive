@@ -18,7 +18,9 @@ restore is verified. Origin still points to a local auth checkout. No push, merg
 public deployment or provider installation is implied by local execution.
 
 BASE and ARCH are complete as their recorded runtime-baseline/design-review tasks.
-CONN-001 and QA-001 are also complete: 26 of 446 tasks, with CONN-002/003 in progress.
+CONN-001 through CONN-003 and QA-001 are also complete: **28 of 446 tasks**,
+with 418 remaining planned. [Current provider foundation qualification](provider-contract-qualification.md)
+records the exact source and evidence.
 Design closure does not implement their future grant, event, lifecycle or sandbox behavior.
 
 ## BASE evidence

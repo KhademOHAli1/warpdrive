@@ -69,7 +69,12 @@ BASE and ARCH have their own evidence in the live register. Architecture closure
 review only: grant/capability enforcement, the richer lifecycle, transactional outbox,
 real app sandbox and client-trust implementation remain open. Read `architecture-review.md`
 and its three linked contracts before their implementation. CONN-001 source seams and
-QA-001 evidence taxonomy are closed; provider contracts and registry are being qualified.
+QA-001 evidence taxonomy, CONN-002 typed contracts and CONN-003 registry are closed.
+Their current qualification is `provider-contract-qualification.md`: 5,856 unit tests,
+116 applicable PostgreSQL tests, build/type/lint/i18n/worker/UI checks and ten actual
+local-service smoke checks passed on source `89adc81`. Existing Slack transport still
+needs test-first adoption of the contract; generic fixture success is not real-provider
+conformance. The CONN package lifecycle exit and other implementation tasks remain open.
 
 Continue UX/QA fixture/journey foundations and the CONN/EVT/Slack vertical slice. Reuse the
 persisted workflow engine and pg-boss, preserving NOTIFY behavior. The workflow peer now has
