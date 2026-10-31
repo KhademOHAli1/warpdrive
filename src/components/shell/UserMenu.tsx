@@ -15,10 +15,11 @@ import { APPEARANCE_DEFAULT, type Appearance } from "@/features/theme/appearance
 import { useAppearanceChoice } from "@/features/theme/useAppearanceChoice";
 import { avatarColorClass, initials } from "@/lib/avatar";
 import { cn } from "@/lib/utils";
+import { readCsrfToken } from "@/utils/csrfCookie";
 import styles from "./TopBar.module.css";
 
-// Language lives in personal settings. Keep sign-out a plain anchor
-// so the router cannot prefetch it while the user is only opening their account menu.
+// Language lives in personal settings. Logout is a CSRF-protected POST; opening or
+// prefetching the account menu must never end a session.
 export function UserMenu({
   userId,
   userName,
@@ -78,12 +79,19 @@ export function UserMenu({
             {account.settings}
           </Link>
         </DropdownMenuItem>
-        <DropdownMenuItem asChild className="gap-2.5 rounded-md px-2.5 py-2 text-muted-foreground">
-          <a href="/auth/logout">
-            <LogOut aria-hidden="true" className="h-4 w-4 text-muted-foreground" />
-            {account.logout}
-          </a>
-        </DropdownMenuItem>
+        <form action="/auth/logout" method="post">
+          <input type="hidden" name="csrfToken" value={readCsrfToken() ?? ""} />
+          <DropdownMenuItem
+            asChild
+            onSelect={(event) => event.preventDefault()}
+            className="gap-2.5 rounded-md px-2.5 py-2 text-muted-foreground"
+          >
+            <button type="submit" className="w-full">
+              <LogOut aria-hidden="true" className="h-4 w-4 text-muted-foreground" />
+              {account.logout}
+            </button>
+          </DropdownMenuItem>
+        </form>
         <DropdownMenuSeparator className="my-1" />
         <AppearanceMenuSection choice={appearanceChoice} />
       </DropdownMenuContent>

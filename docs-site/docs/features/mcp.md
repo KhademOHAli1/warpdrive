@@ -57,9 +57,10 @@ https://<your-domain>/api/mcp
 ```
 
 Warpdrive is a full OAuth 2.1 authorization server: it handles discovery, dynamic
-client registration, the authorization code flow, and PKCE (S256), and it delegates the
-actual login to your existing Google sign-in. So connecting is a one-click "sign in and
-approve", with no API keys to copy.
+client registration, the authorization code flow, and PKCE (S256). Sign in using a method
+enabled for your Warpdrive installation, complete any required MFA, then review and approve
+the client's consent request. Administrators always require strong authentication. There
+are no API keys to copy.
 
 To connect from Claude or Claude Desktop:
 
@@ -123,3 +124,7 @@ Open **Settings**, then **Connected apps**. Each connected client is listed with
 connected and when it was last used. Select **Revoke** to invalidate all of its access
 and refresh tokens for your account. The client must complete the sign-in again before
 it can reach Warpdrive. You can also remove the connector from the client's own settings.
+
+Authentication upgrades, account recovery and stricter MFA policies can also revoke existing
+grants. Reconnect the client, complete the required sign-in and MFA steps, and approve a new
+consent request before it can access the workspace again.

@@ -18,6 +18,7 @@ import {
   setUserActiveAction,
   setUserAdminAction,
 } from "@/features/identity/actions/users";
+import { IdentityActionError } from "@/features/identity/IdentityActionError";
 import { settingsIdentityError } from "@/features/identity/settingsMessages";
 import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import { readCsrfToken } from "@/utils/csrfCookie";
@@ -130,11 +131,7 @@ export function UserRowControls({
           )}
         </DropdownMenuContent>
       </DropdownMenu>
-      {error !== null && (
-        <span role="alert" className="text-xs text-red-600">
-          {error}
-        </span>
-      )}
+      {error !== null && <IdentityActionError message={error} className="text-xs text-red-600" />}
     </span>
   );
 }

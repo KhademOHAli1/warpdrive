@@ -52,22 +52,41 @@ describe("listActivityRows filter predicates", () => {
     });
   });
 
-  it("from/to narrows dueAt to an inclusive window (gte lower bound, lte upper bound)", async () => {
+  it.each([
+    {
+      zone: undefined,
+      label: "default UTC",
+      lower: "2026-07-10T00:00:00.000Z",
+      upper: "2026-07-12T23:59:59.999Z",
+    },
+    {
+      zone: "Europe/Berlin",
+      label: "Europe/Berlin",
+      lower: "2026-07-09T22:00:00.000Z",
+      upper: "2026-07-12T21:59:59.999Z",
+    },
+    {
+      zone: "Asia/Tehran",
+      label: "Asia/Tehran",
+      lower: "2026-07-09T20:30:00.000Z",
+      upper: "2026-07-12T20:29:59.999Z",
+    },
+  ])("from/to includes both civil-day boundaries in $label", async ({ zone, lower, upper }) => {
     await withTestDb(async (db) => {
       const u = await seedUser(db);
       const typeId = await callTypeId(db);
       const from = "2026-07-10";
       const to = "2026-07-12";
-      // Mirror the production code's own boundary construction (new Date(`${d}T00:00:00`)) so the
-      // comparison is exact regardless of the machine's local timezone.
-      const lowerMs = new Date(`${from}T00:00:00`).getTime();
-      const upperMs = new Date(`${to}T23:59:59`).getTime();
+      // Explicit instants describe these civil-day boundaries independently of the host zone
+      // and the production conversion. The final millisecond of the end day is included.
+      const lowerMs = new Date(lower).getTime();
+      const upperMs = new Date(upper).getTime();
 
       await createActivity(
         db,
         actor(u.id),
         minimalActivityInput(typeId, "Just before window", {
-          dueAt: new Date(lowerMs - 1000).toISOString(),
+          dueAt: new Date(lowerMs - 1).toISOString(),
         }),
         sig(),
       );
@@ -91,14 +110,21 @@ describe("listActivityRows filter predicates", () => {
         db,
         actor(u.id),
         minimalActivityInput(typeId, "Just after window", {
-          dueAt: new Date(upperMs + 1000).toISOString(),
+          dueAt: new Date(upperMs + 1).toISOString(),
         }),
         sig(),
       );
 
-      const rows = await listActivityRows(db, actor(u.id), { ...noFilter, from, to }, sig());
+      const rows = await listActivityRows(
+        db,
+        actor(u.id),
+        { ...noFilter, from, to },
+        sig(),
+        undefined,
+        zone,
+      );
       const subjects = rows.map((r) => r.subject);
-      // Boundaries included (gte/lte), one tick outside on either side excluded.
+      // Both civil dates included, one millisecond outside on either side excluded.
       expect(subjects).toContain("At lower boundary");
       expect(subjects).toContain("At upper boundary");
       expect(subjects).not.toContain("Just before window");

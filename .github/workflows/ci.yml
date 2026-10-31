@@ -34,6 +34,8 @@ jobs:
         run: bun run lint
       - name: Run app unit tests
         run: bun run test:unit --maxWorkers=2
+      - name: Run app PostgreSQL integration tests
+        run: bun run test:integration --maxWorkers=2
       - name: Build app with isolated validation placeholders
         run: bun run build
         env:
@@ -43,7 +45,7 @@ jobs:
           GOOGLE_OAUTH_CLIENT_ID: ci-build-client
           GOOGLE_OAUTH_CLIENT_SECRET: ci-build-secret
           GOOGLE_WORKSPACE_DOMAIN: build.example.invalid
-          BASE_URL: http://127.0.0.1:3000
+          BASE_URL: https://build.example.invalid
           WS_TICKET_SECRET: ci_build_placeholder_ws_ticket_secret_0123456789
           WS_PUBLIC_URL: ws://127.0.0.1:8080
           NEXT_PUBLIC_WS_URL: ws://127.0.0.1:8080
@@ -55,6 +57,10 @@ jobs:
           MCP_ENABLED: "true"
           SEED_ADMIN_EMAIL: build@example.invalid
           ALLOW_FIRST_LOGIN_ADMIN: "false"
+          AUTH_SECRET: ci_build_only_auth_secret_not_for_deployment_0123456789
+          AUTH_MAIL_TRANSPORT: smtp
+          AUTH_SMTP_HOST: smtp.example.invalid
+          AUTH_MAIL_FROM: build@example.invalid
           DISABLE_TELEMETRY: "true"
           DISABLE_UPDATE_CHECK: "true"
           NEXT_TELEMETRY_DISABLED: "1"

@@ -11,11 +11,19 @@ const { guardCsrf } = vi.hoisted(() => ({ guardCsrf: vi.fn(() => Promise.resolve
 const { createContext } = vi.hoisted(() => ({
   createContext: vi.fn(() => Promise.resolve({ actor: { id: "admin-1", type: "admin" } })),
 }));
-const { inviteUser } = vi.hoisted(() => ({ inviteUser: vi.fn() }));
+const { issueInvitation } = vi.hoisted(() => ({ issueInvitation: vi.fn() }));
+const { resolveWorkflowSession } = vi.hoisted(() => ({
+  resolveWorkflowSession: vi.fn(() => Promise.resolve({})),
+}));
 
 vi.mock("./shared", () => ({ guardCsrf }));
 vi.mock("@/server/trpc/context", () => ({ createContext }));
-vi.mock("../invite.service", () => ({ inviteUser }));
+vi.mock("@/features/auth/management/invitations", () => ({ issueInvitation }));
+vi.mock("@/features/auth/better/sessionPolicy", () => ({ resolveWorkflowSession }));
+vi.mock("@/features/auth/management/mail", () => ({
+  dispatchAuthMail: () => Promise.resolve({ sent: 1, failed: 0 }),
+}));
+vi.mock("next/headers", () => ({ headers: () => Promise.resolve(new Headers()) }));
 
 import { inviteUserAction } from "./invite";
 
@@ -23,9 +31,7 @@ const VALID_INPUT = { email: "new@example.com", name: "New Person", isAdmin: fal
 
 describe("inviteUserAction serialization (IDENTITY-02)", () => {
   it("returns a plain { error: { id } } (not an AppError) that survives structuredClone", async () => {
-    inviteUser.mockResolvedValueOnce(
-      err(new AppError(ERROR_IDS.AUTH_EMAIL_TAKEN, "email already registered", { email: "x" })),
-    );
+    issueInvitation.mockResolvedValueOnce(err("email_taken"));
 
     const result = await inviteUserAction("csrf", VALID_INPUT);
 
@@ -50,7 +56,7 @@ describe("inviteUserAction serialization (IDENTITY-02)", () => {
   });
 
   it("passes the created userId through on success", async () => {
-    inviteUser.mockResolvedValueOnce(ok({ userId: "u-123" }));
+    issueInvitation.mockResolvedValueOnce(ok({ userId: "u-123", invitationId: "i-123" }));
     const result = await inviteUserAction("csrf", VALID_INPUT);
     expect(result.ok === true && result.userId).toBe("u-123");
   });

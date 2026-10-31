@@ -8,6 +8,10 @@ export const ERROR_IDS = {
   AUTH_BOOTSTRAP_NO_SEED: "E_AUTH_004", // first-run with no SEED_ADMIN_EMAIL in prod
   AUTH_EMAIL_TAKEN: "E_AUTH_005", // inviteUser: email already belongs to an existing/placeholder user
   AUTH_INVITE_INPUT_INVALID: "E_AUTH_006", // inviteUserAction input failed Zod validation
+  AUTH_SESSION_STORAGE_INVALID: "E_AUTH_007", // unsupported session token storage or lookup shape
+  AUTH_RECOVERY_STORAGE_INVALID: "E_AUTH_008", // malformed hash-only recovery record
+  AUTH_POLICY_DENIED: "E_AUTH_009", // invitation, freshness or assurance policy rejected access
+  AUTH_MAIL_ORIGIN_INVALID: "E_AUTH_010", // authentication link does not use the configured origin
   // PERM
   PERM_DENIED: "E_PERM_001", // channel subscribe / action denied: not visible
   PERM_SELF_ESCALATION: "E_PERM_002", // non-admin tried to escalate via permission system

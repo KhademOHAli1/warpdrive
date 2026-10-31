@@ -54,17 +54,28 @@ export async function makeTestDb(): Promise<TestDb> {
   // count well under the container's max_connections.
   const pool = new Pool({ connectionString: url, max: 4 });
   const db = drizzle(pool, { schema });
+  let closing: Promise<void> | null = null;
+  const dispose = async (): Promise<void> => {
+    await pool.end();
+    try {
+      // Reclaim schema clones during large runs instead of accumulating them until teardown.
+      await admin.query(`DROP DATABASE "${name}"`);
+    } catch (error) {
+      // A test may own a separate LISTEN/NOTIFY client. Retain its database rather than
+      // terminating that connection; the disposable container will reclaim it at teardown.
+      if (typeof error === "object" && error !== null && "code" in error && error.code === "55006")
+        return;
+      throw error;
+    }
+  };
 
   return {
     db,
     url,
     pool,
-    // close() only ends this test's pool; the cloned database itself is left for the disposable
-    // container to reclaim on stop. Dropping it here would race a FORCE-drop against connections a
-    // test opened on `url` (e.g. a LISTEN/NOTIFY client), surfacing a 57P01 on their error handler.
-    // Cloned databases hold only the empty migrated schema, so hundreds cost negligibly.
-    close: async () => {
-      await pool.end();
+    close: () => {
+      closing ??= dispose();
+      return closing;
     },
   };
 }

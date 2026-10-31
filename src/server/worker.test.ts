@@ -101,6 +101,8 @@ describe("registerAllJobs", () => {
       expect(queueNames).toContain(PGBOSS_QUEUE_EMAIL_SYNC);
       expect(queueNames).toContain(PGBOSS_QUEUE_EMAIL_SEND);
       expect(queueNames).toContain(PGBOSS_QUEUE_FILE_REAPER);
+      expect(queueNames).toContain("auth-maintenance");
+      expect(fakeBoss.schedules).toContainEqual({ name: "auth-maintenance", cron: "* * * * *" });
 
       const scheduled = fakeBoss.schedules.find((s) => s.name === PGBOSS_QUEUE_FILE_REAPER);
       expect(scheduled).toBeDefined();

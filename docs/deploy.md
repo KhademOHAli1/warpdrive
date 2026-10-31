@@ -14,8 +14,9 @@ thing. Design: `docs/superpowers/specs/2026-07-07-docker-single-box-deploy-desig
   box. The browser uploads files (CSV import, avatars, attachments) directly to MinIO through this
   host, so it needs its own hostname, cert, and `MINIO_ENDPOINT` value.
 - Ports 80 and 443 open to the internet (Caddy needs 80 for the ACME challenge).
-- A Google OAuth client (Workspace) with the redirect URI set to
-  `https://<your-domain>/api/gmail/oauth/callback` and the app's sign-in callback.
+- Working SMTP delivery for invitations, verification, recovery and security notices.
+- Optional Google, Microsoft or OIDC credentials for federated sign-in. Google mailbox consent
+  remains separate, at `https://<your-domain>/api/gmail/oauth/callback`.
 
 ## 1. Configure `.env`
 
@@ -25,17 +26,21 @@ cp .env.example .env
 
 Fill it in. The deployment-specific values:
 
-| Var                       | Value on the box                                                         |
-| ------------------------- | ------------------------------------------------------------------------ |
-| `APP_DOMAIN`              | `crm.example.com` (the public hostname)                                  |
-| `ACME_EMAIL`              | an address for Let's Encrypt expiry notices                              |
-| `BASE_URL`                | `https://crm.example.com`                                                |
-| `NEXT_PUBLIC_WS_URL`      | `wss://crm.example.com/_ws`                                              |
-| `WS_PUBLIC_URL`           | `ws://ws:8080` (internal compose address)                                |
-| `MINIO_ENDPOINT`          | `https://s3.crm.example.com` (public: the browser uploads directly here) |
-| `DATABASE_URL`            | `postgres://warpdrive:warpdrive@postgres:5432/warpdrive`                 |
-| `SEED_ADMIN_EMAIL`        | the first admin's email (required in production)                         |
-| `ALLOW_FIRST_LOGIN_ADMIN` | `false` (the env boundary rejects `true` in production)                  |
+| Var                       | Value on the box                                                            |
+| ------------------------- | --------------------------------------------------------------------------- |
+| `APP_DOMAIN`              | `crm.example.com` (the public hostname)                                     |
+| `ACME_EMAIL`              | an address for Let's Encrypt expiry notices                                 |
+| `BASE_URL`                | `https://crm.example.com`                                                   |
+| `NEXT_PUBLIC_WS_URL`      | `wss://crm.example.com/_ws`                                                 |
+| `WS_PUBLIC_URL`           | `ws://ws:8080` (internal compose address)                                   |
+| `MINIO_ENDPOINT`          | `https://s3.crm.example.com` (public: the browser uploads directly here)    |
+| `DATABASE_URL`            | `postgres://warpdrive:warpdrive@postgres:5432/warpdrive`                    |
+| `SEED_ADMIN_EMAIL`        | the first admin's email (required in production)                            |
+| `ALLOW_FIRST_LOGIN_ADMIN` | `false` (the env boundary rejects `true` in production)                     |
+| `AUTH_SECRET`             | a dedicated random secret of at least 32 characters, stable across restarts |
+| `AUTH_MAIL_TRANSPORT`     | `smtp` in production                                                        |
+| `AUTH_MAIL_FROM`          | your verified sender address                                                |
+| `AUTH_SMTP_HOST`          | your SMTP relay hostname, with port/TLS/user/password configured as needed  |
 
 Generate the secrets:
 
@@ -44,12 +49,15 @@ Generate the secrets:
 openssl rand -base64 32          # -> TOKEN_ENCRYPTION_KEY
 # a long random string (>= 32 chars) for WS tickets
 openssl rand -hex 32             # -> WS_TICKET_SECRET
+# a separate random secret for Better Auth
+openssl rand -hex 32             # -> AUTH_SECRET
 # MinIO credentials
 openssl rand -hex 16             # -> MINIO_ACCESS_KEY / MINIO_SECRET_KEY
 ```
 
 Hardening: any of `DATABASE_URL`, `TOKEN_ENCRYPTION_KEY`, `WS_TICKET_SECRET`,
-`GOOGLE_OAUTH_CLIENT_SECRET`, `MINIO_SECRET_KEY` may instead be supplied as `<VAR>_FILE` pointing
+`GOOGLE_OAUTH_CLIENT_SECRET`, `MINIO_SECRET_KEY`, `AUTH_SECRET`, `AUTH_SMTP_PASSWORD`,
+`AUTH_MICROSOFT_CLIENT_SECRET` and `AUTH_OIDC_PROVIDERS` may instead be supplied as `<VAR>_FILE` pointing
 at a file path (Docker secret), and the app reads the file contents at boot.
 
 ## 2. Bring it up
@@ -71,9 +79,18 @@ curl -fsS https://<APP_DOMAIN>/api/health   # -> {"ok":true}
 
 ## 3. First admin login
 
-`SEED_ADMIN_EMAIL` is bootstrapped as the initial admin. Sign in with that Google account through
-the normal OAuth flow; it is promoted on first login. `ALLOW_FIRST_LOGIN_ADMIN` stays `false` in
-production (the env boundary enforces this).
+Use the host-only bootstrap command to queue the initial invitation to `SEED_ADMIN_EMAIL`:
+
+```sh
+docker compose exec app bun dist/auth-operator.mjs bootstrap --email owner@example.com --name "Workspace owner" --locale fa --confirm
+```
+
+The command refuses an established workspace and never creates a password or an authenticated
+session. Complete invitation acceptance, email verification and mandatory strong authentication
+through the normal UI. `ALLOW_FIRST_LOGIN_ADMIN` stays `false` in production. The
+[operator runbook](auth-operations.md) documents recovery, delivery and emergency handling.
+Before upgrading an existing installation, follow the
+[authentication migration report](auth-implementation-report.md).
 
 ## Operating the box
 
@@ -124,8 +141,13 @@ is missing, and because two items are load-bearing assumptions rather than setti
 
 Session cookies are now stored as a sha256 digest rather than in the clear, which means existing
 session rows cannot be carried forward (the pre-image is by construction unrecoverable). The
-migration deletes them. Everyone signed in is signed out once and logs back in through Google
-SSO. Nothing else is affected.
+migration deletes them. Users sign in again with a configured authentication method.
+
+The Better Auth cutover also revokes pre-cutover sessions and MCP grants. Existing CRM UUIDs,
+permissions and preferences are retained. Administrators finish strong authentication before
+receiving application access; MCP clients obtain fresh consent. Old verification links require
+a new message. Follow the [migration report](auth-implementation-report.md) and
+[operator runbook](auth-operations.md) when planning this upgrade.
 
 ## Local development against this stack
 

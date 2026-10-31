@@ -23,3 +23,6 @@ docs/parity-captures/
 
 # Impeccable critique snapshots: internal design audits, never publish
 .impeccable/
+
+# Optional project-local runtime; install from the version declared in package.json.
+.runtime/

@@ -30,6 +30,7 @@ export default tseslint.config(
       "site/**",
       "docs-site/**",
       ".claude/**",
+      ".runtime/**",
     ],
   },
   ...tseslint.configs.recommendedTypeChecked,

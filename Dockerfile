@@ -1,12 +1,12 @@
 # syntax=docker/dockerfile:1
 
 # Slim multi-stage build. The runtime image ships a PROD-ONLY node_modules (no devDeps, no tsx,
-# no test tooling), the Next build output, the three esbuild-transpiled server entrypoints, and
+# no test tooling), the Next build output, the server/operator entrypoints, and
 # the migration SQL. The workers are transpiled (not inlined): deps like jsdom read their own data
 # files via __dirname-relative reads, so they must stay in a real node_modules, not a bundle.
 # See docs/superpowers/specs/2026-07-07-docker-single-box-deploy-design.md.
 
-FROM oven/bun:1.4.2 AS base
+FROM oven/bun:1.4.4 AS base
 WORKDIR /app
 
 # --- deps: full install (build needs devDeps: next, esbuild, drizzle types) ---
@@ -48,7 +48,7 @@ RUN NODE_ENV=production \
     GOOGLE_OAUTH_CLIENT_ID=build \
     GOOGLE_OAUTH_CLIENT_SECRET=build \
     GOOGLE_WORKSPACE_DOMAIN=build.example.com \
-    BASE_URL=http://localhost:3000 \
+    BASE_URL=https://build.example.invalid \
     WS_TICKET_SECRET=build_placeholder_ws_ticket_secret_0123456789 \
     WS_PUBLIC_URL=ws://localhost:8080 \
     MINIO_ENDPOINT=http://localhost:9000 \
@@ -58,6 +58,9 @@ RUN NODE_ENV=production \
     OAUTH_SIGNING_KEY=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA= \
     SEED_ADMIN_EMAIL=build@example.com \
     ALLOW_FIRST_LOGIN_ADMIN=false \
+    AUTH_SECRET=build_only_placeholder_auth_secret_not_for_deployment_0123456789 \
+    AUTH_MAIL_TRANSPORT=smtp \
+    AUTH_SMTP_HOST=smtp.example.invalid \
     bun run build:docker
 
 # --- runtime: minimal, non-root ---

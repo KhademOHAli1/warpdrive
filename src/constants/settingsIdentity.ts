@@ -31,6 +31,8 @@ export const IDENTITY_SETTINGS_STRINGS = {
 // raw internal wording ever leaks to the UI.
 export const IDENTITY_ERROR_MESSAGES = {
   generic: "Something went wrong. Please try again.",
+  freshAuthentication:
+    "Confirm your identity again in Settings > Security, then retry this change.",
   session: "Your session looks stale. Refresh the page and try again.",
   permission: "You do not have permission to do that.",
   selfPromote: "You can't grant yourself admin.",
@@ -47,6 +49,7 @@ type ErrorKey = keyof typeof IDENTITY_ERROR_MESSAGES;
 // Maps the raw error strings thrown by the identity guards/actions to a message key.
 const RAW_ERROR_TO_KEY: Record<string, ErrorKey> = {
   unauthorized: "permission",
+  fresh_auth_required: "freshAuthentication",
   "permissions.manage required": "permission",
   "admin required to change admin role": "permission",
   "admin required to deactivate users": "permission",

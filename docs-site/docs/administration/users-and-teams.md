@@ -1,63 +1,132 @@
 ---
 sidebar_position: 1
 title: Users and teams
-description: "Invite, deactivate, and reactivate Warpdrive users, promote administrators, and organize people into teams with managers."
+description: "Manage invitation-only accounts, authentication security and recovery, deactivate users safely, and organize teams and managers."
 ---
 
 # Users and teams
 
 ## The first administrator
 
-The account matching `SEED_ADMIN_EMAIL` becomes the first administrator when it signs
-in.
+The deployment operator creates the first administrator with the host-only
+`bootstrap` command described in [Installation](../setup.md#4-bootstrap-the-first-administrator).
+`SEED_ADMIN_EMAIL` defines the intended recipient; signing in with that address
+does not automatically create or promote an account.
 
-Two details are worth knowing, because they look like faults otherwise:
+Bootstrap is locked and one-use. It creates the Regular and Admin permission sets,
+Everyone group, initial pipeline and labels, plus an administrator placeholder and
+an expiring invitation. It refuses an existing user or initialized workspace.
+The recipient must claim the invitation and complete verification and the required
+strong-factor enrollment before application access.
 
-- **Bootstrap stays open until that specific account signs in.** Other people who sign
-  in first are created as ordinary users and do not close the election. Nobody is
-  accidentally promoted by being early.
-- **The election is guarded by a database lock**, so simultaneous logins cannot
-  produce two administrators.
-
-The first sign-in also seeds the defaults: the Regular and Admin permission sets, an
-"Everyone" visibility group, a default pipeline with stages, and the default labels.
+An expired, unclaimed first-administrator invitation can be renewed only with the
+host's `resend-bootstrap` command. Renewal keeps the original account and recipient;
+it cannot replace the administrator or reopen bootstrap.
 
 ## Users
 
-`/settings/users` lists everyone, filterable by status.
+`/settings/users` lists everyone, filterable by status. `/settings/security-admin`
+adds searchable account details, invitation management, delivery status, recovery
+requests, authentication policy, and the security activity log. Sensitive changes
+require a fresh identity confirmation. If prompted, confirm your identity in
+`/settings/security`, then retry the action.
 
 ![The users list, showing active, invited, and deactivated accounts](/img/screenshots/users/list.png)
 
 ### Inviting
 
-Inviting creates a placeholder account with no Google identity attached, assigns a
-permission set, and puts the user in the Everyone group.
+Inviting creates a placeholder account, assigns a permission set, joins the user to
+the Everyone group, and queues a localized invitation email. The invitation expires
+after 72 hours and can be used only once. Its bearer token is stored as a hash;
+delivery content is encrypted in the outbox.
 
-The placeholder is claimed on the invitee's first verified Google sign-in with a
-matching address. Until then it shows as invited.
+The invitee opens the link and joins with the exact invited email address using a
+password or a configured provider. Password-based joins must complete email
+verification before signing in. Provider admission also checks the invitation and
+the returned address. A shared email domain alone never grants access.
 
-### Accounts are bound to Google identity, not email
+Resending creates a new invitation and invalidates previous links; revoking blocks
+an unclaimed invitation. Delivery retries do not renew an expired invitation.
+Review email delivery separately from invitation acceptance: a queued message may
+still need SMTP or worker attention. Invitations and authentication messages support
+Persian, German, and English.
 
-A user is identified by their stable Google account, not their address. Changing
-someone's email in Google updates their existing Warpdrive profile rather than
-creating a second user.
+### Account identity and sign-in methods
 
-The reverse is refused: an address reused by a **different** Google account is
-rejected, unless the existing record is an unclaimed invitation. This is what stops a
-recycled address from inheriting a departed colleague's records.
+The stable CRM user UUID remains the account's identity and record owner across
+authentication methods. Existing Google identities are migrated using their stored
+provider subjects while preserving those UUIDs. A matching email address never
+automatically merges two accounts or attaches a different provider identity.
+
+Users manage password, passkeys, authenticator, recovery codes, linked providers,
+and sessions in `/settings/security`. Adding a provider is an explicit action by a
+verified, freshly authenticated account with a matching email. Verified email
+changes update the existing profile; they do not transfer another account's data.
+
+Google, Microsoft, and OIDC sign-in are optional deployment choices. Google sign-in
+and Gmail mailbox connection have separate consent flows and callbacks. Connecting
+Gmail does not create a CRM user or bypass an invitation.
+
+### Authentication policy
+
+Administrators always require a verified strong factor, either an authenticator
+challenge or a passkey with user verification. An administrator can require it for
+everyone in Security administration. Users who have enabled two-factor
+authentication must also complete it at sign-in.
+
+The default policy is a 30-minute idle limit, a seven-day absolute session lifetime,
+and a five-minute fresh-authentication window for sensitive changes. Tightening the
+MFA policy or promoting a user to administrator invalidates the affected existing
+MCP grants, so clients must obtain fresh authorization under the new requirement.
 
 ### Deactivating
 
-Deactivating a user revokes all of their sessions in the same transaction, so access
-ends immediately rather than at session expiry.
+Deactivation ends local access in the same transaction: application sessions and
+MCP access/refresh grants are revoked, outstanding authorization codes and invitations
+are invalidated, and the mailbox is disconnected. The worker retries remote Gmail
+revocation separately, after local access has ended. The account and CRM history
+remain available for administration and ownership transfer.
 
 Two guards apply:
 
 - You cannot deactivate yourself.
-- The **last active administrator** cannot be deactivated or demoted, which prevents
-  locking the deployment out of its own administration.
+- The **last established active administrator** cannot be deactivated or demoted.
+  An unclaimed invited administrator does not count as a replacement.
 
-Reactivation is administrator-only and does not restore the old sessions.
+Reactivation is administrator-only. It does not restore old sessions, MCP grants,
+or mailbox connections. Account security changes are audited and relevant changes
+queue a localized security notice to the affected user.
+
+### Lost passwords, lost factors, and account closure
+
+Use the normal password-reset flow for a forgotten password. Its email link expires
+after 15 minutes; a password reset does not remove a required authenticator or passkey.
+
+For lost factors, the owner submits a recovery request. An independent active
+administrator reviews it in Security administration. Approval records the review;
+it does not remove factors. A deployment operator then verifies ownership through a
+trusted process and completes that approved case from the host:
+
+```sh
+docker compose exec app bun dist/auth-operator.mjs recover \
+  --request-id APPROVED_CASE_UUID --confirm
+```
+
+Completion removes registered factors, revokes existing access and reusable
+integration grants, and queues both a security notice and the normal password-reset
+message to the verified owner's address. It preserves the CRM UUID, permissions,
+provider subjects, and record ownership. Resolved cases cannot be replayed.
+
+A sole locked-out administrator has a separate host-only emergency procedure that
+requires explicit ownership review and additional flags. There is no browser
+self-approval or operator-selected password. Follow the
+[authentication operator runbook](https://github.com/KhademOHAli1/warpdrive/blob/main/docs/auth-operations.md)
+for the ordinary and emergency procedures.
+
+Account-closure requests are also reviewed in Security administration. Resolving an
+approved closure deactivates the account under the same self/last-administrator
+protections; it does not delete CRM history. Transfer record ownership separately
+when needed.
 
 ## Teams
 

@@ -9,6 +9,7 @@ import {
 } from "@/features/identity/users.service";
 import { createContext } from "@/server/trpc/context";
 import { err, type Result } from "@/types/result";
+import { requireFreshIdentityAction } from "./fresh";
 import { guardCsrf, runWithActor } from "./shared";
 import { SIG } from "./sig";
 
@@ -20,6 +21,8 @@ export async function assignPermissionSetAction(
   if (!csrfOk.ok) return csrfOk;
   const parsed = assignSetInput.safeParse(raw);
   if (!parsed.success) return err("invalid input");
+  const fresh = await requireFreshIdentityAction();
+  if (!fresh.ok) return fresh;
   const { actor } = await createContext();
   return runWithActor(actor, (a) => assignPermissionSet(db, a, parsed.data, SIG()));
 }
@@ -32,6 +35,8 @@ export async function setUserAdminAction(
   if (!csrfOk.ok) return csrfOk;
   const parsed = setAdminInput.safeParse(raw);
   if (!parsed.success) return err("invalid input");
+  const fresh = await requireFreshIdentityAction();
+  if (!fresh.ok) return fresh;
   const { actor } = await createContext();
   return runWithActor(actor, (a) => setUserAdmin(db, a, parsed.data, SIG()));
 }
@@ -44,6 +49,8 @@ export async function setUserActiveAction(
   if (!csrfOk.ok) return csrfOk;
   const parsed = setActiveInput.safeParse(raw);
   if (!parsed.success) return err("invalid input");
+  const fresh = await requireFreshIdentityAction();
+  if (!fresh.ok) return fresh;
   const { actor } = await createContext();
   return runWithActor(actor, (a) => setUserActive(db, a, parsed.data, SIG()));
 }
