@@ -57,7 +57,9 @@ Evidence on the merged Better Auth baseline:
 - Type generation/typecheck and lint passed. Lint retains the existing eleven cookie
   warnings. The broad unit run first caught a page-title token mismatch, corrected and
   verified; a new red test also caught blank task titles, now rejected before publication.
-- After the final layout changes, **98 focused tests across twelve files passed**.
+- After the final editor changes, **99 focused tests across thirteen files passed**.
+  A regression test verifies that saved drafts adopt the server's normalized content and
+  correctly clear the unsaved-change indicator.
 - Application production build: **passed** with the current editor and merged authentication,
   using ignored synthetic build-only configuration.
 - Worker/WebSocket/operator bundles: **passed**, including the workflow handlers.

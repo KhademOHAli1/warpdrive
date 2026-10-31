@@ -62,6 +62,7 @@ export function useWorkflowEditor(initial: WorkflowDetail) {
     }
     setRevision(result.value.revision);
     setName(result.value.name);
+    setDefinition(result.value.draft);
     setSaved(JSON.stringify({ name: result.value.name, definition: result.value.draft }));
     return result.value.revision;
   }
