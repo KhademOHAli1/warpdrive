@@ -94,6 +94,20 @@ Never close a live-provider, public-hosting or publication task with local fixtu
 Those later finite tests need actual selected resources and appropriate authorization;
 they do not block unrelated local foundations or independent provider tracks.
 
+## Authorized mail/platform coordination
+
+Ali's direct human approval for coordinating shared interfaces was verified in the mail
+chat, and the prepared `mail-platform-agreement-proposal.md` was sent there. That file
+contains named ownership, exact proposed projection/control/attempt hooks and exclusive
+mail migration reservation 0085 through 0091. No other writer should allocate that range.
+Peer acknowledgement and an immutable mail handoff are pending; do not claim a two-way
+agreement from a sent message. Preserve accepted/partial/unknown SMTP attempts and native
+mail freshness/generation fences; generic delivery recovery never resubmits accepted DATA.
+Current shared broker/lifecycle/EVT services remain design contracts, not available exports.
+The mail branch now includes auth main refinements at `a1a8f6d`; reconcile that committed
+history separately before later integration and rerun affected gates. No scope expansion,
+mail source adoption, real-provider action or DDL is implied by this coordination.
+
 ## Incoming peer planning amendment
 
 During BASE checkpointing, a peer writer added a planning amendment with 586 slots,
