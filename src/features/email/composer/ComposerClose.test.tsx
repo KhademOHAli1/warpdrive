@@ -37,6 +37,12 @@ vi.mock("@/features/files/serverActions", () => ({
 }));
 vi.stubGlobal("fetch", () => Promise.resolve(new Response(null, { status: 204 })));
 
+vi.mock("../folderActions", () => ({
+  saveDraftAction: () => Promise.resolve({ ok: true, value: { id: "saved-draft" } }),
+  deleteDraftAction: () => Promise.resolve({ ok: true, value: { id: "saved-draft" } }),
+  cancelOutboxAction: () => Promise.resolve({ ok: false, error: { id: "E_GMAIL_017" } }),
+}));
+
 import { Composer } from "./Composer";
 
 describe("Composer: close control", () => {

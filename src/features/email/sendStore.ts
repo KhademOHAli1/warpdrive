@@ -68,9 +68,9 @@ export async function storeOutboundCopy(
 
   const inserted = await db.execute(sql`
     INSERT INTO email_messages
-      (thread_id, account_id, gmail_message_id, direction, from_email, to_emails, cc_emails, subject, snippet, body_html, sent_at, tracking_enabled)
+      (thread_id, account_id, gmail_message_id, provider_message_id, direction, from_email, to_emails, cc_emails, subject, snippet, body_html, sent_at, tracking_enabled)
     VALUES (
-      ${localThreadId}, ${args.accountId}, ${args.gmailMessageId}, 'outbound', ${args.fromEmail},
+      ${localThreadId}, ${args.accountId}, ${args.gmailMessageId}, ${args.gmailMessageId}, 'outbound', ${args.fromEmail},
       ${JSON.stringify(args.input.to)}::jsonb, ${JSON.stringify(args.input.cc ?? [])}::jsonb,
       ${args.input.subject}, ${snippet}, ${args.bodyHtml}, now(), ${args.resolvedTrackingEnabled}
     )
@@ -161,9 +161,9 @@ async function upsertThread(
   // place rather than branching the SQL.
   const visibility = args.visibility ?? null;
   const created = await db.execute(sql`
-    INSERT INTO email_threads (gmail_thread_id, account_id, subject, person_id, deal_id, visibility, last_message_at)
+    INSERT INTO email_threads (gmail_thread_id, provider_thread_id, account_id, subject, person_id, deal_id, visibility, last_message_at)
     VALUES (
-      ${args.gmailThreadId}, ${args.accountId}, ${args.subject}, ${personId}, ${dealId},
+      ${args.gmailThreadId}, ${args.gmailThreadId}, ${args.accountId}, ${args.subject}, ${personId}, ${dealId},
       COALESCE(${visibility}::email_visibility, 'private'), now()
     )
     ON CONFLICT (account_id, gmail_thread_id) DO UPDATE SET updated_at=now()

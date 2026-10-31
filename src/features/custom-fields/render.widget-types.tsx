@@ -6,6 +6,7 @@ export type ControlProps = {
   def: CustomFieldDef;
   value: unknown;
   onChange: (next: unknown) => void;
+  currency?: string;
   hideValidationMessage?: boolean;
 };
 export type RangeValue = { start: string; end: string };

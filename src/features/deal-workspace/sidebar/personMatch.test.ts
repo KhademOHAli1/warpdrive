@@ -90,3 +90,21 @@ describe("findPersonMatches", () => {
     expect(findPersonMatches({ ...EMPTY, email: "steve" }, OPTIONS)).toEqual([]);
   });
 });
+
+it("never treats an explicit foreign country code as the same complete international number", () => {
+  const foreign = { id: "foreign", name: "", emails: [], phones: ["+49 989123456789"] };
+  expect(findPersonMatches({ name: "", email: "", phone: "+98 9123456789" }, [foreign])).toEqual(
+    [],
+  );
+});
+
+it("matches an Iranian national number only using its selected region and keeps multiple candidates for manual review", () => {
+  const a = { id: "a", name: "", emails: [], phones: ["+98 9123456789"] };
+  const b = { ...a, id: "b" };
+  expect(
+    findPersonMatches({ name: "", email: "", phone: "۰۹۱۲۳۴۵۶۷۸۹", phoneCountry: "IR" }, [a, b]),
+  ).toEqual([
+    { option: a, reason: "phone" },
+    { option: b, reason: "phone" },
+  ]);
+});

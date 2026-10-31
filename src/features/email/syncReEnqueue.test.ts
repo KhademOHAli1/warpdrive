@@ -36,6 +36,22 @@ test("queues nothing when a tick for this mailbox is already waiting", async () 
   expect(b.send).not.toHaveBeenCalled();
 });
 
+test("continues bounded backfill promptly but backs off a deferred Sent-copy page", async () => {
+  const b = boss();
+  await reEnqueueSync(b, "acc-1", counter(0).pendingTicks, { more: true });
+  expect(b.send.mock.calls[0]?.[2].startAfter).toBe(1);
+  await reEnqueueSync(b, "acc-2", counter(0).pendingTicks, { more: true, deferred: true });
+  expect(b.send.mock.calls[1]?.[2].startAfter).toBe(5);
+});
+
+test("does not perpetuate jobs after an owner disables the connection", async () => {
+  const b = boss();
+  await reEnqueueSync(b, "acc-1", counter(0).pendingTicks, {
+    isEnabled: () => Promise.resolve(false),
+  });
+  expect(b.send).not.toHaveBeenCalled();
+});
+
 test("a backlog cannot feed itself: many pending ticks still add none", async () => {
   const b = boss();
   await reEnqueueSync(b, "acc-1", counter(10026).pendingTicks);

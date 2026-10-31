@@ -55,6 +55,8 @@ vi.mock("./actions", () => ({
 }));
 vi.mock("@/utils/csrfCookie", () => ({ readCsrfToken: () => "csrf" }));
 
+import { LocaleProvider } from "@/features/i18n/LocaleProvider";
+import { emailMessagesForLocale } from "./emailMessages";
 import { ReaderTopBar } from "./ReaderTopBar";
 
 afterEach(() => {
@@ -76,6 +78,24 @@ it("links Back to the inbox", () => {
   render(<ReaderTopBar threadId="t1" canManage />);
   expect(screen.getByRole("link", { name: /back/i })).toHaveAttribute("href", "/inbox");
 });
+
+it.each(["fa", "de"] as const)(
+  "disables unsupported remote controls while preserving local archive (%s)",
+  (locale) => {
+    const E = emailMessagesForLocale(locale);
+    render(
+      <LocaleProvider locale={locale}>
+        <ReaderTopBar
+          threadId="t1"
+          canManage
+          mailCapabilities={{ read: true, send: true, markRead: false, move: false, trash: false }}
+        />
+      </LocaleProvider>,
+    );
+    expect(screen.getByRole("button", { name: E.delete })).toBeDisabled();
+    expect(screen.getByRole("button", { name: E.archive })).not.toBeDisabled();
+  },
+);
 
 it("archives then returns to the inbox on success", async () => {
   render(<ReaderTopBar threadId="t1" canManage />);

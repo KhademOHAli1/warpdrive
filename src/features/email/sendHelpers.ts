@@ -7,6 +7,7 @@ import type { Db } from "@/db/client";
 import { files } from "@/db/schema";
 import { canActorAccessParent } from "@/features/files/fileAuthz";
 import type { AuthUser } from "@/features/permissions/types";
+import type { DbOrTx } from "@/server/realtime/channelVersions";
 import { err, ok, type Result } from "@/types/result";
 import { assertSignatureOwner } from "./mailboxOwnership";
 import { sanitizeAuthorHtml } from "./sanitizeHtml";
@@ -37,7 +38,7 @@ function extractLinks(html: string): string[] {
 // Apply tracking token rewrites (Phase 2) then append the sanitised signature (Phase 4).
 // Returns the final body string for MIME build and CRM copy storage.
 export async function applyTrackingAndSignature(
-  db: Db,
+  db: DbOrTx,
   args: {
     attemptId: string;
     actorId: string;
@@ -69,7 +70,7 @@ export async function applyTrackingAndSignature(
     await db.execute(sql`
       UPDATE email_send_attempts
       SET payload = jsonb_set(payload, '{html}', ${JSON.stringify(body)}::jsonb)
-      WHERE id=${args.attemptId}
+      WHERE id=${args.attemptId} AND send_started_at IS NULL
     `);
     signal.throwIfAborted();
   }
@@ -81,7 +82,7 @@ export async function applyTrackingAndSignature(
     await db.execute(sql`
       UPDATE email_send_attempts
       SET payload = jsonb_set(payload, '{html}', ${JSON.stringify(body)}::jsonb)
-      WHERE id=${args.attemptId}
+      WHERE id=${args.attemptId} AND send_started_at IS NULL
     `);
     signal.throwIfAborted();
   }

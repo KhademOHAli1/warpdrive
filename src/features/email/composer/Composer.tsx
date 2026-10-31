@@ -1,70 +1,33 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useEmailMessages } from "@/features/email/useEmailMessages";
 import { useInterfacePrefs } from "@/features/identity/InterfacePrefsProvider";
 import { trpc } from "@/lib/trpc-client";
-import type { EmailVisibility } from "../threadVisibility";
-import { AttachButton } from "./AttachButton";
-import type { AttachedFile } from "./AttachmentList";
-import { AttachmentList } from "./AttachmentList";
+import type { SendEmailOutcome } from "@/types/mail";
 import { ComposerErrorAlert } from "./ComposerErrorAlert";
-import { ComposerFooter } from "./ComposerFooter";
+import { ComposerForm } from "./ComposerForm";
 import { ComposerHeader } from "./ComposerHeader";
-import type { ComposerContext } from "./composer.types";
-import { mergeRecipientEmail, resolveComposerLinks } from "./composerLinks";
+import type { ComposerProps } from "./ComposerProps";
+import { resolveComposerLinks } from "./composerLinks";
 import { DraftSaveStatus } from "./DraftSaveStatus";
 import { dealDefaultRecipients } from "./dealRecipients";
-import { InsertToolbar } from "./InsertToolbar";
-import { RecipientsRow } from "./RecipientsRow";
-import { RichTextBody } from "./RichTextBodyLazy";
+import { MailboxDraftCopyDialog } from "./MailboxDraftCopyDialog";
 import { resolveComposerThreadId } from "./resolveThreadId";
-import { SignatureDropdown } from "./SignatureDropdown";
-import { SubjectRow } from "./SubjectRow";
+import { SendReviewNotice } from "./SendReviewNotice";
+import { useComposerFields } from "./useComposerFields";
+import { useComposerMailboxes } from "./useComposerMailboxes";
+import { useComposerMailboxMessages } from "./useComposerMailboxMessages";
+import { useComposerReceipt } from "./useComposerReceipt";
 import { buildSendHandlers } from "./useComposerSend";
 import { useComposerSignature } from "./useComposerSignature";
 import { useDraftAutosave } from "./useDraftAutosave";
-
-interface ComposerProps {
-  // accountId comes from the server (ThreadView.accountId) - never fabricated client-side.
-  accountId: string;
-  // fromAddress is the sender mailbox address shown in the From row.
-  fromAddress?: string;
-  // context drives deal-specific behaviours (prefill recipient, add-as-activity, etc.).
-  context?: ComposerContext;
-  // threadId present when replying to an existing thread (inbox context).
-  threadId?: string;
-  // linkDealId comes from the inbox compose's ComposeLinkSidebar (a picked/created deal held in
-  // page state, not the deal-workspace `context`). Forwarded into the send deps so the new
-  // outbound thread links to that deal; see useComposerSend.ts buildInput.
-  linkDealId?: string;
-  // draft present when resuming a saved draft: seeds initial state. Autosave then continues
-  // into the same draft id, and the draft is deleted on send. threadId preserves a reply
-  // draft's thread linkage (omitting it forks a new thread on send).
-  draft?: {
-    id: string;
-    subject: string;
-    bodyHtml: string;
-    to: string[];
-    cc: string[];
-    threadId?: string | null;
-    visibility?: EmailVisibility;
-    // CRM links saved with the draft, used when the composer has no context of its own (the
-    // Drafts folder). See resolveComposerLinks for the precedence.
-    linkDealId?: string | null;
-    linkPersonId?: string | null;
-  };
-  // prefill seeds initial state (reader Reply / Reply all / Forward). Only used when no
-  // `draft` is present; draft (a saved autosave) always takes precedence.
-  prefill?: { to?: string[]; cc?: string[]; subject?: string; bodyHtml?: string };
-  onSent?: () => void;
-  // Email-tab close: resets the draft then returns to the host's default view.
-  onClose?: () => void;
-}
+import { useMailboxDraftCopy } from "./useMailboxDraftCopy";
 
 export function Composer({
   accountId,
   fromAddress,
+  mailboxes,
   context,
   threadId,
   linkDealId,
@@ -74,6 +37,22 @@ export function Composer({
   onClose,
 }: ComposerProps): React.ReactNode {
   const E = useEmailMessages();
+  const L = useComposerMailboxMessages();
+  const [activeAccountId, setActiveAccountId] = useState(draft?.accountId ?? accountId);
+  const [activeDraftId, setActiveDraftId] = useState(draft?.id);
+  const [sendIntentId, setSendIntentId] = useState(
+    () => draft?.sendIntentId ?? crypto.randomUUID(),
+  );
+  const intentRef = useRef(sendIntentId);
+  const [outcome, setOutcome] = useState<SendEmailOutcome | null>(draft?.sendOutcome ?? null);
+  const senderContainer = useRef<HTMLDivElement>(null);
+  const mailboxData = useComposerMailboxes(mailboxes);
+  const currentMailbox = mailboxData.mailboxes.find((mailbox) => mailbox.id === activeAccountId);
+  const currentAddress =
+    currentMailbox?.emailAddress ?? (activeAccountId === accountId ? fromAddress : undefined);
+  const canUseMailbox =
+    !mailboxData.known ||
+    (currentMailbox?.status === "connected" && currentMailbox.capabilities.send);
 
   const resolvedThreadId = resolveComposerThreadId(threadId, draft?.threadId, context);
   const links = resolveComposerLinks({ context, linkDealId, draft });
@@ -82,33 +61,29 @@ export function Composer({
   const defaultToList: string[] =
     context?.kind === "deal" ? dealDefaultRecipients(context, prefillParticipantsAsRecipients) : [];
 
-  const [toList, setToList] = useState<string[]>(draft?.to ?? prefill?.to ?? defaultToList);
-  const [ccList, setCcList] = useState<string[]>(draft?.cc ?? prefill?.cc ?? []);
-  const [bccList, setBccList] = useState<string[]>([]);
-  const [subject, setSubject] = useState(draft?.subject ?? prefill?.subject ?? "");
-  const [body, setBody] = useState(draft?.bodyHtml ?? prefill?.bodyHtml ?? "");
-  const [trackOpens, setTrackOpens] = useState(false);
-  const [trackLinks, setTrackLinks] = useState(false);
-  // C1: compose privacy, restored from a resumed draft or defaulting to "shared". Threaded into the
-  // send payload so a private compose lands a private thread across all send paths, and persisted by
-  // autosave so a private selection survives resume (codex P1).
-  const [visibility, setVisibility] = useState<EmailVisibility>(draft?.visibility ?? "shared");
-  const [addAsActivity, setAddAsActivity] = useState(false);
-  const [sending, setSending] = useState(false);
-  // True while AttachButton has an upload batch in flight: blocks Send to prevent a
-  // race where the user clicks Send before the fileId is confirmed and returned.
-  const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  // insertToken drives RichTextBody.insertContent imperatively.
-  // seq increments on each insert so the useEffect always fires.
-  const [insertToken, setInsertToken] = useState<{ text: string; seq: number } | undefined>(
-    undefined,
+  const fields = useComposerFields({ draft, prefill, defaultToList });
+  const {
+    toList,
+    ccList,
+    bccList,
+    subject,
+    body,
+    setBody,
+    trackOpens,
+    trackLinks,
+    visibility,
+    addAsActivity,
+    sending,
+    setSending,
+    uploading,
+    error,
+    setError,
+    attachments,
+  } = fields;
+  const attachmentInputs = useMemo(
+    () => attachments.map((attachment) => ({ fileId: attachment.fileId })),
+    [attachments],
   );
-  // Incrementing nonce remounts RecipientsRow on reset, collapsing its internal
-  // showCcBcc state back to false without lifting that state into Composer.
-  const [recipientsNonce, setRecipientsNonce] = useState(0);
-  // Confirmed uploaded attachments; cleared on resetDraft so Discard starts fresh.
-  const [attachments, setAttachments] = useState<AttachedFile[]>([]);
 
   const { data: signatures = [] } = trpc.email.signatures.list.useQuery();
 
@@ -118,7 +93,7 @@ export function Composer({
   // Signature: embeds the default into the body on a fresh compose (C3), else carries the id for the
   // server to append on a reply/forward/legacy draft. See useComposerSignature.
   const { signatureId, sendSignatureId, applySignature, resetSignature } = useComposerSignature({
-    signatures,
+    signatures: sending || outcome !== null ? [] : signatures,
     setBody,
     // Decided from the initial props (not the live body) so a fast typist cannot flip a fresh
     // compose into the prefill branch before the signatures query resolves.
@@ -127,27 +102,19 @@ export function Composer({
   });
 
   function resetDraft(): void {
-    setToList(defaultToList);
-    setCcList([]);
-    setBccList([]);
-    setSubject("");
-    // Re-seed the default signature into the body so a discarded draft matches a fresh open (C3).
-    resetSignature();
-    setTrackOpens(false);
-    setTrackLinks(false);
-    setVisibility("shared");
-    setAddAsActivity(false);
-    setInsertToken(undefined); // stop the remounted RichTextBody re-inserting the last field
-    setRecipientsNonce((n) => n + 1); // remount RecipientsRow so showCcBcc collapses to false
-    setAttachments([]); // discarded draft must not leak files into the next send
+    fields.reset(resetSignature);
+    setOutcome(null);
+    const intent = crypto.randomUUID();
+    intentRef.current = intent;
+    setSendIntentId(intent);
   }
 
   // Shared with the autosave hook so delete-on-send targets the id autosave created/resumed.
   const draftIdRef = useRef<string | undefined>(draft?.id);
   // Shared in-flight save promise: lets send await a racing autosave before deleting the draft.
   const draftInFlightRef = useRef<Promise<void> | null>(null);
-  const autosave = useDraftAutosave({
-    accountId,
+  const snapshot = {
+    accountId: activeAccountId,
     threadId: resolvedThreadId ?? null,
     subject,
     body,
@@ -156,17 +123,54 @@ export function Composer({
     visibility,
     linkDealId: links.linkDealId,
     linkPersonId: links.linkPersonId,
-    initialDraftId: draft?.id,
+    bccList,
+    attachments: attachmentInputs,
+    sendIntentId,
+    trackOpens,
+    trackLinks,
+    enabled: outcome === null,
+    initialDraftId: activeDraftId,
     draftIdRef,
     inFlightRef: draftInFlightRef,
+  };
+  const autosave = useDraftAutosave(snapshot);
+  const copy = useMailboxDraftCopy({
+    snapshot,
+    autosave,
+    locked: resolvedThreadId !== undefined || sending || uploading || outcome !== null,
+    onCopied: (target, draftId, intent) => {
+      setActiveAccountId(target.id);
+      setActiveDraftId(draftId);
+      intentRef.current = intent;
+      setSendIntentId(intent);
+      setError(null);
+    },
   });
+  const receipt = useComposerReceipt({
+    accountId: activeAccountId,
+    intentId: sendIntentId,
+    outcome,
+    onOutcome: setOutcome,
+    onNewIntent: (intent) => {
+      intentRef.current = intent;
+      setSendIntentId(intent);
+      setOutcome(null);
+      setError(null);
+      autosave.resume();
+    },
+  });
+  const readOnly = sending || copy.busy || outcome !== null;
 
   // buildSendHandlers reads draftIdRef/inFlightRef only inside the click handlers it returns (at
   // event time, not this render), so the rule's warning here is a false positive.
   // eslint-disable-next-line react-hooks/refs -- refs are read inside the returned handlers, not now
-  const { handleSend, handleSendLater } = buildSendHandlers({
+  const { handleSend, handleSendLater, acknowledgeAccepted } = buildSendHandlers({
     messages: E,
-    accountId,
+    idempotencyKeyRef: intentRef,
+    beforeSend: autosave.flush,
+    draftSaveError: L.saveError,
+    setOutcome,
+    accountId: activeAccountId,
     resolvedThreadId,
     toList,
     ccList,
@@ -179,7 +183,7 @@ export function Composer({
     // C3: when the signature is embedded in `body`, sendSignatureId is "" (no server re-append);
     // for a forward/reply/legacy draft it is the selected id so the server appends it.
     signatureId: sendSignatureId,
-    attachments: attachments.map((a) => ({ fileId: a.fileId })),
+    attachments: attachmentInputs,
     context,
     linkDealId: links.linkDealId,
     linkPersonId: links.linkPersonId,
@@ -193,7 +197,7 @@ export function Composer({
     inFlightRef: draftInFlightRef,
   });
 
-  const attachEntityId = context?.kind === "deal" ? context.dealId : accountId;
+  const attachEntityId = context?.kind === "deal" ? context.dealId : activeAccountId;
   const attachEntityType =
     context?.kind === "deal" ? ("deal" as const) : ("email_message" as const);
 
@@ -203,96 +207,89 @@ export function Composer({
       className="rounded-md border border-border bg-background p-3 flex flex-col gap-2 text-sm"
     >
       <ComposerHeader
-        fromAddress={fromAddress}
+        fromAddress={currentAddress}
+        accountId={activeAccountId}
+        mailboxes={mailboxData.mailboxes}
+        onMailboxChange={(id) => {
+          const target = mailboxData.mailboxes.find((mailbox) => mailbox.id === id);
+          if (target !== undefined) copy.request(target);
+        }}
+        senderLocked={resolvedThreadId !== undefined}
+        senderDisabled={readOnly || uploading}
+        senderContainerRef={senderContainer}
         onClose={
           onClose === undefined
             ? undefined
             : () => {
-                resetDraft();
+                if (outcome === null && !sending) resetDraft();
                 onClose();
               }
         }
       />
       <ComposerErrorAlert error={error} onDismiss={() => setError(null)} />
       <DraftSaveStatus status={autosave.status} onRetry={autosave.retry} />
-      <RecipientsRow
-        key={recipientsNonce}
-        to={toList}
-        onToChange={setToList}
-        cc={ccList}
-        onCcChange={setCcList}
-        bcc={bccList}
-        onBccChange={setBccList}
-      />
-      <SubjectRow value={subject} onChange={setSubject} />
-      <div className="flex items-center gap-2">
-        <InsertToolbar
-          key={`toolbar-${recipientsNonce}`}
-          onSubjectChange={setSubject}
-          subjectLocked={resolvedThreadId !== undefined}
-          onBodyChange={setBody}
-          context={context}
-          onInsertField={(text) => setInsertToken((prev) => ({ text, seq: (prev?.seq ?? 0) + 1 }))}
-          subject={subject}
-          bodyHtml={body}
-          recipientEmail={mergeRecipientEmail(toList, ccList, bccList)}
-          personId={links.linkPersonId ?? null}
-          dealId={links.linkDealId ?? null}
+      {mailboxData.error && (
+        <p role="status" className="text-xs text-muted-foreground">
+          {L.mailboxesError}{" "}
+          <button type="button" className="text-action hover:underline" onClick={mailboxData.retry}>
+            {L.retry}
+          </button>
+        </p>
+      )}
+      {!canUseMailbox && (outcome === null || outcome.status === "failed") && (
+        <p role="alert" className="text-sm text-destructive">
+          {L.senderUnavailable}{" "}
+          <a href="/settings/email-sync" className="text-action hover:underline">
+            {L.openConnections}
+          </a>
+        </p>
+      )}
+      {outcome !== null && (
+        <SendReviewNotice
+          outcome={outcome}
+          busy={sending || receipt.busy}
+          error={receipt.error}
+          onCheck={() => void receipt.check()}
+          onRetry={canUseMailbox ? () => void handleSend() : undefined}
+          onEdit={receipt.canEdit ? () => receipt.setEditOpen(true) : undefined}
+          editOpen={receipt.editOpen}
+          onEditOpenChange={receipt.setEditOpen}
+          onConfirmEdit={() => void receipt.confirmEdit()}
+          onDone={() => void acknowledgeAccepted()}
+          onKeepDraft={onClose}
         />
-        <SignatureDropdown
-          signatures={signatures.map((s) => ({ id: s.id, name: s.name }))}
-          value={signatureId}
-          onChange={applySignature}
-        />
-      </div>
-      <RichTextBody
-        key={`body-${recipientsNonce}`}
-        html={body}
-        onChange={setBody}
-        ariaLabel={E._extra.email_body}
-        insertToken={insertToken}
-        frameClassName="rounded-md border border-border bg-background text-sm"
-        contentClassName="min-h-40 [&_.ProseMirror]:min-h-40"
+      )}
+      <ComposerForm
+        fields={fields}
+        context={context}
+        resolvedThreadId={resolvedThreadId}
+        links={links}
+        signatures={signatures}
+        signatureId={signatureId}
+        applySignature={applySignature}
+        readOnly={readOnly}
+        canSend={toList.length > 0 && !uploading && canUseMailbox && outcome === null && !copy.busy}
+        onSend={() => void handleSend()}
+        onSendLater={(at) => void handleSendLater(at)}
+        onDiscard={() => {
+          resetDraft();
+          setError(null);
+        }}
+        attachEntityId={attachEntityId}
+        attachEntityType={attachEntityType}
       />
-      <AttachmentList
-        attachments={attachments}
-        onRemove={(fileId) => setAttachments((prev) => prev.filter((a) => a.fileId !== fileId))}
+      <MailboxDraftCopyDialog
+        open={copy.pending !== null}
+        sourceAddress={currentAddress ?? ""}
+        targetAddress={copy.pending?.target.emailAddress ?? ""}
+        busy={copy.busy}
+        error={copy.error}
+        onCancel={copy.cancel}
+        onConfirm={() => void copy.confirm()}
+        onReturnFocus={() =>
+          senderContainer.current?.querySelector<HTMLElement>('[role="combobox"]')?.focus()
+        }
       />
-      <div className="flex items-center gap-2">
-        <AttachButton
-          entityType={attachEntityType}
-          entityId={attachEntityId}
-          onAttached={(file) => setAttachments((prev) => [...prev, file])}
-          onUploadingChange={setUploading}
-        />
-        <div className="flex-1">
-          <ComposerFooter
-            canSend={toList.length > 0 && !uploading}
-            sending={sending}
-            onSend={() => void handleSend()}
-            onDiscard={() => {
-              resetDraft();
-              setError(null);
-            }}
-            trackOpens={trackOpens}
-            onTrackOpensChange={setTrackOpens}
-            trackLinks={trackLinks}
-            onTrackLinksChange={setTrackLinks}
-            visibility={visibility}
-            onVisibilityChange={setVisibility}
-            // Show the privacy picker only for a NEW compose. On a reply (existing thread) the send
-            // path preserves that thread's visibility, so the picker would be inert (codex P2); the
-            // reader's thread-privacy toggle governs an existing thread instead.
-            showVisibility={resolvedThreadId === undefined}
-            // Available from both deal and inbox context; a non-deal send logs a
-            // standalone activity (see fireActivity in useComposerSend.ts).
-            showAddAsActivity={true}
-            addAsActivity={addAsActivity}
-            onAddAsActivityChange={setAddAsActivity}
-            onSendLater={(scheduledAt) => void handleSendLater(scheduledAt)}
-          />
-        </div>
-      </div>
     </section>
   );
 }

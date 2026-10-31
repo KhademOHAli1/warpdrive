@@ -5,6 +5,7 @@ import { INBOX_PAGE_SIZE, INBOX_SCAN_CHUNK } from "@/constants/inbox";
 import type { Db } from "@/db/client";
 import type { AuthUser } from "@/features/permissions/types";
 import { canSeeEmail } from "./emailVisibility";
+import { decorateThreadMailCapabilities } from "./imapThreadOperationsCapabilities";
 import {
   type InboxFilter,
   type InboxThread,
@@ -223,5 +224,8 @@ export async function listInbox(
   signal.throwIfAborted();
 
   const reachedEnd = exhausted && consumedEveryScannedRow;
-  return { threads, nextCursor: reachedEnd ? null : cursor };
+  return {
+    threads: await decorateThreadMailCapabilities(db, args.actor, threads, signal),
+    nextCursor: reachedEnd ? null : cursor,
+  };
 }

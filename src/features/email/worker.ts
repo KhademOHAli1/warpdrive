@@ -1,13 +1,20 @@
 import { sql } from "drizzle-orm";
 import { SYNC_JITTER_MODULO_SECONDS } from "@/constants/email";
-import type { AppError } from "@/constants/errorIds";
+import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import { db as prodDb } from "@/db/client";
+import type { StorageClient } from "@/features/files/storage";
 import { makeStorageClient } from "@/features/files/storage";
 import { err, ok, type Result } from "@/types/result";
 import { createGmailClient, type GmailClient } from "./gmailClient";
 import { makeRefresh } from "./gmailRefresh";
+import { runImapSyncJob } from "./imapSync";
+import type { ImapSyncDependencies } from "./imapSyncTypes";
+import { loadImapConnection } from "./mailConnectionRuntime";
 import { processSendAttempt } from "./outbox";
+import { sendFailureOutcome } from "./sendFailureOutcome";
+import { prepareEnqueuedSend } from "./sendPreparation";
+import { processSmtpSendAttempt, repairSmtpReceipt } from "./smtpOutbox";
 import { syncMailbox } from "./sync";
 import { ensureAccessToken } from "./tokens";
 import { performWorkerSendCrm } from "./workerSendCrm";
@@ -28,6 +35,9 @@ export function jitterFor(accountId: string): number {
 // Resolve a fresh Gmail client for an account (default dep). Injectable so tests pass a
 // fake transport with no real OAuth. Never logs tokens.
 export interface SyncDeps {
+  imap?: ImapSyncDependencies;
+  loadMail?: typeof loadImapConnection;
+  storage?: StorageClient;
   resolveClient: (accountId: string, signal: AbortSignal) => Promise<Result<GmailClient, AppError>>;
 }
 
@@ -37,6 +47,7 @@ async function defaultResolveClient(
 ): Promise<Result<GmailClient, AppError>> {
   signal.throwIfAborted();
   const token = await ensureAccessToken(prodDb, {
+    signal,
     accountId,
     deps: { refresh: makeRefresh(signal) },
   });
@@ -51,19 +62,35 @@ const defaultSyncDeps: SyncDeps = { resolveClient: defaultResolveClient };
 // handler converts a returned err into a sanitized throw for backoff.
 export async function runSyncJob(
   db: Db,
-  args: { accountId: string; signal: AbortSignal },
+  args: { accountId: string; signal: AbortSignal; now?: Date },
   deps: SyncDeps = defaultSyncDeps,
-): Promise<Result<{ applied: number }, AppError>> {
+): Promise<Result<{ applied: number; more?: boolean; deferred?: boolean }, AppError>> {
   args.signal.throwIfAborted();
+  const account = (
+    await db.execute(sql`
+    SELECT a.provider,a.status,a.paused,a.connection_generation FROM email_accounts a JOIN users u ON u.id=a.user_id
+    WHERE a.id=${args.accountId} AND u.is_active=true AND u.invited_at IS NULL
+  `)
+  ).rows[0] as
+    | { provider: string; status: string; paused: boolean; connection_generation: number }
+    | undefined;
+  args.signal.throwIfAborted();
+  if (account === undefined || account.status === "disconnected" || account.paused)
+    return ok({ applied: 0 });
+  if (account.provider === "imap_smtp") return runImapSyncJob(db, args, deps.imap);
+  if (account.provider !== "gmail") return ok({ applied: 0 });
   const client = await deps.resolveClient(args.accountId, args.signal);
-  if (!client.ok) return stampError(db, args.accountId, client.error, args.signal);
+  if (!client.ok)
+    return stampError(db, args.accountId, account.connection_generation, client.error, args.signal);
 
   const synced = await syncMailbox(db, {
     accountId: args.accountId,
     gmail: client.value,
     signal: args.signal,
+    expectedGeneration: account.connection_generation,
   });
-  if (!synced.ok) return stampError(db, args.accountId, synced.error, args.signal);
+  if (!synced.ok)
+    return stampError(db, args.accountId, account.connection_generation, synced.error, args.signal);
   return ok(synced.value);
 }
 
@@ -78,8 +105,79 @@ export async function runSendJob(
   deps: SyncDeps = defaultSyncDeps,
 ): Promise<Result<{ status: string }, AppError>> {
   args.signal.throwIfAborted();
+  const account = (
+    await db.execute(sql`
+    SELECT a.user_id,a.provider,a.status,a.paused,a.connection_generation,
+      coalesce((a.capabilities->>'send')::boolean,true) AS can_send,
+      EXISTS(SELECT 1 FROM email_send_attempts s WHERE s.account_id=a.id
+        AND s.idempotency_key=${args.idempotencyKey} AND s.delivery_outcome->>'state' IN ('accepted','partial')) AS receipt
+    FROM email_accounts a JOIN users u ON u.id=a.user_id
+    WHERE a.id=${args.accountId} AND u.is_active=true AND u.invited_at IS NULL
+  `)
+  ).rows[0] as
+    | {
+        user_id: string;
+        provider: string;
+        status: string;
+        paused: boolean;
+        connection_generation: number;
+        can_send: boolean;
+        receipt: boolean;
+      }
+    | undefined;
+  args.signal.throwIfAborted();
+  if (account?.provider === "imap_smtp" && account.receipt) return repairSmtpReceipt(db, args);
+  if (!account || account.status === "disconnected" || account.paused)
+    return err(new AppError(ERROR_IDS.MAIL_CONNECTION_UNAVAILABLE, "mailbox unavailable"));
+  const attempt = (
+    await db.execute(sql`SELECT id,send_started_at FROM email_send_attempts
+    WHERE account_id=${args.accountId} AND idempotency_key=${args.idempotencyKey}`)
+  ).rows[0] as { id: string; send_started_at: unknown } | undefined;
+  if (!attempt)
+    return err(new AppError(ERROR_IDS.GMAIL_OUTBOX_NOT_FOUND, "send attempt unavailable"));
+  if (!account.can_send && !(account.provider === "gmail" && attempt.send_started_at !== null))
+    return err(
+      new AppError(ERROR_IDS.MAIL_CAPABILITY_DENIED, "mailbox cannot submit new messages"),
+    );
+  const prepared = await prepareEnqueuedSend(db, {
+    attemptId: attempt.id,
+    actorId: account.user_id,
+    signal: args.signal,
+  });
+  if (!prepared.ok) {
+    await db.execute(sql`UPDATE email_send_attempts SET status='failed',error_id=${prepared.error.id}
+      WHERE id=${attempt.id} AND send_started_at IS NULL AND claim_token IS NULL`);
+    return prepared;
+  }
+  if (account.provider === "imap_smtp") {
+    const runtime = await (deps.loadMail ?? loadImapConnection)(db, args.accountId, args.signal);
+    if (!runtime.ok) {
+      await sendFailureOutcome(db, { ...args, attemptId: attempt.id }, runtime.error);
+      return runtime;
+    }
+    return processSmtpSendAttempt(db, {
+      ...args,
+      runtime: runtime.value,
+      storage: deps.storage ?? makeStorageClient(),
+    });
+  }
+  if (account.provider !== "gmail")
+    return err(new AppError(ERROR_IDS.MAIL_CAPABILITY_DENIED, "mailbox provider cannot send"));
+  return runGmailSendJob(db, args, deps, account.connection_generation, attempt.id);
+}
+
+async function runGmailSendJob(
+  db: Db,
+  args: { accountId: string; idempotencyKey: string; signal: AbortSignal },
+  deps: SyncDeps,
+  generation: number,
+  attemptId: string,
+): Promise<Result<{ status: string }, AppError>> {
   const client = await deps.resolveClient(args.accountId, args.signal);
-  if (!client.ok) return client;
+  if (!client.ok) {
+    await sendFailureOutcome(db, { ...args, attemptId: attemptId }, client.error);
+    return client;
+  }
 
   const outcome = await processSendAttempt(db, {
     accountId: args.accountId,
@@ -87,6 +185,7 @@ export async function runSendJob(
     gmail: client.value,
     storage: makeStorageClient(),
     signal: args.signal,
+    expectedGeneration: generation,
   });
   if (!outcome.ok) return outcome;
 
@@ -113,10 +212,14 @@ export async function runSendJob(
 async function stampError(
   db: Db,
   accountId: string,
+  generation: number,
   error: AppError,
   signal: AbortSignal,
 ): Promise<Result<never, AppError>> {
-  await db.execute(sql`UPDATE email_accounts SET last_error_id=${error.id} WHERE id=${accountId}`);
+  await db.execute(sql`UPDATE email_accounts a SET last_error_id=${error.id}
+    FROM users u WHERE a.id=${accountId} AND a.connection_generation=${generation}
+      AND a.user_id=u.id AND u.is_active=true AND u.invited_at IS NULL
+      AND a.status<>'disconnected' AND NOT a.paused`);
   signal.throwIfAborted();
   return err(error);
 }

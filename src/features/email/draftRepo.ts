@@ -1,9 +1,12 @@
+import { randomUUID } from "node:crypto";
 import { sql } from "drizzle-orm";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import type { AuthUser } from "@/features/permissions/types";
 import { err, ok, type Result } from "@/types/result";
-import { assertDraftLinks } from "./draftLinks";
+import { resolveDraftAttachments } from "./draftAttachments";
+import { findDraftCreation } from "./draftCreation";
+import { assertDraftLinks, assertDraftThread } from "./draftLinks";
 import { DRAFT_COLUMNS, type DraftRow, type DraftSummary, toDraftSummary } from "./draftRow";
 import type { EmailVisibility } from "./threadVisibility";
 
@@ -11,12 +14,18 @@ export type { DraftSummary } from "./draftRow";
 
 export interface DraftInput {
   id?: string;
+  createId?: string;
   accountId: string;
   threadId?: string | null;
   subject: string;
   bodyHtml: string;
   toEmails: string[];
   ccEmails: string[];
+  bccEmails?: string[];
+  attachments?: { fileId: string }[];
+  sendIntentId?: string;
+  trackOpens?: boolean;
+  trackLinks?: boolean;
   // Compose privacy in progress. Omitted defaults to "shared" (the column default) so an old draft
   // or a caller that does not set it still round-trips a valid value.
   visibility?: EmailVisibility;
@@ -37,23 +46,28 @@ export async function saveDraft(
 ): Promise<Result<{ id: string }, AppError>> {
   signal.throwIfAborted();
   const d = args.draft;
+  const owned = (
+    await db.execute(sql`SELECT a.id FROM email_accounts a JOIN users u ON u.id=a.user_id
+    WHERE a.id=${d.accountId} AND a.user_id=${args.actor.id} AND u.is_active=true AND u.invited_at IS NULL`)
+  ).rows[0];
+  signal.throwIfAborted();
+  if (!owned || (d.id !== undefined && d.createId !== undefined))
+    return err(new AppError(ERROR_IDS.GMAIL_DRAFT_NOT_FOUND, "draft unavailable"));
+  const creation = await findDraftCreation(db, d, signal);
+  if (!creation.ok) return creation;
+  if (creation.value !== null) return ok(creation.value);
+  const attachments = await resolveDraftAttachments(db, args.actor, d.attachments ?? [], signal);
+  if (!attachments.ok) return attachments;
   // When a threadId is supplied, verify it lives on this same account BEFORE the write, so a
   // foreign/nonexistent id returns a typed error instead of letting the composite FK throw.
-  if (d.threadId !== undefined && d.threadId !== null) {
-    const thread = (
-      await db.execute(sql`
-        SELECT 1 FROM email_threads WHERE id = ${d.threadId} AND account_id = ${d.accountId}
-      `)
-    ).rows[0];
-    if (thread === undefined)
-      return err(
-        new AppError(ERROR_IDS.GMAIL_THREAD_NOT_FOUND, "thread not found for account", {}),
-      );
-  }
+  const thread = await assertDraftThread(db, d, signal);
+  if (!thread.ok) return thread;
   const links = await assertDraftLinks(db, d, signal);
   if (!links.ok) return links;
   const to = JSON.stringify(d.toEmails);
   const cc = JSON.stringify(d.ccEmails);
+  const bcc = JSON.stringify(d.bccEmails ?? []);
+  const attachmentJson = JSON.stringify(attachments.value);
   const visibility = d.visibility ?? "shared";
   const dealId = d.linkDealId ?? null;
   const personId = d.linkPersonId ?? null;
@@ -63,6 +77,9 @@ export async function saveDraft(
         UPDATE email_drafts
         SET subject = ${d.subject}, body_html = ${d.bodyHtml},
             to_emails = ${to}::jsonb, cc_emails = ${cc}::jsonb,
+            bcc_emails=${bcc}::jsonb, attachments=${attachmentJson}::jsonb,
+            send_intent_id=coalesce(${d.sendIntentId ?? null}::uuid,send_intent_id),
+            track_opens=${d.trackOpens ?? false},track_links=${d.trackLinks ?? false},
             thread_id = ${d.threadId ?? null}, visibility = ${visibility},
             link_deal_id = ${dealId}, link_person_id = ${personId}, updated_at = now()
         WHERE id = ${d.id} AND account_id = ${d.accountId}
@@ -75,15 +92,22 @@ export async function saveDraft(
   }
   const inserted = (
     await db.execute(sql`
-      INSERT INTO email_drafts (account_id, thread_id, subject, body_html, to_emails, cc_emails,
-        visibility, link_deal_id, link_person_id)
-      VALUES (${d.accountId}, ${d.threadId ?? null}, ${d.subject}, ${d.bodyHtml}, ${to}::jsonb,
-        ${cc}::jsonb, ${visibility}, ${dealId}, ${personId})
+      INSERT INTO email_drafts (id, account_id, thread_id, subject, body_html, to_emails, cc_emails,
+        visibility, link_deal_id, link_person_id,bcc_emails,attachments,send_intent_id,track_opens,track_links)
+      VALUES (${d.createId ?? randomUUID()}, ${d.accountId}, ${d.threadId ?? null}, ${d.subject}, ${d.bodyHtml}, ${to}::jsonb,
+        ${cc}::jsonb, ${visibility}, ${dealId}, ${personId},${bcc}::jsonb,${attachmentJson}::jsonb,
+        ${d.sendIntentId ?? randomUUID()},${d.trackOpens ?? false},${d.trackLinks ?? false})
+      ON CONFLICT (id) DO NOTHING
       RETURNING id
     `)
   ).rows[0] as { id: string } | undefined;
-  if (inserted === undefined)
-    return err(new AppError(ERROR_IDS.DB_INSERT_FAILED, "draft insert returned no row", {}));
+  if (inserted === undefined) {
+    const replay = await findDraftCreation(db, d, signal);
+    if (!replay.ok) return replay;
+    return replay.value !== null
+      ? ok(replay.value)
+      : err(new AppError(ERROR_IDS.GMAIL_DRAFT_NOT_FOUND, "draft unavailable"));
+  }
   return ok({ id: inserted.id });
 }
 

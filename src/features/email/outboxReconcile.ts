@@ -12,6 +12,7 @@ export interface AttemptRow {
   send_started_at: string | null;
   claim_token: string | null;
   gmail_message_id: string | null;
+  connection_generation?: number | null;
 }
 
 export type SendOutcome = { status: "sent" | "failed" | "needs_review"; gmailMessageId?: string };
@@ -29,7 +30,7 @@ export async function markSent(
 ): Promise<void> {
   await db.execute(sql`
     UPDATE email_send_attempts
-    SET status='sent', gmail_message_id=${gmailMessageId}, sent_at=now(), error_id=NULL
+    SET status='sent', gmail_message_id=${gmailMessageId}, provider_message_id=${gmailMessageId}, sent_at=now(), error_id=NULL
     WHERE id=${attemptId}
       AND status <> 'sent'
       AND (gmail_message_id IS NULL OR gmail_message_id = ${gmailMessageId})

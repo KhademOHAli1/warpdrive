@@ -1,0 +1,1 @@
+ALTER TABLE "email_send_attempts" ADD COLUMN "payload_prepared" boolean DEFAULT true NOT NULL;

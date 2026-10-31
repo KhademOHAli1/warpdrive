@@ -1,4 +1,4 @@
-import { bigint, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { bigint, jsonb, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { emailMessages } from "./email";
 
 // Inbound attachment metadata captured during Gmail sync. Bytes are NOT stored;
@@ -9,7 +9,17 @@ export const emailMessageAttachments = pgTable("email_message_attachments", {
     .notNull()
     .references(() => emailMessages.id, { onDelete: "cascade" }),
   accountId: uuid("account_id").notNull(),
-  gmailAttachmentId: text("gmail_attachment_id").notNull(),
+  gmailAttachmentId: text("gmail_attachment_id"),
+  providerLocator: jsonb("provider_locator").$type<
+    | {
+        kind: "imap";
+        folderPath: string;
+        uidValidity: string;
+        uid: number;
+        partKey: string;
+      }
+    | { kind: "stored"; objectKey: string; sha256: string }
+  >(),
   filename: text("filename").notNull(),
   mimeType: text("mime_type").notNull(),
   sizeBytes: bigint("size_bytes", { mode: "number" }).notNull(),

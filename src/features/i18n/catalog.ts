@@ -71,6 +71,9 @@ import { mergeMessages } from "./mergeMessages";
 import boundaryGerman from "./messages/boundary.de.json";
 import boundaryEnglish from "./messages/boundary.en.json";
 import boundaryPersian from "./messages/boundary.fa.json";
+import dataGerman from "./messages/dataConventions.de.json";
+import dataEnglish from "./messages/dataConventions.en.json";
+import dataPersian from "./messages/dataConventions.fa.json";
 import de from "./messages/de.json";
 import en from "./messages/en.json";
 import fa from "./messages/fa.json";
@@ -96,6 +99,7 @@ const english = {
   shell: shellEnglish,
   settings: settingsEnglish,
   contacts: contactsEnglish,
+  dataConventions: dataEnglish,
   leads: leadsEnglish,
   entityCreate: entityEnglish,
   sales: salesEnglish,
@@ -123,6 +127,7 @@ const persian: typeof english = mergeMessages(english, {
   shell: shellPersian,
   settings: settingsPersian,
   contacts: contactsPersian,
+  dataConventions: dataPersian,
   leads: leadsPersian,
   entityCreate: entityPersian,
   sales: salesPersian,
@@ -150,6 +155,7 @@ const german: typeof english = mergeMessages(english, {
   shell: shellGerman,
   settings: settingsGerman,
   contacts: contactsGerman,
+  dataConventions: dataGerman,
   leads: leadsGerman,
   entityCreate: entityGerman,
   sales: salesGerman,

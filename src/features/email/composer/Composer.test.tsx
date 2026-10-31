@@ -55,6 +55,12 @@ vi.mock("@/features/files/serverActions", () => ({
 // Stub fetch for the presigned POST in AttachButton.
 vi.stubGlobal("fetch", () => Promise.resolve(new Response(null, { status: 204 })));
 
+vi.mock("../folderActions", () => ({
+  saveDraftAction: () => Promise.resolve({ ok: true, value: { id: "saved-draft" } }),
+  deleteDraftAction: () => Promise.resolve({ ok: true, value: { id: "saved-draft" } }),
+  cancelOutboxAction: () => Promise.resolve({ ok: false, error: { id: "E_GMAIL_017" } }),
+}));
+
 import { Composer } from "./Composer";
 
 describe("Composer (deal context)", () => {
@@ -198,7 +204,9 @@ describe("Composer error banner", () => {
   });
 
   it("shows a top role=alert banner when send fails, dismiss removes it", async () => {
-    sendEmailMock.mockImplementation(() => Promise.resolve({ ok: false as const }));
+    sendEmailMock.mockImplementation(() =>
+      Promise.resolve({ ok: false as const, error: { id: "E_GMAIL_004" } }),
+    );
     render(
       <Composer
         accountId="a1"

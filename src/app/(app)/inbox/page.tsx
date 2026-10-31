@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { GmailConnectionNotice } from "@/features/email/composer/GmailConnectionNotice";
 import { getEmailMessages } from "@/features/email/emailMessages.server";
 import { parseFolder } from "@/features/email/inboxFolders";
 import { createContext } from "@/server/trpc/context";
@@ -22,5 +23,12 @@ export default async function InboxPage({
   }
   const sp = await searchParams;
   const folder = parseFolder(typeof sp.folder === "string" ? sp.folder : undefined);
-  return <InboxListClient selfActorId={ctx.actor.id} folder={folder} />;
+  const inbox = <InboxListClient selfActorId={ctx.actor.id} folder={folder} />;
+  if (sp.connect !== "error") return inbox;
+  return (
+    <div className="flex h-full min-h-0 flex-col">
+      <GmailConnectionNotice reason={typeof sp.reason === "string" ? sp.reason : undefined} />
+      <div className="min-h-0 flex-1">{inbox}</div>
+    </div>
+  );
 }

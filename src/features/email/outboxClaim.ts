@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { sql } from "drizzle-orm";
 import { CLAIM_LEASE_SECONDS } from "@/constants/email";
 import type { Db } from "@/db/client";
+import { stampGmailSend } from "./gmailSendFence";
 import type { AttemptRow } from "./outboxReconcile";
 
 // Attachment metadata persisted in the payload so processSendAttempt can rebuild
@@ -14,6 +15,7 @@ interface PayloadAttachment {
 }
 
 export interface SendPayload {
+  fromName?: string | null;
   to: string[];
   cc?: string[];
   bcc?: string[];
@@ -24,6 +26,7 @@ export interface SendPayload {
   trackingEnabled?: boolean;
   trackOpens?: boolean;
   trackLinks?: boolean;
+  signatureId?: string;
   // Phase 6: attachment metadata resolved at send time, stored for replay.
   attachments?: PayloadAttachment[];
   // Explicit CRM link context from the composer (see SendEmailInput.linkPersonId/linkDealId).
@@ -50,6 +53,7 @@ export async function claim(
     UPDATE email_send_attempts
     SET claim_token=${token}, claimed_at=now(), status='sending'
     WHERE id=${attemptId}
+      AND payload_prepared=true
       AND (
         status IN ('pending','failed')
         OR (status='sending' AND claimed_at < now() - (${CLAIM_LEASE_SECONDS} * interval '1 second'))
@@ -67,7 +71,7 @@ export async function loadAttempt(
   idempotencyKey: string,
 ): Promise<AttemptRow | undefined> {
   const res = await db.execute(sql`
-    SELECT id, status, message_id_header, send_started_at, claim_token, gmail_message_id
+    SELECT id, status, message_id_header, send_started_at, claim_token, gmail_message_id, connection_generation
     FROM email_send_attempts
     WHERE account_id=${accountId} AND idempotency_key=${idempotencyKey}
   `);
@@ -126,12 +130,7 @@ export async function stamp(
   attemptId: string,
   token: string,
   signal: AbortSignal,
+  expectedGeneration?: number,
 ): Promise<boolean> {
-  const res = await db.execute(sql`
-    UPDATE email_send_attempts SET send_started_at=now()
-    WHERE id=${attemptId} AND claim_token=${token} AND send_started_at IS NULL
-    RETURNING id
-  `);
-  signal.throwIfAborted();
-  return res.rows[0] !== undefined;
+  return stampGmailSend(db, attemptId, token, signal, expectedGeneration);
 }

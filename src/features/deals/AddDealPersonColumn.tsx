@@ -2,10 +2,12 @@
 import type React from "react";
 import { Input } from "@/components/ui/Input";
 import { Select, type SelectOption } from "@/components/ui/Select";
-import { MAX_EMAIL_LEN, MAX_PHONE_LEN } from "@/features/contacts/fieldBounds";
+import { MAX_EMAIL_LEN } from "@/features/contacts/fieldBounds";
+import { PhoneNumberInput } from "@/features/contacts/PhoneNumberInput";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
+import type { PhonePointMetadata } from "@/types/contactPoint";
 
-export interface ContactPoint {
+export interface ContactPoint extends PhonePointMetadata {
   label: string;
   value: string;
   primary?: boolean;
@@ -90,22 +92,39 @@ function ContactRows({
       <div className="flex flex-col gap-2">
         {rows.map((row, idx) => (
           // Positional rows for an ephemeral create form.
-          // biome-ignore lint/suspicious/noArrayIndexKey: positional contact rows
-          <div key={idx} className="flex items-center gap-2">
-            <Input
-              aria-label={translateSales("computed.contactRow", {
-                kind: kindLabel,
-                index: idx + 1,
-              })}
-              type={kind === "Phone" ? "tel" : "email"}
-              dir="ltr"
-              maxLength={kind === "Phone" ? MAX_PHONE_LEN : MAX_EMAIL_LEN}
-              disabled={disabled}
-              value={row.value}
-              onChange={(e) => update(idx, { value: e.target.value })}
-              placeholder={kind === "Phone" ? "+1 555 0100" : "name@company.com"}
-              className="min-w-0 flex-1 disabled:bg-muted disabled:opacity-60"
-            />
+          <div
+            // biome-ignore lint/suspicious/noArrayIndexKey: positional contact rows
+            key={idx}
+            className={kind === "Phone" ? "flex items-start gap-2" : "flex items-center gap-2"}
+          >
+            {kind === "Phone" ? (
+              <PhoneNumberInput
+                value={row.value}
+                country={row.country}
+                onChange={(value) => update(idx, { value })}
+                onCountryChange={(country) => update(idx, { country })}
+                ariaLabel={translateSales("computed.contactRow", {
+                  kind: kindLabel,
+                  index: idx + 1,
+                })}
+                disabled={disabled}
+              />
+            ) : (
+              <Input
+                aria-label={translateSales("computed.contactRow", {
+                  kind: kindLabel,
+                  index: idx + 1,
+                })}
+                type="email"
+                dir="ltr"
+                maxLength={MAX_EMAIL_LEN}
+                disabled={disabled}
+                value={row.value}
+                onChange={(e) => update(idx, { value: e.target.value })}
+                placeholder="name@company.com"
+                className="min-w-0 flex-1 disabled:bg-muted disabled:opacity-60"
+              />
+            )}
             {/* Select has no disabled prop (primitive is not modified for this sweep); a
                 pointer-events-none wrapper reproduces the disabled input's read-only behavior. */}
             <div className={disabled ? "pointer-events-none opacity-60" : undefined}>

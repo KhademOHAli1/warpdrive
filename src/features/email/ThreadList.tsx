@@ -13,6 +13,7 @@ import type { ActionResult } from "@/types/actionResult";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import type { InboxFilter, InboxThread } from "./emailReads";
 import { archiveThreadAction, unarchiveThreadAction } from "./folderActions";
+import { MailOperationHint } from "./MailOperationHint";
 import { markThreadReadAction, markThreadUnreadAction } from "./readActions";
 import { ThreadListToolbar } from "./ThreadListToolbar";
 import { canArchiveInFolder, canSelectInFolder, type ThreadFolder, ThreadRow } from "./ThreadRow";
@@ -160,6 +161,10 @@ export function ThreadList({
   }
 
   const visibleIds = threads.map((t) => t.id);
+  const canBulkRead = [...selection.selected].every((id) => {
+    const thread = sourceThreads.find((thread) => thread.id === id);
+    return thread !== undefined && thread.mailCapabilities?.markRead !== false;
+  });
 
   return (
     <div className="flex flex-col h-full">
@@ -203,22 +208,26 @@ export function ThreadList({
                   {folder === "archive" ? E._extra.unarchive : E._extra.archive}
                 </button>
               )}
-              <button
-                type="button"
-                disabled={bulkBusy}
-                onClick={bulkMarkRead}
-                className="rounded-md border px-3 py-1 text-sm transition-transform hover:bg-accent active:scale-[0.96] disabled:opacity-50"
-              >
-                {E._extra.mark_read}
-              </button>
-              <button
-                type="button"
-                disabled={bulkBusy}
-                onClick={bulkMarkUnread}
-                className="rounded-md border px-3 py-1 text-sm transition-transform hover:bg-accent active:scale-[0.96] disabled:opacity-50"
-              >
-                {E._extra.mark_unread}
-              </button>
+              <MailOperationHint enabled={canBulkRead}>
+                <button
+                  type="button"
+                  disabled={bulkBusy || !canBulkRead}
+                  onClick={bulkMarkRead}
+                  className="rounded-md border px-3 py-1 text-sm transition-transform hover:bg-accent active:scale-[0.96] disabled:opacity-50"
+                >
+                  {E._extra.mark_read}
+                </button>
+              </MailOperationHint>
+              <MailOperationHint enabled={canBulkRead}>
+                <button
+                  type="button"
+                  disabled={bulkBusy || !canBulkRead}
+                  onClick={bulkMarkUnread}
+                  className="rounded-md border px-3 py-1 text-sm transition-transform hover:bg-accent active:scale-[0.96] disabled:opacity-50"
+                >
+                  {E._extra.mark_unread}
+                </button>
+              </MailOperationHint>
             </div>
           </BulkActionBar>
         </div>

@@ -5,6 +5,11 @@ import type { AuthUser } from "@/features/permissions/types";
 import { err, ok, type Result } from "@/types/result";
 import { type AttachmentMeta, attachmentsForMessages } from "./attachmentReads";
 import { canSeeEmail } from "./emailVisibility";
+import {
+  NO_MAIL_CAPABILITIES,
+  type ThreadMailCapabilities,
+  threadMailCapabilities,
+} from "./imapThreadOperationsCapabilities";
 import { plainTextToSafeHtml } from "./plainText";
 import { sanitizeInboundHtml } from "./sanitizeHtml";
 import type { InboxThread, ThreadRow } from "./threadShape";
@@ -21,7 +26,7 @@ export { toInboxThread } from "./threadShape";
 
 export interface ThreadMessage {
   messageId: string;
-  gmailMessageId: string;
+  gmailMessageId: string | null;
   direction: string;
   fromEmail: string;
   // Parsed From display name for the reader message header (PD shows "Name <email>"), null for bare.
@@ -54,6 +59,8 @@ export interface ThreadView {
   // (Pipedrive parity) instead of the type noun "Person" / "Deal". Null when not linked.
   personName: string | null;
   dealTitle: string | null;
+  mailCapabilities?: ThreadMailCapabilities;
+  mailProvider?: "gmail" | "imap_smtp" | "microsoft";
 }
 
 // jsonb columns (to_emails/cc_emails) round-trip through the driver as `unknown`;
@@ -91,7 +98,7 @@ export async function getThread(
     `)
   ).rows as {
     id: string;
-    gmail_message_id: string;
+    gmail_message_id: string | null;
     direction: string;
     from_email: string;
     from_name: string | null;
@@ -140,11 +147,16 @@ export async function getThread(
   // carries the mailbox address (ownerEmail) the reader needs as the reply/forward "self".
   const acctRow = (
     await db.execute(
-      sql`SELECT user_id, email_address FROM email_accounts WHERE id=${t.account_id}`,
+      sql`SELECT user_id, email_address,provider FROM email_accounts WHERE id=${t.account_id}`,
     )
-  ).rows[0] as { user_id: string; email_address: string } | undefined;
+  ).rows[0] as
+    | { user_id: string; email_address: string; provider: "gmail" | "imap_smtp" | "microsoft" }
+    | undefined;
   signal.throwIfAborted();
   const canCompose = acctRow !== undefined && acctRow.user_id === args.actor.id;
+  const mailCapabilities =
+    (await threadMailCapabilities(db, args.actor, [t.id], signal)).get(t.id) ??
+    NO_MAIL_CAPABILITIES;
 
   // Linked-record display labels: the reader header shows the person's NAME and the deal's TITLE,
   // not the type nouns "Person" / "Deal" (Pipedrive parity; the link-shows-type-noun smell).
@@ -186,6 +198,7 @@ export async function getThread(
       senderName: null,
       snippet: null,
       hasAttachment: false,
+      mailCapabilities,
     },
     messages,
     accountId: t.account_id,
@@ -193,5 +206,7 @@ export async function getThread(
     ownerEmail: acctRow?.email_address ?? "",
     personName,
     dealTitle,
+    mailCapabilities,
+    mailProvider: acctRow?.provider,
   });
 }

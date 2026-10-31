@@ -42,8 +42,14 @@ vi.mock("@/features/files/serverActions", () => ({
 
 vi.stubGlobal("fetch", () => Promise.resolve(new Response(null, { status: 204 })));
 
+vi.mock("../folderActions", () => ({
+  saveDraftAction: () => Promise.resolve({ ok: true, value: { id: "saved-draft" } }),
+  deleteDraftAction: () => Promise.resolve({ ok: true, value: { id: "saved-draft" } }),
+  cancelOutboxAction: () => Promise.resolve({ ok: false, error: { id: "E_GMAIL_017" } }),
+}));
+
 import { Composer } from "./Composer";
-import { COMPOSER_STRINGS } from "./composer.constants";
+import { composerMailboxMessages } from "./mailboxMessages";
 
 // The send action arms an 8s deadline of its own, so a slow Gmail send rejects instead of
 // returning a failed Result. An escaping rejection left `sending` stuck true, which greyed
@@ -61,7 +67,7 @@ describe("Composer when the send action rejects", () => {
     return e;
   }
 
-  it("re-enables Send and shows an unconfirmed-send banner", async () => {
+  it("locks the submitted request and offers status checking when the answer is lost", async () => {
     sendEmailMock.mockImplementation(() => Promise.reject(abortError()));
     render(
       <Composer
@@ -74,7 +80,10 @@ describe("Composer when the send action rejects", () => {
     fireEvent.click(send);
 
     await waitFor(() => expect(screen.getByRole("alert")).toBeInTheDocument());
-    expect(screen.getByText(COMPOSER_STRINGS.sendUnconfirmed)).toBeInTheDocument();
-    expect(send).toBeEnabled();
+    expect(screen.getByText(composerMailboxMessages("en").unknownDescription)).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: composerMailboxMessages("en").checkStatus }),
+    ).toBeEnabled();
+    expect(send).toBeDisabled();
   });
 });

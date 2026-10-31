@@ -1,4 +1,20 @@
 {
+  "remoteActions": {
+    "unavailable": "This action is unavailable for this mailbox or folder. Check the connection and write permissions.",
+    "move": "Move to folder",
+    "moveTitle": "Move conversation",
+    "moveDescription": "Choose a folder in this email account.",
+    "folder": "Destination folder",
+    "chooseFolder": "Choose a folder",
+    "loading": "Loading folders…",
+    "empty": "No writable folders are available.",
+    "outsideView": "This folder is not selected for sync. The conversation will leave this view.",
+    "confirm": "Move conversation",
+    "moving": "Moving…",
+    "cancel": "Cancel",
+    "refreshBeforeRetry": "The server may have applied some changes. Refresh this conversation before trying again.",
+    "refresh": "Refresh conversation"
+  },
   "title": "Inbox",
   "composeTitle": "New email",
   "loadingDraft": "Loading draft...",

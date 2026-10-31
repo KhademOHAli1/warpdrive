@@ -3,6 +3,22 @@ import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import { err, ok, type Result } from "@/types/result";
 
+export async function assertDraftThread(
+  db: Db,
+  input: { threadId?: string | null; accountId: string },
+  signal: AbortSignal,
+): Promise<Result<null, AppError>> {
+  if (input.threadId === undefined || input.threadId === null) return ok(null);
+  const row = (
+    await db.execute(sql`SELECT id FROM email_threads
+    WHERE id=${input.threadId} AND account_id=${input.accountId}`)
+  ).rows[0];
+  signal.throwIfAborted();
+  return row
+    ? ok(null)
+    : err(new AppError(ERROR_IDS.GMAIL_THREAD_NOT_FOUND, "thread not found for account"));
+}
+
 // link_deal_id / link_person_id are untyped uuids (mirroring email_threads.deal_id), so nothing at
 // the database level rejects an id that names no record. Check both before the write so a bad id
 // from a caller that never rendered the picker (MCP, an import) is a typed error, not a silent

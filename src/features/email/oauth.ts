@@ -3,8 +3,11 @@ import { sql } from "drizzle-orm";
 import { env } from "@/config/env";
 import { AppError } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
+import { recordSecurityEvent } from "@/features/auth/management/audit";
 import { err, ok, type Result } from "@/types/result";
 import { encryptToken } from "./crypto";
+import { lockMailboxSession } from "./mailConnectionProofContext";
+import { hasPendingGmailRevocation } from "./oauthState";
 
 // Postgres unique_violation. A second user binding an address already connected to
 // another user trips email_accounts.email_address UNIQUE.
@@ -39,7 +42,11 @@ export interface GoogleIdentity {
 // Gmail-specific consent URL. Distinct from the LOGIN flow in auth/google.ts:
 // broader scopes, the Gmail callback redirect, offline access, and forced consent
 // so Google always returns a refresh token.
-export function buildAuthUrl(args: { userId: string; state: string }): string {
+export function buildAuthUrl(args: {
+  userId: string;
+  state: string;
+  codeChallenge: string;
+}): string {
   const p = new URLSearchParams({
     client_id: env.GOOGLE_OAUTH_CLIENT_ID,
     redirect_uri: `${env.BASE_URL}/api/gmail/oauth/callback`,
@@ -49,6 +56,8 @@ export function buildAuthUrl(args: { userId: string; state: string }): string {
     hd: env.GOOGLE_WORKSPACE_DOMAIN,
     scope: SCOPES.join(" "),
     state: args.state,
+    code_challenge: args.codeChallenge,
+    code_challenge_method: "S256",
   });
   return `https://accounts.google.com/o/oauth2/v2/auth?${p.toString()}`;
 }
@@ -82,6 +91,19 @@ function pgErrorCode(e: unknown): string | undefined {
   return undefined;
 }
 
+async function providerRequest<T>(
+  request: () => Promise<Result<T, AppError>>,
+  signal: AbortSignal,
+): Promise<Result<T, AppError>> {
+  try {
+    return await request();
+  } catch (error) {
+    signal.throwIfAborted();
+    if (error instanceof Error && error.name === "AbortError") throw error;
+    return err(new AppError("E_GMAIL_001", "gmail provider unavailable", {}));
+  }
+}
+
 // Security core: exchange the code, fetch the Google identity, and bind the
 // mailbox to the signed-in user ONLY when the identity is verified, in our
 // workspace domain, and addresses the same account. Any mismatch rejects with
@@ -89,17 +111,31 @@ function pgErrorCode(e: unknown): string | undefined {
 // the DB write always hits real Postgres.
 export async function exchangeAndBind(args: {
   db: Db;
+  signal: AbortSignal;
   code: string;
   sessionUserId: string;
+  sessionId: string;
   sessionEmail: string;
   deps: {
-    exchangeCode: (code: string) => Promise<Result<TokenInfo, AppError>>;
-    fetchIdentity: (accessToken: string) => Promise<Result<GoogleIdentity, AppError>>;
+    exchangeCode: (code: string, signal: AbortSignal) => Promise<Result<TokenInfo, AppError>>;
+    fetchIdentity: (
+      accessToken: string,
+      signal: AbortSignal,
+    ) => Promise<Result<GoogleIdentity, AppError>>;
   };
 }): Promise<Result<{ accountId: string }, AppError>> {
-  const tokens = await args.deps.exchangeCode(args.code);
+  args.signal.throwIfAborted();
+  const tokens = await providerRequest(
+    () => args.deps.exchangeCode(args.code, args.signal),
+    args.signal,
+  );
+  args.signal.throwIfAborted();
   if (!tokens.ok) return tokens;
-  const ident = await args.deps.fetchIdentity(tokens.value.accessToken);
+  const ident = await providerRequest(
+    () => args.deps.fetchIdentity(tokens.value.accessToken, args.signal),
+    args.signal,
+  );
+  args.signal.throwIfAborted();
   if (!ident.ok) return ident;
 
   const id = ident.value;
@@ -114,28 +150,84 @@ export async function exchangeAndBind(args: {
 
   const enc = encryptToken(tokens.value.refreshToken);
   try {
-    const res = await args.db.execute(sql`
-      INSERT INTO email_accounts (user_id, email_address, refresh_token_enc, scopes, status)
-      VALUES (${args.sessionUserId}, ${norm(id.email)}, ${enc}, ${JSON.stringify(tokens.value.scopes)}::jsonb, 'connected')
-      ON CONFLICT (user_id) DO UPDATE SET
-        email_address = EXCLUDED.email_address,
-        refresh_token_enc = EXCLUDED.refresh_token_enc,
-        scopes = EXCLUDED.scopes,
-        status = 'connected',
-        last_error_id = NULL,
-        updated_at = now()
-      RETURNING id
-    `);
-    const row = res.rows[0] as { id: string } | undefined;
-    if (row === undefined) {
-      return err(new AppError("E_AUTH_001", "gmail account upsert returned no row", {}));
-    }
-    return ok({ accountId: row.id });
+    return await args.db.transaction(async (tx) => {
+      if (
+        !(await lockMailboxSession(
+          tx,
+          { actorId: args.sessionUserId, sessionId: args.sessionId },
+          args.signal,
+        ))
+      )
+        return err(new AppError("E_AUTH_009", "fresh native authentication required", {}));
+      const currentOwner = (
+        await tx.execute(sql`SELECT email FROM users WHERE id=${args.sessionUserId}`)
+      ).rows[0] as { email: string };
+      if (norm(currentOwner.email) !== norm(args.sessionEmail))
+        return err(new AppError("E_AUTH_001", "gmail identity changed during authorization", {}));
+      if (await hasPendingGmailRevocation(tx, args.sessionUserId, id.email, args.signal))
+        return err(
+          new AppError("E_GMAIL_006", "previous gmail revocation pending", {
+            reason: "revocation_pending",
+          }),
+        );
+      const existing = (
+        await tx.execute(sql`
+        SELECT id,user_id,provider,is_default FROM email_accounts WHERE email_address=${norm(id.email)}
+      `)
+      ).rows[0] as
+        | { id: string; user_id: string; provider: string; is_default: boolean }
+        | undefined;
+      if (
+        existing !== undefined &&
+        (existing.user_id !== args.sessionUserId || existing.provider !== "gmail")
+      )
+        return err(new AppError("E_GMAIL_006", "gmail address already connected", {}));
+      const currentDefault = (
+        await tx.execute(sql`
+        SELECT id FROM email_accounts WHERE user_id=${args.sessionUserId} AND is_default=true AND status<>'disconnected'
+      `)
+      ).rows[0];
+      const makeDefault = existing?.is_default === true || currentDefault === undefined;
+      if (makeDefault)
+        await tx.execute(
+          sql`UPDATE email_accounts SET is_default=false WHERE user_id=${args.sessionUserId} AND is_default=true`,
+        );
+      const res =
+        existing === undefined
+          ? await tx.execute(sql`
+            INSERT INTO email_accounts (user_id,email_address,provider,refresh_token_enc,scopes,status,is_default)
+            VALUES (${args.sessionUserId},${norm(id.email)},'gmail',${enc},${JSON.stringify(tokens.value.scopes)}::jsonb,'connected',
+              ${makeDefault})
+            RETURNING id
+          `)
+          : await tx.execute(sql`
+            UPDATE email_accounts SET refresh_token_enc=${enc},credentials_enc=NULL,
+              scopes=${JSON.stringify(tokens.value.scopes)}::jsonb,status='connected',paused=false,is_default=${makeDefault},
+              connection_generation=connection_generation+1,credential_version=credential_version+1,last_error_id=NULL,updated_at=now()
+            WHERE id=${existing.id} AND user_id=${args.sessionUserId} AND provider='gmail'
+            RETURNING id
+          `);
+      args.signal.throwIfAborted();
+      const row = res.rows[0] as { id: string } | undefined;
+      if (row === undefined)
+        return err(new AppError("E_AUTH_001", "gmail binding returned no account", {}));
+      await recordSecurityEvent(
+        tx,
+        {
+          actorId: args.sessionUserId,
+          targetUserId: args.sessionUserId,
+          action: existing === undefined ? "mailbox.connected" : "mailbox.reconnected",
+          outcome: "success",
+          metadata: { accountId: row.id, provider: "gmail" },
+        },
+        args.signal,
+      );
+      args.signal.throwIfAborted();
+      return ok({ accountId: row.id });
+    });
   } catch (e) {
-    // The ON CONFLICT targets user_id, so a collision on the separate
-    // email_address UNIQUE means this Gmail address is already bound to a
-    // DIFFERENT user. Surface it as a value, never a 500; the other user's row
-    // is left untouched. Do not log token contents.
+    // Another owner may win the globally unique address after our lookup.
+    // Surface that race as a binding conflict without changing the winning row.
     if (pgErrorCode(e) === PG_UNIQUE_VIOLATION) {
       return err(new AppError("E_GMAIL_006", "gmail address already bound to another user", {}));
     }

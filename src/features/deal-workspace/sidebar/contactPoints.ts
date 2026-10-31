@@ -1,15 +1,25 @@
-import type { ContactPoint } from "@/types/contactPoint";
+import type { ContactPoint, PhonePointMetadata } from "@/types/contactPoint";
+import { isPhoneCountry } from "@/utils/phoneNormalization";
 
 export const DEFAULT_POINT_LABEL = "work";
 
-export type StoredContactPoint = { label: string; value: string; primary?: boolean };
+export type StoredContactPoint = {
+  label: string;
+  value: string;
+  primary?: boolean;
+} & PhonePointMetadata;
 
 function fold(value: string): string {
   return value.trim().toLowerCase();
 }
 
 function normalize(point: StoredContactPoint): ContactPoint {
-  return { label: point.label, value: point.value, primary: point.primary === true };
+  return {
+    label: point.label,
+    value: point.value,
+    primary: point.primary === true,
+    ...(isPhoneCountry(point.country) ? { country: point.country } : {}),
+  };
 }
 
 export function orderedPoints(
@@ -78,10 +88,13 @@ export function appendPoint(points: readonly ContactPoint[]): ContactPoint[] {
   ];
 }
 
-export function committedPoints(points: readonly StoredContactPoint[]): ContactPoint[] {
+export function committedPoints(
+  points: readonly StoredContactPoint[],
+  preserveRaw = false,
+): ContactPoint[] {
   const filled = points
-    .map((p) => ({ ...normalize(p), value: p.value.trim() }))
-    .filter((p) => p.value !== "");
+    .map((p) => ({ ...normalize(p), value: preserveRaw ? p.value : p.value.trim() }))
+    .filter((p) => p.value.trim() !== "");
   const primaryIndex = filled.findIndex((p) => p.primary);
   const leadIndex = primaryIndex === -1 ? 0 : primaryIndex;
   return filled.map((p, i) => ({ ...p, primary: i === leadIndex }));

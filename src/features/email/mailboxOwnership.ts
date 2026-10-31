@@ -2,14 +2,14 @@ import { sql } from "drizzle-orm";
 import type { EMAIL_ACCOUNT_STATUS } from "@/constants/email";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
+import type { DbOrTx } from "@/server/realtime/channelVersions";
 import { err, ok, type Result } from "@/types/result";
 
 // Confirm a mailbox belongs to the actor BEFORE any token decrypt/refresh side effect
 // (Codex finding F5). A missing account and a non-owned account return the SAME error so
 // a caller cannot probe which account ids exist. Mirrors the ownership check inside
 // runSend (send.ts) but runs first, in the action, ahead of ensureAccessToken.
-// The viewer's own connected mailbox (email_accounts.user_id is UNIQUE, so at most one),
-// used to mount the deal composer. Returns null when the actor has not linked Gmail.
+// Existing callers use the default sender, with a deterministic legacy fallback.
 export async function getActorMailbox(
   db: Db,
   actorId: string,
@@ -17,7 +17,11 @@ export async function getActorMailbox(
 ): Promise<{ id: string; emailAddress: string } | null> {
   signal.throwIfAborted();
   const row = (
-    await db.execute(sql`SELECT id, email_address FROM email_accounts WHERE user_id=${actorId}`)
+    await db.execute(sql`
+      SELECT id, email_address FROM email_accounts WHERE user_id=${actorId}
+      ORDER BY (status='connected' AND NOT paused AND coalesce((capabilities->>'send')::boolean,true)) DESC,
+        is_default DESC, created_at, id LIMIT 1
+    `)
   ).rows[0] as { id: string; email_address: string } | undefined;
   if (row === undefined) return null;
   return { id: row.id, emailAddress: row.email_address };
@@ -33,7 +37,7 @@ export interface ActorMailboxStatus {
   lastErrorId: string | null;
 }
 
-// Read the actor's single mailbox (email_accounts.user_id is UNIQUE) with exactly the
+// Read the actor's default mailbox with exactly the
 // fields the Email sync settings page needs: connection status, last successful sync, and
 // last error id. Returns null when the actor has never linked Gmail. NEVER selects or
 // returns token bytes (refresh_token_enc stays out of the projection).
@@ -47,6 +51,7 @@ export async function getActorMailboxStatus(
     await db.execute(sql`
       SELECT id, email_address, status, last_sync_at, last_error_id
       FROM email_accounts WHERE user_id=${actorId}
+      ORDER BY is_default DESC, created_at, id LIMIT 1
     `)
   ).rows[0] as
     | {
@@ -89,7 +94,7 @@ export async function assertMailboxOwner(
 // Confirm a signature belongs to the actor. Missing and not-owned return the same error
 // so a caller cannot probe which signature ids exist.
 export async function assertSignatureOwner(
-  db: Db,
+  db: DbOrTx,
   signatureId: string,
   actorId: string,
   signal: AbortSignal,
