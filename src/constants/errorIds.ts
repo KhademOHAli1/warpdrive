@@ -191,6 +191,8 @@ export const ERROR_IDS = {
   UI_CHART_CONTEXT_MISSING: "E_UI_001", // a chart part rendered outside its ChartContainer
   UI_STALE_BUILD: "E_UI_002", // server action posted from a page loaded before the running deploy
   UI_ACTION_UNCONFIRMED: "E_UI_003", // action rejected without returning a Result: answer was lost
+  // PRIVACY
+  PRIVACY_EVIDENCE_UNREADABLE: "E_PRIVACY_001", // malformed, substituted or unauthenticated privacy ciphertext
 } as const;
 
 export type ErrorId = (typeof ERROR_IDS)[keyof typeof ERROR_IDS];
