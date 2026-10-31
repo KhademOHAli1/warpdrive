@@ -1,4 +1,4 @@
-# Shared mail/platform agreement proposal
+# Shared mail/platform coordination agreement and API proposal
 
 31 October 2026. Coordination authority was verified directly in source chat
 `01a18868-3300-7dc2-b49d-c3bdb067fae7`: human reply
@@ -11,6 +11,23 @@ Mail's prepared `docs/mail-platform-reconciliation.md` was read in
 `a1a8f6da1ce366c35002900bf33508356dfbb995`; mail code/migrations remain uncommitted.
 Platform checkpoint is `82f76438d1a4e41b8d3b8ed8edffceb76ed41c66`, qualified source
 `89adc8158f3e04c14e48ed6258e14abf3f179cc7`. Preserve both source trees and previews.
+
+## Acknowledged coordination state
+
+The mail owner accepted the responsibility split and exclusive integrated reservation
+0085 through 0091 by return message in the authorized source chat. The active local-88 mail
+preview remains untouched. The closed projection/control/API details remain under peer review;
+no shared schema/runtime implementation or two-way API acceptance is inferred from the
+numbering acknowledgement.
+
+Platform selected a separate combined candidate as the preferred metadata handoff: use the
+actual common 0082 snapshot and platform 0084 as a three-way merge base, compare each cumulative
+mail snapshot delta, retain disjoint platform/mail changes, and stop on a common-key conflict.
+Generate fresh combined snapshot IDs/prevId chain and 0085 through 0091 journal entries.
+Validate SQL/backfills and clean/upgrade preservation, final Drizzle no-schema-diff, custom
+workflow guards and mail certainty. Mail prepares that immutable candidate; platform retains
+final integrated journal/metadata review and acceptance. Matching PostgreSQL 16 container
+clients can perform its disposable restore checks without changing global host tools.
 
 ## Named responsibility
 
@@ -47,7 +64,7 @@ inside that range. Proposed mapping of the mail-only disposable sequence:
 | 0088 explicit remote-trash intent                        | 0090            | Mail prepares, platform integrates/reviews |
 | Pending sourceFingerprint locator extension, if required | 0091 reserved   | Mail owns until handoff                    |
 
-This is a source-integration reservation, awaiting the peer's acknowledgement. It is not
+This source-integration reservation was acknowledged by the mail owner. It is not
 permission to rename files on an installed database or reset the active mail preview. Because
 mail reports only disposable local use, it can prepare a new immutable source cut against the
 combined platform baseline in another isolated checkout/database. Preserve existing local
@@ -185,7 +202,7 @@ current EVT outbox is still to be implemented under the reviewed architecture co
 
 ## Safe integration sequence and evidence
 
-1. Both owners acknowledge this reservation and API direction; record changes explicitly.
+1. Ownership and reservation are acknowledged. Finish the closed API mapping review and record any corrections explicitly.
 2. Mail creates a reviewable committed handoff while preserving its active UI/auth/mail work
    and ongoing tests. Platform does not stage or copy the dirty tree.
 3. Platform inventories/adopts current committed auth refinements and the selected clean
