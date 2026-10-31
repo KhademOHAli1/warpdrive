@@ -582,6 +582,27 @@
       "when": 1793439305973,
       "tag": "0082_shocking_beast",
       "breakpoints": true
+    },
+    {
+      "idx": 83,
+      "version": "7",
+      "when": 1793457595775,
+      "tag": "0083_privacy_foundations",
+      "breakpoints": true
+    },
+    {
+      "idx": 84,
+      "version": "7",
+      "when": 1793458105911,
+      "tag": "0084_privacy_policy_deadlines",
+      "breakpoints": true
+    },
+    {
+      "idx": 85,
+      "version": "7",
+      "when": 1793458528968,
+      "tag": "0085_privacy_identity",
+      "breakpoints": true
     }
   ]
 }

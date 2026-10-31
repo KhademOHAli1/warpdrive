@@ -1,0 +1,56 @@
+export const syntheticPolicyProfile = () => ({
+  controller: {
+    identity: "Synthetic controller",
+    role: "controller",
+    privacyContact: "privacy@example.test",
+    controllerContact: "operator@example.test",
+  },
+  jurisdictions: ["synthetic-reviewed-EU-profile"],
+  purposes: [
+    {
+      id: "crm-operations",
+      description: "Synthetic permitted CRM administration",
+      ground: "Synthetic reviewed ground",
+      retentionProfile: "operator-disabled-active-crm",
+    },
+  ],
+  recipients: [
+    {
+      id: "local-storage",
+      kind: "storage",
+      enabled: true,
+      identity: "Synthetic local storage operator",
+      role: "processor",
+      locations: ["Synthetic local environment"],
+      transferReview: "synthetic-transfer-review",
+      contractReference: "synthetic-contract-review",
+    },
+    ...(["smtp", "analytics", "enrichment", "backup"] as const).map((kind) => ({
+      id: `synthetic-${kind}`,
+      kind,
+      enabled: false,
+      identity: null,
+      role: null,
+      locations: null,
+      transferReview: null,
+      contractReference: null,
+    })),
+  ],
+  retention: {
+    activeCrm: { enabled: false, days: null, anchor: null, reviewReference: null },
+    caseMetadataDays: null,
+    exportHours: 24,
+    grantMinutes: 5,
+    approvalHours: 24,
+    authBodyDays: 7,
+    authMetadataDays: 180,
+  },
+  rights: { disclosureEnabled: false, eligibilityReview: null },
+  deadline: {
+    jurisdiction: "synthetic-reviewed-EU-profile",
+    timeZone: "Europe/Berlin",
+    responseMonths: 1,
+    maxExtensionMonths: 2,
+    disambiguation: "reject",
+  },
+});

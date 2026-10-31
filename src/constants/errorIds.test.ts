@@ -11,6 +11,7 @@ describe("error IDs", () => {
     // JOBS covers the background-queue boundary. OAUTH covers the MCP authorization server.
     // GOAL covers quota goals and their progress. ENRICH covers the lead-research providers.
     // UI covers design-system invariants, e.g. a chart part rendered outside its container.
+    // PRIVACY covers authenticated privacy evidence and lifecycle operations.
     const domains = [
       "AUTH",
       "OAUTH",
@@ -40,6 +41,7 @@ describe("error IDs", () => {
       "LOSTREASON",
       "ENRICH",
       "UI",
+      "PRIVACY",
     ];
     for (const id of Object.values(ERROR_IDS)) {
       const m = /^E_([A-Z]+)_(\d{3})$/.exec(id);
