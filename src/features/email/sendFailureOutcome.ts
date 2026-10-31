@@ -31,6 +31,7 @@ export async function sendFailureOutcome(
     args.signal.throwIfAborted();
     if (!row) return ok(review);
     const outcome = draftSendOutcome(row.receipt);
+    if (row.claimed && outcome?.status === "pending") return ok(outcome);
     const state = outcome?.deliveryOutcome?.state;
     if (
       row.send_started_at !== null ||
