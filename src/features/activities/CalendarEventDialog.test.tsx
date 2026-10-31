@@ -56,7 +56,7 @@ afterEach(() => {
 
 const labels = {
   en: {
-    title: "Subject",
+    title: "Event title",
     create: "New event",
     more: "More options",
     fewer: "Fewer options",
@@ -66,11 +66,13 @@ const labels = {
     allDay: "All day",
     location: "Location",
     meeting: "Meeting link",
+    addMeeting: "Add video meeting",
+    applyLink: "Apply link",
     save: "Save",
     zone: "UTC",
   },
   fa: {
-    title: "موضوع",
+    title: "عنوان رویداد",
     create: "رویداد جدید",
     more: "گزینه‌های بیشتر",
     fewer: "گزینه‌های کمتر",
@@ -80,11 +82,13 @@ const labels = {
     allDay: "تمام روز",
     location: "مکان",
     meeting: "پیوند جلسه",
+    addMeeting: "افزودن جلسهٔ آنلاین",
+    applyLink: "ثبت پیوند",
     save: "ذخیره",
     zone: "Asia/Tehran",
   },
   de: {
-    title: "Betreff",
+    title: "Termintitel",
     create: "Neuer Termin",
     more: "Weitere Optionen",
     fewer: "Weniger Optionen",
@@ -94,6 +98,8 @@ const labels = {
     allDay: "Ganztägig",
     location: "Ort",
     meeting: "Besprechungslink",
+    addMeeting: "Videobesprechung hinzufügen",
+    applyLink: "Link übernehmen",
     save: "Speichern",
     zone: "Europe/Berlin",
   },
@@ -138,6 +144,7 @@ describe.each(["fa", "de", "en"] as Locale[])("calendar event workflow in %s", (
   it("keeps one draft through quick/details and timed/all-day transitions, then saves it", async () => {
     actions.createActivityAction.mockResolvedValue({ ok: true, value: { id: "created" } });
     open();
+    expect(screen.getByLabelText(l.title)).toHaveAttribute("dir", locale === "fa" ? "rtl" : "ltr");
     expect(screen.getByRole("dialog", { name: l.create })).toHaveAttribute(
       "dir",
       locale === "fa" ? "rtl" : "ltr",
@@ -147,9 +154,11 @@ describe.each(["fa", "de", "en"] as Locale[])("calendar event workflow in %s", (
     });
     fireEvent.click(screen.getByRole("button", { name: l.more }));
     fireEvent.change(screen.getByLabelText(l.location), { target: { value: "تهران / Berlin" } });
-    fireEvent.change(screen.getByLabelText(l.meeting), {
+    fireEvent.click(screen.getByRole("button", { name: l.addMeeting }));
+    fireEvent.change(screen.getByRole("textbox", { name: l.meeting }), {
       target: { value: "https://meet.google.com/abc-defg-hij" },
     });
+    fireEvent.click(screen.getByRole("button", { name: l.applyLink }));
     fireEvent.change(screen.getByLabelText("Description editor"), {
       target: { value: "<p>برنامهٔ جلسه / Tagesordnung</p>" },
     });
@@ -197,7 +206,7 @@ it("accepts Persian clock digits and moves the end without changing duration", a
       <CalendarEventDialog defaultDate="2027-03-21" defaultTime="09:00" onClose={vi.fn()} />
     </LocaleProvider>,
   );
-  fireEvent.change(screen.getByLabelText("موضوع"), { target: { value: "جلسهٔ نوروزی" } });
+  fireEvent.change(screen.getByLabelText("عنوان رویداد"), { target: { value: "جلسهٔ نوروزی" } });
   expect(screen.getByLabelText("تاریخ شروع")).toHaveTextContent("۱۴۰۶");
   fireEvent.change(screen.getByLabelText("ساعت شروع"), { target: { value: "۱۰:۳۰" } });
   fireEvent.blur(screen.getByLabelText("ساعت شروع"));
@@ -239,7 +248,12 @@ it("retains the completion workflow and reports it to the follow-up caller", asy
   actions.completeActivityAction.mockResolvedValue({ ok: true });
   const onMarkedDone = vi.fn();
   render(<CalendarEventDialog editing={stored} onClose={vi.fn()} onMarkedDone={onMarkedDone} />);
-  fireEvent.click(screen.getByRole("button", { name: "Mark as done" }));
+  fireEvent.pointerDown(screen.getByRole("button", { name: "Event actions" }), {
+    button: 0,
+    ctrlKey: false,
+    pointerType: "mouse",
+  });
+  fireEvent.click(await screen.findByRole("menuitem", { name: "Mark as done" }));
   await waitFor(() => expect(onMarkedDone).toHaveBeenCalledWith(stored.id));
   expect(actions.completeActivityAction).toHaveBeenCalledWith(
     { id: stored.id, done: true },

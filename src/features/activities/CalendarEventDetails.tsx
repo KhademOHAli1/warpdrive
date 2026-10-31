@@ -1,73 +1,57 @@
 "use client";
-import { MapPin, StickyNote, Video } from "lucide-react";
+import { MapPin } from "lucide-react";
+import { useState } from "react";
+import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { Select } from "@/components/ui/Select";
-import { ACTIVITY_PRIORITY_KEYS } from "@/constants/activityPriorities";
-import { ComposerFieldRow } from "@/features/deal-workspace/composer/ComposerFieldRow";
 import type { ActivityDraft } from "@/features/deal-workspace/composer/composerHelpers";
-import { RichTextBody } from "@/features/email/composer/RichTextBodyLazy";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
-import { useActivitiesMessages } from "./useActivitiesMessages";
+import { CalendarEventDescription } from "./CalendarEventDescription";
+import { CalendarMeetingField } from "./CalendarMeetingField";
 
 export function CalendarEventDetails({
   draft,
+  expanded,
   onChange,
 }: {
   draft: ActivityDraft;
+  expanded: boolean;
   onChange: (patch: Partial<ActivityDraft>) => void;
 }): React.ReactNode {
   const t = useAppTranslations("calendar");
-  const S = useActivitiesMessages();
+  const [locationOpen, setLocationOpen] = useState(false);
   return (
-    <div className="space-y-5 border-t pt-5">
-      <Select
-        ariaLabel={S.priority}
-        value={draft.priority}
-        onChange={(priority) => onChange({ priority })}
-        options={[
-          { value: "", label: S.noPriority },
-          ...ACTIVITY_PRIORITY_KEYS.map((key) => ({
-            value: key,
-            label: S.priorities[key],
-          })),
-        ]}
-      />
-      <ComposerFieldRow icon={<MapPin className="size-4" />}>
-        <Input
-          aria-label={t("editor.location")}
-          placeholder={t("editor.locationPlaceholder")}
-          value={draft.location}
-          maxLength={255}
-          onChange={(event) => onChange({ location: event.target.value })}
-        />
-      </ComposerFieldRow>
-      <ComposerFieldRow icon={<Video className="size-4" />} iconAlign="top">
-        <div className="space-y-1.5">
+    <div className="space-y-4">
+      {expanded || locationOpen || draft.location !== "" ? (
+        <div className="flex items-center gap-3">
+          <MapPin className="size-4 shrink-0 text-muted-foreground" aria-hidden />
           <Input
-            aria-label={t("editor.meetingLink")}
-            dir="ltr"
-            type="url"
-            value={draft.videoCallUrl}
-            maxLength={2048}
-            onChange={(event) => onChange({ videoCallUrl: event.target.value })}
+            aria-label={t("editor.location")}
+            placeholder={t("editor.locationPlaceholder")}
+            value={draft.location}
+            maxLength={255}
+            onChange={(event) => onChange({ location: event.target.value })}
+            className="border-transparent bg-muted/25 hover:border-input"
           />
-          <p className="text-xs leading-relaxed text-muted-foreground">
-            {t("editor.meetingLinkHint")}
-          </p>
         </div>
-      </ComposerFieldRow>
-      <ComposerFieldRow icon={<StickyNote className="size-4" />} iconAlign="top">
-        <div className="min-w-0 space-y-2">
-          <p className="text-sm font-medium">{t("editor.description")}</p>
-          <div className="overflow-hidden rounded-md border bg-warning/10">
-            <RichTextBody
-              ariaLabel={t("editor.description")}
-              html={draft.note}
-              onChange={(note) => onChange({ note })}
-            />
-          </div>
-        </div>
-      </ComposerFieldRow>
+      ) : (
+        <Button
+          variant="ghost"
+          className="w-full justify-start px-0 font-normal text-muted-foreground"
+          onClick={() => setLocationOpen(true)}
+        >
+          <MapPin className="me-2 size-4" aria-hidden />
+          {t("editor.addLocation")}
+        </Button>
+      )}
+      <CalendarMeetingField
+        value={draft.videoCallUrl}
+        onChange={(videoCallUrl) => onChange({ videoCallUrl })}
+      />
+      <CalendarEventDescription
+        value={draft.note}
+        expanded={expanded}
+        onChange={(note) => onChange({ note })}
+      />
     </div>
   );
 }
