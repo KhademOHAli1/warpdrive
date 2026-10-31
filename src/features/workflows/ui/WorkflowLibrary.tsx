@@ -69,7 +69,7 @@ export function WorkflowLibrary({ canCreate }: { canCreate: boolean }) {
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
+            <h1 className="text-display font-semibold tracking-tight">{t("title")}</h1>
             <Badge variant="outline">{t("early")}</Badge>
           </div>
           <p className="mt-2 text-sm text-muted-foreground">{t("subtitle")}</p>

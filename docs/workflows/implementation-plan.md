@@ -10,6 +10,10 @@ This is the approved execution backlog, not a statement that all features alread
 
 ## Source baseline and reuse
 
+Implementation update: the isolated workflow branch incorporates fork main `8539fe8`, including
+the merged Better Auth implementation and current UI. Workflow migration `0083_visual_workflows.sql`
+follows those authentication migrations. The earlier inspection snapshot below remains historical.
+
 Read-only inspection: `/tmp/warpdrive-better-auth-20261031`, branch `codex/better-auth`, base commit `01dd1dda4e4a6944f4bb46c7a504d6848a9ccae2`, with substantial in-progress changes owned by the main conversation. This identifies the inspected source snapshot; it is not a fresh remote synchronization claim. Recheck the selected implementation branch, remote head, active work, and ownership before any later implementation.
 
 Verified source foundations:

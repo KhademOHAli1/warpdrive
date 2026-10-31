@@ -1,33 +1,74 @@
 ---
 title: Visual workflows
-description: "Implementation status and intended authoring, testing, publishing, and inspection workflow for Warpdrive automations."
+description: "Create, simulate, publish, and run manual deal follow-up workflows."
 ---
 
 # Visual workflows
 
-**Status: implementation in progress.** The first increment adds internal definition validation, permissions, and draft/version persistence. The application does not yet expose a visual builder or execute these definitions. Existing scheduled email and activity reminders continue to use their existing workers.
+**Early access:** the first workflow editor supports a manual start, reading a visible deal,
+and creating one or more follow-up tasks. Automatic CRM triggers, conditions, waits, email,
+and provider integrations remain in development. Existing email scheduling and reminders
+continue to use their existing workers.
 
-## Planned authoring experience
+## Create and configure
 
-Create a workflow from a template or a blank trigger, add actions on a visual canvas or ordered-step view, and configure the selected step in a contextual panel. Use a variable picker to reference typed data from earlier steps. Conditions have named outcomes and explicit destinations.
+Open **Workflows** in the sidebar and choose **New workflow**. Name your workflow, then
+configure the follow-up template. Choose a step on the canvas or in the keyboard-accessible
+step selector. The settings panel lets you rename a step and enter a task title or use the
+deal title from the preceding read step. Add or remove task steps as needed.
 
-Saving preserves a draft. Testing uses sample data and simulates external effects by default. Publication reviews the trigger, execution identity, permissions, connections, and effects before activating an immutable version. Existing runs stay attached to their original version.
+The initial task action creates an undated task linked to the chosen deal and assigned to
+the person who starts the run. Assignees, due dates, other activity types, and arbitrary
+record modifications are not configurable in this release.
 
-The run inspector will show the executed path, step attempts, waiting conditions, redacted inputs/outputs, and actionable failures. Retry and cancellation need to respect effects that have already completed.
+![Farsi workflow editor with contextual task settings](../../../docs/images/workflows/editor-fa.jpg)
 
-## Delivery sequence
+Current early-access Farsi UI, captured 31 October 2026 with synthetic local data.
 
-1. Definition/version foundation, then a permission-checked manual CRM execution.
-2. Workflow library, visual editor, typed data mapping, conditions, persistent waits, testing, publication, and run inspection.
-3. Iranian calendar recurrence, business calendars, webhooks, and provider connections.
-4. Approvals, bounded loops, sub-workflows, and open source extension contracts.
+**Save draft** preserves edits. Drafts and published versions are separate. A conflicting
+save leaves your draft in the editor and asks you to reconcile it, rather than overwriting
+another user's changes.
 
-Farsi, German, and English are required throughout. Display language, scheduling calendar, and timezone remain independent.
+## Publish and simulate
 
-## Scope of current permissions
+**Publish** validates the graph and mappings, requires recent authentication through
+Settings > Security, and activates an immutable version. Editing afterwards changes only
+the draft. Existing runs retain their original published version.
 
-Permission sets now include workflow view, create, edit, publish, run, and cancel flags. Regular users operate on their own workflows; administrators retain explicit administrative authority. Publishing is a high-risk permission. These flags prepare the feature and do not enable a UI or execution service by themselves.
+Select **Simulate**, search for a deal you can access, select it, and confirm. Simulation
+uses the published version and the same CRM validation as a live run, then rolls back task
+changes. Run history is retained. Publication is currently required before simulation.
 
-## Implementation references
+## Run and inspect
 
-The repository's `docs/workflows/` directory holds the approved task plan, UX journeys, exact Mobbin references, architecture decisions, and status ledger. Consult that ledger for completed task evidence. Calendar/conferencing and analytics specifications remain separate projects until their implementations are available.
+Select **Run workflow**, choose a deal, and review the confirmation. This creates real
+tasks. Runs are processed by the background worker, even after the browser closes. A
+missed enqueue is recovered at worker startup or by its minutely reconciliation job.
+
+**Run history** shows simulation/live mode, status, timestamps, completion count, and stable
+failure IDs. Raw CRM inputs and outputs are withheld because historical access may change.
+Detailed redacted step payloads and manual retry are later milestones.
+
+**Cancel run** stops subsequent steps; already committed tasks remain. **Pause** prevents
+new runs while previously admitted runs continue. Publishing reactivates a paused workflow.
+The worker checks the initiating user's current permissions and deal visibility again at
+each step. Losing access or being deactivated stops the run.
+
+## Permissions and languages
+
+Workflow permissions are view, create, edit, publish, run, and cancel. Regular users need
+the corresponding permission and ownership. Administrators retain explicit administrative
+authority. Publishing is classified as high risk and requires fresh authentication.
+
+The interface supports English, Farsi RTL, and German through the shared language system.
+Run timestamps follow the account's calendar, timezone, and digit preferences, including
+the Iranian calendar. Calendar display does not enable Iranian recurring schedules.
+
+## Remaining delivery stages
+
+The repository's `docs/workflows/` directory contains the approved 42-task plan, exact
+Mobbin flow references, architecture, operational instructions, and verification ledger.
+The initial manual workflow is one milestone within R1. CRM events, richer actions,
+conditions, waits, notifications, controlled email, operational limits, and retention
+remain before the full R1 production candidate. Calendar-aware recurrence and provider
+connections follow in R2; approvals, loops, and sub-workflows follow in R3.

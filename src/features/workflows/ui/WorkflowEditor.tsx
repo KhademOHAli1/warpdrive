@@ -8,6 +8,9 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
+import { IdentityActionError } from "@/features/identity/IdentityActionError";
+import { trpc } from "@/lib/trpc-client";
+import { useFormatters } from "@/lib/useFormatters";
 import { appendTask, removeTask } from "../editorModel";
 import { NodeInspector } from "./NodeInspector";
 import { RunDialog } from "./RunDialog";
@@ -17,6 +20,8 @@ import { WorkflowCanvas } from "./WorkflowCanvas";
 
 export function WorkflowEditor({ initial }: { initial: WorkflowDetail }) {
   const t = useAppTranslations("workflows");
+  const utils = trpc.useUtils();
+  const fmt = useFormatters();
   const editor = useWorkflowEditor(initial);
   const [selected, setSelected] = useState(initial.draft.nodes[0]?.id ?? "start");
   const [tab, setTab] = useState("configure");
@@ -32,6 +37,7 @@ export function WorkflowEditor({ initial }: { initial: WorkflowDetail }) {
   }
   return (
     <div className="mx-auto max-w-[1600px] space-y-5">
+      <h1 className="sr-only">{editor.name}</h1>
       <div className="flex items-center justify-between gap-4">
         <Link
           href="/workflows"
@@ -52,7 +58,7 @@ export function WorkflowEditor({ initial }: { initial: WorkflowDetail }) {
             value={editor.name}
             disabled={!editable}
             maxLength={120}
-            className="h-11 max-w-xl border-transparent px-0 text-xl font-semibold shadow-none focus-visible:px-3"
+            className="h-11 max-w-xl border-transparent px-0 text-display font-semibold shadow-none focus-visible:px-3 md:text-display"
             onChange={(e) => editor.setName(e.target.value)}
           />
           <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
@@ -97,12 +103,9 @@ export function WorkflowEditor({ initial }: { initial: WorkflowDetail }) {
         </div>
       </header>
       {editor.error !== null && (
-        <p
-          role="alert"
-          className="rounded-lg border border-destructive/20 bg-destructive/5 p-4 text-sm text-destructive"
-        >
-          {editor.error}
-        </p>
+        <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-4 text-sm text-destructive">
+          <IdentityActionError message={editor.error} />
+        </div>
       )}
       {editor.notice !== null && (
         <p role="status" className="rounded-lg border bg-card p-4 text-sm">
@@ -162,7 +165,7 @@ export function WorkflowEditor({ initial }: { initial: WorkflowDetail }) {
                       aria-pressed={selected === item.id}
                       onClick={() => setSelected(item.id)}
                     >
-                      <bdi>{index + 1}</bdi>
+                      <bdi>{fmt.number(index + 1)}</bdi>
                       <span className="max-w-36 truncate">{item.name}</span>
                       {index < editor.definition.nodes.length - 1 && (
                         <ChevronRight className="size-3" />
@@ -178,6 +181,7 @@ export function WorkflowEditor({ initial }: { initial: WorkflowDetail }) {
                       onClick={addTask}
                     >
                       <Plus className="size-4" />
+                      {t("addTask")}
                     </Button>
                   )}
                 </nav>
@@ -185,8 +189,6 @@ export function WorkflowEditor({ initial }: { initial: WorkflowDetail }) {
                   definition={editor.definition}
                   selected={selected}
                   onSelect={setSelected}
-                  onAdd={addTask}
-                  editable={editable}
                 />
               </div>
               <div className="border-t bg-card xl:border-s xl:border-t-0">
@@ -247,6 +249,7 @@ export function WorkflowEditor({ initial }: { initial: WorkflowDetail }) {
           mode={runMode}
           onClose={() => setRunMode(null)}
           onStarted={() => {
+            void utils.workflows.runs.invalidate({ id: initial.id });
             setRunMode(null);
             editor.setNotice(t("queuedHint"));
             setTab("runs");

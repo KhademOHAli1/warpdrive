@@ -13,6 +13,11 @@ This fork is maintained at [KhademOHAli1/warpdrive](https://github.com/KhademOHA
 
 ## Interface and internationalization
 
+See the [Better Auth implementation report](auth-implementation-report.md),
+[operator guide](auth-operations.md), [Farsi guide](auth-operations.fa.md),
+[German guide](auth-operations.de.md), and [current authentication UI](auth-ui-design.md)
+for onboarding, MFA, sessions, recovery, and security policy.
+
 - [UI maintenance](ui-updates.md), shared shadcn primitives, CRM adapters, themes, and RTL.
 - [Localization glossary](i18n-glossary.md), contextual product wording.
 - [Localization status and historical evidence](i18n-progress.md), current summary followed by dated checkpoints.
@@ -26,6 +31,7 @@ This fork is maintained at [KhademOHAli1/warpdrive](https://github.com/KhademOHA
 - [Approved task plan](workflows/implementation-plan.md), dependencies and acceptance criteria.
 - [UX specification and Mobbin references](workflows/ux-design-reference.md), user journeys and reference-to-task mapping.
 - [Architecture decisions](workflows/architecture.md), definitions, publication, persistence, and authority.
+- [Workflow operations](workflows/operations.md), migrations, worker recovery, and current limits.
 - [Public workflow feature guide](../docs-site/docs/features/automations.md), current availability and release boundaries.
 
 ## Specifications for future work

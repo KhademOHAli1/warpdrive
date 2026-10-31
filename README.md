@@ -95,29 +95,29 @@ It retains the upstream relationship, history and MIT attribution.
 The table records this fork's current scope. Planned work is identified separately from
 features available in the application.
 
-|                                                            |                    warpdrive                    |   Pipedrive    |
-| ---------------------------------------------------------- | :---------------------------------------------: | :------------: |
-| License                                                    |                MIT, open source                 |  Proprietary   |
-| Hosting                                                    |           Self-hosted, single-tenant            |  Vendor cloud  |
-| Pricing                                                    |         Free (your infrastructure only)         | Paid, per seat |
-| Your data                                                  |          Stays on your infrastructure           | Vendor servers |
-| Kanban pipeline + custom stages                            |                       ✅                        |       ✅       |
-| Multiple pipelines                                         |                       ✅                        |       ✅       |
-| Deal workspace (activities, notes, files, history)         |                       ✅                        |       ✅       |
-| Contacts and organizations + custom fields                 |                       ✅                        |       ✅       |
-| Leads inbox + CSV import (with undo)                       |                       ✅                        |       ✅       |
-| Two-way Gmail (send/receive, threads, open/click tracking) |                       ✅                        |       ✅       |
-| Email templates, signatures, scheduled send                |                       ✅                        |       ✅       |
-| Permissions, teams, user management                        |                       ✅                        |       ✅       |
-| Saved filters                                              |                       ✅                        |       ✅       |
-| Realtime board / inbox / presence                          |                       ✅                        |       ✅       |
-| Notifications                                              |                       ✅                        |       ✅       |
-| Pipeline stats (funnel, performance)                       |                    ✅ Basic                     |  ✅ Advanced   |
-| Products, Projects, Invoicing, Forecast                    |                 ➖ Out of scope                 |       ✅       |
-| Native currency values and separate currency totals        |                       ✅                        |       ✅       |
-| Workflow automation                                        | Email scheduling; visual builder in development |       ✅       |
-| Web forms / chatbot / marketplace                          |                 ➖ Out of scope                 |       ✅       |
-| Native mobile apps                                         |                   ➖ Web app                    |       ✅       |
+|                                                            |                     warpdrive                     |   Pipedrive    |
+| ---------------------------------------------------------- | :-----------------------------------------------: | :------------: |
+| License                                                    |                 MIT, open source                  |  Proprietary   |
+| Hosting                                                    |            Self-hosted, single-tenant             |  Vendor cloud  |
+| Pricing                                                    |          Free (your infrastructure only)          | Paid, per seat |
+| Your data                                                  |           Stays on your infrastructure            | Vendor servers |
+| Kanban pipeline + custom stages                            |                        ✅                         |       ✅       |
+| Multiple pipelines                                         |                        ✅                         |       ✅       |
+| Deal workspace (activities, notes, files, history)         |                        ✅                         |       ✅       |
+| Contacts and organizations + custom fields                 |                        ✅                         |       ✅       |
+| Leads inbox + CSV import (with undo)                       |                        ✅                         |       ✅       |
+| Two-way Gmail (send/receive, threads, open/click tracking) |                        ✅                         |       ✅       |
+| Email templates, signatures, scheduled send                |                        ✅                         |       ✅       |
+| Permissions, teams, user management                        |                        ✅                         |       ✅       |
+| Saved filters                                              |                        ✅                         |       ✅       |
+| Realtime board / inbox / presence                          |                        ✅                         |       ✅       |
+| Notifications                                              |                        ✅                         |       ✅       |
+| Pipeline stats (funnel, performance)                       |                     ✅ Basic                      |  ✅ Advanced   |
+| Products, Projects, Invoicing, Forecast                    |                  ➖ Out of scope                  |       ✅       |
+| Native currency values and separate currency totals        |                        ✅                         |       ✅       |
+| Workflow automation                                        | Manual workflows (early access); email scheduling |       ✅       |
+| Web forms / chatbot / marketplace                          |                  ➖ Out of scope                  |       ✅       |
+| Native mobile apps                                         |                    ➖ Web app                     |       ✅       |
 
 ✅ supported · ➖ outside the current implementation
 
@@ -213,8 +213,10 @@ historical illustrations and may precede the current shell.
 
 The [visual workflow builder](docs/workflows/status.md) is in implementation. Its approved
 42-task plan, Mobbin design references, architecture decisions, and verification ledger live
-in `docs/workflows/`. The first increment adds internal definition/version foundations;
-a user-facing editor and execution engine are not yet available. Personal workflow preferences
+in `docs/workflows/`. The early-access builder supports manually reading a visible deal
+and creating follow-up tasks, with a localized editor, simulation, publication,
+background execution, run history, and cancellation. The broader R1 scope is still in progress.
+Personal workflow preferences
 in Settings are a separate existing feature.
 
 ## Self-hosting

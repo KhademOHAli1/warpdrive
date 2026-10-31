@@ -1,6 +1,7 @@
 "use server";
 
 import { ERROR_IDS } from "@/constants/errorIds";
+import { requireFreshIdentityAction } from "@/features/identity/actions/fresh";
 import { guardCsrf } from "@/features/identity/actions/shared";
 import { createContext } from "@/server/trpc/context";
 import { err } from "@/types/result";
@@ -30,6 +31,8 @@ export async function saveWorkflowAction(input: unknown, token: string | null) {
 export async function publishWorkflowAction(id: string, revision: number, token: string | null) {
   const ctx = await authorizedContext(token);
   if (ctx === null) return err(ERROR_IDS.WORKFLOW_DENIED);
+  const fresh = await requireFreshIdentityAction();
+  if (!fresh.ok) return fresh;
   return publishWorkflow(ctx.db, ctx.actor, id, revision, AbortSignal.timeout(10_000));
 }
 export async function pauseWorkflowAction(id: string, revision: number, token: string | null) {

@@ -34,6 +34,10 @@ export function useWorkflowEditor(initial: WorkflowDetail) {
   }, [dirty]);
 
   function report(code: string) {
+    if (code === "fresh_auth_required") {
+      setError(code);
+      return;
+    }
     setError(
       t(
         code === ERROR_IDS.WORKFLOW_CONFLICT

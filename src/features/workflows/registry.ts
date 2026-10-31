@@ -39,7 +39,13 @@ export const actionRegistry: Record<WorkflowNode["type"], ActionSpec> = {
   },
   "activity.create": {
     config: z.strictObject({
-      subject: bindingSchema,
+      subject: bindingSchema.refine(
+        (binding) =>
+          binding.kind === "reference" ||
+          (typeof binding.value === "string" &&
+            binding.value.trim().length > 0 &&
+            binding.value.length <= 255),
+      ),
       dealId: bindingSchema.optional(),
       assigneeId: bindingSchema.optional(),
       dueAt: bindingSchema.optional(),

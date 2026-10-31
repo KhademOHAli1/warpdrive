@@ -36,6 +36,11 @@ function sample(): WorkflowDefinition {
 }
 
 describe("workflow definition boundary", () => {
+  it("rejects a blank literal task title before publication", () => {
+    const definition = sample();
+    definition.nodes[2]!.config.subject = { kind: "value", value: "   " };
+    expect(validateDefinition(definition).ok).toBe(false);
+  });
   it("accepts a reachable, typed manual CRM workflow", () => {
     const result = validateDefinition(sample());
     expect(result.ok).toBe(true);

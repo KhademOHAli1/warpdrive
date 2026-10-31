@@ -1,6 +1,6 @@
 # Visual workflow architecture
 
-Status: initial manual-run implementation, 31 October 2026. Source baseline: fork main `d37518a`, before workflow changes. The first editor and worker are implemented; the complete R1 acceptance scope remains in progress.
+Status: initial manual-run implementation, 31 October 2026. Integration baseline: fork main `8539fe8`, including Better Auth and its current UI. The first editor and worker are implemented; the complete R1 acceptance scope remains in progress.
 
 ## Definitions
 
@@ -16,7 +16,7 @@ Drafts accept structurally valid incomplete configuration so users can save work
 
 Publication locks the workflow row, validates the expected revision, and creates an immutable version with its name, definition, publisher, and timestamp. A repeated publication of the same active content returns that version. Editing the draft does not change the published snapshot.
 
-Migration `0078_visual_workflow_definitions.sql` creates the tables and adds two database guards beyond the generated table schema: a composite foreign key that keeps a published pointer on a version of the same workflow, and a trigger that rejects updates/deletes of published versions. Later migration work must retain these guards. Archive definitions rather than rewriting their history.
+Migration `0083_visual_workflows.sql` creates the tables and adds two database guards beyond the generated table schema: a composite foreign key that keeps a published pointer on a version of the same workflow, and a trigger that rejects updates/deletes of published versions. Later migration work must retain these guards. Archive definitions rather than rewriting their history.
 
 ## Authorization
 

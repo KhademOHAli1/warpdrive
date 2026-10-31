@@ -192,4 +192,8 @@ Use contextual descriptions, for example Farsi «با تغییر مرحلهٔ م
 
 Produce reviewable prototypes for UX-01, UX-03, UX-05/06, UX-08/09, and UX-10 with realistic synthetic workflow data, Farsi RTL and German LTR, and light/dark variants. Include a meaningful validation failure, waiting run, revoked connection, and publication summary. Show the layouts against the current application shell and compare them to M02/M05/M06/M09.
 
-Implementation is approved. Prototypes remain the next design deliverable WF-005 and must be reviewed against the current shell before the application editor is accepted. This specification and the [implementation plan](implementation-plan.md) remain the design contract; implementation progress is recorded in [status.md](status.md).
+Implementation is approved. The [initial working UI review](ui-review.md) records Farsi,
+German, and narrow-screen captures for the manual-flow milestone. The remaining prototype
+states and full WF-005/040 acceptance gates are still open. This specification and the
+[implementation plan](implementation-plan.md) remain the design contract; progress is
+recorded in [status.md](status.md).

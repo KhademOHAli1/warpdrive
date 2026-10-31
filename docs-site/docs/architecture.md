@@ -117,13 +117,18 @@ that is exactly the failure a CRM cannot afford.
 
 See [Contributing](./contributing.md).
 
-## Workflow automation foundation
+## Workflow automation
 
-The in-progress workflow subsystem lives in `src/features/workflows/`. Its initial
-increment defines a bounded versioned graph, registered configuration/input/output
-schemas, predecessor references, owner/capability checks, revision-checked drafts,
-and immutable publication backed by PostgreSQL. Application UI and action execution
-are separate milestones and are not enabled by those tables or permission flags.
+The in-progress workflow subsystem lives in `src/features/workflows/`. It includes
+a bounded versioned graph, typed references, owner/capability checks, revision-checked
+drafts, immutable publication, and a localized visual editor. The initial executable
+path starts manually, reads a visible deal, and creates follow-up tasks.
+
+Run admission pins a published version. CRM database effects and step progress share
+a transaction, and pg-boss startup/minutely reconciliation recovers persisted cursors.
+Simulation invokes the same CRM validation in a rolled-back savepoint. Publication
+requires the existing fresh-authentication check. Historical payloads are excluded
+from UI responses because record visibility can change.
 
 The planned engine will persist events, runs, steps, effects, and waits and use the
 existing pg-boss worker. PostgreSQL NOTIFY is the real-time notification layer;

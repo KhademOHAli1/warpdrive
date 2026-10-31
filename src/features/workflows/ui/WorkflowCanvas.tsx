@@ -7,12 +7,10 @@ import {
   MarkerType,
   type Node,
   type NodeProps,
-  Panel,
   Position,
   ReactFlow,
 } from "@xyflow/react";
-import { CirclePlay, Database, ListTodo, Plus } from "lucide-react";
-import { Button } from "@/components/ui/Button";
+import { CirclePlay, Database, ListTodo } from "lucide-react";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import type { WorkflowDefinition, WorkflowNode } from "../schemas";
 import "@xyflow/react/dist/style.css";
@@ -52,21 +50,17 @@ export function WorkflowCanvas({
   definition,
   selected,
   onSelect,
-  onAdd,
-  editable,
 }: {
   definition: WorkflowDefinition;
   selected: string;
   onSelect: (id: string) => void;
-  onAdd: () => void;
-  editable: boolean;
 }) {
   const t = useAppTranslations("workflows");
   const nodes: FlowNode[] = definition.nodes.map((node, index) => ({
     id: node.id,
     type: "workflow",
     data: { node, index },
-    position: { x: 0, y: index * 155 },
+    position: { x: 0, y: index * 132 },
     selected: selected === node.id,
     ariaLabel: node.name,
   }));
@@ -80,7 +74,7 @@ export function WorkflowCanvas({
   }));
   return (
     <section
-      className="workflow-canvas relative h-[540px] min-w-0 bg-muted/25 lg:h-[650px]"
+      className="workflow-canvas relative h-[clamp(380px,calc(100dvh-360px),650px)] min-w-0 bg-muted/25"
       aria-label={t("canvas")}
     >
       <ReactFlow
@@ -88,7 +82,7 @@ export function WorkflowCanvas({
         edges={edges}
         nodeTypes={nodeTypes}
         fitView
-        fitViewOptions={{ padding: 0.25 }}
+        fitViewOptions={{ padding: 0.15 }}
         nodesDraggable={false}
         nodesConnectable={false}
         deleteKeyCode={null}
@@ -97,6 +91,9 @@ export function WorkflowCanvas({
         disableKeyboardA11y
         onNodeClick={(_, node) => onSelect(node.id)}
         ariaLabelConfig={{
+          "controls.ariaLabel": t("canvas"),
+          "node.a11yDescription.keyboardDisabled": t("nodeDescription"),
+          "edge.a11yDescription.default": t("edgeDescription"),
           "controls.zoomIn.ariaLabel": t("zoomIn"),
           "controls.zoomOut.ariaLabel": t("zoomOut"),
           "controls.fitView.ariaLabel": t("fitView"),
@@ -104,14 +101,6 @@ export function WorkflowCanvas({
       >
         <Background gap={22} size={1} />
         <Controls showInteractive={false} />
-        {editable && (
-          <Panel position="bottom-center">
-            <Button variant="outline" onClick={onAdd} disabled={definition.nodes.length >= 100}>
-              <Plus className="size-4" />
-              {t("addTask")}
-            </Button>
-          </Panel>
-        )}
       </ReactFlow>
     </section>
   );

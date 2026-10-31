@@ -25,7 +25,6 @@ export async function registerAllJobs(boss: PgBossType): Promise<void> {
   await registerAuthMailWorker(boss, db);
   // Update-check cron (OSS self-hosters). No-op when DISABLE_UPDATE_CHECK is set.
   await registerReleaseCheckJob(boss);
-  const { db } = await import("@/db/client");
   await registerWorkflowJobs(boss, db);
 }
 
