@@ -14,6 +14,7 @@ import {
   SettingsCard,
   SettingsCardBody,
 } from "../SettingsSurface";
+import { ImportQueryFeedback } from "./ImportQueryFeedback";
 
 function RowActions({
   batch,
@@ -64,7 +65,8 @@ export function ImportHistory(): React.ReactNode {
   };
   const utils = trpc.useUtils();
   const reportError = useActionError();
-  const batches = trpc.import.listBatches.useQuery().data ?? [];
+  const query = trpc.import.listBatches.useQuery();
+  const batches = query.data;
 
   async function onUndo(batchId: string): Promise<void> {
     const r = await undoImportAction(batchId, readCsrfToken());
@@ -74,44 +76,53 @@ export function ImportHistory(): React.ReactNode {
 
   return (
     <div className="space-y-4">
-      {batches.length === 0 ? (
-        <SettingsCard>
-          <SettingsCardBody>
-            <p className="text-sm text-muted-foreground">{IMP.historyEmpty}</p>
-          </SettingsCardBody>
-        </SettingsCard>
-      ) : (
-        <SettingsCard className="overflow-x-auto shadow-none">
-          <table className="w-full min-w-[720px] text-sm">
-            <thead className={SETTINGS_TABLE_HEAD}>
-              <tr className="border-b">
-                <th className={SETTINGS_TABLE_HEADER_CELL}>{IMP.colFile}</th>
-                <th className={SETTINGS_TABLE_HEADER_CELL}>{IMP.colTarget}</th>
-                <th className={SETTINGS_TABLE_HEADER_CELL}>{IMP.colStatus}</th>
-                <th className={SETTINGS_TABLE_HEADER_CELL}>{IMP.colResult}</th>
-                <th className={SETTINGS_TABLE_HEADER_CELL}>{IMP.colActions}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {batches.map((b) => (
-                <tr key={b.id} className={SETTINGS_TABLE_ROW}>
-                  <td className={SETTINGS_TABLE_CELL}>{b.filename}</td>
-                  <td className={SETTINGS_TABLE_CELL}>
-                    {targetLabels[b.targetEntity] ?? b.targetEntity}
-                  </td>
-                  <td className={SETTINGS_TABLE_CELL}>{L._labels.importStatus[b.status]}</td>
-                  <td className={`${SETTINGS_TABLE_CELL} tabular-nums`}>
-                    {IMP.resultCounts(b.importedRows, b.errorRows)}
-                  </td>
-                  <td className={`${SETTINGS_TABLE_CELL} text-right`}>
-                    <RowActions batch={b} onUndo={(id) => void onUndo(id)} />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </SettingsCard>
+      {(batches === undefined || query.isError) && (
+        <ImportQueryFeedback
+          loadingLabel={L._extra.importJourney.loadingHistory}
+          failed={query.isError}
+          retrying={query.isFetching}
+          onRetry={() => void query.refetch()}
+        />
       )}
+      {batches !== undefined &&
+        (batches.length === 0 ? (
+          <SettingsCard>
+            <SettingsCardBody>
+              <p className="text-sm text-muted-foreground">{IMP.historyEmpty}</p>
+            </SettingsCardBody>
+          </SettingsCard>
+        ) : (
+          <SettingsCard className="overflow-x-auto shadow-none">
+            <table className="w-full min-w-[720px] text-sm">
+              <thead className={SETTINGS_TABLE_HEAD}>
+                <tr className="border-b">
+                  <th className={SETTINGS_TABLE_HEADER_CELL}>{IMP.colFile}</th>
+                  <th className={SETTINGS_TABLE_HEADER_CELL}>{IMP.colTarget}</th>
+                  <th className={SETTINGS_TABLE_HEADER_CELL}>{IMP.colStatus}</th>
+                  <th className={SETTINGS_TABLE_HEADER_CELL}>{IMP.colResult}</th>
+                  <th className={SETTINGS_TABLE_HEADER_CELL}>{IMP.colActions}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {batches.map((b) => (
+                  <tr key={b.id} className={SETTINGS_TABLE_ROW}>
+                    <td className={SETTINGS_TABLE_CELL}>{b.filename}</td>
+                    <td className={SETTINGS_TABLE_CELL}>
+                      {targetLabels[b.targetEntity] ?? b.targetEntity}
+                    </td>
+                    <td className={SETTINGS_TABLE_CELL}>{L._labels.importStatus[b.status]}</td>
+                    <td className={`${SETTINGS_TABLE_CELL} tabular-nums`}>
+                      {IMP.resultCounts(b.importedRows, b.errorRows)}
+                    </td>
+                    <td className={`${SETTINGS_TABLE_CELL} text-right`}>
+                      <RowActions batch={b} onUndo={(id) => void onUndo(id)} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </SettingsCard>
+        ))}
     </div>
   );
 }

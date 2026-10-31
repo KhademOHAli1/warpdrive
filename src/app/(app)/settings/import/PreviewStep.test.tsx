@@ -112,3 +112,20 @@ it("commits the valid rows when clicked and disables when nothing is valid", () 
   );
   expect(screen.getByRole("button", { name: "Import 0 valid rows" })).toBeDisabled();
 });
+
+it("does not allow commit while row diagnostics are unavailable", () => {
+  const retry = vi.fn();
+  useQuery.mockReturnValue({ data: undefined, isError: true, refetch: retry });
+  render(
+    <PreviewStep
+      batchId="b1"
+      validation={{ valid: 2, invalid: 1 }}
+      busy={false}
+      onCommit={vi.fn()}
+    />,
+  );
+  expect(screen.getByRole("alert")).toHaveTextContent("Could not load these import details");
+  expect(screen.getByRole("button", { name: "Import 2 valid rows" })).toBeDisabled();
+  fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+  expect(retry).toHaveBeenCalledOnce();
+});

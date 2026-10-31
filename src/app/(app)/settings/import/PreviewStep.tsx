@@ -7,6 +7,7 @@ import type { ImportTarget } from "@/features/import/wizardState";
 import { trpc } from "@/lib/trpc-client";
 import { useFormatters } from "@/lib/useFormatters";
 import type { CustomFieldDef } from "@/types/customFields";
+import { ImportQueryFeedback } from "./ImportQueryFeedback";
 
 export interface PreviewStepProps {
   batchId: string;
@@ -30,8 +31,8 @@ export function PreviewStep({
   const preferences = useLocalePreferences();
   const format = useFormatters();
 
-  const rows = trpc.import.listRows.useQuery({ batchId }).data ?? [];
-  const invalid = rows.filter((r) => r.status === "invalid");
+  const query = trpc.import.listRows.useQuery({ batchId });
+  const invalid = query.data?.filter((r) => r.status === "invalid") ?? [];
 
   return (
     <section className="space-y-5">
@@ -45,6 +46,15 @@ export function PreviewStep({
           </span>
         )}
       </div>
+
+      {(query.data === undefined || query.isError) && (
+        <ImportQueryFeedback
+          loadingLabel={L._extra.importJourney.loadingRows}
+          failed={query.isError}
+          retrying={query.isFetching}
+          onRetry={() => void query.refetch()}
+        />
+      )}
 
       {invalid.length > 0 && (
         <div className="space-y-1.5">
@@ -64,7 +74,12 @@ export function PreviewStep({
         </div>
       )}
 
-      <Button type="button" disabled={validation.valid === 0 || busy} onClick={onCommit} size="sm">
+      <Button
+        type="button"
+        disabled={validation.valid === 0 || busy || query.data === undefined || query.isError}
+        onClick={onCommit}
+        size="sm"
+      >
         {IMP.commitButton(validation.valid)}
       </Button>
     </section>

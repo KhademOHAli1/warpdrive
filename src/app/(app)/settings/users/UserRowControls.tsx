@@ -25,6 +25,7 @@ import { readCsrfToken } from "@/utils/csrfCookie";
 
 interface Props {
   userId: string;
+  userName?: string;
   isAdmin: boolean;
   isActive: boolean;
   viewerIsAdmin: boolean;
@@ -35,6 +36,7 @@ interface Props {
 
 export function UserRowControls({
   userId,
+  userName,
   isAdmin,
   isActive,
   viewerIsAdmin,
@@ -102,9 +104,9 @@ export function UserRowControls({
     <span className="flex flex-col items-end gap-1">
       <DropdownMenu>
         <DropdownMenuTrigger
-          aria-label={T.menu}
+          aria-label={userName === undefined ? T.menu : `${T.menu}: ${userName}`}
           disabled={isPending}
-          className="flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors duration-150 hover:bg-accent hover:text-foreground disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transition-none"
+          className="flex size-10 items-center justify-center rounded-md text-muted-foreground transition-colors duration-150 hover:bg-accent hover:text-foreground disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transition-none"
         >
           <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
         </DropdownMenuTrigger>

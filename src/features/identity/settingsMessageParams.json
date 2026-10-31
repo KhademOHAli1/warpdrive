@@ -30,5 +30,7 @@
   "_extra.importErrors.unknown": ["kind", "value"],
   "_extra.importErrors.ambiguous": ["count"],
   "_extra.activityGoalDisplayLabel": ["action", "interval"],
-  "_extra.importWarnings.unassigned": ["value", "reason"]
+  "_extra.importWarnings.unassigned": ["value", "reason"],
+  "_extra.connectionJourney.revokeTitle": ["name"],
+  "_extra.connectionJourney.revokeDescription": ["name"]
 }

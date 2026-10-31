@@ -1,7 +1,9 @@
 "use client";
 import { Plug } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/Button";
 import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import { revokeConnectionAction } from "@/features/oauth/revokeAction";
@@ -32,8 +34,13 @@ export function ConnectionsClient({
   const [connections, setConnections] = useState(initialConnections);
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [confirming, setConfirming] = useState<ConnectionView | null>(null);
+  const pending = useRef(false);
 
   async function revoke(clientId: string): Promise<void> {
+    if (pending.current) return;
+    pending.current = true;
+    setConfirming(null);
     setPendingId(clientId);
     setError(null);
     try {
@@ -47,6 +54,7 @@ export function ConnectionsClient({
     } catch {
       setError(S.connectedAppsRevokeError);
     } finally {
+      pending.current = false;
       setPendingId(null);
     }
   }
@@ -64,9 +72,11 @@ export function ConnectionsClient({
         ) : (
           <ul className="divide-y">
             {connections.map((connection) => (
-              <li key={connection.clientId} className="flex items-center gap-4 px-5 py-4">
+              <li key={connection.clientId} className="flex flex-wrap items-center gap-4 px-5 py-4">
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium">{connection.clientName}</p>
+                  <p className="text-sm font-medium [overflow-wrap:anywhere]">
+                    {connection.clientName}
+                  </p>
                   <p className="text-sm text-muted-foreground">
                     {S.connectedAppsConnected(formatDate(connection.connectedAtIso))}
                   </p>
@@ -80,7 +90,8 @@ export function ConnectionsClient({
                   type="button"
                   variant="outline"
                   disabled={pendingId !== null}
-                  onClick={() => void revoke(connection.clientId)}
+                  aria-label={`${pendingId === connection.clientId ? S.connectedAppsRevoking : S.connectedAppsRevoke}: ${connection.clientName}`}
+                  onClick={() => setConfirming(connection)}
                 >
                   {pendingId === connection.clientId
                     ? S.connectedAppsRevoking
@@ -91,10 +102,29 @@ export function ConnectionsClient({
           </ul>
         )}
         {error !== null ? (
-          <p className="border-t px-5 py-3 text-sm text-red-600" aria-live="polite">
+          <p className="border-t px-5 py-3 text-sm text-destructive" role="alert">
             {error}
           </p>
         ) : null}
+        <p className="border-t px-5 py-4 text-sm text-muted-foreground">
+          {L._extra.connectionJourney.mailboxHint}{" "}
+          <Link href="/settings/email-sync" className="text-primary underline underline-offset-4">
+            {L._extra.connectionJourney.mailboxLink}
+          </Link>
+        </p>
+        {confirming !== null && (
+          <ConfirmDialog
+            open
+            onOpenChange={(open) => {
+              if (!open) setConfirming(null);
+            }}
+            title={L._extra.connectionJourney.revokeTitle(confirming.clientName)}
+            description={L._extra.connectionJourney.revokeDescription(confirming.clientName)}
+            confirmLabel={S.connectedAppsRevoke}
+            destructive
+            onConfirm={() => void revoke(confirming.clientId)}
+          />
+        )}
       </SettingsCardBody>
     </SettingsCard>
   );

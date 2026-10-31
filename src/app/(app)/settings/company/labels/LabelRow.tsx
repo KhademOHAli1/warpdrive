@@ -1,4 +1,5 @@
 "use client";
+
 import type React from "react";
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
@@ -8,89 +9,125 @@ import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import { ReorderControls } from "../ReorderControls";
 import { LabelColorSelect } from "./LabelColorSelect";
 
-const ROW_BUTTON =
-  "relative h-auto px-0 py-0 text-xs font-medium text-muted-foreground hover:bg-transparent hover:text-foreground after:absolute after:left-0 after:top-1/2 after:h-10 after:w-full after:-translate-y-1/2 after:content-['']";
-
 export interface LabelRowData {
   id: string;
   name: string;
   color: LabelColor;
 }
-
 interface Props {
   row: LabelRowData;
   isFirst: boolean;
   isLast: boolean;
-  onMove: (dir: "up" | "down") => void;
-  onRename: (name: string) => void;
+  pending: boolean;
+  onMove: (direction: "up" | "down") => void;
+  onRename: (name: string) => Promise<boolean>;
   onColor: (color: LabelColor) => void;
   onDelete: () => void;
 }
 
-// A single label row: color chip + enum color picker + inline rename + reorder + guarded delete.
 export function LabelRow({
   row,
   isFirst,
   isLast,
+  pending,
   onMove,
   onRename,
   onColor,
   onDelete,
 }: Props): React.ReactNode {
   const L = useSettingsMessages();
-  const S = L;
-
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(row.name);
 
+  async function save(): Promise<void> {
+    const next = name.trim();
+    if (next !== "" && (await onRename(next))) setEditing(false);
+  }
+
   return (
-    <li className="flex items-center gap-3 px-3 py-2">
-      <span className={`rounded border px-2 py-0.5 text-xs ${LABEL_COLOR_CLASSES[row.color]}`}>
-        {row.name}
-      </span>
-      {editing ? (
-        <Input
-          aria-label={S.labelName}
-          name="labelName"
-          autoComplete="off"
-          required
-          maxLength={120}
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          className="flex-1"
-        />
-      ) : (
-        <span className="flex-1 text-sm">{row.name}</span>
-      )}
-      <div className="w-32 shrink-0">
-        <LabelColorSelect ariaLabel={S.color} value={row.color} onChange={onColor} />
+    <li className="flex min-w-0 flex-col gap-3 px-4 py-3 sm:flex-row sm:flex-wrap sm:items-center">
+      <div className="min-w-0 flex-1">
+        {editing ? (
+          <Input
+            aria-label={`${L.labelName}: ${row.name}`}
+            autoComplete="off"
+            required
+            maxLength={120}
+            disabled={pending}
+            value={name}
+            onChange={(event) => setName(event.target.value)}
+          />
+        ) : (
+          <span
+            className={`inline-block max-w-full break-words rounded border px-2 py-0.5 text-sm ${LABEL_COLOR_CLASSES[row.color]}`}
+          >
+            {row.name}
+          </span>
+        )}
       </div>
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3 sm:ms-auto">
+        <div className="w-32 max-w-full">
+          <LabelColorSelect
+            ariaLabel={`${L.color}: ${row.name}`}
+            value={row.color}
+            onChange={onColor}
+            disabled={pending}
+          />
+        </div>
         <ReorderControls
-          canMoveUp={!isFirst}
-          canMoveDown={!isLast}
+          canMoveUp={!pending && !isFirst}
+          canMoveDown={!pending && !isLast}
           onMoveUp={() => onMove("up")}
           onMoveDown={() => onMove("down")}
         />
         {editing ? (
+          <>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="min-h-10"
+              disabled={pending || name.trim() === "" || name.trim() === row.name}
+              onClick={() => void save()}
+            >
+              {L.save}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="min-h-10"
+              disabled={pending}
+              onClick={() => {
+                setName(row.name);
+                setEditing(false);
+              }}
+            >
+              {L.cancel}
+            </Button>
+          </>
+        ) : (
           <Button
             variant="ghost"
             size="sm"
-            className={ROW_BUTTON}
+            className="min-h-10"
+            disabled={pending}
+            aria-label={`${L.rename}: ${row.name}`}
             onClick={() => {
-              if (name.trim() !== "") onRename(name.trim());
-              setEditing(false);
+              setName(row.name);
+              setEditing(true);
             }}
           >
-            {S.save}
-          </Button>
-        ) : (
-          <Button variant="ghost" size="sm" className={ROW_BUTTON} onClick={() => setEditing(true)}>
-            {S.rename}
+            {L.rename}
           </Button>
         )}
-        <Button variant="ghost" size="sm" className={ROW_BUTTON} onClick={onDelete}>
-          {S.delete}
+        <Button
+          variant="ghost"
+          size="sm"
+          className="min-h-10"
+          disabled={pending}
+          aria-label={`${L.delete}: ${row.name}`}
+          onClick={onDelete}
+        >
+          {L.delete}
         </Button>
       </div>
     </li>

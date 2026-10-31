@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeAll, expect, it, vi } from "vitest";
 import type { CustomFieldDef } from "@/types/customFields";
 
@@ -13,7 +13,14 @@ beforeAll(() => {
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
+  batchState.status = "mapping_ready";
 });
+
+const { batchState, push } = vi.hoisted(() => ({
+  batchState: { status: "mapping_ready" },
+  push: vi.fn(),
+}));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
 
 vi.mock("@/utils/csrfCookie", () => ({ readCsrfToken: () => "csrf" }));
 vi.stubGlobal(
@@ -57,10 +64,10 @@ vi.mock("@/lib/trpc-client", () => ({
       getBatch: {
         useQuery: () => ({
           data: {
-            status: "mapping_ready",
+            status: batchState.status,
             headers: ["name", "grade"],
             totalRows: 1,
-            validRows: 0,
+            validRows: 1,
             errorRows: 0,
           },
         }),
@@ -168,4 +175,79 @@ it("creates a pipedrive batch and gates Continue on the Pipedrive ID", async () 
     expect(screen.getByLabelText("Maps to: name")).toHaveTextContent("Person[Name] *"),
   );
   expect(screen.getByRole("button", { name: "Continue" })).toBeDisabled();
+});
+
+const emptyDefs = { personDefs: [], orgDefs: [], dealDefs: [], activityDefs: [], leadDefs: [] };
+
+async function preview() {
+  const view = render(<ImportWizard {...emptyDefs} />);
+  fireEvent.change(screen.getByLabelText("CSV file", { selector: "input[type=file]" }), {
+    target: { files: [new File(["name\nJane\n"], "c.csv", { type: "text/csv" })] },
+  });
+  await screen.findByLabelText("Maps to: name");
+  fireEvent.click(screen.getByRole("button", { name: "Continue" }));
+  await waitFor(() => expect(actions.setMappingAction).toHaveBeenCalledOnce());
+  batchState.status = "ready";
+  view.rerender(<ImportWizard {...emptyDefs} />);
+  await screen.findByRole("button", { name: "Import 1 valid rows" });
+  return view;
+}
+
+it("reviews validated mapping read-only and keeps the current preview intact", async () => {
+  await preview();
+  fireEvent.click(screen.getByRole("button", { name: "Review mapping" }));
+  const dialog = screen.getByRole("dialog", { name: "Review mapping" });
+  expect(dialog).toHaveTextContent("This mapping has already been validated");
+  expect(dialog).toHaveTextContent("Person[Name] *");
+  expect(within(dialog).queryByRole("combobox")).not.toBeInTheDocument();
+  fireEvent.click(within(dialog).getByRole("button", { name: "Close" }));
+  expect(screen.getByRole("button", { name: "Import 1 valid rows" })).toBeInTheDocument();
+  expect(actions.setMappingAction).toHaveBeenCalledOnce();
+  expect(actions.commitBatchAction).not.toHaveBeenCalled();
+});
+
+it("starts a fresh upload when changing a validated mapping, without mutating the old batch", async () => {
+  await preview();
+  fireEvent.click(screen.getByRole("button", { name: "Review mapping" }));
+  fireEvent.click(screen.getByRole("button", { name: "Import another file" }));
+  expect(screen.getByLabelText("CSV file", { selector: "input[type=file]" })).toBeInTheDocument();
+  expect(actions.commitBatchAction).not.toHaveBeenCalled();
+  expect(actions.setMappingAction).toHaveBeenCalledOnce();
+});
+
+it("explains leaving setup without claiming to cancel its background job", async () => {
+  await preview();
+  fireEvent.click(screen.getByRole("button", { name: "Leave import" }));
+  const dialog = screen.getByRole("alertdialog", { name: "Leave this import?" });
+  expect(dialog).toHaveTextContent("The uploaded batch stays in import history");
+  expect(dialog).toHaveTextContent("Preparation or validation already running may finish");
+  fireEvent.click(screen.getByRole("button", { name: "Keep editing" }));
+  expect(push).not.toHaveBeenCalled();
+  expect(screen.getByRole("button", { name: "Import 1 valid rows" })).toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "Leave import" }));
+  fireEvent.click(screen.getByRole("button", { name: "Leave setup" }));
+  expect(push).toHaveBeenCalledWith("/settings/import");
+  expect(actions.commitBatchAction).not.toHaveBeenCalled();
+});
+
+it("locks review and leave while a commit request is pending and prevents duplicate commits", async () => {
+  let finish: (value: Res<{ imported: number; skipped: number; invalid: number }>) => void =
+    () => {};
+  actions.commitBatchAction.mockImplementationOnce(
+    () =>
+      new Promise((resolve) => {
+        finish = resolve;
+      }),
+  );
+  await preview();
+  const commit = screen.getByRole("button", { name: "Import 1 valid rows" });
+  fireEvent.click(commit);
+  fireEvent.click(commit);
+  expect(actions.commitBatchAction).toHaveBeenCalledOnce();
+  expect(screen.getByRole("button", { name: "Review mapping" })).toBeDisabled();
+  expect(screen.getByRole("button", { name: "Leave import" })).toBeDisabled();
+  finish({ ok: true, value: { imported: 0, skipped: 0, invalid: 0 } });
+  await waitFor(() =>
+    expect(screen.queryByRole("button", { name: "Review mapping" })).not.toBeInTheDocument(),
+  );
 });

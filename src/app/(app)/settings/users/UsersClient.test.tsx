@@ -71,7 +71,9 @@ describe("UsersClient", () => {
     const user = userEvent.setup();
     render(<UsersClient rows={ROWS} permissionSets={SETS} viewerIsAdmin={true} />);
     const [adminRow] = screen.getAllByRole("row").slice(1);
-    await user.click(within(adminRow as HTMLElement).getByRole("button", { name: "User actions" }));
+    await user.click(
+      within(adminRow as HTMLElement).getByRole("button", { name: "User actions: Demo One" }),
+    );
     expect(
       await screen.findByRole("menuitem", { name: "Change permission set" }),
     ).toBeInTheDocument();
@@ -81,7 +83,9 @@ describe("UsersClient", () => {
     const user = userEvent.setup();
     render(<UsersClient rows={ROWS} permissionSets={SETS} viewerIsAdmin={false} />);
     const [adminRow, regularRow] = screen.getAllByRole("row").slice(1);
-    await user.click(within(adminRow as HTMLElement).getByRole("button", { name: "User actions" }));
+    await user.click(
+      within(adminRow as HTMLElement).getByRole("button", { name: "User actions: Demo One" }),
+    );
     await screen.findByRole("menu");
     expect(
       screen.queryByRole("menuitem", { name: "Change permission set" }),
@@ -89,7 +93,7 @@ describe("UsersClient", () => {
     await user.keyboard("{Escape}");
 
     await user.click(
-      within(regularRow as HTMLElement).getByRole("button", { name: "User actions" }),
+      within(regularRow as HTMLElement).getByRole("button", { name: "User actions: Demo Two" }),
     );
     expect(
       await screen.findByRole("menuitem", { name: "Change permission set" }),

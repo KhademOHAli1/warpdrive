@@ -1,61 +1,64 @@
 "use client";
 
-import { useState } from "react";
-import type { NotificationType } from "@/constants/notificationTypes";
+import { Button } from "@/components/ui/Button";
+import { useMessages } from "@/features/i18n/LocaleProvider";
 import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
-import { setPreferenceAction } from "@/features/notifications/actions";
 import { PreferencesForm } from "@/features/notifications/ui/PreferencesForm";
 import { trpc } from "@/lib/trpc-client";
-import { readCsrfToken } from "@/utils/csrfCookie";
 import { SettingsHeading } from "../SettingsHeading";
-import { SettingsCard, SettingsCardHeader, SettingsPage } from "../SettingsSurface";
+import {
+  SettingsCard,
+  SettingsCardBody,
+  SettingsCardHeader,
+  SettingsPage,
+} from "../SettingsSurface";
+import { usePreferenceChanges } from "./usePreferenceChanges";
 
 export default function NotificationSettingsPage() {
   const L = useSettingsMessages();
-  const pageTitle = L._extra.notificationPageTitle;
-  const loading = L._extra.notificationLoading;
-  const saveError = L._extra.notificationSaveError;
-
-  const utils = trpc.useUtils();
+  const messages = useMessages();
   const prefs = trpc.notifications.preferences.useQuery();
-  const [error, setError] = useState<string | null>(null);
-
-  async function handleChange(type: NotificationType, next: { inApp: boolean; email: boolean }) {
-    setError(null);
-    const result = await setPreferenceAction(
-      { type, inApp: next.inApp, email: next.email },
-      readCsrfToken(),
-    );
-    if (result.ok) {
-      void utils.notifications.preferences.invalidate();
-    } else {
-      setError(saveError);
-    }
-  }
-
-  if (!prefs.data) {
-    return <p className="text-sm text-muted-foreground">{loading}</p>;
-  }
+  const changes = usePreferenceChanges();
 
   return (
     <SettingsPage>
       <SettingsHeading
         scope="personal"
-        title={pageTitle}
+        title={L._extra.notificationPageTitle}
         description={L.notificationsDescription}
       />
-      {error !== null && <p className="mb-4 text-sm text-destructive">{error}</p>}
       <SettingsCard>
         <SettingsCardHeader
           title={L._extra.notification_channels}
           description={L._extra.choose_how_each_kind_of_update_reaches_you}
         />
-        <div className="px-5">
-          <PreferencesForm
-            prefs={prefs.data}
-            onChange={(type, next) => void handleChange(type, next)}
-          />
-        </div>
+        {prefs.data !== undefined ? (
+          <div className="px-5">
+            <PreferencesForm
+              prefs={{ ...prefs.data, ...changes.pending }}
+              feedback={changes.feedback}
+              onChange={(type, next) => void changes.save(type, next)}
+              onRetry={changes.retry}
+            />
+          </div>
+        ) : (
+          <SettingsCardBody>
+            {prefs.isError ? (
+              <div className="space-y-3">
+                <p role="alert" className="text-sm text-destructive">
+                  {L._extra.notificationLoadError}
+                </p>
+                <Button variant="outline" onClick={() => void prefs.refetch()}>
+                  {messages.boundaries.retry}
+                </Button>
+              </div>
+            ) : (
+              <p role="status" className="text-sm text-muted-foreground">
+                {L._extra.notificationLoading}
+              </p>
+            )}
+          </SettingsCardBody>
+        )}
       </SettingsCard>
     </SettingsPage>
   );

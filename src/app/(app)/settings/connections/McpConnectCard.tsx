@@ -1,9 +1,9 @@
 "use client";
 
 import { Bot } from "lucide-react";
-import { useId, useState } from "react";
+import { useId, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
+import { Textarea } from "@/components/ui/Textarea";
 import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import { SettingsCard, SettingsCardBody, SettingsCardHeader } from "../SettingsSurface";
 
@@ -12,11 +12,29 @@ export function McpConnectCard({ endpointUrl }: { endpointUrl: string }): React.
   const S = L;
 
   const inputId = useId();
+  const field = useRef<HTMLTextAreaElement>(null);
+  const copying = useRef(false);
   const [copied, setCopied] = useState(false);
+  const [pending, setPending] = useState(false);
+  const [copyFailed, setCopyFailed] = useState(false);
 
   async function copy(): Promise<void> {
-    await navigator.clipboard.writeText(endpointUrl);
-    setCopied(true);
+    if (copying.current) return;
+    copying.current = true;
+    setPending(true);
+    setCopied(false);
+    setCopyFailed(false);
+    try {
+      await navigator.clipboard.writeText(endpointUrl);
+      setCopied(true);
+    } catch {
+      setCopyFailed(true);
+      field.current?.focus();
+      field.current?.select();
+    } finally {
+      copying.current = false;
+      setPending(false);
+    }
   }
 
   return (
@@ -31,22 +49,35 @@ export function McpConnectCard({ endpointUrl }: { endpointUrl: string }): React.
           <label htmlFor={inputId} className="text-sm font-medium">
             {S.mcpConnectServerUrl}
           </label>
-          <div className="flex gap-2">
-            <Input
+          <div className="flex flex-col items-start gap-2 sm:flex-row">
+            <Textarea
+              ref={field}
               id={inputId}
               readOnly
+              dir="ltr"
+              rows={2}
               value={endpointUrl}
-              className="font-mono text-xs"
+              className="min-w-0 resize-none text-left font-mono text-xs [overflow-wrap:anywhere]"
               onFocus={(event) => event.currentTarget.select()}
             />
-            <Button type="button" variant="outline" onClick={() => void copy()}>
+            <Button type="button" variant="outline" disabled={pending} onClick={() => void copy()}>
               {copied ? S.mcpConnectCopied : S.mcpConnectCopy}
             </Button>
           </div>
+          {copyFailed && (
+            <p role="alert" className="text-sm text-destructive">
+              {L._extra.connectionJourney.copyFailed}
+            </p>
+          )}
+          {copied && (
+            <p role="status" className="text-xs text-muted-foreground">
+              {S.mcpConnectCopied}
+            </p>
+          )}
         </div>
         <div>
           <p className="text-sm font-medium">{S.mcpConnectStepsHeading}</p>
-          <ol className="mt-1.5 list-decimal space-y-1 pl-5 text-sm text-muted-foreground">
+          <ol className="mt-1.5 list-decimal space-y-1 ps-5 text-sm text-muted-foreground">
             {S.mcpConnectSteps.map((step) => (
               <li key={step}>{step}</li>
             ))}

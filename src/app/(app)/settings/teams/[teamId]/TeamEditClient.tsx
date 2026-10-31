@@ -1,178 +1,111 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useMemo, useState, useTransition } from "react";
+import { useState } from "react";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
-import { MultiCombobox } from "@/components/ui/MultiCombobox";
-import { Select } from "@/components/ui/Select";
-import {
-  deleteTeamAction,
-  setTeamMembersAction,
-  updateTeamAction,
-} from "@/features/identity/actions/teams";
 import { IdentityActionError } from "@/features/identity/IdentityActionError";
-import { settingsIdentityError } from "@/features/identity/settingsMessages";
 import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
-import { readCsrfToken } from "@/utils/csrfCookie";
 import {
   SettingsCard,
   SettingsCardBody,
   SettingsCardFooter,
   SettingsCardHeader,
 } from "../../SettingsSurface";
+import { TeamFields } from "../TeamFields";
+import type { TeamMember, TeamUser } from "../teamDraft";
+import { useTeamEditor } from "./useTeamEditor";
 
-const MANAGER_NONE_VALUE = "team:manager:none";
-
-interface Member {
-  userId: string;
-  name: string;
-}
-interface AssignableUser {
-  id: string;
-  name: string;
-  avatarUrl: string | null;
-}
-interface Props {
+export function TeamEditClient({
+  teamId,
+  name,
+  managerId,
+  members,
+  assignableUsers,
+}: {
   teamId: string;
   name: string;
   managerId: string | null;
-  members: Member[];
-  assignableUsers: AssignableUser[];
-}
-
-// View + edit a single team: rename, change manager, and add/remove members (roster pre-loaded).
-// Mirrors the visibility-group detail pattern (server-loaded data, local pending/error state, a
-// server action per save, router refresh/back on success). Reuses setTeamMembersAction (full
-// replace) for membership and the new updateTeamAction for name/manager.
-export function TeamEditClient({
-  teamId,
-  name: initialName,
-  managerId: initialManagerId,
-  members,
-  assignableUsers,
-}: Props): React.ReactElement {
+  members: TeamMember[];
+  assignableUsers: TeamUser[];
+}): React.ReactElement {
   const L = useSettingsMessages();
   const T = L._identity.teamEditor;
-
-  const identityErrorMessage = (error: string) => settingsIdentityError(L, error);
-
-  const router = useRouter();
-  const [name, setName] = useState(initialName);
-  const [managerId, setManagerId] = useState(initialManagerId ?? "");
-  const [memberIds, setMemberIds] = useState<string[]>(members.map((m) => m.userId));
-  const [isPending, startTransition] = useTransition();
-  const [error, setError] = useState<string | null>(null);
-
-  const managerOptions = [
-    { value: MANAGER_NONE_VALUE, label: T.managerNone },
-    ...assignableUsers.map((u) => ({ value: u.id, label: u.name })),
-  ];
-  // Options for the member picker must include any current member who is no longer assignable
-  // (e.g. deactivated), so their chip still renders with a name instead of a bare id.
-  const memberOptions = useMemo(() => {
-    const byId = new Map(assignableUsers.map((u) => [u.id, { value: u.id, label: u.name }]));
-    for (const m of members)
-      if (!byId.has(m.userId)) byId.set(m.userId, { value: m.userId, label: m.name });
-    return [...byId.values()];
-  }, [assignableUsers, members]);
-
-  function save(): void {
-    const trimmed = name.trim();
-    if (trimmed.length === 0) return;
-    setError(null);
-    const csrf = readCsrfToken();
-    startTransition(async () => {
-      const updated = await updateTeamAction(csrf, {
-        teamId,
-        name: trimmed,
-        managerId: managerId === "" ? null : managerId,
-      });
-      if (!updated.ok) {
-        setError(identityErrorMessage(updated.error));
-        return;
-      }
-      const roster = await setTeamMembersAction(csrf, { teamId, userIds: memberIds });
-      if (!roster.ok) {
-        setError(identityErrorMessage(roster.error));
-        return;
-      }
-      router.refresh();
-    });
-  }
-
-  function remove(): void {
-    setError(null);
-    const csrf = readCsrfToken();
-    startTransition(async () => {
-      const res = await deleteTeamAction(csrf, { teamId });
-      if (!res.ok) {
-        setError(identityErrorMessage(res.error));
-        return;
-      }
-      router.push("/settings/teams");
-    });
-  }
+  const editor = useTeamEditor(teamId, {
+    name,
+    managerId,
+    memberIds: members.map((member) => member.userId),
+  });
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   return (
-    <SettingsCard>
-      <SettingsCardHeader title={L._extra.team_details} description={T.membersHelp} />
-      <SettingsCardBody className="space-y-5">
-        <div className="flex flex-col gap-1.5">
-          <span className="text-sm font-medium">{L._extra.team_name}</span>
-          <Input
-            aria-label={L._extra.team_name}
-            type="text"
-            value={name}
-            maxLength={80}
-            disabled={isPending}
-            onChange={(e) => setName(e.target.value)}
-            className="px-3"
+    <>
+      <SettingsCard>
+        <SettingsCardHeader title={L._extra.team_details} description={T.membersHelp} />
+        <SettingsCardBody className="space-y-5">
+          {editor.partial && (
+            <p role="status" className="rounded-md border bg-muted/30 p-3 text-sm">
+              {T.partialUpdated}
+            </p>
+          )}
+          <TeamFields
+            draft={editor.draft}
+            users={assignableUsers}
+            retainedMembers={members}
+            pending={editor.pending}
+            onChange={editor.change}
           />
-        </div>
-
-        <div className="flex flex-col gap-1">
-          <span className="text-sm font-medium">{T.manager}</span>
-          <Select
-            ariaLabel={T.manager}
-            value={managerId}
-            onChange={(value) => {
-              if (!isPending) setManagerId(value === MANAGER_NONE_VALUE ? "" : value);
-            }}
-            placeholder={T.managerNone}
-            options={managerOptions}
-          />
-        </div>
-
-        <div className="flex flex-col gap-1">
-          <span className="text-sm font-medium">{T.members}</span>
-          <p className="text-xs text-muted-foreground">{T.membersHelp}</p>
-          <MultiCombobox
-            ariaLabel={T.members}
-            values={memberIds}
-            onChange={(v) => !isPending && setMemberIds(v)}
-            options={memberOptions}
-            placeholder={L._extra.add_members}
-          />
-        </div>
-
-        {error !== null && <IdentityActionError message={error} className="text-sm text-red-600" />}
-      </SettingsCardBody>
-
-      <SettingsCardFooter className="justify-between">
-        <Button
-          type="button"
-          variant="outline"
-          disabled={isPending}
-          onClick={remove}
-          className="text-red-600"
-        >
-          {L._extra.delete_team}
-        </Button>
-        <Button type="button" disabled={isPending} onClick={save}>
-          {isPending ? L._extra.saving : L._extra.save_changes}
-        </Button>
-      </SettingsCardFooter>
-    </SettingsCard>
+          {editor.error !== null && <IdentityActionError message={editor.error} />}
+          {(editor.pending || editor.saved) && (
+            <p role="status" className="text-sm text-muted-foreground">
+              {editor.pending ? L._extra.saving : L.saved}
+            </p>
+          )}
+        </SettingsCardBody>
+        <SettingsCardFooter className="flex-wrap justify-between gap-3">
+          <Button
+            variant="outline"
+            className="text-destructive"
+            disabled={editor.pending}
+            aria-label={`${L._extra.delete_team}: ${editor.baseline.name}`}
+            onClick={() => setConfirmDelete(true)}
+          >
+            {L._extra.delete_team}
+          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="outline"
+              disabled={editor.pending || (!editor.dirty && !editor.partial)}
+              onClick={editor.cancel}
+            >
+              {L.cancel}
+            </Button>
+            <Button
+              disabled={
+                editor.pending ||
+                (!editor.dirty && !editor.partial) ||
+                editor.draft.name.trim() === ""
+              }
+              onClick={() => void editor.save()}
+            >
+              {editor.pending
+                ? L._extra.saving
+                : editor.partial && !editor.detailsChanged
+                  ? T.saveMembers
+                  : L._extra.save_changes}
+            </Button>
+          </div>
+        </SettingsCardFooter>
+      </SettingsCard>
+      <ConfirmDialog
+        open={confirmDelete}
+        onOpenChange={setConfirmDelete}
+        title={T.deleteTitle}
+        description={`${T.deleteDescription} (\u2068${editor.baseline.name}\u2069)`}
+        confirmLabel={L._extra.delete_team}
+        destructive
+        pending={editor.pending}
+        onConfirm={() => void editor.remove()}
+      />
+    </>
   );
 }

@@ -1,13 +1,13 @@
 "use client";
 import { useRouter } from "next/navigation";
 import type React from "react";
-import { useActionError } from "@/components/shell/ActionErrorProvider";
 import { Switch } from "@/components/ui/Switch";
 import type { CustomFieldTarget } from "@/constants/customFieldTypes";
 import { setBuiltinFieldHiddenAction } from "@/features/custom-fields/actions";
 import { settingsBuiltinLabel } from "@/features/identity/settingsMessages";
 import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import { readCsrfToken } from "@/utils/csrfCookie";
+import { FieldTaskStatus, useFieldTask } from "./FieldTask";
 import type { BuiltinRow } from "./types";
 
 // One built-in field in the Data fields list. Locked identity fields render as a labelled,
@@ -25,24 +25,31 @@ export function BuiltinFieldRow({
   const label = settingsBuiltinLabel(L, row.label);
 
   const router = useRouter();
-  const reportError = useActionError();
+  const task = useFieldTask();
 
   async function toggle(next: boolean): Promise<void> {
-    const r = await setBuiltinFieldHiddenAction(
-      { entity, key: row.key, hidden: next },
-      readCsrfToken(),
-    );
-    if (r.ok) router.refresh();
-    else reportError(r.error.id);
+    await task.run(async () => {
+      const r = await setBuiltinFieldHiddenAction(
+        { entity, key: row.key, hidden: next },
+        readCsrfToken(),
+      );
+      if (r.ok) router.refresh();
+      return r;
+    });
   }
 
   return (
-    <li className="flex min-h-10 items-center gap-2 px-3 py-2 text-sm transition-colors duration-150 ease-out hover:bg-accent/30 motion-reduce:transition-none">
-      <span className="font-medium">{label}</span>
+    <li
+      aria-busy={task.pending}
+      className="flex min-h-10 flex-wrap items-center gap-2 px-3 py-3 text-sm transition-colors duration-150 ease-out hover:bg-accent/30 motion-reduce:transition-none"
+    >
+      <span className="min-w-0 flex-1 break-words font-medium [overflow-wrap:anywhere]">
+        {label}
+      </span>
       <span className="rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
         {S.builtinBadge}
       </span>
-      <span className="ml-auto flex items-center gap-2 text-xs text-muted-foreground">
+      <span className="ms-auto flex shrink-0 items-center gap-2 text-xs text-muted-foreground">
         {row.locked ? (
           <span>{S.builtinAlwaysShown}</span>
         ) : (
@@ -52,10 +59,12 @@ export function BuiltinFieldRow({
               checked={row.hidden}
               onCheckedChange={(next) => void toggle(next)}
               label={`${S.builtinHidden}: ${label}`}
+              disabled={task.pending}
             />
           </>
         )}
       </span>
+      <FieldTaskStatus state={task.state} />
     </li>
   );
 }

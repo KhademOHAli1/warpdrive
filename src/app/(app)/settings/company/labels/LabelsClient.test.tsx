@@ -45,7 +45,7 @@ describe("LabelsClient", () => {
   it("uses the same color picker geometry for label rows and add-label forms", () => {
     render(<LabelsClient rows={[row("l1", "Hot")]} />);
 
-    const rowPicker = screen.getByRole("combobox", { name: STRINGS.settings.color });
+    const rowPicker = screen.getByRole("combobox", { name: `${STRINGS.settings.color}: Hot` });
     const addPicker = screen.getByRole("combobox", { name: "Deals Color" });
     expect(rowPicker.className).toBe(addPicker.className);
     expect(rowPicker.parentElement).toHaveClass("w-32");
