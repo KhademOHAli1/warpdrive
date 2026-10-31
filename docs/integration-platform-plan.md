@@ -1,8 +1,11 @@
-# Integration platform delivery plan
+# Integration platform overview and legacy work packages
 
-Updated 2026-10-31. This is the complete programme backlog, not a claim of feature parity.
-The current delivery is a local preview. Live provider authorization, public endpoints,
-publication, and marketplace installation remain separate gates.
+Updated 2026-10-31. The full [project plan](integration-project-plan.md) now defines the
+delivery milestones and shared acceptance gates. Its [detailed task register](integration-platform-tasks.md)
+contains 446 planned tasks across 23 packages, with a matching [CSV export](integration-platform-tasks.csv).
+This overview preserves the earlier identifiers used by existing handoffs. It is not a claim
+of feature parity. The current delivery remains a local preview; live authorization,
+public endpoints, publication and marketplace installation are separate stages.
 
 ## Product boundaries
 

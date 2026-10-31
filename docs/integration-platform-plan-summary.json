@@ -1,0 +1,206 @@
+{
+  "version": "1.0",
+  "date": "2026-10-31",
+  "baseline": "e321126f98a37a376e72ab0e4513e0c5b003f2b5",
+  "task_count": 446,
+  "package_count": 23,
+  "counts_by_priority": {
+    "P0": 190,
+    "P1": 170,
+    "P2": 66,
+    "P3": 20
+  },
+  "counts_by_stage": {
+    "decision": 3,
+    "live-provider": 24,
+    "local": 411,
+    "public-hosting": 4,
+    "publication": 4
+  },
+  "packages": [
+    {
+      "id": "BASE",
+      "title": "Reconcile the preview with current development",
+      "milestone": "R0",
+      "tasks": 12,
+      "dependencies": [],
+      "exit": "A current isolated checkout contains the intended changes, has a reproducible local runtime and records its own passing baseline."
+    },
+    {
+      "id": "ARCH",
+      "title": "Architecture and product contracts",
+      "milestone": "R0",
+      "tasks": 12,
+      "dependencies": ["BASE"],
+      "exit": "Reviewed ADRs define ownership, capability enforcement, event delivery and extension boundaries with migration examples."
+    },
+    {
+      "id": "UX",
+      "title": "Product design, localization and accessibility",
+      "milestone": "CROSS",
+      "tasks": 14,
+      "dependencies": ["BASE"],
+      "exit": "Each delivery has reviewed FA/DE/EN flows, Iranian-calendar behavior, responsive evidence and keyboard-accessible states."
+    },
+    {
+      "id": "CONN",
+      "title": "Shared connector lifecycle and provider SDK",
+      "milestone": "R1",
+      "tasks": 26,
+      "dependencies": ["ARCH"],
+      "exit": "Two test providers exercise the same ownership, credential, refresh, reconnect, health and removal contracts without feature-specific bypasses."
+    },
+    {
+      "id": "EVT",
+      "title": "Events, rules and reliable delivery",
+      "milestone": "R1",
+      "tasks": 20,
+      "dependencies": ["CONN"],
+      "exit": "A committed CRM event produces a traceable delivery; rollback, retries, duplicate jobs and revoked permissions have tested outcomes."
+    },
+    {
+      "id": "SLK",
+      "title": "Slack notifications and management",
+      "milestone": "R1",
+      "tasks": 24,
+      "dependencies": ["EVT", "UX"],
+      "exit": "A local deal or activity change matches an active rule, produces a safe message and shows its delivery history, including outage and permission-loss cases."
+    },
+    {
+      "id": "SLKX",
+      "title": "Slack commands, actions and unfurls",
+      "milestone": "R5",
+      "tasks": 12,
+      "dependencies": ["SLK", "API"],
+      "exit": "Signed Slack interactions resolve to a verified CRM actor, enforce permissions and produce auditable, safely scoped results."
+    },
+    {
+      "id": "AISEC",
+      "title": "MCP and application authorization",
+      "milestone": "R2",
+      "tasks": 24,
+      "dependencies": ["ARCH"],
+      "exit": "A read-only grant cannot mutate through any tool, UI action or direct request; revoked or reduced access stops on the next request."
+    },
+    {
+      "id": "MCP",
+      "title": "Complete the CRM MCP capability surface",
+      "milestone": "R2",
+      "tasks": 22,
+      "dependencies": ["AISEC"],
+      "exit": "The capability matrix maps every supported workflow to tools, scopes, validation, failures and tests; unsupported operations are explicit."
+    },
+    {
+      "id": "CLIENT",
+      "title": "ChatGPT, Claude and supporting client apps",
+      "milestone": "R2",
+      "tasks": 20,
+      "dependencies": ["MCP", "UX"],
+      "exit": "Local conformance passes for every claimed client profile; live installation and rich UI support are recorded separately per host."
+    },
+    {
+      "id": "MAIL",
+      "title": "Mail integration hardening",
+      "milestone": "R3",
+      "tasks": 12,
+      "dependencies": ["CONN"],
+      "exit": "Existing mail flows remain intact and multi-account or shared-mailbox changes follow explicit ownership and migration rules."
+    },
+    {
+      "id": "CAL",
+      "title": "Calendar domain and event workflow",
+      "milestone": "R3",
+      "tasks": 22,
+      "dependencies": ["ARCH", "UX"],
+      "exit": "Event creation/editing, recurrence, permissions and communication decisions have explicit semantics and round-trip correctly across calendars and time zones."
+    },
+    {
+      "id": "GOOG",
+      "title": "Google Calendar and Google Meet",
+      "milestone": "R3",
+      "tasks": 20,
+      "dependencies": ["CAL", "CONN", "EVT"],
+      "exit": "Synthetic changes converge between CRM and a local Google simulator; a separate live gate verifies the claimed account capabilities."
+    },
+    {
+      "id": "MS",
+      "title": "Microsoft 365, Outlook and Teams",
+      "milestone": "R4",
+      "tasks": 16,
+      "dependencies": ["MAIL", "CAL", "CONN", "EVT"],
+      "exit": "Selected Microsoft resources use the common lifecycle and show tenant/permission constraints with documented synchronization semantics."
+    },
+    {
+      "id": "ZOOM",
+      "title": "Zoom conferencing",
+      "milestone": "R4",
+      "tasks": 12,
+      "dependencies": ["CAL", "CONN", "EVT"],
+      "exit": "Meeting creation, update and cancellation are tied to the correct host account and remain consistent with the CRM event."
+    },
+    {
+      "id": "API",
+      "title": "Public API and signed webhooks",
+      "milestone": "R5",
+      "tasks": 20,
+      "dependencies": ["ARCH", "AISEC", "EVT"],
+      "exit": "Scoped API clients can perform documented operations and consume authenticated, retryable events without bypassing CRM visibility."
+    },
+    {
+      "id": "AUTO",
+      "title": "Workflow and automation integrations",
+      "milestone": "R5",
+      "tasks": 12,
+      "dependencies": ["API", "EVT"],
+      "exit": "A workflow can react to a CRM event and call an integration action with traceable permissions, variables, retries and cancellation."
+    },
+    {
+      "id": "EXP",
+      "title": "Additional provider delivery tracks",
+      "milestone": "R6",
+      "tasks": 52,
+      "dependencies": ["CONN", "EVT", "API", "UX"],
+      "exit": "Every released provider has its own supported workflows, local contract tests, localized management flow and live qualification record."
+    },
+    {
+      "id": "SDK",
+      "title": "Application SDK and isolated extension runtime",
+      "milestone": "R6",
+      "tasks": 24,
+      "dependencies": ["ARCH", "CONN", "EVT", "API", "AISEC"],
+      "exit": "A private example app can add authorized data/UI/workflow capabilities, run in real isolation, update and uninstall without bypassing core policy."
+    },
+    {
+      "id": "STORE",
+      "title": "Marketplace and app management",
+      "milestone": "R7",
+      "tasks": 22,
+      "dependencies": ["SDK", "UX"],
+      "exit": "A private app can be discovered, reviewed, installed, configured, updated and removed; public listing adds verified ownership and publication operations."
+    },
+    {
+      "id": "OPS",
+      "title": "Self-hosting, observability and operations",
+      "milestone": "CROSS",
+      "tasks": 18,
+      "dependencies": ["BASE"],
+      "exit": "Operators can start required services, diagnose failures, rotate secrets, restore data and suspend delivery with documented evidence."
+    },
+    {
+      "id": "QA",
+      "title": "Shared verification and release acceptance",
+      "milestone": "CROSS",
+      "tasks": 18,
+      "dependencies": ["BASE"],
+      "exit": "Every released capability has reproducible source, runtime, authorization, localization and provider evidence appropriate to its claimed support level."
+    },
+    {
+      "id": "OSS",
+      "title": "Open-source distribution and maintenance",
+      "milestone": "CROSS",
+      "tasks": 12,
+      "dependencies": ["BASE"],
+      "exit": "A contributor can reproduce the local setup, add a provider safely and understand which releases and integrations are actually supported."
+    }
+  ]
+}
