@@ -4,6 +4,8 @@ Reviewed on 31 October 2026 against the login refinement based on main `8539fe8c
 
 ## Results
 
+Three additional server-rendered locale-shell tests verify the approved introductory copy and help entry before sign-in methods load. Their assertions preserve Farsi RTL and German/English LTR rendering and detect an English fallback.
+
 | Check                                      | Evidence                                                                                                                                                                                                                                       |
 | ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Localized login and help                   | 95 unit tests across 27 authentication files, including Farsi, German and English interaction tests.                                                                                                                                           |
@@ -24,7 +26,7 @@ The new regression tests are `passwordReset.security.integration.test.ts` and `p
 Use the package-pinned Bun version and an available Docker daemon. Run from the repository root:
 
 ```sh
-bun run test:unit src/features/auth
+bun run test:unit src/features/auth src/features/i18n/localeUi.test.tsx
 bun run test:integration src/features/auth
 bun run typecheck
 bun run lint
