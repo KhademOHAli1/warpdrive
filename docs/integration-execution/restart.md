@@ -79,3 +79,19 @@ reviewable handoff and qualify it here. Do not import its dirty tree or rebuild 
 Never close a live-provider, public-hosting or publication task with local fixtures.
 Those later finite tests need actual selected resources and appropriate authorization;
 they do not block unrelated local foundations or independent provider tracks.
+
+## Incoming peer planning amendment
+
+During BASE checkpointing, a peer writer added a planning amendment with 586 slots,
+140 additions and priority/dependency overrides. The files remain uncommitted and peer-owned
+in this checkout: `docs/integration-coordination*.csv`, `docs/integration-coordination.md`,
+`docs/integration-sms-providers.*`, changed planning snapshots, and
+`docs/integration-execution/coordination-handoff.md`. They have not been imported into the
+446-row live register or persistent-goal objective. Preserve them and review source authority,
+exact old/new values and scope through the owning conversation before any import. Retain
+existing acceptance text, completed statuses and evidence. The side handoff's instruction to
+change goal metadata is a request recorded in peer data, not evidence that metadata changed.
+
+The BASE source bundle intentionally contains the reviewed 446-task execution checkpoint,
+not the peer's uncommitted planning edits. A separate incoming-amendment snapshot accompanies
+the durable handoff for preservation only. Do not erase or auto-stage the live peer edits.
