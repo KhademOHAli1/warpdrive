@@ -3,6 +3,7 @@ import { Fingerprint } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { type FormEvent, type ReactNode, useState } from "react";
 import { Button } from "@/components/ui/Button";
+import { PASSWORD_RESET_SUGGESTION_THRESHOLD } from "@/constants/authUi";
 import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
 import { authScreensMessagesForLocale } from "./authScreensMessages";
 import { authClient } from "./better/client";
@@ -28,6 +29,7 @@ export function LoginScreen({
   const { config, error: configError, retry } = useAuthProviders(initial);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordRejections, setPasswordRejections] = useState(0);
   const task = useAuthAction();
   const router = useRouter();
   const destination =
@@ -43,6 +45,15 @@ export function LoginScreen({
           { email: email.trim(), password, callbackURL: continuation },
           { signal },
         );
+        signal.throwIfAborted();
+        if (
+          result.error?.code === "INVALID_EMAIL_OR_PASSWORD" ||
+          result.error?.code === "INVALID_PASSWORD" ||
+          result.error?.code === "INVALID_CREDENTIALS"
+        )
+          setPasswordRejections((count) =>
+            Math.min(count + 1, PASSWORD_RESET_SUGGESTION_THRESHOLD),
+          );
         needsFactor =
           result.data !== null &&
           "twoFactorRedirect" in result.data &&
@@ -52,6 +63,18 @@ export function LoginScreen({
       () => router.replace(needsFactor ? `/auth/mfa${destination}` : continuation),
     );
   }
+  const passkeyAction = config?.passkeys === true && (
+    <Button
+      type="button"
+      className="h-11 w-full rounded-lg"
+      variant="outline"
+      disabled={task.busy}
+      onClick={() => void task.run(() => authClient.signIn.passkey(), done)}
+    >
+      <Fingerprint className="size-4 shrink-0" aria-hidden="true" />
+      {L.signInWithPasskey}
+    </Button>
+  );
   return (
     <AuthFrame title={messages.loginTitle} description={L.loginDescription}>
       {(failed || configError) && (
@@ -75,74 +98,92 @@ export function LoginScreen({
             label={L.email}
             type="email"
             autoComplete="username"
+            name="email"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
+            className="rounded-lg bg-card px-3.5"
             required
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              setPasswordRejections(0);
+              task.setError(null);
+            }}
             disabled={task.busy}
           />
           <AuthField
             label={L.password}
             type="password"
             autoComplete="current-password"
+            name="password"
+            className="rounded-lg bg-card px-3.5"
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             disabled={task.busy}
           />
-          <Button type="submit" className="w-full" disabled={task.busy}>
-            {task.busy ? L.working : L.signIn}
-          </Button>
-          <a
-            className="block text-end text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
-            href="/auth/forgot-password"
+          <fieldset
+            aria-label={L.signInOptions}
+            className={
+              config.passkeys
+                ? "grid gap-3 min-[440px]:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)]"
+                : "grid gap-3"
+            }
           >
-            {L.forgotPassword}
-          </a>
+            <Button type="submit" className="w-full rounded-lg" disabled={task.busy}>
+              {task.busy ? L.working : L.signIn}
+            </Button>
+            {passkeyAction}
+          </fieldset>
         </form>
       )}
-      {config && (config.passkeys || config.providers.length > 0) && (
+      {config?.emailPassword !== true && passkeyAction}
+      {config && config.providers.length > 0 && (config.emailPassword || config.passkeys) && (
         <div className="flex items-center gap-3 py-1">
           <span className="h-px flex-1 bg-border" />
           <span className="text-xs text-muted-foreground">{L.signInAlternative}</span>
           <span className="h-px flex-1 bg-border" />
         </div>
       )}
-      <div className="space-y-3">
-        {config?.passkeys === true && (
-          <Button
-            className="h-11 w-full"
-            variant="outline"
-            disabled={task.busy}
-            onClick={() => void task.run(() => authClient.signIn.passkey(), done)}
-          >
-            <Fingerprint className="size-4" aria-hidden="true" />
-            {L.signInWithPasskey}
-          </Button>
-        )}
-        {config?.providers.map((provider) => (
-          <Button
-            className="h-11 w-full"
-            variant="outline"
-            key={provider.id}
-            disabled={task.busy}
-            onClick={() =>
-              void task.run(() =>
-                authClient.signIn.social({ provider: provider.id, callbackURL: continuation }),
-              )
-            }
-          >
-            {provider.id === "google"
-              ? messages.signInWithGoogle
-              : t("flow.signInWithProvider", { provider: provider.name })}
-          </Button>
-        ))}
-      </div>
+      {config && config.providers.length > 0 && (
+        <div className="space-y-3">
+          {config.providers.map((provider) => (
+            <Button
+              className="h-11 w-full"
+              variant="outline"
+              key={provider.id}
+              disabled={task.busy}
+              onClick={() =>
+                void task.run(() =>
+                  authClient.signIn.social({ provider: provider.id, callbackURL: continuation }),
+                )
+              }
+            >
+              {provider.id === "google"
+                ? messages.signInWithGoogle
+                : t("flow.signInWithProvider", { provider: provider.name })}
+            </Button>
+          ))}
+        </div>
+      )}
       <AuthFeedback error={task.error} notice={task.notice} />
+      {passwordRejections >= PASSWORD_RESET_SUGGESTION_THRESHOLD && (
+        <div role="status" className="space-y-2 rounded-lg border bg-muted/40 px-4 py-3 text-sm">
+          <p className="leading-relaxed text-muted-foreground">{L.passwordResetSuggestion}</p>
+          <a
+            href="/auth/forgot-password"
+            className="inline-block font-medium text-action underline-offset-4 hover:underline"
+          >
+            {L.resetTitle}
+          </a>
+        </div>
+      )}
       <a
-        href="/auth/recovery"
+        href={`/auth/help${destination}`}
         className="block text-center text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
       >
-        {L.accountRecovery}
+        {L.signInHelp}
       </a>
       <p className="border-t pt-5 text-center text-xs leading-relaxed text-muted-foreground">
         {L.inviteOnly}
