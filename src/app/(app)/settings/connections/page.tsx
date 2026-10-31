@@ -49,6 +49,8 @@ export default async function ConnectionsPage({
         serverOrigin={env.BASE_URL}
         isAdmin={ctx.actor.type === "admin"}
         slackConfigured={slackConfiguration() !== null}
+        gmailConfigured={Boolean(env.GOOGLE_OAUTH_CLIENT_ID && env.GOOGLE_OAUTH_CLIENT_SECRET)}
+        mailbox={mailbox === null ? null : { status: mailbox.status }}
         initialTab={typeof query.tab === "string" ? query.tab : undefined}
         callbackResult={
           query.result === "connected" &&

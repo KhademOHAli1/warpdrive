@@ -39,14 +39,14 @@ it("keeps AI onboarding discoverable when MCP is disabled and explains why", asy
 
 it("does not offer a working connector or installation for a planned provider", async () => {
   render(<IntegrationHub {...props} />);
-  await userEvent.setup().click(screen.getByRole("button", { name: "View details: Zoom" }));
+  await userEvent.setup().click(screen.getByRole("button", { name: "View roadmap: Zoom" }));
   expect(screen.getByRole("dialog")).toHaveTextContent("not available yet");
   expect(screen.queryByRole("button", { name: "Connect account" })).not.toBeInTheDocument();
 });
 
 it("explains both missing Slack configuration and administrator access", async () => {
   render(<IntegrationHub {...props} />);
-  await userEvent.setup().click(screen.getByRole("button", { name: "View details: Slack" }));
+  await userEvent.setup().click(screen.getByRole("button", { name: "Setup guide: Slack" }));
   expect(screen.getByRole("dialog")).toHaveTextContent("configure the Slack OAuth app");
   expect(screen.getByRole("button", { name: "Connect account" })).toBeDisabled();
 });
@@ -55,13 +55,13 @@ it.each([
   {
     locale: "fa" as const,
     search: "جست‌وجو در اتصال‌ها",
-    button: "مشاهدهٔ جزئیات: Slack",
+    button: "راهنمای راه‌اندازی: Slack",
     text: "مدیر سرور",
   },
   {
     locale: "de" as const,
     search: "Integrationen suchen",
-    button: "Details ansehen: Slack",
+    button: "Einrichtungsanleitung: Slack",
     text: "Serveradministrator",
   },
 ])(

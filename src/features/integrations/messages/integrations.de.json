@@ -159,5 +159,11 @@
   "slackSetupStep3": "Hinterlegen Sie SLACK_CLIENT_ID und SLACK_CLIENT_SECRET in der Serverkonfiguration und starten Sie Warpdrive neu.",
   "slackSetupStep4": "Lassen Sie die Slack-Token-Rotation für diese erste Connector-Version deaktiviert.",
   "slackCallback": "OAuth-Weiterleitungs-URL",
-  "slackApps": "Slack-App-Einstellungen öffnen"
+  "slackApps": "Slack-App-Einstellungen öffnen",
+  "setupGuide": "Einrichtungsanleitung",
+  "setupAi": "Assistenten einrichten",
+  "finishSetup": "Einrichtung abschließen",
+  "reconnect": "Erneut verbinden",
+  "explorePlanned": "Entwicklungsplan ansehen",
+  "needsAttention": "Prüfung erforderlich"
 }

@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/Input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { cn } from "@/lib/utils";
+import { ConnectionBadge } from "./ConnectionBadge";
 import {
   filterIntegrations,
   INTEGRATION_CATEGORIES,
@@ -19,6 +20,7 @@ import {
   type IntegrationCategory,
   type IntegrationId,
 } from "./catalog";
+import { connectionState } from "./connectionState";
 import { IntegrationDetails } from "./IntegrationDetails";
 import { IntegrationMark } from "./IntegrationMark";
 import { McpSetup } from "./McpSetup";
@@ -32,6 +34,8 @@ export interface IntegrationHubProps {
   serviceConnections: ServiceConnectionView[];
   aiConnections: ConnectionView[];
   gmail: ReactNode;
+  gmailConfigured?: boolean;
+  mailbox?: { status: string } | null;
   initialTab?: string;
   callbackResult?: string;
 }
@@ -47,6 +51,8 @@ export function IntegrationHub({
   serviceConnections,
   aiConnections,
   gmail,
+  gmailConfigured = false,
+  mailbox = null,
   initialTab,
   callbackResult,
 }: IntegrationHubProps) {
@@ -54,6 +60,11 @@ export function IntegrationHub({
   const [category, setCategory] = useState<IntegrationCategory>("all");
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<Integration | null>(null);
+  const [tab, setTab] = useState(
+    ["browse", "connections", "ai", "marketplace"].includes(initialTab ?? "")
+      ? initialTab
+      : "browse",
+  );
   const trigger = useRef<HTMLElement | null>(null);
   const descriptions = Object.fromEntries(
     INTEGRATIONS.map((item) => [item.id, t(`providers.${item.id}.description`)]),
@@ -72,22 +83,17 @@ export function IntegrationHub({
     return item.name;
   }
 
-  function availability(item: Integration) {
-    if (item.delivery === "planned") return t("planned");
-    if (item.delivery === "mcp" && endpoint === null) return t("disabled");
-    if (item.delivery === "slack" && !slackConfigured) return t("needsSetup");
-    return t("ready");
-  }
+  const context = {
+    endpoint,
+    slackConfigured,
+    gmailConfigured,
+    mailbox,
+    services: serviceConnections.filter((row) => row.provider === "slack"),
+  };
 
   return (
     <div className="space-y-6">
-      <Tabs
-        defaultValue={
-          ["browse", "connections", "ai", "marketplace"].includes(initialTab ?? "")
-            ? initialTab
-            : "browse"
-        }
-      >
+      <Tabs value={tab} onValueChange={setTab}>
         <div className="overflow-x-auto border-b">
           <TabsList variant="line" aria-label={t("title")} className="w-max min-w-full gap-2">
             <TabsTrigger value="browse" className={TAB_STYLE}>
@@ -142,35 +148,40 @@ export function IntegrationHub({
             ))}
           </fieldset>
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-            {visible.map((item) => (
-              <article
-                key={item.id}
-                className="flex flex-col rounded-lg border bg-card p-4 transition-colors hover:border-muted-foreground/40"
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <IntegrationMark integration={item} />
-                  <span className="rounded-md bg-muted/60 px-2 py-1 text-xs text-muted-foreground">
-                    {availability(item)}
-                  </span>
-                </div>
-                <h2 className="mt-4 text-sm font-semibold">
-                  <bdi>{displayName(item)}</bdi>
-                </h2>
-                <p className="mb-4 mt-1.5 flex-1 text-sm leading-relaxed text-muted-foreground">
-                  {descriptions[item.id]}
-                </p>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full justify-between"
-                  aria-label={`${t("details")}: ${displayName(item)}`}
-                  onClick={() => open(item)}
+            {visible.map((item) => {
+              const state = connectionState(item, context);
+              return (
+                <article
+                  key={item.id}
+                  className="flex flex-col rounded-lg border bg-card p-4 transition-colors hover:border-muted-foreground/40"
                 >
-                  {t("details")}
-                  <ArrowUpRight className="size-3.5 rtl:-scale-x-100" aria-hidden="true" />
-                </Button>
-              </article>
-            ))}
+                  <div className="flex items-start justify-between gap-2">
+                    <IntegrationMark integration={item} />
+                    <ConnectionBadge status={state.status} />
+                  </div>
+                  <h2 className="mt-4 text-sm font-semibold">
+                    <bdi>{displayName(item)}</bdi>
+                  </h2>
+                  <p className="mb-4 mt-1.5 flex-1 text-sm leading-relaxed text-muted-foreground">
+                    {descriptions[item.id]}
+                  </p>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full justify-between"
+                    aria-label={`${t(state.action)}: ${displayName(item)}`}
+                    onClick={() => {
+                      if (state.action === "manage" || state.action === "finishSetup")
+                        setTab("connections");
+                      else open(item);
+                    }}
+                  >
+                    {t(state.action)}
+                    <ArrowUpRight className="size-3.5 rtl:-scale-x-100" aria-hidden="true" />
+                  </Button>
+                </article>
+              );
+            })}
           </div>
           {visible.length === 0 && (
             <p

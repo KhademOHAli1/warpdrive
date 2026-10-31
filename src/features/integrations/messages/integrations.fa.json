@@ -159,5 +159,11 @@
   "slackSetupStep3": "مقادیر SLACK_CLIENT_ID و SLACK_CLIENT_SECRET را در تنظیمات سرور وارد کنید و Warpdrive را دوباره راه‌اندازی کنید.",
   "slackSetupStep4": "در نسخهٔ نخست این اتصال، چرخش خودکار توکن Slack را فعال نکنید.",
   "slackCallback": "نشانی بازگشت OAuth",
-  "slackApps": "باز کردن تنظیمات برنامه در Slack"
+  "slackApps": "باز کردن تنظیمات برنامه در Slack",
+  "setupGuide": "راهنمای راه‌اندازی",
+  "setupAi": "راه‌اندازی دستیار",
+  "finishSetup": "تکمیل راه‌اندازی",
+  "reconnect": "اتصال دوباره",
+  "explorePlanned": "مشاهدهٔ برنامهٔ توسعه",
+  "needsAttention": "نیازمند بررسی"
 }
