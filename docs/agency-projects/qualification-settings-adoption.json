@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-10-31T16:53:43.182955+00:00",
+  "agencyBase": "8e6e2a65349ea6ebd6e652228ffe46c7caac6327",
+  "ownerSource": "ec9b3f8943e42736edc6713c099fd2ef14068d0a",
+  "commonAncestor": "a1a8f6da1ce366c35002900bf33508356dfbb995",
+  "ownerEvidence": "613 selected tests/full types-lint-build/selected native journeys reported by owner; not a combined Agency pass",
+  "resolution": {
+    "navigation": "exact owner blob",
+    "catalogs": "structural merge; no conflicting leaf values; 18 workflow permission labels preserved",
+    "testCompatibility": "retain gates/destination assertions and add Sheet dismissal"
+  },
+  "checks": [
+    {
+      "name": "inherited regression red",
+      "failed": 1,
+      "passed": 11,
+      "exitCode": 1,
+      "log": "evidence/settings-adoption-red.log"
+    },
+    {
+      "name": "navigation selection",
+      "passed": 18,
+      "files": 2,
+      "exitCode": 0,
+      "log": "evidence/settings-adoption-green-nav.log"
+    },
+    {
+      "name": "adapter-message-import selection",
+      "passed": 30,
+      "files": 5,
+      "exitCode": 0,
+      "log": "evidence/settings-adoption-green-adapters.log"
+    },
+    {
+      "name": "locale audit",
+      "exitCode": 0,
+      "catalogIssues": 0,
+      "newSourceFindings": 0,
+      "log": "evidence/settings-adoption-i18n.log"
+    },
+    {
+      "name": "test formatting/whitespace",
+      "exitCode": 0
+    }
+  ],
+  "sourceHashes": {
+    "src/app/(app)/settings/SettingsNav.tsx": "a09e1ad821835e537def45430c3e91ad2741b8625c03b0753e09cfdf2f3065a2",
+    "src/app/(app)/settings/SettingsNav.test.tsx": "2c8550b900e416665dadf78753f43c57b4528166c83d2008b2efd1ba3753f5c6",
+    "src/features/identity/messages/settings.fa.json": "4e74330b1e79f6587d6807fdaa99472ec4656011aecccbdcac4512951db79293",
+    "src/features/identity/messages/settings.de.json": "72470543977153a401a09e1669625453d126dabb4e590ad6100c505f883336e7",
+    "src/features/identity/messages/settings.en.json": "1930dc03a0884663c2e03a9f2d94acb2600848d4ce5c2f4d30fd44254c67836a"
+  },
+  "limits": [
+    "Compatibility patch owner review pending",
+    "One-file compatibility typecheck held before launch by <3GiB disk guard",
+    "No full combined type/lint/unit/build, PostgreSQL or native UI qualification",
+    "No new feature/permission/store/writer/route/effect enabled"
+  ]
+}

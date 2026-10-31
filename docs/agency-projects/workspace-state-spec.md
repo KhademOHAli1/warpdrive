@@ -2,6 +2,8 @@
 
 31 October 2026. Implementation input for AP-01.2 through AP-01.6, reviewed against source `97bf00eff9b23ac62e74b6901c528d06b05ef09a`, `ui-source-inventory.md` and the immutable PRD/architecture. This is a source/design specification. No screen, translation catalog, permission contract or release is implemented or accepted by this document. Native-language review, ICU/key checks, rendered FA/DE/EN journeys and accessibility measurements remain pending.
 
+Adoption amendment: Settings `ec9b3f8` supplies the searchable mobile Sheet and committed optional navigation/dialog props described in `settings-adoption.md`. Use those actual current adapters when implementing this proposal. Statements below about unavailable dirty props refer to the earlier source snapshot, not the newly adopted candidate. Their presence does not add a request-status or backend recovery API.
+
 ## Current-shell composition and ownership
 
 Retain the authenticated layout, sidebar/mobile navigation, Inter/Vazirmatn, compact spacing, semantic light/dark colors, action green, focus tokens and existing logical direction behavior. Add feature-local agency content; do not redesign the shell or edit managed primitives. Navigation and route registration require narrow owner review. A proposed Projects destination is not an existing route or server entitlement.

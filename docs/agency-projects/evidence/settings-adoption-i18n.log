@@ -1,0 +1,213 @@
+$ bun scripts/i18n/audit.ts --check
+{
+  "catalogs": [
+    {
+      "group": "src/components/data-table/messages/tableControls",
+      "locales": [
+        "de",
+        "en",
+        "fa"
+      ]
+    },
+    {
+      "group": "src/components/filters/messages/filters",
+      "locales": [
+        "de",
+        "en",
+        "fa"
+      ]
+    },
+    {
+      "group": "src/components/shell/messages/shell",
+      "locales": [
+        "de",
+        "en",
+        "fa"
+      ]
+    },
+    {
+      "group": "src/components/shell/messages/utilities",
+      "locales": [
+        "de",
+        "en",
+        "fa"
+      ]
+    },
+    {
+      "group": "src/components/ui/messages/shared",
+      "locales": [
+        "de",
+        "en",
+        "fa"
+      ]
+    },
+    {
+      "group": "src/features/activities/messages/activities",
+      "locales": [
+        "de",
+        "en",
+        "fa"
+      ]
+    },
+    {
+      "group": "src/features/activities/messages/calendar",
+      "locales": [
+        "de",
+        "en",
+        "fa"
+      ]
+    },
+    {
+      "group": "src/features/auth/management/messages/authManagement",
+      "locales": [
+        "de",
+        "en",
+        "fa"
+      ]
+    },
+    {
+      "group": "src/features/auth/messages/authScreens",
+      "locales": [
+        "de",
+        "en",
+        "fa"
+      ]
+    },
+    {
+      "group": "src/features/contacts/messages/contacts",
+      "locales": [
+        "de",
+        "en",
+        "fa"
+      ]
+    },
+    {
+      "group": "src/features/custom-fields/messages/customFields",
+      "locales": [
+        "de",
+        "en",
+        "fa"
+      ]
+    },
+    {
+      "group": "src/features/deals/messages/sales",
+      "locales": [
+        "de",
+        "en",
+        "fa"
+      ]
+    },
+    {
+      "group": "src/features/email/messages/email",
+      "locales": [
+        "de",
+        "en",
+        "fa"
+      ]
+    },
+    {
+      "group": "src/features/enrichment/messages/enrichment",
+      "locales": [
+        "de",
+        "en",
+        "fa"
+      ]
+    },
+    {
+      "group": "src/features/entity-create/messages/entityCreate",
+      "locales": [
+        "de",
+        "en",
+        "fa"
+      ]
+    },
+    {
+      "group": "src/features/files/messages/files",
+      "locales": [
+        "de",
+        "en",
+        "fa"
+      ]
+    },
+    {
+      "group": "src/features/i18n/messages/boundary",
+      "locales": [
+        "de",
+        "en",
+        "fa"
+      ]
+    },
+    {
+      "group": "src/features/i18n/messages/",
+      "locales": [
+        "de",
+        "en",
+        "fa"
+      ]
+    },
+    {
+      "group": "src/features/identity/messages/settings",
+      "locales": [
+        "de",
+        "en",
+        "fa"
+      ]
+    },
+    {
+      "group": "src/features/integrations/messages/integrations",
+      "locales": [
+        "de",
+        "en",
+        "fa"
+      ]
+    },
+    {
+      "group": "src/features/leads/messages/leads",
+      "locales": [
+        "de",
+        "en",
+        "fa"
+      ]
+    },
+    {
+      "group": "src/features/notifications/messages/notifications",
+      "locales": [
+        "de",
+        "en",
+        "fa"
+      ]
+    },
+    {
+      "group": "src/features/quick-add/messages/quickAdd",
+      "locales": [
+        "de",
+        "en",
+        "fa"
+      ]
+    },
+    {
+      "group": "src/features/stats/messages/stats",
+      "locales": [
+        "de",
+        "en",
+        "fa"
+      ]
+    },
+    {
+      "group": "src/features/workflows/messages/workflows",
+      "locales": [
+        "de",
+        "en",
+        "fa"
+      ]
+    }
+  ],
+  "catalogIssues": 0,
+  "sourceLiteralCandidates": 0,
+  "legacyCatalogImports": 0,
+  "sourceFilesWithFindings": 0,
+  "newSourceFindings": 0,
+  "reviewedSourceExceptions": 6,
+  "sourceMigrationComplete": true,
+  "note": "Static inventory is a migration aid. Computed copy, backend errors, data labels and browser workflows still require feature review. A valid catalog does not prove that every screen is translated."
+}

@@ -4,6 +4,7 @@ import { ERROR_IDS } from "@/constants/errorIds";
 import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import { useImportProgress } from "@/features/import/useImportProgress";
 import { trpc } from "@/lib/trpc-client";
+import { ImportQueryFeedback } from "./ImportQueryFeedback";
 import { ProgressBar } from "./ProgressBar";
 
 // The batch fields a wait step reads once its phase finishes.
@@ -37,7 +38,7 @@ export function PhaseWait({
   const IMP = L.importer;
 
   const progress = useImportProgress(batchId);
-  const batch = trpc.import.getBatch.useQuery(
+  const query = trpc.import.getBatch.useQuery(
     { batchId },
     {
       refetchInterval: (q) => {
@@ -45,7 +46,8 @@ export function PhaseWait({
         return s === until || s === "failed" ? false : 1000;
       },
     },
-  ).data;
+  );
+  const batch = query.data;
 
   // Mirror the polled batch into a ref (written after commit, not during render, per concurrent-
   // safe ref rules) so the transition effect can read the full batch without depending on its
@@ -58,13 +60,24 @@ export function PhaseWait({
   useEffect(() => {
     // Read status (the trigger) reactively; read the full batch payload from the ref so this only
     // fires on a phase transition, not on every progress-updating poll tick.
+    if (query.isError) return;
     const status = batch?.status;
     if (status === undefined) return;
     const b = batchRef.current;
     if (b === undefined) return;
     if (status === until) onReady(b);
     else if (status === "failed") onError(ERROR_IDS.IMPORT_PARSE_FAILED);
-  }, [batch?.status, until, onReady, onError]);
+  }, [batch?.status, query.isError, until, onReady, onError]);
+
+  if (query.isError)
+    return (
+      <ImportQueryFeedback
+        loadingLabel={label}
+        failed
+        retrying={query.isFetching}
+        onRetry={() => void query.refetch()}
+      />
+    );
 
   return (
     <section className="space-y-3">

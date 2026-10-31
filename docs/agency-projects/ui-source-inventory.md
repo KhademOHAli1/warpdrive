@@ -2,6 +2,8 @@
 
 31 October 2026. Source-only review for AP-01.1. This records available implementation seams, not browser acceptance or a proposed redesign.
 
+Latest amendment: the clean Settings cut `ec9b3f8943e42736edc6713c099fd2ef14068d0a` is now being adopted into the Agency candidate. Read `settings-adoption.md` for the exact merge, actual new props, compatibility evidence and remaining combined gates. The initial observations below remain tied to their original source, and their dirty-Settings status is historical.
+
 ## Exact source and adoption boundary
 
 - Agency checkout: `/Users/ali/Developer/warpdrive-agency-projects`, base `67eb151f228d9a2866d51266420e9fb915a77739`.

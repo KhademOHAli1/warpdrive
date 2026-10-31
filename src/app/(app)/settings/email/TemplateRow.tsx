@@ -19,12 +19,14 @@ const ROW_BUTTON =
 export function TemplateRow({
   template: t,
   selected,
+  pending,
   onToggle,
   onEdit,
   onDelete,
 }: {
   template: SettingsTemplate;
   selected: boolean;
+  pending: boolean;
   onToggle: (v: boolean) => void;
   onEdit: () => void;
   onDelete: () => void;
@@ -33,7 +35,10 @@ export function TemplateRow({
   const preferences = useLocalePreferences();
   const S = L._email;
 
-  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: t.id });
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
+    id: t.id,
+    disabled: pending,
+  });
   const style = { transform: CSS.Transform.toString(transform), transition };
 
   return (
@@ -41,6 +46,7 @@ export function TemplateRow({
       <Button
         variant="ghost"
         size="icon"
+        disabled={pending}
         aria-label={`${S.reorder} ${t.name}`}
         className="relative size-7 cursor-grab p-0 text-muted-foreground after:absolute after:left-1/2 after:top-1/2 after:size-10 after:-translate-x-1/2 after:-translate-y-1/2 after:content-['']"
         {...attributes}
@@ -48,7 +54,12 @@ export function TemplateRow({
       >
         <GripVertical aria-hidden="true" className="size-4" />
       </Button>
-      <Checkbox checked={selected} onCheckedChange={onToggle} label={`${S.select} ${t.name}`} />
+      <Checkbox
+        disabled={pending}
+        checked={selected}
+        onCheckedChange={onToggle}
+        label={`${S.select} ${t.name}`}
+      />
       <span className="flex flex-1 items-center gap-2">
         {t.name}
         {t.isShared && (
@@ -65,6 +76,7 @@ export function TemplateRow({
         <Button
           variant="ghost"
           size="sm"
+          disabled={pending}
           className={ROW_BUTTON}
           onClick={onEdit}
           aria-label={`${S.edit} ${t.name}`}
@@ -74,6 +86,7 @@ export function TemplateRow({
         <Button
           variant="ghost"
           size="sm"
+          disabled={pending}
           className={`${ROW_BUTTON} text-destructive hover:text-destructive/80`}
           onClick={onDelete}
           aria-label={`${S.delete} ${t.name}`}

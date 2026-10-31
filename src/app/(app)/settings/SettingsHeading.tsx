@@ -29,7 +29,7 @@ export function SettingsHeading({
       title={title}
       description={description}
       actions={
-        <div className="flex flex-wrap items-center justify-end gap-3">
+        <div className="flex max-w-full flex-wrap items-center gap-3 sm:justify-end">
           {scope !== undefined && (
             <span className="rounded-full border px-2.5 py-1 text-xs text-muted-foreground">
               {scopeLabels[scope]}

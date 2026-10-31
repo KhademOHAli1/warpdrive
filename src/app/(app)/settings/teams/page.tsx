@@ -35,11 +35,13 @@ export default async function TeamsPage(): Promise<ReactNode> {
   const teamRows = teams.map((t) => ({ id: t.id, name: t.name, managerId: t.managerId }));
   return (
     <SettingsPage>
-      <SettingsHeading scope="workspace" title={L.teams} description={L.teamsDescription} />
+      <SettingsHeading
+        scope="workspace"
+        title={L.teams}
+        description={L.teamsDescription}
+        actions={<TeamsClient users={assignableUsers} />}
+      />
       <TeamsTable teams={teamRows} users={users} />
-      <div className="mt-6">
-        <TeamsClient users={assignableUsers} />
-      </div>
     </SettingsPage>
   );
 }

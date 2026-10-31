@@ -16,7 +16,6 @@ import {
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { useMemo, useState } from "react";
-import { useActionError } from "@/components/shell/ActionErrorProvider";
 import { Button } from "@/components/ui/Button";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { Input } from "@/components/ui/Input";
@@ -29,10 +28,10 @@ import {
   updateTemplateAction,
 } from "@/features/email/authoringActions";
 import type { SettingsTemplate } from "@/features/email/emailAuthoringReads";
-import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import { readCsrfToken } from "@/utils/csrfCookie";
-import { formatCreatedOn } from "./formatDate";
+import { EmailSettingsTaskFeedback, useEmailSettingsTask } from "./EmailSettingsTask";
+import { SharedTemplateRow } from "./SharedTemplateRow";
 import { type TemplateDraft, TemplateDraftEditor } from "./TemplateDraftEditor";
 import { TemplateRow } from "./TemplateRow";
 
@@ -44,11 +43,10 @@ export function TemplatesSettingsClient({
   canShare: boolean;
 }): React.ReactNode {
   const L = useSettingsMessages();
-  const preferences = useLocalePreferences();
   const S = L._email;
 
   const router = useRouter();
-  const reportError = useActionError();
+  const task = useEmailSettingsTask();
   const [draft, setDraft] = useState<TemplateDraft | null>(null);
   // A blank-name save used to return silently, so Save looked dead. Track the validation
   // failure and render it on the form instead.
@@ -115,12 +113,14 @@ export function TemplatesSettingsClient({
 
   // Every draft transition (open, edit, cancel) clears the stale validation message.
   function changeDraft(next: TemplateDraft | null): void {
+    if (task.isPending()) return;
+    task.reset();
     setDraft(next);
     if (next === null || next.name.trim() !== "") setNameError(null);
   }
 
   async function save(): Promise<void> {
-    if (draft === null) return;
+    if (draft === null || task.isPending()) return;
     if (draft.name.trim() === "") {
       setNameError(S.nameRequired);
       return;
@@ -132,45 +132,50 @@ export function TemplatesSettingsClient({
       bodyHtml: draft.bodyHtml,
       isShared: draft.isShared,
     };
-    const r =
-      draft.id === undefined
-        ? await createTemplateAction(csrf(), payload)
-        : await updateTemplateAction(csrf(), { id: draft.id, patch: payload });
-    if (r.ok) {
-      changeDraft(null);
-      router.refresh();
-    } else reportError(r.error.id);
+    await task.run(
+      () =>
+        draft.id === undefined
+          ? createTemplateAction(csrf(), payload)
+          : updateTemplateAction(csrf(), { id: draft.id, patch: payload }),
+      () => {
+        setDraft(null);
+        router.refresh();
+      },
+    );
   }
 
   async function remove(id: string): Promise<void> {
-    const r = await deleteTemplateAction(csrf(), { id });
-    if (r.ok) router.refresh();
-    else reportError(r.error.id);
+    await task.run(
+      () => deleteTemplateAction(csrf(), { id }),
+      () => router.refresh(),
+    );
   }
 
   async function bulkDelete(): Promise<void> {
     const ids = [...selected];
     if (ids.length === 0) return;
-    const r = await deleteTemplatesAction(csrf(), { ids });
-    if (r.ok) {
-      setSelected(new Set());
-      router.refresh();
-    } else reportError(r.error.id);
+    await task.run(
+      () => deleteTemplatesAction(csrf(), { ids }),
+      () => {
+        setSelected(new Set());
+        router.refresh();
+      },
+    );
   }
 
   async function onDragEnd(event: DragEndEvent): Promise<void> {
     const { active, over } = event;
-    if (over === null || active.id === over.id) return;
+    if (over === null || active.id === over.id || task.isPending()) return;
     const prev = order;
     const next = reorderByDrag(order, String(active.id), String(over.id));
     setOrder(next); // optimistic
-    const r = await reorderTemplatesAction(csrf(), { orderedIds: next });
     // On failure, restore the exact prior order directly: router.refresh() returns the same id set,
     // so ownKey is unchanged and the render-time resync would leave the failed order stuck.
-    if (!r.ok) {
-      setOrder(prev);
-      reportError(r.error.id);
-    }
+    await task.run(
+      () => reorderTemplatesAction(csrf(), { orderedIds: next }),
+      () => {},
+      () => setOrder(prev),
+    );
   }
 
   return (
@@ -179,6 +184,7 @@ export function TemplatesSettingsClient({
         <h2 className="text-sm font-semibold">{S.templates}</h2>
         <Button
           size="sm"
+          disabled={task.pending}
           onClick={() => changeDraft({ name: "", subject: "", bodyHtml: "", isShared: false })}
         >
           {S.newTemplate}
@@ -186,6 +192,7 @@ export function TemplatesSettingsClient({
       </div>
 
       <div className="space-y-3 p-5">
+        <EmailSettingsTaskFeedback pending={task.pending} failed={task.failed} />
         <div className="flex items-center gap-2">
           <Input
             type="search"
@@ -200,6 +207,7 @@ export function TemplatesSettingsClient({
             <Button
               variant="outline"
               size="sm"
+              disabled={task.pending}
               className="whitespace-nowrap border-destructive text-destructive hover:bg-destructive/10"
               onClick={() => void bulkDelete()}
             >
@@ -215,7 +223,12 @@ export function TemplatesSettingsClient({
                 with a drag handle, shared rows with a matching spacer). */}
               <span className="size-7" />
               {ownViewIds.length > 0 ? (
-                <Checkbox checked={allChecked} onCheckedChange={toggleAll} label={S.selectAll} />
+                <Checkbox
+                  disabled={task.pending}
+                  checked={allChecked}
+                  onCheckedChange={toggleAll}
+                  label={S.selectAll}
+                />
               ) : (
                 <span className="h-4 w-4" />
               )}
@@ -235,6 +248,7 @@ export function TemplatesSettingsClient({
                 <TemplateRow
                   key={t.id}
                   template={t}
+                  pending={task.pending}
                   selected={selected.has(t.id)}
                   onToggle={(v) => toggleOne(t.id, v)}
                   onEdit={() =>
@@ -253,22 +267,7 @@ export function TemplatesSettingsClient({
           </DndContext>
 
           {sharedRows.map((t) => (
-            <li key={t.id} className="flex items-center gap-3 px-3 py-2 text-sm">
-              <span className="size-7" />
-              <span className="h-4 w-4" />
-              <span className="flex flex-1 items-center gap-2">
-                {t.name}
-                {t.isShared && (
-                  <span className="rounded bg-accent px-1.5 py-0.5 text-xs text-muted-foreground">
-                    {S.sharedBadge}
-                  </span>
-                )}
-              </span>
-              <span className="w-28 text-xs text-muted-foreground">
-                {formatCreatedOn(t.createdAt, preferences)}
-              </span>
-              <span className="w-24 text-xs text-muted-foreground">{t.ownerName}</span>
-            </li>
+            <SharedTemplateRow key={t.id} template={t} />
           ))}
 
           {filtered.length === 0 && (
@@ -279,6 +278,7 @@ export function TemplatesSettingsClient({
         {draft !== null && (
           <TemplateDraftEditor
             draft={draft}
+            pending={task.pending}
             canShare={canShare}
             nameError={nameError}
             onChange={changeDraft}

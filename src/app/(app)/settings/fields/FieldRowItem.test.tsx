@@ -59,6 +59,11 @@ function renderRow(row: FieldRow): ReturnType<typeof render> {
 }
 
 describe("FieldRowItem placement toggles", () => {
+  it("identifies the field in each placement switch name", () => {
+    renderRow(ROW);
+    expect(screen.getByRole("switch", { name: "Important: Budget" })).toBeInTheDocument();
+    expect(screen.getByRole("switch", { name: "Show in add form: Budget" })).toBeInTheDocument();
+  });
   it("uses the shared arrow reorder controls", () => {
     const onMove = vi.fn();
     render(
@@ -73,7 +78,7 @@ describe("FieldRowItem placement toggles", () => {
 
   it("toggles Important via setDefFlagsAction, sending the full flag pair", async () => {
     renderRow(ROW);
-    fireEvent.click(screen.getByRole("switch", { name: "Important" }));
+    fireEvent.click(screen.getByRole("switch", { name: "Important: Budget" }));
     await waitFor(() =>
       expect(actions.setDefFlagsAction).toHaveBeenCalledWith(
         { id: "d1", isImportant: true, showInAddForm: false },
@@ -84,7 +89,7 @@ describe("FieldRowItem placement toggles", () => {
 
   it("toggles Show in add form via setDefFlagsAction, sending the full flag pair", async () => {
     renderRow({ ...ROW, isImportant: true });
-    fireEvent.click(screen.getByRole("switch", { name: "Show in add form" }));
+    fireEvent.click(screen.getByRole("switch", { name: "Show in add form: Budget" }));
     await waitFor(() =>
       expect(actions.setDefFlagsAction).toHaveBeenCalledWith(
         { id: "d1", isImportant: true, showInAddForm: true },
@@ -95,11 +100,11 @@ describe("FieldRowItem placement toggles", () => {
 
   it("reflects the def's current flag state in the switches", () => {
     renderRow({ ...ROW, isImportant: true, showInAddForm: true });
-    expect(screen.getByRole("switch", { name: "Important" })).toHaveAttribute(
+    expect(screen.getByRole("switch", { name: "Important: Budget" })).toHaveAttribute(
       "aria-checked",
       "true",
     );
-    expect(screen.getByRole("switch", { name: "Show in add form" })).toHaveAttribute(
+    expect(screen.getByRole("switch", { name: "Show in add form: Budget" })).toHaveAttribute(
       "aria-checked",
       "true",
     );
@@ -107,6 +112,27 @@ describe("FieldRowItem placement toggles", () => {
 });
 
 describe("FieldRowItem surfaces failed mutations", () => {
+  it("prevents duplicate rename requests and keeps the draft after a network rejection", async () => {
+    let rejectSave: (reason: unknown) => void = () => {};
+    actions.renameDefAction.mockImplementationOnce(
+      () =>
+        new Promise((_, reject) => {
+          rejectSave = reject;
+        }),
+    );
+    renderRow(ROW);
+    fireEvent.click(screen.getByRole("button", { name: S.rename }));
+    fireEvent.change(screen.getByLabelText(S.rename), { target: { value: "New budget" } });
+    const save = screen.getByRole("button", { name: S.save });
+    fireEvent.click(save);
+    fireEvent.click(save);
+    expect(actions.renameDefAction).toHaveBeenCalledTimes(1);
+    expect(save).toBeDisabled();
+    rejectSave(new Error("offline"));
+    await waitFor(() => expect(screen.getByRole("alert")).toBeInTheDocument());
+    expect(screen.getByLabelText(S.rename)).toHaveValue("New budget");
+    expect(screen.getByRole("button", { name: S.save })).toBeEnabled();
+  });
   it("reports the error id when archive is denied", async () => {
     actions.archiveDefAction.mockResolvedValueOnce({ ok: false, error: { id: "E_PERM_001" } });
     renderRow(ROW);
@@ -126,7 +152,7 @@ describe("FieldRowItem surfaces failed mutations", () => {
   it("reports the error id when a flag toggle is denied", async () => {
     actions.setDefFlagsAction.mockResolvedValueOnce({ ok: false, error: { id: "E_PERM_001" } });
     renderRow(ROW);
-    fireEvent.click(screen.getByRole("switch", { name: S.important }));
+    fireEvent.click(screen.getByRole("switch", { name: `${S.important}: Budget` }));
     await waitFor(() => expect(report).toHaveBeenCalledWith("E_PERM_001"));
   });
 });
