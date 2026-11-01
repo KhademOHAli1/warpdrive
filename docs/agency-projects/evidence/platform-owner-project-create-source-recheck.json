@@ -1,0 +1,15 @@
+{
+  "observedAt": "2026-11-01T05:45:52.568371+00:00",
+  "reviewBase": "3e84bc14c60cd3abb7c6340ba2022e6aa0dc3af2",
+  "observedAgencyHead": "d98574bb5dcfd5360158676ae87b96f2b0012c14",
+  "allFiveTargetsByteUnchangedFromBase": true,
+  "paths": [
+    "src/constants/permissionFlags.ts",
+    "src/features/permissions/actions-meta.ts",
+    "src/features/identity/messages/settings.fa.json",
+    "src/features/identity/messages/settings.de.json",
+    "src/features/identity/messages/settings.en.json"
+  ],
+  "patchApplied": false,
+  "testsRun": false
+}

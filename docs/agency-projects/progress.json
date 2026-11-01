@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-11-01T05:43:31.944167+00:00",
+  "updatedAt": "2026-11-01T05:53:31.552768+00:00",
   "statusMeaning": "Evidence level only. A source-verified task is not accepted or complete. All 96 acceptance flags remain false.",
   "tasks": {
     "AP-00.1": {
@@ -23,8 +23,8 @@
     },
     "AP-00.6": {
       "status": "active",
-      "evidence": "domain-review-proposal.md; actual APIs separated from proposed interfaces.",
-      "remaining": "Calendar/project authority and durable admission acceptance pending.",
+      "evidence": "authority-admission-inventory-20261101.md audits actual central-env, lifecycle/MCP availability, workflow/provider and native/CRM lock surfaces at d98574b. No generic Agency module gate or complete writer fence exists; two review-only protocols and participating source surfaces supplied to Platform/Settings.",
+      "remaining": "Owner choice for module disabled/history/app-worker behavior and complete bounded shared fence protocol, exact namespace/lock order/participating patches and real PG evidence remain open. No invented module registry or case-authority substitution.",
       "accepted": false
     },
     "AP-00.7": {
@@ -53,8 +53,8 @@
     },
     "AP-02.2": {
       "status": "active",
-      "evidence": "Concrete create/read/edit/lifecycle/owner action table and independent edit/coordinator grants retained. owner-review/project-create-registration-review.patch supplies exact five-path registration-only proposal at 3e84bc1: ordinary defaults deny, high-risk grantors/admin semantics unchanged, FA/DE/EN labels. Unapplied/untested; owner acceptance requested. Settings accepted the exact registration/native-admin/high-risk contract for test-first implementation, with true-map update and exhaustive-write boundary qualifications; verbatim evidence retained. Platform review and application remain pending.",
-      "remaining": "Owner acceptance and actual permission/fence patches plus real deny/race evidence remain open. Pure transition validation is not actor authorization.",
+      "evidence": "Concrete create/read/edit/lifecycle/owner action table and independent edit/coordinator grants retained. owner-review/project-create-registration-review.patch supplies exact five-path registration-only proposal at 3e84bc1: ordinary defaults deny, high-risk grantors/admin semantics unchanged, FA/DE/EN labels. Unapplied/untested; owner acceptance requested. Settings accepted the exact registration/native-admin/high-risk contract for test-first implementation, with true-map update and exhaustive-write boundary qualifications; verbatim evidence retained. Platform's local prepared review also supports the exact narrow contract, with source/copy rebase caveats; both verbatim owner reviews retained. Application and actual qualification remain pending.",
+      "remaining": "Implement accepted narrow registration test-first, preserving all submitted true flags and exhaustive schema-write boundaries. Project action table, module admission, member/admin/CRM policy and actual participating-writer fence plus real deny/race evidence remain open. No project writer or finance grant.",
       "accepted": false
     },
     "AP-02.4": {
@@ -188,6 +188,12 @@
       "accepted": false,
       "evidence": "Read-only audit at 3e84bc1 identified actual replayMasking constants, maskAllInputs:false, email block/no-capture conventions and shape-only failure telemetry. workspace-state-spec.md now requires protected container/portal coverage and forbids raw protected telemetry; no UI or common observability source changed.",
       "remaining": "Actual source implementation, native rendered capture exclusion, privacy-safe audited mutation provenance, rollback/race and all original task dependencies remain open."
+    },
+    "AP-06.1": {
+      "status": "active",
+      "accepted": false,
+      "evidence": "feedback-boundary-contract.md and nonexecutable test-preparation/feedbackRecord.test.ts.txt prepare strict declaration/native-command parser tests only. Exact work version, tagged author versus native recorder, explicit source and protected plain-text/reference boundaries proposed. Tests NOT RUN; production import absent.",
+      "remaining": "Review vocabulary/evidence/time decisions and actual red before implementation; native project/work-version/author admission, protected storage/replay/retention, escaped rendering/XSS and original AP-02.3/AP-08.1 dependencies remain open."
     }
   }
 }
