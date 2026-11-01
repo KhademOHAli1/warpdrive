@@ -97,10 +97,10 @@ test.each([true, false])(
       expect.any(AbortSignal),
     );
     expect(boundary.csrf.mock.invocationCallOrder[0]).toBeLessThan(
-      boundary.context.mock.invocationCallOrder[0],
+      boundary.context.mock.invocationCallOrder[0] ?? Number.NEGATIVE_INFINITY,
     );
     expect(boundary.context.mock.invocationCallOrder[0]).toBeLessThan(
-      boundary.complete.mock.invocationCallOrder[0],
+      boundary.complete.mock.invocationCallOrder[0] ?? Number.NEGATIVE_INFINITY,
     );
   },
 );
