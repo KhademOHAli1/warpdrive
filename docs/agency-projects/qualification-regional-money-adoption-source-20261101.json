@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
-  "capturedAt": "2026-11-01T11:34:28.520413+00:00",
+  "capturedAt": "2026-11-01T11:36:19.905502+00:00",
   "agencyBase": "ac3b056d6191493bb0d9082af492f8f03b17d2c0",
   "sourceOwner": "MAIL/regional",
   "sourceCommit": "297c1dd5dbff4e19f6d1559a16bb258cc3368577",
   "laterSourceCut": "56210f31307701c7e545bf05f6b93ce4621605a3",
-  "status": "Owned source candidate only; numeric correction pending GREEN, statics and UI qualification",
+  "status": "Owned source candidate; exact7numeric GREEN after3failure/4control RED, affected statics and UI qualification pending",
   "initialAdoption": {
     "capturedAt": "2026-11-01T11:17:02.056483+00:00",
     "scope": "Initial26-source-path adoption before root numeric correction, after observed7case RED",
@@ -97,7 +97,22 @@
       "pid": 13145,
       "phase": "actual behavioralRED; exact7cases"
     },
-    "numericGreen": "Pending fresh grant, NOTRUN",
+    "numericGreen": {
+      "passedCases": 7,
+      "failedCases": 0,
+      "fileCount": 1,
+      "pid": 34643,
+      "session": 9240,
+      "rawExitCode": 0,
+      "stopReason": null,
+      "elapsedSeconds": 1.02,
+      "minimumFreeBytes": 18114768896,
+      "frozenInputCount": 5,
+      "frozenInputsUnchanged": true,
+      "groupGone": true,
+      "vitestMilliseconds": 78,
+      "scope": "Only exact7 Node tests, no fullUI/static/native qualification"
+    },
     "identityAndBulk": "8casesNOTRUN; no production ID correction yet",
     "uiRedRequest": "work/agency-regional-ui-red-request.json:8cases/2files,45TOTAL30command15cleanup,34inputpins; fresh grant required, NOTRUN."
   },
@@ -112,7 +127,11 @@
     "regional-money-numeric-red-launch.json": "b1b573b98e98fe59e0f3ed55e5ddbee406dd98fdac6b482dd5d4ea73b69bca20",
     "regional-money-numeric-red-receipt.json": "9b03ace2eabbfeaf841f0b4a2ff59cd945ce677e1994dd66be7b7f80f59f229c",
     "regional-money-adoption-before-numeric-fix.json": "201115a0a645d79eaabe5c396d5356d44776fe004d0ba9bfb381868116adf4dc",
-    "regional-money-iranianMoney-before-fix.ts.txt": "a320a91d931a1c81a33ed578d68eeab289077577c09c0e4725dd0d13b3f7029c"
+    "regional-money-iranianMoney-before-fix.ts.txt": "a320a91d931a1c81a33ed578d68eeab289077577c09c0e4725dd0d13b3f7029c",
+    "regional-money-numeric-green.log": "dd26a7b0c0ce3565b8314afcc5340476490637582a9884cacbbf593d18365054",
+    "regional-money-numeric-green-launch.json": "6e8c6f9da5b97fc32ee76710d612ac6f3d720cbd00a847ad39993fee63c83c74",
+    "regional-money-numeric-green-receipt.json": "faa9936e2b81ffe516c27bd6f64305689a00810260806ce0c827667acc861104"
   },
-  "numericFixSourceReview": "Independent read-only source review found no concrete logic/type blocker; not a test/type/lint result."
+  "numericFixSourceReview": "Independent read-only source review found no concrete logic/type blocker; not a test/type/lint result.",
+  "numericGreenHead": "f028e759370e6bfdd131ea5c3874292312fcee65"
 }

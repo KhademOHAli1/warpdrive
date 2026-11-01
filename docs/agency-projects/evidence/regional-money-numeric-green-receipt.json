@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-11-01T11:35:54.890019+00:00",
+  "observationSource": "Root transcription of actual canonical guard stdout and separate post-terminal killpg(pid,0) observation, not a new execution.",
+  "pid": 34643,
+  "session": 9240,
+  "terminal": true,
+  "rawExitCode": 0,
+  "stopReason": null,
+  "minimumFreeBytes": 18114768896,
+  "elapsedSecondsReportedByGuard": 1.02,
+  "inputCount": 5,
+  "frozenInputsUnchanged": true,
+  "ownedGroupRemainingReportedByGuard": false,
+  "postTerminalGroupGone": true,
+  "passedCases": 7,
+  "failedCases": 0,
+  "testFiles": 1,
+  "vitestMilliseconds": 78,
+  "log": "agency-regional-numeric-green-attempt1.log",
+  "scope": "Exact7pureNode cases, pinnedBun1.4.4 --bun; noDB/jsdom/app/build/install."
+}
