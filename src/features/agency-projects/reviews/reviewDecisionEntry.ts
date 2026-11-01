@@ -1,6 +1,9 @@
 import type { ReviewCommand, ReviewDecision, ReviewSnapshot } from "./reviewTypes";
 
-type RecordCommand = Extract<ReviewCommand, { action: "record-internal-review" | "record-client-approval" }>;
+type RecordCommand = Extract<
+  ReviewCommand,
+  { action: "record-internal-review" | "record-client-approval" }
+>;
 
 export function reviewDecisionEntry(
   current: ReviewSnapshot,
@@ -18,6 +21,11 @@ export function reviewDecisionEntry(
     recordedAtRevision: revision,
   };
   return command.action === "record-client-approval"
-    ? { ...provenance, kind: "staff-recorded-client-approval", clientContactId: command.clientContactId, method: command.method }
+    ? {
+        ...provenance,
+        kind: "staff-recorded-client-approval",
+        clientContactId: command.clientContactId,
+        method: command.method,
+      }
     : { ...provenance, kind: "internal-review", method: command.method };
 }

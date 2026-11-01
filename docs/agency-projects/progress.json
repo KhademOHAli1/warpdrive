@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-11-01T03:45:40.710202+00:00",
+  "updatedAt": "2026-11-01T03:58:11.436947+00:00",
   "statusMeaning": "Evidence level only. A source-verified task is not accepted or complete. All 96 acceptance flags remain false.",
   "tasks": {
     "AP-00.1": {
@@ -29,8 +29,8 @@
     },
     "AP-00.7": {
       "status": "active",
-      "evidence": "MAIL authorized only a guarded one-worker selected review-policy UNIT lane on existing dependencies. Five own runs terminal, final43 pass; all process groups verified empty and lane released. No PG/type/lint/build/install or broad selection. Cleanup reclaimed 0.",
-      "remaining": "New checks require finite coordinated lane. No Agency app/worker/DB or migration allocation; stable headroom and actual accepted interfaces/base required before heavy validation.",
+      "evidence": "MAIL finite source-check batch completed sequentially under60s owned deadlines and live5GiB floor. Nine owned process groups verified empty and lane released; minimum observed18,123,718,656 bytes. No PG/app/build/install/provider campaign.",
+      "remaining": "Further checks need a new finite window. No Agency service/DB/migration allocation exists; accepted shared interfaces/base required before persistence qualification.",
       "accepted": false
     },
     "AP-00.8": {
@@ -83,8 +83,8 @@
     },
     "AP-10.1": {
       "status": "active",
-      "evidence": "Historical integrated domain 285, separate starter 13 and selected review 43 pass at documented source scopes. Settings selected 48 and locale audit are earlier adoption checks. Genuine behavioral/epoch/chronology reds and exact terminal guarded handles retained.",
-      "remaining": "Post-adoption integrated feature/types/lint/Biome/build unrun. Narrow unit lane released. PG/native/restore/source-owner acceptance remains open.",
+      "evidence": "qualification-feature-20261101.json: current feature341/13 unit selection, narrow TypeScript, unchanged-rule type-aware ESLint29 TS files and Biome32 files pass. Original behavioral/epoch/chronology reds retained; no cases lost in review suite split.",
+      "remaining": "Full repository/app/native/real PG/migration/restore and later feature increments remain open; source checks are not task acceptance.",
       "accepted": false
     },
     "AP-11.1": {
@@ -132,8 +132,8 @@
     "AP-05.2": {
       "status": "active",
       "accepted": false,
-      "evidence": "4b74635 commits modeling, short-video and campaign v1 manifests with FA/DE/EN source copy, unresolved roles and editable calendar-day assumptions. Genuine incomplete-catalog red6fail7pass; formatted focused green13pass.",
-      "remaining": "Post-starter scoped types/lint and combined selection held. Native-language/UI review, actual role/date preview, persisted publication/install and task acceptance remain open."
+      "evidence": "4b74635 commits modeling, short-video and campaign v1 manifests with FA/DE/EN source copy, unresolved roles and editable calendar-day assumptions. Genuine incomplete-catalog red6fail7pass; formatted focused green13pass. Current candidate feature341/13 plus narrow types/lint/Biome pass in qualification-feature-20261101.json.",
+      "remaining": "Native-language/UI review, actual role/date preview, persisted publication/install and task acceptance remain open."
     },
     "AP-08.2": {
       "status": "active",
@@ -144,14 +144,14 @@
     "AP-06.4": {
       "status": "active",
       "accepted": false,
-      "evidence": "Feature-local review boundaries/policy: selected 43/43 green after genuine 17/19 behavioral, 5/34 epoch and 7/36 chronology reds. Exact version/evidence/time strings, separate internal/client records, complete policy receipts, non-resurrecting epochs and monotonic server recording tested. qualification-review-decisions.json.",
-      "remaining": "Types/type-awarelint/Biome/integrated selection held. Native authority and current contact/version ownership, trusted snapshot loader, idempotent service envelope, transactional history/CAS, real PG, UI/Privacy and original task dependencies remain open."
+      "evidence": "Feature-local review boundaries/policy: selected 43/43 green after genuine 17/19 behavioral, 5/34 epoch and 7/36 chronology reds. Exact version/evidence/time strings, separate internal/client records, complete policy receipts, non-resurrecting epochs and monotonic server recording tested. qualification-review-decisions.json. Current candidate feature341/13 plus narrow types/lint/Biome pass in qualification-feature-20261101.json.",
+      "remaining": "Native authority and current contact/version ownership, trusted snapshot loader, idempotent service envelope, transactional history/CAS, real PG, UI/Privacy and original task dependencies remain open."
     },
     "AP-06.5": {
       "status": "active",
       "accepted": false,
-      "evidence": "Feature-local review boundaries/policy: selected 43/43 green after genuine 17/19 behavioral, 5/34 epoch and 7/36 chronology reds. Exact version/evidence/time strings, separate internal/client records, complete policy receipts, non-resurrecting epochs and monotonic server recording tested. qualification-review-decisions.json.",
-      "remaining": "Types/type-awarelint/Biome/integrated selection held. Native authority and current contact/version ownership, trusted snapshot loader, idempotent service envelope, transactional history/CAS, real PG, UI/Privacy and original task dependencies remain open."
+      "evidence": "Feature-local review boundaries/policy: selected 43/43 green after genuine 17/19 behavioral, 5/34 epoch and 7/36 chronology reds. Exact version/evidence/time strings, separate internal/client records, complete policy receipts, non-resurrecting epochs and monotonic server recording tested. qualification-review-decisions.json. Current candidate feature341/13 plus narrow types/lint/Biome pass in qualification-feature-20261101.json.",
+      "remaining": "Native authority and current contact/version ownership, trusted snapshot loader, idempotent service envelope, transactional history/CAS, real PG, UI/Privacy and original task dependencies remain open."
     }
   }
 }

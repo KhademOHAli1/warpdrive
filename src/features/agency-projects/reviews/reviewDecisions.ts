@@ -19,7 +19,9 @@ export function parseReviewAction(input: unknown): Result<ReviewAction, "invalid
   return parsed.success ? ok(parsed.data) : err("invalid_review_action");
 }
 
-export function parseReviewCommand(input: unknown): Result<ReviewCommand, "invalid_review_command"> {
+export function parseReviewCommand(
+  input: unknown,
+): Result<ReviewCommand, "invalid_review_command"> {
   const parsed = reviewCommandSchema.safeParse(input);
   return parsed.success ? ok(parsed.data) : err("invalid_review_command");
 }
@@ -33,12 +35,16 @@ function conflict(current: ReviewSnapshot, command: ReviewCommand): ReviewFailur
     return "review_time_conflict";
   }
   if (command.action === "record-internal-review" || command.action === "record-client-approval") {
-    if (command.reviewedVersionReference !== current.currentVersionReference) return "review_version_conflict";
+    if (command.reviewedVersionReference !== current.currentVersionReference)
+      return "review_version_conflict";
     return Temporal.Instant.compare(command.occurredAt, current.reviewOpenedAt) < 0
-      ? "review_occurrence_before_epoch" : null;
+      ? "review_occurrence_before_epoch"
+      : null;
   }
-  return command.action === "change-version" && command.versionReference === current.currentVersionReference
-    ? "version_unchanged" : null;
+  return command.action === "change-version" &&
+    command.versionReference === current.currentVersionReference
+    ? "version_unchanged"
+    : null;
 }
 
 function nextSnapshot(current: ReviewSnapshot, command: ReviewCommand): ReviewSnapshot {
@@ -47,9 +53,17 @@ function nextSnapshot(current: ReviewSnapshot, command: ReviewCommand): ReviewSn
   switch (command.action) {
     case "record-internal-review":
     case "record-client-approval":
-      return { ...next, decisions: [...current.decisions, reviewDecisionEntry(current, command, revision)] };
+      return {
+        ...next,
+        decisions: [...current.decisions, reviewDecisionEntry(current, command, revision)],
+      };
     case "change-version":
-      return { ...next, reviewEpoch: current.reviewEpoch + 1, reviewOpenedAt: command.recordedAt, currentVersionReference: command.versionReference };
+      return {
+        ...next,
+        reviewEpoch: current.reviewEpoch + 1,
+        reviewOpenedAt: command.recordedAt,
+        currentVersionReference: command.versionReference,
+      };
     case "reopen-review":
       return { ...next, reviewEpoch: current.reviewEpoch + 1, reviewOpenedAt: command.recordedAt };
   }
@@ -64,7 +78,8 @@ export function applyReviewCommand(
   if (failure !== null) return err(failure);
   if (current.revision >= Number.MAX_SAFE_INTEGER) return err("revision_exhausted");
   const opensReview = command.action === "change-version" || command.action === "reopen-review";
-  if (opensReview && current.reviewEpoch >= Number.MAX_SAFE_INTEGER) return err("review_epoch_exhausted");
+  if (opensReview && current.reviewEpoch >= Number.MAX_SAFE_INTEGER)
+    return err("review_epoch_exhausted");
   const snapshot = nextSnapshot(current, command);
   return ok({
     snapshot,
@@ -84,7 +99,10 @@ export function applyReviewCommand(
       versionReference: snapshot.currentVersionReference,
       recordedByUserId: command.recordedByUserId,
       recordedAt: command.recordedAt,
-      reason: command.action === "change-version" || command.action === "reopen-review" ? command.reason : null,
+      reason:
+        command.action === "change-version" || command.action === "reopen-review"
+          ? command.reason
+          : null,
     },
   });
 }
@@ -93,7 +111,11 @@ export function currentReviewApprovals(snapshot: ReviewSnapshot): ReviewApproval
   const internal: Extract<ReviewDecision, { kind: "internal-review" }>[] = [];
   const recordedClient: Extract<ReviewDecision, { kind: "staff-recorded-client-approval" }>[] = [];
   for (const decision of snapshot.decisions) {
-    if (decision.reviewEpoch !== snapshot.reviewEpoch || decision.reviewedVersionReference !== snapshot.currentVersionReference) continue;
+    if (
+      decision.reviewEpoch !== snapshot.reviewEpoch ||
+      decision.reviewedVersionReference !== snapshot.currentVersionReference
+    )
+      continue;
     if (decision.kind === "internal-review") internal.push(decision);
     else recordedClient.push(decision);
   }

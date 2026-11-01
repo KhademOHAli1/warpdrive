@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-11-01T03:58:11.436947+00:00",
+  "base": "b1767ff794320acd94af1b8857e41d3e41538037",
+  "scope": "All current tracked Agency pure feature source, ingress schemas, starter manifests and co-located unit suites; no application/store/route/effect enabled. Future communication draft excluded and not executed.",
+  "sourceHashes": {
+    "src/features/agency-projects/assignmentBoundaryJourney.test.ts": "beb2b35fc4929c993511df0be34e3102e909b3a302197117b7a76ad143381fd1",
+    "src/features/agency-projects/assignmentFixtures.ts": "62d2b9fa6ec66206e021dde3cd465fbcdf8986a14d052c3fdad08c731912b25c",
+    "src/features/agency-projects/assignmentLifecycle.test.ts": "9b6c5d3c176d84c83cd5522df8df81ac9ca8193627076fec5d3b914bafefc483",
+    "src/features/agency-projects/assignmentLifecycle.ts": "f73b067b083bc9b801f32788b88fdd27dd69ba0f9420488b5fbefbcac2445988",
+    "src/features/agency-projects/assignmentSchemas.test.ts": "5be393aa2f56883a4cd27efff2976cbbe5b202a69a4cadb3a4e719d7b1b990cf",
+    "src/features/agency-projects/assignmentSchemas.ts": "6d90de3799b035f0d607c5d62335bb72bc2e0860102629fd6ba86a0325bfd187",
+    "src/features/agency-projects/assignmentVersion.test.ts": "a35c16e479aeccff57ac0f0d05e12b464941092413c46699a484f1312165adff",
+    "src/features/agency-projects/projectLifecycle.test.ts": "49bd9b7c3b99d293be7d4a4e052325ad572f401c34adfefbb37130724c83b8f5",
+    "src/features/agency-projects/projectLifecycle.ts": "e535c05920128b9e5b0bff1e4fe3dad566d42582f9a1c5c7afc22e4cc0f153d4",
+    "src/features/agency-projects/projectSchemas.test.ts": "b3b9c0a0ff1f55a7d74fd0e465be70c9113157e335b0bef11a798c8b89401db6",
+    "src/features/agency-projects/projectSchemas.ts": "3009adc5370e735f0e8f8214f7435f112859f1d73e4bebecbd9bb4a8b23922c5",
+    "src/features/agency-projects/reviews/reviewBoundary.test.ts": "7c3cf06e7ed8c3816fe654dd4c7053bd9ae44c4d98f1dc74da5bb65db283eee4",
+    "src/features/agency-projects/reviews/reviewChronology.test.ts": "a22e36dd6d6047f461eb86d06f8d26ed5fe83aa824b5946382ccc7ac53290794",
+    "src/features/agency-projects/reviews/reviewDecisionEntry.ts": "8947cb3f0b54343b60427eac122ec5d4faba6194fa2616b65301f48991e6b097",
+    "src/features/agency-projects/reviews/reviewDecisions.test-support.ts": "b9ca3af776ce4188fb511df93f791ea82c7006e52d39c98db053f736f7d6eccc",
+    "src/features/agency-projects/reviews/reviewDecisions.test.ts": "47337b3caa6b2535697ef3092df75eb40e9e55e0d92c19579f9f9fd9233b8332",
+    "src/features/agency-projects/reviews/reviewDecisions.ts": "ae88ec8e43a66a44c7afe8423b764e6ed5a0cf27216ad189589d6dc4f5cf4284",
+    "src/features/agency-projects/reviews/reviewEpoch.test.ts": "277d44832afa36391033f791fa743f51ea5b9c4f29d3852bc424c17d580f0bf8",
+    "src/features/agency-projects/reviews/reviewSchemas.ts": "dffb1c6ddef934109f2cda4fda3ca98ed6504828af2c95d1fe153628f503e7ba",
+    "src/features/agency-projects/reviews/reviewTypes.ts": "d133f9e18027926f7fb8aa11788bd92350fccee28602a69ce5a10184f914515e",
+    "src/features/agency-projects/templates/starterTemplates.test.ts": "c92f21bb8597b03026b42ebe2beae216c8882dea24836a15208c504080b6e36c",
+    "src/features/agency-projects/templates/starterTemplates.ts": "f1b8ecb1bb2ce7457968e2779e6f10f2797625caba60d039ca1683923a88fc2b",
+    "src/features/agency-projects/templates/starters/campaign.v1.json": "c7686bbd9f379a554b0d85526b0c0f3711141ae349222822196d09b1d2207461",
+    "src/features/agency-projects/templates/starters/modeling.v1.json": "973c6f85d1ae936a700dd64327514e649fc5908f984e4e06e6e854ddb28afc13",
+    "src/features/agency-projects/templates/starters/short-video.v1.json": "d12f0adf3e4e85fb0a968feadab7b97d6e399f10e4755484080d4bcca26f814b",
+    "src/features/agency-projects/templates/templateManifest.test-support.ts": "4eb43d26a7b6cf2b5593f7a8f768131d52c7e445da9b9c01b3f52ed2f2e389c4",
+    "src/features/agency-projects/templates/templateManifest.test.ts": "527e057c9a35d1f14dfc96a078be9df91a2748d5d7eb927677f184e10d8d95e0",
+    "src/features/agency-projects/templates/templateManifest.ts": "5d783a9f9c1944ee07b869cd4787c49ac257e3287097f8f2893761860bbf580c",
+    "src/features/agency-projects/templates/templateManifestGraph.test.ts": "3f45e0fa05ad2fe39749dc2380a8f5bdc12de7d27e72a53b3eca1a9141250391",
+    "src/features/agency-projects/templates/templateManifestGraph.ts": "cd9510b3a3bf4883db827da0f212953915ad154c238f007da7cfe9a888cb9113",
+    "src/features/agency-projects/templates/templateManifestSchemas.ts": "61f18441b4713fb68ea21c736f22d8cb960cf37d3ab2e105603dba8efb404673",
+    "src/features/agency-projects/valueSchemas.ts": "70d076628355e0180e531763040dddb834c14b393984a1e8bc135473454b7330"
+  },
+  "sourceFiles": 32,
+  "environment": {
+    "bun": "1.4.4",
+    "vitest": "5.0.5",
+    "workers": 1
+  },
+  "checks": {
+    "typescript": {
+      "exitCode": 0,
+      "config": "evidence/tsconfig.agency-20261101.json.txt",
+      "log": "evidence/agency-source-types-2.log"
+    },
+    "biome": {
+      "exitCode": 0,
+      "files": 32,
+      "log": "evidence/agency-source-biome-check-2.log"
+    },
+    "eslint": {
+      "exitCode": 0,
+      "typescriptFiles": 29,
+      "rules": "unchanged repository rules; narrow TypeScript program only",
+      "config": "evidence/agency-eslint-20261101.mjs.txt",
+      "log": "evidence/agency-source-eslint-2.log"
+    },
+    "units": {
+      "exitCode": 0,
+      "passed": 341,
+      "files": 13,
+      "log": "evidence/agency-source-units-1.log"
+    }
+  },
+  "corrections": [
+    "Initial Biome check found five review formatting errors; safe formatting applied.",
+    "Review test cases mechanically split into boundary/decision/epoch/chronology suites plus shared fixture without adding/removing cases.",
+    "Initial ESLint found two unused helper imports after test split; removed. Final narrow lint and final candidate types/Biome/unit checks pass."
+  ],
+  "guard": {
+    "admissionBytes": 5368709120,
+    "stopBytes": 5368709120,
+    "timeoutSecondsPerProcess": 60,
+    "minimumObservedFreeBytes": 18123718656,
+    "ownedRunGroupsEmptyVerified": [
+      3250,
+      3279,
+      3349,
+      4049,
+      4072,
+      4163,
+      4242,
+      4268,
+      4362
+    ],
+    "lane": "MAIL-specific finite sequential source-check batch, now released"
+  },
+  "handles": "evidence/agency-source-batch-handles.json",
+  "history": "Earlier285, starter13 and review43 qualifications remain historical scoped evidence. This341-case run qualifies the current32-file feature selection after formatting/refactor.",
+  "limits": [
+    "No full-repository combined types/lint/unit/build or new Settings/Sales native acceptance.",
+    "No enabled Agency app, worker, PostgreSQL/store, writer, native actor grant, activity bridge, sender or workflow effect.",
+    "No real-PG/migration/restore/Privacy lifecycle/provider/pilot or release acceptance.",
+    "Actual shared API/permission/base/schema/allocation review remains open; all96 task acceptance flags remain false."
+  ]
+}

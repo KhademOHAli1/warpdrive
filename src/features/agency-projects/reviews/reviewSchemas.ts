@@ -75,12 +75,14 @@ function occurrenceNotAfterRecording(command: ReviewCommand): boolean {
   }
 }
 
-export const reviewCommandSchema = z.discriminatedUnion("action", [
-  internalReview.extend(nativeRecorder),
-  clientApproval.extend(nativeRecorder),
-  changeVersion.extend(nativeRecorder),
-  reopenReview.extend(nativeRecorder),
-]).refine(occurrenceNotAfterRecording, {
-  path: ["occurredAt"],
-  message: "Occurrence must not follow server recording time",
-}) satisfies z.ZodType<ReviewCommand>;
+export const reviewCommandSchema = z
+  .discriminatedUnion("action", [
+    internalReview.extend(nativeRecorder),
+    clientApproval.extend(nativeRecorder),
+    changeVersion.extend(nativeRecorder),
+    reopenReview.extend(nativeRecorder),
+  ])
+  .refine(occurrenceNotAfterRecording, {
+    path: ["occurredAt"],
+    message: "Occurrence must not follow server recording time",
+  }) satisfies z.ZodType<ReviewCommand>;

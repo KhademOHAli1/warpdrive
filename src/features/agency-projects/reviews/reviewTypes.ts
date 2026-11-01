@@ -11,35 +11,41 @@ type RecordedEvidence = Readonly<{
 }>;
 type ClientMethod = "email" | "phone" | "meeting" | "message";
 
-export type ReviewAction = Target & (
-  | RecordedEvidence & Readonly<{ action: "record-internal-review"; method: "internal-review" }>
-  | RecordedEvidence & Readonly<{
-      action: "record-client-approval";
-      clientContactId: string;
-      method: ClientMethod;
-    }>
-  | Readonly<{ action: "change-version"; versionReference: string; reason: string }>
-  | Readonly<{ action: "reopen-review"; reason: string }>
-);
-export type ReviewCommand = ReviewAction & Readonly<{
-  recordedByUserId: string;
-  recordedAt: string;
-}>;
-type DecisionProvenance = RecordedEvidence & Readonly<{
-  recordedByUserId: string;
-  recordedAt: string;
-  reviewEpoch: number;
-  recordedAtRevision: number;
-}>;
-type InternalDecision = DecisionProvenance & Readonly<{
-  kind: "internal-review";
-  method: "internal-review";
-}>;
-type RecordedClientDecision = DecisionProvenance & Readonly<{
-  kind: "staff-recorded-client-approval";
-  clientContactId: string;
-  method: ClientMethod;
-}>;
+export type ReviewAction = Target &
+  (
+    | (RecordedEvidence & Readonly<{ action: "record-internal-review"; method: "internal-review" }>)
+    | (RecordedEvidence &
+        Readonly<{
+          action: "record-client-approval";
+          clientContactId: string;
+          method: ClientMethod;
+        }>)
+    | Readonly<{ action: "change-version"; versionReference: string; reason: string }>
+    | Readonly<{ action: "reopen-review"; reason: string }>
+  );
+export type ReviewCommand = ReviewAction &
+  Readonly<{
+    recordedByUserId: string;
+    recordedAt: string;
+  }>;
+type DecisionProvenance = RecordedEvidence &
+  Readonly<{
+    recordedByUserId: string;
+    recordedAt: string;
+    reviewEpoch: number;
+    recordedAtRevision: number;
+  }>;
+type InternalDecision = DecisionProvenance &
+  Readonly<{
+    kind: "internal-review";
+    method: "internal-review";
+  }>;
+type RecordedClientDecision = DecisionProvenance &
+  Readonly<{
+    kind: "staff-recorded-client-approval";
+    clientContactId: string;
+    method: ClientMethod;
+  }>;
 export type ReviewDecision = InternalDecision | RecordedClientDecision;
 export type ReviewSnapshot = Readonly<{
   projectId: string;
