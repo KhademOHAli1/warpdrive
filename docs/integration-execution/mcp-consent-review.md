@@ -232,7 +232,10 @@ independent review passed these corrections, the exact 37-name set, source-tool 
 trilingual fields/placeholders, retained v1 history and derived-email boundaries. This does
 not qualify runtime enforcement or AISEC-003.
 
-Only bounded source/CSV/text checks are permitted in this task. No runtime, DDL, ledger, tracker,
-external write, provider grant, test, Bun, PostgreSQL, compiler, lint, build, install or browser
-action is part of this delivery. The artifact is not all-future-screens implementation, a
-native-speaker qualification, AISEC-001 closure or AISEC-002 closure.
+The author performed bounded source/CSV/text checks only. Root independently repeated the
+37-name, 555-field, 185-placeholder-triplet and all-35-tool reconciliation, and parsed all
+555 localized strings with the installed ICU parser. The corrected consent design is accepted
+for AISEC-002's specification/review criterion. Status changes belong to the live register.
+No grant, runtime, DDL, provider action, PostgreSQL campaign, build, install or browser was
+performed for this catalog. Runtime bindings, native-speaker/rendering acceptance, AISEC-003
+and actual scoped enforcement remain open.
