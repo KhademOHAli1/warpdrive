@@ -20,6 +20,14 @@ A prior assignment event or any current/historical non-intake membership makes a
 
 Assignment changes the case command version, never the subject identity scope, recipient or verification generations. A current self-verification proof therefore remains bound to the same subject after initial assignment. Sensitive review/export operations still recheck their own case capability and current proof.
 
+## Current discovery-job observation
+
+`getDiscoveryJobStatus(db, actor, {caseId, jobId}, signal)` returns only ID, case ID, discovery kind, validated durable status, attempts and update time. It uses the existing current native session/global `case.review`/case-membership transaction before querying an exact case/job/kind match. Wrong-case, unknown and other-kind jobs share `not_found` within an authorized case; absent case authority returns `forbidden`. Malformed input returns `invalid_input`, recognized storage failures return `storage_unavailable`, and cancellation stays rejection.
+
+This read uses the current reviewer's authority rather than an originating worker ticket. It can describe work needing attention after the worker's session or subject binding changes. It does not disclose encrypted result contents, claim tokens, originating sessions or authority generations, and cannot renew worker authority, mutate state, repair a lease or retry work. Enqueue receipts remain immutable historical `queued` outcomes. No HTTP action, job-status screen, new store or generic execution is added.
+
+All 15 reader regressions passed against real PostgreSQL in the selected four-file campaign on 1 November 2026. The separate readiness-parser cases deliberately failed in that command; its overall nonzero result is not aggregate source qualification. Detailed collection, assertion RED, isolated statics, inventory and publication boundaries remain in the implementation register.
+
 ## Development evidence and remaining gates
 
 The first service tests failed because the modules were absent. A later real PostgreSQL regression demonstrated that a new claim could reactivate authority after revocation; eligibility was corrected to retain the historical assignment barrier. On 31 October 2026 at 18:00:42 Europe/Berlin, the personal, assignment and existing authority regression selection passed 27 tests in four files against disposable migrated PostgreSQL. Scoped source lint passed. This evidence is separate from the green CI of published commit `65a579e`, which predates these services.

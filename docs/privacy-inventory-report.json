@@ -1,8 +1,8 @@
 {
   "registryVersion": 1,
   "evidenceLevel": "source_inventory",
-  "sourceFingerprint": "fa0e1e7c851c39f78e2129367e61000e0583fd7213ced2a2374e93c5f98014c1",
-  "sourceFiles": 1844,
+  "sourceFingerprint": "1d2a215901b4f4a2688f5ab32956678889833cb5d56b5e4fd686600e2701b9c5",
+  "sourceFiles": 1845,
   "discoveredCounts": {
     "browserStore": 3,
     "derived": 241,
@@ -14,11 +14,29 @@
     "table": 93,
     "writer": 536
   },
-  "classifiedDeclarations": 1598,
+  "classifiedDeclarations": 1599,
   "coverage": {
     "ok": true,
     "missing": [],
     "invalid": []
   },
+  "sourceReviewVerification": {
+    "declared": 605,
+    "verified": 605,
+    "failures": [],
+    "requiredManualReviews": [
+      {
+        "id": "sourceReview:src/features/privacy/jobStatus.ts#d80b32df70cc7c781826b69b01823ffabb6d6661ee1eaccfdd8fc47a853225f3",
+        "basis": "manual_review_hash_binding",
+        "discoveredByAst": false
+      },
+      {
+        "id": "sourceReview:next.config.ts#7f1ec3ce7c808ddfc9eb02dec4bf5f4ac6eeaf99d920511d88ea0b59c2bd3ea5",
+        "basis": "manual_review_hash_binding",
+        "discoveredByAst": false
+      }
+    ]
+  },
+  "qualification": "Source inventory only; PostgreSQL, real HTTP/browser and installed acceptance are separate evidence. This report grants no lifecycle capability.",
   "installationGates": "OPEN: physical storage, provider contracts/receipts, production logs and backup destinations require separate acceptance."
 }
