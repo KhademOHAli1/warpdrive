@@ -63,6 +63,9 @@ import quickPersian from "@/features/quick-add/messages/quickAdd.fa.json";
 import statsGerman from "@/features/stats/messages/stats.de.json";
 import statsEnglish from "@/features/stats/messages/stats.en.json";
 import statsPersian from "@/features/stats/messages/stats.fa.json";
+import workflowsGerman from "@/features/workflows/messages/workflows.de.json";
+import workflowsEnglish from "@/features/workflows/messages/workflows.en.json";
+import workflowsPersian from "@/features/workflows/messages/workflows.fa.json";
 import { localeWithNumberingSystem, type NumberingSystem } from "@/lib/numberingSystem";
 import { mergeMessages } from "./mergeMessages";
 import boundaryGerman from "./messages/boundary.de.json";
@@ -75,6 +78,7 @@ import type { Locale } from "./registry";
 
 const english = {
   ...en,
+  workflows: workflowsEnglish,
   utilities: utilitiesEnglish,
   enrichment: enrichmentEnglish,
   stats: statsEnglish,
@@ -101,6 +105,7 @@ const english = {
 };
 const persian: typeof english = mergeMessages(english, {
   ...fa,
+  workflows: workflowsPersian,
   utilities: utilitiesPersian,
   enrichment: enrichmentPersian,
   stats: statsPersian,
@@ -127,6 +132,7 @@ const persian: typeof english = mergeMessages(english, {
 });
 const german: typeof english = mergeMessages(english, {
   ...de,
+  workflows: workflowsGerman,
   utilities: utilitiesGerman,
   enrichment: enrichmentGerman,
   stats: statsGerman,

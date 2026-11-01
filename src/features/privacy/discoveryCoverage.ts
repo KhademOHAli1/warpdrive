@@ -19,6 +19,11 @@ export const DISCOVERY_COVERAGE: readonly DiscoveryCoverage[] = [
     "Version-bound candidate IDs and explicit relationships only; content and exact approved scope require further review.",
   ),
   ...group(
+    ["workflows", "workflow_versions", "workflow_runs", "workflow_steps"],
+    "unsupported",
+    "Workflow definitions, workforce provenance, trigger links and copied execution outputs need a dedicated subject/provenance adapter. Workflow ownership and history access do not establish subject identity or approved disclosure scope.",
+  ),
+  ...group(
     [
       "auth_accounts",
       "auth_email_verification_tokens",

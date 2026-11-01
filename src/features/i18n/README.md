@@ -1,14 +1,13 @@
 # Internationalization
 
-English and Iranian Persian are active interface languages. German is recorded as planned in
-`registry.ts` and is not offered until its catalogs and workflows are ready. Existing CRM URLs
+English, Iranian Persian, and German are active interface languages in `registry.ts`. Existing CRM URLs
 stay stable; language selection uses the authenticated account preference and mirrored cookies.
 
 ## Translations
 
 Use namespaced ICU messages from JSON catalogs. `messages/en.json` defines the canonical base
 catalog, and domain catalogs live beside their owning feature. `catalog.ts` combines them and
-fills absent Persian values from English. The audit command reports missing translations even
+fills absent localized values from English. The audit command reports missing translations even
 when a runtime fallback exists.
 
 Client components use `useAppTranslations("namespace")` from `LocaleProvider.tsx`. Async server
@@ -25,7 +24,7 @@ coverage and ICU parity. Generated `.d.json.ts` files are ignored by Git.
 
 ## Language and regional preferences
 
-`useLocalePreferences()` returns `{ locale, calendar, timeZone }`; `useCalendarSystem()` returns
+`useLocalePreferences()` returns `{ locale, calendar, timeZone, numberingSystem }`; `useCalendarSystem()` returns
 the selected calendar. Change preferences with `useSetLocalePreferences()`, which accepts a
 partial preference object and returns a promise indicating whether persistence succeeded.
 

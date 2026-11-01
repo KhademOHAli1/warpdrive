@@ -19,8 +19,9 @@
 
 warpdrive reimplements the core business-development workflow of Pipedrive as software you
 run yourself. It is **single-tenant and self-hosted**: your own box, your own Postgres and
-object storage, with invitation-only authentication powered by Better Auth. Your customer data never
-leaves your infrastructure, and there is no per-seat bill.
+object storage, with invitation-only authentication powered by Better Auth. Core CRM records
+are stored on your infrastructure; connected email and enrichment services process the data
+used by their integrations. There is no per-seat application license fee.
 
 The information architecture and workflows follow the tools BD teams already know, but all
 code, styling, and assets are original, and the interface ships its own visual layer built
@@ -39,6 +40,7 @@ It retains the upstream relationship, history and MIT attribution.
 - [Tech stack](#tech-stack)
 - [Quickstart (local development)](#quickstart-local-development)
 - [Languages and regional settings](#languages-and-regional-settings)
+- [Documentation and implementation status](#documentation-and-implementation-status)
 - [Self-hosting](#self-hosting)
 - [Tests](#tests)
 - [Project status](#project-status)
@@ -90,34 +92,34 @@ It retains the upstream relationship, history and MIT attribution.
 
 ## warpdrive vs Pipedrive
 
-warpdrive covers Pipedrive's core BD loop and deliberately leaves the rest out of scope. The
-goal is a focused, self-hosted CRM, not a feature-for-feature clone.
+The table records this fork's current scope. Planned work is identified separately from
+features available in the application.
 
-|                                                            |            warpdrive            |   Pipedrive    |
-| ---------------------------------------------------------- | :-----------------------------: | :------------: |
-| License                                                    |        MIT, open source         |  Proprietary   |
-| Hosting                                                    |   Self-hosted, single-tenant    |  Vendor cloud  |
-| Pricing                                                    | Free (your infrastructure only) | Paid, per seat |
-| Your data                                                  |  Stays on your infrastructure   | Vendor servers |
-| Kanban pipeline + custom stages                            |               ✅                |       ✅       |
-| Multiple pipelines                                         |               ✅                |       ✅       |
-| Deal workspace (activities, notes, files, history)         |               ✅                |       ✅       |
-| Contacts and organizations + custom fields                 |               ✅                |       ✅       |
-| Leads inbox + CSV import (with undo)                       |               ✅                |       ✅       |
-| Two-way Gmail (send/receive, threads, open/click tracking) |               ✅                |       ✅       |
-| Email templates, signatures, scheduled send                |               ✅                |       ✅       |
-| Permissions, teams, user management                        |               ✅                |       ✅       |
-| Saved filters                                              |               ✅                |       ✅       |
-| Realtime board / inbox / presence                          |               ✅                |       ✅       |
-| Notifications                                              |               ✅                |       ✅       |
-| Pipeline stats (funnel, performance)                       |            ✅ Basic             |  ✅ Advanced   |
-| Products, Projects, Invoicing, Forecast                    |         ➖ Out of scope         |       ✅       |
-| Multi-currency                                             |         ➖ Out of scope         |       ✅       |
-| Workflow automation                                        |    ➖ Email scheduling only     |       ✅       |
-| Web forms / chatbot / marketplace                          |         ➖ Out of scope         |       ✅       |
-| Native mobile apps                                         |           ➖ Web app            |       ✅       |
+|                                                            |                     warpdrive                     |   Pipedrive    |
+| ---------------------------------------------------------- | :-----------------------------------------------: | :------------: |
+| License                                                    |                 MIT, open source                  |  Proprietary   |
+| Hosting                                                    |            Self-hosted, single-tenant             |  Vendor cloud  |
+| Pricing                                                    |          Free (your infrastructure only)          | Paid, per seat |
+| Your data                                                  |           Stays on your infrastructure            | Vendor servers |
+| Kanban pipeline + custom stages                            |                        ✅                         |       ✅       |
+| Multiple pipelines                                         |                        ✅                         |       ✅       |
+| Deal workspace (activities, notes, files, history)         |                        ✅                         |       ✅       |
+| Contacts and organizations + custom fields                 |                        ✅                         |       ✅       |
+| Leads inbox + CSV import (with undo)                       |                        ✅                         |       ✅       |
+| Two-way Gmail (send/receive, threads, open/click tracking) |                        ✅                         |       ✅       |
+| Email templates, signatures, scheduled send                |                        ✅                         |       ✅       |
+| Permissions, teams, user management                        |                        ✅                         |       ✅       |
+| Saved filters                                              |                        ✅                         |       ✅       |
+| Realtime board / inbox / presence                          |                        ✅                         |       ✅       |
+| Notifications                                              |                        ✅                         |       ✅       |
+| Pipeline stats (funnel, performance)                       |                     ✅ Basic                      |  ✅ Advanced   |
+| Products, Projects, Invoicing, Forecast                    |                  ➖ Out of scope                  |       ✅       |
+| Native currency values and separate currency totals        |                        ✅                         |       ✅       |
+| Workflow automation                                        | Manual workflows (early access); email scheduling |       ✅       |
+| Web forms / chatbot / marketplace                          |                  ➖ Out of scope                  |       ✅       |
+| Native mobile apps                                         |                    ➖ Web app                     |       ✅       |
 
-✅ supported · ➖ intentionally out of scope
+✅ supported · ➖ outside the current implementation
 
 ## Tech stack
 
@@ -136,6 +138,8 @@ An S3-compatible service can be used for local development, but the shipped comp
 an updated storage image before it can be relied on for a fresh installation.
 
 ```bash
+git clone https://github.com/KhademOHAli1/warpdrive.git
+cd warpdrive
 bun install --frozen-lockfile
 cp .env.example .env
 # bring up Postgres and MinIO with host ports and no TLS:
@@ -200,6 +204,22 @@ external calendar synchronization are planned capabilities, not current integrat
 The current UI includes the updated sidebar and top bar, separate regional, appearance
 and workflow settings, contact directories and inbox workspace. These changes are kept
 together with the English, Persian and German catalogs.
+
+## Documentation and implementation status
+
+Start with the [documentation index](docs/README.md) and the [current user guide](docs-site/docs/intro.md).
+The guide now covers the updated navigation, separate regional/appearance/workflow preferences,
+Farsi/German behavior, Iranian date input, and native currency values. Existing screenshots are
+historical illustrations and may precede the current shell.
+
+The [visual workflow builder](docs/workflows/status.md) is in implementation. Its approved
+42-task plan, Mobbin design references, architecture decisions, and verification ledger live
+in `docs/workflows/`. The early-access node builder supports explicit connections, saved
+positions, conditional branches, deal reads, and follow-up tasks, with English/Farsi/German
+editing, contextual step creation, undo/redo, simulation, publication, background execution,
+historical graph inspection, and cancellation. The broader R1 scope is still in progress.
+Personal workflow preferences
+in Settings are a separate existing feature.
 
 ## Self-hosting
 

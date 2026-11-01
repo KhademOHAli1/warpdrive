@@ -1,5 +1,19 @@
 # Multilingual CRM delivery
 
+## Current reading guide, 31 October 2026
+
+English, Farsi, and German are selectable in the current fork. Gregorian and Iranian
+calendar display/input, regional digits, account timezones, and the updated application
+shell are implemented. See the [regional settings guide](../docs-site/docs/features/regional-settings.md)
+and [i18n developer guide](../src/features/i18n/README.md) for current behavior.
+
+The dated checkpoints below are historical evidence, not present-tense release claims.
+Statements about German being planned describe an earlier migration stage and are
+superseded by the later German checkpoints. Test counts overlap and should not be added.
+The new visual workflow builder has its own [status ledger](workflows/status.md);
+its planned Iranian recurrence engine is separate from existing date display/input.
+
+
 English and Iranian Persian are the completed first localization milestone. German is the next
 milestone, with the same calendar, numeric-input, accessibility and contextual-copy requirements.
 The earlier dated sections below are historical evidence; this section and the newest checkpoint

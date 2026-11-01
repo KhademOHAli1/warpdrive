@@ -12,7 +12,7 @@ Guidance for working in this codebase (with an AI coding assistant or by hand).
 - tRPC (typesafe reads) + TanStack Query; Next server actions for mutations/forms
 - shadcn/ui + Tailwind; dnd-kit for the board; Zustand for board-local state
 - Self-hosted WebSocket server + Postgres LISTEN/NOTIFY for realtime
-- Gmail API via OAuth (Google Workspace); Google SSO for auth
+- Gmail API via OAuth (Google Workspace); invitation-only Better Auth with configured sign-in methods and administrator MFA
 - pg-boss for background jobs; MinIO (S3-compatible) for file storage
 - Bun
 

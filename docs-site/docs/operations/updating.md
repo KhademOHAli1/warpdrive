@@ -8,8 +8,23 @@ description: "Upgrade a self-hosted Warpdrive deployment, take database and file
 
 ## Upgrading
 
+This maintained fork keeps Bun, localization, and UI changes on top of upstream
+Warpdrive. Check the deployment branch and remotes before updating; an upstream
+release number alone does not identify the fork's current code or migration state.
+
 ```sh
-git pull
+git status --short
+git remote -v
+git fetch origin
+git log --oneline HEAD..origin/main
+```
+
+Back up the database, files, and required runtime secrets, then rehearse the reviewed
+release and migrations in an isolated environment. Deploy from a clean checkout of
+the intended branch/revision. For a deployment tracking the fork's `main` branch:
+
+```sh
+git pull --ff-only origin main
 docker compose up -d --build
 ```
 
@@ -25,7 +40,8 @@ Administrators see an in-app banner when a newer release is published on GitHub.
 | `APP_VERSION` | The version reported as current. Usually stamped at build from the release tag. Falls back to `package.json`, then to `dev`, which disables the banner. |
 | `DISABLE_UPDATE_CHECK` | Set `true` to disable the banner and the GitHub poll entirely. |
 
-Set `DISABLE_UPDATE_CHECK=true` for deployments that should make no outbound calls.
+`DISABLE_UPDATE_CHECK=true` disables release polling. It does not disable connected
+email, enrichment, telemetry, or other integrations; configure those separately.
 
 ## Backups
 
@@ -42,6 +58,12 @@ docker compose exec -T postgres pg_dump -U warpdrive warpdrive \
 Files live in the `miniodata` volume; back that up alongside the database.
 
 Test a restore before you need one.
+
+Record the source revision, migration journal, restore result, and service checks.
+A successful build or migration is not proof that mailbox delivery or other
+provider workflows work in the deployed environment. New workflow definitions and
+versions are database state; include them in database backups once their migration
+has been adopted. The visual executor is still in development.
 
 ## Logs
 

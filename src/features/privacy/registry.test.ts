@@ -1,3 +1,6 @@
+import { createHash } from "node:crypto";
+import { readFile } from "node:fs/promises";
+import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { checkRegistryCoverage, privacyRegistry, requireLifecycleCapability } from "./registry";
@@ -29,6 +32,20 @@ describe("privacy inventory (P01A/P01B)", () => {
       missing: [],
       invalid: [],
     });
+  });
+
+  it("binds every declared source review to its actual current bytes, including opaque UI and configuration", async () => {
+    const stale: string[] = [];
+    const signal = AbortSignal.timeout(30_000);
+    for (const entry of privacyRegistry.entries) {
+      for (const id of entry.ids) {
+        const review = /^sourceReview:(.+)#([a-f0-9]{64})$/u.exec(id);
+        if (review === null) continue;
+        const source = await readFile(path.join(root, review[1]!), { signal });
+        if (createHash("sha256").update(source).digest("hex") !== review[2]) stale.push(id);
+      }
+    }
+    expect(stale).toEqual([]);
   });
 
   it.each([
