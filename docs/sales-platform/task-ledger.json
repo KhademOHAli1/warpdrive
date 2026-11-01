@@ -621,6 +621,10 @@
         {
           "path": "docs/sales-platform/evidence/saved-view-write-boundary-2026-11-01.json",
           "level": "local-unit"
+        },
+        {
+          "path": "docs/sales-platform/evidence/activity-replay-and-view-preservation-2026-11-01.json",
+          "level": "local-runtime"
         }
       ],
       "remainingGates": [
@@ -628,7 +632,7 @@
         "Permission-aware dynamic custom-field filter resolution, scope editing and all server export/search/realtime paths remain unqualified by client availability guards.",
         "Full versioned builtin column/sort read-write-UI path, PostgreSQL round trips and native current-source qualification remain open."
       ],
-      "notes": "Existing executing-viewer query authority is preserved while invalid stored definitions close record-query admission. Board/list scope receipts and entity paging delivery keys prevent mismatched or previous broader cached results from appearing as a narrower view. Contact/lead unavailable selections suppress queries, rows, counts and reference labels. This extends safe composition boundaries without adding a permission grant. Later db92500 closes lossy saved-definition writes across all four entities: 26 failures reproduced, 105 schema/compatibility units passed, scoped typed lint passed. This does not add presentation persistence or qualify actual DB/native write behavior."
+      "notes": "Existing executing-viewer query authority is preserved while invalid stored definitions close record-query admission. Board/list scope receipts and entity paging delivery keys prevent mismatched or previous broader cached results from appearing as a narrower view. Contact/lead unavailable selections suppress queries, rows, counts and reference labels. This extends safe composition boundaries without adding a permission grant. Later db92500 closes lossy saved-definition writes across all four entities: 26 failures reproduced, 105 schema/compatibility units passed, scoped typed lint passed. This does not add presentation persistence; later PostgreSQL refusal/preservation evidence is separately recorded. Later d4bf15a passed six actual PostgreSQL replay/saved-preservation cases; strict completion action input passed 24 units. Full current types/lint passed after a preserved test-only type failure and repair. Native authority/browser/build and main-history upgrade gates remain open."
     },
     {
       "id": "SP-03.3",
@@ -656,6 +660,10 @@
         {
           "path": "docs/sales-platform/evidence/saved-view-write-boundary-2026-11-01.json",
           "level": "local-unit"
+        },
+        {
+          "path": "docs/sales-platform/evidence/activity-replay-and-view-preservation-2026-11-01.json",
+          "level": "local-runtime"
         }
       ],
       "remainingGates": [
@@ -663,7 +671,7 @@
         "The reserved presentation envelope is not active column/sort support; existing personal/shared/favorite metadata preservation is not new sharing implementation.",
         "Full versioned builtin column/sort read-write-UI path, PostgreSQL round trips and native current-source qualification remain open."
       ],
-      "notes": "Valid existing personal/shared/favorite metadata is retained. Full selected-view state now survives invalid/missing/deleted selections and refresh instead of clearing to all records; only explicit clear or a valid replacement resumes data. Board/list restored unavailable context and native reload recovery were exercised. Existing bare write format remains unchanged. Later db92500 closes lossy saved-definition writes across all four entities: 26 failures reproduced, 105 schema/compatibility units passed, scoped typed lint passed. This does not add presentation persistence or qualify actual DB/native write behavior."
+      "notes": "Valid existing personal/shared/favorite metadata is retained. Full selected-view state now survives invalid/missing/deleted selections and refresh instead of clearing to all records; only explicit clear or a valid replacement resumes data. Board/list restored unavailable context and native reload recovery were exercised. Existing bare write format remains unchanged. Later db92500 closes lossy saved-definition writes across all four entities: 26 failures reproduced, 105 schema/compatibility units passed, scoped typed lint passed. This does not add presentation persistence; later PostgreSQL refusal/preservation evidence is separately recorded. Later d4bf15a passed six actual PostgreSQL replay/saved-preservation cases; strict completion action input passed 24 units. Full current types/lint passed after a preserved test-only type failure and repair. Native authority/browser/build and main-history upgrade gates remain open."
     },
     {
       "id": "SP-03.4",
@@ -687,14 +695,18 @@
         {
           "path": "docs/sales-platform/evidence/next-action-queue-2026-11-01.json",
           "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/evidence/activity-replay-and-view-preservation-2026-11-01.json",
+          "level": "local-runtime"
         }
       ],
       "remainingGates": [
         "Literal unassigned work requires an approved ownership/storage decision; current fields are nonnullable.",
         "Shared current-native/OAuth/job mutation admission, revocation and unknown-outcome qualification remain open.",
-        "Full exact-candidate types/lint/build, native FA/DE/EN accessibility/state journeys and performance remain open."
+        "Full exact-candidate build, native FA/DE/EN accessibility/state journeys and performance remain open."
       ],
-      "notes": "Partial default-off read queue for canonical overdue work and opportunities with no nondeleted open activity. Strict protected RPC, bounded permission-scoped counts/pages, redacted links and existing native edit/schedule forms. Actor/input/preference/revision-scoped client hides stale reads, including preference-save and late pre-save races. Adjacent containerless run of 125 tests across 16 files passed; 14 actual read PostgreSQL tests across 4 files and later focused units 44/5 plus scoped typed ESLint 38 files passed. Full current types/lint/build/browser, release and parent completion remain open."
+      "notes": "Partial default-off read queue for canonical overdue work and opportunities with no nondeleted open activity. Strict protected RPC, bounded permission-scoped counts/pages, redacted links and existing native edit/schedule forms. Actor/input/preference/revision-scoped client hides stale reads, including preference-save and late pre-save races. Adjacent containerless run of 125 tests across 16 files passed; 14 actual read PostgreSQL tests across 4 files and later focused units 44/5 plus scoped typed ESLint 38 files passed. At that queue checkpoint, full types/lint/build/browser remained separate. Later full types/lint are recorded below; current build/browser, release and parent completion remain open. Later d4bf15a passed six actual PostgreSQL replay/saved-preservation cases; strict completion action input passed 24 units. Full current types/lint passed after a preserved test-only type failure and repair. Native authority/browser/build and main-history upgrade gates remain open."
     },
     {
       "id": "SP-03.5",
@@ -1763,13 +1775,17 @@
         {
           "path": "docs/sales-platform/evidence/qualification-export-static-2026-11-01.json",
           "level": "local-unit"
+        },
+        {
+          "path": "docs/sales-platform/evidence/activity-replay-and-view-preservation-2026-11-01.json",
+          "level": "local-runtime"
         }
       ],
       "remainingGates": [
         "Remaining exact-candidate functional/browser/provider/release acceptance still required.",
         "Full protected foreground/background/provider/browser/state and release acceptance remains open."
       ],
-      "notes": "Checkpoint c655b8e: final root unit summary inspected with 6020 tests across 966 files passing; affected PostgreSQL summary inspected with 239 tests across 50 files passing. Existing registry and guards retain all 128 parent IDs and evidence ceilings. Native lifecycle/unavailable-view journeys and the 103-table synthetic restore add current local runtime evidence; aggregate checks do not complete parent acceptance. Version-matched qualification.json now records the checkpoint build/check evidence separately from release acceptance. Later lead CSV export gate 6efe4dd adds native session/global data.export refusal before reads; 44 adjacent units across 5 files passed. Full 15950b6 types passed with 18-file affected typed lint; no current full build/browser/native replay result inferred."
+      "notes": "Checkpoint c655b8e: final root unit summary inspected with 6020 tests across 966 files passing; affected PostgreSQL summary inspected with 239 tests across 50 files passing. Existing registry and guards retain all 128 parent IDs and evidence ceilings. Native lifecycle/unavailable-view journeys and the 103-table synthetic restore add current local runtime evidence; aggregate checks do not complete parent acceptance. Version-matched qualification.json now records the checkpoint build/check evidence separately from release acceptance. Later lead CSV export gate 6efe4dd adds native session/global data.export refusal before reads; 44 adjacent units across 5 files passed. Full 15950b6 types passed with 18-file affected typed lint; that type/unit record alone establishes no newer build/browser/native replay result; subsequent actual replay evidence is recorded below. Later d4bf15a passed six actual PostgreSQL replay/saved-preservation cases; strict completion action input passed 24 units. Full current types/lint passed after a preserved test-only type failure and repair. Native authority/browser/build and main-history upgrade gates remain open."
     },
     {
       "id": "SP-15.2",

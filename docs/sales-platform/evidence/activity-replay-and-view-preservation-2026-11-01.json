@@ -1,0 +1,247 @@
+{
+  "observedAt": "2026-11-01T06:49:41.644016+00:00",
+  "latestSourceCommit": "901ba96d668a29fa5d34a38a9fc0dfc7bc25014e",
+  "fullTypecheckBeforeReplayFix": {
+    "command": "bun run typecheck: Next typegen + full tsc --noEmit -p tsconfig.typecheck.json",
+    "sourceCommit": "2fdef03055b3bbff058af5a5072d6c3826a3a769",
+    "startedAt": "2026-11-01T05:56:01.357786+00:00",
+    "finishedAt": "2026-11-01T05:56:16.552802+00:00",
+    "exitCode": 0,
+    "durationSeconds": 15.195,
+    "minimumObservedFreeBytes": 19079397376,
+    "headroomFloorBytes": 5368709120,
+    "timeoutSeconds": 90,
+    "preparedTestsCompiledOnlyAtThatPoint": {
+      "src/features/activities/completeActivityReplay.integration.test.ts": "1f66d87e259f69ea28e723836cd2b9e9f1f6efc6a860f3d7a879e988966daaaf",
+      "src/features/saved-filters/savedFilterWritePreservation.integration.test.ts": "b90e2a4add7955a7496c515a8e35eb44eb3af804017e9b04a737ba702004747f"
+    }
+  },
+  "nativeBehavioralRed": {
+    "tests": 6,
+    "files": 2,
+    "failed": 2,
+    "passed": 4,
+    "expectedFailures": [
+      "Designed trigger proved same-state redundant UPDATE",
+      "Concurrent true completions returned differing canonical timestamps"
+    ],
+    "infrastructureFailures": 0,
+    "dockerReturnedToBaseline": true,
+    "sourceCommit": "2fdef03055b3bbff058af5a5072d6c3826a3a769",
+    "startedAt": "2026-11-01T05:56:44.515401+00:00",
+    "finishedAt": "2026-11-01T05:56:49.624092+00:00",
+    "exitCode": 1,
+    "durationSeconds": 5.108,
+    "minimumObservedFreeBytes": 19073601536,
+    "headroomFloorBytes": 5368709120,
+    "timeoutSeconds": 180
+  },
+  "nativeGreen": {
+    "tests": 6,
+    "files": 2,
+    "activityReplayTests": 3,
+    "savedViewPreservationTests": 3,
+    "sourceHashes": {
+      "src/features/activities/completeActivityReplay.integration.test.ts": "1f66d87e259f69ea28e723836cd2b9e9f1f6efc6a860f3d7a879e988966daaaf",
+      "src/features/activities/repo.ts": "ca2826ab2fa920998fee9d28df2cd8f9ebf7a39e2844bba38e7b2c1e8dc69400",
+      "src/features/saved-filters/savedFilterWritePreservation.integration.test.ts": "b90e2a4add7955a7496c515a8e35eb44eb3af804017e9b04a737ba702004747f",
+      "src/features/saved-filters/savedFilterActions.ts": "2f3e4f834dbc89a1872fa9d4062a6b6e389865f459bd88aa25b1b0579db4b6c7",
+      "src/features/saved-filters/schemas.ts": "26e06a97217b1b186f5d2692ee1a674413139868f24c808493f45a5f0efdd5f6",
+      "src/schemas/filterCondition.ts": "054304b178a15c7f771c960c72652c6d2c5a917f8e7db1e3c3cb074ed71e29b9"
+    },
+    "dockerReturnedToBaseline": true,
+    "sourceCommit": "d4bf15ad642ba8539ea1283cde95efb4d213e022",
+    "startedAt": "2026-11-01T06:04:36.754555+00:00",
+    "finishedAt": "2026-11-01T06:04:41.836722+00:00",
+    "exitCode": 0,
+    "durationSeconds": 5.082,
+    "minimumObservedFreeBytes": 18855649280,
+    "headroomFloorBytes": 5368709120,
+    "timeoutSeconds": 180
+  },
+  "completionActionBoundary": {
+    "sourceCommit": "2133e94e8d7968e0a2b0594cbf6e4b4eae223da2",
+    "redFailed": 17,
+    "redPassed": 7,
+    "greenTests": 24,
+    "greenGuardSeconds": 1.59,
+    "minimumReportedLiveFreeDiskGiBRounded": 17.314,
+    "headroomFloorBytes": 3221225472,
+    "deadlineSeconds": 45,
+    "errorId": "E_ACTIVITY_008",
+    "redLogSha256": "6153a9daf16845fd8eee97368374dda6a0bd60c976668d07c1f2a782c30af3bf",
+    "greenLogSha256": "1fa3d238315756b90ce16679bd485e219ef2fa3c5d918b2c2efdd7674445e7f4",
+    "boundary": "Existing CSRF/actor checks, strict UUID/boolean payload parse once, then core command. Real unconnected Pool, context/CSRF/domain command seams; no DB query mocked."
+  },
+  "scopedTypedLint": {
+    "files": 7,
+    "selection": [
+      "src/features/activities/actions.ts",
+      "src/features/activities/completeActivityInput.ts",
+      "src/features/activities/completeActivityAction.validation.test.ts",
+      "src/constants/errorIds.ts",
+      "src/features/activities/repo.ts",
+      "src/features/activities/completeActivityReplay.integration.test.ts",
+      "src/features/saved-filters/savedFilterWritePreservation.integration.test.ts"
+    ],
+    "sourceCommit": "2133e94e8d7968e0a2b0594cbf6e4b4eae223da2",
+    "startedAt": "2026-11-01T06:09:46.035803+00:00",
+    "finishedAt": "2026-11-01T06:09:54.120636+00:00",
+    "exitCode": 0,
+    "durationSeconds": 8.085,
+    "minimumObservedFreeBytes": 17445609472,
+    "headroomFloorBytes": 5368709120,
+    "timeoutSeconds": 45
+  },
+  "limits": [
+    "Row-lock/same-state canonical return is not a durable creation/command-intent receipt or revision-CAS for intervening opposite changes.",
+    "Core still receives captured actor authority; current native-session/actor/OAuth/job admission and revocation after waiting remain unqualified.",
+    "Queue quick completion remains unwired and queue default-off.",
+    "Native six-case proof uses selected synthetic85-entry Sales history, not current-main privacy upgrade or real retained data.",
+    "Full current types and full-repository lint passed after the test-only repair; no newer production build/browser/release result is inferred."
+  ],
+  "fullLintCandidateCommit": "901ba96d668a29fa5d34a38a9fc0dfc7bc25014e",
+  "fullTypecheckAttempts": [
+    {
+      "sourceCommit": "2133e94e8d7968e0a2b0594cbf6e4b4eae223da2",
+      "startedAt": "2026-11-01T06:17:42.137423+00:00",
+      "finishedAt": "2026-11-01T06:17:57.348610+00:00",
+      "exitCode": 2,
+      "durationSeconds": 15.211,
+      "minimumObservedFreeBytes": 19149336576,
+      "headroomFloorBytes": 5368709120,
+      "timeoutSeconds": 90,
+      "diagnostics": [
+        "Two number | undefined comparator arguments in completion test invocation-order assertions; production source unchanged by repair."
+      ]
+    },
+    {
+      "sourceCommit": "601be5341c437ca40d0dbd6c5ac68beed7ea5f5f",
+      "startedAt": "2026-11-01T06:27:13.140475+00:00",
+      "finishedAt": "2026-11-01T06:27:17.207489+00:00",
+      "exitCode": 0,
+      "durationSeconds": 4.066,
+      "minimumObservedFreeBytes": 18554404864,
+      "headroomFloorBytes": 5368709120,
+      "timeoutSeconds": 90
+    },
+    {
+      "sourceCommit": "3b79edc7bd7a3e107745f6824350ff4dbb0f1b6e",
+      "startedAt": "2026-11-01T06:30:19.963089+00:00",
+      "finishedAt": "2026-11-01T06:30:24.528173+00:00",
+      "exitCode": 0,
+      "durationSeconds": 4.565,
+      "minimumObservedFreeBytes": 18339213312,
+      "headroomFloorBytes": 5368709120,
+      "timeoutSeconds": 90
+    },
+    {
+      "sourceCommit": "901ba96d668a29fa5d34a38a9fc0dfc7bc25014e",
+      "startedAt": "2026-11-01T06:48:03.517195+00:00",
+      "finishedAt": "2026-11-01T06:48:07.589454+00:00",
+      "exitCode": 0,
+      "durationSeconds": 4.072,
+      "minimumObservedFreeBytes": 17419886592,
+      "headroomFloorBytes": 5368709120,
+      "timeoutSeconds": 90
+    }
+  ],
+  "fullRepositoryLintAttempts": [
+    {
+      "sourceCommit": "601be5341c437ca40d0dbd6c5ac68beed7ea5f5f",
+      "startedAt": "2026-11-01T06:27:23.689341+00:00",
+      "finishedAt": "2026-11-01T06:27:24.707484+00:00",
+      "exitCode": 1,
+      "durationSeconds": 1.018,
+      "minimumObservedFreeBytes": 18559148032,
+      "headroomFloorBytes": 5368709120,
+      "timeoutSeconds": 90,
+      "diagnostics": [
+        "Three Farsi next-action count ICU contracts and one test-only helper source literal stopped i18n audit before Biome/ESLint."
+      ]
+    },
+    {
+      "sourceCommit": "3b79edc7bd7a3e107745f6824350ff4dbb0f1b6e",
+      "startedAt": "2026-11-01T06:30:28.497929+00:00",
+      "finishedAt": "2026-11-01T06:30:30.524673+00:00",
+      "exitCode": 1,
+      "durationSeconds": 2.026,
+      "minimumObservedFreeBytes": 18331885568,
+      "headroomFloorBytes": 5368709120,
+      "timeoutSeconds": 90,
+      "diagnostics": [
+        "i18n passed; Biome stopped on qualification-contract.md table formatting. No production source change in 59cb7d9 formatting repair."
+      ]
+    },
+    {
+      "sourceCommit": "59cb7d9001fd611a1559aba24f99178a0a422938",
+      "startedAt": "2026-11-01T06:32:49.703732+00:00",
+      "finishedAt": "2026-11-01T06:33:31.270112+00:00",
+      "exitCode": 1,
+      "durationSeconds": 41.566,
+      "minimumObservedFreeBytes": 18154795008,
+      "headroomFloorBytes": 5368709120,
+      "timeoutSeconds": 90,
+      "diagnostics": [
+        "i18n and Biome passed; two typed ESLint errors in PipelineDirectoryRecovery.test.tsx (unused callback parameter, async callback without real await). 901ba96 awaits the actual rejected response and fixes callback typing; no production change."
+      ]
+    },
+    {
+      "sourceCommit": "901ba96d668a29fa5d34a38a9fc0dfc7bc25014e",
+      "startedAt": "2026-11-01T06:48:22.625492+00:00",
+      "finishedAt": "2026-11-01T06:49:01.698773+00:00",
+      "exitCode": 0,
+      "durationSeconds": 39.073,
+      "minimumObservedFreeBytes": 17353211904,
+      "headroomFloorBytes": 5368709120,
+      "timeoutSeconds": 90
+    }
+  ],
+  "finalAffectedUnits": {
+    "sourceCommit": "3b79edc7bd7a3e107745f6824350ff4dbb0f1b6e",
+    "startedAt": "2026-11-01T06:28:42.542830+00:00",
+    "finishedAt": "2026-11-01T06:28:47.112844+00:00",
+    "exitCode": 0,
+    "durationSeconds": 4.57,
+    "minimumObservedFreeBytes": 18407792640,
+    "headroomFloorBytes": 3221225472,
+    "timeoutSeconds": 45,
+    "tests": 68,
+    "files": 6
+  },
+  "fullRepositoryLint": {
+    "sourceCommit": "901ba96d668a29fa5d34a38a9fc0dfc7bc25014e",
+    "startedAt": "2026-11-01T06:48:22.625492+00:00",
+    "finishedAt": "2026-11-01T06:49:01.698773+00:00",
+    "exitCode": 0,
+    "durationSeconds": 39.073,
+    "minimumObservedFreeBytes": 17353211904,
+    "headroomFloorBytes": 5368709120,
+    "timeoutSeconds": 90
+  },
+  "pipelineRecoveryLintRepair": {
+    "sourceCommit": "901ba96d668a29fa5d34a38a9fc0dfc7bc25014e",
+    "units": {
+      "sourceCommit": "901ba96d668a29fa5d34a38a9fc0dfc7bc25014e",
+      "startedAt": "2026-11-01T06:35:12.954154+00:00",
+      "finishedAt": "2026-11-01T06:35:17.013542+00:00",
+      "exitCode": 0,
+      "durationSeconds": 4.059,
+      "minimumObservedFreeBytes": 18121080832,
+      "headroomFloorBytes": 3221225472,
+      "timeoutSeconds": 45,
+      "tests": 23,
+      "files": 3
+    },
+    "scopedTypedLint": {
+      "sourceCommit": "901ba96d668a29fa5d34a38a9fc0dfc7bc25014e",
+      "startedAt": "2026-11-01T06:35:22.770061+00:00",
+      "finishedAt": "2026-11-01T06:35:27.343418+00:00",
+      "exitCode": 0,
+      "durationSeconds": 4.573,
+      "minimumObservedFreeBytes": 18156552192,
+      "headroomFloorBytes": 5368709120,
+      "timeoutSeconds": 45
+    }
+  }
+}
