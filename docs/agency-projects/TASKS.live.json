@@ -62,10 +62,10 @@
     "expected_passing_tests": "T30: no applied history is renamed; common-key conflicts stop reconciliation; SQL-only guards survive.",
     "dependencies": "AP-00.1;AP-00.3",
     "owner": "Agency implementation chat; shared edits require owner review",
-    "status": "planned",
-    "evidence": "Not implemented or qualified",
-    "remaining": "Original outcome, dependencies and applicable acceptance tests remain",
-    "accepted": false
+    "status": "active",
+    "evidence": "main-lineage-audit-20261101.json/md: fetched fork maina049, actual162-file/common0082 identity, divergent83/84/85 chains and timestamps, disjoint7+11 schema additions, SQL-only guard and7-table Privacy coverage gates identified. No source/SQL merge executed.",
+    "accepted": false,
+    "remaining": "Platform/MAIL/Privacy accepted canonical lineage/reservation and actual-ledger supported upgrades/fresh/rerun/restore required. Source metadata100-table union is not installed proof."
   },
   {
     "id": "AP-00.5",
@@ -79,10 +79,10 @@
     "expected_passing_tests": "T30: no use of reserved85..93 or assumed94; new journal timestamps advance the accepted combined head.",
     "dependencies": "AP-00.4;AP-02.1",
     "owner": "Agency implementation chat; shared edits require owner review",
-    "status": "planned",
-    "evidence": "Not implemented or qualified",
-    "remaining": "Original outcome, dependencies and applicable acceptance tests remain",
-    "accepted": false
+    "status": "active",
+    "evidence": "Concrete protected-history five-store proposal remains unallocated. New mainPrivacy0085 overlaps inspected MAIL0085..0093 reservation;0094 remains unallocated. Review-only coverage patch supplied for existing7 tables.",
+    "accepted": false,
+    "remaining": "Resolve accepted combined base and reviewed Agency schema/grants before allocator assigns any new number. No journal/snapshot/DDL generation or applied-history rename."
   },
   {
     "id": "AP-00.6",

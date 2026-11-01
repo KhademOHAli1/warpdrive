@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-11-01T04:22:41.798891+00:00",
+  "updatedAt": "2026-11-01T04:38:26.667260+00:00",
   "statusMeaning": "Evidence level only. A source-verified task is not accepted or complete. All 96 acceptance flags remain false.",
   "tasks": {
     "AP-00.1": {
@@ -158,6 +158,18 @@
       "accepted": false,
       "evidence": "Test-first strict communication preference ingress implemented: canonical intent/project/person IDs, explicit role/channel/cadence, exact protected references and preserved FA/DE text. Genuine11/14 and invisible-format1/25 reds; current integrated367/14 plus narrow types/Biome/lint pass. qualification-feature-r1-20261101.json.",
       "remaining": "Actual native actor/project/person relationship checks, persisted coexistence/retry uniqueness, current Privacy field disclosure, UI and full AP-03.1 dependencies remain open. No scheduling or sending from this declaration."
+    },
+    "AP-00.4": {
+      "status": "active",
+      "accepted": false,
+      "evidence": "main-lineage-audit-20261101.json/md: fetched fork maina049, actual162-file/common0082 identity, divergent83/84/85 chains and timestamps, disjoint7+11 schema additions, SQL-only guard and7-table Privacy coverage gates identified. No source/SQL merge executed.",
+      "remaining": "Platform/MAIL/Privacy accepted canonical lineage/reservation and actual-ledger supported upgrades/fresh/rerun/restore required. Source metadata100-table union is not installed proof."
+    },
+    "AP-00.5": {
+      "status": "active",
+      "accepted": false,
+      "evidence": "Concrete protected-history five-store proposal remains unallocated. New mainPrivacy0085 overlaps inspected MAIL0085..0093 reservation;0094 remains unallocated. Review-only coverage patch supplied for existing7 tables.",
+      "remaining": "Resolve accepted combined base and reviewed Agency schema/grants before allocator assigns any new number. No journal/snapshot/DDL generation or applied-history rename."
     }
   }
 }
