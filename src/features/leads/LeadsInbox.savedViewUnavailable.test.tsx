@@ -22,7 +22,10 @@ vi.mock("@/lib/trpc-client", () => ({
     },
   },
 }));
-vi.mock("@/features/identity/preferencesActions", () => ({ setLeadsViewAction: vi.fn() }));
+vi.mock("@/features/identity/preferencesActions", () => ({
+  setLeadsViewAction: vi.fn(),
+  setSavedViewSelectionAction: vi.fn(async () => ({ ok: true })),
+}));
 vi.mock("./inbox/exportHref", () => ({ buildLeadExportHref: list.exportHref }));
 vi.mock("./leadServerActions", () => ({
   archiveLeadAction: vi.fn(),

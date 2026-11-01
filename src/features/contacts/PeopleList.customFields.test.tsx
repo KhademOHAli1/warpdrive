@@ -23,7 +23,10 @@ vi.mock("@/lib/trpc-client", () => ({
 }));
 vi.mock("./actions", () => ({ deletePersonAction: vi.fn(), mergePersonsAction: vi.fn() }));
 vi.mock("@/utils/csrfCookie", () => ({ readCsrfToken: () => "csrf" }));
-vi.mock("@/features/identity/preferencesActions", () => ({ setColumnViewAction: vi.fn() }));
+vi.mock("@/features/identity/preferencesActions", () => ({
+  setColumnViewAction: vi.fn(),
+  setSavedViewSelectionAction: vi.fn(async () => ({ ok: true })),
+}));
 
 import { PeopleList } from "./PeopleList";
 

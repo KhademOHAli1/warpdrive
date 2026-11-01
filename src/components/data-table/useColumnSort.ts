@@ -28,8 +28,17 @@ export function effectiveSort<F extends string>(
 export function useColumnSort<F extends string>(
   fallback: ColumnSort<F>,
   initial: ColumnSort<F> | null = null,
-): { sort: ColumnSort<F> | null; effective: ColumnSort<F>; cycle: (field: F) => void } {
+): {
+  sort: ColumnSort<F> | null;
+  effective: ColumnSort<F>;
+  cycle: (field: F) => void;
+  replace: (sort: ColumnSort<F> | null) => void;
+} {
   const [sort, setSort] = useState<ColumnSort<F> | null>(initial);
   const cycle = useCallback((field: F) => setSort((cur) => cycleSort(cur, field)), []);
-  return { sort, effective: effectiveSort(sort, fallback), cycle };
+  const replace = useCallback(
+    (next: ColumnSort<F> | null) => setSort(next === null ? null : { ...next }),
+    [],
+  );
+  return { sort, effective: effectiveSort(sort, fallback), cycle, replace };
 }

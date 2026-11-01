@@ -21,7 +21,8 @@ function unsupportedDefinitions(targetEntity: SavedFilterTargetEntity, field: st
   const condition = { field, op: "contains", value: "Acme" };
   const definition = { conditions: [condition] };
   return [
-    { version: 1, targetEntity, definition },
+    ...(targetEntity === "deal" ? [{ version: 1, targetEntity, definition }] : []),
+    { version: 1, targetEntity, definition, presentation: { version: 1, columns: ["unknown"] } },
     { version: 99, targetEntity, definition },
     { ...definition, version: 99, targetEntity, definition },
     { ...definition, futureNarrowing: { teams: ["managed-team"] } },

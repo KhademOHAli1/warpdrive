@@ -27,7 +27,10 @@ vi.mock("./actions", () => ({
   mergeOrgsAction: vi.fn(),
 }));
 vi.mock("@/utils/csrfCookie", () => ({ readCsrfToken: () => "csrf" }));
-vi.mock("@/features/identity/preferencesActions", () => ({ setColumnViewAction: vi.fn() }));
+vi.mock("@/features/identity/preferencesActions", () => ({
+  setColumnViewAction: vi.fn(),
+  setSavedViewSelectionAction: vi.fn(async () => ({ ok: true })),
+}));
 
 import type { CustomFieldDef } from "@/types/customFields";
 import { OrgsList } from "./OrgsList";

@@ -30,7 +30,10 @@ vi.mock("./actions", () => ({
   mergeOrgsAction: (...a: unknown[]) => mergeOrgsAction(...a),
 }));
 vi.mock("@/utils/csrfCookie", () => ({ readCsrfToken: () => "csrf" }));
-vi.mock("@/features/identity/preferencesActions", () => ({ setColumnViewAction: vi.fn() }));
+vi.mock("@/features/identity/preferencesActions", () => ({
+  setColumnViewAction: vi.fn(),
+  setSavedViewSelectionAction: vi.fn(async () => ({ ok: true })),
+}));
 
 import { OrgsList } from "./OrgsList";
 import type { OrgsListRow } from "./OrgsTable";
