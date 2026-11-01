@@ -76,7 +76,13 @@ mail SQL semantics and UUIDs, ciphertext, generation fences, outbox receipts and
 Platform owns the final journal/metadata commit and real-PostgreSQL clean-install plus
 integration-0084-to-mail upgrade review. Divergent mail-dev and workflow-0083 databases need
 their own explicit recovery/upgrade evidence; no production/customer path is inferred.
-No shared/SMS migration below 0092 is allocated. Above that boundary, consult the one allocator
+Later allocator addendum: integrated 0092 is also exclusively reserved for MAIL's additive
+delivery-observation evidence table. Its parser/schema/authorization/upgrade qualification is
+pending. It must not change accepted/partial/unknown submission facts or trigger resend.
+Notification binding has a subsequent MAIL reservation in
+[the current allocation ledger](migration-allocation.md). Read that ledger for the current
+exclusive range and next unreserved slot; none of those reservations approves a schema.
+For every new shared/SMS migration, consult the one allocator
 before choosing any number; an unused reservation is explicitly released rather than reused
 by assumption.
 

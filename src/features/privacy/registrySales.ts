@@ -25,7 +25,7 @@ export const salesInventoryEntries = [
     retention:
       "OAuth attempts expire without a purge introduced here. Disconnect retains encrypted retry material while revocation is pending; successful revocation clears credentials and appends history. Events, attempts, backups and remote copies require separate lifecycle adapters.",
     externalEffects:
-      "Slack exchange, account/channel reads and revocation contact the configured provider. Generic provider invocation dispatches trusted adapters with deadlines but does not itself authenticate callers, persist broker grants or establish remote deletion. Allowlisted message transport has no newly introduced production caller in this cut.",
+      "Slack exchange, account/channel reads and revocation contact the configured provider. Read failures expose fixed classifications rather than raw provider errors. Each page has a request deadline; channel listing can span 20 pages without a whole-list deadline or response-byte cap. Caller cancellation is supported by direct read-helper consumers; current actions use their own fresh signal. Generic provider invocation dispatches trusted adapters with deadlines but does not itself authenticate callers, persist broker grants or establish remote deletion. Allowlisted message transport has no newly introduced production caller in this cut.",
   }),
   classifyInventory(salesJourneysIds1, {
     ...classifications.crm,

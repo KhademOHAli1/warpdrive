@@ -10,7 +10,11 @@ import { formatDateTime } from "@/lib/localeFormatting";
 import { useFormatters } from "@/lib/useFormatters";
 import { LanguageSettings } from "./LanguageSettings";
 
-const { save } = vi.hoisted(() => ({ save: vi.fn(() => Promise.resolve({ ok: true })) }));
+const { save } = vi.hoisted(() => ({
+  save: vi.fn<(input: unknown, csrfToken: string | null) => Promise<{ ok: boolean }>>(() =>
+    Promise.resolve({ ok: true }),
+  ),
+}));
 vi.mock("@/features/i18n/actions", () => ({ saveLocalePreferencesAction: save }));
 vi.mock("@/utils/csrfCookie", () => ({ readCsrfToken: () => "test-csrf" }));
 afterEach(() => {
@@ -64,22 +68,6 @@ it("keeps an existing timezone outside the suggested list selectable", () => {
   );
   expect(screen.getByRole("combobox", { name: "Time zone" })).toHaveTextContent("Pacific/Auckland");
   expect(save).not.toHaveBeenCalled();
-});
-
-it("shows the digit setting only after choosing Farsi", async () => {
-  const user = userEvent.setup();
-  render(
-    <LocaleProvider>
-      <LanguageSettings />
-    </LocaleProvider>,
-  );
-  expect(screen.queryByRole("combobox", { name: "Number display" })).not.toBeInTheDocument();
-  await user.click(screen.getByRole("combobox", { name: "Language" }));
-  await user.click(screen.getByRole("option", { name: "فارسی" }));
-  expect(await screen.findByRole("combobox", { name: "نمایش اعداد" })).toBeInTheDocument();
-  await waitFor(() =>
-    expect(save).toHaveBeenCalledWith(expect.objectContaining({ locale: "fa" }), "test-csrf"),
-  );
 });
 
 it("saves English digits while keeping Farsi text and unfinished input", async () => {

@@ -44,4 +44,14 @@ describe("dateFormat", () => {
       }),
     ).toBe("امروز، جمعه، ۱ آبان ۱۴۰۵، انتخاب‌شده");
   });
+
+  it.each([
+    { numberingSystem: "arabext", expected: "۱۴۰۵/۰۱/۰۱" },
+    { numberingSystem: "latn", expected: "1405/01/01" },
+  ] as const)(
+    "honors explicit $numberingSystem in the English Iranian trigger",
+    ({ numberingSystem, expected }) => {
+      expect(formatPersianDate("2026-03-21", "en", numberingSystem)).toBe(expected);
+    },
+  );
 });

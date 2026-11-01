@@ -78,7 +78,7 @@ it("lets an empty workspace discover supported apps without a wall of roadmap ca
     "aria-selected",
     "true",
   );
-  expect(screen.getByRole("heading", { name: "Available integrations" })).toBeVisible();
+  expect(screen.getByRole("heading", { name: "Integrations in this version" })).toBeVisible();
   expect(screen.queryByRole("heading", { name: "Dropbox" })).not.toBeInTheDocument();
 });
 

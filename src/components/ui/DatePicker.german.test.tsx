@@ -123,7 +123,7 @@ describe("German DatePicker", () => {
     expect(onChange).not.toHaveBeenCalled();
   });
 
-  it("uses the account's Iranian today with German labels and Latin digits despite a saved Persian digit preference", async () => {
+  it("uses the account's Iranian today with German labels and its saved Persian digits", async () => {
     vi.stubEnv("TZ", "Pacific/Honolulu");
     vi.useFakeTimers({ toFake: ["Date"] });
     vi.setSystemTime(new Date("2026-03-20T22:00:00Z"));
@@ -139,10 +139,40 @@ describe("German DatePicker", () => {
       </LocaleProvider>,
     );
     fireEvent.click(screen.getByLabelText("Datum"));
-    expect(await screen.findByRole("grid")).toHaveAccessibleName("Farwardin 1405");
-    const today = screen.getByRole("button", { name: "Heute, Samstag, 1. Farwardin 1405" });
-    expect(today).toHaveTextContent("1");
+    expect(await screen.findByRole("grid")).toHaveAccessibleName("Farwardin ۱۴۰۵");
+    expect(screen.getByRole("combobox", { name: "Jahr auswählen" })).toHaveDisplayValue("۱۴۰۵");
+    expect(screen.getByRole("combobox", { name: "Jahr auswählen" })).toHaveValue("1405");
+    const today = screen.getByRole("button", { name: "Heute, Samstag, ۱. Farwardin ۱۴۰۵" });
+    expect(today).toHaveTextContent("۱");
     fireEvent.click(today);
     expect(onChange).toHaveBeenCalledExactlyOnceWith("2026-03-21");
+  });
+
+  it("uses explicit Persian digits in German Gregorian trigger, grid and accessible labels", async () => {
+    const onChange = vi.fn();
+    render(
+      <LocaleProvider
+        locale="de"
+        calendar="gregory"
+        numberingSystem="arabext"
+        timeZone="America/New_York"
+      >
+        <DatePicker value="2026-03-21" onChange={onChange} ariaLabel="Datum" />
+      </LocaleProvider>,
+    );
+    expect(screen.getByLabelText("Datum")).toHaveTextContent("۲۱.۰۳.۲۰۲۶");
+    fireEvent.click(screen.getByLabelText("Datum"));
+    expect(await screen.findByRole("grid")).toHaveAccessibleName("März ۲۰۲۶");
+    const year = screen.getByRole("combobox", { name: "Jahr auswählen" });
+    expect(year).toHaveDisplayValue("۲۰۲۶");
+    expect(year).toHaveValue("2026");
+    expect(
+      screen.getByRole("button", { name: "Samstag, ۲۱. März ۲۰۲۶, ausgewählt" }),
+    ).toHaveTextContent("۲۱");
+    const next = screen.getByRole("button", { name: "Sonntag, ۲۲. März ۲۰۲۶" });
+    expect(next).toHaveTextContent("۲۲");
+    expect(onChange).not.toHaveBeenCalled();
+    fireEvent.click(next);
+    expect(onChange).toHaveBeenCalledExactlyOnceWith("2026-03-22");
   });
 });

@@ -23,10 +23,7 @@ export function ConnectionOverview({
       (row.status === "connected" && (row.settings.channelId ?? "").length === 0),
   );
   const mailAttention = mailbox !== null && mailbox.status !== "connected";
-  const total =
-    services.filter((row) => row.status === "connected").length +
-    (mailbox?.status === "connected" ? 1 : 0) +
-    aiCount;
+  const total = services.length + (mailbox === null ? 0 : 1) + aiCount;
   const slack = INTEGRATIONS.find((item) => item.id === "slack");
   return (
     <div className="space-y-5">
@@ -34,7 +31,7 @@ export function ConnectionOverview({
         <div>
           <h2 className="text-base font-semibold">{t("workspaceTools")}</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            {t("activeConnections", { count: total })}
+            {t("savedConnections", { count: total })}
           </p>
         </div>
         <Button type="button" variant="outline" onClick={onBrowse}>

@@ -263,7 +263,7 @@ describe("updateDeal: won/lost transitions", () => {
 
   it("owner with deal.edit_own can update their own deal", async () => {
     await withTestDb(async (db) => {
-      const { u, deal } = await setupDeal(db);
+      const { u, deal } = await setupDeal(db, "owner-editor");
       const r = await updateDeal(
         db,
         regularSession(u.id),

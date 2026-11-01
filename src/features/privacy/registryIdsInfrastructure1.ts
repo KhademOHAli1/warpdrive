@@ -1,5 +1,7 @@
 // Reviewed identifiers. New or changed boundaries require inventory review, never automatic acceptance.
 export const infrastructureIds1: string[] = [
+  "derived:src/components/ui/dateFormat.ts",
+  "sourceReview:src/components/ui/dateFormat.ts#f8b625c87a3efc5e03f8085b34236639e811f41db8c10440760b35964f6032af",
   "browserStore:src/features/release/ui/VersionBanner.tsx#RELEASE_DISMISS_KEY",
   "derived:src/app/(app)/settings/fields/FieldRowItem.tsx",
   "derived:src/app/(app)/settings/profile/LanguageSettings.tsx",
@@ -59,7 +61,7 @@ export const infrastructureIds1: string[] = [
   "sourceReview:src/app/(app)/error.tsx#cfd720524d018957e1e1653ef01709f3bc9679f4427f67b4eb4f9baebd275786",
   "sourceReview:src/app/(app)/settings/fields/FieldRowItem.tsx#aec77dea2a1e71db65a693e24835566d19d418940e1018e50a5d9882fab72e43",
   "sourceReview:src/app/(app)/settings/profile/InterfacePreferences.tsx#22fd64d23c5ed542b7fc00ecf6a142675c96160f22917ac50c88cb0f7727fbac",
-  "sourceReview:src/app/(app)/settings/profile/LanguageSettings.tsx#e7be8f392c80da5c01cac62285b9a250594e0004e8633f125dc609512863ca23",
+  "sourceReview:src/app/(app)/settings/profile/LanguageSettings.tsx#a5b8d10d12223f730d94d03f173a7b99486f0f51fc6ace57b363fab80d4f5777",
   "sourceReview:src/app/(app)/settings/security-admin/SecurityAdminClient.tsx#3b038d5b5b859be1da31235872804cf245cf4e5418ddd4967a0a5a3aaec09cd6",
   "sourceReview:src/app/(app)/settings/teams/TeamsTable.tsx#4262911d759496a0e0b2a444fc9004ee2c2d8bff9b1d61f47737e08b383f3b5e",
   "sourceReview:src/app/(app)/settings/users/UsersClient.tsx#158423a96e7d9ee14a0c2029c17c9a2ed6962d37f0e347ec1794adb78cd0a789",
