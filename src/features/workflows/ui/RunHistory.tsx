@@ -1,7 +1,7 @@
 "use client";
 
 import { Activity, RefreshCw } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
@@ -10,6 +10,7 @@ import { useFormatters } from "@/lib/useFormatters";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { cancelWorkflowAction } from "../actions";
 import { RunDetailDialog } from "./RunDetailDialog";
+import { useDialogFocus } from "./useDialogFocus";
 
 export function RunHistory({ workflowId, canCancel }: { workflowId: string; canCancel: boolean }) {
   const t = useAppTranslations("workflows");
@@ -27,6 +28,9 @@ export function RunHistory({ workflowId, canCancel }: { workflowId: string; canC
   const [pending, setPending] = useState<string | null>(null);
   const [error, setError] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
+  const detailFocus = useDialogFocus();
+  const refreshButton = useRef<HTMLButtonElement>(null);
+  const historyHeading = useRef<HTMLHeadingElement>(null);
   async function cancel(id: string) {
     setPending(id);
     setError(false);
@@ -43,8 +47,11 @@ export function RunHistory({ workflowId, canCancel }: { workflowId: string; canC
   return (
     <section className="space-y-5 p-6" aria-label={t("runs")}>
       <header className="flex items-center justify-between">
-        <h2 className="font-semibold">{t("runs")}</h2>
+        <h2 ref={historyHeading} tabIndex={-1} className="font-semibold">
+          {t("runs")}
+        </h2>
         <Button
+          ref={refreshButton}
           variant="outline"
           size="sm"
           onClick={() => void list.refetch()}
@@ -101,7 +108,10 @@ export function RunHistory({ workflowId, canCancel }: { workflowId: string; canC
               variant="outline"
               size="sm"
               className="mt-3"
-              onClick={() => setSelected(run.id)}
+              onClick={(event) => {
+                detailFocus.remember(event.currentTarget);
+                setSelected(run.id);
+              }}
             >
               {t("viewRun")}
             </Button>
@@ -131,6 +141,12 @@ export function RunHistory({ workflowId, canCancel }: { workflowId: string; canC
         <RunDetailDialog
           workflowId={workflowId}
           runId={selected}
+          onCloseAutoFocus={(event) => {
+            const refresh = refreshButton.current;
+            const fallback =
+              refresh?.isConnected === true && !refresh.disabled ? refresh : historyHeading.current;
+            detailFocus.restore(event, fallback);
+          }}
           onClose={() => setSelected(null)}
         />
       )}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useId } from "react";
+import { type Ref, useId } from "react";
 import { Button } from "@/components/ui/Button";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { Input } from "@/components/ui/Input";
@@ -16,12 +16,14 @@ export function NodeInspector({
   editable,
   onChange,
   onRemove,
+  nameInputRef,
 }: {
   definition: WorkflowDefinition;
   node: WorkflowNode;
   editable: boolean;
   onChange: (node: WorkflowNode) => void;
   onRemove: () => void;
+  nameInputRef?: Ref<HTMLInputElement>;
 }) {
   const t = useAppTranslations("workflows");
   const locale = useLocale();
@@ -42,6 +44,7 @@ export function NodeInspector({
             {t("stepName")}
           </label>
           <Input
+            ref={nameInputRef}
             dir="auto"
             id={id}
             value={name}
@@ -53,7 +56,7 @@ export function NodeInspector({
           />
           <div className="flex items-center gap-2">
             <Checkbox
-              id={id + "-auto"}
+              id={`${id}-auto`}
               label={t("stepNameAutomatic")}
               checked={automatic}
               disabled={!editable}
@@ -61,7 +64,7 @@ export function NodeInspector({
                 onChange({ ...node, name, nameMode: value ? "automatic" : "custom" })
               }
             />
-            <label className="text-xs text-muted-foreground" htmlFor={id + "-auto"}>
+            <label className="text-xs text-muted-foreground" htmlFor={`${id}-auto`}>
               {t("stepNameAutomatic")}
             </label>
           </div>

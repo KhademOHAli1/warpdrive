@@ -19,11 +19,13 @@ export function NodePalette({
   onClose,
   onAdd,
   context,
+  onCloseAutoFocus,
 }: {
   open: boolean;
   onClose: () => void;
   onAdd: (type: CreatableNodeType) => void;
   context?: string;
+  onCloseAutoFocus?: (event: Event) => void;
 }) {
   const t = useAppTranslations("workflows");
   const [search, setSearch] = useState("");
@@ -43,7 +45,10 @@ export function NodePalette({
         if (!value) onClose();
       }}
     >
-      <DialogContent className="max-h-[calc(100dvh-32px)] w-[calc(100vw-32px)] max-w-xl overflow-y-auto">
+      <DialogContent
+        className="max-h-[calc(100dvh-32px)] w-[calc(100vw-32px)] max-w-xl overflow-y-auto"
+        onCloseAutoFocus={onCloseAutoFocus}
+      >
         <DialogHeader>
           <DialogTitle>{t("chooseNode")}</DialogTitle>
           <DialogDescription>
