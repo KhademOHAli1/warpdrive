@@ -1,3 +1,4 @@
+import assert from "node:assert/strict";
 import { randomBytes, randomUUID } from "node:crypto";
 import { Client, StreamableHTTPClientTransport } from "@modelcontextprotocol/client";
 import { afterAll, beforeAll, expect, test } from "vitest";
@@ -24,6 +25,7 @@ afterAll(async () => {
   await h.close();
 });
 const signal = () => AbortSignal.timeout(10_000);
+const resource = `${env.BASE_URL.replace(/\/$/, "")}/api/mcp`;
 
 test("a consented MCP app reads visible CRM data and loses all existing grants on disconnect", async () => {
   const owner = await seedUser(h.db);
@@ -56,23 +58,24 @@ test("a consented MCP app reads visible CRM data and loses all existing grants o
     signal(),
   );
   const verifier = randomUUID().replaceAll("-", "").repeat(2);
-  const binding = { clientId, redirectUri, codeChallenge: sha256Base64Url(verifier) };
+  const binding = { clientId, redirectUri, codeChallenge: sha256Base64Url(verifier), resource };
   const consent = await issueSessionAuthCode(h.db, headers, binding, signal());
   expect(consent.ok).toBe(true);
-  if (!consent.ok) return;
+  assert(consent.ok);
   const codeInput = (code: string) => ({
     grant_type: "authorization_code" as const,
     client_id: clientId,
     redirect_uri: redirectUri,
     code_verifier: verifier,
     code,
+    resource,
   });
   const exchange = await exchangeMcpGrant(h.db, codeInput(consent.value), signal());
   expect(exchange.ok).toBe(true);
-  if (!exchange.ok) return;
+  assert(exchange.ok);
   const pendingConsent = await issueSessionAuthCode(h.db, headers, binding, signal());
   expect(pendingConsent.ok).toBe(true);
-  if (!pendingConsent.ok) return;
+  assert(pendingConsent.ok);
 
   const actor = await hydrateActor(h.db, owner.id, signal());
   expect(actor).not.toBeNull();
@@ -105,7 +108,7 @@ test("a consented MCP app reads visible CRM data and loses all existing grants o
   if (visible === undefined || hidden === undefined) return;
 
   const handler = createAuthenticatedMcpHandler(h.db, env.BASE_URL);
-  const endpoint = new URL("/api/mcp", env.BASE_URL);
+  const endpoint = new URL(resource);
   const client = new Client(
     { name: "consented-client-journey", version: "0.0.0" },
     { versionNegotiation: { mode: { pin: "2026-07-28" } } },
@@ -134,6 +137,7 @@ test("a consented MCP app reads visible CRM data and loses all existing grants o
           grant_type: "refresh_token",
           client_id: clientId,
           refresh_token: exchange.value.refresh_token,
+          resource,
         },
         signal(),
       ),

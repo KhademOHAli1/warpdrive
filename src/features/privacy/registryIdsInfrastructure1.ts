@@ -125,7 +125,7 @@ export const infrastructureIds1: string[] = [
   "sourceReview:src/features/entity-create/similarMatch.ts#c53daf0a059e1b09c6d455fdff2ac2d457274728a705edf7f3f2c02a33ff973f",
   "sourceReview:src/features/health/healthCheck.ts#78ea9500ea79915ab151e76258cca09e5e2f6389ddc47c9fea2a2c6147bec880",
   "sourceReview:src/features/i18n/actions.ts#794dbc14815c404867d04f82cefd5b3ff28ea7f9661c911a83c8bb86ccceb064",
-  "sourceReview:src/features/mcp/http.ts#1dd6881fd7a8be4dec627886788361f4816553f256e3714abb3a94091cdc9be4",
+  "sourceReview:src/features/mcp/http.ts#6271ea875e43fcde24eeb2d1a2496f2ef89cbc707c1c3d2b6a8d2674f44f5e9a",
   "sourceReview:src/features/mcp/server.ts#64921eb7cc4f4be4fa3380cc86cc852707640dae4611a9eecbf0f5995482386d",
   "sourceReview:src/features/mcp/tools/reads.ts#07dc3c7eed628820b97071fe2bb7089a4d0287df91fa3afecbf062aa5ed8d04f",
   "sourceReview:src/features/mcp/tools/types.ts#e9cdd84595d2f86bcf610ae310e1bb8bac979b6349b596a4e5574b22cd469f72",

@@ -1,6 +1,7 @@
 import { Client, StreamableHTTPClientTransport } from "@modelcontextprotocol/client";
 import { eq } from "drizzle-orm";
 import { expect, test } from "vitest";
+import { env } from "@/config/env";
 import { ERROR_IDS } from "@/constants/errorIds";
 import { deals, oauthAccessTokens, oauthClients } from "@/db/schema";
 import { withTestDb } from "@/db/testing";
@@ -8,12 +9,13 @@ import { seedPipelineWithStages, seedUser } from "@/db/testing/factories";
 import { issueAccessToken } from "@/features/oauth/tokens";
 import { createAuthenticatedMcpHandler } from "./http";
 
-const BASE_URL = "https://crm.example.test";
-const ENDPOINT = new URL("/api/mcp", BASE_URL);
+const BASE_URL = env.BASE_URL;
+const RESOURCE_BASE = BASE_URL.replace(/\/$/, "");
+const ENDPOINT = new URL(`${RESOURCE_BASE}/api/mcp`);
 
 test("HTTP authentication challenges unauthenticated requests with the configured resource", async () => {
   await withTestDb(async (db) => {
-    const handler = createAuthenticatedMcpHandler(db, `${BASE_URL}/`);
+    const handler = createAuthenticatedMcpHandler(db, BASE_URL);
     for (const authorization of [undefined, "Bearer invalid"]) {
       const response = await handler(
         new Request(ENDPOINT, {
@@ -23,7 +25,7 @@ test("HTTP authentication challenges unauthenticated requests with the configure
       );
       expect(response.status).toBe(401);
       expect(response.headers.get("www-authenticate")).toContain(
-        `resource_metadata="${BASE_URL}/.well-known/oauth-protected-resource"`,
+        `resource_metadata="${RESOURCE_BASE}/.well-known/oauth-protected-resource"`,
       );
     }
   });

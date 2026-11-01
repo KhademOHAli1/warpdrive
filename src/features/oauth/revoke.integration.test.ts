@@ -1,6 +1,8 @@
+import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import { eq, sql } from "drizzle-orm";
 import { afterAll, beforeAll, expect, test } from "vitest";
+import { env } from "@/config/env";
 import {
   oauthAccessTokens,
   oauthAuthCodes,
@@ -30,6 +32,7 @@ afterAll(async () => {
 const signal = () => AbortSignal.timeout(10000);
 const redirectUri = "https://client.example.com/callback";
 const verifier = "a".repeat(64);
+const resource = `${env.BASE_URL.replace(/\/$/, "")}/api/mcp`;
 
 async function newUser() {
   const id = randomUUID();
@@ -49,10 +52,11 @@ async function grants(userId: string, clientId: string) {
   const refresh = await issueRefreshToken(h.db, owner, signal());
   const code = await issueAuthCode(
     h.db,
-    { ...owner, redirectUri, codeChallenge: sha256Base64Url(verifier) },
+    { ...owner, redirectUri, codeChallenge: sha256Base64Url(verifier), resource },
     signal(),
   );
-  return { ...owner, access, refresh, code };
+  assert(code.ok);
+  return { ...owner, access, refresh, code: code.value };
 }
 
 type Grants = Awaited<ReturnType<typeof grants>>;
@@ -62,27 +66,31 @@ function refreshInput(grant: Grants) {
     grant_type: "refresh_token" as const,
     client_id: grant.clientId,
     refresh_token: grant.refresh,
+    resource,
   };
 }
 
 async function expectUsable(grant: Grants, usable: boolean) {
   expect((await verifyAccessToken(h.db, grant.access.token, signal())).ok).toBe(usable);
-  expect((await exchangeMcpGrant(h.db, refreshInput(grant), signal())).ok).toBe(usable);
-  expect(
-    (
-      await exchangeMcpGrant(
-        h.db,
-        {
-          grant_type: "authorization_code",
-          client_id: grant.clientId,
-          code: grant.code,
-          redirect_uri: redirectUri,
-          code_verifier: verifier,
-        },
-        signal(),
-      )
-    ).ok,
-  ).toBe(usable);
+  const refreshed = await exchangeMcpGrant(h.db, refreshInput(grant), signal());
+  expect(refreshed.ok).toBe(usable);
+  const exchanged = await exchangeMcpGrant(
+    h.db,
+    {
+      grant_type: "authorization_code",
+      client_id: grant.clientId,
+      code: grant.code,
+      redirect_uri: redirectUri,
+      code_verifier: verifier,
+      resource,
+    },
+    signal(),
+  );
+  expect(exchanged.ok).toBe(usable);
+  if (!usable) {
+    expect(refreshed).toEqual({ ok: false, error: "invalid_grant" });
+    expect(exchanged).toEqual({ ok: false, error: "invalid_grant" });
+  }
 }
 
 test("revoking one app denies access, refresh and pending codes while preserving other clients and users", async () => {
@@ -183,7 +191,7 @@ test("client revocation waits for an in-flight exchange and revokes its replacem
   }
   const replacement = await inFlight;
   expect(replacement.ok).toBe(true);
-  if (!replacement.ok) return;
+  assert(replacement.ok);
   expect((await verifyAccessToken(h.db, replacement.value.access_token, signal())).ok).toBe(false);
   expect(
     await exchangeMcpGrant(
@@ -192,6 +200,7 @@ test("client revocation waits for an in-flight exchange and revokes its replacem
         grant_type: "refresh_token",
         client_id: original.clientId,
         refresh_token: replacement.value.refresh_token,
+        resource,
       },
       signal(),
     ),

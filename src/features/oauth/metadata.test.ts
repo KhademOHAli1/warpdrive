@@ -4,6 +4,7 @@ import { buildAuthServerMetadata, buildProtectedResourceMetadata } from "./metad
 test("builds OAuth authorization server discovery metadata", () => {
   const metadata = buildAuthServerMetadata("https://app.example.com/");
 
+  expect(metadata.issuer).toBe("https://app.example.com/");
   expect(metadata.authorization_endpoint).toBe("https://app.example.com/oauth/authorize");
   expect(metadata.token_endpoint).toBe("https://app.example.com/oauth/token");
   expect(metadata.registration_endpoint).toBe("https://app.example.com/oauth/register");
@@ -16,7 +17,7 @@ test("builds OAuth authorization server discovery metadata", () => {
 test("builds protected resource discovery metadata", () => {
   expect(buildProtectedResourceMetadata("https://app.example.com/")).toEqual({
     resource: "https://app.example.com/api/mcp",
-    authorization_servers: ["https://app.example.com"],
+    authorization_servers: ["https://app.example.com/"],
   });
 });
 

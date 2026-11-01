@@ -1,29 +1,20 @@
 import { randomBytes } from "node:crypto";
 import { and, eq, isNull } from "drizzle-orm";
-import { z } from "zod";
+import { env } from "@/config/env";
 import { AppError, ERROR_IDS, type ErrorId } from "@/constants/errorIds";
 import { AUTH_CODE_TTL_MS } from "@/constants/oauth";
 import type { Db } from "@/db/client";
 import { oauthAuthCodes } from "@/db/schema/oauth";
 import { err, ok, type Result } from "@/types/result";
 import { sha256Base64Url, verifyPkceS256 } from "./pkce";
+import type { AuthorizationRequest } from "./requestSchemas";
+import { validateMcpResource } from "./resource";
 
-export const authorizationRequestInput = z.object({
-  client_id: z.string().min(1),
-  redirect_uri: z.string().url(),
-  response_type: z.literal("code"),
-  code_challenge: z.string().regex(/^[A-Za-z0-9_-]{43}$/),
-  code_challenge_method: z.literal("S256"),
-  state: z.string().min(1),
-  scope: z.string().optional(),
-  resource: z.string().url().optional(),
-});
-
-export const authorizationPostQueryInput = authorizationRequestInput.extend({
-  csrf_token: z.string().min(1),
-});
-
-export type AuthorizationRequest = z.infer<typeof authorizationRequestInput>;
+export {
+  type AuthorizationRequest,
+  authorizationPostQueryInput,
+  authorizationRequestInput,
+} from "./requestSchemas";
 
 export function authorizationSearchParams(input: AuthorizationRequest): URLSearchParams {
   const params = new URLSearchParams({
@@ -33,9 +24,9 @@ export function authorizationSearchParams(input: AuthorizationRequest): URLSearc
     code_challenge: input.code_challenge,
     code_challenge_method: input.code_challenge_method,
     state: input.state,
+    resource: input.resource,
   });
   if (input.scope !== undefined) params.set("scope", input.scope);
-  if (input.resource !== undefined) params.set("resource", input.resource);
   return params;
 }
 
@@ -44,6 +35,7 @@ interface AuthCodeBinding {
   userId: string;
   redirectUri: string;
   codeChallenge: string;
+  resource: unknown;
 }
 
 interface ConsumeAuthCodeInput {
@@ -61,16 +53,21 @@ export async function issueAuthCode(
   db: Db,
   binding: AuthCodeBinding,
   signal: AbortSignal,
-): Promise<string> {
+): Promise<Result<string, "invalid_target">> {
   signal.throwIfAborted();
+  const resource = validateMcpResource(env.BASE_URL, binding.resource);
+  if (!resource.ok) return resource;
   const code = randomBytes(32).toString("base64url");
   await db.insert(oauthAuthCodes).values({
     codeHash: sha256Base64Url(code),
-    ...binding,
+    clientId: binding.clientId,
+    userId: binding.userId,
+    redirectUri: binding.redirectUri,
+    codeChallenge: binding.codeChallenge,
     expiresAt: new Date(Date.now() + AUTH_CODE_TTL_MS),
   });
   signal.throwIfAborted();
-  return code;
+  return ok(code);
 }
 
 export async function consumeAuthCode(

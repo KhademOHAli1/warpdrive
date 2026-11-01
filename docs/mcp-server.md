@@ -80,6 +80,44 @@ Remote connectors are added through Settings in Claude Desktop, not through `cla
 
 Other MCP clients can use the same endpoint when they support remote Streamable HTTP servers and OAuth.
 
+### Resource and issuer profile
+
+Include exactly one nonempty `resource` in the authorization request and in every token
+request, including refresh. Use the `resource` advertised by
+`/.well-known/oauth-protected-resource`, for example:
+
+```text
+resource=https://crm.example.com/api/mcp
+```
+
+Authorization query parameters, token form fields and token JSON members follow the same
+rule. Missing, repeated or foreign resources receive HTTP 400 with `invalid_target` before
+grant lookup or mutation. Repeating an identical resource is also rejected. JSON compatibility
+is retained, including detection of duplicate member names written with Unicode escapes.
+Other malformed input receives `invalid_request`; unusable credentials for a valid target
+receive `invalid_grant`.
+
+Warpdrive supports one MCP resource. Its audience is the configured `BASE_URL`, with one
+trailing slash removed, followed by `/api/mcp`. Resource matching permits scheme and host
+case differences while preserving the port and path bytes, path case and trailing slash.
+Query strings, fragments, user information, raw whitespace or controls, backslashes and
+normalizing dot segments are rejected. The configured issuer is `BASE_URL` literally,
+including a trailing slash when configured; discovery and signed tokens use that same issuer.
+
+The MCP profile requires a valid HTTPS `BASE_URL` without a query, fragment or user information.
+An invalid profile hides the MCP endpoint in Settings and makes MCP discovery, registration
+and protocol entry points unavailable. This profile does not change other applications'
+URL validation. Keep `BASE_URL` stable: opaque codes and refresh grants do not store a
+historical resource binding across configuration changes. Plan a separate migration and
+fresh consent when changing the public identity.
+
+The strict single-resource and missing-resource rejection rules are Warpdrive compatibility
+policy. Older clients that omit `resource`, including on refresh, must update their requests.
+[RFC 8707](https://www.rfc-editor.org/rfc/rfc8707.html) permits multiple resource indicators;
+Warpdrive deliberately accepts one. See the targeted
+[MCP authorization profile](https://modelcontextprotocol.io/specification/2026-07-28/basic/authorization).
+This policy does not add per-client scopes or make existing grants read-only.
+
 ## Tools
 
 Read tools:

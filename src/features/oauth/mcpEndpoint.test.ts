@@ -13,4 +13,17 @@ describe("resolveMcpEndpoint", () => {
       null,
     );
   });
+
+  it.each([
+    "http://crm.example.com",
+    "https://crm.example.com?other=1",
+    "https://crm.example.com#other",
+    "https://user:secret@crm.example.com",
+    "https://crm.example.com/../other",
+    "https://crm.example.com/%2e%2e/other",
+    "https://crm.example.com\\other",
+    " https://crm.example.com",
+  ])("does not expose an endpoint for invalid MCP profile %j", (baseUrl) => {
+    expect(resolveMcpEndpoint({ mcpEnabled: true, baseUrl })).toBeNull();
+  });
 });
