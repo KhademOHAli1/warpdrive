@@ -20,6 +20,8 @@ import { notificationsIds1 } from "./registryIdsNotifications1";
 import { observabilityIds1 } from "./registryIdsObservability1";
 import { privacyIds1 } from "./registryIdsPrivacy1";
 import { protectedSecretsIds1 } from "./registryIdsProtectedSecrets1";
+import { requestServicesIds1 } from "./registryIdsRequestServices1";
+import { scopeDraftIds1 } from "./registryIdsScopeDraft1";
 import { stagingQualificationIds1 } from "./registryIdsStagingQualification1";
 import { toolingIds1 } from "./registryIdsTooling1";
 import type { RegistryEntry } from "./registryTypes";
@@ -114,6 +116,50 @@ export const registryEntries: RegistryEntry[] = [
     externalEffects:
       "No network, filesystem or object-storage I/O. Supplied manifest hashes are metadata and are not verified object/content receipts.",
     erasureTask: "DPL-23",
+  }),
+  classifyInventory(scopeDraftIds1, {
+    ...classifications.privacy,
+    owner: "privacy unsealed scope draft",
+    categories: [
+      "opaque draft and record references",
+      "native record locators",
+      "field and replacement descriptors",
+      "provenance and source fingerprints",
+      "explicit coverage blockers",
+    ],
+    subjectRelation:
+      "Contact, workforce and external subjects stay explicit. Native locators and provenance are supplied metadata; they do not merge identities or establish current source membership.",
+    purpose:
+      "Canonicalize a bounded, version-bound draft of category coverage, record references and field decisions with immutable bytes, SHA-256 and explicit review blockers.",
+    disclosure:
+      "Every result remains unsealed, including an empty blocker list. No current authority, durable approval, verified source/replacement content or permission to disclose follows from the draft hash.",
+    retention:
+      "Transient in-memory metadata only. Durable scope retention, source loading and sealing require separately reviewed server integration.",
+    externalEffects:
+      "No database, filesystem, network, object or queue I/O. Discovered update/delete signatures are SHA-256 input and in-memory cycle-tracking operations, not persistent writers.",
+    erasureTask: "DPL-23",
+  }),
+  classifyInventory(requestServicesIds1, {
+    ...classifications.privacy,
+    owner: "privacy requester and initial assignment services",
+    categories: [
+      "requester references",
+      "encrypted own-intake metadata",
+      "minimal case summaries",
+      "initial reviewer membership",
+      "minimal assignment receipts",
+    ],
+    subjectRelation:
+      "A native authenticated requester supplies its own user subject and in-app recipient. Initial triage assignment does not verify identity, expand subject scope or disclose matched records.",
+    purpose:
+      "Create and read requester-bound cases, list minimal unassigned intake summaries and atomically claim the first reviewer membership using explicit current global authority.",
+    disclosure:
+      "Own-status reads expose minimal requester-bound summaries. Initial assignment requires case.assign, authority.manage and case.review; it copies only existing permitted capabilities. HTTP credentials, origin/abuse controls and localized UI remain separate integration.",
+    retention:
+      "Writes use existing encrypted privacy cases, memberships and minimal events. Their retention still requires operator activation; no new retention period or deletion receipt is inferred.",
+    externalEffects:
+      "Existing PostgreSQL reads, native authority locks, case/member writes and minimal events only. The intake queue is a live database view; no pg-boss job, object operation, email or publication occurs.",
+    erasureTask: "DPL-26",
   }),
   classifyInventory(
     [

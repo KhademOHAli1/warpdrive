@@ -1,6 +1,6 @@
 # Privacy data and writer inventory
 
-DPL-01 implementation register, 31 October 2026. Scope: this privacy branch rooted at `a1a8f6da1ce366c35002900bf33508356dfbb995`. Source classification is distinct from a working export/erasure adapter, physical deletion proof and installation acceptance. The canonical requirements remain the privacy PRD, backlog and acceptance matrix.
+DPL-01 implementation register, 1 November 2026. The current report covers the isolated native request/scope candidate: published `65a579eec99755b587f33b97445374093d91e4ff` plus its frozen 28-file staged patch. The privacy branch is rooted at `a1a8f6da1ce366c35002900bf33508356dfbb995`. Source classification is distinct from a working export/erasure adapter, physical deletion proof and installation acceptance. The canonical requirements remain the privacy PRD, backlog and acceptance matrix.
 
 ## Reproduce the source coverage report
 
@@ -12,6 +12,8 @@ DOCKER_HOST=unix:///Users/ali/.colima/warpdrive/docker.sock TESTCONTAINERS_DOCKE
 ```
 
 The Docker socket above is the disposable local qualification context for this workspace; use the corresponding disposable test context on another machine. It does not select or modify the global Docker context.
+
+The isolated native candidate was scanned with `/Users/ali/Developer/warpdrive/.runtime/bin/bun` 1.4.4 and an ignored dependency symlink. Only the source CLI and scoped documentation formatting ran for this inventory refresh. The unit/PG commands above describe separate qualification work; they were not rerun on this snapshot.
 
 The report records registry version, a SHA-256 fingerprint over all scanned source paths/content, source counts, independently discovered boundary counts and missing/invalid declarations. A missing declaration, duplicate ID or incomplete classification makes the check fail. A report is valid only for the fingerprint/revision actually checked. It does not assert that live providers, backups or production storage were inspected.
 
@@ -155,8 +157,66 @@ Loopback TLS tests establish synthetic transport behavior only. A reference, dec
 
 After a successful standalone CLI run, compare fresh output with `bun scripts/privacy-inventory.ts | diff -u docs/privacy-inventory-report.json -`. Any later source change needs a fresh report. Its fingerprint covers scanned source and does not replace exact-revision CI or installed acceptance.
 
-## Current source checkpoint
+## Published M2 inventory evidence (historical)
 
-The refreshed report records 1,837 scanned source files, 93 application tables, 528 conservative writer signatures, 17 mixed object-key/filesystem boundaries, 26 transport boundaries and 1,539 classified declarations. There are zero missing or invalid items. The declarations include the explicitly reviewed caller-source and caller-sink codec contracts; they do not imply that 1,539 independent data stores exist. Source fingerprint: `b25ccb7aca0f967c875bca53e3d4573516d4af5e9315f1419da91192709a4850`.
+The historical report associated with published M2 commit `65a579eec99755b587f33b97445374093d91e4ff` recorded 1,837 scanned source files, 93 application tables, 528 conservative writer signatures, 17 mixed object-key/filesystem boundaries, 26 transport boundaries and 1,539 classified declarations, with no missing or invalid items. Its source fingerprint was `b25ccb7aca0f967c875bca53e3d4573516d4af5e9315f1419da91192709a4850`. That fingerprint covers the commit's 1,815 tracked scanned sources plus 22 local next-intl generated declaration files; it is not a fingerprint of the tracked commit alone.
 
-After the codec cleanup and temporal guards froze, pinned Bun 1.4.4/Vitest 5.0.5 passed all 29 inventory unit tests (three files, 995 ms) and both real migrated-PostgreSQL catalog tests (2.70 seconds, one worker). Scoped type-aware ESLint exited zero. Formatting and a fresh CLI byte comparison check the versioned report separately. These are local inventory/database qualification results; the primary evidence register owns the final commit, broader exact-revision CI and all OPEN installation gates.
+A read-only reconstruction on 1 November 2026 combined the exact `65a579e` tracked source bytes with those 22 local declaration files and reproduced `b25ccb7aca0f967c875bca53e3d4573516d4af5e9315f1419da91192709a4850` exactly. The declarations are generated through `next.config.ts#createMessagesDeclaration`, ignored by `.gitignore`'s `src/**/messages/*.d.json.ts` rule and absent from the isolated snapshot. No tracked production file is missing. The scanner includes these files when present, so report reproducibility depends on the actual scanned path/content set as well as the tracked revision.
+
+The historical generated paths were:
+
+```text
+src/components/data-table/messages/tableControls.en.d.json.ts
+src/components/filters/messages/filters.en.d.json.ts
+src/components/shell/messages/shell.en.d.json.ts
+src/components/shell/messages/utilities.en.d.json.ts
+src/components/ui/messages/shared.en.d.json.ts
+src/features/activities/messages/activities.en.d.json.ts
+src/features/activities/messages/calendar.en.d.json.ts
+src/features/auth/messages/authScreens.en.d.json.ts
+src/features/contacts/messages/contacts.en.d.json.ts
+src/features/custom-fields/messages/customFields.en.d.json.ts
+src/features/deals/messages/sales.en.d.json.ts
+src/features/email/messages/email.en.d.json.ts
+src/features/enrichment/messages/enrichment.en.d.json.ts
+src/features/entity-create/messages/entityCreate.en.d.json.ts
+src/features/files/messages/files.en.d.json.ts
+src/features/i18n/messages/boundary.en.d.json.ts
+src/features/i18n/messages/en.d.json.ts
+src/features/identity/messages/settings.en.d.json.ts
+src/features/leads/messages/leads.en.d.json.ts
+src/features/notifications/messages/notifications.en.d.json.ts
+src/features/quick-add/messages/quickAdd.en.d.json.ts
+src/features/stats/messages/stats.en.d.json.ts
+```
+
+After that checkpoint's codec cleanup and temporal guards froze, pinned Bun 1.4.4/Vitest 5.0.5 passed all 29 inventory unit tests (three files, 995 ms) and both real migrated-PostgreSQL catalog tests (2.70 seconds, one worker). Scoped type-aware ESLint exited zero. Those are historical local inventory/database results and do not qualify the newer native patch. The primary evidence register owns published exact-revision CI and all OPEN installation gates.
+
+## Isolated native request and scope snapshot
+
+The current `privacy-inventory-report.json` was generated in `work/native-scope-checkpoint`, detached at `65a579eec99755b587f33b97445374093d91e4ff` with the frozen native request/scope patch, including the array-prototype preflight fix. The CLI exited zero, and a second generation compared byte-for-byte equal. Registry version is 1 and source fingerprint is `72fd8453085e995e0961922953c1576291353b5c293da76fb8467a795bc8b574`.
+
+| Source measure                   | Count |
+| -------------------------------- | ----: |
+| Scanned production source files  | 1,829 |
+| Application tables               |    93 |
+| Conservative writer signatures   |   535 |
+| Source-review signatures         |   573 |
+| Derived signatures               |   241 |
+| External transport signatures    |    26 |
+| Object-key/filesystem signatures |    17 |
+| Fixed/dynamic queue boundaries   |    12 |
+| Log signatures                   |    41 |
+| Browser-store signatures         |     3 |
+| Classified declarations          | 1,562 |
+| Missing/invalid declarations     | 0 / 0 |
+
+Boundary signatures and manual declarations do not count independent stores. The 1,829 scanned files are the baseline's 1,815 tracked sources plus 14 new native service/planner/registry modules, without local ignored message declarations. The report fingerprints scanned `src/` and `scripts/` source, excluding tests and recognized test infrastructure. Package/lock files, documentation, installed dependencies and physical services are outside that fingerprint. It describes this isolated candidate only; it makes no coverage claim for the broader dirty development checkout.
+
+The new request-services classification covers `createOwnPrivacyCase` and `readOwnPrivacyCase`, deriving the user subject, requester and in-app recipient from the authenticated native actor. Intake writes encrypted metadata and a minimal event to existing stores; status returns only requester-bound summaries. Initial assignment uses explicit current `case.assign`, `authority.manage` and `case.review`, intersects existing global capabilities and atomically writes membership, case version and a minimal event. The intake queue is a bounded live database view, with no new pg-boss queue. Historical assignment/revocation prevents a new global takeover. These services add no HTTP route, public external-intake channel, new store or UI. See [request services](privacy-request-services.md).
+
+The scope-draft classification covers seven pure metadata modules. `buildScopeDraftPlan` binds case/subject, separate identity scope and disclosure revision, recipient/verification, policy, registry/catalog/source fingerprints, adapter versions and mode. It accounts for exact server-declared categories, including zero-record categories, and binds opaque record references, native locators, provenance and field/replacement decisions into immutable canonical bytes and SHA-256. Unsupported/incomplete/unresolved material remains explicit. Every result is `unsealed`, including one with no blockers. The hash attests supplied metadata only; a future authenticated server loader/sealer must establish complete trusted coverage and verify actual source/replacement contents and exact file/object descriptors. No database, filesystem, network, object or job I/O occurs in these modules. See [scope drafts](privacy-scope-drafts.md).
+
+The owning planner regression first reproduced an inherited array getter reaching validation (one failure in six selected tests). The fix rejects nonstandard array prototypes before Zod. Its subsequent 41 scope unit tests passed at 05:10:00 Europe/Berlin on 1 November 2026 (292 ms). This is recorded development evidence from the owning run, not a test campaign executed by this inventory refresh or exact-candidate full CI.
+
+Generic lifecycle capabilities remain unsupported. This snapshot excludes experimental S3 adapter files, stream-error constants and package/lock changes from the broader development checkout. It establishes no storage completion, private bucket policy, durable scope/jobs, artifact publication/delivery, browser journey or provider/installation acceptance. The historical 29 inventory unit and two PG results above were not rerun here. The owning native slice has separately recorded development evidence; exact-candidate full CI remains pending and is not replaced by a source CLI exit or a byte-equal report.
