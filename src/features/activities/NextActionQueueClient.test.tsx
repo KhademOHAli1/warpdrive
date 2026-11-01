@@ -59,7 +59,7 @@ vi.mock("./AddActivityModal", () => ({
 }));
 
 import { queuePage } from "./NextActionQueue.test-support";
-import { deferred, renderQueueClient } from "./NextActionQueueClient.test-support";
+import { deferred, renderQueueClient } from "./NextActionQueueClient.test.support";
 
 configure({ asyncUtilTimeout: 750 });
 beforeEach(() => {
