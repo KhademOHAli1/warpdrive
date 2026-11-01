@@ -1,6 +1,6 @@
 "use client";
 
-import { type ReactNode, useId, useRef, useState } from "react";
+import { type ReactNode, useEffect, useId, useRef, useState } from "react";
 import {
   SettingsCard,
   SettingsCardBody,
@@ -67,6 +67,10 @@ export function PipelineDirectory({
   const searchId = useId();
   const searchRef = useRef<HTMLInputElement>(null);
   const returnFocusTo = useRef<HTMLElement>(null);
+  const outcomeSnapshot = useRef<string | null>(snapshotId ?? null);
+  useEffect(() => {
+    outcomeSnapshot.current = snapshotId ?? null;
+  }, [snapshotId]);
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState<"active" | "archived">("active");
   const [selection, setSelection] = useState<Selection | null>(null);
@@ -147,7 +151,7 @@ export function PipelineDirectory({
         setFailure({
           code: result.error,
           revision: target.updatedAt,
-          snapshotId: snapshotId ?? null,
+          snapshotId: outcomeSnapshot.current,
         });
         return;
       }
@@ -165,14 +169,16 @@ export function PipelineDirectory({
       setSelection(null);
       onRefresh?.();
     } catch {
+      // A read received during the write cannot confirm its later unknown outcome.
+      const snapshotAtOutcome = outcomeSnapshot.current;
       setUncertain((previous) => ({
         ...previous,
-        [target.id]: { snapshotId: snapshotId ?? null },
+        [target.id]: { snapshotId: snapshotAtOutcome },
       }));
       setFailure({
         code: "unconfirmed",
         revision: target.updatedAt,
-        snapshotId: snapshotId ?? null,
+        snapshotId: snapshotAtOutcome,
       });
     } finally {
       setPending(false);
