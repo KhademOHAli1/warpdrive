@@ -1,0 +1,113 @@
+{
+  "schemaVersion": 1,
+  "templateId": "modeling_project",
+  "version": 1,
+  "label": {
+    "fa": "پروژه مدل‌سازی سه‌بعدی",
+    "de": "3D-Modellierung",
+    "en": "3D modeling"
+  },
+  "description": {
+    "fa": "الگویی برای هماهنگی مدل‌سازی سه‌بعدی. پیش از استفاده، دامنه کار، افراد مسئول و تاریخ‌ها را بررسی کنید. فاصله روزها پیشنهادی و قابل ویرایش است؛ زمان تحویل را جداگانه توافق کنید.",
+    "de": "Vorlage für die Koordination einer 3D-Modellierung. Vor der Verwendung Leistungsumfang, Rollenbesetzung und Termine prüfen. Die Tagesabstände sind editierbare Annahmen; Liefertermine separat abstimmen.",
+    "en": "Coordinate a 3D modeling project. Review scope, role mapping and dates before use. Use day offsets as editable planning assumptions and agree delivery dates separately."
+  },
+  "roles": [
+    {
+      "id": "producer",
+      "kind": "internal-producer",
+      "label": {
+        "fa": "مسئول داخلی پروژه",
+        "de": "Interne Projektverantwortung",
+        "en": "Internal project owner"
+      }
+    },
+    {
+      "id": "modeler",
+      "kind": "freelancer-contact",
+      "label": { "fa": "مدل‌ساز همکار", "de": "Externe 3D-Modellierung", "en": "Freelance modeler" }
+    }
+  ],
+  "stages": [
+    {
+      "id": "briefing",
+      "label": { "fa": "شرح کار و نقش‌ها", "de": "Briefing und Rollen", "en": "Brief and roles" },
+      "dependsOn": []
+    },
+    {
+      "id": "production",
+      "label": { "fa": "تولید", "de": "Produktion", "en": "Production" },
+      "dependsOn": ["briefing"]
+    },
+    {
+      "id": "internal_review",
+      "label": { "fa": "بازبینی داخلی", "de": "Interne Prüfung", "en": "Internal review" },
+      "dependsOn": ["production"]
+    }
+  ],
+  "deliverables": [
+    {
+      "id": "model",
+      "label": { "fa": "مدل سه‌بعدی", "de": "3D-Modell", "en": "3D model" },
+      "stageId": "production",
+      "responsibleRoleId": "producer"
+    }
+  ],
+  "intents": [
+    {
+      "id": "brief_followup",
+      "kind": "follow-up",
+      "label": {
+        "fa": "تکمیل شرح کار و تعیین مسئولان",
+        "de": "Briefing und Rollen klären",
+        "en": "Clarify brief and role mapping"
+      },
+      "stageId": "briefing",
+      "assigneeRoleId": "producer",
+      "dependsOn": [],
+      "dueOffset": { "basis": "calendar-days", "anchor": "project-start", "days": 0 }
+    },
+    {
+      "id": "model_assignment",
+      "kind": "assignment",
+      "label": {
+        "fa": "هماهنگی مدل‌سازی",
+        "de": "Modellierung koordinieren",
+        "en": "Coordinate modeling"
+      },
+      "stageId": "production",
+      "deliverableId": "model",
+      "internalProducerRoleId": "producer",
+      "freelancerRoleId": "modeler",
+      "dependsOn": ["brief_followup"],
+      "dueOffset": { "basis": "calendar-days", "anchor": "project-start", "days": 4 }
+    },
+    {
+      "id": "client_update_followup",
+      "kind": "follow-up",
+      "label": {
+        "fa": "پیگیری گزارش پیشرفت برای مشتری",
+        "de": "Kundenupdate intern nachhalten",
+        "en": "Follow up internally on client update"
+      },
+      "stageId": "production",
+      "assigneeRoleId": "producer",
+      "dependsOn": ["brief_followup"],
+      "dueOffset": { "basis": "calendar-days", "anchor": "project-start", "days": 2 }
+    },
+    {
+      "id": "model_review",
+      "kind": "review",
+      "label": {
+        "fa": "بازبینی داخلی مدل",
+        "de": "Modell intern prüfen",
+        "en": "Review model internally"
+      },
+      "stageId": "internal_review",
+      "deliverableId": "model",
+      "assigneeRoleId": "producer",
+      "dependsOn": ["model_assignment"],
+      "dueOffset": { "basis": "calendar-days", "anchor": "project-start", "days": 5 }
+    }
+  ]
+}

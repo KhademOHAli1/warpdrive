@@ -1,0 +1,126 @@
+$ bun --bun vitest run --project unit src/features/agency-projects/templates/starterTemplates.test.ts "--maxWorkers=1"
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+  - ESM syntax in a file loaded as CommonJS (vitest.classify.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.5 /Users/ali/Developer/warpdrive-agency-projects
+
+ ❯ |unit| src/features/agency-projects/templates/starterTemplates.test.ts (13 tests | 6 failed) 14ms
+   ❯ production starter template catalog v1 (13)
+     × lists the three bounded starter versions through the manifest boundary 8ms
+     × reads short_video with complete FA/DE/EN scope and date-review assumptions 1ms
+     × reads campaign_content with complete FA/DE/EN scope and date-review assumptions 0ms
+     × models an unresolved editor, video cut and later internal review 0ms
+     × keeps campaign design and editing assignments separate, with two deliverables 0ms
+     × isolates caller edits from future individual and catalog reads 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| src/features/agency-projects/templates/starterTemplates.test.ts > production starter template catalog v1 > lists the three bounded starter versions through the manifest boundary
+AssertionError: expected [ 'modeling_project' ] to deeply equal [ 'modeling_project', …(2) ]
+
+- Expected
++ Received
+
+  [
+    "modeling_project",
+-   "short_video",
+-   "campaign_content",
+  ]
+
+ ❯ src/features/agency-projects/templates/starterTemplates.test.ts:12:65
+     10|     expect(result.ok).toBe(true);
+     11|     if (!result.ok) return;
+     12|     expect(result.value.map((manifest) => manifest.templateId)).toEqua…
+       |                                                                 ^
+     13|     for (const manifest of result.value) {
+     14|       expect(manifest.version).toBe(1);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  |unit| src/features/agency-projects/templates/starterTemplates.test.ts > production starter template catalog v1 > reads short_video with complete FA/DE/EN scope and date-review assumptions
+ FAIL  |unit| src/features/agency-projects/templates/starterTemplates.test.ts > production starter template catalog v1 > reads campaign_content with complete FA/DE/EN scope and date-review assumptions
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/features/agency-projects/templates/starterTemplates.test.ts:23:23
+     21|   it.each(starterIds)("reads %s with complete FA/DE/EN scope and date-…
+     22|     const result = readStarterTemplate(id);
+     23|     expect(result.ok).toBe(true);
+       |                       ^
+     24|     if (!result.ok) return;
+     25|     expect(result.value.templateId).toBe(id);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  |unit| src/features/agency-projects/templates/starterTemplates.test.ts > production starter template catalog v1 > models an unresolved editor, video cut and later internal review
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/features/agency-projects/templates/starterTemplates.test.ts:55:23
+     53|   it("models an unresolved editor, video cut and later internal review…
+     54|     const result = readStarterTemplate("short_video");
+     55|     expect(result.ok).toBe(true);
+       |                       ^
+     56|     if (!result.ok) return;
+     57|     expect(result.value.roles).toEqual(expect.arrayContaining([expect.…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  |unit| src/features/agency-projects/templates/starterTemplates.test.ts > production starter template catalog v1 > keeps campaign design and editing assignments separate, with two deliverables
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/features/agency-projects/templates/starterTemplates.test.ts:67:23
+     65|   it("keeps campaign design and editing assignments separate, with two…
+     66|     const result = readStarterTemplate("campaign_content");
+     67|     expect(result.ok).toBe(true);
+       |                       ^
+     68|     if (!result.ok) return;
+     69|     expect(result.value.roles.filter((role) => role.kind === "freelanc…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  |unit| src/features/agency-projects/templates/starterTemplates.test.ts > production starter template catalog v1 > isolates caller edits from future individual and catalog reads
+AssertionError: expected [ { schemaVersion: 1, …(8) } ] to have a length of 3 but got 1
+
+- Expected
++ Received
+
+- 3
++ 1
+
+ ❯ src/features/agency-projects/templates/starterTemplates.test.ts:109:26
+    107|     if (!reread.ok) return;
+    108|     expect(reread.value[0]).toEqual(original);
+    109|     expect(reread.value).toHaveLength(3);
+       |                          ^
+    110|   });
+    111| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  6 failed | 7 passed (13)
+   Start at  17:35:03
+   Duration  129ms (transform 39%, import 32%, tests 21%, setup 5%, worker 3%)
+
+error: "vitest" exited with code 1
+error: script "test:unit" exited with code 1
