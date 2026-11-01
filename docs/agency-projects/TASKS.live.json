@@ -419,10 +419,10 @@
     "expected_passing_tests": "T01/T05/T34: multiple contact/channel roles coexist; links neither fetch remote data nor grant access.",
     "dependencies": "AP-02.3",
     "owner": "Agency implementation chat; shared edits require owner review",
-    "status": "planned",
-    "evidence": "Not implemented or qualified",
-    "remaining": "Original outcome, dependencies and applicable acceptance tests remain",
-    "accepted": false
+    "status": "active",
+    "evidence": "communication-preferences-contract.md and test-preparation/communicationPreferences.test.ts.txt are reviewable TEST PREPARATION ONLY, NOT RUN. Strict contextual role/channel/cadence/reference and stable intent proposal. No src parser/module/test exists.",
+    "accepted": false,
+    "remaining": "Fresh finite unit lane, observed red then behavioral red/green, scoped static checks, actual native/project/person access and persistence coexistence/idempotency/Privacy/UI remain open."
   },
   {
     "id": "AP-03.2",
@@ -1100,8 +1100,8 @@
     "dependencies": "AP-02.1;AP-00.3",
     "owner": "Agency implementation chat; shared edits require owner review",
     "status": "active",
-    "evidence": "project-core-delta.md separates client links, workforce owners/members/recorders and restricted history/request data for four-store Privacy review.",
-    "remaining": "Actual owner-reviewed registry/classification/adapters and subject-specific redaction remain open; no whole-project inference from one contact/user.",
+    "evidence": "Exact Privacy owner response retained in evidence/privacy-owner-project-core-review.md. Conditional review separates workforce/client subjects and minimal immutable facts from protected/redactable reasons; proposed fifth history-content store added for fresh review.",
+    "remaining": "Fifth-store/schema/crypto/disposition/retention and source-subject registry review remain open. No lifecycle/discovery acceptance or generic project fence.",
     "accepted": false
   },
   {
@@ -1117,9 +1117,9 @@
     "dependencies": "AP-08.1",
     "owner": "Agency implementation chat; shared edits require owner review",
     "status": "active",
-    "evidence": "Committed Privacy65a579e reviewed: physical DISCOVERY_COVERAGE is a separate gate; an unclassified Agency table blocks candidate discovery globally. Concrete four-store coverage/adapter patch surfaces documented.",
+    "evidence": "Privacy1Nov supplement supports initial unsupported/candidate_links_only classification proposals for four historical stores; exact literal coverage/source-digest/writer steps specified. A proposed fifth protected-content table requires its own explicit classification before migration.",
     "accepted": false,
-    "remaining": "Owner-reviewed source inventory and explicit physical coverage required before migration. Generic restriction/project-writer fence absent; unsupported operations stay unavailable."
+    "remaining": "Actual accepted combined source, registry and physical catalog patches/tests still needed. No Agency table, reader, generic restriction/writer fence, migration or lifecycle executor enabled."
   },
   {
     "id": "AP-08.3",

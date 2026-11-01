@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-11-01T03:58:11.436947+00:00",
+  "updatedAt": "2026-11-01T04:04:24.265720+00:00",
   "statusMeaning": "Evidence level only. A source-verified task is not accepted or complete. All 96 acceptance flags remain false.",
   "tasks": {
     "AP-00.1": {
@@ -71,8 +71,8 @@
     },
     "AP-08.1": {
       "status": "active",
-      "evidence": "project-core-delta.md separates client links, workforce owners/members/recorders and restricted history/request data for four-store Privacy review.",
-      "remaining": "Actual owner-reviewed registry/classification/adapters and subject-specific redaction remain open; no whole-project inference from one contact/user.",
+      "evidence": "Exact Privacy owner response retained in evidence/privacy-owner-project-core-review.md. Conditional review separates workforce/client subjects and minimal immutable facts from protected/redactable reasons; proposed fifth history-content store added for fresh review.",
+      "remaining": "Fifth-store/schema/crypto/disposition/retention and source-subject registry review remain open. No lifecycle/discovery acceptance or generic project fence.",
       "accepted": false
     },
     "AP-09.1": {
@@ -138,8 +138,8 @@
     "AP-08.2": {
       "status": "active",
       "accepted": false,
-      "evidence": "Committed Privacy65a579e reviewed: physical DISCOVERY_COVERAGE is a separate gate; an unclassified Agency table blocks candidate discovery globally. Concrete four-store coverage/adapter patch surfaces documented.",
-      "remaining": "Owner-reviewed source inventory and explicit physical coverage required before migration. Generic restriction/project-writer fence absent; unsupported operations stay unavailable."
+      "evidence": "Privacy1Nov supplement supports initial unsupported/candidate_links_only classification proposals for four historical stores; exact literal coverage/source-digest/writer steps specified. A proposed fifth protected-content table requires its own explicit classification before migration.",
+      "remaining": "Actual accepted combined source, registry and physical catalog patches/tests still needed. No Agency table, reader, generic restriction/writer fence, migration or lifecycle executor enabled."
     },
     "AP-06.4": {
       "status": "active",
@@ -152,6 +152,12 @@
       "accepted": false,
       "evidence": "Feature-local review boundaries/policy: selected 43/43 green after genuine 17/19 behavioral, 5/34 epoch and 7/36 chronology reds. Exact version/evidence/time strings, separate internal/client records, complete policy receipts, non-resurrecting epochs and monotonic server recording tested. qualification-review-decisions.json. Current candidate feature341/13 plus narrow types/lint/Biome pass in qualification-feature-20261101.json.",
       "remaining": "Native authority and current contact/version ownership, trusted snapshot loader, idempotent service envelope, transactional history/CAS, real PG, UI/Privacy and original task dependencies remain open."
+    },
+    "AP-03.1": {
+      "status": "active",
+      "accepted": false,
+      "evidence": "communication-preferences-contract.md and test-preparation/communicationPreferences.test.ts.txt are reviewable TEST PREPARATION ONLY, NOT RUN. Strict contextual role/channel/cadence/reference and stable intent proposal. No src parser/module/test exists.",
+      "remaining": "Fresh finite unit lane, observed red then behavioral red/green, scoped static checks, actual native/project/person access and persistence coexistence/idempotency/Privacy/UI remain open."
     }
   }
 }
