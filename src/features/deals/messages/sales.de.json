@@ -467,7 +467,7 @@
     "stageHoldsDeals": "Diese Phase enthält noch Verkaufschancen. Laden Sie die Seite neu und wählen Sie deren Zielphase aus.",
     "pipelineNeedsStage": "Eine Vertriebspipeline muss mindestens eine Phase enthalten.",
     "destinationDeleted": "Die vorgesehene Zielphase existiert nicht mehr. Laden Sie die Seite neu und versuchen Sie es erneut.",
-    "saveUnconfirmed": "Die Speicheranfrage hat den Server nicht erreicht. Einige Änderungen wurden daher möglicherweise nicht übernommen. Laden Sie die Seite neu und versuchen Sie es erneut.",
+    "saveUnconfirmed": "Der Speichervorgang konnte nicht bestätigt werden. Einige Änderungen können bereits gespeichert sein. Aktualisieren und prüfen Sie den gespeicherten Stand, bevor Sie es erneut versuchen.",
     "stageAlreadyDeleted": "Diese Phase wurde bereits gelöscht. Laden Sie die Seite neu, um die aktuellen Phasen zu sehen.",
     "changeFailedTitle": "Ihre Änderung konnte nicht gespeichert werden",
     "changeFailedBody": "Ein Fehler ist aufgetreten. Laden Sie die Seite neu und versuchen Sie es erneut.",
@@ -493,7 +493,16 @@
     "stageColumn": "Phasenspalte",
     "removeDealLink": "Verknüpfung mit Verkaufschance entfernen",
     "removePersonLink": "Verknüpfung mit Person entfernen",
-    "removeOrganizationLink": "Verknüpfung mit Organisation entfernen"
+    "removeOrganizationLink": "Verknüpfung mit Organisation entfernen",
+    "renameConflict": "Die Vertriebspipeline wurde geändert. Aktualisieren und prüfen Sie den gespeicherten Stand, bevor Sie Ihren Entwurf übernehmen. Ihre ungespeicherten Änderungen bleiben erhalten.",
+    "renameFreshProof": "Bestätigen Sie Ihre Identität erneut in der Kontosicherheit und kehren Sie hierher zurück. Ihre ungespeicherten Änderungen bleiben erhalten.",
+    "renameUnavailable": "Diese Vertriebspipeline kann nicht mehr bearbeitet werden. Aktualisieren Sie die Ansicht, um Ihren aktuellen Zugriff zu prüfen. Ihre ungespeicherten Änderungen bleiben erhalten.",
+    "renameInvalid": "Geben Sie einen Namen mit 1 bis 255 Zeichen ein.",
+    "renameVerifyIdentity": "Identität in der Kontosicherheit bestätigen (neuer Tab)",
+    "renameRefreshVersion": "Gespeicherten Stand aktualisieren",
+    "renameSavedName": "Aktuell gespeicherter Pipeline-Name:",
+    "renameReviewHint": "Prüfen Sie den gespeicherten Namen. Beim Fortfahren bleibt Ihr Entwurf erhalten; der nächste Speichervorgang verwendet diesen Stand.",
+    "renameKeepDraft": "Meinen Entwurf behalten und diesen Stand verwenden"
   },
   "fields": {
     "title": "Titel",

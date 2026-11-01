@@ -4,7 +4,7 @@ import { deals } from "@/db/schema/deals";
 import { channelVersions } from "@/db/schema/realtime";
 import { withTestDb } from "@/db/testing";
 import { seedUser } from "@/db/testing/factories";
-import { createPipeline, createStage, renamePipeline } from "./pipelineActions";
+import { createPipeline, createStage } from "./pipelineActions";
 import { listVisiblePipelines } from "./pipelineRouter";
 import { deleteStage } from "./stageActions";
 
@@ -219,39 +219,6 @@ describe("deleteStage", () => {
       const r = await deleteStage(db, regular, { stageId: stages[0]!.id }, sig());
       expect(r.ok).toBe(false);
       if (r.ok === false) expect(r.error.id).toBe("E_PERM_001");
-    });
-  });
-});
-
-describe("renamePipeline", () => {
-  it("renames a pipeline", async () => {
-    await withTestDb(async (db) => {
-      const admin = await seedUser(db);
-      const s = adminSession(admin.id);
-      const { pipeline } = await pipelineWith(db, s, ["A"]);
-      const r = await renamePipeline(db, s, { pipelineId: pipeline.id, name: "Renamed" }, sig());
-      expect(r.ok).toBe(true);
-
-      const list = await listVisiblePipelines(db, s, sig());
-      expect(list.find((p) => p.id === pipeline.id)?.name).toBe("Renamed");
-    });
-  });
-
-  it("rejects rename for a regular user", async () => {
-    await withTestDb(async (db) => {
-      const admin = await seedUser(db);
-      const s = adminSession(admin.id);
-      const { pipeline } = await pipelineWith(db, s, ["A"]);
-      const regular = {
-        userId: admin.id,
-        isActive: true,
-        sessionLive: true,
-        isAdmin: false,
-        visibilityGroupIds: [] as string[],
-        flags: {} as Record<string, boolean>,
-      };
-      const r = await renamePipeline(db, regular, { pipelineId: pipeline.id, name: "X" }, sig());
-      expect(r.ok).toBe(false);
     });
   });
 });

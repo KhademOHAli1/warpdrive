@@ -69,6 +69,9 @@ export const ERROR_IDS = {
   LEAD_FILTER_INVALID: "E_LEAD_008", // leads list filter compiled with a field/op outside the allow-list
   // PIPELINE
   PIPELINE_NOT_FOUND: "E_PIPELINE_001", // pipeline not found or restricted (404-on-invisible)
+  PIPELINE_REVISION_CONFLICT: "E_PIPELINE_002", // rename source revision changed
+  PIPELINE_FRESH_AUTH_REQUIRED: "E_PIPELINE_003", // rename requires current native fresh proof
+  PIPELINE_RENAME_INPUT_INVALID: "E_PIPELINE_004", // rename input failed strict validation
   // STAGE
   STAGE_NOT_FOUND: "E_STAGE_001", // stage not found (delete/update targeted a missing stage)
   STAGE_HAS_DEALS: "E_STAGE_002", // refuse to delete a stage that still holds deals (move them first)
