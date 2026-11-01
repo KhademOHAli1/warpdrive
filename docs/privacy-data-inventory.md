@@ -157,6 +157,13 @@ After a successful standalone CLI run, compare fresh output with `bun scripts/pr
 
 ## Current source checkpoint
 
-The refreshed report records 1,837 scanned source files, 93 application tables, 528 conservative writer signatures, 17 mixed object-key/filesystem boundaries, 26 transport boundaries and 1,539 classified declarations. There are zero missing or invalid items. The declarations include the explicitly reviewed caller-source and caller-sink codec contracts; they do not imply that 1,539 independent data stores exist. Source fingerprint: `b25ccb7aca0f967c875bca53e3d4573516d4af5e9315f1419da91192709a4850`.
+The refreshed report records 1,867 scanned source files, 93 application tables, 530 conservative writer signatures, 17 mixed object-key/filesystem boundaries, 26 transport boundaries and 1,544 classified declarations. There are zero missing or invalid items. The declarations include the explicitly reviewed caller-source and caller-sink codec contracts; they do not imply that 1,539 independent data stores exist. Source fingerprint: `f4b2f771ddff76bd3f865b34fd51fb9572bc6e54458804cce9d633b372d27eed`.
 
 After the codec cleanup and temporal guards froze, pinned Bun 1.4.4/Vitest 5.0.5 passed all 29 inventory unit tests (three files, 995 ms) and both real migrated-PostgreSQL catalog tests (2.70 seconds, one worker). Scoped type-aware ESLint exited zero. Formatting and a fresh CLI byte comparison check the versioned report separately. These are local inventory/database qualification results; the primary evidence register owns the final commit, broader exact-revision CI and all OPEN installation gates.
+
+
+## Settings integration, 1 November 2026
+
+The completed Settings presentation cut `ec9b3f8` is integrated with the published Privacy foundation. An initial union scan failed with 20 missing identifiers; exact call review mapped all of them to the existing CRM, email, enrichment, import, notifications or infrastructure classifications. Eight same-path fingerprints were replaced, five moved derived boundaries and their source reviews were added, two conservative writer signatures were added, and seven obsolete moved-boundary declarations were removed. The two new delete signatures remove local in-flight Set entries, not provider or subject records. Existing generic lifecycle dispositions remain unsupported.
+
+The fresh inventory has no missing or invalid declarations. Source coverage does not establish physical storage, external-provider, staging or installed acceptance. Prior checkpoint test counts above remain historical evidence, not a combined Settings/Privacy qualification claim.

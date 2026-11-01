@@ -24,4 +24,7 @@ export const notificationsIds1: string[] = [
   "writer:src/features/notifications/produce.ts#insert:notifications",
   "writer:src/features/notifications/router.ts#query:dynamic",
   "writer:src/features/notifications/scrub.ts#delete:notifications",
+  "derived:src/app/(app)/settings/notifications/usePreferenceChanges.ts",
+  "sourceReview:src/app/(app)/settings/notifications/usePreferenceChanges.ts#2faaf333050df2d8ba0871b9a8f121b5195ac9b5f1d2a57211c06d0258301a06",
+  "writer:src/app/(app)/settings/notifications/usePreferenceChanges.ts#delete:type",
 ];
