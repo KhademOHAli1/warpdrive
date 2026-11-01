@@ -93,9 +93,20 @@ distribution `0d8247f`, pipeline outcome recovery `b120ab9` and opt-in flag
 `2d9052f`. The default-off next-action queue uses canonical overdue work and
 opportunities with no open activity, permission-scoped counts/pages and native
 edit/schedule dialogs. Adjacent units passed 125/16, actual read PostgreSQL
-14/4, later focused units 44/5, and scoped typed ESLint 38 files. Full current
-types/lint/build/browser and native mutation admission remain separate gates.
+14/4, later focused units 44/5, and scoped typed ESLint 38 files. At that source
+checkpoint, full types/lint/build/browser and native mutation admission remained
+separate gates; the subsequent TypeScript pass is recorded below.
 See `next-action-queue-contract.md` and its source-bound evidence record.
+
+Later source `15950b6d81083b14239b5f54539ae828af406d67` passed full route type
+generation and TypeScript, plus scoped typed lint for 18 new export/qualification
+files. It includes the native lead CSV `data.export` guard and six original,
+neutral qualification research definitions with frozen localized previews.
+Qualification plus adjacent stage contracts passed 43 tests/6 files; export plus
+adjacent permission/CSV units passed 44/5. These are scoped unit/type results.
+Current full lint/build/browser, native completion replay and installed framework
+selection/evidence/scoring remain open. Read `qualification-contract.md`,
+`qualification-framework-research.md` and the later verification record.
 
 The selected product-led source is a customer-controlled first-party event API,
 with synthetic local Warpdrive as reference and optional PostHog/Segment mapping.

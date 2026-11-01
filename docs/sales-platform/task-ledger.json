@@ -69,6 +69,10 @@
         {
           "path": "docs/sales-platform/evidence/local-lineage.json",
           "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/evidence/current-main-source-lineage-2026-11-01.json",
+          "level": "observed-source"
         }
       ],
       "remainingGates": [
@@ -76,7 +80,7 @@
         "WF-0083 and MAIL-dev forward convergence/recovery not qualified.",
         "New privacy branch migration drift needs allocator-owned reconciliation."
       ],
-      "notes": "Read-only fail-closed tool implemented; 24 tests pass. Newly created candidate DB ledger matches 85 migrations; no retained path inferred."
+      "notes": "Read-only fail-closed tool implemented; 24 tests pass. Newly created candidate DB ledger matches 85 migrations; no retained path inferred. Current main a0490c1 and committed MAIL a660039 were independently inspected: shared prefix through 0082, divergent 0083; all applied retained ledgers remain unknown and no history was changed."
     },
     {
       "id": "SP-00.4",
@@ -613,13 +617,18 @@
         {
           "path": "docs/sales-platform/evidence/r1-lifecycle/qualification.json",
           "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/evidence/saved-view-write-boundary-2026-11-01.json",
+          "level": "local-unit"
         }
       ],
       "remainingGates": [
         "Complete new pipeline/owner/team/source/date/status/label/custom-field composition and SQL/UI parity qualification remain open.",
-        "Permission-aware dynamic custom-field filter resolution, scope editing and all server export/search/realtime paths remain unqualified by client availability guards."
+        "Permission-aware dynamic custom-field filter resolution, scope editing and all server export/search/realtime paths remain unqualified by client availability guards.",
+        "Full versioned builtin column/sort read-write-UI path, PostgreSQL round trips and native current-source qualification remain open."
       ],
-      "notes": "Existing executing-viewer query authority is preserved while invalid stored definitions close record-query admission. Board/list scope receipts and entity paging delivery keys prevent mismatched or previous broader cached results from appearing as a narrower view. Contact/lead unavailable selections suppress queries, rows, counts and reference labels. This extends safe composition boundaries without adding a permission grant."
+      "notes": "Existing executing-viewer query authority is preserved while invalid stored definitions close record-query admission. Board/list scope receipts and entity paging delivery keys prevent mismatched or previous broader cached results from appearing as a narrower view. Contact/lead unavailable selections suppress queries, rows, counts and reference labels. This extends safe composition boundaries without adding a permission grant. Later db92500 closes lossy saved-definition writes across all four entities: 26 failures reproduced, 105 schema/compatibility units passed, scoped typed lint passed. This does not add presentation persistence or qualify actual DB/native write behavior."
     },
     {
       "id": "SP-03.3",
@@ -643,13 +652,18 @@
         {
           "path": "docs/sales-platform/evidence/r1-lifecycle/native-journey.json",
           "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/evidence/saved-view-write-boundary-2026-11-01.json",
+          "level": "local-unit"
         }
       ],
       "remainingGates": [
         "New per-view column/sort persistence, duplicate/rename/reset behavior and the full preference/return-navigation matrix remain open.",
-        "The reserved presentation envelope is not active column/sort support; existing personal/shared/favorite metadata preservation is not new sharing implementation."
+        "The reserved presentation envelope is not active column/sort support; existing personal/shared/favorite metadata preservation is not new sharing implementation.",
+        "Full versioned builtin column/sort read-write-UI path, PostgreSQL round trips and native current-source qualification remain open."
       ],
-      "notes": "Valid existing personal/shared/favorite metadata is retained. Full selected-view state now survives invalid/missing/deleted selections and refresh instead of clearing to all records; only explicit clear or a valid replacement resumes data. Board/list restored unavailable context and native reload recovery were exercised. Existing bare write format remains unchanged."
+      "notes": "Valid existing personal/shared/favorite metadata is retained. Full selected-view state now survives invalid/missing/deleted selections and refresh instead of clearing to all records; only explicit clear or a valid replacement resumes data. Board/list restored unavailable context and native reload recovery were exercised. Existing bare write format remains unchanged. Later db92500 closes lossy saved-definition writes across all four entities: 26 failures reproduced, 105 schema/compatibility units passed, scoped typed lint passed. This does not add presentation persistence or qualify actual DB/native write behavior."
     },
     {
       "id": "SP-03.4",
@@ -886,12 +900,29 @@
     {
       "id": "SP-05.1",
       "projectId": "SP-05",
-      "status": "planned",
+      "status": "in-progress",
       "owner": "sales-platform",
       "dependsOn": ["SP-04.1", "SP-01.8"],
-      "evidence": [],
-      "remainingGates": [],
-      "notes": ""
+      "evidence": [
+        {
+          "path": "docs/sales-platform/qualification-framework-research.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/qualification-contract.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/evidence/qualification-export-static-2026-11-01.json",
+          "level": "local-unit"
+        }
+      ],
+      "remainingGates": [
+        "Rights/content/contextual language decision for exact copy/naming/distribution remains open.",
+        "Real per-pipeline opt-in selection, controlled authoring and durable definition/version bindings require owner-reviewed storage and authority.",
+        "Native selection/switching/historical evidence/UI/recovery acceptance remains open; no installed framework exists."
+      ],
+      "notes": "Partial original neutral catalog covers six researched framework families in FA/DE/EN; strict frozen definitions and stable localized previews have seven unit tests, plus 43 adjacent stage/qualification tests across 6 files. Rights status pending; installation/persisted selection/evidence writes/scoring/stage policy/effects all unavailable. Full types and scoped 18-file typed lint passed on 15950b6; this does not complete SP-05.1 or later evidence/rule tasks."
     },
     {
       "id": "SP-05.2",
@@ -1724,13 +1755,21 @@
         {
           "path": "docs/sales-platform/evidence/r1-lifecycle/qualification.json",
           "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/evidence/lead-export-permission-2026-11-01.json",
+          "level": "local-unit"
+        },
+        {
+          "path": "docs/sales-platform/evidence/qualification-export-static-2026-11-01.json",
+          "level": "local-unit"
         }
       ],
       "remainingGates": [
         "Remaining exact-candidate functional/browser/provider/release acceptance still required.",
         "Full protected foreground/background/provider/browser/state and release acceptance remains open."
       ],
-      "notes": "Checkpoint c655b8e: final root unit summary inspected with 6020 tests across 966 files passing; affected PostgreSQL summary inspected with 239 tests across 50 files passing. Existing registry and guards retain all 128 parent IDs and evidence ceilings. Native lifecycle/unavailable-view journeys and the 103-table synthetic restore add current local runtime evidence; aggregate checks do not complete parent acceptance. Version-matched qualification.json now records the checkpoint build/check evidence separately from release acceptance."
+      "notes": "Checkpoint c655b8e: final root unit summary inspected with 6020 tests across 966 files passing; affected PostgreSQL summary inspected with 239 tests across 50 files passing. Existing registry and guards retain all 128 parent IDs and evidence ceilings. Native lifecycle/unavailable-view journeys and the 103-table synthetic restore add current local runtime evidence; aggregate checks do not complete parent acceptance. Version-matched qualification.json now records the checkpoint build/check evidence separately from release acceptance. Later lead CSV export gate 6efe4dd adds native session/global data.export refusal before reads; 44 adjacent units across 5 files passed. Full 15950b6 types passed with 18-file affected typed lint; no current full build/browser/native replay result inferred."
     },
     {
       "id": "SP-15.2",

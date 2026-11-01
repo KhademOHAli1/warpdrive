@@ -28,6 +28,22 @@ bounded increments. The R0 foundation tools are implemented, but no broad parent
 task is marked complete. `verification.md` distinguishes actual reruns from
 inherited reports and records remaining acceptance gates.
 
+Later code is export guard `6efe4dd` and qualification contracts `3e507fa`, with
+documentation/source checkpoint `15950b6d81083b14239b5f54539ae828af406d67`.
+That exact candidate passed full route type generation and TypeScript, scoped
+typed ESLint on 18 new files, 44 adjacent export/permission units and 43 adjacent
+qualification/stage units. Only source and static/unit qualification is added;
+all runtime/installation/main-history gates retain their separate boundaries.
+
+After that typechecked candidate, `db925000ec20b9b8d8a3131ae3d183553d2a080c`
+adds strict saved-definition writes for all four entities. It rejects envelopes
+and unknown constraint keys before persistence, instead of stripping them into
+weaker filters. Its 105 schema/compatibility units and three-file typed lint pass;
+full latest-source TypeScript and actual PostgreSQL/native persistence remain
+separate gates. Read `saved-view-presentation-path.md` before adding real
+columns/sort/envelope UI support. Current writes intentionally accept bare native
+definitions only; metadata-only patches preserve the original definition.
+
 ## Current evidence and next work
 
 Latest build-checked application source is
@@ -126,10 +142,19 @@ again, silently repurpose observability telemetry or infer live-source access.
    125 tests/16 files in one finite run. Actual PostgreSQL read GREEN passed
    14 tests/4 files; all seven query production files remain unchanged afterward.
    Later focused queue units passed 44/5 and scoped typed ESLint passed 38 files.
-   Full current types and separate completion-replay RED still require explicit
-   resource slots; no new build/app/provider campaign is authorized. Preserve the
+   Full current types later passed on 15950b6; separate completion-replay RED
+   still requires its own explicit native slot. No new build/app/provider campaign
+   is authorized. Preserve the
    collection-only RED, behavioral assertion RED and later outcomes separately.
    No fail-closed test scaffold may be committed or delivered as implementation.
+5. Lead CSV export now requires an active native actor/session and existing
+   `data.export` permission before data reads. Its current-request unit boundary
+   does not replace native PostgreSQL/browser or transaction-time revocation proof.
+6. Qualification remains a separate data-only original research catalog and
+   preview. Read `qualification-contract.md` and its researched rights/storage
+   boundaries. All six native capabilities remain unavailable. Continue actual
+   per-pipeline selection, evidence, review, switching and scoring only against
+   reviewed native storage/authority contracts; do not create a parallel store.
 
 These increments do not replace the full 128-task scope or close parent packages.
 

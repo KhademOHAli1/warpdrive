@@ -18,8 +18,10 @@ Main has 86 entries ending at 0085. The later local committed MAIL candidate
 The read-only lineage CLI returns the intended exit 1: Sales/main and main/MAIL
 share 83 entries, then diverge at index 83 in tag, timestamp and SQL hash.
 MAIL extends all 85 Sales entries. Source review also found all 162 historical
-SQL/snapshot blobs through 0082 unchanged. No actual applied installation ledger
-was inspected. See `evidence/current-main-source-lineage-2026-11-01.json`.
+SQL/snapshot blobs through 0082 unchanged. No retained-installation applied ledger
+was inspected in this source inventory. Earlier synthetic Sales fixture evidence
+does not establish an upgrade from main. See
+`evidence/current-main-source-lineage-2026-11-01.json`.
 
 The committed allocator ledger at preview source `d2257ceb368b36ae45cd5d05d9569f252ae4512c`
 still reserves 0083 for platform, 0084 for workflows and 0085 through 0093 for

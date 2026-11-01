@@ -9,6 +9,32 @@ and production-release acceptance remain open.
 
 ## Later bounded source checks
 
+The later `db925000ec20b9b8d8a3131ae3d183553d2a080c` write-boundary repair
+rejects lossy saved-definition inputs for all four entities. RED reproduced 26
+failures among 49 new schema cases. The final schema/read-compatibility selection
+passed 105 tests/5 files, and scoped typed ESLint passed the three changed files
+in 6.595 seconds, minimum free space 19,657,760,768 bytes. The earlier full
+TypeScript result below predates this fix; a new finite full check is pending.
+No PostgreSQL persistence, stored-data rewrite or native UI result is inferred.
+See `evidence/saved-view-write-boundary-2026-11-01.json` and
+`saved-view-presentation-path.md` for the full UI path still required.
+
+Source `15950b6d81083b14239b5f54539ae828af406d67`, including queue, native lead
+export permission guard and the separate qualification catalog/preview, passed
+full Next route type generation and TypeScript. The finite process returned
+terminal 0 in 21.264 seconds, with minimum live free space 14,998,421,504 bytes
+above its 5 GiB floor. The prepared untracked activity replay test was compiled
+only and hash-recorded; no native replay assertion was executed.
+
+Scoped typed ESLint for the 18 new export/qualification files passed in 6.089
+seconds, minimum free space 20,424,019,968 bytes. Committed qualification plus
+adjacent stage contracts passed 43 tests/6 files in 1.015 seconds. The formatted
+lead export route plus adjacent permission/CSV units passed 44/5 in 1.532 seconds.
+These checks establish no current full lint/build, native browser, installed
+framework or migration upgrade. See
+`evidence/qualification-export-static-2026-11-01.json` and
+`evidence/lead-export-permission-2026-11-01.json`.
+
 The latest full build-checked application remains f006 below. The later builder
 adoption, distribution and recovery changes have narrower evidence:
 
