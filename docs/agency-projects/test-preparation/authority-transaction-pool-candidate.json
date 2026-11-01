@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-11-01T10:31:17.730625+00:00",
+  "base": "6855645499b5f5878f7b2d2eb431dd6e6d4b7fbc",
+  "reasonCorrectionHead": "f03c3626e388b7f1e493a7c6f1e44f7a6f499e92",
+  "candidateStatus": "typed Pool unavailable-only scaffold; noSQLbody; behavioralRED NOTRUN",
+  "declaredCases": 14,
+  "testFiles": 2,
+  "sourceFiles": {
+    "src/features/agency-projects/authorityTransactionSpec.ts": "2c4048f55c768440751bceefe7bf9865a522ad9a90975ff1795c8360bf171611",
+    "src/features/agency-projects/authorityTransactionSpec.test.ts": "5f8db288fc041291a46e6662bd2d2ecff9d3417fc15f4855524cb9c0baf00271",
+    "src/features/agency-projects/authorityTransactionCandidate.ts": "3b98b871246f0af94b8d6b41efc40347a96efafdf15bcffcdadd700f8be5b9e7",
+    "src/features/agency-projects/authorityTransactionCandidate.test.ts": "ce8e7b0282a1826edd0fe422931ab9c06455592bb3408bd5fec42477ba541f12",
+    "src/features/agency-projects/authorityTransactionCandidate.test-support.ts": "e411b21cd0122dc5523d7b807be846edd42d8994096302a0db14b198d6996ba4",
+    "src/features/agency-projects/authorityConnectionBoundary.test.ts": "f1ce61146f8da044ae5a0e0a9f3119c6b9dff2ccd93b22981b27a4bae6dc4d7b",
+    "src/features/agency-projects/authorityConnectionBoundary.test-support.ts": "3fffcc6fa305c03948b28ca8422414ef7a51556e8a111c60375f73c68bfde5da"
+  },
+  "controlHashes": {
+    ".runtime/run-authority-candidate-pg.py": "bce49d657b9ab2b32ddb921c3722c02bc7cfd66ff0b45d40a6262b70d356c761",
+    ".runtime/authority-candidate-pg-run.json": "b0f080f81f8e94dcb17338ebc152928dd994ca0fef72c854061a409894adc1e1",
+    ".runtime/authority-candidate-owned-global-setup.ts": "cedebc0bc05de2785dd6c868c94f6b3264db3d00b17cb1f107e61def12b47544",
+    ".runtime/vitest.authority-candidate-pg.config.ts": "3e47bdc8929529535bdb3e3b9763d27282881cf5842d7e08f99dfe037a3e07be"
+  },
+  "controlCopies": {
+    ".runtime/run-authority-candidate-pg.py": "docs/agency-projects/test-preparation/authority-pool-run-authority-candidate-pg.py.txt",
+    ".runtime/authority-candidate-pg-run.json": "docs/agency-projects/test-preparation/authority-pool-authority-candidate-pg-run.json.txt",
+    ".runtime/authority-candidate-owned-global-setup.ts": "docs/agency-projects/test-preparation/authority-pool-authority-candidate-owned-global-setup.ts.txt",
+    ".runtime/vitest.authority-candidate-pg.config.ts": "docs/agency-projects/test-preparation/authority-pool-vitest.authority-candidate-pg.config.ts.txt"
+  },
+  "actualPriorAbsence": "qualification-authority-transaction-candidate-absence-20261101.json (0cases at6855645, exact missingmodule)",
+  "pendingSourceScope": "7primary+2controlTS,60TOTAL; oldsourcev1guard rejected beforelaunch, v2guard underpreparation/review",
+  "pendingNativeScope": "14cases90TOTAL/65native,unusednonce inprivateinput; heldwithoutgrantduringCalendarNEXTlease; no permissionstoredhere",
+  "fixtureDDL": "One ownedTEMP deferredUNIQUE constraint probe (ONCOMMITDROP) forconservativeCOMMITfailureclassification; noAgencyproductionDDL/store/schema/migration",
+  "caseAdditions": [
+    "ActualdeferredconstraintCOMMITfailure",
+    "RejectalreadyopenRRclientbackedDbwrapperwithoutoutercommit/rollback",
+    "Capturekey/mode/timeouts beforedelayedpoolacquisition"
+  ],
+  "review": "Independentread-onlyreviewfoundnoconcreteharness/API/type/cleanupdefect; noexecution/typelint result.",
+  "limits": [
+    "Poollease versusprivatePoolfactory remainsownerdecision; dirtyreturnedpoolclients/mixedcallers notqualified.",
+    "No wholecommand deadline, immediatequeryabort, confirmeddestructivedisposal, lostCOMMITack/receipt/idempotentrecovery orallwriterparticipation.",
+    "No nativeauth/CRM/Privacy/currentness/moduleadmission, acceptedsharedAPI/key/canonicalbase/allocation orenabledAgencywriter."
+  ]
+}

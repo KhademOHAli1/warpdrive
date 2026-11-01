@@ -1,10 +1,8 @@
 import { randomUUID } from "node:crypto";
 import { setImmediate } from "node:timers/promises";
 import { eq, sql } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/node-postgres";
-import type { PoolClient } from "pg";
+import { Pool } from "pg";
 import type { Db } from "@/db/client";
-import * as schema from "@/db/schema";
 import { users } from "@/db/schema/identity";
 import type { TestDb } from "@/test/db";
 import { ok, type Result } from "@/types/result";
@@ -39,17 +37,15 @@ export async function seedActor(h: TestDb): Promise<string> {
 }
 
 export async function configuredCommit(h: TestDb) {
-  let client: PoolClient | undefined;
+  const pool = new Pool({ connectionString: h.url, max: 1 });
   try {
-    client = await h.pool.connect();
-    await client.query("SET SESSION default_transaction_isolation = 'repeatable read'");
-    const before = await client.query(settingsQuery);
-    const db = drizzle(client, { schema });
+    await pool.query("SET SESSION default_transaction_isolation = 'repeatable read'");
+    const before = await pool.query(settingsQuery);
     const signal = new AbortController().signal;
     const id = randomUUID();
     let receivedSignal: AbortSignal | undefined;
     const result = await runAuthorityTransactionCandidate(
-      db, candidateSpec("exclusive"), signal,
+      pool, candidateSpec("exclusive"), signal,
       async (tx, supplied) => {
         receivedSignal = supplied;
         const settings = await tx.execute(sql.raw(settingsQuery));
@@ -58,11 +54,32 @@ export async function configuredCommit(h: TestDb) {
       },
     );
     const committed = await h.db.select({ id: users.id }).from(users).where(eq(users.id, id));
-    const after = await client.query(settingsQuery);
+    const after = await pool.query(settingsQuery);
     return { before: before.rows, after: after.rows, result, receivedSignal, signal, id, committed };
   } finally {
-    if (client !== undefined) await releaseOwnedClient(client);
+    await pool.end();
   }
+}
+
+export async function deferredCommitFailure(h: TestDb) {
+  const id = randomUUID();
+  let operationEntered = false;
+  let operationCompleted = false;
+  const result = await runAuthorityTransactionCandidate(
+    h.pool, candidateSpec("exclusive"), new AbortController().signal,
+    async (tx) => {
+      operationEntered = true;
+      await tx.insert(users).values(userValues(id));
+      await tx.execute(sql`CREATE TEMP TABLE authority_commit_failure_probe (
+        value integer UNIQUE DEFERRABLE INITIALLY DEFERRED
+      ) ON COMMIT DROP`);
+      await tx.execute(sql`INSERT INTO authority_commit_failure_probe (value) VALUES (1), (1)`);
+      operationCompleted = true;
+      return ok("deferred_probe");
+    },
+  );
+  const remaining = await h.db.select({ id: users.id }).from(users).where(eq(users.id, id));
+  return { result, operationEntered, operationCompleted, remaining };
 }
 
 export function barrier() {
@@ -91,7 +108,7 @@ function observed<T>(promise: Promise<T>) {
 export function heldTransaction(h: TestDb, spec: AuthorityTransactionSpec, beforeHold?: BeforeHold) {
   const entered = barrier();
   const release = barrier();
-  const run = runAuthorityTransactionCandidate(h.db, spec, new AbortController().signal, async (tx) => {
+  const run = runAuthorityTransactionCandidate(h.pool, spec, new AbortController().signal, async (tx) => {
     const prepared = await beforeHold?.(tx);
     if (prepared?.ok === false) return prepared;
     entered.open();
@@ -174,11 +191,3 @@ export async function closeHeldFixture(h: TestDb, handles: readonly HeldTransact
   }
 }
 
-export async function releaseOwnedClient(client: PoolClient) {
-  try {
-    await client.query("ROLLBACK");
-    await client.query("RESET default_transaction_isolation");
-  } finally {
-    client.release();
-  }
-}

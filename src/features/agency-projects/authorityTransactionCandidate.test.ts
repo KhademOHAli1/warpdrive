@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { eq, sql } from "drizzle-orm";
 import { PgTransaction } from "drizzle-orm/pg-core";
+import type { Pool } from "pg";
 import { describe, expect, it } from "vitest";
 import { users } from "@/db/schema/identity";
 import { makeTestDb } from "@/test/db";
@@ -11,6 +12,7 @@ import {
   candidateSpec,
   closeHeldFixture,
   configuredCommit,
+  deferredCommitFailure,
   heldTransaction,
   seedActor,
   settingsQuery,
@@ -46,7 +48,7 @@ describe("isolated real-PG authority transaction candidate", () => {
       const id = randomUUID();
       const failure = err({ code: "business_denied", correlation: id });
       const result = await runAuthorityTransactionCandidate(
-        h.db, candidateSpec("exclusive"), new AbortController().signal,
+        h.pool, candidateSpec("exclusive"), new AbortController().signal,
         async (tx) => {
           await tx.insert(users).values(userValues(id));
           return failure;
@@ -55,6 +57,19 @@ describe("isolated real-PG authority transaction candidate", () => {
       expect(result).toEqual(failure);
       if (!result.ok) expect(result.error).toBe(failure.error);
       expect(await h.db.select({ id: users.id }).from(users).where(eq(users.id, id))).toEqual([]);
+    } finally {
+      await h.close();
+    }
+  });
+
+  it("conservatively classifies a deferred constraint failure at COMMIT as unknown", async () => {
+    const h = await makeTestDb();
+    try {
+      const observed = await deferredCommitFailure(h);
+      expect(observed.operationEntered).toBe(true);
+      expect(observed.operationCompleted).toBe(true);
+      expect(observed.result).toEqual({ ok: false, error: "authority_commit_outcome_unknown" });
+      expect(observed.remaining).toEqual([]);
     } finally {
       await h.close();
     }
@@ -192,7 +207,7 @@ describe("isolated real-PG authority transaction candidate", () => {
     try {
       const controller = new AbortController(); controller.abort();
       let called = false;
-      await expect(runAuthorityTransactionCandidate(h.db, candidateSpec("shared"), controller.signal, async () => {
+      await expect(runAuthorityTransactionCandidate(h.pool, candidateSpec("shared"), controller.signal, async () => {
         called = true;
         return ok("unexpected");
       })).rejects.toMatchObject({ name: "AbortError" });
@@ -208,7 +223,7 @@ describe("isolated real-PG authority transaction candidate", () => {
     try {
       const id = randomUUID();
       const controller = new AbortController();
-      await expect(runAuthorityTransactionCandidate(h.db, candidateSpec("exclusive"), controller.signal, async (tx) => {
+      await expect(runAuthorityTransactionCandidate(h.pool, candidateSpec("exclusive"), controller.signal, async (tx) => {
         await tx.insert(users).values(userValues(id));
         controller.abort();
         return ok("must_not_commit");
@@ -227,7 +242,7 @@ describe("isolated real-PG authority transaction candidate", () => {
         expect(tx).toBeInstanceOf(PgTransaction);
         const before = await tx.execute(sql.raw(settingsQuery));
         let called = false;
-        const result = await runAuthorityTransactionCandidate(tx, candidateSpec("exclusive"), new AbortController().signal, async () => {
+        const result = await runAuthorityTransactionCandidate(tx as unknown as Pool, candidateSpec("exclusive"), new AbortController().signal, async () => {
           called = true;
           return ok("nested");
         });

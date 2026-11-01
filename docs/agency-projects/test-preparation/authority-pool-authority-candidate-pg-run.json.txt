@@ -1,0 +1,10 @@
+{
+  "runId": "d83a8c8f-c61a-4a64-8438-d614a547358a",
+  "phase": "red",
+  "status": "prepared-not-started",
+  "daemonMarkerId": "",
+  "dockerEndpoint": "unix:///Users/ali/.colima/warpdrive/docker.sock",
+  "ownershipFile": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/authority-candidate-pg-red-owned-container.json",
+  "receiptFile": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/authority-candidate-pg-red-handles.json",
+  "logFile": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/authority-candidate-pg-red.log"
+}

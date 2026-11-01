@@ -1,0 +1,10 @@
+{
+  "runId": "7fd16542-e8f6-4d77-b14f-dd44216a302e",
+  "phase": "absence",
+  "status": "allocated-run-input",
+  "daemonMarkerId": "95f7afeb150611cc11724314d1dd74ad994b0200d8894116f329279b051de7b8",
+  "dockerEndpoint": "unix:///Users/ali/.colima/warpdrive/docker.sock",
+  "ownershipFile": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/authority-candidate-pg-absence-owned-container.json",
+  "receiptFile": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/authority-candidate-pg-absence-handles.json",
+  "logFile": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/authority-candidate-pg-absence.log"
+}

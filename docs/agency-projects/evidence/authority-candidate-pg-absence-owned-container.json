@@ -1,0 +1,10 @@
+{
+  "runId": "7fd16542-e8f6-4d77-b14f-dd44216a302e",
+  "label": "codex.agency.authority-candidate-run",
+  "pid": 88521,
+  "daemonMarkerId": "95f7afeb150611cc11724314d1dd74ad994b0200d8894116f329279b051de7b8",
+  "daemonVerified": true,
+  "containerId": "46c28879071f13a15dbcdbf018065da5af3b6fefd8a6c0955f92f21acdd41a1e",
+  "state": "ready",
+  "observedAt": "2026-11-01T10:05:00.018Z"
+}
