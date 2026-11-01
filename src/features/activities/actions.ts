@@ -8,6 +8,7 @@ import { can } from "@/features/permissions/can";
 import { createContext } from "@/server/trpc/context";
 import { deleteActivity } from "./activityDelete";
 import { updateActivity } from "./activityUpdate";
+import { type CompleteActivityInput, completeActivityInput } from "./completeActivityInput";
 import { notifyOnActivityCreated } from "./notifyHelpers";
 import { completeActivity, createActivity } from "./repo";
 import type { ActivityCreateInput, ActivityUpdateInput } from "./schemas";
@@ -37,7 +38,7 @@ export async function createActivityAction(
 }
 
 export async function completeActivityAction(
-  input: { id: string; done: boolean },
+  input: CompleteActivityInput,
   csrfToken: string | null = null,
 ): Promise<ActionResult> {
   const csrfOk = await guardCsrf(csrfToken);
@@ -46,8 +47,12 @@ export async function completeActivityAction(
   const { actor } = await createContext();
   if (actor === null) return { ok: false, error: { id: ERROR_IDS.AUTH_SESSION_DEAD } };
 
+  const parsed = completeActivityInput.safeParse(input);
+  if (!parsed.success)
+    return { ok: false, error: { id: ERROR_IDS.ACTIVITY_COMPLETE_INPUT_INVALID } };
+
   // Record-scoped: completeActivity gates via can(actor, "activity.complete", vis).
-  const result = await completeActivity(db, actor, input.id, input.done, SIG());
+  const result = await completeActivity(db, actor, parsed.data.id, parsed.data.done, SIG());
   if (!result.ok) return { ok: false, error: { id: result.error.id } };
   return { ok: true, value: { id: result.value.id } };
 }
