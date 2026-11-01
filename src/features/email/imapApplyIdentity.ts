@@ -3,6 +3,7 @@ import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import { emailMessages } from "@/db/schema";
 import { mailMessageLocators } from "@/db/schema/mailRemote";
 import type { DbOrTx } from "@/server/realtime/channelVersions";
+import { uniqueImapSourceAlias } from "./imapApplySourceAlias";
 import type { ImapFolderCheckpoint, PreparedImapMessage } from "./imapSyncTypes";
 import { findSmtpSentCopy } from "./smtpMimeProof";
 
@@ -32,7 +33,8 @@ export async function existingImapMessage(
       isSentFolder: folder.isSentFolder,
       parsed: message.parsed,
       signal,
-    }));
+    })) ??
+    (await uniqueImapSourceAlias(tx, accountId, message.sourceFingerprint, signal));
   const [existing] = await tx
     .select({
       id: emailMessages.id,
@@ -50,7 +52,7 @@ export async function existingImapMessage(
     );
   signal.throwIfAborted();
   // SMTP copies can acquire provider transport headers. Their accepted semantic receipt or
-  // persisted APPENDUID locator establishes identity; a global RFC header never does.
+  // persisted APPENDUID/raw-source alias establishes identity; a global RFC header never does.
   if (
     existing !== undefined &&
     existing.fingerprint !== null &&

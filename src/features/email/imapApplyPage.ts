@@ -20,6 +20,7 @@ async function locator(
   folder: ImapFolderCheckpoint,
   uid: number,
   messageId: string | null,
+  sourceFingerprint: string | null,
   flags: string[],
   skippedReason: "message_too_large" | "message_missing" | "invalid_message" | null,
   signal: AbortSignal,
@@ -33,6 +34,7 @@ async function locator(
       uidValidity: folder.uidValidity,
       uid,
       messageId,
+      sourceFingerprint,
       flags,
       skippedReason,
       active: true,
@@ -43,7 +45,14 @@ async function locator(
         mailMessageLocators.uidValidity,
         mailMessageLocators.uid,
       ],
-      set: { messageId, flags, skippedReason, active: true, lastSeenAt: sql`clock_timestamp()` },
+      set: {
+        messageId,
+        flags,
+        skippedReason,
+        active: true,
+        lastSeenAt: sql`clock_timestamp()`,
+        ...(sourceFingerprint === null ? {} : { sourceFingerprint }),
+      },
     });
   signal.throwIfAborted();
 }
@@ -89,6 +98,7 @@ export async function applyImapPage(
         folder,
         message.uid,
         result.messageId,
+        message.sourceFingerprint,
         message.flags,
         null,
         signal,
@@ -101,7 +111,17 @@ export async function applyImapPage(
       if (result.inserted) applied += 1;
     }
     for (const skipped of prepared.skipped)
-      await locator(tx, runtime.accountId, folder, skipped.uid, null, [], skipped.reason, signal);
+      await locator(
+        tx,
+        runtime.accountId,
+        folder,
+        skipped.uid,
+        null,
+        null,
+        [],
+        skipped.reason,
+        signal,
+      );
     await refreshImapThreadReadState(tx, runtime.accountId, runtime.ownerId, threadIds, signal);
     if (prepared.messages.length > 0 || prepared.skipped.length > 0)
       await publishEvent(

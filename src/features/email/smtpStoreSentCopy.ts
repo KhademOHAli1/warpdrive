@@ -3,6 +3,7 @@ import type { Db } from "@/db/client";
 import { guardImapConnection } from "./imapSyncGuard";
 import { type ImapConnectionRuntime, isMailConnectionCurrent } from "./mailConnectionRuntime";
 import { lockMailRemoteWrites } from "./mailRemoteWriteLock";
+import { mailSourceFingerprint } from "./mailSourceFingerprint";
 import type { SmtpAttempt } from "./smtpOutboxTypes";
 
 export async function appendSmtpSentCopy(
@@ -66,9 +67,9 @@ export async function appendSmtpSentCopy(
       ).rows as { id: string }[];
       if (folder === undefined) return;
       const recorded = await tx.execute(sql`INSERT INTO mail_message_locators
-        (account_id,folder_id,uid_validity,uid,message_id,flags)
-        VALUES (${args.runtime.accountId},${folder.id},${locator.uidValidity},${locator.uid},${args.messageId},ARRAY['\\Seen']::text[])
-        ON CONFLICT (folder_id,uid_validity,uid) DO UPDATE SET message_id=EXCLUDED.message_id,active=true,last_seen_at=now()
+        (account_id,folder_id,uid_validity,uid,message_id,flags,source_fingerprint)
+        VALUES (${args.runtime.accountId},${folder.id},${locator.uidValidity},${locator.uid},${args.messageId},ARRAY['\\Seen']::text[],${mailSourceFingerprint(args.raw)})
+        ON CONFLICT (folder_id,uid_validity,uid) DO UPDATE SET message_id=EXCLUDED.message_id,source_fingerprint=EXCLUDED.source_fingerprint,active=true,last_seen_at=now()
           WHERE mail_message_locators.message_id IS NULL OR mail_message_locators.message_id=EXCLUDED.message_id RETURNING id`);
       if (recorded.rows.length !== 1) return;
       result.state = "complete";

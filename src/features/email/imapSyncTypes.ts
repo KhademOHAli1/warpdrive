@@ -39,6 +39,7 @@ export interface PreparedImapMessage {
   flags: string[];
   internalDate: Date | null;
   fingerprint: string;
+  sourceFingerprint: string;
   parsed: RawParsedMail;
 }
 

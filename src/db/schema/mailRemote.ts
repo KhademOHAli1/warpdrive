@@ -50,6 +50,7 @@ export const mailMessageLocators = pgTable(
     uidValidity: text("uid_validity").notNull(),
     uid: bigint("uid", { mode: "number" }).notNull(),
     messageId: uuid("message_id"),
+    sourceFingerprint: text("source_fingerprint"),
     flags: text("flags").array().notNull().default(sql`'{}'::text[]`),
     active: boolean("active").notNull().default(true),
     skippedReason: text("skipped_reason").$type<
@@ -61,6 +62,7 @@ export const mailMessageLocators = pgTable(
   (table) => [
     unique("mail_locators_folder_epoch_uid_uq").on(table.folderId, table.uidValidity, table.uid),
     index("mail_locators_message_account_idx").on(table.messageId, table.accountId),
+    index("mail_locators_account_source_idx").on(table.accountId, table.sourceFingerprint),
     foreignKey({
       columns: [table.folderId, table.accountId],
       foreignColumns: [mailFolders.id, mailFolders.accountId],

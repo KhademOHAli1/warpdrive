@@ -1,5 +1,6 @@
 import type { PreparedImapPage } from "./imapSyncTypes";
 import { imapMessageFingerprint } from "./imapThreading";
+import { mailSourceFingerprint } from "./mailSourceFingerprint";
 import type { ImapFolderPage } from "./providers/imapTypes";
 import { parseRawMime } from "./providers/rawMime";
 
@@ -23,6 +24,7 @@ export async function prepareImapPage(
         flags: message.flags,
         internalDate: message.internalDate,
         fingerprint: imapMessageFingerprint(accountId, message.source),
+        sourceFingerprint: mailSourceFingerprint(message.source),
         parsed: parsed.value,
       });
   }
