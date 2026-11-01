@@ -21,7 +21,9 @@ The inherited compact-selector regression failed after adopting the Sheet: 1 fai
 - `bun run i18n:check`: exit 0, zero catalog issues or new source findings.
 - Biome on the adapted navigation test: exit 0 after formatting.
 - Conflict-marker check and staged whitespace check: exit 0.
-- The narrow compatibility patch was sent to the Settings owner for review. Its response remains pending.
+- The Settings owner reviewed the supplied compatibility snapshot and found no blocking presentation issue. Its exact review is retained in `evidence/settings-owner-compatibility-review.md`. It confirmed the unchanged owner navigation, 18 retained workflow labels and appropriate Sheet regression test.
+
+The merge is committed as `980833d0d74795c8f8fda77d962de017d96b6f03`. The owner's review leaves three concrete persistence gates: an explicit lifecycle-command/grant table; native administrator, grantor and high-risk behavior for `project.create`; and revocation-through-commit coordination with identity, flag, membership and team writers. Those gates remain proposed in `project-core-delta.md`; this presentation review does not approve them or enable Agency persistence.
 
 Logs are retained under `evidence/settings-adoption-*.log`. Type-aware validation of the compatibility test, a complete combined type/lint/unit/build run and new native browser evidence remain open. A scoped typecheck was held before launch when the 3 GiB resource guard failed. No failure is counted as a pass, and no build/database campaign or Agency service was started.
 

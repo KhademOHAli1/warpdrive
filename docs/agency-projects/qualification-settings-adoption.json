@@ -52,9 +52,21 @@
     "src/features/identity/messages/settings.en.json": "1930dc03a0884663c2e03a9f2d94acb2600848d4ce5c2f4d30fd44254c67836a"
   },
   "limits": [
-    "Compatibility patch owner review pending",
+    "Owner compatibility review received for supplied snapshot; later delta and full combined acceptance remain separate",
     "One-file compatibility typecheck held before launch by <3GiB disk guard",
     "No full combined type/lint/unit/build, PostgreSQL or native UI qualification",
     "No new feature/permission/store/writer/route/effect enabled"
-  ]
+  ],
+  "review": {
+    "status": "owner review received",
+    "source": "evidence/settings-owner-compatibility-review.md",
+    "sha256": "02880f84c33af4ff5bfdd4b7f5614512129bdd6de2489428a9ed4b6fae8937c7",
+    "reviewScope": "Supplied compatibility patch and snapshot draft, not full Agency enablement",
+    "result": "No blocking presentation issue; exact owner navigation and all 18 workflow labels retained",
+    "openAuthorityGates": [
+      "Lifecycle command/grant truth table",
+      "Native administrator and project.create grantor/high-risk behavior",
+      "Revocation through commit, including identity/flags/membership/team writers"
+    ]
+  }
 }

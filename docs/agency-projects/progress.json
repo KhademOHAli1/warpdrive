@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-31T16:27:19.326048+00:00",
+  "updatedAt": "2026-11-01T03:19:55.691084+00:00",
   "statusMeaning": "Evidence level only. A source-verified task is not accepted or complete. All 96 acceptance flags remain false.",
   "tasks": {
     "AP-00.1": {
       "status": "source-verified",
-      "evidence": "source-baseline.json; exact heads, dirty paths, remotes, main and listener inventory retained.",
-      "remaining": "Peer private applied ledgers intentionally unavailable; owner receipts required before migration.",
+      "evidence": "source-inventory-latest.json refresh 1 November: seven exact committed owner cuts and dirty paths retained without adopting dirt.",
+      "remaining": "Private applied ledgers intentionally not accessed; owner receipts and accepted combined base required before migration.",
       "accepted": false
     },
     "AP-00.2": {
@@ -17,8 +17,8 @@
     },
     "AP-00.3": {
       "status": "active",
-      "evidence": "Six ownership/API requests sent on 2026-10-31. Immutable COORDINATION has previous owner replies.",
-      "remaining": "Current six responses and concrete extension acceptance pending.",
+      "evidence": "Six authorized owner coordination requests; Settings presentation review received and retained in evidence/settings-owner-compatibility-review.md; concrete four-store/authority/Privacy delta prepared.",
+      "remaining": "Actual Platform/Privacy permission, admission, writer fence, schema and allocation acceptance remains open; Calendar and quotation contracts remain owner-gated.",
       "accepted": false
     },
     "AP-00.6": {
@@ -29,8 +29,8 @@
     },
     "AP-00.7": {
       "status": "active",
-      "evidence": "Owned dependencies restored cache-backed in3.01s after3.5GiB recovery. Only tiny one-worker units, no Agency service/PG/build. Last observed4.9GiB; owner window/API requests pending.",
-      "remaining": "No Agency runtime/DB started. Proposed ports not yet acknowledged. Coordinated >=5GiB stable heavy window and accepted interfaces required before PG/build campaigns.",
+      "evidence": "1 November full cwd ps scan found no Agency processes; five generated cache candidates absent; zero bytes reclaimed and no tracked deletion. MAIL recovery hold acknowledged; fresh Data reading in source inventory is a snapshot only.",
+      "remaining": "No Agency test/type/lint/build/install campaign during MAIL window. Require explicit release, finite coordinated window and fresh headroom before checks; no owned runtime/DB or allocated migration.",
       "accepted": false
     },
     "AP-00.8": {
@@ -41,20 +41,20 @@
     },
     "AP-01.1": {
       "status": "active",
-      "evidence": "ui-source-inventory.md tied to committed base and dirty Settings handoff.",
-      "remaining": "Latest committed Settings/Sales adoption and native captures pending.",
+      "evidence": "Settings source ec9b3f8 merged in980833d with exact owner navigation and structural FA/DE/EN catalog preservation; owner compatibility review found no blocking presentation issue.",
+      "remaining": "Combined type/build/native checks remain open; review latest committed Sales source separately before adoption.",
       "accepted": false
     },
     "AP-02.1": {
       "status": "active",
-      "evidence": "285 feature-scoped unit cases pass, including strict project/assignment provenance and template structure. Canonical UUID spellings and exact external version identity are preserved.",
-      "remaining": "Full additive schema, FKs, SQL/owner review and other domain boundaries pending.",
+      "evidence": "project-core-delta.md specifies four proposed stores, constraints, native identity/CRM links, idempotency and history; pure domain foundation285 prior cases and separate starter13-case result retained.",
+      "remaining": "Full additive domain, exact SQL/schema/FK/privacy review and actual allocation remain open; no DDL or persistence enabled.",
       "accepted": false
     },
     "AP-02.2": {
       "status": "active",
-      "evidence": "domain-review-proposal.md proposed access truth table; no grant API invented.",
-      "remaining": "Owner-reviewed shared project permission extension and full deny evidence pending.",
+      "evidence": "Concrete proposed create/read/edit/lifecycle/owner action table; independent edit/coordinate grants; fresh Settings review identified native admin/high-risk/grantor and team revocation-through-commit gates.",
+      "remaining": "Owner acceptance and actual permission/fence patches plus real deny/race evidence remain open. Pure transition validation is not actor authorization.",
       "accepted": false
     },
     "AP-02.4": {
@@ -71,8 +71,8 @@
     },
     "AP-08.1": {
       "status": "active",
-      "evidence": "domain-review-proposal.md explicit proposed subject/store/writer inventory.",
-      "remaining": "Privacy owner review and actual registry/adapters/fences pending.",
+      "evidence": "project-core-delta.md separates client links, workforce owners/members/recorders and restricted history/request data for four-store Privacy review.",
+      "remaining": "Actual owner-reviewed registry/classification/adapters and subject-specific redaction remain open; no whole-project inference from one contact/user.",
       "accepted": false
     },
     "AP-09.1": {
@@ -83,8 +83,8 @@
     },
     "AP-10.1": {
       "status": "active",
-      "evidence": "285 cases across8 feature files pass; scoped TypeScript, unchanged type-aware lint rules and Biome18 files pass. Version, UUID, control/line and template graph assertion reds retained.",
-      "remaining": "Ongoing per-increment evidence; this does not close PG/native/provider gates.",
+      "evidence": "Historical integrated domain285 passes; separate starter13 passes; Settings navigation18 plus adapters30 and locale audit pass at documented scopes. Raw reds/greens and exact source hashes retained.",
+      "remaining": "Post-starter combined feature/types/lint not run. Pending review-decision tests must first run red after MAIL release; no PG/native/restore acceptance.",
       "accepted": false
     },
     "AP-11.1": {
@@ -128,6 +128,18 @@
       "accepted": false,
       "evidence": "55 test-first manifest/graph cases pass, including strict bounded FA/DE/EN data, roles/references, cycles, stage ancestry and controls; integrated feature selection285 passes.",
       "remaining": "Published-version persistence immutability, full domain/owner contracts, mapping/install/date preview, upgrade/restore and acceptance remain open."
+    },
+    "AP-05.2": {
+      "status": "active",
+      "accepted": false,
+      "evidence": "4b74635 commits modeling, short-video and campaign v1 manifests with FA/DE/EN source copy, unresolved roles and editable calendar-day assumptions. Genuine incomplete-catalog red6fail7pass; formatted focused green13pass.",
+      "remaining": "Post-starter scoped types/lint and combined selection held. Native-language/UI review, actual role/date preview, persisted publication/install and task acceptance remain open."
+    },
+    "AP-08.2": {
+      "status": "active",
+      "accepted": false,
+      "evidence": "Committed Privacy65a579e reviewed: physical DISCOVERY_COVERAGE is a separate gate; an unclassified Agency table blocks candidate discovery globally. Concrete four-store coverage/adapter patch surfaces documented.",
+      "remaining": "Owner-reviewed source inventory and explicit physical coverage required before migration. Generic restriction/project-writer fence absent; unsupported operations stay unavailable."
     }
   }
 }
