@@ -2,6 +2,8 @@
 
 Prepared 31 October 2026. Ali explicitly authorized inter-chat coordination. Named ownership and the integrated migration reservation below are agreed with the platform owner; exact API implementation mapping and final qualification remain under review. Neither goal was replaced.
 
+Current qualification note, 1 November 2026: this document retains the original reconciliation agreement as history. Work now uses the isolated `codex/mail-platform-candidate` checkout at `/Users/ali/Developer/warpdrive-mail-platform`. Published main is `a0490c16a9954d9a03c3bb22bfb69944db433a77`, with Privacy83..85, so the old platform83/84 plus mail85..91 numbering is not a global migration allocation. Local92/93 additions remain isolated. Current-main adoption and preserved installed histories require the separately reviewed convergence/admission work in [mail-migration-qualification.md](mail-migration-qualification.md). No peer checkout or installed ledger has been rewritten.
+
 ## Current mail ownership
 
 The active P0/P1 mail goal uses `/Users/ali/Developer/warpdrive-integrations`, branch `codex/local-integrations`, originally based on main `8539fe8`. Immutable source cuts are `aab6c3d` (queue/logging), `297c1dd` (mail/regional), `27326c6` (active SMTP status) and `de74493` (operator guides). The latest main auth refinements were verified byte-identical and their committed history was fast-forwarded to `a1a8f6da1ce366c35002900bf33508356dfbb995`, preserving every mail/regional change. New uncommitted parser/tests are follow-up work, not part of those cuts.

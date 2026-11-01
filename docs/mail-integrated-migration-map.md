@@ -1,6 +1,6 @@
 # Integrated mail migration map
 
-This candidate preserves the active local88 mail preview. It reconciles immutable source cuts only; PostgreSQL upgrade, clean-install, restore and installed-provider qualification are separate gates. Fingerprint91 remains reserved and is not implemented here.
+This document records the original isolated candidate mapping and preserves the local88 mail preview. It reconciles immutable source cuts only; PostgreSQL upgrade, clean-install, restore and installed-provider qualification are separate gates. Fingerprint91 was subsequently implemented and tested in this candidate. Local delivery-observation92 and notification-admission93 work is also present. The fork's published main now has a conflicting Privacy83..85 lineage, so this historical map must not be applied as a current-main upgrade path. See [the current lineage gate](mail-migration-qualification.md#current-lineage-gate-1-november-2026).
 
 Platform: `b8b2708d4076551b803451ce10d4928a87ce35cd`. Mail: `297c1dd5dbff4e19f6d1559a16bb258cc3368577`. Actual common82 snapshot SHA256: `3b26d54e4602737812ca9af0637e812df9b5d7cf198f34e2c78cd28f979dd54a`. Snapshot82 and all historical SQL/snapshots0..82 were compared through their actual Git blobs, with identical journal entries0..82.
 

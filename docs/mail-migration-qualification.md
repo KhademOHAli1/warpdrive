@@ -2,6 +2,14 @@
 
 Prepared 31 October 2026. This document describes the rehearsal and its acceptance criteria. The upgrade/restore rehearsal has not run yet. Current protocol, PostgreSQL feature tests and source checks do not establish migration, object-store restore or installed-provider qualification.
 
+## Current lineage gate, 1 November 2026
+
+The mapping below records the earlier isolated platform/mail candidate. It is not the current published-main upgrade path. The fork's main was verified at `a0490c16a9954d9a03c3bb22bfb69944db433a77`, which preserves published Privacy entries83..85. The isolated mail candidate has a different83..85 lineage and additional local entries through93 (fingerprint91, delivery observations92, notification admission93). Those local numbers are not a global allocation.
+
+Preserve the complete applied ledger and data for original MAIL88, platform84, published Privacy85 and combined MAIL91/92/93 profiles. A supported path needs an immutable source cut, physical catalog and full-ledger admission on every migration invocation, explicit append-only convergence, and real upgrade, rerun and restore tests. Never fabricate historical applied rows, replay mail backfills or renumber an installed database. The programme's convergence proposal remains under review; no canonical sequence has been accepted or executed here.
+
+The prepared local runner is unexecuted and currently insufficient for these divergent profiles. Its single target-ledger comparison and historical workflow guards need extension for Privacy guards, observation92 pointer cleanup and immutability, and notification93 constraints/indexes. A clean feature-test database does not close this gate.
+
 ## Migration allocation gate
 
 The reference Gmail/native-auth baseline is main commit `8539fe8`, through journal entry 82 (`0082_shocking_beast`). The isolated mail checkout currently has unmerged entries 83 through 88. The parallel platform checkout has committed integration/workflow entries 83 and 84. The agreed separate combined candidate preserves those entries and maps mail83..88 to85..90, with sourceFingerprint91 reserved. Do not renumber or copy historical SQL across installed databases to hide this divergence. See [mail-platform-reconciliation.md](mail-platform-reconciliation.md).
@@ -54,4 +62,4 @@ Before applying the agreed sequence to an installation, record its actual schema
 | Private object/key restore                                     | Separate isolated qualification, not established here                               |
 | Real external mail server/account qualification                | Separate authorized provider gate, not established by native fixtures               |
 
-Execution is additionally paused during the current host disk-pressure incident. Resume database/container work only after the root coordinator confirms sufficient space, then append exact non-secret test results and artifact locations to this document.
+Run database/container qualification only in a finite coordinator-assigned window with a fresh/live free-space check. The host currently has sufficient space for selected bounded feature tests; the migration and restore campaign itself remains unexecuted. Append exact non-secret input hashes, test results and artifact locations when that separate campaign runs.
