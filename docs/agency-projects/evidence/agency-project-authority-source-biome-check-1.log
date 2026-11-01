@@ -1,0 +1,269 @@
+src/features/agency-projects/projectCreationPlan.test.ts format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+     74  74 │       expect(planProjectCreation(input)).toEqual({ ok: true, value: expectedCreationPlan() });
+     75  75 │       expect(input).toEqual(before);
+     76     │ - ····for·(const·value·of·[input,·input.actor,·input.actor.flags,·input.actor.groupIds,·input.creator,·input.selectedOwner])·{
+         76 │ + ····for·(const·value·of·[
+         77 │ + ······input,
+         78 │ + ······input.actor,
+         79 │ + ······input.actor.flags,
+         80 │ + ······input.actor.groupIds,
+         81 │ + ······input.creator,
+         82 │ + ······input.selectedOwner,
+         83 │ + ····])·{
+     77  84 │         expect(Object.isFrozen(value)).toBe(false);
+     78  85 │       }
+  
+
+src/features/agency-projects/projectLocalAccess.test-support.ts format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+     24  24 │   export const relations: Relation[] = ["owner", "read", "edit", "coordinate", "both", "outsider"];
+     25  25 │   export const states: ProjectState[] = [
+     26     │ - ··"planned",·"active",·"on-hold",·"completed",·"canceled",·"archived",
+         26 │ + ··"planned",
+         27 │ + ··"active",
+         28 │ + ··"on-hold",
+         29 │ + ··"completed",
+         30 │ + ··"canceled",
+         31 │ + ··"archived",
+     27  32 │   ];
+     28  33 │   export const unarchivedStates = ["planned", "active", "on-hold", "completed", "canceled"] as const;
+     29  34 │   export const lifecycleActions: ProjectAction[] = [
+     30     │ - ··"start",·"hold",·"resume",·"complete",·"cancel",·"archive",·"restore",·"reopen",
+         35 │ + ··"start",
+         36 │ + ··"hold",
+         37 │ + ··"resume",
+         38 │ + ··"complete",
+         39 │ + ··"cancel",
+         40 │ + ··"archive",
+         41 │ + ··"restore",
+         42 │ + ··"reopen",
+     31  43 │   ];
+     32  44 │   export const actions: LocalAction[] = [
+     33     │ - ··"read",·"edit-content",·...lifecycleActions,·"manage-members",·"transfer-owner",
+         45 │ + ··"read",
+         46 │ + ··"edit-content",
+         47 │ + ··...lifecycleActions,
+         48 │ + ··"manage-members",
+         49 │ + ··"transfer-owner",
+     34  50 │   ];
+     35  51 │   export const granted = { ok: true, value: true } as const;
+    ······· │ 
+     69  85 │         relation === "owner" || relation === "outsider"
+     70  86 │           ? null
+     71     │ - ········:·membership(relation·===·"edit"·||·relation·===·"both",·relation·===·"coordinate"·||·relation·===·"both"),
+         87 │ + ········:·membership(
+         88 │ + ············relation·===·"edit"·||·relation·===·"both",
+         89 │ + ············relation·===·"coordinate"·||·relation·===·"both",
+         90 │ + ··········),
+     72  91 │     };
+     73  92 │   }
+    ······· │ 
+    140 159 │       [type, "edit member", context(type, "edit")],
+    141 160 │       [type, "coordinate member", context(type, "coordinate")],
+    142     │ - ····[type,·"wrong·project",·{
+    143     │ - ······...context(type,·"both"),
+    144     │ - ······membership:·{·...membership(true,·true),·projectId:·otherProjectId·},
+    145     │ - ····}],
+        161 │ + ····[
+        162 │ + ······type,
+        163 │ + ······"wrong·project",
+        164 │ + ······{
+        165 │ + ········...context(type,·"both"),
+        166 │ + ········membership:·{·...membership(true,·true),·projectId:·otherProjectId·},
+        167 │ + ······},
+        168 │ + ····],
+    146 169 │       [type, "inactive owner", inactiveOwner],
+    147 170 │     ] as const;
+    148 171 │   });
+    149 172 │   export const forgedCommandFields = [
+    150     │ - ··"actor",·"context",·"ownerUserId",·"membership",·"projectEdit",
+    151     │ - ··"assignmentCoordinate",·"authorized",·"moduleEnabled",·"crmVisible",·"privacyAllowed",
+        173 │ + ··"actor",
+        174 │ + ··"context",
+        175 │ + ··"ownerUserId",
+        176 │ + ··"membership",
+        177 │ + ··"projectEdit",
+        178 │ + ··"assignmentCoordinate",
+        179 │ + ··"authorized",
+        180 │ + ··"moduleEnabled",
+        181 │ + ··"crmVisible",
+        182 │ + ··"privacyAllowed",
+    152 183 │   ] as const;
+    153 184 │   
+  
+
+src/features/agency-projects/projectLocalAccess.test.ts format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+      7   7 │   } from "./projectLocalAccess";
+      8   8 │   import {
+      9     │ - ··actions,·actorTypes,·contentDenied,·context,·denied,·deniedContexts,·editableRows,
+     10     │ - ··editingRows,·expectedAccess,·expectedCoordinate,·expectedStartResult,·forgedCommandFields,·formerOwnerRows,
+     11     │ - ··granted,·graphRows,·inactiveOwnerId,·otherUserId,·reasonRows,·relationRows,·reopenRows,
+     12     │ - ··restoreRows,·snapshot,·states,·wrongScopeRows,
+          9 │ + ··actions,
+         10 │ + ··actorTypes,
+         11 │ + ··contentDenied,
+         12 │ + ··context,
+         13 │ + ··denied,
+         14 │ + ··deniedContexts,
+         15 │ + ··editableRows,
+         16 │ + ··editingRows,
+         17 │ + ··expectedAccess,
+         18 │ + ··expectedCoordinate,
+         19 │ + ··expectedStartResult,
+         20 │ + ··forgedCommandFields,
+         21 │ + ··formerOwnerRows,
+         22 │ + ··granted,
+         23 │ + ··graphRows,
+         24 │ + ··inactiveOwnerId,
+         25 │ + ··otherUserId,
+         26 │ + ··reasonRows,
+         27 │ + ··relationRows,
+         28 │ + ··reopenRows,
+         29 │ + ··restoreRows,
+         30 │ + ··snapshot,
+         31 │ + ··states,
+         32 │ + ··wrongScopeRows,
+     13  33 │   } from "./projectLocalAccess.test-support";
+     14  34 │   import { projectCommandSchema, projectSnapshotSchema } from "./projectSchemas";
+    ······· │ 
+     18  38 │       const current = context(type, relation);
+     19  39 │       for (const action of actions) {
+     20     │ - ······expect({·action,·result:·checkProjectLocalAction(current,·snapshot("active"),·action)·}).toEqual({
+         40 │ + ······expect({
+         41 │ + ········action,
+         42 │ + ········result:·checkProjectLocalAction(current,·snapshot("active"),·action),
+         43 │ + ······}).toEqual({
+     21  44 │           action,
+     22  45 │           result: expectedAccess(relation, action),
+    ······· │ 
+     51  74 │       for (const state of states) {
+     52  75 │         const expected = ["planned", "active", "on-hold"].includes(state) ? granted : contentDenied;
+     53     │ - ······expect({·state,·result:·checkProjectLocalAction(context(type,·relation),·snapshot(state),·"edit-content")·})
+     54     │ - ········.toEqual({·state,·result:·expected·});
+         76 │ + ······expect({
+         77 │ + ········state,
+         78 │ + ········result:·checkProjectLocalAction(context(type,·relation),·snapshot(state),·"edit-content"),
+         79 │ + ······}).toEqual({·state,·result:·expected·});
+     55  80 │       }
+     56  81 │     });
+    ······· │ 
+     59  84 │       for (const state of states) {
+     60  85 │         for (const action of ["manage-members", "transfer-owner"] as const) {
+     61     │ - ········expect(checkProjectLocalAction(context(type,·"owner"),·snapshot(state),·action)).toEqual(granted);
+         86 │ + ········expect(checkProjectLocalAction(context(type,·"owner"),·snapshot(state),·action)).toEqual(
+         87 │ + ··········granted,
+         88 │ + ········);
+     62  89 │         }
+     63  90 │       }
+    ······· │ 
+     67  94 │       for (const relation of ["outsider", "read", "coordinate"] as const) {
+     68  95 │         for (const state of ["completed", "canceled", "archived"] as const) {
+     69     │ - ········expect(checkProjectLocalAction(context(type,·relation),·snapshot(state),·"edit-content"))
+     70     │ - ··········.toEqual(denied);
+         96 │ + ········expect(
+         97 │ + ··········checkProjectLocalAction(context(type,·relation),·snapshot(state),·"edit-content"),
+         98 │ + ········).toEqual(denied);
+     71  99 │         }
+     72 100 │       }
+    ······· │ 
+     81 109 │     });
+     82 110 │   
+     83     │ - ··it.each(formerOwnerRows)("%s·former·owner·retains·only·explicit·%s·membership",·(type,·relation)·=>·{
+     84     │ - ····const·after·=·context(type,·relation);
+     85     │ - ····const·before·=·{·...after,·ownerUserId:·after.actor.id·};
+     86     │ - ····const·membershipBefore·=·structuredClone(after.membership);
+     87     │ - ····expect(checkProjectLocalAction(before,·snapshot("active"),·"transfer-owner")).toEqual(granted);
+     88     │ - ····for·(const·action·of·actions)·{
+     89     │ - ······expect({·action,·result:·checkProjectLocalAction(after,·snapshot("active"),·action)·}).toEqual({
+     90     │ - ········action,
+     91     │ - ········result:·expectedAccess(relation,·action),
+     92     │ - ······});
+     93     │ - ····}
+     94     │ - ····expect(hasProjectAssignmentCoordinateEligibility(after)).toBe(expectedCoordinate(relation));
+     95     │ - ····expect(after.membership).toEqual(membershipBefore);
+     96     │ - ····expect(after.ownerUserId).toBe(otherUserId);
+     97     │ - ··});
+        111 │ + ··it.each(formerOwnerRows)(
+        112 │ + ····"%s·former·owner·retains·only·explicit·%s·membership",
+        113 │ + ····(type,·relation)·=>·{
+        114 │ + ······const·after·=·context(type,·relation);
+        115 │ + ······const·before·=·{·...after,·ownerUserId:·after.actor.id·};
+        116 │ + ······const·membershipBefore·=·structuredClone(after.membership);
+        117 │ + ······expect(checkProjectLocalAction(before,·snapshot("active"),·"transfer-owner")).toEqual(
+        118 │ + ········granted,
+        119 │ + ······);
+        120 │ + ······for·(const·action·of·actions)·{
+        121 │ + ········expect({
+        122 │ + ··········action,
+        123 │ + ··········result:·checkProjectLocalAction(after,·snapshot("active"),·action),
+        124 │ + ········}).toEqual({
+        125 │ + ··········action,
+        126 │ + ··········result:·expectedAccess(relation,·action),
+        127 │ + ········});
+        128 │ + ······}
+        129 │ + ······expect(hasProjectAssignmentCoordinateEligibility(after)).toBe(expectedCoordinate(relation));
+        130 │ + ······expect(after.membership).toEqual(membershipBefore);
+        131 │ + ······expect(after.ownerUserId).toBe(otherUserId);
+        132 │ + ····},
+        133 │ + ··);
+     98 134 │   
+     99 135 │     it.each(actorTypes)("%s active member needs no owner-active context field", (type) => {
+    100 136 │       const current = { ...context(type, "edit"), ownerUserId: inactiveOwnerId };
+    101     │ - ····expect(Object.keys(current).sort()).toEqual(["actor",·"membership",·"ownerUserId",·"projectId"]);
+        137 │ + ····expect(Object.keys(current).sort()).toEqual([
+        138 │ + ······"actor",
+        139 │ + ······"membership",
+        140 │ + ······"ownerUserId",
+        141 │ + ······"projectId",
+        142 │ + ····]);
+    102 143 │       expect(checkProjectLocalAction(current, snapshot(), "read")).toEqual(granted);
+    103 144 │       expect(checkProjectLocalAction(current, snapshot(), "edit-content")).toEqual(granted);
+    104     │ - ····expect(transitionProjectForLocalActor(current,·snapshot(),·{·action:·"start",·expectedRevision:·7·}))
+    105     │ - ······.toMatchObject({·ok:·true,·value:·{·next:·{·state:·"active",·revision:·8·}·}·});
+        145 │ + ····expect(
+        146 │ + ······transitionProjectForLocalActor(current,·snapshot(),·{·action:·"start",·expectedRevision:·7·}),
+        147 │ + ····).toMatchObject({·ok:·true,·value:·{·next:·{·state:·"active",·revision:·8·}·}·});
+    106 148 │     });
+    107 149 │   
+    108 150 │     it.each(forgedCommandFields)("browser source schemas reject forged %s", (field) => {
+    109 151 │       const forged = { [field]: context("admin", "owner") };
+    110     │ - ····expect(projectCommandSchema.safeParse({·action:·"start",·expectedRevision:·7,·...forged·}).success)
+    111     │ - ······.toBe(false);
+        152 │ + ····expect(
+        153 │ + ······projectCommandSchema.safeParse({·action:·"start",·expectedRevision:·7,·...forged·}).success,
+        154 │ + ····).toBe(false);
+    112 155 │       expect(projectSnapshotSchema.safeParse({ ...snapshot(), ...forged }).success).toBe(false);
+    113 156 │     });
+    ······· │ 
+    119 162 │       const command = { action, expectedRevision: 7, reason: "تغییر برنامه / Änderung" };
+    120 163 │       expect(checkProjectLocalAction(context("regular", "owner"), current, action)).toEqual(granted);
+    121     │ - ····expect(transitionProjectForLocalActor(context("regular",·"owner"),·current,·command))
+    122     │ - ······.toEqual(transitionProject(current,·command));
+        164 │ + ····expect(transitionProjectForLocalActor(context("regular",·"owner"),·current,·command)).toEqual(
+        165 │ + ······transitionProject(current,·command),
+        166 │ + ····);
+    123 167 │     });
+    124 168 │   
+    125     │ - ··it.each(deniedContexts)("%s·%s·is·denied·before·revision,·graph·or·reason·disclosure",·(_type,·_name,·actor)·=>·{
+    126     │ - ····for·(const·state·of·["planned",·"completed",·"archived"]·as·const)·{
+    127     │ - ······for·(const·revision·of·[7,·Number.MAX_SAFE_INTEGER])·{
+    128     │ - ········const·current·=·snapshot(state,·revision);
+    129     │ - ········for·(const·expectedRevision·of·[0,·revision])·{
+  131 more lines truncated
+  
+
+Checked 6 files in 36ms. No fixes applied.
+Found 3 errors.
+check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Some errors were emitted while running checks.
+  
+

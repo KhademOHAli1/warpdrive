@@ -1,0 +1,35 @@
+from pathlib import Path
+import os,signal,subprocess,sys,time,json,datetime
+root=Path.cwd();work=Path('/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work');floor=5*1024**3
+phase=sys.argv[1];attempt=sys.argv[2] if len(sys.argv)>2 else '1'
+if not attempt.isdigit():raise SystemExit('Invalid attempt')
+targets=json.loads((root/'.runtime/project-authority-source-targets.json').read_text());files=targets['files'];ts=[p for p in files if p.endswith(('.ts','.tsx'))];assert len(files)==6 and len(ts)==6
+bun=str(root/'.runtime/bin/bun');commands={'types':[bun,'--smol','node_modules/typescript/bin/tsc','--noEmit','-p','.runtime/tsconfig.project-authority.json'],'biome-check':[bun,'node_modules/@biomejs/biome/bin/biome','check',*files],'biome-write':[bun,'node_modules/@biomejs/biome/bin/biome','check','--write',*files],'eslint':[bun,'--smol','node_modules/eslint/bin/eslint.js','--config','.runtime/project-authority-eslint.mjs',*ts],'units':[bun,'run','test:unit',*targets['unitFiles'],'--maxWorkers=1']}
+if phase not in commands:raise SystemExit('Invalid phase')
+def free():
+ s=os.statvfs(root);return s.f_bavail*s.f_frsize
+before=free();minimum=before
+if before<floor:print(json.dumps({'status':'held-before-launch','freeBytes':before}),flush=True);raise SystemExit(75)
+windowpath=root/'.runtime/project-authority-source-window.json'
+if not windowpath.exists():
+ if phase!='types' or attempt!='1':raise SystemExit('Window must start with initial types')
+ window={'grantSourceThreadId':'01a18868-3300-7dc2-b49d-c3bdb067fae7','budgetSeconds':45,'teardownReserveSeconds':1,'startedAt':datetime.datetime.now(datetime.timezone.utc).isoformat(),'deadlineMonotonic':time.monotonic()+44};windowpath.write_text(json.dumps(window,indent=2)+'\n')
+else:window=json.loads(windowpath.read_text())
+remaining=window['deadlineMonotonic']-time.monotonic()
+if remaining<1:print(json.dumps({'status':'window-expired-before-launch','remainingSeconds':remaining}),flush=True);raise SystemExit(75)
+log=work/('agency-project-authority-source-'+phase+'-'+attempt+'.log');env=os.environ.copy();env['PATH']=str(root/'.runtime/bin')+os.pathsep+env['PATH'];started=datetime.datetime.now(datetime.timezone.utc).isoformat();stop=None
+with log.open('w') as output:
+ process=subprocess.Popen(commands[phase],cwd=root,env=env,stdout=output,stderr=subprocess.STDOUT,start_new_session=True);print(json.dumps({'phase':phase,'attempt':attempt,'pid':process.pid,'windowRemainingSeconds':remaining,'beforeFreeBytes':before,'log':str(log)}),flush=True)
+ while process.poll() is None:
+  minimum=min(minimum,free())
+  if minimum<floor:stop='below-5GiB'
+  elif time.monotonic()>window['deadlineMonotonic']:stop='total-window-deadline'
+  if stop:
+   os.killpg(process.pid,signal.SIGTERM)
+   try:process.wait(timeout=.5)
+   except subprocess.TimeoutExpired:os.killpg(process.pid,signal.SIGKILL);process.wait()
+   break
+  time.sleep(.1)
+ code=process.wait();after=free();minimum=min(minimum,after)
+receipt={'phase':phase,'attempt':attempt,'pid':process.pid,'startedAt':started,'finishedAt':datetime.datetime.now(datetime.timezone.utc).isoformat(),'terminal':True,'exitCode':code,'stopReason':stop,'beforeFreeBytes':before,'minimumFreeBytes':minimum,'afterFreeBytes':after,'floorBytes':floor,'windowRemainingSecondsAtLaunch':remaining,'windowBudgetSeconds':45,'log':str(log),'command':commands[phase]};meta=work/'agency-project-authority-source-batch-handles.json';data=json.loads(meta.read_text()) if meta.exists() else {'schemaVersion':1,'scope':'Exact6-file project-local authority source-check window,45seconds total; separately coordinated','window':window,'runs':[]};data['runs'].append(receipt);meta.write_text(json.dumps(data,indent=2)+'\n');print(json.dumps({k:v for k,v in receipt.items() if k!='command'}),flush=True)
+raise SystemExit(code if stop is None else 75)

@@ -102,6 +102,7 @@ const agencyProjectHistory = pgTable(
       ${t.previousRevision} BETWEEN 0 AND 9007199254740991`),
     check("agency_project_history_revision_shape_ck", sql`
       (${t.action} = 'create' AND ${t.newRevision} = 0 AND
+        ${t.newState} = 'planned' AND ${t.newArchivedFrom} IS NULL AND
         ${t.previousRevision} IS NULL AND ${t.previousState} IS NULL AND
         ${t.previousArchivedFrom} IS NULL) OR
       (${t.action} <> 'create' AND ${t.previousRevision} IS NOT NULL AND

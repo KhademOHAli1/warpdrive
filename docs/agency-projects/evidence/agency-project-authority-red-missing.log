@@ -1,0 +1,29 @@
+$ bun --bun vitest run --project unit src/features/agency-projects/projectLocalAccess.test.ts src/features/agency-projects/projectCreationPlan.test.ts "--maxWorkers=1"
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+  - ESM syntax in a file loaded as CommonJS (vitest.classify.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.5 /Users/ali/Developer/warpdrive-agency-projects
+
+ ❯ |unit| src/features/agency-projects/projectLocalAccess.test.ts (0 test)
+ ❯ |unit| src/features/agency-projects/projectCreationPlan.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| src/features/agency-projects/projectCreationPlan.test.ts [ src/features/agency-projects/projectCreationPlan.test.ts ]
+Error: Cannot find module './projectCreationPlan' imported from /Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/projectCreationPlan.test.ts
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts [ src/features/agency-projects/projectLocalAccess.test.ts ]
+Error: Cannot find module './projectLocalAccess' imported from /Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/projectLocalAccess.test.ts
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  no tests
+   Start at  09:52:03
+   Duration  109ms (setup 41%, transform 31%, worker 26%, environment 2%)
+
+error: "vitest" exited with code 1
+error: script "test:unit" exited with code 1

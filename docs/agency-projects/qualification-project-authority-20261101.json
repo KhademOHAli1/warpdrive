@@ -1,0 +1,140 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-11-01T08:59:17.705232+00:00",
+  "base": "6091c2234e974758b3f440060526f330f3b67c4d",
+  "sourceStateAtChecks": "six new owned uncommitted TS files, no peer source mutation",
+  "ownerDecision": {
+    "artifact": "evidence/settings-owner-project-local-authority-decision.md",
+    "sha256": "1deac897cccc52b40e3333a0ad4ed4886ff841aecd263c938e17fa3f1604e39d",
+    "scope": "Local model, action/state rules, creation defaults and retained membership accepted for test-first implementation only."
+  },
+  "scope": "Project-local policy, local-first composition of existing lifecycle and pure creation plan using actual global can() and typed staff facts; no native reader/writer/authority loader.",
+  "preFormatSourceHashes": {
+    "src/features/agency-projects/projectLocalAccess.ts": "2b554ee6c426db7cc9616b4a8bec5f75ac7e6263524885b153635ca791829b33",
+    "src/features/agency-projects/projectLocalAccess.test.ts": "8ded2f777bdae9410d638f73e07e2ad5134898c9757b73296f237d89fc82f4e1",
+    "src/features/agency-projects/projectLocalAccess.test-support.ts": "41247c988f3417c77f62532d877a22c839486dd8f3e908dd460dc110367ac167",
+    "src/features/agency-projects/projectCreationPlan.ts": "126c8a5100c9cfd83c2a6913b3fccbe028bab0bf17390c26e6d133ea3dac46b7",
+    "src/features/agency-projects/projectCreationPlan.test.ts": "4677f3c770c9abe495ed3df4aa3a08c216721ab8c2ff3a5e246711d51969ba7f",
+    "src/features/agency-projects/projectCreationPlan.test-support.ts": "56a2f6622e10d678626a76b048fc7f634956de164337e5080cf0abba1e919352"
+  },
+  "sourceHashes": {
+    "src/features/agency-projects/projectLocalAccess.ts": "2b554ee6c426db7cc9616b4a8bec5f75ac7e6263524885b153635ca791829b33",
+    "src/features/agency-projects/projectLocalAccess.test.ts": "e8e04ec893210e226d186e3bf315b8bf66add7ebaaa22abaeeed041125eae20c",
+    "src/features/agency-projects/projectLocalAccess.test-support.ts": "c7fda60e5667561d1db9ccd1d1f83b66d984e058f63c1224a6b3da7bae71dea8",
+    "src/features/agency-projects/projectCreationPlan.ts": "126c8a5100c9cfd83c2a6913b3fccbe028bab0bf17390c26e6d133ea3dac46b7",
+    "src/features/agency-projects/projectCreationPlan.test.ts": "c7b9fb952ff0d633556115735855d5c5a12095a8d0d6d8e4bd7dd21d62dc1b4e",
+    "src/features/agency-projects/projectCreationPlan.test-support.ts": "56a2f6622e10d678626a76b048fc7f634956de164337e5080cf0abba1e919352"
+  },
+  "checks": {
+    "missingModuleRed": {
+      "failedSuites": 2,
+      "testsExecuted": 0,
+      "log": "evidence/agency-project-authority-red-missing.log"
+    },
+    "behavioralRed": {
+      "failed": 133,
+      "passed": 64,
+      "files": 2,
+      "log": "evidence/agency-project-authority-red-behavior.log",
+      "scaffolds": [
+        "evidence/projectLocalAccess-rejection-scaffold.ts.txt",
+        "evidence/projectCreationPlan-rejection-scaffold.ts.txt"
+      ]
+    },
+    "preFormatUnits": {
+      "passed": 197,
+      "files": 2,
+      "durationMilliseconds": 137,
+      "log": "evidence/agency-project-authority-green.log"
+    },
+    "selectedUnits": {
+      "passed": 197,
+      "files": 2,
+      "durationMilliseconds": 147,
+      "phase": "postformat",
+      "pid": 63349,
+      "log": "evidence/agency-project-authority-source-units-1.log"
+    },
+    "focusedTypes": {
+      "exitCode": 0,
+      "primaryFiles": 6,
+      "pid": 63325,
+      "log": "evidence/agency-project-authority-source-types-2.log"
+    },
+    "biome": {
+      "exitCode": 0,
+      "files": 6,
+      "pid": 63337,
+      "log": "evidence/agency-project-authority-source-biome-check-2.log"
+    },
+    "typedEslint": {
+      "exitCode": 0,
+      "files": 6,
+      "pid": 63312,
+      "unchangedRepositoryRules": true,
+      "log": "evidence/agency-project-authority-source-eslint-1.log"
+    },
+    "initialBiome": "Three test-only format diagnostics; formatter changed those tests. Both production files remained byte-for-byte unchanged."
+  },
+  "guard": {
+    "routineUnits": {
+      "workers": 1,
+      "timeoutSeconds": 30,
+      "executionCutoffSeconds": 29,
+      "floorBytes": 5368709120,
+      "groupsEmptyVerified": [
+        61599,
+        61628,
+        62131
+      ],
+      "minimumFreeBytes": 13038473216,
+      "receipt": "evidence/agency-project-authority-unit-handles.json"
+    },
+    "sourceWindow": {
+      "serial": true,
+      "elapsedSeconds": 12.071086,
+      "minimumFreeBytes": 12999340032,
+      "groups": [
+        {
+          "pid": 63250,
+          "state": "empty"
+        },
+        {
+          "pid": 63266,
+          "state": "empty"
+        },
+        {
+          "pid": 63300,
+          "state": "empty"
+        },
+        {
+          "pid": 63312,
+          "state": "empty"
+        },
+        {
+          "pid": 63325,
+          "state": "empty"
+        },
+        {
+          "pid": 63337,
+          "state": "empty"
+        },
+        {
+          "pid": 63349,
+          "state": "empty"
+        }
+      ],
+      "released": true,
+      "budgetSeconds": 45,
+      "floorBytes": 5368709120,
+      "receipt": "evidence/agency-project-authority-source-batch-handles.json"
+    }
+  },
+  "limits": [
+    "Trusted native-shaped input facts are not an implemented/current authenticated loader or authority token. No module/session/CSRF/CRM/Privacy admission, selected-row lookup or revocation-through-commit is proved.",
+    "Coordinate eligibility is a state-neutral local grant, not assignment-command/version/state/Calendar/finance/effect authority. Lifecycle eligibility alone does not replace actual transitionProject().",
+    "Creation output is a detached plan only: no generated project ID, insertion, intent/recovery, owner transfer, atomic history/member/request receipt or native currentness.",
+    "Fresh supplied post-transfer/revoked facts are tested; actual persisted transfer/revocation/recovery and inactive-owner database behavior remain real native/PG cases.",
+    "No schema/DDL/migration/allocation, app/worker/build/install/provider or task/release acceptance; earlier scopes remain separate with no arithmetic aggregate."
+  ]
+}

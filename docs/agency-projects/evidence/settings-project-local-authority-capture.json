@@ -1,0 +1,8 @@
+{
+  "capturedAt": "2026-11-01T08:41:29.780242+00:00",
+  "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-settings-ux/outputs/project-local-authority-decision.md",
+  "sha256": "1deac897cccc52b40e3333a0ad4ed4886ff841aecd263c938e17fa3f1604e39d",
+  "copy": "docs/agency-projects/evidence/settings-owner-project-local-authority-decision.md",
+  "reviewedAgency": "6091c2234e974758b3f440060526f330f3b67c4d",
+  "scope": "Exact local owner/member/action/creation/transfer contract accepted for test-first implementation; no schema/fence/runtime acceptance."
+}
