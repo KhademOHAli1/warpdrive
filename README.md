@@ -109,7 +109,7 @@ and [capability matrix](docs/email-provider-capabilities.md) record the current 
 
 ![Contacts](docs/screenshots/contacts.png)
 
-_These screenshots are illustrative captures and may precede the latest interface._
+_English interface captured on 1 November 2026 using synthetic demo data._
 
 ## warpdrive vs Pipedrive
 
