@@ -12,7 +12,16 @@ export interface SavedViewDefinition {
   conditions: Array<{ field: string; op: FilterOpKey; value?: ConditionValue }>;
 }
 
-export interface SavedView {
+export type SavedViewProblem = {
+  kind: "invalid" | "unsupported" | "missing";
+  code: string;
+};
+
+export type SavedViewDefinitionAvailability<D> =
+  | { availability?: "available"; definition: D }
+  | { availability: "unavailable"; definition: null; problem: SavedViewProblem };
+
+export type SavedView = {
   id: string;
   name: string;
   favorite: boolean;
@@ -20,5 +29,4 @@ export interface SavedView {
   // True when the session user owns this view. Only owners can toggle its favorite flag (the flag
   // is a per-row, owner-scoped column), so the UI hides the star on others' shared views.
   isOwn: boolean;
-  definition: SavedViewDefinition;
-}
+} & SavedViewDefinitionAvailability<SavedViewDefinition>;

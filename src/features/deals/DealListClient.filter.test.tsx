@@ -36,8 +36,41 @@ vi.mock("./BoardFilterControl", () => ({
   BoardFilterControl: (p: {
     selectedFilterId: string | null;
     onApplyDefinition?: (d: null) => void;
+    onSelectFilter?: (view: SavedFilterView | null) => void;
   }) => (
     <>
+      <button
+        type="button"
+        onClick={() =>
+          p.onSelectFilter?.({
+            id: "bad",
+            name: "Retained",
+            favorite: false,
+            isShared: false,
+            isOwn: true,
+            availability: "unavailable",
+            definition: null,
+            problem: { kind: "unsupported", code: "unsupported-field" },
+          })
+        }
+      >
+        select unavailable test view
+      </button>
+      <button
+        type="button"
+        onClick={() =>
+          p.onSelectFilter?.({
+            id: "narrow",
+            name: "Narrow",
+            favorite: false,
+            isShared: false,
+            isOwn: true,
+            definition: { conditions: [{ field: "title", op: "eq", value: "Only this" }] },
+          })
+        }
+      >
+        select narrow test view
+      </button>
       <span data-testid="selected-filter">{p.selectedFilterId ?? "none"}</span>
       <button type="button" onClick={() => p.onApplyDefinition?.(null)}>
         menu-clear-filter
@@ -51,6 +84,7 @@ vi.mock("./NewDealButton", () => ({ NewDealButton: () => null }));
 import type { BoardViewState } from "./boardView";
 import { forgetBoardView } from "./boardViewMemory";
 import { DealListClient } from "./DealListClient";
+import type { SavedFilterView } from "./savedFilterView";
 
 afterEach(() => {
   cleanup();
@@ -125,6 +159,7 @@ describe("DealListClient shares the persisted board view", () => {
     await waitFor(() =>
       expect(listQueryMock).toHaveBeenCalledWith(
         expect.objectContaining({ timeZone: expect.any(String) }),
+        expect.objectContaining({ signal: expect.any(AbortSignal) }),
       ),
     );
   });
@@ -136,6 +171,7 @@ describe("DealListClient shares the persisted board view", () => {
     await waitFor(() =>
       expect(listQueryMock).toHaveBeenCalledWith(
         expect.objectContaining({ definition: ROTTING_VIEW.savedFilter?.definition }),
+        expect.objectContaining({ signal: expect.any(AbortSignal) }),
       ),
     );
   });
@@ -158,6 +194,7 @@ describe("DealListClient shares the persisted board view", () => {
             conditions: [{ field: "title", op: "contains", value: "acme" }],
           },
         }),
+        expect.objectContaining({ signal: expect.any(AbortSignal) }),
       ),
     );
   });
@@ -182,6 +219,7 @@ describe("DealListClient inline filter", () => {
             conditions: [{ field: "title", op: "contains", value: "acme" }],
           },
         }),
+        expect.objectContaining({ signal: expect.any(AbortSignal) }),
       ),
     );
   });
@@ -226,4 +264,33 @@ describe("DealListClient inline filter", () => {
 
     expect(screen.getByLabelText("Filter")).not.toHaveTextContent("1");
   });
+});
+
+it("blocks restored unavailable views without showing cached records or issuing an all-record query", async () => {
+  listQueryMock.mockResolvedValue({ rows: [], total: 0, totalValue: "0" });
+  renderClient({
+    initialView: {
+      ...ROTTING_VIEW,
+      savedFilter: {
+        ...ROTTING_VIEW.savedFilter!,
+        availability: "unavailable",
+        definition: null,
+        problem: { kind: "unsupported", code: "unsupported-field" },
+      },
+    },
+  });
+  expect(screen.getByRole("alert")).toHaveTextContent("This saved view is unavailable");
+  expect(screen.queryByTestId("deal-list")).not.toBeInTheDocument();
+  await new Promise((resolve) => setTimeout(resolve, 30));
+  expect(listQueryMock).not.toHaveBeenCalled();
+});
+
+it("does not show the previous broad cache while recovering into a narrower valid view", () => {
+  listQueryMock.mockReturnValue(new Promise(() => {}));
+  renderClient();
+  fireEvent.click(screen.getByRole("button", { name: "select unavailable test view" }));
+  expect(screen.getByRole("alert")).toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "select narrow test view" }));
+  expect(screen.queryByTestId("deal-list")).not.toBeInTheDocument();
+  expect(screen.getByRole("status")).toBeInTheDocument();
 });

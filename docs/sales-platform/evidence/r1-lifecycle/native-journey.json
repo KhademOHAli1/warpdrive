@@ -1,0 +1,39 @@
+{
+  "profile": "task-owned synthetic PostgreSQL18.1 and native Better Auth password UI",
+  "pipeline": {
+    "id": "8b170b24-a9b2-46cc-a5ab-46ae8e4d3267",
+    "name": "نمونه فروش / DACH",
+    "isArchived": false,
+    "stageCount": 5,
+    "auditActions": ["pipeline.archive", "pipeline.restore"]
+  },
+  "unsupportedView": {
+    "id": "d76cec57-1520-4725-8364-e160b9354606",
+    "rawDefinitionUnchanged": true,
+    "definition": {
+      "version": 99,
+      "definition": {
+        "conditions": []
+      },
+      "targetEntity": "deal"
+    }
+  },
+  "observedUI": [
+    "existing pipeline create form and stage editor",
+    "native expired-proof rejection",
+    "native account-security password re-verification succeeded",
+    "archive and restore persisted with one audit each",
+    "Farsi desktop and390px directory",
+    "unsupported view blocked visible cards and totals",
+    "reload preserved blocked selection without initial card/amount payload",
+    "explicit recovery restored permitted records",
+    "English directory with original authored pipeline name retained"
+  ],
+  "limits": [
+    "synthetic local data only",
+    "no native human language/accessibility review",
+    "no provider/pilot/production qualification",
+    "initial in-document RSC bootstrap had already-delivered permitted data before view switch; reloaded blocked page omits card data"
+  ],
+  "observedAt": "2026-10-31T16:24:12.744624+00:00"
+}

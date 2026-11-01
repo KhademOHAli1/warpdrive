@@ -2,6 +2,8 @@ import type { BoardCard } from "./dealRepo";
 
 export interface BoardData {
   cards: BoardCard[];
+  filterKey?: string;
+  filterIsActive?: boolean;
 }
 
 function sorted(cards: BoardCard[]): BoardCard[] {
@@ -20,14 +22,14 @@ export function applyMove(
   const cards = data.cards.map((c) =>
     c.id === move.dealId ? { ...c, stageId: move.toStageId, boardPosition: move.boardPosition } : c,
   );
-  return { cards: sorted(cards) };
+  return { ...data, cards: sorted(cards) };
 }
 
 export function removeCard(data: BoardData, dealId: string): BoardData {
-  return { cards: data.cards.filter((c) => c.id !== dealId) };
+  return { ...data, cards: data.cards.filter((c) => c.id !== dealId) };
 }
 
 export function upsertCard(data: BoardData, card: BoardCard): BoardData {
   const without = data.cards.filter((c) => c.id !== card.id);
-  return { cards: sorted([...without, card]) };
+  return { ...data, cards: sorted([...without, card]) };
 }

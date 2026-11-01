@@ -31,7 +31,9 @@
     "ui:record": "bun scripts/shadcn.ts record",
     "ui:verify": "bun run typecheck && bun run test:unit src/components/ui src/features/i18n src/features/identity src/features/navigation src/components/shell src/features/activities/ActivityDatePicker.test.tsx",
     "i18n:audit": "bun scripts/i18n/audit.ts",
-    "i18n:check": "bun scripts/i18n/audit.ts --check"
+    "i18n:check": "bun scripts/i18n/audit.ts --check",
+    "sales:check": "bun --no-env-file scripts/sales-platform/programme-check.ts",
+    "sales:migrations:inspect": "bun --no-env-file scripts/sales-platform/check-migration-lineage.ts"
   },
   "keywords": [],
   "author": "Nikita Sawinyh",

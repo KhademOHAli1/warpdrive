@@ -16,10 +16,20 @@ export function usePeopleListPaging(opts: {
   orgNames: Record<string, string>;
   sort: ColumnSort<PersonSortField>;
   filter: ContactFilterDefinition | null;
+  enabled?: boolean;
   search?: string;
 }) {
   const t = useAppTranslations("contacts");
-  const { initial, initialTotal, initialRefLabels, orgNames, sort, filter, search = "" } = opts;
+  const {
+    initial,
+    initialTotal,
+    initialRefLabels,
+    orgNames,
+    sort,
+    filter,
+    enabled = true,
+    search = "",
+  } = opts;
   const utils = trpc.useUtils();
   const utilsRef = useRef(utils);
   useEffect(() => {
@@ -47,6 +57,7 @@ export function usePeopleListPaging(opts: {
     initialTotal,
     initialRefLabels,
     fetchPage,
+    enabled,
     reloadError: t("couldnTLoadPeoplePleaseTryAgain"),
     moreError: t("couldnTLoadMorePeoplePleaseTryAgain"),
   });

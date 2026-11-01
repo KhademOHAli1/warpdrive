@@ -50,6 +50,7 @@ export function SavedViewMenu({
   onSaveCurrent,
 }: SavedViewMenuProps): React.ReactNode {
   const t = useAppTranslations("tableControls");
+  const compatibility = useAppTranslations("viewCompatibility");
   const selected = views.find((v) => v.id === selectedViewId) ?? null;
   const ordered = [...views].sort((a, b) => Number(b.favorite) - Number(a.favorite));
   const [pendingDelete, setPendingDelete] = useState<PendingFilterDelete | null>(null);
@@ -83,6 +84,11 @@ export function SavedViewMenu({
               >
                 <span className="truncate">
                   <bdi dir="auto">{v.name}</bdi>
+                  {v.availability === "unavailable" && (
+                    <span className="ms-1 text-muted-foreground">
+                      ({compatibility("unavailableLabel")})
+                    </span>
+                  )}
                 </span>
               </DropdownMenuItem>
               {/* Starring and deleting are both owner-scoped, so neither is offered on someone

@@ -1,0 +1,11 @@
+{
+  "title": "Diese gespeicherte Ansicht ist nicht verfügbar",
+  "body": "Die ursprünglichen Bedingungen bleiben erhalten. Wählen Sie eine andere Ansicht oder lassen Sie ausdrücklich alle zugänglichen Datensätze anzeigen.",
+  "showAll": "Alle zugänglichen Datensätze anzeigen",
+  "unavailableLabel": "Nicht verfügbar",
+  "checkingTitle": "Gespeicherte Ansicht wird geprüft",
+  "checkingBody": "Die gespeicherten Bedingungen werden geprüft, bevor Datensätze angezeigt werden.",
+  "queryError": "Diese Ansicht konnte nicht geladen werden. Ihre ausgewählten Bedingungen bleiben erhalten.",
+  "retry": "Erneut versuchen",
+  "missingBody": "Diese Ansicht wurde entfernt oder ist für Sie nicht mehr zugänglich. Wählen Sie eine andere Ansicht oder lassen Sie ausdrücklich alle zugänglichen Datensätze anzeigen."
+}

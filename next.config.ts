@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
+import { applyDevelopmentCachePolicy } from "./src/config/developmentCache";
 
 // Security response headers, applied to every route.
 //
@@ -59,6 +60,9 @@ function securityHeaders(directives: string[]): { key: string; value: string }[]
 }
 
 const nextConfig: NextConfig = {
+  webpack(config: Record<string, unknown>, context: { dev: boolean }) {
+    return applyDevelopmentCachePolicy(config, context.dev);
+  },
   // Action arguments include credentials, CSRF tokens and private email content.
   logging: { serverFunctions: false },
   // Its server DOM depends on packages with mixed module formats; load it through Bun.
@@ -97,6 +101,8 @@ export default createNextIntlPlugin({
   requestConfig: "./src/features/i18n/request.ts",
   experimental: {
     createMessagesDeclaration: [
+      "./src/features/pipelines/messages/lifecycle.en.json",
+      "./src/features/saved-filters/messages/viewCompatibility.en.json",
       "./src/features/workflows/messages/workflows.en.json",
       "./src/features/i18n/messages/en.json",
       "./src/components/shell/messages/utilities.en.json",

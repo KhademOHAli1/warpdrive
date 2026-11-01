@@ -67,6 +67,8 @@ const base = z.object({
   // that has already connected the clients it needs can set "disabled" and shut the door. An
   // enum rather than a boolean so a typo fails at boot instead of silently reading as "open".
   OAUTH_REGISTRATION: z.enum(["open", "disabled"]).default("open"),
+  // Opt-in while lifecycle, access-revocation and upgrade acceptance remain under qualification.
+  SALES_PIPELINE_LIFECYCLE_ENABLED: boolFromString.default(false),
   BASE_CURRENCY: z.string().length(3).default("USD"),
   SEED_ADMIN_EMAIL: z.string().email().or(z.literal("")).default(""),
   ALLOW_FIRST_LOGIN_ADMIN: boolFromString.default(false),

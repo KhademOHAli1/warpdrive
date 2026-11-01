@@ -14,7 +14,7 @@ type Filter = "inbox" | "archived";
 export interface LeadsActionBarProps {
   filter: Filter;
   onFilter: (f: Filter) => void;
-  count: number;
+  count: number | null;
   baseCurrency?: string;
   // Gates the "Import leads" link in the add-lead menu (data.import permission).
   canImport: boolean;
@@ -33,6 +33,7 @@ export interface LeadsActionBarProps {
   onReorderColumn: (from: string, to: string) => void;
   // Export the current filtered/sorted rows to CSV (client-side).
   onExport: () => void;
+  exportDisabled?: boolean;
   // Inline ad-hoc condition builder, rendered alongside the fixed-chip LeadFilters (additive).
   filterBuilder?: React.ReactNode;
 }
@@ -99,9 +100,11 @@ export function LeadsActionBar(props: LeadsActionBarProps): React.ReactNode {
         onCreated={props.onCreated}
       />
 
-      <span className="text-sm tabular-nums text-muted-foreground">
-        {tLeads("leadCount", { count })}
-      </span>
+      {count !== null && (
+        <span className="text-sm tabular-nums text-muted-foreground">
+          {tLeads("leadCount", { count })}
+        </span>
+      )}
 
       <div className="ms-auto flex items-center gap-2">
         {props.filterBuilder}
@@ -129,6 +132,7 @@ export function LeadsActionBar(props: LeadsActionBarProps): React.ReactNode {
             <button
               type="button"
               role="menuitem"
+              disabled={props.exportDisabled}
               className={POP_ITEM}
               onClick={() => {
                 close();

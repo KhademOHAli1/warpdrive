@@ -1,0 +1,63 @@
+{
+  "title": "Warpdrive sales platform roadmap",
+  "date": "2026-10-31",
+  "timezone": "Europe/Berlin",
+  "status": "Planning proposal; no application implementation",
+  "projects": 16,
+  "tasks": 128,
+  "ux_studies": 20,
+  "checks": {
+    "unique_task_ids": true,
+    "eight_tasks_per_project": true,
+    "all_dependencies_resolve": true,
+    "dependency_graph_acyclic": true,
+    "research_ids_resolve": true,
+    "local_markdown_links_resolve": true,
+    "csv_round_trip": true,
+    "scaffolder_placeholders_absent": true
+  },
+  "files": [
+    {
+      "path": "INTEGRATION-SAFETY.md",
+      "bytes": 31308,
+      "sha256": "80463a6ed9e544cfc7f2133aa387b90f7daac3927901d1d1907dbf8318d6cfdc",
+      "words": 4206
+    },
+    {
+      "path": "PRD-Warpdrive-Sales-Process-Platform.md",
+      "bytes": 14004,
+      "sha256": "e9209529d3935cf4ef8f3b3500f39a78d52a7bdec1b47db4d1a74c242276d88f",
+      "words": 1891
+    },
+    {
+      "path": "PROJECTS.md",
+      "bytes": 44243,
+      "sha256": "939e009752a9c82fcd53d1f3807705771b4cade0dc33edd2685a671a2cbeae5b",
+      "words": 6212
+    },
+    {
+      "path": "README.md",
+      "bytes": 4969,
+      "sha256": "967295af4ae2493a712e4d818d58b1301e95a148dde2de1d1986c8230af12e1d",
+      "words": 663
+    },
+    {
+      "path": "SOURCES-AND-DECISIONS.md",
+      "bytes": 11271,
+      "sha256": "c7e34f382b65fc073618501aa5f9ce73b68850e920ae717694e0a2e50a0227bb",
+      "words": 1373
+    },
+    {
+      "path": "UX-RESEARCH.md",
+      "bytes": 23228,
+      "sha256": "d52ae95cf07a71d21771ff02c18342a769cc58df039dd4535bfd7bb0cff1fbe4",
+      "words": 3159
+    },
+    {
+      "path": "TASKS.csv",
+      "bytes": 52641,
+      "sha256": "cc436607d882d4d6e2c7fba516d436dae6fe60536c158467fd41562b02be7f14",
+      "words": 5019
+    }
+  ]
+}

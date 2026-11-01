@@ -17,6 +17,7 @@ import {
   EMPTY_REF_LABELS,
 } from "@/features/custom-fields/refLabelsContext";
 import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
+import type { SavedView } from "@/features/saved-filters/savedView";
 import type { CustomFieldDef } from "@/types/customFields";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { deleteOrgAction } from "./actions";
@@ -77,7 +78,9 @@ export function OrgsList({
   const { effective, cycle } = useColumnSort<OrgSortField>(DEFAULT_SORT);
   const [filter, setFilter] = useState<ContactFilterDefinition | null>(null);
   // The saved view the filter came from, so the picker can show which one is applied.
-  const [savedViewId, setSavedViewId] = useState<string | null>(null);
+  const [savedView, setSavedView] = useState<SavedView | null>(null);
+  const savedViewId = savedView?.id ?? null;
+  const blocked = savedView?.availability === "unavailable";
   // Whether the pair-merge dialog is open (only reachable with exactly two rows selected).
   const [merging, setMerging] = useState(false);
 
@@ -88,6 +91,7 @@ export function OrgsList({
     initialRefLabels,
     sort: effective,
     filter,
+    enabled: !blocked,
     search: searchInput.search,
   });
 
@@ -104,6 +108,7 @@ export function OrgsList({
   }, [reload, clearSelection]);
 
   async function bulkDelete(): Promise<void> {
+    if (blocked) return;
     const ids = [...selection.selected];
     if (ids.length === 0) return;
     const outcomes = await Promise.all(
@@ -125,7 +130,7 @@ export function OrgsList({
   function clearCriteria(): void {
     searchInput.clear();
     setFilter(null);
-    setSavedViewId(null);
+    setSavedView(null);
     selection.clear();
   }
 
@@ -152,21 +157,28 @@ export function OrgsList({
         onSubmit={searchInput.submit}
         onClear={searchInput.clear}
         summary={
-          busy
-            ? tContacts("directory.updating")
-            : tContacts("countLabel", { shown: rows.length, total })
+          blocked
+            ? null
+            : busy
+              ? tContacts("directory.updating")
+              : tContacts("countLabel", { shown: rows.length, total })
         }
       >
         <OrgsListToolbar
           filter={filter}
           savedViewId={savedViewId}
+          selectedView={savedView}
           onSelectView={(view) => {
-            setSavedViewId(view?.id ?? null);
+            setSavedView(view);
             setFilter(view?.definition ?? null);
+            selection.clear();
+            setMerging(false);
           }}
           onApplyFilter={(def) => {
-            setSavedViewId(null);
+            setSavedView(null);
             setFilter(def);
+            selection.clear();
+            setMerging(false);
           }}
         />
 
@@ -178,14 +190,14 @@ export function OrgsList({
           onReorder={columns.reorder}
         />
       </ContactDirectoryToolbar>
-      {narrowed && (
+      {!blocked && narrowed && (
         <ContactDirectoryCriteria
           query={searchInput.draft.trim()}
           count={filter?.conditions.length ?? 0}
           onClear={clearCriteria}
         />
       )}
-      {selection.count > 0 && (
+      {!blocked && selection.count > 0 && (
         <BulkActionBar count={selection.count} onClear={selection.clear}>
           {mergePair !== null && (
             <button
@@ -216,7 +228,7 @@ export function OrgsList({
           onClose={() => setMerging(false)}
         />
       )}
-      {rows.length === 0 && !busy ? (
+      {blocked || (rows.length === 0 && error !== null) ? null : rows.length === 0 && !busy ? (
         <ContactDirectoryEmptyState
           kind="org"
           narrowed={narrowed}
@@ -240,7 +252,7 @@ export function OrgsList({
           </CustomFieldRefLabelsProvider>
         </div>
       )}
-      {error !== null && (
+      {!blocked && error !== null && (
         <div
           role="alert"
           className="flex flex-wrap items-center justify-between gap-3 border-t px-4 py-3 text-sm text-destructive"
@@ -251,24 +263,26 @@ export function OrgsList({
           </Button>
         </div>
       )}
-      <footer className="flex min-h-14 flex-wrap items-center justify-between gap-3 border-t px-4 py-3">
-        <p className="text-xs text-muted-foreground tabular-nums">
-          {busy
-            ? tContacts("directory.updating")
-            : tContacts("countLabel", { shown: rows.length, total })}
-        </p>
-        {rows.length < total && (
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={busy}
-            onClick={() => void loadMore()}
-          >
-            {loading ? tContacts("loading") : tContacts("loadMore")}
-          </Button>
-        )}
-      </footer>
+      {!blocked && (
+        <footer className="flex min-h-14 flex-wrap items-center justify-between gap-3 border-t px-4 py-3">
+          <p className="text-xs text-muted-foreground tabular-nums">
+            {busy
+              ? tContacts("directory.updating")
+              : tContacts("countLabel", { shown: rows.length, total })}
+          </p>
+          {rows.length < total && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={busy}
+              onClick={() => void loadMore()}
+            >
+              {loading ? tContacts("loading") : tContacts("loadMore")}
+            </Button>
+          )}
+        </footer>
+      )}
     </section>
   );
 }

@@ -1,0 +1,2 @@
+# Preserve the owner's approved CSV byte-for-byte, including its CRLF line endings.
+approved/TASKS.csv -text whitespace=cr-at-eol

@@ -8,14 +8,14 @@ import { stages } from "@/db/schema/stages";
 import { err, ok, type Result } from "@/types/result";
 import {
   type PipelineCreateInput,
-  type PipelineRenameInput,
   pipelineCreateInput,
-  pipelineRenameInput,
   type StageCreateInput,
   type StageReorderInput,
   stageCreateInput,
   stageReorderInput,
 } from "./schemas";
+
+export { renamePipeline } from "./pipelineRename";
 
 type Db = NodePgDatabase<typeof schema>;
 
@@ -80,33 +80,6 @@ export async function createPipelineWithStages(
     await tx.insert(stages).values(buildDefaultStageValues(pipeline.id));
     return pipeline;
   });
-  return ok(row);
-}
-
-export async function renamePipeline(
-  db: Db,
-  session: ManageSession,
-  raw: PipelineRenameInput,
-  signal: AbortSignal,
-): Promise<Result<typeof pipelines.$inferSelect, AppError>> {
-  if (!canManage(session)) {
-    return err(new AppError(ERROR_IDS.PERM_DENIED, "Not permitted", { userId: session.userId }));
-  }
-  const input = pipelineRenameInput.parse(raw);
-  signal.throwIfAborted();
-  const rows = await db
-    .update(pipelines)
-    .set({ name: input.name, updatedAt: new Date() })
-    .where(eq(pipelines.id, input.pipelineId))
-    .returning();
-  const row = rows[0];
-  if (row === undefined) {
-    return err(
-      new AppError(ERROR_IDS.PIPELINE_NOT_FOUND, "Pipeline not found", {
-        pipelineId: input.pipelineId,
-      }),
-    );
-  }
   return ok(row);
 }
 

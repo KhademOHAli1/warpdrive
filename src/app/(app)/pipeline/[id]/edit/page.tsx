@@ -37,8 +37,11 @@ export default async function EditPipelinePage({
         {translateSales("edit_pipeline_81305")}
       </h1>
       <EditPipelineClient
+        key={pipeline.id}
         pipelineId={pipeline.id}
         pipelineName={pipeline.name}
+        pipelineUpdatedAt={pipeline.updatedAt.toISOString()}
+        snapshotId={randomUUID()}
         stages={pipeline.stages.map((s) => ({
           id: s.id,
           name: s.name,
@@ -50,3 +53,5 @@ export default async function EditPipelinePage({
     </main>
   );
 }
+
+import { randomUUID } from "node:crypto";

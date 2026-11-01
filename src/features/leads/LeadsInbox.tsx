@@ -4,11 +4,13 @@ import type React from "react";
 import { useEffect, useMemo, useState } from "react";
 import { useColumns } from "@/components/data-table/useColumns";
 import { useActionError } from "@/components/shell/ActionErrorProvider";
+import { Button } from "@/components/ui/Button";
 import { DEFAULT_BASE_CURRENCY } from "@/constants/currency";
 import { addFormCustomFieldDefs } from "@/features/custom-fields/CustomFieldCreateFields";
 import { customFieldColumns } from "@/features/custom-fields/listColumns";
 import { CustomFieldRefLabelsProvider } from "@/features/custom-fields/refLabelsContext";
 import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
+import type { SavedView } from "@/features/saved-filters/savedView";
 import { trpc } from "@/lib/trpc-client";
 import type { CustomFieldDef } from "@/types/customFields";
 import { readCsrfToken } from "@/utils/csrfCookie";
@@ -50,6 +52,7 @@ export function LeadsInbox({
   customFieldDefs = [],
 }: LeadsInboxProps): React.ReactNode {
   const tLeads = useAppTranslations("leads");
+  const tViews = useAppTranslations("viewCompatibility");
 
   const router = useRouter();
   const reportError = useActionError();
@@ -66,6 +69,8 @@ export function LeadsInbox({
   const [nextActivity, setNextActivity] = useState<LeadNextActivityBucket | null>(null);
   const [ownerIds, setOwnerIds] = useState<string[]>([]);
   const [condition, setCondition] = useState<LeadConditionInput | null>(null);
+  const [selectedView, setSelectedView] = useState<SavedView | null>(null);
+  const blocked = selectedView?.availability === "unavailable";
 
   const sort = useLeadSort(initialView?.sort ?? null);
   const selection = useLeadSelection();
@@ -92,6 +97,7 @@ export function LeadsInbox({
     labelKeys,
     nextActivity,
     condition,
+    enabled: !blocked,
   });
   const rows = list.rows;
 
@@ -102,7 +108,7 @@ export function LeadsInbox({
   }
 
   async function bulkChange(ids: string[], change: BulkUpdateLeadsInput["change"]): Promise<void> {
-    if (ids.length === 0) return;
+    if (blocked || ids.length === 0) return;
     const r = await bulkUpdateLeadsAction({ ids, change }, readCsrfToken());
     if (r.ok) {
       selection.clear();
@@ -124,6 +130,7 @@ export function LeadsInbox({
   });
 
   async function archiveToggle(id: string, archived: boolean): Promise<void> {
+    if (blocked) return;
     const r = await archiveLeadAction({ leadId: id, archived }, readCsrfToken());
     if (r.ok) await refetch();
     else reportError(r.error.id);
@@ -133,6 +140,7 @@ export function LeadsInbox({
   // sort, inline condition, and visible-column order as query params. The route re-applies the
   // visibility gate and streams text/csv (not just the loaded page).
   function exportCsv(): void {
+    if (blocked) return;
     window.location.href = buildLeadExportHref({
       filter,
       sort: sort.effective,
@@ -157,12 +165,15 @@ export function LeadsInbox({
     setLabelKeys([]);
     setNextActivity(null);
     setCondition(null);
+    setSelectedView(null);
+    selection.clear();
+    setConvertTarget(null);
   }
 
   // Zero rows while the first page is still in flight is not an empty inbox, so the message waits
   // for the read to land rather than accusing the user of having no leads.
   const empty =
-    list.isLoading || rows.length > 0 ? null : (
+    blocked || list.error || list.isLoading || rows.length > 0 ? null : (
       <LeadsEmpty
         archived={archived}
         hasFilter={hasFilter}
@@ -199,7 +210,7 @@ export function LeadsInbox({
       <LeadsActionBar
         filter={filter}
         onFilter={setFilter}
-        count={list.total}
+        count={blocked || list.error || list.isLoading ? null : list.total}
         baseCurrency={baseCurrency}
         canImport={canImport}
         onCreated={() => void refetch()}
@@ -214,10 +225,34 @@ export function LeadsInbox({
         onToggleColumn={columns.toggle}
         onReorderColumn={columns.reorder}
         onExport={exportCsv}
+        exportDisabled={blocked}
         filterBuilder={
-          <LeadsFilterControls users={users} condition={condition} onCondition={setCondition} />
+          <LeadsFilterControls
+            users={users}
+            condition={condition}
+            selectedView={selectedView}
+            onSelectView={(view) => {
+              setSelectedView(view);
+              setCondition(view?.definition ?? null);
+              selection.clear();
+              setConvertTarget(null);
+            }}
+            onCondition={setCondition}
+          />
         }
       />
+
+      {!blocked && list.error && (
+        <div
+          role="alert"
+          className="mb-3 flex flex-wrap items-center justify-between gap-3 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+        >
+          <span>{tViews("queryError")}</span>
+          <Button type="button" variant="outline" size="sm" onClick={() => void refetch()}>
+            {tViews("retry")}
+          </Button>
+        </div>
+      )}
 
       {convertError !== null && (
         <div
@@ -228,7 +263,7 @@ export function LeadsInbox({
         </div>
       )}
 
-      {selection.count > 0 && (
+      {!blocked && selection.count > 0 && (
         <div className="mb-3">
           <BulkEditPanel
             count={selection.count}
@@ -245,11 +280,11 @@ export function LeadsInbox({
         </div>
       )}
 
-      <div className="min-h-0 flex-1 overflow-auto rounded-sg border">
+      <div aria-busy={list.isLoading} className="min-h-0 flex-1 overflow-auto rounded-sg border">
         {/* Nothing exists and nothing is filtered: the header row, select-all and sort controls
             are machinery over zero rows, so the table goes and the empty state stands alone.
             A filtered-to-nothing list keeps its columns, since the columns are still the view. */}
-        {empty !== null && !hasFilter ? (
+        {blocked || (list.error && rows.length === 0) ? null : empty !== null && !hasFilter ? (
           empty
         ) : (
           <CustomFieldRefLabelsProvider value={list.refLabels}>
@@ -274,7 +309,7 @@ export function LeadsInbox({
 
       {list.canLoadMore && <LeadsLoadMore onClick={list.loadMore} />}
 
-      {convertTarget !== null && (
+      {!blocked && convertTarget !== null && (
         <ConvertLeadDialog
           defs={dealFields}
           onClose={() => setConvertTarget(null)}

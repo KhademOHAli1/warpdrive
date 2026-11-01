@@ -71,3 +71,13 @@ describe("boardCache", () => {
     expect(next.cards.map((c) => c.id)).toEqual(["a", "b", "c"]);
   });
 });
+
+it("preserves the query scope receipt through optimistic and realtime cache helpers", () => {
+  const data = { cards: [card("a", "s1", "1")], filterKey: "verified-scope", filterIsActive: true };
+  expect(applyMove(data, { dealId: "a", toStageId: "s2", boardPosition: "1" })).toMatchObject({
+    filterKey: "verified-scope",
+    filterIsActive: true,
+  });
+  expect(removeCard(data, "a")).toMatchObject({ filterKey: "verified-scope" });
+  expect(upsertCard(data, card("b", "s1", "2"))).toMatchObject({ filterKey: "verified-scope" });
+});

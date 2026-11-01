@@ -74,7 +74,13 @@ function renderEditor(): void {
   queryClient = new QueryClient();
   render(
     <QueryClientProvider client={queryClient}>
-      <EditPipelineClient pipelineId="p1" pipelineName="Sales" stages={STAGES} />
+      <EditPipelineClient
+        pipelineId="p1"
+        pipelineName="Sales"
+        pipelineUpdatedAt="2026-10-31T14:00:00Z"
+        snapshotId="initial-read"
+        stages={STAGES}
+      />
     </QueryClientProvider>,
   );
 }
@@ -97,7 +103,10 @@ function save(): void {
 }
 
 beforeEach(() => {
-  renamePipelineAction.mockResolvedValue({ ok: true, value: { id: "p1", name: "Sales" } });
+  renamePipelineAction.mockResolvedValue({
+    ok: true,
+    value: { id: "p1", name: "Sales", updatedAt: "2026-10-31T14:00:01Z" },
+  });
   createStageAction.mockResolvedValue({ ok: true, value: { id: "n1" } });
   updateStageAction.mockResolvedValue({ ok: true, value: { id: "s1" } });
   deleteStageAction.mockResolvedValue({ ok: true, value: undefined });
@@ -196,7 +205,9 @@ describe("EditPipelineClient stage reordering", () => {
     renderEditor();
     fireEvent.click(screen.getByRole("button", { name: "+ Add stage" }));
     save();
-    await waitFor(() => expect(screen.getByRole("alert")).toHaveTextContent("E_PIPELINE_001"));
+    await waitFor(() =>
+      expect(screen.getByRole("alert")).toHaveTextContent(/no longer available for editing/i),
+    );
     save();
     await waitFor(() => expect(push).toHaveBeenCalledWith("/pipeline/p1"));
     expect(createStageAction).toHaveBeenCalledTimes(1);
@@ -224,7 +235,9 @@ describe("EditPipelineClient stage reordering", () => {
     renderEditor();
     fireEvent.click(screen.getByRole("button", { name: "Delete stage 2" }));
     save();
-    await waitFor(() => expect(screen.getByRole("alert")).toHaveTextContent("E_PIPELINE_001"));
+    await waitFor(() =>
+      expect(screen.getByRole("alert")).toHaveTextContent(/no longer available for editing/i),
+    );
     save();
     await waitFor(() => expect(push).toHaveBeenCalledWith("/pipeline/p1"));
     expect(deleteStageAction).toHaveBeenCalledTimes(1);
@@ -235,7 +248,9 @@ describe("EditPipelineClient stage reordering", () => {
     renderEditor();
     fireEvent.click(screen.getByRole("button", { name: "+ Add stage" }));
     save();
-    await waitFor(() => expect(screen.getByRole("alert")).toHaveTextContent("E_PIPELINE_001"));
+    await waitFor(() =>
+      expect(screen.getByRole("alert")).toHaveTextContent(/no longer available for editing/i),
+    );
     fireEvent.change(screen.getByLabelText("Stage 4 name"), { target: { value: "Demo" } });
     save();
     await waitFor(() =>
@@ -252,7 +267,9 @@ describe("EditPipelineClient stage reordering", () => {
     renderEditor();
     fireEvent.click(screen.getByRole("button", { name: "Delete stage 2" }));
     save();
-    await waitFor(() => expect(screen.getByRole("alert")).toHaveTextContent("E_PIPELINE_001"));
+    await waitFor(() =>
+      expect(screen.getByRole("alert")).toHaveTextContent(/no longer available for editing/i),
+    );
     save();
     await waitFor(() => expect(push).toHaveBeenCalledWith("/pipeline/p1"));
     expect(reorderStagesAction).toHaveBeenCalledTimes(2);
@@ -291,7 +308,9 @@ describe("EditPipelineClient stage reordering", () => {
     renderEditor();
     drag("s2", "s1");
     save();
-    await waitFor(() => expect(screen.getByRole("alert")).toHaveTextContent(/try again/i));
+    await waitFor(() =>
+      expect(screen.getByRole("alert")).toHaveTextContent(/could not be confirmed/i),
+    );
     expect(push).not.toHaveBeenCalled();
   });
 
@@ -300,7 +319,9 @@ describe("EditPipelineClient stage reordering", () => {
     renderEditor();
     drag("s2", "s1");
     save();
-    await waitFor(() => expect(screen.getByRole("alert")).toHaveTextContent("E_PIPELINE_001"));
+    await waitFor(() =>
+      expect(screen.getByRole("alert")).toHaveTextContent(/no longer available for editing/i),
+    );
     expect(push).not.toHaveBeenCalled();
     expect(refresh).not.toHaveBeenCalled();
   });
@@ -428,7 +449,9 @@ describe("EditPipelineClient deleting a stage that holds deals", () => {
     await screen.findByRole("dialog");
     confirmMove();
     save();
-    await waitFor(() => expect(screen.getByRole("alert")).toHaveTextContent("E_PIPELINE_001"));
+    await waitFor(() =>
+      expect(screen.getByRole("alert")).toHaveTextContent(/no longer available for editing/i),
+    );
     expect(screen.getByText("12 deals, 3 won or lost")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Delete stage 1" }));
     const dialog = await screen.findByRole("dialog", { name: "Delete Contacted?" });
@@ -471,7 +494,9 @@ describe("EditPipelineClient deleting a stage that holds deals", () => {
     confirmMove();
     queryClient.setQueryData(["board", "p1"], { cards: [{ id: "d1", stageId: "s1" }] });
     save();
-    await waitFor(() => expect(screen.getByRole("alert")).toHaveTextContent("E_PIPELINE_001"));
+    await waitFor(() =>
+      expect(screen.getByRole("alert")).toHaveTextContent(/no longer available for editing/i),
+    );
     expect(queryClient.getQueryData(["board", "p1"])).toBeUndefined();
   });
 
@@ -481,7 +506,13 @@ describe("EditPipelineClient deleting a stage that holds deals", () => {
       .mockResolvedValueOnce({ ok: false, error: { id: "E_STAGE_002" } });
     render(
       <QueryClientProvider client={new QueryClient()}>
-        <EditPipelineClient pipelineId="p1" pipelineName="Sales" stages={STAGES.slice(0, 2)} />
+        <EditPipelineClient
+          pipelineId="p1"
+          pipelineName="Sales"
+          pipelineUpdatedAt="2026-10-31T14:00:00Z"
+          snapshotId="initial-read"
+          stages={STAGES.slice(0, 2)}
+        />
       </QueryClientProvider>,
     );
     fireEvent.click(screen.getByRole("button", { name: "Delete stage 1" }));
