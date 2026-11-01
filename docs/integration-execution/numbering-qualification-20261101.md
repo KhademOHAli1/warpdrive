@@ -101,5 +101,6 @@ keyboard/screen-reader journeys, deployed recovery and actual provider qualifica
 open. Unit/jsdom and compile success do not qualify those stages. Web 3160, realtime 8080 and
 the programme worker were absent at the last service inventory; this work started none.
 Existing PG/S3 data and keys were preserved. The migration-lineage hold remains in force;
-no global number or new local 94 slot was allocated. MCP grants, origin approval, shared
+this numbering correction allocated no migration. Later MAIL candidate reservations are
+recorded separately in migration-allocation.md. MCP grants, origin approval, shared
 connection lifecycle and transactional authority fences remain separate implementation work.

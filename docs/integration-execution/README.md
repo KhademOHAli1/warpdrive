@@ -111,7 +111,8 @@ campaign; no broad campaign is inherited from a completed window.
 
 [Local migration reservations](migration-allocation.md) now carry an execution hold for the
 published-main Privacy 83..85 collision. Local 85..93 reservations allocate no global slots;
-local 94 is still unallocated. An unaccepted work-only reconciliation proposal does not
+local 94 is reserved only for MAIL candidate private-intake provenance; local 95 remains
+unallocated. An unaccepted work-only reconciliation proposal does not
 establish a merged source, installed upgrade, Privacy coverage or accepted numbering.
 
 The ARCH design contracts passed independent scenario review after concrete corrections;
