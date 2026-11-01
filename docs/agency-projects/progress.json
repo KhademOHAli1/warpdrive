@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-11-01T04:04:24.265720+00:00",
+  "updatedAt": "2026-11-01T04:22:41.798891+00:00",
   "statusMeaning": "Evidence level only. A source-verified task is not accepted or complete. All 96 acceptance flags remain false.",
   "tasks": {
     "AP-00.1": {
@@ -29,7 +29,7 @@
     },
     "AP-00.7": {
       "status": "active",
-      "evidence": "MAIL finite source-check batch completed sequentially under60s owned deadlines and live5GiB floor. Nine owned process groups verified empty and lane released; minimum observed18,123,718,656 bytes. No PG/app/build/install/provider campaign.",
+      "evidence": "Second finite source batch released,7 groups empty,min14,859,186,176 bytes. Five selected communication unit groups empty,min15,049,256,960 bytes. Explicit routine small containerless units restored <=30s/oneworker/live5GiB; no heavy/native window inherited.",
       "remaining": "Further checks need a new finite window. No Agency service/DB/migration allocation exists; accepted shared interfaces/base required before persistence qualification.",
       "accepted": false
     },
@@ -41,7 +41,7 @@
     },
     "AP-01.1": {
       "status": "active",
-      "evidence": "Settings ec9b3f8 adopted by 980833d and owner-reviewed; Sales f006b5a adopted by 264d9b2 as complete 178-path source delta, preserving Settings and baseline byte-for-byte. qualifications distinguish owner reports from combined evidence.",
+      "evidence": "Settings ec9b3f8 adopted by 980833d and owner-reviewed; Sales f006b5a adopted by 264d9b2 as complete 178-path source delta, preserving Settings and baseline byte-for-byte. qualifications distinguish owner reports from combined evidence. Platformed9 complete37-path source slice adopted by f5ac1dd, with focused owner evidence kept separate; all preceding feature/Settings bytes preserved.",
       "remaining": "Current combined types/lint/messages/unit/build and native FA/DE/EN acceptance remain open; no Agency workspace is enabled.",
       "accepted": false
     },
@@ -83,7 +83,7 @@
     },
     "AP-10.1": {
       "status": "active",
-      "evidence": "qualification-feature-20261101.json: current feature341/13 unit selection, narrow TypeScript, unchanged-rule type-aware ESLint29 TS files and Biome32 files pass. Original behavioral/epoch/chronology reds retained; no cases lost in review suite split.",
+      "evidence": "Current feature367/14 unit selection plus narrow TypeScript, unchanged-rule ESLint33TS and Biome36files pass. Original domain/template/review and new communication behavioral/format-only-text reds retained with exact source hashes/terminal handles.",
       "remaining": "Full repository/app/native/real PG/migration/restore and later feature increments remain open; source checks are not task acceptance.",
       "accepted": false
     },
@@ -156,8 +156,8 @@
     "AP-03.1": {
       "status": "active",
       "accepted": false,
-      "evidence": "communication-preferences-contract.md and test-preparation/communicationPreferences.test.ts.txt are reviewable TEST PREPARATION ONLY, NOT RUN. Strict contextual role/channel/cadence/reference and stable intent proposal. No src parser/module/test exists.",
-      "remaining": "Fresh finite unit lane, observed red then behavioral red/green, scoped static checks, actual native/project/person access and persistence coexistence/idempotency/Privacy/UI remain open."
+      "evidence": "Test-first strict communication preference ingress implemented: canonical intent/project/person IDs, explicit role/channel/cadence, exact protected references and preserved FA/DE text. Genuine11/14 and invisible-format1/25 reds; current integrated367/14 plus narrow types/Biome/lint pass. qualification-feature-r1-20261101.json.",
+      "remaining": "Actual native actor/project/person relationship checks, persisted coexistence/retry uniqueness, current Privacy field disclosure, UI and full AP-03.1 dependencies remain open. No scheduling or sending from this declaration."
     }
   }
 }
