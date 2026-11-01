@@ -1,0 +1,303 @@
+import time
+
+ENTRY = time.monotonic()
+ENTRY_EPOCH = time.time()
+
+import argparse
+import datetime
+import hashlib
+import json
+import os
+from pathlib import Path
+import re
+import signal
+import subprocess
+import sys
+import uuid
+
+ROOT = Path('/Users/ali/Developer/warpdrive-agency-projects')
+WORK = Path('/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work')
+FLOOR = 5 * 1024**3
+RESERVE = 4
+BASE = 'src/features/agency-projects/'
+PROFILES = {
+    'reason': (30, ['valueSchemas.ts', 'reasonBoundary.test.ts'], [], [
+        'reasonBoundary.test.ts', 'projectSchemas.test.ts', 'assignmentSchemas.test.ts',
+        'reviews/reviewBoundary.test.ts',
+    ]),
+    'authority-candidate': (60, [
+        'authorityTransactionSpec.ts', 'authorityTransactionSpec.test.ts',
+        'authorityTransactionCandidate.ts', 'authorityTransactionCandidate.test.ts',
+        'authorityTransactionCandidate.test-support.ts', 'authorityConnectionBoundary.test.ts',
+        'authorityConnectionBoundary.test-support.ts',
+    ], ['.runtime/authority-candidate-owned-global-setup.ts',
+        '.runtime/vitest.authority-candidate-pg.config.ts'], []),
+}
+CANCELLED = []
+
+
+def utc():
+    return datetime.datetime.now(datetime.timezone.utc).isoformat()
+
+
+def free_bytes():
+    stat = os.statvfs(ROOT)
+    return stat.f_bavail * stat.f_frsize
+
+
+def exclusive_json(path, value):
+    with path.open('x') as stream:
+        os.chmod(path, 0o600)
+        json.dump(value, stream, indent=2)
+        stream.write('\n')
+
+
+def atomic_json(path, value, exclusive=False):
+    temporary = path.with_name(path.name + '.' + uuid.uuid4().hex + '.tmp')
+    try:
+        exclusive_json(temporary, value)
+        if exclusive:
+            os.link(temporary, path)  # Atomic publication without replacing an existing receipt.
+        else:
+            os.replace(temporary, path)
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
+def hashes(paths):
+    result = {}
+    for name in dict.fromkeys(paths):
+        path = ROOT / name
+        if not path.resolve().is_relative_to(ROOT) or path.stat().st_size > 1024**2:
+            raise ValueError('Unsafe or oversized input: ' + name)
+        result[name] = hashlib.sha256(path.read_bytes()).hexdigest()
+    return result
+
+
+def actual_head():
+    directory = ROOT / '.git'
+    if directory.is_file():
+        directory = (ROOT / directory.read_text().strip().removeprefix('gitdir: ')).resolve()
+    value = (directory / 'HEAD').read_text().strip()
+    if value.startswith('ref: '):
+        reference = value[5:]
+        common = directory
+        if (directory / 'commondir').exists():
+            common = (directory / (directory / 'commondir').read_text().strip()).resolve()
+        loose = common / reference
+        value = loose.read_text().strip() if loose.exists() else next(
+            line.split()[0] for line in (common / 'packed-refs').read_text().splitlines()
+            if not line.startswith(('#', '^')) and line.split()[1:] == [reference]
+        )
+    if re.fullmatch('[0-9a-f]{40}', value) is None:
+        raise ValueError('Unresolved repository HEAD')
+    return value
+
+
+def group_alive(child):
+    child.poll()  # Reap the direct child while observing its independently owned group.
+    try:
+        os.killpg(child.pid, 0)
+        return True
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+
+
+def pause(deadline):
+    remaining = deadline - time.monotonic()
+    if remaining > 0:
+        time.sleep(min(0.05, remaining))
+
+
+def cleanup(child, deadline, sent, sample):
+    for signum, grace in [(signal.SIGINT, 0.5), (signal.SIGTERM, 0.75), (signal.SIGKILL, 4)]:
+        if not group_alive(child):
+            break
+        if time.monotonic() >= deadline:
+            signum, grace = signal.SIGKILL, 0
+        try:
+            os.killpg(child.pid, signum)
+            sent.append({'signal': signal.Signals(signum).name, 'sentAt': utc()})
+        except ProcessLookupError:
+            break
+        except OSError as error:
+            sent.append({'signal': signal.Signals(signum).name, 'error': str(error), 'sentAt': utc()})
+        until = min(deadline, time.monotonic() + grace)
+        while time.monotonic() < until:
+            sample()
+            if not group_alive(child):
+                break
+            pause(until)
+        if signum == signal.SIGKILL:
+            break
+    child.poll()
+
+
+def main():
+    parser = argparse.ArgumentParser(description='Fixed source-only shared-window guard; never authorizes execution.')
+    parser.add_argument('scope', choices=PROFILES)
+    parser.add_argument('phase', choices=['types', 'biome-check', 'biome-write', 'eslint', 'units'])
+    parser.add_argument('attempt', choices=list('123456789'))
+    args = parser.parse_args()
+    if Path.cwd() != ROOT or (args.scope == 'authority-candidate' and args.phase == 'units'):
+        raise ValueError('Wrong cwd or prohibited candidate unit phase')
+    for signum in (signal.SIGINT, signal.SIGTERM):
+        signal.signal(signum, lambda number, _frame: CANCELLED.append(number))
+    budget, names, controls, unit_names = PROFILES[args.scope]
+    files, units = [BASE + name for name in names], [BASE + name for name in unit_names]
+    prefix = 'agency-' + args.scope + '-source-v2'
+    runtime_prefix = ROOT / '.runtime' / (args.scope + '-source-v2')
+    window_path = runtime_prefix.with_name(runtime_prefix.name + '-window.json')
+    meta_path = WORK / (prefix + '-batch-handles.json')
+    log_path = WORK / (prefix + '-' + args.phase + '-' + args.attempt + '.log')
+    lease_path = ROOT / '.runtime/agency-source-v2-active.lock'
+    with lease_path.open('x') as lease:
+        lease.write(str(os.getpid()) + '\n')
+        lease.flush()
+        try:
+            if not window_path.exists():
+                if (args.phase, args.attempt) != ('types', '1'):
+                    raise ValueError('A new window requires types 1')
+                exclusive_json(window_path, {
+                    'schemaVersion': 2, 'scope': args.scope, 'runId': str(uuid.uuid4()),
+                    'budgetSeconds': budget, 'cleanupReserveSeconds': RESERVE,
+                    'startedAt': utc(), 'startedEpoch': ENTRY_EPOCH, 'startedMonotonic': ENTRY,
+                    'totalDeadlineMonotonic': ENTRY + budget,
+                    'executionDeadlineMonotonic': ENTRY + budget - RESERVE,
+                    'cleanupDeadlineMonotonic': ENTRY + budget - 0.25,
+                })
+            window = json.loads(window_path.read_text())
+            start, total = window['startedMonotonic'], window['totalDeadlineMonotonic']
+            execution, cleanup_end = window['executionDeadlineMonotonic'], window['cleanupDeadlineMonotonic']
+            if (window['schemaVersion'], window['scope'], window['budgetSeconds'], window['cleanupReserveSeconds']) != (2, args.scope, budget, RESERVE):
+                raise ValueError('Window profile mismatch')
+            if total != start + budget or execution != total - RESERVE or cleanup_end != total - 0.25:
+                raise ValueError('Invalid absolute window deadlines')
+            if ENTRY < start or abs((ENTRY_EPOCH - window['startedEpoch']) - (ENTRY - start)) > 2:
+                raise ValueError('Window clock identity changed')
+            if not meta_path.exists():
+                exclusive_json(meta_path, {'schemaVersion': 2, 'scope': args.scope, 'window': window, 'runs': []})
+            meta = json.loads(meta_path.read_text())
+            if meta['window'] != window or any((run['phase'], run['attempt']) == (args.phase, args.attempt) for run in meta['runs']):
+                raise ValueError('Mismatched metadata or duplicate phase/attempt receipt')
+            return run_phase(args, files, controls, units, window, meta, meta_path, log_path)
+        finally:
+            if lease_path.exists() and lease_path.stat().st_ino == os.fstat(lease.fileno()).st_ino:
+                lease_path.unlink()
+
+
+def run_phase(args, files, controls, units, window, meta, meta_path, log_path):
+    receipt_path = log_path.with_suffix('.receipt.json')
+    if receipt_path.exists():
+        raise ValueError('Duplicate immutable phase/attempt receipt')
+    config = '.runtime/tsconfig.' + args.scope + '-source.json'
+    eslint = '.runtime/' + args.scope + '-eslint.mjs'
+    targets = '.runtime/' + args.scope + '-source-targets.json'
+    bun = str(ROOT / '.runtime/bin/bun')
+    commands = {
+        'types': [bun, '--smol', 'node_modules/typescript/bin/tsc', '--noEmit', '-p', config],
+        'biome-check': [bun, 'node_modules/@biomejs/biome/bin/biome', 'check', *files],
+        'biome-write': [bun, 'node_modules/@biomejs/biome/bin/biome', 'check', '--write', *files],
+        'eslint': [bun, '--smol', 'node_modules/eslint/bin/eslint.js', '--config', eslint, *files],
+        'units': [bun, 'run', 'test:unit', *units, '--maxWorkers=1'],
+    }
+    child, stop, sent, before_hashes, after_hashes = None, None, [], {}, {}
+    before = minimum = free_bytes()
+    execution, cleanup_end = window['executionDeadlineMonotonic'], window['cleanupDeadlineMonotonic']
+    head, started, launch = None, utc(), None
+
+    def sample():
+        nonlocal minimum, stop
+        try:
+            minimum = min(minimum, free_bytes())
+        except OSError:
+            stop = stop or 'resource-observation-failed'
+
+    with log_path.open('x') as output:
+        os.chmod(log_path, 0o600)
+        try:
+            manifest = json.loads((ROOT / targets).read_text())
+            tsconfig = json.loads((ROOT / config).read_text())
+            if manifest['files'] != files or manifest.get('unitFiles', []) != units or manifest.get('controlFiles', []) != controls:
+                raise ValueError('Exact source/control/unit allowlist mismatch')
+            if tsconfig.get('include') != ['../' + name for name in files + controls] or tsconfig.get('exclude') != []:
+                raise ValueError('Unexpected typecheck roots')
+            if args.phase == 'units' and json.loads((ROOT / 'package.json').read_text())['scripts']['test:unit'] != 'bun --bun vitest run --project unit':
+                raise ValueError('Unexpected unit script')
+            before_hashes = hashes(files + controls + units + [config, eslint, targets, '.runtime/run-agency-source-campaign-v2.py', 'tsconfig.json', 'eslint.config.mjs', 'biome.json', 'package.json', 'vitest.config.ts', 'vitest.classify.ts', 'vitest.setup.ts'])
+            head = actual_head()
+            sample()
+            stop = ('owner-cancelled' if CANCELLED else 'below-5GiB' if minimum < FLOOR else stop)
+            if time.monotonic() >= execution:
+                stop = stop or 'total-window-execution-deadline'
+            if stop is None:
+                env = os.environ.copy()
+                env['PATH'] = str(ROOT / '.runtime/bin') + os.pathsep + env.get('PATH', '')
+                child = subprocess.Popen(commands[args.phase], cwd=ROOT, env=env, stdout=output, stderr=subprocess.STDOUT, start_new_session=True)
+                launch = utc()
+                print(json.dumps({'scope': args.scope, 'phase': args.phase, 'pid': child.pid, 'runId': window['runId'], 'log': str(log_path)}), flush=True)
+                while True:
+                    sample()
+                    alive = group_alive(child)
+                    if CANCELLED or minimum < FLOOR or stop or time.monotonic() >= execution:
+                        stop = stop or ('owner-cancelled' if CANCELLED else 'below-5GiB' if minimum < FLOOR else 'total-window-execution-deadline')
+                        break
+                    if child.returncode is not None:
+                        if alive:
+                            stop = 'descendants-after-child-exit'
+                        break
+                    pause(execution)
+        except Exception as error:
+            stop = stop or type(error).__name__ + ': ' + str(error)
+        finally:
+            if child is not None:
+                cleanup(child, cleanup_end, sent, sample)
+            sample()
+            try:
+                after_hashes = hashes(before_hashes)
+            except Exception as error:
+                stop = stop or 'post-hash-' + type(error).__name__ + ': ' + str(error)
+    stop = stop or ('owner-cancelled' if CANCELLED else 'below-5GiB' if minimum < FLOOR else None)
+    changed = [name for name, digest in before_hashes.items() if after_hashes.get(name) != digest]
+    forbidden = sorted(set(changed) - (set(files) if args.phase == 'biome-write' else set()))
+    prior_stop, stop = stop, 'input-changed' if forbidden else stop
+    remaining = group_alive(child) if child is not None else False
+    reaped = child is not None and child.returncode is not None
+    observed = time.monotonic()
+    receipt = {
+        'scope': args.scope, 'phase': args.phase, 'attempt': args.attempt, 'runId': window['runId'],
+        'pid': child.pid if child else None, 'rawExitCode': child.returncode if child else None,
+        'stopReason': stop, 'signals': sent, 'wrapperSignals': CANCELLED,
+        'childReaped': reaped, 'groupRemaining': remaining, 'terminal': reaped and not remaining,
+        'enteredAtEpoch': ENTRY_EPOCH, 'startedAt': started, 'launchedAt': launch, 'finishedAt': utc(),
+        'elapsedSeconds': observed - ENTRY, 'windowElapsedSeconds': observed - window['startedMonotonic'],
+        'maxCapSeconds': window['budgetSeconds'],
+        'withinTotalBudgetAtCleanupObservation': observed <= window['totalDeadlineMonotonic'],
+        'budgetObservationScope': 'After cleanup/hashing; before receipt publication. Not wrapper completion.',
+        'beforeFreeBytes': before, 'minimumFreeBytes': minimum, 'floorBytes': FLOOR,
+        'head': head, 'inputHashesBefore': before_hashes, 'inputHashesAfter': after_hashes,
+        'inputChanges': changed, 'forbiddenInputChanges': forbidden, 'priorStopReason': prior_stop,
+        'log': str(log_path), 'command': commands[args.phase],
+    }
+    atomic_json(receipt_path, receipt, exclusive=True)
+    meta['runs'].append(receipt)
+    atomic_json(meta_path, meta)
+    print(json.dumps(receipt), flush=True)
+    completed = time.monotonic()
+    within_total = completed <= window['totalDeadlineMonotonic']
+    print(json.dumps({'completionObservationAt': utc(), 'withinTotalBudget': within_total,
+                      'ownerCancelled': bool(CANCELLED), 'wrapperSignals': list(CANCELLED),
+                      'windowElapsedSeconds': completed - window['startedMonotonic'], 'receiptPublished': str(receipt_path)}), flush=True)
+    if CANCELLED or stop or not receipt['terminal'] or not within_total:
+        return 75
+    return child.returncode if child.returncode >= 0 else 75
+
+
+if __name__ == '__main__':
+    try:
+        sys.exit(main())
+    except Exception as error:
+        print(json.dumps({'status': 'held', 'error': type(error).__name__ + ': ' + str(error)}), flush=True)
+        sys.exit(75)
