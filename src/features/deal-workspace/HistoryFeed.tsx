@@ -61,6 +61,7 @@ function RailMarker({ item }: { item: HistoryItem }): React.ReactNode {
 export function HistoryFeed({
   items,
   emptyLabel,
+  compact = false,
   onActivityChanged,
   onNoteChanged,
   onEditActivity,
@@ -71,6 +72,7 @@ export function HistoryFeed({
 }: {
   items: HistoryItem[];
   emptyLabel: string;
+  compact?: boolean;
   onActivityChanged?: () => void;
   // Invalidate the notes query after an in-feed note mutation (pin/edit/delete).
   onNoteChanged?: () => void;
@@ -90,13 +92,14 @@ export function HistoryFeed({
     return <p className="text-sm text-muted-foreground">{emptyLabel}</p>;
   }
   return (
-    <ol className="relative ms-2 space-y-2 border-s ps-6">
+    <ol className={compact ? "divide-y" : "relative ms-2 space-y-2 border-s ps-6"}>
       {items.map((item) => (
         <li key={item.id} className="relative">
-          <RailMarker item={item} />
+          {!compact && <RailMarker item={item} />}
           {item.kind === "created" && <CreatedCard at={item.at} actorName={item.actorName} />}
           {item.kind === "activity" && (
             <ActivityCard
+              compact={compact}
               activity={item.activity}
               at={item.at}
               onChanged={onActivityChanged}

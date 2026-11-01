@@ -4,7 +4,7 @@ import type React from "react";
 import { useRef } from "react";
 import { reportTimePickerValidity } from "@/components/ui/timePickerValidity";
 import { ERROR_IDS } from "@/constants/errorIds";
-import { useLocale } from "@/features/i18n/LocaleProvider";
+import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
 import { InlineEditFooter } from "@/features/inline-edit/InlineEditFooter";
 import { InlineFieldShell } from "@/features/inline-edit/InlineFieldShell";
 import { saveErrorMessage } from "@/features/inline-edit/saveError";
@@ -21,14 +21,17 @@ export function InlineCustomFieldEditor({
   value,
   currency,
   onSave,
+  initiallyEditing = false,
 }: {
   def: CustomFieldDef;
   value: unknown;
   currency: string;
   onSave: InlineSaveFn<unknown>;
+  initiallyEditing?: boolean;
 }): React.ReactNode {
   const locale = useLocale();
-  const field = useInlineEditField<unknown>(value);
+  const t = useAppTranslations("customFields");
+  const field = useInlineEditField<unknown>(value, initiallyEditing);
   const fieldsRef = useRef<HTMLDivElement>(null);
   const dirty = JSON.stringify(field.draft ?? null) !== JSON.stringify(value ?? null);
 
@@ -73,20 +76,26 @@ export function InlineCustomFieldEditor({
           {serverError}
         </p>
       )}
-      <InlineFieldShell
-        label={def.name}
-        editing={field.editing}
-        onStartEdit={field.start}
-        value={
-          isCustomFieldValueEmpty(value) ? (
-            "-"
-          ) : (
-            <CustomFieldDetail def={def} value={value} currency={currency} />
-          )
-        }
-      >
-        {editor}
-      </InlineFieldShell>
+      {field.pending ? (
+        <p role="status" className="text-xs text-muted-foreground">
+          {t("saving")}
+        </p>
+      ) : (
+        <InlineFieldShell
+          label={def.name}
+          editing={field.editing}
+          onStartEdit={field.start}
+          value={
+            isCustomFieldValueEmpty(value) ? (
+              "-"
+            ) : (
+              <CustomFieldDetail def={def} value={value} currency={currency} />
+            )
+          }
+        >
+          {editor}
+        </InlineFieldShell>
+      )}
     </div>
   );
 }

@@ -57,5 +57,26 @@
     "englishNumbers": "Lateinische Ziffern (123)",
     "numberHelp": "Diese Einstellung ändert die Anzeige von Zahlen und Daten. Gespeicherte Werte bleiben unverändert.",
     "numberPreview": "Vorschau: {value, number}"
+  },
+  "dealWorkspace": {
+    "nextActions": "Nächste Schritte",
+    "openCount": "{count} offen",
+    "loadingActivities": "Aktivitäten werden geladen…",
+    "activitiesFailed": "Aktivitäten konnten nicht aktualisiert werden.",
+    "retry": "Erneut versuchen",
+    "viewAll": "Alle {count} anzeigen",
+    "showLess": "Weniger anzeigen",
+    "loadingHistory": "Verlauf wird geladen…",
+    "historyFailed": "Ein Teil des Verlaufs konnte nicht geladen werden.",
+    "retryHistory": "Verlauf erneut laden",
+    "details": "Zusatzfelder",
+    "deals": "Verkaufschancen",
+    "fieldScope": "Für alle Verkaufschancen verfügbar. Jede Verkaufschance hat ihren eigenen Wert.",
+    "addField": "Feld hinzufügen",
+    "manageFields": "Felder verwalten",
+    "closes": "Abschluss {date}",
+    "scheduleActivity": "Aktivität planen",
+    "noNextAction": "Kein nächster Schritt geplant.",
+    "noCustomFields": "Fügen Sie ein Feld für die Details hinzu, die Ihr Team benötigt."
   }
 }

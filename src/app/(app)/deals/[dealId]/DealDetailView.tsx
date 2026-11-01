@@ -120,6 +120,7 @@ export async function DealDetailView({ dealId }: { dealId: string }): Promise<Re
         emailAddress={mailbox?.emailAddress}
         canChangeOwner={canChangeOwner}
         canDelete={canDelete}
+        canManageFields={can(loaded.actor, "metadata.manage")}
         assignableUsers={assignableUsers}
         initialHiddenBlocks={prefs.ui.dealHeaderBlocks ?? []}
         initialSidebarSections={prefs.ui.dealSidebarSections}

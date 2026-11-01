@@ -27,5 +27,6 @@
   "requiredField": "تکمیل «{name}» الزامی است.",
   "rangeStart": "شروع {name}",
   "rangeEnd": "پایان {name}",
-  "referenceUnavailable": "گزینه‌های «{name}» دریافت نشدند. دوباره تلاش کنید."
+  "referenceUnavailable": "گزینه‌های «{name}» دریافت نشدند. دوباره تلاش کنید.",
+  "saving": "در حال ذخیره فیلد…"
 }

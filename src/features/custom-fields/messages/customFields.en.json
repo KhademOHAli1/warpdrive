@@ -27,5 +27,6 @@
   "requiredField": "{name} is required.",
   "rangeStart": "{name}: start",
   "rangeEnd": "{name}: end",
-  "referenceUnavailable": "Couldn't load choices for {name}. Please try again."
+  "referenceUnavailable": "Couldn't load choices for {name}. Please try again.",
+  "saving": "Saving field…"
 }

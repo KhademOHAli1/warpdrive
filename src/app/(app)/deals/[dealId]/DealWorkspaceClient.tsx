@@ -5,6 +5,7 @@ import {
   type DealSidebarSectionPreference,
   normalizeDealSidebarSections,
 } from "@/constants/dealSidebarSections";
+import { AddActivityModal } from "@/features/activities/AddActivityModal";
 import { SharedComposeBar } from "@/features/compose/SharedComposeBar";
 import type { PersonMatchCandidate } from "@/features/contacts/personOptionsRepo";
 import { DealActionErrorProvider } from "@/features/deal-workspace/DealActionErrorProvider";
@@ -28,6 +29,7 @@ interface DealWorkspaceClientProps {
   canChangeOwner: boolean;
   // Whether the actor may delete this deal (deal.delete own/any), gated server-side too.
   canDelete: boolean;
+  canManageFields?: boolean;
   // Users offered in the owner-reassignment menu; empty until a non-privileged source exists.
   assignableUsers: { id: string; name: string }[];
   // Hidden deal-block ids seeded from the server pref (user_preferences.ui.dealHeaderBlocks).
@@ -55,6 +57,7 @@ export function DealWorkspaceClient({
   emailAddress,
   canChangeOwner,
   canDelete,
+  canManageFields = false,
   assignableUsers,
   initialHiddenBlocks,
   baseCurrency,
@@ -66,6 +69,7 @@ export function DealWorkspaceClient({
   hiddenPersonFields,
 }: DealWorkspaceClientProps) {
   const { deal, person, org } = workspace;
+  const [scheduling, setScheduling] = useState(false);
   const [tab, setTab] = useState<Tab>("all");
   const [now] = useState(() => new Date());
   const [sidebarSections, setSidebarSections] = useState(() =>
@@ -76,8 +80,11 @@ export function DealWorkspaceClient({
   const { isHidden, toggle } = useBlockVisibility(initialHiddenBlocks);
 
   const router = useRouter();
-  const activities =
-    trpc.activities.listForEntity.useQuery({ entityType: "deal", entityId: deal.id }).data ?? [];
+  const activitiesQuery = trpc.activities.listForEntity.useQuery({
+    entityType: "deal",
+    entityId: deal.id,
+  });
+  const activities = activitiesQuery.data ?? [];
   const utils = trpc.useUtils();
   // Participant emails feed the email composer's "prefill all participants" preference. Shares the
   // tRPC cache key the sidebar already populates, so this adds no extra round trip in practice.
@@ -110,7 +117,17 @@ export function DealWorkspaceClient({
 
   return (
     <DealActionErrorProvider>
-      <div className="flex h-full flex-col p-4">
+      {scheduling && (
+        <AddActivityModal
+          dealId={deal.id}
+          onClose={() => setScheduling(false)}
+          onCreated={() => {
+            setScheduling(false);
+            onActivityChanged();
+          }}
+        />
+      )}
+      <div className="mx-auto flex min-h-full w-full max-w-[1600px] flex-col p-4 lg:p-6">
         <DealHeader
           workspace={workspace}
           selfActorId={selfActorId}
@@ -122,9 +139,10 @@ export function DealWorkspaceClient({
           scheduleFollowUpAfterWon={scheduleFollowUpAfterWon}
         />
 
-        <div className="grid min-h-0 flex-1 grid-cols-1 gap-6 lg:grid-cols-[34fr_66fr]">
+        <div className="grid min-h-0 flex-1 grid-cols-1 gap-6 lg:grid-cols-[minmax(280px,320px)_minmax(0,1fr)]">
           <DealSidebar
             workspace={workspace}
+            canManageFields={canManageFields}
             now={now}
             isHidden={isHidden}
             baseCurrency={baseCurrency}
@@ -136,7 +154,7 @@ export function DealWorkspaceClient({
             hiddenPersonFields={hiddenPersonFields}
           />
 
-          <div className="min-w-0">
+          <div className="order-first min-w-0 lg:order-last">
             {/* Compose toolbar (Pipedrive): Activity/Notes/Email/Files. */}
             {!isHidden("email") && (
               <SharedComposeBar
@@ -184,7 +202,19 @@ export function DealWorkspaceClient({
                 tab={tab}
                 onTab={setTab}
                 activities={activities}
+                onScheduleActivity={() => setScheduling(true)}
+                activityReadState={
+                  activitiesQuery.isError
+                    ? "error"
+                    : activitiesQuery.isPending
+                      ? "pending"
+                      : "success"
+                }
+                onRetryActivities={() => {
+                  void activitiesQuery.refetch();
+                }}
                 stages={workspace.stageProgress.chips}
+                customFieldDefs={workspace.customFieldDefs}
                 createdActorName={workspace.owner?.name ?? null}
                 onActivityChanged={onActivityChanged}
                 onNoteChanged={() =>

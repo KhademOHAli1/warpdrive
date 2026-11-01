@@ -95,7 +95,7 @@ it("renders Summary, Person, and Organization when nothing is hidden", () => {
   expect(screen.getByText("Organization")).toBeInTheDocument();
 });
 
-it("opens every section by default (section content is visible without a click)", () => {
+it("keeps the summary open and secondary sections collapsed initially", () => {
   render(
     <DealSidebar
       workspace={makeWorkspace()}
@@ -104,10 +104,12 @@ it("opens every section by default (section content is visible without a click)"
       baseCurrency="USD"
     />,
   );
-  // Source content (defaults to collapsed before this change).
-  expect(screen.getByText("Channel ID")).toBeInTheDocument();
-  // Overview content (also defaulted collapsed).
-  expect(screen.getByText("Deal age")).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "Summary" })).toHaveAttribute("aria-expanded", "true");
+  expect(screen.getByRole("button", { name: "Source" })).toHaveAttribute("aria-expanded", "false");
+  expect(screen.getByRole("button", { name: "Overview" })).toHaveAttribute(
+    "aria-expanded",
+    "false",
+  );
 });
 
 it("omits the Summary section when summary is hidden", () => {
@@ -149,6 +151,7 @@ it("renders org firmographics and saves an edit via updateOrgAction", async () =
   );
   expect(screen.getByText("Industry")).toBeInTheDocument(); // firmographic row present
   expect(screen.getByText("Website")).toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "Organization" }));
   fireEvent.click(screen.getByRole("button", { name: "Edit Website" }));
   fireEvent.change(screen.getByLabelText("editor-website"), { target: { value: "new.com" } });
   fireEvent.click(screen.getByRole("button", { name: "Save" }));
@@ -240,7 +243,7 @@ it("does not render a standalone Details section when the deal has no custom fie
   expect(screen.queryByText(/No custom fields yet/)).not.toBeInTheDocument();
 });
 
-it("renders deal custom fields inside Organization instead of a Details section", () => {
+it("keeps deal custom fields in Details, separate from organization fields", () => {
   const def = { id: "f1", type: "text", name: "Industry", key: "industry" };
   const workspace = { ...makeWorkspace(), customFieldDefs: [def] } as ReturnType<
     typeof makeWorkspace
@@ -248,7 +251,10 @@ it("renders deal custom fields inside Organization instead of a Details section"
   render(
     <DealSidebar workspace={workspace} now={new Date()} isHidden={showAll} baseCurrency="USD" />,
   );
-  expect(screen.queryByRole("region", { name: "Details" })).not.toBeInTheDocument();
+  expect(screen.getByRole("region", { name: "Details" })).toBeInTheDocument();
   const organization = within(screen.getByRole("region", { name: "Organization" }));
-  expect(organization.getAllByText("Industry")).toHaveLength(2);
+  expect(organization.queryByText("Industry")).not.toBeInTheDocument();
+  expect(
+    within(screen.getByRole("region", { name: "Details" })).getByText("Industry"),
+  ).toBeInTheDocument();
 });

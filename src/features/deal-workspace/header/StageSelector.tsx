@@ -24,6 +24,7 @@ interface StageSelectorProps {
   // CAS precondition: the deal's updatedAt ISO string.
   expectedUpdatedAt: string;
   chips: StageChipView[];
+  quiet?: boolean;
 }
 
 // Chevron shape reused from StageChevrons: flat left edge, pointed right, with a matching left
@@ -45,6 +46,7 @@ export function StageSelector({
   dealId,
   expectedUpdatedAt,
   chips,
+  quiet = false,
 }: StageSelectorProps): React.ReactNode {
   const translateSales = useAppTranslations("sales");
   const locale = useLocale();
@@ -88,16 +90,21 @@ export function StageSelector({
               onClick={() => void select(chip)}
               className={[
                 "relative flex min-w-0 flex-col items-start truncate px-4 py-1 text-xs leading-tight text-foreground transition-transform hover:opacity-90 disabled:cursor-default disabled:opacity-70",
+                quiet ? "shrink-0" : "",
                 idx > 0 ? "-ms-2 ps-6" : "",
                 // The current stage pops out of the row: slightly enlarged and raised above the
                 // interlocking neighbours (which use z-0 so the scaled segment overlaps them).
-                chip.current ? "z-10 scale-[1.08] drop-shadow-sm" : "z-0",
+                chip.current && !quiet ? "z-10 scale-[1.08] drop-shadow-sm" : "z-0",
               ]
                 .join(" ")
                 .trim()}
               style={{
                 clipPath: funnelClip(idx === 0, direction),
-                backgroundColor: fill.backgroundColor,
+                backgroundColor: quiet
+                  ? chip.current
+                    ? "hsl(var(--primary) / 0.12)"
+                    : "hsl(var(--muted) / 0.6)"
+                  : fill.backgroundColor,
                 fontWeight: fill.fontWeight,
               }}
             >
@@ -106,9 +113,11 @@ export function StageSelector({
               </span>
               {/* C3 (Pipedrive parity): day-count at 12px (PD shows day-counts only; warpdrive keeps
                 the stage name above it as an extra affordance). */}
-              <span className="text-xs tabular-nums opacity-80">
-                {translateSales("computed.dayCount", { count: chip.days })}
-              </span>
+              {(!quiet || chip.current || chip.passed) && (
+                <span className="text-xs tabular-nums opacity-80">
+                  {translateSales("computed.dayCount", { count: chip.days })}
+                </span>
+              )}
             </button>
           </Tip>
         );

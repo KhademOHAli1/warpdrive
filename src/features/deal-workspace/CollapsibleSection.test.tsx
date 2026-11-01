@@ -7,6 +7,25 @@ import { FieldRow } from "./sidebar/FieldRow";
 
 afterEach(cleanup);
 
+it("opens a collapsed section when its edit action reveals fields", () => {
+  render(
+    <CollapsibleSection
+      title="Source"
+      defaultOpen={false}
+      headerActions={({ showEmptyFields }) => (
+        <button type="button" onClick={showEmptyFields}>
+          Edit source
+        </button>
+      )}
+    >
+      <p>Source editor</p>
+    </CollapsibleSection>,
+  );
+  expect(screen.getByRole("button", { name: "Source" })).toHaveAttribute("aria-expanded", "false");
+  fireEvent.click(screen.getByRole("button", { name: "Edit source" }));
+  expect(screen.getByRole("button", { name: "Source" })).toHaveAttribute("aria-expanded", "true");
+});
+
 it("hides empty fields when the funnel is toggled on", () => {
   render(
     <CollapsibleSection title="Organization">
