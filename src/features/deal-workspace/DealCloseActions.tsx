@@ -17,6 +17,7 @@ import { markWonAction, reopenDealAction } from "./actions";
 export interface DealCloseActionsProps {
   dealId: string;
   status: DealStatus;
+  quiet?: boolean;
   lostReasonOptions: Array<{ id: string; name: string }>;
   // Read-back for a closed lost deal: the preset reason name (from lostReasonId) and the free-text
   // comment (lostReason). Both may be set (Pipedrive parity); null when unset. Written on close but
@@ -37,6 +38,7 @@ export interface DealCloseActionsProps {
 export function DealCloseActions({
   dealId,
   status,
+  quiet = false,
   lostReasonOptions,
   lostReasonName = null,
   lostReasonText = null,
@@ -122,7 +124,11 @@ export function DealCloseActions({
         type="button"
         disabled={pending}
         onClick={() => void won()}
-        className="rounded-md bg-success px-3 py-1.5 text-sm font-medium text-success-foreground transition-[opacity,scale] duration-150 ease-out hover:opacity-90 active:not-disabled:scale-[0.96] disabled:opacity-50"
+        className={
+          quiet
+            ? "rounded-md border px-3 py-1.5 text-sm font-medium text-foreground hover:bg-accent disabled:opacity-50"
+            : "rounded-md bg-success px-3 py-1.5 text-sm font-medium text-success-foreground transition-[opacity,scale] duration-150 ease-out hover:opacity-90 active:not-disabled:scale-[0.96] disabled:opacity-50"
+        }
       >
         {translateSales("won_acdf2")}
       </button>
@@ -130,7 +136,11 @@ export function DealCloseActions({
         type="button"
         disabled={pending}
         onClick={() => setPicking(true)}
-        className="rounded-md bg-destructive px-3 py-1.5 text-sm font-medium text-destructive-foreground transition-[opacity,scale] duration-150 ease-out hover:opacity-90 active:not-disabled:scale-[0.96] disabled:opacity-50"
+        className={
+          quiet
+            ? "rounded-md border px-3 py-1.5 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-destructive disabled:opacity-50"
+            : "rounded-md bg-destructive px-3 py-1.5 text-sm font-medium text-destructive-foreground transition-[opacity,scale] duration-150 ease-out hover:opacity-90 active:not-disabled:scale-[0.96] disabled:opacity-50"
+        }
       >
         {translateSales("lost_51e13")}
       </button>

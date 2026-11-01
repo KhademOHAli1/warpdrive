@@ -27,5 +27,6 @@
   "requiredField": "{name} ist erforderlich.",
   "rangeStart": "{name}: Beginn",
   "rangeEnd": "{name}: Ende",
-  "referenceUnavailable": "Die Auswahlmöglichkeiten für {name} konnten nicht geladen werden. Bitte versuchen Sie es erneut."
+  "referenceUnavailable": "Die Auswahlmöglichkeiten für {name} konnten nicht geladen werden. Bitte versuchen Sie es erneut.",
+  "saving": "Feld wird gespeichert…"
 }

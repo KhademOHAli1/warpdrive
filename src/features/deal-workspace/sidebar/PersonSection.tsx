@@ -44,7 +44,7 @@ export function PersonSection({
   return (
     <CollapsibleSection
       title={translateSales("person_6007d")}
-      headerActions={() => (
+      headerActions={({ showEmptyFields }) => (
         <EnrichButton
           entityType="person"
           entityId={person.id}
@@ -54,7 +54,10 @@ export function PersonSection({
           {(fill) => (
             <SectionHeaderMenu
               sectionLabel={translateSales("person_6007d")}
-              onEdit={onStartBulk}
+              onEdit={() => {
+                showEmptyFields();
+                onStartBulk();
+              }}
               menuItems={menuItems}
               {...fill}
             />

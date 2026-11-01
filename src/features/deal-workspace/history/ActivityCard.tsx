@@ -34,11 +34,13 @@ type EntityKey = { entityType: "deal" | "person" | "organization"; entityId: str
 // the user complete an open activity or reopen a completed one.
 export function ActivityCard({
   activity,
+  compact = false,
   at,
   onChanged,
   onEdit,
 }: {
   activity: CalendarActivity;
+  compact?: boolean;
   at: Date;
   onChanged?: () => void;
   // Opens this activity in the inline composer for editing (deal workspace). The subject line and
@@ -148,7 +150,13 @@ export function ActivityCard({
   }, [busy, activity.id, entityKeys, utils, invalidateActivityLists, onChanged, reportError]);
 
   return (
-    <div className="overflow-hidden rounded-md border bg-card transition-colors hover:border-ring/40">
+    <div
+      className={
+        compact
+          ? "py-1"
+          : "overflow-hidden rounded-md border bg-card transition-colors hover:border-ring/40"
+      }
+    >
       <div className="flex items-start gap-2.5 px-3 py-2">
         <Checkbox
           checked={done}
@@ -197,7 +205,7 @@ export function ActivityCard({
             {activity.ownerName != null ? (
               <span>· {formatUserName(activity.ownerName)}</span>
             ) : null}
-            {activity.personId !== null ? (
+            {!compact && activity.personId !== null ? (
               <Link
                 href={`/contacts/people/${activity.personId}`}
                 className="text-primary hover:underline"
@@ -206,7 +214,7 @@ export function ActivityCard({
                 · {activity.personName ?? translateSales("person_6007d")}
               </Link>
             ) : null}
-            {activity.orgId !== null ? (
+            {!compact && activity.orgId !== null ? (
               <Link
                 href={`/contacts/orgs/${activity.orgId}`}
                 className="text-primary hover:underline"

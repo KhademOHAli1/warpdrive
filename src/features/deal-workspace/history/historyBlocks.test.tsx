@@ -1,6 +1,8 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { act, cleanup, render, screen } from "@testing-library/react";
+import { hydrateRoot } from "react-dom/client";
+import { renderToString } from "react-dom/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { formatTimelineEmailDate } from "@/features/email/inboxDate";
 import { LocaleProvider } from "@/features/i18n/LocaleProvider";
@@ -19,6 +21,25 @@ afterEach(() => {
 const AT = new Date("2026-07-02T15:37:00Z");
 
 describe("AttributionLine", () => {
+  it("hydrates safely when the minute changes between server render and browser hydration", async () => {
+    const view = <AttributionLine at={AT} actorName="Nick" />;
+    const container = document.createElement("div");
+    container.innerHTML = renderToString(view);
+    document.body.append(container);
+    vi.setSystemTime(new Date("2026-07-02T15:43:00Z"));
+    const recover = vi.fn();
+    let root: ReturnType<typeof hydrateRoot> | undefined;
+    await act(async () => {
+      root = hydrateRoot(container, view, { onRecoverableError: recover });
+      await Promise.resolve();
+    });
+    await act(async () => {
+      root?.unmount();
+      await Promise.resolve();
+    });
+    container.remove();
+    expect(recover).not.toHaveBeenCalled();
+  });
   it("renders a <time> with the actor and (Web App) source", () => {
     render(<AttributionLine at={AT} actorName="Nick Sawinyh" />);
     const time = document.querySelector("time");

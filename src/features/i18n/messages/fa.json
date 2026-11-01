@@ -57,5 +57,26 @@
     "englishNumbers": "اعداد انگلیسی (123)",
     "numberHelp": "این تنظیم، نمایش اعداد و تاریخ‌ها را تغییر می‌دهد و تأثیری بر اطلاعات ذخیره‌شده ندارد.",
     "numberPreview": "پیش‌نمایش: {value, number}"
+  },
+  "dealWorkspace": {
+    "nextActions": "اقدام‌های بعدی",
+    "openCount": "{count} باز",
+    "loadingActivities": "در حال بارگذاری فعالیت‌ها…",
+    "activitiesFailed": "فعالیت‌ها به‌روز نشدند.",
+    "retry": "تلاش دوباره",
+    "viewAll": "نمایش هر {count} مورد",
+    "showLess": "نمایش کمتر",
+    "loadingHistory": "در حال بارگذاری تاریخچه…",
+    "historyFailed": "بخشی از تاریخچه بارگذاری نشد.",
+    "retryHistory": "بارگذاری دوباره تاریخچه",
+    "details": "جزئیات",
+    "deals": "فرصت‌ها",
+    "fieldScope": "برای همه فرصت‌ها در دسترس است. هر فرصت مقدار مخصوص خود را دارد.",
+    "addField": "افزودن فیلد",
+    "manageFields": "مدیریت فیلدها",
+    "closes": "تاریخ نهایی {date}",
+    "scheduleActivity": "برنامه‌ریزی فعالیت",
+    "noNextAction": "اقدام بعدی برنامه‌ریزی نشده است.",
+    "noCustomFields": "برای ثبت جزئیات مورد نیاز تیمتان، یک فیلد اضافه کنید."
   }
 }

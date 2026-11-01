@@ -24,8 +24,10 @@ export function RecordOrganizationSection({
   onSaveCustomFields,
   detailsTitle,
   detailsMenuItems,
+  initiallyCollapsed = false,
 }: {
   hidden: boolean;
+  initiallyCollapsed?: boolean;
   org: Organization | null;
   orgMenuItems: SectionHeaderMenuItem[];
   bulkEditing: boolean;
@@ -56,6 +58,7 @@ export function RecordOrganizationSection({
     return (
       <OrganizationSection
         org={org}
+        defaultOpen={!initiallyCollapsed}
         menuItems={orgMenuItems}
         bulkEditing={bulkEditing}
         onStartBulk={onStartBulk}
