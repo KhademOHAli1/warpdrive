@@ -1549,9 +1549,20 @@
       "status": "planned",
       "owner": "sales-platform",
       "dependsOn": ["SP-12.1", "SP-06.2"],
-      "evidence": [],
-      "remainingGates": [],
-      "notes": ""
+      "evidence": [
+        {
+          "path": "docs/sales-platform/product-signal-event-contract.md",
+          "level": "observed-source"
+        }
+      ],
+      "remainingGates": [
+        "SP-12.1 still requires a named permitted actual source, operational owner, purpose, consent/suppression and retention decisions before any connector.",
+        "SP-06.2 native account/person identity and shared server-owned source/destination authority contracts remain dependencies; no automatic contact merge or parallel auth store is admitted.",
+        "The specified strict object parser and bounded synthetic preview require meaningful test-first implementation and actual passing checks; this specification includes no executed tests or implementation.",
+        "Native body-byte/UTF-8/duplicate-key limits, authenticated/rate-bounded ingestion, real PostgreSQL duplicate races, current authority after waits, durable deletion/tombstone/retention and restore/replay guarantees remain unimplemented and unqualified.",
+        "Versioned native rules, evidence/work queues, explicitly activated shared WF/IG effects, provider/source qualification, contextual FA/DE/EN UI and pilot/release acceptance remain separate open work."
+      ],
+      "notes": "Original proposed V1 specification defines five allowlisted event shapes, bounded opaque source IDs/timestamps/properties and a pure synthetic preview. Only syntactically valid payloads form semantic duplicate groups; invalid records expose safe index-based diagnostics without untrusted identifiers. One current source/account/user lookup context applies across every copy: suppression/revocation outranks earliest delivery, and mapping changes do not silently promote history. All heuristics are proposed and unqualified; no parser, evaluator, native ingestion, durable state or effects are implemented. SP-12.2 remains planned with its original dependencies."
     },
     {
       "id": "SP-12.3",

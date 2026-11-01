@@ -123,7 +123,12 @@ remain open. Read `qualification-contract.md`,
 
 The selected product-led source is a customer-controlled first-party event API,
 with synthetic local Warpdrive as reference and optional PostHog/Segment mapping.
-See `product-signal-source-decision.md`. A real owner/feed remains unqualified.
+See `product-signal-source-decision.md`. The proposed
+[event contract](product-signal-event-contract.md) specifies a pure synthetic
+parser/preview increment, with group-wide current identity/suppression context
+and explicit unimplemented native intake boundaries. This is observed-source
+specification only; no parser, evaluator or connector is built or qualified.
+A real owner/feed remains unqualified.
 
 Earlier application checkpoint `901ba96d668a29fa5d34a38a9fc0dfc7bc25014e` adds strict saved-definition writes,
 serialized completion retries with canonical same-state returns and strict native
