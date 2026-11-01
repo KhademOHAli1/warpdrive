@@ -1,0 +1,20 @@
+{
+  "files": [
+    "src/features/agency-projects/authorityTransactionSpec.ts",
+    "src/features/agency-projects/authorityTransactionSpec.test.ts"
+  ],
+  "controlFiles": [
+    ".runtime/authority-candidate-owned-global-setup.ts",
+    ".runtime/vitest.authority-candidate-pg.config.ts"
+  ],
+  "unitFiles": [
+    "src/features/agency-projects/authorityTransactionSpec.test.ts"
+  ],
+  "preFormatHashes": {
+    "src/features/agency-projects/authorityTransactionSpec.ts": "2c4048f55c768440751bceefe7bf9865a522ad9a90975ff1795c8360bf171611",
+    "src/features/agency-projects/authorityTransactionSpec.test.ts": "7ac4a741813e32dae75ac437c60f36f0207fd345c290266f457f77addc2911d9",
+    ".runtime/authority-candidate-owned-global-setup.ts": "cedebc0bc05de2785dd6c868c94f6b3264db3d00b17cb1f107e61def12b47544",
+    ".runtime/vitest.authority-candidate-pg.config.ts": "3e47bdc8929529535bdb3e3b9763d27282881cf5842d7e08f99dfe037a3e07be"
+  },
+  "headAtStart": "5318422256ae673f4385bf16b1e3c2401f67cc29"
+}

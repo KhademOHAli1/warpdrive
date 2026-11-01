@@ -1,0 +1,46 @@
+import { writeFileSync, renameSync } from "node:fs";
+import { PostgreSqlContainer } from "@testcontainers/postgresql";
+import type { TestProject } from "vitest/node";
+import { getContainerRuntimeClient } from "testcontainers";
+import canonicalSetup from "../vitest.globalSetup";
+import run from "./authority-candidate-pg-run.json";
+
+const label = "codex.agency.authority-candidate-run";
+
+function record(data: Record<string, unknown>) {
+  const path = run.ownershipFile;
+  writeFileSync(`${path}.tmp`, JSON.stringify({ runId: run.runId, label, pid: process.pid, daemonMarkerId: run.daemonMarkerId, daemonVerified: true, ...data }, null, 2));
+  renameSync(`${path}.tmp`, path);
+}
+
+// Instrument only this process's actual PostgreSQL container. SQL/bootstrap are delegated unchanged.
+export default async function setup(project: TestProject) {
+  if (!/^[0-9a-f]{64}$/.test(run.daemonMarkerId)) throw new Error("Daemon marker missing");
+  const runtime = await getContainerRuntimeClient();
+  const marker = await runtime.network.getById(run.daemonMarkerId).inspect();
+  if (marker.Id !== run.daemonMarkerId || marker.Labels?.[label] !== run.runId) {
+    throw new Error("Docker daemon binding could not be verified");
+  }
+  record({ state: "daemon-verified", observedAt: new Date().toISOString() });
+  const prototype = PostgreSqlContainer.prototype;
+  const originalStart = prototype.start;
+  const originalCreated = Reflect.get(prototype, "containerCreated") as unknown;
+  prototype.start = async function (this: PostgreSqlContainer) {
+    this.withLabels({ [label]: run.runId });
+    const started = await originalStart.call(this);
+    if (started.getLabels()[label] !== run.runId) throw new Error("Owned PG label missing");
+    record({ containerId: started.getId(), state: "ready", observedAt: new Date().toISOString() });
+    return started;
+  };
+  Reflect.set(prototype, "containerCreated", async function (this: PostgreSqlContainer, containerId: string) {
+    record({ containerId, state: "created", observedAt: new Date().toISOString() });
+    if (typeof originalCreated === "function") await Reflect.apply(originalCreated, this, [containerId]);
+  });
+  try {
+    return await canonicalSetup(project);
+  } finally {
+    prototype.start = originalStart;
+    if (originalCreated === undefined) Reflect.deleteProperty(prototype, "containerCreated");
+    else Reflect.set(prototype, "containerCreated", originalCreated);
+  }
+}

@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 1,
+  "scope": "Mail recovery window permits routine small containerless selected units; no heavy campaign",
+  "runs": [
+    {
+      "phase": "red-missing",
+      "pid": 78381,
+      "startedAt": "2026-11-01T09:31:33.006623+00:00",
+      "finishedAt": "2026-11-01T09:31:33.844133+00:00",
+      "terminal": true,
+      "exitCode": 1,
+      "stopReason": null,
+      "beforeFreeBytes": 14056054784,
+      "minimumFreeBytes": 14050435072,
+      "afterFreeBytes": 14050435072,
+      "floorBytes": 5368709120,
+      "timeoutSeconds": 30,
+      "executionCutoffSeconds": 29,
+      "log": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/agency-authority-spec-red-missing.log",
+      "command": [
+        "/Users/ali/Developer/warpdrive-agency-projects/.runtime/bin/bun",
+        "run",
+        "test:unit",
+        "src/features/agency-projects/authorityTransactionSpec.test.ts",
+        "--maxWorkers=1"
+      ]
+    },
+    {
+      "phase": "red-behavior",
+      "pid": 78409,
+      "startedAt": "2026-11-01T09:31:33.960211+00:00",
+      "finishedAt": "2026-11-01T09:31:34.375154+00:00",
+      "terminal": true,
+      "exitCode": 1,
+      "stopReason": null,
+      "beforeFreeBytes": 14050394112,
+      "minimumFreeBytes": 14050381824,
+      "afterFreeBytes": 14052302848,
+      "floorBytes": 5368709120,
+      "timeoutSeconds": 30,
+      "executionCutoffSeconds": 29,
+      "log": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/agency-authority-spec-red-behavior.log",
+      "command": [
+        "/Users/ali/Developer/warpdrive-agency-projects/.runtime/bin/bun",
+        "run",
+        "test:unit",
+        "src/features/agency-projects/authorityTransactionSpec.test.ts",
+        "--maxWorkers=1"
+      ]
+    },
+    {
+      "phase": "green",
+      "pid": 78490,
+      "startedAt": "2026-11-01T09:31:47.954617+00:00",
+      "finishedAt": "2026-11-01T09:31:48.577799+00:00",
+      "terminal": true,
+      "exitCode": 0,
+      "stopReason": null,
+      "beforeFreeBytes": 14032113664,
+      "minimumFreeBytes": 14029713408,
+      "afterFreeBytes": 14030069760,
+      "floorBytes": 5368709120,
+      "timeoutSeconds": 30,
+      "executionCutoffSeconds": 29,
+      "log": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/agency-authority-spec-green.log",
+      "command": [
+        "/Users/ali/Developer/warpdrive-agency-projects/.runtime/bin/bun",
+        "run",
+        "test:unit",
+        "src/features/agency-projects/authorityTransactionSpec.test.ts",
+        "--maxWorkers=1"
+      ]
+    }
+  ]
+}

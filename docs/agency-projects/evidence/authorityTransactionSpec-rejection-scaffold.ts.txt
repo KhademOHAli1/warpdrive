@@ -1,0 +1,5 @@
+import { err } from "@/types/result";
+
+export function parseAuthorityTransactionSpec(_input: unknown) {
+  return err("invalid_authority_transaction_spec");
+}

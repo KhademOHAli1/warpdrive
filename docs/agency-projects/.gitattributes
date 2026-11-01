@@ -14,3 +14,4 @@ evidence/project-create-pg-source-biome-check-1.log -text whitespace=-blank-at-e
 evidence/agency-feedback-source-biome-check-1.log -text whitespace=-blank-at-eof,-blank-at-eol
 evidence/agency-template-role-preview-source-biome-check-1.log -text whitespace=-blank-at-eof,-blank-at-eol
 evidence/agency-project-authority-source-biome-check-1.log -text whitespace=-blank-at-eof,-blank-at-eol
+evidence/agency-authority-spec-source-biome-check-1.log -text whitespace=-blank-at-eof,-blank-at-eol

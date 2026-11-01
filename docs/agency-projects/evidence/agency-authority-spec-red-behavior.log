@@ -1,0 +1,341 @@
+$ bun --bun vitest run --project unit src/features/agency-projects/authorityTransactionSpec.test.ts "--maxWorkers=1"
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+  - ESM syntax in a file loaded as CommonJS (vitest.classify.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.5 /Users/ali/Developer/warpdrive-agency-projects
+
+ ❯ |unit| src/features/agency-projects/authorityTransactionSpec.test.ts (114 tests | 10 failed) 10ms
+   ❯ candidate authority transaction specification boundary (114)
+     × preserves explicit shared mode 4ms
+     × preserves explicit exclusive mode 0ms
+     × accepts the exact signed int32 key tuple -2147483648 0ms
+     × accepts the exact signed int32 key tuple 2147483647 0ms
+     × accepts the exact signed int32 key tuple 0 0ms
+     × accepts inclusive ordered timeout bounds 1 0ms
+     × accepts inclusive ordered timeout bounds 60000 0ms
+     × accepts inclusive ordered timeout bounds 1 0ms
+     × detaches returned tuples and timeout objects without mutating or freezing caller input 0ms
+     × keeps an earlier accepted specification independent of later caller changes 0ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 10 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| src/features/agency-projects/authorityTransactionSpec.test.ts > candidate authority transaction specification boundary > preserves explicit shared mode
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: true, …(1) }
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "key": [
+-       10101,
+-       20202,
+-     ],
+-     "mode": "shared",
+-     "sqlTimeouts": {
+-       "idleMs": 5000,
+-       "lockMs": 1500,
+-       "statementMs": 3000,
+-     },
+-   },
++   "error": "invalid_authority_transaction_spec",
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/authorityTransactionSpec.test.ts:39:50
+     37|   it.each(["shared", "exclusive"] as const)("preserves explicit %s mod…
+     38|     const input = { ...spec(), mode };
+     39|     expect(parseAuthorityTransactionSpec(input)).toEqual({ ok: true, v…
+       |                                                  ^
+     40|   });
+     41|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/10]⎯
+
+ FAIL  |unit| src/features/agency-projects/authorityTransactionSpec.test.ts > candidate authority transaction specification boundary > preserves explicit exclusive mode
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: true, …(1) }
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "key": [
+-       10101,
+-       20202,
+-     ],
+-     "mode": "exclusive",
+-     "sqlTimeouts": {
+-       "idleMs": 5000,
+-       "lockMs": 1500,
+-       "statementMs": 3000,
+-     },
+-   },
++   "error": "invalid_authority_transaction_spec",
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/authorityTransactionSpec.test.ts:39:50
+     37|   it.each(["shared", "exclusive"] as const)("preserves explicit %s mod…
+     38|     const input = { ...spec(), mode };
+     39|     expect(parseAuthorityTransactionSpec(input)).toEqual({ ok: true, v…
+       |                                                  ^
+     40|   });
+     41|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/10]⎯
+
+ FAIL  |unit| src/features/agency-projects/authorityTransactionSpec.test.ts > candidate authority transaction specification boundary > accepts the exact signed int32 key tuple -2147483648
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: true, …(1) }
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "key": [
+-       -2147483648,
+-       2147483647,
+-     ],
+-     "mode": "shared",
+-     "sqlTimeouts": {
+-       "idleMs": 5000,
+-       "lockMs": 1500,
+-       "statementMs": 3000,
+-     },
+-   },
++   "error": "invalid_authority_transaction_spec",
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/authorityTransactionSpec.test.ts:46:52
+     44|     (first, second) => {
+     45|       const input = { ...spec(), key: [first, second] };
+     46|       expect(parseAuthorityTransactionSpec(input)).toEqual({ ok: true,…
+       |                                                    ^
+     47|     },
+     48|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/10]⎯
+
+ FAIL  |unit| src/features/agency-projects/authorityTransactionSpec.test.ts > candidate authority transaction specification boundary > accepts the exact signed int32 key tuple 2147483647
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: true, …(1) }
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "key": [
+-       2147483647,
+-       -2147483648,
+-     ],
+-     "mode": "shared",
+-     "sqlTimeouts": {
+-       "idleMs": 5000,
+-       "lockMs": 1500,
+-       "statementMs": 3000,
+-     },
+-   },
++   "error": "invalid_authority_transaction_spec",
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/authorityTransactionSpec.test.ts:46:52
+     44|     (first, second) => {
+     45|       const input = { ...spec(), key: [first, second] };
+     46|       expect(parseAuthorityTransactionSpec(input)).toEqual({ ok: true,…
+       |                                                    ^
+     47|     },
+     48|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/10]⎯
+
+ FAIL  |unit| src/features/agency-projects/authorityTransactionSpec.test.ts > candidate authority transaction specification boundary > accepts the exact signed int32 key tuple 0
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: true, value: { …(3) } }
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "key": [
+-       0,
+-       0,
+-     ],
+-     "mode": "shared",
+-     "sqlTimeouts": {
+-       "idleMs": 5000,
+-       "lockMs": 1500,
+-       "statementMs": 3000,
+-     },
+-   },
++   "error": "invalid_authority_transaction_spec",
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/authorityTransactionSpec.test.ts:46:52
+     44|     (first, second) => {
+     45|       const input = { ...spec(), key: [first, second] };
+     46|       expect(parseAuthorityTransactionSpec(input)).toEqual({ ok: true,…
+       |                                                    ^
+     47|     },
+     48|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/10]⎯
+
+ FAIL  |unit| src/features/agency-projects/authorityTransactionSpec.test.ts > candidate authority transaction specification boundary > accepts inclusive ordered timeout bounds 1
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: true, …(1) }
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "key": [
+-       10101,
+-       20202,
+-     ],
+-     "mode": "shared",
+-     "sqlTimeouts": {
+-       "idleMs": 1,
+-       "lockMs": 1,
+-       "statementMs": 1,
+-     },
+-   },
++   "error": "invalid_authority_transaction_spec",
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/authorityTransactionSpec.test.ts:54:52
+     52|     (lockMs, statementMs, idleMs) => {
+     53|       const input = { ...spec(), sqlTimeouts: { lockMs, statementMs, i…
+     54|       expect(parseAuthorityTransactionSpec(input)).toEqual({ ok: true,…
+       |                                                    ^
+     55|     },
+     56|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/10]⎯
+
+ FAIL  |unit| src/features/agency-projects/authorityTransactionSpec.test.ts > candidate authority transaction specification boundary > accepts inclusive ordered timeout bounds 60000
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: true, …(1) }
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "key": [
+-       10101,
+-       20202,
+-     ],
+-     "mode": "shared",
+-     "sqlTimeouts": {
+-       "idleMs": 60000,
+-       "lockMs": 60000,
+-       "statementMs": 60000,
+-     },
+-   },
++   "error": "invalid_authority_transaction_spec",
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/authorityTransactionSpec.test.ts:54:52
+     52|     (lockMs, statementMs, idleMs) => {
+     53|       const input = { ...spec(), sqlTimeouts: { lockMs, statementMs, i…
+     54|       expect(parseAuthorityTransactionSpec(input)).toEqual({ ok: true,…
+       |                                                    ^
+     55|     },
+     56|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/10]⎯
+
+ FAIL  |unit| src/features/agency-projects/authorityTransactionSpec.test.ts > candidate authority transaction specification boundary > accepts inclusive ordered timeout bounds 1
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: true, …(1) }
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "key": [
+-       10101,
+-       20202,
+-     ],
+-     "mode": "shared",
+-     "sqlTimeouts": {
+-       "idleMs": 60000,
+-       "lockMs": 1,
+-       "statementMs": 30000,
+-     },
+-   },
++   "error": "invalid_authority_transaction_spec",
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/authorityTransactionSpec.test.ts:54:52
+     52|     (lockMs, statementMs, idleMs) => {
+     53|       const input = { ...spec(), sqlTimeouts: { lockMs, statementMs, i…
+     54|       expect(parseAuthorityTransactionSpec(input)).toEqual({ ok: true,…
+       |                                                    ^
+     55|     },
+     56|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/10]⎯
+
+ FAIL  |unit| src/features/agency-projects/authorityTransactionSpec.test.ts > candidate authority transaction specification boundary > detaches returned tuples and timeout objects without mutating or freezing caller input
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/features/agency-projects/authorityTransactionSpec.test.ts:123:22
+    121|     const before = structuredClone(input);
+    122|     const first = parseAuthorityTransactionSpec(input);
+    123|     expect(first.ok).toBe(true);
+       |                      ^
+    124|     if (!first.ok) return;
+    125|     Reflect.set(first.value.key, "0", 99);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/10]⎯
+
+ FAIL  |unit| src/features/agency-projects/authorityTransactionSpec.test.ts > candidate authority transaction specification boundary > keeps an earlier accepted specification independent of later caller changes
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/features/agency-projects/authorityTransactionSpec.test.ts:136:23
+    134|     const before = structuredClone(input);
+    135|     const result = parseAuthorityTransactionSpec(input);
+    136|     expect(result.ok).toBe(true);
+       |                       ^
+    137|     if (!result.ok) return;
+    138|     input.key[0] = MIN_INT32;
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/10]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  10 failed | 104 passed (114)
+   Start at  10:31:34
+   Duration  82ms (transform 38%, tests 32%, import 14%, setup 9%, worker 6%)
+
+error: "vitest" exited with code 1
+error: script "test:unit" exited with code 1

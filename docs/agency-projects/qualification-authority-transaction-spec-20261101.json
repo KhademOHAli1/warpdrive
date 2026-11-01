@@ -1,0 +1,131 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-11-01T09:57:59.240653+00:00",
+  "base": "5318422256ae673f4385bf16b1e3c2401f67cc29",
+  "scope": "Source-only candidate transaction-spec parsing:2primaryTS unit/types/Biome/typedESLint;2privatecontrolTS included in types only. No lock execution or native candidate qualification.",
+  "preFormatSourceHashes": {
+    "src/features/agency-projects/authorityTransactionSpec.ts": "2c4048f55c768440751bceefe7bf9865a522ad9a90975ff1795c8360bf171611",
+    "src/features/agency-projects/authorityTransactionSpec.test.ts": "7ac4a741813e32dae75ac437c60f36f0207fd345c290266f457f77addc2911d9",
+    ".runtime/authority-candidate-owned-global-setup.ts": "cedebc0bc05de2785dd6c868c94f6b3264db3d00b17cb1f107e61def12b47544",
+    ".runtime/vitest.authority-candidate-pg.config.ts": "3e47bdc8929529535bdb3e3b9763d27282881cf5842d7e08f99dfe037a3e07be"
+  },
+  "sourceHashes": {
+    "src/features/agency-projects/authorityTransactionSpec.ts": "2c4048f55c768440751bceefe7bf9865a522ad9a90975ff1795c8360bf171611",
+    "src/features/agency-projects/authorityTransactionSpec.test.ts": "5f8db288fc041291a46e6662bd2d2ecff9d3417fc15f4855524cb9c0baf00271"
+  },
+  "controlSourceHashes": {
+    ".runtime/authority-candidate-owned-global-setup.ts": "cedebc0bc05de2785dd6c868c94f6b3264db3d00b17cb1f107e61def12b47544",
+    ".runtime/vitest.authority-candidate-pg.config.ts": "3e47bdc8929529535bdb3e3b9763d27282881cf5842d7e08f99dfe037a3e07be"
+  },
+  "checks": {
+    "missingModuleRed": {
+      "failedSuites": 1,
+      "testsExecuted": 0,
+      "log": "evidence/agency-authority-spec-red-missing.log"
+    },
+    "behavioralRed": {
+      "failed": 10,
+      "passed": 104,
+      "files": 1,
+      "log": "evidence/agency-authority-spec-red-behavior.log",
+      "scaffold": "evidence/agency-authority-spec-rejection-scaffold.ts.txt"
+    },
+    "preFormatUnits": {
+      "passed": 114,
+      "files": 1,
+      "durationMilliseconds": 79,
+      "log": "evidence/agency-authority-spec-green.log"
+    },
+    "selectedUnits": {
+      "passed": 114,
+      "files": 1,
+      "durationMilliseconds": 88,
+      "phase": "postformat",
+      "pid": 83484,
+      "log": "evidence/agency-authority-spec-source-units-1.log"
+    },
+    "focusedTypes": {
+      "exitCode": 0,
+      "primaryFiles": 2,
+      "privateControlFiles": 2,
+      "pid": 83445,
+      "log": "evidence/agency-authority-spec-source-types-2.log"
+    },
+    "biome": {
+      "exitCode": 0,
+      "files": 2,
+      "pid": 83472,
+      "log": "evidence/agency-authority-spec-source-biome-check-2.log"
+    },
+    "typedEslint": {
+      "exitCode": 0,
+      "files": 2,
+      "pid": 83424,
+      "unchangedRepositoryRules": true,
+      "log": "evidence/agency-authority-spec-source-eslint-1.log"
+    },
+    "initialBiome": "One test-file formatter diagnostic; production parser and private controls unchanged. Post-format types/Biome/typedESLint and114units pass."
+  },
+  "guard": {
+    "observationAuthority": "Process-group absence was observed by root, as supplied in this delegation; this worker performed read/hash/copy only.",
+    "routineUnits": {
+      "workers": 1,
+      "timeoutSeconds": 30,
+      "executionCutoffSeconds": 29,
+      "floorBytes": 5368709120,
+      "groupsEmptyVerifiedByRoot": [
+        78381,
+        78409,
+        78490
+      ],
+      "minimumFreeBytes": 14029713408,
+      "receipt": "evidence/agency-authority-spec-unit-handles.json"
+    },
+    "sourceWindow": {
+      "serial": true,
+      "elapsedSeconds": 11.897639,
+      "elapsedBasis": "window.startedAt through finalrun.finishedAt",
+      "minimumFreeBytes": 13437227008,
+      "groupsEmptyVerifiedByRoot": [
+        83364,
+        83378,
+        83412,
+        83424,
+        83445,
+        83472,
+        83484
+      ],
+      "released": true,
+      "budgetSeconds": 45,
+      "teardownReserveSeconds": 1,
+      "floorBytes": 5368709120,
+      "receipt": "evidence/agency-authority-spec-source-batch-handles.json"
+    },
+    "grantSourceThreadId": "01a18868-3300-7dc2-b49d-c3bdb067fae7",
+    "grantScope": "Exact2spec+2controlTS noEmit; Biome2/unchanged-rule typedESLint2 and same114-case post-format unit selection, serial45seconds total/live5GiB/existingdependencies. No native/app/build/install/provider scope."
+  },
+  "controlSnapshots": {
+    ".runtime/run-agency-authority-spec-unit.py": "evidence/agency-authority-spec-run-unit.py.txt",
+    ".runtime/run-agency-authority-spec-source-batch.py": "evidence/agency-authority-spec-run-source-batch.py.txt",
+    ".runtime/authority-spec-source-targets.json": "evidence/agency-authority-spec-source-targets.json.txt",
+    ".runtime/tsconfig.authority-spec-controls.json": "evidence/agency-authority-spec-tsconfig-controls.json.txt",
+    ".runtime/authority-spec-eslint.mjs": "evidence/agency-authority-spec-eslint.mjs.txt",
+    ".runtime/authority-candidate-owned-global-setup.ts": "evidence/agency-authority-spec-control-owned-global-setup.ts.txt",
+    ".runtime/vitest.authority-candidate-pg.config.ts": "evidence/agency-authority-spec-control-vitest-pg.config.ts.txt"
+  },
+  "rawAndControlCopiesByteVerified": 22,
+  "nativeCandidate": {
+    "declaredCases": 11,
+    "status": "NOT RUN",
+    "module": "src/features/agency-projects/authorityTransactionCandidate.ts",
+    "modulePresentAtCapture": false,
+    "privateControls": "Typechecked only; no setup/container/profile/marker/cleanup behavior executed or qualified."
+  },
+  "limits": [
+    "Valid spec syntax reserves no production advisory-lock key and supplies no native authority or shared owner API.",
+    "SQL timeout bounds/order are parsed data only; PostgreSQL settings, shared/exclusive ordering, Result rollback, cancellation, COMMIT outcomes and connection disposal are unqualified.",
+    "The11-case native test candidate was not executed and was outside this primary source/static scope; its implementation module remains absent at capture.",
+    "No native session/CRM/Privacy/fence/writer closure, Agency persistence/DDL/migration/allocation, app/worker/build/install/provider or task/release acceptance.",
+    "Prior qualification scopes remain separate; no arithmetic combined pass or full repository claim."
+  ]
+}
