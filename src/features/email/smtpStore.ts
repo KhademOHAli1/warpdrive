@@ -12,16 +12,12 @@ export async function storeSmtpOutboundCopy(
   db: Db,
   attempt: SmtpAttempt,
   signal: AbortSignal,
-  requireActiveOwner = false,
 ): Promise<Result<string, AppError>> {
   const links = await smtpThreadLinks(db, attempt, signal);
   return db.transaction(async (tx) => {
-    if (requireActiveOwner && !(await guardSmtpReceiptOwner(tx, attempt, signal)))
+    if (!(await guardSmtpReceiptOwner(tx, attempt, signal)))
       return err(
-        new AppError(
-          ERROR_IDS.MAIL_CONNECTION_CHANGED,
-          "SMTP receipt owner is inactive or missing",
-        ),
+        new AppError(ERROR_IDS.MAIL_CONNECTION_CHANGED, "SMTP receipt owner is unavailable"),
       );
     const locked = (
       await tx.execute(sql`SELECT id FROM email_send_attempts WHERE id=${attempt.id}

@@ -9,7 +9,7 @@ export async function guardSmtpReceiptOwner(
 ): Promise<boolean> {
   const owner = (
     await tx.execute(
-      sql`SELECT is_active FROM users WHERE id=${attempt.owner_id} FOR NO KEY UPDATE`,
+      sql`SELECT is_active FROM users WHERE id=${attempt.owner_id} AND invited_at IS NULL FOR NO KEY UPDATE`,
     )
   ).rows[0] as { is_active: boolean } | undefined;
   signal.throwIfAborted();
