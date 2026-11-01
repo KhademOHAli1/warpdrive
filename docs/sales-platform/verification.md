@@ -7,15 +7,47 @@ recoverable saved views. It reuses existing authentication, authorization,
 queries, optimistic cache/realtime machinery and integrations. The programme
 and production-release acceptance remain open.
 
-## Later bounded source checks
+## Completion and stored-view preservation checkpoint
+
+Application source `901ba96d668a29fa5d34a38a9fc0dfc7bc25014e` passed full Next route type generation and
+TypeScript in 4.072 seconds and full-repository lint in
+39.073 seconds, in separate finite groups with a 5 GiB disk
+floor. The preceding type attempt on 2133e94 exited 2 on two test assertion
+comparator types; commit 601be53 repairs those assertions without changing
+production code. That failed attempt is retained in the source-bound evidence. The first full
+lint stopped at the queue i18n audit; commit 3b79edc aligns the three Farsi ICU
+count contracts and renames a test-only helper under the existing audit convention.
+A second lint attempt passed i18n but stopped on qualification-contract.md table
+formatting; 59cb7d9 changes only that document. A third lint attempt reached full typed ESLint and found two recovery-test callback
+issues. The 901ba96 test-only repair awaits the actual rejected response; 23
+pipeline tests/3 files and affected typed lint passed. Full types and final full
+lint then passed together on `901ba96d668a29fa5d34a38a9fc0dfc7bc25014e` with unchanged production files since
+3b79edc. The later affected
+completion/queue selection passed 68 tests/6 files.
+
+Real PostgreSQL reproduced two completion replay failures among six cases on
+2fdef03. The minimal d4bf15a repair locks the activity row and returns the
+already-desired canonical row before any UPDATE. All six cases across two files
+then passed, including concurrent identical completions, permission/parent
+denial and saved-definition refusal/metadata preservation for all four entities.
+The test container returned to the peer baseline after both finite runs.
+
+Completion action input is now parsed strictly after existing CSRF/actor checks
+and before the native command. Its 24 boundary tests passed after an actual
+17-failure RED; seven-file typed lint passed. The selected native fixture uses
+the synthetic 85-entry Sales history. It does not qualify current-main upgrades,
+revocation while waiting, durable command-intent receipts or native UI recovery.
+Queue quick completion remains unwired. See
+`evidence/activity-replay-and-view-preservation-2026-11-01.json`.
+
+## Earlier bounded source checks
 
 The later `db925000ec20b9b8d8a3131ae3d183553d2a080c` write-boundary repair
 rejects lossy saved-definition inputs for all four entities. RED reproduced 26
 failures among 49 new schema cases. The final schema/read-compatibility selection
 passed 105 tests/5 files, and scoped typed ESLint passed the three changed files
-in 6.595 seconds, minimum free space 19,657,760,768 bytes. The earlier full
-TypeScript result below predates this fix; a new finite full check is pending.
-No PostgreSQL persistence, stored-data rewrite or native UI result is inferred.
+in 6.595 seconds, minimum free space 19,657,760,768 bytes. Subsequent full TypeScript and actual PostgreSQL preservation results are
+recorded above. No stored-data rewrite or native UI result is inferred.
 See `evidence/saved-view-write-boundary-2026-11-01.json` and
 `saved-view-presentation-path.md` for the full UI path still required.
 

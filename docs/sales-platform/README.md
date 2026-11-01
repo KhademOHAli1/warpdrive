@@ -104,10 +104,19 @@ files. It includes the native lead CSV `data.export` guard and six original,
 neutral qualification research definitions with frozen localized previews.
 Qualification plus adjacent stage contracts passed 43 tests/6 files; export plus
 adjacent permission/CSV units passed 44/5. These are scoped unit/type results.
-Current full lint/build/browser, native completion replay and installed framework
-selection/evidence/scoring remain open. Read `qualification-contract.md`,
+Later full types/lint and native completion replay/preservation results are
+recorded below. Build/browser and installed framework selection/evidence/scoring
+remain open. Read `qualification-contract.md`,
 `qualification-framework-research.md` and the later verification record.
 
 The selected product-led source is a customer-controlled first-party event API,
 with synthetic local Warpdrive as reference and optional PostHog/Segment mapping.
 See `product-signal-source-decision.md`. A real owner/feed remains unqualified.
+
+Latest application checkpoint `901ba96d668a29fa5d34a38a9fc0dfc7bc25014e` adds strict saved-definition writes,
+serialized completion retries with canonical same-state returns and strict native
+completion action inputs. Six real PostgreSQL cases and 24 action boundary units
+passed. Full current TypeScript and full-repository lint passed in separately
+granted finite groups after a preserved test-only type failure and repair.
+This adds no main-history upgrade, shared authority, production build or browser
+acceptance. See the later section of `verification.md`.

@@ -39,8 +39,8 @@ After that typechecked candidate, `db925000ec20b9b8d8a3131ae3d183553d2a080c`
 adds strict saved-definition writes for all four entities. It rejects envelopes
 and unknown constraint keys before persistence, instead of stripping them into
 weaker filters. Its 105 schema/compatibility units and three-file typed lint pass;
-full latest-source TypeScript and actual PostgreSQL/native persistence remain
-separate gates. Read `saved-view-presentation-path.md` before adding real
+full latest-source TypeScript and actual PostgreSQL preservation subsequently
+passed as recorded below; native UI persistence remains a separate gate. Read `saved-view-presentation-path.md` before adding real
 columns/sort/envelope UI support. Current writes intentionally accept bare native
 definitions only; metadata-only patches preserve the original definition.
 
@@ -142,9 +142,10 @@ again, silently repurpose observability telemetry or infer live-source access.
    125 tests/16 files in one finite run. Actual PostgreSQL read GREEN passed
    14 tests/4 files; all seven query production files remain unchanged afterward.
    Later focused queue units passed 44/5 and scoped typed ESLint passed 38 files.
-   Full current types later passed on 15950b6; separate completion-replay RED
-   still requires its own explicit native slot. No new build/app/provider campaign
-   is authorized. Preserve the
+   Full current types/lint and the six-case completion replay/saved-preservation
+   PostgreSQL batch subsequently passed as recorded below. Shared mutation
+   admission and native browser acceptance remain open. No new build/app/provider
+   campaign is authorized. Preserve the
    collection-only RED, behavioral assertion RED and later outcomes separately.
    No fail-closed test scaffold may be committed or delivered as implementation.
 5. Lead CSV export now requires an active native actor/session and existing
@@ -191,3 +192,20 @@ do not attribute native recovery solely to the policy. Warm native fresh-proof
 and archive/restore then succeeded. No auth or timeout rule was weakened.
 Keep heavy verification finite and avoid duplicate broad runs unless new
 changes or failures justify them. Never delete peer caches, databases or VMs.
+
+## Latest completion/preservation evidence
+
+Application checkpoint `901ba96d668a29fa5d34a38a9fc0dfc7bc25014e` passed full types and full-repository lint
+in separate terminal process groups. The earlier 2133e94 type failure and
+test-only 601be53 repair are retained. The minimal completion row lock/no-op
+repair at d4bf15a passed six actual PostgreSQL tests across two files, including
+all-entity stored-definition refusal/preservation. Strict action input parsing at
+2133e94 passed 24 units. Read the latest section of `verification.md` and its
+source-bound JSON before continuing. No Sales process or native slot remains
+owned after the recorded checks. New heavy campaigns require coordination.
+
+Next independent user-visible increment: implement the complete named-view
+columns/sort path from `saved-view-presentation-path.md`, beginning with People
+and extending Organizations/Leads before the separate Deals server-sort path.
+Preserve unsupported raw definitions, no broader transient queries and each
+user's personal baseline. Do not silently drop custom-field presentation.

@@ -11,8 +11,10 @@ Sales `27006e4` and committed Calendar
 update, actor hydration and native session source. Browser actions authenticate
 through `createContext`, then pass a captured actor into the repository. Completion
 and update evaluate that actor inside their transactions without refreshing or
-locking its authority. Their current target mutations also lack the proposed
-calendar revision/row-lock repair.
+locking its authority. At that review checkpoint their target mutations also lacked the proposed
+calendar revision/row-lock repair. Later Sales d4bf15a adds a completion-only
+activity row lock and same-state canonical return; the shared authority and
+revision repair below remains open.
 
 Platform `423dd155ad5f9c3f5073e5d7b47acaa346df582f` includes deal-only commit
 `643738bdba1e7aba8b414a98dc0b6cdc9c17a361`. It refreshes the actor inside the
@@ -94,3 +96,14 @@ The queue remains opt-in and its full quick-action/security acceptance stays
 open until this shared boundary is implemented and verified. Literal unassigned
 work also needs an explicit ownership/visibility design because current owner
 and assignee columns are non-null.
+
+## Later bounded replay repair
+
+Sales d4bf15a reproduced and repaired redundant same-state completion writes and
+differing concurrent retry timestamps. Two intended PostgreSQL failures became
+six passing combined replay/saved-preservation cases; capability and dominant
+parent denial still precede the no-op return. Strict action payload parsing at
+2133e94 rejects malformed UUID/boolean input after existing CSRF/actor checks.
+Neither change rehydrates native/OAuth/job authority inside the transaction or
+establishes a durable intent receipt for an intervening opposite transition.
+The six revocation/admission requirements above remain open.
