@@ -1,0 +1,51 @@
+$ bun --bun vitest run --project unit src/features/agency-projects/reasonBoundary.test.ts "--maxWorkers=1"
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+  - ESM syntax in a file loaded as CommonJS (vitest.classify.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.5 /Users/ali/Developer/warpdrive-agency-projects
+
+ ❯ |unit| src/features/agency-projects/reasonBoundary.test.ts (16 tests | 6 failed) 7ms
+   ❯ substantive lifecycle reason ingress (16)
+     × rejects a supplied variation selector reason 3ms
+     × rejects a supplied combining grapheme joiner reason 0ms
+     × rejects a supplied mixed default-ignorable characters reason 0ms
+     × rejects a supplied default-ignorable surrounded by whitesp… reason 0ms
+     × rejects a supplied format and default-ignorable characters reason 0ms
+     × rejects a supplied format, default-ignorable and whitespace reason 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| src/features/agency-projects/reasonBoundary.test.ts > substantive lifecycle reason ingress > rejects a supplied variation selector reason
+ FAIL  |unit| src/features/agency-projects/reasonBoundary.test.ts > substantive lifecycle reason ingress > rejects a supplied combining grapheme joiner reason
+ FAIL  |unit| src/features/agency-projects/reasonBoundary.test.ts > substantive lifecycle reason ingress > rejects a supplied mixed default-ignorable characters reason
+ FAIL  |unit| src/features/agency-projects/reasonBoundary.test.ts > substantive lifecycle reason ingress > rejects a supplied default-ignorable surrounded by whitesp… reason
+ FAIL  |unit| src/features/agency-projects/reasonBoundary.test.ts > substantive lifecycle reason ingress > rejects a supplied format and default-ignorable characters reason
+ FAIL  |unit| src/features/agency-projects/reasonBoundary.test.ts > substantive lifecycle reason ingress > rejects a supplied format, default-ignorable and whitespace reason
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/features/agency-projects/reasonBoundary.test.ts:44:52
+     42| describe("substantive lifecycle reason ingress", () => {
+     43|   it.each(invisibleReasons)("rejects a supplied $label reason", ({ rea…
+     44|     expect(reasonSchema.safeParse(reason).success).toBe(false);
+       |                                                    ^
+     45|     expect(
+     46|       projectCommandSchema.safeParse({ action: "cancel", expectedRevis…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  6 failed | 10 passed (16)
+   Start at  11:07:13
+   Duration  87ms (transform 37%, import 36%, tests 16%, setup 7%, worker 4%)
+
+error: "vitest" exited with code 1
+error: script "test:unit" exited with code 1
