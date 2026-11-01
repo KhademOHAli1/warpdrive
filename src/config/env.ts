@@ -69,6 +69,8 @@ const base = z.object({
   OAUTH_REGISTRATION: z.enum(["open", "disabled"]).default("open"),
   // Opt-in while lifecycle, access-revocation and upgrade acceptance remain under qualification.
   SALES_PIPELINE_LIFECYCLE_ENABLED: boolFromString.default(false),
+  // Queue query, action-admission and UI acceptance are qualified before exposure.
+  SALES_NEXT_ACTION_QUEUE_ENABLED: boolFromString.default(false),
   BASE_CURRENCY: z.string().length(3).default("USD"),
   SEED_ADMIN_EMAIL: z.string().email().or(z.literal("")).default(""),
   ALLOW_FIRST_LOGIN_ADMIN: boolFromString.default(false),
