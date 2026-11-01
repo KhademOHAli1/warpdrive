@@ -80,3 +80,9 @@ No source test certifies a provider, pilot, production operation or retained
 installation upgrade. No local fixture authorizes customer outreach or paid
 campaigns. Archive preserves history; migration/import/restore never admits
 historical outbound effects automatically.
+
+A later source-only merge adopts the reviewed manual workflow builder at
+`f78c342e2e6f062bd1602c2928d925028bc0d44f`. All 200 Sales-modified blobs through
+fbdef5c were preserved. This adds builder interaction/history inspection, without
+new engines, schema or effects. The combined workflow checks await a coordinated
+slot; earlier f006 checks remain scoped to that earlier source.

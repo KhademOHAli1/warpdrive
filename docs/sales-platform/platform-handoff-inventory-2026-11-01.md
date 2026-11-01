@@ -65,7 +65,9 @@ Exact builder `92a9432` was fetched into the task-owned review ref only. Git
 `merge-tree --write-tree` returned exit 0 for Sales `f006b5a` and produced
 `2bc75891f7eafe3dae0626a87f975f14eb200873`. The branch and checkout were not
 merged. Every Sales-changed file from the original b8 baseline retained its
-exact blob, including README.md. The package/lock, migration history, current
+exact blob, including `docs/sales-platform/README.md`. Root README.md is outside
+that Sales-modified set and its builder workflow copy changes in the preview.
+The package/lock, migration history, current
 Next config, entrypoints/jobs, auth/identity and shared UI surfaces are
 byte-identical to Sales in the preview. See
 `evidence/builder-merge-preview-2026-11-01.json`.
@@ -79,3 +81,19 @@ candidate. Actual adoption and affected workflow/auth/locale tests wait for the
 coordinated validation sequence. Preserve the history-aware merge; replacing the
 Sales tree with the builder tree would lose Sales/platform work and misplace WF
 migration history.
+
+## Actual source-only adoption
+
+A normal history-aware merge adopted exact builder 92a9432 in Sales commit
+`f78c342e2e6f062bd1602c2928d925028bc0d44f`, after documentation checkpoint
+fbdef5c was packaged. The actual merge changed 54 builder paths and preserved all
+200 Sales-modified blobs from the b8 base through fbdef5c. Protected package/lock,
+migrations, Next configuration, entrypoints/jobs, auth/identity and shared UI
+remained identical. No dirty peer source, dependency installation or schema was
+imported. See `evidence/builder-source-adoption-2026-11-01.json`.
+
+This is source adoption only. The earlier f006 unit/integration/build results do
+not qualify the newly combined workflow source. No new heavy run or preview has
+started. A bounded selected workflow/auth/locale and workflow PostgreSQL window
+was requested after the existing shared queue. Automatic events, waits and shared
+MAIL effects remain unavailable; no new parent task is complete.

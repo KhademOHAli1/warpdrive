@@ -113,12 +113,24 @@
         {
           "path": "docs/integration-execution/mail-platform-agreement-proposal.md",
           "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/platform-handoff-inventory-2026-11-01.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/evidence/builder-source-adoption-2026-11-01.json",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/sales-storage-coordination-request.md",
+          "level": "observed-source"
         }
       ],
       "remainingGates": [
         "Existing WF outbox/shared command and MAIL integration interfaces await actual exports/owner acceptance."
       ],
-      "notes": "Preserves one Better Auth, one WF engine and one IG sender; existing platform allocator and MAIL 0085-0091 reservation retained."
+      "notes": "Preserves one Better Auth, one WF engine and one IG sender; existing platform allocator and MAIL 0085-0091 reservation retained. Current committed shared-source inventory and history-aware builder adoption preserve Sales code. The combined source remains unqualified pending its selected window; Sales storage allocation and actual event/wait/MAIL bindings remain absent."
     },
     {
       "id": "SP-00.6",

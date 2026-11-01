@@ -28,8 +28,11 @@ inherited reports and records remaining acceptance gates.
 
 ## Current evidence and next work
 
-Current committed application HEAD is
+Latest build-checked application source is
 `f006b5a5026449fd2bf792439b9149ba3517feb8`, extending the earlier c655 checkpoint.
+Current application HEAD is the later source-only builder merge
+`f78c342e2e6f062bd1602c2928d925028bc0d44f`. Its combined workflow checks are not
+yet run; do not relabel the earlier f006 results as post-adoption qualification.
 Its full unit run passed 6068 tests/972 files and affected PostgreSQL passed 245/51.
 Full typecheck and lint passed with actual terminal exit 0. Native warm two-tab
 rename conflict/refresh/explicit review/save passed; three intended audit entries
@@ -102,10 +105,11 @@ again, silently repurpose observability telemetry or infer live-source access.
    coordination, then send the prepared storage request. Do not claim a migration
    slot from unreserved 0094. Complete durable create/duplicate receipts and actual
    template installation against the allocator-reviewed history.
-2. Builder 92a9432 has a clean history-aware merge preview. All 188 Sales-changed
-   blobs and protected runtime surfaces are preserved. A real merge and selected
-   workflow/auth/locale qualification remain unexecuted. Request an appropriate
-   finite window after the current Calendar/Privacy sequence before heavy checks.
+2. Builder 92a9432 was actually merged at f78c342 after the earlier clean preview.
+   All 200 Sales-changed blobs through fbdef5c and protected runtime surfaces are
+   preserved. Selected workflow/auth/locale and PostgreSQL qualification is still
+   unexecuted. Its finite window was requested after the current shared queue;
+   await explicit release before any heavy campaign.
 3. `distribution-notices-review.md` identifies an independent concrete packaging
    fix: exclude private `.runtime` from Docker context, explicitly distribute root
    and curated notices, preserve fonts and inspect actual resulting artifacts.
