@@ -30,10 +30,12 @@ describe("explicit revision-round declaration boundary", () => {
   it.each([0, -1, 1.5, "2", Number.MAX_SAFE_INTEGER + 1, NaN, Infinity])(
     "rejects a nonpositive or unsafe ordinal/version: %s",
     (value) => {
-      expect(parseRevisionRoundDeclaration({ ...round(), roundNumber: value }))
-        .toEqual(invalidDeclaration);
-      expect(parseRevisionRoundDeclaration({ ...round(), expectedAllowanceVersion: value }))
-        .toEqual(invalidDeclaration);
+      expect(parseRevisionRoundDeclaration({ ...round(), roundNumber: value })).toEqual(
+        invalidDeclaration,
+      );
+      expect(
+        parseRevisionRoundDeclaration({ ...round(), expectedAllowanceVersion: value }),
+      ).toEqual(invalidDeclaration);
     },
   );
 
@@ -46,8 +48,9 @@ describe("explicit revision-round declaration boundary", () => {
     expect(parseRevisionRoundDeclaration(input)).toEqual({ ok: true, value: round() });
     for (const field of ["projectId", "deliverableId"]) {
       for (const value of ["same-title", "", null, undefined]) {
-        expect(parseRevisionRoundDeclaration({ ...round(), [field]: value }))
-          .toEqual(invalidDeclaration);
+        expect(parseRevisionRoundDeclaration({ ...round(), [field]: value })).toEqual(
+          invalidDeclaration,
+        );
       }
     }
   });
@@ -59,16 +62,17 @@ describe("explicit revision-round declaration boundary", () => {
       { provenance: "staff-recorded" },
       { versionReference: "asset/version-1" },
     ]) {
-      expect(parseRevisionRoundDeclaration({ ...round(), ...extra }))
-        .toEqual(invalidDeclaration);
+      expect(parseRevisionRoundDeclaration({ ...round(), ...extra })).toEqual(invalidDeclaration);
     }
   });
 });
 
 describe("versioned staff-recorded allowance boundary", () => {
   it("retains explicit unknown and agreed zero as distinct declarations", () => {
-    expect(parseRevisionRoundAllowance(unknownAllowance()))
-      .toEqual({ ok: true, value: unknownAllowance() });
+    expect(parseRevisionRoundAllowance(unknownAllowance())).toEqual({
+      ok: true,
+      value: unknownAllowance(),
+    });
     expect(parseRevisionRoundAllowance(agreed(0))).toEqual({ ok: true, value: agreed(0) });
   });
 
@@ -99,8 +103,9 @@ describe("versioned staff-recorded allowance boundary", () => {
     for (const allowance of [agreed(), unknownAllowance()]) {
       for (const field of ["projectId", "deliverableId", "recordedByUserId"]) {
         for (const value of ["same-name", "", null, undefined]) {
-          expect(parseRevisionRoundAllowance({ ...allowance, [field]: value }))
-            .toEqual(invalidAllowance);
+          expect(parseRevisionRoundAllowance({ ...allowance, [field]: value })).toEqual(
+            invalidAllowance,
+          );
         }
       }
     }
@@ -108,8 +113,7 @@ describe("versioned staff-recorded allowance boundary", () => {
 
   it("requires staff-recorded provenance and a known strict variant", () => {
     for (const provenance of [undefined, "client-authenticated", "signed", true]) {
-      expect(parseRevisionRoundAllowance({ ...agreed(), provenance }))
-        .toEqual(invalidAllowance);
+      expect(parseRevisionRoundAllowance({ ...agreed(), provenance })).toEqual(invalidAllowance);
     }
     for (const kind of [undefined, null, "Agreed", "included", "exhausted"]) {
       expect(parseRevisionRoundAllowance({ ...agreed(), kind })).toEqual(invalidAllowance);
@@ -119,8 +123,9 @@ describe("versioned staff-recorded allowance boundary", () => {
       { agreementSource: "Terms" },
       { evidenceReference: "agreement/1" },
     ]) {
-      expect(parseRevisionRoundAllowance({ ...unknownAllowance(), ...extra }))
-        .toEqual(invalidAllowance);
+      expect(parseRevisionRoundAllowance({ ...unknownAllowance(), ...extra })).toEqual(
+        invalidAllowance,
+      );
     }
   });
 
@@ -134,8 +139,9 @@ describe("versioned staff-recorded allowance boundary", () => {
     ]) {
       expect(parseRevisionRoundAllowance({ ...agreed(), recordedAt })).toEqual(invalidAllowance);
     }
-    expect(parseRevisionRoundAllowance({ ...unknownAllowance(), recordedAt: undefined }))
-      .toEqual(invalidAllowance);
+    expect(parseRevisionRoundAllowance({ ...unknownAllowance(), recordedAt: undefined })).toEqual(
+      invalidAllowance,
+    );
   });
 
   it("requires substantive bounded agreement source and evidence, including agreed zero", () => {
@@ -144,9 +150,16 @@ describe("versioned staff-recorded allowance boundary", () => {
       Reflect.deleteProperty(input, field);
       expect(parseRevisionRoundAllowance(input)).toEqual(invalidAllowance);
     }
-    for (const agreementSource of [" ", "\u200c", "Source\u0085", "Source\nline", "x".repeat(161)]) {
-      expect(parseRevisionRoundAllowance({ ...agreed(), agreementSource }))
-        .toEqual(invalidAllowance);
+    for (const agreementSource of [
+      " ",
+      "\u200c",
+      "Source\u0085",
+      "Source\nline",
+      "x".repeat(161),
+    ]) {
+      expect(parseRevisionRoundAllowance({ ...agreed(), agreementSource })).toEqual(
+        invalidAllowance,
+      );
     }
     for (const evidenceReference of [
       "",
@@ -155,20 +168,23 @@ describe("versioned staff-recorded allowance boundary", () => {
       " agreement/1",
       "r".repeat(2049),
     ]) {
-      expect(parseRevisionRoundAllowance({ ...agreed(), evidenceReference }))
-        .toEqual(invalidAllowance);
+      expect(parseRevisionRoundAllowance({ ...agreed(), evidenceReference })).toEqual(
+        invalidAllowance,
+      );
     }
   });
 
   it("rejects invalid limits or versions rather than defaulting to unknown", () => {
     for (const includedRounds of [-1, 1.5, "2", null, NaN, Infinity, Number.MAX_SAFE_INTEGER + 1]) {
-      expect(parseRevisionRoundAllowance({ ...agreed(), includedRounds }))
-        .toEqual(invalidAllowance);
+      expect(parseRevisionRoundAllowance({ ...agreed(), includedRounds })).toEqual(
+        invalidAllowance,
+      );
     }
     for (const version of [0, -1, 1.5, "2", undefined, Number.MAX_SAFE_INTEGER + 1]) {
       expect(parseRevisionRoundAllowance({ ...agreed(), version })).toEqual(invalidAllowance);
-      expect(parseRevisionRoundAllowance({ ...unknownAllowance(), version }))
-        .toEqual(invalidAllowance);
+      expect(parseRevisionRoundAllowance({ ...unknownAllowance(), version })).toEqual(
+        invalidAllowance,
+      );
     }
   });
 });
@@ -189,10 +205,8 @@ describe("strict data-only round scope", () => {
       { authenticatedClient: true },
       { signature: "claim" },
     ]) {
-      expect(parseRevisionRoundDeclaration({ ...round(), ...extra }))
-        .toEqual(invalidDeclaration);
-      expect(parseRevisionRoundAllowance({ ...agreed(), ...extra }))
-        .toEqual(invalidAllowance);
+      expect(parseRevisionRoundDeclaration({ ...round(), ...extra })).toEqual(invalidDeclaration);
+      expect(parseRevisionRoundAllowance({ ...agreed(), ...extra })).toEqual(invalidAllowance);
     }
   });
 });

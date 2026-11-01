@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-11-01T05:53:31.552768+00:00",
+  "updatedAt": "2026-11-01T05:57:50.133281+00:00",
   "statusMeaning": "Evidence level only. A source-verified task is not accepted or complete. All 96 acceptance flags remain false.",
   "tasks": {
     "AP-00.1": {
@@ -29,8 +29,8 @@
     },
     "AP-00.7": {
       "status": "active",
-      "evidence": "Completed 47-file source-check batch: all seven groups empty, minimum 20,368,809,984 bytes, released. New explicit-round selected-unit runs used one worker, 30s deadlines and live 5GiB floor; three groups empty. Exact 52-file static/integrated batch requested, not started or inherited.",
-      "remaining": "Await a new finite static window; native/PG/build/install/provider and broad qualification remain separate. No Agency service, DB or migration allocation exists; accepted shared interfaces/base required before persistence qualification.",
+      "evidence": "Exact52-file source window completed in35.716148 seconds first start to final finish; all7 groups empty, minimum19,071,856,640 bytes, released. Initial readonly wrapper overlap268.061ms recorded; subsequent operations sequential. Earlier47 window separate. No PG/app/build/install/provider or broad qualification.",
+      "remaining": "Further static/native/heavy campaigns require current finite coordination; routine selected units stay one worker/30s/live5GiB. Accepted combined base/interfaces required before persistence.",
       "accepted": false
     },
     "AP-00.8": {
@@ -83,8 +83,8 @@
     },
     "AP-10.1": {
       "status": "active",
-      "evidence": "qualification-manual-20261101.json: actual post-format390 cases/16files, narrow types, Biome47 and unchanged-rule ESLint44 TS pass. Meaningful manual16/6 and reason1/28 reds retained, with exact47 source hashes and terminal guarded handles.",
-      "remaining": "New 52-file candidate adds 31 selected round-scope cases; its integrated/static checks are pending. Full repository/app/native/real PG/migration/restore and later feature increments remain open; source checks are not task acceptance.",
+      "evidence": "qualification-round-scope-20261101.json: actual post-format 421 tests/18 files, feature-local types, Biome52 and unchanged-rule ESLint49 TS pass; exact hashes/commands/terminal receipts retained, including initial read-only wrapper overlap. Prior reds and scoped results remain historical.",
+      "remaining": "Permission registration and later feature increments need their own evidence; full repository/app/native/real PG/migration/restore and original task acceptance remain open.",
       "accepted": false
     },
     "AP-11.1": {
@@ -180,7 +180,7 @@
     "AP-06.3": {
       "status": "active",
       "accepted": false,
-      "evidence": "Strict explicit per-deliverable round/recorded-allowance parsers and contextual classifier implemented test-first: actual missing-import red, behavioral 12 failed/19 passed, selected 31 passed in 2 files. Unknown and agreed zero remain distinct; supplied-version mismatch fails; no commercial authority. Static/integrated checks pending. revision-round-scope-contract.md.",
+      "evidence": "qualification-round-scope-20261101.json: strict explicit per-deliverable round/recorded-allowance parsers and supplied-term classifier implemented after actual 12 failed/19 passed red. Final integrated 421/18, local types, Biome52 and unchanged-rule ESLint49 TS pass. Unknown/zero/currentness boundaries explicit; no commercial authority or round writer.",
       "remaining": "AP-06.1 exact work-version and round lifecycle, current authorized term selection, immutable provenance/history/correction/replay, Privacy and real commercial handoff remain open. No round recording or original task acceptance."
     },
     "AP-08.7": {

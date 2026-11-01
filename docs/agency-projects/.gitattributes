@@ -8,3 +8,4 @@ evidence/agency-preference-source-biome-check-1.log -text whitespace=-blank-at-e
 evidence/agency-manual-source-biome-check-1.log -text whitespace=-blank-at-eof,-blank-at-eol
 # Preserve required blank context prefixes in this review-only unified diff.
 owner-review/project-create-registration-review.patch -text whitespace=-blank-at-eol
+evidence/agency-round-source-biome-check-1.log -text whitespace=-blank-at-eof,-blank-at-eol

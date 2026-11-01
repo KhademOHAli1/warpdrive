@@ -1,9 +1,9 @@
 import { err, ok, type Result } from "@/types/result";
 import {
-  recordedRoundAllowanceSchema,
-  revisionRoundDeclarationSchema,
   type RecordedRoundAllowance,
   type RevisionRoundDeclaration,
+  recordedRoundAllowanceSchema,
+  revisionRoundDeclarationSchema,
 } from "./revisionRoundScopeSchemas";
 
 export type { RecordedRoundAllowance, RevisionRoundDeclaration } from "./revisionRoundScopeSchemas";
@@ -34,10 +34,7 @@ export function parseRevisionRoundAllowance(
 export function evaluateRevisionRoundScope(
   round: RevisionRoundDeclaration,
   allowance: RecordedRoundAllowance,
-): Result<
-  RoundScopeAssessment,
-  "round_scope_target_conflict" | "round_scope_version_conflict"
-> {
+): Result<RoundScopeAssessment, "round_scope_target_conflict" | "round_scope_version_conflict"> {
   if (round.projectId !== allowance.projectId || round.deliverableId !== allowance.deliverableId) {
     return err("round_scope_target_conflict");
   }

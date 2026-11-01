@@ -45,14 +45,18 @@ describe("contextual comparison against supplied recorded allowance terms", () =
 
   it("rejects another target or supplied-version mismatch before classification", () => {
     for (const field of ["projectId", "deliverableId"] as const) {
-      expect(evaluateRevisionRoundScope(round(), {
-        ...agreed(),
-        [field]: "fabcdefa-6789-4bcd-9efa-678901234abc",
-      })).toEqual({ ok: false, error: "round_scope_target_conflict" });
+      expect(
+        evaluateRevisionRoundScope(round(), {
+          ...agreed(),
+          [field]: "fabcdefa-6789-4bcd-9efa-678901234abc",
+        }),
+      ).toEqual({ ok: false, error: "round_scope_target_conflict" });
     }
     for (const allowance of [agreed(0), unknownAllowance()]) {
-      expect(evaluateRevisionRoundScope(round(), { ...allowance, version: 3 }))
-        .toEqual({ ok: false, error: "round_scope_version_conflict" });
+      expect(evaluateRevisionRoundScope(round(), { ...allowance, version: 3 })).toEqual({
+        ok: false,
+        error: "round_scope_version_conflict",
+      });
     }
   });
 
@@ -94,10 +98,13 @@ describe("contextual comparison against supplied recorded allowance terms", () =
   it("does not reinterpret an old supplied pair after a different version is assessed", () => {
     const original = evaluateRevisionRoundScope(round(2), agreed(2));
     const changed = { ...agreed(0), version: 3 };
-    expect(evaluateRevisionRoundScope({ ...round(2), expectedAllowanceVersion: 3 }, changed))
-      .toMatchObject({ ok: true, value: { classification: "scope-review-required" } });
-    expect(evaluateRevisionRoundScope(round(2), changed))
-      .toEqual({ ok: false, error: "round_scope_version_conflict" });
+    expect(
+      evaluateRevisionRoundScope({ ...round(2), expectedAllowanceVersion: 3 }, changed),
+    ).toMatchObject({ ok: true, value: { classification: "scope-review-required" } });
+    expect(evaluateRevisionRoundScope(round(2), changed)).toEqual({
+      ok: false,
+      error: "round_scope_version_conflict",
+    });
     expect(evaluateRevisionRoundScope(round(2), agreed(2))).toEqual(original);
   });
 
