@@ -1,0 +1,39 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "incremental": false,
+    "types": [
+      "node",
+      "next"
+    ]
+  },
+  "include": [
+    "../src/features/i18n/LocaleProvider.tsx",
+    "../src/features/i18n/actions.ts",
+    "../src/features/i18n/server.ts",
+    "../src/features/i18n/preferences.ts",
+    "../src/features/i18n/catalog.ts",
+    "../src/lib/formatCurrency.ts",
+    "../src/lib/iranianMoney.ts",
+    "../src/lib/localeFormatting.ts",
+    "../src/lib/useFormatters.ts",
+    "../src/lib/iranianMoney.test.ts",
+    "../src/app/(app)/settings/profile/LanguageSettings.tsx",
+    "../src/app/(app)/settings/profile/IranianMoneySetting.tsx",
+    "../src/app/(app)/settings/profile/IranianMoneySetting.test.tsx",
+    "../src/features/identity/iranianMoneyPreferences.integration.test.ts",
+    "../src/features/custom-fields/CustomFieldCreateFields.tsx",
+    "../src/features/custom-fields/InlineCustomFieldEditor.tsx",
+    "../src/features/custom-fields/render.numeric-control.tsx",
+    "../src/features/custom-fields/render.widget-types.tsx",
+    "../src/features/custom-fields/render.widgets.tsx",
+    "../src/features/custom-fields/monetaryEntryUnit.test.tsx",
+    "../src/features/deals/AddDealModal.tsx",
+    "../src/features/leads/AddLeadModal.tsx",
+    "../src/features/deal-workspace/sidebar/DetailsBlock.tsx",
+    "../src/lib/iranianMoneyExponent.test.ts",
+    "../src/features/custom-fields/monetaryDescriptionIdentity.test.tsx",
+    "../src/features/deal-workspace/sidebar/monetaryBulkCurrency.test.tsx"
+  ],
+  "exclude": []
+}

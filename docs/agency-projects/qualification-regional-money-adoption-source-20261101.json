@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
-  "capturedAt": "2026-11-01T11:49:04.752925+00:00",
+  "capturedAt": "2026-11-01T12:13:43.651898+00:00",
   "agencyBase": "ac3b056d6191493bb0d9082af492f8f03b17d2c0",
   "sourceOwner": "MAIL/regional",
   "sourceCommit": "297c1dd5dbff4e19f6d1559a16bb258cc3368577",
   "laterSourceCut": "56210f31307701c7e545bf05f6b93ce4621605a3",
-  "status": "Numeric7GREEN and UI8GREEN afteractualseparate behavioralREDs; affectedstatic/native/account/SSR qualification pending",
+  "status": "Numeric7GREEN/UI8GREEN separately; firstfocusedsourcecheck failedmissingNextambienttypes, repairedcontrolpendingfreshretry; source/native/account/SSR notqualified",
   "initialAdoption": {
     "capturedAt": "2026-11-01T11:17:02.056483+00:00",
     "scope": "Initial26-source-path adoption before root numeric correction, after observed7case RED",
@@ -173,9 +173,42 @@
     "regional-money-render-widgets-before-id-fix.tsx.txt": "8ba597c7cc2546151a882b58f01fa3d59dd221695f26547e469ae6596cbd7ca6",
     "regional-money-ui-green.log": "191caba36266eeca89187a46635e7692a432608242914ecb6ebda6f960d96aa9",
     "regional-money-ui-green-launch.json": "6941217b9c6dcc266914c81dcd96ed1a0459d8bb9fb78d5717f8b778cec73ea2",
-    "regional-money-ui-green-receipt.json": "ad05a8b63d2028f106f6e82bbc764b8a0c0073a9c26221a348e430db3524c4e4"
+    "regional-money-ui-green-receipt.json": "ad05a8b63d2028f106f6e82bbc764b8a0c0073a9c26221a348e430db3524c4e4",
+    "regional-source-readonly-attempt1.log": "5583857eeb832222eda998ebda49fec10d8c6e2fd9861cd768e8cb0750bca4a7",
+    "regional-source-readonly-attempt1-launch.json": "50ce26f875dd5f26e17f7fd4227579c26c380a8efbfcf68d95858663361660ec",
+    "regional-source-readonly-attempt1-receipt.json": "cc6c7432b3114e0b770a79522c5230fed7ea63802385e316869c5b4db234ff0b"
   },
   "numericFixSourceReview": "Independent read-only source review found no concrete logic/type blocker; not a test/type/lint result.",
   "numericGreenHead": "f028e759370e6bfdd131ea5c3874292312fcee65",
-  "uiIdFix": "AfteractualRED, only CustomFieldFormControl changes to unconditional ReactuseId per rendered instance; NumericControl alreadyderives input/error/unit IDs fromit. Independent source review foundno hardcodedDOMselector; no SSR/native claim."
+  "uiIdFix": "AfteractualRED, only CustomFieldFormControl changes to unconditional ReactuseId per rendered instance; NumericControl alreadyderives input/error/unit IDs fromit. Independent source review foundno hardcodedDOMselector; no SSR/native claim.",
+  "sourceValidation": {
+    "attempt1": {
+      "status": "TERMINAL/FAILED atfirsttypephase; no staticpass",
+      "head": "311fdbffe9870bb89105e3b208b6899a72e08e50",
+      "pid": 51649,
+      "session": 4052,
+      "rawExitCode": 2,
+      "stopReason": null,
+      "elapsedSeconds": 5.06,
+      "phaseTypeSeconds": 4.6318,
+      "minimumFreeBytes": 14543548416,
+      "frozenInputs": 41,
+      "inputsUnchanged": true,
+      "groupGone": true,
+      "diagnostic": "FieldRow.tsx TS2307 for existing FieldRow.module.css because focusedtypes containednodeonly, omittinginstalledNextambientCSS declarations",
+      "Biome29": "NOTRUN stopfirsterror",
+      "typedESLint26": "NOTRUN stopfirsterror"
+    },
+    "repair": {
+      "scope": "Onlyfocusedtsconfig types now node+next, matchingtracked.typecheck/env.d.ts andactualNextindex globalreference. No customCSSstub/generatedrouteimport/source/rule/strictnesschange.",
+      "newPinCount": 43,
+      "extraPins": [
+        "node_modules/next/index.d.ts",
+        "node_modules/next/types/global.d.ts"
+      ],
+      "tsconfigSha256": "5673238528387474ad48076db2aa664d4ba6c942f2d284d75f6435a5ac167095",
+      "status": "NOTRUN, freshretrygrantrequested"
+    },
+    "sourceQualified": false
+  }
 }

@@ -1,0 +1,10 @@
+from pathlib import Path
+import json, subprocess, time
+root=Path.cwd()
+control=json.loads((root/".runtime/regional-source-controls.json").read_text())
+for index,command in enumerate(control["commands"],1):
+    started=time.monotonic()
+    print(json.dumps({"phase":index,"command":command}),flush=True)
+    result=subprocess.run(command,cwd=root)
+    print(json.dumps({"phase":index,"exitCode":result.returncode,"seconds":round(time.monotonic()-started,4)}),flush=True)
+    if result.returncode:raise SystemExit(result.returncode)
