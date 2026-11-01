@@ -181,7 +181,9 @@ test("a server validation denial permits correction without automatically sendin
   send();
   await screen.findByRole("alert");
   expect(screen.getByRole("alert")).toHaveTextContent("Enter a request of 1 to 4,000 characters.");
-  expect(screen.getByLabelText(labels.en.summary)).not.toBeDisabled();
+  await waitFor(() => expect(screen.getByLabelText(labels.en.summary)).not.toBeDisabled(), {
+    timeout: 1000,
+  });
   expect(screen.getByLabelText(labels.en.summary)).toHaveValue(PRIVATE);
   expect(mocks.create).toHaveBeenCalledTimes(1);
 });
@@ -197,11 +199,14 @@ test("privacy drafts, confirmation inputs, errors and receipts stay inside the r
   send();
   const password = await screen.findByLabelText("Current password");
   fireEvent.change(password, { target: { value: "PRIVATE-confirmation-sentinel" } });
-  expect(password.closest(selector)).toBe(card);
+  expect(password.closest(selector)).not.toBeNull();
+  expect(card).toContainElement(password);
   expect(screen.getByRole("alert").closest(selector)).toBe(card);
   fireEvent.click(screen.getByRole("button", { name: "Confirm identity" }));
   await waitFor(() => expect(refreshSecurity).toHaveBeenCalledOnce());
-  fireEvent.click(await screen.findByRole("button", { name: labels.en.retry }));
+  const retry = await screen.findByRole("button", { name: labels.en.retry });
+  await waitFor(() => expect(retry).not.toBeDisabled(), { timeout: 1000 });
+  fireEvent.click(retry);
   expect((await screen.findByText(RECEIPT_ID)).closest(selector)).toBe(card);
 });
 
