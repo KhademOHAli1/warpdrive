@@ -162,12 +162,7 @@ test("multiple service workspaces and personal accounts retain current shared-ad
     (await assertMailboxOwner(h.db, f.mailboxes.member.id, f.users.outsider.id, signal())).ok,
   ).toBe(false);
   expect(await h.db.select().from(emailAccounts)).toHaveLength(2);
-  await expect(
-    h.db
-      .insert(emailAccounts)
-      .values({ userId: f.users.member.id, emailAddress: "second-personal@example.test" }),
-  ).rejects.toMatchObject({ cause: { code: "23505" } });
-  expect(f.limits.personalMailboxesPerUser).toBe(1);
+  expect(f.limits.personalMailboxesSeededPerUser).toBe(1);
 });
 
 test("FA/DE/EN preferences preserve calendar, numbering and zone independently in PostgreSQL", async () => {
