@@ -12,6 +12,9 @@ approval. The original roadmap and acceptance criteria remain in `approved/`.
   latest main/auth `a1a8f6da` and workflow `d0c83e8`.
 - Fork/upstream remotes remain `KhademOHAli1/warpdrive` and `sneg55/warpdrive`.
 - Own pinned Bun: `.runtime/bin/bun`, version 1.4.4. No global runtime changed.
+- Current locally adopted application source:
+  `7c10761647633a6d2c0f701f3a1426d58357ee96`, identical tree to checked
+  `03100336a1053155d282f4f8e016e509bdb7ec31`.
 - Latest full build-checked application source checkpoint:
   `f006b5a5026449fd2bf792439b9149ba3517feb8`.
 - Earlier lifecycle/saved-view checkpoint:
@@ -40,11 +43,23 @@ adds strict saved-definition writes for all four entities. It rejects envelopes
 and unknown constraint keys before persistence, instead of stripping them into
 weaker filters. Its 105 schema/compatibility units and three-file typed lint pass;
 full latest-source TypeScript and actual PostgreSQL preservation subsequently
-passed as recorded below; native UI persistence remains a separate gate. Read `saved-view-presentation-path.md` before adding real
-columns/sort/envelope UI support. Current writes intentionally accept bare native
-definitions only; metadata-only patches preserve the original definition.
+passed as recorded below. That historical bare-only boundary is extended by
+03100336: person, organization and lead also accept strict full V1 builtin
+presentation envelopes. Deal writes remain bare-only; metadata-only patches
+preserve the original definition. Read `saved-view-presentation-contract.md` and
+`saved-view-presentation-path.md` before continuing current-source browser or
+separate Deal sorting work.
 
 ## Current evidence and next work
+
+Current presentation source 03100336 was adopted locally at 7c1076 with identical
+tree 4924b8a4a7ad4abad9b12db18c0aa7142656a93b. Actual affected units passed
+425 cases/33 files, full Next type generation/TypeScript passed, actual PostgreSQL
+passed 18/3, and full repository lint passed. The earlier 18 scoped-lint errors
+and 44 type diagnostics remain preserved with their repairs. Read
+`evidence/saved-view-presentation-2026-11-01.json`. All presentation check groups
+are terminal; their grants do not authorize a browser/build/provider campaign.
+No current-source browser journey or retained/main-history upgrade is inferred.
 
 Latest build-checked application source is
 `f006b5a5026449fd2bf792439b9149ba3517feb8`, extending the earlier c655 checkpoint.
@@ -204,8 +219,15 @@ all-entity stored-definition refusal/preservation. Strict action input parsing a
 source-bound JSON before continuing. No Sales process or native slot remains
 owned after the recorded checks. New heavy campaigns require coordination.
 
-Next independent user-visible increment: implement the complete named-view
-columns/sort path from `saved-view-presentation-path.md`, beginning with People
-and extending Organizations/Leads before the separate Deals server-sort path.
-Preserve unsupported raw definitions, no broader transient queries and each
-user's personal baseline. Do not silently drop custom-field presentation.
+Next native user-visible verification: exercise the implemented People,
+Organizations and Leads named-view columns/sort path in FA/DE/EN, including
+reload, blocked selection, explicit Clear and personal-baseline isolation. Prepare
+a finite window and inspect development import-worker startup before starting
+the owned profile. Current UI and DB processes remain separate from source proof.
+
+Separate unadopted Deals work is under ignored deal-list-sort and native-RED
+worktrees. The six-case server sort/paging PostgreSQL RED is prepared but unrun;
+server production remains held until that actual RED and its finite grant.
+Client work in that separate checkout is unqualified. Preserve raw unsupported
+definitions, query admission and personal baselines. Custom-field presentation
+and broad parent acceptance remain open.

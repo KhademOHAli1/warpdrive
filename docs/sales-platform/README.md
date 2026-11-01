@@ -40,6 +40,18 @@ independently use unreserved 0094 or combine dirty MAIL snapshots. See the exist
 - `verification.md` records rerun commands and candidate evidence separately
   from inherited historical reports.
 
+Current application source is locally adopted at
+`7c10761647633a6d2c0f701f3a1426d58357ee96`, with the exact checked tree of
+`03100336a1053155d282f4f8e016e509bdb7ec31`. People, Organizations and Leads
+support versioned builtin columns/sort and native selected-view preferences,
+including personal-baseline isolation and blocked unavailable selections.
+Affected units passed 425 cases/33 files, actual PostgreSQL passed 18/3, and full
+Next route types/TypeScript plus full repository lint passed. Preserved failed
+attempts and limits are in [the contract](saved-view-presentation-contract.md) and
+[the source-bound record](evidence/saved-view-presentation-2026-11-01.json).
+Native current-source browser, Deals global server sorting, build and release
+gates remain open. All 128 parent tasks remain open.
+
 The R0 preservation tools are followed by a committed R1 increment: opt-in
 pipeline archive/restore in the existing settings shell and compatible saved-view
 decoding with persistent recovery across deal, people, organization and lead
@@ -113,7 +125,7 @@ The selected product-led source is a customer-controlled first-party event API,
 with synthetic local Warpdrive as reference and optional PostHog/Segment mapping.
 See `product-signal-source-decision.md`. A real owner/feed remains unqualified.
 
-Latest application checkpoint `901ba96d668a29fa5d34a38a9fc0dfc7bc25014e` adds strict saved-definition writes,
+Earlier application checkpoint `901ba96d668a29fa5d34a38a9fc0dfc7bc25014e` adds strict saved-definition writes,
 serialized completion retries with canonical same-state returns and strict native
 completion action inputs. Six real PostgreSQL cases and 24 action boundary units
 passed. Full current TypeScript and full-repository lint passed in separately

@@ -1,11 +1,14 @@
 # Native saved-view presentation path
 
-Read-only implementation map, 1 November 2026. SP-03 remains open. This is the
-next full read/write/UI path, not an installed presentation capability. The
-existing saved_filters.definition JSONB can hold a reviewed versioned envelope;
-no separate table or store is needed for this scope.
+Implemented source map, 1 November 2026. Checked source
+`03100336a1053155d282f4f8e016e509bdb7ec31` is locally adopted at
+`7c10761647633a6d2c0f701f3a1426d58357ee96` with an identical tree.
+People, Organizations and Leads now have builtin presentation read/write, capture,
+selection and personal-baseline handling. SP-03 remains open. Read the
+[contract](saved-view-presentation-contract.md) and
+[source-bound evidence](evidence/saved-view-presentation-2026-11-01.json).
 
-## Current native support
+## Native builtin support
 
 | Entity       | Builtin column keys                                                | Supported server sort fields                                            |
 | ------------ | ------------------------------------------------------------------ | ----------------------------------------------------------------------- |
@@ -13,57 +16,55 @@ no separate table or store is needed for this scope.
 | Organization | name, address, closedDeals, openDeals, peopleCount                 | name                                                                    |
 | Lead         | title, nextActivity, labels, sourceOrigin, value, createdAt, owner | title, nextActivityAt, label, sourceOrigin, value, createdAt, ownerName |
 
-People's email column maps to primaryEmail sort. Unsortable count/address columns
-must not acquire implied sort behavior. Resolve only current per-entity builtin
-catalogs, enforce the pinned name/title link column and reject duplicate,
-cross-entity, unknown, cf: and qualification keys. Current builtin projection has
-no per-actor field ACL; hidden_builtin_fields is global UI metadata, not a
-confidentiality mechanism. This slice cannot establish independent field privacy.
+People's email column maps to primaryEmail sort. Count/address columns have no
+implied sort. The full envelope requires known unique columns with the pinned
+name/title first and an allowed entity-specific sort. Unknown, cross-entity,
+`cf:` and qualification keys are refused intact. Existing builtin projection has
+no per-actor field ACL; hidden_builtin_fields remains global UI metadata. This
+increment establishes no independent field-privacy contract.
 
-Deals use a separate saved-view control and currently sort in the browser over
-at most 500 returned cards. Persisting that state cannot be described as global
-server sorting. Complete its server-sort/query path before closing the common
-presentation requirement for all entities.
+## Implemented path
 
-## Existing path to extend
+1. `viewPresentation.ts` and `viewPresentationSchema.ts` define pure capture and
+   strict presentation validation. `viewDefinitionVersion.ts` decodes supported
+   envelopes without rewriting raw stored JSONB or widening unknown definitions.
+2. Native create/definition updates validate the complete explicit V1 envelope
+   for person, organization and lead. Legacy bare writes stay strict. Metadata-only
+   patches preserve definition bytes; existing owner/share authority is retained.
+3. Available saved-view DTOs expose validated conditions and full presentation.
+   Unavailable rows expose no executable definition or authored payload values.
+4. `useColumns` and `useColumnSort` apply validated view state. Personal preference
+   debounce and unmount flush are cancelled in view mode; Clear restores baseline,
+   while local edits detach the selected ID without overwriting that baseline.
+5. `SavedViewControl` and `SaveViewDialog` permit layout-only saves, compare full
+   view state and refuse unsupported capture with FA/DE/EN recovery guidance.
+   Contact search and Leads quick-filter/archived scope cannot silently disappear
+   from a saved view; named selection explicitly clears that transient scope.
+6. People, Organizations and Leads use native actor ID-only selection preferences.
+   Initial route resolution happens before data admission; malformed/private/missing
+   selections block rows/counts/reference labels and Leads export/bulk admission.
+   Ordered client preference writes fence deferred dispatch against actor changes.
 
-1. `viewDefinitionVersion.ts` currently reserves presentation version 1. Add the
-   exact builtin column/sort resolver, preserving unsupported raw envelopes and
-   the unavailable-view recovery state. Do not discard unknown columns through
-   resolveVisibleOrder or turn unsupported filters into an unrestricted read.
-2. `savedFilterActions.ts` create and definition-update use bare filter schemas.
-   Source `db92500` closes their lossy write boundary with a separate strict map
-   for all four entities: envelopes and unknown constraint keys are rejected.
-   Native defaults and metadata-only updates retain their existing contracts.
-   Actual envelope writes later need explicit target/version validation and intact
-   encoding, with existing owner-only update and filter.share authority.
-3. `storedViewDefinition.ts`, saved-view DTO types and `savedFilterList.ts` must
-   retain validated presentation on available reads. Unavailable rows must continue
-   withholding executable definitions and authored payload values.
-4. `useColumns.ts` and `useColumnSort.ts` need explicit validated apply/reset
-   operations. Conditions, columns and sort form one selected-view state; switching
-   must not issue a transient broader filter or reuse stale rows/counts.
-5. `SavedViewControl.tsx` and `SaveViewDialog.tsx` currently capture/reconcile only
-   conditions and require conditions for saving. Capture full presentation, define
-   layout-only views explicitly, and compare the entire current view state.
-6. `PeopleList.tsx`, `OrgsList.tsx` and `LeadsInbox.tsx` own actual table state and
-   already scope page requests by sort. Apply named-view overrides through those
-   existing wrappers. Preserve each user's personal layout baseline; selecting a
-   named/shared view must not silently overwrite automatic personal preferences.
+Deals still use a separate saved-view control and client sorting over at most 500
+returned cards in the adopted source. Its independent global server sorting/paging
+work is unadopted and its prepared six-case PostgreSQL RED is unrun. Do not describe
+that future client branch as a qualified server contract or full Deal presentation.
 
-The first native journey is People: hide/reorder builtin columns, sort email
-descending, save a named view, change layout/sort, select that view and restore
-the complete state, then reload and recover it again. Extend the same path through
-Organizations and Leads, retaining Lead export columns/sort and unavailable-view
-export blocking. Complete the separate Deals sorting path afterward; no broad
-parent is complete at the first entity's pass.
+## Verification and next journeys
 
-## Verification and limits
+Actual affected units passed 425 cases/33 files. Full typecheck and full repository
+lint passed. Actual PostgreSQL passed 18 cases/three files for envelope round trips,
+native selection and strict-write preservation, using the selected synthetic
+85-entry Sales history. Failed type/lint attempts and behavioral RED classifications
+remain in the source-bound record. No migration/dependency change was introduced.
 
-Keep current version/decoder, stored-view, owner/share and metadata-only update
-tests. Add actual PostgreSQL create/update/read round trips for envelopes, native
-selected-view persistence and late-response recovery, personal-baseline isolation,
-unknown/archive/cross-entity fields, scope/revocation and FA/DE/EN complete-state
-journeys. Existing read-side strict recovery is not write-side persistence proof.
-No database command, source presentation change or UI enablement ran during this
-inventory. Native changes require their appropriate finite verification slots.
+Next native journey is People: hide/reorder builtin columns, sort email descending,
+save, change state, select the named view, reload and recover its complete state;
+then verify Clear and personal-baseline isolation. Extend through Organizations and
+Leads, including export columns/sort and unavailable-view export blocking, in
+FA/DE/EN. Browser operation requires a separately coordinated finite window and
+review of native development import-worker startup before starting the profile.
+
+Custom-field presentation, real retained definitions, broader revocation after waits,
+current-main/retained upgrades, complete export authority and release acceptance
+remain open. The latest production build-checked application is still f006b5a.

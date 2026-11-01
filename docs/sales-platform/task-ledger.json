@@ -575,13 +575,21 @@
         {
           "path": "docs/sales-platform/evidence/r1-lifecycle/qualification.json",
           "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/saved-view-presentation-contract.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/evidence/saved-view-presentation-2026-11-01.json",
+          "level": "local-runtime"
         }
       ],
       "remainingGates": [
-        "A bounded inventory of real retained definitions, unknown keys and all installed entity variants still requires evidence.",
-        "Versioned writes, old-client compatibility, presentation columns/sort and explicit recovery/edit workflows beyond clear/replace remain open."
+        "A bounded inventory of real retained definitions, unknown keys and installed entity variants still requires evidence.",
+        "Old-client compatibility, custom-field presentation, complete recovery/edit workflows and current-source native browser/retained-upgrade qualification remain open."
       ],
-      "notes": "Bare historical and V1 definitions reuse entity-specific validators; supported values round-trip and authored strings stay unchanged. Unsupported versions/operators/fields/keys return typed unavailable state rather than an executable empty filter. Stored reads retain IDs/names/ownership and raw JSONB. Native version-99 selection blocked cards/totals, persisted across reload without card payload and recovered only after explicit clear; its raw definition stayed unchanged."
+      "notes": "Bare historical and explicit V1 definitions retain strict entity validation. Checked source 03100336 adds full builtin presentation envelopes for person, organization and lead while unknown/future/unsupported definitions remain unavailable without rewriting raw JSONB. Actual envelope round trips and metadata preservation passed within the 18-case PostgreSQL batch. Native current-source browser and old-client/retained data evidence remain separate."
     },
     {
       "id": "SP-03.2",
@@ -625,14 +633,22 @@
         {
           "path": "docs/sales-platform/evidence/activity-replay-and-view-preservation-2026-11-01.json",
           "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/saved-view-presentation-contract.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/evidence/saved-view-presentation-2026-11-01.json",
+          "level": "local-runtime"
         }
       ],
       "remainingGates": [
         "Complete new pipeline/owner/team/source/date/status/label/custom-field composition and SQL/UI parity qualification remain open.",
         "Permission-aware dynamic custom-field filter resolution, scope editing and all server export/search/realtime paths remain unqualified by client availability guards.",
-        "Full versioned builtin column/sort read-write-UI path, PostgreSQL round trips and native current-source qualification remain open."
+        "Builtin person/organization/lead read-write and PostgreSQL checks passed; current-source browser qualification and the separate Deals global server sort/paging contract remain open."
       ],
-      "notes": "Existing executing-viewer query authority is preserved while invalid stored definitions close record-query admission. Board/list scope receipts and entity paging delivery keys prevent mismatched or previous broader cached results from appearing as a narrower view. Contact/lead unavailable selections suppress queries, rows, counts and reference labels. This extends safe composition boundaries without adding a permission grant. Later db92500 closes lossy saved-definition writes across all four entities: 26 failures reproduced, 105 schema/compatibility units passed, scoped typed lint passed. This does not add presentation persistence; later PostgreSQL refusal/preservation evidence is separately recorded. Later d4bf15a passed six actual PostgreSQL replay/saved-preservation cases; strict completion action input passed 24 units. Full current types/lint passed after a preserved test-only type failure and repair. Native authority/browser/build and main-history upgrade gates remain open."
+      "notes": "Existing executing-viewer authority is preserved. Checked source 03100336 applies conditions/columns/sort together, blocks unavailable selections before initial record/count/reference-label admission and refuses unsaved search/quick-filter scope rather than weakening it. Actual affected 425/33 units, PostgreSQL18/3, full types and full lint passed. Existing strict writes and metadata preservation remain. This does not complete dynamic-field, cross-surface authority, native browser, build or main-history upgrade qualification."
     },
     {
       "id": "SP-03.3",
@@ -664,14 +680,22 @@
         {
           "path": "docs/sales-platform/evidence/activity-replay-and-view-preservation-2026-11-01.json",
           "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/saved-view-presentation-contract.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/evidence/saved-view-presentation-2026-11-01.json",
+          "level": "local-runtime"
         }
       ],
       "remainingGates": [
-        "New per-view column/sort persistence, duplicate/rename/reset behavior and the full preference/return-navigation matrix remain open.",
-        "The reserved presentation envelope is not active column/sort support; existing personal/shared/favorite metadata preservation is not new sharing implementation.",
-        "Full versioned builtin column/sort read-write-UI path, PostgreSQL round trips and native current-source qualification remain open."
+        "Duplicate/rename/reset behavior, full return-navigation/preferences matrix and native FA/DE/EN browser acceptance remain open.",
+        "Existing personal/shared/favorite metadata preservation is not new sharing authority; execution-time shared revocation remains open.",
+        "Deals full presentation/global server sorting and custom-field presentation remain outside the adopted three-entity builtin contract."
       ],
-      "notes": "Valid existing personal/shared/favorite metadata is retained. Full selected-view state now survives invalid/missing/deleted selections and refresh instead of clearing to all records; only explicit clear or a valid replacement resumes data. Board/list restored unavailable context and native reload recovery were exercised. Existing bare write format remains unchanged. Later db92500 closes lossy saved-definition writes across all four entities: 26 failures reproduced, 105 schema/compatibility units passed, scoped typed lint passed. This does not add presentation persistence; later PostgreSQL refusal/preservation evidence is separately recorded. Later d4bf15a passed six actual PostgreSQL replay/saved-preservation cases; strict completion action input passed 24 units. Full current types/lint passed after a preserved test-only type failure and repair. Native authority/browser/build and main-history upgrade gates remain open."
+      "notes": "Checked source 03100336 persists person/organization/lead V1 builtin columns/sort and native actor ID-only selected-view preferences. Selecting a view preserves the personal baseline; view-mode debounce/unmount writes are cancelled. Clear restores personal mode, while local editing detaches selection without overwriting personal layout. Malformed/private/missing selections block data. Queued writes fence principal changes, and actual native preferences passed nine PostgreSQL cases within 18/3. Affected 425/33 units, full types and full lint passed; no new browser/release claim."
     },
     {
       "id": "SP-03.4",
@@ -754,13 +778,21 @@
         {
           "path": "docs/sales-platform/evidence/r1-lifecycle/qualification.json",
           "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/saved-view-presentation-contract.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/evidence/saved-view-presentation-2026-11-01.json",
+          "level": "local-runtime"
         }
       ],
       "remainingGates": [
         "Asynchronous scoped export jobs, field/currency/unit/date manifests, safe CSV text and progress are not delivered by this increment.",
         "Execution/download authorization rechecks and shared-view export revocation require complete server/runtime qualification."
       ],
-      "notes": "Partial export admission is implemented for leads: an unavailable selected view disables the CSV entry and the export handler, so a null invalid definition cannot become an all-records export. Tests cover cached rows/counts, paging and export suppression through explicit recovery. This is client admission evidence, not completion of the scoped asynchronous export service."
+      "notes": "Leads unavailable selections continue to disable both CSV entry and handler. Checked source 03100336 reuses the existing CSV path with effective builtin columns, sort, conditions and quick filters; unsupported capture cannot silently weaken scope. The native export route independently retains current session/data.export checks. Affected presentation units and 18/3 PostgreSQL passed, but this is not asynchronous export/download authority, after-wait revocation or current-source browser qualification."
     },
     {
       "id": "SP-03.8",
@@ -796,13 +828,21 @@
         {
           "path": "docs/sales-platform/evidence/r1-lifecycle/qualification.json",
           "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/saved-view-presentation-contract.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/evidence/saved-view-presentation-2026-11-01.json",
+          "level": "local-runtime"
         }
       ],
       "remainingGates": [
         "Hidden-field changes, complete shared-view revocation, server export/search/cache/realtime authority and mobile next-action queues remain open.",
         "Native cross-entity language/accessibility/theme matrices and actual retained-filter inventory are still required."
       ],
-      "notes": "Compatibility/recovery is integrated across deal board/list and person/organization/lead selections. Invalid, unsupported, missing or deleted views do not silently widen; cached totals/rows and late results are suppressed, and valid narrower replacements wait for matching data. Source/cache/component and PostgreSQL route tests passed in the current candidate; native Farsi unsupported-deal-view reload/explicit recovery was observed. No cross-surface closure is inferred."
+      "notes": "Compatibility/recovery remains integrated across deal board/list and person/organization/lead selection. Checked source 03100336 adds three-entity builtin presentation and native preference persistence with initial query blocking, personal-baseline isolation, actor queue fences and explicit unsupported transient scope guidance. Actual 425/33 units,18/3 PostgreSQL, full types and full lint passed. Existing older Farsi unsupported-deal-view browser evidence remains historical; no current-source native matrix or broader authority closure is inferred."
     },
     {
       "id": "SP-04.1",
@@ -1779,13 +1819,21 @@
         {
           "path": "docs/sales-platform/evidence/activity-replay-and-view-preservation-2026-11-01.json",
           "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/saved-view-presentation-contract.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/evidence/saved-view-presentation-2026-11-01.json",
+          "level": "local-runtime"
         }
       ],
       "remainingGates": [
         "Remaining exact-candidate functional/browser/provider/release acceptance still required.",
         "Full protected foreground/background/provider/browser/state and release acceptance remains open."
       ],
-      "notes": "Checkpoint c655b8e: final root unit summary inspected with 6020 tests across 966 files passing; affected PostgreSQL summary inspected with 239 tests across 50 files passing. Existing registry and guards retain all 128 parent IDs and evidence ceilings. Native lifecycle/unavailable-view journeys and the 103-table synthetic restore add current local runtime evidence; aggregate checks do not complete parent acceptance. Version-matched qualification.json now records the checkpoint build/check evidence separately from release acceptance. Later lead CSV export gate 6efe4dd adds native session/global data.export refusal before reads; 44 adjacent units across 5 files passed. Full 15950b6 types passed with 18-file affected typed lint; that type/unit record alone establishes no newer build/browser/native replay result; subsequent actual replay evidence is recorded below. Later d4bf15a passed six actual PostgreSQL replay/saved-preservation cases; strict completion action input passed 24 units. Full current types/lint passed after a preserved test-only type failure and repair. Native authority/browser/build and main-history upgrade gates remain open."
+      "notes": "Checkpoint c655b8e: final root unit summary inspected with 6020 tests across 966 files passing; affected PostgreSQL summary inspected with 239 tests across 50 files passing. Existing registry and guards retain all 128 parent IDs and evidence ceilings. Native lifecycle/unavailable-view journeys and the 103-table synthetic restore add current local runtime evidence; aggregate checks do not complete parent acceptance. Version-matched qualification.json now records the checkpoint build/check evidence separately from release acceptance. Later lead CSV export gate 6efe4dd adds native session/global data.export refusal before reads; 44 adjacent units across 5 files passed. Full 15950b6 types passed with 18-file affected typed lint; that type/unit record alone establishes no newer build/browser/native replay result; subsequent actual replay evidence is recorded below. Later d4bf15a passed six actual PostgreSQL replay/saved-preservation cases; strict completion action input passed 24 units. Full current types/lint passed after a preserved test-only type failure and repair. Native authority/browser/build and main-history upgrade gates remain open. Later checked source 03100336, locally adopted 7c1076 with an identical tree, passed 425 affected units/33 files, 18 actual PostgreSQL cases/three files, full Next types/TypeScript and full repository lint. Failed presentation type/lint attempts and behavioral RED classifications remain preserved. Current-source browser/build/provider/release and current-main/retained upgrades remain open."
     },
     {
       "id": "SP-15.2",

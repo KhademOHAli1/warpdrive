@@ -7,6 +7,51 @@ recoverable saved views. It reuses existing authentication, authorization,
 queries, optimistic cache/realtime machinery and integrations. The programme
 and production-release acceptance remain open.
 
+## Builtin presentation and native selection checkpoint
+
+Source `03100336a1053155d282f4f8e016e509bdb7ec31` was adopted by a normal local
+merge at `7c10761647633a6d2c0f701f3a1426d58357ee96`. Both trees equal
+`4924b8a4a7ad4abad9b12db18c0aa7142656a93b`. The changed source introduces no
+Sales DDL, dependency change or modification of the eight approved originals.
+People, Organizations and Leads now persist strict V1 builtin columns/sort,
+resolve native ID-only selected views before data admission, preserve personal
+baselines and block unavailable selections. The complete implemented behavior is
+in [the contract](saved-view-presentation-contract.md).
+
+| Check                           | Actual terminal result                     | Scope                                                                                                        |
+| ------------------------------- | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------ |
+| Affected units                  | 425 tests/33 files passed, 17.770 seconds  | One worker, 45-second guard, minimum 14,487,355,392 free bytes                                               |
+| Full route types and TypeScript | Exit 0, 12.185 seconds                     | 90-second guard, 5 GiB floor, minimum 13,215,555,584 free bytes                                              |
+| Actual PostgreSQL               | 18 tests/three files passed, 5.101 seconds | PostgreSQL 16, one worker, selected synthetic 85-entry history; exact peer baseline restored                 |
+| Full repository lint            | Exit 0, 39.529 seconds                     | i18n, Biome 3697 files, typed ESLint; 11 existing warnings and nine infos; minimum 12,040,028,160 free bytes |
+
+Native cases cover six envelope round trips, nine native preference selections
+and three strict-write preservation cases. They do not establish runtime browser,
+shared revocation after waits or retained-installation upgrade acceptance.
+The lock and journal hashes are unchanged in the source-bound evidence.
+
+The first scoped typed lint failed with 18 diagnostics, repaired at 91cc233;
+its 56-file rerun passed, followed by the three newly changed files passing on
+03100336. The first full type attempt generated route types successfully, then
+failed with 44 diagnostics: 42 output optional-key cascades, one address fixture
+and one bare/envelope union assertion. The outer schema optional output and two
+fixture repairs at 03100336 passed the final unit, type, PostgreSQL and lint checks.
+No failed attempt is overwritten or presented as a pass.
+
+Behavioral RED receipts remain separate: 38 data failures, 20 shared presentation
+failures, separate layout-only and malformed-selection failures, 41 selection
+failures, nine initial-route failures, and two principal-fence failures. The final
+scope batch had 15 failures, of which 14 were behavioral and one was an ambiguous
+implicit output-status fixture; its real status assertions stayed unchanged.
+See [the sanitized receipt record](evidence/saved-view-presentation-2026-11-01.json)
+for actual timing, counts, hashes and boundaries. Raw logs remain private.
+
+The latest production build-checked application remains f006 below. Current-source
+FA/DE/EN browser, accessibility, provider, current-main/retained-history and release
+gates remain open. The separate unadopted Deals server sort/paging path has six
+native RED cases prepared but unrun; it is not included in this 18-case batch.
+All 16 projects and 128 parent tasks remain in scope with zero completed parents.
+
 ## Completion and stored-view preservation checkpoint
 
 Application source `901ba96d668a29fa5d34a38a9fc0dfc7bc25014e` passed full Next route type generation and
@@ -49,7 +94,8 @@ passed 105 tests/5 files, and scoped typed ESLint passed the three changed files
 in 6.595 seconds, minimum free space 19,657,760,768 bytes. Subsequent full TypeScript and actual PostgreSQL preservation results are
 recorded above. No stored-data rewrite or native UI result is inferred.
 See `evidence/saved-view-write-boundary-2026-11-01.json` and
-`saved-view-presentation-path.md` for the full UI path still required.
+`saved-view-presentation-path.md` for the later implemented three-entity path and
+its remaining native-browser/Deals gates.
 
 Source `15950b6d81083b14239b5f54539ae828af406d67`, including queue, native lead
 export permission guard and the separate qualification catalog/preview, passed
