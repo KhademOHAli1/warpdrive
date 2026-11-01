@@ -36,12 +36,13 @@ describe.each(entities)("%s saved-definition write boundary", (targetEntity, fie
     expect(definition).toEqual({ conditions: [condition] });
   });
 
-  test.each(operations)("rejects supported and future envelopes on %s", (operation) => {
+  test.each(operations)("rejects unsupported or lossy envelope shapes on %s", (operation) => {
     for (const version of [1, 99]) {
       const envelope = { version, targetEntity, definition };
-      // The deal schema previously defaulted absent top-level conditions to an empty filter.
-      expect(parseWrite(targetEntity, envelope, operation).success).toBe(false);
-      // Other entities must also reject an envelope carrying plausible native keys alongside it.
+      expect(parseWrite(targetEntity, envelope, operation).success).toBe(
+        targetEntity !== "deal" && version === 1,
+      );
+      // Plausible native keys beside an envelope must never silently replace its definition.
       expect(parseWrite(targetEntity, { ...definition, ...envelope }, operation).success).toBe(
         false,
       );

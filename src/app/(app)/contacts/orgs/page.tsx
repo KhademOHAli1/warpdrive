@@ -7,6 +7,7 @@ import { QuickAddContact } from "@/features/contacts/QuickAddContact";
 import { listDefs } from "@/features/custom-fields/defsRepo";
 import { getAppTranslations } from "@/features/i18n/server";
 import { getPreferencesForActor } from "@/features/identity/preferencesForActor";
+import { resolveSavedViewSelection } from "@/features/saved-filters/savedViewSelection";
 import { readBaseCurrency } from "@/features/settings/readBaseCurrency";
 import { createContext } from "@/server/trpc/context";
 import { createCaller } from "@/server/trpc/root";
@@ -46,14 +47,38 @@ async function OrgsSection({ actorId }: { actorId: string }): Promise<React.Reac
   const t = await getAppTranslations("contacts");
   const ctx = await createContext();
   const caller = createCaller(ctx);
-  const [{ rows, total, refLabels }, prefs, customFieldDefs, baseCurrency] = await Promise.all([
-    caller.contacts.listOrgs({ offset: 0, limit: 50 }),
-    getPreferencesForActor(ctx.db, actorId),
+  const prefs = await getPreferencesForActor(ctx.db, actorId);
+  const storedSelection = prefs.ui.orgsSavedViewSelection;
+  const visibleViews =
+    storedSelection !== undefined &&
+    !("status" in storedSelection) &&
+    storedSelection.savedViewId !== null
+      ? await caller.savedFilters.listByTarget({ targetEntity: "organization" })
+      : [];
+  const seed = resolveSavedViewSelection(storedSelection, visibleViews);
+  const blocked =
+    seed.initialSelectionBlocked || seed.initialSavedView?.availability === "unavailable";
+  const selected = seed.initialSavedView;
+  const sort =
+    selected !== null && selected.availability !== "unavailable"
+      ? selected.presentation?.sort
+      : undefined;
+  const [{ rows, total, refLabels }, customFieldDefs, baseCurrency] = await Promise.all([
+    blocked
+      ? { rows: [], total: 0, refLabels: { user: {}, person: {}, org: {} } }
+      : caller.contacts.listOrgs({
+          offset: 0,
+          limit: 50,
+          filter: selected?.definition ?? undefined,
+          sort,
+        }),
     listDefs(ctx.db, "organization", {}, AbortSignal.timeout(8000)),
     readBaseCurrency(ctx.db, AbortSignal.timeout(8000)),
   ]);
   return (
     <OrgsList
+      key={actorId}
+      preferenceActorId={actorId}
       rows={rows.map((r) => ({
         id: r.id,
         name: r.name,
@@ -65,6 +90,7 @@ async function OrgsSection({ actorId }: { actorId: string }): Promise<React.Reac
       }))}
       total={total}
       initialColumns={prefs.ui.orgsView}
+      {...seed}
       customFieldDefs={customFieldDefs}
       baseCurrency={baseCurrency}
       refLabels={refLabels}

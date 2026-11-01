@@ -4,6 +4,13 @@ import { ERROR_IDS } from "@/constants/errorIds";
 import { db } from "@/db/client";
 import { guardCsrf } from "@/features/identity/actions/shared";
 import { SIG } from "@/features/identity/actions/sig";
+import { listCompatibleSavedFilterViews } from "@/features/saved-filters/savedFilterList";
+import {
+  SAVED_VIEW_SELECTION_KEYS,
+  savedViewSelectionActorHintSchema,
+  savedViewSelectionInputSchema,
+} from "@/features/saved-filters/savedViewSelectionSchema";
+import type { SavedViewPresentationTarget } from "@/features/saved-filters/viewPresentation";
 import type { Appearance } from "@/features/theme/appearance";
 import { createContext } from "@/server/trpc/context";
 import { setPreferences, setSidebarSectionsPreference } from "./preferencesRepo";
@@ -28,6 +35,67 @@ import {
 } from "./preferencesSchema";
 
 export type PrefActionResult = { ok: true } | { ok: false; error: { id: string } };
+
+async function maySelectSavedView(
+  ctx: Parameters<typeof listCompatibleSavedFilterViews>[0],
+  targetEntity: SavedViewPresentationTarget,
+  savedViewId: string | null,
+): Promise<PrefActionResult> {
+  if (savedViewId === null) return { ok: true };
+  try {
+    const visible = await listCompatibleSavedFilterViews(ctx, targetEntity);
+    if (!visible.some((view) => view.id === savedViewId))
+      return { ok: false, error: { id: ERROR_IDS.PERM_DENIED } };
+    return { ok: true };
+  } catch (cause) {
+    if (cause instanceof Error && cause.name === "AbortError") throw cause;
+    return { ok: false, error: { id: ERROR_IDS.DB_READ_FAILED } };
+  }
+}
+
+export async function setSavedViewSelectionAction(
+  input: unknown,
+  csrfToken: string | null = null,
+  expectedActorId?: string,
+): Promise<PrefActionResult> {
+  const csrf = await guardCsrf(csrfToken);
+  if (!csrf.ok) return { ok: false, error: { id: "E_AUTH_CSRF" } };
+  let ctx: Awaited<ReturnType<typeof createContext>>;
+  try {
+    ctx = await createContext();
+  } catch (cause) {
+    if (cause instanceof Error && cause.name === "AbortError") throw cause;
+    return { ok: false, error: { id: ERROR_IDS.DB_READ_FAILED } };
+  }
+  if (ctx.actor === null || ctx.session === null)
+    return { ok: false, error: { id: ERROR_IDS.AUTH_SESSION_DEAD } };
+  const expectedActor = savedViewSelectionActorHintSchema.safeParse(expectedActorId);
+  if (!expectedActor.success)
+    return { ok: false, error: { id: ERROR_IDS.PREF_SAVED_VIEW_SELECTION_INVALID } };
+  // The hint can only refuse a deferred write. Authority remains the current native session.
+  if (expectedActor.data !== undefined && expectedActor.data !== ctx.actor.id)
+    return { ok: false, error: { id: ERROR_IDS.PERM_DENIED } };
+  const parsed = savedViewSelectionInputSchema.safeParse(input);
+  if (!parsed.success)
+    return { ok: false, error: { id: ERROR_IDS.PREF_SAVED_VIEW_SELECTION_INVALID } };
+  const { targetEntity, savedViewId } = parsed.data;
+  const allowed = await maySelectSavedView({ ...ctx, actor: ctx.actor }, targetEntity, savedViewId);
+  if (!allowed.ok) return allowed;
+  try {
+    await setPreferences(
+      ctx.db,
+      ctx.actor.id,
+      {
+        ui: { [SAVED_VIEW_SELECTION_KEYS[targetEntity]]: { version: 1, savedViewId } },
+      },
+      SIG(),
+    );
+    return { ok: true };
+  } catch (cause) {
+    if (cause instanceof Error && cause.name === "AbortError") throw cause;
+    return { ok: false, error: { id: ERROR_IDS.DB_WRITE_FAILED } };
+  }
+}
 
 async function actorId(
   csrfToken: string | null,

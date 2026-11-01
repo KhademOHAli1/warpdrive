@@ -17,11 +17,14 @@ import { readCsrfToken } from "@/utils/csrfCookie";
 import type { SavedView, SavedViewDefinition } from "./savedView";
 import type { SavedFilterTargetEntity } from "./schemas";
 import { createSavedFilterAction } from "./serverActions";
+import { SAVED_VIEW_DEFINITION_VERSION } from "./viewDefinitionConstants";
+import type { SavedViewPresentation } from "./viewPresentation";
 
 interface SaveViewDialogProps {
   targetEntity: SavedFilterTargetEntity;
   // The conditions currently applied to the list, persisted as the body of the new view.
   definition: SavedViewDefinition;
+  presentation?: SavedViewPresentation;
   onClose: () => void;
   onSaved: (view: SavedView) => void;
 }
@@ -31,6 +34,7 @@ interface SaveViewDialogProps {
 export function SaveViewDialog({
   targetEntity,
   definition,
+  presentation,
   onClose,
   onSaved,
 }: SaveViewDialogProps): React.ReactNode {
@@ -48,7 +52,15 @@ export function SaveViewDialog({
     const viewName = name.trim() === "" ? t("untitledView") : name.trim();
     setSaving(true);
     const res = await createSavedFilterAction(
-      { name: viewName, targetEntity, definition, isShared },
+      {
+        name: viewName,
+        targetEntity,
+        definition:
+          presentation === undefined
+            ? definition
+            : { version: SAVED_VIEW_DEFINITION_VERSION, targetEntity, definition, presentation },
+        isShared,
+      },
       readCsrfToken(),
     );
     setSaving(false);
@@ -63,6 +75,7 @@ export function SaveViewDialog({
       isShared,
       isOwn: true,
       definition,
+      ...(presentation === undefined ? {} : { presentation }),
     });
   }
 

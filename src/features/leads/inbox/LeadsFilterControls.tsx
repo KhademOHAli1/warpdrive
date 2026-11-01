@@ -3,6 +3,7 @@ import type React from "react";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { SavedViewControl } from "@/features/saved-filters/SavedViewControl";
 import type { SavedView } from "@/features/saved-filters/savedView";
+import type { SavedViewPresentationCapture } from "@/features/saved-filters/viewPresentation";
 import type { LeadConditionInput } from "../schemas";
 import { LeadFilterBuilder } from "./LeadFilterBuilder";
 
@@ -11,6 +12,8 @@ interface LeadsFilterControlsProps {
   users: ReadonlyArray<{ id: string; name: string }>;
   condition: LeadConditionInput | null;
   selectedView: SavedView | null;
+  selectionBlocked?: boolean;
+  presentationCapture?: SavedViewPresentationCapture;
   onSelectView: (view: SavedView | null) => void;
   onCondition: (condition: LeadConditionInput | null) => void;
 }
@@ -21,6 +24,8 @@ export function LeadsFilterControls({
   users,
   condition,
   selectedView,
+  selectionBlocked,
+  presentationCapture,
   onSelectView,
   onCondition,
 }: LeadsFilterControlsProps): React.ReactNode {
@@ -34,17 +39,15 @@ export function LeadsFilterControls({
         currentDefinition={condition}
         selectedViewId={selectedView?.id ?? null}
         selectedView={selectedView}
+        selectionBlocked={selectionBlocked}
+        presentationCapture={presentationCapture}
         onSelectView={onSelectView}
       />
       <LeadFilterBuilder
         users={users}
         activeCount={condition?.conditions.length ?? 0}
         appliedCondition={condition}
-        onApply={(next) => {
-          // An ad-hoc edit is no longer the saved view, so the picker stops claiming it is.
-          onSelectView(null);
-          onCondition(next);
-        }}
+        onApply={onCondition}
       />
     </>
   );

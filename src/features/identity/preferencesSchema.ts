@@ -3,6 +3,7 @@ import { MAX_DAILY_ACTIVITY_TARGET, MIN_DAILY_ACTIVITY_TARGET } from "@/constant
 import { DEAL_SIDEBAR_SECTION_IDS } from "@/constants/dealSidebarSections";
 import { BOARD_SORT_KEYS } from "@/features/deals/boardSort";
 import { localePreferencesSchema } from "@/features/i18n/preferences";
+import { storedSavedViewSelectionSchema } from "@/features/saved-filters/savedViewSelectionSchema";
 import { filterDefinition } from "@/features/saved-filters/schemas";
 import { APPEARANCE_VALUES } from "@/features/theme/appearance";
 
@@ -107,6 +108,9 @@ export const uiSchema = z.object({
   dealsListView: columnOrderSchema.optional().catch(undefined),
   peopleView: columnOrderSchema.optional().catch(undefined),
   orgsView: columnOrderSchema.optional().catch(undefined),
+  peopleSavedViewSelection: storedSavedViewSelectionSchema,
+  orgsSavedViewSelection: storedSavedViewSelectionSchema,
+  leadsSavedViewSelection: storedSavedViewSelectionSchema,
   openDetailsAfterCreate: openDetailsAfterCreateSchema.optional().catch(undefined),
   usPhoneFormat: z.boolean().optional().catch(undefined),
   winSound: z.boolean().optional().catch(undefined),

@@ -5,8 +5,10 @@ import { getPreferencesForActor } from "@/features/identity/preferencesForActor"
 import { toLeadSort } from "@/features/leads/inbox/seedSort";
 import { LeadsInbox } from "@/features/leads/LeadsInbox";
 import { can } from "@/features/permissions/can";
+import { resolveSavedViewSelection } from "@/features/saved-filters/savedViewSelection";
 import { readBaseCurrency } from "@/features/settings/readBaseCurrency";
 import { createContext } from "@/server/trpc/context";
+import { createCaller } from "@/server/trpc/root";
 
 export async function generateMetadata() {
   const t = await getAppTranslations("leads");
@@ -25,6 +27,14 @@ export default async function LeadsPage(): Promise<React.ReactNode> {
     listDefs(db, "lead", {}, AbortSignal.timeout(8000)),
   ]);
   const stored = prefs.ui.leadsView;
+  const storedSelection = prefs.ui.leadsSavedViewSelection;
+  const visibleViews =
+    storedSelection !== undefined &&
+    !("status" in storedSelection) &&
+    storedSelection.savedViewId !== null
+      ? await createCaller(ctx).savedFilters.listByTarget({ targetEntity: "lead" })
+      : [];
+  const seed = resolveSavedViewSelection(storedSelection, visibleViews);
   const initialView =
     stored !== undefined
       ? {
@@ -36,8 +46,11 @@ export default async function LeadsPage(): Promise<React.ReactNode> {
   return (
     <main aria-label={t("leads")} className="h-full">
       <LeadsInbox
+        key={ctx.actor.id}
+        preferenceActorId={ctx.actor.id}
         baseCurrency={baseCurrency}
         initialView={initialView}
+        {...seed}
         customFieldDefs={customFieldDefs}
         canImport={can(ctx.actor, "data.import")}
       />
