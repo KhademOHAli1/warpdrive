@@ -155,18 +155,21 @@ it.each(["fetch", "body", "decode", "settlement"] as const)(
     const data = {
       get ok() {
         if (phase === "decode") now = 11_001;
-        if (phase === "settlement") queueMicrotask(() => { now = 11_001; });
+        if (phase === "settlement")
+          queueMicrotask(() => {
+            now = 11_001;
+          });
         return true;
       },
     };
     const response = Response.json({ ok: true });
-    vi.spyOn(response, "json").mockImplementation(async () => {
+    vi.spyOn(response, "json").mockImplementation(() => {
       if (phase === "body") now = 11_001;
-      return data;
+      return Promise.resolve(data);
     });
-    const fetcher = vi.fn<typeof fetch>().mockImplementation(async () => {
+    const fetcher = vi.fn<typeof fetch>().mockImplementation(() => {
       if (phase === "fetch") now = 11_001;
-      return response;
+      return Promise.resolve(response);
     });
     try {
       // No timer advancement: microtasks can complete before the overdue timer callback.
@@ -192,18 +195,23 @@ it.each(["fetch", "body"] as const)(
     let now = 1000;
     const clock = vi.spyOn(performance, "now").mockImplementation(() => now);
     const controller = new AbortController();
-    const stop = () => { now = 11_001; controller.abort(); };
+    const stop = () => {
+      now = 11_001;
+      controller.abort();
+    };
     const response = Response.json({ ok: true });
-    vi.spyOn(response, "json").mockImplementation(async () => {
+    vi.spyOn(response, "json").mockImplementation(() => {
       if (phase === "body") stop();
-      return { ok: true };
+      return Promise.resolve({ ok: true });
     });
-    const fetcher = vi.fn<typeof fetch>().mockImplementation(async () => {
+    const fetcher = vi.fn<typeof fetch>().mockImplementation(() => {
       if (phase === "fetch") stop();
-      return response;
+      return Promise.resolve(response);
     });
     try {
-      await expect(requestSlackRead({ ...args(), signal: controller.signal, fetcher })).rejects.toMatchObject({ name: "AbortError" });
+      await expect(
+        requestSlackRead({ ...args(), signal: controller.signal, fetcher }),
+      ).rejects.toMatchObject({ name: "AbortError" });
       expect(vi.getTimerCount()).toBe(0);
     } finally {
       clock.mockRestore();

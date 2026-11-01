@@ -78,6 +78,37 @@ function textIssue(nodes: Node[]): SvgGuardCode | null {
   return null;
 }
 
+function titleIssue(element: Element): SvgGuardCode | null {
+  if (
+    (element.textContent ?? "").trim() === "" ||
+    Array.from(element.childNodes).some((child) => child.nodeType !== Node.TEXT_NODE)
+  )
+    return "title";
+  return null;
+}
+
+function inspectElement(
+  element: Element,
+  root: Element,
+  gradients: Map<string, Element>,
+  references: Set<string>,
+): SvgGuardCode | null {
+  const issue = elementIssue(element, root);
+  if (issue !== null) return issue;
+  if (element.localName === "title") {
+    const titleCode = titleIssue(element);
+    if (titleCode !== null) return titleCode;
+  }
+  if (element.localName === "linearGradient") {
+    const id = element.getAttribute("id");
+    if (id === null || gradients.has(id)) return "reference";
+    gradients.set(id, element);
+  }
+  const reference = LOCAL_PAINT.exec(element.getAttribute("fill") ?? "")?.[1];
+  if (reference !== undefined) references.add(reference);
+  return null;
+}
+
 function validateTree(root: Element, nodes: Node[]): Result<SvgGuardSummary, SvgGuardIssue> {
   const gradients = new Map<string, Element>();
   const references = new Set<string>();
@@ -87,23 +118,9 @@ function validateTree(root: Element, nodes: Node[]): Result<SvgGuardSummary, Svg
     if (node.nodeType !== Node.ELEMENT_NODE) continue;
     const element = node as Element;
     elementCount++;
-    const issue = elementIssue(element, root);
+    const issue = inspectElement(element, root, gradients, references);
     if (issue !== null) return refuse(issue);
-    if (element.localName === "title") {
-      titles++;
-      if (
-        (element.textContent ?? "").trim() === "" ||
-        Array.from(element.childNodes).some((child) => child.nodeType !== Node.TEXT_NODE)
-      )
-        return refuse("title");
-    }
-    if (element.localName === "linearGradient") {
-      const id = element.getAttribute("id");
-      if (id === null || gradients.has(id)) return refuse("reference");
-      gradients.set(id, element);
-    }
-    const reference = LOCAL_PAINT.exec(element.getAttribute("fill") ?? "")?.[1];
-    if (reference !== undefined) references.add(reference);
+    if (element.localName === "title") titles++;
   }
   if (titles !== 1) return refuse("title");
   const issue = textIssue(nodes);

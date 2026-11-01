@@ -40,25 +40,29 @@ function offset(value: string): boolean {
   return finite(number) && Number(number) >= 0 && Number(number) <= (percentage ? 100 : 1);
 }
 
-function valueIssue(name: string, value: string): SvgGuardCode | null {
+function paintIssue(name: string, value: string): SvgGuardCode | null {
   switch (name) {
     case "fill":
       return HEX_COLOR.test(value) || LOCAL_PAINT.test(value) ? null : "paint";
     case "stop-color":
       return HEX_COLOR.test(value) ? null : "paint";
+    default:
+      return "attribute";
+  }
+}
+
+function dimensionIssue(value: string): SvgGuardCode | null {
+  const number = value.endsWith("px") ? value.slice(0, -2) : value;
+  return finite(number) && Number(number) > 0 ? null : "attribute";
+}
+
+function geometryIssue(name: string, value: string): SvgGuardCode | null {
+  switch (name) {
     case "viewBox":
       return viewBox(value) ? null : "viewbox";
     case "width":
-    case "height": {
-      const number = value.endsWith("px") ? value.slice(0, -2) : value;
-      return finite(number) && Number(number) > 0 ? null : "attribute";
-    }
-    case "role":
-      return value === "img" ? null : "attribute";
-    case "version":
-      return value === "1.1" ? null : "attribute";
-    case "preserveAspectRatio":
-      return value === "xMidYMid" ? null : "attribute";
+    case "height":
+      return dimensionIssue(value);
     case "d":
       return value.trim() !== "" && PATH_DATA.test(value) ? null : "attribute";
     case "points": {
@@ -67,6 +71,26 @@ function valueIssue(name: string, value: string): SvgGuardCode | null {
         ? null
         : "attribute";
     }
+    default:
+      return "attribute";
+  }
+}
+
+function metadataIssue(name: string, value: string): SvgGuardCode | null {
+  switch (name) {
+    case "role":
+      return value === "img" ? null : "attribute";
+    case "version":
+      return value === "1.1" ? null : "attribute";
+    case "preserveAspectRatio":
+      return value === "xMidYMid" ? null : "attribute";
+    default:
+      return "attribute";
+  }
+}
+
+function gradientIssue(name: string, value: string): SvgGuardCode | null {
+  switch (name) {
     case "id":
       return SVG_ID.test(value) ? null : "reference";
     case "offset":
@@ -76,6 +100,33 @@ function valueIssue(name: string, value: string): SvgGuardCode | null {
     case "y1":
     case "y2":
       return coordinate(value) ? null : "attribute";
+    default:
+      return "attribute";
+  }
+}
+
+function valueIssue(name: string, value: string): SvgGuardCode | null {
+  switch (name) {
+    case "fill":
+    case "stop-color":
+      return paintIssue(name, value);
+    case "viewBox":
+    case "width":
+    case "height":
+    case "d":
+    case "points":
+      return geometryIssue(name, value);
+    case "role":
+    case "version":
+    case "preserveAspectRatio":
+      return metadataIssue(name, value);
+    case "id":
+    case "offset":
+    case "x1":
+    case "x2":
+    case "y1":
+    case "y2":
+      return gradientIssue(name, value);
     default:
       return "attribute";
   }

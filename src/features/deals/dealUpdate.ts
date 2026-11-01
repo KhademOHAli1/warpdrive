@@ -104,9 +104,13 @@ export async function updateDeal(
       !currentActor.groupIds.has(input.visibilityGroupId)
     ) {
       return err(
-        new AppError(ERROR_IDS.PERM_DENIED, "visibility group not permitted: actor is not a member", {
-          visibilityGroupId: input.visibilityGroupId,
-        }),
+        new AppError(
+          ERROR_IDS.PERM_DENIED,
+          "visibility group not permitted: actor is not a member",
+          {
+            visibilityGroupId: input.visibilityGroupId,
+          },
+        ),
       );
     }
 

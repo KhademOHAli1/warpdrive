@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ERROR_IDS } from "@/constants/errorIds";
+import type { ERROR_IDS } from "@/constants/errorIds";
 import { err, ok, type Result } from "@/types/result";
 import type { ProviderFailure } from "./providers/models";
 

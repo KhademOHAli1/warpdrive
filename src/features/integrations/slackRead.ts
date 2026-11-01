@@ -70,7 +70,6 @@ export async function requestSlackRead(
   args.signal.throwIfAborted();
   const deadlineAt = performance.now() + SLACK_READ_TIMEOUT_MS;
   const controller = new AbortController();
-  let timedOut = false;
   let rejectStopped: (reason: unknown) => void = () => undefined;
   const stopped = new Promise<never>((_resolve, reject) => {
     rejectStopped = reject;
@@ -81,7 +80,6 @@ export async function requestSlackRead(
   };
   args.signal.addEventListener("abort", onAbort, { once: true });
   const timer = setTimeout(() => {
-    timedOut = true;
     controller.abort();
     rejectStopped(new DOMException("Slack read deadline elapsed", "TimeoutError"));
   }, SLACK_READ_TIMEOUT_MS);
@@ -100,7 +98,7 @@ export async function requestSlackRead(
     return err(
       slackReadFailure(
         "transient_outage",
-        timedOut || performance.now() >= deadlineAt ? "timed_out" : "unavailable",
+        controller.signal.aborted || performance.now() >= deadlineAt ? "timed_out" : "unavailable",
         ERROR_IDS.SLACK_UNAVAILABLE,
       ),
     );
