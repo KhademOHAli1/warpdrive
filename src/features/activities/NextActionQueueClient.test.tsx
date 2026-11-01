@@ -87,7 +87,10 @@ test("starts a mine/25/0 authorized read and never wires a quick completion", as
     { scope: "mine", limit: 25, offset: 0 },
     { signal: expect.any(AbortSignal) },
   );
-  await act(() => read.resolve(queuePage()));
+  await act(async () => {
+    read.resolve(queuePage());
+    await read.promise;
+  });
   await loaded();
   expect(screen.getByText("1 overdue activity")).toBeVisible();
   expect(screen.queryByRole("button", { name: /^Mark complete:/ })).not.toBeInTheDocument();
@@ -105,9 +108,15 @@ test("scope changes hide old rows and counts, reset paging and discard late broa
   expect(screen.queryByText("1 overdue activity")).not.toBeInTheDocument();
   fireEvent.click(screen.getByRole("combobox", { name: "Work shown" }));
   fireEvent.click(screen.getByRole("option", { name: "My work" }));
-  await act(() => broader.resolve({ ...queuePage(), scope: "all-permitted" }));
+  await act(async () => {
+    broader.resolve({ ...queuePage(), scope: "all-permitted" });
+    await broader.promise;
+  });
   expect(screen.queryByText("پیگیری / Follow-up")).not.toBeInTheDocument();
-  await act(() => current.resolve({ ...queuePage(), readId: "mine-again" }));
+  await act(async () => {
+    current.resolve({ ...queuePage(), readId: "mine-again" });
+    await current.promise;
+  });
   await loaded();
   expect(rpc.query.mock.calls.at(-1)?.[0]).toEqual({ scope: "mine", limit: 25, offset: 0 });
   expect(rpc.query.mock.calls[1]?.[1].signal.aborted).toBe(true);
@@ -129,7 +138,10 @@ test("pagination starts a distinct read and a scope change always returns to the
     limit: 25,
     offset: 0,
   });
-  await act(() => later.resolve({ ...queuePage(), offset: 25, readId: "old-page" }));
+  await act(async () => {
+    later.resolve({ ...queuePage(), offset: 25, readId: "old-page" });
+    await later.promise;
+  });
   expect(screen.getByRole("combobox", { name: "Work shown" })).toHaveTextContent(
     "All I can access",
   );
@@ -160,17 +172,24 @@ test("an editor save cancels pre-save reads and accepts only the newly started r
   await loaded();
   fireEvent.click(screen.getByRole("button", { name: /^Edit activity:/ }));
   expect(screen.getByRole("dialog", { name: "Edit activity-1" })).toBeVisible();
-  await act(() => {
+  act(() => {
     void view.client.refetchQueries({ type: "active" });
   });
+  await waitFor(() => expect(rpc.query).toHaveBeenCalledTimes(2));
   fireEvent.click(screen.getByRole("button", { name: "Save existing activity" }));
   expect(screen.queryByText("پیگیری / Follow-up")).not.toBeInTheDocument();
   expect(screen.queryByText("1 overdue activity")).not.toBeInTheDocument();
   await waitFor(() => expect(rpc.query).toHaveBeenCalledTimes(3));
   expect(rpc.query.mock.calls[1]?.[1].signal.aborted).toBe(true);
-  await act(() => beforeSave.resolve({ ...queuePage(), readId: "late-before-save" }));
+  await act(async () => {
+    beforeSave.resolve({ ...queuePage(), readId: "late-before-save" });
+    await beforeSave.promise;
+  });
   expect(screen.queryByText("پیگیری / Follow-up")).not.toBeInTheDocument();
-  await act(() => afterSave.resolve({ ...queuePage(), readId: "after-save", rows: [], total: 0 }));
+  await act(async () => {
+    afterSave.resolve({ ...queuePage(), readId: "after-save", rows: [], total: 0 });
+    await afterSave.promise;
+  });
   await screen.findByText("No next actions in this view.");
   expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
 });
@@ -184,7 +203,10 @@ test("schedules through the existing deal dialog and refreshes after a real crea
   expect(screen.getByRole("dialog", { name: "Schedule deal-1" })).toBeVisible();
   fireEvent.click(screen.getByRole("button", { name: "Create linked activity" }));
   expect(screen.queryByText("پیگیری / Follow-up")).not.toBeInTheDocument();
-  await act(() => refreshed.resolve({ ...queuePage(), readId: "created" }));
+  await act(async () => {
+    refreshed.resolve({ ...queuePage(), readId: "created" });
+    await refreshed.promise;
+  });
   await loaded();
   expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
 });
@@ -197,7 +219,10 @@ test("saved timezone changes hide old results until a new server read succeeds",
   view.changeTimeZone("Asia/Tehran");
   expect(screen.queryByText("پیگیری / Follow-up")).not.toBeInTheDocument();
   expect(screen.queryByText("1 overdue activity")).not.toBeInTheDocument();
-  await act(() => updated.resolve({ ...queuePage(), readId: "new-preferences" }));
+  await act(async () => {
+    updated.resolve({ ...queuePage(), readId: "new-preferences" });
+    await updated.promise;
+  });
   await loaded();
   expect(rpc.query).toHaveBeenCalledTimes(2);
 });
@@ -216,16 +241,20 @@ test.each([true, false])(
     expect(screen.queryByText("1 overdue activity")).not.toBeInTheDocument();
     await waitFor(() => expect(preferenceAction).toHaveBeenCalledOnce());
     expect(rpc.query).toHaveBeenCalledTimes(1);
-    await act(() => saving.resolve({ ok: saved }));
+    await act(async () => {
+      saving.resolve({ ok: saved });
+      await saving.promise;
+    });
     await waitFor(() => expect(rpc.query).toHaveBeenCalledTimes(2));
     expect(screen.queryByText("پیگیری / Follow-up")).not.toBeInTheDocument();
-    await act(() =>
+    await act(async () => {
       settledRead.resolve({
         ...queuePage(),
         readId: "preferences-confirmed",
         timeZone: saved ? "Asia/Tehran" : "Europe/Berlin",
-      }),
-    );
+      });
+      await settledRead.promise;
+    });
     await loaded();
   },
 );
@@ -239,7 +268,10 @@ test("actor changes discard old reads, rows and dialogs rather than reusing anot
   view.changeUser("user-2");
   expect(screen.queryByText("پیگیری / Follow-up")).not.toBeInTheDocument();
   expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
-  await act(() => other.resolve({ ...queuePage(), readId: "other-actor", rows: [], total: 0 }));
+  await act(async () => {
+    other.resolve({ ...queuePage(), readId: "other-actor", rows: [], total: 0 });
+    await other.promise;
+  });
   await screen.findByText("No next actions in this view.");
   expect(rpc.query).toHaveBeenCalledTimes(2);
 });

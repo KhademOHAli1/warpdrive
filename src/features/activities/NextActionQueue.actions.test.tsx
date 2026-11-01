@@ -10,13 +10,11 @@ const completeButton = () =>
   screen.getByRole("button", { name: "Mark complete: پیگیری / Follow-up" });
 
 test("completion is done=true, blocks duplicates while pending and holds an acknowledged row until fresh read", async () => {
-  let finish: (result: QueueCompletionResult) => void = () => undefined;
-  const onCompleteActivity = vi.fn(
-    () =>
-      new Promise<QueueCompletionResult>((resolve) => {
-        finish = resolve;
-      }),
-  );
+  let finish!: (result: QueueCompletionResult) => void;
+  const completion = new Promise<QueueCompletionResult>((resolve) => {
+    finish = resolve;
+  });
+  const onCompleteActivity = vi.fn(() => completion);
   const props = { ...queueProps(), onCompleteActivity };
   const view = render(<NextActionQueue {...props} />);
   fireEvent.click(completeButton());
@@ -24,7 +22,10 @@ test("completion is done=true, blocks duplicates while pending and holds an ackn
   fireEvent.click(completeButton());
   expect(onCompleteActivity).toHaveBeenCalledTimes(1);
   expect(onCompleteActivity).toHaveBeenCalledWith({ id: "activity-1", done: true });
-  await act(() => finish({ ok: true, value: { id: "activity-1" } }));
+  await act(async () => {
+    finish({ ok: true, value: { id: "activity-1" } });
+    await completion;
+  });
   expect(props.onRefresh).toHaveBeenCalledOnce();
   expect(
     screen.queryByRole("button", { name: "Mark complete: پیگیری / Follow-up" }),
@@ -127,15 +128,13 @@ test("an activity and opportunity may share an ID without sharing completion sta
 test.each(["saved", "unconfirmed"] as const)(
   "a read received during completion cannot release its later %s state",
   async (outcome) => {
-    let finish: (result: QueueCompletionResult) => void = () => undefined;
-    let fail: () => void = () => undefined;
-    const onCompleteActivity = vi.fn(
-      () =>
-        new Promise<QueueCompletionResult>((resolve, reject) => {
-          finish = resolve;
-          fail = () => reject(new Error("response lost after the intervening read"));
-        }),
-    );
+    let finish!: (result: QueueCompletionResult) => void;
+    let fail!: () => void;
+    const completion = new Promise<QueueCompletionResult>((resolve, reject) => {
+      finish = resolve;
+      fail = () => reject(new Error("response lost after the intervening read"));
+    });
+    const onCompleteActivity = vi.fn(() => completion);
     const props = { ...queueProps(), onCompleteActivity };
     const view = render(<NextActionQueue {...props} />);
     fireEvent.click(completeButton());
@@ -143,9 +142,14 @@ test.each(["saved", "unconfirmed"] as const)(
       <NextActionQueue {...props} page={{ ...props.page, readId: "read-while-pending" }} />,
     );
     expect(completeButton()).toBeDisabled();
-    await act(() => {
-      if (outcome === "saved") finish({ ok: true, value: { id: "activity-1" } });
-      else fail();
+    await act(async () => {
+      if (outcome === "saved") {
+        finish({ ok: true, value: { id: "activity-1" } });
+        await completion;
+      } else {
+        fail();
+        await expect(completion).rejects.toThrow("response lost after the intervening read");
+      }
     });
     if (outcome === "saved") {
       expect(screen.queryByText("پیگیری / Follow-up")).not.toBeInTheDocument();
