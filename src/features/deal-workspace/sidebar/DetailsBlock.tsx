@@ -43,6 +43,7 @@ export function DetailsBlock({
         onSave={onSave}
         customFieldDefs={customFieldDefs}
         customFields={customFields}
+        currency={currency}
         onExit={onExitBulk ?? (() => {})}
       />
     );
@@ -65,11 +66,13 @@ function DetailsBulkEditor({
   onSave,
   customFieldDefs,
   customFields,
+  currency,
   onExit,
 }: {
   onSave: CustomFieldsSave;
   customFieldDefs: CustomFieldDef[];
   customFields: Record<string, unknown>;
+  currency: string;
   onExit: () => void;
 }): React.ReactNode {
   const locale = useLocale();
@@ -128,6 +131,7 @@ function DetailsBulkEditor({
           </span>
           <CustomFieldFormControl
             def={def}
+            currency={currency}
             value={draft[def.key]}
             onChange={(v) => setDraft((prev) => ({ ...prev, [def.key]: v }))}
           />

@@ -12,6 +12,7 @@ import { LOCALE_REGISTRY, SELECTABLE_LOCALES } from "@/features/i18n/registry";
 import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import { useFormatters } from "@/lib/useFormatters";
 import { SettingsCard, SettingsCardBody, SettingsCardHeader } from "../SettingsSurface";
+import { IranianMoneySetting } from "./IranianMoneySetting";
 
 export function LanguageSettings() {
   const t = useAppTranslations("preferences");
@@ -122,6 +123,7 @@ export function LanguageSettings() {
               {t("numberPreview", { value: 12345.67 })}
             </p>
           </div>
+          <IranianMoneySetting />
         </SettingsCardBody>
       </SettingsCard>
       <SettingsCard>

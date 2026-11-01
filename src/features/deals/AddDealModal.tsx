@@ -231,6 +231,7 @@ export function AddDealModal(props: AddDealModalProps): React.ReactNode {
       personCustomFields={
         <CustomFieldCreateFields
           title={translateSales("person_fields_31c77")}
+          currency={baseCurrency}
           defs={personFieldsQ.data ?? []}
           values={state.personCustomFields}
           onChange={(key, value) =>
@@ -263,6 +264,7 @@ export function AddDealModal(props: AddDealModalProps): React.ReactNode {
           organizationCustomFields={
             <CustomFieldCreateFields
               title={translateSales("organization_fields_805c7")}
+              currency={baseCurrency}
               defs={orgFieldsQ.data ?? []}
               values={state.orgCustomFields}
               onChange={(key, value) =>
@@ -273,6 +275,7 @@ export function AddDealModal(props: AddDealModalProps): React.ReactNode {
           dealCustomFields={
             <CustomFieldCreateFields
               title={translateSales("deal_fields_930ee")}
+              currency={baseCurrency}
               defs={dealFieldsQ.data ?? []}
               values={state.dealCustomFields}
               onChange={(key, value) =>

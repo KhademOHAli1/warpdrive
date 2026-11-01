@@ -1,4 +1,5 @@
 /// <reference lib="es2023.intl" />
+import type { IranianMoneyUnit } from "./iranianMoney";
 import {
   displayNumberingSystem,
   localeWithNumberingSystem,
@@ -13,6 +14,7 @@ export interface FormattingPreferences {
   calendar: CalendarSystem;
   timeZone: string;
   numberingSystem?: NumberingSystem;
+  iranianMoneyUnit?: IranianMoneyUnit;
 }
 
 export type DateDisplayOptions = Omit<
@@ -31,6 +33,9 @@ export function resolveFormattingPreferences(
     locale,
     calendar: preferences.calendar ?? (locale === "fa" ? "persian" : "gregory"),
     timeZone: preferences.timeZone ?? "UTC",
+    ...(preferences.iranianMoneyUnit === undefined
+      ? {}
+      : { iranianMoneyUnit: preferences.iranianMoneyUnit }),
     ...(preferences.numberingSystem === undefined
       ? {}
       : { numberingSystem: preferences.numberingSystem }),
