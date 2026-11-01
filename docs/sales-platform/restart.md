@@ -28,7 +28,34 @@ inherited reports and records remaining acceptance gates.
 
 ## Current evidence and next work
 
-At the R1 application checkpoint, the full unit suite passed 6020 tests in 966
+Current committed application HEAD is
+`f006b5a5026449fd2bf792439b9149ba3517feb8`, extending the earlier c655 checkpoint.
+Its full unit run passed 6068 tests/972 files and affected PostgreSQL passed 245/51.
+Full typecheck and lint passed with actual terminal exit 0. Native warm two-tab
+rename conflict/refresh/explicit review/save passed; three intended audit entries
+and unchanged record/stage/saved-filter digests were observed. Initial cold dev
+RSC timeouts reset one editor, so full-reload draft durability remains open.
+
+The first current-source build handle 99578 was intentionally stopped,
+terminal 143, for the user-authorized shared resource window. The later granted
+build handle 34684 returned terminal 0, 60.222 seconds, with a 5 GiB headroom
+watchdog and minimum observed free space above 12.5 billion bytes. The slot was
+released to Mail coordinator chat `01a18868-3300-7dc2-b49d-c3bdb067fae7`.
+Current-source worker bundles were not rerun in that slot. Do not start another
+heavy campaign until coordinated. Own Next 3176, PostgreSQL 55461 and all
+build/test/lint processes are stopped. Only verified ignored `.next/cache` was
+removed after the terminal build; `.next/types`, private profiles/data and all
+peer resources are preserved. Source work and review can continue.
+
+Read `platform-handoff-inventory-2026-11-01.md` before adoption. The clean MAIL
+adoption and builder candidates are reviewed sources, not an adopted runtime.
+`0094` is explicitly unallocated, not a Sales reservation. A concrete storage
+request exists in `sales-storage-coordination-request.md`; direct human messaging
+permission to the platform allocator is pending. Resource-only coordination with
+Mail is already authorized and was verified in that chat's human reply.
+
+
+At the earlier c655 R1 checkpoint, the full unit suite passed 6020 tests in 966
 files, and the affected real-PostgreSQL integration batch passed 239 tests in 50
 files. Full typecheck and lint, production webpack build, worker/WS/operator
 bundles and the UI source audit passed. Historical R0 checks and the initial
@@ -43,7 +70,7 @@ restore, FA/DE/EN directory captures, Farsi mobile, and unsupported-view recover
 exist in `evidence/r1-lifecycle/`. No provider, real-user, object-store restore,
 performance target or production release is qualified.
 
-Continue pipeline creation/rename/duplicate and existing-scope access explanation
+Continue durable pipeline creation/duplicate and existing-scope access explanation
 before admitting new owner roles or template installation. Archive/restore uses
 native fresh proof, transaction-time actor/membership locks, CAS, scoped counts
 and existing audit. Deal creation rechecks the pipeline under a shared row lock.
@@ -68,6 +95,24 @@ selected default is a customer-controlled first-party event API, with synthetic
 local Warpdrive as reference and optional PostHog/Segment mapping. Read
 `product-signal-source-decision.md`. Do not ask Ali the same technical question
 again, silently repurpose observability telemetry or infer live-source access.
+
+## Next implementation dependencies
+
+1. Obtain the pending direct human authorization for platform schema/interface
+   coordination, then send the prepared storage request. Do not claim a migration
+   slot from unreserved 0094. Complete durable create/duplicate receipts and actual
+   template installation against the allocator-reviewed history.
+2. Builder 92a9432 has a clean history-aware merge preview. All 188 Sales-changed
+   blobs and protected runtime surfaces are preserved. A real merge and selected
+   workflow/auth/locale qualification remain unexecuted. Request an appropriate
+   finite window after the current Calendar/Privacy sequence before heavy checks.
+3. `distribution-notices-review.md` identifies an independent concrete packaging
+   fix: exclude private `.runtime` from Docker context, explicitly distribute root
+   and curated notices, preserve fonts and inspect actual resulting artifacts.
+   Do not run a Docker build from this checkout before the context fix. The
+   completed build was Next-only and performed no Docker image distribution.
+
+These increments do not replace the full 128-task scope or close parent packages.
 
 ## Private finite runtime
 

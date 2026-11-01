@@ -53,6 +53,15 @@ model was introduced. R1 schema and production enablement still wait for the
 applicable lineage, design and recovery gates. See `pipeline-lifecycle-contract.md`,
 `view-compatibility.md` and `verification.md` for actual behavior and open work.
 
+The next committed application candidate is
+`f006b5a5026449fd2bf792439b9149ba3517feb8`: guarded existing rename plus strict
+stage-only template manifests and previews. Full unit 6068/972 files, affected
+PostgreSQL 245/51 files, typecheck and lint passed. After an initial coordinated stop, its production webpack build passed in the
+explicitly granted finite slot. No production service was started or deployed.
+See `pipeline-rename-contract.md`, `template-contract.md` and the current section
+of `verification.md`. Installation is unavailable until reviewed storage,
+idempotency and authority work exists. No Sales migration has been allocated.
+
 ## Preservation contract
 
 Keep the current sidebar/top bar, Inter/Vazirmatn fonts, shared adapters,

@@ -152,12 +152,17 @@
         {
           "path": "docs/sales-platform/verification.md",
           "level": "local-unit"
+        },
+        {
+          "path": "docs/sales-platform/distribution-notices-review.md",
+          "level": "observed-source"
         }
       ],
       "remainingGates": [
-        "Full production web build and complete combined candidate still required."
+        "Full production web build and complete combined candidate still required.",
+        "Fix private .runtime Docker-context exclusion and explicit application/third-party notice distribution, then inspect exact runtime artifacts and unresolved/transitive license entries."
       ],
-      "notes": "Pinned Bun 1.4.4 frozen install no changes; typecheck/lint/worker bundling/UI-source audit pass. Inherited broad unit 5897 pass plus expected red collection failure, final tool 44 pass."
+      "notes": "Pinned Bun 1.4.4 frozen install no changes; typecheck/lint/worker bundling/UI-source audit pass. Inherited broad unit 5897 pass plus expected red collection failure, final tool 44 pass. Current f006 source preserves the frozen lock. A bounded notice inventory identified explicit Docker context/runtime notice-copy work; no Docker image or transitive notice closure is claimed."
     },
     {
       "id": "SP-00.8",
@@ -339,12 +344,32 @@
     {
       "id": "SP-02.3",
       "projectId": "SP-02",
-      "status": "planned",
+      "status": "in-progress",
       "owner": "sales-platform",
       "dependsOn": ["SP-02.2"],
-      "evidence": [],
-      "remainingGates": [],
-      "notes": ""
+      "evidence": [
+        {
+          "path": "docs/sales-platform/pipeline-rename-contract.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "src/features/pipelines/pipelineRename.integration.test.ts",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/evidence/r1-rename/native-journey.json",
+          "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/evidence/r1-rename/qualification.json",
+          "level": "local-runtime"
+        }
+      ],
+      "remainingGates": [
+        "Durable creation/duplicate intent receipts, atomic native creation authority and duplicate-configuration behavior remain unimplemented.",
+        "Native global MFA/passkey-policy concurrency, create/stage authority and all required cross-surface/FA-DE-EN/recovery criteria remain open."
+      ],
+      "notes": "Existing rename now uses native fresh proof, scope, CAS and transactional audit. Focused native-PG and editor recovery tests passed; native warm two-tab conflict/refetch/review/save preserved the draft and produced only three intended rename audits. Cold dev error-boundary draft durability is not qualified. Full root 6068/972 and affected PG 245/51 passed on unchanged f006b5a source. Full typecheck/lint and the later coordinated production webpack build passed. No production operation or whole parent completion is inferred."
     },
     {
       "id": "SP-02.4",
@@ -723,12 +748,37 @@
     {
       "id": "SP-04.1",
       "projectId": "SP-04",
-      "status": "planned",
+      "status": "in-progress",
       "owner": "sales-platform",
       "dependsOn": ["SP-00.5", "SP-01.8"],
-      "evidence": [],
-      "remainingGates": [],
-      "notes": ""
+      "evidence": [
+        {
+          "path": "docs/sales-platform/template-contract.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "src/features/process-templates/templateManifest.test.ts",
+          "level": "local-unit"
+        },
+        {
+          "path": "src/features/process-templates/templatePlan.test.ts",
+          "level": "local-unit"
+        },
+        {
+          "path": "src/features/process-templates/basicCatalog.test.ts",
+          "level": "local-unit"
+        },
+        {
+          "path": "docs/sales-platform/evidence/r1-rename/qualification.json",
+          "level": "local-runtime"
+        }
+      ],
+      "remainingGates": [
+        "Native field/rule/action capability registries, contextual copy/design review and original parent dependencies remain open.",
+        "Runtime immutability does not bind historical template versions to content. Reviewed persistence, durable intent receipts, installation ID mapping and upgrade/local-override behavior remain unimplemented.",
+        "No UI, installer, authorization, DB operation, rule or provider effect is supplied by this source-only manifest/preview increment."
+      ],
+      "notes": "Strict bounded JSON manifests, duplicate/prototype-key rejection, deep readonly values and deterministic FA/DE/EN stage-only previews implemented. Thirty-six focused tests passed. Unknown capabilities block preview, native IDs are unallocated and installation stays explicitly unavailable. Basic and one-stage structures are original optional design proposals."
     },
     {
       "id": "SP-04.2",

@@ -7,7 +7,29 @@ recoverable saved views. It reuses existing authentication, authorization,
 queries, optimistic cache/realtime machinery and integrations. The programme
 and production-release acceptance remain open.
 
-## Current checkpoint evidence
+## Rename and template continuation
+
+The later application source is `f006b5a5026449fd2bf792439b9149ba3517feb8`.
+Its full root unit suite passed 6068 tests across 972 files and its affected
+PostgreSQL batch passed 245 tests across 51 files. Full typecheck and full lint passed with terminal exit 0; the existing
+11 warnings and 9 informational notices remain.
+
+The first production build was deliberately stopped with terminal exit 143 during
+the user-authorized shared resource-recovery window. The later explicitly granted
+finite build passed with terminal exit 0 on the same source, in 60.222 seconds.
+The separate process group and watchdog observed at least 12558819328 available
+bytes, above the 5 GiB floor. No production service was started or deployed.
+Current-source worker bundles were not rerun in that slot; prior c655 bundling
+remains separately scoped. See the [source-bound check record](evidence/r1-rename/qualification.json).
+
+See [guarded rename](pipeline-rename-contract.md),
+[stage-only template contract](template-contract.md) and
+[native continuation evidence](evidence/r1-rename/native-journey.json).
+The template code is strict manifest validation and deterministic preview only;
+installation remains unavailable pending persistence and authority qualification.
+The full roadmap remains active and all broad parent packages remain open.
+
+## Earlier c655 checkpoint evidence
 
 | Check                                         | Actual result                                                                                                                                                      | Evidence ceiling                                                                                                                                                          |
 | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
