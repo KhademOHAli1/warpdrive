@@ -87,7 +87,9 @@
       "projectId": "SP-00",
       "status": "in-progress",
       "owner": "sales-platform",
-      "dependsOn": ["SP-00.1"],
+      "dependsOn": [
+        "SP-00.1"
+      ],
       "evidence": [
         {
           "path": "docs/sales-platform/critical-journeys.json",
@@ -96,12 +98,16 @@
         {
           "path": "docs/sales-platform/verification.md",
           "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/critical-journey-permission-fixtures.json",
+          "level": "observed-source"
         }
       ],
       "remainingGates": [
         "All protected browser/provider/state fixtures and domain-owner review still required."
       ],
-      "notes": "Twelve journey categories map source tests and explicit missing acceptance evidence."
+      "notes": "Twelve protected categories now bind82 exact test definitions across41 source files to concrete fixtures, actors, permission context, oracles and limits. Missing browser/provider/revocation/isolation journeys and owner review remain explicit. Source inspection is separate from historical or rerun evidence."
     },
     {
       "id": "SP-00.5",

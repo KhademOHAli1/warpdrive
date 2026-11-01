@@ -34,6 +34,11 @@ independently use unreserved 0094 or combine dirty MAIL snapshots. See the exist
   task is complete merely because a source audit or test subset passes.
 - `critical-journeys.json` maps existing protection checks, fixtures and missing
   runtime/provider/reviewer evidence.
+- [Permission and fixture bindings](critical-journey-permission-fixtures.json)
+  identifies the tested actor, fixture constructor or input vector, exact case
+  and oracle for each protected category. It distinguishes source inspection,
+  mocked boundaries and real-PostgreSQL test definitions from executed evidence.
+  Missing journeys and domain-owner review remain explicit.
 - `current-shell-research.md` records original design decisions and actual
   reference inspection limits. Real participant studies remain outstanding.
 - `execution-slices.md` splits the largest work packages into bounded increments.

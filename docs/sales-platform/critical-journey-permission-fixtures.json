@@ -1,0 +1,2037 @@
+{
+  "schemaVersion": 1,
+  "observedAt": "2026-11-01T11:32:51.397804+00:00",
+  "kind": "Protected journey permission and fixture source bindings",
+  "sourceCommit": "57240cae5bbfd1335fcb24f0412d19828af16b44",
+  "applicationCommit": "7c10761647633a6d2c0f701f3a1426d58357ee96",
+  "registry": "docs/sales-platform/critical-journeys.json",
+  "taskIds": [
+    "SP-00.4",
+    "SP-15.1",
+    "SP-15.2",
+    "SP-15.3",
+    "SP-15.5"
+  ],
+  "evidenceCeiling": "Source inspection only. Test declarations, fixture construction and oracles do not establish execution, installed proof, owner agreement or acceptance. Existing single-installation controls do not qualify independently isolated workspaces.",
+  "executionPerformed": false,
+  "ownerAttestation": "Open; no domain owner approval inferred.",
+  "sourceInputs": [
+    {
+      "path": "src/app/(app)/leads/export/route.authorization.test.ts",
+      "sha256": "3273ee73b62cab9dc288720aa01dbe9bdf58363e3103e6de73ecab3c06a85bae"
+    },
+    {
+      "path": "src/components/ui/dateFormat.german.test.ts",
+      "sha256": "0e233ce47175f0da3ec3a7aacfb8ade35566665418e33dff54c09746d5816f78"
+    },
+    {
+      "path": "src/components/ui/dateFormat.test.ts",
+      "sha256": "251b52a03feef025bc51a38d1804b8ba338075d4eb06774f4aa582a058e6a435"
+    },
+    {
+      "path": "src/db/integrationWorkflowMigration.integration.test.ts",
+      "sha256": "35a090ca99f53ae4f8b2dd1f97011ad6492c64546dac80526be199df1acf5454"
+    },
+    {
+      "path": "src/db/migrate.test.ts",
+      "sha256": "40df5536b8f5325063a082d90d6cc032b4d27c3550ba5c889d43f15e33909a00"
+    },
+    {
+      "path": "src/features/activities/ActivityRow.phone.test.tsx",
+      "sha256": "70ee1528dbececefc69e87476ff05bc1b265a5af8d4556744e024427604f524a"
+    },
+    {
+      "path": "src/features/activities/calendarEventDraft.test.ts",
+      "sha256": "ddd7babd06919936755d17f22f654d5f6ff54ca498086e711228beb32ba03ab6"
+    },
+    {
+      "path": "src/features/activities/calendarEventRoundTrip.integration.test.ts",
+      "sha256": "b95644cbfca35b1cfee61324df7db8e059c709a53dcd7a2b36d137386ae2d28f"
+    },
+    {
+      "path": "src/features/auth/better/auth.integration.test.ts",
+      "sha256": "1de93ecd937dada478b2ccec1c5416da5599d16aad0575def37a0e5ed3e30d50"
+    },
+    {
+      "path": "src/features/auth/better/sessionPolicy.integration.test.ts",
+      "sha256": "d63f3b01d28c0e243d5a67efc6d14c54100ceff4985cb8fb01163afedc518723"
+    },
+    {
+      "path": "src/features/auth/session.test.ts",
+      "sha256": "c59a1519dd55076292ba566286cebe3e95774e04ea284aa81e185263aff3ee4c"
+    },
+    {
+      "path": "src/features/contacts/PeopleTable.phone.test.tsx",
+      "sha256": "08b9abbda5b5e9b572193962bc86cfdb1648b8ef530aed768968bc38e5934706"
+    },
+    {
+      "path": "src/features/contacts/updatePersonName.test.ts",
+      "sha256": "a373d85fa46213810b7a9346cd80acd5ea38df5748bbb55f50f372b5a05e02c2"
+    },
+    {
+      "path": "src/features/currencies/currencyFlows.test.ts",
+      "sha256": "ff7fcecee4af05b83ca4e7122bb528e4cacaed6aaa7919203699372aae6e4673"
+    },
+    {
+      "path": "src/features/currencies/money.test.ts",
+      "sha256": "3080054ee5662cfa7ae3adcfec8aed03df0c3e5af6dbf92eaff6721f630dc546"
+    },
+    {
+      "path": "src/features/currencies/multicurrency.test.ts",
+      "sha256": "08bebca1cc676bae5ec4a1001a4430a20ce408465d0e10af5582c152ac3da40c"
+    },
+    {
+      "path": "src/features/deals/dealUpdate.changeLog.test.ts",
+      "sha256": "c69022c0b2981b6b75280cdadfbfcde2de60b8e0e79e94e7fe8e0eaea062e5ed"
+    },
+    {
+      "path": "src/features/deals/dealUpdatePerms.test.ts",
+      "sha256": "28768adcff038fe98c4498c22755849fc17a1c54c846e4a5cb88f141660289ae"
+    },
+    {
+      "path": "src/features/email/attachmentAuthz.test.ts",
+      "sha256": "1b2fcef74aa52b30d12ba3f7746cbea219ac3f9743a71a4074bd8d41d6a71ad3"
+    },
+    {
+      "path": "src/features/email/attachmentDownload.test.ts",
+      "sha256": "0b3c371d7ebc951efecdd70be5521e3cc3605a6cd9af96bf907ad2f6ecb70c3d"
+    },
+    {
+      "path": "src/features/email/attachmentSend.test.ts",
+      "sha256": "ed3184c2c0a0fc1fef742e70866a74a83504846b98e0c619b9a7f07dc12e4600"
+    },
+    {
+      "path": "src/features/email/composer/Composer.sendFailure.test.tsx",
+      "sha256": "4140868a5bdc117e2590508a2625313327b1d4fa6d86128e05d9e40093524b1f"
+    },
+    {
+      "path": "src/features/email/send.test.ts",
+      "sha256": "014522c04a4e145d4cd8b70ee94afb58a73f8c3c5335ac2e543ba8196fdd0b69"
+    },
+    {
+      "path": "src/features/email/send.visibility.test.ts",
+      "sha256": "864674cf4d89fa6b71bc05e78ed722e1631d4e54fe999004d4f8db27b5bdda0d"
+    },
+    {
+      "path": "src/features/identity/actions/privileged.fresh.test.ts",
+      "sha256": "278720d8e1128ef28e60a9d2e6ef3b8d0964ffa2991e78ae992977bc259a9f74"
+    },
+    {
+      "path": "src/features/identity/preferencesSelection.integration.test.ts",
+      "sha256": "944a5e9c3ab4d5e0118dee4fb1478c70aef06dd75d619b163de418757952d6b1"
+    },
+    {
+      "path": "src/features/import/pipeline.integration.test.ts",
+      "sha256": "87e41c9658bb94c31b0d8603ed17199232ac262f49e6a612fc481177398f4eea"
+    },
+    {
+      "path": "src/features/leads/inbox/exportCsv.test.ts",
+      "sha256": "cce5e4641fb1e4e75efdd193d96623be0cdac26f5ebc323ccd9ea697ae99ed26"
+    },
+    {
+      "path": "src/features/oauth/tokens.test.ts",
+      "sha256": "6d2b67c32575890cf81f87ec88c9a1d5d98e58c566483e01cfbaf915ca51a281"
+    },
+    {
+      "path": "src/features/permissions/canSee.test.ts",
+      "sha256": "514a8660868e3aa56b1b248f27407c1d750d211b022e0a40e80ad80ae620efa3"
+    },
+    {
+      "path": "src/features/permissions/sql.test.ts",
+      "sha256": "988e4e06bf4ae378ee7485f1ca355ac09b664227986e436aa236dd81ce22bcb5"
+    },
+    {
+      "path": "src/features/pipelines/canManagePipelines.test.ts",
+      "sha256": "aa270565d153572d42724cb8b8a4c9f9a38b4b7d10ae705f4336d7438d677883"
+    },
+    {
+      "path": "src/features/pipelines/pipelines.test.ts",
+      "sha256": "9d888014bf36cbda8b6139d85bf732779c76e88b769a21765be128af3502cb30"
+    },
+    {
+      "path": "src/features/saved-filters/SavedViewControl.test.tsx",
+      "sha256": "e07623cf9cd5be7110e62aa832ff6723e71e59c30439b80c457569750f51c90b"
+    },
+    {
+      "path": "src/features/saved-filters/savedFilterActions.test.ts",
+      "sha256": "70bf0f332b9841725a75c9c5abef3c409e2c2c15c447c21fa839bac41b90b0ca"
+    },
+    {
+      "path": "src/features/saved-filters/savedFilterWritePreservation.integration.test.ts",
+      "sha256": "ceb62f2a6ce6c614a76386ceb6399bfd147fb115aea1f54cd13c8db8681ee516"
+    },
+    {
+      "path": "src/features/workflows/executionSafety.integration.test.ts",
+      "sha256": "178092236094a9d5ef8e315a85047ed336635c81edaec5505ec0b8b344099dfe"
+    },
+    {
+      "path": "src/features/workflows/runControl.integration.test.ts",
+      "sha256": "e21048f8934582096fb3e22007fffdd67ed4a36314b2543d405a0b60db1a2a23"
+    },
+    {
+      "path": "src/features/workflows/worker.integration.test.ts",
+      "sha256": "3876655e532f79249a4c1da9cd6ead10744dcab51d2752be31d0aba1227960ea"
+    },
+    {
+      "path": "src/server/ws/authorizeDeal.test.ts",
+      "sha256": "bf91976c3e4f1f36db350c206d2efe620aa982dc6225f5320622f49fe04f2181"
+    },
+    {
+      "path": "src/utils/phone.test.ts",
+      "sha256": "1689d24321f73b794cd413aa4ec45d32d1d679ca4044ae7224abeb0afa06c2e5"
+    }
+  ],
+  "preparationFragments": [
+    {
+      "scope": "access",
+      "sha256": "7a9ec70fb3d63341cccaaedd2d42d2b5af527cac36881f04afcbbd081b407eb0",
+      "journeys": [
+        "auth",
+        "pipeline-access",
+        "records",
+        "saved-views"
+      ]
+    },
+    {
+      "scope": "effects",
+      "sha256": "5ec42512b23d915173f97091b0b80a9d21efe93e7e749e5a8d52d7f078b78fe9",
+      "journeys": [
+        "exports",
+        "workflows",
+        "communications",
+        "recovery"
+      ]
+    },
+    {
+      "scope": "regional-isolation",
+      "sha256": "fe378ed64f224c255f05d2dcd832ae68dcb117af07127d4357369644cadd135e",
+      "journeys": [
+        "regional-dates",
+        "regional-money",
+        "regional-phones",
+        "workspace-isolation"
+      ]
+    }
+  ],
+  "journeys": [
+    {
+      "id": "auth",
+      "owner": "sales-platform",
+      "ownerReviewState": "not owner-attested",
+      "testReferences": [
+        {
+          "path": "src/features/auth/better/auth.integration.test.ts",
+          "testTitle": "native signup cannot bypass admission and a real invited account keeps its CRM UUID",
+          "line": 18,
+          "kind": "real-postgresql-native-auth",
+          "fixture": {
+            "constructor": "makeTestDb; createBetterAuth(h.db, explicit test AUTH_SECRET with Google disabled)",
+            "data": "Admin inviter, pre-created CRM invitee, hashed authInvitations token, origin header and wd_invite cookie; stranger has no invitation",
+            "lines": [
+              11,
+              19,
+              24,
+              31,
+              35,
+              39,
+              47
+            ]
+          },
+          "actorContext": "Uninvited stranger versus invited email/password account; subsequent verified invitee sign-in through native API and native cookie resolution",
+          "oracle": "Stranger signup rejects; invited identity keeps CRM UUID and accepts invitation; verified password sign-in returns200, stores password assurance and resolves same user",
+          "limitations": "No external provider, invitation email delivery, browser, MFA enrollment or deployed admission result; email verification is set directly in the fixture",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/features/auth/better/sessionPolicy.integration.test.ts",
+          "testTitle": "pending administrator session is confined to enrollment and cannot satisfy fresh privileged access",
+          "line": 17,
+          "kind": "real-postgresql-native-session-policy",
+          "fixture": {
+            "constructor": "makeTestDb; raw users/authUsers/sessions inserts and hashed random token",
+            "data": "Active admin with verified email, password assurance and signed-cookie envelope; then MFA state update and later stale MFA timestamp/deactivation",
+            "lines": [
+              10,
+              18,
+              25,
+              37,
+              47,
+              58,
+              65
+            ]
+          },
+          "actorContext": "Admin is pending MFA despite a recent password; allowPending is explicit; fresh privilege requires current MFA; inactive user must fail even allowPending",
+          "oracle": "Normal live-session and fresh resolution deny pending admin; enrollment resolution allows it; current MFA permits fresh access; stale MFA or inactive user denies",
+          "limitations": "Direct DB fixture transitions, not a rendered enrollment flow or real MFA challenge; no assertion about service behavior after an arbitrary long wait",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/features/auth/session.test.ts",
+          "testTitle": "create then load returns a live session",
+          "line": 32,
+          "kind": "real-postgresql-session-repository",
+          "fixture": {
+            "constructor": "makeTestDb beforeAll, permissionSets Regular with empty flags, users row s@example.com",
+            "lines": [
+              18,
+              20,
+              23,
+              33
+            ]
+          },
+          "actorContext": "Active regular user with no extra capabilities; createSession-generated bearer cookie value",
+          "oracle": "Token lookup returns a live session for the exact fixture user",
+          "limitations": "Repository API source, not proof of successful browser sign-in or native cookie transport",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/features/auth/session.test.ts",
+          "testTitle": "revoked session is not live",
+          "line": 41,
+          "kind": "real-postgresql-session-repository",
+          "fixture": {
+            "constructor": "Shared Regular user fixture; createSession then revokeAllSessions",
+            "lines": [
+              18,
+              41,
+              44
+            ]
+          },
+          "actorContext": "Formerly live regular-user session is revoked before the next token lookup",
+          "oracle": "loadLiveSessionByToken returns ok:false after revocation",
+          "limitations": "Checks post-revocation lookup, not an in-flight command, WebSocket heartbeat or background-job revocation race",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/features/auth/session.test.ts",
+          "testTitle": "deactivated user makes the session not live (rule 0)",
+          "line": 49,
+          "kind": "real-postgresql-session-repository",
+          "fixture": {
+            "constructor": "Shared Regular user fixture; users.isActive false before lookup and restored after",
+            "lines": [
+              18,
+              49,
+              53
+            ]
+          },
+          "actorContext": "Existing session of an inactive regular user",
+          "oracle": "Token lookup returns ok:false while inactive",
+          "limitations": "No full offboarding workflow, provider token revoke or cross-service cleanup assertion",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/features/identity/actions/privileged.fresh.test.ts",
+          "testTitle": "team, permission and visibility actions require fresh authentication before their services run",
+          "line": 43,
+          "kind": "unit-mocked-service-boundary",
+          "fixture": {
+            "constructor": "vi.hoisted fresh=>null and operation spy; next/headers/context/shared/sessionPolicy/services mocked",
+            "data": "Nine team/permission-set/visibility-group action calls with csrf and fixed UUID",
+            "lines": [
+              4,
+              8,
+              9,
+              14,
+              17,
+              43,
+              45
+            ]
+          },
+          "actorContext": "Mocked admin actor passes CSRF/runWithActor, but native fresh-session resolver is stubbed unavailable",
+          "oracle": "Every action returns fresh_auth_required and service operation spy is never called",
+          "limitations": "No real session, CSRF verification, database mutation, route or native actor hydration; this is a boundary control only",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        }
+      ],
+      "pendingJourneys": [
+        {
+          "surface": "recovery and FA/DE/EN native login UI",
+          "state": "unbound-or-unqualified",
+          "missing": "RecoveryRequest and LoginWorkflow remain registry references; their case-level fixtures were not bound by this fragment.",
+          "evidenceRequirement": "Bind their exact recovery ticket/actor and UI fixtures, then obtain source-bound native/browser receipts; never infer email delivery."
+        },
+        {
+          "surface": "suspension/offboarding and MCP grant revocation",
+          "state": "unbound-or-unqualified",
+          "missing": "Session deactivation/lookup is bound; complete offboarding and originating MCP-grant revocation are not covered by these selected references.",
+          "evidenceRequirement": "Bind source tests for token/grant lifecycle and command after-wait denial; qualify exact candidate and retain external revoke uncertainty."
+        }
+      ],
+      "evidenceCeiling": "Source definitions and fixture/actor/oracle binding only; no new execution, owner attestation or runtime qualification.",
+      "permissionContexts": [
+        "Native invited/stranger accounts and native pending-MFA admin",
+        "Regular cookie session, inactive user and explicit revocation",
+        "Mocked admin without fresh proof at action boundary"
+      ],
+      "evidenceRequirements": [
+        "Exact-candidate native auth/session cases with owned PostgreSQL teardown, plus FA/DE/EN login/recovery/admin browser and explicit external-provider/email evidence where authorized."
+      ]
+    },
+    {
+      "id": "pipeline-access",
+      "owner": "sales-platform",
+      "ownerReviewState": "not owner-attested",
+      "testReferences": [
+        {
+          "path": "src/features/pipelines/canManagePipelines.test.ts",
+          "testTitle": "allows admins regardless of flags",
+          "line": 6,
+          "kind": "pure-permission-unit",
+          "fixture": {
+            "constructor": "Literal actor {type:admin, flags:new Set()}",
+            "lines": [
+              6,
+              7
+            ]
+          },
+          "actorContext": "Admin bypass with no capability flags",
+          "oracle": "canManagePipelines is true",
+          "limitations": "Pure predicate only; no live session or route/server write",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/features/pipelines/canManagePipelines.test.ts",
+          "testTitle": "allows regular users holding pipeline.manage",
+          "line": 10,
+          "kind": "pure-permission-unit",
+          "fixture": {
+            "constructor": "Literal regular actor; PERMISSION_FLAGS.PIPELINE_MANAGE set",
+            "lines": [
+              10,
+              11
+            ]
+          },
+          "actorContext": "Active-state/session fields are not part of this helper input; regular capability grant is explicit",
+          "oracle": "canManagePipelines is true for pipeline.manage",
+          "limitations": "Does not prove actor hydration, current capability freshness or group visibility",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/features/pipelines/canManagePipelines.test.ts",
+          "testTitle": "denies regular users without the flag",
+          "line": 15,
+          "kind": "pure-permission-unit",
+          "fixture": {
+            "constructor": "Literal regular actor with only deal.edit_own",
+            "lines": [
+              15,
+              16
+            ]
+          },
+          "actorContext": "Regular actor lacks pipeline.manage",
+          "oracle": "canManagePipelines is false",
+          "limitations": "Not a runtime downgrade or in-flight authorization test",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/features/pipelines/pipelines.test.ts",
+          "testTitle": "creates a pipeline with stages and lists them ordered",
+          "line": 27,
+          "kind": "real-postgresql-direct-service",
+          "fixture": {
+            "constructor": "withTestDb, seedUser, local adminSession(userId), createPipeline and createStage",
+            "data": "Sales pipeline and Qualified/Proposal stages",
+            "lines": [
+              15,
+              27,
+              29,
+              31,
+              39,
+              45
+            ]
+          },
+          "actorContext": "Constructed active live admin session with pipeline.manage and empty visibility groups",
+          "oracle": "Created pipeline appears once and stages preserve creation order",
+          "limitations": "Direct session object, not fresh native admin verification or rendered create journey",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/features/pipelines/pipelines.test.ts",
+          "testTitle": "createPipelineWithStages denies a non-manage user and writes nothing",
+          "line": 177,
+          "kind": "real-postgresql-direct-service",
+          "fixture": {
+            "constructor": "withTestDb, seedUser, local regular session with flags:{}",
+            "lines": [
+              177,
+              179,
+              180
+            ]
+          },
+          "actorContext": "Regular active live session, no pipeline.manage",
+          "oracle": "Creation rejects and pipelines table remains empty",
+          "limitations": "No concurrent capability revocation or UI denial-state proof",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/features/pipelines/pipelines.test.ts",
+          "testTitle": "hides a restricted pipeline from a non-member and shows it to members",
+          "line": 113,
+          "kind": "real-postgresql-query",
+          "fixture": {
+            "constructor": "withTestDb; Restricted Group and Restricted pipeline raw inserts; nonMemberSession/memberSession/adminSession",
+            "lines": [
+              113,
+              119,
+              124,
+              131,
+              140,
+              151
+            ]
+          },
+          "actorContext": "Non-admin with no group, non-admin with exact restricted group, and admin bypass",
+          "oracle": "Non-member sees no restricted row; member and admin see it",
+          "limitations": "Static constructed contexts; does not remove membership during a live request, cover byId, search or counts",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/features/permissions/sql.test.ts",
+          "testTitle": "dead session yields empty id set",
+          "line": 230,
+          "kind": "real-postgresql-sql-predicate",
+          "fixture": {
+            "constructor": "makeTestDb; beforeAll t_deals table populated from sqlParityFixtures.FIXTURES; sqlVisibleIds Scenario",
+            "data": "VIEWER admin with isActive:true, sessionLive:false, groups:[]",
+            "lines": [
+              89,
+              100,
+              230
+            ]
+          },
+          "actorContext": "Dead session must override admin bypass for SQL record visibility",
+          "oracle": "Visibility predicate returns an empty exact ID set",
+          "limitations": "Predicate exercised over dedicated t_deals fixture table, not production query joins/aggregates or a real revoked session record",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/features/permissions/canSee.test.ts",
+          "testTitle": "team-manager visibility does NOT bypass a restricted pipeline (hard gate wins)",
+          "line": 174,
+          "kind": "pure-visibility-unit",
+          "fixture": {
+            "constructor": "user() and deal() literal factories; managedUserIds OWNER, owner-only deal with pipelineVisibilityGroupId gx",
+            "lines": [
+              9,
+              12,
+              174
+            ]
+          },
+          "actorContext": "Regular manager of record owner has no membership in restricted pipeline gx",
+          "oracle": "canSee returns false despite manager relationship",
+          "limitations": "managedUserIds is supplied directly; team.viewMembers hydration and live revocation are outside this unit",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        }
+      ],
+      "pendingJourneys": [
+        {
+          "surface": "byId, search and aggregates",
+          "state": "unbound-or-unqualified",
+          "missing": "Bound listVisiblePipelines and generic SQL predicate cases do not cover every production byId/search/aggregate query.",
+          "evidenceRequirement": "Bind actual route/query fixtures for non-member/member/admin, ensure hidden IDs and counts remain absent."
+        },
+        {
+          "surface": "downgrade during edit and pipeline-role shadow comparison",
+          "state": "unbound-or-unqualified",
+          "missing": "Existing static capability predicates do not prove live downgrade after edit started; newer pipeline role/share model remains incomplete.",
+          "evidenceRequirement": "Add real current-authority positive/deny/revocation fixtures and source-bound PG/browser receipts before enabling role/share authority."
+        }
+      ],
+      "evidenceCeiling": "Source definitions and fixture/actor/oracle binding only; no new execution, owner attestation or runtime qualification.",
+      "permissionContexts": [
+        "Admin and regular pipeline.manage capability predicate",
+        "Constructed active live regular/admin service sessions",
+        "Restricted group membership and dead SQL session contexts"
+      ],
+      "evidenceRequirements": [
+        "Exact candidate PG pipeline/list/query ID-set checks and current-authority writes; FA/DE/EN rendered create/sharing/denied and downgrade recovery; owner attestation required."
+      ]
+    },
+    {
+      "id": "records",
+      "owner": "sales-platform",
+      "ownerReviewState": "not owner-attested",
+      "testReferences": [
+        {
+          "path": "src/features/deals/dealUpdatePerms.test.ts",
+          "testTitle": "returns E_DEAL_002 on stale expectedUpdatedAt and leaves row unchanged",
+          "line": 14,
+          "kind": "real-postgresql-direct-command",
+          "fixture": {
+            "constructor": "withTestDb; setupDeal in dealUpdate.test-helpers.ts:10 seeds settings/user/one-stage pipeline and createDeal(title Initial)",
+            "data": "Admin actor; expectedUpdatedAt 2000-01-01 versus current row",
+            "lines": [
+              14,
+              16
+            ]
+          },
+          "actorContext": "Constructed active admin session; stale optimistic version",
+          "oracle": "Update returns E_DEAL_002 and persisted title remains Initial",
+          "limitations": "No live browser conflict recovery; this pins title preservation only",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/features/deals/dealUpdatePerms.test.ts",
+          "testTitle": "denies a user with no deal.edit_* flag (E_PERM_001)",
+          "line": 39,
+          "kind": "real-postgresql-direct-command",
+          "fixture": {
+            "constructor": "setupDeal plus second seedUser; noEditSession from dealMove.test-helpers.ts:31",
+            "lines": [
+              39,
+              41,
+              42,
+              45
+            ]
+          },
+          "actorContext": "Active regular non-owner with no edit capabilities or visibility groups",
+          "oracle": "Update returns E_PERM_001",
+          "limitations": "Test does not itself compare every row/log column after denial or exercise revocation during a wait",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/features/deals/dealUpdatePerms.test.ts",
+          "testTitle": "denies a non-owner with only deal.edit_own (E_PERM_001)",
+          "line": 59,
+          "kind": "real-postgresql-direct-command",
+          "fixture": {
+            "constructor": "setupDeal plus second seedUser; regularSession from dealMove.test-helpers.ts:20",
+            "lines": [
+              59,
+              61,
+              62,
+              65
+            ]
+          },
+          "actorContext": "Active regular non-owner holds deal.edit_own only",
+          "oracle": "Update returns E_PERM_001",
+          "limitations": "Constructed actor permission snapshot; not native session hydration or a concurrent ownership change",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/features/deals/dealUpdate.changeLog.test.ts",
+          "testTitle": "records a change row per edited field: title, value, expectedCloseDate",
+          "line": 89,
+          "kind": "real-postgresql-data-and-history",
+          "fixture": {
+            "constructor": "setupDeal; adminSession; updateDeal and listChangeLog",
+            "data": "Renamed Deal, value2000, expectedCloseDate2026-08-01",
+            "lines": [
+              89,
+              91,
+              94,
+              107
+            ]
+          },
+          "actorContext": "Constructed active admin updates a fixture deal",
+          "oracle": "History preserves old/new title, actor ID, exact value text2000.00 and civil close-date string",
+          "limitations": "No currency conversion/aggregation proof, native rendered history or migration preservation",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/features/deals/dealUpdate.changeLog.test.ts",
+          "testTitle": "rejects a relink to a person the actor cannot see and logs nothing",
+          "line": 230,
+          "kind": "real-postgresql-link-authorization",
+          "fixture": {
+            "constructor": "setupDeal; stranger seedUser; persons insert Secret with owner visibility; regularSession of deal owner",
+            "lines": [
+              230,
+              232,
+              233,
+              236,
+              246
+            ]
+          },
+          "actorContext": "Regular deal owner has deal.edit_own but no visibility to stranger-owned person",
+          "oracle": "Relink rejects; deal.personId remains null and no person_id change log entry exists",
+          "limitations": "No cross-pipeline transfer, organization relink deny, buying-group or mailbox-visibility proof",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/features/contacts/updatePersonName.test.ts",
+          "testTitle": "recomputes name when first/last are edited",
+          "line": 39,
+          "kind": "real-postgresql-contact-repository",
+          "fixture": {
+            "constructor": "createPersonFixture:25 uses createPerson with owner actor contact.create; edit uses actor(p.ownerId,[contact.edit_own])",
+            "data": "Old Name becomes firstName Mia, lastName Silva",
+            "lines": [
+              11,
+              25,
+              39,
+              41,
+              44
+            ]
+          },
+          "actorContext": "Active regular owner with contact.edit_own and no groups",
+          "oracle": "Update succeeds and persisted returned first/last/combined name is Mia Silva",
+          "limitations": "No denied contact edit, company edit, imported raw multilingual value or visibility revocation control in this case",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/features/import/pipeline.integration.test.ts",
+          "testTitle": "upload -> prepare -> map -> validate -> commit -> undo",
+          "line": 42,
+          "kind": "real-postgresql-import-with-fake-storage",
+          "fixture": {
+            "constructor": "withTestDb, seedUser({isAdmin:true}), hydrateActor->toImportActor, storageFor(CSV) local stub",
+            "data": "CSV Name\\nAlice\\nBob; mapping Name->name; upload/prepare/validate/commit/undo handlers called directly",
+            "lines": [
+              17,
+              18,
+              42,
+              45,
+              46,
+              48,
+              63,
+              64,
+              65,
+              72,
+              73,
+              79
+            ]
+          },
+          "actorContext": "Database-hydrated administrator; fake StorageClient grants controlled CSV bytes with no real S3",
+          "oracle": "Alice is created once, batch status completed, undo soft-deletes Alice and two import rows remain",
+          "limitations": "No external object upload, queue dispatch/restart, regular-user denial, changed authority mid-import or retained-lineage upgrade",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        }
+      ],
+      "pendingJourneys": [
+        {
+          "surface": "stage transfer, company editing, activity/history links",
+          "state": "unbound-or-unqualified",
+          "missing": "Selected cases bind update permissions/history, person relink and person names; full stage transfer, organization editing and activity-link mutations lack category bindings here.",
+          "evidenceRequirement": "Bind production command-specific fixtures and authority contexts, including hidden destination/linked entities and no-write deny oracles."
+        },
+        {
+          "surface": "buying groups, cross-pipeline transfer and retained data",
+          "state": "unbound-or-unqualified",
+          "missing": "These future relationship/transfer and divergent-lineage preservation paths are unimplemented or unqualified.",
+          "evidenceRequirement": "Record/ID/raw-value/link reconciliation on every supported upgrade/recovery profile; no mailbox or pipeline visibility bypass; exact candidate UI and native evidence."
+        },
+        {
+          "surface": "authority lost after queue/wait or import start",
+          "state": "unbound-or-unqualified",
+          "missing": "Direct constructed actor snapshots and administrator import success do not cover current authority after a wait.",
+          "evidenceRequirement": "Bind genuine revocation controls across native/UI/import/worker/MCP mutations before claiming shared command enforcement."
+        }
+      ],
+      "evidenceCeiling": "Source definitions and fixture/actor/oracle binding only; no new execution, owner attestation or runtime qualification.",
+      "permissionContexts": [
+        "Admin stale-version/field-history commands",
+        "Regular no-edit actor and non-owner edit_own actor",
+        "Regular deal-owner editor blocked by hidden linked person",
+        "Regular contact owner with contact.create/edit_own; hydrated import administrator"
+      ],
+      "evidenceRequirements": [
+        "Source-bound real PG mutation, deny, CAS, audit/link and import/undo checks; reconcile raw IDs/values and relationship authority across supported upgrades and rendered FA/DE/EN record flows."
+      ]
+    },
+    {
+      "id": "saved-views",
+      "owner": "sales-platform",
+      "ownerReviewState": "not owner-attested",
+      "testReferences": [
+        {
+          "path": "src/features/saved-filters/savedFilterActions.test.ts",
+          "testTitle": "SECURITY: user without filter.share cannot create a shared filter",
+          "line": 20,
+          "kind": "real-postgresql-direct-command",
+          "fixture": {
+            "constructor": "withTestDb, default settings row, seedUser, filterSessionNoFlag",
+            "lines": [
+              20,
+              22,
+              27,
+              30
+            ]
+          },
+          "actorContext": "Regular owner session with empty flags attempts shared deal definition",
+          "oracle": "Create returns E_PERM_001",
+          "limitations": "Direct FilterSession has no native session proof; assertion does not establish execution-viewer record visibility",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/features/saved-filters/savedFilterActions.test.ts",
+          "testTitle": "user WITH filter.share can create a shared filter",
+          "line": 47,
+          "kind": "real-postgresql-direct-command",
+          "fixture": {
+            "constructor": "withTestDb, settings, seedUser, filterSessionWithFlag(userId,filter.share)",
+            "data": "Shared filter with status=open deal condition",
+            "lines": [
+              47,
+              49,
+              54,
+              57
+            ]
+          },
+          "actorContext": "Regular actor has explicit filter.share capability",
+          "oracle": "Save succeeds with expected shared flag and name",
+          "limitations": "Sharing definition does not grant record visibility; no grant revocation during write",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/features/saved-filters/savedFilterActions.test.ts",
+          "testTitle": "returns own filters and shared filters, but not other users' private filters",
+          "line": 122,
+          "kind": "real-postgresql-definition-list",
+          "fixture": {
+            "constructor": "withTestDb; Alice/Bob seedUser; Alice private/shared and Bob private definitions",
+            "lines": [
+              122,
+              129,
+              130,
+              133,
+              145,
+              157
+            ]
+          },
+          "actorContext": "Both regular actors without share flag for reads; Alice uses filter.share only for initial shared create",
+          "oracle": "Bob list contains Alice shared and Bob private; Alice list contains own private/shared only",
+          "limitations": "Definition metadata selection only; does not execute record query or test later unsharing/deletion while selected",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/features/saved-filters/savedFilterWritePreservation.integration.test.ts",
+          "testTitle": "rejected definition updates preserve the original raw payload and every row column",
+          "line": 91,
+          "kind": "real-postgresql-jsonb-preservation",
+          "fixture": {
+            "constructor": "withTestDb; seedFuture:52 inserts future version99 JSONB for deal/person/organization/lead; snapshot:36 selects every row column and canonical JSONB/timestamps text; unsupportedDefinitions:20",
+            "lines": [
+              91,
+              93,
+              94,
+              96,
+              97,
+              98
+            ]
+          },
+          "actorContext": "Owner has filter.share but authored malformed/future narrowing/unsupported presentation must still reject",
+          "oracle": "Every refused update returns E_DEAL_008 and full raw PostgreSQL snapshot equals before",
+          "limitations": "Synthetic selected history, not a retained-installation future payload or all possible version transformations",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/features/saved-filters/savedFilterWritePreservation.integration.test.ts",
+          "testTitle": "name-only updates preserve future JSONB and identity while owner and share gates remain",
+          "line": 114,
+          "kind": "real-postgresql-owner-and-share-gates",
+          "fixture": {
+            "constructor": "seedFuture/snapshot across four entities; owner FilterSessionNoFlag and outsider FilterSessionWithFlag(filter.share)",
+            "lines": [
+              114,
+              116,
+              117,
+              118,
+              119,
+              121
+            ]
+          },
+          "actorContext": "Outsider with share capability cannot rename/favorite another owner; owner without share flag cannot share; owner may rename",
+          "oracle": "Denied operations preserve all raw columns; owner rename preserves JSONB/ID/other columns and advances updatedAt",
+          "limitations": "No removal of current role/grant during an in-flight DB operation; does not establish browser metadata masking",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/features/identity/preferencesSelection.integration.test.ts",
+          "testTitle": "${targetEntity} round-trips only its native selected ID and Clear while retaining all personal baselines",
+          "line": 16,
+          "kind": "real-postgresql-preference-and-selection",
+          "fixture": {
+            "constructor": "Loop targetEntity person/organization/lead; seedUser, own Native choice savedFilters row, personal people/org/leads columns/sort; setPreferences/getPreferences and hydrateActor",
+            "lines": [
+              14,
+              16,
+              18,
+              19,
+              27,
+              42,
+              64
+            ]
+          },
+          "actorContext": "Database-hydrated regular user selects own view; preferences writes are explicitly keyed to fixture user ID",
+          "oracle": "Only version/savedViewId persist in selection; own ID resolves; Clear persists null and retains personal baselines",
+          "limitations": "Direct preference repository receives userId; no action authentication or cross-user write-denial assertion in this test; no browser reload/tab journey",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/features/identity/preferencesSelection.integration.test.ts",
+          "testTitle": "${targetEntity} retains a private selected ID as unavailable after a real visibility read",
+          "line": 85,
+          "kind": "real-postgresql-private-selection",
+          "fixture": {
+            "constructor": "Loop person/organization/lead; separate viewer/owner seedUser; private owner view with Private metadata/Private condition; viewer stores its ID then hydrateActor/listCompatibleSavedFilterViews",
+            "lines": [
+              14,
+              85,
+              87,
+              88,
+              89,
+              108,
+              114,
+              118
+            ]
+          },
+          "actorContext": "Viewer is not private-view owner, has no share-derived authority; ID is deliberately retained as an unavailable selection",
+          "oracle": "Resolution returns unavailable empty-name/null-definition object; private label/condition omitted; selected ID remains in preferences",
+          "limitations": "Static inaccessible view, not a shared-to-private transition or revocation during an active record query",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/features/saved-filters/SavedViewControl.test.tsx",
+          "testTitle": "revalidates an active selection becoming unavailable without clearing it",
+          "line": 216,
+          "kind": "jsdom-component-with-mocked-rpc-and-actions",
+          "fixture": {
+            "constructor": "view() and DEFINITION factories; listData mock returns unavailable unsupported view; selectedViewId v1; onSelectView spy",
+            "lines": [
+              8,
+              10,
+              20,
+              37,
+              42,
+              216,
+              217,
+              225
+            ]
+          },
+          "actorContext": "No authenticated actor; owned-view metadata is a UI fixture, not authority",
+          "oracle": "Unavailable view is reported to selection callback, null is not reported and alert renders",
+          "limitations": "Component-only synthetic result replacement; no actual server revocation, browser/network/offline behavior or record result authority",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        }
+      ],
+      "pendingJourneys": [
+        {
+          "surface": "executing-viewer record results and historic decoding",
+          "state": "unbound-or-unqualified",
+          "missing": "Metadata/list/write fixtures do not prove every consumer applies record visibility or semantic compatibility; old parseDefinition fallback tests must not stand in for strict current saved-view admission.",
+          "evidenceRequirement": "Bind current decoder/consumer query cases for each entity and pipeline, unknown/private/malformed definitions, exact rows/counts/aggregates and filter composition."
+        },
+        {
+          "surface": "favorites and navigation context",
+          "state": "unbound-or-unqualified",
+          "missing": "Owner favorite denial is present in combined raw-preservation case; positive favorites/navigation scope, principal change and queued replay need their own complete fixture bindings.",
+          "evidenceRequirement": "Bind concrete principal, selection key, scope and race fixtures, preserving personal baselines and stale cached result fences."
+        },
+        {
+          "surface": "shared-view revocation, offline and stale recovery",
+          "state": "unbound-or-unqualified",
+          "missing": "Static private ID and mocked unavailable replacement do not establish real share revocation or network/offline recovery.",
+          "evidenceRequirement": "Actual shared-to-private/delete/downgrade after selection plus FA/DE/EN native UI states; no query/label/count leakage or silent clear/broadening."
+        }
+      ],
+      "evidenceCeiling": "Source definitions and fixture/actor/oracle binding only; no new execution, owner attestation or runtime qualification.",
+      "permissionContexts": [
+        "Regular private owner, owner with/without filter.share, and different viewer",
+        "Hydrated per-entity viewer with ID-only preference selection",
+        "UI unavailable result fixture with no real authenticated context"
+      ],
+      "evidenceRequirements": [
+        "Exact current native JSONB/preferences and record-query authority evidence, followed by rendered FA/DE/EN stale/denied/offline/reload flows. Historical source receipts remain separate from this inspection."
+      ]
+    },
+    {
+      "id": "exports",
+      "owner": "sales-platform",
+      "ownerReviewState": "not owner-attested",
+      "testReferences": [
+        {
+          "path": "src/app/(app)/leads/export/route.authorization.test.ts",
+          "testTitle": "rejects %s before currency or lead reads",
+          "line": 80,
+          "kind": "unit-route/domain-command-doubles",
+          "fixture": {
+            "builder": "context(), request(), expectNoDataReads()",
+            "declarations": "lines24-69; table73-80",
+            "cases": [
+              "missing actor",
+              "missing native session",
+              "admin without a native session"
+            ]
+          },
+          "actorContext": "AppContext supplies nativeSession and HydratedActor; each table case removes actor or session. Context and export/currency commands are substituted; actual Pool remains unconnected.",
+          "oracle": "HTTP401 and zero currency/export command calls.",
+          "limitations": "Native authentication, SQL visibility and revocation during I/O are not exercised.",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/app/(app)/leads/export/route.authorization.test.ts",
+          "testTitle": "denies %s before currency or lead reads",
+          "line": 91,
+          "kind": "unit-route/domain-command-doubles",
+          "fixture": {
+            "builder": "permittedActor, context(actor), request(), expectNoDataReads()",
+            "declarations": "lines24-69; table87-91",
+            "cases": [
+              "inactive member",
+              "inactive admin",
+              "active member without data.export"
+            ]
+          },
+          "actorContext": "Regular active actor normally has data.export, visibility-group and managed-user; table removes activity or export flag, including inactive admin.",
+          "oracle": "HTTP403 with PERM_DENIED and no domain data reads.",
+          "limitations": "Snapshot denial only, no after-wait or actual DB admission proof.",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/app/(app)/leads/export/route.authorization.test.ts",
+          "testTitle": "forwards validated filters, sort and native visibility to the existing export command",
+          "line": 99,
+          "kind": "unit-route/domain-command-doubles",
+          "fixture": {
+            "builder": "permittedActor, nativeSession, row, request()",
+            "declarations": "lines24-59; testcondition100-113",
+            "values": "KWD12.345; title Acme, Inc; owner @owner; archived cf:region ASC; AND title condition"
+          },
+          "actorContext": "Active regular actor with native session, data.export, one visibility group and managed user.",
+          "oracle": "Passes exact native visibility, filters, sort and limit500 into domain command; CSV separates currency and formula-neutralizes @owner.",
+          "limitations": "Does not execute filtered SQL or establish full-data paging, field permissions, retained export jobs or file grants.",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/features/leads/inbox/exportCsv.test.ts",
+          "testTitle": "neutralizes spreadsheet formula injection in a leading =/+/-/@ cell",
+          "line": 46,
+          "kind": "pure-unit",
+          "fixture": {
+            "builder": "row and cols constants",
+            "declarations": "lines6-23 and evilrow47",
+            "values": "title =HYPERLINK(...), owner @cmd"
+          },
+          "actorContext": "Pure serialization of an already supplied LeadRow; no session or authority decision.",
+          "oracle": "CSV formula-leading title and owner receive apostrophe protection.",
+          "limitations": "No authorization or download/revocation coverage; source example assertions specifically inspect = and @ inputs.",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/features/leads/inbox/exportCsv.test.ts",
+          "testTitle": "exports the raw native amount with a separate currency column",
+          "line": 26,
+          "kind": "pure-unit",
+          "fixture": {
+            "builder": "row spread, columnsFromKeys([value])",
+            "values": "value12.345;currencyKWD;fallbackUSD"
+          },
+          "actorContext": "No actor; caller must have authorized the rows.",
+          "oracle": "Exact Value,Currency CSV retains12.345,KWD.",
+          "limitations": "No permission proof or cross-currency aggregate/exchange-rate qualification.",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/features/email/attachmentDownload.test.ts",
+          "testTitle": "the mailbox owner can download: fetches bytes via the injected Gmail client using the stored gmail ids",
+          "line": 62,
+          "kind": "real-pg/provider-double",
+          "fixture": {
+            "builder": "withTestDb, seedUser, seedThreadWithAttachment, fakeClientWithBytes",
+            "declarations": "lines14-58",
+            "rows": "owned email_account, private-default thread, inbound message g1, attachment a1 invoice.pdf"
+          },
+          "actorContext": "actorOf(owner.id): active regular actor, no visibility groups.",
+          "oracle": "Resolved bytes/name/MIME match fake bytes and provider request uses stored message g1/attachment a1.",
+          "limitations": "Real PostgreSQL harness declared in source; FakeGmailClient/FakeStorageClient are provider/storage doubles. No native-session, real-provider or current rerun proof. This is email attachment download, not a scoped CSV export download grant.",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/features/email/attachmentDownload.test.ts",
+          "testTitle": "a stranger to a private thread is denied with E_GMAIL_012 (attachment not found, no existence leak)",
+          "line": 90,
+          "kind": "real-pg/provider-double",
+          "fixture": {
+            "builder": "withTestDb; separate owner and stranger seedUser; seedThreadWithAttachment(owner.id); fakeClientWithBytes",
+            "declarations": "lines14-58 and92-95"
+          },
+          "actorContext": "actorOf(stranger.id): active regular non-owner with empty groups.",
+          "oracle": "E_GMAIL_012 and zero fake Gmail calls.",
+          "limitations": "Real PostgreSQL harness declared in source; FakeGmailClient/FakeStorageClient are provider/storage doubles. No native-session, real-provider or current rerun proof. Does not change authority during an outstanding download or exercise expiring grant lifecycle.",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        }
+      ],
+      "pendingJourneys": [
+        {
+          "surface": "authorized query and field visibility",
+          "state": "partial-source-binding",
+          "missing": "Route doubles prove forwarding/denial shape; actual export SQL field visibility, full paging and changing authority need separately bound real-PG cases."
+        },
+        {
+          "surface": "asynchronous export execution and download",
+          "state": "unimplemented-or-unqualified",
+          "missing": "No current async scoped-view export job/grant fixture, post-enqueue revocation, expiring-download or actual runtime evidence bound here."
+        },
+        {
+          "surface": "download revocation",
+          "state": "missing-after-wait-fixture",
+          "missing": "Attachment positive/stranger checks exist; no authority-change-during-download assertion in inspected references."
+        }
+      ],
+      "evidenceCeiling": "Source definitions and fixture/actor/oracle binding only; no new execution, owner attestation or runtime qualification.",
+      "permissionContexts": [
+        "Native export route requires active native session and data.export, with admin bypass only for active authenticated admin. Serialization is not an authority grant. Attachment access remains mailbox/entity-scoped."
+      ],
+      "evidenceRequirements": [
+        "Exact candidate route boundary checks plus real PostgreSQL record/field visibility and live revocation checks; separately observed native CSV/download journey; async exports need execution/download admission and grant lifecycle proof."
+      ]
+    },
+    {
+      "id": "workflows",
+      "owner": "sales-platform",
+      "ownerReviewState": "not owner-attested",
+      "testReferences": [
+        {
+          "path": "src/features/workflows/executionSafety.integration.test.ts",
+          "testTitle": "rejects reuse of an admission key for a different execution mode",
+          "line": 12,
+          "kind": "real-pg",
+          "fixture": {
+            "builder": "setupWorkflowExecution()",
+            "declarations": "src/features/workflows/execution.test-helpers.ts:10",
+            "values": "requestKey481a5947-e6c4-4e95-b627-5528bba98e97 reused simulation/live"
+          },
+          "actorContext": "Hydrated administrator seeded with own owner-visible deal in Proposal pipeline; published manual -> record.read -> activity.create definition.",
+          "oracle": "Initial simulation accepted; same key with live mode returns E_WORKFLOW_003 and exactly one workflow_runs row.",
+          "limitations": "Manual admission only; no automatic event outbox ordering or external-effect idempotency.",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/features/workflows/executionSafety.integration.test.ts",
+          "testTitle": "rolls back an activity if persisting its progress fails, then retries without duplication",
+          "line": 51,
+          "kind": "real-pg",
+          "fixture": {
+            "builder": "setupWorkflowExecution(); temporary workflow_steps CHECK(node_id <> task)",
+            "declarations": "src/features/workflows/execution.test-helpers.ts:10; testlines62-69"
+          },
+          "actorContext": "Hydrated administrator running own owner-visible deal; internal activity.create effect.",
+          "oracle": "Progress constraint causes rejection with zero activity and nextNodeId task; after constraint removal retry yields one activity and succeeded.",
+          "limitations": "Test-local transaction failure/retry; not process crash after external acceptance, automatic sales mutation admission or durable external receipts.",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/features/workflows/executionSafety.integration.test.ts",
+          "testTitle": "rehydrates downgraded authority and does not expose another owner's hidden deal",
+          "line": 77,
+          "kind": "real-pg",
+          "fixture": {
+            "builder": "setupWorkflowExecution(); seedUser(other); permissionSets insert; users downgrade; deals owner change",
+            "declarations": "lines80-89",
+            "flags": [
+              "workflow.run",
+              "activity.create"
+            ]
+          },
+          "actorContext": "Previously hydrated admin becomes regular in DB; keeps run/create flags but deal is owner-visible under another user.",
+          "oracle": "Run fails, outputs omit hidden deal title and no activity is created.",
+          "limitations": "Covers stored authority rehydration before this executor path, not all job/provider/MCP grant revocation seams.",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/features/workflows/executionSafety.integration.test.ts",
+          "testTitle": "keeps a queued run on its original published definition after a new version is activated",
+          "line": 130,
+          "kind": "real-pg",
+          "fixture": {
+            "builder": "setupWorkflowExecution(); admitManualRun; saveWorkflowDraft revision1; publishWorkflow version2",
+            "declarations": "src/features/workflows/execution.test-helpers.ts:29",
+            "values": "original Persian activity subject; replacement Neue Aufgabe"
+          },
+          "actorContext": "Hydrated admin queues original published manual definition before publishing replacement.",
+          "oracle": "Activity retains original Persian subject and run.versionId remains original version ID.",
+          "limitations": "Internal activity action only; does not qualify future stage-template version binding or external effect version provenance.",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/features/workflows/runControl.integration.test.ts",
+          "testTitle": "cancels persisted work before an effect and records the cancelling identity",
+          "line": 12,
+          "kind": "real-pg",
+          "fixture": {
+            "builder": "setupWorkflowExecution(); advance twice; cancelWorkflowRun",
+            "declarations": "src/features/workflows/execution.test-helpers.ts:10"
+          },
+          "actorContext": "Same hydrated admin admits and cancels own workflow run.",
+          "oracle": "Cancellation Result is cancelled; subsequent advance creates zero activity; cancelledBy actor ID and cancelledAt persisted.",
+          "limitations": "No unauthorized canceller case in this reference; cancel after external acceptance/unknown effect not exercised.",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/features/workflows/worker.integration.test.ts",
+          "testTitle": "recovers a partially executed run on worker boot through real pg-boss",
+          "line": 9,
+          "kind": "real-pg/real-pg-boss",
+          "fixture": {
+            "builder": "setupWorkflowExecution(); new PgBoss(test.url); advance once; registerWorkflowJobs",
+            "declarations": "lines10-28"
+          },
+          "actorContext": "Stored run was admitted by hydrated admin; worker resumes its existing actor-bound run.",
+          "oracle": "Run eventually succeeds with exactly one activity and workflow.reconcile schedule exists.",
+          "limitations": "Boot/reconcile path is declared, not kill-during-effect or restored queue proof; no external provider or automatic committed-event admission.",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        }
+      ],
+      "pendingJourneys": [
+        {
+          "surface": "manual editor/simulation/history",
+          "state": "source-tests-partially-bound",
+          "missing": "This fragment binds execution oracles; rendered native editor, denied controls, FA/DE/EN run history and simulation journey are not runtime-qualified by these refs."
+        },
+        {
+          "surface": "automatic committed-event admission and durable waits",
+          "state": "owner-prerequisite-open",
+          "missing": "No qualified source event outbox, ordering, replay, after-wait authority or shared durable wait implementation is proved by manual trigger fixtures."
+        },
+        {
+          "surface": "external effects and unknown outcomes",
+          "state": "unqualified",
+          "missing": "Internal activity transactions do not qualify provider acceptance, unknown receipts, crash-after-send, suppression or grant revocation."
+        }
+      ],
+      "evidenceCeiling": "Source definitions and fixture/actor/oracle binding only; no new execution, owner attestation or runtime qualification.",
+      "permissionContexts": [
+        "Manual actor is hydrated against current DB authority; executor rehydrates stored actor. Explicit admin fixture does not replace regular-role and revoked-grant evidence across every effect."
+      ],
+      "evidenceRequirements": [
+        "Exact candidate real-PG manual admission, immutable publication, actor downgrade, transaction/worker retry and cancellation; native editor/run-history FA/DE/EN plus qualified shared outbox/admission/wait/provider capabilities before advertising them."
+      ]
+    },
+    {
+      "id": "communications",
+      "owner": "sales-platform",
+      "ownerReviewState": "not owner-attested",
+      "testReferences": [
+        {
+          "path": "src/features/email/send.test.ts",
+          "testTitle": "rejects sending from a mailbox the actor does not own (E_PERM)",
+          "line": 47,
+          "kind": "real-pg/provider-double",
+          "fixture": {
+            "builder": "withTestDb; seedUser(owner), seedUser(other); local seedAccount(owner.id)",
+            "declarations": "seedAccount33-44; test49-67"
+          },
+          "actorContext": "Other active regular user, empty actorGroupIds, requests owner mailbox with a new idempotency key.",
+          "oracle": "sendEmail returns a permission error.",
+          "limitations": "Real PostgreSQL harness declared in source; FakeGmailClient/FakeStorageClient are provider/storage doubles. No native-session, real-provider or current rerun proof. Source assertion checks error prefix; does not by itself assert zero fake provider calls.",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/features/email/send.visibility.test.ts",
+          "testTitle": "INTERACTIVE send: a private compose creates a private thread",
+          "line": 87,
+          "kind": "real-pg/provider-double",
+          "fixture": {
+            "builder": "withTestDb; seedUser; seedAccount; FakeGmailClient accepted-message map",
+            "declarations": "seedAccount19; test89-115"
+          },
+          "actorContext": "Regular owner sends from owned mailbox, empty groups, visibility private.",
+          "oracle": "send succeeds and persisted threadVisibility is private.",
+          "limitations": "Real PostgreSQL harness declared in source; FakeGmailClient/FakeStorageClient are provider/storage doubles. No native-session, real-provider or current rerun proof.",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/features/email/send.visibility.test.ts",
+          "testTitle": "SCHEDULED/worker send: a private compose creates a private thread when delivered later",
+          "line": 122,
+          "kind": "real-pg/provider-double",
+          "fixture": {
+            "builder": "withTestDb; seedAccount; sendEmail with future scheduledSendAt; deliverScheduled() backdates and invokes runSendJob",
+            "declarations": "deliverScheduled45-63; test124-159"
+          },
+          "actorContext": "Regular mailbox owner schedules; worker resolves supplied fake client for that account.",
+          "oracle": "Initial scheduled status and delivered local thread remains private.",
+          "limitations": "Real PostgreSQL harness declared in source; FakeGmailClient/FakeStorageClient are provider/storage doubles. No native-session, real-provider or current rerun proof. Worker handler is called directly; no real pg-boss delay, provider cancellation or after-wait revocation.",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/features/email/send.visibility.test.ts",
+          "testTitle": "REPLAY-REPAIR: a private compose recorded in the stored payload repairs a private thread",
+          "line": 163,
+          "kind": "real-pg/provider-double",
+          "fixture": {
+            "builder": "seedSentAttempt(); FakeGmailClient.messages; ensureLocalCopyForReplay",
+            "declarations": "seedSentAttempt67-84; test169-195",
+            "values": "sent attempt without local copy; payload visibility private"
+          },
+          "actorContext": "Repair is account-bound internal call using synthetic stored attempt and supplied fromEmail; no native-session authentication is performed in this reference.",
+          "oracle": "Repair succeeds and reconstructed thread visibility is private.",
+          "limitations": "Real PostgreSQL harness declared in source; FakeGmailClient/FakeStorageClient are provider/storage doubles. No native-session, real-provider or current rerun proof. Synthetic accepted status is seeded; no proof of real send acceptance or correct replay permission after account revocation.",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/features/email/attachmentSend.test.ts",
+          "testTitle": "an attachment not readable by the actor fails the send with E_GMAIL_012",
+          "line": 120,
+          "kind": "real-pg/provider-storage-doubles",
+          "fixture": {
+            "builder": "withTestDb; owner and attacker; attacker-owned mailbox; owner-only person; seedReadyFile; FakeStorageClient",
+            "declarations": "lines122-149"
+          },
+          "actorContext": "Regular attacker owns sender mailbox but not owner-visible person/file, empty groups.",
+          "oracle": "E_GMAIL_012 and zero fake sendRaw calls.",
+          "limitations": "Real DB authorization with fake storage/provider; no actual file storage revocation/download proof.",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/features/email/attachmentAuthz.test.ts",
+          "testTitle": "a regular user who is a member of the file entity visibility group is allowed",
+          "line": 72,
+          "kind": "real-pg/provider-storage-doubles",
+          "fixture": {
+            "builder": "withTestDb; seedUser owner/member; visibility_groups and membership inserts; group-visible person; seedReadyFile",
+            "declarations": "lines74-118"
+          },
+          "actorContext": "Regular member of exact file entity visibility group, actorGroupIds contains that group, owns sender account.",
+          "oracle": "Send Result succeeds despite file being uploaded by another user.",
+          "limitations": "Real PostgreSQL harness declared in source; FakeGmailClient/FakeStorageClient are provider/storage doubles. No native-session, real-provider or current rerun proof. Membership is explicit input snapshot, not revoked while send awaits.",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/features/email/composer/Composer.sendFailure.test.tsx",
+          "testTitle": "re-enables Send and shows an unconfirmed-send banner",
+          "line": 64,
+          "kind": "jsdom-unit/action-rpc-fetch-doubles",
+          "fixture": {
+            "builder": "Composer(accountId a1, deal d1, recipient@x.com); sendEmailMock rejects AbortError",
+            "declarations": "mocks8-43; abortError58-62; render66-71"
+          },
+          "actorContext": "Synthetic component props with stub CSRF, mocked action/RPC/upload; no actual authenticated actor or mailbox admission.",
+          "oracle": "Alert displays sendUnconfirmed and Send becomes enabled after rejected action.",
+          "limitations": "UI unknown-result presentation only; no actual uncertain-send reconciliation, provider receipt or retry deduplication proof.",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        }
+      ],
+      "pendingJourneys": [
+        {
+          "surface": "committed MAIL owner cut",
+          "state": "source-context-only",
+          "missing": "The earlier registry statement that MAIL was uncommitted was stale. Combined MAIL70bc46b19a8896104eccdc3d944cf4352f849224 is a committed 94-entry owner cut, not adopted or qualified as this Sales candidate; future owner advances remain separate."
+        },
+        {
+          "surface": "revocation and cancellation",
+          "state": "missing-in-inspected-refs",
+          "missing": "Mailbox/file snapshot deny tests do not prove account/grant/recipient/suppression loss during pending send or worker execution."
+        },
+        {
+          "surface": "accepted/partial/unknown external outcomes",
+          "state": "provider-qualification-open",
+          "missing": "Fake accepted payloads and UI action rejection are not real delivery evidence, final reconciliation, blind-resend prevention or shared MAIL effect admission."
+        }
+      ],
+      "evidenceCeiling": "Source definitions and fixture/actor/oracle binding only; no new execution, owner attestation or runtime qualification.",
+      "permissionContexts": [
+        "Mailbox ownership, current entity visibility and explicit recipient/sender intent are separate. Fake provider/storage controls do not attest native connection custody, delivery or fresh authority after waits."
+      ],
+      "evidenceRequirements": [
+        "Exact combined candidate real-PG sender/recipient/file admission, changing authority and replay/unknown state cases; native FA/DE/EN compose/recovery journey; separately authorized real provider operations and certainty evidence."
+      ]
+    },
+    {
+      "id": "regional-dates",
+      "owner": "sales-platform",
+      "ownerReviewState": "not-owner-attested",
+      "testReferences": [
+        {
+          "path": "src/features/activities/calendarEventDraft.test.ts",
+          "testTitle": "uses civil dates for an all-day event, including Nowruz",
+          "line": 47,
+          "kind": "unit-pure",
+          "fixture": {
+            "constructor": "calendarEventDraft",
+            "input": {
+              "date": "2027-03-21",
+              "time": "",
+              "timeZone": "Asia/Tehran"
+            }
+          },
+          "actorContext": "Pure conversion or validation input; no authenticated actor, permission evaluation or authority grant.",
+          "oracle": "Start/end remain the same civil date and time fields stay empty.",
+          "limitations": "Source-defined containerless unit case; no execution result is recorded by this inspection.",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/features/activities/calendarEventDraft.test.ts",
+          "testTitle": "an untouched save keeps exact seconds and the later DST occurrence",
+          "line": 68,
+          "kind": "unit-pure",
+          "fixture": {
+            "object": "stored: EditableActivity at line10",
+            "dueAt": "2026-10-25T01:30:29.123Z",
+            "timeZone": "Europe/Berlin"
+          },
+          "actorContext": "Pure conversion or validation input; no authenticated actor, permission evaluation or authority grant.",
+          "oracle": "Untouched calendarEventPatch is null; changing subject yields only id and subject, preserving the exact instant.",
+          "limitations": "Source-defined containerless unit case; no execution result is recorded by this inspection.",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/features/activities/calendarEventDraft.test.ts",
+          "testTitle": "rejects an earlier repeated-hour end relative to the stored start instant",
+          "line": 98,
+          "kind": "unit-pure",
+          "fixture": {
+            "object": "stored at line10",
+            "patch": {
+              "endTime": "02:45"
+            },
+            "timeZone": "Europe/Berlin"
+          },
+          "actorContext": "Pure conversion or validation input; no authenticated actor, permission evaluation or authority grant.",
+          "oracle": "calendarEventIssue returns endBeforeStart against the stored later DST occurrence.",
+          "limitations": "Source-defined containerless unit case; no execution result is recorded by this inspection.",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/features/activities/calendarEventDraft.test.ts",
+          "testTitle": "blocks invalid schedule or meeting input: %j",
+          "line": 142,
+          "kind": "unit-parameterized",
+          "fixture": {
+            "constructor": "calendarEventDraft at line143",
+            "vectorsAtLine": 135,
+            "vectors": [
+              "2027-02-30",
+              "99:00",
+              "Europe/Berlin 2027-03-28 02:30",
+              "endTime08:00",
+              "javascript:alert(1)",
+              "http://example.com/meeting"
+            ]
+          },
+          "actorContext": "Pure conversion or validation input; no authenticated actor, permission evaluation or authority grant.",
+          "oracle": "Date/time/nonexistent-wall-time/end ordering/meeting scheme inputs return their exact named issues.",
+          "limitations": "Source-defined containerless unit case; no execution result is recorded by this inspection. Parameterized declaration describes six vectors; no runtime case count is inferred.",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/features/activities/calendarEventRoundTrip.integration.test.ts",
+          "testTitle": "persists an end-only edit without shifting a later repeated-hour start",
+          "line": 29,
+          "kind": "real-postgres",
+          "fixture": {
+            "constructor": "makeTestDb at line15; seedUser at line30; meeting activity type query at line31",
+            "actorFunction": "actor(id) at line21 supplies type admin, active true, empty groups/flags",
+            "event": "2026-10-25T01:30:29.123Z; duration60; end-only03:45"
+          },
+          "actorContext": "Supplied active admin PermSetUser for the seeded user, no native-session hydration.",
+          "oracle": "createActivity/getActivityForEdit/updateActivity preserve exact dueAt and set endAt02:45Z, duration75.",
+          "limitations": "Source-defined real-PostgreSQL test through makeTestDb/withTestDb; inspected, not executed in this work. Supplied actor objects do not prove native authentication.",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/features/activities/calendarEventRoundTrip.integration.test.ts",
+          "testTitle": "creates, reopens and edits timed and all-day events without shifting civil dates",
+          "line": 77,
+          "kind": "real-postgres-parameterized",
+          "fixture": {
+            "constructor": "makeTestDb; seedUser; userPreferences insertion at line79",
+            "locales": [
+              "fa/Asia/Tehran/persian",
+              "de/Europe/Berlin/gregory"
+            ],
+            "event": "2027-03-21 at09:00 or all-day through2027-03-23",
+            "denyFixture": "Unrelated viewer at line146; stranger uses type regular at line147"
+          },
+          "actorContext": "Initial supplied active admin actor; a different seeded regular actor is subsequently denied edit/read.",
+          "oracle": "Civil dates/notes/instant survive round trip and Honolulu display; stranger get/edit both return ok false.",
+          "limitations": "Source-defined real-PostgreSQL test through makeTestDb/withTestDb; inspected, not executed in this work. Supplied actor objects do not prove native authentication. Covers owner/admin and stranger denial, not revocation during an outstanding operation or provider parity.",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/components/ui/dateFormat.test.ts",
+          "testTitle": "formats Solar Hijri dates at Nowruz and the end of a leap year",
+          "line": 31,
+          "kind": "unit-pure",
+          "fixture": {
+            "vectors": [
+              "2024-03-20 ->1403/01/01",
+              "2025-03-20 ->1403/12/30",
+              "2025-03-21 ->1404/01/01",
+              "2026-02-30 ->empty",
+              "2026-03-21 en ->1405/01/01"
+            ]
+          },
+          "actorContext": "Pure conversion or validation input; no authenticated actor, permission evaluation or authority grant.",
+          "oracle": "Gregorian civil values map to exact Persian output, invalid dates blank, English digits remain Latin.",
+          "limitations": "Source-defined containerless unit case; no execution result is recorded by this inspection. Formatting does not implement Iranian recurrence.",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/components/ui/dateFormat.german.test.ts",
+          "testTitle": "uses German numeric ordering for the chosen Iranian calendar at Nowruz and a leap boundary",
+          "line": 11,
+          "kind": "unit-pure",
+          "fixture": {
+            "vectors": [
+              "2024-03-20 ->01.01.1403",
+              "2025-03-20 ->30.12.1403",
+              "2025-03-21 ->01.01.1404",
+              "2026-03-21 ->01.01.1405",
+              "2026-02-30 ->empty"
+            ]
+          },
+          "actorContext": "Pure conversion or validation input; no authenticated actor, permission evaluation or authority grant.",
+          "oracle": "Chosen Iranian calendar retains German DD.MM.YYYY ordering with exact leap-boundary values.",
+          "limitations": "Source-defined containerless unit case; no execution result is recorded by this inspection.",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        }
+      ],
+      "pendingJourneys": [
+        {
+          "surface": "locale/calendar/timezone preference persistence",
+          "state": "unqualified-combined-runtime",
+          "missing": "Exact candidate FA/DE/EN browser settings save, switch and reopened event behavior remains pending; selected source tests do not supply this browser receipt."
+        },
+        {
+          "surface": "authority loss during edit and provider/recurrence behavior",
+          "state": "missing-from-selected-references",
+          "missing": "Stranger edit denial is covered in source; mid-operation revocation, Iranian recurrence and real calendar-provider parity are not established."
+        }
+      ],
+      "evidenceCeiling": "Source definitions and fixture/actor/oracle binding only; no new execution, owner attestation or runtime qualification.",
+      "permissionContexts": [
+        "Pure date validators grant no authority. Real-PostgreSQL cases supply an active admin actor and a distinct unrelated regular actor for explicit read/edit denial; no native-session hydration or mid-operation revocation is proved."
+      ],
+      "evidenceRequirements": [
+        "Run exact candidate date/DST/realPG cases with supplied actor fixture and denied unrelated viewer; retain raw timestamps, civil dates, locale/calendar/timezone preferences and unchanged links.",
+        "Separately qualify current-source FA/DE/EN native browser preference persistence, accessible labels and date editing; record provider evidence independently."
+      ]
+    },
+    {
+      "id": "regional-money",
+      "owner": "sales-platform",
+      "ownerReviewState": "not-owner-attested",
+      "testReferences": [
+        {
+          "path": "src/features/currencies/money.test.ts",
+          "testTitle": "orders large amounts without losing their fractional difference",
+          "line": 10,
+          "kind": "unit-pure",
+          "fixture": {
+            "constructor": "baseCard from dealCardTestFixture",
+            "cards": [
+              "IRR9999999999999.0002 id a",
+              "IRR9999999999999.0001 id b"
+            ]
+          },
+          "actorContext": "Pure conversion or validation input; no authenticated actor, permission evaluation or authority grant.",
+          "oracle": "Ascending value sort returns b,a without precision loss.",
+          "limitations": "Source-defined containerless unit case; no execution result is recorded by this inspection.",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/features/currencies/money.test.ts",
+          "testTitle": "accepts large native amounts as lossless decimal strings",
+          "line": 17,
+          "kind": "unit-pure",
+          "fixture": {
+            "vectors": [
+              "9999999999999.1234",
+              "100000000000000"
+            ]
+          },
+          "actorContext": "Pure conversion or validation input; no authenticated actor, permission evaluation or authority grant.",
+          "oracle": "moneyAmount/parseMoneyValue retain valid decimal-string input; amount at upper rejection vector fails validation.",
+          "limitations": "Source-defined containerless unit case; no execution result is recorded by this inspection.",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/features/currencies/money.test.ts",
+          "testTitle": "keeps currencies separate and adds decimal amounts exactly",
+          "line": 38,
+          "kind": "unit-pure",
+          "fixture": {
+            "values": [
+              "USD0.10",
+              "USD0.20",
+              "EUR99.99",
+              "IRR12500000",
+              "JPY null"
+            ],
+            "legacyCurrency": "USD"
+          },
+          "actorContext": "Pure conversion or validation input; no authenticated actor, permission evaluation or authority grant.",
+          "oracle": "sumMoney returns EUR99.99, IRR12500000.00, USD0.30 separately and excludes null JPY.",
+          "limitations": "Source-defined containerless unit case; no execution result is recorded by this inspection. Does not evaluate record visibility or approve currency conversion.",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/features/currencies/multicurrency.test.ts",
+          "testTitle": "defaults to company currency and keeps foreign amounts separate in reads",
+          "line": 9,
+          "kind": "real-postgres",
+          "fixture": {
+            "constructor": "withTestDb at line10; seedUser at16; seedPipelineWithStages Qualified at17",
+            "settings": "baseCurrency EUR; default record visibility all",
+            "createdDeals": [
+              "EUR default100",
+              "USD100"
+            ],
+            "session": "userId; isAdmin/isActive/sessionLive true; empty visibilityGroupIds/managedUserIds; flags{}"
+          },
+          "actorContext": "Supplied live active admin session, no native-session hydration; all-visible records.",
+          "oracle": "createDeal uses company default, board/list/stage reads retain currencies, aggregate totalValue null and currencyTotals remain separated before/after USD filter.",
+          "limitations": "Source-defined real-PostgreSQL test through makeTestDb/withTestDb; inspected, not executed in this work. Supplied actor objects do not prove native authentication. No regular-viewer or mid-read revocation case here.",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/features/currencies/currencyFlows.test.ts",
+          "testTitle": "never merges currencies in goal progress, daily series, or report averages",
+          "line": 60,
+          "kind": "real-postgres",
+          "fixture": {
+            "constructor": "withTestDb; seedUser isAdmin true; toActor(user); seedPipelineWithStages Qualified",
+            "wonDeals": [
+              "KWD0.001",
+              "KWD0.002",
+              "USD900"
+            ],
+            "period": "2026-10-01..2026-10-31",
+            "goals": [
+              "KWD value target0.010",
+              "count target3"
+            ]
+          },
+          "actorContext": "Seeded administrator converted with toActor; deals visibility all.",
+          "oracle": "KWD actual/series/report sum0.003/count2; count-goal3; independent USD average900.",
+          "limitations": "Source-defined real-PostgreSQL test through makeTestDb/withTestDb; inspected, not executed in this work. Supplied actor objects do not prove native authentication. No mixed-currency grand total or exchange-rate evidence is implied.",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/features/currencies/currencyFlows.test.ts",
+          "testTitle": "preserves the native unit during duplication and conversion back to a lead",
+          "line": 126,
+          "kind": "real-postgres",
+          "fixture": {
+            "constructor": "withTestDb; seedUser isAdmin true; toActor(user); seedPipelineWithStages Qualified",
+            "sourceDeal": "IRR250000 owned by seeded user, all-visible",
+            "commands": [
+              "duplicateDeal",
+              "convertDealToLead with expectedUpdatedAt"
+            ]
+          },
+          "actorContext": "Seeded administrator actor on its own source deal.",
+          "oracle": "Duplicate deal and converted lead retain IRR and250000.00 in storage.",
+          "limitations": "Source-defined real-PostgreSQL test through makeTestDb/withTestDb; inspected, not executed in this work. Supplied actor objects do not prove native authentication. Native unit means stored currency IRR; this is not a toman display-unit test.",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        }
+      ],
+      "pendingJourneys": [
+        {
+          "surface": "IRR/toman authored and display-unit invariants",
+          "state": "missing-from-selected-primary-tests",
+          "missing": "The selected tests retain native IRR and exact decimals, but do not assert 1234560IRR=123456toman,1IRR=0.1toman, German locale preservation of a chosen unit, or native UI edit round trips."
+        },
+        {
+          "surface": "permission-scoped analytics and after-wait revocation",
+          "state": "missing-from-selected-references",
+          "missing": "Currency integration fixtures use supplied admin actors/all-visible records; they do not establish restricted-viewer denominators or access loss while reporting."
+        }
+      ],
+      "evidenceCeiling": "Source definitions and fixture/actor/oracle binding only; no new execution, owner attestation or runtime qualification.",
+      "permissionContexts": [
+        "Pure decimal/currency conversion grants no authority. Real-PostgreSQL cases supply seeded administrator actors or live admin session objects on all-visible data; restricted-viewer and revoked access remain pending."
+      ],
+      "evidenceRequirements": [
+        "Exact selected-candidate tests and native input/storage/display round trips must preserve decimal strings and separate currency totals under allowed and denied actors.",
+        "Bind real IRR/toman conversion/display-unit source to immutable qualified handoff, then inspect and execute exact vectors and FA/DE/EN UI preference cases; owner-recorded history is not a combined Sales rerun."
+      ]
+    },
+    {
+      "id": "regional-phones",
+      "owner": "sales-platform",
+      "ownerReviewState": "not-owner-attested",
+      "testReferences": [
+        {
+          "path": "src/utils/phone.test.ts",
+          "testTitle": "formats the same US number written with localized digits: %s",
+          "line": 19,
+          "kind": "unit-parameterized",
+          "fixture": {
+            "vectorsAtLine": 18,
+            "values": [
+              "۴۱۵۵۵۵۱۲۳۴",
+              "٤١٥٥٥٥١٢٣٤",
+              "+۱ (۴۱۵) ۵۵۵-۱۲۳۴",
+              "4۱٥.5۵٥.1۲٣۴"
+            ]
+          },
+          "actorContext": "Pure conversion or validation input; no authenticated actor, permission evaluation or authority grant.",
+          "oracle": "All supplied localized US-looking vectors display (415) 555-1234.",
+          "limitations": "Source-defined containerless unit case; no execution result is recorded by this inspection. A display heuristic, not canonical international identity matching.",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/utils/phone.test.ts",
+          "testTitle": "preserves the complete international number or extension: %s",
+          "line": 26,
+          "kind": "unit-parameterized",
+          "fixture": {
+            "vectorsAtLine": 25,
+            "values": [
+              "+۹۸ 4155551234",
+              "+٩٨ 4155551234",
+              "(415) 555-1234 x۹۹",
+              "(415) 555-1234 x٩٩"
+            ]
+          },
+          "actorContext": "Pure conversion or validation input; no authenticated actor, permission evaluation or authority grant.",
+          "oracle": "formatUsPhone returns the authored international/extension input unchanged.",
+          "limitations": "Source-defined containerless unit case; no execution result is recorded by this inspection. No source-country field or recomputed persisted identity is exercised.",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/utils/phone.test.ts",
+          "testTitle": "leaves a non-US-looking number untouched",
+          "line": 32,
+          "kind": "unit-pure",
+          "fixture": {
+            "value": "+44 20 7946 0958"
+          },
+          "actorContext": "Pure conversion or validation input; no authenticated actor, permission evaluation or authority grant.",
+          "oracle": "The raw international number remains byte-for-byte identical.",
+          "limitations": "Source-defined containerless unit case; no execution result is recorded by this inspection.",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/features/contacts/PeopleTable.phone.test.tsx",
+          "testTitle": "shows the raw phone when usPhoneFormat is off",
+          "line": 45,
+          "kind": "unit-jsdom",
+          "fixture": {
+            "object": "row:PeopleListRow at line15 with phone4155551234",
+            "constructor": "renderTable(false) at line26 wraps InterfacePrefsProvider and phone-only PEOPLE_COLUMNS"
+          },
+          "actorContext": "No actor or query; supplied visible PeopleListRow and personal usPhoneFormat false.",
+          "oracle": "Raw4155551234 remains in rendered table.",
+          "limitations": "Source-defined jsdom rendering with supplied row/provider fixtures; no DB, hydrated native session or browser execution was observed.",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/features/contacts/PeopleTable.phone.test.tsx",
+          "testTitle": "formats the phone column when usPhoneFormat is on",
+          "line": 50,
+          "kind": "unit-jsdom",
+          "fixture": {
+            "object": "same row at line15",
+            "constructor": "renderTable(true)"
+          },
+          "actorContext": "No actor or query; same supplied row, usPhoneFormat true.",
+          "oracle": "Rendered phone label is (415) 555-1234.",
+          "limitations": "Source-defined jsdom rendering with supplied row/provider fixtures; no DB, hydrated native session or browser execution was observed. Does not persist preferences or rewrite raw data.",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/features/activities/ActivityRow.phone.test.tsx",
+          "testTitle": "keeps the authored %s visible while making its digits dialable",
+          "line": 42,
+          "kind": "unit-jsdom-parameterized",
+          "fixture": {
+            "object": "baseRow at line11 and spread row at43",
+            "constructor": "LocaleProvider fa and ActivityRow",
+            "vectorsAtLine": 37,
+            "values": [
+              "+989123456789",
+              "+۹۸ (۹۱۲) ۳۴۵-۶۷۸۹",
+              "+٩٨ (٩١٢) ٣٤٥-٦٧٨٩",
+              "+۹8 (٩1۲) 3۴٥-6۷٨9"
+            ]
+          },
+          "actorContext": "No actor/query; already supplied activity row is rendered with locale fa.",
+          "oracle": "tel:+989123456789, dir=ltr, exact authored link label and unchanged row.personPhone.",
+          "limitations": "Source-defined jsdom rendering with supplied row/provider fixtures; no DB, hydrated native session or browser execution was observed. Mixed-direction display protection only; no dialing/provider effect or persisted-country identity check.",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        }
+      ],
+      "pendingJourneys": [
+        {
+          "surface": "explicit country context and canonical identity recomputation",
+          "state": "missing-from-selected-primary-tests",
+          "missing": "formatUsPhone and rendered tel links test presentation only; these references do not bind a source-country column, canonical persisted identity, migration/backfill, dedupe or merge decision."
+        },
+        {
+          "surface": "native persistence and permission-denied phone edits",
+          "state": "missing-from-selected-references",
+          "missing": "No actual authenticated regional phone edit/reload or cross-actor denied/revoked edit is established by the supplied UI rows."
+        }
+      ],
+      "evidenceCeiling": "Source definitions and fixture/actor/oracle binding only; no new execution, owner attestation or runtime qualification.",
+      "permissionContexts": [
+        "Pure formatting and supplied-row jsdom renderers have no authenticated actor, permission lookup or authority grant; row visibility is a test precondition."
+      ],
+      "evidenceRequirements": [
+        "Exact candidate source tests must preserve authored text while generating safe digit-normalized tel targets; browser FA/DE/EN mixed-direction rendering and saved settings require separate receipts.",
+        "Country-context validation, canonical identity recomputation and raw-input persistence need their own realDB and permitted/denied actor fixtures before contact merge/import qualification."
+      ]
+    },
+    {
+      "id": "recovery",
+      "owner": "sales-platform",
+      "ownerReviewState": "not owner-attested",
+      "testReferences": [
+        {
+          "path": "src/db/migrate.test.ts",
+          "testTitle": "applyMigrations brings an empty db to a usable schema",
+          "line": 20,
+          "kind": "real-pg/dedicated-container",
+          "fixture": {
+            "builder": "PostgreSqlContainer(postgres:16-alpine), Pool, drizzle, applyMigrations",
+            "declarations": "beforeAll11-14"
+          },
+          "actorContext": "Migration operator using disposable DB connection; application session/capabilities not part of migration authority.",
+          "oracle": "Migration Result succeeds and users table exists.",
+          "limitations": "Clean installation only; narrow users-table oracle does not prove full retained state, rollback or upgrade recovery.",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/db/migrate.test.ts",
+          "testTitle": "applyMigrations honors an explicit migrations folder",
+          "line": 31,
+          "kind": "real-pg/dedicated-container",
+          "fixture": {
+            "builder": "same dedicated PostgreSQL Pool; nonexistent explicit folder /nonexistent/drizzle/folder",
+            "declarations": "lines11-14,34-36"
+          },
+          "actorContext": "Disposable migration operator.",
+          "oracle": "Invalid explicit folder returns failure rather than silently using default.",
+          "limitations": "Configuration failure control, not interruption/resume or restored installation proof.",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/db/integrationWorkflowMigration.integration.test.ts",
+          "testTitle": "clean migrations install integrations and workflows with database-enforced version safety",
+          "line": 101,
+          "kind": "real-pg/migration-rebuild",
+          "fixture": {
+            "builder": "makeTestDb; rebuild(h,folder); seedOwner; assertWorkflowConstraints",
+            "declarations": "rebuild26-33; seedOwner35-42; assertWorkflowConstraints44-99"
+          },
+          "actorContext": "Synthetic administrator is row fixture; SQL connection performs migrations and constraint probes independently of application session.",
+          "oracle": "integration_connections exists; pinned-version foreign keys reject invalid references; published definition update/delete rejected; original definition unchanged.",
+          "limitations": "Current selected history only; SQL constraint proof is not application policy, retained data or privacy-tail upgrade compatibility.",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/db/integrationWorkflowMigration.integration.test.ts",
+          "testTitle": "workflow upgrade preserves existing connections, credentials, settings and independent locale preferences",
+          "line": 115,
+          "kind": "real-pg/synthetic-prefix-upgrade",
+          "fixture": {
+            "builder": "makeTestDb; copied journal entries through idx83CONN; rebuild; seedOwner; synthetic connection/event/preferences; migrate full selected history",
+            "declarations": "lines116-157",
+            "values": "opaque synthetic credential bytes; Slack CLOCALTEST settings; fa+gregory+latn+Europe/Berlin preferences"
+          },
+          "actorContext": "Synthetic admin fixture, direct operator SQL; no usable provider credential, active provider or application admission.",
+          "oracle": "All connection, integration_event, user and preference rows equal pre-upgrade values; workflow constraints hold afterward.",
+          "limitations": "Only generated CONN0083 -> selected WF0084 synthetic path, not retained installations, privacy0083-85 or MAIL chain, interrupted migration, object bytes or real credentials.",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/features/workflows/worker.integration.test.ts",
+          "testTitle": "recovers a partially executed run on worker boot through real pg-boss",
+          "line": 9,
+          "kind": "real-pg/real-pg-boss",
+          "fixture": {
+            "builder": "setupWorkflowExecution; real PgBoss; persisted partial run and worker registration",
+            "declarations": "lines10-28"
+          },
+          "actorContext": "Original admin actor is persisted with run; worker restarts supported internal execution path.",
+          "oracle": "One activity and succeeded run after worker reconciliation; schedule registered.",
+          "limitations": "This does not backup/restore queue state or uncertain external-effect receipts; no process killed between provider effect and receipt.",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        }
+      ],
+      "pendingJourneys": [
+        {
+          "surface": "retained divergent lineages",
+          "state": "missing",
+          "missing": "Actual retained applied ledgers and owner-reviewed current main/privacy/CONN/WF/MAIL upgrade strategy are absent; selected synthetic prefix is not a retained upgrade."
+        },
+        {
+          "surface": "interruption/repeat/rollback",
+          "state": "unqualified",
+          "missing": "No inspected test kills/resumes migration or establishes old-binary compatibility or data recovery after rollback."
+        },
+        {
+          "surface": "object bytes, in-flight queues, external receipts",
+          "state": "unqualified",
+          "missing": "Historical source-bound synthetic restore report excludes object files and real external outcomes; empty job tables are not in-flight queue restore proof."
+        },
+        {
+          "surface": "recovery objectives and containment",
+          "state": "unmeasured-or-unqualified",
+          "missing": "No timed RTO/RPO, unknown-effect reconciliation or verified outbound suspension after representative retained restore is established here."
+        }
+      ],
+      "evidenceCeiling": "Source definitions and fixture/actor/oracle binding only; no new execution, owner attestation or runtime qualification.",
+      "permissionContexts": [
+        "Migration/restore operator uses explicitly owned isolated databases and disabled outbound context; seeded admin row tests do not authorize peer or retained installations."
+      ],
+      "evidenceRequirements": [
+        "Owner-reviewed immutable reconciled history for each supported installation shape; actual applied-ledger exports; interrupted/repeat upgrades; quarantined dump/fresh restore with rows/IDs/permissions/preferences plus files/jobs/receipts and outbound containment; measured RTO/RPO."
+      ]
+    },
+    {
+      "id": "workspace-isolation",
+      "owner": "sales-platform",
+      "ownerReviewState": "not-owner-attested",
+      "testReferences": [
+        {
+          "path": "src/features/permissions/canSee.test.ts",
+          "testTitle": "0: inactive regular -> false",
+          "line": 25,
+          "kind": "unit-pure-authority",
+          "fixture": {
+            "constructors": "user(over) at line9; deal(over) at12",
+            "actor": "VIEWER regular, inactive, empty groupIds",
+            "record": "OWNER all-visible unrestricted deal"
+          },
+          "actorContext": "Synthetic AuthUser and VisibleDeal predicate inputs, no hydrated session.",
+          "oracle": "Inactive actor cannot see even all-visible deal.",
+          "limitations": "Source-defined containerless unit case; no execution result is recorded by this inspection. Single-install record predicate, not workspace enforcement or a revocation-race test.",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/server/ws/authorizeDeal.test.ts",
+          "testTitle": "deal: regular user who OWNS the deal can subscribe (was wrongly denied by Phase 1 stub)",
+          "line": 84,
+          "kind": "real-postgres",
+          "fixture": {
+            "constructors": "makeTestDb; beforeEach inserts user and sessionFixture at40; seedPipelineStage at46; seedDeal at57",
+            "deal": "owner visibility, ownerId equals userId",
+            "connection": "sessionId,userId,isAdmin false,isActive true,groupIds[]"
+          },
+          "actorContext": "Active regular user with an inserted native session; supplied WS connection fields match owned deal.",
+          "oracle": "authorizeSubscribe accepts deal:<id>.",
+          "limitations": "Source-defined real-PostgreSQL test through makeTestDb/withTestDb; inspected, not executed in this work. Supplied actor objects do not prove native authentication. Tests initial subscription admission only in a single installation.",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/server/ws/authorizeDeal.test.ts",
+          "testTitle": "deal: regular user who is NOT owner/group/visible_to of an owner-visibility deal is denied",
+          "line": 104,
+          "kind": "real-postgres",
+          "fixture": {
+            "constructors": "same beforeEach; second owner insertion at105; seedPipelineStage/seedDeal",
+            "deal": "owner-only, different owner; no group or visibleTo grant"
+          },
+          "actorContext": "Active regular viewer with real inserted session, not record owner/member.",
+          "oracle": "authorizeSubscribe returns ok false.",
+          "limitations": "Source-defined real-PostgreSQL test through makeTestDb/withTestDb; inspected, not executed in this work. Supplied actor objects do not prove native authentication. No separate tenant IDs exist in this fixture.",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/server/ws/authorizeDeal.test.ts",
+          "testTitle": "deal: pipeline restriction gate blocks user not in pipeline group even if deal is all-visibility",
+          "line": 157,
+          "kind": "real-postgres",
+          "fixture": {
+            "constructors": "pipeline visibility group inserted at158; seedPipelineStage(group); seedDeal",
+            "connection": "regular active user, emptygroupIds; all-visible owned deal behind restricted pipeline"
+          },
+          "actorContext": "Regular owner without membership in the pipeline visibility group.",
+          "oracle": "Pipeline gate denies WS deal subscription despite ownership/all visibility.",
+          "limitations": "Source-defined real-PostgreSQL test through makeTestDb/withTestDb; inspected, not executed in this work. Supplied actor objects do not prove native authentication. Group restriction is not a workspace boundary.",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/server/ws/authorizeDeal.test.ts",
+          "testTitle": "deal: owner is DENIED subscribing to a deal in an archived pipeline",
+          "line": 244,
+          "kind": "real-postgres",
+          "fixture": {
+            "constructors": "seedPipelineStage/seedDeal; UPDATE pipelines is_archived at252",
+            "connection": "active regular owner with original session"
+          },
+          "actorContext": "Record owner remains active, but pipeline archive is already applied before new subscription.",
+          "oracle": "New WS subscription is denied after archive.",
+          "limitations": "Source-defined real-PostgreSQL test through makeTestDb/withTestDb; inspected, not executed in this work. Supplied actor objects do not prove native authentication. Does not establish cancellation of an existing subscription or after-wait access revocation.",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/features/oauth/tokens.test.ts",
+          "testTitle": "issued tokens verify and revoked tokens do not",
+          "line": 15,
+          "kind": "real-postgres",
+          "fixture": {
+            "constructor": "withTestDb; oauthClients row token-test-client; fixed userId00000000-0000-0000-0000-000000000001",
+            "sequence": [
+              "issueAccessToken",
+              "verifyAccessToken",
+              "issueRefreshToken",
+              "rotateRefreshToken",
+              "reject reused original refresh",
+              "revokeAllForClientUser",
+              "verify original access token"
+            ]
+          },
+          "actorContext": "Single client/user OAuth token ownership tuple; no workspace scope field in the fixture.",
+          "oracle": "Access token verifies before client-user revocation; reused refresh and revoked access token return ok false.",
+          "limitations": "Source-defined real-PostgreSQL test through makeTestDb/withTestDb; inspected, not executed in this work. Supplied actor objects do not prove native authentication. Proves source-defined sequential revocation controls, not originating MCP grant ceilings or effects racing revocation.",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/features/email/attachmentAuthz.test.ts",
+          "testTitle": "an admin actor can attach a file on an entity they do not own (admin bypass)",
+          "line": 17,
+          "kind": "real-postgres-with-fake-externals",
+          "fixture": {
+            "constructors": "withTestDb; seedUser(owner); seedUser(admin isAdmin true); seedAccount; owner-only person; seedReadyFile",
+            "externalFakes": [
+              "FakeStorageClient",
+              "FakeGmailClient sendImpl ok"
+            ]
+          },
+          "actorContext": "Supplied actorType admin, actorId admin; mailbox owned by admin; owner-only file entity belongs to another user.",
+          "oracle": "sendEmail returns ok true for allowed admin bypass.",
+          "limitations": "Source-defined real-PostgreSQL test through makeTestDb/withTestDb; inspected, not executed in this work. Supplied actor objects do not prove native authentication. Fake storage/provider only; no real delivery/download grant/multiworkspace proof.",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        },
+        {
+          "path": "src/features/email/attachmentAuthz.test.ts",
+          "testTitle": "a regular user who is a member of the file entity visibility group is allowed",
+          "line": 72,
+          "kind": "real-postgres-with-fake-externals",
+          "fixture": {
+            "constructors": "withTestDb; visibility_groups and membership rows; seedUser owner/member; seedAccount(member); group-visible person; seedReadyFile",
+            "externalFakes": [
+              "FakeStorageClient",
+              "FakeGmailClient sendImpl ok"
+            ]
+          },
+          "actorContext": "Supplied regular member actor with actorGroupIds containing the file entity group, on its own mailbox.",
+          "oracle": "sendEmail returns ok true when the explicit record group membership is passed.",
+          "limitations": "Source-defined real-PostgreSQL test through makeTestDb/withTestDb; inspected, not executed in this work. Supplied actor objects do not prove native authentication. Positive group case only; no denied attachment case is defined in this file.",
+          "executionEvidence": "Not executed by this mapping work; historical results require their own source-bound receipt."
+        }
+      ],
+      "pendingJourneys": [
+        {
+          "surface": "request/session, background events/jobs, files, cache/search, exports/downloads, realtime, provider tokens/MCP, workspace admin and stale switch",
+          "state": "not-implemented-or-qualified-as-multiworkspace",
+          "missing": "All references are existing single-install controls. No two-workspace fixture, explicit selected workspace context, principal/workspace binding or exhaustive denial/revocation matrix is present in these cases."
+        },
+        {
+          "surface": "after-wait and ongoing effects revocation",
+          "state": "missing-from-selected-references",
+          "missing": "Sequential OAuth revocation and pre-subscription archive denial do not prove queued/background effects, existing WS streams or cached/exported data stop after workspace access loss."
+        }
+      ],
+      "evidenceCeiling": "Source definitions and fixture/actor/oracle binding only; no new execution, owner attestation or runtime qualification.",
+      "permissionContexts": [
+        "Existing single-install owner/group/admin/activity/token permissions only; no multiworkspace authority is established."
+      ],
+      "evidenceRequirements": [
+        "Retain existing single-install owner/group/admin/inactive/archived/token controls while defining explicit workspace authority with the owning architecture and identity maintainers.",
+        "Before enabling workspace switching, use independent two-workspace identities, records, files, cache/search, jobs/events, exports/downloads, subscriptions and provider/MCP grants; prove positive same-workspace and denied foreign/stale/revoked cases on exact candidate, with durable recovery evidence."
+      ]
+    }
+  ],
+  "programme": {
+    "projects": 16,
+    "parents": 128,
+    "complete": 0
+  }
+}
