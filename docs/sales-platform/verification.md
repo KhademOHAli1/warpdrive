@@ -49,8 +49,36 @@ for actual timing, counts, hashes and boundaries. Raw logs remain private.
 The latest production build-checked application remains f006 below. Current-source
 FA/DE/EN browser, accessibility, provider, current-main/retained-history and release
 gates remain open. The separate unadopted Deals server sort/paging path has six
-native RED cases prepared but unrun; it is not included in this 18-case batch.
+native cases whose later attempt stopped before database setup or assertions;
+it provides infrastructure evidence only and is outside this 18-case batch.
 All 16 projects and 128 parent tasks remain in scope with zero completed parents.
+
+## Separate Deals runner attempts
+
+The unadopted client selection first executed 14 cases across three files:
+five passed and nine failed in 12.693 seconds. Seven failures reproduced missing
+create/unarchive/realtime invalidation and have candidate fixes awaiting GREEN.
+The inline-edit case returned undefined cache data from a fixture configured with
+a zero cache lifetime. That lifetime was corrected without changing its assertions;
+the membership oracle still needs a valid RED run. The long paging case
+hit its five-second test timeout and supplies no behavioral failure oracle.
+
+Later targeted attempts 2 through 4 stopped before RUN. Attempts 5 and 6 reached
+RUN but executed zero cases; the separately granted 90-second attempt ended at
+90.239 seconds with exit 143. The frozen native six-case attempt likewise reached
+RUN, then stopped before database creation or any assertion. Its watchdog sent
+TERM at 180 seconds; the existing kill grace produced 185.261 seconds total and
+wrapper exit 137 (reported child exit -9). The overrun was acknowledged. Its
+minimum free space was 12,948,320,256 bytes and Docker returned to the exact
+original three-container baseline. Lock and selected 85-entry journal were unchanged.
+
+These later attempts supply neither behavioral RED nor GREEN. The server
+implementation stays held; client fixes and the new owner-metadata tests stay
+unqualified. The prepared, unexecuted future native wrapper reserves ten seconds
+for cleanup within its 180-second total, and needs a fresh grant. Read the
+[source and receipt handoff](deal-list-runner-status.md) for classifications,
+hashes and dependency-loading observations. Existing presentation proof above
+and frozen source packs remain unchanged.
 
 ## Completion and stored-view preservation checkpoint
 

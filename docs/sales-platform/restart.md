@@ -226,8 +226,18 @@ a finite window and inspect development import-worker startup before starting
 the owned profile. Current UI and DB processes remain separate from source proof.
 
 Separate unadopted Deals work is under ignored deal-list-sort and native-RED
-worktrees. The six-case server sort/paging PostgreSQL RED is prepared but unrun;
-server production remains held until that actual RED and its finite grant.
-Client work in that separate checkout is unqualified. Preserve raw unsupported
-definitions, query admission and personal baselines. Custom-field presentation
-and broad parent acceptance remain open.
+worktrees. Its six-case native attempt reached the runner but stopped during
+dependency loading before database setup or any assertion. This is infrastructure
+evidence only; server production remains held until an actual behavioral RED.
+The separate two-case UI diagnostic also executed zero cases, including its
+90-second window. All recorded groups are terminal and their reservations released.
+Read [the runner handoff](deal-list-runner-status.md) before any new attempt.
+
+Client paging and seven witnessed invalidation fixes remain unqualified in the
+separate checkout. Inline membership, identical-later-page rebuild and two new
+owner-metadata cases still need actual execution. Diagnose dependency loading
+before requesting a fresh named verification window. The proposed isolated
+existing-byte copy is preparation work and confers no retry grant. Reserve cleanup
+inside each total time limit. Preserve raw unsupported definitions, query admission
+and personal baselines. Custom-field presentation and broad parent acceptance
+remain open.

@@ -47,8 +47,11 @@ increment establishes no independent field-privacy contract.
 
 Deals still use a separate saved-view control and client sorting over at most 500
 returned cards in the adopted source. Its independent global server sorting/paging
-work is unadopted and its prepared six-case PostgreSQL RED is unrun. Do not describe
-that future client branch as a qualified server contract or full Deal presentation.
+work is unadopted. The six-case native attempt stopped during dependency loading
+before database setup or assertions, so it establishes no behavioral RED or GREEN.
+The later UI diagnostic also executed zero cases. Read the
+[runner status and next-step handoff](deal-list-runner-status.md). That future
+client branch remains unqualified; complete Deal presentation is still open.
 
 ## Verification and next journeys
 
