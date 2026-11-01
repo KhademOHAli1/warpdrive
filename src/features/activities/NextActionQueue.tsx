@@ -71,9 +71,7 @@ export function NextActionQueue(props: NextActionQueueProps): ReactNode {
           )}
         </div>
       ) : (
-        page !== null && (
-          <NextActionQueueContent page={page} callbacks={props} completion={completion} />
-        )
+        <NextActionQueueContent page={page} callbacks={props} completion={completion} />
       )}
     </section>
   );

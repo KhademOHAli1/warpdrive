@@ -24,7 +24,7 @@ test("completion is done=true, blocks duplicates while pending and holds an ackn
   fireEvent.click(completeButton());
   expect(onCompleteActivity).toHaveBeenCalledTimes(1);
   expect(onCompleteActivity).toHaveBeenCalledWith({ id: "activity-1", done: true });
-  await act(async () => finish({ ok: true, value: { id: "activity-1" } }));
+  await act(() => finish({ ok: true, value: { id: "activity-1" } }));
   expect(props.onRefresh).toHaveBeenCalledOnce();
   expect(
     screen.queryByRole("button", { name: "Mark complete: پیگیری / Follow-up" }),
@@ -69,10 +69,12 @@ test("unknown completion needs a new authoritative read and explicit reviewed re
 });
 
 test("known permission loss retains its denied state until refresh and never echoes the server payload", async () => {
-  const onCompleteActivity = vi.fn(async () => ({
-    ok: false as const,
-    error: { id: "E_PERM_001", detail: "hidden person" },
-  }));
+  const onCompleteActivity = vi.fn(() =>
+    Promise.resolve({
+      ok: false as const,
+      error: { id: "E_PERM_001", detail: "hidden person" },
+    }),
+  );
   const props = { ...queueProps(), onCompleteActivity };
   const view = render(<NextActionQueue {...props} />);
   fireEvent.click(completeButton());
@@ -93,10 +95,12 @@ test("known permission loss retains its denied state until refresh and never ech
 });
 
 test("an acknowledgement for another activity is unconfirmed for this row", async () => {
-  const onCompleteActivity = vi.fn(async () => ({
-    ok: true as const,
-    value: { id: "other-activity" },
-  }));
+  const onCompleteActivity = vi.fn(() =>
+    Promise.resolve({
+      ok: true as const,
+      value: { id: "other-activity" },
+    }),
+  );
   render(<NextActionQueue {...queueProps()} onCompleteActivity={onCompleteActivity} />);
   fireEvent.click(completeButton());
   await waitFor(() =>
@@ -108,9 +112,7 @@ test("an acknowledgement for another activity is unconfirmed for this row", asyn
 test("an activity and opportunity may share an ID without sharing completion state", async () => {
   const props = queueProps();
   const page = { ...props.page, rows: props.page.rows.map((row) => ({ ...row, id: "shared-id" })) };
-  const onCompleteActivity = vi.fn(async () => {
-    throw new Error("lost completion response");
-  });
+  const onCompleteActivity = vi.fn(() => Promise.reject(new Error("lost completion response")));
   render(<NextActionQueue {...props} page={page} onCompleteActivity={onCompleteActivity} />);
   fireEvent.click(completeButton());
   await waitFor(() =>
@@ -141,7 +143,7 @@ test.each(["saved", "unconfirmed"] as const)(
       <NextActionQueue {...props} page={{ ...props.page, readId: "read-while-pending" }} />,
     );
     expect(completeButton()).toBeDisabled();
-    await act(async () => {
+    await act(() => {
       if (outcome === "saved") finish({ ok: true, value: { id: "activity-1" } });
       else fail();
     });

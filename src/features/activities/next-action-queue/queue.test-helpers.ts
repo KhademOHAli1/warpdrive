@@ -1,5 +1,6 @@
 import { eq } from "drizzle-orm";
 import { expect } from "vitest";
+import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { PermissionFlagKey } from "@/constants/permissionFlags";
 import {
   activities,
@@ -26,7 +27,8 @@ async function fixture(h: TestDb) {
   const pipe = await seedPipelineWithStages(h.db, ["بررسی / Prüfung"], { name: "مسیر / Prozess" });
   const [type] = await h.db.select().from(activityTypes).where(eq(activityTypes.key, "call"));
   const stage = pipe.stages[0];
-  if (type === undefined || stage === undefined) throw new Error("Queue fixture metadata missing");
+  if (type === undefined || stage === undefined)
+    throw new AppError(ERROR_IDS.DB_INVARIANT, "Queue fixture metadata missing");
   return { h, viewer, colleague, pipe, stage, type };
 }
 
@@ -67,7 +69,7 @@ export async function addDeal(f: QueueFixture, patch: Partial<NewDeal> = {}) {
       ...patch,
     })
     .returning();
-  if (row === undefined) throw new Error("Queue deal fixture missing");
+  if (row === undefined) throw new AppError(ERROR_IDS.DB_INVARIANT, "Queue deal fixture missing");
   return row;
 }
 
@@ -85,7 +87,8 @@ export async function addActivity(f: QueueFixture, patch: Partial<NewActivity> =
       ...patch,
     })
     .returning();
-  if (row === undefined) throw new Error("Queue activity fixture missing");
+  if (row === undefined)
+    throw new AppError(ERROR_IDS.DB_INVARIANT, "Queue activity fixture missing");
   return row;
 }
 

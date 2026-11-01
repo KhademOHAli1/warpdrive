@@ -4,15 +4,13 @@ import { LocaleProvider, useSetLocalePreferences } from "@/features/i18n/LocaleP
 import { NextActionQueueClient } from "./NextActionQueueClient";
 
 export function deferred<T>() {
-  const settle = {
-    resolve: (_value: T): void => undefined,
-    reject: (_error: unknown): void => undefined,
-  };
-  const promise = new Promise<T>((resolve, reject) => {
-    settle.resolve = resolve;
-    settle.reject = reject;
+  let resolve!: (value: T) => void;
+  let reject!: (error: unknown) => void;
+  const promise = new Promise<T>((finish, fail) => {
+    resolve = finish;
+    reject = fail;
   });
-  return { promise, ...settle };
+  return { promise, resolve, reject };
 }
 
 function SaveTimeZone() {
