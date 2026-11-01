@@ -31,6 +31,9 @@ export interface RawParsedMail {
   // Sanitized storage variant; render only through the reader's explicit remote-image gate.
   htmlWithRemoteImages: string | null;
   attachments: RawMailAttachment[];
+  // Private observations only; never expose these as ordinary attachment chips.
+  deliveryReports: RawDeliveryReportPart[];
+  deliveryReportsTruncated: boolean;
 }
 
 export interface RawMimeLimits {
@@ -61,3 +64,18 @@ export type RawMimeFailure = {
     | "invalid_message"
     | "invalid_limits";
 };
+
+import type { DeliveryReportInput } from "../deliveryReportTypes";
+
+export interface RawDeliveryReportPart extends DeliveryReportInput {
+  partKey: string;
+  content: Buffer;
+}
+
+export const RAW_DELIVERY_REPORT_LIMITS = {
+  partBytes: 128 * 1024,
+  retainedParts: 8,
+  forwardedDepth: 4,
+  embeddedMessages: 16,
+  traversalBytes: 25 * 1024 * 1024,
+} as const;

@@ -47,5 +47,7 @@ export function rawMimeFields(parser: MailParser, attachments: RawMailAttachment
     htmlWithRemoteImages:
       parser.html === false ? null : sanitizeInboundHtml(parser.html, { allowRemote: true }),
     attachments,
+    deliveryReports: [],
+    deliveryReportsTruncated: false,
   };
 }

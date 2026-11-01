@@ -1,6 +1,11 @@
 import { Readable, Transform } from "node:stream";
 import { MailParser } from "mailparser";
 import { err, ok, type Result } from "@/types/result";
+import {
+  createDeliveryReportScan,
+  deliveryReportMediaType,
+  drainDeliveryPart,
+} from "./rawMimeDeliveryReports";
 import { rawMimeFields } from "./rawMimeFields";
 import {
   RAW_MIME_LIMITS,
@@ -29,9 +34,11 @@ export async function parseRawMime(args: {
     skipTextToHtml: true,
     skipImageLinks: true,
     skipTextLinks: true,
+    keepDeliveryStatus: true,
     maxHeadSize: limits.headerBytes,
     maxChildNodes: limits.partCount,
   });
+  const reports = createDeliveryReportScan(limits, args.signal);
   const attachments: RawMailAttachment[] = [];
   const attachmentStreams = new Set<Readable>();
   let messageBytes = 0;
@@ -48,6 +55,7 @@ export async function parseRawMime(args: {
       source.destroy();
       limiter.destroy();
       parser.destroy();
+      reports.destroy();
       for (const stream of attachmentStreams) stream.destroy();
     }
     function failure(kind: RawMimeFailure["kind"]) {
@@ -94,6 +102,12 @@ export async function parseRawMime(args: {
 
     parser.on("data", (part) => {
       if (part.type !== "attachment" || finished) return;
+      if (deliveryReportMediaType(part.headers) !== null) {
+        attachmentStreams.add(part.content);
+        drainDeliveryPart(part, () => failure("invalid_message"));
+        part.content.on("end", () => attachmentStreams.delete(part.content));
+        return;
+      }
       attachmentCount += 1;
       if (attachmentCount > limits.attachmentCount) {
         failure("too_many_attachments");
@@ -133,16 +147,23 @@ export async function parseRawMime(args: {
         failure("body_too_large");
         return;
       }
-      const parsed = rawMimeFields(parser, attachments);
-      finished = true;
-      cleanup();
-      resolve(ok(parsed));
+      void reports.result.then((delivery) => {
+        if (finished) return;
+        const parsed = rawMimeFields(parser, attachments);
+        finished = true;
+        cleanup();
+        resolve(ok({ ...parsed, ...delivery }));
+      });
     });
     source.on("error", () => failure("invalid_message"));
     limiter.on("error", () => failure("invalid_message"));
     parser.on("error", () => failure("invalid_message"));
     args.signal.addEventListener("abort", abort, { once: true });
     if (args.signal.aborted) abort();
-    else source.pipe(limiter).pipe(parser);
+    else {
+      limiter.pipe(parser);
+      limiter.pipe(reports.stream);
+      source.pipe(limiter);
+    }
   });
 }
