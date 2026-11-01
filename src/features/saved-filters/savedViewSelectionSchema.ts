@@ -26,9 +26,8 @@ export type SavedViewSelectionRead = SavedViewSelection | typeof BLOCKED_SAVED_V
 // malformed UI preferences remain independently recoverable.
 export const storedSavedViewSelectionSchema = z
   .unknown()
-  .optional()
-  .transform((raw): SavedViewSelectionRead | undefined => {
-    if (raw === undefined) return undefined;
+  .transform((raw): SavedViewSelectionRead => {
     const parsed = savedViewSelectionSchema.safeParse(raw);
     return parsed.success ? parsed.data : BLOCKED_SAVED_VIEW_SELECTION;
-  });
+  })
+  .optional();

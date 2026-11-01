@@ -125,7 +125,7 @@ const person = {
 const org = {
   id: "o1",
   name: "Acme org",
-  address: "Street",
+  address: { street: "Street" },
   closedDeals: 0,
   openDeals: 0,
   peopleCount: 1,
