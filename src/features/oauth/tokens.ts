@@ -9,7 +9,8 @@ import {
   REFRESH_TOKEN_TTL_MS,
 } from "@/constants/oauth";
 import type { Db } from "@/db/client";
-import { oauthAccessTokens, oauthRefreshTokens } from "@/db/schema/oauth";
+import { oauthAccessTokens, oauthAuthCodes, oauthRefreshTokens } from "@/db/schema/oauth";
+import { lockMcpGrants } from "@/features/auth/management/mcpGrants";
 import { err, ok, type Result } from "@/types/result";
 import { sha256Base64Url } from "./pkce";
 
@@ -172,15 +173,42 @@ export async function revokeAllForClientUser(
   signal: AbortSignal,
 ): Promise<void> {
   signal.throwIfAborted();
-  const revokedAt = new Date();
-  await db
-    .update(oauthAccessTokens)
-    .set({ revokedAt })
-    .where(and(eq(oauthAccessTokens.clientId, clientId), eq(oauthAccessTokens.userId, userId)));
-  signal.throwIfAborted();
-  await db
-    .update(oauthRefreshTokens)
-    .set({ revokedAt })
-    .where(and(eq(oauthRefreshTokens.clientId, clientId), eq(oauthRefreshTokens.userId, userId)));
+  await db.transaction(async (tx) => {
+    await lockMcpGrants(tx, signal);
+    const revokedAt = new Date();
+    await tx
+      .update(oauthAccessTokens)
+      .set({ revokedAt })
+      .where(
+        and(
+          eq(oauthAccessTokens.clientId, clientId),
+          eq(oauthAccessTokens.userId, userId),
+          isNull(oauthAccessTokens.revokedAt),
+        ),
+      );
+    signal.throwIfAborted();
+    await tx
+      .update(oauthRefreshTokens)
+      .set({ revokedAt })
+      .where(
+        and(
+          eq(oauthRefreshTokens.clientId, clientId),
+          eq(oauthRefreshTokens.userId, userId),
+          isNull(oauthRefreshTokens.revokedAt),
+        ),
+      );
+    signal.throwIfAborted();
+    await tx
+      .update(oauthAuthCodes)
+      .set({ consumedAt: revokedAt })
+      .where(
+        and(
+          eq(oauthAuthCodes.clientId, clientId),
+          eq(oauthAuthCodes.userId, userId),
+          isNull(oauthAuthCodes.consumedAt),
+        ),
+      );
+    signal.throwIfAborted();
+  });
   signal.throwIfAborted();
 }
