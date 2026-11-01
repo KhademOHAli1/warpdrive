@@ -54,6 +54,9 @@ import leadsPersian from "@/features/leads/messages/leads.fa.json";
 import notificationsGerman from "@/features/notifications/messages/notifications.de.json";
 import notificationsEnglish from "@/features/notifications/messages/notifications.en.json";
 import notificationsPersian from "@/features/notifications/messages/notifications.fa.json";
+import privacyGerman from "@/features/privacy/messages/privacyRequest.de.json";
+import privacyEnglish from "@/features/privacy/messages/privacyRequest.en.json";
+import privacyPersian from "@/features/privacy/messages/privacyRequest.fa.json";
 import quickGerman from "@/features/quick-add/messages/quickAdd.de.json";
 import quickEnglish from "@/features/quick-add/messages/quickAdd.en.json";
 import quickPersian from "@/features/quick-add/messages/quickAdd.fa.json";
@@ -94,6 +97,7 @@ const english = {
   filters: filtersEnglish,
   tableControls: tableEnglish,
   notifications: notificationsEnglish,
+  privacyRequest: privacyEnglish,
 };
 const persian: typeof english = mergeMessages(english, {
   ...fa,
@@ -119,6 +123,7 @@ const persian: typeof english = mergeMessages(english, {
   filters: filtersPersian,
   tableControls: tablePersian,
   notifications: notificationsPersian,
+  privacyRequest: privacyPersian,
 });
 const german: typeof english = mergeMessages(english, {
   ...de,
@@ -144,6 +149,7 @@ const german: typeof english = mergeMessages(english, {
   filters: filtersGerman,
   tableControls: tableGerman,
   notifications: notificationsGerman,
+  privacyRequest: privacyGerman,
 });
 const catalogs = { en: english, fa: persian, de: german } satisfies Record<Locale, typeof english>;
 export type AppMessages = typeof english;

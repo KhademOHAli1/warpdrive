@@ -1,6 +1,6 @@
 "use client";
-import { type FormEvent, useState } from "react";
-import { Button } from "@/components/ui/Button";
+import { type FormEvent, useId, useState } from "react";
+import { Button, buttonVariants } from "@/components/ui/Button";
 import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
 import { authScreensMessagesForLocale } from "../authScreensMessages";
 import { authClient } from "../better/client";
@@ -16,20 +16,27 @@ export function FreshVerification({
   status,
   refresh,
   embedded = false,
+  providerConfirmation = "redirect",
 }: {
   status: SecurityStatus;
   refresh: () => void;
   embedded?: boolean;
+  providerConfirmation?: "redirect" | "new_tab";
 }) {
   const L = authScreensMessagesForLocale(useLocale()).flow;
   const t = useAppTranslations("authScreens");
   const task = useAuthAction();
   const { config } = useAuthProviders();
+  const newTabHelpId = useId();
   const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
   const hasStrongFactor = status.twoFactorEnabled || status.passkeys.length > 0;
   const strongRequired = status.user.isAdmin || status.policy.requireMfaForAll || hasStrongFactor;
   const passwordAllowed = !strongRequired || (status.needsEnrollment && !hasStrongFactor);
+  const linkedProviders =
+    config?.providers.filter((provider) =>
+      status.accounts.some((account) => account.providerId === provider.id),
+    ) ?? [];
   function passwordSubmit(event: FormEvent) {
     event.preventDefault();
     void task.run(
@@ -92,11 +99,28 @@ export function FreshVerification({
             {L.confirmWithPasskey}
           </Button>
         )}
-        {config?.providers
-          .filter((provider) =>
-            status.accounts.some((account) => account.providerId === provider.id),
-          )
-          .map((provider) => (
+        {providerConfirmation === "new_tab" && linkedProviders.length > 0 ? (
+          <div className="space-y-2">
+            <a
+              href="/settings/security"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-describedby={newTabHelpId}
+              aria-disabled={task.busy}
+              tabIndex={task.busy ? -1 : undefined}
+              className={buttonVariants({ variant: "outline" })}
+              onClick={(event) => {
+                if (task.busy) event.preventDefault();
+              }}
+            >
+              {L.confirmIdentityInNewTab}
+            </a>
+            <p id={newTabHelpId} className="text-sm text-muted-foreground">
+              {L.confirmNewTabDescription}
+            </p>
+          </div>
+        ) : (
+          linkedProviders.map((provider) => (
             <Button
               variant="outline"
               key={provider.id}
@@ -112,7 +136,8 @@ export function FreshVerification({
             >
               {t("flow.confirmWithProvider", { provider: provider.name })}
             </Button>
-          ))}
+          ))
+        )}
       </div>
       <AuthFeedback error={task.error} notice={task.notice} />
     </SecurityPanel>

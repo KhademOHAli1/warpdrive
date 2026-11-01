@@ -2,6 +2,7 @@ import { z } from "zod";
 
 export const PRIVACY_CAPABILITIES = [
   "case.intake",
+  "case.assign",
   "case.review",
   "case.disclose",
   "case.export",

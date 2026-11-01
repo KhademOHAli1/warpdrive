@@ -16,6 +16,7 @@ import { InterfacePrefsProvider } from "@/features/identity/InterfacePrefsProvid
 import { interfacePrefsFromUi } from "@/features/identity/interfacePrefs";
 import { getPreferencesForActor } from "@/features/identity/preferencesForActor";
 import { IdentifyUser } from "@/features/observability/IdentifyUser";
+import { PRIVACY_CASE_PATH_HEADER, privacyCaseReturnPath } from "@/features/privacy/requestPath";
 import { VersionBanner } from "@/features/release/ui/VersionBanner";
 import { CommandPalette } from "@/features/search/ui/CommandPalette";
 import { readBaseCurrency } from "@/features/settings/readBaseCurrency";
@@ -26,10 +27,13 @@ import { createContext } from "@/server/trpc/context";
 export default async function AppLayout({ children }: { children: ReactNode }): Promise<ReactNode> {
   const ctx = await createContext();
   if (ctx.actor === null) {
-    const pending = await resolveWorkflowSession(db, await headers(), AbortSignal.timeout(5000), {
+    const requestHeaders = await headers();
+    const pending = await resolveWorkflowSession(db, requestHeaders, AbortSignal.timeout(5000), {
       allowPending: true,
     });
-    redirect(pending === null ? "/login" : "/auth/continue");
+    const target = pending === null ? "/login" : "/auth/continue";
+    const returnPath = privacyCaseReturnPath(requestHeaders.get(PRIVACY_CASE_PATH_HEADER));
+    redirect(returnPath === null ? target : `${target}?returnTo=${encodeURIComponent(returnPath)}`);
   }
   const jar = await cookies();
   const hasCsrf = jar.get(CSRF_COOKIE) !== undefined;

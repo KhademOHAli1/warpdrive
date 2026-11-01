@@ -18,8 +18,11 @@ import { infrastructureIds2 } from "./registryIdsInfrastructure2";
 import { metadataToolingIds1 } from "./registryIdsMetadataTooling1";
 import { notificationsIds1 } from "./registryIdsNotifications1";
 import { observabilityIds1 } from "./registryIdsObservability1";
+import { personalRequestsIds1 } from "./registryIdsPersonalRequests1";
 import { privacyIds1 } from "./registryIdsPrivacy1";
 import { protectedSecretsIds1 } from "./registryIdsProtectedSecrets1";
+import { requestServicesIds1 } from "./registryIdsRequestServices1";
+import { scopeDraftIds1 } from "./registryIdsScopeDraft1";
 import { stagingQualificationIds1 } from "./registryIdsStagingQualification1";
 import { toolingIds1 } from "./registryIdsTooling1";
 import type { RegistryEntry } from "./registryTypes";
@@ -114,6 +117,74 @@ export const registryEntries: RegistryEntry[] = [
     externalEffects:
       "No network, filesystem or object-storage I/O. Supplied manifest hashes are metadata and are not verified object/content receipts.",
     erasureTask: "DPL-23",
+  }),
+  classifyInventory(scopeDraftIds1, {
+    ...classifications.privacy,
+    owner: "privacy unsealed scope draft",
+    categories: [
+      "opaque draft and record references",
+      "native record locators",
+      "field and replacement descriptors",
+      "provenance and source fingerprints",
+      "explicit coverage blockers",
+    ],
+    subjectRelation:
+      "Contact, workforce and external subjects stay explicit. Native locators and provenance are supplied metadata; they do not merge identities or establish current source membership.",
+    purpose:
+      "Canonicalize a bounded, version-bound draft of category coverage, record references and field decisions with immutable bytes, SHA-256 and explicit review blockers.",
+    disclosure:
+      "Every result remains unsealed, including an empty blocker list. No current authority, durable approval, verified source/replacement content or permission to disclose follows from the draft hash.",
+    retention:
+      "Transient in-memory metadata only. Durable scope retention, source loading and sealing require separately reviewed server integration.",
+    externalEffects:
+      "No database, filesystem, network, object or queue I/O. Discovered update/delete signatures are SHA-256 input and in-memory cycle-tracking operations, not persistent writers.",
+    erasureTask: "DPL-23",
+  }),
+  classifyInventory(requestServicesIds1, {
+    ...classifications.privacy,
+    owner: "privacy requester and initial assignment services",
+    categories: [
+      "requester references",
+      "encrypted own-intake metadata",
+      "minimal case summaries",
+      "initial reviewer membership",
+      "minimal assignment receipts",
+    ],
+    subjectRelation:
+      "A native authenticated requester supplies its own user subject and in-app recipient. Initial triage assignment does not verify identity, expand subject scope or disclose matched records.",
+    purpose:
+      "Create and read requester-bound cases, list minimal unassigned intake summaries and atomically claim the first reviewer membership using explicit current global authority.",
+    disclosure:
+      "Own-status reads expose minimal requester-bound summaries. Initial assignment requires case.assign, authority.manage and case.review; it copies only existing permitted capabilities. HTTP credentials, origin/abuse controls and localized UI remain separate integration.",
+    retention:
+      "Writes use existing encrypted privacy cases, memberships and minimal events. Their retention still requires operator activation; no new retention period or deletion receipt is inferred.",
+    externalEffects:
+      "Existing PostgreSQL reads, native authority locks, case/member writes and minimal events only. The intake queue is a live database view; no pg-boss job, object operation, email or publication occurs.",
+    erasureTask: "DPL-26",
+  }),
+  classifyInventory(personalRequestsIds1, {
+    ...classifications.privacy,
+    owner: "privacy requester interface and shared HTTP/auth transport",
+    categories: [
+      "browser request summary and frozen retry intent",
+      "requester and minimal receipt references",
+      "own-case summaries, URL selectors and frozen confirmation commands",
+      "transient allowlisted case-return request headers",
+      "global matched CRM/authentication body copies",
+      "native account security status and authentication inputs",
+      "localized interface metadata",
+    ],
+    subjectRelation:
+      "The server resolves the actor natively; path hints are not authority and the expected requester UUID is deny-only. Global non-API app/Server Action body copies can contain unrelated CRM data and authentication secrets; actor/path never determine their subject scope.",
+    purpose:
+      "Mount requester intake/detail routes, preserve a validated case return path through existing sign-in/pending flows, read minimal own-case status and submit exact own-account confirmation commands through existing CSRF/fresh-session Server Actions.",
+    disclosure:
+      "Only minimal own-case summaries and command receipts are displayed. Case status is not proof status or approval. Body copies inherit native confidentiality and are excluded from case disclosure and routine telemetry. Replay-block/autocapture declarations do not establish installed browser acceptance.",
+    retention:
+      "Form/case state remains in component memory; intake success does not clear its summary. Next can buffer matched request-body copies until completion/abort, under the shared finite 64mb limit. Case URLs remain linkable browser/HTTP metadata. No durable store, expiry policy or physical memory-erasure proof is introduced.",
+    externalEffects:
+      "The matcher excludes /api and /api/... before proxy body cloning; other matched paths scrub caller hints and stamp only validated case pathnames. Header deletion is transient, not a DB writer. Existing action body limits, native authorization and recipients remain; neither universal POST equivalence, response-body/encryption changes nor CSP nonces are established.",
+    erasureTask: "DPL-26",
   }),
   classifyInventory(
     [

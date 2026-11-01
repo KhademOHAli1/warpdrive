@@ -59,7 +59,9 @@ async function caseTicket(
     verificationVersion: null,
   };
   if (request.caseId === undefined)
-    return request.capability.startsWith("case.") && request.capability !== "case.intake"
+    return request.capability.startsWith("case.") &&
+      request.capability !== "case.intake" &&
+      request.capability !== "case.assign"
       ? null
       : ticket;
   const [privacyCase] = await db
