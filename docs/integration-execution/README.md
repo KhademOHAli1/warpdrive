@@ -32,6 +32,12 @@ compiled worker bundles. These are source/unit/static/compile results. Native ac
 persistence, browser journeys, full real-PG, providers and release remain separate gates.
 The 149 focused cases are included in 6,040, not another total. Task status is unchanged.
 
+[The prepared native browser fixture](native-browser-fixture-20261101.md) now has
+reviewed, finite profile/SMTP/native-UI orchestration and six account-preference
+scenarios. Its named resource window is pending; no native fixture or service has
+started. Regional controls are at `/settings/regional`. This is preparation, not
+browser/account-persistence acceptance or another task closure.
+
 UX-001 through UX-007 and UX-009 have reviewed flow/pattern/copy, fresh Mobbin,
 Farsi terminology and regional/date scenario evidence. The later numbering correction resolves the earlier digit-display restriction.
 Week-start coupling and unsupported recurrence remain explicit. The local fake harness and

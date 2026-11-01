@@ -51,6 +51,14 @@ Its package/lock hashes stayed unchanged; retained dependencies are an ordinary 
 Recheck current clone state before use. Pinned Bun remains 1.4.4 and the synthetic profile
 remains private; do not print or export its configuration or keys.
 
+For the next native browser gate, read
+[the prepared fixture and its execution boundary](native-browser-fixture-20261101.md).
+Its reviewed tools are in `outputs/native-browser-fixture-20261101` under the programme
+workspace. The named window remains pending at that record. Use its new disposable
+database/profile, retain the original zero-user profile, and target `/settings/regional`.
+Neither the private preparation nor service launcher has executed. A later actual
+receipt must replace this pending state before making any native/browser claim.
+
 ## Independent source restoration
 
 The latest 1 November records/source delta is
