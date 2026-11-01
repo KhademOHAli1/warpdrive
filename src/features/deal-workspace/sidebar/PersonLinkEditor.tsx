@@ -4,6 +4,7 @@ import { useId, useMemo, useRef, useState } from "react";
 import { reportTimePickerValidity } from "@/components/ui/timePickerValidity";
 import { FIELD_INPUT } from "@/constants/formStyles";
 import { createPersonAction } from "@/features/contacts/actions";
+import { PhoneNumberInput } from "@/features/contacts/PhoneNumberInput";
 import type { PersonMatchCandidate } from "@/features/contacts/personOptionsRepo";
 import {
   CustomFieldCreateFields,
@@ -15,6 +16,7 @@ import { updateDealAction } from "@/features/deals/updateAction";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import type { CustomFieldDef } from "@/types/customFields";
 import { readCsrfToken } from "@/utils/csrfCookie";
+import type { PhoneCountry } from "@/utils/phoneNormalization";
 import { findPersonMatches, type PersonMatchReason } from "./personMatch";
 
 // Translate whole explanations so the matched person's name can appear naturally in each language.
@@ -28,6 +30,7 @@ interface Draft {
   firstName: string;
   lastName: string;
   phone: string;
+  phoneCountry?: PhoneCountry;
   email: string;
 }
 
@@ -72,7 +75,12 @@ export function PersonLinkEditor({
   const matches = useMemo(
     () =>
       findPersonMatches(
-        { name: fullName(draft), email: draft.email, phone: draft.phone },
+        {
+          name: fullName(draft),
+          email: draft.email,
+          phone: draft.phone,
+          phoneCountry: draft.phoneCountry,
+        },
         personOptions,
       ),
     [draft, personOptions],
@@ -130,7 +138,14 @@ export function PersonLinkEditor({
         phones:
           draft.phone.trim() === ""
             ? []
-            : [{ label: "work", value: draft.phone.trim(), primary: true }],
+            : [
+                {
+                  label: "work",
+                  value: draft.phone,
+                  primary: true,
+                  ...(draft.phoneCountry === undefined ? {} : { country: draft.phoneCountry }),
+                },
+              ],
         orgId: null,
         customFields: customFieldCreatePayload(customFieldDefs, values),
       },
@@ -165,12 +180,20 @@ export function PersonLinkEditor({
         onChange={(v) => set({ lastName: v })}
       />
       {!hidden.has("phones") && (
-        <Field
-          id={ids.phone}
-          label={translateSales("phone_63dce")}
-          value={draft.phone}
-          onChange={(v) => set({ phone: v })}
-        />
+        <div className="flex items-start gap-2">
+          <label htmlFor={ids.phone} className="w-24 shrink-0 pt-2 text-end text-muted-foreground">
+            {translateSales("phone_63dce")}
+          </label>
+          <PhoneNumberInput
+            id={ids.phone}
+            ariaLabel={translateSales("phone_63dce")}
+            value={draft.phone}
+            country={draft.phoneCountry}
+            onChange={(phone) => set({ phone })}
+            onCountryChange={(phoneCountry) => set({ phoneCountry })}
+            disabled={pending}
+          />
+        </div>
       )}
       {!hidden.has("emails") && (
         <Field

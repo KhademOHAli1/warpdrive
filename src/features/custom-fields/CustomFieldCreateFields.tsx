@@ -87,11 +87,13 @@ export function CustomFieldCreateFields({
   defs,
   values,
   onChange,
+  currency,
   title,
 }: {
   defs: CustomFieldDef[];
   values: CustomFieldValues;
   onChange: (key: string, value: unknown) => void;
+  currency?: string;
   title?: string;
 }): React.ReactNode {
   const t = useAppTranslations("customFields");
@@ -120,6 +122,7 @@ export function CustomFieldCreateFields({
             </div>
             <CustomFieldFormControl
               def={def}
+              currency={currency}
               value={values[def.key]}
               onChange={(value) => onChange(def.key, value)}
             />

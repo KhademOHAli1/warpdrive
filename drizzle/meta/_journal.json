@@ -617,6 +617,76 @@
       "when": 1793538489345,
       "tag": "0087_integration_connections",
       "breakpoints": true
+    },
+    {
+      "idx": 88,
+      "version": "7",
+      "when": 1793540158005,
+      "tag": "0088_natural_deathstrike",
+      "breakpoints": true
+    },
+    {
+      "idx": 89,
+      "version": "7",
+      "when": 1793540158006,
+      "tag": "0089_military_loki",
+      "breakpoints": true
+    },
+    {
+      "idx": 90,
+      "version": "7",
+      "when": 1793540158007,
+      "tag": "0090_cooing_night_nurse",
+      "breakpoints": true
+    },
+    {
+      "idx": 91,
+      "version": "7",
+      "when": 1793540158008,
+      "tag": "0091_early_tomas",
+      "breakpoints": true
+    },
+    {
+      "idx": 92,
+      "version": "7",
+      "when": 1793540158009,
+      "tag": "0092_cool_stryfe",
+      "breakpoints": true
+    },
+    {
+      "idx": 93,
+      "version": "7",
+      "when": 1793540158010,
+      "tag": "0093_skinny_slyde",
+      "breakpoints": true
+    },
+    {
+      "idx": 94,
+      "version": "7",
+      "when": 1793540158011,
+      "tag": "0094_mail_source_aliases",
+      "breakpoints": true
+    },
+    {
+      "idx": 95,
+      "version": "7",
+      "when": 1793540158012,
+      "tag": "0095_mail_delivery_observations",
+      "breakpoints": true
+    },
+    {
+      "idx": 96,
+      "version": "7",
+      "when": 1793540158013,
+      "tag": "0096_notification_send_admission",
+      "breakpoints": true
+    },
+    {
+      "idx": 97,
+      "version": "7",
+      "when": 1793540158014,
+      "tag": "0097_private_mail_intake",
+      "breakpoints": true
     }
   ]
 }

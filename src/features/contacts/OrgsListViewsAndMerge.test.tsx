@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterAll, afterEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("next/navigation", () => ({ usePathname: () => "/contacts/orgs" }));
 
@@ -41,9 +41,14 @@ import type { OrgsListRow } from "./OrgsTable";
 const EMPTY_REF_LABELS = { user: {}, person: {}, org: {} };
 
 afterEach(() => {
+  cleanup();
   listOrgsQuery.mockReset();
   mergeOrgsAction.mockReset();
   savedViews.mockReturnValue([]);
+});
+
+afterAll(() => {
+  expect(document.body.childElementCount).toBe(0);
 });
 
 function orgRow(id: string, name: string, overrides?: Partial<OrgsListRow>): OrgsListRow {
@@ -91,6 +96,9 @@ describe("OrgsList saved views and merge", () => {
         }),
       ),
     );
+    await vi.waitFor(() =>
+      expect(screen.queryByRole("checkbox", { name: "Select Acme Inc" })).not.toBeInTheDocument(),
+    );
   });
 
   it("merges the two selected orgs via mergeOrgsAction, gated on exactly two", async () => {
@@ -110,5 +118,9 @@ describe("OrgsList saved views and merge", () => {
         "csrf",
       ),
     );
+    await vi.waitFor(() => {
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+      expect(screen.queryByRole("checkbox", { name: "Select Acme Inc" })).not.toBeInTheDocument();
+    });
   });
 });

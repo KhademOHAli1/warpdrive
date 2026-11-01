@@ -6,13 +6,15 @@ The generated 0086 snapshot extends the canonical 0085 snapshot with the four Wo
 
 The shared connection schema is appended as `0087_integration_connections`, preserving the canonical 0086 predecessor and all 97 previous table definitions. Its three tables extend the combined schema to 100 tables. `platform-original/` retains the original CONN-83/Workflow-84 SQL, snapshots and journal verbatim. The canonical CONN SQL remains byte-identical to its original source.
 
+The completed MAIL cut appends `0088`–`0097`, preserving every actual canonical SQL/snapshot file through 0087 and the first 88 journal entries. Ten original SQL bodies and their original journal/snapshots are retained verbatim under `mail-original/`; the final combined schema has 107 tables. See [the canonical MAIL map](../mail-integrated-migration-map.md) for exact hashes, timestamps and snapshot identities.
+
 ## Admission
 
 Both the application migration entrypoint and `bun run db:migrate` use `src/db/migrate.ts`. Before applying SQL, the runner loads and validates the ordered source journal and checks every stored migration hash and timestamp against an exact prefix of that source. It takes an advisory transaction lock, checks the prefix, applies the already-loaded SQL, inserts normal Drizzle receipts and verifies the Workflow protections in one transaction. SQL failures roll back metadata creation and pending migrations together. Lock and statement timeouts bound individual database operations; the idle transaction timeout is not a total transaction deadline.
 
 Fresh databases and unchanged canonical prefixes are supported. Divergent Workflow-83, CONN-83/Workflow-84 and MAIL candidate histories are refused, including histories whose higher timestamp would otherwise select no SQL. Refusal does not rewrite or backfill ledger rows. An installed divergent database needs a separately reviewed upgrade procedure and preserved data before it can adopt canonical main.
 
-Admission also refuses application tables without a canonical ledger and partial Workflow objects before 0086. Once 0086 is present, the runner checks the four Workflow tables, the pinned/published version foreign keys, and the immutable-version function and unrestricted enabled trigger, including on a no-op rerun. These bounded checks are not a complete physical-schema fingerprint or evidence of a production upgrade.
+Admission also refuses application tables without a canonical ledger and partial Workflow objects before 0086. Once 0086 is present, the runner checks the four Workflow tables, the pinned/published version foreign keys, and the immutable-version function and unrestricted enabled trigger, including on a no-op rerun. When present in the applied prefix, MAIL protection checks additionally verify ten function definitions/attributes, four unrestricted enabled triggers and three pointer-only SET NULL foreign keys with their internal RI triggers enabled. Preflight never demands objects from future entries: a canonical 95 database is admitted before upgrading to 97. These bounded checks are not a complete physical-schema fingerprint or evidence of a production upgrade.
 
 ## Validation
 

@@ -66,13 +66,13 @@ export const coreClassifications = {
     subjectRelation:
       "Sender/recipient/header/content links need review; mailbox owner is not the sole subject of a message or attachment.",
     purpose:
-      "Gmail synchronization, composing, outbound delivery, thread linking and read/tracking state.",
+      "Gmail/IMAP synchronization, composing, SMTP/provider outbound delivery, thread linking and read/tracking state.",
     disclosure:
       "Third-party messages and private content excluded unless specifically approved. Never export credential material. Original MIME is not guaranteed by current records.",
     retention:
       "Current trash/archive/disconnect do not prove complete erasure; queues, draft copies, tracking and provider residuals require reviewed policy.",
     externalEffects:
-      "Google OAuth/Gmail and outbound recipients. Remote data deletion is unsupported until capability and authorization receipts exist.",
+      "Google OAuth/Gmail, configured IMAP/SMTP endpoints and outbound recipients. Flag, move, trash and sent-copy operations do not establish physical deletion; remote privacy erasure remains unsupported without reviewed capability and authorization receipts.",
     erasureTask: "DPL-16",
   },
   files: {

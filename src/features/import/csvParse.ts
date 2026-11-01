@@ -91,7 +91,7 @@ export function parseCsv(text: string): ParsedCsv {
   const rows = dataRows.map((cells) => {
     const obj: Record<string, string> = {};
     headers.forEach((header, idx) => {
-      obj[header] = (cells[idx] ?? "").trim();
+      obj[header] = cells[idx] ?? "";
     });
     return obj;
   });

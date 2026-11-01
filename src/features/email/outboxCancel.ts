@@ -17,17 +17,30 @@ export async function cancelOutbox(
   signal.throwIfAborted();
   const found = (
     await db.execute(sql`
-      SELECT s.id, s.claim_token, s.sent_at, s.status
+      SELECT s.id, s.claim_token, s.sent_at, s.status,s.send_started_at,s.delivery_outcome->>'state' AS receipt_state
       FROM email_send_attempts s JOIN email_accounts a ON a.id = s.account_id
       WHERE s.id = ${args.attemptId} AND a.user_id = ${args.actor.id}
     `)
   ).rows[0] as
-    | { id: string; claim_token: string | null; sent_at: string | null; status: string }
+    | {
+        id: string;
+        claim_token: string | null;
+        sent_at: string | null;
+        status: string;
+        send_started_at: unknown;
+        receipt_state: string | null;
+      }
     | undefined;
   signal.throwIfAborted();
   if (found === undefined)
     return err(new AppError(ERROR_IDS.GMAIL_OUTBOX_NOT_FOUND, "attempt not found", {}));
-  if (found.claim_token !== null || found.sent_at !== null || found.status === "sent") {
+  if (
+    found.claim_token !== null ||
+    found.sent_at !== null ||
+    found.send_started_at !== null ||
+    !["pending", "failed"].includes(found.status) ||
+    (found.receipt_state !== null && found.receipt_state !== "rejected")
+  ) {
     return err(
       new AppError(ERROR_IDS.GMAIL_OUTBOX_NOT_CANCELABLE, "attempt already claimed or sent", {}),
     );
@@ -35,7 +48,9 @@ export async function cancelOutbox(
   const deleted = (
     await db.execute(sql`
       DELETE FROM email_send_attempts
-      WHERE id = ${args.attemptId} AND claim_token IS NULL AND sent_at IS NULL AND status <> 'sent'
+      WHERE id = ${args.attemptId} AND claim_token IS NULL AND sent_at IS NULL AND send_started_at IS NULL
+        AND status IN ('pending','failed')
+        AND (delivery_outcome->>'state' IS NULL OR delivery_outcome->>'state'='rejected')
       RETURNING id
     `)
   ).rows[0] as { id: string } | undefined;

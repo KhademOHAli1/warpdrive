@@ -6,6 +6,7 @@ import type { AuthUser } from "@/features/permissions/types";
 import { err, ok, type Result } from "@/types/result";
 import { canSeeEmail } from "./emailVisibility";
 import { assertMailboxOwner } from "./mailboxOwnership";
+import { privateIntakeBlocksThread } from "./privateIntakeRestrictions";
 
 export type EmailVisibility = (typeof EMAIL_VISIBILITY)[number];
 
@@ -47,8 +48,10 @@ export async function setThreadVisibility(
   const owner = await assertMailboxOwner(db, thread.account_id, args.actor.id, signal);
   if (!owner.ok) return owner;
 
-  await db.execute(
-    sql`UPDATE email_threads SET visibility = ${args.visibility} WHERE id = ${args.threadId}`,
+  const updated = await db.execute(
+    sql`UPDATE email_threads SET visibility = ${args.visibility} WHERE id = ${args.threadId}
+      AND NOT ${privateIntakeBlocksThread(thread.account_id, args.threadId)} RETURNING id`,
   );
-  return ok({ threadId: args.threadId });
+  signal.throwIfAborted();
+  return updated.rows.length === 1 ? ok({ threadId: args.threadId }) : notFound;
 }

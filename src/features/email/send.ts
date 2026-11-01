@@ -1,33 +1,36 @@
+import { sql } from "drizzle-orm";
 import { z } from "zod";
 import { EMAIL_VISIBILITY } from "@/constants/email";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import type { StorageClient } from "@/features/files/storage";
-import { err, ok, type Result } from "@/types/result";
+import type { SendEmailOutcome } from "@/types/mail";
+import { err, type Result } from "@/types/result";
 import type { GmailClient } from "./gmailClient";
 import { assertMailboxOwner } from "./mailboxOwnership";
+import type { ImapConnectionRuntime } from "./mailConnectionRuntime";
 import { applyMergeFields } from "./merge";
 import { buildMergeContext } from "./mergeContext";
-import { enqueueSend, processSendAttempt } from "./outbox";
+import { enqueueSend } from "./outbox";
+import { isValidMailRecipient } from "./recipientAddress";
 import { sanitizeAuthorHtml } from "./sanitizeHtml";
-import { applyTrackingAndSignature, resolveAttachments } from "./sendHelpers";
-import { ensureLocalCopyForReplay } from "./sendReplayRepair";
-import { enqueueScheduledSendJob, isFutureScheduledSend } from "./sendScheduling";
-import { storeOutboundCopy } from "./sendStore";
-import { backfillTokens, disableTokens } from "./tracking";
+import { deliverQueuedSend } from "./sendDelivery";
+import { resolveAttachments } from "./sendHelpers";
 
 // The lower-level system-send primitive lives in its own file (send.ts is at the size
 // cap) but is re-exported here so callers import both sends from one module.
 export { sendGmail } from "./sendSystem";
+
+const mailboxAddress = z.email({ pattern: z.regexes.unicodeEmail }).refine(isValidMailRecipient);
 
 // Boundary validation for the interactive send action. idempotencyKey is a strict UUID
 // so a client cannot smuggle a forged Message-ID seed (it feeds deriveMessageId).
 export const sendEmailInput = z.object({
   accountId: z.string().uuid(),
   idempotencyKey: z.string().uuid(),
-  to: z.array(z.string().email()).min(1),
-  cc: z.array(z.string().email()).optional(),
-  bcc: z.array(z.string().email()).optional(),
+  to: z.array(mailboxAddress).min(1),
+  cc: z.array(mailboxAddress).optional(),
+  bcc: z.array(mailboxAddress).optional(),
   subject: z.string(),
   bodyHtml: z.string(),
   threadId: z.string().optional(),
@@ -66,7 +69,9 @@ export interface SendEmailArgs {
   // Callers obtain these from the trusted session context (never from client input).
   actorType: "admin" | "regular";
   actorGroupIds: ReadonlySet<string>;
-  gmail: GmailClient;
+  gmail?: GmailClient;
+  mail?: ImapConnectionRuntime;
+  expectedGeneration?: number;
   // storage is required: every send path must wire in real storage so production
   // attachment sends never silently fail. Tests inject FakeStorageClient.
   storage: StorageClient;
@@ -80,7 +85,7 @@ export interface SendEmailArgs {
 export async function sendEmail(
   db: Db,
   args: SendEmailArgs,
-): Promise<Result<{ status: string; messageId?: string }, AppError>> {
+): Promise<Result<SendEmailOutcome, AppError>> {
   const signal = args.signal ?? AbortSignal.timeout(8000);
   // Localized boundary: the tracking-path DB calls (mint/persist/backfill/disable) and
   // the outbox throw on DB failure. Turn any unexpected throw into a Result so the
@@ -90,11 +95,7 @@ export async function sendEmail(
     return await runSend(db, args, signal);
   } catch (e) {
     if (e instanceof Error && e.name === "AbortError") throw e;
-    return err(
-      new AppError(ERROR_IDS.GMAIL_API_EXHAUSTED, "send orchestration failed", {
-        cause: String(e),
-      }),
-    );
+    return err(new AppError(ERROR_IDS.GMAIL_API_EXHAUSTED, "send orchestration failed"));
   }
 }
 
@@ -102,14 +103,40 @@ async function runSend(
   db: Db,
   args: SendEmailArgs,
   signal: AbortSignal,
-): Promise<Result<{ status: string; messageId?: string }, AppError>> {
+): Promise<Result<SendEmailOutcome, AppError>> {
   const { input } = args;
 
   // (a) Ownership: load the account via assertMailboxOwner helper. Missing OR not-owned
   // are treated identically so a caller cannot probe which account ids exist.
   const acct = await assertMailboxOwner(db, input.accountId, args.actorId, signal);
   if (!acct.ok) return acct;
+  if (
+    args.mail &&
+    (args.mail.accountId !== input.accountId || args.mail.ownerId !== args.actorId)
+  ) {
+    return err(
+      new AppError(ERROR_IDS.MAIL_CONNECTION_UNAVAILABLE, "mailbox runtime does not match actor"),
+    );
+  }
   const emailAddress = acct.value.emailAddress;
+  const delivery = {
+    accountId: input.accountId,
+    idempotencyKey: input.idempotencyKey,
+    actorId: args.actorId,
+    fromEmail: emailAddress,
+    signal,
+    storage: args.storage,
+    gmail: args.gmail,
+    mail: args.mail,
+    expectedGeneration: args.expectedGeneration,
+  };
+  const existing = (
+    await db.execute(sql`
+    SELECT id FROM email_send_attempts WHERE account_id=${input.accountId} AND idempotency_key=${input.idempotencyKey}
+  `)
+  ).rows[0] as { id: string } | undefined;
+  signal.throwIfAborted();
+  if (existing) return deliverQueuedSend(db, { ...delivery, attemptId: existing.id });
 
   const actor = {
     id: args.actorId,
@@ -153,6 +180,7 @@ async function runSend(
   // (d) Enqueue first (idempotent). A replay of an already-sent attempt short-circuits:
   // never re-mint or re-send.
   const enq = await enqueueSend(db, {
+    requiresPreparation: true,
     accountId: input.accountId,
     idempotencyKey: input.idempotencyKey,
     payload: {
@@ -163,6 +191,7 @@ async function runSend(
       html: sanitizedBody,
       trackOpens: resolvedTrackOpens,
       trackLinks: resolvedTrackLinks,
+      signatureId: input.signatureId,
       attachments: resolvedAttachments.length > 0 ? resolvedAttachments : undefined,
       // Carried through so a SCHEDULED send can restore the composer's explicit link in the
       // worker path (performWorkerSendCrm), which has no in-scope SendEmailInput to read from.
@@ -176,91 +205,5 @@ async function runSend(
     scheduledAt: input.scheduledSendAt ?? null,
   });
   if (!enq.ok) return enq;
-  const attemptId = enq.value.attemptId;
-
-  if (enq.value.replay) {
-    // Never blindly report success: repair the local copy if a prior send was accepted by
-    // Gmail but its local-copy/token step failed or crashed (F17). Idempotent, no re-send.
-    const repaired = await ensureLocalCopyForReplay(db, {
-      attemptId,
-      accountId: input.accountId,
-      fromEmail: emailAddress,
-      gmail: args.gmail,
-      signal,
-    });
-    if (!repaired.ok) return repaired;
-    return ok({ status: "sent", messageId: repaired.value.messageId });
-  }
-
-  // (e) Apply tracking rewrites and append signature (extracted to sendHelpers.ts).
-  // This runs for BOTH immediate and scheduled sends: the helper persists the prepared
-  // body into the payload row (jsonb_set), so a "Send later" email carries the same
-  // signature and tracking rewrites an immediate send would. Runs BEFORE the scheduled
-  // early-return so the worker later sends the already-prepared payload unchanged.
-  const bodyResult = await applyTrackingAndSignature(db, {
-    attemptId,
-    actorId: args.actorId,
-    sanitizedBody,
-    signatureId: input.signatureId,
-    trackOpens: resolvedTrackOpens,
-    trackLinks: resolvedTrackLinks,
-    recipient: input.to[0] ?? "",
-    signal,
-  });
-  if (!bodyResult.ok) return bodyResult;
-  const bodyForCopy = bodyResult.value;
-
-  // (d2) Scheduled send: if scheduledSendAt is in the future, return now (after body prep
-  // above). Enqueue a delayed pg-boss job so the worker fires processSendAttempt (which
-  // also does the CRM copy + token backfill via runSendJob) when the row becomes due.
-  // enqueueScheduledSendJob is a no-op when no boss is set (tests, web at boot), so
-  // DB-only tests stay free of a live queue.
-  if (isFutureScheduledSend(input.scheduledSendAt, Date.now())) {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    await enqueueScheduledSendJob(input.accountId, input.idempotencyKey, input.scheduledSendAt!);
-    return ok({ status: "scheduled" });
-  }
-
-  // (f) Process the outbox attempt (claim, stamp, send or reconcile).
-  const outcome = await processSendAttempt(db, {
-    accountId: input.accountId,
-    idempotencyKey: input.idempotencyKey,
-    gmail: args.gmail,
-    storage: args.storage,
-    signal,
-  });
-  if (!outcome.ok) return outcome;
-
-  // (g) On success store the CRM copy and backfill tokens; otherwise disable tokens.
-  if (outcome.value.status === "sent" && outcome.value.gmailMessageId !== undefined) {
-    const stored = await storeOutboundCopy(db, {
-      accountId: input.accountId,
-      fromEmail: emailAddress,
-      gmailMessageId: outcome.value.gmailMessageId,
-      // Store the CRM copy under the MERGED subject so the thread/message match what was sent.
-      input: { ...input, subject: mergedSubject },
-      resolvedTrackingEnabled: resolvedTrackOpens || resolvedTrackLinks,
-      bodyHtml: bodyForCopy,
-      // Create a NEW thread with the composer's chosen visibility (C1).
-      visibility: input.visibility,
-      gmail: args.gmail,
-      link: {
-        owner: actor,
-        recipients: [...input.to, ...(input.cc ?? []), ...(input.bcc ?? [])],
-        explicitPersonId: input.linkPersonId ?? null,
-        explicitDealId: input.linkDealId ?? null,
-      },
-      signal,
-    });
-    if (!stored.ok) return stored;
-    await backfillTokens(db, {
-      sendAttemptId: attemptId,
-      messageId: stored.value.messageId,
-      signal,
-    });
-    return ok({ status: "sent", messageId: outcome.value.gmailMessageId });
-  }
-
-  await disableTokens(db, attemptId, signal);
-  return ok({ status: outcome.value.status, messageId: outcome.value.gmailMessageId });
+  return deliverQueuedSend(db, { ...delivery, attemptId: enq.value.attemptId });
 }

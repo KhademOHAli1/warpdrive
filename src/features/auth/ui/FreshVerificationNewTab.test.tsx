@@ -56,6 +56,7 @@ it.each([
           status={status}
           refresh={vi.fn()}
           providerConfirmation="new_tab"
+          returnTo="//outside.example/PRIVATE-DRAFT-SENTINEL"
           embedded
         />
       </LocaleProvider>,

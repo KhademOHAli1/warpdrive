@@ -44,3 +44,11 @@ it("skips physical lines that are only whitespace (common in spreadsheet exports
   const { rows } = parseCsv("name\nJane\n   \nBob\n");
   expect(rows).toEqual([{ name: "Jane" }, { name: "Bob" }]);
 });
+
+it("preserves quoted phone bytes and other raw cell whitespace while normalizing only column headers", () => {
+  const phone = " ۰۹۱۲ ۳۴۵ ۶۷۸۹ ";
+  expect(parseCsv(` Name ,Phone\n Kontakt ,"${phone}"\n`)).toEqual({
+    headers: ["Name", "Phone"],
+    rows: [{ Name: " Kontakt ", Phone: phone }],
+  });
+});

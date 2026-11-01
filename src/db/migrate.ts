@@ -2,7 +2,8 @@ import { fileURLToPath } from "node:url";
 import { sql } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { err, ok, type Result } from "@/types/result";
-import { inspectMigrationAdmission, verifyWorkflowMigration } from "./migrationAdmissionDatabase";
+import { inspectMigrationAdmission } from "./migrationAdmissionDatabase";
+import { verifyMigrationIntegrity } from "./migrationAdmissionIntegrity";
 import { readCanonicalMigrations } from "./migrationAdmissionSource";
 
 // Default location: <repo-root>/drizzle, resolved relative to this module (src/db/migrate.ts),
@@ -37,11 +38,12 @@ export async function applyMigrations(
         currentSignal.throwIfAborted();
         const admitted = await inspectMigrationAdmission(tx, loaded.value, currentSignal);
         if (!admitted.ok) return admitted;
-        const workflow = loaded.value.findIndex((entry) => entry.tag.endsWith("_visual_workflows"));
-        if (workflow >= 0 && admitted.value > workflow) {
-          const integrity = await verifyWorkflowMigration(tx, loaded.value, currentSignal);
-          if (!integrity.ok) return integrity;
-        }
+        const before = await verifyMigrationIntegrity(
+          tx,
+          loaded.value.slice(0, admitted.value),
+          currentSignal,
+        );
+        if (!before.ok) return before;
         // Stock migrate(tx) uses the underlying session's BEGIN/COMMIT, not a savepoint.
         // Execute its already-hashed SQL/receipt format here so the fence spans one transaction.
         await tx.execute(sql`CREATE SCHEMA IF NOT EXISTS drizzle`);
@@ -56,7 +58,7 @@ export async function applyMigrations(
           await tx.execute(sql`INSERT INTO drizzle.__drizzle_migrations(hash,created_at)
           VALUES(${migration.hash},${migration.when})`);
         }
-        const integrity = await verifyWorkflowMigration(tx, loaded.value, currentSignal);
+        const integrity = await verifyMigrationIntegrity(tx, loaded.value, currentSignal);
         if (!integrity.ok) {
           rejection = integrity.error;
           tx.rollback();

@@ -6,6 +6,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/RadioGroup";
 import { Select } from "@/components/ui/Select";
 import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import type { HiddenBuiltinsMap } from "@/features/import/eligibleFields";
+import { IMPORT_DATE_FIELDS } from "@/features/import/importDateConventions";
 import { sampleValues } from "@/features/import/sampleValues";
 import {
   isMappingComplete,
@@ -19,6 +20,8 @@ import {
   UNMAPPED_SELECT_VALUE,
   valueToChoice,
 } from "./columnOptions";
+import { ImportDateOptions } from "./ImportDateOptions";
+import { PhoneImportCountryOption } from "./PhoneImportCountryOption";
 import { StageOptions } from "./StageOptions";
 
 export type { HiddenBuiltinsMap };
@@ -103,6 +106,31 @@ export function MapStep({
           </tbody>
         </table>
       </div>
+
+      {Object.values(state.columns).some((column) => column.field === "phones") && (
+        <PhoneImportCountryOption
+          value={state.phoneCountry}
+          onChange={(phoneCountry) => dispatch({ type: "setPhoneCountry", phoneCountry })}
+          disabled={busy}
+        />
+      )}
+
+      {Object.values(state.columns).some(
+        (column) =>
+          IMPORT_DATE_FIELDS.some((field) => field === column.field) ||
+          (column.isCustom &&
+            defs.some(
+              (def) => def.key === column.key && (def.type === "date" || def.type === "date_range"),
+            )),
+      ) && (
+        <ImportDateOptions
+          calendar={state.dateCalendar ?? "gregory"}
+          timeZone={state.dateTimeZone ?? "UTC"}
+          onCalendar={(dateCalendar) => dispatch({ type: "setDateCalendar", dateCalendar })}
+          onTimeZone={(dateTimeZone) => dispatch({ type: "setDateTimeZone", dateTimeZone })}
+          disabled={busy}
+        />
+      )}
 
       {showDedup && (
         <fieldset className="space-y-1.5">

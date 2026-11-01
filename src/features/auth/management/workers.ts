@@ -7,6 +7,7 @@ import { pruneEmailVerificationTokens } from "@/features/auth/better/emailVerifi
 import { pruneAuthRateLimits } from "@/features/auth/better/rateLimit";
 import { pruneTotpReplays } from "@/features/auth/better/totpReplay";
 import { decryptToken } from "@/features/email/crypto";
+import { pruneMailboxProofs } from "@/features/email/mailConnectionMaintenance";
 import { expireAuthenticationRecords } from "./administration";
 import { MAIL_LEASE_MS } from "./domain";
 import { dispatchAuthMail } from "./mail";
@@ -83,6 +84,7 @@ export async function registerAuthMailWorker(boss: PgBoss, db: Db): Promise<void
     await dispatchAuthMail(db, signal);
     await dispatchIntegrationRevocations(db, signal);
     await expireAuthenticationRecords(db, signal);
+    await pruneMailboxProofs(db, signal);
     await pruneAuthRateLimits(db, signal);
     await pruneTotpReplays(db, signal);
     await pruneEmailVerificationTokens(db, signal);

@@ -1,4 +1,5 @@
 /// <reference lib="es2023.intl" />
+import { formatToman } from "./iranianMoney";
 import { type FormattingPreferences, localeTagForFormatting } from "./localeFormatting";
 
 // Currency is business data, independent of interface language. Stored decimal values
@@ -8,6 +9,8 @@ export function formatCurrency(
   currency = "USD",
   preferences: Partial<FormattingPreferences> = {},
 ): string {
+  if (currency === "IRR" && preferences.iranianMoneyUnit === "toman")
+    return formatToman(value, preferences);
   const n = typeof value === "number" ? value : Number(value);
   if (!Number.isFinite(n)) return "";
   // Intl formats decimal strings exactly; converting a large total to Number loses its fraction.

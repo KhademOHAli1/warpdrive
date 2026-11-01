@@ -25,6 +25,10 @@ export function importDiagnosticMessage(
     "settings._extra.importErrors",
     options.numberingSystem,
   );
+  if (diagnostic === "ambiguous local time; include an explicit UTC offset")
+    return createAppTranslator(options.locale, "dataConventions")("dates.ambiguous");
+  if (diagnostic === "local time does not exist in the selected time zone")
+    return createAppTranslator(options.locale, "dataConventions")("dates.nonexistent");
   switch (diagnostic) {
     case "not permitted to update":
       return t("permission");

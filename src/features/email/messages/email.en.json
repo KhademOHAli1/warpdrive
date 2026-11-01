@@ -1,4 +1,20 @@
 {
+  "remoteActions": {
+    "unavailable": "This action is unavailable for this mailbox or folder. Check the connection and write permissions.",
+    "move": "Move to folder",
+    "moveTitle": "Move conversation",
+    "moveDescription": "Choose a folder in this email account.",
+    "folder": "Destination folder",
+    "chooseFolder": "Choose a folder",
+    "loading": "Loading folders…",
+    "empty": "No writable folders are available.",
+    "outsideView": "This folder is not selected for sync. The conversation will leave this view.",
+    "confirm": "Move conversation",
+    "moving": "Moving…",
+    "cancel": "Cancel",
+    "refreshBeforeRetry": "The server may have applied some changes. Refresh this conversation before trying again.",
+    "refresh": "Refresh conversation"
+  },
   "title": "Inbox",
   "composeTitle": "New email",
   "loadingDraft": "Loading draft...",
@@ -319,5 +335,39 @@
     "markUnread": "Mark unread",
     "selection": "Conversation selection",
     "resumeReply": "Continue reply: {subject}"
+  },
+  "privateIntake": {
+    "title": "Private email review",
+    "review": "Review copy",
+    "dialogTitle": "Review private copy",
+    "description": "Only you can view this copy. Reviewing it does not confirm a send or send the email again.",
+    "confirmedDescription": "This copy matches the email service’s send acknowledgement. Your review does not change its send status.",
+    "restrictions": "Replies, sharing, archiving and links to CRM records are unavailable for this copy.",
+    "dismissDescription": "Hiding this item only removes it from the review list. The private copy is kept.",
+    "keepPrivate": "Keep private",
+    "dismiss": "Hide from review list",
+    "restore": "Return to review list",
+    "cancel": "Cancel",
+    "saving": "Saving review…",
+    "saved": "Review saved",
+    "refresh": "Refresh review",
+    "refreshing": "Refreshing review…",
+    "contentRemoved": "The stored content has been removed. Reviewing this item cannot restore it.",
+    "states": {
+      "unverified": "Needs review",
+      "conflict": "Manual review",
+      "confirmed_notification": "Notification copy"
+    },
+    "decisions": {
+      "keep_private": "Kept private",
+      "dismiss": "Hidden from the review list",
+      "restore_private": "Returned to the review list"
+    },
+    "errors": {
+      "forbidden": "You no longer have permission to review this copy. Refresh this email to check your access.",
+      "conflict": "This review changed elsewhere. Refresh this email before making another choice.",
+      "not_found": "This review is no longer available. Refresh this email to get its current status.",
+      "unavailable": "We could not confirm that your review was saved. Refresh this email before trying again."
+    }
   }
 }

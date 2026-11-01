@@ -13,6 +13,8 @@ import type { ActionResult } from "@/types/actionResult";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import type { InboxFilter, InboxThread } from "./emailReads";
 import { archiveThreadAction, unarchiveThreadAction } from "./folderActions";
+import { MailOperationHint } from "./MailOperationHint";
+import { canApplySelectedMailAction } from "./privateIntakePolicy";
 import { markThreadReadAction, markThreadUnreadAction } from "./readActions";
 import { ThreadListToolbar } from "./ThreadListToolbar";
 import { canArchiveInFolder, canSelectInFolder, type ThreadFolder, ThreadRow } from "./ThreadRow";
@@ -141,11 +143,13 @@ export function ThreadList({
   }
 
   function bulkArchive(): void {
+    if (!canBulkArchive) return;
     const op = folder === "archive" ? unarchiveThreadAction : archiveThreadAction;
     void applyBulk((threadId) => op(readCsrfToken(), { threadId }), afterArchive);
   }
 
   function bulkMarkRead(): void {
+    if (!canBulkRead) return;
     void applyBulk(
       (threadId) => markThreadReadAction(readCsrfToken(), { threadId }),
       afterReadChange,
@@ -153,6 +157,7 @@ export function ThreadList({
   }
 
   function bulkMarkUnread(): void {
+    if (!canBulkRead) return;
     void applyBulk(
       (threadId) => markThreadUnreadAction(readCsrfToken(), { threadId }),
       afterReadChange,
@@ -160,6 +165,8 @@ export function ThreadList({
   }
 
   const visibleIds = threads.map((t) => t.id);
+  const canBulkRead = canApplySelectedMailAction(sourceThreads, selection.selected, "markRead");
+  const canBulkArchive = canApplySelectedMailAction(sourceThreads, selection.selected, "archive");
 
   return (
     <div className="flex flex-col h-full">
@@ -196,29 +203,33 @@ export function ThreadList({
               {canArchiveInFolder(folder) && (
                 <button
                   type="button"
-                  disabled={bulkBusy}
+                  disabled={bulkBusy || !canBulkArchive}
                   onClick={bulkArchive}
                   className="rounded-md border px-3 py-1 text-sm transition-transform hover:bg-accent active:scale-[0.96] disabled:opacity-50"
                 >
                   {folder === "archive" ? E._extra.unarchive : E._extra.archive}
                 </button>
               )}
-              <button
-                type="button"
-                disabled={bulkBusy}
-                onClick={bulkMarkRead}
-                className="rounded-md border px-3 py-1 text-sm transition-transform hover:bg-accent active:scale-[0.96] disabled:opacity-50"
-              >
-                {E._extra.mark_read}
-              </button>
-              <button
-                type="button"
-                disabled={bulkBusy}
-                onClick={bulkMarkUnread}
-                className="rounded-md border px-3 py-1 text-sm transition-transform hover:bg-accent active:scale-[0.96] disabled:opacity-50"
-              >
-                {E._extra.mark_unread}
-              </button>
+              <MailOperationHint enabled={canBulkRead}>
+                <button
+                  type="button"
+                  disabled={bulkBusy || !canBulkRead}
+                  onClick={bulkMarkRead}
+                  className="rounded-md border px-3 py-1 text-sm transition-transform hover:bg-accent active:scale-[0.96] disabled:opacity-50"
+                >
+                  {E._extra.mark_read}
+                </button>
+              </MailOperationHint>
+              <MailOperationHint enabled={canBulkRead}>
+                <button
+                  type="button"
+                  disabled={bulkBusy || !canBulkRead}
+                  onClick={bulkMarkUnread}
+                  className="rounded-md border px-3 py-1 text-sm transition-transform hover:bg-accent active:scale-[0.96] disabled:opacity-50"
+                >
+                  {E._extra.mark_unread}
+                </button>
+              </MailOperationHint>
             </div>
           </BulkActionBar>
         </div>

@@ -19,6 +19,19 @@ export const DISCOVERY_COVERAGE: readonly DiscoveryCoverage[] = [
     "Version-bound candidate IDs and explicit relationships only; content and exact approved scope require further review.",
   ),
   ...group(
+    [
+      "mail_connection_checks",
+      "mail_folders",
+      "mail_message_locators",
+      "email_delivery_reports",
+      "email_delivery_reviews",
+      "email_private_intake",
+      "email_private_intake_reviews",
+    ],
+    "unsupported",
+    "Mailbox security proofs, folder/UID provenance, delivery-recipient evidence and duplicated private intake payloads require purpose-specific subject and lifecycle adapters. Local pointer cleanup or dismissal does not establish content erasure, credential disclosure authority or remote receipt.",
+  ),
+  ...group(
     ["integration_connections", "integration_events", "integration_oauth_attempts"],
     "unsupported",
     "Workspace credentials, OAuth attempt security material and connection event provenance require dedicated subject-aware adapters. Workspace ownership or current administration does not establish disclosure or remote-erasure authority.",

@@ -118,7 +118,8 @@ export const discoveryAdapters: readonly DiscoveryAdapter[] = [
   },
   {
     store: "email_drafts",
-    source: "email_drafts.link_person_id/link_deal_id/thread_id/account_id/to_emails/cc_emails",
+    source:
+      "email_drafts.link_person_id/link_deal_id/thread_id/account_id/to_emails/cc_emails/bcc_emails",
     query: (s) =>
       query(
         "email_drafts",

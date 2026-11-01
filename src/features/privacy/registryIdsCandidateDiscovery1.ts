@@ -1,9 +1,10 @@
 // Reviewed identifiers. New or changed boundaries require inventory review, never automatic acceptance.
 export const candidateDiscoveryIds1: string[] = [
+  "sourceReview:src/features/privacy/discoveryContent.ts#d8312cb860635d51779c1910ef26c34bb7c28a9afe2d4da64628dc331f7acb30",
   "derived:src/features/privacy/discoveryCoverage.ts",
   "sourceReview:src/features/privacy/discovery.ts#b170fbd5b54172b74d356a55eb99f0ca8c76c3b39beafe73daf207a08c683591",
-  "sourceReview:src/features/privacy/discoveryAdapters.ts#10d0c4062e356bad300ff8493940cd80d31986cf228a84404f6863faf4824546",
-  "sourceReview:src/features/privacy/discoveryCoverage.ts#3216249466dd103d0d338302bdf9d3f74b98d52687fd481bb2e2100e1eb86502",
+  "sourceReview:src/features/privacy/discoveryAdapters.ts#4fcfeac783d9045a893fa5248b80fc98fb348af26b6c52e3494059afa28ba7c1",
+  "sourceReview:src/features/privacy/discoveryCoverage.ts#5f47328087bd2f04196cdffd13bb7572d5bd28bcb6215db944e20ff281fbb00a",
   "writer:src/features/privacy/discovery.ts#execute:sql",
   "writer:src/features/privacy/discovery.ts#query:subject",
   "writer:src/features/privacy/discoveryAdapters.ts#query:activities",

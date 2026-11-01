@@ -2,6 +2,7 @@ import { sql } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { withTestDb } from "@/db/testing";
 import { ok } from "@/types/result";
+import { seedMailHttpSession } from "./mailConnectionHttp.test-helpers";
 import { buildAuthUrl, exchangeAndBind, stateMatches } from "./oauth";
 
 // Injected HTTP layer (token exchange + identity). The DB write hits real Postgres.
@@ -19,15 +20,9 @@ const goodDeps = {
 
 type TestDb = Parameters<Parameters<typeof withTestDb>[0]>[0];
 
-async function seedUser(
-  db: TestDb,
-  email = "me@example.com",
-  sub = "sub-me",
-): Promise<{ id: string }> {
-  const res = await db.execute(
-    sql`INSERT INTO users (email, name, google_sub) VALUES (${email},'Me',${sub}) RETURNING id`,
-  );
-  return res.rows[0] as { id: string };
+async function seedUser(db: TestDb, email = "me@example.com", sub = "sub-me") {
+  const f = await seedMailHttpSession(db, { email, googleSub: sub });
+  return { id: f.user.id, sessionId: f.context.sessionId };
 }
 
 describe("stateMatches (login-CSRF state compare)", () => {
@@ -51,7 +46,9 @@ describe("Gmail consent scopes", () => {
   // hd ONLY when the access token carries an OIDC identity scope. Without one, userinfo
   // 403s, fetchIdentity errors, and the connect silently fails with no mailbox stored.
   // So the consent URL MUST request openid + email alongside the Gmail scopes.
-  const scopes = new URLSearchParams(buildAuthUrl({ userId: "u1", state: "s1" }).split("?")[1])
+  const scopes = new URLSearchParams(
+    buildAuthUrl({ userId: "u1", state: "s1", codeChallenge: "challenge" }).split("?")[1],
+  )
     .get("scope")
     ?.split(" ");
 
@@ -72,8 +69,10 @@ describe("OAuth identity binding", () => {
       const u = await seedUser(db);
       const r = await exchangeAndBind({
         db,
+        signal: new AbortController().signal,
         code: "c",
         sessionUserId: u.id,
+        sessionId: u.sessionId,
         sessionEmail: "me@example.com",
         deps: goodDeps,
       });
@@ -100,8 +99,10 @@ describe("OAuth identity binding", () => {
       };
       const r = await exchangeAndBind({
         db,
+        signal: new AbortController().signal,
         code: "c",
         sessionUserId: u.id,
+        sessionId: u.sessionId,
         sessionEmail: "me@example.com",
         deps: badDeps,
       });
@@ -119,8 +120,10 @@ describe("OAuth identity binding", () => {
       const u = await seedUser(db);
       const r = await exchangeAndBind({
         db,
+        signal: new AbortController().signal,
         code: "c",
         sessionUserId: u.id,
+        sessionId: u.sessionId,
         sessionEmail: "me@example.com",
         deps: {
           ...goodDeps,
@@ -139,8 +142,10 @@ describe("OAuth identity binding", () => {
       const u = await seedUser(db);
       const r = await exchangeAndBind({
         db,
+        signal: new AbortController().signal,
         code: "c",
         sessionUserId: u.id,
+        sessionId: u.sessionId,
         sessionEmail: "me@example.com",
         deps: {
           ...goodDeps,
@@ -160,11 +165,13 @@ describe("OAuth identity binding", () => {
   it("rejects a second user binding an address already connected to another user (no 500, no clobber)", async () => {
     await withTestDb(async (db) => {
       // User A connects shared@example.com successfully.
-      const a = await seedUser(db, "a@example.com", "sub-a");
+      const a = await seedUser(db, "shared@example.com", "sub-a");
       const aBind = await exchangeAndBind({
         db,
+        signal: new AbortController().signal,
         code: "c",
         sessionUserId: a.id,
+        sessionId: a.sessionId,
         sessionEmail: "shared@example.com",
         deps: {
           ...goodDeps,
@@ -176,12 +183,17 @@ describe("OAuth identity binding", () => {
       });
       expect(aBind.ok).toBe(true);
 
+      // A later changes their CRM address; historical mailbox ownership remains A's.
+      await db.execute(sql`UPDATE users SET email='a@example.com' WHERE id=${a.id}`);
+      await db.execute(sql`UPDATE auth_users SET email='a@example.com' WHERE id=${a.id}`);
       // User B (a different session) tries to bind the same Gmail address.
       const b = await seedUser(db, "shared@example.com", "sub-b");
       const bBind = await exchangeAndBind({
         db,
+        signal: new AbortController().signal,
         code: "c2",
         sessionUserId: b.id,
+        sessionId: b.sessionId,
         sessionEmail: "shared@example.com",
         deps: {
           ...goodDeps,

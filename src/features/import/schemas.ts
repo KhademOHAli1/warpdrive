@@ -1,6 +1,8 @@
 import { z } from "zod";
 import { DEFAULT_IMPORT_SOURCE, type ImportSource } from "@/constants/importSources";
 import { DEDUP_MODES } from "@/constants/importStatus";
+import { isTimeZone } from "@/features/i18n/preferences";
+import { PHONE_COUNTRIES } from "@/utils/phoneNormalization";
 import type { MappableEntity } from "./importFields";
 import {
   ENTITY_FIELDS,
@@ -37,6 +39,9 @@ export const columnMappingSchema = z.object({
   options: z
     .object({
       rowNoteFromUnmapped: z.boolean().default(false),
+      phoneCountry: z.enum(PHONE_COUNTRIES).optional(),
+      dateCalendar: z.enum(["gregory", "persian"]).optional(),
+      dateTimeZone: z.string().min(1).max(100).refine(isTimeZone).optional(),
       createMissingStages: z.boolean().default(false),
     })
     .default({ rowNoteFromUnmapped: false, createMissingStages: false }),

@@ -8,6 +8,7 @@ import { resolveAccountLocalePreferences } from "./accountPreferences";
 import { type AppNamespace, createAppTranslator } from "./catalog";
 import {
   CALENDAR_COOKIE,
+  IRANIAN_MONEY_UNIT_COOKIE,
   LOCALE_COOKIE,
   NUMBERING_SYSTEM_COOKIE,
   resolveLocalePreferences,
@@ -21,6 +22,7 @@ export const getLocalePreferences = cache(async () => {
     calendar: jar.get(CALENDAR_COOKIE)?.value,
     timeZone: jar.get(TIME_ZONE_COOKIE)?.value,
     numberingSystem: jar.get(NUMBERING_SYSTEM_COOKIE)?.value,
+    iranianMoneyUnit: jar.get(IRANIAN_MONEY_UNIT_COOKIE)?.value,
   };
   if (jar.get(SESSION_COOKIE) === undefined) return resolveLocalePreferences(raw);
   const { actor } = await createContext();

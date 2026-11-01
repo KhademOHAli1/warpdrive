@@ -3,6 +3,10 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { useState } from "react";
 import { afterEach, expect, it } from "vitest";
+import {
+  INTERFACE_PREFS_DEFAULT,
+  InterfacePrefsProvider,
+} from "@/features/identity/InterfacePrefsProvider";
 import type { ContactPoint } from "@/types/contactPoint";
 import { ContactPointsValue, contactPointsEditor } from "./ContactPointsField";
 import { parsePoints, serializePoints } from "./contactPoints";
@@ -107,4 +111,19 @@ it("locks the rows while a save is in flight", () => {
   expect(screen.getByRole("button", { name: "Remove Email 1" })).toBeDisabled();
   expect(screen.getByRole("radio", { name: "Make Email 2 primary" })).toBeDisabled();
   expect(screen.getByRole("button", { name: "+ Add email" })).toBeDisabled();
+});
+
+it("keeps a selected German national phone's authored text when US display formatting is enabled and dials its canonical international value", () => {
+  render(
+    <InterfacePrefsProvider value={{ ...INTERFACE_PREFS_DEFAULT, usPhoneFormat: true }}>
+      <ContactPointsValue
+        kind="Phone"
+        points={[{ label: "work", value: "0301234567", country: "DE", primary: true }]}
+      />
+    </InterfacePrefsProvider>,
+  );
+  expect(screen.getByRole("link", { name: "0301234567" })).toHaveAttribute(
+    "href",
+    "tel:+49301234567",
+  );
 });

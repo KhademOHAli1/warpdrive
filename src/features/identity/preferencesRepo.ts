@@ -2,6 +2,7 @@ import { eq, sql } from "drizzle-orm";
 import type { DealSidebarSectionPreference } from "@/constants/dealSidebarSections";
 import type { Db } from "@/db/client";
 import { userPreferences } from "@/db/schema";
+import type { DbOrTx } from "@/server/realtime/channelVersions";
 import {
   type Density,
   densitySchema,
@@ -12,7 +13,7 @@ import {
 } from "./preferencesSchema";
 
 export async function getPreferences(
-  db: Db,
+  db: DbOrTx,
   userId: string,
   signal: AbortSignal,
 ): Promise<Preferences> {

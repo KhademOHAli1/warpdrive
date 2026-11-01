@@ -33,8 +33,18 @@ describe("ensureAccessToken", () => {
   it("reuses a cached token that is not near expiry (no refresh call)", async () => {
     await withTestDb(async (db) => {
       const id = await seedAccount(db);
-      const cached: AccessToken = { token: "still-good", expiresAt: Date.now() + 600_000 };
-      const r = await ensureAccessToken(db, { accountId: id, cached, deps: refreshShouldNotRun });
+      const cached: AccessToken = {
+        token: "still-good",
+        expiresAt: Date.now() + 600_000,
+        connectionGeneration: 1,
+        credentialVersion: 1,
+      };
+      const r = await ensureAccessToken(db, {
+        accountId: id,
+        signal: new AbortController().signal,
+        cached,
+        deps: refreshShouldNotRun,
+      });
       expect(r.ok).toBe(true);
       if (r.ok) expect(r.value.token).toBe("still-good");
     });
@@ -46,6 +56,7 @@ describe("ensureAccessToken", () => {
       let seenRefresh: string | undefined;
       const r = await ensureAccessToken(db, {
         accountId: id,
+        signal: new AbortController().signal,
         now: 1_000_000,
         deps: {
           refresh: (rt) => {
@@ -69,6 +80,7 @@ describe("ensureAccessToken", () => {
       const id = await seedAccount(db);
       const r = await ensureAccessToken(db, {
         accountId: id,
+        signal: new AbortController().signal,
         deps: {
           refresh: () => Promise.resolve(err(new AppError("E_GMAIL_002", "invalid_grant", {}))),
         },
@@ -95,6 +107,7 @@ describe("ensureAccessToken", () => {
       const id = await seedAccount(db);
       const r = await ensureAccessToken(db, {
         accountId: id,
+        signal: new AbortController().signal,
         deps: {
           refresh: () => Promise.resolve(err(new AppError("E_GMAIL_001", "rate limited", {}))),
         },
@@ -119,6 +132,7 @@ describe("ensureAccessToken", () => {
       );
       const r = await ensureAccessToken(db, {
         accountId: id,
+        signal: new AbortController().signal,
         deps: refreshShouldNotRun,
       });
       expect(r.ok).toBe(false);
@@ -137,6 +151,7 @@ describe("ensureAccessToken", () => {
       const id = await seedAccount(db);
       const r = await ensureAccessToken(db, {
         accountId: id,
+        signal: new AbortController().signal,
         deps: {
           refresh: () =>
             Promise.resolve(
@@ -150,6 +165,7 @@ describe("ensureAccessToken", () => {
       let seenRefresh: string | undefined;
       const r2 = await ensureAccessToken(db, {
         accountId: id,
+        signal: new AbortController().signal,
         deps: {
           refresh: (rt) => {
             seenRefresh = rt;

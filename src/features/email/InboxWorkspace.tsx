@@ -18,6 +18,7 @@ import {
 import type { InboxLocation } from "./inboxLocation";
 import styles from "./inboxWorkspace.module.css";
 import { OutboxList } from "./OutboxList";
+import { canApplySelectedMailAction } from "./privateIntakePolicy";
 import { markThreadReadAction } from "./readActions";
 import { NO_ATTRIBUTE_FILTER } from "./threadAttributeFilter";
 import { runBulk } from "./threadBulkActions";
@@ -77,6 +78,8 @@ export function InboxWorkspace({
   const threads = feed.data?.pages.flatMap((page) => page.threads) ?? [];
   const total = feed.data?.pages[0]?.total ?? 0;
   const ids = threads.map((thread) => thread.id);
+  const canBulkArchive = canApplySelectedMailAction(threads, selection.selected, "archive");
+  const canBulkRead = canApplySelectedMailAction(threads, selection.selected, "markRead");
   const pending = feed.isPending || (location.query !== "" && location.query !== query);
   const failed = Boolean(feed.error);
   const narrowed =
@@ -91,6 +94,7 @@ export function InboxWorkspace({
   };
   const closeReader = () => onNavigate({ ...location, threadId: null }, true);
   const applyBulk = async (readOnly: boolean): Promise<void> => {
+    if (readOnly ? !canBulkRead : !canBulkArchive) return;
     setBusy(true);
     setBulkError(false);
     try {
@@ -152,6 +156,8 @@ export function InboxWorkspace({
               onMarkRead={() => void applyBulk(true)}
               onClearSelection={selection.clear}
               busy={busy}
+              canArchive={canBulkArchive}
+              canMarkRead={canBulkRead}
               onRefresh={refresh}
             />
             {bulkError && (

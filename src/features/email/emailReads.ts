@@ -4,8 +4,20 @@ import type { Db } from "@/db/client";
 import type { AuthUser } from "@/features/permissions/types";
 import { err, ok, type Result } from "@/types/result";
 import { type AttachmentMeta, attachmentsForMessages } from "./attachmentReads";
+import {
+  type DeliveryObservationMessageRef,
+  readDeliveryObservationMessageRefs,
+} from "./deliveryObservationMessageRefs";
 import { canSeeEmail } from "./emailVisibility";
+import {
+  NO_MAIL_CAPABILITIES,
+  type ThreadMailCapabilities,
+  threadMailCapabilities,
+} from "./imapThreadOperationsCapabilities";
 import { plainTextToSafeHtml } from "./plainText";
+import { readPrivateIntakeProjection } from "./privateIntakeProjection";
+import { privateIntakeBlocksThread } from "./privateIntakeRestrictions";
+import type { PrivateIntakeSummary } from "./privateIntakeTypes";
 import { sanitizeInboundHtml } from "./sanitizeHtml";
 import type { InboxThread, ThreadRow } from "./threadShape";
 import { toVisibilityRow } from "./threadShape";
@@ -21,7 +33,7 @@ export { toInboxThread } from "./threadShape";
 
 export interface ThreadMessage {
   messageId: string;
-  gmailMessageId: string;
+  gmailMessageId: string | null;
   direction: string;
   fromEmail: string;
   // Parsed From display name for the reader message header (PD shows "Name <email>"), null for bare.
@@ -36,6 +48,10 @@ export interface ThreadMessage {
   // when the message has no tracking tokens or no hits yet. Distinct from the transient
   // WS trackingBadge in ThreadPane, which only nudges for the current session.
   tracking: TrackingEvent[];
+  // Optional for existing client fixtures; server readers always project an explicit null
+  // when current owner authority or stored report evidence is unavailable.
+  deliveryReportRef?: DeliveryObservationMessageRef | null;
+  privateIntake?: PrivateIntakeSummary | null;
 }
 
 export interface ThreadView {
@@ -44,8 +60,8 @@ export interface ThreadView {
   // accountId: the thread's mailbox account. Comes from the server; NEVER fabricated
   // client-side. Required so the Composer can pass the correct send accountId.
   accountId: string;
-  // canCompose: true only when the actor owns the mailbox (email_accounts.user_id === actor.id).
-  // Computed server-side after the canSeeEmail check so privacy semantics are unchanged.
+  // Owner local-management eligibility. Protected intake is excluded; actual
+  // composing/sending additionally requires mailCapabilities.send in the reader.
   canCompose: boolean;
   // The mailbox's own address (email_accounts.email_address). The reader uses this as the
   // "self" address so buildReplyPrefill can exclude it from reply-all recipients.
@@ -54,6 +70,9 @@ export interface ThreadView {
   // (Pipedrive parity) instead of the type noun "Person" / "Deal". Null when not linked.
   personName: string | null;
   dealTitle: string | null;
+  mailCapabilities?: ThreadMailCapabilities;
+  mailProvider?: "gmail" | "imap_smtp" | "microsoft";
+  privateIntake?: PrivateIntakeSummary | null;
 }
 
 // jsonb columns (to_emails/cc_emails) round-trip through the driver as `unknown`;
@@ -74,7 +93,8 @@ export async function getThread(
   const t = (
     await db.execute(sql`
       SELECT id, subject, last_message_at, person_id, deal_id, visibility, account_id,
-        follow_up_status, labels
+        follow_up_status, labels,
+        ${privateIntakeBlocksThread(sql`email_threads.account_id`, sql`email_threads.id`)} AS private_intake_protected
       FROM email_threads WHERE id=${args.threadId} AND trashed_at IS NULL
     `)
   ).rows[0] as unknown as ThreadRow | undefined;
@@ -91,7 +111,7 @@ export async function getThread(
     `)
   ).rows as {
     id: string;
-    gmail_message_id: string;
+    gmail_message_id: string | null;
     direction: string;
     from_email: string;
     from_name: string | null;
@@ -112,7 +132,23 @@ export async function getThread(
   signal.throwIfAborted();
   const trackingByMessage = await trackingForMessages(db, messageIds, signal);
   signal.throwIfAborted();
+  const deliveryRefs = await readDeliveryObservationMessageRefs(
+    db,
+    { actor: args.actor, accountId: t.account_id, messageIds },
+    signal,
+  );
+  signal.throwIfAborted();
 
+  const privateProjection = await readPrivateIntakeProjection(
+    db,
+    {
+      actor: args.actor,
+      threadIds: [t.id],
+      messageIds,
+    },
+    signal,
+  );
+  const privateIntake = privateProjection.threads.get(t.id) ?? null;
   const messages: ThreadMessage[] = rows.map((m) => ({
     messageId: m.id,
     gmailMessageId: m.gmail_message_id,
@@ -133,6 +169,8 @@ export async function getThread(
     sentAt: m.sent_at,
     attachments: attachmentsByMessage.get(m.id) ?? [],
     tracking: trackingByMessage.get(m.id) ?? [],
+    deliveryReportRef: deliveryRefs.get(m.id) ?? null,
+    privateIntake: privateProjection.messages.get(m.id) ?? null,
   }));
 
   // Compute canCompose: actor owns the mailbox iff email_accounts.user_id === actor.id.
@@ -140,11 +178,19 @@ export async function getThread(
   // carries the mailbox address (ownerEmail) the reader needs as the reply/forward "self".
   const acctRow = (
     await db.execute(
-      sql`SELECT user_id, email_address FROM email_accounts WHERE id=${t.account_id}`,
+      sql`SELECT user_id, email_address,provider FROM email_accounts WHERE id=${t.account_id}`,
     )
-  ).rows[0] as { user_id: string; email_address: string } | undefined;
+  ).rows[0] as
+    | { user_id: string; email_address: string; provider: "gmail" | "imap_smtp" | "microsoft" }
+    | undefined;
   signal.throwIfAborted();
-  const canCompose = acctRow !== undefined && acctRow.user_id === args.actor.id;
+  const isOwner = acctRow !== undefined && acctRow.user_id === args.actor.id;
+  const mailCapabilities =
+    (await threadMailCapabilities(db, args.actor, [t.id], signal)).get(t.id) ??
+    NO_MAIL_CAPABILITIES;
+  // Ownership still permits ordinary local management while sending is disabled.
+  // Protected classification is authoritative even if the nullable hint is unavailable.
+  const canCompose = isOwner && t.private_intake_protected !== true;
 
   // Linked-record display labels: the reader header shows the person's NAME and the deal's TITLE,
   // not the type nouns "Person" / "Deal" (Pipedrive parity; the link-shows-type-noun smell).
@@ -178,14 +224,14 @@ export async function getThread(
       unread: false,
       followUpStatus: t.follow_up_status,
       labels: t.labels,
-      // Owning the mailbox is exactly canCompose, computed above; reuse it so the reader can gate
-      // the same owner-only privacy affordance the list row does.
-      isOwner: canCompose,
+      isOwner,
       // The reader shows the full messages below, so the list-row sender/snippet aren't projected here.
       senderEmail: null,
       senderName: null,
       snippet: null,
       hasAttachment: false,
+      mailCapabilities,
+      privateIntake,
     },
     messages,
     accountId: t.account_id,
@@ -193,5 +239,8 @@ export async function getThread(
     ownerEmail: acctRow?.email_address ?? "",
     personName,
     dealTitle,
+    mailCapabilities,
+    mailProvider: acctRow?.provider,
+    privateIntake,
   });
 }

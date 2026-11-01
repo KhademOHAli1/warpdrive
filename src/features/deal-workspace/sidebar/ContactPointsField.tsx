@@ -4,8 +4,10 @@ import type React from "react";
 import { Input } from "@/components/ui/Input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/RadioGroup";
 import { MAX_EMAIL_LEN, MAX_PHONE_LEN } from "@/features/contacts/fieldBounds";
+import { PhoneNumberInput } from "@/features/contacts/PhoneNumberInput";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import type { ContactPoint } from "@/types/contactPoint";
+import type { PhoneCountry } from "@/utils/phoneNormalization";
 import { LinkValue, mailtoHref, telHref } from "./contactLinks";
 import {
   appendPoint,
@@ -24,8 +26,8 @@ const MAX_LEN: Record<ContactPointKind, number> = {
   Phone: MAX_PHONE_LEN,
 };
 
-function href(kind: ContactPointKind, value: string): string {
-  return kind === "Email" ? mailtoHref(value) : telHref(value);
+function href(kind: ContactPointKind, value: string, country?: PhoneCountry): string {
+  return kind === "Email" ? mailtoHref(value) : telHref(value, country);
 }
 
 export function ContactPointsValue({
@@ -44,7 +46,9 @@ export function ContactPointsValue({
           className="min-w-0 max-w-full break-words"
         >
           <bdi dir="ltr">
-            <LinkValue href={href(kind, point.value)}>{point.value}</LinkValue>
+            <LinkValue href={href(kind, point.value, point.country)} phoneCountry={point.country}>
+              {point.value}
+            </LinkValue>
           </bdi>
         </span>
       ))}
@@ -104,15 +108,29 @@ export function ContactPointsEditor({
             key={index}
             className="flex items-center gap-1"
           >
-            <Input
-              aria-label={translateSales("computed.contactRow", { kind: noun, index: index + 1 })}
-              type={kind === "Email" ? "email" : "tel"}
-              maxLength={MAX_LEN[kind]}
-              value={row.value}
-              disabled={disabled}
-              onChange={(e) => commit(setValueAt(rows, index, e.target.value))}
-              className="order-2 h-8 min-w-0 flex-1 px-2 py-1"
-            />
+            {kind === "Phone" ? (
+              <PhoneNumberInput
+                value={row.value}
+                country={row.country}
+                onChange={(value) => commit(setValueAt(rows, index, value))}
+                onCountryChange={(country) =>
+                  commit(rows.map((point, i) => (i === index ? { ...point, country } : point)))
+                }
+                ariaLabel={translateSales("computed.contactRow", { kind: noun, index: index + 1 })}
+                disabled={disabled}
+                className="order-2 min-w-0 flex-1 space-y-1"
+              />
+            ) : (
+              <Input
+                aria-label={translateSales("computed.contactRow", { kind: noun, index: index + 1 })}
+                type="email"
+                maxLength={MAX_LEN[kind]}
+                value={row.value}
+                disabled={disabled}
+                onChange={(e) => commit(setValueAt(rows, index, e.target.value))}
+                className="order-2 h-8 min-w-0 flex-1 px-2 py-1"
+              />
+            )}
             {rows.length > 1 && (
               <RadioGroupItem
                 value={String(index)}

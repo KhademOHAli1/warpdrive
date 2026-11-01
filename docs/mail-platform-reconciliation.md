@@ -1,0 +1,42 @@
+# Mail and shared integration foundation reconciliation
+
+Prepared 31 October 2026. Ali explicitly authorized inter-chat coordination. Named ownership and the integrated migration reservation below are agreed with the platform owner; exact API implementation mapping and final qualification remain under review. Neither goal was replaced.
+
+Current qualification note, 1 November 2026: this document retains the original reconciliation agreement as history. Work now uses the isolated `codex/mail-platform-candidate` checkout at `/Users/ali/Developer/warpdrive-mail-platform`. Published main is `a0490c16a9954d9a03c3bb22bfb69944db433a77`, with Privacy83..85, so the old platform83/84 plus mail85..91 numbering is not a global migration allocation. Local92/93 additions remain isolated. Current-main adoption and preserved installed histories require the separately reviewed convergence/admission work in [mail-migration-qualification.md](mail-migration-qualification.md). No peer checkout or installed ledger has been rewritten.
+
+## Current mail ownership
+
+The active P0/P1 mail goal uses `/Users/ali/Developer/warpdrive-integrations`, branch `codex/local-integrations`, originally based on main `8539fe8`. Immutable source cuts are `aab6c3d` (queue/logging), `297c1dd` (mail/regional), `27326c6` (active SMTP status) and `de74493` (operator guides). The latest main auth refinements were verified byte-identical and their committed history was fast-forwarded to `a1a8f6da1ce366c35002900bf33508356dfbb995`, preserving every mail/regional change. New uncommitted parser/tests are follow-up work, not part of those cuts.
+
+Mail owns the email domain/schema, IMAP/SMTP transports, email connection proof/check/settings workflows, mailbox identity/defaults, provider-aware inbox/composer/attachments, native authority fences, regional data conventions and their tests. Preserve all current UI and unrelated peer work. Local endpoint policy is in `src/features/connections`; it is a security primitive, not a competing generic connection registry.
+
+Current isolated mail migrations: 0083 mailbox model; 0084 encrypted check proofs; 0085 remote folders/locators/provider IDs; 0086 atomic payload preparation; 0087 complete draft/send intent; 0088 explicit remote-trash intent. Only disposable local databases have used this mail sequence. No customer installation or external-provider qualification is claimed. The source-fingerprint locator extension is reserved as integrated0091, without changing the local88 sequence.
+
+## Confirmed parallel foundation
+
+The active platform checkout `/tmp/warpdrive-integrations-preview-20261031` has committed integration connections 0083 and workflow 0084. Its provider contract checkpoint is `89adc8158f3e04c14e48ed6258e14abf3f179cc7`; the currently inspected committed head including later auth/workflow work is `b8b2708d4076551b803451ce10d4928a87ce35cd`. Registry/CONN/EVT work is active there. Existing task IDs and completion evidence must remain intact. The incoming coordination document is a planning handoff; it is not evidence that shared implementation is already available in this mail checkout.
+
+## Agreed ownership and reserved handoff
+
+1. Platform owns canonical CONN authority/lifecycle/binding, generic credential broker and EVT admission/effects; MAIL retains its domain, native checks/proofs, current credential owner/generation fences, attempts/repair, endpoint policy, UI and IG-06. The generic broker and EVT runtime are still design contracts; no fictitious exports or Bearer encoding of passwords/API keys are introduced.
+2. Preserve committed platform0083 integration and0084 workflow. Integrated slots0085..0091 are exclusively reserved for MAIL: local0083..0088 map to0085..0090; the locator sourceFingerprint extension uses0091. No shared/SMS DDL below0092. Prepare a separate combined candidate with three-way structural metadata merge against actual common0082, preserving all independent/custom constraints and stopping on conflicting common keys. Platform owns final journal/snapshot acceptance and real-PostgreSQL upgrade review. The running disposable local88 preview is preserved; divergent installed histories need separate qualification.
+3. Provide typed connection binding/projection hooks for the working mail lifecycle, retaining current UUIDs, native fresh-auth guards, generation fencing, settings UI and provider-specific state.
+4. Keep the email send attempt/outbox and remote-mail identity responsibilities in MAIL; define how shared delivery intents reference domain attempts. No generic retry may bypass partial/unknown outcome holds or re-submit accepted SMTP data.
+5. Map ongoing mail evidence into the canonical MAIL/CONN/UX/QA rows without claiming unfinished or live-provider tasks complete. Kavenegar research and proposed logical records are in `kavenegar-qualification.md`; actual SMS provider/domain source remains pending the shared runtime interfaces. A pure, independently tested text/segment estimator is implemented without provider IO or a second engine.
+6. Keep local previews isolated: mail3106/WS3107, platform3160 and the existing main preview. No live messages, calls, financial writes or paid services are authorized by local implementation approval.
+
+## Evidence available for review
+
+The actual common0082 snapshot, journal0..82 and historical SQL are byte-identical in both checkouts. Snapshot SHA-256: `3b26d54e4602737812ca9af0637e812df9b5d7cf198f34e2c78cd28f979dd54a`. Combined entries85..91 require new strictly increasing `when` timestamps greater than platform84 (`1793452709228`): every old local mail timestamp precedes it, and Drizzle applies migrations by that timestamp. Preserve platform0..84 byte-for-byte and exercise an actual84-to-mail upgrade to detect silent skips.
+
+The mail implementation record is `local-integrations-progress.md`. Scoped PostgreSQL/native-TLS and FA/DE/EN UI suites are passing; final consolidated source checks, local-server/browser qualification, migration/object/key restore and external-account gates are still in progress. These checkpoints are not production acceptance or a release commit.
+
+## Current extension handoff
+
+The separate combined checkout is `/Users/ali/Developer/warpdrive-mail-platform`, branch `codex/mail-platform-candidate`, immutable checkpoint `571ba2cfd71361dfa886395bd10adc3b90cb0b8d`. It contains the mail cuts and platform history through `a697067`; the actual metadata mapping is `docs/mail-integrated-migration-map.md`. This is a reviewable source base, not a qualified installation. Later fingerprint91, delivery observations92 and notification changes must remain separately reviewable. The platform allocator owns any additional migration reservation.
+
+New project/activity modules should reference existing customer/deal/person/activity IDs and call the canonical permission and regional-formatting helpers. Do not create another sender, credential registry, queue engine or authentication stack. Mail domain calls such as `resolveSendConnection`, `readOwnedSendStatus`, `sendEmail` and `deliverQueuedSend` are internal building blocks with required ownership, provider and generation checks, not a public bypass around trusted native or integration authority. Shared CONN/EVT binding APIs remain under review; do not import fictitious broker/effect exports. A project promise/reminder must not bypass the notification visibility/opt-out admission currently being hardened.
+
+IG-06 conventions and their tests live in the mail cut: `LocaleProvider`, account preferences, formatters, `phoneNormalization`, phone input components, `iranianMoney` and explicit monetary-entry labels. Use stored country/calendar/currency/unit preferences independently of display language. Canonical IRR remains unchanged by toman presentation; client text is not authoritative numeric storage. Reuse the existing contextual FA/DE/EN catalogs, current shadcn adapters and direction handling.
+
+The `main` and `origin/main` refs were verified at `a1a8f6d`. The primary `/Users/ali/Developer/warpdrive` checkout is now used by the separate privacy branch, with its own committed/uncommitted work; it is not currently checked out on main. Calendar, settings, privacy, platform and other previews/worktrees remain peer-owned. Do not copy their dirty source or reset/switch those working trees to assemble a new module. No new implementation goal or expanded module scope is authorized by this handoff itself.

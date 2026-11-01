@@ -1,14 +1,21 @@
 import { sql } from "drizzle-orm";
 import { env } from "@/config/env";
 import { RECONCILE_WINDOW_MS } from "@/constants/email";
-import { AppError } from "@/constants/errorIds";
+import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import type { StorageClient } from "@/features/files/storage";
+import type { DbOrTx } from "@/server/realtime/channelVersions";
 import { err, ok, type Result } from "@/types/result";
 import type { GmailClient } from "./gmailClient";
+import { gmailConnectionChanged } from "./gmailConnectionFence";
+import { isGmailSendCurrent, releaseUnsubmittedGmailClaim } from "./gmailSendFence";
+import { parseNotificationSendPurpose } from "./mailSendPurpose";
 import { buildMime, deriveMessageId, type MimeAttachment, toRawBase64 } from "./mime";
+import { reconcileNotificationGmail, recordNotificationGmailAck } from "./notificationGmailReceipt";
 import { claim, loadAttempt, loadSendInputs, type SendPayload, stamp } from "./outboxClaim";
-import { markSent, reconcile, type SendOutcome } from "./outboxReconcile";
+import { type AttemptRow, markSent, reconcile, type SendOutcome } from "./outboxReconcile";
+import { privateIntakeBlocksQueuedSend } from "./privateIntakeDispatchFence";
+import { privateIntakeBlocksThread } from "./privateIntakeRestrictions";
 import { type ReplyThreadHeaders, replyThreadHeaders } from "./replyHeaders";
 
 // Resolve the RFC 5322 threading headers for a reply. The parent's Message-ID lives only in
@@ -41,23 +48,31 @@ function isDefiniteRejection(error: AppError): boolean {
 // crashed-but-accepted send. Idempotent on (account_id, idempotency_key); if a sent
 // row already exists it is reported as a replay.
 export async function enqueueSend(
-  db: Db,
+  db: DbOrTx,
   args: {
     accountId: string;
     idempotencyKey: string;
     payload: SendPayload;
     threadId?: string | null;
     scheduledAt?: Date | null;
+    requiresPreparation?: boolean;
   },
 ): Promise<Result<{ attemptId: string; replay: boolean }, AppError>> {
   const header = deriveMessageId({
     accountId: args.accountId,
     idempotencyKey: args.idempotencyKey,
-    domain: env.GOOGLE_WORKSPACE_DOMAIN,
+    domain: new URL(env.BASE_URL).hostname,
   });
   await db.execute(sql`
-    INSERT INTO email_send_attempts (idempotency_key, message_id_header, account_id, thread_id, payload, status, scheduled_at)
-    VALUES (${args.idempotencyKey}, ${header}, ${args.accountId}, ${args.threadId ?? null}, ${JSON.stringify(args.payload)}::jsonb, 'pending', ${args.scheduledAt ?? null})
+    INSERT INTO email_send_attempts (idempotency_key, message_id_header, account_id, thread_id, payload, status, scheduled_at, connection_generation, payload_prepared)
+    SELECT ${args.idempotencyKey}, ${header}, id, ${args.threadId ?? null},
+      ${JSON.stringify(args.payload)}::jsonb || jsonb_build_object('fromName',display_name),
+      'pending', ${args.scheduledAt ?? null}, connection_generation, ${args.requiresPreparation !== true}
+    FROM email_accounts WHERE id=${args.accountId}
+      AND (${args.threadId ?? null}::uuid IS NULL OR EXISTS(
+        SELECT 1 FROM email_threads reply_thread WHERE reply_thread.id=${args.threadId ?? null}::uuid
+          AND reply_thread.account_id=email_accounts.id
+          AND NOT ${privateIntakeBlocksThread(sql`reply_thread.account_id`, sql`reply_thread.id`)}))
     ON CONFLICT (account_id, idempotency_key) DO NOTHING
   `);
 
@@ -68,39 +83,62 @@ export async function enqueueSend(
     `)
   ).rows[0] as { id: string; status: string } | undefined;
   if (row === undefined) {
+    if (args.threadId != null)
+      return err(new AppError(ERROR_IDS.GMAIL_THREAD_NOT_FOUND, "reply thread is unavailable"));
     return err(new AppError("E_DB_002", "enqueueSend found no attempt row", args));
   }
   return ok({ attemptId: row.id, replay: row.status === "sent" });
+}
+
+interface ProcessSendArgs {
+  accountId: string;
+  idempotencyKey: string;
+  gmail: GmailClient;
+  // Required so attachment sends cannot silently skip loading their bytes.
+  storage: StorageClient;
+  signal: AbortSignal;
+  now?: number;
+  windowMs?: number;
+  expectedGeneration?: number;
 }
 
 // ops B6 steps 2 to 4. Exactly-once-effect under crashes: never blind re-send a row
 // that may already have been accepted by Gmail; reconcile by deterministic Message-ID.
 export async function processSendAttempt(
   db: Db,
-  args: {
-    accountId: string;
-    idempotencyKey: string;
-    gmail: GmailClient;
-    // storage is required: callers must always wire in real (or fake) storage so that
-    // attachment sends never silently fail. The TypeScript compiler enforces this.
-    storage: StorageClient;
-    signal: AbortSignal;
-    now?: number;
-    windowMs?: number;
-  },
+  args: ProcessSendArgs,
 ): Promise<Result<SendOutcome, AppError>> {
   args.signal.throwIfAborted();
+  if (await privateIntakeBlocksQueuedSend(db, args))
+    return err(new AppError(ERROR_IDS.GMAIL_THREAD_NOT_FOUND, "thread not found"));
   const now = args.now ?? Date.now();
   const windowMs = args.windowMs ?? RECONCILE_WINDOW_MS;
 
   const existing = await loadAttempt(db, args.accountId, args.idempotencyKey);
   if (existing === undefined) {
-    return err(new AppError("E_DB_002", "processSendAttempt: no attempt row", args));
+    return err(
+      new AppError("E_DB_002", "processSendAttempt: no attempt row", {
+        accountId: args.accountId,
+        idempotencyKey: args.idempotencyKey,
+      }),
+    );
   }
   // (a) replay short-circuit: already sent.
   if (existing.status === "sent") {
+    const notification = await reconcileNotificationGmail(db, existing.id, args.signal);
+    if (notification !== null) return ok(notification);
     return ok({ status: "sent", gmailMessageId: existing.gmail_message_id ?? undefined });
   }
+  if (
+    !(await isGmailSendCurrent(
+      db,
+      args.accountId,
+      existing.connection_generation,
+      args.signal,
+      args.expectedGeneration,
+    ))
+  )
+    return err(gmailConnectionChanged());
 
   // (c) branch on send_started_at: a stamped row may have been accepted -> reconcile,
   // never blind re-send. Do this BEFORE claiming so a stamped row can never re-send.
@@ -132,14 +170,39 @@ export async function processSendAttempt(
     });
   }
 
+  return submitClaimedAttempt(db, args, existing, token);
+}
+
+async function submitClaimedAttempt(
+  db: Db,
+  args: ProcessSendArgs,
+  existing: AttemptRow,
+  token: string,
+): Promise<Result<SendOutcome, AppError>> {
   // (d) everything fallible that is NOT the send itself happens BEFORE the stamp. Once
   // send_started_at is committed a later failure can no longer be treated as definitely-unsent:
   // it routes into reconcile, which searches for a Message-ID that was never sent and parks the
   // attempt as needs_review. So load the inputs and resolve the reply's threading headers here.
   const inputs = await loadSendInputs(db, existing.id, args.accountId);
-  if (inputs === undefined) return err(new AppError("E_DB_002", "send inputs not found", args));
+  if (inputs === undefined)
+    return err(
+      new AppError("E_DB_002", "send inputs not found", {
+        accountId: args.accountId,
+        idempotencyKey: args.idempotencyKey,
+      }),
+    );
   args.signal.throwIfAborted();
   const { from, payload, gmailThreadId, parentGmailMessageId } = inputs;
+  const purpose =
+    payload.systemPurpose === undefined
+      ? null
+      : parseNotificationSendPurpose(payload.systemPurpose);
+  if (payload.systemPurpose !== undefined && purpose === null) {
+    await releaseUnsubmittedGmailClaim(db, existing.id, token, args.signal);
+    return err(
+      new AppError(ERROR_IDS.NOTIF_SEND_PURPOSE_INVALID, "Gmail notification purpose is invalid"),
+    );
+  }
 
   const threading = await loadReplyThreadHeaders(
     args.gmail,
@@ -150,11 +213,20 @@ export async function processSendAttempt(
 
   // (e) stamp send_started_at and COMMIT before the Gmail send. A lost stamp race is
   // expected contention (E_GMAIL_008), not an API failure.
-  const stamped = await stamp(db, existing.id, token, args.signal);
-  if (!stamped) return err(new AppError("E_GMAIL_008", "stamp race lost", { id: existing.id }));
-
   const attResult = await fetchAttachmentBytes(payload, args.storage, args.signal);
-  if (!attResult.ok) return attResult;
+  if (!attResult.ok) {
+    await releaseUnsubmittedGmailClaim(db, existing.id, token, args.signal);
+    return attResult;
+  }
+  const stamped = await stamp(db, existing.id, token, args.signal, args.expectedGeneration);
+  if (!stamped) {
+    await releaseUnsubmittedGmailClaim(db, existing.id, token, args.signal);
+    return err(
+      new AppError("E_GMAIL_008", "stamp race lost or mailbox authority changed", {
+        id: existing.id,
+      }),
+    );
+  }
 
   // (f) build MIME with the FIXED Message-ID, then send with NO DB tx held open.
   const mime = buildMime({
@@ -200,7 +272,18 @@ export async function processSendAttempt(
     return ok({ status: "failed" });
   }
 
-  await markSent(db, existing.id, sent.value.id, args.signal);
+  if (purpose !== null) {
+    const receipt = await recordNotificationGmailAck(db, {
+      attemptId: existing.id,
+      accountId: args.accountId,
+      idempotencyKey: args.idempotencyKey,
+      purpose,
+      payload,
+      providerMessageId: sent.value.id,
+      signal: args.signal,
+    });
+    if (!receipt.ok) return receipt;
+  } else await markSent(db, existing.id, sent.value.id, args.signal);
   return ok({ status: "sent", gmailMessageId: sent.value.id });
 }
 

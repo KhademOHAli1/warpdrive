@@ -29,7 +29,9 @@ export function draftMatch(alias: string, subject: DiscoverySubject): SQL {
     subject.kind === "contact"
       ? sql`${column(alias, "link_person_id")}=${subject.referenceId}::uuid`
       : sql`false`;
-  return sql`(${person} OR ${column(alias, "link_deal_id")} IN (${dealIds()}) OR ${linkedMessage(alias)} OR ${correspondence(alias, false)})`;
+  // BCC is stored on drafts; inbox message rows have no corresponding column.
+  const bcc = sql`EXISTS(SELECT 1 FROM jsonb_array_elements_text(${column(alias, "bcc_emails")}) address WHERE lower(trim(address)) IN (${subjectAddresses()}))`;
+  return sql`(${person} OR ${column(alias, "link_deal_id")} IN (${dealIds()}) OR ${linkedMessage(alias)} OR ${correspondence(alias, false)} OR ${bcc})`;
 }
 export function definitionMatch(subject: DiscoverySubject): SQL {
   const type = subject.kind === "contact" ? "person" : "user";

@@ -2,6 +2,8 @@
 // Inbox list, the Sent/Archive folder reads, and getThread all project the same shape and cannot
 // drift. Holds no queries, so it can be imported from either side without a cycle.
 import type { ThreadVisibilityRow } from "./emailVisibility";
+import type { ThreadMailCapabilities } from "./imapThreadOperationsCapabilities";
+import type { PrivateIntakeSummary } from "./privateIntakeTypes";
 
 // Linking tabs (all/unmatched/needs_linking) are decided post-query in matchesInboxFilter; the U5
 // quick-filters (shared/private/tracked/to_me/from_contact/linked_open_deal) are decided in SQL in
@@ -42,6 +44,8 @@ export interface InboxThread {
   // only the owner may flip visibility. Defaults false for reads that do not project the owner
   // (e.g. the chrome-less "linked" deal/contact Email tabs).
   isOwner: boolean;
+  mailCapabilities?: ThreadMailCapabilities;
+  privateIntake?: PrivateIntakeSummary | null;
 }
 
 export interface ThreadRow {
@@ -62,6 +66,8 @@ export interface ThreadRow {
   sender_name?: string | null;
   snippet?: string | null;
   has_attachment?: boolean;
+  // Internal server classification. It does not depend on projected hint visibility.
+  private_intake_protected?: boolean;
 }
 
 export function toVisibilityRow(t: ThreadRow): ThreadVisibilityRow {
@@ -114,6 +120,7 @@ export function toInboxThread(
     snippet: t.snippet ?? null,
     hasAttachment: t.has_attachment ?? false,
     isOwner: actorId !== undefined && t.owner_user_id !== undefined && t.owner_user_id === actorId,
+    privateIntake: null,
   };
 }
 

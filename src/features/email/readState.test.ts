@@ -49,6 +49,53 @@ it("a fresh thread is unread; marking read clears it; marking unread restores it
   expect(await inboxUnreadCount(ctx.db, { actor }, SIG())).toBe(1);
 });
 
+it.each([false, true])(
+  "marks the latest stored message read despite a future provider timestamp (existing marker=%s)",
+  async (existingMarker) => {
+    const owner = await seedUser(ctx.db);
+    const actor = actorOf(owner.id);
+    const threadId = await seedThread(ctx.db, owner.id);
+    await ctx.db.execute(sql`UPDATE email_threads
+      SET last_message_at=now()+interval '1 hour' WHERE id=${threadId}`);
+    if (existingMarker)
+      await ctx.db.execute(sql`INSERT INTO email_thread_reads (thread_id,user_id,read_at)
+        VALUES (${threadId},${owner.id},now()-interval '1 hour')`);
+
+    expect(await inboxUnreadCount(ctx.db, { actor }, SIG())).toBe(1);
+    expect(await markThreadRead(ctx.db, { actor, threadId }, SIG())).toMatchObject({ ok: true });
+    const [marker] = (
+      await ctx.db.execute(sql`SELECT r.read_at>=t.last_message_at AS covers_latest
+        FROM email_thread_reads r JOIN email_threads t ON t.id=r.thread_id
+        WHERE r.thread_id=${threadId} AND r.user_id=${owner.id}`)
+    ).rows as { covers_latest: boolean }[];
+    expect(marker?.covers_latest).toBe(true);
+    expect(await inboxUnreadCount(ctx.db, { actor }, SIG())).toBe(0);
+
+    await ctx.db.execute(sql`UPDATE email_threads
+      SET last_message_at=last_message_at+interval '1 second' WHERE id=${threadId}`);
+    expect(await inboxUnreadCount(ctx.db, { actor }, SIG())).toBe(1);
+    expect(await markThreadRead(ctx.db, { actor, threadId }, SIG())).toMatchObject({ ok: true });
+    expect(await inboxUnreadCount(ctx.db, { actor }, SIG())).toBe(0);
+  },
+);
+
+it("does not move an existing later read marker backwards", async () => {
+  const owner = await seedUser(ctx.db);
+  const actor = actorOf(owner.id);
+  const threadId = await seedThread(ctx.db, owner.id);
+  const [before] = (
+    await ctx.db.execute(sql`INSERT INTO email_thread_reads (thread_id,user_id,read_at)
+      VALUES (${threadId},${owner.id},now()+interval '2 hours') RETURNING read_at::text`)
+  ).rows as { read_at: string }[];
+
+  expect(await markThreadRead(ctx.db, { actor, threadId }, SIG())).toMatchObject({ ok: true });
+  const [after] = (
+    await ctx.db.execute(sql`SELECT read_at::text FROM email_thread_reads
+      WHERE thread_id=${threadId} AND user_id=${owner.id}`)
+  ).rows as { read_at: string }[];
+  expect(after).toEqual(before);
+});
+
 it("does not count another user's shared thread in the actor's unread badge (Inbox is personal)", async () => {
   // The unread badge must match the personal Inbox list: a colleague's shared thread, even one the
   // actor could open via the linked record, is NOT part of the actor's own mailbox count.

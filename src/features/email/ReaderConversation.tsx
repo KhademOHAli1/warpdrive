@@ -41,10 +41,12 @@ export function ReaderConversation({
           <div className="flex flex-col gap-3">
             {earlier.map((msg) => (
               <ReaderMessageCard
-                key={msg.gmailMessageId}
+                key={msg.messageId}
                 message={msg}
                 allowRemote={allowRemote}
                 onShowRemote={onShowRemote}
+                accountId={accountId}
+                threadId={threadId}
               />
             ))}
           </div>
@@ -55,6 +57,8 @@ export function ReaderConversation({
           message={latestMessage}
           allowRemote={allowRemote}
           onShowRemote={onShowRemote}
+          accountId={accountId}
+          threadId={threadId}
         />
       )}
 

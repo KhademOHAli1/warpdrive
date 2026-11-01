@@ -109,6 +109,12 @@
       "sourceChannels.inbound": "Inbound is the standard German sales-channel term for incoming prospect interest."
     }
   },
+  "src/features/email/messages/deliveryReports": {
+    "de": {
+      "recipientKinds.cc": "Standard German email header abbreviation, consistent with the existing composer Cc label.",
+      "recipientKinds.bcc": "Standard German email header abbreviation, consistent with the existing composer Bcc label."
+    }
+  },
   "src/features/email/messages/email": {
     "de": {
       "_extra.links": "Link and Links are standard German interface nouns.",

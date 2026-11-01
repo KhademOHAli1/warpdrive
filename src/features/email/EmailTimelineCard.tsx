@@ -49,6 +49,7 @@ export function EmailTimelineCard({
   const preferences = useLocalePreferences();
 
   const [expanded, setExpanded] = useState(false);
+  const [hasOpened, setHasOpened] = useState(false);
   const [allowRemote, setAllowRemote] = useState(false);
   const [composeMode, setComposeMode] = useState<ReplyMode | null>(null);
   const reportError = useActionError();
@@ -58,6 +59,11 @@ export function EmailTimelineCard({
     { messageId: message.messageId, allowRemote },
     { enabled: expanded },
   );
+
+  function changeExpanded(next: boolean): void {
+    if (next) setHasOpened(true);
+    setExpanded(next);
+  }
 
   async function handleUnlink(): Promise<void> {
     const patch =
@@ -76,7 +82,7 @@ export function EmailTimelineCard({
 
   // The mode is what the composer opens in, so Forward never lands on a Reply prefill.
   function startCompose(mode: ReplyMode): void {
-    setExpanded(true);
+    changeExpanded(true);
     setComposeMode(mode);
   }
 
@@ -118,7 +124,7 @@ export function EmailTimelineCard({
           <button
             type="button"
             aria-label={expanded ? E.collapseEmail : E.expandEmail}
-            onClick={() => setExpanded((v) => !v)}
+            onClick={() => changeExpanded(!expanded)}
             className="rounded p-1 text-muted-foreground transition-transform hover:bg-accent active:scale-[0.96]"
           >
             {expanded ? (
@@ -147,8 +153,10 @@ export function EmailTimelineCard({
         </div>
       </div>
 
-      {expanded && (
-        <div className="border-t border-border p-3">
+      {(expanded || (hasOpened && body.data?.privateIntake != null)) && (
+        // Preserve a private review's fixed lockout across collapse without loading an unopened
+        // body. Hidden/inert cancels its active work; ordinary messages still unmount as before.
+        <div hidden={!expanded} inert={!expanded} className="border-t border-border p-3">
           {body.isLoading && <p className="text-xs text-muted-foreground">{E.loadingEmail}</p>}
           {/* An error must not read as an empty body: say it failed and offer the retry. */}
           {body.isError && (
@@ -171,6 +179,8 @@ export function EmailTimelineCard({
                 message={body.data}
                 allowRemote={allowRemote}
                 onShowRemote={() => setAllowRemote(true)}
+                accountId={body.data.accountId}
+                threadId={message.threadId}
               />
               {composeMode !== null && message.canCompose && (
                 <div className="mt-3">

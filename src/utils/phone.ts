@@ -1,6 +1,12 @@
 import { normalizeDigits } from "./normalizeNumberInput";
+import { normalizePhoneInput, type PhoneCountry } from "./phoneNormalization";
 
-export function telHref(phone: string): string {
+export function telHref(phone: string, country?: PhoneCountry): string {
+  if (country !== undefined) {
+    const normalized = normalizePhoneInput(phone, country);
+    if (normalized.e164 !== undefined)
+      return `tel:${normalized.e164}${normalized.extension === undefined ? "" : `;ext=${normalized.extension}`}`;
+  }
   // Dialers want unformatted ASCII digits; preserve the existing plus/extension stripping rules.
   return `tel:${normalizeDigits(phone).replace(/[^\d+]/g, "")}`;
 }

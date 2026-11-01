@@ -235,7 +235,10 @@ describe("sendEmail", () => {
         storage: new FakeStorageClient(),
         input,
       });
-      expect(r1.ok).toBe(false);
+      expect(r1).toMatchObject({
+        ok: true,
+        value: { status: "needs_review", deliveryOutcome: { state: "accepted" } },
+      });
       const sendsAfterFirst = fake.calls.filter((c) => c.method === "sendRaw").length;
 
       // The attempt is marked sent with the gmail id, but NO local copy exists yet.
