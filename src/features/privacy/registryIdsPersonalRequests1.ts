@@ -1,5 +1,16 @@
 // Reviewed identifiers. Opaque UI/service calls supplement AST discovery; they grant no capability.
 export const personalRequestsIds1: string[] = [
+  // Reviewer triage is a separate authorized view, not subject disclosure or case execution.
+  "derived:src/features/privacy/ui/useReviewerIntake.ts",
+  "external:src/features/privacy/ui/useReviewerIntake.ts#listPrivacyIntakeQueueAction",
+  "external:src/features/privacy/ui/useReviewerIntake.ts#claimPrivacyCaseAction",
+  "sourceReview:src/features/privacy/ui/ReviewerIntakeCard.tsx#989b01a46a83e6985f84be4a1803d64635d203d7822892d150fa2a96f3f5a2ac",
+  "sourceReview:src/features/privacy/ui/useReviewerIntake.ts#ca17442eb6e7b5a512b6095df671475d9f2e1a67b88c861ef9be0b2593bbd414",
+  "sourceReview:src/features/privacy/ui/reviewerIntakeModel.ts#4688f61c5e907b80079a1bcd799707a12e12015e5101b81bd5914cb6d9a487c4",
+  "sourceReview:src/features/privacy/privacyReviewerMessages.ts#005b03da9bbcc528ac5e72c8ad72b860be019a581c049704a73f669408eab1be",
+  "sourceReview:src/features/privacy/messages/privacyReviewer.en.json#3deebfb584f7af9a9264b26839fa8e1d322e1d80de4a7a6bc62418f0f1990ece",
+  "sourceReview:src/features/privacy/messages/privacyReviewer.de.json#07dd69e7a473c574690b1076c9228cfbdfbf00adcb6eb181b91d24d1a8666846",
+  "sourceReview:src/features/privacy/messages/privacyReviewer.fa.json#0178088702b4a55fc2fa6516ceeb4101ff5a8816c7cfac330fde06dc77541595",
   "derived:src/features/privacy/ui/PersonalPrivacyWorkspace.tsx",
   "derived:src/features/privacy/ui/useOwnPrivacyCaseStatus.ts",
   "derived:src/features/privacy/ui/useOwnPrivacyRequestForm.ts",
@@ -28,7 +39,7 @@ export const personalRequestsIds1: string[] = [
   "sourceReview:src/features/privacy/requestPath.ts#f9836d48702a020bf6b2fef8eb594bedbf774277356882d2e51ee2d4634c5d59",
   "sourceReview:src/features/privacy/ui/OwnPrivacyCaseStatus.tsx#b6b32a44442c1a64c73e7b6cd3beb6c60d1624f9e7da618e3c2354d19eeb6a49",
   "sourceReview:src/features/privacy/ui/OwnPrivacyRequestForm.tsx#85240e297107ed50bf0f160dc6e4ff7f9c20e8ea296ea10585f6620e4f041c7b",
-  "sourceReview:src/features/privacy/ui/PersonalPrivacyWorkspace.tsx#f72284b964b8be51cdd9395bc8177ced994c0c1625b4d864d94acc93c58df095",
+  "sourceReview:src/features/privacy/ui/PersonalPrivacyWorkspace.tsx#eca76823108d8b1420d8172ca29b9fc2396627086e6ffbf56aca015513794483",
   "sourceReview:src/features/privacy/ui/loadOwnPrivacySecurity.ts#c046c736522ad311df1d114f2398dba3430881b60fce8d7911b06a636880d743",
   "sourceReview:src/features/privacy/ui/ownCaseStatusModel.ts#6a8940970a489c92b7befd55a2d73f6dd1d93d1c0b4217fd40fc10f3dd423be1",
   "sourceReview:src/features/privacy/ui/ownRequestFormModel.ts#ffd6af978c3601d71aa6d54a20b8bb39968f1189cfdbc1a7a9757d4b71e30019",
