@@ -1,6 +1,6 @@
 {
-  "preparedAt": "2026-11-01T11:48:02.330787+00:00",
-  "status": "15cases prepared, NOTRUN. Production module absent; firstfutureexecution establishes collectionabsence only, then importable empty scaffold and meaningful assertionRED required before implementation.",
+  "preparedAt": "2026-11-01T11:58:04.383323+00:00",
+  "status": "16cases/2testfiles plus1support prepared, NOTRUN. Productionabsent. Queuedfirst15case/onefile collectionabsence request remains18pinsunchanged; laterassertionRED willrequirebothfiles/exact16cases andfreshgrant.",
   "tasks": [
     "AP-01.4",
     "AP-06.6",
@@ -8,14 +8,15 @@
   ],
   "sourcePins": {
     "src/features/agency-projects/reviews/ReviewDecisionHistory.test.tsx": "f6e56f5204461b7202dd2abda474f680d8d90e26196f6a5d66258bf6aee483e6",
-    "src/features/agency-projects/reviews/ReviewDecisionHistory.test-support.tsx": "91ccd8d5b3bcad191bbed492469fb8fa6b9156c6805fc4e512becf58e932e122"
+    "src/features/agency-projects/reviews/ReviewDecisionHistory.test-support.tsx": "91ccd8d5b3bcad191bbed492469fb8fa6b9156c6805fc4e512becf58e932e122",
+    "src/features/agency-projects/reviews/ReviewDecisionHistory.provenance.test.tsx": "9869d666fc3038b17a56325d2d0accc421114d8155851438fd18d5799ba71f6e"
   },
   "futureComponent": "src/features/agency-projects/reviews/ReviewDecisionHistory.tsx",
   "contract": {
     "props": "review:ReviewSnapshot, userLabels/clientLabels:Readonly<Record<string,string>>; explicitly authorized and coherent caller projections, no accessdecision/fetch/route/mutation",
     "render": "Accessible region/list, exactversion+epoch current/history, explicit staff-recorded clientvsinternal provenance, recorder/contact labels, method, occurrence/recording semantic times, selectedtimezone, text-only bdi references, unknownidentitywithoutUUID, BLOCK_CLASS+ph-no-capture"
   },
-  "cases": 15,
+  "cases": 16,
   "coverage": [
     "version change",
     "sameversion newepoch",
@@ -25,7 +26,8 @@
     "markuptext no active remote surface",
     "captureboundary",
     "missingauthorizedlabels",
-    "FA/DE/EN independent calendar/digits/zone"
+    "FA/DE/EN independent calendar/digits/zone",
+    "Mixed coherent old/current decisions after versionchange with differentstaff, contacts, methods and timestamps; rowclassification/provenance cannot use global flags or firstrow values."
   ],
   "copy": "Proposed translation expectations only; native-language review pending.",
   "limits": "No production/catalog edits, runtime, native serverauthority, capturebehavior or persistence acceptance. Existing shared source and regional34pins unchanged by prep."

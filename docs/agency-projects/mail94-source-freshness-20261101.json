@@ -1,0 +1,56 @@
+{
+  "capturedAt": "2026-11-01T12:02:52.416158+00:00",
+  "scope": "Read-only immutable MAIL94 sourcecut audit, no adoption or appliedledger/runtime inspection",
+  "ownerRepo": "/Users/ali/Developer/warpdrive-mail-platform",
+  "base": "70bc46b19a8896104eccdc3d944cf4352f849224",
+  "head": "46f7b1bb76e4bea2a082112eb11dfa801f4ffdd4",
+  "handoff": {
+    "path": "evidence/mail94-owner-source-cut-46f7b1b.json",
+    "sha256": "5ec76606bb4861818207afc8e9d94aea536c0aaab7c54fcbbc93899fba39f5e0"
+  },
+  "pins": {
+    "drizzle/0094_private_mail_intake.sql": "402ed79e5dd1aa466620b07cf3715ebb70f8bc975f1b2b46e0bc570a7f573d93",
+    "drizzle/meta/0094_snapshot.json": "9c499cdb9ea553b2d2d5ca3cdfb85194cc73f952e9c78b26165fa13377b0d604",
+    "drizzle/meta/_journal.json": "b8e89bbef727dad82e8a6326bb79f6ca74743f386aa3e7fdd39245a338309109"
+  },
+  "journal": {
+    "entries": 95,
+    "lastIndex": 94,
+    "tag": "0094_private_mail_intake",
+    "when": 1793520048557,
+    "version": "7",
+    "allPriorEntriesConserved": true
+  },
+  "snapshot": {
+    "id": "6690fed9-e828-4c72-b50d-80c8616434cd",
+    "predecessor": "97c5716c-3c6f-4ee1-bb90-b51c112123a8",
+    "precedingSqlSnapshotBlobsUnchanged": 184
+  },
+  "sourceDelta": {
+    "paths": 163,
+    "actualMailOnlyExports": [
+      "markPrivateIntakeLocalRead",
+      "readPrivateIntake",
+      "reviewPrivateIntake",
+      "createPrivateIntakeHttp",
+      "privateIntakeBlocksThread",
+      "privateIntakeBlocksQueuedSend",
+      "privateIntakeImapMutationCurrent"
+    ],
+    "scope": "MAIL-owner native/private localread/review and held-mail mutation/send restrictions; twoMAILtables/eightMAILfunctions/twoimmutablehistorytriggers"
+  },
+  "notSupplied": [
+    "Genericcleanlease/Agencysharedfence/key",
+    "projectvisibilityintersection",
+    "quotation/costsource",
+    "newreusablefinalauthAPI",
+    "installedmigrationadmission"
+  ],
+  "rawMigratorUnchanged": {
+    "path": "src/db/migrate.ts",
+    "sha256": "fd76dfa2183c53b662c70a0099cf13593cb019c994a9f012659f0f5b90fd68b5",
+    "packageScript": "bun --bun drizzle-kit migrate"
+  },
+  "nextAction": "Platform source-only convergence/physicalprofile proposal must be revised through immutable94cut and reviewed/qualified. Existing93profile does not admit94; noAgencyDDL/allocation/adoption follows.",
+  "qualification": "Ownerreports399native/72files and331unit/31files are notAgencyexecution. Privatelease/cancellation/allwriter/Privacy/quote gates remain open."
+}

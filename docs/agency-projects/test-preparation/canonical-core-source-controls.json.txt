@@ -1,0 +1,112 @@
+{
+  "schemaVersion": 1,
+  "status": "Prepared read-only commands only, NOTRUN",
+  "profiles": {
+    "reason": {
+      "primaryFiles": [
+        "src/features/agency-projects/valueSchemas.ts",
+        "src/features/agency-projects/reasonBoundary.test.ts"
+      ],
+      "privateTypeControlFiles": [],
+      "sourceConfigFiles": [
+        ".runtime/tsconfig.reason-source.json",
+        ".runtime/reason-eslint.mjs",
+        ".runtime/reason-source-targets.json"
+      ],
+      "totalSeconds": 30,
+      "commandBudgetSeconds": 15,
+      "cleanupReserveSeconds": 15,
+      "commands": [
+        [
+          ".runtime/bin/bun",
+          "--bun",
+          "node_modules/typescript/bin/tsc",
+          "--project",
+          ".runtime/tsconfig.reason-source.json",
+          "--noEmit",
+          "--incremental",
+          "false"
+        ],
+        [
+          ".runtime/bin/bun",
+          "--bun",
+          "node_modules/@biomejs/biome/bin/biome",
+          "check",
+          "src/features/agency-projects/valueSchemas.ts",
+          "src/features/agency-projects/reasonBoundary.test.ts"
+        ],
+        [
+          ".runtime/bin/bun",
+          "--bun",
+          "node_modules/eslint/bin/eslint.js",
+          "--config",
+          ".runtime/reason-eslint.mjs",
+          "src/features/agency-projects/valueSchemas.ts",
+          "src/features/agency-projects/reasonBoundary.test.ts"
+        ]
+      ]
+    },
+    "authority-candidate": {
+      "primaryFiles": [
+        "src/features/agency-projects/authorityTransactionSpec.ts",
+        "src/features/agency-projects/authorityTransactionSpec.test.ts",
+        "src/features/agency-projects/authorityTransactionCandidate.ts",
+        "src/features/agency-projects/authorityTransactionCandidate.test.ts",
+        "src/features/agency-projects/authorityTransactionCandidate.test-support.ts",
+        "src/features/agency-projects/authorityConnectionBoundary.test.ts",
+        "src/features/agency-projects/authorityConnectionBoundary.test-support.ts"
+      ],
+      "privateTypeControlFiles": [
+        ".runtime/authority-candidate-owned-global-setup.ts",
+        ".runtime/vitest.authority-candidate-pg.config.ts"
+      ],
+      "sourceConfigFiles": [
+        ".runtime/tsconfig.authority-candidate-source.json",
+        ".runtime/authority-candidate-eslint.mjs",
+        ".runtime/authority-candidate-source-targets.json"
+      ],
+      "totalSeconds": 60,
+      "commandBudgetSeconds": 45,
+      "cleanupReserveSeconds": 15,
+      "commands": [
+        [
+          ".runtime/bin/bun",
+          "--bun",
+          "node_modules/typescript/bin/tsc",
+          "--project",
+          ".runtime/tsconfig.authority-candidate-source.json",
+          "--noEmit",
+          "--incremental",
+          "false"
+        ],
+        [
+          ".runtime/bin/bun",
+          "--bun",
+          "node_modules/@biomejs/biome/bin/biome",
+          "check",
+          "src/features/agency-projects/authorityTransactionSpec.ts",
+          "src/features/agency-projects/authorityTransactionSpec.test.ts",
+          "src/features/agency-projects/authorityTransactionCandidate.ts",
+          "src/features/agency-projects/authorityTransactionCandidate.test.ts",
+          "src/features/agency-projects/authorityTransactionCandidate.test-support.ts",
+          "src/features/agency-projects/authorityConnectionBoundary.test.ts",
+          "src/features/agency-projects/authorityConnectionBoundary.test-support.ts"
+        ],
+        [
+          ".runtime/bin/bun",
+          "--bun",
+          "node_modules/eslint/bin/eslint.js",
+          "--config",
+          ".runtime/authority-candidate-eslint.mjs",
+          "src/features/agency-projects/authorityTransactionSpec.ts",
+          "src/features/agency-projects/authorityTransactionSpec.test.ts",
+          "src/features/agency-projects/authorityTransactionCandidate.ts",
+          "src/features/agency-projects/authorityTransactionCandidate.test.ts",
+          "src/features/agency-projects/authorityTransactionCandidate.test-support.ts",
+          "src/features/agency-projects/authorityConnectionBoundary.test.ts",
+          "src/features/agency-projects/authorityConnectionBoundary.test-support.ts"
+        ]
+      ]
+    }
+  }
+}

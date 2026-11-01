@@ -1,0 +1,159 @@
+{
+  "schemaVersion": 1,
+  "preparedAt": "2026-11-01T12:03:09.430636+00:00",
+  "status": "READY/NOTRUN; source preparation only. Fresh explicit finite sole LIGHT grants required.",
+  "relationshipTo774Requests": "Root withdraws the old774sourceguard requests before anyexecution and proposes these same source scopes undercanonical5bguard. No oldgrant, window orbehaviorproof transfers. Existing oldartifacts preserved.",
+  "repo": "/Users/ali/Developer/warpdrive-agency-projects",
+  "guard": "/tmp/warpdrive-mail-owned-campaign.py",
+  "guardSha256": "5b1a23f4ce7d2bf1f5944bed3ba2fc15e4ce0d611c2066612d01b69684c04126",
+  "profiles": {
+    "reason": {
+      "status": "READY/NOTRUN; proposed replacement only, no grant or withdrawal claim",
+      "primaryTS": 2,
+      "privateControlsIncludedOnlyInTypes": 0,
+      "totalSeconds": 30,
+      "commandBudgetSeconds": 15,
+      "cleanupReserveSeconds": 15,
+      "floorGiB": 5,
+      "scope": "Serial noEmit, read-only Biome and unchanged-rule typed ESLint; stop at first error",
+      "driver": [
+        "python3",
+        ".runtime/run-agency-core-source-readonly.py",
+        "reason"
+      ],
+      "commands": [
+        [
+          ".runtime/bin/bun",
+          "--bun",
+          "node_modules/typescript/bin/tsc",
+          "--project",
+          ".runtime/tsconfig.reason-source.json",
+          "--noEmit",
+          "--incremental",
+          "false"
+        ],
+        [
+          ".runtime/bin/bun",
+          "--bun",
+          "node_modules/@biomejs/biome/bin/biome",
+          "check",
+          "src/features/agency-projects/valueSchemas.ts",
+          "src/features/agency-projects/reasonBoundary.test.ts"
+        ],
+        [
+          ".runtime/bin/bun",
+          "--bun",
+          "node_modules/eslint/bin/eslint.js",
+          "--config",
+          ".runtime/reason-eslint.mjs",
+          "src/features/agency-projects/valueSchemas.ts",
+          "src/features/agency-projects/reasonBoundary.test.ts"
+        ]
+      ],
+      "sourcePins": {
+        "src/features/agency-projects/valueSchemas.ts": "344486350601e1cd8bbd8c07978edf4e17f2136d6943ec7730ece8c4fa0523c3",
+        "src/features/agency-projects/reasonBoundary.test.ts": "27ec62a15f2bea901eeeff88b2fce75c5126f0c5ddb32b3f0cb917c345e0d1fc",
+        ".runtime/tsconfig.reason-source.json": "2521077b91edcfe92140b7650a994a6a6c2f10544d5b4df623773fe08e65b67f",
+        ".runtime/reason-eslint.mjs": "545724c66e5450444878385be69b0b6bfdcfe507240c14999857f401b4a61d68",
+        ".runtime/reason-source-targets.json": "8e05e634a0d9dd5d329167f44ba0abde1473305e8ec0e7bab53d59a3759470e3",
+        "tsconfig.json": "3e482742ee772ce6c49ed50d2d5fc83592588b9e43b6a3890c409ae834c77ccb",
+        "biome.json": "392b4813f25dd26f6dfec24ef7e65d38da79f7a6a3340412df08718cd2d7439d",
+        "eslint.config.mjs": "06a95b81d1e159118cbbe4351eb7becf4ab70b32505819de40f77463ca57e26f",
+        "package.json": "1fc056ebcf03ce3a198d9060cdd489759bc3a8b9af34bc05b5acfcb84a4ef2f6",
+        "bun.lock": "529a9b6a87d9fc836c45a8e68f0da012ed8a111b0fc60b09a0e5c3c8bfbef0e4",
+        ".runtime/agency-core-source-readonly-controls.json": "56853ff7bdff59b135b354e864149cb7e4968213442ec8d1e70db3b202398319",
+        ".runtime/run-agency-core-source-readonly.py": "9ceedde91b97ec03e530f97d25138905683c1c62e44356101b388c7b74cf179f"
+      }
+    },
+    "authority-candidate": {
+      "status": "READY/NOTRUN; proposed replacement only, no grant or withdrawal claim",
+      "primaryTS": 7,
+      "privateControlsIncludedOnlyInTypes": 2,
+      "totalSeconds": 60,
+      "commandBudgetSeconds": 45,
+      "cleanupReserveSeconds": 15,
+      "floorGiB": 5,
+      "scope": "Serial noEmit, read-only Biome and unchanged-rule typed ESLint; stop at first error",
+      "driver": [
+        "python3",
+        ".runtime/run-agency-core-source-readonly.py",
+        "authority-candidate"
+      ],
+      "commands": [
+        [
+          ".runtime/bin/bun",
+          "--bun",
+          "node_modules/typescript/bin/tsc",
+          "--project",
+          ".runtime/tsconfig.authority-candidate-source.json",
+          "--noEmit",
+          "--incremental",
+          "false"
+        ],
+        [
+          ".runtime/bin/bun",
+          "--bun",
+          "node_modules/@biomejs/biome/bin/biome",
+          "check",
+          "src/features/agency-projects/authorityTransactionSpec.ts",
+          "src/features/agency-projects/authorityTransactionSpec.test.ts",
+          "src/features/agency-projects/authorityTransactionCandidate.ts",
+          "src/features/agency-projects/authorityTransactionCandidate.test.ts",
+          "src/features/agency-projects/authorityTransactionCandidate.test-support.ts",
+          "src/features/agency-projects/authorityConnectionBoundary.test.ts",
+          "src/features/agency-projects/authorityConnectionBoundary.test-support.ts"
+        ],
+        [
+          ".runtime/bin/bun",
+          "--bun",
+          "node_modules/eslint/bin/eslint.js",
+          "--config",
+          ".runtime/authority-candidate-eslint.mjs",
+          "src/features/agency-projects/authorityTransactionSpec.ts",
+          "src/features/agency-projects/authorityTransactionSpec.test.ts",
+          "src/features/agency-projects/authorityTransactionCandidate.ts",
+          "src/features/agency-projects/authorityTransactionCandidate.test.ts",
+          "src/features/agency-projects/authorityTransactionCandidate.test-support.ts",
+          "src/features/agency-projects/authorityConnectionBoundary.test.ts",
+          "src/features/agency-projects/authorityConnectionBoundary.test-support.ts"
+        ]
+      ],
+      "sourcePins": {
+        "src/features/agency-projects/authorityTransactionSpec.ts": "2c4048f55c768440751bceefe7bf9865a522ad9a90975ff1795c8360bf171611",
+        "src/features/agency-projects/authorityTransactionSpec.test.ts": "5f8db288fc041291a46e6662bd2d2ecff9d3417fc15f4855524cb9c0baf00271",
+        "src/features/agency-projects/authorityTransactionCandidate.ts": "3b98b871246f0af94b8d6b41efc40347a96efafdf15bcffcdadd700f8be5b9e7",
+        "src/features/agency-projects/authorityTransactionCandidate.test.ts": "ce8e7b0282a1826edd0fe422931ab9c06455592bb3408bd5fec42477ba541f12",
+        "src/features/agency-projects/authorityTransactionCandidate.test-support.ts": "52110a17bf2a56fc8e75b0dd1c8d2fadf9acba02cff296a1337a0bec60e16334",
+        "src/features/agency-projects/authorityConnectionBoundary.test.ts": "f1ce61146f8da044ae5a0e0a9f3119c6b9dff2ccd93b22981b27a4bae6dc4d7b",
+        "src/features/agency-projects/authorityConnectionBoundary.test-support.ts": "3fffcc6fa305c03948b28ca8422414ef7a51556e8a111c60375f73c68bfde5da",
+        ".runtime/authority-candidate-owned-global-setup.ts": "cedebc0bc05de2785dd6c868c94f6b3264db3d00b17cb1f107e61def12b47544",
+        ".runtime/vitest.authority-candidate-pg.config.ts": "3e47bdc8929529535bdb3e3b9763d27282881cf5842d7e08f99dfe037a3e07be",
+        ".runtime/tsconfig.authority-candidate-source.json": "c46437fb608fa416e71402884fe9a0486369470ef1160eb77351c71f703afba6",
+        ".runtime/authority-candidate-eslint.mjs": "492df84df43869aabed7503d9feb2582a394807925a8eb326fdcb3f61ccf3005",
+        ".runtime/authority-candidate-source-targets.json": "5d8a1d5c0b437365033faf66a0df46d4ac06021ae088227722a3f3d8ee92bb51",
+        "tsconfig.json": "3e482742ee772ce6c49ed50d2d5fc83592588b9e43b6a3890c409ae834c77ccb",
+        "biome.json": "392b4813f25dd26f6dfec24ef7e65d38da79f7a6a3340412df08718cd2d7439d",
+        "eslint.config.mjs": "06a95b81d1e159118cbbe4351eb7becf4ab70b32505819de40f77463ca57e26f",
+        "package.json": "1fc056ebcf03ce3a198d9060cdd489759bc3a8b9af34bc05b5acfcb84a4ef2f6",
+        "bun.lock": "529a9b6a87d9fc836c45a8e68f0da012ed8a111b0fc60b09a0e5c3c8bfbef0e4",
+        ".runtime/agency-core-source-readonly-controls.json": "56853ff7bdff59b135b354e864149cb7e4968213442ec8d1e70db3b202398319",
+        ".runtime/run-agency-core-source-readonly.py": "9ceedde91b97ec03e530f97d25138905683c1c62e44356101b388c7b74cf179f"
+      }
+    }
+  },
+  "groupOwnership": "Driver creates no session or process group. Commands inherit the canonical guard-owned child PGID. Canonical wrapper owns each total cap and15second cleanup reserve.",
+  "runtime": "Existing owned Bun1.4.4 at .runtime/bin/bun, explicit--bun; no host Node substitution or version-probe execution in preparation.",
+  "prohibited": [
+    "units",
+    "formatter writes",
+    "PostgreSQL or other native fixture execution",
+    "dependency installation",
+    "app or worker or build",
+    "provider activity",
+    "automatic retry",
+    "other source targets"
+  ],
+  "preparationEvidence": "Only existing files were read and three owned preparation files written. No driver, syntax, types, lint, formatter, unit, native, app, build or install command executed.",
+  "rootReviewedAt": "2026-11-01T12:04:36.212487+00:00",
+  "rootReview": "Read-only review confirms fixedcommands, unchangedrules, sameprimary/controltargets, no new sessions/groups and stopfirsterror. Runtime NOTRUN, freshseparatefinitegrantsrequired."
+}
