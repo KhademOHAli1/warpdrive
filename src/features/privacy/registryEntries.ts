@@ -26,12 +26,16 @@ import { scopeDraftIds1 } from "./registryIdsScopeDraft1";
 import { stagingQualificationIds1 } from "./registryIdsStagingQualification1";
 import { toolingIds1 } from "./registryIdsTooling1";
 import { migrationInventoryEntry } from "./registryMigrations";
+import { salesInventoryEntries } from "./registrySales";
+import { salesToolingInventoryEntry } from "./registrySalesTooling";
 import type { RegistryEntry } from "./registryTypes";
 import { workflowInventoryEntry } from "./registryWorkflows";
 
 export const registryEntries: RegistryEntry[] = [
   workflowInventoryEntry,
   migrationInventoryEntry,
+  salesToolingInventoryEntry,
+  ...salesInventoryEntries,
   classifyInventory([...authenticationIds1, ...authenticationIds2], classifications.authentication),
   classifyInventory([...contentIds1], classifications.content),
   classifyInventory([...crmIds1, ...crmIds2, ...crmIds3], classifications.crm),
@@ -92,7 +96,7 @@ export const registryEntries: RegistryEntry[] = [
     subjectRelation:
       "Verified contact and workforce subjects remain distinct. Shared addresses, reverse custom references and indirect graph edges are candidates requiring review; ownership does not expand identity.",
     purpose:
-      "Read bounded PostgreSQL candidate IDs and relationship provenance across 18 declared candidate adapters, with 79 explicit per-table blockers.",
+      "Read bounded PostgreSQL candidate IDs and relationship provenance across 18 declared candidate adapters, with 82 explicit per-table blockers.",
     disclosure:
       "Candidate metadata requires current specific case authority, fresh authentication and verification. Candidate coverage is not an immutable approved scope or authority to export full records.",
     retention:

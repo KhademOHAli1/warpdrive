@@ -1,0 +1,16 @@
+{
+  "title": "This saved view is unavailable",
+  "body": "Its original conditions have been kept. Choose another saved view, or explicitly show all permitted records.",
+  "showAll": "Show all permitted records",
+  "unavailableLabel": "Unavailable",
+  "checkingTitle": "Checking this saved view",
+  "checkingBody": "The saved conditions are being checked before records are shown.",
+  "queryError": "Could not load this view. Your selected conditions are unchanged.",
+  "retry": "Try again",
+  "missingBody": "This saved view was removed or is no longer available to you. Choose another saved view or explicitly show all permitted records.",
+  "unsupportedColumns": "These columns cannot be saved in a view yet. Choose supported columns and try again.",
+  "unsupportedSort": "This sort order cannot be saved in a view yet. Choose a supported sort and try again.",
+  "selectionSaving": "Saving selected view…",
+  "selectionSaveFailed": "Could not save the selected view. Select it again to retry.",
+  "unsupportedScope": "Clear search or quick filters before saving this view."
+}

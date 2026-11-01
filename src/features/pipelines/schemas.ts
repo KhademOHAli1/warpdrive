@@ -27,9 +27,14 @@ export const stageDeleteInput = z.object({
   moveDealsToStageId: z.string().uuid().optional(),
 });
 
-export const pipelineRenameInput = z.object({
+export const pipelineRenameInput = z.strictObject({
   pipelineId: z.string().uuid(),
-  name: z.string().min(1).max(255),
+  name: z
+    .string()
+    .min(1)
+    .max(255)
+    .refine((name) => name.trim().length > 0),
+  expectedUpdatedAt: z.iso.datetime({ offset: true }),
 });
 
 // Use z.input<> for types with .default() so callers may omit defaulted fields.

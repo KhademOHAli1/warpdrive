@@ -1,4 +1,5 @@
 import { listDefs } from "@/features/custom-fields/defsRepo";
+import { EMPTY_REF_LABELS } from "@/features/custom-fields/refLabelsShared";
 import type { LocalePreferences } from "@/features/i18n/preferences";
 import { getPreferencesForActor } from "@/features/identity/preferencesForActor";
 import { readBaseCurrency } from "@/features/settings/readBaseCurrency";
@@ -29,18 +30,26 @@ export async function loadDealListPageData(
   );
   void viewPromise.catch(() => {});
   const listPromise = viewPromise.then((view) =>
-    caller.deal.list({
-      pipelineId: args.pipelineId,
-      offset: 0,
-      limit: FIRST_PAGE,
-      archived: args.archived,
-      definition: boardViewDefinition(view),
-      ...args.viewPreferences,
-    }),
+    boardViewDefinition(view) === null
+      ? Promise.resolve({
+          rows: [],
+          total: 0,
+          totalValue: null,
+          currencyTotals: [],
+          refLabels: EMPTY_REF_LABELS,
+        })
+      : caller.deal.list({
+          pipelineId: args.pipelineId,
+          offset: 0,
+          limit: FIRST_PAGE,
+          archived: args.archived,
+          definition: boardViewDefinition(view) ?? undefined,
+          ...args.viewPreferences,
+        }),
   );
   void listPromise.catch(() => {});
   const unfilteredPromise = viewPromise.then((view) =>
-    boardViewDefinition(view) === undefined
+    boardViewDefinition(view) === undefined || boardViewDefinition(view) === null
       ? undefined
       : caller.deal
           .list({

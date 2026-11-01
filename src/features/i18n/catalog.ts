@@ -18,6 +18,9 @@ import { CALENDAR_MESSAGES } from "@/features/activities/calendarMessages";
 import activitiesGerman from "@/features/activities/messages/activities.de.json";
 import activitiesEnglish from "@/features/activities/messages/activities.en.json";
 import activitiesPersian from "@/features/activities/messages/activities.fa.json";
+import nextActionQueueGerman from "@/features/activities/messages/nextActionQueue.de.json";
+import nextActionQueueEnglish from "@/features/activities/messages/nextActionQueue.en.json";
+import nextActionQueuePersian from "@/features/activities/messages/nextActionQueue.fa.json";
 import managementGerman from "@/features/auth/management/messages/authManagement.de.json";
 import managementEnglish from "@/features/auth/management/messages/authManagement.en.json";
 import managementPersian from "@/features/auth/management/messages/authManagement.fa.json";
@@ -48,18 +51,27 @@ import filesPersian from "@/features/files/messages/files.fa.json";
 import settingsGerman from "@/features/identity/messages/settings.de.json";
 import settingsEnglish from "@/features/identity/messages/settings.en.json";
 import settingsPersian from "@/features/identity/messages/settings.fa.json";
+import integrationsGerman from "@/features/integrations/messages/integrations.de.json";
+import integrationsEnglish from "@/features/integrations/messages/integrations.en.json";
+import integrationsPersian from "@/features/integrations/messages/integrations.fa.json";
 import leadsGerman from "@/features/leads/messages/leads.de.json";
 import leadsEnglish from "@/features/leads/messages/leads.en.json";
 import leadsPersian from "@/features/leads/messages/leads.fa.json";
 import notificationsGerman from "@/features/notifications/messages/notifications.de.json";
 import notificationsEnglish from "@/features/notifications/messages/notifications.en.json";
 import notificationsPersian from "@/features/notifications/messages/notifications.fa.json";
+import pipelineLifecycleGerman from "@/features/pipelines/messages/lifecycle.de.json";
+import pipelineLifecycleEnglish from "@/features/pipelines/messages/lifecycle.en.json";
+import pipelineLifecyclePersian from "@/features/pipelines/messages/lifecycle.fa.json";
 import privacyGerman from "@/features/privacy/messages/privacyRequest.de.json";
 import privacyEnglish from "@/features/privacy/messages/privacyRequest.en.json";
 import privacyPersian from "@/features/privacy/messages/privacyRequest.fa.json";
 import quickGerman from "@/features/quick-add/messages/quickAdd.de.json";
 import quickEnglish from "@/features/quick-add/messages/quickAdd.en.json";
 import quickPersian from "@/features/quick-add/messages/quickAdd.fa.json";
+import viewCompatibilityGerman from "@/features/saved-filters/messages/viewCompatibility.de.json";
+import viewCompatibilityEnglish from "@/features/saved-filters/messages/viewCompatibility.en.json";
+import viewCompatibilityPersian from "@/features/saved-filters/messages/viewCompatibility.fa.json";
 import statsGerman from "@/features/stats/messages/stats.de.json";
 import statsEnglish from "@/features/stats/messages/stats.en.json";
 import statsPersian from "@/features/stats/messages/stats.fa.json";
@@ -78,6 +90,10 @@ import type { Locale } from "./registry";
 
 const english = {
   ...en,
+  nextActionQueue: nextActionQueueEnglish,
+  pipelineLifecycle: pipelineLifecycleEnglish,
+  viewCompatibility: viewCompatibilityEnglish,
+  integrations: integrationsEnglish,
   workflows: workflowsEnglish,
   utilities: utilitiesEnglish,
   enrichment: enrichmentEnglish,
@@ -105,6 +121,10 @@ const english = {
 };
 const persian: typeof english = mergeMessages(english, {
   ...fa,
+  nextActionQueue: nextActionQueuePersian,
+  pipelineLifecycle: pipelineLifecyclePersian,
+  viewCompatibility: viewCompatibilityPersian,
+  integrations: integrationsPersian,
   workflows: workflowsPersian,
   utilities: utilitiesPersian,
   enrichment: enrichmentPersian,
@@ -132,6 +152,10 @@ const persian: typeof english = mergeMessages(english, {
 });
 const german: typeof english = mergeMessages(english, {
   ...de,
+  nextActionQueue: nextActionQueueGerman,
+  pipelineLifecycle: pipelineLifecycleGerman,
+  viewCompatibility: viewCompatibilityGerman,
+  integrations: integrationsGerman,
   workflows: workflowsGerman,
   utilities: utilitiesGerman,
   enrichment: enrichmentGerman,

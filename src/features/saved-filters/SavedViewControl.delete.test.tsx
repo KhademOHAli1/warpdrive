@@ -114,7 +114,7 @@ describe("SavedViewControl delete", () => {
     await waitFor(() => expect(invalidate).toHaveBeenCalledWith({ targetEntity: "person" }));
   });
 
-  it("clears the selection when the deleted view was the applied one", async () => {
+  it("retains a deleted active selection as unavailable until explicit recovery", async () => {
     listData.mockReturnValue([view()]);
     const user = userEvent.setup();
     const onSelectView = renderControl("v1");
@@ -122,13 +122,24 @@ describe("SavedViewControl delete", () => {
     const dialog = await openDeleteConfirm(user);
     await user.click(within(dialog).getByRole("button", { name: "Delete" }));
 
-    await waitFor(() => expect(onSelectView).toHaveBeenCalledWith(null));
+    await waitFor(() =>
+      expect(onSelectView).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: "v1",
+          definition: null,
+          availability: "unavailable",
+          problem: { kind: "missing", code: "missing-or-no-longer-visible" },
+        }),
+      ),
+    );
+    expect(onSelectView).not.toHaveBeenCalledWith(null);
   });
 
   it("leaves the selection alone when a different view is deleted", async () => {
     listData.mockReturnValue([view()]);
     const user = userEvent.setup();
     const onSelectView = renderControl("v9");
+    onSelectView.mockClear();
 
     const dialog = await openDeleteConfirm(user);
     await user.click(within(dialog).getByRole("button", { name: "Delete" }));

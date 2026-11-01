@@ -1,5 +1,7 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 import { db } from "@/db/client";
 import { guardCsrf } from "@/features/identity/actions/shared";
 import { SIG } from "@/features/identity/actions/sig";
@@ -12,7 +14,6 @@ import {
 } from "./pipelineActions";
 import type {
   PipelineCreateInput,
-  PipelineRenameInput,
   StageCreateInput,
   StageDeleteInput,
   StageReorderInput,
@@ -21,8 +22,9 @@ import type {
 import { deleteStage, updateStage } from "./stageActions";
 
 // Thin CSRF-guarded wrappers around the pure pipeline/stage mutation functions, for the Edit
-// Pipeline page. Every action guards CSRF first, then derives a ManageSession from the real actor
-// (isAdmin + capability flags). Client input never carries the permission decision.
+// Pipeline page. Rename uses native fresh proof and transaction-time scope/revision checks.
+// Create/stage actions retain their current actor projection. Every wrapper guards CSRF first;
+// client input never carries the permission decision.
 export type EditResult<T = undefined> =
   | { ok: true; value: T }
   | { ok: false; error: { id: string } };
@@ -62,14 +64,19 @@ export async function createPipelineAction(
 }
 
 export async function renamePipelineAction(
-  input: PipelineRenameInput,
+  input: unknown,
   csrfToken: string | null = null,
-): Promise<EditResult<{ id: string; name: string }>> {
-  const auth = await authorize(csrfToken);
-  if (!auth.ok) return auth;
-  const r = await renamePipeline(db, auth.session, input, SIG());
+): Promise<EditResult<{ id: string; name: string; updatedAt: string }>> {
+  const csrf = await guardCsrf(csrfToken);
+  if (!csrf.ok) return { ok: false, error: { id: "E_AUTH_CSRF" } };
+  const r = await renamePipeline(db, await headers(), input, SIG());
   if (!r.ok) return { ok: false, error: { id: r.error.id } };
-  return { ok: true, value: { id: r.value.id, name: r.value.name } };
+  revalidatePath("/settings/company/pipelines");
+  revalidatePath("/pipeline");
+  return {
+    ok: true,
+    value: { id: r.value.id, name: r.value.name, updatedAt: r.value.updatedAt.toISOString() },
+  };
 }
 
 export async function createStageAction(

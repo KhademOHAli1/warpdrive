@@ -1,0 +1,213 @@
+{
+  "title": "Verbundene Apps",
+  "intro": "Verbinden Sie Ihre Arbeitswerkzeuge und KI-Assistenten mit Ihrem CRM und verwalten Sie deren Zugriff an einem Ort.",
+  "browse": "Integrationen entdecken",
+  "connections": "Meine Verbindungen",
+  "ai": "KI-Assistenten",
+  "marketplace": "App-Marktplatz",
+  "search": "Integrationen suchen",
+  "all": "Alle Integrationen",
+  "communication": "Kommunikation",
+  "calendar": "Kalender & Besprechungen",
+  "automation": "Automatisierung",
+  "files": "Dateien",
+  "business": "Geschäftsanwendungen",
+  "aiCategory": "KI-Assistenten",
+  "ready": "Verfügbar",
+  "planned": "Geplant",
+  "needsSetup": "Einrichtung erforderlich",
+  "disabled": "Nicht aktiviert",
+  "connected": "Verbunden",
+  "disconnected": "Getrennt",
+  "details": "Details ansehen",
+  "connect": "Konto verbinden",
+  "manage": "Verbindung verwalten",
+  "learn": "Einrichtungsanleitung",
+  "close": "Schließen",
+  "copy": "URL kopieren",
+  "copied": "Kopiert",
+  "copyFailed": "Kopieren fehlgeschlagen. Markieren und kopieren Sie die URL manuell.",
+  "emptySearch": "Keine passenden Integrationen gefunden. Versuchen Sie einen anderen Namen oder eine andere Kategorie.",
+  "emptyConnections": "Ihre verbundenen Werkzeuge an einem Ort",
+  "emptyConnectionsBody": "Verbinden Sie zunächst ein Konto aus dem Verzeichnis. Auch den Zugriff Ihrer KI-Assistenten können Sie hier prüfen und widerrufen.",
+  "capabilities": "Funktionen dieser Integration",
+  "access": "Zugriff & Berechtigungen",
+  "workspace": "Gemeinsame Workspace-Verbindung",
+  "personal": "Persönliche Verbindung",
+  "adminRequired": "Diese Integration muss von einem Administrator eingerichtet werden.",
+  "comingSoon": "Diese Integration ist geplant. Konten lassen sich noch nicht verbinden.",
+  "slackAccess": "Namen öffentlicher Kanäle lesen und Nachrichten in Kanälen senden, denen die App beigetreten ist. Nachrichtenverläufe und private Kanäle werden nicht angefordert.",
+  "slackIntro": "Verbinden Sie Ihren Slack-Workspace, wählen Sie einen Kanal und prüfen Sie die Verbindung. Automatische Deal-Benachrichtigungen und Nachrichtenaktionen sind separat geplant.",
+  "slackSetup": "Ihr Serveradministrator muss die Slack-OAuth-App konfigurieren, bevor Konten verbunden werden können.",
+  "slackChannel": "Benachrichtigungskanal",
+  "chooseChannel": "Kanal auswählen",
+  "loadChannels": "Kanäle laden",
+  "noChannels": "Laden Sie die Warpdrive-App in einen öffentlichen Kanal ein und laden Sie diese Liste erneut.",
+  "save": "Kanal speichern",
+  "saved": "Kanal gespeichert",
+  "check": "Verbindung testen",
+  "checked": "Verbindung bestätigt",
+  "disconnect": "Verbindung trennen",
+  "disconnectTitle": "Slack-Verbindung trennen?",
+  "disconnectBody": "Der Slack-Zugriff wird widerrufen. Vorhandene CRM-Datensätze bleiben erhalten. Sie können den Workspace später erneut verbinden.",
+  "cancel": "Abbrechen",
+  "busy": "Wird ausgeführt…",
+  "requestFailed": "Die Anfrage konnte nicht abgeschlossen werden. Versuchen Sie es erneut oder wenden Sie sich an Ihren Administrator.",
+  "freshAuthentication": "Bitte melden Sie sich erneut an, um diese sicherheitsrelevante Änderung zu bestätigen.",
+  "forbidden": "Sie sind nicht berechtigt, diese Änderung vorzunehmen.",
+  "callbackConnected": "Slack ist verbunden. Wählen Sie einen Kanal, um die Einrichtung abzuschließen.",
+  "callbackFailed": "Slack konnte nicht verbunden werden. Prüfen Sie die App-Konfiguration und versuchen Sie es erneut.",
+  "account": "Konto",
+  "lastChecked": "Zuletzt erfolgreich geprüft",
+  "neverChecked": "Noch nicht geprüft",
+  "gmailManage": "E-Mail-Synchronisierung verwalten",
+  "gmailBody": "Verbinden Sie Ihr Gmail-Postfach, stellen Sie die Verbindung wieder her und verwalten Sie die Synchronisierung.",
+  "mcpTitle": "KI-Assistenten verbinden",
+  "mcpBody": "Durchsuchen Sie CRM-Daten, bereiten Sie Besprechungen vor, aktualisieren Sie Deals, erstellen Sie Aufgaben und entwerfen Sie Follow-ups mit Ihrem KI-Assistenten.",
+  "mcpDisabled": "KI-Verbindungen sind auf diesem Server nicht aktiviert. Bitten Sie Ihren Administrator, den MCP-Server und eine öffentliche HTTPS-Adresse einzurichten.",
+  "mcpUrl": "MCP-Server-URL",
+  "mcpAccess": "Ihr Assistent arbeitet mit den aktuellen CRM-Berechtigungen Ihres Kontos. Prüfen Sie angeforderte Aktionen im KI-Client. Sie können den Zugriff jederzeit widerrufen.",
+  "chatgptStep1": "Öffnen Sie die offizielle ChatGPT-Anleitung und fügen Sie einen eigenen MCP-Server hinzu.",
+  "chatgptStep2": "Geben Sie diese Server-URL ein, wählen Sie OAuth und melden Sie sich bei Warpdrive an.",
+  "chatgptStep3": "Prüfen und bestätigen Sie den Zugriff. Suchen Sie anschließend einen Deal oder erstellen Sie eine Aufgabe.",
+  "claudeStep1": "Öffnen Sie in Claude Customize → Connectors → Add custom connector.",
+  "claudeStep2": "Fügen Sie die Server-URL ein und melden Sie sich bei Warpdrive an. Eine Freigabe Ihrer Organisation kann erforderlich sein.",
+  "claudeStep3": "Aktivieren Sie die Verbindung in einem Gespräch und testen Sie einen CRM-Ablauf.",
+  "otherStep1": "Wählen Sie einen Client mit Unterstützung für Remote-MCP über Streamable HTTP sowie OAuth mit PKCE.",
+  "otherStep2": "Fügen Sie diese Server-URL hinzu und bestätigen Sie den Zugriff in Warpdrive.",
+  "otherStep3": "Testen Sie zuerst einen Lesezugriff und prüfen und bestätigen Sie anschließend eine Schreibaktion.",
+  "publicEndpoint": "Cloud-Assistenten benötigen eine erreichbare Serveradresse. Eine localhost-Adresse eignet sich nur für lokale Clients.",
+  "grants": "Autorisierte KI-Clients",
+  "grantsBody": "Prüfen Sie Ihre autorisierten Clients und widerrufen Sie deren Zugriff bei Bedarf.",
+  "marketTitle": "Ein Ökosystem für Ihre Arbeitsweise",
+  "marketBody": "Der Marktplatz folgt im nächsten Schritt. Geprüfte Integrationen, Workflow-Aktionen und CRM-Erweiterungen erhalten klare Berechtigungen und verwaltete Updates.",
+  "marketFeature1": "Öffentliche Community-Apps und private Organisations-Apps",
+  "marketFeature2": "Berechtigungen vor der Installation prüfen",
+  "marketFeature3": "Versionskompatibilität, Updates und sichere Deinstallation",
+  "marketFeature4": "Unterstützung für Farsi und Deutsch",
+  "marketStatus": "Die Installation über den Marktplatz ist in dieser Version noch nicht verfügbar.",
+  "providers": {
+    "chatgpt": {
+      "description": "Arbeiten Sie aus ChatGPT mit Ihrem CRM."
+    },
+    "claude": {
+      "description": "Nutzen Sie CRM-Kontext und Aktionen in Claude."
+    },
+    "other-mcp": {
+      "description": "Verbinden Sie einen weiteren kompatiblen KI-Client."
+    },
+    "gmail": {
+      "description": "Synchronisieren Sie Ihr Postfach und ordnen Sie Gespräche den passenden Datensätzen zu."
+    },
+    "slack": {
+      "description": "Verbinden Sie einen Workspace und wählen Sie einen Kanal für CRM-Meldungen."
+    },
+    "google-calendar": {
+      "description": "Kalendersynchronisierung, Einladungen und Google-Meet-Links."
+    },
+    "microsoft365": {
+      "description": "Outlook-E-Mail, Kalendersynchronisierung und Teams-Besprechungen."
+    },
+    "zoom": {
+      "description": "Besprechungen erstellen, verwalten und mit CRM-Datensätzen verknüpfen."
+    },
+    "n8n": {
+      "description": "CRM-Abläufe mit selbst gehosteter Automatisierung verbinden."
+    },
+    "make": {
+      "description": "CRM-Ereignisse mit Ihren Make-Szenarien verbinden."
+    },
+    "zapier": {
+      "description": "CRM-Auslöser und Aktionen in Ihren Zaps verwenden."
+    },
+    "google-drive": {
+      "description": "Google-Drive-Dokumente mit Kunden und Deals verknüpfen."
+    },
+    "onedrive": {
+      "description": "OneDrive-Dateien den passenden CRM-Datensätzen zuordnen."
+    },
+    "dropbox": {
+      "description": "Dropbox-Dateien mit Kundengesprächen verknüpfen."
+    },
+    "github": {
+      "description": "Kundenanfragen mit GitHub-Issues verknüpfen."
+    },
+    "linear": {
+      "description": "Kundenfeedback mit Linear-Issues verbinden."
+    },
+    "jira": {
+      "description": "Kundenbezogene Aufgaben in Jira verfolgen."
+    },
+    "calendly": {
+      "description": "Calendly-Buchungen in Ihr CRM übernehmen."
+    },
+    "cal-com": {
+      "description": "Cal.com-Buchungen und Folgeaufgaben verbinden."
+    },
+    "whatsapp": {
+      "description": "Autorisierte WhatsApp-Kundennachrichten anbinden."
+    },
+    "stripe": {
+      "description": "Den Zahlungsstatus Ihrer Kunden im CRM sehen."
+    }
+  },
+  "revocationPending": "In Warpdrive getrennt. Slack konnte den Widerruf noch nicht bestätigen. Wiederholen Sie das Trennen, um den Zugriff vollständig zu entfernen.",
+  "slackAccountTitle": "Slack-Workspace: {account}",
+  "slackSetupTitle": "Slack-App einrichten",
+  "slackSetupStep1": "Erstellen Sie eine Slack-App für Ihren Workspace und tragen Sie diese Weiterleitungs-URL unter OAuth & Permissions ein.",
+  "slackSetupStep2": "Fügen Sie die Bot-Berechtigungen chat:write und channels:read hinzu. Laden Sie die App in die gewünschten öffentlichen Kanäle ein.",
+  "slackSetupStep3": "Hinterlegen Sie SLACK_CLIENT_ID und SLACK_CLIENT_SECRET in der Serverkonfiguration und starten Sie Warpdrive neu.",
+  "slackSetupStep4": "Lassen Sie die Slack-Token-Rotation für diese erste Connector-Version deaktiviert.",
+  "slackCallback": "OAuth-Weiterleitungs-URL",
+  "slackApps": "Slack-App-Einstellungen öffnen",
+  "setupGuide": "Einrichtungsanleitung",
+  "setupAi": "Assistenten einrichten",
+  "finishSetup": "Einrichtung abschließen",
+  "reconnect": "Erneut verbinden",
+  "explorePlanned": "Entwicklungsplan ansehen",
+  "needsAttention": "Prüfung erforderlich",
+  "availableIntegrations": "Verfügbare Integrationen",
+  "availableBody": "Verbinden Sie Ihre täglichen Werkzeuge. Sie behalten die Kontrolle über den Kontozugriff.",
+  "exploreRoadmap": "Geplante Integrationen entdecken",
+  "roadmapBody": "{count, plural, one {# geplante Integration.} other {# geplante Integrationen.}} Ein Ausblick auf die nächsten Erweiterungen.",
+  "workspaceTools": "Ihre verbundenen Arbeitswerkzeuge",
+  "activeConnections": "{count, plural, =0 {Noch keine aktiven Verbindungen.} one {# aktive Verbindung.} other {# aktive Verbindungen.}}",
+  "addConnection": "Verbindung hinzufügen",
+  "review": "Prüfen",
+  "channelNeeded": "Wählen Sie einen öffentlichen Kanal, um die Einrichtung abzuschließen.",
+  "connectionRemoved": "Diese Workspace-Verbindung wurde getrennt. Sie können sie bei Bedarf erneut herstellen.",
+  "reviewGmail": "Gmail-Verbindung prüfen",
+  "serverSetup": "Servereinrichtung",
+  "slackCapability1": "Einen öffentlichen Kanal auswählen, dem die App beigetreten ist.",
+  "slackCapability2": "Den Zugriff auf den verbundenen Slack-Workspace prüfen.",
+  "slackCapability3": "Die Verbindung verwalten und ihren Zugriff widerrufen.",
+  "gmailCapability1": "Kunden-E-Mails bei den passenden CRM-Datensätzen aufbewahren.",
+  "gmailCapability2": "Nachrichten und Postfachaktivitäten synchronisieren.",
+  "gmailCapability3": "Das eigene Postfach verwalten und die Verbindung trennen.",
+  "gmailAccess": "Nachrichten im verbundenen Gmail-Postfach lesen, organisieren und senden. Ihre Google-Identität dient zur Prüfung der Postfachinhaberschaft.",
+  "gmailSetup": "Ihre Serveradministration muss Google OAuth einrichten, bevor Sie ein Postfach verbinden können.",
+  "slackConnectHint": "Weiter zu Slack, um den Workspace-Zugriff zu prüfen.",
+  "connectedBy": "Verbunden durch",
+  "connectedSince": "Verbunden seit",
+  "grantedAccess": "Erteilte Berechtigungen",
+  "unknownAuthorizer": "Verbindende Person nicht verfügbar",
+  "unknownDate": "Datum nicht verfügbar",
+  "retryRemoval": "Entfernen erneut versuchen",
+  "verifyIdentity": "Identität bestätigen",
+  "tryWorkflow": "Mit einer konkreten Aufgabe starten",
+  "workflowBody": "Wählen Sie ein Beispiel, kopieren Sie die Anfrage und verwenden Sie sie im verbundenen Assistenten. Hier wird nichts ausgeführt.",
+  "meetingTitle": "Besprechung vorbereiten",
+  "pipelineTitle": "Meine Pipeline prüfen",
+  "draftTitle": "Follow-up entwerfen",
+  "promptPreview": "Vorschau der Anfrage",
+  "copyPrompt": "Anfrage kopieren",
+  "promptCopied": "Anfrage kopiert. Fügen Sie sie in Ihren verbundenen Assistenten ein.",
+  "meetingPrompt": "Hilf mir, mein nächstes Kundengespräch vorzubereiten. Finde den passenden Kontakt, Deal und die letzten Aktivitäten, fasse den Kontext zusammen und schlage eine kurze Agenda vor. Frage nach, wenn Datum oder Zeitzone unklar sind.",
+  "pipelinePrompt": "Prüfe meine Vertriebspipeline. Zeige festgefahrene Deals, überfällige Aktivitäten und den sinnvollsten nächsten Schritt pro Deal. Belege deine Empfehlungen mit den passenden CRM-Datensätzen. Ändere keine Datensätze.",
+  "draftPrompt": "Hilf mir, ein Follow-up für einen Kunden zu entwerfen. Kläre zuerst Kontakt und Deal mit mir und erstelle anhand des aktuellen CRM-Kontexts einen E-Mail-Entwurf zur Prüfung, ohne die Nachricht zu senden.",
+  "meetingAccess": "Liest relevante CRM-Kontakte, Deals und Aktivitäten.",
+  "pipelineAccess": "Liest Pipeline-Daten und Aktivitäten. Dieses Beispiel fordert keine Änderungen an.",
+  "draftAccess": "Liest CRM-Kontext und kann einen ungesendeten Entwurf erstellen. Prüfen Sie ihn vor dem Senden.",
+  "currentGrant": "Diese Verbindung stellt alle MCP-Werkzeuge bereit, die Ihre CRM-Rolle erlaubt. Eine separate Verbindung mit reinem Lesezugriff ist noch nicht verfügbar.",
+  "filterCategory": "Integrationskategorie"
+}

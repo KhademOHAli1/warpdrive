@@ -66,7 +66,13 @@ function renderEditor(): void {
   queryClient = new QueryClient();
   render(
     <QueryClientProvider client={queryClient}>
-      <EditPipelineClient pipelineId="p1" pipelineName="Sales" stages={STAGES} />
+      <EditPipelineClient
+        pipelineId="p1"
+        pipelineName="Sales"
+        pipelineUpdatedAt="2026-10-31T14:00:00Z"
+        snapshotId="initial-read"
+        stages={STAGES}
+      />
     </QueryClientProvider>,
   );
 }
@@ -76,7 +82,10 @@ function save(): void {
 }
 
 beforeEach(() => {
-  renamePipelineAction.mockResolvedValue({ ok: true, value: { id: "p1", name: "Sales" } });
+  renamePipelineAction.mockResolvedValue({
+    ok: true,
+    value: { id: "p1", name: "Sales", updatedAt: "2026-10-31T14:00:01Z" },
+  });
   createStageAction.mockResolvedValue({ ok: true, value: { id: "n1" } });
   updateStageAction.mockResolvedValue({ ok: true, value: { id: "s1" } });
   deleteStageAction.mockResolvedValue({ ok: true, value: undefined });

@@ -3,6 +3,7 @@
 // zod to read its own views.
 import type { FilterOpKey } from "@/constants/filterOps";
 import type { ConditionCombinator, ConditionValue } from "@/schemas/filterCondition";
+import type { SavedViewPresentation } from "./viewPresentation";
 
 // The entity-agnostic shape every parsed saved view definition has. Each entity's own definition
 // type (ContactFilterDefinition, LeadConditionInput) is assignable to it, so a view applies to its
@@ -12,7 +13,16 @@ export interface SavedViewDefinition {
   conditions: Array<{ field: string; op: FilterOpKey; value?: ConditionValue }>;
 }
 
-export interface SavedView {
+export type SavedViewProblem = {
+  kind: "invalid" | "unsupported" | "missing";
+  code: string;
+};
+
+export type SavedViewDefinitionAvailability<D> =
+  | { availability?: "available"; definition: D; presentation?: SavedViewPresentation }
+  | { availability: "unavailable"; definition: null; problem: SavedViewProblem };
+
+export type SavedView = {
   id: string;
   name: string;
   favorite: boolean;
@@ -20,5 +30,4 @@ export interface SavedView {
   // True when the session user owns this view. Only owners can toggle its favorite flag (the flag
   // is a per-row, owner-scoped column), so the UI hides the star on others' shared views.
   isOwn: boolean;
-  definition: SavedViewDefinition;
-}
+} & SavedViewDefinitionAvailability<SavedViewDefinition>;

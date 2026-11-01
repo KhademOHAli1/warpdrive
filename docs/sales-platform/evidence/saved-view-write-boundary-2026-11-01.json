@@ -1,0 +1,53 @@
+{
+  "observedAt": "2026-11-01T05:43:10.164497+00:00",
+  "sourceCommit": "db925000ec20b9b8d8a3131ae3d183553d2a080c",
+  "behavior": "CREATE and definition UPDATE reject envelopes and unknown definition/condition/deal-sort properties for all four entities instead of stripping authored constraints before persistence.",
+  "preserved": [
+    "Native bare filters/defaults/refinements and deal rotting/sort",
+    "Metadata-only update does not introduce a definition",
+    "Read compatibility map/decoder and retained raw payload behavior",
+    "Owner/share/persistence commands and actual UI writer payload shape"
+  ],
+  "behavioralRed": {
+    "tests": 49,
+    "failed": 26,
+    "passed": 23,
+    "logSha256": "a5a5e2ad7222929b98f38f61a7c978d8f88a603e9c2a24713e51ce1e07004be3"
+  },
+  "green": {
+    "tests": 105,
+    "files": 5,
+    "vitestMilliseconds": 342,
+    "guardElapsedSeconds": 0.74,
+    "minimumLiveFreeDiskGiBReportedRounded": 18.469,
+    "workers": 1,
+    "deadlineSeconds": 45,
+    "headroomFloorBytes": 3221225472,
+    "logSha256": "25d3f302ec5176e3e41d723f0aa3b1519dc4f5ba90b38ec82d127851bff0314d",
+    "postGreenChange": "One comment-only clarification in schemas.ts; executable code unchanged."
+  },
+  "sourceSha256": {
+    "src/features/saved-filters/schemas.ts": "26e06a97217b1b186f5d2692ee1a674413139868f24c808493f45a5f0efdd5f6",
+    "src/schemas/filterCondition.ts": "054304b178a15c7f771c960c72652c6d2c5a917f8e7db1e3c3cb074ed71e29b9",
+    "src/features/saved-filters/savedFilterWriteValidation.test.ts": "a2eeddc52d6cb92dc7f16a381cf1c4062ae56e968d06ef9c31fb19474d0435ab"
+  },
+  "scopedTypedEslint": {
+    "sourceCommit": "db925000ec20b9b8d8a3131ae3d183553d2a080c",
+    "exitCode": 0,
+    "durationSeconds": 6.595,
+    "minimumObservedFreeBytes": 19657760768,
+    "headroomFloorBytes": 5368709120,
+    "selection": [
+      "src/features/saved-filters/schemas.ts",
+      "src/schemas/filterCondition.ts",
+      "src/features/saved-filters/savedFilterWriteValidation.test.ts"
+    ]
+  },
+  "limits": [
+    "Pure write-schema and read-compatibility unit boundary; no database mock or DB/native persistence result inferred.",
+    "No stored record was rewritten by this repair; persistence and owner/share code were not changed.",
+    "Full current TypeScript passed earlier15950b6 before this fix; a new finite pass is pending.",
+    "Versioned presentation writes, native columns/sort selection and personal preference isolation remain unimplemented; see saved-view-presentation-path.md.",
+    "No new schema, migration, build, service, provider, deployment or release."
+  ]
+}

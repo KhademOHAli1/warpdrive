@@ -1,0 +1,181 @@
+// @vitest-environment jsdom
+import "@testing-library/jest-dom/vitest";
+import { cleanup, render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { afterEach, expect, it, vi } from "vitest";
+import { LocaleProvider } from "@/features/i18n/LocaleProvider";
+import { IntegrationHub } from "./IntegrationHub";
+
+vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
+vi.mock("./actions", () => ({
+  connectSlackAction: vi.fn(),
+  configureSlackAction: vi.fn(),
+  disconnectSlackAction: vi.fn(),
+  slackChannelsAction: vi.fn(),
+  testSlackAction: vi.fn(),
+}));
+vi.mock("@/app/(app)/settings/connections/ConnectionsClient", () => ({
+  ConnectionsClient: () => <p>Authorized clients</p>,
+}));
+afterEach(cleanup);
+
+const props = {
+  endpoint: null,
+  slackConfigured: false,
+  isAdmin: false,
+  serviceConnections: [],
+  aiConnections: [],
+  gmail: <p>Gmail account controls</p>,
+};
+
+it("keeps AI onboarding discoverable when MCP is disabled and explains why", async () => {
+  render(<IntegrationHub {...props} />);
+  const user = userEvent.setup();
+  await user.click(screen.getByRole("tab", { name: "AI clients" }));
+  expect(screen.getByRole("status")).toHaveTextContent("not been enabled");
+  expect(screen.getByRole("tab", { name: "ChatGPT" })).toBeVisible();
+  expect(screen.getByRole("tab", { name: "Claude" })).toBeVisible();
+});
+
+it("does not offer a working connector or installation for a planned provider", async () => {
+  render(<IntegrationHub {...props} />);
+  expect(screen.queryByRole("heading", { name: "Zoom" })).not.toBeInTheDocument();
+  await userEvent
+    .setup()
+    .click(screen.getByRole("button", { name: /Explore planned integrations/ }));
+  await userEvent.setup().click(screen.getByRole("button", { name: "View roadmap: Zoom" }));
+  expect(screen.getByRole("dialog")).toHaveTextContent("not available yet");
+  expect(screen.queryByRole("button", { name: "Connect account" })).not.toBeInTheDocument();
+});
+
+it("opens real connections first and keeps recovery ahead of discovery", () => {
+  render(
+    <IntegrationHub
+      {...props}
+      serviceConnections={[
+        {
+          id: "slack-1",
+          provider: "slack",
+          accountName: "Product team",
+          status: "revocation-pending",
+          settings: {},
+          lastCheckedAt: null,
+        },
+      ]}
+    />,
+  );
+  expect(screen.getByRole("tab", { name: /My connections/ })).toHaveAttribute(
+    "aria-selected",
+    "true",
+  );
+  expect(screen.getByRole("region", { name: "Needs attention" })).toHaveTextContent("Product team");
+  expect(screen.queryByRole("heading", { name: "Zoom" })).not.toBeInTheDocument();
+});
+
+it("lets an empty workspace discover supported apps without a wall of roadmap cards", () => {
+  render(<IntegrationHub {...props} />);
+  expect(screen.getByRole("tab", { name: /Browse integrations/ })).toHaveAttribute(
+    "aria-selected",
+    "true",
+  );
+  expect(screen.getByRole("heading", { name: "Available integrations" })).toBeVisible();
+  expect(screen.queryByRole("heading", { name: "Dropbox" })).not.toBeInTheDocument();
+});
+
+it("does not present an intentionally disconnected workspace as an active warning", () => {
+  render(
+    <IntegrationHub
+      {...props}
+      serviceConnections={[
+        {
+          id: "removed",
+          provider: "slack",
+          accountName: "Removed workspace",
+          status: "disconnected",
+          settings: {},
+          lastCheckedAt: null,
+        },
+      ]}
+    />,
+  );
+  expect(screen.getByRole("heading", { name: "Removed workspace" })).toBeVisible();
+  expect(screen.queryByRole("region", { name: "Needs attention" })).not.toBeInTheDocument();
+});
+
+it("formats the connection count with the selected Persian numbering system", () => {
+  render(
+    <LocaleProvider locale="fa">
+      <IntegrationHub {...props} mailbox={{ status: "connected" }} />
+    </LocaleProvider>,
+  );
+  expect(screen.getByRole("tab", { name: "اتصال‌های من" })).toHaveTextContent("۱");
+});
+
+it("filters through the compact category control and reveals the requested roadmap apps", async () => {
+  render(<IntegrationHub {...props} />);
+  const user = userEvent.setup();
+  await user.click(screen.getByRole("combobox", { name: "Integration category" }));
+  await user.click(screen.getByRole("option", { name: "Files" }));
+  expect(screen.getByRole("heading", { name: "Google Drive" })).toBeVisible();
+  expect(screen.getByRole("heading", { name: "OneDrive" })).toBeVisible();
+  expect(screen.queryByRole("heading", { name: "ChatGPT" })).not.toBeInTheDocument();
+});
+
+it("explains both missing Slack configuration and administrator access", async () => {
+  render(<IntegrationHub {...props} />);
+  await userEvent.setup().click(screen.getByRole("button", { name: "Setup guide: Slack" }));
+  expect(screen.getByRole("dialog")).toHaveTextContent("configure the Slack OAuth app");
+  expect(screen.getByRole("button", { name: "Connect account" })).toBeDisabled();
+});
+
+it("keeps operator configuration collapsed and restores focus after provider details close", async () => {
+  render(<IntegrationHub {...props} isAdmin serverOrigin="http://localhost:3150" />);
+  const user = userEvent.setup();
+  const trigger = screen.getByRole("button", { name: "Setup guide: Slack" });
+  await user.click(trigger);
+  expect(screen.getByRole("heading", { name: "What you can do" })).toBeVisible();
+  expect(screen.queryByLabelText("OAuth redirect URL")).not.toBeInTheDocument();
+  await user.click(screen.getByRole("button", { name: "Server setup" }));
+  expect(screen.getByLabelText("OAuth redirect URL")).toHaveValue(
+    "http://localhost:3150/api/integrations/slack/callback",
+  );
+  await user.keyboard("{Escape}");
+  expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  expect(trigger).toHaveFocus();
+});
+
+it("includes real mailbox controls and explicit Gmail access in the provider flow", async () => {
+  render(<IntegrationHub {...props} gmailConfigured />);
+  await userEvent.setup().click(screen.getByRole("button", { name: "Connect account: Gmail" }));
+  expect(screen.getByRole("dialog")).toHaveTextContent("Gmail account controls");
+  expect(screen.getByRole("dialog")).toHaveTextContent("Read, organize and send messages");
+});
+
+it.each([
+  {
+    locale: "fa" as const,
+    search: "جست‌وجو در اتصال‌ها",
+    button: "راهنمای راه‌اندازی: Slack",
+    text: "مدیر سرور",
+  },
+  {
+    locale: "de" as const,
+    search: "Integrationen suchen",
+    button: "Einrichtungsanleitung: Slack",
+    text: "Serveradministrator",
+  },
+])(
+  "supports localized searching and setup details in $locale",
+  async ({ locale, search, button, text }) => {
+    render(
+      <LocaleProvider locale={locale}>
+        <IntegrationHub {...props} />
+      </LocaleProvider>,
+    );
+    const user = userEvent.setup();
+    await user.type(screen.getByRole("searchbox", { name: search }), "Slack");
+    expect(screen.queryByRole("heading", { name: "Zoom" })).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: button }));
+    expect(screen.getByRole("dialog")).toHaveTextContent(text);
+  },
+);

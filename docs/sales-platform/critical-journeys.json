@@ -1,0 +1,354 @@
+{
+  "schemaVersion": 1,
+  "journeys": [
+    {
+      "id": "auth",
+      "owner": "sales-platform",
+      "taskIds": ["SP-00.4", "SP-15.1", "SP-15.2"],
+      "surfaces": [
+        "Better Auth native sessions",
+        "invitation-only admission",
+        "fresh verification",
+        "suspension and offboarding",
+        "MCP grant revocation"
+      ],
+      "sourceTests": [
+        "src/features/auth/session.test.ts",
+        "src/features/auth/ui/LoginWorkflow.test.tsx",
+        "src/features/auth/better/recoveryRequest.integration.test.ts",
+        "src/features/identity/actions/privileged.fresh.test.ts",
+        "src/features/auth/better/auth.integration.test.ts",
+        "src/features/auth/better/sessionPolicy.integration.test.ts"
+      ],
+      "fixtures": [
+        "src/test/db.ts",
+        "src/features/auth/better/auth.integration.test.ts",
+        "src/features/auth/better/sessionPolicy.integration.test.ts",
+        "src/features/auth/session.test.ts",
+        "src/features/identity/actions/privileged.fresh.test.ts"
+      ],
+      "pendingGates": [
+        "Exact-candidate FA/DE/EN login, recovery and administrator journeys still require browser evidence.",
+        "Current source tests do not qualify external identity providers or real mail delivery."
+      ]
+    },
+    {
+      "id": "pipeline-access",
+      "owner": "sales-platform",
+      "taskIds": ["SP-00.4", "SP-02.2", "SP-15.2"],
+      "surfaces": [
+        "pipeline list and byId",
+        "record visibility ceiling",
+        "manager and group restrictions",
+        "downgrade during edit",
+        "search and aggregates"
+      ],
+      "sourceTests": [
+        "src/features/pipelines/pipelines.test.ts",
+        "src/features/pipelines/canManagePipelines.test.ts",
+        "src/features/permissions/canSee.test.ts",
+        "src/features/permissions/sql.test.ts"
+      ],
+      "fixtures": [
+        "src/test/db.ts",
+        "src/features/pipelines/canManagePipelines.test.ts",
+        "src/features/pipelines/pipelines.test.ts",
+        "src/features/permissions/sql.test.ts",
+        "src/features/permissions/canSee.test.ts"
+      ],
+      "pendingGates": [
+        "Pipeline-role shadow comparison and shared-view revocation paths are not implemented or qualified.",
+        "Exact-candidate rendered create, sharing and denial states remain pending."
+      ]
+    },
+    {
+      "id": "records",
+      "owner": "sales-platform",
+      "taskIds": ["SP-00.4", "SP-02.6", "SP-06.8"],
+      "surfaces": [
+        "deal edit and stage transfer",
+        "customer-company and contact editing",
+        "import",
+        "activity and history links"
+      ],
+      "sourceTests": [
+        "src/features/deals/dealUpdatePerms.test.ts",
+        "src/features/deals/dealUpdate.changeLog.test.ts",
+        "src/features/contacts/updatePersonName.test.ts",
+        "src/features/import/pipeline.integration.test.ts"
+      ],
+      "fixtures": [
+        "src/test/db.ts",
+        "src/features/deals/dealUpdatePerms.test.ts",
+        "src/features/deals/dealUpdate.changeLog.test.ts",
+        "src/features/contacts/updatePersonName.test.ts",
+        "src/features/import/pipeline.integration.test.ts"
+      ],
+      "pendingGates": [
+        "Buying-group and cross-pipeline transfer qualification require their implementation.",
+        "Preservation must reconcile actual IDs, raw values and links in each supported migration lineage."
+      ]
+    },
+    {
+      "id": "saved-views",
+      "owner": "sales-platform",
+      "taskIds": ["SP-00.4", "SP-03.1", "SP-03.8"],
+      "surfaces": [
+        "historic filter decoding",
+        "personal and shared definitions",
+        "executing-viewer results",
+        "favorites and navigation context"
+      ],
+      "sourceTests": [
+        "src/features/saved-filters/parseDefinition.test.ts",
+        "src/features/saved-filters/router.test.ts",
+        "src/features/saved-filters/savedFilterActions.test.ts",
+        "src/features/saved-filters/SavedViewControl.test.tsx",
+        "src/features/saved-filters/savedFilterWritePreservation.integration.test.ts",
+        "src/features/identity/preferencesSelection.integration.test.ts"
+      ],
+      "fixtures": [
+        "src/test/db.ts",
+        "src/features/saved-filters/savedFilterActions.test.ts",
+        "src/features/saved-filters/savedFilterWritePreservation.integration.test.ts",
+        "src/features/identity/preferencesSelection.integration.test.ts",
+        "src/features/saved-filters/SavedViewControl.test.tsx"
+      ],
+      "pendingGates": [
+        "A shared definition never grants data access; current-source tests are not release proof for new view contracts.",
+        "FA/DE/EN stale, denied and offline view recovery journeys remain pending."
+      ]
+    },
+    {
+      "id": "exports",
+      "owner": "sales-platform",
+      "taskIds": ["SP-00.4", "SP-03.7", "SP-15.2"],
+      "surfaces": [
+        "authorized query at execution and download",
+        "CSV formula safety",
+        "field visibility",
+        "files and expiring download grants"
+      ],
+      "sourceTests": [
+        "src/features/leads/inbox/exportCsv.test.ts",
+        "src/features/leads/inbox/exportQuery.test.ts",
+        "src/features/email/attachmentAuthz.test.ts",
+        "src/app/(app)/leads/export/route.authorization.test.ts",
+        "src/features/email/attachmentDownload.test.ts"
+      ],
+      "fixtures": [
+        "src/test/db.ts",
+        "src/app/(app)/leads/export/route.authorization.test.ts",
+        "src/features/leads/inbox/exportCsv.test.ts",
+        "src/features/email/attachmentDownload.test.ts"
+      ],
+      "pendingGates": [
+        "Asynchronous scoped-view export is not implemented or qualified.",
+        "Revocation during export and download requires actual runtime evidence."
+      ]
+    },
+    {
+      "id": "workflows",
+      "owner": "sales-platform",
+      "taskIds": ["SP-00.4", "SP-07.2", "SP-07.8"],
+      "surfaces": [
+        "manual editor and immutable publication",
+        "simulation and run",
+        "deduplication and crash recovery",
+        "cancel and run history",
+        "future committed event admission"
+      ],
+      "sourceTests": [
+        "src/features/workflows/definition.test.ts",
+        "src/features/workflows/executionSafety.integration.test.ts",
+        "src/features/workflows/worker.integration.test.ts",
+        "src/features/workflows/runControl.integration.test.ts",
+        "src/features/workflows/ui/workflowLocale.test.tsx"
+      ],
+      "fixtures": [
+        "src/test/db.ts",
+        "src/features/workflows/executionSafety.integration.test.ts",
+        "src/features/workflows/runControl.integration.test.ts",
+        "src/features/workflows/worker.integration.test.ts"
+      ],
+      "pendingGates": [
+        "Automatic domain-event outbox, waits and external effects remain owner-controlled prerequisites.",
+        "Historical peer qualification is distinct from rerunning this exact candidate."
+      ]
+    },
+    {
+      "id": "communications",
+      "owner": "sales-platform",
+      "taskIds": ["SP-00.4", "SP-07.6", "SP-07.8"],
+      "surfaces": [
+        "existing IG mail sender and attachments",
+        "selected sender and recipient authority",
+        "accepted, partial and unknown states",
+        "revocation, cancellation and repair"
+      ],
+      "sourceTests": [
+        "src/features/email/send.visibility.test.ts",
+        "src/features/email/sendReplayRepair.test.ts",
+        "src/features/email/attachmentAuthz.test.ts",
+        "src/features/email/composer/Composer.sendFailure.test.tsx",
+        "src/features/email/send.test.ts",
+        "src/features/email/attachmentSend.test.ts"
+      ],
+      "fixtures": [
+        "src/test/db.ts",
+        "src/features/email/send.test.ts",
+        "src/features/email/send.visibility.test.ts",
+        "src/features/email/attachmentSend.test.ts",
+        "src/features/email/attachmentAuthz.test.ts",
+        "src/features/email/composer/Composer.sendFailure.test.tsx"
+      ],
+      "pendingGates": [
+        "MAIL remains peer-owned. The observed committed combined owner cut70bc46b has94 migrations and is not adopted or qualified as this Sales candidate; later owner advances require their own exact cut.",
+        "Real-provider operation and uncertain-send reconciliation require authorized domain evidence; no second sender is introduced."
+      ]
+    },
+    {
+      "id": "regional-dates",
+      "owner": "sales-platform",
+      "taskIds": ["SP-00.4", "SP-15.3"],
+      "surfaces": [
+        "civil dates versus instants",
+        "explicit calendar and timezone intent",
+        "Tehran display",
+        "Berlin repeated and nonexistent times",
+        "Iranian month and leap boundaries"
+      ],
+      "sourceTests": [
+        "src/features/activities/calendarEventDraft.test.ts",
+        "src/features/activities/calendarEventRoundTrip.integration.test.ts",
+        "src/components/ui/dateFormat.test.ts",
+        "src/components/ui/dateFormat.german.test.ts"
+      ],
+      "fixtures": [
+        "src/features/activities/calendarEventDraft.ts",
+        "src/features/activities/calendarEventDraft.test.ts",
+        "src/features/activities/calendarEventRoundTrip.integration.test.ts",
+        "src/components/ui/dateFormat.test.ts",
+        "src/components/ui/dateFormat.german.test.ts"
+      ],
+      "pendingGates": [
+        "Candidate browser review must preserve selected calendar and timezone across locale switches.",
+        "Alternate-calendar display is not Iranian recurrence or provider-parity qualification."
+      ]
+    },
+    {
+      "id": "regional-money",
+      "owner": "sales-platform",
+      "taskIds": ["SP-00.4", "SP-15.3"],
+      "surfaces": [
+        "canonical exact IRR",
+        "1,234,560 IRR = 123,456 toman",
+        "1 IRR = 0.1 toman",
+        "German locale preserves selected unit",
+        "currency-separated analytics"
+      ],
+      "sourceTests": [
+        "src/features/currencies/money.test.ts",
+        "src/features/currencies/multicurrency.test.ts",
+        "src/features/currencies/currencyFlows.test.ts"
+      ],
+      "fixtures": [
+        "src/features/currencies/money.ts",
+        "src/features/currencies/money.test.ts",
+        "src/features/currencies/multicurrency.test.ts",
+        "src/features/currencies/currencyFlows.test.ts"
+      ],
+      "pendingGates": [
+        "The approved IRR/toman vectors require qualification after the immutable MAIL/regional handoff.",
+        "Committed regional owner source exists separately; selected Sales tests do not qualify the native IRR/toman display-unit flow or the combined candidate."
+      ]
+    },
+    {
+      "id": "regional-phones",
+      "owner": "sales-platform",
+      "taskIds": ["SP-00.4", "SP-06.6", "SP-15.3"],
+      "surfaces": [
+        "raw authored input",
+        "explicit country context",
+        "canonical identity recomputation",
+        "mixed-direction isolation"
+      ],
+      "sourceTests": [
+        "src/utils/phone.test.ts",
+        "src/features/contacts/PeopleTable.phone.test.tsx",
+        "src/features/activities/ActivityRow.phone.test.tsx"
+      ],
+      "fixtures": [
+        "src/utils/phone.ts",
+        "src/utils/phone.test.ts",
+        "src/features/contacts/PeopleTable.phone.test.tsx",
+        "src/features/activities/ActivityRow.phone.test.tsx"
+      ],
+      "pendingGates": [
+        "Raw-input and country-context cases must be rerun after adopting the regional handoff.",
+        "Locale changes must not rewrite original names, phone text or contact identities."
+      ]
+    },
+    {
+      "id": "recovery",
+      "owner": "sales-platform",
+      "taskIds": ["SP-00.3", "SP-00.6", "SP-15.5"],
+      "surfaces": [
+        "main and divergent applied ledgers",
+        "migration interruption and resume",
+        "backup and restore",
+        "preserved effect receipts",
+        "outbound suspension after restore"
+      ],
+      "sourceTests": [
+        "src/db/migrate.test.ts",
+        "src/db/integrationWorkflowMigration.integration.test.ts",
+        "src/features/workflows/executionSafety.integration.test.ts",
+        "src/features/workflows/worker.integration.test.ts"
+      ],
+      "fixtures": [
+        "src/test/db.ts",
+        "src/db/migrate.test.ts",
+        "src/db/integrationWorkflowMigration.integration.test.ts",
+        "src/features/workflows/worker.integration.test.ts"
+      ],
+      "pendingGates": [
+        "Retained-installation applied-ledger exports are unavailable; source SQL hashes do not prove installed state.",
+        "WF-0083 and MAIL-dev convergence, files, queues and post-effect restore still need separate rehearsals.",
+        "Recovery time and recovery point are unmeasured."
+      ]
+    },
+    {
+      "id": "workspace-isolation",
+      "owner": "sales-platform",
+      "taskIds": ["SP-14.3", "SP-14.5", "SP-14.7", "SP-15.2"],
+      "surfaces": [
+        "request and native-session context",
+        "background jobs and committed events",
+        "files and object storage",
+        "cache and search",
+        "exports and downloads",
+        "realtime and subscriptions",
+        "provider tokens and MCP",
+        "workspace-scoped admin and stale switches"
+      ],
+      "sourceTests": [
+        "src/features/permissions/canSee.test.ts",
+        "src/server/ws/authorizeDeal.test.ts",
+        "src/features/oauth/tokens.test.ts",
+        "src/features/email/attachmentAuthz.test.ts"
+      ],
+      "fixtures": [
+        "src/test/db.ts",
+        "src/features/permissions/canSee.test.ts",
+        "src/server/ws/authorizeDeal.test.ts",
+        "src/features/oauth/tokens.test.ts",
+        "src/features/email/attachmentAuthz.test.ts"
+      ],
+      "pendingGates": [
+        "These are existing single-workspace boundary references, not multi-workspace isolation tests.",
+        "No workspace switcher or external partner access may be enabled before complete tenancy ownership, scoping and adversarial qualification."
+      ]
+    }
+  ]
+}

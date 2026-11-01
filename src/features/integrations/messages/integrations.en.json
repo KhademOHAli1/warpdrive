@@ -1,0 +1,213 @@
+{
+  "title": "Connected apps",
+  "intro": "Bring your tools and AI assistants into your CRM. Connect an account, choose its access, and manage it here.",
+  "browse": "Browse integrations",
+  "connections": "My connections",
+  "ai": "AI clients",
+  "marketplace": "App marketplace",
+  "search": "Search integrations",
+  "all": "All integrations",
+  "communication": "Communication",
+  "calendar": "Calendar & meetings",
+  "automation": "Automation",
+  "files": "Files",
+  "business": "Business tools",
+  "aiCategory": "AI assistants",
+  "ready": "Available",
+  "planned": "Planned",
+  "needsSetup": "Setup required",
+  "disabled": "Not enabled",
+  "connected": "Connected",
+  "disconnected": "Disconnected",
+  "details": "View details",
+  "connect": "Connect account",
+  "manage": "Manage connection",
+  "learn": "Setup guide",
+  "close": "Close",
+  "copy": "Copy URL",
+  "copied": "Copied",
+  "copyFailed": "Could not copy. Select the URL and copy it manually.",
+  "emptySearch": "No integrations match your search. Try another name or category.",
+  "emptyConnections": "Your tools, connected in one place",
+  "emptyConnectionsBody": "Connect an account from the directory to get started. You can review and revoke AI access here too.",
+  "capabilities": "What you can do",
+  "access": "Access & permissions",
+  "workspace": "Workspace connection",
+  "personal": "Personal connection",
+  "adminRequired": "An administrator needs to set up this integration.",
+  "comingSoon": "This integration is on the roadmap. Connecting accounts is not available yet.",
+  "slackAccess": "Read public channel names and post messages in channels the app has joined. Message history and private channels are not requested.",
+  "slackIntro": "Connect your Slack workspace, choose a channel, and check that the connection works. Automated deal alerts and message actions are planned separately.",
+  "slackSetup": "Your server administrator needs to configure the Slack OAuth app before accounts can be connected.",
+  "slackChannel": "Notification channel",
+  "chooseChannel": "Choose a channel",
+  "loadChannels": "Load channels",
+  "noChannels": "Invite the Warpdrive app to a public channel, then reload this list.",
+  "save": "Save channel",
+  "saved": "Channel saved",
+  "check": "Test connection",
+  "checked": "Connection verified",
+  "disconnect": "Disconnect",
+  "disconnectTitle": "Disconnect Slack?",
+  "disconnectBody": "The Slack token will be revoked. Existing CRM records stay available. You can reconnect this workspace later.",
+  "cancel": "Cancel",
+  "busy": "Working…",
+  "requestFailed": "The request could not be completed. Try again or ask your administrator.",
+  "freshAuthentication": "Please sign in again to confirm this security-sensitive change.",
+  "forbidden": "You do not have permission to make this change.",
+  "callbackConnected": "Slack is connected. Choose a channel to finish setup.",
+  "callbackFailed": "Slack could not be connected. Check the app configuration and try again.",
+  "account": "Account",
+  "lastChecked": "Last successful check",
+  "neverChecked": "Not checked yet",
+  "gmailManage": "Manage email sync",
+  "gmailBody": "Connect or reconnect your Gmail mailbox and manage its sync settings.",
+  "mcpTitle": "Connect your AI assistant",
+  "mcpBody": "Search CRM records, prepare meetings, update deals, create tasks, and draft follow-ups from your AI assistant.",
+  "mcpDisabled": "AI connections have not been enabled on this server. Ask your administrator to enable the MCP server and configure a public HTTPS address.",
+  "mcpUrl": "MCP server URL",
+  "mcpAccess": "Your assistant acts with your account’s current CRM permissions. Review the requested actions in your AI client. You can revoke access at any time.",
+  "chatgptStep1": "Open the official ChatGPT setup guide and add a custom MCP server.",
+  "chatgptStep2": "Enter this server URL, choose OAuth authentication, and sign in to Warpdrive.",
+  "chatgptStep3": "Review access, connect, and try searching for a deal or creating a task.",
+  "claudeStep1": "In Claude, open Customize → Connectors → Add custom connector.",
+  "claudeStep2": "Paste this server URL, connect, and sign in to Warpdrive. Organization approval may be required.",
+  "claudeStep3": "Enable the connector in a conversation and try a CRM workflow.",
+  "otherStep1": "Choose a client that supports remote MCP over Streamable HTTP and OAuth with PKCE.",
+  "otherStep2": "Add this server URL and complete Warpdrive’s authorization screen.",
+  "otherStep3": "Test a read operation, then review and approve a write operation.",
+  "publicEndpoint": "Cloud AI clients need a reachable server address. A localhost address is for local clients only.",
+  "grants": "Authorized AI clients",
+  "grantsBody": "Review the clients you have authorized and revoke their access when needed.",
+  "marketTitle": "An ecosystem built around your work",
+  "marketBody": "The marketplace is the next stage. It will bring reviewed integrations, workflow actions, and CRM extensions together with clear permissions and managed updates.",
+  "marketFeature1": "Public community apps and private organization apps",
+  "marketFeature2": "Permissions reviewed before installation",
+  "marketFeature3": "Version compatibility, updates, and safe removal",
+  "marketFeature4": "Farsi and German interface support",
+  "marketStatus": "Marketplace installation is not available in this release.",
+  "providers": {
+    "chatgpt": {
+      "description": "Work with your CRM from ChatGPT."
+    },
+    "claude": {
+      "description": "Bring CRM context and actions into Claude."
+    },
+    "other-mcp": {
+      "description": "Connect another compatible AI client."
+    },
+    "gmail": {
+      "description": "Sync your mailbox and keep conversations with the right records."
+    },
+    "slack": {
+      "description": "Connect a workspace and choose a channel for CRM updates."
+    },
+    "google-calendar": {
+      "description": "calendar sync, invitations, and Google Meet links."
+    },
+    "microsoft365": {
+      "description": "Outlook mail, calendar sync, and Teams meetings."
+    },
+    "zoom": {
+      "description": "create and manage meetings linked to CRM records."
+    },
+    "n8n": {
+      "description": "Build CRM workflows with self-hosted automation."
+    },
+    "make": {
+      "description": "Connect CRM activity to your Make scenarios."
+    },
+    "zapier": {
+      "description": "Connect CRM triggers and actions to your Zaps."
+    },
+    "google-drive": {
+      "description": "Link Google Drive documents to customers and deals."
+    },
+    "onedrive": {
+      "description": "Keep OneDrive files alongside the right CRM records."
+    },
+    "dropbox": {
+      "description": "Connect Dropbox files to customer conversations."
+    },
+    "github": {
+      "description": "Link customer requests to GitHub issues."
+    },
+    "linear": {
+      "description": "Connect customer feedback to Linear issues."
+    },
+    "jira": {
+      "description": "Track customer-related work in Jira."
+    },
+    "calendly": {
+      "description": "Bring Calendly bookings into your CRM."
+    },
+    "cal-com": {
+      "description": "Connect Cal.com bookings and follow-ups."
+    },
+    "whatsapp": {
+      "description": "Connect authorized WhatsApp customer messaging."
+    },
+    "stripe": {
+      "description": "Bring customer payment status into the CRM."
+    }
+  },
+  "revocationPending": "Disconnected locally. Slack could not confirm revocation. Retry disconnecting to finish removing its access.",
+  "slackAccountTitle": "Slack · {account}",
+  "slackSetupTitle": "Set up the Slack app",
+  "slackSetupStep1": "Create a Slack app for your workspace and add this redirect URL under OAuth & Permissions.",
+  "slackSetupStep2": "Add the bot scopes chat:write and channels:read. Invite the app to the public channels you want to use.",
+  "slackSetupStep3": "Set SLACK_CLIENT_ID and SLACK_CLIENT_SECRET in your server configuration, then restart Warpdrive.",
+  "slackSetupStep4": "Keep Slack token rotation disabled for this first connector release.",
+  "slackCallback": "OAuth redirect URL",
+  "slackApps": "Open Slack app settings",
+  "setupGuide": "Setup guide",
+  "setupAi": "Set up assistant",
+  "finishSetup": "Finish setup",
+  "reconnect": "Reconnect",
+  "explorePlanned": "View roadmap",
+  "needsAttention": "Needs attention",
+  "availableIntegrations": "Available integrations",
+  "availableBody": "Connect the tools you use today. Account access stays under your control.",
+  "exploreRoadmap": "Explore planned integrations",
+  "roadmapBody": "{count, plural, one {# planned integration.} other {# planned integrations.}} Preview what is coming next.",
+  "workspaceTools": "Your workspace, connected",
+  "activeConnections": "{count, plural, =0 {No active connections yet.} one {# active connection.} other {# active connections.}}",
+  "addConnection": "Add a connection",
+  "review": "Review",
+  "channelNeeded": "Choose a public channel to finish setup.",
+  "connectionRemoved": "Disconnected. Reconnect this workspace when you need it.",
+  "reviewGmail": "Review Gmail connection",
+  "serverSetup": "Server setup",
+  "slackCapability1": "Choose a public channel your app has joined.",
+  "slackCapability2": "Verify access to the connected Slack workspace.",
+  "slackCapability3": "Manage the connection and revoke its access.",
+  "gmailCapability1": "Keep customer email alongside the right CRM records.",
+  "gmailCapability2": "Synchronize messages and mailbox activity.",
+  "gmailCapability3": "Manage and disconnect your own mailbox.",
+  "gmailAccess": "Read, organize and send messages in your connected Gmail mailbox. Your Google identity is used to verify the mailbox owner.",
+  "gmailSetup": "Your server administrator needs to configure Google OAuth before you can connect a mailbox.",
+  "slackConnectHint": "Continue to Slack to review workspace access.",
+  "connectedBy": "Connected by",
+  "connectedSince": "Connected since",
+  "grantedAccess": "Granted access",
+  "unknownAuthorizer": "Authorizer unavailable",
+  "unknownDate": "Date unavailable",
+  "retryRemoval": "Retry removal",
+  "verifyIdentity": "Verify your identity",
+  "tryWorkflow": "Start with a real task",
+  "workflowBody": "Choose an example, copy the prompt and use it in your connected assistant. Nothing runs here.",
+  "meetingTitle": "Prepare for a meeting",
+  "pipelineTitle": "Review my pipeline",
+  "draftTitle": "Draft a follow-up",
+  "promptPreview": "Prompt preview",
+  "copyPrompt": "Copy prompt",
+  "promptCopied": "Prompt copied. Paste it into your connected assistant.",
+  "meetingPrompt": "Help me prepare for my next customer meeting. Find the relevant contact, deal and recent activities, summarize the context, and suggest a short agenda. Ask me to clarify the date and time zone if needed.",
+  "pipelinePrompt": "Review my sales pipeline. Show stalled deals, overdue activities and the most useful next action for each deal. Cite the CRM records behind your recommendations. Do not change records.",
+  "draftPrompt": "Help me draft a follow-up for a customer. First confirm the contact and deal, then use recent CRM context to prepare an unsent email draft for my review. Do not send the message.",
+  "meetingAccess": "Reads relevant CRM contacts, deals and activities.",
+  "pipelineAccess": "Reads pipeline records and activity. This example asks for no changes.",
+  "draftAccess": "Reads CRM context and can create an unsent draft. Review the draft before sending.",
+  "currentGrant": "This connection exposes all MCP tools your CRM role permits. A separate read-only connection is not yet available.",
+  "filterCategory": "Integration category"
+}

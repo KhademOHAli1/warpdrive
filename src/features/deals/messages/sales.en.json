@@ -467,7 +467,7 @@
     "stageHoldsDeals": "It still holds deals. Reload the page to see them and choose where to move them.",
     "pipelineNeedsStage": "A pipeline must keep at least one stage.",
     "destinationDeleted": "The stage its deals were going to no longer exists. Reload the page and try again.",
-    "saveUnconfirmed": "The save did not reach the server, so some changes may not have been applied. Reload the page and try again.",
+    "saveUnconfirmed": "The save could not be confirmed. Some changes may already be saved. Refresh and review the saved version before trying again.",
     "stageAlreadyDeleted": "It was already deleted. Reload the page to see the current stages.",
     "changeFailedTitle": "Couldn't save your change",
     "changeFailedBody": "Something went wrong. Please refresh and try again.",
@@ -493,7 +493,16 @@
     "stageColumn": "stage column",
     "removeDealLink": "Remove deal link",
     "removePersonLink": "Remove person link",
-    "removeOrganizationLink": "Remove organization link"
+    "removeOrganizationLink": "Remove organization link",
+    "renameConflict": "The pipeline changed. Refresh the saved version and review it before applying your draft. Your unsaved changes are retained.",
+    "renameFreshProof": "Verify your identity again in account security, then return here. Your unsaved changes are retained.",
+    "renameUnavailable": "This pipeline is no longer available for editing. Refresh to review your current access. Your unsaved changes are retained.",
+    "renameInvalid": "Enter a pipeline name containing 1 to 255 characters.",
+    "renameVerifyIdentity": "Verify identity in account security (new tab)",
+    "renameRefreshVersion": "Refresh saved version",
+    "renameSavedName": "Current saved pipeline name:",
+    "renameReviewHint": "Review the saved name. Continuing keeps your draft and uses this version for the next save.",
+    "renameKeepDraft": "Keep my draft and use this version"
   },
   "fields": {
     "title": "Title",

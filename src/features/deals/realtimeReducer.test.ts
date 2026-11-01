@@ -128,3 +128,13 @@ describe("reduceRealtime", () => {
     });
   });
 });
+
+it("revalidates filtered movement on the server instead of patching across filter semantics", () => {
+  const filtered = { ...data, filterKey: "stage-equals-s1", filterIsActive: true };
+  const out = reduceRealtime(
+    { lastSeq: 4, data: filtered },
+    { kind: "event", event: movedEvent, seq: 5, selfActorId: "me" },
+  );
+  expect(out).toEqual({ lastSeq: 5, effect: "invalidate" });
+  expect(filtered.cards[0]?.stageId).toBe("s1");
+});

@@ -7,6 +7,7 @@
 // via vi.mock so registerEmailJobs's internal SELECT hits a real Postgres with
 // the proper schema, not the placeholder URL from vitest.setup.ts.
 
+import { PgBoss } from "pg-boss";
 import { describe, expect, it, vi } from "vitest";
 import {
   PGBOSS_QUEUE_EMAIL_SEND,
@@ -14,6 +15,7 @@ import {
   PGBOSS_QUEUE_FILE_REAPER,
   PGBOSS_QUEUE_RELEASE_CHECK,
 } from "@/constants/jobNames";
+import { observeBossErrors } from "@/jobs/bossObserver";
 import { makeTestDb } from "@/test/db";
 import { registerAllJobs } from "./worker";
 
@@ -91,8 +93,13 @@ describe("registerAllJobs", () => {
   it("creates all three queues and schedules the reaper", async () => {
     const h = await makeTestDb();
     testDbHolder.db = h;
+    const bootstrap = new PgBoss(h.url);
+    observeBossErrors(bootstrap, "worker");
 
     try {
+      // Registration recovery reads actual pg-boss tables. Bootstrap their
+      // schema before using the recording facade for handler/schedule assertions.
+      await bootstrap.start();
       const fakeBoss = makeFakeBoss();
 
       await registerAllJobs(fakeBoss as unknown as Parameters<typeof registerAllJobs>[0]);
@@ -114,6 +121,7 @@ describe("registerAllJobs", () => {
       expect(fakeBoss.schedules.some((s) => s.name === PGBOSS_QUEUE_RELEASE_CHECK)).toBe(true);
     } finally {
       testDbHolder.db = null;
+      await bootstrap.stop();
       await h.close();
     }
   });

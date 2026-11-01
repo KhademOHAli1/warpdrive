@@ -22,7 +22,8 @@ import { BOARD_QUERY_KEY } from "@/features/deals/useDealMove";
 import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { applyStageOps } from "./applyStageOps";
-import { renamePipelineAction, reorderStagesAction } from "./pipelineEditActions";
+import { PipelineRenameRecovery } from "./PipelineRenameRecovery";
+import { reorderStagesAction } from "./pipelineEditActions";
 import { SortableStageCard } from "./SortableStageCard";
 import { StageDeleteDialog } from "./StageDeleteDialog";
 import { diffStages, type StageRow } from "./stageDiff";
@@ -33,6 +34,7 @@ import {
   reorderRowsByKey,
   stageOrderChanged,
 } from "./stageOrder";
+import { usePipelineRename } from "./usePipelineRename";
 import { type EditorRow, useStageDeletion } from "./useStageDeletion";
 
 interface InitialStage {
@@ -46,12 +48,16 @@ interface InitialStage {
 interface EditPipelineClientProps {
   pipelineId: string;
   pipelineName: string;
+  pipelineUpdatedAt: string;
+  snapshotId: string;
   stages: InitialStage[];
 }
 
 export function EditPipelineClient({
   pipelineId,
   pipelineName,
+  pipelineUpdatedAt,
+  snapshotId,
   stages,
 }: EditPipelineClientProps): React.ReactNode {
   const translateSales = useAppTranslations("sales");
@@ -60,13 +66,11 @@ export function EditPipelineClient({
   const router = useRouter();
   const queryClient = useQueryClient();
   const nameId = useId();
-  const originalName = pipelineName;
   const originalIds = stages.map((s) => s.id);
   const originalById = Object.fromEntries(
     stages.map((s) => [s.id, { name: s.name, rottingDays: s.rottingDays }]),
   );
 
-  const [name, setName] = useState(pipelineName);
   const [rows, setRows] = useState<EditorRow[]>(
     stages.map((s) => ({
       key: s.id,
@@ -80,6 +84,13 @@ export function EditPipelineClient({
   const [pendingReorder, setPendingReorder] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const rename = usePipelineRename({
+    pipelineId,
+    pipelineName,
+    pipelineUpdatedAt,
+    snapshotId,
+    reportError: (id) => setError(stageEditErrorMessages(locale)[id] ?? id),
+  });
   const nextKeyRef = useRef(0);
   const deletion = useStageDeletion({ rows, setRows, setError });
   const sensors = useSensors(
@@ -114,6 +125,7 @@ export function EditPipelineClient({
   }
 
   async function save(): Promise<void> {
+    if (saving || rename.blocked) return;
     setSaving(true);
     setError(null);
     const csrf = readCsrfToken();
@@ -121,10 +133,7 @@ export function EditPipelineClient({
 
     const fail = (id: string): void => setError(stageEditErrorMessages(locale)[id] ?? id);
     try {
-      if (name.trim() !== originalName && name.trim() !== "") {
-        const r = await renamePipelineAction({ pipelineId, name: name.trim() }, csrf);
-        if (!r.ok) return fail(r.error.id);
-      }
+      if (!(await rename.save(csrf))) return;
       const applied = await applyStageOps(pipelineId, ops, csrf);
       setRows((prev) => assignCreatedIds(prev, applied.createdIds));
       const failedDelete =
@@ -172,8 +181,10 @@ export function EditPipelineClient({
           <Input
             id={nameId}
             aria-label={translateSales("pipeline_name_5ba23")}
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+            value={rename.name}
+            onChange={(e) => rename.setName(e.target.value)}
+            maxLength={255}
+            disabled={saving}
             className="max-w-md"
           />
         </div>
@@ -188,7 +199,7 @@ export function EditPipelineClient({
           <button
             type="button"
             onClick={() => void save()}
-            disabled={saving}
+            disabled={saving || rename.blocked}
             className="rounded-md bg-action px-3 py-1.5 text-sm font-medium text-action-foreground transition-transform hover:bg-action/90 active:scale-[0.96] disabled:opacity-60"
           >
             {saving ? translateSales("saving_dc85a") : translateSales("save_changes_dd0ae")}
@@ -204,6 +215,16 @@ export function EditPipelineClient({
           {error}
         </p>
       )}
+      <PipelineRenameRecovery
+        failureId={rename.failureId}
+        blocked={rename.blocked}
+        freshRead={rename.freshRead}
+        savedName={pipelineName}
+        onRefresh={() => router.refresh()}
+        onReview={() => {
+          if (rename.reviewVersion()) setError(null);
+        }}
+      />
 
       {deletion.request !== null && (
         <StageDeleteDialog

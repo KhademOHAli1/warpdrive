@@ -20,7 +20,18 @@ export interface BoardViewControls extends BoardViewState {
 
 export function useBoardView(initial: BoardViewState | undefined): BoardViewControls {
   const [restored] = useState(() => recallBoardView() !== null);
-  const [seed] = useState(() => recallBoardView() ?? initial ?? DEFAULT_BOARD_VIEW);
+  const [seed] = useState(() => {
+    const memory = recallBoardView();
+    if (initial?.savedFilter?.availability === "unavailable")
+      return { ...(memory ?? initial), savedFilter: initial.savedFilter };
+    if (
+      initial?.savedFilter !== null &&
+      initial?.savedFilter !== undefined &&
+      memory?.savedFilter?.id === initial.savedFilter.id
+    )
+      return { ...memory, savedFilter: initial.savedFilter };
+    return memory ?? initial ?? DEFAULT_BOARD_VIEW;
+  });
   const [ownerId, setOwnerId] = useState<string | null>(seed.ownerId);
   const [sortKey, setSortKey] = useState<BoardSortKey>(seed.sortKey);
   const [sortDir, setSortDir] = useState(seed.sortDir);

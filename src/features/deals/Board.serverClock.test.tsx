@@ -2,6 +2,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, test, vi } from "vitest";
+import type { BoardViewState } from "./boardView";
 import type { BoardCard } from "./dealRepo";
 
 vi.mock("./useBoardRealtime", () => ({ useBoardRealtime: () => {} }));
@@ -57,11 +58,12 @@ function rottenCard(): BoardCard {
 // The server render is the user's first paint. It must not describe an overdue deal as having
 // nothing scheduled: effects have not run yet, so anything derived from a mount-only clock is
 // a factual claim made before the data exists.
-function ssr(): string {
+function ssr(initialView?: BoardViewState): string {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return renderToStaticMarkup(
     <QueryClientProvider client={qc}>
       <Board
+        initialView={initialView}
         pipelineId={PIPE}
         selfActorId="22222222-2222-2222-2222-222222222222"
         stages={STAGES}
@@ -89,4 +91,25 @@ describe("Board first paint", () => {
   test("renders the rot tint for a deal past its stage threshold", () => {
     expect(ssr()).toContain("border-s-4");
   });
+});
+
+test("does not render seeded cards when the selected saved view is unavailable", () => {
+  const html = ssr({
+    ownerId: null,
+    sortKey: "nextActivity",
+    sortDir: "asc",
+    conditions: null,
+    savedFilter: {
+      id: "blocked",
+      name: "نمای حفظ‌شده",
+      favorite: false,
+      isShared: false,
+      isOwn: true,
+      availability: "unavailable",
+      definition: null,
+      problem: { kind: "unsupported", code: "unsupported-field" },
+    },
+  });
+  expect(html).toContain("This saved view is unavailable");
+  expect(html).not.toContain("annual contract deal #47");
 });

@@ -1,6 +1,23 @@
 // Stable error-ID registry. Append-only: one ID per distinct cause; retired IDs
 // stay searchable (commented) and are never reused or renumbered.
 export const ERROR_IDS = {
+  // Third-party integrations
+  INTEGRATION_FORBIDDEN: "E_INTEGRATION_001",
+  INTEGRATION_NEEDS_CONFIGURATION: "E_INTEGRATION_002",
+  INTEGRATION_STATE_INVALID: "E_INTEGRATION_003",
+  INTEGRATION_SAVE_FAILED: "E_INTEGRATION_004",
+  INTEGRATION_NOT_CONNECTED: "E_INTEGRATION_005",
+  INTEGRATION_CREDENTIALS_UNAVAILABLE: "E_INTEGRATION_006",
+  CHANNEL_UNAVAILABLE: "E_INTEGRATION_007",
+  SLACK_METHOD_INVALID: "E_INTEGRATION_008",
+  SLACK_RATE_LIMITED: "E_INTEGRATION_009",
+  SLACK_UNAVAILABLE: "E_INTEGRATION_010",
+  SLACK_REQUEST_FAILED: "E_INTEGRATION_011",
+  SLACK_EXCHANGE_FAILED: "E_INTEGRATION_012",
+  SLACK_SCOPE_MISSING: "E_INTEGRATION_013",
+  SLACK_CHANNEL_LIMIT: "E_INTEGRATION_014",
+  INTEGRATION_CUSTODY_CONFLICT: "E_INTEGRATION_015",
+
   // AUTH
   AUTH_LOGIN_REJECTED: "E_AUTH_001", // domain / email_verified / signature check failed
   AUTH_STATE_MISMATCH: "E_AUTH_002", // OAuth state/nonce/PKCE mismatch
@@ -25,6 +42,7 @@ export const ERROR_IDS = {
   DB_INVARIANT: "E_DB_001", // a DB invariant we believed impossible was violated
   DB_INSERT_FAILED: "E_DB_002", // insert returned no rows (should never happen)
   DB_WRITE_FAILED: "E_DB_003", // the write threw: Postgres unreachable, aborted, or rejected
+  DB_READ_FAILED: "E_DB_004", // the authorized read failed without a safe result
   // DEAL
   DEAL_NOT_FOUND: "E_DEAL_001", // deal not found or not visible (404-on-invisible)
   DEAL_PRECONDITION: "E_DEAL_002", // optimistic precondition failed (stale compare-and-swap on move)
@@ -53,6 +71,9 @@ export const ERROR_IDS = {
   LEAD_FILTER_INVALID: "E_LEAD_008", // leads list filter compiled with a field/op outside the allow-list
   // PIPELINE
   PIPELINE_NOT_FOUND: "E_PIPELINE_001", // pipeline not found or restricted (404-on-invisible)
+  PIPELINE_REVISION_CONFLICT: "E_PIPELINE_002", // rename source revision changed
+  PIPELINE_FRESH_AUTH_REQUIRED: "E_PIPELINE_003", // rename requires current native fresh proof
+  PIPELINE_RENAME_INPUT_INVALID: "E_PIPELINE_004", // rename input failed strict validation
   // STAGE
   STAGE_NOT_FOUND: "E_STAGE_001", // stage not found (delete/update targeted a missing stage)
   STAGE_HAS_DEALS: "E_STAGE_002", // refuse to delete a stage that still holds deals (move them first)
@@ -106,6 +127,7 @@ export const ERROR_IDS = {
   ACTIVITY_UPDATE_INPUT_INVALID: "E_ACTIVITY_005", // edit action input failed Zod validation
   ACTIVITY_TYPE_INVALID: "E_ACTIVITY_006", // patched typeId is missing or archived (activity WAS found)
   ACTIVITY_END_BEFORE_START: "E_ACTIVITY_007", // multi-day endAt is earlier than the start (dueAt)
+  ACTIVITY_COMPLETE_INPUT_INVALID: "E_ACTIVITY_008", // complete action input failed strict Zod validation
   // LABEL
   LABEL_NOT_FOUND: "E_LABEL_001", // label not found (rename/recolor/delete targeted a missing label)
   LABEL_IN_USE: "E_LABEL_002", // delete blocked: label still applied to one or more records
@@ -201,6 +223,9 @@ export const ERROR_IDS = {
   UI_ACTION_UNCONFIRMED: "E_UI_003", // action rejected without returning a Result: answer was lost
   // PRIVACY
   PRIVACY_EVIDENCE_UNREADABLE: "E_PRIVACY_001", // malformed, substituted or unauthenticated privacy ciphertext
+
+  // PREFERENCES
+  PREF_SAVED_VIEW_SELECTION_INVALID: "E_PREF_001", // invalid native saved-view selection input
 } as const;
 
 export type ErrorId = (typeof ERROR_IDS)[keyof typeof ERROR_IDS];

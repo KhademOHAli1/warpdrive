@@ -1,0 +1,264 @@
+{
+  "observedAt": "2026-10-31T15:01:44.764632+00:00",
+  "exitCode": 1,
+  "qualifiesUpgrade": false,
+  "note": "Live source inventories only. Applied ledgers not supplied; own disposable ledger is a separate artifact. Peer trees may change after capture.",
+  "sources": [
+    {
+      "label": "primary",
+      "directory": "/Users/ali/Developer/warpdrive",
+      "journalSha256": "bbf0309c9c77869a4e207b43f1efc9f400a82a6dac6daa830c107495622f9618",
+      "entries": 86,
+      "tail": [
+        {
+          "idx": 83,
+          "tag": "0083_privacy_foundations",
+          "when": 1793457595775,
+          "sha256": "77a8c257eef6ac8300bd5c89eda5cb036cf3b8208e8baa928b43253bd11a7692",
+          "bytes": 9079
+        },
+        {
+          "idx": 84,
+          "tag": "0084_privacy_policy_deadlines",
+          "when": 1793458105911,
+          "sha256": "0ea0748506b4dc4e05c68649c086193efede6b3514830e4fe7a7be0c7e268e77",
+          "bytes": 7935
+        },
+        {
+          "idx": 85,
+          "tag": "0085_privacy_identity",
+          "when": 1793458528968,
+          "sha256": "22f1baa06a161dcc8c705ec7b0981382d6f05b79347e784436d4e59a0830d9d6",
+          "bytes": 2283
+        }
+      ],
+      "ledger": {
+        "status": "not-provided",
+        "issues": []
+      }
+    },
+    {
+      "label": "workflow",
+      "directory": "/private/tmp/warpdrive-workflows-20261031",
+      "journalSha256": "cf7e9c9b4b54d62c77fc1f7fac3cafc714ef74f16032ee413da7b994565ea667",
+      "entries": 84,
+      "tail": [
+        {
+          "idx": 83,
+          "tag": "0083_visual_workflows",
+          "when": 1793444960042,
+          "sha256": "5b19873644fd336e925a94dd6666e4735556649967ca5aa086d76ab717860eb5",
+          "bytes": 5108
+        }
+      ],
+      "ledger": {
+        "status": "not-provided",
+        "issues": []
+      }
+    },
+    {
+      "label": "mail",
+      "directory": "/Users/ali/Developer/warpdrive-integrations",
+      "journalSha256": "b4be16d7dedfe69672b5ba6d6d6a508f4296f8a8da41a31b4ed0d7f2d3c3d5e6",
+      "entries": 89,
+      "tail": [
+        {
+          "idx": 83,
+          "tag": "0083_natural_deathstrike",
+          "when": 1793446537651,
+          "sha256": "3a91f34acc7a9ba493425fc703d739dfab7ca71cc5e568d9940e1c8b5b4fed9b",
+          "bytes": 1534
+        },
+        {
+          "idx": 84,
+          "tag": "0084_military_loki",
+          "when": 1793447063979,
+          "sha256": "562d6affd4ddcb70a5d9baa0ba2ac076dd5e04b32e2113e759c18471725e04e2",
+          "bytes": 1230
+        },
+        {
+          "idx": 85,
+          "tag": "0085_cooing_night_nurse",
+          "when": 1793448196423,
+          "sha256": "87171bd516d517c20756b2ce09efedf7ea0a88cd6dba58d2635bdab21ee4157f",
+          "bytes": 5419
+        },
+        {
+          "idx": 86,
+          "tag": "0086_early_tomas",
+          "when": 1793451580903,
+          "sha256": "e98695888d8aec834ccdff77340d5123089b335d6f011e76d4815bd89e0b2a57",
+          "bytes": 94
+        },
+        {
+          "idx": 87,
+          "tag": "0087_cool_stryfe",
+          "when": 1793451892308,
+          "sha256": "6b951166dd50bdc38ee2855d0044d3a948eff9b65c355a3fd3f970b08a540586",
+          "bytes": 520
+        },
+        {
+          "idx": 88,
+          "tag": "0088_skinny_slyde",
+          "when": 1793452405456,
+          "sha256": "63f9f00ae03c629b64e84a40f9d69dd21685bcafb63cb2bef609630d10e35fb0",
+          "bytes": 84
+        }
+      ],
+      "ledger": {
+        "status": "not-provided",
+        "issues": []
+      }
+    },
+    {
+      "label": "platform",
+      "directory": "/private/tmp/warpdrive-integrations-preview-20261031",
+      "journalSha256": "4d89be8c2d18d22a088ae592ae0345373b6067e5cefc7bb9da9a3fbb4feaa867",
+      "entries": 85,
+      "tail": [
+        {
+          "idx": 83,
+          "tag": "0083_integration_connections",
+          "when": 1793443475394,
+          "sha256": "6ea7f6c7e1f1549e13a15e63a635c23ca97942278631e331daefd67211309acc",
+          "bytes": 2467
+        },
+        {
+          "idx": 84,
+          "tag": "0084_visual_workflows",
+          "when": 1793452709228,
+          "sha256": "5b19873644fd336e925a94dd6666e4735556649967ca5aa086d76ab717860eb5",
+          "bytes": 5108
+        }
+      ],
+      "ledger": {
+        "status": "not-provided",
+        "issues": []
+      }
+    },
+    {
+      "label": "candidate",
+      "directory": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-sales-platform-implementation/work/warpdrive-sales",
+      "journalSha256": "4d89be8c2d18d22a088ae592ae0345373b6067e5cefc7bb9da9a3fbb4feaa867",
+      "entries": 85,
+      "tail": [
+        {
+          "idx": 83,
+          "tag": "0083_integration_connections",
+          "when": 1793443475394,
+          "sha256": "6ea7f6c7e1f1549e13a15e63a635c23ca97942278631e331daefd67211309acc",
+          "bytes": 2467
+        },
+        {
+          "idx": 84,
+          "tag": "0084_visual_workflows",
+          "when": 1793452709228,
+          "sha256": "5b19873644fd336e925a94dd6666e4735556649967ca5aa086d76ab717860eb5",
+          "bytes": 5108
+        }
+      ],
+      "ledger": {
+        "status": "not-provided",
+        "issues": []
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "left": "primary",
+      "right": "workflow",
+      "sharedPrefix": 83,
+      "relation": "divergent",
+      "mismatch": {
+        "index": 83,
+        "fields": ["tag", "when", "sha256"]
+      }
+    },
+    {
+      "left": "primary",
+      "right": "mail",
+      "sharedPrefix": 83,
+      "relation": "divergent",
+      "mismatch": {
+        "index": 83,
+        "fields": ["tag", "when", "sha256"]
+      }
+    },
+    {
+      "left": "primary",
+      "right": "platform",
+      "sharedPrefix": 83,
+      "relation": "divergent",
+      "mismatch": {
+        "index": 83,
+        "fields": ["tag", "when", "sha256"]
+      }
+    },
+    {
+      "left": "primary",
+      "right": "candidate",
+      "sharedPrefix": 83,
+      "relation": "divergent",
+      "mismatch": {
+        "index": 83,
+        "fields": ["tag", "when", "sha256"]
+      }
+    },
+    {
+      "left": "workflow",
+      "right": "mail",
+      "sharedPrefix": 83,
+      "relation": "divergent",
+      "mismatch": {
+        "index": 83,
+        "fields": ["tag", "when", "sha256"]
+      }
+    },
+    {
+      "left": "workflow",
+      "right": "platform",
+      "sharedPrefix": 83,
+      "relation": "divergent",
+      "mismatch": {
+        "index": 83,
+        "fields": ["tag", "when", "sha256"]
+      }
+    },
+    {
+      "left": "workflow",
+      "right": "candidate",
+      "sharedPrefix": 83,
+      "relation": "divergent",
+      "mismatch": {
+        "index": 83,
+        "fields": ["tag", "when", "sha256"]
+      }
+    },
+    {
+      "left": "mail",
+      "right": "platform",
+      "sharedPrefix": 83,
+      "relation": "divergent",
+      "mismatch": {
+        "index": 83,
+        "fields": ["tag", "when", "sha256"]
+      }
+    },
+    {
+      "left": "mail",
+      "right": "candidate",
+      "sharedPrefix": 83,
+      "relation": "divergent",
+      "mismatch": {
+        "index": 83,
+        "fields": ["tag", "when", "sha256"]
+      }
+    },
+    {
+      "left": "platform",
+      "right": "candidate",
+      "sharedPrefix": 85,
+      "relation": "identical"
+    }
+  ]
+}

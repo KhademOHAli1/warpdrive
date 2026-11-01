@@ -22,7 +22,7 @@ it("installs a fresh canonical schema and admits its unchanged no-op rerun", asy
   }
 });
 
-it.each([83, 86])(
+it.each([83, 86, 87])(
   "upgrades actual canonical prefix length %i without changing prior ledger or business data",
   async (prefix) => {
     const h = await freshMigrationDb();
@@ -38,7 +38,7 @@ it.each([83, 86])(
       await h.db.execute(
         sql`INSERT INTO user_preferences(user_id,ui) VALUES ('00000000-0000-4000-8000-000000000001','{"localePreferences":{"locale":"fa","calendar":"persian","timeZone":"Europe/Berlin","numberingSystem":"latn"}}'::jsonb)`,
       );
-      if (prefix === 86)
+      if (prefix >= 86)
         await h.db.execute(
           sql`INSERT INTO privacy_cases(kind,created_by,intake_key,intake_digest,metadata_enc) VALUES ('access','00000000-0000-4000-8000-000000000001','migration-fixture','synthetic-digest',decode('00ff81','hex'))`,
         );
@@ -67,7 +67,7 @@ it.each([83, 86])(
           )
         ).rows,
       ).toEqual(preferences);
-      if (prefix === 86)
+      if (prefix >= 86)
         expect(
           (
             await h.db.execute(

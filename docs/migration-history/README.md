@@ -4,6 +4,8 @@ The published main history through `0085_privacy_identity` is retained byte for 
 
 The generated 0086 snapshot extends the canonical 0085 snapshot with the four Workflow tables and preserves all existing table definitions. Do not replace main's Privacy migrations with another branch's files that happen to use the same numbers.
 
+The shared connection schema is appended as `0087_integration_connections`, preserving the canonical 0086 predecessor and all 97 previous table definitions. Its three tables extend the combined schema to 100 tables. `platform-original/` retains the original CONN-83/Workflow-84 SQL, snapshots and journal verbatim. The canonical CONN SQL remains byte-identical to its original source.
+
 ## Admission
 
 Both the application migration entrypoint and `bun run db:migrate` use `src/db/migrate.ts`. Before applying SQL, the runner loads and validates the ordered source journal and checks every stored migration hash and timestamp against an exact prefix of that source. It takes an advisory transaction lock, checks the prefix, applies the already-loaded SQL, inserts normal Drizzle receipts and verifies the Workflow protections in one transaction. SQL failures roll back metadata creation and pending migrations together. Lock and statement timeouts bound individual database operations; the idle transaction timeout is not a total transaction deadline.

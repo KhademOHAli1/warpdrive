@@ -1,0 +1,90 @@
+{
+  "schemaVersion": 1,
+  "observedAt": "2026-11-01T03:30:55.793875+00:00",
+  "applicationSourceCommit": "f006b5a5026449fd2bf792439b9149ba3517feb8",
+  "runtime": "Bun 1.4.4",
+  "checks": [
+    {
+      "check": "full-unit",
+      "outcome": "passed",
+      "testFiles": 972,
+      "tests": 6068,
+      "durationSeconds": 200.71,
+      "privateLog": ".runtime/sales-evidence/r1-continuation-unit.log",
+      "logSha256": "ae73c1910a06bead27b110b1a88ca4e2bbe405ed4a9417dc0c4e155ae2d9cc4e"
+    },
+    {
+      "check": "affected-postgresql-integration",
+      "outcome": "passed",
+      "testFiles": 51,
+      "tests": 245,
+      "durationSeconds": 40.05,
+      "privateLog": ".runtime/sales-evidence/r1-continuation-db.log",
+      "logSha256": "99db47d1dda6eb58104ac9579c0401517be48bbd32f87ba25f9c1cc8ce616120"
+    },
+    {
+      "check": "full-typecheck",
+      "outcome": "passed",
+      "terminalExitCode": 0,
+      "privateLog": ".runtime/sales-evidence/r1-continuation-typecheck.log",
+      "logSha256": "2758203e7042ddf6ec87648be271f61fb2e79e1853539f813e87c5955d6efa57"
+    },
+    {
+      "check": "full-lint",
+      "outcome": "passed",
+      "terminalExitCode": 0,
+      "warnings": 11,
+      "informationalNotices": 9,
+      "privateLog": ".runtime/sales-evidence/r1-continuation-lint.log",
+      "logSha256": "43ebeb77ad1fba3e15f090061f14ac6d2199f47e18a09b2630d3c9d127e3442a"
+    },
+    {
+      "check": "production-web-build",
+      "outcome": "passed",
+      "terminalExitCode": 0,
+      "qualified": true,
+      "buildHandle": 34684,
+      "privateLog": ".runtime/sales-evidence/r1-continuation-web-build-final.log",
+      "logSha256": "d7473bd8d099780418b6e8a6d56ebffd5519a85257c1f7d0916bdbe27af59c16",
+      "durationSeconds": 60.222,
+      "minimumObservedFreeBytes": 12558819328,
+      "scope": "Synthetic production build only, no production service/deployment/provider operation"
+    }
+  ],
+  "nativeEvidence": "native-journey.json",
+  "featureEvidence": {
+    "rename": "native fresh-session CAS command and current editor",
+    "templates": "strict immutable stage-only manifests and pure preview; installation unavailable"
+  },
+  "limits": [
+    "Synthetic/disposable local evidence only",
+    "No complete roadmap, retained upgrade, provider, pilot or production acceptance",
+    "Cold development/RSC timeouts reset one editor; full-reload draft durability remains open",
+    "No new Sales DDL allocated; actual persistence and shared effect/event exports remain required",
+    "First build was deliberately interrupted for resource coordination; granted later attempt passed. Current-source worker bundles were not rerun in that window; prior c655 bundle evidence remains separately scoped."
+  ],
+  "buildAttemptHistory": [
+    {
+      "check": "production-web-build",
+      "outcome": "interrupted-for-coordinated-resource-window",
+      "terminalExitCode": 143,
+      "qualified": false,
+      "buildHandle": 99578,
+      "privateLog": ".runtime/sales-evidence/r1-continuation-web-build.log",
+      "logSha256": "4e4d360ebbbeef36f07bc5d50ee4df73ceb34ae6863d6b53db2acda97da93c4b"
+    },
+    {
+      "check": "production-web-build",
+      "outcome": "passed",
+      "terminalExitCode": 0,
+      "qualified": true,
+      "buildHandle": 34684,
+      "privateLog": ".runtime/sales-evidence/r1-continuation-web-build-final.log",
+      "logSha256": "d7473bd8d099780418b6e8a6d56ebffd5519a85257c1f7d0916bdbe27af59c16",
+      "durationSeconds": 60.222,
+      "minimumObservedFreeBytes": 12558819328,
+      "scope": "Synthetic production build only, no production service/deployment/provider operation"
+    }
+  ],
+  "currentBuildQualified": true
+}

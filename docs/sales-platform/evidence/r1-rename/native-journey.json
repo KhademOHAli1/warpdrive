@@ -1,0 +1,67 @@
+{
+  "observedAt": "2026-10-31T17:00:28.062504+00:00",
+  "profile": "task-owned synthetic PostgreSQL18.1 and native Better Auth UI, development preview",
+  "sourceBinding": "No production source edits occurred during the successful warm native journey; subsequently committed unchanged in the named source commit.",
+  "pipeline": {
+    "id": "8b170b24-a9b2-46cc-a5ab-46ae8e4d3267",
+    "finalAuthoredName": "پیش‌نویس من / Mein Entwurf",
+    "successfulRenameAudits": 3,
+    "rejectedConflictAudits": 0
+  },
+  "observations": [
+    "Expired fresh proof refused rename; existing native account-security password confirmation succeeded",
+    "Warm existing editor saved فروش پایدار / Vertrieb",
+    "First tab kept پیش‌نویس من / Mein Entwurf while second tab saved نام همکار / Kollegin",
+    "First-tab stale rename was refused and save disabled",
+    "Explicit Refresh saved version preserved the draft and showed current saved colleague name",
+    "Keep my draft and use this version explicitly advanced source revision; save persisted the draft",
+    "Existing regional controls changed locale from English to Farsi, retaining authored names, Persian calendar and Europe/Berlin",
+    "Farsi RTL editor rejected whitespace-only candidate with localized guidance; correcting to unchanged current name returned to the pipeline without another rename audit"
+  ],
+  "preservedRecordDigests": [
+    {
+      "schema": "public",
+      "table": "deals",
+      "rows": 54,
+      "sha256": "ed1085300deb9f9a5fbd597d64cd51fc240c088cd86bcbf068a08ddce4cc5e11"
+    },
+    {
+      "schema": "public",
+      "table": "leads",
+      "rows": 50,
+      "sha256": "29ee1e881432604373b3e4ad98a2ae524a0d235ea8ba1790f389b27d9af05ed3"
+    },
+    {
+      "schema": "public",
+      "table": "organizations",
+      "rows": 50,
+      "sha256": "1ed922650f9e2c260989df5feb4c01beb8795ace4304e8884c0756641241b826"
+    },
+    {
+      "schema": "public",
+      "table": "persons",
+      "rows": 100,
+      "sha256": "065c9aceddd67f2bf03bae5130b2400a95380ceac91cb2f4fa839b18c141fbdf"
+    },
+    {
+      "schema": "public",
+      "table": "saved_filters",
+      "rows": 3,
+      "sha256": "8a65da7cacff0f638f5dc21d91a4a1e45f884bcc7c2332d49f388042d6b11015"
+    },
+    {
+      "schema": "public",
+      "table": "stages",
+      "rows": 10,
+      "sha256": "acea22dc2901e5918686e890b1bd9698d15a116f006f28aa09ec36d32ba04a7a"
+    }
+  ],
+  "limits": [
+    "Synthetic local observation only; no provider, pilot, production, screen-reader or native human-language acceptance",
+    "Initial cold development/RSC timeouts reset an editor and lost its unsaved draft during native re-verification; no claim of draft durability across full reload/error-boundary unmount",
+    "Successful in-place conflict refresh retained the draft on the warm route; component tests separately cover fresh-proof recovery and unknown-outcome review",
+    "Native session/security, preference, pipeline/audit and pg-boss startup metadata changed as expected; no general outbound worker was started",
+    "Existing create/stage command authorization and concurrent global MFA/passkey-policy changes remain separate qualification work"
+  ],
+  "applicationSourceCommit": "f006b5a5026449fd2bf792439b9149ba3517feb8"
+}

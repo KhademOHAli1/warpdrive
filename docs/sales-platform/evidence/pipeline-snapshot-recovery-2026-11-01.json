@@ -1,0 +1,51 @@
+{
+  "sourceCommit": "b120ab9278c0a50b4a0bb0e264a56f1562feeec7",
+  "behavior": "Unknown-outcome recovery requires an accepted read later than settlement, including reads already delivered while the request was pending.",
+  "checks": {
+    "red": {
+      "startedAt": "2026-11-01T04:14:56.830465+00:00",
+      "finishedAt": "2026-11-01T04:15:01.395074+00:00",
+      "exitCode": 1,
+      "durationSeconds": 4.564,
+      "minimumObservedFreeBytes": 15129174016,
+      "headroomFloorBytes": 3221225472,
+      "selection": ["src/features/pipelines/PipelineDirectoryRecovery.test.tsx"]
+    },
+    "green": {
+      "startedAt": "2026-11-01T04:15:46.366358+00:00",
+      "finishedAt": "2026-11-01T04:15:50.413493+00:00",
+      "exitCode": 0,
+      "durationSeconds": 4.047,
+      "minimumObservedFreeBytes": 15047618560,
+      "headroomFloorBytes": 3221225472,
+      "selection": [
+        "src/features/pipelines/PipelineDirectoryRecovery.test.tsx",
+        "src/features/pipelines/PipelineDirectoryProjection.test.tsx",
+        "src/features/pipelines/PipelineDirectory.test.tsx"
+      ]
+    }
+  },
+  "redResult": {
+    "failed": 1,
+    "passed": 8
+  },
+  "greenResult": {
+    "tests": 23,
+    "files": 3
+  },
+  "scopedBiome": "passed",
+  "limits": [
+    "UI in-place recovery only; no full-reload draft durability.",
+    "No backend authorization or database behavior changed.",
+    "Full current-candidate types, lint, build and browser checks remain pending."
+  ],
+  "subsequentFormattedRegression": {
+    "tests": 125,
+    "files": 16,
+    "includesPipelineRecoveryTests": 23,
+    "durationSeconds": 12.175,
+    "minimumObservedFreeBytes": 12512600064,
+    "exitCode": 0,
+    "note": "The original production file matched its earlier tested hash. The recovery test was formatted afterward; the subsequent adjacent run covers its committed bytes."
+  }
+}

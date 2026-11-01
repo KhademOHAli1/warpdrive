@@ -25,6 +25,7 @@ interface BoardHeaderProps {
   totalValue: string | null;
   currencyTotals?: CurrencyTotal[];
   dealCount: number;
+  totalsUnavailable?: boolean;
   currency?: string;
   view: BoardViewControls;
   addSlot: React.ReactNode;
@@ -52,6 +53,7 @@ export function BoardHeader(props: BoardHeaderProps): React.ReactNode {
       totalValue={totalValue}
       currencyTotals={props.currencyTotals}
       dealCount={dealCount}
+      totalsUnavailable={props.totalsUnavailable}
       currency={props.currency}
       canManagePipelines={canManagePipelines}
       createSlot={addSlot}

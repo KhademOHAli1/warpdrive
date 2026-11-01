@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { BulkActionBar } from "@/components/data-table/BulkActionBar";
 import { BulkDeleteButton } from "@/components/data-table/BulkDeleteButton";
 import { ColumnsMenu } from "@/components/data-table/ColumnsMenu";
+import { resolveVisibleOrder } from "@/components/data-table/columnModel";
 import { type ColumnSort, useColumnSort } from "@/components/data-table/useColumnSort";
 import { useColumns } from "@/components/data-table/useColumns";
 import { usePersistColumns } from "@/components/data-table/usePersistColumns";
@@ -17,7 +18,15 @@ import {
   EMPTY_REF_LABELS,
 } from "@/features/custom-fields/refLabelsContext";
 import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
+import { SavedViewSelectionStatus } from "@/features/saved-filters/SavedViewSelectionStatus";
+import type { SavedView } from "@/features/saved-filters/savedView";
+import { useSavedViewSelection } from "@/features/saved-filters/useSavedViewSelection";
+import {
+  captureSavedViewPresentation,
+  type SavedViewPresentationCapture,
+} from "@/features/saved-filters/viewPresentation";
 import type { CustomFieldDef } from "@/types/customFields";
+import { err } from "@/types/result";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { deleteOrgAction } from "./actions";
 import { BulkMergeDialog } from "./BulkMergeDialog";
@@ -43,6 +52,9 @@ export interface OrgsListProps {
   total: number;
   // Seeded from user_preferences.ui.orgsView (server); falls back to catalog defaults.
   initialColumns?: string[];
+  initialSavedView?: SavedView | null;
+  initialSelectionBlocked?: boolean;
+  preferenceActorId?: string;
   customFieldDefs?: CustomFieldDef[];
   baseCurrency?: string;
   refLabels?: CustomFieldRefLabels;
@@ -57,6 +69,9 @@ export function OrgsList({
   rows: initial,
   total: initialTotal,
   initialColumns,
+  initialSavedView,
+  initialSelectionBlocked = false,
+  preferenceActorId,
   customFieldDefs = [],
   baseCurrency = DEFAULT_BASE_CURRENCY,
   refLabels: initialRefLabels = EMPTY_REF_LABELS,
@@ -69,15 +84,30 @@ export function OrgsList({
     () => [...orgColumns(locale), ...customFieldColumns(customFieldDefs)],
     [customFieldDefs, locale],
   );
-  const columns = useColumns(catalog, initialColumns);
-  usePersistColumns("orgs", columns.order);
+  const nativeView = useSavedViewSelection<OrgSortField>(
+    "organization",
+    {
+      columns: resolveVisibleOrder(catalog, initialColumns),
+      sort: null,
+    },
+    { initialSavedView, initialSelectionBlocked, preferenceActorId },
+  );
+  const columns = useColumns(catalog, nativeView.initialPresentation.columns);
+  usePersistColumns("orgs", columns.order, { enabled: nativeView.mode === "personal" });
   const selection = useRowSelection();
   // Depend on the stable callback, not the selection object, which is recreated every render.
   const clearSelection = selection.clear;
-  const { effective, cycle } = useColumnSort<OrgSortField>(DEFAULT_SORT);
-  const [filter, setFilter] = useState<ContactFilterDefinition | null>(null);
+  const {
+    sort: rawSort,
+    effective,
+    cycle,
+    replace: replaceSort,
+  } = useColumnSort<OrgSortField>(DEFAULT_SORT, nativeView.initialPresentation.sort);
+  const filter: ContactFilterDefinition | null = nativeView.definition;
   // The saved view the filter came from, so the picker can show which one is applied.
-  const [savedViewId, setSavedViewId] = useState<string | null>(null);
+  const savedView = nativeView.selectedView;
+  const savedViewId = savedView?.id ?? null;
+  const blocked = nativeView.blocked;
   // Whether the pair-merge dialog is open (only reachable with exactly two rows selected).
   const [merging, setMerging] = useState(false);
 
@@ -88,6 +118,7 @@ export function OrgsList({
     initialRefLabels,
     sort: effective,
     filter,
+    enabled: !blocked,
     search: searchInput.search,
   });
 
@@ -104,6 +135,7 @@ export function OrgsList({
   }, [reload, clearSelection]);
 
   async function bulkDelete(): Promise<void> {
+    if (blocked) return;
     const ids = [...selection.selected];
     if (ids.length === 0) return;
     const outcomes = await Promise.all(
@@ -120,12 +152,29 @@ export function OrgsList({
     if (failedIds.length > 0) setError(tContacts("couldnTDeleteSomeOrganizationsPleaseTryAgain"));
   }
 
+  function selectView(view: SavedView | null): void {
+    searchInput.clear();
+    const next = nativeView.select(view, { columns: columns.order, sort: rawSort });
+    columns.replace(next.columns);
+    replaceSort(next.sort);
+    selection.clear();
+    setMerging(false);
+  }
+  function editColumns(edit: () => void): void {
+    if (blocked) return;
+    nativeView.detach();
+    edit();
+  }
+
+  const presentationCapture: SavedViewPresentationCapture =
+    searchInput.draft.trim() !== "" || searchInput.search !== "" || searchInput.settling
+      ? err("unsupported-scope")
+      : captureSavedViewPresentation("organization", columns.order, effective);
   const narrowed = searchInput.draft.trim() !== "" || filter !== null;
   const busy = loading || searchInput.settling;
   function clearCriteria(): void {
     searchInput.clear();
-    setFilter(null);
-    setSavedViewId(null);
+    selectView(null);
     selection.clear();
   }
 
@@ -146,27 +195,37 @@ export function OrgsList({
         kind="org"
         draft={searchInput.draft}
         onSearch={(value) => {
+          if (blocked) return;
+          nativeView.detach();
           searchInput.setDraft(value);
           selection.clear();
         }}
         onSubmit={searchInput.submit}
-        onClear={searchInput.clear}
+        onClear={() => {
+          if (blocked) return;
+          nativeView.detach();
+          searchInput.clear();
+        }}
         summary={
-          busy
-            ? tContacts("directory.updating")
-            : tContacts("countLabel", { shown: rows.length, total })
+          blocked
+            ? null
+            : busy
+              ? tContacts("directory.updating")
+              : tContacts("countLabel", { shown: rows.length, total })
         }
       >
         <OrgsListToolbar
           filter={filter}
           savedViewId={savedViewId}
-          onSelectView={(view) => {
-            setSavedViewId(view?.id ?? null);
-            setFilter(view?.definition ?? null);
-          }}
+          selectedView={savedView}
+          selectionBlocked={nativeView.selectionBlocked}
+          presentationCapture={presentationCapture}
+          onSelectView={selectView}
           onApplyFilter={(def) => {
-            setSavedViewId(null);
-            setFilter(def);
+            if (blocked) return;
+            nativeView.editDefinition(def);
+            selection.clear();
+            setMerging(false);
           }}
         />
 
@@ -174,18 +233,19 @@ export function OrgsList({
           catalog={catalog}
           order={columns.order}
           visibleKeys={columns.visibleKeys}
-          onToggle={columns.toggle}
-          onReorder={columns.reorder}
+          onToggle={(key) => editColumns(() => columns.toggle(key))}
+          onReorder={(from, to) => editColumns(() => columns.reorder(from, to))}
         />
       </ContactDirectoryToolbar>
-      {narrowed && (
+      <SavedViewSelectionStatus status={nativeView.persistence} />
+      {!blocked && narrowed && (
         <ContactDirectoryCriteria
           query={searchInput.draft.trim()}
           count={filter?.conditions.length ?? 0}
           onClear={clearCriteria}
         />
       )}
-      {selection.count > 0 && (
+      {!blocked && selection.count > 0 && (
         <BulkActionBar count={selection.count} onClear={selection.clear}>
           {mergePair !== null && (
             <button
@@ -216,7 +276,7 @@ export function OrgsList({
           onClose={() => setMerging(false)}
         />
       )}
-      {rows.length === 0 && !busy ? (
+      {blocked || (rows.length === 0 && error !== null) ? null : rows.length === 0 && !busy ? (
         <ContactDirectoryEmptyState
           kind="org"
           narrowed={narrowed}
@@ -229,7 +289,10 @@ export function OrgsList({
             <OrgsTable
               rows={rows}
               sort={effective}
-              onSort={cycle}
+              onSort={(field) => {
+                nativeView.detach();
+                cycle(field);
+              }}
               isSelected={selection.isSelected}
               allSelected={selection.allSelected(visibleIds)}
               onToggleRow={selection.toggle}
@@ -240,7 +303,7 @@ export function OrgsList({
           </CustomFieldRefLabelsProvider>
         </div>
       )}
-      {error !== null && (
+      {!blocked && error !== null && (
         <div
           role="alert"
           className="flex flex-wrap items-center justify-between gap-3 border-t px-4 py-3 text-sm text-destructive"
@@ -251,24 +314,26 @@ export function OrgsList({
           </Button>
         </div>
       )}
-      <footer className="flex min-h-14 flex-wrap items-center justify-between gap-3 border-t px-4 py-3">
-        <p className="text-xs text-muted-foreground tabular-nums">
-          {busy
-            ? tContacts("directory.updating")
-            : tContacts("countLabel", { shown: rows.length, total })}
-        </p>
-        {rows.length < total && (
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={busy}
-            onClick={() => void loadMore()}
-          >
-            {loading ? tContacts("loading") : tContacts("loadMore")}
-          </Button>
-        )}
-      </footer>
+      {!blocked && (
+        <footer className="flex min-h-14 flex-wrap items-center justify-between gap-3 border-t px-4 py-3">
+          <p className="text-xs text-muted-foreground tabular-nums">
+            {busy
+              ? tContacts("directory.updating")
+              : tContacts("countLabel", { shown: rows.length, total })}
+          </p>
+          {rows.length < total && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={busy}
+              onClick={() => void loadMore()}
+            >
+              {loading ? tContacts("loading") : tContacts("loadMore")}
+            </Button>
+          )}
+        </footer>
+      )}
     </section>
   );
 }

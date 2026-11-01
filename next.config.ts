@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
+import { applyDevelopmentCachePolicy } from "./src/config/developmentCache";
 
 // Security response headers, applied to every route.
 //
@@ -62,6 +63,11 @@ function securityHeaders(directives: string[]): { key: string; value: string }[]
 const ACTION_BODY_SIZE_LIMIT = "64mb";
 
 const nextConfig: NextConfig = {
+  webpack(config: Record<string, unknown>, context: { dev: boolean }) {
+    return applyDevelopmentCachePolicy(config, context.dev);
+  },
+  // Action arguments include credentials, CSRF tokens and private email content.
+  logging: { serverFunctions: false },
   // Its server DOM depends on packages with mixed module formats; load it through Bun.
   serverExternalPackages: ["pg", "pg-boss", "isomorphic-dompurify"],
   // HSTS is set by Caddy, not here: it terminates TLS and so is the layer that knows the
@@ -97,12 +103,16 @@ export default createNextIntlPlugin({
   requestConfig: "./src/features/i18n/request.ts",
   experimental: {
     createMessagesDeclaration: [
+      "./src/features/activities/messages/nextActionQueue.en.json",
+      "./src/features/pipelines/messages/lifecycle.en.json",
+      "./src/features/saved-filters/messages/viewCompatibility.en.json",
       "./src/features/workflows/messages/workflows.en.json",
       "./src/features/i18n/messages/en.json",
       "./src/components/shell/messages/utilities.en.json",
       "./src/features/enrichment/messages/enrichment.en.json",
       "./src/features/stats/messages/stats.en.json",
       "./src/features/auth/messages/authScreens.en.json",
+      "./src/features/integrations/messages/integrations.en.json",
       "./src/features/custom-fields/messages/customFields.en.json",
       "./src/features/files/messages/files.en.json",
       "./src/features/email/messages/email.en.json",

@@ -1,0 +1,94 @@
+{
+  "observedAt": "2026-11-01T10:39:06.568381+00:00",
+  "kind": "Read-only local committed owner refs; no fetch or current-GitHub-main verification",
+  "sales": {
+    "commit": "5de8a12a940236895a889df7cfaffca160ae0661",
+    "journalEntries": 85
+  },
+  "ownerCuts": [
+    {
+      "owner": "privacy checkout",
+      "commit": "7e747e99524e08037da6eba1bd01f6558663f8f0",
+      "journalEntries": 86,
+      "drizzleUnchangedFrom": "a0490c16a9954d9a03c3bb22bfb69944db433a77"
+    },
+    {
+      "owner": "original MAIL/regional checkout",
+      "commit": "56210f31307701c7e545bf05f6b93ce4621605a3",
+      "journalEntries": 89,
+      "scope": "Original MAIL83-88 chain; not the combined candidate"
+    },
+    {
+      "owner": "combined MAIL branch codex/mail-platform-candidate",
+      "commit": "70bc46b19a8896104eccdc3d944cf4352f849224",
+      "journalEntries": 94,
+      "extendsAll85SalesEntries": true,
+      "newSinceA660039": ["0092_mail_delivery_observations", "0093_notification_send_admission"],
+      "earlierMigrationFilesUnchanged": true
+    },
+    {
+      "owner": "platform preview",
+      "commit": "12dd62cb4f7fbec3cd66129a3527ee54a7937cce",
+      "journalEntries": 85,
+      "selectedSalesJournalUnchanged": true
+    }
+  ],
+  "historyBoundary": {
+    "commonJournalIndices": "0..82",
+    "historicalSqlSnapshotBlobsIdentical": 162,
+    "divergenceIndex": 83,
+    "salesPreviewCombinedMailSuffix": ["0083_integration_connections", "0084_visual_workflows"],
+    "privacySuffix": [
+      "0083_privacy_foundations",
+      "0084_privacy_policy_deadlines",
+      "0085_privacy_identity"
+    ],
+    "reconciled": false
+  },
+  "sourceSurfacesToPreserve": [
+    {
+      "ownerCommit": "d86e3f7580667a1201e8b2b4f92e92d7f2cb8d85",
+      "surface": "Privacy auth/settings UI",
+      "differencesFromSales": [
+        "FreshVerification",
+        "SecuritySettings",
+        "SecuritySurface",
+        "localized auth messages",
+        "privacy-settings navigation"
+      ],
+      "inspectedAuthUiBlobsDifferent": 3,
+      "adoption": "Not adopted; dependencies and combined authority qualification remain open"
+    },
+    {
+      "ownerCommit": "7c8bb7ed013ef5eb9543399566bc5175a12df633",
+      "surface": "Preview language/digits/date UI",
+      "productionBlobsDifferent": [
+        "LanguageSettings",
+        "DatePicker",
+        "dateFormat",
+        "localizedDayPickers",
+        "numberingSystem"
+      ],
+      "adoption": "Not adopted; bounded source-integration preflight pending"
+    }
+  ],
+  "remoteTrackingLimits": {
+    "developerCachedOriginMain": "a0490c16a9954d9a03c3bb22bfb69944db433a77",
+    "previewCachedOriginMain": "01dd1dda4e4a6944f4bb46c7a504d6848a9ccae2",
+    "previewCachedMainDate": "2026-10-30",
+    "previewCachedMainJournalEntries": 77,
+    "previewCachedRefIsOlder": true,
+    "remoteQueried": false
+  },
+  "excludedEvidence": [
+    "Working-tree dirt was not adopted or used as committed proof",
+    "No allocator or0094 reservation conclusion",
+    "No retained-installation/upgrade/runtime qualification",
+    "No source integration, deployment or release acceptance"
+  ],
+  "programme": {
+    "projects": 16,
+    "parents": 128,
+    "complete": 0
+  }
+}
