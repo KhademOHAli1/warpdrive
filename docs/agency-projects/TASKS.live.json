@@ -725,10 +725,10 @@
     "expected_passing_tests": "T07/T11/T26: missing staff/contact/capability dependencies prevent activation and are explained accessibly.",
     "dependencies": "AP-05.2;AP-04.2",
     "owner": "Agency implementation chat; shared edits require owner review",
-    "status": "planned",
-    "evidence": "Not implemented or qualified",
-    "remaining": "Original outcome, dependencies and applicable acceptance tests remain",
-    "accepted": false
+    "status": "active",
+    "evidence": "template-role-preview-contract.md and exact outside-source/recovery10-case test draft prepare a pure typed-manifest role-binding/use preview. Explicit unmapped/role kinds/local uses/offset assumptions and mutation isolation selected; production absent, all10 NOT RUN. No native eligibility/date/install projection or task acceptance.",
+    "accepted": false,
+    "remaining": "Place tests and observe actual missing-module/behavioral red before pure implementation; focused qualification, native staff/contact/current-scope/capability admission, dated/accessible full install preview and original dependencies remain open."
   },
   {
     "id": "AP-05.4",

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-11-01T08:01:39.937493+00:00",
+  "updatedAt": "2026-11-01T08:02:14.389658+00:00",
   "statusMeaning": "Evidence level only. A source-verified task is not accepted or complete. All 96 acceptance flags remain false.",
   "tasks": {
     "AP-00.1": {
@@ -194,6 +194,12 @@
       "accepted": false,
       "evidence": "Strict feature-local feedback declaration/native-command parsers implemented after missing-module RED and actual9failed/14passed behavioral RED. Further default-ignorable3failed/23passed RED reproduced and corrected locally for text/references; other-channel-label1failed/26passed RED also reproduced and fixed; actual27selected/1file pass; exact work/evidence references, tagged author vs native recorder, explicit source, substantive protected text/reference bounds and nested strictness tested. Shared helpers unchanged; qualification-feedback-boundary-20261101.json; focused exact3 types/Biome/unchanged-rule typedESLint pass after2test formatter corrections; explicitly amended postformat27/1GREEN, source-hash-matched with static3, all8unitgroups empty/released.",
       "remaining": "Owner vocabulary/evidence/time acceptance remains open; native project/work-version/author admission, protected storage/replay/retention, escaped rendering/XSS and original AP-02.3/AP-08.1 dependencies remain open."
+    },
+    "AP-05.3": {
+      "status": "active",
+      "accepted": false,
+      "evidence": "template-role-preview-contract.md and exact outside-source/recovery10-case test draft prepare a pure typed-manifest role-binding/use preview. Explicit unmapped/role kinds/local uses/offset assumptions and mutation isolation selected; production absent, all10 NOT RUN. No native eligibility/date/install projection or task acceptance.",
+      "remaining": "Place tests and observe actual missing-module/behavioral red before pure implementation; focused qualification, native staff/contact/current-scope/capability admission, dated/accessible full install preview and original dependencies remain open."
     }
   }
 }
