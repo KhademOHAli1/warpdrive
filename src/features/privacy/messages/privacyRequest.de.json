@@ -53,8 +53,8 @@
   "caseLoading": "Anfragestatus wird geprüft…",
   "caseWorking": "Anfrage wird bearbeitet…",
   "caseState": "Bearbeitungsstand",
-  "caseDueAt": "Antwortdatum",
-  "caseNoDeadline": "Noch kein Antwortdatum erfasst",
+  "caseDueAt": "Antwortfrist",
+  "caseNoDeadline": "Noch keine Antwortfrist erfasst",
   "caseUnavailable": "Diese Anfrage ist nicht verfügbar.",
   "caseLoadFailed": "Der Anfragestatus konnte nicht geladen werden. Versuchen Sie es erneut.",
   "caseNotLoaded": "Aktualisieren Sie die Ansicht, um den aktuellen Anfragestatus zu laden.",
@@ -81,6 +81,6 @@
     "response_ready": "Antwort vorbereitet",
     "responded": "Beantwortet",
     "closed": "Abgeschlossen",
-    "cancelled": "Zurückgezogen"
+    "cancelled": "Abgebrochen"
   }
 }

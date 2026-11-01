@@ -4,8 +4,9 @@ import createNextIntlPlugin from "next-intl/plugin";
 // Security response headers, applied to every route.
 //
 // script-src is deliberately ABSENT. Locking it down under the App Router requires nonce
-// injection from middleware, and this project has no middleware.ts by design (auth is enforced
-// per route). The directives below are the ones that are correct without a nonce pipeline and
+// injection through a nonce pipeline. The request proxy only carries an allowlisted own-case
+// path; it does not issue CSP nonces, and native route/action code still enforces authentication.
+// The directives below are the ones that are correct without a nonce pipeline and
 // that carry the actual exploit mitigations; adding script-src is a separate change that must
 // land together with nonce plumbing, not a value tweak here.
 //
@@ -58,6 +59,8 @@ function securityHeaders(directives: string[]): { key: string; value: string }[]
   ];
 }
 
+const ACTION_BODY_SIZE_LIMIT = "64mb";
+
 const nextConfig: NextConfig = {
   // Its server DOM depends on packages with mixed module formats; load it through Bun.
   serverExternalPackages: ["pg", "pg-boss", "isomorphic-dompurify"],
@@ -81,13 +84,12 @@ const nextConfig: NextConfig = {
     // Icons are imported from the lucide-react barrel in ~13 files. Without this, any chunk that
     // touches one icon pulls the whole barrel; Next rewrites them to direct module paths instead.
     optimizePackageImports: ["lucide-react"],
-    // The CSV importer POSTs the entire parsed rows array through the createBatchAction
-    // server action, whose JSON encoding runs ~2.2x the raw file bytes. Next defaults this
-    // to ~1 MB, so any CSV over a few hundred KB passes the 25 MB client cap
-    // (MAX_IMPORT_CSV_BYTES) then fails at the server. Raise it to cover that cap's JSON
-    // expansion. Stopgap: the storage-backed import overhaul moves the bytes off the request
-    // path entirely, making this irrelevant. Tied to the client cap by next.config.test.ts.
-    serverActions: { bodySizeLimit: "64mb" },
+    // Preserve the existing action contract. Current import bytes travel directly to storage;
+    // the compatibility envelope remains tied to the CSV cap by next.config.test.ts.
+    serverActions: { bodySizeLimit: ACTION_BODY_SIZE_LIMIT },
+    // Next clones matched POST bodies before handlers run. Its smaller default would truncate
+    // bodies that the action boundary accepts; keep both finite limits aligned.
+    proxyClientMaxBodySize: ACTION_BODY_SIZE_LIMIT,
   },
 };
 

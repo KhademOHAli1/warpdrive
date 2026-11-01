@@ -164,24 +164,26 @@ export const registryEntries: RegistryEntry[] = [
   }),
   classifyInventory(personalRequestsIds1, {
     ...classifications.privacy,
-    owner: "privacy requester interface and native account security",
+    owner: "privacy requester interface and shared HTTP/auth transport",
     categories: [
       "browser request summary and frozen retry intent",
       "requester and minimal receipt references",
       "own-case summaries, URL selectors and frozen confirmation commands",
+      "transient allowlisted case-return request headers",
+      "global matched CRM/authentication body copies",
       "native account security status and authentication inputs",
       "localized interface metadata",
     ],
     subjectRelation:
-      "The server resolves the current native actor. A browser's expected requester UUID can only deny a changed-account form; it cannot select a subject, recipient or authorized actor.",
+      "The server resolves the actor natively; path hints are not authority and the expected requester UUID is deny-only. Global non-API app/Server Action body copies can contain unrelated CRM data and authentication secrets; actor/path never determine their subject scope.",
     purpose:
-      "Mount requester intake/detail routes, read minimal own-case status and submit exact own-account confirmation commands through existing CSRF/fresh-session Server Actions, preserving transient intent across uncertain retries.",
+      "Mount requester intake/detail routes, preserve a validated case return path through existing sign-in/pending flows, read minimal own-case status and submit exact own-account confirmation commands through existing CSRF/fresh-session Server Actions.",
     disclosure:
-      "Only minimal own-case summaries and command receipts are displayed. Case status does not establish proof status, approval or a data change; current state requires a fresh read after a command receipt. Existing replay-block/autocapture classes do not establish installed telemetry or browser acceptance.",
+      "Only minimal own-case summaries and command receipts are displayed. Case status is not proof status or approval. Body copies inherit native confidentiality and are excluded from case disclosure and routine telemetry. Replay-block/autocapture declarations do not establish installed browser acceptance.",
     retention:
-      "Summary, case view, exact pending command and receipt remain in component memory until reset/account invalidation/unmount; intake success does not explicitly clear its summary. Opaque case URLs remain linkable data in browser/HTTP history. No new database, durable queue or expiry schedule is introduced.",
+      "Form/case state remains in component memory; intake success does not clear its summary. Next can buffer matched request-body copies until completion/abort, under the shared finite 64mb limit. Case URLs remain linkable browser/HTTP metadata. No durable store, expiry policy or physical memory-erasure proof is introduced.",
     externalEffects:
-      "The settings route inherits the existing authenticated app layout. Same-origin Server Actions and existing GET /api/auth-workflows/status reuse classified auth/privacy boundaries, including session/rate-limit/CSRF effects and delegated case/proof writes. Focus/visibility refresh adds no durable store. Browser cancellation cannot undo a dispatched Server Action; provider/device confirmation retains its existing native boundaries.",
+      "The matcher excludes /api and /api/... before proxy body cloning; other matched paths scrub caller hints and stamp only validated case pathnames. Header deletion is transient, not a DB writer. Existing action body limits, native authorization and recipients remain; neither universal POST equivalence, response-body/encryption changes nor CSP nonces are established.",
     erasureTask: "DPL-26",
   }),
   classifyInventory(
