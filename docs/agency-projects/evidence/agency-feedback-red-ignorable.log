@@ -1,0 +1,140 @@
+$ bun --bun vitest run --project unit src/features/agency-projects/feedbackRecord.test.ts "--maxWorkers=1"
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+  - ESM syntax in a file loaded as CommonJS (vitest.classify.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.5 /Users/ali/Developer/warpdrive-agency-projects
+
+ ❯ |unit| src/features/agency-projects/feedbackRecord.test.ts (26 tests | 3 failed) 18ms
+   ❯ feedback declaration boundary (22)
+     × rejects default-ignorable-only workVersionReference while preserving embedded characters 4ms
+     × rejects default-ignorable-only evidenceReference while preserving embedded characters 1ms
+     × rejects default-ignorable-only text while preserving embedded characters 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| src/features/agency-projects/feedbackRecord.test.ts > feedback declaration boundary > rejects default-ignorable-only workVersionReference while preserving embedded characters
+AssertionError: expected { ok: true, value: { …(6) } } to deeply equal { ok: false, …(1) }
+
+- Expected
++ Received
+
+  {
+-   "error": "invalid_feedback_declaration",
+-   "ok": false,
++   "ok": true,
++   "value": {
++     "author": {
++       "kind": "internal-user",
++       "userId": "bcdefabc-2345-4bcd-9efa-234567890abc",
++     },
++     "deliverableId": "defabcde-4567-4def-bcde-456789012abc",
++     "projectId": "cdefabcd-3456-4cde-abcd-345678901abc",
++     "source": {
++       "channel": {
++         "kind": "email",
++       },
++       "evidenceReference": "https://source.example.invalid/Feedback/A%2Fb?thread=1#Nachricht",
++     },
++     "text": "  رنگ‌ها روشن بمانند.
++ Farben bitte hell lassen.	  ",
++     "workVersionReference": "͏",
++   },
+  }
+
+ ❯ src/features/agency-projects/feedbackRecord.test.ts:102:60
+    100|         : { ...declaration(), [field]: value };
+    101|       for (const value of ["\u034f", "\uFE0F", "\u115F", " \u034f\uFE0…
+    102|         expect(parseFeedbackDeclaration(withValue(value))).toEqual(inv…
+       |                                                            ^
+    103|         expect(parseFeedbackCommand({ ...command(), declaration: withV…
+    104|       }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  |unit| src/features/agency-projects/feedbackRecord.test.ts > feedback declaration boundary > rejects default-ignorable-only evidenceReference while preserving embedded characters
+AssertionError: expected { ok: true, value: { …(6) } } to deeply equal { ok: false, …(1) }
+
+- Expected
++ Received
+
+  {
+-   "error": "invalid_feedback_declaration",
+-   "ok": false,
++   "ok": true,
++   "value": {
++     "author": {
++       "kind": "internal-user",
++       "userId": "bcdefabc-2345-4bcd-9efa-234567890abc",
++     },
++     "deliverableId": "defabcde-4567-4def-bcde-456789012abc",
++     "projectId": "cdefabcd-3456-4cde-abcd-345678901abc",
++     "source": {
++       "channel": {
++         "kind": "email",
++       },
++       "evidenceReference": "͏",
++     },
++     "text": "  رنگ‌ها روشن بمانند.
++ Farben bitte hell lassen.	  ",
++     "workVersionReference": "https://work.example.invalid/مدل%2Fv1?variant=A%2Fb#Teil-1",
++   },
+  }
+
+ ❯ src/features/agency-projects/feedbackRecord.test.ts:102:60
+    100|         : { ...declaration(), [field]: value };
+    101|       for (const value of ["\u034f", "\uFE0F", "\u115F", " \u034f\uFE0…
+    102|         expect(parseFeedbackDeclaration(withValue(value))).toEqual(inv…
+       |                                                            ^
+    103|         expect(parseFeedbackCommand({ ...command(), declaration: withV…
+    104|       }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  |unit| src/features/agency-projects/feedbackRecord.test.ts > feedback declaration boundary > rejects default-ignorable-only text while preserving embedded characters
+AssertionError: expected { ok: true, value: { …(6) } } to deeply equal { ok: false, …(1) }
+
+- Expected
++ Received
+
+  {
+-   "error": "invalid_feedback_declaration",
+-   "ok": false,
++   "ok": true,
++   "value": {
++     "author": {
++       "kind": "internal-user",
++       "userId": "bcdefabc-2345-4bcd-9efa-234567890abc",
++     },
++     "deliverableId": "defabcde-4567-4def-bcde-456789012abc",
++     "projectId": "cdefabcd-3456-4cde-abcd-345678901abc",
++     "source": {
++       "channel": {
++         "kind": "email",
++       },
++       "evidenceReference": "https://source.example.invalid/Feedback/A%2Fb?thread=1#Nachricht",
++     },
++     "text": "͏",
++     "workVersionReference": "https://work.example.invalid/مدل%2Fv1?variant=A%2Fb#Teil-1",
++   },
+  }
+
+ ❯ src/features/agency-projects/feedbackRecord.test.ts:102:60
+    100|         : { ...declaration(), [field]: value };
+    101|       for (const value of ["\u034f", "\uFE0F", "\u115F", " \u034f\uFE0…
+    102|         expect(parseFeedbackDeclaration(withValue(value))).toEqual(inv…
+       |                                                            ^
+    103|         expect(parseFeedbackCommand({ ...command(), declaration: withV…
+    104|       }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 23 passed (26)
+   Start at  08:50:51
+   Duration  137ms (import 40%, transform 28%, tests 20%, worker 6%, setup 5%)
+
+error: "vitest" exited with code 1
+error: script "test:unit" exited with code 1

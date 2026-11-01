@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-11-01T07:44:51.950387+00:00",
+  "updatedAt": "2026-11-01T07:53:51.255455+00:00",
   "statusMeaning": "Evidence level only. A source-verified task is not accepted or complete. All 96 acceptance flags remain false.",
   "tasks": {
     "AP-00.1": {
@@ -192,8 +192,8 @@
     "AP-06.1": {
       "status": "active",
       "accepted": false,
-      "evidence": "feedback-boundary-contract.md and nonexecutable test-preparation/feedbackRecord.test.ts.txt prepare strict declaration/native-command parser tests only. Exact work version, tagged author versus native recorder, explicit source and protected plain-text/reference boundaries proposed. Tests NOT RUN; production import absent.",
-      "remaining": "Review vocabulary/evidence/time decisions and actual red before implementation; native project/work-version/author admission, protected storage/replay/retention, escaped rendering/XSS and original AP-02.3/AP-08.1 dependencies remain open."
+      "evidence": "Strict feature-local feedback declaration/native-command parsers implemented after missing-module RED and actual9failed/14passed behavioral RED. Further default-ignorable3failed/23passed RED reproduced and corrected locally for text/references; other-channel-label1failed/26passed RED also reproduced and fixed; actual27selected/1file pass; exact work/evidence references, tagged author vs native recorder, explicit source, substantive protected text/reference bounds and nested strictness tested. Shared helpers unchanged; qualification-feedback-boundary-20261101.json; source-only static3 pending.",
+      "remaining": "Owner vocabulary/evidence/time acceptance and focused static3 remain open; native project/work-version/author admission, protected storage/replay/retention, escaped rendering/XSS and original AP-02.3/AP-08.1 dependencies remain open."
     }
   }
 }

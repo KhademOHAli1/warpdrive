@@ -1,0 +1,87 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-11-01T07:53:51.255455+00:00",
+  "base": "9c949bd3dc6c42528ec59f0caa2842614f729f98",
+  "scope": "Pure feedback declaration/native-command syntax and exact-data preservation only; no native authority, writer, rendering or disclosure admission.",
+  "sourceHashesAtSelectedGreen": {
+    "src/features/agency-projects/feedbackRecord.ts": "383ebb9304f2860fff9fcbff4e1075a8b3be1807b07b4de7738842f6d8c5c10f",
+    "src/features/agency-projects/feedbackRecord.test.ts": "07b780901e4fce0656b38e5cae41741f971b4dba634de061807ce27343d45305",
+    "src/features/agency-projects/feedbackRecord.test-support.ts": "07247669d767218d69226acdabcc495bc7dc63886c91cabc6dfe263b51fb54d4"
+  },
+  "checks": {
+    "missingModuleRed": {
+      "failedSuites": 1,
+      "testsExecuted": 0,
+      "log": "evidence/agency-feedback-red-missing.log"
+    },
+    "behavioralRed": {
+      "failed": 9,
+      "passed": 14,
+      "log": "evidence/agency-feedback-red-behavior.log",
+      "scaffold": "evidence/feedback-rejection-scaffold.ts.txt"
+    },
+    "selectedUnits": {
+      "passed": 27,
+      "files": 1,
+      "durationMilliseconds": 98,
+      "log": "evidence/agency-feedback-green-channel.log"
+    },
+    "focusedStatic": "pending separate exact3-primary-TS finite source window",
+    "initialSelectedUnits": {
+      "passed": 23,
+      "files": 1,
+      "durationMilliseconds": 110,
+      "log": "evidence/agency-feedback-green.log"
+    },
+    "defaultIgnorableBehavioralRed": {
+      "failed": 3,
+      "passed": 23,
+      "log": "evidence/agency-feedback-red-ignorable.log",
+      "sourceBeforeCorrection": "evidence/feedback-pre-default-ignorable.ts.txt"
+    },
+    "defaultIgnorableSelectedUnits": {
+      "passed": 26,
+      "files": 1,
+      "durationMilliseconds": 96,
+      "log": "evidence/agency-feedback-green-ignorable.log"
+    },
+    "channelSubstanceRed": {
+      "failed": 1,
+      "passed": 26,
+      "log": "evidence/agency-feedback-red-channel.log",
+      "sourceBeforeCorrection": "evidence/feedback-pre-channel-substance.ts.txt"
+    }
+  },
+  "guard": {
+    "workers": 1,
+    "timeoutSeconds": 30,
+    "floorBytes": 5368709120,
+    "groupsEmptyVerified": [
+      32640,
+      32769,
+      32841,
+      34807,
+      35170,
+      37178,
+      37225
+    ],
+    "receipt": "evidence/agency-feedback-unit-handles.json",
+    "minimumFreeBytes": 13289381888
+  },
+  "limits": [
+    "No database mocks or actual persistence, replay/current-head, correction/history, Privacy disposition or native session/CRM/project/version/author currentness proof.",
+    "Literal markup-looking text is data; parser acceptance does not prove escaped rendering, XSS closure or safe link presentation.",
+    "Staff-recorded attribution is not authenticated client signature, provider receipt, source occurrence time, task/change request, revision-round accounting or commercial authority.",
+    "Existing52-file source qualification stays a preceding separate scope; no combined arithmetic pass, full feature static/build/native or task/release acceptance."
+  ],
+  "sourceHashesAtInitial23CaseGreen": {
+    "src/features/agency-projects/feedbackRecord.ts": "1f3b17ca331d952311af955451aec5faea9ae2946155f72ba0743393e672c822",
+    "src/features/agency-projects/feedbackRecord.test.ts": "a10a3a5110ffe36076feb1bd44470c1fd69ba2849a5a1e54c57a1528e281a803",
+    "src/features/agency-projects/feedbackRecord.test-support.ts": "07247669d767218d69226acdabcc495bc7dc63886c91cabc6dfe263b51fb54d4"
+  },
+  "sourceHashesAt26CaseGreen": {
+    "src/features/agency-projects/feedbackRecord.ts": "185350e3d0aaab219d08e1ae96eb5ba09e159edc92cd8c2e63e163bd188489b8",
+    "src/features/agency-projects/feedbackRecord.test.ts": "1d814efc702c16a95196f92c4037797b891aede32b21fde2d2bff0043dc5b6c8",
+    "src/features/agency-projects/feedbackRecord.test-support.ts": "07247669d767218d69226acdabcc495bc7dc63886c91cabc6dfe263b51fb54d4"
+  }
+}

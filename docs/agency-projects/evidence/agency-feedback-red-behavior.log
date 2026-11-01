@@ -1,0 +1,392 @@
+$ bun --bun vitest run --project unit src/features/agency-projects/feedbackRecord.test.ts "--maxWorkers=1"
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+  - ESM syntax in a file loaded as CommonJS (vitest.classify.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.5 /Users/ali/Developer/warpdrive-agency-projects
+
+ ❯ |unit| src/features/agency-projects/feedbackRecord.test.ts (23 tests | 9 failed) 9ms
+   ❯ feedback declaration boundary (19)
+     × preserves multilingual text and exact references while canonicalizing scope and author IDs 3ms
+     × keeps contact authors distinct from internal users and the native recorder 0ms
+     × requires an explicit source channel without inventing missing evidence 1ms
+     × requires substantive workVersionReference without removing embedded Persian joiners 0ms
+     × requires substantive evidenceReference without removing embedded Persian joiners 0ms
+     × requires substantive bounded text without stripping embedded Persian joiners 0ms
+     × keeps markup-looking text literal without claiming safe rendered output 0ms
+   ❯ native feedback recording command boundary (4)
+     × requires separate server-owned identity, label and exact recording time 0ms
+     × retains contradictory reviewers as separate declarations without merging or approval inference 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 9 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| src/features/agency-projects/feedbackRecord.test.ts > feedback declaration boundary > preserves multilingual text and exact references while canonicalizing scope and author IDs
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: true, value: { …(6) } }
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "author": {
+-       "kind": "internal-user",
+-       "userId": "bcdefabc-2345-4bcd-9efa-234567890abc",
+-     },
+-     "deliverableId": "defabcde-4567-4def-bcde-456789012abc",
+-     "projectId": "cdefabcd-3456-4cde-abcd-345678901abc",
+-     "source": {
+-       "channel": {
+-         "kind": "email",
+-       },
+-       "evidenceReference": "https://source.example.invalid/Feedback/A%2Fb?thread=1#Nachricht",
+-     },
+-     "text": "  رنگ‌ها روشن بمانند.
+- Farben bitte hell lassen.	  ",
+-     "workVersionReference": "https://work.example.invalid/مدل%2Fv1?variant=A%2Fb#Teil-1",
+-   },
++   "error": "invalid_feedback_declaration",
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/feedbackRecord.test.ts:22:53
+     20|
+     21|   it("preserves multilingual text and exact references while canonical…
+     22|     expect(parseFeedbackDeclaration(declaration())).toEqual({ ok: true…
+       |                                                     ^
+     23|     const input = {
+     24|       ...declaration(),
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/9]⎯
+
+ FAIL  |unit| src/features/agency-projects/feedbackRecord.test.ts > feedback declaration boundary > keeps contact authors distinct from internal users and the native recorder
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: true, value: { …(6) } }
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "author": {
+-       "kind": "external-contact",
+-       "personId": "fabcdefa-6789-4bcd-9efa-678901234abc",
+-     },
+-     "deliverableId": "defabcde-4567-4def-bcde-456789012abc",
+-     "projectId": "cdefabcd-3456-4cde-abcd-345678901abc",
+-     "source": {
+-       "channel": {
+-         "kind": "email",
+-       },
+-       "evidenceReference": "https://source.example.invalid/Feedback/A%2Fb?thread=1#Nachricht",
+-     },
+-     "text": "  رنگ‌ها روشن بمانند.
+- Farben bitte hell lassen.	  ",
+-     "workVersionReference": "https://work.example.invalid/مدل%2Fv1?variant=A%2Fb#Teil-1",
+-   },
++   "error": "invalid_feedback_declaration",
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/feedbackRecord.test.ts:45:45
+     43|   it("keeps contact authors distinct from internal users and the nativ…
+     44|     const input = { ...declaration(), author: { kind: "external-contac…
+     45|     expect(parseFeedbackDeclaration(input)).toEqual({
+       |                                             ^
+     46|       ok: true,
+     47|       value: { ...input, author: { kind: "external-contact", personId:…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/9]⎯
+
+ FAIL  |unit| src/features/agency-projects/feedbackRecord.test.ts > feedback declaration boundary > requires an explicit source channel without inventing missing evidence
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: true, value: { …(6) } }
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "author": {
+-       "kind": "internal-user",
+-       "userId": "bcdefabc-2345-4bcd-9efa-234567890abc",
+-     },
+-     "deliverableId": "defabcde-4567-4def-bcde-456789012abc",
+-     "projectId": "cdefabcd-3456-4cde-abcd-345678901abc",
+-     "source": {
+-       "channel": {
+-         "kind": "other",
+-         "label": "  نظر فایل / Dateikommentar  ",
+-       },
+-     },
+-     "text": "  رنگ‌ها روشن بمانند.
+- Farben bitte hell lassen.	  ",
+-     "workVersionReference": "https://work.example.invalid/مدل%2Fv1?variant=A%2Fb#Teil-1",
+-   },
++   "error": "invalid_feedback_declaration",
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/feedbackRecord.test.ts:56:68
+     54|   it("requires an explicit source channel without inventing missing ev…
+     55|     const source = { channel: { kind: "other", label: "  نظر فایل / Da…
+     56|     expect(parseFeedbackDeclaration({ ...declaration(), source })).toE…
+       |                                                                    ^
+     57|     for (const source of invalidSources()) {
+     58|       expect(parseFeedbackDeclaration({ ...declaration(), source })).t…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/9]⎯
+
+ FAIL  |unit| src/features/agency-projects/feedbackRecord.test.ts > feedback declaration boundary > requires substantive workVersionReference without removing embedded Persian joiners
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: true, value: { …(6) } }
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "author": {
+-       "kind": "internal-user",
+-       "userId": "bcdefabc-2345-4bcd-9efa-234567890abc",
+-     },
+-     "deliverableId": "defabcde-4567-4def-bcde-456789012abc",
+-     "projectId": "cdefabcd-3456-4cde-abcd-345678901abc",
+-     "source": {
+-       "channel": {
+-         "kind": "email",
+-       },
+-       "evidenceReference": "https://source.example.invalid/Feedback/A%2Fb?thread=1#Nachricht",
+-     },
+-     "text": "  رنگ‌ها روشن بمانند.
+- Farben bitte hell lassen.	  ",
+-     "workVersionReference": "review/نسخه‌۱",
+-   },
++   "error": "invalid_feedback_declaration",
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/feedbackRecord.test.ts:83:47
+     81|       }
+     82|       const input = withReference("review/نسخه\u200c۱");
+     83|       expect(parseFeedbackDeclaration(input)).toEqual({ ok: true, valu…
+       |                                               ^
+     84|     },
+     85|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/9]⎯
+
+ FAIL  |unit| src/features/agency-projects/feedbackRecord.test.ts > feedback declaration boundary > requires substantive evidenceReference without removing embedded Persian joiners
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: true, value: { …(6) } }
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "author": {
+-       "kind": "internal-user",
+-       "userId": "bcdefabc-2345-4bcd-9efa-234567890abc",
+-     },
+-     "deliverableId": "defabcde-4567-4def-bcde-456789012abc",
+-     "projectId": "cdefabcd-3456-4cde-abcd-345678901abc",
+-     "source": {
+-       "channel": {
+-         "kind": "email",
+-       },
+-       "evidenceReference": "review/نسخه‌۱",
+-     },
+-     "text": "  رنگ‌ها روشن بمانند.
+- Farben bitte hell lassen.	  ",
+-     "workVersionReference": "https://work.example.invalid/مدل%2Fv1?variant=A%2Fb#Teil-1",
+-   },
++   "error": "invalid_feedback_declaration",
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/feedbackRecord.test.ts:83:47
+     81|       }
+     82|       const input = withReference("review/نسخه\u200c۱");
+     83|       expect(parseFeedbackDeclaration(input)).toEqual({ ok: true, valu…
+       |                                               ^
+     84|     },
+     85|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/9]⎯
+
+ FAIL  |unit| src/features/agency-projects/feedbackRecord.test.ts > feedback declaration boundary > requires substantive bounded text without stripping embedded Persian joiners
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: true, value: { …(6) } }
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "author": {
+-       "kind": "internal-user",
+-       "userId": "bcdefabc-2345-4bcd-9efa-234567890abc",
+-     },
+-     "deliverableId": "defabcde-4567-4def-bcde-456789012abc",
+-     "projectId": "cdefabcd-3456-4cde-abcd-345678901abc",
+-     "source": {
+-       "channel": {
+-         "kind": "email",
+-       },
+-       "evidenceReference": "https://source.example.invalid/Feedback/A%2Fb?thread=1#Nachricht",
+-     },
+-     "text": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+-     "workVersionReference": "https://work.example.invalid/مدل%2Fv1?variant=A%2Fb#Teil-1",
+-   },
++   "error": "invalid_feedback_declaration",
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/feedbackRecord.test.ts:92:45
+     90|     }
+     91|     const input = { ...declaration(), text: "x".repeat(2000) };
+     92|     expect(parseFeedbackDeclaration(input)).toEqual({ ok: true, value:…
+       |                                             ^
+     93|   });
+     94|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/9]⎯
+
+ FAIL  |unit| src/features/agency-projects/feedbackRecord.test.ts > feedback declaration boundary > keeps markup-looking text literal without claiming safe rendered output
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: true, value: { …(6) } }
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "author": {
+-       "kind": "internal-user",
+-       "userId": "bcdefabc-2345-4bcd-9efa-234567890abc",
+-     },
+-     "deliverableId": "defabcde-4567-4def-bcde-456789012abc",
+-     "projectId": "cdefabcd-3456-4cde-abcd-345678901abc",
+-     "source": {
+-       "channel": {
+-         "kind": "email",
+-       },
+-       "evidenceReference": "https://source.example.invalid/Feedback/A%2Fb?thread=1#Nachricht",
+-     },
+-     "text": "<img src=x onerror=\"alert(1)\"> & <script>literal</script>",
+-     "workVersionReference": "https://work.example.invalid/مدل%2Fv1?variant=A%2Fb#Teil-1",
+-   },
++   "error": "invalid_feedback_declaration",
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/feedbackRecord.test.ts:97:45
+     95|   it("keeps markup-looking text literal without claiming safe rendered…
+     96|     const input = { ...declaration(), text: '<img src=x onerror="alert…
+     97|     expect(parseFeedbackDeclaration(input)).toEqual({ ok: true, value:…
+       |                                             ^
+     98|   });
+     99|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/9]⎯
+
+ FAIL  |unit| src/features/agency-projects/feedbackRecord.test.ts > native feedback recording command boundary > requires separate server-owned identity, label and exact recording time
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: true, value: { …(5) } }
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "declaration": {
+-       "author": {
+-         "kind": "internal-user",
+-         "userId": "bcdefabc-2345-4bcd-9efa-234567890abc",
+-       },
+-       "deliverableId": "defabcde-4567-4def-bcde-456789012abc",
+-       "projectId": "cdefabcd-3456-4cde-abcd-345678901abc",
+-       "source": {
+-         "channel": {
+-           "kind": "email",
+-         },
+-         "evidenceReference": "https://source.example.invalid/Feedback/A%2Fb?thread=1#Nachricht",
+-       },
+-       "text": "  رنگ‌ها روشن بمانند.
+- Farben bitte hell lassen.	  ",
+-       "workVersionReference": "https://work.example.invalid/مدل%2Fv1?variant=A%2Fb#Teil-1",
+-     },
+-     "feedbackId": "aabcdefa-6789-4bcd-9efa-678901234abc",
+-     "provenance": "staff-recorded",
+-     "recordedAt": "2026-11-01T09:30:00.000000001+03:30",
+-     "recordedByUserId": "abcdefab-1234-4abc-8def-1234567890ab",
+-   },
++   "error": "invalid_feedback_command",
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/feedbackRecord.test.ts:114:45
+    112| describe("native feedback recording command boundary", () => {
+    113|   it("requires separate server-owned identity, label and exact recordi…
+    114|     expect(parseFeedbackCommand(command())).toEqual({ ok: true, value:…
+       |                                             ^
+    115|     const input = { ...command(), feedbackId: ids.feedbackId.toUpperCa…
+    116|     expect(parseFeedbackCommand(input)).toEqual({ ok: true, value: com…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/9]⎯
+
+ FAIL  |unit| src/features/agency-projects/feedbackRecord.test.ts > native feedback recording command boundary > retains contradictory reviewers as separate declarations without merging or approval inference
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: true, value: { …(5) } }
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "declaration": {
+-       "author": {
+-         "kind": "internal-user",
+-         "userId": "bcdefabc-2345-4bcd-9efa-234567890abc",
+-       },
+-       "deliverableId": "defabcde-4567-4def-bcde-456789012abc",
+-       "projectId": "cdefabcd-3456-4cde-abcd-345678901abc",
+-       "source": {
+-         "channel": {
+-           "kind": "email",
+-         },
+-         "evidenceReference": "https://source.example.invalid/Feedback/A%2Fb?thread=1#Nachricht",
+-       },
+-       "text": "  رنگ‌ها روشن بمانند.
+- Farben bitte hell lassen.	  ",
+-       "workVersionReference": "https://work.example.invalid/مدل%2Fv1?variant=A%2Fb#Teil-1",
+-     },
+-     "feedbackId": "aabcdefa-6789-4bcd-9efa-678901234abc",
+-     "provenance": "staff-recorded",
+-     "recordedAt": "2026-11-01T09:30:00.000000001+03:30",
+-     "recordedByUserId": "abcdefab-1234-4abc-8def-1234567890ab",
+-   },
++   "error": "invalid_feedback_command",
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/feedbackRecord.test.ts:163:41
+    161|       },
+    162|     };
+    163|     expect(parseFeedbackCommand(first)).toEqual({ ok: true, value: fir…
+       |                                         ^
+    164|     expect(parseFeedbackCommand(second)).toEqual({ ok: true, value: se…
+    165|     expect(first.declaration.author).not.toEqual(second.declaration.au…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/9]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  9 failed | 14 passed (23)
+   Start at  08:47:01
+   Duration  89ms (transform 48%, tests 27%, import 11%, setup 9%, worker 5%)
+
+error: "vitest" exited with code 1
+error: script "test:unit" exited with code 1
