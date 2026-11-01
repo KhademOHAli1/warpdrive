@@ -1,0 +1,252 @@
+$ bun --bun vitest run --project unit src/features/agency-projects/templates/templateRolePreview.test.ts "--maxWorkers=1"
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+  - ESM syntax in a file loaded as CommonJS (vitest.classify.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.5 /Users/ali/Developer/warpdrive-agency-projects
+
+ ❯ |unit| src/features/agency-projects/templates/templateRolePreview.test.ts (13 tests | 11 failed) 15ms
+   ❯ typed-manifest role-binding preview (13)
+     × returns all roles in manifest order with exact preview row keys 7ms
+     × accepts a mapping for an unused declared role with empty uses 1ms
+     × previews a validated manifest with no deliverables or intents 0ms
+     × accepts all 32 declared roles and rejects 33 input bindings 2ms
+     × canonicalizes UUIDs without reordering or changing caller input 1ms
+     × shows the exact five role uses and ancestor-deliverable reviews 0ms
+     × preserves offsets in intent order without installation or dates 0ms
+     × allows repeated identities across distinct declared roles 0ms
+     × keeps equal UUID bytes in distinct identity namespaces 0ms
+     × isolates output edits from inputs and future previews 0ms
+     × isolates prior output without freezing caller arrays or objects 0ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 11 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| src/features/agency-projects/templates/templateRolePreview.test.ts > typed-manifest role-binding preview > returns all roles in manifest order with exact preview row keys
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/features/agency-projects/templates/templateRolePreview.test.ts:23:23
+     21|   it("returns all roles in manifest order with exact preview row keys"…
+     22|     const result = previewTemplateRoleBindings(manifest, []);
+     23|     expect(result.ok).toBe(true);
+       |                       ^
+     24|     if (!result.ok) return;
+     25|     expect(Object.keys(result.value).sort())
+ ❯ src/features/agency-projects/templates/templateRolePreview.test-support.ts:45:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/11]⎯
+
+ FAIL  |unit| src/features/agency-projects/templates/templateRolePreview.test.ts > typed-manifest role-binding preview > accepts a mapping for an unused declared role with empty uses
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/features/agency-projects/templates/templateRolePreview.test.ts:39:23
+     37|       { roleId: "unused", kind: "internal-user", userId },
+     38|     ]);
+     39|     expect(result.ok).toBe(true);
+       |                       ^
+     40|     if (!result.ok) return;
+     41|     expect(result.value.roles.find((role) => role.roleId === "unused")…
+ ❯ src/features/agency-projects/templates/templateRolePreview.test-support.ts:45:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/11]⎯
+
+ FAIL  |unit| src/features/agency-projects/templates/templateRolePreview.test.ts > typed-manifest role-binding preview > previews a validated manifest with no deliverables or intents
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/features/agency-projects/templates/templateRolePreview.test.ts:51:23
+     49|   it("previews a validated manifest with no deliverables or intents", …
+     50|     const result = previewTemplateRoleBindings(manifest, mappings());
+     51|     expect(result.ok).toBe(true);
+       |                       ^
+     52|     if (!result.ok) return;
+     53|     expect(result.value.roles).toHaveLength(5);
+ ❯ src/features/agency-projects/templates/templateRolePreview.test-support.ts:45:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/11]⎯
+
+ FAIL  |unit| src/features/agency-projects/templates/templateRolePreview.test.ts > typed-manifest role-binding preview > accepts all 32 declared roles and rejects 33 input bindings
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/features/agency-projects/templates/templateRolePreview.test.ts:66:23
+     64|     }));
+     65|     const result = previewTemplateRoleBindings(manifest, input);
+     66|     expect(result.ok).toBe(true);
+       |                       ^
+     67|     if (!result.ok) return;
+     68|     expect(result.value.roles).toHaveLength(32);
+ ❯ src/features/agency-projects/templates/templateRolePreview.test-support.ts:45:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/11]⎯
+
+ FAIL  |unit| src/features/agency-projects/templates/templateRolePreview.test.ts > typed-manifest role-binding preview > canonicalizes UUIDs without reordering or changing caller input
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/features/agency-projects/templates/templateRolePreview.test.ts:90:23
+     88|     const before = structuredClone({ manifest, input });
+     89|     const result = previewTemplateRoleBindings(manifest, input);
+     90|     expect(result.ok).toBe(true);
+       |                       ^
+     91|     if (!result.ok) return;
+     92|     expect(result.value.roles.map(({ roleId, binding }) => ({ roleId, …
+ ❯ src/features/agency-projects/templates/templateRolePreview.test-support.ts:45:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/11]⎯
+
+ FAIL  |unit| src/features/agency-projects/templates/templateRolePreview.test.ts > typed-manifest role-binding preview > shows the exact five role uses and ancestor-deliverable reviews
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/features/agency-projects/templates/templateRolePreview.test.ts:99:23
+     97|   it("shows the exact five role uses and ancestor-deliverable reviews"…
+     98|     const result = previewTemplateRoleBindings(manifest, []);
+     99|     expect(result.ok).toBe(true);
+       |                       ^
+    100|     if (!result.ok) return;
+    101|     expect(Object.fromEntries(result.value.roles.map((role) => [role.r…
+ ❯ src/features/agency-projects/templates/templateRolePreview.test-support.ts:45:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/11]⎯
+
+ FAIL  |unit| src/features/agency-projects/templates/templateRolePreview.test.ts > typed-manifest role-binding preview > preserves offsets in intent order without installation or dates
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/features/agency-projects/templates/templateRolePreview.test.ts:107:23
+    105|   it("preserves offsets in intent order without installation or dates"…
+    106|     const result = previewTemplateRoleBindings(manifest, mappings());
+    107|     expect(result.ok).toBe(true);
+       |                       ^
+    108|     if (!result.ok) return;
+    109|     expect(result.value.offsetAssumptions).toEqual(expectedOffsets);
+ ❯ src/features/agency-projects/templates/templateRolePreview.test-support.ts:45:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/11]⎯
+
+ FAIL  |unit| src/features/agency-projects/templates/templateRolePreview.test.ts > typed-manifest role-binding preview > allows repeated identities across distinct declared roles
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/features/agency-projects/templates/templateRolePreview.test.ts:122:23
+    120|       { roleId: "editor", kind: "external-contact", personId },
+    121|     ]);
+    122|     expect(result.ok).toBe(true);
+       |                       ^
+    123|     if (!result.ok) return;
+    124|     expect(result.value.roles.map((role) => role.binding)).toEqual([
+ ❯ src/features/agency-projects/templates/templateRolePreview.test-support.ts:45:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/11]⎯
+
+ FAIL  |unit| src/features/agency-projects/templates/templateRolePreview.test.ts > typed-manifest role-binding preview > keeps equal UUID bytes in distinct identity namespaces
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/features/agency-projects/templates/templateRolePreview.test.ts:138:23
+    136|       { roleId: "designer", kind: "external-contact", personId: userId…
+    137|     ]);
+    138|     expect(result.ok).toBe(true);
+       |                       ^
+    139|     if (!result.ok) return;
+    140|     expect(result.value.roles.find((role) => role.roleId === "producer…
+ ❯ src/features/agency-projects/templates/templateRolePreview.test-support.ts:45:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/11]⎯
+
+ FAIL  |unit| src/features/agency-projects/templates/templateRolePreview.test.ts > typed-manifest role-binding preview > isolates output edits from inputs and future previews
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/features/agency-projects/templates/templateRolePreview.test.ts:162:22
+    160|     const before = structuredClone({ manifest, input });
+    161|     const first = previewTemplateRoleBindings(manifest, input);
+    162|     expect(first.ok).toBe(true);
+       |                      ^
+    163|     if (!first.ok) return;
+    164|     const original = structuredClone(first.value);
+ ❯ src/features/agency-projects/templates/templateRolePreview.test-support.ts:45:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/11]⎯
+
+ FAIL  |unit| src/features/agency-projects/templates/templateRolePreview.test.ts > typed-manifest role-binding preview > isolates prior output without freezing caller arrays or objects
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/features/agency-projects/templates/templateRolePreview.test.ts:180:23
+    178|     const input = [{ roleId: "producer", kind: "internal-user", userId…
+    179|     const result = previewTemplateRoleBindings(manifest, input);
+    180|     expect(result.ok).toBe(true);
+       |                       ^
+    181|     if (!result.ok) return;
+    182|     for (const value of [...objectsIn(manifest), ...objectsIn(input)])…
+ ❯ src/features/agency-projects/templates/templateRolePreview.test-support.ts:45:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/11]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  11 failed | 2 passed (13)
+   Start at  09:11:45
+   Duration  131ms (transform 39%, import 32%, tests 22%, setup 5%, worker 3%)
+
+error: "vitest" exited with code 1
+error: script "test:unit" exited with code 1

@@ -1,0 +1,6 @@
+import { err } from "@/types/result";
+import type { TemplateManifest } from "./templateManifestSchemas";
+
+export function previewTemplateRoleBindings(_manifest: TemplateManifest, _bindings: unknown) {
+  return err("invalid_template_bindings");
+}

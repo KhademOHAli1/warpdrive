@@ -97,7 +97,7 @@
     "dependencies": "AP-00.3",
     "owner": "Agency implementation chat; shared edits require owner review",
     "status": "active",
-    "evidence": "authority-admission-inventory-20261101.md audits actual central-env, lifecycle/MCP availability, workflow/provider and native/CRM lock surfaces at d98574b. No generic Agency module gate or complete writer fence exists; two review-only protocols and participating source surfaces supplied to Platform/Settings. Settings review now recommends coarse shared/exclusive mode, with actual outer-entry/read-only final-auth corrections and central default-false/all-reads-unavailable startup module behavior. Exact review retained; no shared helper/key or gate implemented. Central AGENCY_PROJECTS_ENABLED=false parsing field/operator docs now implemented after actual15-failure red;15 selected and37/5 affected units pass. Focused14 type/Biome/unchanged-rule typedESLint now pass, with both module-env source hashes unchanged. It implements no server/worker gate or shared fence.",
+    "evidence": "authority-admission-inventory-20261101.md audits actual central-env, lifecycle/MCP availability, workflow/provider and native/CRM lock surfaces at d98574b. No generic Agency module gate or complete writer fence exists; two review-only protocols and participating source surfaces supplied to Platform/Settings. Settings review now recommends coarse shared/exclusive mode, with actual outer-entry/read-only final-auth corrections and central default-false/all-reads-unavailable startup module behavior. Exact review retained; no shared helper/key or gate implemented. Central AGENCY_PROJECTS_ENABLED=false parsing field/operator docs now implemented after actual15-failure red;15 selected and37/5 affected units pass. Focused14 type/Biome/unchanged-rule typedESLint now pass, with both module-env source hashes unchanged. It implements no server/worker gate or shared fence. Fresh committed Platformc840946 source check adds only3executiondocs after6e68bad, with application still7c8bb7e; no concrete fence/key/final-auth API or beyond93 canonical profile published. authority-owner-source-freshness-20261101.md.",
     "remaining": "Platform exact API/key and complete participating patch/race evidence remain open; native no-touch final verification, Privacy ordinary fence, native config consistency/drain/restart, and future read/command admission and canonical base/schema/allocation still required.",
     "accepted": false
   },
@@ -726,9 +726,9 @@
     "dependencies": "AP-05.2;AP-04.2",
     "owner": "Agency implementation chat; shared edits require owner review",
     "status": "active",
-    "evidence": "template-role-preview-contract.md and exact outside-source/recovery10-case test draft prepare a pure typed-manifest role-binding/use preview. Explicit unmapped/role kinds/local uses/offset assumptions and mutation isolation selected; production absent, all10 NOT RUN. No native eligibility/date/install projection or task acceptance.",
+    "evidence": "Pure feature-local template role-binding/use preview now implemented after missing-module RED and actual11failed/2passed behavioral RED. Actual13/1GREEN and13/1after intent-projection refactor; exact keys, stableorder, role kinds, unused/empty/max32 and bidirectional isolation covered. qualification-template-role-preview-20261101.json. Exact3file static window requested, not started.",
     "accepted": false,
-    "remaining": "Place tests and observe actual missing-module/behavioral red before pure implementation; focused qualification, native staff/contact/current-scope/capability admission, dated/accessible full install preview and original dependencies remain open."
+    "remaining": "Focused3file static and later full qualification; actual native staff/contact/current-scope/capability admission, dated/accessible full install preview, canonical activity/WF installation/replay/restore and original dependencies remain open."
   },
   {
     "id": "AP-05.4",

@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-11-01T08:16:23.013711+00:00",
+  "base": "31dd9ef82a32306cb0c3db7edad945f4ee85081b",
+  "scope": "Pure typed-manifest role binding and source-use/offset projection; no native eligibility, dates, commands or installation.",
+  "sourceHashesAtSelectedGreen": {
+    "src/features/agency-projects/templates/templateRolePreview.ts": "aff2c9bf41faa3126d72cbaaeac1f2c19d8e0a7fd8a371314821eb5291fd114c",
+    "src/features/agency-projects/templates/templateRolePreview.test.ts": "9f036d69c0ce64732d133b87708c366394dfabdcc009aac4704fae9f0d87fedc",
+    "src/features/agency-projects/templates/templateRolePreview.test-support.ts": "84e11ad1c8c956867eaf9945484f75ea3d47e320315132a9f7c30f6a7954fb76"
+  },
+  "checks": {
+    "missingModuleRed": {
+      "failedSuites": 1,
+      "testsExecuted": 0,
+      "log": "evidence/agency-template-role-preview-red-missing.log"
+    },
+    "behavioralRed": {
+      "failed": 11,
+      "passed": 2,
+      "log": "evidence/agency-template-role-preview-red-behavior.log",
+      "scaffold": "evidence/template-role-rejection-scaffold.ts.txt"
+    },
+    "initialSelectedUnits": {
+      "passed": 13,
+      "files": 1,
+      "durationMilliseconds": 86,
+      "log": "evidence/agency-template-role-preview-green.log",
+      "productionSnapshot": "evidence/template-role-pre-refactor.ts.txt"
+    },
+    "selectedUnits": {
+      "passed": 13,
+      "files": 1,
+      "durationMilliseconds": 95,
+      "log": "evidence/agency-template-role-preview-green-refactor.log",
+      "phase": "after intent-projection refactor"
+    },
+    "focusedStatic": "pending separately requested exact3-primary-TS/30second source window"
+  },
+  "guard": {
+    "workers": 1,
+    "timeoutSeconds": 30,
+    "executionCutoffSeconds": 29,
+    "floorBytes": 5368709120,
+    "groupsEmptyVerified": [
+      44323,
+      44380,
+      44659,
+      45056
+    ],
+    "minimumFreeBytes": 15032918016,
+    "receipt": "evidence/agency-template-role-preview-unit-handles.json"
+  },
+  "limits": [
+    "The manifest must already have crossed actual structural/graph ingress. This function validates only new bindings and semantic role-kind membership; no native identity existence/currentness, capability or scope is proved.",
+    "Explicit null unmapped roles and syntactic complete mapping are preview data, not activation/install permission. No user/contact namespace merge or authentication claim.",
+    "Offsets remain exact calendar-day/project-start declarations, not calculated dates, workweeks, holidays, deadlines or canonical activity commands.",
+    "Detached objects are memory ownership only, not persisted version immutability, replay/rollback, Privacy or restore proof.",
+    "No full-feature/repository/build/native UI/DB/provider proof or task/release acceptance; prior source scopes remain separate."
+  ]
+}
