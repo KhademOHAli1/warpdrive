@@ -39,14 +39,14 @@ must render the strings as text and review content before distribution.
 second column occur only in research metadata, with URLs from the reviewed source
 document. They do not appear in the localized preview.
 
-| Stable key | Research reference | Original evidence concepts |
-| --- | --- | --- |
-| `buying-readiness` | BANT | Funding constraints, approval participants, customer need, buyer timing. |
-| `complex-purchase-review` | MEDDPICC | Value evidence, spending authority, evaluation requirements, approval path, contracting path, problem consequences, internal support, alternatives. |
-| `customer-context-review` | SPICED | Operating context, reported difficulty, consequences, external milestone, decision requirements. |
-| `discovery-conversation` | SPIN | Current work, friction, downstream effects, customer-described benefit. |
-| `commercial-hypothesis` | Challenger | Hypothesis source, stakeholder relevance, customer response including disagreement, shared next step. |
-| `mutual-working-agreement` | Sandler | Meeting purpose, customer concern, resources, decision participants and steps, agreed next action, post-decision expectations. |
+| Stable key                 | Research reference | Original evidence concepts                                                                                                                          |
+| -------------------------- | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `buying-readiness`         | BANT               | Funding constraints, approval participants, customer need, buyer timing.                                                                            |
+| `complex-purchase-review`  | MEDDPICC           | Value evidence, spending authority, evaluation requirements, approval path, contracting path, problem consequences, internal support, alternatives. |
+| `customer-context-review`  | SPICED             | Operating context, reported difficulty, consequences, external milestone, decision requirements.                                                    |
+| `discovery-conversation`   | SPIN               | Current work, friction, downstream effects, customer-described benefit.                                                                             |
+| `commercial-hypothesis`    | Challenger         | Hypothesis source, stakeholder relevance, customer response including disagreement, shared next step.                                               |
+| `mutual-working-agreement` | Sandler            | Meeting purpose, customer concern, resources, decision participants and steps, agreed next action, post-decision expectations.                      |
 
 The catalog does not reproduce vendor scripts, courses, scorecards, diagrams,
 choreography, logos, badges or certification assets. Neutral copy remains a draft
