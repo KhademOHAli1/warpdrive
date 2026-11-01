@@ -1,16 +1,16 @@
 {
   "registryVersion": 1,
   "evidenceLevel": "source_inventory",
-  "sourceFingerprint": "0cbedbc6ce37cce738254c3cbead0ee85f0d592131ed130ea1adec1e72285d79",
-  "sourceFiles": 1898,
+  "sourceFingerprint": "e9dd542993f8692d90d1625466223f8990234ce72c71423b2b98e8d4e4e66c25",
+  "sourceFiles": 1908,
   "discoveredCounts": {
     "browserStore": 3,
-    "derived": 242,
+    "derived": 241,
     "external": 26,
     "log": 41,
     "objectNamespace": 17,
     "queue": 12,
-    "sourceReview": 576,
+    "sourceReview": 575,
     "table": 93,
     "writer": 538
   },
