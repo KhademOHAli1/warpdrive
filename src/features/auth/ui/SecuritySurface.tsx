@@ -19,6 +19,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useLocale } from "@/features/i18n/LocaleProvider";
+import { BLOCK_CLASS } from "@/features/observability/replayMasking";
 import { authScreensMessagesForLocale } from "../authScreensMessages";
 
 export function SecurityPanel({
@@ -32,9 +33,10 @@ export function SecurityPanel({
   embedded?: boolean;
   children: ReactNode;
 }) {
-  if (embedded === true) return <div className="space-y-5">{children}</div>;
+  if (embedded === true)
+    return <div className={`${BLOCK_CLASS} ph-no-capture space-y-5`}>{children}</div>;
   return (
-    <SettingsCard>
+    <SettingsCard className={`${BLOCK_CLASS} ph-no-capture`}>
       <SettingsCardHeader title={title} description={description} />
       <SettingsCardBody className="space-y-5">{children}</SettingsCardBody>
     </SettingsCard>
@@ -62,7 +64,9 @@ export function SecurityAction({
   const L = authScreensMessagesForLocale(useLocale()).flow;
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <div className="flex flex-col items-start gap-3 px-5 py-5 sm:flex-row sm:items-center sm:gap-4">
+      <div
+        className={`${BLOCK_CLASS} ph-no-capture flex flex-col items-start gap-3 px-5 py-5 sm:flex-row sm:items-center sm:gap-4`}
+      >
         <div className="hidden size-9 shrink-0 items-center justify-center rounded-lg border bg-muted/30 text-muted-foreground sm:flex">
           <Icon className="size-4" aria-hidden="true" />
         </div>
@@ -80,7 +84,9 @@ export function SecurityAction({
             {action}
           </Button>
         </DialogTrigger>
-        <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-md">
+        <DialogContent
+          className={`${BLOCK_CLASS} ph-no-capture max-h-[90dvh] overflow-y-auto sm:max-w-md`}
+        >
           <DialogHeader>
             <DialogTitle>{title}</DialogTitle>
             <DialogDescription>{description}</DialogDescription>

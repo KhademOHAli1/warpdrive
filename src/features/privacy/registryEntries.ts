@@ -18,6 +18,7 @@ import { infrastructureIds2 } from "./registryIdsInfrastructure2";
 import { metadataToolingIds1 } from "./registryIdsMetadataTooling1";
 import { notificationsIds1 } from "./registryIdsNotifications1";
 import { observabilityIds1 } from "./registryIdsObservability1";
+import { personalRequestsIds1 } from "./registryIdsPersonalRequests1";
 import { privacyIds1 } from "./registryIdsPrivacy1";
 import { protectedSecretsIds1 } from "./registryIdsProtectedSecrets1";
 import { requestServicesIds1 } from "./registryIdsRequestServices1";
@@ -159,6 +160,27 @@ export const registryEntries: RegistryEntry[] = [
       "Writes use existing encrypted privacy cases, memberships and minimal events. Their retention still requires operator activation; no new retention period or deletion receipt is inferred.",
     externalEffects:
       "Existing PostgreSQL reads, native authority locks, case/member writes and minimal events only. The intake queue is a live database view; no pg-boss job, object operation, email or publication occurs.",
+    erasureTask: "DPL-26",
+  }),
+  classifyInventory(personalRequestsIds1, {
+    ...classifications.privacy,
+    owner: "privacy requester interface and native account security",
+    categories: [
+      "browser request summary and frozen retry intent",
+      "requester and minimal receipt references",
+      "native account security status and authentication inputs",
+      "localized interface metadata",
+    ],
+    subjectRelation:
+      "The server resolves the current native actor. A browser's expected requester UUID can only deny a changed-account form; it cannot select a subject, recipient or authorized actor.",
+    purpose:
+      "Mount the personal privacy settings workspace, submit bounded requester-owned intake through CSRF/fresh-session Server Actions, refresh existing own-security status and retain one transient intent across uncertain retries.",
+    disclosure:
+      "Only minimal own-request receipts are displayed. Request/security surfaces and portaled controls use existing replay-block and autocapture-exclusion classes; those declarations do not establish installed telemetry or browser acceptance.",
+    retention:
+      "Summary, attempt and receipt remain in component memory until reset/account invalidation/unmount; success does not explicitly clear the retained summary. No new browser database, durable queue, table or expiry schedule is introduced.",
+    externalEffects:
+      "The settings route inherits the existing authenticated app layout. Same-origin Server Actions and existing GET /api/auth-workflows/status reuse classified auth/privacy boundaries, including session/rate-limit/CSRF effects and delegated case/proof writes. Focus/visibility refresh adds no durable store. Browser cancellation cannot undo a dispatched Server Action; provider/device confirmation retains its existing native boundaries.",
     erasureTask: "DPL-26",
   }),
   classifyInventory(

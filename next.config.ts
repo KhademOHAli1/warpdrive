@@ -110,6 +110,7 @@ export default createNextIntlPlugin({
       "./src/components/ui/messages/shared.en.json",
       "./src/components/shell/messages/shell.en.json",
       "./src/features/identity/messages/settings.en.json",
+      "./src/features/privacy/messages/privacyRequest.en.json",
       "./src/features/contacts/messages/contacts.en.json",
       "./src/features/leads/messages/leads.en.json",
       "./src/features/entity-create/messages/entityCreate.en.json",
