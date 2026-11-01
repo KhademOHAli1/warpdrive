@@ -78,12 +78,12 @@ export async function repairAcceptedSmtpCopy(
   db: Db,
   attempt: SmtpAttempt,
   signal: AbortSignal,
-  requireActiveOwner = false,
+  rejectUnavailableOwner = false,
 ): Promise<Result<SmtpSendOutcome, AppError>> {
   const review = { ...smtpAttemptOutcome(attempt), status: "needs_review" as const };
   try {
-    const stored = await storeSmtpOutboundCopy(db, attempt, signal, requireActiveOwner);
-    if (!stored.ok && requireActiveOwner) return stored;
+    const stored = await storeSmtpOutboundCopy(db, attempt, signal);
+    if (!stored.ok && rejectUnavailableOwner) return stored;
     return ok(stored.ok ? smtpAttemptOutcome(attempt, stored.value) : review);
   } catch {
     signal.throwIfAborted();

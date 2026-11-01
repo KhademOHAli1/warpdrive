@@ -20,15 +20,12 @@ export async function repairSmtpReceipt(
     const active =
       (
         await db.execute(sql`SELECT a.id FROM email_accounts a JOIN users u ON u.id=a.user_id
-      WHERE a.id=${args.accountId} AND a.provider='imap_smtp' AND u.is_active=true`)
+      WHERE a.id=${args.accountId} AND a.provider='imap_smtp' AND u.is_active=true AND u.invited_at IS NULL`)
       ).rows.length === 1;
     args.signal.throwIfAborted();
     if (!active)
       return err(
-        new AppError(
-          ERROR_IDS.MAIL_CONNECTION_CHANGED,
-          "SMTP receipt owner is inactive or missing",
-        ),
+        new AppError(ERROR_IDS.MAIL_CONNECTION_CHANGED, "SMTP receipt owner is unavailable"),
       );
     const attempt = await loadSmtpAttempt(db, args.accountId, args.idempotencyKey, args.signal);
     const state = attempt?.delivery_outcome?.state;
