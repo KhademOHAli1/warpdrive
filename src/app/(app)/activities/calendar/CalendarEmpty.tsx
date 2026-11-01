@@ -3,7 +3,7 @@ import type React from "react";
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { AddActivityModal } from "@/features/activities/AddActivityModal";
+import { CalendarEventDialog } from "@/features/activities/CalendarEventDialog";
 import type { CalendarViewName } from "@/features/activities/calendarView";
 import { useLocale } from "@/features/i18n/LocaleProvider";
 import { calendarEmptyState } from "./calendarEmptyState";
@@ -49,10 +49,10 @@ export function CalendarEmpty({
         }
       />
       {addOpen && (
-        <AddActivityModal
+        <CalendarEventDialog
           defaultDate={dateIso}
           onClose={() => setAddOpen(false)}
-          onCreated={() => {
+          onSaved={() => {
             onCreated();
             setAddOpen(false);
           }}
