@@ -41,6 +41,7 @@ export const ERROR_IDS = {
   DB_INVARIANT: "E_DB_001", // a DB invariant we believed impossible was violated
   DB_INSERT_FAILED: "E_DB_002", // insert returned no rows (should never happen)
   DB_WRITE_FAILED: "E_DB_003", // the write threw: Postgres unreachable, aborted, or rejected
+  DB_READ_FAILED: "E_DB_004", // the authorized read failed without a safe result
   // DEAL
   DEAL_NOT_FOUND: "E_DEAL_001", // deal not found or not visible (404-on-invisible)
   DEAL_PRECONDITION: "E_DEAL_002", // optimistic precondition failed (stale compare-and-swap on move)

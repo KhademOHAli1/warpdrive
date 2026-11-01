@@ -18,6 +18,9 @@ import { CALENDAR_MESSAGES } from "@/features/activities/calendarMessages";
 import activitiesGerman from "@/features/activities/messages/activities.de.json";
 import activitiesEnglish from "@/features/activities/messages/activities.en.json";
 import activitiesPersian from "@/features/activities/messages/activities.fa.json";
+import nextActionQueueGerman from "@/features/activities/messages/nextActionQueue.de.json";
+import nextActionQueueEnglish from "@/features/activities/messages/nextActionQueue.en.json";
+import nextActionQueuePersian from "@/features/activities/messages/nextActionQueue.fa.json";
 import managementGerman from "@/features/auth/management/messages/authManagement.de.json";
 import managementEnglish from "@/features/auth/management/messages/authManagement.en.json";
 import managementPersian from "@/features/auth/management/messages/authManagement.fa.json";
@@ -84,6 +87,7 @@ import type { Locale } from "./registry";
 
 const english = {
   ...en,
+  nextActionQueue: nextActionQueueEnglish,
   pipelineLifecycle: pipelineLifecycleEnglish,
   viewCompatibility: viewCompatibilityEnglish,
   integrations: integrationsEnglish,
@@ -113,6 +117,7 @@ const english = {
 };
 const persian: typeof english = mergeMessages(english, {
   ...fa,
+  nextActionQueue: nextActionQueuePersian,
   pipelineLifecycle: pipelineLifecyclePersian,
   viewCompatibility: viewCompatibilityPersian,
   integrations: integrationsPersian,
@@ -142,6 +147,7 @@ const persian: typeof english = mergeMessages(english, {
 });
 const german: typeof english = mergeMessages(english, {
   ...de,
+  nextActionQueue: nextActionQueueGerman,
   pipelineLifecycle: pipelineLifecycleGerman,
   viewCompatibility: viewCompatibilityGerman,
   integrations: integrationsGerman,

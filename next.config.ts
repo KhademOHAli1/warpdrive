@@ -101,6 +101,7 @@ export default createNextIntlPlugin({
   requestConfig: "./src/features/i18n/request.ts",
   experimental: {
     createMessagesDeclaration: [
+      "./src/features/activities/messages/nextActionQueue.en.json",
       "./src/features/pipelines/messages/lifecycle.en.json",
       "./src/features/saved-filters/messages/viewCompatibility.en.json",
       "./src/features/workflows/messages/workflows.en.json",
