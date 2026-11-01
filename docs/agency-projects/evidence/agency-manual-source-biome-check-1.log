@@ -1,0 +1,917 @@
+src/features/agency-projects/communication/communicationPreferenceSchemas.ts:4:1 assist/source/organizeImports  FIXABLE  ━━━━━━━━━━
+
+  × This statement must be preceded by a blank line. Add a newline before this statement.
+  
+    2 │ import { canonicalUuidSchema, referenceSchema } from "../valueSchemas";
+    3 │ import { communicationChannelSchema, plainTextSchema } from "./communicationValueSchemas";
+  > 4 │ const cadence = z.discriminatedUnion("kind", [
+      │ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 5 │   z.strictObject({ kind: z.enum(["unspecified", "none"]) }),
+  > 6 │   z.strictObject({ kind: z.literal("declared"), text: plainTextSchema(1000, true) }),
+  > 7 │ ]);
+      │ ^^^
+    8 │ 
+    9 │ export const communicationPreferenceRequestSchema = z.strictObject({
+  
+  i Safe fix: Organize imports and exports (Biome)
+  
+     2  2 │   import { canonicalUuidSchema, referenceSchema } from "../valueSchemas";
+     3  3 │   import { communicationChannelSchema, plainTextSchema } from "./communicationValueSchemas";
+        4 │ + 
+     4  5 │   const cadence = z.discriminatedUnion("kind", [
+     5  6 │     z.strictObject({ kind: z.enum(["unspecified", "none"]) }),
+  
+
+src/features/agency-projects/communication/communicationValueSchemas.ts format ━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+     2  2 │   
+     3  3 │   export function plainTextSchema(limit: number, multiline: boolean) {
+     4    │ - ··return·z.string().min(1).max(limit)
+        4 │ + ··return·z
+        5 │ + ····.string()
+        6 │ + ····.min(1)
+        7 │ + ····.max(limit)
+     5  8 │       .refine((value) => value.replace(/\p{Cf}/gu, "").trim().length > 0)
+     6  9 │       .refine((value) => {
+  
+
+src/features/agency-projects/communication/manualCommunication.test-support.ts format ━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+     33  33 │   
+     34  34 │   export function recordCommand() {
+     35     │ - ··return·{·...recordAction(),·logId:·ids.logId,·recordedByUserId:·ids.actorId,·recordedAt:·"2026-11-01T06:00:00Z"·};
+         35 │ + ··return·{
+         36 │ + ····...recordAction(),
+         37 │ + ····logId:·ids.logId,
+         38 │ + ····recordedByUserId:·ids.actorId,
+         39 │ + ····recordedAt:·"2026-11-01T06:00:00Z",
+         40 │ + ··};
+     36  41 │   }
+     37  42 │   
+    ······· │ 
+     44  49 │       logId: ids.logId,
+     45  50 │       expectedRevision: 1,
+     46     │ - ····declaration:·{·...declaration(),·occurredAt:·"2026-11-01T05:45:00+00:00",·note:·"اصلاح·زمان·/·Zeitangabe·korrigiert"·},
+         51 │ + ····declaration:·{
+         52 │ + ······...declaration(),
+         53 │ + ······occurredAt:·"2026-11-01T05:45:00+00:00",
+         54 │ + ······note:·"اصلاح·زمان·/·Zeitangabe·korrigiert",
+         55 │ + ····},
+     47  56 │       reason: "  اصلاح یادداشت کارکنان / Aufzeichnung korrigiert  ",
+     48  57 │     };
+    ······· │ 
+     50  59 │   
+     51  60 │   export function correctionCommand() {
+     52     │ - ··return·{·...correctionAction(),·recordedByUserId:·ids.actorId,·recordedAt:·"2026-11-01T06:10:00Z"·};
+         61 │ + ··return·{
+         62 │ + ····...correctionAction(),
+         63 │ + ····recordedByUserId:·ids.actorId,
+         64 │ + ····recordedAt:·"2026-11-01T06:10:00Z",
+         65 │ + ··};
+     53  66 │   }
+     54  67 │   
+     55  68 │   export function laterCorrection() {
+     56  69 │     return {
+     57     │ - ····...correctionCommand(),·mutationIntentId:·ids.laterIntent,·expectedRevision:·2,
+         70 │ + ····...correctionCommand(),
+         71 │ + ····mutationIntentId:·ids.laterIntent,
+         72 │ + ····expectedRevision:·2,
+     58  73 │       recordedAt: "2026-11-01T06:20:00Z",
+     59  74 │       declaration: { ...declaration(), note: "یادداشت کامل�تر / Ergänzte Aufzeichnung" },
+    ······· │ 
+     65  80 │     const command = recordCommand();
+     66  81 │     return {
+     67     │ - ····policyVersion:·1·as·const,·provenance:·"staff-recorded"·as·const,
+     68     │ - ····action:·command.action,·mutationIntentId:·command.mutationIntentId,
+     69     │ - ····projectId:·command.projectId,·personId:·command.personId,·logId:·command.logId,
+     70     │ - ····recordedByUserId:·command.recordedByUserId,·recordedAt:·command.recordedAt,
+     71     │ - ····revision:·1,·previousRevision:·0,·previousPersonId:·null,·reason:·null,
+         82 │ + ····policyVersion:·1·as·const,
+         83 │ + ····provenance:·"staff-recorded"·as·const,
+         84 │ + ····action:·command.action,
+         85 │ + ····mutationIntentId:·command.mutationIntentId,
+         86 │ + ····projectId:·command.projectId,
+         87 │ + ····personId:·command.personId,
+         88 │ + ····logId:·command.logId,
+         89 │ + ····recordedByUserId:·command.recordedByUserId,
+         90 │ + ····recordedAt:·command.recordedAt,
+         91 │ + ····revision:·1,
+         92 │ + ····previousRevision:·0,
+         93 │ + ····previousPersonId:·null,
+         94 │ + ····reason:·null,
+     72  95 │     };
+     73  96 │   }
+    ······· │ 
+     76  99 │     const command = correctionCommand();
+     77 100 │     return {
+     78     │ - ····policyVersion:·1·as·const,·provenance:·"staff-recorded"·as·const,
+     79     │ - ····action:·command.action,·mutationIntentId:·command.mutationIntentId,
+     80     │ - ····projectId:·command.projectId,·personId:·command.personId,·logId:·command.logId,
+     81     │ - ····recordedByUserId:·command.recordedByUserId,·recordedAt:·command.recordedAt,
+     82     │ - ····revision:·2,·previousRevision:·1,·previousPersonId:·ids.personId,·reason:·command.reason,
+        101 │ + ····policyVersion:·1·as·const,
+        102 │ + ····provenance:·"staff-recorded"·as·const,
+        103 │ + ····action:·command.action,
+        104 │ + ····mutationIntentId:·command.mutationIntentId,
+        105 │ + ····projectId:·command.projectId,
+        106 │ + ····personId:·command.personId,
+        107 │ + ····logId:·command.logId,
+        108 │ + ····recordedByUserId:·command.recordedByUserId,
+        109 │ + ····recordedAt:·command.recordedAt,
+        110 │ + ····revision:·2,
+        111 │ + ····previousRevision:·1,
+        112 │ + ····previousPersonId:·ids.personId,
+        113 │ + ····reason:·command.reason,
+     83 114 │     };
+     84 115 │   }
+    ······· │ 
+     86 117 │   export function currentHead() {
+     87 118 │     return {
+     88     │ - ····projectId:·ids.projectId,·personId:·ids.personId,·logId:·ids.logId,
+        119 │ + ····projectId:·ids.projectId,
+        120 │ + ····personId:·ids.personId,
+        121 │ + ····logId:·ids.logId,
+     89 122 │       provenance: "staff-recorded" as const,
+     90     │ - ····revision:·2,·lastRecordedAt:·correctionCommand().recordedAt,
+        123 │ + ····revision:·2,
+        124 │ + ····lastRecordedAt:·correctionCommand().recordedAt,
+     91 125 │       declaration: correctionCommand().declaration,
+     92 126 │     };
+    ······· │ 
+    102 136 │   
+    103 137 │   export function deletedRecordIntent() {
+    104     │ - ··return·{·state:·"deleted"·as·const,·key:·{·recordedByUserId:·ids.actorId,·action:·"record"·as·const,·mutationIntentId:·ids.recordIntent·}·};
+        138 │ + ··return·{
+        139 │ + ····state:·"deleted"·as·const,
+        140 │ + ····key:·{
+        141 │ + ······recordedByUserId:·ids.actorId,
+        142 │ + ······action:·"record"·as·const,
+        143 │ + ······mutationIntentId:·ids.recordIntent,
+        144 │ + ····},
+        145 │ + ··};
+    105 146 │   }
+    106 147 │   
+  
+
+src/features/agency-projects/communication/manualCommunication.test.ts format ━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+      6   6 │   } from "./manualCommunication";
+      7   7 │   import {
+      8     │ - ··appliedCorrectionIntent,·context,·correctionAction,·correctionCommand,·deletedRecordIntent,·ids,
+      9     │ - ··recordAction,·recordCommand,
+          8 │ + ··appliedCorrectionIntent,
+          9 │ + ··context,
+         10 │ + ··correctionAction,
+         11 │ + ··correctionCommand,
+         12 │ + ··deletedRecordIntent,
+         13 │ + ··ids,
+         14 │ + ··recordAction,
+         15 │ + ··recordCommand,
+     10  16 │   } from "./manualCommunication.test-support";
+     11  17 │   
+    ······· │ 
+     14  20 │       for (const input of [recordAction(), correctionAction()]) {
+     15  21 │         expect(parseManualCommunicationAction(input)).toEqual({ ok: true, value: input });
+     16     │ - ······for·(const·extra·of·[{·recordedByUserId:·ids.actorId·},·{·recordedAt:·"2026-11-01T06:00:00Z"·}])·{
+     17     │ - ········expect(parseManualCommunicationAction({·...input,·...extra·}))
+     18     │ - ··········.toEqual({·ok:·false,·error:·"invalid_manual_action"·});
+         22 │ + ······for·(const·extra·of·[
+         23 │ + ········{·recordedByUserId:·ids.actorId·},
+         24 │ + ········{·recordedAt:·"2026-11-01T06:00:00Z"·},
+         25 │ + ······])·{
+         26 │ + ········expect(parseManualCommunicationAction({·...input,·...extra·})).toEqual({
+         27 │ + ··········ok:·false,
+         28 │ + ··········error:·"invalid_manual_action",
+         29 │ + ········});
+     19  30 │         }
+     20  31 │       }
+     21     │ - ····expect(parseManualCommunicationAction({·...recordAction(),·logId:·ids.logId·}))
+     22     │ - ······.toEqual({·ok:·false,·error:·"invalid_manual_action"·});
+         32 │ + ····expect(parseManualCommunicationAction({·...recordAction(),·logId:·ids.logId·})).toEqual({
+         33 │ + ······ok:·false,
+         34 │ + ······error:·"invalid_manual_action",
+         35 │ + ····});
+     23  36 │     });
+     24  37 │   
+    ······· │ 
+     27  40 │         const input = recordCommand();
+     28  41 │         Reflect.deleteProperty(input, field);
+     29     │ - ······expect(parseManualCommunicationCommand(input)).toEqual({·ok:·false,·error:·"invalid_manual_command"·});
+         42 │ + ······expect(parseManualCommunicationCommand(input)).toEqual({
+         43 │ + ········ok:·false,
+         44 │ + ········error:·"invalid_manual_command",
+         45 │ + ······});
+     30  46 │       }
+     31  47 │       const input = recordCommand();
+     32     │ - ····expect(parseManualCommunicationCommand({
+     33     │ - ······...input,·logId:·input.logId.toUpperCase(),·projectId:·input.projectId.toUpperCase(),
+     34     │ - ······personId:·input.personId.toUpperCase(),·mutationIntentId:·input.mutationIntentId.toUpperCase(),
+     35     │ - ······recordedByUserId:·input.recordedByUserId.toUpperCase(),
+     36     │ - ····})).toEqual({·ok:·true,·value:·input·});
+         48 │ + ····expect(
+         49 │ + ······parseManualCommunicationCommand({
+         50 │ + ········...input,
+         51 │ + ········logId:·input.logId.toUpperCase(),
+         52 │ + ········projectId:·input.projectId.toUpperCase(),
+         53 │ + ········personId:·input.personId.toUpperCase(),
+         54 │ + ········mutationIntentId:·input.mutationIntentId.toUpperCase(),
+         55 │ + ········recordedByUserId:·input.recordedByUserId.toUpperCase(),
+         56 │ + ······}),
+         57 │ + ····).toEqual({·ok:·true,·value:·input·});
+     37  58 │     });
+     38  59 │   
+     39  60 │     it("requires canonical target/intent UUIDs and correction preconditions", () => {
+     40  61 │       for (const field of ["projectId", "personId", "mutationIntentId", "logId"]) {
+     41     │ - ······expect(parseManualCommunicationCommand({·...correctionCommand(),·[field]:·"shared@example.invalid"·}))
+     42     │ - ········.toEqual({·ok:·false,·error:·"invalid_manual_command"·});
+         62 │ + ······expect(
+         63 │ + ········parseManualCommunicationCommand({
+         64 │ + ··········...correctionCommand(),
+         65 │ + ··········[field]:·"shared@example.invalid",
+         66 │ + ········}),
+         67 │ + ······).toEqual({·ok:·false,·error:·"invalid_manual_command"·});
+     43  68 │       }
+     44  69 │       for (const expectedRevision of [undefined, -1, 1.5, "1"]) {
+     45     │ - ······expect(parseManualCommunicationCommand({·...correctionCommand(),·expectedRevision·}))
+     46     │ - ········.toEqual({·ok:·false,·error:·"invalid_manual_command"·});
+         70 │ + ······expect(parseManualCommunicationCommand({·...correctionCommand(),·expectedRevision·})).toEqual(
+         71 │ + ········{·ok:·false,·error:·"invalid_manual_command"·},
+         72 │ + ······);
+     47  73 │       }
+     48  74 │     });
+    ······· │ 
+     50  76 │     it("cannot turn a draft, copy or unqualified provider/client claim into a manual record", () => {
+     51  77 │       for (const action of ["draft", "copy", "send", "provider-delivered"]) {
+     52     │ - ······expect(parseManualCommunicationAction({·...recordAction(),·action·}))
+     53     │ - ········.toEqual({·ok:·false,·error:·"invalid_manual_action"·});
+         78 │ + ······expect(parseManualCommunicationAction({·...recordAction(),·action·})).toEqual({
+         79 │ + ········ok:·false,
+         80 │ + ········error:·"invalid_manual_action",
+         81 │ + ······});
+     54  82 │       }
+     55     │ - ····for·(const·extra·of·[{·authenticatedClient:·true·},·{·delivered:·true·},·{·providerMessageId:·"claim"·},·{·recipient:·"person@example.invalid"·},·{·grantAccess:·true·}])·{
+     56     │ - ······expect(parseManualCommunicationCommand({·...recordCommand(),·...extra·}))
+     57     │ - ········.toEqual({·ok:·false,·error:·"invalid_manual_command"·});
+         83 │ + ····for·(const·extra·of·[
+         84 │ + ······{·authenticatedClient:·true·},
+         85 │ + ······{·delivered:·true·},
+         86 │ + ······{·providerMessageId:·"claim"·},
+         87 │ + ······{·recipient:·"person@example.invalid"·},
+         88 │ + ······{·grantAccess:·true·},
+         89 │ + ····])·{
+         90 │ + ······expect(parseManualCommunicationCommand({·...recordCommand(),·...extra·})).toEqual({
+         91 │ + ········ok:·false,
+         92 │ + ········error:·"invalid_manual_command",
+         93 │ + ······});
+     58  94 │       }
+     59  95 │     });
+    ······· │ 
+     61  97 │     it("preserves declared protected plain note/evidence and explicit other-channel label", () => {
+     62  98 │       const input = {
+     63     │ - ······...recordCommand(),·declaration:·{
+         99 │ + ······...recordCommand(),
+        100 │ + ······declaration:·{
+     64 101 │           ...recordCommand().declaration,
+     65 102 │           channel: { kind: "other", label: "گفت�وگو / Austausch" },
+    ······· │ 
+     70 107 │       const withoutEvidence = recordCommand();
+     71 108 │       Reflect.deleteProperty(withoutEvidence.declaration, "evidenceReference");
+     72     │ - ····expect(parseManualCommunicationCommand(withoutEvidence)).toEqual({·ok:·true,·value:·withoutEvidence·});
+        109 │ + ····expect(parseManualCommunicationCommand(withoutEvidence)).toEqual({
+        110 │ + ······ok:·true,
+        111 │ + ······value:·withoutEvidence,
+        112 │ + ····});
+     73 113 │     });
+     74 114 │   
+     75 115 │     it("rejects missing/implicit channel, blank or oversized protected note/reason and unsafe evidence", () => {
+     76 116 │       const command = recordCommand();
+     77     │ - ····for·(const·channel·of·[undefined,·"email",·{·kind:·"automatic"·},·{·kind:·"email",·mailboxId:·ids.personId·},·{·kind:·"other",·label:·"\u200c"·}])·{
+     78     │ - ······expect(parseManualCommunicationCommand({·...command,·declaration:·{·...command.declaration,·channel·}·}))
+     79     │ - ········.toEqual({·ok:·false,·error:·"invalid_manual_command"·});
+        117 │ + ····for·(const·channel·of·[
+        118 │ + ······undefined,
+        119 │ + ······"email",
+        120 │ + ······{·kind:·"automatic"·},
+        121 │ + ······{·kind:·"email",·mailboxId:·ids.personId·},
+        122 │ + ······{·kind:·"other",·label:·"\u200c"·},
+        123 │ + ····])·{
+        124 │ + ······expect(
+        125 │ + ········parseManualCommunicationCommand({
+        126 │ + ··········...command,
+        127 │ + ··········declaration:·{·...command.declaration,·channel·},
+        128 │ + ········}),
+        129 │ + ······).toEqual({·ok:·false,·error:·"invalid_manual_command"·});
+     80 130 │       }
+     81 131 │       for (const note of [undefined, " ", "\u200c", "\u2066\u2069", "x".repeat(2001), "متن\u0085"]) {
+     82     │ - ······expect(parseManualCommunicationCommand({·...command,·declaration:·{·...command.declaration,·note·}·}))
+     83     │ - ········.toEqual({·ok:·false,·error:·"invalid_manual_command"·});
+        132 │ + ······expect(
+        133 │ + ········parseManualCommunicationCommand({
+        134 │ + ··········...command,
+        135 │ + ··········declaration:·{·...command.declaration,·note·},
+        136 │ + ········}),
+  131 more lines truncated
+  
+
+src/features/agency-projects/communication/manualCommunication.ts format ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+     6  6 │   export { applyManualCommunicationCommand } from "./manualCommunicationPolicy";
+     7  7 │   
+     8    │ - export·function·parseManualCommunicationAction(input:·unknown):·Result<ManualAction,·"invalid_manual_action">·{
+        8 │ + export·function·parseManualCommunicationAction(
+        9 │ + ··input:·unknown,
+       10 │ + ):·Result<ManualAction,·"invalid_manual_action">·{
+     9 11 │     const parsed = manualActionSchema.safeParse(input);
+    10 12 │     return parsed.success ? ok(parsed.data) : err("invalid_manual_action");
+    11 13 │   }
+    12    │ - export·function·parseManualCommunicationCommand(input:·unknown):·Result<ManualCommand,·"invalid_manual_command">·{
+       14 │ + export·function·parseManualCommunicationCommand(
+       15 │ + ··input:·unknown,
+       16 │ + ):·Result<ManualCommand,·"invalid_manual_command">·{
+    13 17 │     const parsed = manualCommandSchema.safeParse(input);
+    14 18 │     return parsed.success ? ok(parsed.data) : err("invalid_manual_command");
+    15 19 │   }
+    16    │ - export·function·parseManualCommunicationContext(input:·unknown):·Result<ManualContext,·"invalid_manual_context">·{
+       20 │ + export·function·parseManualCommunicationContext(
+       21 │ + ··input:·unknown,
+       22 │ + ):·Result<ManualContext,·"invalid_manual_context">·{
+    17 23 │     const parsed = manualContextSchema.safeParse(input);
+    18 24 │     return parsed.success ? ok(parsed.data) : err("invalid_manual_context");
+  
+
+src/features/agency-projects/communication/manualCommunicationContext.ts format ━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+     2  2 │   import { sameManualDeclaration } from "./manualCommunicationEquality";
+     3  3 │   import { manualContextShapeSchema } from "./manualCommunicationSchemas";
+     4    │ - import·type·{·ManualAction,·ManualContext,·ManualHead,·ManualReceipt·}·from·"./manualCommunicationTypes";
+        4 │ + import·type·{
+        5 │ + ··ManualAction,
+        6 │ + ··ManualContext,
+        7 │ + ··ManualHead,
+        8 │ + ··ManualReceipt,
+        9 │ + }·from·"./manualCommunicationTypes";
+     5 10 │   
+     6 11 │   function receiptBindsRequest(request: ManualAction, receipt: ManualReceipt): boolean {
+     7    │ - ··if·(receipt.action·!==·request.action·||·receipt.mutationIntentId·!==·request.mutationIntentId·||
+     8    │ - ····receipt.projectId·!==·request.projectId·||·receipt.personId·!==·request.personId)·return·false;
+       12 │ + ··if·(
+       13 │ + ····receipt.action·!==·request.action·||
+       14 │ + ····receipt.mutationIntentId·!==·request.mutationIntentId·||
+       15 │ + ····receipt.projectId·!==·request.projectId·||
+       16 │ + ····receipt.personId·!==·request.personId
+       17 │ + ··)
+       18 │ + ····return·false;
+     9 19 │     if (request.action === "record") return true;
+    10    │ - ··return·receipt.logId·===·request.logId·&&·receipt.previousRevision·===·request.expectedRevision·&&
+    11    │ - ····receipt.reason·===·request.reason;
+       20 │ + ··return·(
+       21 │ + ····receipt.logId·===·request.logId·&&
+       22 │ + ····receipt.previousRevision·===·request.expectedRevision·&&
+       23 │ + ····receipt.reason·===·request.reason
+       24 │ + ··);
+    12 25 │   }
+    13 26 │   
+    14    │ - function·receiptFitsHead(request:·ManualAction,·receipt:·ManualReceipt,·current:·ManualHead):·boolean·{
+    15    │ - ··if·(receipt.projectId·!==·current.projectId·||·receipt.logId·!==·current.logId·||
+       27 │ + function·receiptFitsHead(
+       28 │ + ··request:·ManualAction,
+       29 │ + ··receipt:·ManualReceipt,
+       30 │ + ··current:·ManualHead,
+       31 │ + ):·boolean·{
+       32 │ + ··if·(
+       33 │ + ····receipt.projectId·!==·current.projectId·||
+       34 │ + ····receipt.logId·!==·current.logId·||
+    16 35 │       receipt.revision > current.revision ||
+    17    │ - ····Temporal.Instant.compare(receipt.recordedAt,·current.lastRecordedAt)·>·0)·return·false;
+       36 │ + ····Temporal.Instant.compare(receipt.recordedAt,·current.lastRecordedAt)·>·0
+       37 │ + ··)
+       38 │ + ····return·false;
+    18 39 │     if (receipt.revision !== current.revision) return true;
+    19    │ - ··return·receipt.personId·===·current.personId·&&·receipt.recordedAt·===·current.lastRecordedAt·&&
+    20    │ - ····sameManualDeclaration(request.declaration,·current.declaration);
+       40 │ + ··return·(
+       41 │ + ····receipt.personId·===·current.personId·&&
+       42 │ + ····receipt.recordedAt·===·current.lastRecordedAt·&&
+       43 │ + ····sameManualDeclaration(request.declaration,·current.declaration)
+       44 │ + ··);
+    21 45 │   }
+    22 46 │   
+    ····· │ 
+    24 48 │     try {
+    25 49 │       const { current, priorIntent } = context;
+    26    │ - ····if·(current·!==·null·&&·Temporal.Instant.compare(current.declaration.occurredAt,·current.lastRecordedAt)·>·0)·{
+       50 │ + ····if·(
+       51 │ + ······current·!==·null·&&
+       52 │ + ······Temporal.Instant.compare(current.declaration.occurredAt,·current.lastRecordedAt)·>·0
+       53 │ + ····)·{
+    27 54 │         return false;
+    28 55 │       }
+    29 56 │       if (priorIntent === null || priorIntent.state === "deleted") return true;
+    30 57 │       const { request, receipt } = priorIntent;
+    31    │ - ····if·(!receiptBindsRequest(request,·receipt)·||
+    32    │ - ······Temporal.Instant.compare(request.declaration.occurredAt,·receipt.recordedAt)·>·0)·return·false;
+       58 │ + ····if·(
+       59 │ + ······!receiptBindsRequest(request,·receipt)·||
+       60 │ + ······Temporal.Instant.compare(request.declaration.occurredAt,·receipt.recordedAt)·>·0
+       61 │ + ····)
+       62 │ + ······return·false;
+    33 63 │       return current === null || receiptFitsHead(request, receipt, current);
+    34 64 │     } catch {
+  
+
+src/features/agency-projects/communication/manualCommunicationEquality.ts format ━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+     3  3 │   export function sameManualDeclaration(a: ManualDeclaration, b: ManualDeclaration): boolean {
+     4  4 │     if (a.channel.kind !== b.channel.kind) return false;
+     5    │ - ··if·(a.channel.kind·===·"other"·&&·b.channel.kind·===·"other"·&&·a.channel.label·!==·b.channel.label)·{
+        5 │ + ··if·(
+        6 │ + ····a.channel.kind·===·"other"·&&
+        7 │ + ····b.channel.kind·===·"other"·&&
+        8 │ + ····a.channel.label·!==·b.channel.label
+        9 │ + ··)·{
+     6 10 │       return false;
+     7 11 │     }
+     8    │ - ··return·a.occurredAt·===·b.occurredAt·&&·a.note·===·b.note·&&
+     9    │ - ····a.evidenceReference·===·b.evidenceReference;
+       12 │ + ··return·(
+       13 │ + ····a.occurredAt·===·b.occurredAt·&&
+       14 │ + ····a.note·===·b.note·&&
+       15 │ + ····a.evidenceReference·===·b.evidenceReference
+       16 │ + ··);
+    10 17 │   }
+    11 18 │   
+    12 19 │   // Compare the canonical public declaration, not a new server clock or assigned record UUID.
+    13 20 │   export function sameManualAction(a: ManualAction, b: ManualAction): boolean {
+    14    │ - ··if·(a.action·!==·b.action·||·a.mutationIntentId·!==·b.mutationIntentId·||
+    15    │ - ····a.projectId·!==·b.projectId·||·a.personId·!==·b.personId·||
+    16    │ - ····!sameManualDeclaration(a.declaration,·b.declaration))·return·false;
+       21 │ + ··if·(
+       22 │ + ····a.action·!==·b.action·||
+       23 │ + ····a.mutationIntentId·!==·b.mutationIntentId·||
+       24 │ + ····a.projectId·!==·b.projectId·||
+       25 │ + ····a.personId·!==·b.personId·||
+       26 │ + ····!sameManualDeclaration(a.declaration,·b.declaration)
+       27 │ + ··)
+       28 │ + ····return·false;
+    17 29 │     if (a.action === "correct" && b.action === "correct") {
+    18    │ - ····return·a.logId·===·b.logId·&&·a.expectedRevision·===·b.expectedRevision·&&·a.reason·===·b.reason;
+       30 │ + ····return·(
+       31 │ + ······a.logId·===·b.logId·&&·a.expectedRevision·===·b.expectedRevision·&&·a.reason·===·b.reason
+       32 │ + ····);
+    19 33 │     }
+    20 34 │     return true;
+  
+
+src/features/agency-projects/communication/manualCommunicationPolicy.test.ts format ━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+      2   2 │   import { applyManualCommunicationCommand } from "./manualCommunication";
+      3   3 │   import {
+      4     │ - ··appliedCorrectionIntent,·appliedRecordIntent,·context,·correctionCommand,·currentHead,
+      5     │ - ··deletedRecordIntent,·ids,·laterCorrection,·recordCommand,·recordReceipt,
+          4 │ + ··appliedCorrectionIntent,
+          5 │ + ··appliedRecordIntent,
+          6 │ + ··context,
+          7 │ + ··correctionCommand,
+          8 │ + ··currentHead,
+          9 │ + ··deletedRecordIntent,
+         10 │ + ··ids,
+         11 │ + ··laterCorrection,
+         12 │ + ··recordCommand,
+         13 │ + ··recordReceipt,
+      6  14 │   } from "./manualCommunication.test-support";
+      7  15 │   
+    ······· │ 
+     10  18 │       const command = recordCommand();
+     11  19 │       const result = applyManualCommunicationCommand({ current: null, priorIntent: null }, command);
+     12     │ - ····expect(result).toEqual({·ok:·true,·value:·{
+     13     │ - ······replayed:·false,·receipt:·recordReceipt(),
+     14     │ - ······snapshot:·{
+     15     │ - ········projectId:·ids.projectId,·personId:·ids.personId,·logId:·ids.logId,
+     16     │ - ········provenance:·"staff-recorded",·revision:·1,·lastRecordedAt:·command.recordedAt,
+     17     │ - ········declaration:·command.declaration,
+     18     │ - ······},
+     19     │ - ······appendEvent:·{·receipt:·recordReceipt(),·before:·null,·after:·{·personId:·ids.personId,·declaration:·command.declaration·}·},
+     20     │ - ····}·});
+         20 │ + ····expect(result).toEqual({
+         21 │ + ······ok:·true,
+         22 │ + ······value:·{
+         23 │ + ········replayed:·false,
+         24 │ + ········receipt:·recordReceipt(),
+         25 │ + ········snapshot:·{
+         26 │ + ··········projectId:·ids.projectId,
+         27 │ + ··········personId:·ids.personId,
+         28 │ + ··········logId:·ids.logId,
+         29 │ + ··········provenance:·"staff-recorded",
+         30 │ + ··········revision:·1,
+         31 │ + ··········lastRecordedAt:·command.recordedAt,
+         32 │ + ··········declaration:·command.declaration,
+         33 │ + ········},
+         34 │ + ········appendEvent:·{
+         35 │ + ··········receipt:·recordReceipt(),
+         36 │ + ··········before:·null,
+         37 │ + ··········after:·{·personId:·ids.personId,·declaration:·command.declaration·},
+         38 │ + ········},
+         39 │ + ······},
+         40 │ + ····});
+     21  41 │     });
+     22  42 │   
+    ······· │ 
+     26  46 │       const command = laterCorrection();
+     27  47 │       const result = applyManualCommunicationCommand(input, command);
+     28     │ - ····expect(result).toMatchObject({·ok:·true,·value:·{
+     29     │ - ······replayed:·false,
+     30     │ - ······snapshot:·{·revision:·3,·declaration:·command.declaration,·lastRecordedAt:·command.recordedAt·},
+     31     │ - ······receipt:·{·action:·"correct",·provenance:·"staff-recorded",·previousRevision:·2,·revision:·3,·reason:·command.reason·},
+     32     │ - ······appendEvent:·{
+     33     │ - ········before:·{·personId:·input.current.personId,·declaration:·input.current.declaration·},
+     34     │ - ········after:·{·personId:·command.personId,·declaration:·command.declaration·},
+         48 │ + ····expect(result).toMatchObject({
+         49 │ + ······ok:·true,
+         50 │ + ······value:·{
+         51 │ + ········replayed:·false,
+         52 │ + ········snapshot:·{
+         53 │ + ··········revision:·3,
+         54 │ + ··········declaration:·command.declaration,
+         55 │ + ··········lastRecordedAt:·command.recordedAt,
+         56 │ + ········},
+         57 │ + ········receipt:·{
+         58 │ + ··········action:·"correct",
+         59 │ + ··········provenance:·"staff-recorded",
+         60 │ + ··········previousRevision:·2,
+         61 │ + ··········revision:·3,
+         62 │ + ··········reason:·command.reason,
+         63 │ + ········},
+         64 │ + ········appendEvent:·{
+         65 │ + ··········before:·{·personId:·input.current.personId,·declaration:·input.current.declaration·},
+         66 │ + ··········after:·{·personId:·command.personId,·declaration:·command.declaration·},
+         67 │ + ········},
+     35  68 │         },
+     36     │ - ····}·});
+         69 │ + ····});
+     37  70 │       expect(input).toEqual(before);
+     38  71 │     });
+    ······· │ 
+     41  74 │       const input = context();
+     42  75 │       const before = structuredClone(input);
+     43     │ - ····expect(applyManualCommunicationCommand(input,·{
+     44     │ - ······...recordCommand(),·logId:·ids.otherLogId,·recordedAt:·"2026-11-01T06:05:00Z",
+     45     │ - ····})).toEqual({·ok:·true,·value:·{
+     46     │ - ······replayed:·true,·snapshot:·input.current,·receipt:·input.priorIntent.receipt,·appendEvent:·null,
+     47     │ - ····}·});
+         76 │ + ····expect(
+         77 │ + ······applyManualCommunicationCommand(input,·{
+         78 │ + ········...recordCommand(),
+         79 │ + ········logId:·ids.otherLogId,
+         80 │ + ········recordedAt:·"2026-11-01T06:05:00Z",
+         81 │ + ······}),
+         82 │ + ····).toEqual({
+         83 │ + ······ok:·true,
+         84 │ + ······value:·{
+         85 │ + ········replayed:·true,
+         86 │ + ········snapshot:·input.current,
+         87 │ + ········receipt:·input.priorIntent.receipt,
+         88 │ + ········appendEvent:·null,
+         89 │ + ······},
+         90 │ + ····});
+     48  91 │       expect(input).toEqual(before);
+     49  92 │     });
+     50  93 │   
+     51  94 │     it("replays an older correction against the current head with its original receipt and no new append", () => {
+     52     │ - ····const·initial·=·applyManualCommunicationCommand({·current:·currentHead(),·priorIntent:·null·},·laterCorrection());
+         95 │ + ····const·initial·=·applyManualCommunicationCommand(
+         96 │ + ······{·current:·currentHead(),·priorIntent:·null·},
+         97 │ + ······laterCorrection(),
+         98 │ + ····);
+     53  99 │       expect(initial.ok).toBe(true);
+     54 100 │       if (!initial.ok) return;
+     55 101 │       const priorIntent = appliedCorrectionIntent();
+     56     │ - ····expect(applyManualCommunicationCommand({·current:·initial.value.snapshot,·priorIntent·},·{
+     57     │ - ······...correctionCommand(),·recordedAt:·"2026-11-01T06:15:00Z",
+     58     │ - ····})).toEqual({·ok:·true,·value:·{
+     59     │ - ······replayed:·true,·snapshot:·initial.value.snapshot,·receipt:·priorIntent.receipt,·appendEvent:·null,
+     60     │ - ····}·});
+        102 │ + ····expect(
+        103 │ + ······applyManualCommunicationCommand(
+        104 │ + ········{·current:·initial.value.snapshot,·priorIntent·},
+        105 │ + ········{
+        106 │ + ··········...correctionCommand(),
+        107 │ + ··········recordedAt:·"2026-11-01T06:15:00Z",
+        108 │ + ········},
+        109 │ + ······),
+        110 │ + ····).toEqual({
+        111 │ + ······ok:·true,
+        112 │ + ······value:·{
+        113 │ + ········replayed:·true,
+        114 │ + ········snapshot:·initial.value.snapshot,
+        115 │ + ········receipt:·priorIntent.receipt,
+        116 │ + ········appendEvent:·null,
+        117 │ + ······},
+        118 │ + ····});
+     61 119 │     });
+     62 120 │   
+    ······· │ 
+     68 126 │         { ...command.declaration, occurredAt: "2026-11-01T09:10:00.000000001+03:30" },
+     69 127 │         { ...command.declaration, evidenceReference: "another-protected-reference" },
+     70     │ - ····])·expect(applyManualCommunicationCommand(context(),·{·...command,·declaration·}))
+     71     │ - ······.toEqual({·ok:·false,·error:·"manual_intent_conflict"·});
+        128 │ + ····])
+        129 │ + ······expect(applyManualCommunicationCommand(context(),·{·...command,·declaration·})).toEqual({
+        130 │ + ········ok:·false,
+        131 │ + ········error:·"manual_intent_conflict",
+  206 more lines truncated
+  
+
+src/features/agency-projects/communication/manualCommunicationPolicy.ts format ━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+     2   2 │   import { err, ok, type Result } from "@/types/result";
+     3   3 │   import { sameManualAction } from "./manualCommunicationEquality";
+     4     │ - import·type·{·ManualCommand,·ManualContext,·ManualFailure,·ManualHead,·ManualMutation,·ManualReceipt·}·from·"./manualCommunicationTypes";
+         4 │ + import·type·{
+         5 │ + ··ManualCommand,
+         6 │ + ··ManualContext,
+         7 │ + ··ManualFailure,
+         8 │ + ··ManualHead,
+         9 │ + ··ManualMutation,
+        10 │ + ··ManualReceipt,
+        11 │ + }·from·"./manualCommunicationTypes";
+     5  12 │   
+     6     │ - function·priorReplay(context:·ManualContext,·command:·ManualCommand):·Result<ManualMutation,·ManualFailure>·|·null·{
+        13 │ + function·priorReplay(
+        14 │ + ··context:·ManualContext,
+        15 │ + ··command:·ManualCommand,
+        16 │ + ):·Result<ManualMutation,·ManualFailure>·|·null·{
+     7  17 │     const prior = context.priorIntent;
+     8  18 │     if (prior === null) return null;
+     9  19 │     const key = prior.state === "applied" ? prior.receipt : prior.key;
+    10     │ - ··if·(key.recordedByUserId·!==·command.recordedByUserId·||·key.action·!==·command.action·||
+    11     │ - ····key.mutationIntentId·!==·command.mutationIntentId·||·prior.state·===·"deleted"·||·context.current·===·null)·{
+        20 │ + ··if·(
+        21 │ + ····key.recordedByUserId·!==·command.recordedByUserId·||
+        22 │ + ····key.action·!==·command.action·||
+        23 │ + ····key.mutationIntentId·!==·command.mutationIntentId·||
+        24 │ + ····prior.state·===·"deleted"·||
+        25 │ + ····context.current·===·null
+        26 │ + ··)·{
+    12  27 │       return err("manual_intent_unavailable");
+    13  28 │     }
+    14  29 │     if (!sameManualAction(prior.request, command)) return err("manual_intent_conflict");
+    15     │ - ··return·ok({·snapshot:·context.current,·receipt:·prior.receipt,·appendEvent:·null,·replayed:·true·});
+        30 │ + ··return·ok({
+        31 │ + ····snapshot:·context.current,
+        32 │ + ····receipt:·prior.receipt,
+        33 │ + ····appendEvent:·null,
+        34 │ + ····replayed:·true,
+        35 │ + ··});
+    16  36 │   }
+    17  37 │   
+    18  38 │   function freshFailure(current: ManualHead, command: ManualCommand): ManualFailure | null {
+    19     │ - ··if·(current.projectId·!==·command.projectId·||·(command.action·===·"correct"·&&·current.logId·!==·command.logId))·{
+        39 │ + ··if·(
+        40 │ + ····current.projectId·!==·command.projectId·||
+        41 │ + ····(command.action·===·"correct"·&&·current.logId·!==·command.logId)
+        42 │ + ··)·{
+    20  43 │       return "manual_target_conflict";
+    21  44 │     }
+    22  45 │     if (command.action === "record") return "manual_log_exists";
+    23  46 │     if (current.revision !== command.expectedRevision) return "manual_revision_conflict";
+    24     │ - ··if·(Temporal.Instant.compare(command.recordedAt,·current.lastRecordedAt)·<·0)·return·"manual_time_conflict";
+        47 │ + ··if·(Temporal.Instant.compare(command.recordedAt,·current.lastRecordedAt)·<·0)
+        48 │ + ····return·"manual_time_conflict";
+    25  49 │     if (current.revision >= Number.MAX_SAFE_INTEGER) return "manual_revision_exhausted";
+    26  50 │     return null;
+    ······ │ 
+    30  54 │     const previousRevision = current?.revision ?? 0;
+    31  55 │     const receipt: ManualReceipt = {
+    32     │ - ····policyVersion:·1,·provenance:·"staff-recorded",·action:·command.action,
+    33     │ - ····mutationIntentId:·command.mutationIntentId,·projectId:·command.projectId,
+    34     │ - ····logId:·current?.logId·??·command.logId,·personId:·command.personId,
+        56 │ + ····policyVersion:·1,
+        57 │ + ····provenance:·"staff-recorded",
+        58 │ + ····action:·command.action,
+        59 │ + ····mutationIntentId:·command.mutationIntentId,
+        60 │ + ····projectId:·command.projectId,
+        61 │ + ····logId:·current?.logId·??·command.logId,
+        62 │ + ····personId:·command.personId,
+    35  63 │       previousPersonId: current?.personId ?? null,
+    36     │ - ····recordedByUserId:·command.recordedByUserId,·recordedAt:·command.recordedAt,
+    37     │ - ····previousRevision,·revision:·previousRevision·+·1,
+        64 │ + ····recordedByUserId:·command.recordedByUserId,
+        65 │ + ····recordedAt:·command.recordedAt,
+        66 │ + ····previousRevision,
+        67 │ + ····revision:·previousRevision·+·1,
+    38  68 │       reason: command.action === "correct" ? command.reason : null,
+    39  69 │     };
+    40  70 │     const snapshot: ManualHead = {
+    41     │ - ····projectId:·receipt.projectId,·logId:·receipt.logId,·personId:·receipt.personId,
+    42     │ - ····provenance:·"staff-recorded",·revision:·receipt.revision,
+    43     │ - ····lastRecordedAt:·command.recordedAt,·declaration:·command.declaration,
+        71 │ + ····projectId:·receipt.projectId,
+        72 │ + ····logId:·receipt.logId,
+        73 │ + ····personId:·receipt.personId,
+        74 │ + ····provenance:·"staff-recorded",
+        75 │ + ····revision:·receipt.revision,
+        76 │ + ····lastRecordedAt:·command.recordedAt,
+        77 │ + ····declaration:·command.declaration,
+    44  78 │     };
+    45  79 │     return {
+    46     │ - ····snapshot,·receipt,·replayed:·false,
+        80 │ + ····snapshot,
+        81 │ + ····receipt,
+        82 │ + ····replayed:·false,
+    47  83 │       appendEvent: {
+    48  84 │         receipt,
+    49     │ - ······before:·current·===·null·?·null·:·{·personId:·current.personId,·declaration:·current.declaration·},
+        85 │ + ······before:
+        86 │ + ········current·===·null·?·null·:·{·personId:·current.personId,·declaration:·current.declaration·},
+    50  87 │         after: { personId: command.personId, declaration: command.declaration },
+    51  88 │       },
+    ······ │ 
+    54  91 │   
+    55  92 │   // Only validated private context/commands belong here. Native scope and atomic storage remain caller gates.
+    56     │ - export·function·applyManualCommunicationCommand(context:·ManualContext,·command:·ManualCommand):·Result<ManualMutation,·ManualFailure>·{
+        93 │ + export·function·applyManualCommunicationCommand(
+        94 │ + ··context:·ManualContext,
+        95 │ + ··command:·ManualCommand,
+        96 │ + ):·Result<ManualMutation,·ManualFailure>·{
+    57  97 │     const replay = priorReplay(context, command);
+    58  98 │     if (replay !== null) return replay;
+  
+
+src/features/agency-projects/communication/manualCommunicationSchemas.ts format ━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+    19  19 │   const record = z.strictObject({ ...actionFields, action: z.literal("record") });
+    20  20 │   const correct = z.strictObject({
+    21     │ - ··...actionFields,·action:·z.literal("correct"),·logId:·canonicalUuidSchema,
+    22     │ - ··expectedRevision:·revisionSchema,·reason:·plainTextSchema(1000,·true),
+        21 │ + ··...actionFields,
+        22 │ + ··action:·z.literal("correct"),
+        23 │ + ··logId:·canonicalUuidSchema,
+        24 │ + ··expectedRevision:·revisionSchema,
+        25 │ + ··reason:·plainTextSchema(1000,·true),
+    23  26 │   });
+    24  27 │   export const manualActionSchema = z.discriminatedUnion("action", [record, correct]);
+    ······ │ 
+    38  41 │   
+    39  42 │   export const manualHeadSchema = z.strictObject({
+    40     │ - ··projectId:·canonicalUuidSchema,·logId:·canonicalUuidSchema,·personId:·canonicalUuidSchema,
+    41     │ - ··provenance:·z.literal("staff-recorded"),·revision:·revisionSchema.min(1),
+    42     │ - ··lastRecordedAt:·exactInstantSchema,·declaration:·manualDeclarationSchema,
+        43 │ + ··projectId:·canonicalUuidSchema,
+        44 │ + ··logId:·canonicalUuidSchema,
+        45 │ + ··personId:·canonicalUuidSchema,
+        46 │ + ··provenance:·z.literal("staff-recorded"),
+        47 │ + ··revision:·revisionSchema.min(1),
+        48 │ + ··lastRecordedAt:·exactInstantSchema,
+        49 │ + ··declaration:·manualDeclarationSchema,
+    43  50 │   });
+    44  51 │   const receiptShape = z.strictObject({
+    45     │ - ··policyVersion:·z.literal(1),·provenance:·z.literal("staff-recorded"),
+    46     │ - ··action:·z.enum(["record",·"correct"]),·mutationIntentId:·canonicalUuidSchema,
+    47     │ - ··projectId:·canonicalUuidSchema,·logId:·canonicalUuidSchema,·personId:·canonicalUuidSchema,
+    48     │ - ··previousPersonId:·canonicalUuidSchema.nullable(),·...nativeRecorder,
+    49     │ - ··previousRevision:·revisionSchema,·revision:·revisionSchema.min(1),
+        52 │ + ··policyVersion:·z.literal(1),
+        53 │ + ··provenance:·z.literal("staff-recorded"),
+        54 │ + ··action:·z.enum(["record",·"correct"]),
+        55 │ + ··mutationIntentId:·canonicalUuidSchema,
+        56 │ + ··projectId:·canonicalUuidSchema,
+        57 │ + ··logId:·canonicalUuidSchema,
+        58 │ + ··personId:·canonicalUuidSchema,
+        59 │ + ··previousPersonId:·canonicalUuidSchema.nullable(),
+        60 │ + ··...nativeRecorder,
+        61 │ + ··previousRevision:·revisionSchema,
+        62 │ + ··revision:·revisionSchema.min(1),
+    50  63 │     reason: plainTextSchema(1000, true).nullable(),
+    51  64 │   });
+    52  65 │   function coherentReceipt(receipt: z.infer<typeof receiptShape>): boolean {
+    53  66 │     if (receipt.action === "record") {
+    54     │ - ····return·receipt.previousRevision·===·0·&&·receipt.revision·===·1·&&
+    55     │ - ······receipt.previousPersonId·===·null·&&·receipt.reason·===·null;
+        67 │ + ····return·(
+        68 │ + ······receipt.previousRevision·===·0·&&
+        69 │ + ······receipt.revision·===·1·&&
+        70 │ + ······receipt.previousPersonId·===·null·&&
+        71 │ + ······receipt.reason·===·null
+        72 │ + ····);
+    56  73 │     }
+    57     │ - ··return·receipt.previousRevision·>=·1·&&·receipt.revision·===·receipt.previousRevision·+·1·&&
+    58     │ - ····receipt.previousPersonId·!==·null·&&·receipt.reason·!==·null;
+        74 │ + ··return·(
+        75 │ + ····receipt.previousRevision·>=·1·&&
+        76 │ + ····receipt.revision·===·receipt.previousRevision·+·1·&&
+        77 │ + ····receipt.previousPersonId·!==·null·&&
+        78 │ + ····receipt.reason·!==·null
+        79 │ + ··);
+    59  80 │   }
+    60  81 │   export const manualReceiptSchema = receiptShape.refine(coherentReceipt);
+    61  82 │   const priorIntent = z.discriminatedUnion("state", [
+    62     │ - ··z.strictObject({·state:·z.literal("applied"),·request:·manualActionSchema,·receipt:·manualReceiptSchema·}),
+    63     │ - ··z.strictObject({·state:·z.literal("deleted"),·key:·z.strictObject({
+    64     │ - ····recordedByUserId:·canonicalUuidSchema,·action:·z.enum(["record",·"correct"]),·mutationIntentId:·canonicalUuidSchema,
+    65     │ - ··})·}),
+        83 │ + ··z.strictObject({
+        84 │ + ····state:·z.literal("applied"),
+        85 │ + ····request:·manualActionSchema,
+        86 │ + ····receipt:·manualReceiptSchema,
+        87 │ + ··}),
+        88 │ + ··z.strictObject({
+        89 │ + ····state:·z.literal("deleted"),
+        90 │ + ····key:·z.strictObject({
+        91 │ + ······recordedByUserId:·canonicalUuidSchema,
+        92 │ + ······action:·z.enum(["record",·"correct"]),
+        93 │ + ······mutationIntentId:·canonicalUuidSchema,
+        94 │ + ····}),
+        95 │ + ··}),
+    66  96 │   ]);
+    67  97 │   export const manualContextShapeSchema = z.strictObject({
+    68     │ - ··current:·manualHeadSchema.nullable(),·priorIntent:·priorIntent.nullable(),
+        98 │ + ··current:·manualHeadSchema.nullable(),
+        99 │ + ··priorIntent:·priorIntent.nullable(),
+    69 100 │   });
+    70 101 │   
+  
+
+src/features/agency-projects/communication/manualCommunicationTypes.ts format ━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+     1  1 │   import type { z } from "zod";
+     2  2 │   import type {
+     3    │ - ··manualActionSchema,·manualCommandSchema,·manualContextShapeSchema,
+     4    │ - ··manualDeclarationSchema,·manualHeadSchema,·manualReceiptSchema,
+        3 │ + ··manualActionSchema,
+        4 │ + ··manualCommandSchema,
+        5 │ + ··manualContextShapeSchema,
+        6 │ + ··manualDeclarationSchema,
+        7 │ + ··manualHeadSchema,
+        8 │ + ··manualReceiptSchema,
+     5  9 │   } from "./manualCommunicationSchemas";
+     6 10 │   
+    ····· │ 
+    20 24 │   }>;
+    21 25 │   export type ManualFailure =
+    22    │ - ··|·"manual_intent_unavailable"·|·"manual_intent_conflict"
+    23    │ - ··|·"manual_log_exists"·|·"manual_log_missing"·|·"manual_target_conflict"
+    24    │ - ··|·"manual_revision_conflict"·|·"manual_time_conflict"·|·"manual_revision_exhausted";
+       26 │ + ··|·"manual_intent_unavailable"
+       27 │ + ··|·"manual_intent_conflict"
+       28 │ + ··|·"manual_log_exists"
+       29 │ + ··|·"manual_log_missing"
+       30 │ + ··|·"manual_target_conflict"
+       31 │ + ··|·"manual_revision_conflict"
+       32 │ + ··|·"manual_time_conflict"
+       33 │ + ··|·"manual_revision_exhausted";
+    25 34 │   
+  
+
+src/features/agency-projects/projectSchemas.test.ts format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+    77 77 │       for (const action of ["start", "cancel"] as const) {
+    78 78 │         for (const reason of ["\u200c", "\u2066\u2069"]) {
+    79    │ - ········expect(projectCommandSchema.safeParse({·action,·expectedRevision:·1,·reason·}).success).toBe(false);
+       79 │ + ········expect(
+       80 │ + ··········projectCommandSchema.safeParse({·action,·expectedRevision:·1,·reason·}).success,
+       81 │ + ········).toBe(false);
+    80 82 │         }
+    81 83 │       }
+    82 84 │       const reason = "هماهنگ�کننده / Projektleitung";
+    83    │ - ····expect(projectCommandSchema.parse({·action:·"cancel",·expectedRevision:·1,·reason·}).reason).toBe(reason);
+    84    │ - ····expect(projectCommandSchema.safeParse({·action:·"start",·expectedRevision:·1,·reason:·"·\t\n"·}).success).toBe(true);
+       85 │ + ····expect(
+       86 │ + ······projectCommandSchema.parse({·action:·"cancel",·expectedRevision:·1,·reason·}).reason,
+       87 │ + ····).toBe(reason);
+       88 │ + ····expect(
+       89 │ + ······projectCommandSchema.safeParse({·action:·"start",·expectedRevision:·1,·reason:·"·\t\n"·})
+       90 │ + ········.success,
+       91 │ + ····).toBe(true);
+    85 92 │     });
+    86 93 │   });
+  
+
+Checked 47 files in 48ms. No fixes applied.
+Found 12 errors.
+check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Some errors were emitted while running checks.
+  
+

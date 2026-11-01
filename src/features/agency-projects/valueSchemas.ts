@@ -11,6 +11,7 @@ export const reasonSchema = z
   .string()
   .trim()
   .max(2000)
+  .refine((value) => value.length === 0 || value.replace(/\p{Cf}/gu, "").trim().length > 0)
   .refine((value) =>
     Array.from(value).every((character) => {
       const code = character.charCodeAt(0);

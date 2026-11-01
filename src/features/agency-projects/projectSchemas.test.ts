@@ -72,4 +72,22 @@ describe("project policy boundary", () => {
       ).toBe(false);
     },
   );
+
+  it("rejects format-only reasons while retaining visible Persian joiners and optional emptiness", () => {
+    for (const action of ["start", "cancel"] as const) {
+      for (const reason of ["\u200c", "\u2066\u2069"]) {
+        expect(
+          projectCommandSchema.safeParse({ action, expectedRevision: 1, reason }).success,
+        ).toBe(false);
+      }
+    }
+    const reason = "هماهنگ‌کننده / Projektleitung";
+    expect(
+      projectCommandSchema.parse({ action: "cancel", expectedRevision: 1, reason }).reason,
+    ).toBe(reason);
+    expect(
+      projectCommandSchema.safeParse({ action: "start", expectedRevision: 1, reason: " \t\n" })
+        .success,
+    ).toBe(true);
+  });
 });

@@ -5,3 +5,4 @@ evidence/*.log -text whitespace=-blank-at-eof
 evidence/agency-source-biome-check-1.log -text whitespace=-blank-at-eof,-blank-at-eol
 evidence/agency-source-biome-write-2.log -text whitespace=-blank-at-eof,-blank-at-eol
 evidence/agency-preference-source-biome-check-1.log -text whitespace=-blank-at-eof,-blank-at-eol
+evidence/agency-manual-source-biome-check-1.log -text whitespace=-blank-at-eof,-blank-at-eol

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-11-01T04:38:26.667260+00:00",
+  "updatedAt": "2026-11-01T05:26:18.853734+00:00",
   "statusMeaning": "Evidence level only. A source-verified task is not accepted or complete. All 96 acceptance flags remain false.",
   "tasks": {
     "AP-00.1": {
@@ -29,7 +29,7 @@
     },
     "AP-00.7": {
       "status": "active",
-      "evidence": "Second finite source batch released,7 groups empty,min14,859,186,176 bytes. Five selected communication unit groups empty,min15,049,256,960 bytes. Explicit routine small containerless units restored <=30s/oneworker/live5GiB; no heavy/native window inherited.",
+      "evidence": "47-file source-check exception completed sequentially under60s owned deadlines/live5GiB floor;7 batch groups verified empty/min20,368,809,984 bytes; window released. Routine selected30s/one-worker units remain separately bounded. No native/PG/build/install/provider or broad suite.",
       "remaining": "Further checks need a new finite window. No Agency service/DB/migration allocation exists; accepted shared interfaces/base required before persistence qualification.",
       "accepted": false
     },
@@ -83,7 +83,7 @@
     },
     "AP-10.1": {
       "status": "active",
-      "evidence": "Current feature367/14 unit selection plus narrow TypeScript, unchanged-rule ESLint33TS and Biome36files pass. Original domain/template/review and new communication behavioral/format-only-text reds retained with exact source hashes/terminal handles.",
+      "evidence": "qualification-manual-20261101.json: actual post-format390 cases/16files, narrow types, Biome47 and unchanged-rule ESLint44 TS pass. Meaningful manual16/6 and reason1/28 reds retained, with exact47 source hashes and terminal guarded handles.",
       "remaining": "Full repository/app/native/real PG/migration/restore and later feature increments remain open; source checks are not task acceptance.",
       "accepted": false
     },
@@ -170,6 +170,12 @@
       "accepted": false,
       "evidence": "Concrete protected-history five-store proposal remains unallocated. New mainPrivacy0085 overlaps inspected MAIL0085..0093 reservation;0094 remains unallocated. Review-only coverage patch supplied for existing7 tables.",
       "remaining": "Resolve accepted combined base and reviewed Agency schema/grants before allocator assigns any new number. No journal/snapshot/DDL generation or applied-history rename."
+    },
+    "AP-03.3": {
+      "status": "active",
+      "accepted": false,
+      "evidence": "Pure manual record/correction/replay boundaries and bounded context implemented test-first (16 failed/6 passed red,22 selected green). Actual full feature390/16 plus types/Biome/unchanged-rule ESLint pass at47-file source. Original/current recipient facts and old-intent/current-head semantics retained.",
+      "remaining": "Actual authorized native loader, atomic global intent/log uniqueness, persisted full correction history/protected payloads, DB rollback/races, sender/draft integration and native UI/Privacy remain open. Source label is staff-recorded, not provider delivery."
     }
   }
 }

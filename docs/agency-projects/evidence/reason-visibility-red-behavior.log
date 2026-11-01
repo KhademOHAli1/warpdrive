@@ -1,0 +1,41 @@
+$ bun --bun vitest run --project unit src/features/agency-projects/projectSchemas.test.ts "--maxWorkers=1"
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+  - ESM syntax in a file loaded as CommonJS (vitest.classify.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.5 /Users/ali/Developer/warpdrive-agency-projects
+
+ ❯ |unit| src/features/agency-projects/projectSchemas.test.ts (29 tests | 1 failed) 8ms
+   ❯ project policy boundary (29)
+     × rejects format-only reasons while retaining visible Persian joiners and optional emptiness 3ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| src/features/agency-projects/projectSchemas.test.ts > project policy boundary > rejects format-only reasons while retaining visible Persian joiners and optional emptiness
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/features/agency-projects/projectSchemas.test.ts:79:97
+     77|     for (const action of ["start", "cancel"] as const) {
+     78|       for (const reason of ["\u200c", "\u2066\u2069"]) {
+     79|         expect(projectCommandSchema.safeParse({ action, expectedRevisi…
+       |                                                                                                 ^
+     80|       }
+     81|     }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 28 passed (29)
+   Start at  05:45:14
+   Duration  95ms (transform 39%, import 34%, tests 16%, setup 7%, worker 4%)
+
+error: "vitest" exited with code 1
+error: script "test:unit" exited with code 1

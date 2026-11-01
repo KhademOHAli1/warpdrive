@@ -1,5 +1,6 @@
 import { Temporal } from "@js-temporal/polyfill";
 import { z } from "zod";
+import { exactInstantSchema } from "../instantSchema";
 import {
   canonicalUuidSchema,
   reasonSchema,
@@ -8,17 +9,6 @@ import {
 } from "../valueSchemas";
 import type { ReviewAction, ReviewCommand } from "./reviewTypes";
 
-function supportedInstant(value: string): boolean {
-  if (/\.\d{10}/u.test(value)) return false;
-  try {
-    Temporal.Instant.from(value);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-const instant = z.iso.datetime({ offset: true }).max(64).refine(supportedInstant);
 const target = {
   projectId: canonicalUuidSchema,
   deliverableId: canonicalUuidSchema,
@@ -28,7 +18,7 @@ const evidence = {
   outcome: z.literal("approved"),
   reviewedVersionReference: referenceSchema,
   evidenceReference: referenceSchema,
-  occurredAt: instant,
+  occurredAt: exactInstantSchema,
 };
 const internalReview = z.strictObject({
   ...target,
@@ -62,7 +52,7 @@ export const reviewActionSchema = z.discriminatedUnion("action", [
   reopenReview,
 ]) satisfies z.ZodType<ReviewAction>;
 
-const nativeRecorder = { recordedByUserId: canonicalUuidSchema, recordedAt: instant };
+const nativeRecorder = { recordedByUserId: canonicalUuidSchema, recordedAt: exactInstantSchema };
 
 function occurrenceNotAfterRecording(command: ReviewCommand): boolean {
   if (command.action !== "record-internal-review" && command.action !== "record-client-approval") {
