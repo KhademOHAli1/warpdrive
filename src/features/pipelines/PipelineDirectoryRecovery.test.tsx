@@ -120,7 +120,7 @@ it("retains an unconfirmed hold when the same action is reopened before refresh"
 });
 
 it("does not use a snapshot received while pending to release a later unknown outcome", async () => {
-  let rejectResponse = (_error: Error): void => undefined;
+  let rejectResponse: (error: Error) => void = () => undefined;
   const response = new Promise<PipelineLifecycleResult>((_resolve, reject) => {
     rejectResponse = reject;
   });
@@ -133,6 +133,7 @@ it("does not use a snapshot received while pending to release a later unknown ou
   rerender(<PipelineDirectory {...props} snapshotId="read-during-write" rows={[{ ...row }]} />);
   await act(async () => {
     rejectResponse(new Error("response lost after the earlier read"));
+    await expect(response).rejects.toThrow("response lost after the earlier read");
   });
   expect(await screen.findByRole("alert")).toHaveTextContent("could not be confirmed");
   expect(screen.getByRole("button", { name: "Archive pipeline" })).toBeDisabled();
