@@ -11,7 +11,7 @@
     "src/features/agency-projects/authorityTransactionSpec.test.ts": "5f8db288fc041291a46e6662bd2d2ecff9d3417fc15f4855524cb9c0baf00271",
     "src/features/agency-projects/authorityTransactionCandidate.ts": "3b98b871246f0af94b8d6b41efc40347a96efafdf15bcffcdadd700f8be5b9e7",
     "src/features/agency-projects/authorityTransactionCandidate.test.ts": "ce8e7b0282a1826edd0fe422931ab9c06455592bb3408bd5fec42477ba541f12",
-    "src/features/agency-projects/authorityTransactionCandidate.test-support.ts": "e411b21cd0122dc5523d7b807be846edd42d8994096302a0db14b198d6996ba4",
+    "src/features/agency-projects/authorityTransactionCandidate.test-support.ts": "52110a17bf2a56fc8e75b0dd1c8d2fadf9acba02cff296a1337a0bec60e16334",
     "src/features/agency-projects/authorityConnectionBoundary.test.ts": "f1ce61146f8da044ae5a0e0a9f3119c6b9dff2ccd93b22981b27a4bae6dc4d7b",
     "src/features/agency-projects/authorityConnectionBoundary.test-support.ts": "3fffcc6fa305c03948b28ca8422414ef7a51556e8a111c60375f73c68bfde5da"
   },
@@ -41,5 +41,16 @@
     "Poollease versusprivatePoolfactory remainsownerdecision; dirtyreturnedpoolclients/mixedcallers notqualified.",
     "No wholecommand deadline, immediatequeryabort, confirmeddestructivedisposal, lostCOMMITack/receipt/idempotentrecovery orallwriterparticipation.",
     "No nativeauth/CRM/Privacy/currentness/moduleadmission, acceptedsharedAPI/key/canonicalbase/allocation orenabledAgencywriter."
-  ]
+  ],
+  "originalPreparationHead": "2b9ff4f34fcdf40f54d2ac05b1f7a5539900e1f8",
+  "originalPreparationSourceFiles": {
+    "src/features/agency-projects/authorityTransactionSpec.ts": "2c4048f55c768440751bceefe7bf9865a522ad9a90975ff1795c8360bf171611",
+    "src/features/agency-projects/authorityTransactionSpec.test.ts": "5f8db288fc041291a46e6662bd2d2ecff9d3417fc15f4855524cb9c0baf00271",
+    "src/features/agency-projects/authorityTransactionCandidate.ts": "3b98b871246f0af94b8d6b41efc40347a96efafdf15bcffcdadd700f8be5b9e7",
+    "src/features/agency-projects/authorityTransactionCandidate.test.ts": "ce8e7b0282a1826edd0fe422931ab9c06455592bb3408bd5fec42477ba541f12",
+    "src/features/agency-projects/authorityTransactionCandidate.test-support.ts": "e411b21cd0122dc5523d7b807be846edd42d8994096302a0db14b198d6996ba4",
+    "src/features/agency-projects/authorityConnectionBoundary.test.ts": "f1ce61146f8da044ae5a0e0a9f3119c6b9dff2ccd93b22981b27a4bae6dc4d7b",
+    "src/features/agency-projects/authorityConnectionBoundary.test-support.ts": "3fffcc6fa305c03948b28ca8422414ef7a51556e8a111c60375f73c68bfde5da"
+  },
+  "formatCorrection": "RemovedoneextrablankEOFline fromcommonhelper only; no semantic change or execution."
 }

@@ -190,4 +190,3 @@ export async function closeHeldFixture(h: TestDb, handles: readonly HeldTransact
     await h.close();
   }
 }
-
