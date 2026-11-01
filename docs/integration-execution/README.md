@@ -18,8 +18,8 @@ restore is verified. Origin still points to a local auth checkout. No push, merg
 public deployment or provider installation is implied by local execution.
 
 BASE and ARCH are complete as their recorded runtime-baseline/design-review tasks.
-CONN-001 through CONN-003, CONN-023, QA-001/002 and eight reviewed UX design tasks are complete:
-**38 of 446 tasks**, with 408 remaining planned. [Prior provider foundation qualification](provider-contract-qualification.md)
+CONN-001 through CONN-003, CONN-023, QA-001/002, AISEC-001 and eight reviewed UX design tasks are complete:
+**39 of 446 tasks**, with 407 remaining planned. [Prior provider foundation qualification](provider-contract-qualification.md)
 records its exact source and evidence. [The current foundation batch](foundation-qualification-20261031.md)
 separates new focused checks from pending broad qualification.
 Design closure does not implement their future grant, event, lifecycle or sandbox behavior.
@@ -38,6 +38,12 @@ guards. Independent copy/source review and all 300 ICU parses passed. The future
 bindings, rendered journeys and native-speaker acceptance remain open. See the
 [sequential validation record](validation-windows-20261101.md) for the later focused
 actor/Slack checks and the still-pending affected regression gates.
+
+[AISEC-001's operation inventory](mcp-operation-inventory.md) reconciles all 35 current
+MCP tools, including indirect effects, with a separately reviewed 58-row source matrix.
+Activity reminders can conditionally reach notification email; the inventory includes
+that downstream credential path and its missing origin-grant provenance. This is source
+inventory acceptance, not granular grants, tool invocation or provider qualification.
 
 ## BASE evidence
 
