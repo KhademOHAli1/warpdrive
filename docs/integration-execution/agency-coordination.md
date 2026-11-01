@@ -22,3 +22,18 @@ The agency plan package is owned by its planning chat under
 programme retains its existing 446-task objective and tracker. That side chat's project
 scope, implementation chat and eventual goal are separate; no new chat, goal, external
 publication or provider action was created by this handoff.
+
+## Later implementation review, 1 November 2026
+
+The separate Agency implementation chat requested a narrow project.create registration
+review at 3e84bc1; all five target paths were rechecked unchanged at d98574b. The local packet
+under outputs/agency-registration-review-20261101 records the source contract, Settings
+owner decision and primary English-catalog rebase caveat. It applies no flag or catalog to
+this preview and grants no project writer, scope, module admission, migration or release.
+
+The implementation peer reported retrieving prepared-reply.md and current-source-recheck.json
+from that local packet and retaining copies. Root sent no API reply to that implementation
+chat; the earlier human messaging approval concerned the distinct planning chat. Reported
+retrieval is coordination evidence, not proof of implementation or source adoption. The
+separate authority/admission inventory remains a source-review candidate, with no accepted
+shared fence or runtime guarantee. This does not expand the 446-task programme.

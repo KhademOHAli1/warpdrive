@@ -1,6 +1,6 @@
 # Qualification, 1 November 2026
 
-Goal active: **40 of 446 tasks complete, 406 planned**. Latest application/test
+Goal active: **40 of 446 tasks complete, 406 planned**. At this earlier checkpoint, application/test
 source: `5bf5563618297b88d4755899125cf7debb4b864f`. Later documentation/tracker
 commits culminated in frozen qualification head
 `d2257ceb368b36ae45cd5d05d9569f252ae4512c` (D225). Bun was freshly reverified as 1.4.4.
@@ -150,3 +150,11 @@ and the exact runner. The clone remained clean with unchanged package/lock hashe
 ordinary node_modules directory. The owned process group had no remaining members; its window
 was released. No PostgreSQL, install, build or service campaign followed by inheritance.
 Full-PG, browser/runtime, actual provider, deployed recovery and release gates remain separate.
+
+## Later application correction
+
+The current application/test source is 7c8bb7ed013ef5eb9543399566bc5175a12df633.
+[Its numbering qualification](numbering-qualification-20261101.md) records the observed
+REDs, 149 selected cases and complete 6,040/963 unit lane, whole lint and production/worker
+compilation. This document's D225/D238 results retain their original source/profile and
+failure history. No prior run is relabeled and no runtime/provider gate is inferred.

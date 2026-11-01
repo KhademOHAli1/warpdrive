@@ -38,9 +38,28 @@ create a replacement goal or mark it complete merely because BASE has closed.
    intentionally added, use another disposable qualification profile or adapt its contract
    with explicit tests; do not erase user data to make that smoke pass.
 
+## Current source and qualification
+
+Application/test source 7c8bb7ed013ef5eb9543399566bc5175a12df633 fixes the digit-choice
+coupling. Read [its current qualification](numbering-qualification-20261101.md): 6,040 unit
+cases in 963 files, full lint, standalone types and application/worker compilation passed.
+The 149 focused cases are included in that full total. No service startup or real native
+account/browser/provider acceptance follows. Task register stays 40 complete/406 planned.
+
+The independent qualification clone was fast-forwarded cleanly to 7c8bb7e for whole lint.
+Its package/lock hashes stayed unchanged; retained dependencies are an ordinary directory.
+Recheck current clone state before use. Pinned Bun remains 1.4.4 and the synthetic profile
+remains private; do not print or export its configuration or keys.
+
 ## Independent source restoration
 
 The latest 1 November records/source delta is
+`/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/numbering-20261101`.
+It includes the current application source, all actual RED/GREEN/full-unit/lint/build receipts
+and a direct incremental bundle from foundation 67. Its HANDOFF identifies the exact record
+head and restore steps; no intermediate qualification/progress bundle is required.
+
+The earlier records-only checkpoint remains
 `/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/qualification-20261101`.
 It includes the clean-install/lint receipts and a source bundle from foundation 67 through
 its exact recorded head. No intermediate progress bundle is required for that restore.

@@ -97,3 +97,12 @@ DE/EN mappings above. Remaining catalog inconsistencies are identified rather th
 changed. Root reviewed this design evidence with the correction recorded above; task-status
 changes belong to the register owner. Rendered fit, native-speaker usability and later
 implementation tasks require their own evidence.
+
+## Later digit-choice implementation
+
+The restrictions recorded above describe the reviewed earlier source. The later
+[numbering correction](numbering-qualification-20261101.md), application 7c8bb7e, now
+honors an explicit Persian or Latin digit choice across FA/DE/EN Settings and pickers.
+It preserves absent-choice defaults, selected calendar/zone and raw values. Its unit,
+static and compile evidence does not replace browser/native-speaker/recurrence acceptance.
+Week-start coupling and other untouched limitations retain their separate scope.

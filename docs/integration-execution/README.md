@@ -24,12 +24,20 @@ records its exact source and evidence. [The current foundation batch](foundation
 separates new focused checks from pending broad qualification.
 Design closure does not implement their future grant, event, lifecycle or sandbox behavior.
 
+The latest application/test source is `7c8bb7ed013ef5eb9543399566bc5175a12df633`.
+[The numbering correction and current qualification](numbering-qualification-20261101.md)
+records independent digit choices across FA/DE/EN, **6,040/6,040 unit cases in 963 files**,
+whole-repository i18n/Biome/ESLint, standalone types, a production Next build and five
+compiled worker bundles. These are source/unit/static/compile results. Native account
+persistence, browser journeys, full real-PG, providers and release remain separate gates.
+The 149 focused cases are included in 6,040, not another total. Task status is unchanged.
+
 UX-001 through UX-007 and UX-009 have reviewed flow/pattern/copy, fresh Mobbin,
-Farsi terminology and regional/date scenario evidence. Current digit-display restrictions,
-week-start coupling and unsupported recurrence remain explicit. The local fake harness and
+Farsi terminology and regional/date scenario evidence. The later numbering correction resolves the earlier digit-display restriction.
+Week-start coupling and unsupported recurrence remain explicit. The local fake harness and
 synthetic CRM factory passed their bounded contract/fixture checks and independent review.
 Current-source standalone types passed. A later finite four-shard unit campaign passed
-all 6,024 cases in 961 files at `d2257ce`, after the earlier pressure interruption. These closures do not qualify
+all 6,040 cases in 963 files at `7c8bb7e`, after the earlier pressure interruption. These closures do not qualify
 browser geometry, accessibility, live providers or future runtime journeys.
 
 [UX-006's trilingual design catalog](locale-copy-review.md) adds 100 messages in each
@@ -51,7 +59,7 @@ All 555 localized fields parsed as ICU, and independent consent review corrected
 conversion disclosure and derived reminder-email admission. AISEC-003 and the actual
 grant store/evaluator, resource projection and worker-origin enforcement remain open.
 
-[The 1 November qualification](qualification-20261101.md) records 59 affected PG16 cases,
+[The earlier 1 November qualification](qualification-20261101.md) records 59 affected PG16 cases,
 6,024 full-lane unit cases in 961 files, standalone types and scoped lint, a production
 Next.js build and five compiled worker bundles at `d2257ce`. An independent clean clone's
 Bun 1.4.4 frozen install passed with unchanged package/lock hashes. Its whole-source lint
@@ -96,7 +104,8 @@ Do not reset, stash, bulk-stage or copy the peer dirty trees.
 
 The web preview on 3160 remains stopped. The earlier unit run was deliberately stopped at
 373 MiB free disk; its workers exited, and that historical run remains interrupted. The later
-finite full-unit and production-build windows completed with their own receipts. No service
+finite full-unit and production-build windows completed with their own receipts, most
+recently for 7c8bb7e in the current numbering record. No service
 startup followed. Recheck ownership and fresh headroom, and coordinate each finite next
 campaign; no broad campaign is inherited from a completed window.
 
