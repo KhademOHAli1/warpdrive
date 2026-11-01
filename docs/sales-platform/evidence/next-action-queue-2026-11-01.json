@@ -1,0 +1,106 @@
+{
+  "observedAt": "2026-11-01T04:57:52.690543+00:00",
+  "sourceCommit": "62466a7cc93e17174c8873a8896e847449845056",
+  "featureFlag": {
+    "name": "SALES_NEXT_ACTION_QUEUE_ENABLED",
+    "default": false
+  },
+  "parentTask": "SP-03.4",
+  "parentStatus": "in-progress",
+  "unitAdjacent": {
+    "sourceCommit": "696f36131a56fc0aca499e2be49bc1d7f97d88b9",
+    "tests": 125,
+    "files": 16,
+    "startedAt": "2026-11-01T04:42:22.509983+00:00",
+    "finishedAt": "2026-11-01T04:42:34.684608+00:00",
+    "exitCode": 0,
+    "durationSeconds": 12.175,
+    "minimumObservedFreeBytes": 12512600064,
+    "headroomFloorBytes": 3221225472
+  },
+  "postgresRead": {
+    "sourceCommit": "696f36131a56fc0aca499e2be49bc1d7f97d88b9",
+    "tests": 14,
+    "files": 4,
+    "allOriginalTestAndProductionFilesMatchCommit": true,
+    "currentSevenProductionFilesUnchanged": true,
+    "laterFixtureOnlyChange": "Raw invariant fixture throws replaced with registered AppError after successful native run; query/SQL/assertions unchanged.",
+    "actualOperationalFailure": "Independent real PostgreSQL reader with a table lock and lock_timeout; E_DB_004 returned without SQL/labels/actor ID.",
+    "dockerReturnedToBaseline": true,
+    "startedAt": "2026-11-01T04:51:14.012183+00:00",
+    "finishedAt": "2026-11-01T04:51:20.136459+00:00",
+    "exitCode": 0,
+    "durationSeconds": 6.124,
+    "minimumObservedFreeBytes": 12231712768,
+    "headroomFloorBytes": 5368709120
+  },
+  "postStaticFixUnits": {
+    "sourceCommit": "62466a7cc93e17174c8873a8896e847449845056",
+    "tests": 44,
+    "files": 5,
+    "seconds": 4.163,
+    "minimumFreeBytes": 12012240896,
+    "exitCode": 0,
+    "scope": "Queue presenter/client plus 11 protected API-boundary cases; not 44 new tests."
+  },
+  "scopedTypedEslint": {
+    "sourceCommit": "62466a7cc93e17174c8873a8896e847449845056",
+    "files": 38,
+    "startedAt": "2026-11-01T04:56:32.805327+00:00",
+    "finishedAt": "2026-11-01T04:56:40.393996+00:00",
+    "exitCode": 0,
+    "durationSeconds": 7.588,
+    "minimumObservedFreeBytes": 11977670656,
+    "headroomFloorBytes": 5368709120
+  },
+  "earlierOutcomes": [
+    {
+      "phase": "PostgreSQL collection RED",
+      "result": "Three missing-module collection failures; zero assertions."
+    },
+    {
+      "phase": "Proposed source sequence",
+      "result": "A SQL proposal was written after collection-only RED, preserved privately, then an importable fail-closed baseline was used for the behavioral RED."
+    },
+    {
+      "phase": "PostgreSQL behavioral RED",
+      "result": "13 assertion failures and one scaffold pass across 14 cases; the scaffold pass was not operational-read qualification."
+    },
+    {
+      "phase": "Client first broad RED",
+      "result": "Owned 45-second deadline stopped the run before assertion output; not a behavioral RED."
+    },
+    {
+      "phase": "Narrow client RED",
+      "result": "Nine intended failures, then implemented wrapper."
+    },
+    {
+      "phase": "Pending preference race RED",
+      "result": "One failure plus nine passing cases exposed premature read during optimistic save; fixed and successful/failed-save settlement covered."
+    },
+    {
+      "phase": "Typed ESLint first/second attempts",
+      "result": "Terminal 1 with 23 diagnostics, then 14 callback typing diagnostics; fixed using actual deferred operation promises. No lint disables or dummy awaits."
+    }
+  ],
+  "nativeReadProductionSha256": {
+    "src/features/activities/next-action-queue/queueRows.ts": "352d37f56b7bf58cdbfe6ee70490c6a0305ab4bbf318e837a4044c95124a63ad",
+    "src/features/activities/next-action-queue/queueRowSchema.ts": "6ee1fcf3a89c4d61d82dacc1113d8a1448247108f1f93e8938163e06714beecd",
+    "src/features/activities/next-action-queue/queueTypes.ts": "d6f79bca92f8af67390719bf996ca84e08dfa3691131abd8c3ad153f0988a16e",
+    "src/features/activities/next-action-queue/readNextActionQueue.ts": "5261b4e57e3d3bf0733a04e38880db6b30f49e2a87be6b9e2d3c32c0550e6d8a",
+    "src/features/activities/next-action-queue/queueInput.ts": "319c1b9e344ed9d67d789d416fb5ce61c468ee12518679809a621253b8744b20",
+    "src/features/activities/next-action-queue/queueSqlProjection.ts": "bc76a4b65735d048fba55228af78c7d75ba25dac0b22ac55265dd64342605198",
+    "src/features/activities/next-action-queue/queueSql.ts": "854bf85dcd4bfdb2fa9a9b086a44a90130031a78a8aa96c4bcecce6603a9d783"
+  },
+  "fullCurrentTypecheck": "pending explicit finite resource slot",
+  "fullCurrentLintAndBuild": "not run; scoped lint is not full qualification",
+  "nativeBrowser": "not run for queue",
+  "limits": [
+    "Default-off source increment; no feature rollout, push, deployment or release.",
+    "Literal unassigned work requires a separate ownership/storage decision.",
+    "Current native/OAuth/job mutation admission and access-revocation/unknown-outcome journeys remain open.",
+    "Native editor intentionally retains established relationship IDs; queue DTO redaction does not change that round-trip contract.",
+    "Retained installation, performance, accessibility, language review, provider and full programme acceptance remain open.",
+    "All 16 projects/128 parent tasks retained; zero broad parents complete."
+  ]
+}

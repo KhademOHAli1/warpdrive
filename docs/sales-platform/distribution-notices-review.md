@@ -57,3 +57,17 @@ retain source/license-file hashes and unresolved entries, check the eventual
 runtime image and account for transitive/bundled material. Source and font notice
 preservation, a frozen install or a successful web build cannot substitute for
 that artifact inspection.
+
+## Implemented source correction
+
+Commit `0d8247f676f54899aa8b54c3699e3eaba9f22ead` adds root/nested `.runtime`
+exclusions, explicit runtime LICENSE/third-party copies and the byte-identical
+included shadcn notice. Two bounded containerless cases failed for the original
+context/copy defects, then passed. The existing Docker-compatible matcher checks
+synthetic private paths and retained real build inputs. The runtime check covers
+this recipe's COPY contract and exact notice bytes. Scoped Biome and typed
+ESLint passed. See `evidence/distribution-fix-2026-11-01.json`.
+
+Actual Docker image contents, transitive notice closure and the complete release
+remain unqualified. The source correction does not relabel the earlier inventory
+as a production artifact inspection.

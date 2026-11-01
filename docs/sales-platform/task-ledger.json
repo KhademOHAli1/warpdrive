@@ -654,12 +654,33 @@
     {
       "id": "SP-03.4",
       "projectId": "SP-03",
-      "status": "planned",
+      "status": "in-progress",
       "owner": "sales-platform",
       "dependsOn": ["SP-03.3"],
-      "evidence": [],
-      "remainingGates": [],
-      "notes": ""
+      "evidence": [
+        {
+          "path": "docs/sales-platform/next-action-queue-contract.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/verification.md",
+          "level": "local-unit"
+        },
+        {
+          "path": "docs/sales-platform/activity-command-admission-review.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/evidence/next-action-queue-2026-11-01.json",
+          "level": "local-runtime"
+        }
+      ],
+      "remainingGates": [
+        "Literal unassigned work requires an approved ownership/storage decision; current fields are nonnullable.",
+        "Shared current-native/OAuth/job mutation admission, revocation and unknown-outcome qualification remain open.",
+        "Full exact-candidate types/lint/build, native FA/DE/EN accessibility/state journeys and performance remain open."
+      ],
+      "notes": "Partial default-off read queue for canonical overdue work and opportunities with no nondeleted open activity. Strict protected RPC, bounded permission-scoped counts/pages, redacted links and existing native edit/schedule forms. Actor/input/preference/revision-scoped client hides stale reads, including preference-save and late pre-save races. Adjacent containerless run of 125 tests across 16 files passed; 14 actual read PostgreSQL tests across 4 files and later focused units 44/5 plus scoped typed ESLint 38 files passed. Full current types/lint/build/browser, release and parent completion remain open."
     },
     {
       "id": "SP-03.5",
@@ -1907,12 +1928,24 @@
     {
       "id": "SP-15.8",
       "projectId": "SP-15",
-      "status": "planned",
+      "status": "in-progress",
       "owner": "sales-platform",
       "dependsOn": ["SP-15.7"],
-      "evidence": [],
-      "remainingGates": [],
-      "notes": ""
+      "evidence": [
+        {
+          "path": "docs/sales-platform/distribution-notices-review.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/evidence/distribution-fix-2026-11-01.json",
+          "level": "local-unit"
+        }
+      ],
+      "remainingGates": [
+        "Actual runtime image artifact and transitive notice/license closure remain unqualified.",
+        "Version-matched install/upgrade/disable/diagnose/recovery maintainer acceptance and release gates remain open."
+      ],
+      "notes": "Partial source packaging repair at 0d8247f: private .runtime excluded by effective Docker ignore matching and root/curated notices explicitly copied. Two focused tests, scoped Biome and typed ESLint passed. No Docker image was built or distributed and no release was published."
     }
   ]
 }

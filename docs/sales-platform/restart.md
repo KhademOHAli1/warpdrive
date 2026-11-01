@@ -12,7 +12,9 @@ approval. The original roadmap and acceptance criteria remain in `approved/`.
   latest main/auth `a1a8f6da` and workflow `d0c83e8`.
 - Fork/upstream remotes remain `KhademOHAli1/warpdrive` and `sneg55/warpdrive`.
 - Own pinned Bun: `.runtime/bin/bun`, version 1.4.4. No global runtime changed.
-- Current qualified application source checkpoint:
+- Latest full build-checked application source checkpoint:
+  `f006b5a5026449fd2bf792439b9149ba3517feb8`.
+- Earlier lifecycle/saved-view checkpoint:
   `c655b8e3aa0d9aada5ac3c533bef13688b8ec700`.
 - Reviewed platform patch `6b71b771d921df8930eebc15259ec0648bff0b73` is merged
   in `dcc6d2911ba27f60a9ae6986b1cb0a61cbc2d440`; no dirty peer files adopted.
@@ -30,10 +32,13 @@ inherited reports and records remaining acceptance gates.
 
 Latest build-checked application source is
 `f006b5a5026449fd2bf792439b9149ba3517feb8`, extending the earlier c655 checkpoint.
-Current application HEAD is the later source-only builder merge
-`f78c342e2e6f062bd1602c2928d925028bc0d44f`. Its combined workflow checks are not
-yet run; do not relabel the earlier f006 results as post-adoption qualification.
-Its full unit run passed 6068 tests/972 files and affected PostgreSQL passed 245/51.
+Later committed source includes builder merge
+`f78c342e2e6f062bd1602c2928d925028bc0d44f`, distribution fix `0d8247f`, pipeline
+outcome recovery `b120ab9` and default-off queue flag `2d9052f`. The current queue
+read, client and route are committed at `696f361`, followed by typed-lint cleanup
+through `62466a7cc93e17174c8873a8896e847449845056`. Do not relabel the earlier f006
+results as full post-adoption qualification.
+The f006 full unit run passed 6068 tests/972 files and affected PostgreSQL passed 245/51.
 Full typecheck and lint passed with actual terminal exit 0. Native warm two-tab
 rename conflict/refresh/explicit review/save passed; three intended audit entries
 and unchanged record/stage/saved-filter digests were observed. Initial cold dev
@@ -44,7 +49,7 @@ terminal 143, for the user-authorized shared resource window. The later granted
 build handle 34684 returned terminal 0, 60.222 seconds, with a 5 GiB headroom
 watchdog and minimum observed free space above 12.5 billion bytes. The slot was
 released to Mail coordinator chat `01a18868-3300-7dc2-b49d-c3bdb067fae7`.
-Current-source worker bundles were not rerun in that slot. Do not start another
+The f006 worker bundles were not rerun in that slot. Do not start another
 heavy campaign until coordinated. Own Next 3176, PostgreSQL 55461 and all
 build/test/lint processes are stopped. Only verified ignored `.next/cache` was
 removed after the terminal build; `.next/types`, private profiles/data and all
@@ -86,7 +91,7 @@ Vazirmatn. Keep R0/G1 gates explicit while preparing and testing unblocked sourc
 increments; do not expose unqualified new authority or effect behavior.
 
 The committed platform base has CONN 0083 and WF 0084. MAIL owns reserved integrated
-0085 through 0091, with the platform owner retaining final metadata/allocation.
+0085 through 0093, with the platform owner retaining final metadata/allocation.
 The primary privacy branch also acquired a distinct 0083 after the initial
 baseline capture. `evidence/source-lineages.json` records that live drift. Do not
 invent a migration number, rename applied history, adopt dirty peers or contact
@@ -107,14 +112,21 @@ again, silently repurpose observability telemetry or infer live-source access.
    template installation against the allocator-reviewed history.
 2. Builder 92a9432 was actually merged at f78c342 after the earlier clean preview.
    All 200 Sales-changed blobs through fbdef5c and protected runtime surfaces are
-   preserved. Selected workflow/auth/locale and PostgreSQL qualification is still
-   unexecuted. Its finite window was requested after the current shared queue;
-   await explicit release before any heavy campaign.
-3. `distribution-notices-review.md` identifies an independent concrete packaging
-   fix: exclude private `.runtime` from Docker context, explicitly distribute root
-   and curated notices, preserve fonts and inspect actual resulting artifacts.
-   Do not run a Docker build from this checkout before the context fix. The
-   completed build was Next-only and performed no Docker image distribution.
+   preserved. Selected workflow/auth/locale units passed 133 tests/47 files and
+   workflow PostgreSQL passed 22/8 on the preserved workflow tree. Full current
+   types/build/browser and automatic-workflow qualification remain open.
+3. Distribution fix `0d8247f` excludes private `.runtime` from Docker context and
+   copies root/curated notices. Two effective-context tests and scoped typed lint
+   passed. No actual image contents or transitive licensing closure is qualified.
+4. Read `next-action-queue-contract.md` and `activity-command-admission-review.md`.
+   The queue stays default-off. Its API/route/client and adjacent units passed
+   125 tests/16 files in one finite run. Actual PostgreSQL read GREEN passed
+   14 tests/4 files; all seven query production files remain unchanged afterward.
+   Later focused queue units passed 44/5 and scoped typed ESLint passed 38 files.
+   Full current types and separate completion-replay RED still require explicit
+   resource slots; no new build/app/provider campaign is authorized. Preserve the
+   collection-only RED, behavioral assertion RED and later outcomes separately.
+   No fail-closed test scaffold may be committed or delivered as implementation.
 
 These increments do not replace the full 128-task scope or close parent packages.
 

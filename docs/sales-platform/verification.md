@@ -1,11 +1,43 @@
 # Sales-platform checkpoint verification
 
-31 October 2026, Europe/Berlin. Application source is frozen at
+The earlier 31 October 2026 checkpoint froze application source at
 `c655b8e3aa0d9aada5ac3c533bef13688b8ec700` on the task-owned sales branch.
 This checkpoint extends the preserved shell with guarded pipeline lifecycle and
 recoverable saved views. It reuses existing authentication, authorization,
 queries, optimistic cache/realtime machinery and integrations. The programme
 and production-release acceptance remain open.
+
+## Later bounded source checks
+
+The latest full build-checked application remains f006 below. The later builder
+adoption, distribution and recovery changes have narrower evidence:
+
+- Builder workflow/auth/locale: 133 units/47 files; workflow PostgreSQL 22/8,
+  on the preserved adopted workflow tree. Full combined types/build/browser
+  qualification is separate.
+- Distribution `0d8247f`: two effective Docker-context/notice tests, scoped Biome
+  and typed ESLint passed. No Docker image or transitive notice closure observed.
+- Pipeline outcome recovery `b120ab9`: intended behavioral RED followed by 23
+  passing adjacent tests; the later formatted regression is included in the
+  125-test run below. No backend authority or full-reload durability changed.
+- Queue client/API/route/navigation plus affected existing activity-table and
+  pipeline recovery regressions: 125 units/16 files passed in 12.175 seconds,
+  one worker and at least 12,512,600,064 available bytes. These tests do not replace
+  current full type/lint/build or native browser evidence.
+
+The initial queue PostgreSQL collection run executed no assertions. The later
+importable fail-closed baseline ran all 14 cases: 13 failed assertions and one
+scaffold pass. That pass is not operational-read qualification. The preserved
+proposed SQL implementation was restored afterward. Its separately granted GREEN
+passed all 14 tests/4 files in 6.124 seconds, with at least 12,231,712,768 available
+bytes and the original Docker baseline restored. The actual independent-reader
+table-lock timeout returned safe `E_DB_004`; that proof is distinct from the
+earlier scaffold pass. All seven native production files are hash-identical
+through source `62466a7`. Later focused queue units passed 44/5 after typed-test
+cleanup, and scoped typed ESLint passed 38 files in 7.588 seconds. The initial
+23 and subsequent 14 lint diagnostics remain recorded as failed attempts.
+No scaffold is presented as working functionality.
+See `next-action-queue-contract.md` for exposure and remaining native write gates.
 
 ## Rename and template continuation
 

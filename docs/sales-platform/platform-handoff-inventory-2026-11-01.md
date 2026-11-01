@@ -97,3 +97,12 @@ not qualify the newly combined workflow source. No new heavy run or preview has
 started. A bounded selected workflow/auth/locale and workflow PostgreSQL window
 was requested after the existing shared queue. Automatic events, waits and shared
 MAIL effects remain unavailable; no new parent task is complete.
+
+## Selected post-adoption checks
+
+The actual selected combined-source workflow/auth-UI/locale unit lane passed
+133 tests across 47 files. The selected workflow PostgreSQL lane passed 22 tests
+across 8 files, one worker, and its container returned to the recorded baseline.
+See `evidence/builder-selected-checks-2026-11-01.json`. These are fresh Sales
+reruns, distinct from the owner's earlier CI. They do not qualify a full new
+candidate build, browser matrix, automatic event/wait/effect exports or release.

@@ -23,9 +23,9 @@ The primary checkout is now privacy-owned. MAIL/regional, workflow-builder and
 platform continuations retain their files, services, databases and ownership.
 
 The selected base already has CONN 0083 and WF 0084. MAIL has acknowledged
-exclusive integrated slots 0085 through 0091. The platform owner allocates
+exclusive integrated slots 0085 through 0093. The platform owner allocates
 further migrations. Sales has no migration number allocated and will not
-independently use 0092 or combine dirty MAIL snapshots. See the existing
+independently use unreserved 0094 or combine dirty MAIL snapshots. See the existing
 [agreement](../integration-execution/mail-platform-agreement-proposal.md).
 
 ## Progress and evidence
@@ -53,7 +53,7 @@ model was introduced. R1 schema and production enablement still wait for the
 applicable lineage, design and recovery gates. See `pipeline-lifecycle-contract.md`,
 `view-compatibility.md` and `verification.md` for actual behavior and open work.
 
-The next committed application candidate is
+The later full build-checked application candidate is
 `f006b5a5026449fd2bf792439b9149ba3517feb8`: guarded existing rename plus strict
 stage-only template manifests and previews. Full unit 6068/972 files, affected
 PostgreSQL 245/51 files, typecheck and lint passed. After an initial coordinated stop, its production webpack build passed in the
@@ -84,5 +84,19 @@ historical outbound effects automatically.
 A later source-only merge adopts the reviewed manual workflow builder at
 `f78c342e2e6f062bd1602c2928d925028bc0d44f`. All 200 Sales-modified blobs through
 fbdef5c were preserved. This adds builder interaction/history inspection, without
-new engines, schema or effects. The combined workflow checks await a coordinated
-slot; earlier f006 checks remain scoped to that earlier source.
+new engines, schema or effects. Selected workflow/auth/locale units passed 133
+tests/47 files and workflow PostgreSQL passed 22/8 on the preserved workflow tree.
+Earlier f006 full checks remain scoped to that earlier source.
+
+Current queue source is `62466a7cc93e17174c8873a8896e847449845056`, following
+distribution `0d8247f`, pipeline outcome recovery `b120ab9` and opt-in flag
+`2d9052f`. The default-off next-action queue uses canonical overdue work and
+opportunities with no open activity, permission-scoped counts/pages and native
+edit/schedule dialogs. Adjacent units passed 125/16, actual read PostgreSQL
+14/4, later focused units 44/5, and scoped typed ESLint 38 files. Full current
+types/lint/build/browser and native mutation admission remain separate gates.
+See `next-action-queue-contract.md` and its source-bound evidence record.
+
+The selected product-led source is a customer-controlled first-party event API,
+with synthetic local Warpdrive as reference and optional PostHog/Segment mapping.
+See `product-signal-source-decision.md`. A real owner/feed remains unqualified.
