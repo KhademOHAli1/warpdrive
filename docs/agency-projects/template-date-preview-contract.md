@@ -1,0 +1,13 @@
+# Pure dated template preview
+
+The Calendar owner selected the input/output date contract in [the retained decision](evidence/calendar-owner-civil-date-contract.md), SHA256 `1dba2dcf71e386f8ccd8e1227b3be594a8b5ed95fbc668bb8003045e35876ecd`. This resolves the date-range question for the pure AP-05.3 preview. Activity installation, database representation and runtime acceptance remain separate.
+
+The planned feature-local entry is `previewTemplateDates(manifest, projectStart)`. The manifest has already crossed the existing bounded JSON and graph boundary. The function trusts that typed graph and its `calendar-days` / `project-start` offsets from -3650 through 3650. The externally supplied start is unknown and crosses one strict date ingress boundary. It must be a real canonical ASCII Gregorian `YYYY-MM-DD` string from `0001-01-01` through `9999-12-31`. Do not trim whitespace, convert localized digits, admit timestamps or calendar annotations, or accept signed/extended years or year `0000`.
+
+For a valid start, reuse the existing unchanged `addCivilDays` helper. Return one result containing `templateId`, `version`, canonical `projectStart` and an `intents` array in manifest order. Each entry contains `intentId`, `dueDate` and a copied `dueOffset`. No local identity, assignment, Activity, database row or notification intent is generated. The published input must remain unchanged, including when a caller changes a returned offset.
+
+Every derived date must remain canonical and within the same range. An invalid start, failed calculation or any out-of-range/noncanonical result returns the typed `invalid_date` error for the whole preview. Do not expose a partial array, clamp, wrap or silently normalize dates. An empty manifest still validates its supplied start. Existing manifest validation retains responsibility for invalid offsets and graphs.
+
+These are civil calendar days. Host timezone, language, display calendar, numbering system, workweek and holiday rules do not change the calculation. A review intent remains a checkpoint and creates no approval. Computed dates do not establish dependency feasibility, current staff/contact eligibility, capabilities, project authority or installation permission. The full install preview and canonical atomic, replay-safe installation remain separate AP-05 obligations.
+
+Tests are being prepared before an implementation module exists. Initial collection absence, an importable minimal scaffold, meaningful assertion RED, GREEN and exact source checks require their own finite resource windows. Calendar examples and this contract are source inputs, not executed test or native UI evidence.

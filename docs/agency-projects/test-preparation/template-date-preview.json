@@ -1,0 +1,47 @@
+{
+  "preparedAt": "2026-11-01T12:38:21.776015+00:00",
+  "status": "35cases/2testfiles+support preparedNOTRUN; productionabsent. Existingqueuedfirst34case/onefilecollectionabsence request remains13pinsunchanged.",
+  "tasks": [
+    "AP-05.3",
+    "AP-10.1"
+  ],
+  "cases": 35,
+  "testFiles": 2,
+  "supportFiles": 1,
+  "ownerContract": {
+    "artifact": "evidence/calendar-owner-civil-date-contract.md",
+    "sha256": "1dba2dcf71e386f8ccd8e1227b3be594a8b5ed95fbc668bb8003045e35876ecd",
+    "range": "CanonicalASCII Gregorian0001-01-01..9999-12-31 inclusive",
+    "failure": "invalid_date for ingress/calculation/noncanonicaloutput/rangeoverflow",
+    "calculation": "ExistingunchangedaddCivilDays, manifestvalidatedcalendar-days/project-start offsets\u00b13650"
+  },
+  "futureModule": "src/features/agency-projects/templates/templateDatePreview.ts",
+  "proposedFunction": "previewTemplateDates(manifest:TemplateManifest,projectStart:unknown)",
+  "result": "Result<{templateId,version,projectStart,intents:{intentId,dueDate,dueOffset}[]},invalid_date>",
+  "coverage": {
+    "validDates": 14,
+    "invalidInputs": 14,
+    "overflows": 2,
+    "structureIsolationEmptyCases": 4,
+    "strictEmptyManifestLineTerminatorCase": 1
+  },
+  "fixtureAuthority": "ActualparseTemplateManifestJson withall3intentkinds andvalidgraph; independentread-onlyfixture/datearithmeticreview, notexecution.",
+  "sourcePins": {
+    "src/features/agency-projects/templates/templateDatePreview.test.ts": "341c94ecad8d0437fdf6268d62de864ad4f274a4c0af1a8da5066f1fefeb39f4",
+    "src/features/agency-projects/templates/templateDatePreview.test-support.ts": "6068068fa906f8d51af5e3459f1e634ac0758a2434f6cbc8996023a7fc03940d",
+    "src/features/agency-projects/templates/templateManifest.ts": "5d783a9f9c1944ee07b869cd4787c49ac257e3287097f8f2893761860bbf580c",
+    "src/features/agency-projects/templates/templateManifestGraph.ts": "cd9510b3a3bf4883db827da0f212953915ad154c238f007da7cfe9a888cb9113",
+    "src/features/agency-projects/templates/templateManifestSchemas.ts": "61f18441b4713fb68ea21c736f22d8cb960cf37d3ab2e105603dba8efb404673",
+    "src/features/agency-projects/templates/templateManifest.test-support.ts": "4eb43d26a7b6cf2b5593f7a8f768131d52c7e445da9b9c01b3f52ed2f2e389c4",
+    "src/lib/zonedDateTime.ts": "f01ed9fba3e61db80fc80c8f21cba77cf1d313b1c183aa7505fd810710160eae",
+    "src/types/result.ts": "ebba2cc3e43560f2ee347a8eb15489429e7bd90e213fab56f6976b75099079d9",
+    "vitest.config.ts": "eb300f409ce431f415b89619bb5c3150e63ff14b1c6864a52f66dfe56989e6f7",
+    "vitest.classify.ts": "e9d3fc819ffbc89c9e975c3f656612122b4e3be26abbfcc1160ea6dd35414dfe",
+    "vitest.setup.ts": "60e699e2fe840a3649268ff2c7156a0d7e7b2eafdce14de84e9de1c1e75a6e87",
+    "package.json": "1fc056ebcf03ce3a198d9060cdd489759bc3a8b9af34bc05b5acfcb84a4ef2f6",
+    "bun.lock": "529a9b6a87d9fc836c45a8e68f0da012ed8a111b0fc60b09a0e5c3c8bfbef0e4",
+    "src/features/agency-projects/templates/templateDatePreview.boundary.test.ts": "2f91edc0629128e4c3d6528cf661e8f2a0a3b5898cd3176c5b4a8c226c978939"
+  },
+  "limits": "Puredatepreview, no timezone/workday/calendarinference, identity/activity/notification/install/replay/capability/currentauthority or dependency-feasibility proof. ProductionnotwrittenbeforeactualRED.",
+  "sourceReviewFinding": "InstalledZoddatepattern usesJS^...$ anchor; endanchor may matchbeforeafinalnewline. Exactcanonicalstartmuststillberejectedwithzerointents, where no arithmeticcall can incidentallyreject it. Sourceinspectiononly, no Zod/helper/runtimeexecution."
+}
