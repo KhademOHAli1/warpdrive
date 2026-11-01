@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
-  "capturedAt": "2026-11-01T11:36:19.905502+00:00",
+  "capturedAt": "2026-11-01T11:49:04.752925+00:00",
   "agencyBase": "ac3b056d6191493bb0d9082af492f8f03b17d2c0",
   "sourceOwner": "MAIL/regional",
   "sourceCommit": "297c1dd5dbff4e19f6d1559a16bb258cc3368577",
   "laterSourceCut": "56210f31307701c7e545bf05f6b93ce4621605a3",
-  "status": "Owned source candidate; exact7numeric GREEN after3failure/4control RED, affected statics and UI qualification pending",
+  "status": "Numeric7GREEN and UI8GREEN afteractualseparate behavioralREDs; affectedstatic/native/account/SSR qualification pending",
   "initialAdoption": {
     "capturedAt": "2026-11-01T11:17:02.056483+00:00",
     "scope": "Initial26-source-path adoption before root numeric correction, after observed7case RED",
@@ -74,14 +74,15 @@
     "src/features/custom-fields/InlineCustomFieldEditor.tsx": "e67338308d58cb41ce4bd4ada986c4b9ed9621966fd7692cca6eb0747a786b69",
     "src/features/custom-fields/render.numeric-control.tsx": "e9b6944a7b6dbfca71d3ccb2e975b9328681f843dbda8c4d893dc5d90c7e67b1",
     "src/features/custom-fields/render.widget-types.tsx": "49072a2e77faa98dae91ac5e71e9c1d82657a68ba9cb58d8838fea71aeea9e1d",
-    "src/features/custom-fields/render.widgets.tsx": "8ba597c7cc2546151a882b58f01fa3d59dd221695f26547e469ae6596cbd7ca6",
+    "src/features/custom-fields/render.widgets.tsx": "4e5887df66a8283f92f344fe2afb74e768d9f118ced4c0765f08f598aa20904d",
     "src/features/custom-fields/monetaryEntryUnit.test.tsx": "a5e319d37fa5d1402d18980c9571245d90f27b0ae5eb2434ae565ffb574267d8",
     "src/features/deals/AddDealModal.tsx": "78340024d8824f3b2e1119315f5dd73f56d524cdab0501a669b7a77994e0f4ab",
     "src/features/leads/AddLeadModal.tsx": "cff566e804f526cc9d6c507658a5800943dea5652a8d4479913f4bebd970178b",
     "src/features/deal-workspace/sidebar/DetailsBlock.tsx": "9e52451132d5f571b0cd88b6cc2d5da94fab9064677ef9535e60b4d436b32146"
   },
   "rootProductionChangesAfterAdoption": [
-    "src/lib/iranianMoney.ts"
+    "src/lib/iranianMoney.ts",
+    "src/features/custom-fields/render.widgets.tsx"
   ],
   "manualMergeProof": "Removing3imports/3namespaces and1import/1component reconstructs both Agencybase blobs.",
   "newTestHashes": {
@@ -113,8 +114,43 @@
       "vitestMilliseconds": 78,
       "scope": "Only exact7 Node tests, no fullUI/static/native qualification"
     },
-    "identityAndBulk": "8casesNOTRUN; no production ID correction yet",
-    "uiRedRequest": "work/agency-regional-ui-red-request.json:8cases/2files,45TOTAL30command15cleanup,34inputpins; fresh grant required, NOTRUN."
+    "identityAndBulk": {
+      "failedCases": 3,
+      "passedControls": 5,
+      "fileCount": 2,
+      "pid": 36580,
+      "session": 70963,
+      "head": "fc9f3eef53adcd5a2f5452b24d720625e7636c1e",
+      "rawExitCode": 1,
+      "stopReason": null,
+      "elapsedSeconds": 2.54,
+      "minimumFreeBytes": 17944616960,
+      "frozenInputCount": 34,
+      "frozenInputsUnchanged": true,
+      "groupGone": true,
+      "vitestSeconds": 1.75,
+      "failureClass": "Intended duplicate control IDs (expected3unique, got1):3entity fixture and actualAddDeal/AddLead. No collection/setup error.",
+      "controls": "All3bulkcurrency/localedigit cases, ordinarynumeric no-money description, numericexponent reader."
+    },
+    "uiRedRequest": "work/agency-regional-ui-red-request.json:8cases/2files,45TOTAL30command15cleanup,34inputpins; fresh grant required, NOTRUN.",
+    "uiGreen": {
+      "passedCases": 8,
+      "failedCases": 0,
+      "fileCount": 2,
+      "pid": 40967,
+      "session": 82584,
+      "baseHead": "fc9f3eef53adcd5a2f5452b24d720625e7636c1e",
+      "sourceDelta": "Onlyrender.widgets.tsx4e5887 useIdchange",
+      "rawExitCode": 0,
+      "stopReason": null,
+      "elapsedSeconds": 2.53,
+      "minimumFreeBytes": 17588764672,
+      "frozenInputCount": 34,
+      "frozenInputsUnchanged": true,
+      "groupGone": true,
+      "vitestSeconds": 1.54,
+      "scope": "Onlysame8jsdomcases. No statics/nativeUI/capture/persistence qualification."
+    }
   },
   "protected": "Seven prereqs and numbering/package/lock/env/schema unchanged.",
   "limits": [
@@ -130,8 +166,16 @@
     "regional-money-iranianMoney-before-fix.ts.txt": "a320a91d931a1c81a33ed578d68eeab289077577c09c0e4725dd0d13b3f7029c",
     "regional-money-numeric-green.log": "dd26a7b0c0ce3565b8314afcc5340476490637582a9884cacbbf593d18365054",
     "regional-money-numeric-green-launch.json": "6e8c6f9da5b97fc32ee76710d612ac6f3d720cbd00a847ad39993fee63c83c74",
-    "regional-money-numeric-green-receipt.json": "faa9936e2b81ffe516c27bd6f64305689a00810260806ce0c827667acc861104"
+    "regional-money-numeric-green-receipt.json": "faa9936e2b81ffe516c27bd6f64305689a00810260806ce0c827667acc861104",
+    "regional-money-ui-red.log": "fe48bda5edb26528f543eaa06ae047ebfeab064e5b3936ad454af424a8086d91",
+    "regional-money-ui-red-launch.json": "d7d8993aabd1c3654ed05ddfd55f125a226a391cc47aa400fd149a5624a2c668",
+    "regional-money-ui-red-receipt.json": "b1b517b6bc1f3e378062729748b7a6aa9f6dc73455d112e067554d64b6f6e330",
+    "regional-money-render-widgets-before-id-fix.tsx.txt": "8ba597c7cc2546151a882b58f01fa3d59dd221695f26547e469ae6596cbd7ca6",
+    "regional-money-ui-green.log": "191caba36266eeca89187a46635e7692a432608242914ecb6ebda6f960d96aa9",
+    "regional-money-ui-green-launch.json": "6941217b9c6dcc266914c81dcd96ed1a0459d8bb9fb78d5717f8b778cec73ea2",
+    "regional-money-ui-green-receipt.json": "ad05a8b63d2028f106f6e82bbc764b8a0c0073a9c26221a348e430db3524c4e4"
   },
   "numericFixSourceReview": "Independent read-only source review found no concrete logic/type blocker; not a test/type/lint result.",
-  "numericGreenHead": "f028e759370e6bfdd131ea5c3874292312fcee65"
+  "numericGreenHead": "f028e759370e6bfdd131ea5c3874292312fcee65",
+  "uiIdFix": "AfteractualRED, only CustomFieldFormControl changes to unconditional ReactuseId per rendered instance; NumericControl alreadyderives input/error/unit IDs fromit. Independent source review foundno hardcodedDOMselector; no SSR/native claim."
 }

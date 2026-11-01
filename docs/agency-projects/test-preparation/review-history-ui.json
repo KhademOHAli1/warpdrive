@@ -1,0 +1,32 @@
+{
+  "preparedAt": "2026-11-01T11:48:02.330787+00:00",
+  "status": "15cases prepared, NOTRUN. Production module absent; firstfutureexecution establishes collectionabsence only, then importable empty scaffold and meaningful assertionRED required before implementation.",
+  "tasks": [
+    "AP-01.4",
+    "AP-06.6",
+    "AP-10.1"
+  ],
+  "sourcePins": {
+    "src/features/agency-projects/reviews/ReviewDecisionHistory.test.tsx": "f6e56f5204461b7202dd2abda474f680d8d90e26196f6a5d66258bf6aee483e6",
+    "src/features/agency-projects/reviews/ReviewDecisionHistory.test-support.tsx": "91ccd8d5b3bcad191bbed492469fb8fa6b9156c6805fc4e512becf58e932e122"
+  },
+  "futureComponent": "src/features/agency-projects/reviews/ReviewDecisionHistory.tsx",
+  "contract": {
+    "props": "review:ReviewSnapshot, userLabels/clientLabels:Readonly<Record<string,string>>; explicitly authorized and coherent caller projections, no accessdecision/fetch/route/mutation",
+    "render": "Accessible region/list, exactversion+epoch current/history, explicit staff-recorded clientvsinternal provenance, recorder/contact labels, method, occurrence/recording semantic times, selectedtimezone, text-only bdi references, unknownidentitywithoutUUID, BLOCK_CLASS+ph-no-capture"
+  },
+  "cases": 15,
+  "coverage": [
+    "version change",
+    "sameversion newepoch",
+    "multipleclientrecords not universalapproval",
+    "emptyhistory",
+    "email/phone/meeting/message provenance",
+    "markuptext no active remote surface",
+    "captureboundary",
+    "missingauthorizedlabels",
+    "FA/DE/EN independent calendar/digits/zone"
+  ],
+  "copy": "Proposed translation expectations only; native-language review pending.",
+  "limits": "No production/catalog edits, runtime, native serverauthority, capturebehavior or persistence acceptance. Existing shared source and regional34pins unchanged by prep."
+}

@@ -1,0 +1,21 @@
+{
+  "capturedAt": "2026-11-01T11:40:26.138191+00:00",
+  "observationSource": "Root transcription of actual canonical guard stdout plus separate postterminal killpg(pid,0); not a new execution.",
+  "pid": 36580,
+  "session": 70963,
+  "terminal": true,
+  "rawExitCode": 1,
+  "stopReason": null,
+  "minimumFreeBytes": 17944616960,
+  "elapsedSeconds": 2.54,
+  "frozenInputCount": 34,
+  "frozenInputsUnchanged": true,
+  "ownedGroupRemaining": false,
+  "postTerminalGroupGone": true,
+  "failedCases": 3,
+  "passedControls": 5,
+  "testFiles": 2,
+  "vitestSeconds": 1.75,
+  "log": "agency-regional-ui-red-attempt1.log",
+  "scope": "Exact8jsdomcases under pinnedBun1.4.4 --bun; noDB/app/build/install/provider/retry."
+}

@@ -1,0 +1,104 @@
+{
+  "capturedAt": "2026-11-01T11:43:50.982241+00:00",
+  "sources": [
+    {
+      "owner": "Privacy primary",
+      "path": "/Users/ali/Developer/warpdrive",
+      "present": true,
+      "head": "7e747e99524e08037da6eba1bd01f6558663f8f0",
+      "branch": "codex/privacy-data-lifecycle",
+      "changedSinceOld": true,
+      "committedJournalEntries": 86,
+      "committedJournalLast": "0085_privacy_identity",
+      "dirtySource": "Not inventoried in this minimal refresh; no dirty source or private applied ledger adopted."
+    },
+    {
+      "owner": "Mail and regional",
+      "path": "/Users/ali/Developer/warpdrive-integrations",
+      "present": true,
+      "head": "56210f31307701c7e545bf05f6b93ce4621605a3",
+      "branch": "codex/local-integrations",
+      "changedSinceOld": true,
+      "committedJournalEntries": 89,
+      "committedJournalLast": "0088_skinny_slyde",
+      "dirtySource": "Not inventoried in this minimal refresh; no dirty source or private applied ledger adopted."
+    },
+    {
+      "owner": "Combined mail candidate",
+      "path": "/Users/ali/Developer/warpdrive-mail-platform",
+      "present": true,
+      "head": "70bc46b19a8896104eccdc3d944cf4352f849224",
+      "branch": "codex/mail-platform-candidate",
+      "changedSinceOld": true,
+      "committedJournalEntries": 94,
+      "committedJournalLast": "0093_notification_send_admission",
+      "dirtySource": "Not inventoried in this minimal refresh; no dirty source or private applied ledger adopted."
+    },
+    {
+      "owner": "Integration and workflow",
+      "path": "/tmp/warpdrive-integrations-preview-20261031",
+      "present": true,
+      "head": "12dd62cb4f7fbec3cd66129a3527ee54a7937cce",
+      "branch": "codex/integration-platform-preview",
+      "changedSinceOld": true,
+      "committedJournalEntries": 85,
+      "committedJournalLast": "0084_visual_workflows",
+      "dirtySource": "Not inventoried in this minimal refresh; no dirty source or private applied ledger adopted."
+    },
+    {
+      "owner": "Calendar",
+      "path": "/Users/ali/Developer/warpdrive-calendar",
+      "present": true,
+      "head": "2803183809c646a063f78fe954c110adbb2f453f",
+      "branch": "codex/calendar-workflows",
+      "changedSinceOld": false,
+      "committedJournalEntries": 83,
+      "committedJournalLast": "0082_shocking_beast",
+      "dirtySource": "Not inventoried in this minimal refresh; no dirty source or private applied ledger adopted."
+    },
+    {
+      "owner": "Settings UX",
+      "path": "/Users/ali/Developer/warpdrive-settings-ux",
+      "present": true,
+      "head": "ec9b3f8943e42736edc6713c099fd2ef14068d0a",
+      "branch": "codex/settings-ux",
+      "changedSinceOld": false,
+      "committedJournalEntries": 83,
+      "committedJournalLast": "0082_shocking_beast",
+      "dirtySource": "Not inventoried in this minimal refresh; no dirty source or private applied ledger adopted."
+    },
+    {
+      "owner": "Sales",
+      "path": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-sales-platform-implementation/work/warpdrive-sales",
+      "present": true,
+      "head": "57240cae5bbfd1335fcb24f0412d19828af16b44",
+      "branch": "codex/sales-platform-20261031",
+      "changedSinceOld": true,
+      "committedJournalEntries": 85,
+      "committedJournalLast": "0084_visual_workflows",
+      "dirtySource": "Not inventoried in this minimal refresh; no dirty source or private applied ledger adopted."
+    }
+  ],
+  "qualification": "Bounded read-only committed metadata refresh, not source adoption/canonical acceptance/runtime proof. Previous broader status refresh was interrupted without a published artifact.",
+  "additionalCommittedAudits": {
+    "platform": {
+      "comparedFrom": "c8409463d212de05ccd7a5ff93a925c846a511c0",
+      "head": "12dd62cb4f7fbec3cd66129a3527ee54a7937cce",
+      "delta": "Only4integrationexecutiondocs,153insertions17deletions",
+      "srcTreeBoth": "1cceaf5dc5f86ed8a600e06298d39c3033a9da6b",
+      "newAgencyPrerequisite": false,
+      "ownerNativeRecordSha256": "e69c41e5e5e9588e02a721956b1196f88e8f6d8ed290ea4bd7ac65df45f4fd14",
+      "qualification": "Ownerbrowser/account reports onunchanged app7c8, not AgencyUI/runtime/API/admission acceptance."
+    },
+    "sales": {
+      "comparedFrom": "5de8a12a940236895a889df7cfaffca160ae0661",
+      "head": "57240cae5bbfd1335fcb24f0412d19828af16b44",
+      "delta": "Only4reconciliation/evidencedocs",
+      "srcTreeBoth": "14dc812a71174be0a501247177e2dbaf5a4a8761",
+      "drizzleTreeBoth": "cfa911f13bb74507eb4700a7635ac08c8ba47064",
+      "journalSha256": "4d89be8c2d18d22a088ae592ae0345373b6067e5cefc7bb9da9a3fbb4feaa867",
+      "newAgencyPrerequisite": false,
+      "qualification": "No new atomic handover/nativeprojectpermission/quote-sourceAPI. Separate regional/auth experiments remain unadopted; preserve Agency26moneyadditions."
+    }
+  }
+}
