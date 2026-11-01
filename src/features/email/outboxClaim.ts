@@ -3,6 +3,7 @@ import { sql } from "drizzle-orm";
 import { CLAIM_LEASE_SECONDS } from "@/constants/email";
 import type { Db } from "@/db/client";
 import { stampGmailSend } from "./gmailSendFence";
+import type { NotificationSendPurpose } from "./mailSendPurpose";
 import type { AttemptRow } from "./outboxReconcile";
 
 // Attachment metadata persisted in the payload so processSendAttempt can rebuild
@@ -15,6 +16,7 @@ interface PayloadAttachment {
 }
 
 export interface SendPayload {
+  systemPurpose?: NotificationSendPurpose;
   fromName?: string | null;
   to: string[];
   cc?: string[];

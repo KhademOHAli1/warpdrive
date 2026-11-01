@@ -4,6 +4,7 @@ import { RECONCILE_WINDOW_MS } from "@/constants/email";
 import { AppError } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import type { StorageClient } from "@/features/files/storage";
+import type { DbOrTx } from "@/server/realtime/channelVersions";
 import { err, ok, type Result } from "@/types/result";
 import type { GmailClient } from "./gmailClient";
 import { gmailConnectionChanged } from "./gmailConnectionFence";
@@ -43,7 +44,7 @@ function isDefiniteRejection(error: AppError): boolean {
 // crashed-but-accepted send. Idempotent on (account_id, idempotency_key); if a sent
 // row already exists it is reported as a replay.
 export async function enqueueSend(
-  db: Db,
+  db: DbOrTx,
   args: {
     accountId: string;
     idempotencyKey: string;
