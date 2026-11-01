@@ -23,4 +23,14 @@ describe("German calendar date formatting", () => {
       "Heute, Samstag, 1. Farwardin 1405, ausgewählt",
     );
   });
+
+  it.each([
+    { numberingSystem: "arabext", expected: "۰۱.۰۱.۱۴۰۵" },
+    { numberingSystem: "latn", expected: "01.01.1405" },
+  ] as const)(
+    "honors explicit $numberingSystem in the German Iranian trigger",
+    ({ numberingSystem, expected }) => {
+      expect(formatPersianDate("2026-03-21", "de", numberingSystem)).toBe(expected);
+    },
+  );
 });

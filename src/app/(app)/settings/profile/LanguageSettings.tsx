@@ -102,28 +102,26 @@ export function LanguageSettings() {
             />
             <p className="text-sm text-muted-foreground">{t("calendarHelp")}</p>
           </div>
-          {preferences.locale === "fa" && (
-            <div className="space-y-1.5">
-              <p className="text-sm font-medium">{t("numberDisplay")}</p>
-              <Select
-                ariaLabel={t("numberDisplay")}
-                value={numbers}
-                disabled={pending}
-                options={[
-                  { value: "arabext", label: t("persianNumbers") },
-                  { value: "latn", label: t("englishNumbers") },
-                ]}
-                onChange={(value) => {
-                  if (value === "arabext" || value === "latn")
-                    void choose({ numberingSystem: value });
-                }}
-              />
-              <p className="text-sm text-muted-foreground">{t("numberHelp")}</p>
-              <p className="text-sm tabular-nums" aria-live="polite">
-                {t("numberPreview", { value: 12345.67 })}
-              </p>
-            </div>
-          )}
+          <div className="space-y-1.5">
+            <p className="text-sm font-medium">{t("numberDisplay")}</p>
+            <Select
+              ariaLabel={t("numberDisplay")}
+              value={numbers}
+              disabled={pending}
+              options={[
+                { value: "arabext", label: t("persianNumbers") },
+                { value: "latn", label: t("englishNumbers") },
+              ]}
+              onChange={(value) => {
+                if (value === "arabext" || value === "latn")
+                  void choose({ numberingSystem: value });
+              }}
+            />
+            <p className="text-sm text-muted-foreground">{t("numberHelp")}</p>
+            <p className="text-sm tabular-nums" aria-live="polite">
+              {t("numberPreview", { value: 12345.67 })}
+            </p>
+          </div>
         </SettingsCardBody>
       </SettingsCard>
       <SettingsCard>
