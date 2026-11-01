@@ -6,6 +6,7 @@ import { err, ok, type Result } from "@/types/result";
 import { authorizedAttachment } from "./attachmentDownloadAccess";
 import { attachmentDownloadBytes, attachmentDownloadDenied } from "./attachmentDownloadBytes";
 import type { AttachmentDownload, AttachmentDownloadDeps } from "./attachmentDownloadTypes";
+import { privateGmailAttachmentSource } from "./privateIntakeGmailAttachment";
 
 export type { AttachmentDownload, AttachmentDownloadDeps } from "./attachmentDownloadTypes";
 
@@ -25,7 +26,7 @@ export async function resolveAttachmentDownload(
     );
   const original = await authorizedAttachment(db, args.actor, parsed.data, signal);
   if (original === null) return err(attachmentDownloadDenied());
-  const loaded = await attachmentDownloadBytes(db, deps, original, signal);
+  const loaded = await attachmentDownloadBytes(db, deps, original, args.actor.id, signal);
   signal.throwIfAborted();
   if (!loaded.ok) return loaded;
   // Network and storage I/O never retain row locks. Recheck access before exposing the bytes.
@@ -47,6 +48,10 @@ export async function resolveAttachmentDownload(
       current.paused)
   )
     return err(attachmentDownloadDenied());
+  if (loaded.value.privateBinding !== undefined) {
+    const source = await privateGmailAttachmentSource(db, current, args.actor.id, signal);
+    if (source?.binding !== loaded.value.privateBinding) return err(attachmentDownloadDenied());
+  }
   return ok({
     filename: original.filename,
     mimeType: original.mimeType,

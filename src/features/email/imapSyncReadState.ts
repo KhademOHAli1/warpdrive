@@ -12,6 +12,8 @@ export async function refreshImapThreadReadState(
     const [state] = (
       await tx.execute(sql`
       SELECT t.id,t.last_message_at,
+        EXISTS(SELECT 1 FROM email_private_intake i WHERE i.account_id=t.account_id
+          AND i.baseline_thread_id=t.id AND i.intake_state<>'confirmed_notification') AS held,
         EXISTS(SELECT 1 FROM email_messages m JOIN mail_message_locators l
           ON l.message_id=m.id AND l.account_id=m.account_id
           WHERE m.thread_id=t.id AND m.account_id=${accountId} AND l.active=true) AS active,
@@ -21,9 +23,17 @@ export async function refreshImapThreadReadState(
             AND NOT EXISTS(SELECT 1 FROM unnest(l.flags) flag WHERE lower(flag)=lower(${"\\Seen"}))) AS unread
       FROM email_threads t WHERE t.id=${threadId} AND t.account_id=${accountId}
     `)
-    ).rows as { id: string; last_message_at: Date | null; active: boolean; unread: boolean }[];
+    ).rows as {
+      id: string;
+      last_message_at: Date | null;
+      held: boolean;
+      active: boolean;
+      unread: boolean;
+    }[];
     signal.throwIfAborted();
-    if (state === undefined) continue;
+    // Held copies retain both their immutable mail baseline and the owner's
+    // independent local read choice, even when remote locator flags change.
+    if (state === undefined || state.held) continue;
     await tx.execute(sql`UPDATE email_threads SET trashed_at=CASE WHEN remote_trashed_at IS NOT NULL
       THEN COALESCE(trashed_at,remote_trashed_at) ELSE ${state.active ? null : new Date()}::timestamptz END,updated_at=now()
       WHERE id=${threadId} AND account_id=${accountId}`);

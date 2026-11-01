@@ -1,4 +1,4 @@
-import { and, eq, isNull } from "drizzle-orm";
+import { and, eq, isNull, sql } from "drizzle-orm";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import { emailAccounts, emailThreadReads, emailThreads } from "@/db/schema";
@@ -7,6 +7,8 @@ import { err, ok, type Result } from "@/types/result";
 import { canSeeEmail, type ThreadVisibilityRow } from "./emailVisibility";
 import { runImapThreadOperation } from "./imapThreadOperations";
 import type { ImapThreadOperationDeps } from "./imapThreadOperationsTypes";
+import { markPrivateIntakeLocalRead } from "./privateIntakeLocalRead";
+import { privateIntakeBlocksThread } from "./privateIntakeRestrictions";
 
 // Load the thread's visibility-relevant columns; null if missing. canSeeEmail resolves the
 // owning account (and, for shared threads, the linked deal/person) itself from these fields,
@@ -20,6 +22,7 @@ async function loadThread(db: Db, threadId: string, signal: AbortSignal) {
       personId: emailThreads.personId,
       ownerUserId: emailAccounts.userId,
       provider: emailAccounts.provider,
+      privateIntake: privateIntakeBlocksThread(emailThreads.accountId, emailThreads.id),
     })
     .from(emailThreads)
     .innerJoin(emailAccounts, eq(emailAccounts.id, emailThreads.accountId))
@@ -53,6 +56,12 @@ export async function markThreadRead(
   const thread = await loadThread(db, args.threadId, signal);
   const bad = await gate(db, args.actor, thread, signal);
   if (bad !== null) return err(bad);
+  if (thread?.privateIntake === true)
+    return markPrivateIntakeLocalRead(
+      db,
+      { actorId: args.actor.id, accountId: thread.accountId, threadId: args.threadId, read: true },
+      signal,
+    );
   if (thread?.provider === "imap_smtp" && thread.ownerUserId === args.actor.id)
     return runImapThreadOperation(
       db,
@@ -61,12 +70,16 @@ export async function markThreadRead(
       deps,
     );
   signal.throwIfAborted();
+  // The provider's latest timestamp can lead the app clock. Cover the stored message
+  // watermark in the database so reading it clears unread state without losing precision.
+  const readAt = sql`GREATEST(now(), (SELECT ${emailThreads.lastMessageAt}
+    FROM ${emailThreads} WHERE ${emailThreads.id}=${args.threadId}))`;
   await db
     .insert(emailThreadReads)
-    .values({ threadId: args.threadId, userId: args.actor.id, readAt: new Date() })
+    .values({ threadId: args.threadId, userId: args.actor.id, readAt })
     .onConflictDoUpdate({
       target: [emailThreadReads.threadId, emailThreadReads.userId],
-      set: { readAt: new Date() },
+      set: { readAt: sql`GREATEST(${emailThreadReads.readAt}, EXCLUDED.read_at)` },
     });
   return ok({ threadId: args.threadId });
 }
@@ -81,6 +94,12 @@ export async function markThreadUnread(
   const thread = await loadThread(db, args.threadId, signal);
   const bad = await gate(db, args.actor, thread, signal);
   if (bad !== null) return err(bad);
+  if (thread?.privateIntake === true)
+    return markPrivateIntakeLocalRead(
+      db,
+      { actorId: args.actor.id, accountId: thread.accountId, threadId: args.threadId, read: false },
+      signal,
+    );
   if (thread?.provider === "imap_smtp" && thread.ownerUserId === args.actor.id)
     return runImapThreadOperation(
       db,

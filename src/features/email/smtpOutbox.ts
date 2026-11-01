@@ -3,6 +3,7 @@ import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import { err, ok, type Result } from "@/types/result";
 import { isMailConnectionCurrent } from "./mailConnectionRuntime";
+import { privateIntakeBlocksQueuedSend } from "./privateIntakeDispatchFence";
 import { repairAcceptedSmtpCopy } from "./smtpOutboxAccepted";
 import { abandonSmtpClaim, claimSmtpAttempt, loadSmtpAttempt } from "./smtpOutboxRepo";
 import { submitClaimedSmtpAttempt } from "./smtpOutboxSubmit";
@@ -79,6 +80,8 @@ export async function processSmtpSendAttempt(
   args: SmtpOutboxArgs,
 ): Promise<Result<SmtpSendOutcome, AppError>> {
   try {
+    if (await privateIntakeBlocksQueuedSend(db, args))
+      return err(new AppError(ERROR_IDS.GMAIL_THREAD_NOT_FOUND, "thread not found"));
     return await runSmtpAttempt(db, args);
   } catch (error) {
     args.signal.throwIfAborted();

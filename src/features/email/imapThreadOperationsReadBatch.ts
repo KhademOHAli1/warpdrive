@@ -1,7 +1,7 @@
-import type { DbOrTx } from "@/server/realtime/channelVersions";
 import type { ImapOperationFolder } from "./imapThreadOperationsFolders";
 import type { ImapNetworkOutcome, ImapOperationLocator } from "./imapThreadOperationsTypes";
-import { type ImapConnectionRuntime, isMailConnectionCurrent } from "./mailConnectionRuntime";
+import type { ImapConnectionRuntime } from "./mailConnectionRuntime";
+import type { ImapMutationFence } from "./privateIntakeImapMutationFence";
 
 function seenFlags(flags: string[], read: boolean): string[] {
   const rest = flags.filter((flag) => flag.toLowerCase() !== "\\seen");
@@ -9,12 +9,12 @@ function seenFlags(flags: string[], read: boolean): string[] {
 }
 
 export async function writeImapReadBatch(
-  tx: DbOrTx,
   runtime: ImapConnectionRuntime,
   folder: ImapOperationFolder,
   batch: ImapOperationLocator[],
   read: boolean,
   signal: AbortSignal,
+  beforeMutation: ImapMutationFence,
 ): Promise<ImapNetworkOutcome> {
   const inspected = await runtime.imap.inspectMessages({
     path: folder.path,
@@ -33,7 +33,7 @@ export async function writeImapReadBatch(
       flags: ["\\Seen"],
       mode: read ? "add" : "remove",
       signal,
-      beforeMutation: (s) => isMailConnectionCurrent(tx, runtime, s),
+      beforeMutation,
     });
     if (!changed.ok) return { confirmed: [], failure: changed.error };
   }

@@ -1,5 +1,8 @@
 {
   "title": "Delivery reports",
+  "loading": "Loading delivery reports…",
+  "loadFailure": "Delivery reports could not be loaded. Refresh to try again.",
+  "refresh": "Refresh reports",
   "warning": "This report is unverified. Review it before linking it to a sent email.",
   "unverified": "Unverified",
   "review": "Review report",

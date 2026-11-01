@@ -4,6 +4,7 @@ import type { AuthUser } from "@/features/permissions/types";
 import type { DbOrTx } from "@/server/realtime/channelVersions";
 import { err, ok, type Result } from "@/types/result";
 import { canSeeLinkedDeal, canSeeLinkedPerson } from "./emailVisibility";
+import { privateIntakeBlocksThread } from "./privateIntakeRestrictions";
 
 export async function assertDraftThread(
   db: DbOrTx,
@@ -13,7 +14,8 @@ export async function assertDraftThread(
   if (input.threadId === undefined || input.threadId === null) return ok(null);
   const row = (
     await db.execute(sql`SELECT id FROM email_threads
-    WHERE id=${input.threadId} AND account_id=${input.accountId}`)
+    WHERE id=${input.threadId} AND account_id=${input.accountId}
+      AND NOT ${privateIntakeBlocksThread(input.accountId, input.threadId)}`)
   ).rows[0];
   signal.throwIfAborted();
   return row

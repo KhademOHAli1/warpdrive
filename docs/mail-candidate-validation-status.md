@@ -2,7 +2,31 @@
 
 The approved P0/P1 goal remains active and incomplete. This record does not establish release, installed-provider or pilot acceptance.
 
-## Preserved source and actual results
+## Current candidate, 1 November 2026
+
+The qualification base is `70bc46b19a8896104eccdc3d944cf4352f849224` on
+`codex/mail-platform-candidate`; this follow-up contains private-intake work.
+The sections below preserve earlier qualification stages; their pending
+implementation statements do not describe the latest candidate. The current
+[private-intake record](mail-private-intake-20261101.md) records migration 94,
+native notification/privacy/review routes, reader integration and their evidence.
+Migrations 92 and 93 are already present in this candidate. None is admitted for
+an installed profile or merged into main by this record.
+
+The latest combined unit return passed 331 cases in 31 files, including localized
+UI and strict schema cases. Scoped strict typing, formatting, typed lint and the
+translation audit pass. The final broader native return passed all 399 cases in
+72 files, including the reproduced ordinary read-marker and owner-only protected
+local-read workflows. Remote writes remain forbidden for held private copies.
+No whole-candidate production build or final browser acceptance is claimed.
+Prompt cancellation during PostgreSQL lock waits is a remaining hardening gate.
+
+The candidate's two migration entry points still invoke Drizzle directly:
+`src/db/migrate.ts` and the `db:migrate` package script. Immutable installed-profile
+admission, compatible route selection, upgrade and restore remain mandatory open
+gates. Historical SQL must not be renumbered or replayed against an unknown profile.
+
+## Historical source and actual results
 
 - Combined code checkpoint: `codex/mail-platform-candidate` at `0836da7`; mail-only source: `codex/local-integrations` at `56210f3`. The database qualification fixtures, delivery-observation schema/scaffolds and notification implementation remain uncommitted.
 - The combined metadata preserves platform migrations 0 through 84 and maps mail83..88 to 85..90. Eight reconciliation tests passed. The exact map and hashes are in [mail-integrated-migration-map.md](mail-integrated-migration-map.md).

@@ -14,6 +14,8 @@ import { buildMime, deriveMessageId, type MimeAttachment, toRawBase64 } from "./
 import { reconcileNotificationGmail, recordNotificationGmailAck } from "./notificationGmailReceipt";
 import { claim, loadAttempt, loadSendInputs, type SendPayload, stamp } from "./outboxClaim";
 import { type AttemptRow, markSent, reconcile, type SendOutcome } from "./outboxReconcile";
+import { privateIntakeBlocksQueuedSend } from "./privateIntakeDispatchFence";
+import { privateIntakeBlocksThread } from "./privateIntakeRestrictions";
 import { type ReplyThreadHeaders, replyThreadHeaders } from "./replyHeaders";
 
 // Resolve the RFC 5322 threading headers for a reply. The parent's Message-ID lives only in
@@ -67,6 +69,10 @@ export async function enqueueSend(
       ${JSON.stringify(args.payload)}::jsonb || jsonb_build_object('fromName',display_name),
       'pending', ${args.scheduledAt ?? null}, connection_generation, ${args.requiresPreparation !== true}
     FROM email_accounts WHERE id=${args.accountId}
+      AND (${args.threadId ?? null}::uuid IS NULL OR EXISTS(
+        SELECT 1 FROM email_threads reply_thread WHERE reply_thread.id=${args.threadId ?? null}::uuid
+          AND reply_thread.account_id=email_accounts.id
+          AND NOT ${privateIntakeBlocksThread(sql`reply_thread.account_id`, sql`reply_thread.id`)}))
     ON CONFLICT (account_id, idempotency_key) DO NOTHING
   `);
 
@@ -77,6 +83,8 @@ export async function enqueueSend(
     `)
   ).rows[0] as { id: string; status: string } | undefined;
   if (row === undefined) {
+    if (args.threadId != null)
+      return err(new AppError(ERROR_IDS.GMAIL_THREAD_NOT_FOUND, "reply thread is unavailable"));
     return err(new AppError("E_DB_002", "enqueueSend found no attempt row", args));
   }
   return ok({ attemptId: row.id, replay: row.status === "sent" });
@@ -101,6 +109,8 @@ export async function processSendAttempt(
   args: ProcessSendArgs,
 ): Promise<Result<SendOutcome, AppError>> {
   args.signal.throwIfAborted();
+  if (await privateIntakeBlocksQueuedSend(db, args))
+    return err(new AppError(ERROR_IDS.GMAIL_THREAD_NOT_FOUND, "thread not found"));
   const now = args.now ?? Date.now();
   const windowMs = args.windowMs ?? RECONCILE_WINDOW_MS;
 

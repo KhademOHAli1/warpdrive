@@ -11,6 +11,11 @@ import { existingImapMessage } from "./imapApplyIdentity";
 import { imapThreadForMessage } from "./imapApplyThread";
 import type { ImapFolderCheckpoint, PreparedImapMessage } from "./imapSyncTypes";
 import type { ImapConnectionRuntime } from "./mailConnectionRuntime";
+import {
+  applyMatchingImapDeliveryObservations,
+  heldPrivateImapCopy,
+  holdPrivateImapObservation,
+} from "./privateIntakeImap";
 
 export async function applyImapMessage(
   tx: DbOrTx,
@@ -20,34 +25,58 @@ export async function applyImapMessage(
   message: PreparedImapMessage,
   now: Date,
   signal: AbortSignal,
-): Promise<{ messageId: string; inserted: boolean }> {
+): Promise<{ messageId: string | null; inserted: boolean; sourceFingerprint?: string | null }> {
+  const held = await holdPrivateImapObservation(
+    tx,
+    runtime.accountId,
+    folder,
+    message,
+    now,
+    signal,
+  );
+  if (held !== null) return held;
   const existing = await existingImapMessage(tx, runtime.accountId, folder, message, signal);
   signal.throwIfAborted();
   if (existing !== undefined) {
-    if (existing.fingerprint === null && existing.providerMessageId?.startsWith("smtp:") !== true)
+    const privateCopy = await heldPrivateImapCopy(tx, runtime.accountId, existing.id, signal);
+    if (
+      privateCopy === null &&
+      existing.fingerprint === null &&
+      existing.providerMessageId?.startsWith("smtp:") !== true
+    )
       await tx
         .update(emailMessages)
         .set({ messageFingerprint: message.fingerprint })
         .where(eq(emailMessages.id, existing.id));
-    await imapAttachmentLocators(
+    if (privateCopy === null)
+      await imapAttachmentLocators(
+        tx,
+        {
+          accountId: runtime.accountId,
+          messageId: existing.id,
+          folderPath: folder.path,
+          uidValidity: folder.uidValidity,
+          uid: message.uid,
+        },
+        message.parsed,
+        signal,
+      );
+    await applyMatchingImapDeliveryObservations(
       tx,
       {
         accountId: runtime.accountId,
         messageId: existing.id,
-        folderPath: folder.path,
-        uidValidity: folder.uidValidity,
-        uid: message.uid,
+        parsed: message.parsed,
+        sourceFingerprint: message.sourceFingerprint,
+        heldSourceFingerprint: privateCopy?.sourceFingerprint,
       },
-      message.parsed,
       signal,
     );
-    const observedExisting = await applyImapDeliveryObservations(
-      tx,
-      { accountId: runtime.accountId, messageId: existing.id, parsed: message.parsed },
-      signal,
-    );
-    if (!observedExisting.ok) throw observedExisting.error;
-    return { messageId: existing.id, inserted: false };
+    return {
+      messageId: existing.id,
+      inserted: false,
+      ...privateCopy,
+    };
   }
   const parsed = message.parsed;
   const date = parsed.date ?? message.internalDate ?? now;

@@ -97,6 +97,8 @@ export function InboxWorkspaceToolbar({
   onMarkRead,
   onClearSelection,
   busy,
+  canArchive = true,
+  canMarkRead = true,
   onRefresh,
 }: {
   location: InboxLocation;
@@ -108,6 +110,8 @@ export function InboxWorkspaceToolbar({
   onMarkRead: () => void;
   onClearSelection: () => void;
   busy: boolean;
+  canArchive?: boolean;
+  canMarkRead?: boolean;
   onRefresh: () => void;
 }) {
   const E = useEmailMessages();
@@ -132,13 +136,13 @@ export function InboxWorkspaceToolbar({
               variant="ghost"
               size="icon"
               aria-label={location.folder === "archive" ? E.workspace.restore : E.workspace.archive}
-              disabled={busy}
+              disabled={busy || !canArchive}
               onClick={onArchive}
             >
               <Archive aria-hidden="true" className="size-4" />
             </Button>
           )}
-          <Button variant="ghost" size="sm" disabled={busy} onClick={onMarkRead}>
+          <Button variant="ghost" size="sm" disabled={busy || !canMarkRead} onClick={onMarkRead}>
             {E.workspace.markRead}
           </Button>
           <Button

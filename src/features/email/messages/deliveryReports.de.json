@@ -1,5 +1,8 @@
 {
   "title": "Zustellberichte",
+  "loading": "Zustellberichte werden geladen…",
+  "loadFailure": "Die Zustellberichte konnten nicht geladen werden. Laden Sie sie erneut.",
+  "refresh": "Berichte aktualisieren",
   "warning": "Die Echtheit dieses Berichts ist nicht bestätigt. Prüfen Sie ihn, bevor Sie ihn einer gesendeten E-Mail zuordnen.",
   "unverified": "Unbestätigt",
   "review": "Bericht prüfen",

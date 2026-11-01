@@ -13,6 +13,7 @@ import type { ImapSyncDependencies } from "./imapSyncTypes";
 import { loadImapConnection } from "./mailConnectionRuntime";
 import { notificationWorkerPreflight } from "./notificationWorkerPreflight";
 import { processSendAttempt } from "./outbox";
+import { privateIntakeBlocksQueuedSend } from "./privateIntakeDispatchFence";
 import { sendFailureOutcome } from "./sendFailureOutcome";
 import { prepareEnqueuedSend } from "./sendPreparation";
 import { processSmtpSendAttempt, repairSmtpReceipt } from "./smtpOutbox";
@@ -106,6 +107,8 @@ export async function runSendJob(
   deps: SyncDeps = defaultSyncDeps,
 ): Promise<Result<{ status: string }, AppError>> {
   args.signal.throwIfAborted();
+  if (await privateIntakeBlocksQueuedSend(db, args))
+    return err(new AppError(ERROR_IDS.GMAIL_THREAD_NOT_FOUND, "thread not found"));
   const notification = await notificationWorkerPreflight(db, args);
   if (notification !== null) return notification;
   const account = (

@@ -2,6 +2,7 @@
 import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
+import type { ThreadMailCapabilities } from "./imapThreadOperationsCapabilities";
 
 vi.mock("./readActions", () => ({
   markThreadReadAction: () => Promise.resolve({ ok: true, value: { threadId: "t1" } }),
@@ -22,8 +23,8 @@ vi.mock("./ReaderActions", () => ({
   ),
 }));
 vi.mock("./InboxReaderSidebar", () => ({
-  InboxReaderSidebar: ({ onLinked }: { onLinked: () => void }) => (
-    <button type="button" onClick={onLinked}>
+  InboxReaderSidebar: ({ onLinked, canCompose }: { onLinked: () => void; canCompose: boolean }) => (
+    <button type="button" disabled={!canCompose} onClick={onLinked}>
       reader-linked
     </button>
   ),
@@ -62,6 +63,7 @@ const threadData = {
   ownerEmail: "me@example.com",
   personName: null as string | null,
   dealTitle: null as string | null,
+  mailCapabilities: undefined as ThreadMailCapabilities | undefined,
 };
 
 const invalidateDealMessages = vi.fn(() => Promise.resolve());
@@ -84,6 +86,7 @@ import { ThreadPane } from "./ThreadPane";
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
+  threadData.mailCapabilities = undefined;
 });
 
 it("refreshes the record timelines after a reply sent from the reader", () => {
@@ -100,4 +103,17 @@ it("refreshes the record timelines after the thread's linked deal or person chan
 
   expect(invalidateDealMessages).toHaveBeenCalledTimes(1);
   expect(invalidateContactMessages).toHaveBeenCalledTimes(1);
+});
+
+it("retains owner local linking when ordinary sending is paused", () => {
+  threadData.mailCapabilities = {
+    read: true,
+    send: false,
+    markRead: false,
+    move: false,
+    trash: false,
+  };
+  render(<ThreadPane threadId="t1" trackingBadge={null} />);
+  expect(screen.getByRole("button", { name: "reader-linked" })).toBeEnabled();
+  expect(screen.queryByRole("button", { name: "reader-sent" })).not.toBeInTheDocument();
 });

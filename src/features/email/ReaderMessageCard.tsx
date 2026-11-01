@@ -8,6 +8,8 @@ import { InboundAttachmentList } from "./InboundAttachmentList";
 import { formatReaderDate } from "./inboxDate";
 import { MessageBodyFrame } from "./MessageBodyFrame";
 import { MessageTrackingHistory } from "./MessageTrackingHistory";
+import { ReaderDeliveryReports } from "./ReaderDeliveryReports";
+import { ReaderPrivateIntake } from "./ReaderPrivateIntake";
 
 interface ReaderMessageCardProps {
   message: ThreadMessage;
@@ -15,6 +17,8 @@ interface ReaderMessageCardProps {
   // every message's remote assets), so it is lifted to ThreadPane and threaded in here.
   allowRemote: boolean;
   onShowRemote: () => void;
+  accountId?: string;
+  threadId?: string;
 }
 
 // One message in the reader's reading column, wrapped as a bordered card (PD parity B10: each
@@ -25,6 +29,8 @@ export function ReaderMessageCard({
   message,
   allowRemote,
   onShowRemote,
+  accountId,
+  threadId,
 }: ReaderMessageCardProps): React.ReactNode {
   const E = useEmailMessages();
   const preferences = useLocalePreferences();
@@ -90,6 +96,22 @@ export function ReaderMessageCard({
         <InboundAttachmentList attachments={message.attachments} />
       )}
       {message.direction === "outbound" && <MessageTrackingHistory tracking={message.tracking} />}
+      {accountId !== undefined && message.deliveryReportRef != null && (
+        <ReaderDeliveryReports
+          accountId={accountId}
+          messageId={message.messageId}
+          threadId={threadId}
+          reference={message.deliveryReportRef}
+        />
+      )}
+      {accountId !== undefined && message.privateIntake != null && (
+        <ReaderPrivateIntake
+          accountId={accountId}
+          messageId={message.messageId}
+          threadId={threadId}
+          summary={message.privateIntake}
+        />
+      )}
     </article>
   );
 }

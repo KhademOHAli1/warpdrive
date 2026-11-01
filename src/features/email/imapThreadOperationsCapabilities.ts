@@ -5,12 +5,15 @@ import { mailFolders, mailMessageLocators } from "@/db/schema/mailRemote";
 import type { AuthUser } from "@/features/permissions/types";
 import { IMAP_THREAD_MAX_LOCATORS } from "./imapThreadOperationsTypes";
 import { mailboxCapabilitiesSchema } from "./mailConnectionSchemas";
+import { readPrivateIntakeProjection } from "./privateIntakeProjection";
+import { privateIntakeBlocksThread } from "./privateIntakeRestrictions";
 import type { InboxThread } from "./threadShape";
 
 export interface ThreadMailCapabilities {
   read: boolean;
   send: boolean;
   markRead: boolean;
+  localRead?: boolean;
   move: boolean;
   trash: boolean;
 }
@@ -40,6 +43,9 @@ export async function threadMailCapabilities(
       capabilities: emailAccounts.capabilities,
       ownerActive: users.isActive,
       ownerInvitedAt: users.invitedAt,
+      privateIntake: privateIntakeBlocksThread(emailThreads.accountId, emailThreads.id).as(
+        "private_intake",
+      ),
     })
     .from(emailThreads)
     .innerJoin(emailAccounts, eq(emailAccounts.id, emailThreads.accountId))
@@ -79,6 +85,18 @@ export async function threadMailCapabilities(
   );
   for (const account of accounts) {
     const owner = account.ownerId === actor.id;
+    if (account.privateIntake) {
+      output.set(account.threadId, {
+        read: true,
+        send: false,
+        markRead: false,
+        localRead:
+          owner && actor.isActive && account.ownerActive && account.ownerInvitedAt === null,
+        move: false,
+        trash: false,
+      });
+      continue;
+    }
     const active =
       actor.isActive &&
       account.ownerActive &&
@@ -111,8 +129,15 @@ export async function decorateThreadMailCapabilities(
     threads.map((thread) => thread.id),
     signal,
   );
+  const projection = await readPrivateIntakeProjection(
+    db,
+    { actor, threadIds: threads.map((thread) => thread.id), messageIds: [] },
+    signal,
+  );
+  signal.throwIfAborted();
   return threads.map((thread) => ({
     ...thread,
     mailCapabilities: caps.get(thread.id) ?? NO_MAIL_CAPABILITIES,
+    privateIntake: projection.threads.get(thread.id) ?? null,
   }));
 }

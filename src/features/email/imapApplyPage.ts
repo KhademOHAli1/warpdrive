@@ -14,6 +14,14 @@ import type { ImapFolderCheckpoint, PreparedImapPage } from "./imapSyncTypes";
 import type { ImapConnectionRuntime } from "./mailConnectionRuntime";
 import { hydrateOwner } from "./syncCursor";
 
+function selectedSourceFingerprint(
+  fallback: string,
+  selected: string | null | undefined,
+): string | null {
+  // Explicit NULL suppresses a new alias when held provenance is unavailable.
+  return selected === undefined ? fallback : selected;
+}
+
 async function locator(
   tx: DbOrTx,
   accountId: string,
@@ -98,16 +106,18 @@ export async function applyImapPage(
         folder,
         message.uid,
         result.messageId,
-        message.sourceFingerprint,
+        selectedSourceFingerprint(message.sourceFingerprint, result.sourceFingerprint),
         message.flags,
         null,
         signal,
       );
-      const [row] = await tx
-        .select({ threadId: emailMessages.threadId })
-        .from(emailMessages)
-        .where(eq(emailMessages.id, result.messageId));
-      if (row !== undefined) threadIds.push(row.threadId);
+      if (result.messageId !== null) {
+        const [row] = await tx
+          .select({ threadId: emailMessages.threadId })
+          .from(emailMessages)
+          .where(eq(emailMessages.id, result.messageId));
+        if (row !== undefined) threadIds.push(row.threadId);
+      }
       if (result.inserted) applied += 1;
     }
     for (const skipped of prepared.skipped)

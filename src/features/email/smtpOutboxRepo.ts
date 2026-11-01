@@ -10,6 +10,7 @@ import {
 import { guardImapConnection } from "./imapSyncGuard";
 import type { ImapConnectionRuntime } from "./mailConnectionRuntime";
 import { lockMailRemoteWrites } from "./mailRemoteWriteLock";
+import { privateIntakeBlocksThread } from "./privateIntakeRestrictions";
 import type { SmtpAttempt, SmtpReceipt } from "./smtpOutboxTypes";
 
 export async function loadSmtpAttempt(
@@ -65,12 +66,13 @@ export async function stampSmtpSubmission(
         });
         if (admission !== "ordinary" && admission !== "admitted") return false;
         if (!(await guardImapConnection(tx, args.runtime, args.signal))) return false;
-        const result = await tx.execute(sql`UPDATE email_send_attempts
+        const result = await tx.execute(sql`UPDATE email_send_attempts s
       SET send_started_at=now(),delivery_outcome=${JSON.stringify(args.receipt)}::jsonb
-      WHERE id=${args.attempt.id} AND account_id=${args.runtime.accountId}
+      WHERE s.id=${args.attempt.id} AND s.account_id=${args.runtime.accountId}
         AND connection_generation=${args.runtime.generation} AND claim_token=${args.token}
         AND status='sending' AND send_started_at IS NULL AND payload_prepared=true AND payload=${JSON.stringify(args.attempt.payload)}::jsonb
-      RETURNING id`);
+        AND NOT ${privateIntakeBlocksThread(sql`s.account_id`, sql`s.thread_id`)}
+      RETURNING s.id`);
         if (result.rows.length === 1)
           await tx.execute(sql`UPDATE email_tracking_tokens SET disabled=false
       WHERE send_attempt_id=${args.attempt.id} AND message_id IS NULL`);

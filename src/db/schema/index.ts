@@ -17,6 +17,7 @@ export * from "./email";
 export * from "./emailAttachments";
 export * from "./emailAuthoring";
 export * from "./emailDeliveryObservations";
+export * from "./emailPrivateIntake";
 export * from "./emailDrafts";
 export * from "./emailReads";
 export * from "./enrichment";

@@ -6,6 +6,7 @@ import { err, ok, type Result } from "@/types/result";
 import type { AuthorizedAttachment } from "./attachmentDownloadAccess";
 import type { AttachmentDownloadDeps } from "./attachmentDownloadTypes";
 import { isMailConnectionCurrent, loadImapConnection } from "./mailConnectionRuntime";
+import { privateGmailAttachmentSource } from "./privateIntakeGmailAttachment";
 import { parseRawMime } from "./providers/rawMime";
 import { RAW_MIME_LIMITS } from "./providers/rawMimeTypes";
 
@@ -24,7 +25,10 @@ const locatorSchema = z.discriminatedUnion("kind", [
   }),
 ]);
 type Locator = z.infer<typeof locatorSchema>;
-type BytesResult = Result<{ bytes: Buffer; generation: number | null }, AppError>;
+type BytesResult = Result<
+  { bytes: Buffer; generation: number | null; privateBinding?: string },
+  AppError
+>;
 
 export function attachmentDownloadDenied(): AppError {
   return new AppError(ERROR_IDS.GMAIL_ATTACHMENT_DENIED, "attachment not found");
@@ -96,6 +100,7 @@ export async function attachmentDownloadBytes(
   db: Db,
   deps: AttachmentDownloadDeps,
   row: AuthorizedAttachment,
+  actorId: string,
   signal: AbortSignal,
 ): Promise<BytesResult> {
   if (!Number.isSafeInteger(row.size) || row.size < 0 || row.size > RAW_MIME_LIMITS.attachmentBytes)
@@ -107,20 +112,41 @@ export async function attachmentDownloadBytes(
       ? storedBytes(deps, row, parsed.data, signal)
       : imapBytes(db, deps, row, parsed.data, signal);
   }
-  if (row.provider !== "gmail" || row.gmailMessageId === null || row.gmailAttachmentId === null)
-    return denied();
+  return gmailBytes(db, deps, row, actorId, signal);
+}
+
+async function gmailBytes(
+  db: Db,
+  deps: AttachmentDownloadDeps,
+  row: AuthorizedAttachment,
+  actorId: string,
+  signal: AbortSignal,
+): Promise<BytesResult> {
+  if (row.provider !== "gmail" || row.gmailAttachmentId === null) return denied();
+  const held =
+    row.gmailMessageId === null
+      ? await privateGmailAttachmentSource(db, row, actorId, signal)
+      : null;
+  if (row.gmailMessageId === null && held === null) return denied();
+  const providerMessageId = row.gmailMessageId ?? held?.providerMessageId;
+  if (providerMessageId === undefined) return denied();
   const client = await deps.resolveClient(row.accountId, signal);
   signal.throwIfAborted();
   if (!client.ok) return client;
   const fetched = await client.value.getAttachment({
-    messageId: row.gmailMessageId,
+    messageId: providerMessageId,
     attachmentId: row.gmailAttachmentId,
     signal,
   });
   signal.throwIfAborted();
   if (!fetched.ok) return fetched;
   const bytes = Buffer.from(fetched.value.dataBase64, "base64url");
-  return bytes.length > RAW_MIME_LIMITS.attachmentBytes
+  return bytes.length > RAW_MIME_LIMITS.attachmentBytes ||
+    (held !== null && bytes.length !== row.size)
     ? denied()
-    : ok({ bytes, generation: null });
+    : ok({
+        bytes,
+        generation: held === null ? null : row.generation,
+        ...(held === null ? {} : { privateBinding: held.binding }),
+      });
 }

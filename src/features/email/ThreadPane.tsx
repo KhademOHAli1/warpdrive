@@ -12,7 +12,9 @@ import styles from "./inboxWorkspace.module.css";
 import { invalidateRecordTimelines } from "./invalidateRecordTimelines";
 import { MailOperationHint } from "./MailOperationHint";
 import { primaryCounterparty } from "./primaryCounterparty";
+import { canMarkThreadRead } from "./privateIntakePolicy";
 import { ReaderConversation } from "./ReaderConversation";
+import { ReaderPrivateIntake } from "./ReaderPrivateIntake";
 import { ReaderTopBar } from "./ReaderTopBar";
 import { markThreadReadAction, markThreadUnreadAction } from "./readActions";
 import { ThreadFollowUpControls } from "./ThreadFollowUpControls";
@@ -63,10 +65,12 @@ export function ThreadPane({
   // triggering refetch()) share the same threadId and must not re-fire the action.
   const markedReadForThreadId = useRef<string | null>(null);
   const [markUnreadError, setMarkUnreadError] = useState<string | null>(null);
+  const canMarkRead =
+    data !== undefined &&
+    canMarkThreadRead({ ...data.thread, mailCapabilities: data.mailCapabilities });
 
   useEffect(() => {
-    if (data === undefined) return;
-    if (data.mailCapabilities?.markRead === false) return;
+    if (!canMarkRead) return;
     if (markedReadForThreadId.current === threadId) return;
     markedReadForThreadId.current = threadId;
     void markThreadReadAction(readCsrfToken(), { threadId }).then((res) => {
@@ -81,7 +85,7 @@ export function ThreadPane({
         onChanged?.();
       }
     });
-  }, [data, threadId, utils, onChanged]);
+  }, [canMarkRead, threadId, utils, onChanged]);
 
   // A reply sent here and a change to the thread's linked deal/person both alter what the deal and
   // person timelines should show, and those queries live on other routes: refetching the thread
@@ -93,7 +97,7 @@ export function ThreadPane({
   }
 
   async function handleMarkUnread(): Promise<void> {
-    if (data?.mailCapabilities?.markRead === false) return;
+    if (!canMarkRead) return;
     const res = await markThreadUnreadAction(readCsrfToken(), { threadId });
     if (!res.ok) {
       setMarkUnreadError(E.errorMarkUnread);
@@ -154,7 +158,7 @@ export function ThreadPane({
       subject={inboxThread.subject}
       primaryEmail={primaryEmail}
       primaryName={primaryName}
-      canCompose={canCompose && data.mailCapabilities?.send !== false}
+      canCompose={canCompose}
       onLinked={handleThreadChanged}
     />
   );
@@ -214,10 +218,10 @@ export function ThreadPane({
                 </PopoverContent>
               </Popover>
             )}
-            <MailOperationHint enabled={data.mailCapabilities?.markRead !== false}>
+            <MailOperationHint enabled={canMarkRead}>
               <button
                 type="button"
-                disabled={data.mailCapabilities?.markRead === false}
+                disabled={!canMarkRead}
                 onClick={() => void handleMarkUnread()}
                 className="shrink-0 rounded-md px-2 py-1 text-xs text-muted-foreground transition-transform hover:bg-accent active:scale-[0.96]"
               >
@@ -264,17 +268,32 @@ export function ThreadPane({
               bottom below a flex-1 spacer. B10: the column is width-constrained and centered, with
               each message + the reply footer as its own bordered card. */}
           <div data-reader-scroll className="flex-1 overflow-y-auto">
-            <ReaderConversation
-              messages={messages}
-              allowRemote={allowRemote}
-              onShowRemote={() => setAllowRemote(true)}
-              canCompose={canCompose && data.mailCapabilities?.send !== false}
-              ownerEmail={ownerEmail}
-              accountId={accountId}
-              threadId={threadId}
-              onSent={handleThreadChanged}
-              onComposerChange={onComposerChange}
-            />
+            {messages.length === 0 &&
+            inboxThread.isOwner === true &&
+            data.privateIntake?.contentState === "purged" ? (
+              <div
+                data-reader-column
+                className={`${styles.messageColumn} flex max-w-[44rem] flex-col gap-3`}
+              >
+                <ReaderPrivateIntake
+                  accountId={accountId}
+                  threadId={threadId}
+                  summary={data.privateIntake}
+                />
+              </div>
+            ) : (
+              <ReaderConversation
+                messages={messages}
+                allowRemote={allowRemote}
+                onShowRemote={() => setAllowRemote(true)}
+                canCompose={canCompose && data.mailCapabilities?.send !== false}
+                ownerEmail={ownerEmail}
+                accountId={accountId}
+                threadId={threadId}
+                onSent={handleThreadChanged}
+                onComposerChange={onComposerChange}
+              />
+            )}
           </div>
         </div>
 

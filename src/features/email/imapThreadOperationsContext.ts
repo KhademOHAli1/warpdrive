@@ -1,4 +1,4 @@
-import { and, asc, eq, isNull } from "drizzle-orm";
+import { and, asc, eq, isNull, sql } from "drizzle-orm";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import { emailAccounts, emailMessages, emailThreads, users } from "@/db/schema";
@@ -11,6 +11,7 @@ import {
   type ImapThreadOperationDeps,
 } from "./imapThreadOperationsTypes";
 import { loadImapConnection } from "./mailConnectionRuntime";
+import { privateIntakeBlocksThread } from "./privateIntakeRestrictions";
 
 export async function loadImapOperation(
   db: Db,
@@ -33,6 +34,7 @@ export async function loadImapOperation(
         eq(emailAccounts.userId, actor.id),
         eq(users.isActive, true),
         isNull(users.invitedAt),
+        sql`NOT ${privateIntakeBlocksThread(emailThreads.accountId, emailThreads.id)}`,
       ),
     );
   signal.throwIfAborted();

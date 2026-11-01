@@ -45,6 +45,8 @@ export function ReaderConversation({
                 message={msg}
                 allowRemote={allowRemote}
                 onShowRemote={onShowRemote}
+                accountId={accountId}
+                threadId={threadId}
               />
             ))}
           </div>
@@ -55,6 +57,8 @@ export function ReaderConversation({
           message={latestMessage}
           allowRemote={allowRemote}
           onShowRemote={onShowRemote}
+          accountId={accountId}
+          threadId={threadId}
         />
       )}
 

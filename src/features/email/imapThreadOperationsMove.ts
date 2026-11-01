@@ -1,4 +1,3 @@
-import type { DbOrTx } from "@/server/realtime/channelVersions";
 import { imapOperationFolders, inspectWritableImapFolders } from "./imapThreadOperationsFolders";
 import { writeImapMoveBatch } from "./imapThreadOperationsMoveBatch";
 import { imapMoveTarget } from "./imapThreadOperationsMoveTarget";
@@ -8,13 +7,14 @@ import type {
   ImapThreadOperation,
 } from "./imapThreadOperationsTypes";
 import type { ImapConnectionRuntime } from "./mailConnectionRuntime";
+import type { ImapMutationFence } from "./privateIntakeImapMutationFence";
 
 export async function writeImapMoveState(
-  tx: DbOrTx,
   runtime: ImapConnectionRuntime,
   rows: ImapOperationLocator[],
   operation: Exclude<ImapThreadOperation, { kind: "read" }>,
   signal: AbortSignal,
+  beforeMutation: ImapMutationFence,
 ): Promise<ImapNetworkOutcome> {
   const target = await imapMoveTarget(runtime, operation, signal);
   if (!target.ok) return { confirmed: [], failure: target.error };
@@ -37,12 +37,12 @@ export async function writeImapMoveState(
   for (const folder of folders) {
     for (let offset = 0; offset < folder.rows.length; offset += 100) {
       const result = await writeImapMoveBatch(
-        tx,
         runtime,
         folder,
         folder.rows.slice(offset, offset + 100),
         target.value,
         signal,
+        beforeMutation,
       );
       outcome.confirmed.push(...result.confirmed);
       outcome.movedCopies?.push(...(result.movedCopies ?? []));

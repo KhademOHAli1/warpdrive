@@ -51,3 +51,29 @@ The expanded active-lease regression reproduced a second premature-review branch
 IG-08 review also found that notification email still selects a legacy single mailbox and sends through the Gmail-only system primitive. Provider-neutral dispatch, deterministic active/default mailbox selection and uncertain-retry preservation need a real-PostgreSQL/native-SMTP regression before this Google-free workflow can be accepted. Existing visibility, opt-out and recipient-language checks must remain intact.
 
 The pure delivery-report parser is implemented with 69 passing fixtures and scoped typing/lint checks. It accepts bounded traditional/internationalized machine parts and always returns unverified, review-required observations without correlation authority. MIME ingestion, stored observations, owner review and reader integration are not established by this parser checkpoint. The allocator reserved integrated92 for observations and93 for notification binding/suppression; neither migration has been generated or applied.
+
+## Candidate follow-up, 1 November 2026
+
+MAIL development is now isolated in `/Users/ali/Developer/warpdrive-mail-platform`
+on `codex/mail-platform-candidate`. The local committed checkpoint is
+`70bc46b19a8896104eccdc3d944cf4352f849224`; private-intake and reader work is
+qualified in this follow-up source checkpoint. The parser-only description above is superseded
+for this candidate by the native observation, review, notification-routing and
+privacy checks recorded in `mail-private-intake-20261101.md`.
+
+The checkpoint passed 152 native cases across 34 files. Later scoped runs cover
+detached report correlation, private message isolation, canonical acknowledgement,
+owner review, HTTP boundaries and client readers. These results overlap and must
+not be added into a release total. The latest combined unit return passed 331 cases
+in 31 files with scoped strict typing, formatting, typed lint and translation
+checks. The final broader native return passed all 399 cases in 72 files. Ordinary
+read-marker ordering and protected-copy owner local-read/sync controls now pass.
+Whole-candidate builds, actual localized browser acceptance and prompt PostgreSQL
+lock-wait cancellation remain pending. Current receipts and limits are recorded
+in `mail-private-intake-20261101.md`.
+
+Candidate-local migration 94 is reserved for private intake. It is not an installed
+upgrade or a main-branch migration allocation. The divergent installed profiles
+still require a reviewed admission route and immutable source cut. No live
+provider, real recipient, pilot or financial operation is authorized by the local
+test evidence. IG-07 and the conditional P1 provider work remain open.

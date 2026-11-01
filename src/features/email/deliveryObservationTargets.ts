@@ -3,6 +3,7 @@ import { and, desc, eq, isNotNull, isNull, type SQL, sql } from "drizzle-orm";
 import { z } from "zod";
 import { emailSendAttempts, emailThreads } from "@/db/schema/email";
 import type { DbOrTx } from "@/server/realtime/channelVersions";
+import { readDetachedDeliveryObservationTargets } from "./deliveryObservationDetachedTargets";
 import type { DeliveryReviewTarget } from "./deliveryObservationTypes";
 import { isValidMailRecipient } from "./recipientAddress";
 
@@ -29,7 +30,7 @@ export async function readDeliveryObservationTargets(
   limit = 100,
 ): Promise<DeliveryObservationTargetSnapshot[]> {
   signal.throwIfAborted();
-  const rows = await tx
+  const bound = await tx
     .select({
       id: emailSendAttempts.id,
       accountId: emailSendAttempts.accountId,
@@ -60,6 +61,22 @@ export async function readDeliveryObservationTargets(
     .limit(limit)
     .for("share", { of: [emailThreads, emailSendAttempts] });
   signal.throwIfAborted();
+  const detached = await readDetachedDeliveryObservationTargets(
+    tx,
+    accountId,
+    signal,
+    filter,
+    limit,
+    true,
+  );
+  signal.throwIfAborted();
+  const rows = [...bound, ...detached]
+    .sort(
+      (a, b) =>
+        (b.sendStartedAt?.getTime() ?? 0) - (a.sendStartedAt?.getTime() ?? 0) ||
+        a.id.localeCompare(b.id),
+    )
+    .slice(0, limit);
   const snapshots: DeliveryObservationTargetSnapshot[] = [];
   for (const row of rows) {
     const payload = payloadSchema.safeParse(row.payload);
@@ -111,5 +128,15 @@ export async function lockDeliveryObservationAttemptScope(
     )
     .for("share", { of: [emailThreads, emailSendAttempts] });
   signal.throwIfAborted();
-  return attempt !== undefined;
+  if (attempt !== undefined) return true;
+  const detached = await readDetachedDeliveryObservationTargets(
+    tx,
+    accountId,
+    signal,
+    eq(emailSendAttempts.id, attemptId),
+    2,
+    false,
+  );
+  signal.throwIfAborted();
+  return detached.length === 1;
 }

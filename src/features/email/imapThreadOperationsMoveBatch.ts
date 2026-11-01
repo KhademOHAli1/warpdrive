@@ -1,16 +1,16 @@
-import type { DbOrTx } from "@/server/realtime/channelVersions";
 import type { ImapOperationFolder } from "./imapThreadOperationsFolders";
 import type { ImapMoveTarget } from "./imapThreadOperationsMoveTarget";
 import type { ImapNetworkOutcome, ImapOperationLocator } from "./imapThreadOperationsTypes";
-import { type ImapConnectionRuntime, isMailConnectionCurrent } from "./mailConnectionRuntime";
+import type { ImapConnectionRuntime } from "./mailConnectionRuntime";
+import type { ImapMutationFence } from "./privateIntakeImapMutationFence";
 
 export async function writeImapMoveBatch(
-  tx: DbOrTx,
   runtime: ImapConnectionRuntime,
   folder: ImapOperationFolder,
   batch: ImapOperationLocator[],
   target: ImapMoveTarget,
   signal: AbortSignal,
+  beforeMutation: ImapMutationFence,
 ): Promise<ImapNetworkOutcome> {
   const inspected = await runtime.imap.inspectMessages({
     path: folder.path,
@@ -38,7 +38,7 @@ export async function writeImapMoveBatch(
     uids: present.map((row) => row.uid),
     destination: target.path,
     signal,
-    beforeMutation: (s) => isMailConnectionCurrent(tx, runtime, s),
+    beforeMutation,
   });
   if (!moved.ok) return { confirmed: [], failure: moved.error };
   if (moved.value.uidValidity === null) return { ...outcome, requiresResync: true };

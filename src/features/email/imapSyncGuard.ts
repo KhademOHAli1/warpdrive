@@ -10,6 +10,17 @@ export async function guardImapConnection(
 ): Promise<boolean> {
   signal.throwIfAborted();
   await lockMailRemoteWrites(tx, runtime.accountId, signal);
+  return guardImapConnectionRows(tx, runtime, signal);
+}
+
+// Reuse inside a short transaction when the caller already owns the remote I/O
+// advisory lock. Commit these authority row locks before any provider operation.
+export async function guardImapConnectionRows(
+  tx: DbOrTx,
+  runtime: Pick<ImapConnectionRuntime, "accountId" | "ownerId" | "generation">,
+  signal: AbortSignal,
+): Promise<boolean> {
+  signal.throwIfAborted();
   // Match offboarding's owner -> account lock order. NO KEY UPDATE remains FK-compatible.
   const owner = (
     await tx.execute(

@@ -15,6 +15,7 @@ import type {
 } from "./imapThreadOperationsTypes";
 import { type ImapConnectionRuntime, isMailConnectionCurrent } from "./mailConnectionRuntime";
 import { lockMailRemoteWrites } from "./mailRemoteWriteLock";
+import { privateIntakeImapMutationCurrent } from "./privateIntakeImapMutationFence";
 
 function writeFailure(outcome: ImapNetworkOutcome): AppError | null {
   if (outcome.failure === null) return null;
@@ -45,31 +46,51 @@ async function executeImapThreadOperation(
   signal: AbortSignal,
   state: { attempted: boolean },
 ): Promise<Result<{ threadId: string; requiresResync?: boolean }, AppError>> {
-  return db.transaction(async (tx) => {
-    await lockMailRemoteWrites(tx, runtime.accountId, signal);
-    if (!(await isMailConnectionCurrent(tx, runtime, signal)))
-      return err(new AppError(ERROR_IDS.MAIL_CONNECTION_CHANGED, "mailbox changed"));
-    const rows = await imapOperationLocators(tx, runtime.accountId, args.threadId, signal);
-    if (!rows.ok) return rows;
-    state.attempted = true;
-    const outcome =
-      args.operation.kind === "read"
-        ? await writeImapReadState(tx, runtime, rows.value, args.operation.read, signal)
-        : await writeImapMoveState(tx, runtime, rows.value, args.operation, signal);
-    if (!(await guardImapConnection(tx, runtime, signal)))
-      return err(new AppError(ERROR_IDS.MAIL_CONNECTION_CHANGED, "mailbox changed"));
-    if (args.operation.kind === "read")
-      await persistImapReadState(tx, runtime, args.threadId, outcome, args.operation.read, signal);
-    else if (!(await persistImapMoveState(tx, runtime, args.threadId, outcome, signal)))
-      outcome.failure = { kind: "protocol" };
-    const failure = writeFailure(outcome);
-    return failure === null
-      ? ok({
-          threadId: args.threadId,
-          ...(outcome.requiresResync === true ? { requiresResync: true } : {}),
-        })
-      : err(failure);
-  });
+  return db.transaction(
+    async (tx) => {
+      const beforeMutation = (currentSignal: AbortSignal) =>
+        privateIntakeImapMutationCurrent(tx, runtime, args.threadId, currentSignal);
+      await lockMailRemoteWrites(tx, runtime.accountId, signal);
+      if (!(await isMailConnectionCurrent(tx, runtime, signal)))
+        return err(new AppError(ERROR_IDS.MAIL_CONNECTION_CHANGED, "mailbox changed"));
+      if (!(await beforeMutation(signal)))
+        return err(new AppError(ERROR_IDS.GMAIL_THREAD_NOT_FOUND, "thread not found"));
+      const rows = await imapOperationLocators(tx, runtime.accountId, args.threadId, signal);
+      if (!rows.ok) return rows;
+      state.attempted = true;
+      const outcome =
+        args.operation.kind === "read"
+          ? await writeImapReadState(
+              runtime,
+              rows.value,
+              args.operation.read,
+              signal,
+              beforeMutation,
+            )
+          : await writeImapMoveState(runtime, rows.value, args.operation, signal, beforeMutation);
+      if (!(await guardImapConnection(tx, runtime, signal)))
+        return err(new AppError(ERROR_IDS.MAIL_CONNECTION_CHANGED, "mailbox changed"));
+      if (args.operation.kind === "read")
+        await persistImapReadState(
+          tx,
+          runtime,
+          args.threadId,
+          outcome,
+          args.operation.read,
+          signal,
+        );
+      else if (!(await persistImapMoveState(tx, runtime, args.threadId, outcome, signal)))
+        outcome.failure = { kind: "protocol" };
+      const failure = writeFailure(outcome);
+      return failure === null
+        ? ok({
+            threadId: args.threadId,
+            ...(outcome.requiresResync === true ? { requiresResync: true } : {}),
+          })
+        : err(failure);
+    },
+    { isolationLevel: "read committed" },
+  );
 }
 
 export async function runImapThreadOperation(

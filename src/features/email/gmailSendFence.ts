@@ -5,6 +5,7 @@ import {
   notificationAdmissionContended,
 } from "@/features/notifications/email/notificationAdmission";
 import { readGmailConnection, withGmailConnection } from "./gmailConnectionFence";
+import { privateIntakeBlocksThread } from "./privateIntakeRestrictions";
 
 export async function isGmailSendCurrent(
   db: Db,
@@ -53,7 +54,8 @@ export async function stampGmailSend(
         const stamped = await tx.execute(sql`UPDATE email_send_attempts s SET send_started_at=now()
       FROM email_accounts a WHERE s.id=${attemptId} AND s.claim_token=${token} AND s.send_started_at IS NULL
         AND s.payload_prepared=true AND s.account_id=a.id AND s.connection_generation=a.connection_generation
-        AND coalesce((a.capabilities->>'send')::boolean,true)=true RETURNING s.id`);
+        AND coalesce((a.capabilities->>'send')::boolean,true)=true
+        AND NOT ${privateIntakeBlocksThread(sql`s.account_id`, sql`s.thread_id`)} RETURNING s.id`);
         if (stamped.rows.length === 1)
           await tx.execute(sql`UPDATE email_tracking_tokens SET disabled=false
         WHERE send_attempt_id=${attemptId} AND message_id IS NULL`);

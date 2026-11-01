@@ -335,5 +335,39 @@
     "markUnread": "Als ungelesen markieren",
     "selection": "Auswahl von Unterhaltungen",
     "resumeReply": "Antwort fortsetzen: {subject}"
+  },
+  "privateIntake": {
+    "title": "E-Mail privat prüfen",
+    "review": "Kopie prüfen",
+    "dialogTitle": "Private Kopie prüfen",
+    "description": "Diese Kopie ist nur für Sie sichtbar. Ihre Prüfung bestätigt keinen Versand und sendet die E-Mail nicht erneut.",
+    "confirmedDescription": "Diese Kopie entspricht der Versandbestätigung des E-Mail-Dienstes. Ihre Prüfung ändert den Sendestatus nicht.",
+    "restrictions": "Antworten, Freigaben, Archivieren und Verknüpfungen mit CRM-Einträgen sind für diese Kopie nicht verfügbar.",
+    "dismissDescription": "Ausblenden entfernt diesen Eintrag nur aus der Prüfliste. Die private Kopie bleibt erhalten.",
+    "keepPrivate": "Privat behalten",
+    "dismiss": "Ausblenden",
+    "restore": "Wieder in der Prüfliste anzeigen",
+    "cancel": "Abbrechen",
+    "saving": "Prüfung wird gespeichert…",
+    "saved": "Prüfung gespeichert",
+    "refresh": "Prüfung aktualisieren",
+    "refreshing": "Prüfung wird aktualisiert…",
+    "contentRemoved": "Der gespeicherte Inhalt wurde entfernt. Durch eine Prüfung lässt er sich nicht wiederherstellen.",
+    "states": {
+      "unverified": "Prüfung erforderlich",
+      "conflict": "Manuelle Prüfung",
+      "confirmed_notification": "Benachrichtigungskopie"
+    },
+    "decisions": {
+      "keep_private": "Privat beibehalten",
+      "dismiss": "Aus der Prüfliste ausgeblendet",
+      "restore_private": "Wieder in der Prüfliste angezeigt"
+    },
+    "errors": {
+      "forbidden": "Sie dürfen diese Kopie nicht mehr prüfen. Aktualisieren Sie die E-Mail, um Ihren Zugriff zu prüfen.",
+      "conflict": "Diese Prüfung wurde an anderer Stelle geändert. Aktualisieren Sie die E-Mail vor einer weiteren Auswahl.",
+      "not_found": "Diese Prüfung ist nicht mehr verfügbar. Aktualisieren Sie die E-Mail, um den aktuellen Stand zu sehen.",
+      "unavailable": "Wir konnten nicht bestätigen, dass Ihre Prüfung gespeichert wurde. Aktualisieren Sie die E-Mail, bevor Sie es erneut versuchen."
+    }
   }
 }

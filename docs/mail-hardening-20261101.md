@@ -2,6 +2,16 @@
 
 This is an isolated source checkpoint on `codex/mail-platform-candidate`, not a release or an installed upgrade. The approved P0/P1 email and Iranian-integration goal remains active. Preserve the current UI, Gmail, native authentication, permissions and existing data.
 
+Current follow-up to checkpoint `70bc46b19a8896104eccdc3d944cf4352f849224` contains
+private-intake, reader and review work. The
+[private-intake qualification record](mail-private-intake-20261101.md) supersedes
+the historical pending pre-receipt, notification and reader-wiring statements
+below. The current unit return passed 331 cases in 31 files; the broader native
+return passed all 399 cases in 72 files. Ordinary database timestamp ordering and
+protected-copy owner local-read/sync controls now pass. Current-source browser
+workflows, whole-candidate builds, prompt PostgreSQL lock-wait cancellation and
+installed-profile admission/restore remain unqualified.
+
 ## Behaviors under qualification
 
 - Native IMAP MIME extraction supplies bounded decoded delivery-report parts. Immutable evidence belongs to the actual inbound source message. Public message IDs, report contents and user annotations never establish provider acceptance or change a send outcome.
@@ -40,7 +50,7 @@ The authorized cleanup removed 2,975,203,328 allocated bytes, approximately 2.77
 
 Native PostgreSQL/S3 campaigns use one assigned lane, finite deadlines and a live 5 GiB free-space floor. Builds and installs have a separately named lane. Completed process groups release their slot before another native campaign starts. The protected existing previews are outside these cleanup and stop scopes.
 
-## Remaining gates
+## Historical gates at the committed checkpoint
 
 Published main was independently verified at `a0490c16a9954d9a03c3bb22bfb69944db433a77`. Its Privacy83..85 lineage differs from this candidate's local history through93. The convergence proposal is unaccepted. Preserve every installed ledger and qualify full-ledger/catalog admission, upgrade, rerun and restore paths before applying a sequence to an installation. See [the migration qualification gate](mail-migration-qualification.md#current-lineage-gate-1-november-2026).
 
