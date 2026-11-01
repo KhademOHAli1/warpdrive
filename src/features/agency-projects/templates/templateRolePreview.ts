@@ -61,12 +61,24 @@ function usesForIntent(
         : [];
     case "review":
       return intent.assigneeRoleId === roleId
-        ? [{ ...base, kind: intent.kind, deliverableId: intent.deliverableId, field: "assigneeRoleId" }]
+        ? [
+            {
+              ...base,
+              kind: intent.kind,
+              deliverableId: intent.deliverableId,
+              field: "assigneeRoleId",
+            },
+          ]
         : [];
     case "assignment":
       return (["internalProducerRoleId", "freelancerRoleId"] as const)
         .filter((field) => intent[field] === roleId)
-        .map((field) => ({ ...base, kind: intent.kind, deliverableId: intent.deliverableId, field }));
+        .map((field) => ({
+          ...base,
+          kind: intent.kind,
+          deliverableId: intent.deliverableId,
+          field,
+        }));
     default:
       return assertNever(intent);
   }
@@ -81,7 +93,10 @@ function usesForRole(manifest: TemplateManifest, roleId: string): TemplateRoleUs
       stageId: deliverable.stageId,
       field: "responsibleRoleId",
     }));
-  return [...deliverableUses, ...manifest.intents.flatMap((intent) => usesForIntent(intent, roleId))];
+  return [
+    ...deliverableUses,
+    ...manifest.intents.flatMap((intent) => usesForIntent(intent, roleId)),
+  ];
 }
 
 // The manifest has already crossed its graph boundary; a selected identity is still only syntax.

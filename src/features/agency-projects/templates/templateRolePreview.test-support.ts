@@ -103,33 +103,44 @@ export const expectedUses = {
       field: "assigneeRoleId",
     },
   ],
-  designer: [{
-    kind: "assignment",
-    intentId: "design_assignment",
-    stageId: "production",
-    deliverableId: "campaign_design",
-    field: "freelancerRoleId",
-  }],
-  editor: [{
-    kind: "assignment",
-    intentId: "video_assignment",
-    stageId: "production",
-    deliverableId: "campaign_cut",
-    field: "freelancerRoleId",
-  }],
-  reviewer: [{
-    kind: "review",
-    intentId: "design_review",
-    stageId: "internal_review",
-    deliverableId: "campaign_design",
-    field: "assigneeRoleId",
-  }],
+  designer: [
+    {
+      kind: "assignment",
+      intentId: "design_assignment",
+      stageId: "production",
+      deliverableId: "campaign_design",
+      field: "freelancerRoleId",
+    },
+  ],
+  editor: [
+    {
+      kind: "assignment",
+      intentId: "video_assignment",
+      stageId: "production",
+      deliverableId: "campaign_cut",
+      field: "freelancerRoleId",
+    },
+  ],
+  reviewer: [
+    {
+      kind: "review",
+      intentId: "design_review",
+      stageId: "internal_review",
+      deliverableId: "campaign_design",
+      field: "assigneeRoleId",
+    },
+  ],
   unused: [],
 };
 
 export const expectedUnmappedRoles = [
   { roleId: "producer", roleKind: "internal-producer", binding: null, uses: expectedUses.producer },
-  { roleId: "designer", roleKind: "freelancer-contact", binding: null, uses: expectedUses.designer },
+  {
+    roleId: "designer",
+    roleKind: "freelancer-contact",
+    binding: null,
+    uses: expectedUses.designer,
+  },
   { roleId: "editor", roleKind: "freelancer-contact", binding: null, uses: expectedUses.editor },
   { roleId: "reviewer", roleKind: "internal-producer", binding: null, uses: expectedUses.reviewer },
   { roleId: "unused", roleKind: "internal-producer", binding: null, uses: [] },
@@ -153,8 +164,10 @@ export const expectedOffsets = [
 export function invalidRoleSelections() {
   const one = { roleId: "producer", kind: "internal-user", userId };
   return [
-    [one, one], [one, { ...one, userId: otherUserId }],
-    [{ ...one, roleId: "missing" }], [{ ...one, roleId: "Producer" }],
+    [one, one],
+    [one, { ...one, userId: otherUserId }],
+    [{ ...one, roleId: "missing" }],
+    [{ ...one, roleId: "Producer" }],
     [{ roleId: "producer", kind: "external-contact", personId }],
     [{ roleId: "designer", kind: "internal-user", userId }],
   ];
@@ -163,12 +176,21 @@ export function invalidRoleSelections() {
 export function malformedBindings() {
   const one = { roleId: "producer", kind: "internal-user", userId };
   return [
-    null, undefined, {}, "producer", { bindings: [] }, [null],
-    [{ ...one, userId: "same-name" }], [{ ...one, userId: undefined }],
+    null,
+    undefined,
+    {},
+    "producer",
+    { bindings: [] },
+    [null],
+    [{ ...one, userId: "same-name" }],
+    [{ ...one, userId: undefined }],
     [{ roleId: "designer", kind: "external-contact", personId: "shared@example.invalid" }],
-    [{ ...one, kind: "freelancer-contact" }], [{ ...one, personId }],
-    [{ ...one, authorized: true }], [{ ...one, canInstall: true }],
-    [{ ...one, action: "activate" }], [{ ...one, displayName: "Same name" }],
+    [{ ...one, kind: "freelancer-contact" }],
+    [{ ...one, personId }],
+    [{ ...one, authorized: true }],
+    [{ ...one, canInstall: true }],
+    [{ ...one, action: "activate" }],
+    [{ ...one, displayName: "Same name" }],
   ];
 }
 

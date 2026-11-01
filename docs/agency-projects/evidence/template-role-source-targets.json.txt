@@ -1,0 +1,16 @@
+{
+  "files": [
+    "src/features/agency-projects/templates/templateRolePreview.ts",
+    "src/features/agency-projects/templates/templateRolePreview.test.ts",
+    "src/features/agency-projects/templates/templateRolePreview.test-support.ts"
+  ],
+  "unitFiles": [
+    "src/features/agency-projects/templates/templateRolePreview.test.ts"
+  ],
+  "preFormatHashes": {
+    "src/features/agency-projects/templates/templateRolePreview.ts": "aff2c9bf41faa3126d72cbaaeac1f2c19d8e0a7fd8a371314821eb5291fd114c",
+    "src/features/agency-projects/templates/templateRolePreview.test.ts": "9f036d69c0ce64732d133b87708c366394dfabdcc009aac4704fae9f0d87fedc",
+    "src/features/agency-projects/templates/templateRolePreview.test-support.ts": "84e11ad1c8c956867eaf9945484f75ea3d47e320315132a9f7c30f6a7954fb76"
+  },
+  "headAtStart": "cdc702c0811db07d01ab470335ac06c0e8a0538a"
+}

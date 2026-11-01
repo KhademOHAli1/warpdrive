@@ -1,0 +1,15 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "incremental": false,
+    "types": [
+      "node"
+    ]
+  },
+  "include": [
+    "../src/features/agency-projects/templates/templateRolePreview.ts",
+    "../src/features/agency-projects/templates/templateRolePreview.test.ts",
+    "../src/features/agency-projects/templates/templateRolePreview.test-support.ts"
+  ],
+  "exclude": []
+}

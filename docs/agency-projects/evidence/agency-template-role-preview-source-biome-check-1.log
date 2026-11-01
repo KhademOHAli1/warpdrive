@@ -1,0 +1,310 @@
+src/features/agency-projects/templates/templateRolePreview.test-support.ts format ━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+    104 104 │       },
+    105 105 │     ],
+    106     │ - ··designer:·[{
+    107     │ - ····kind:·"assignment",
+    108     │ - ····intentId:·"design_assignment",
+    109     │ - ····stageId:·"production",
+    110     │ - ····deliverableId:·"campaign_design",
+    111     │ - ····field:·"freelancerRoleId",
+    112     │ - ··}],
+    113     │ - ··editor:·[{
+    114     │ - ····kind:·"assignment",
+    115     │ - ····intentId:·"video_assignment",
+    116     │ - ····stageId:·"production",
+    117     │ - ····deliverableId:·"campaign_cut",
+    118     │ - ····field:·"freelancerRoleId",
+    119     │ - ··}],
+    120     │ - ··reviewer:·[{
+    121     │ - ····kind:·"review",
+    122     │ - ····intentId:·"design_review",
+    123     │ - ····stageId:·"internal_review",
+    124     │ - ····deliverableId:·"campaign_design",
+    125     │ - ····field:·"assigneeRoleId",
+    126     │ - ··}],
+        106 │ + ··designer:·[
+        107 │ + ····{
+        108 │ + ······kind:·"assignment",
+        109 │ + ······intentId:·"design_assignment",
+        110 │ + ······stageId:·"production",
+        111 │ + ······deliverableId:·"campaign_design",
+        112 │ + ······field:·"freelancerRoleId",
+        113 │ + ····},
+        114 │ + ··],
+        115 │ + ··editor:·[
+        116 │ + ····{
+        117 │ + ······kind:·"assignment",
+        118 │ + ······intentId:·"video_assignment",
+        119 │ + ······stageId:·"production",
+        120 │ + ······deliverableId:·"campaign_cut",
+        121 │ + ······field:·"freelancerRoleId",
+        122 │ + ····},
+        123 │ + ··],
+        124 │ + ··reviewer:·[
+        125 │ + ····{
+        126 │ + ······kind:·"review",
+        127 │ + ······intentId:·"design_review",
+        128 │ + ······stageId:·"internal_review",
+        129 │ + ······deliverableId:·"campaign_design",
+        130 │ + ······field:·"assigneeRoleId",
+        131 │ + ····},
+        132 │ + ··],
+    127 133 │     unused: [],
+    128 134 │   };
+    ······· │ 
+    130 136 │   export const expectedUnmappedRoles = [
+    131 137 │     { roleId: "producer", roleKind: "internal-producer", binding: null, uses: expectedUses.producer },
+    132     │ - ··{·roleId:·"designer",·roleKind:·"freelancer-contact",·binding:·null,·uses:·expectedUses.designer·},
+        138 │ + ··{
+        139 │ + ····roleId:·"designer",
+        140 │ + ····roleKind:·"freelancer-contact",
+        141 │ + ····binding:·null,
+        142 │ + ····uses:·expectedUses.designer,
+        143 │ + ··},
+    133 144 │     { roleId: "editor", roleKind: "freelancer-contact", binding: null, uses: expectedUses.editor },
+    134 145 │     { roleId: "reviewer", roleKind: "internal-producer", binding: null, uses: expectedUses.reviewer },
+    ······· │ 
+    154 165 │     const one = { roleId: "producer", kind: "internal-user", userId };
+    155 166 │     return [
+    156     │ - ····[one,·one],·[one,·{·...one,·userId:·otherUserId·}],
+    157     │ - ····[{·...one,·roleId:·"missing"·}],·[{·...one,·roleId:·"Producer"·}],
+        167 │ + ····[one,·one],
+        168 │ + ····[one,·{·...one,·userId:·otherUserId·}],
+        169 │ + ····[{·...one,·roleId:·"missing"·}],
+        170 │ + ····[{·...one,·roleId:·"Producer"·}],
+    158 171 │       [{ roleId: "producer", kind: "external-contact", personId }],
+    159 172 │       [{ roleId: "designer", kind: "internal-user", userId }],
+    ······· │ 
+    164 177 │     const one = { roleId: "producer", kind: "internal-user", userId };
+    165 178 │     return [
+    166     │ - ····null,·undefined,·{},·"producer",·{·bindings:·[]·},·[null],
+    167     │ - ····[{·...one,·userId:·"same-name"·}],·[{·...one,·userId:·undefined·}],
+        179 │ + ····null,
+        180 │ + ····undefined,
+        181 │ + ····{},
+        182 │ + ····"producer",
+        183 │ + ····{·bindings:·[]·},
+        184 │ + ····[null],
+        185 │ + ····[{·...one,·userId:·"same-name"·}],
+        186 │ + ····[{·...one,·userId:·undefined·}],
+    168 187 │       [{ roleId: "designer", kind: "external-contact", personId: "shared@example.invalid" }],
+    169     │ - ····[{·...one,·kind:·"freelancer-contact"·}],·[{·...one,·personId·}],
+    170     │ - ····[{·...one,·authorized:·true·}],·[{·...one,·canInstall:·true·}],
+    171     │ - ····[{·...one,·action:·"activate"·}],·[{·...one,·displayName:·"Same·name"·}],
+        188 │ + ····[{·...one,·kind:·"freelancer-contact"·}],
+        189 │ + ····[{·...one,·personId·}],
+        190 │ + ····[{·...one,·authorized:·true·}],
+        191 │ + ····[{·...one,·canInstall:·true·}],
+        192 │ + ····[{·...one,·action:·"activate"·}],
+        193 │ + ····[{·...one,·displayName:·"Same·name"·}],
+    172 194 │     ];
+    173 195 │   }
+  
+
+src/features/agency-projects/templates/templateRolePreview.test.ts format ━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+     19  19 │   
+     20  20 │   describe("typed-manifest role-binding preview", () => {
+     21     │ - ··it("returns·all·roles·in·manifest·order·with·exact·preview·row·keys",·withManifest((manifest)·=>·{
+     22     │ - ····const·result·=·previewTemplateRoleBindings(manifest,·[]);
+     23     │ - ····expect(result.ok).toBe(true);
+     24     │ - ····if·(!result.ok)·return;
+     25     │ - ····expect(Object.keys(result.value).sort())
+     26     │ - ······.toEqual(["offsetAssumptions",·"roles",·"templateId",·"version"]);
+     27     │ - ····expect(result.value.templateId).toBe("role_preview");
+     28     │ - ····expect(result.value.version).toBe(7);
+     29     │ - ····expect(result.value.roles).toEqual(expectedUnmappedRoles);
+     30     │ - ····for·(const·role·of·result.value.roles)·{
+     31     │ - ······expect(Object.keys(role).sort()).toEqual(["binding",·"roleId",·"roleKind",·"uses"]);
+     32     │ - ····}
+     33     │ - ··}));
+         21 │ + ··it(
+         22 │ + ····"returns·all·roles·in·manifest·order·with·exact·preview·row·keys",
+         23 │ + ····withManifest((manifest)·=>·{
+         24 │ + ······const·result·=·previewTemplateRoleBindings(manifest,·[]);
+         25 │ + ······expect(result.ok).toBe(true);
+         26 │ + ······if·(!result.ok)·return;
+         27 │ + ······expect(Object.keys(result.value).sort()).toEqual([
+         28 │ + ········"offsetAssumptions",
+         29 │ + ········"roles",
+         30 │ + ········"templateId",
+         31 │ + ········"version",
+         32 │ + ······]);
+         33 │ + ······expect(result.value.templateId).toBe("role_preview");
+         34 │ + ······expect(result.value.version).toBe(7);
+         35 │ + ······expect(result.value.roles).toEqual(expectedUnmappedRoles);
+         36 │ + ······for·(const·role·of·result.value.roles)·{
+         37 │ + ········expect(Object.keys(role).sort()).toEqual(["binding",·"roleId",·"roleKind",·"uses"]);
+         38 │ + ······}
+         39 │ + ····}),
+         40 │ + ··);
+     34  41 │   
+     35     │ - ··it("accepts·a·mapping·for·an·unused·declared·role·with·empty·uses",·withManifest((manifest)·=>·{
+     36     │ - ····const·result·=·previewTemplateRoleBindings(manifest,·[
+     37     │ - ······{·roleId:·"unused",·kind:·"internal-user",·userId·},
+     38     │ - ····]);
+     39     │ - ····expect(result.ok).toBe(true);
+     40     │ - ····if·(!result.ok)·return;
+     41     │ - ····expect(result.value.roles.find((role)·=>·role.roleId·===·"unused")).toEqual({
+     42     │ - ······roleId:·"unused",
+     43     │ - ······roleKind:·"internal-producer",
+     44     │ - ······binding:·{·kind:·"internal-user",·userId·},
+     45     │ - ······uses:·[],
+     46     │ - ····});
+     47     │ - ··}));
+         42 │ + ··it(
+         43 │ + ····"accepts·a·mapping·for·an·unused·declared·role·with·empty·uses",
+         44 │ + ····withManifest((manifest)·=>·{
+         45 │ + ······const·result·=·previewTemplateRoleBindings(manifest,·[
+         46 │ + ········{·roleId:·"unused",·kind:·"internal-user",·userId·},
+         47 │ + ······]);
+         48 │ + ······expect(result.ok).toBe(true);
+         49 │ + ······if·(!result.ok)·return;
+         50 │ + ······expect(result.value.roles.find((role)·=>·role.roleId·===·"unused")).toEqual({
+         51 │ + ········roleId:·"unused",
+         52 │ + ········roleKind:·"internal-producer",
+         53 │ + ········binding:·{·kind:·"internal-user",·userId·},
+         54 │ + ········uses:·[],
+         55 │ + ······});
+         56 │ + ····}),
+         57 │ + ··);
+     48  58 │   
+     49     │ - ··it("previews·a·validated·manifest·with·no·deliverables·or·intents",·withManifest((manifest)·=>·{
+     50     │ - ····const·result·=·previewTemplateRoleBindings(manifest,·mappings());
+     51     │ - ····expect(result.ok).toBe(true);
+     52     │ - ····if·(!result.ok)·return;
+     53     │ - ····expect(result.value.roles).toHaveLength(5);
+     54     │ - ····expect(result.value.roles.map((role)·=>·role.uses)).toEqual([[],·[],·[],·[],·[]]);
+     55     │ - ····expect(result.value.offsetAssumptions).toEqual([]);
+     56     │ - ··},·(manifest)·=>·{
+     57     │ - ····manifest.deliverables·=·[];
+     58     │ - ····manifest.intents·=·[];
+     59     │ - ··}));
+         59 │ + ··it(
+         60 │ + ····"previews·a·validated·manifest·with·no·deliverables·or·intents",
+         61 │ + ····withManifest(
+         62 │ + ······(manifest)·=>·{
+         63 │ + ········const·result·=·previewTemplateRoleBindings(manifest,·mappings());
+         64 │ + ········expect(result.ok).toBe(true);
+         65 │ + ········if·(!result.ok)·return;
+         66 │ + ········expect(result.value.roles).toHaveLength(5);
+         67 │ + ········expect(result.value.roles.map((role)·=>·role.uses)).toEqual([[],·[],·[],·[],·[]]);
+         68 │ + ········expect(result.value.offsetAssumptions).toEqual([]);
+         69 │ + ······},
+         70 │ + ······(manifest)·=>·{
+         71 │ + ········manifest.deliverables·=·[];
+         72 │ + ········manifest.intents·=·[];
+         73 │ + ······},
+         74 │ + ····),
+         75 │ + ··);
+     60  76 │   
+     61     │ - ··it("accepts·all·32·declared·roles·and·rejects·33·input·bindings",·withManifest((manifest)·=>·{
+     62     │ - ····const·input·=·manifest.roles.map((role)·=>·({
+     63     │ - ······roleId:·role.id,·kind:·"internal-user",·userId,
+     64     │ - ····}));
+     65     │ - ····const·result·=·previewTemplateRoleBindings(manifest,·input);
+     66     │ - ····expect(result.ok).toBe(true);
+     67     │ - ····if·(!result.ok)·return;
+     68     │ - ····expect(result.value.roles).toHaveLength(32);
+     69     │ - ····expect(result.value.roles.map((role)·=>·role.roleId))
+     70     │ - ······.toEqual(Array.from({·length:·32·},·(_,·index)·=>·`bound_role_${index}`));
+     71     │ - ····expect(result.value.roles.map((role)·=>·role.binding))
+     72     │ - ······.toEqual(Array.from({·length:·32·},·()·=>·({·kind:·"internal-user",·userId·})));
+     73     │ - ····expect(previewTemplateRoleBindings(manifest,·[
+     74     │ - ······...input,·{·roleId:·"bound_role_0",·kind:·"internal-user",·userId·},
+     75     │ - ····])).toEqual(invalid);
+     76     │ - ··},·(manifest)·=>·{
+     77     │ - ····manifest.roles·=·Array.from({·length:·32·},·(_,·index)·=>·({
+     78     │ - ······id:·`bound_role_${index}`,
+     79     │ - ······kind:·"internal-producer",
+     80     │ - ······label:·{·fa:·"نقش",·de:·"Rolle",·en:·"Role"·},
+     81     │ - ····}));
+     82     │ - ····manifest.deliverables·=·[];
+     83     │ - ····manifest.intents·=·[];
+     84     │ - ··}));
+         77 │ + ··it(
+         78 │ + ····"accepts·all·32·declared·roles·and·rejects·33·input·bindings",
+         79 │ + ····withManifest(
+         80 │ + ······(manifest)·=>·{
+         81 │ + ········const·input·=·manifest.roles.map((role)·=>·({
+         82 │ + ··········roleId:·role.id,
+         83 │ + ··········kind:·"internal-user",
+         84 │ + ··········userId,
+         85 │ + ········}));
+         86 │ + ········const·result·=·previewTemplateRoleBindings(manifest,·input);
+         87 │ + ········expect(result.ok).toBe(true);
+         88 │ + ········if·(!result.ok)·return;
+         89 │ + ········expect(result.value.roles).toHaveLength(32);
+         90 │ + ········expect(result.value.roles.map((role)·=>·role.roleId)).toEqual(
+         91 │ + ··········Array.from({·length:·32·},·(_,·index)·=>·`bound_role_${index}`),
+         92 │ + ········);
+         93 │ + ········expect(result.value.roles.map((role)·=>·role.binding)).toEqual(
+         94 │ + ··········Array.from({·length:·32·},·()·=>·({·kind:·"internal-user",·userId·})),
+         95 │ + ········);
+         96 │ + ········expect(
+         97 │ + ··········previewTemplateRoleBindings(manifest,·[
+         98 │ + ············...input,
+         99 │ + ············{·roleId:·"bound_role_0",·kind:·"internal-user",·userId·},
+        100 │ + ··········]),
+        101 │ + ········).toEqual(invalid);
+        102 │ + ······},
+        103 │ + ······(manifest)·=>·{
+        104 │ + ········manifest.roles·=·Array.from({·length:·32·},·(_,·index)·=>·({
+        105 │ + ··········id:·`bound_role_${index}`,
+        106 │ + ··········kind:·"internal-producer",
+        107 │ + ··········label:·{·fa:·"نقش",·de:·"Rolle",·en:·"Role"·},
+  270 more lines truncated
+  
+
+src/features/agency-projects/templates/templateRolePreview.ts format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+     62  62 │       case "review":
+     63  63 │         return intent.assigneeRoleId === roleId
+     64     │ - ········?·[{·...base,·kind:·intent.kind,·deliverableId:·intent.deliverableId,·field:·"assigneeRoleId"·}]
+         64 │ + ········?·[
+         65 │ + ············{
+         66 │ + ··············...base,
+         67 │ + ··············kind:·intent.kind,
+         68 │ + ··············deliverableId:·intent.deliverableId,
+         69 │ + ··············field:·"assigneeRoleId",
+         70 │ + ············},
+         71 │ + ··········]
+     65  72 │           : [];
+     66  73 │       case "assignment":
+     67  74 │         return (["internalProducerRoleId", "freelancerRoleId"] as const)
+     68  75 │           .filter((field) => intent[field] === roleId)
+     69     │ - ········.map((field)·=>·({·...base,·kind:·intent.kind,·deliverableId:·intent.deliverableId,·field·}));
+         76 │ + ········.map((field)·=>·({
+         77 │ + ··········...base,
+         78 │ + ··········kind:·intent.kind,
+         79 │ + ··········deliverableId:·intent.deliverableId,
+         80 │ + ··········field,
+         81 │ + ········}));
+     70  82 │       default:
+     71  83 │         return assertNever(intent);
+    ······· │ 
+     82  94 │         field: "responsibleRoleId",
+     83  95 │       }));
+     84     │ - ··return·[...deliverableUses,·...manifest.intents.flatMap((intent)·=>·usesForIntent(intent,·roleId))];
+         96 │ + ··return·[
+         97 │ + ····...deliverableUses,
+         98 │ + ····...manifest.intents.flatMap((intent)·=>·usesForIntent(intent,·roleId)),
+         99 │ + ··];
+     85 100 │   }
+     86 101 │   
+  
+
+Checked 3 files in 40ms. No fixes applied.
+Found 3 errors.
+check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Some errors were emitted while running checks.
+  
+

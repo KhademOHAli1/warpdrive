@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-11-01T08:16:23.013711+00:00",
+  "updatedAt": "2026-11-01T08:19:38.307097+00:00",
   "statusMeaning": "Evidence level only. A source-verified task is not accepted or complete. All 96 acceptance flags remain false.",
   "tasks": {
     "AP-00.1": {
@@ -29,7 +29,7 @@
     },
     "AP-00.7": {
       "status": "active",
-      "evidence": "52-file and registration six-file source windows released. New service-source window six serial tools passed in15.287281s/min17,337,454,592 bytes. First native attempt held before launch on default profile. Fresh verified-Colima attempt2 passed8/1 in4.888743s/min16,036,057,088 bytes; source unchanged, owned PG/marker/group gone, native slot released. No app/worker/build/install/provider activity. Exact14 numbering/module-env and3feedback source windows now passed/released at26.377603s and9.289990s, followed by explicitly amended27/1 postformat unitGREEN; all owned groups empty. Integration currently owns native-browser window; no Agency new native/build campaign before release.",
+      "evidence": "52-file and registration six-file source windows released. New service-source window six serial tools passed in15.287281s/min17,337,454,592 bytes. First native attempt held before launch on default profile. Fresh verified-Colima attempt2 passed8/1 in4.888743s/min16,036,057,088 bytes; source unchanged, owned PG/marker/group gone, native slot released. No app/worker/build/install/provider activity. Exact14 numbering/module-env and3feedback source windows now passed/released at26.377603s and9.289990s, followed by explicitly amended27/1 postformat unitGREEN; all owned groups empty. Integration currently owns native-browser window; no Agency new native/build campaign before release. Template role-preview exact3 source window passed/released,7serial tools15.761580s,min14,545,453,056 bytes, including13/1postformat units. No native/app/build/install/provider action.",
       "remaining": "Further static/native/heavy campaigns require current finite coordination; routine selected units stay one worker/30s/live5GiB. Accepted combined base/interfaces required before persistence.",
       "accepted": false
     },
@@ -83,7 +83,7 @@
     },
     "AP-10.1": {
       "status": "active",
-      "evidence": "qualification-round-scope-20261101.json: actual post-format 421 tests/18 files, feature-local types, Biome52 and unchanged-rule ESLint49 TS pass; exact hashes/commands/terminal receipts retained, including initial read-only wrapper overlap. Prior reds and scoped results remain historical. Separate project-create registration qualification supplies actual57/6, scoped types/Biome6/ESLint3 TS; no arithmetic aggregate or full application claim. Actual isolated real-PG8/1 permission-set service run now supplements source evidence, with candidate-lineage/native-auth/atomicity limits retained; full Agency DB/native/migration acceptance remains open. Separate exact14 numbering/module-env and3feedback focused types/Biome/unchanged-rule typedESLint now pass; feedback actual postformat27/1 passes with exact current hashes. No arithmetic aggregate.",
+      "evidence": "qualification-round-scope-20261101.json: actual post-format 421 tests/18 files, feature-local types, Biome52 and unchanged-rule ESLint49 TS pass; exact hashes/commands/terminal receipts retained, including initial read-only wrapper overlap. Prior reds and scoped results remain historical. Separate project-create registration qualification supplies actual57/6, scoped types/Biome6/ESLint3 TS; no arithmetic aggregate or full application claim. Actual isolated real-PG8/1 permission-set service run now supplements source evidence, with candidate-lineage/native-auth/atomicity limits retained; full Agency DB/native/migration acceptance remains open. Separate exact14 numbering/module-env and3feedback focused types/Biome/unchanged-rule typedESLint now pass; feedback actual postformat27/1 passes with exact current hashes. No arithmetic aggregate. Pure template role-preview adds separate actual13/1 postformat and focused types/Biome3/typedESLint3 evidence; no full-current-feature aggregate.",
       "remaining": "Full-repository types/lint/build, native numbering/config/admission proof, full Agency stores/auth-fence/migration/restore and later slices remain open. Real8 existing-service cases do not prove broader task acceptance.",
       "accepted": false
     },
@@ -198,8 +198,8 @@
     "AP-05.3": {
       "status": "active",
       "accepted": false,
-      "evidence": "Pure feature-local template role-binding/use preview now implemented after missing-module RED and actual11failed/2passed behavioral RED. Actual13/1GREEN and13/1after intent-projection refactor; exact keys, stableorder, role kinds, unused/empty/max32 and bidirectional isolation covered. qualification-template-role-preview-20261101.json. Exact3file static window requested, not started.",
-      "remaining": "Focused3file static and later full qualification; actual native staff/contact/current-scope/capability admission, dated/accessible full install preview, canonical activity/WF installation/replay/restore and original dependencies remain open."
+      "evidence": "Pure feature-local template role-binding/use preview now implemented after missing-module RED and actual11failed/2passed behavioral RED. Actual13/1GREEN and13/1after intent-projection refactor; exact keys, stableorder, role kinds, unused/empty/max32 and bidirectional isolation covered. qualification-template-role-preview-20261101.json. Exact3file noEmit/Biome/unchanged-rule typedESLint and actual13/1postformat units pass in15.761580s; all7source groups empty/released, exact current hashes retained.",
+      "remaining": "Later full qualification; actual native staff/contact/current-scope/capability admission, dated/accessible full install preview, canonical activity/WF installation/replay/restore and original dependencies remain open."
     }
   }
 }
