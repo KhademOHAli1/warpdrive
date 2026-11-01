@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-11-01T08:19:38.307097+00:00",
+  "updatedAt": "2026-11-01T08:33:02.076730+00:00",
   "statusMeaning": "Evidence level only. A source-verified task is not accepted or complete. All 96 acceptance flags remain false.",
   "tasks": {
     "AP-00.1": {
@@ -47,7 +47,7 @@
     },
     "AP-02.1": {
       "status": "active",
-      "evidence": "project-core-delta.md specifies four historical proposed stores plus a separately reviewable fifth protected/redactable history-content store. Native identity/CRM links, intent replay, constraints and source-only policies remain explicit; no DDL. Read-only CRM audit now makes dangling deal customer links, independent person/org policy, availability-before-admin visibility and inactive historical provenance cases explicit.",
+      "evidence": "project-core-delta.md specifies four historical proposed stores plus a separately reviewable fifth protected/redactable history-content store. Native identity/CRM links, intent replay, constraints and source-only policies remain explicit; no DDL. Read-only CRM audit now makes dangling deal customer links, independent person/org policy, availability-before-admin visibility and inactive historical provenance cases explicit. Nonexecutable structural four-store notation and decision annex now specify canonical FKs, safe bigint revision range, creation nullable previous facts and optional fifth same-project content FK; explicit crypto/replay/title/operations/retention decisions remain deferred. Independent read-only review found no structural contradiction; no type/lint/DB/DDL result.",
       "remaining": "Full additive domain, exact SQL/schema/FK/privacy review and actual allocation remain open; no DDL or persistence enabled.",
       "accepted": false
     },
@@ -71,7 +71,7 @@
     },
     "AP-08.1": {
       "status": "active",
-      "evidence": "Exact Privacy owner response retained in evidence/privacy-owner-project-core-review.md. Conditional review separates workforce/client subjects and minimal immutable facts from protected/redactable reasons; proposed fifth history-content store added for fresh review.",
+      "evidence": "Exact Privacy owner response retained in evidence/privacy-owner-project-core-review.md. Conditional review separates workforce/client subjects and minimal immutable facts from protected/redactable reasons; proposed fifth history-content store added for fresh review. Fresh Privacye2528d5 source audit confirms caseId-only crypto purposes and ciphertext formatVersion1, without Agency key/disposition or generic project fence APIs. privacy-owner-source-freshness-20261101.md and structural decision annex prepare exact owner review; prior65a579e review remains historical.",
       "remaining": "Fifth-store/schema/crypto/disposition/retention and source-subject registry review remain open. No lifecycle/discovery acceptance or generic project fence.",
       "accepted": false
     },
