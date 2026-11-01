@@ -55,8 +55,8 @@ grant store/evaluator, resource projection and worker-origin enforcement remain 
 6,024 full-lane unit cases in 961 files, standalone types and scoped lint, a production
 Next.js build and five compiled worker bundles at `d2257ce`. An independent clean clone's
 Bun 1.4.4 frozen install passed with unchanged package/lock hashes. Its whole-source lint
-stopped at Biome with 22 errors before ESLint; correction and a fresh full-lint result
-remain required. Full PG, service/runtime, browser, provider and release acceptance stay open.
+failed at Biome with 22 errors before ESLint. After a docs-only correction, the independent
+clone passed the full i18n/Biome/ESLint chain at `d238bcb`; the earlier failure remains recorded. Full PG, service/runtime, browser, provider and release acceptance stay open.
 
 ## BASE evidence
 

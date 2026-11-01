@@ -31,7 +31,8 @@ create a replacement goal or mark it complete merely because BASE has closed.
    The broad unit campaign was later deliberately terminated at 373 MiB free disk, exit 143;
    its parent and workers exited. Do not resume any campaign until stable headroom returns.
    The later D225 full unit lane and production build completed in separate finite windows;
-   the independent whole-source lint stopped at Biome. Read the current qualification record
+   the D225 whole-source lint stopped at Biome. A docs-only correction at `d238bcb` then
+   passed the complete i18n/Biome/ESLint chain. Read the current qualification record
    before choosing the next gate. No subsequent service startup is established.
 8. The guarded service smoke requires empty users/provider data. Once useful fixtures are
    intentionally added, use another disposable qualification profile or adapt its contract
@@ -39,7 +40,12 @@ create a replacement goal or mark it complete merely because BASE has closed.
 
 ## Independent source restoration
 
-The latest 1 November source/evidence export is
+The latest 1 November records/source delta is
+`/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/qualification-20261101`.
+It includes the clean-install/lint receipts and a source bundle from foundation 67 through
+its exact recorded head. No intermediate progress bundle is required for that restore.
+
+The earlier application-source checkpoint is
 `/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/progress-20261101`.
 Its HANDOFF and checksum manifest identify the exact record head. The incremental
 bundle contains all changes since the verified foundation head `67eb151`, so it needs
@@ -127,7 +133,8 @@ active-process check, retaining its own Git metadata, source and lockfile. Its i
 dependencies were later removed during verified critical disk pressure. A fresh independent
 Bun 1.4.4 frozen install at D225 subsequently passed, leaving an ordinary node_modules
 directory, unchanged package/lock hashes and a clean tree. Whole-source lint then failed at
-Biome before ESLint. Recheck the actual current clone state before reuse. This keeps
+Biome before ESLint; its later docs-only `d238bcb` full-lint recheck passed with a clean
+tree and unchanged package/lock files. Recheck actual clone state before reuse. This keeps
 generated build/dependency churn outside the file-provider tree. Fetch only reviewable commits from the
 preview, fast-forward there, install frozen dependencies under pinned Bun and run gates.
 This avoids changing the active app's `.next` directory or staging peer planning edits.

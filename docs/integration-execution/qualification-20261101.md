@@ -4,8 +4,8 @@ Goal active: **40 of 446 tasks complete, 406 planned**. Latest application/test
 source: `5bf5563618297b88d4755899125cf7debb4b864f`. Later documentation/tracker
 commits culminated in frozen qualification head
 `d2257ceb368b36ae45cd5d05d9569f252ae4512c` (D225). Bun was freshly reverified as 1.4.4.
-The later full unit/build/install passes and whole-lint failure below retain their
-own receipts. This is not full runtime, provider or release acceptance.
+The later full unit/build/install passes, D225 lint failure and successful docs-only
+full-lint recheck below retain their own receipts. This is not full runtime, provider or release acceptance.
 
 ## Observed gates
 
@@ -67,7 +67,8 @@ source does not repair it by documentation.
 On 1 November 2026, frozen source `d2257ceb368b36ae45cd5d05d9569f252ae4512c`
 passed the complete root unit-file manifest and production/worker compilation under pinned
 Bun 1.4.4. Its independent clean checkout also completed a frozen install. Whole-repository
-lint **failed**, so this is not an all-green repository, runtime or release qualification.
+lint **failed at D225**. The docs-only recheck below subsequently passed; neither result
+establishes runtime or release qualification.
 
 | Gate                                           | Observed result                                                                                | Evidence and scope                                                                                                                                                                                                                                                                                   |
 | ---------------------------------------------- | ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -75,7 +76,7 @@ lint **failed**, so this is not an all-green repository, runtime or release qual
 | Production application build                   | **Passed**, exit 0, 65.084s, group 24790                                                       | `next-production-build-20261101.log/json`, summarized in `production-build-qualification-20261101.json`. `next build --webpack` compiled, completed its TypeScript phase and generated all 66 static pages. Compile evidence only.                                                                   |
 | Worker/WS/operator bundles                     | **Passed**, exit 0, 0.207s, group 25658                                                        | `worker-compilation-20261101.log/json`; `scripts/build-workers.mjs` produced worker, realtime WS, migrate, sweep-spam and auth-operator bundles. These executables were compiled, not started by this gate.                                                                                          |
 | Independent frozen install                     | **Passed**, exit 0, 10.294s, group 44210                                                       | `clean-install-20261101.log/json`, D225, pinned `bun install --frozen-lockfile`; package/lock hashes unchanged, clean working tree, dependencies present and root `node_modules` not a symlink. This is dependency installation, not a database clean-install/upgrade test.                          |
-| Whole-repository lint                          | **Failed**, exit 1, 3.315s, group 46501                                                        | `clean-lint-20261101.log/json`, D225. The chained i18n check reached Biome, which reported 22 errors, 11 warnings and 9 infos and stopped the chain. Twenty printed errors are documentation formatter diagnostics; the diagnostic cap hides other details. Whole-repository ESLint did **not** run. |
+| Whole-repository lint at D225                  | **Failed**, exit 1, 3.315s, group 46501                                                        | `clean-lint-20261101.log/json`, D225. The chained i18n check reached Biome, which reported 22 errors, 11 warnings and 9 infos and stopped the chain. Twenty printed errors are documentation formatter diagnostics; the diagnostic cap hides other details. Whole-repository ESLint did **not** run. |
 | Affected real-PostgreSQL integration selection | **59/59 in 12 files**, exit 0, 7.599s, group 2298                                              | Retained `actor-affected-pg-20261101.log/json` and `actor-freshness-qualification.md`: existing disposable PostgreSQL16 harness, one worker. Not the programme PostgreSQL18 profile and not the full integration lane.                                                                               |
 | Standalone TypeScript project check            | **Passed**, exit 0, 15.140s, group 6231                                                        | `source-types-final-20261101.log/json` at `ed9cdebbb7d379eb393b1a3fd748b8db0fff0d59`: `tsc --noEmit -p tsconfig.typecheck.json --incremental false`. This was the standalone compiler command, not a new invocation of the complete `bun run typecheck` script.                                      |
 | Scoped type-aware ESLint                       | **Passed on 18 selected TS/TSX files**, exit 0, 6.846s, group 5861                             | `scoped-eslint-green-20261101.log/json` at `5bf5563618297b88d4755899125cf7debb4b864f`. This does not substitute for the unreached whole-repository ESLint stage.                                                                                                                                     |
@@ -107,11 +108,10 @@ attribution in `actor-freshness-qualification.md` rather than inventing a D225 P
 
 ## Remaining limits after these results
 
-The complete unit lane, frozen dependency install and application/worker compilation are now
-observed passes for the named source/profile. Whole-repository lint remains failed; its complete
-diagnostic inventory and whole-repository ESLint acceptance remain open. The 20 printed Markdown
-formatter errors are not proof that every one of the 22 errors is formatting-only. Do not suppress
-or downgrade the failing gate merely because the separate application build succeeded.
+The complete unit lane, frozen dependency install and application/worker compilation are
+observed passes for their named source/profile. D225 whole-repository lint failed and retained
+its capped diagnostic log. The subsequent docs-only correction and full static pass are below;
+that later run does not convert the original failed run into a pass.
 
 The complete real-PostgreSQL integration lane has not been established by the 59-case affected
 selection. Browser geometry/accessibility/identity journeys, a fresh running application plus
@@ -129,3 +129,24 @@ checkpoint is `outputs/progress-20261101`. Its pending labels were correct at ex
 Web 3160, realtime 8080 and the programme worker were absent at the latest inventory.
 PG/S3 data was preserved; listeners alone are not application health. No push, deployment,
 external delivery or provider-account installation occurred here.
+
+## Full static recheck after document correction
+
+At docs-only `d238bcbc50f95f05875b40c6b52138613c0a0368`, the independent clean clone ran
+the complete pinned Bun 1.4.4 `bun run lint` chain: i18n check, Biome and whole-repository
+type-aware ESLint. Process group 51729 completed **exit 0 in 50.580 seconds**, with at least
+**15,181,611,008 available bytes** throughout the observed window. Biome checked 3,545 files
+with zero errors, 11 warnings and 9 informational diagnostics. Those diagnostics remain visible;
+no lint rule was disabled or downgraded. ESLint returned successfully, completing the chain.
+
+The formatter corrected 22 tracked execution Markdown files. Sixteen files changed only
+whitespace/table alignment, verified by normalized content comparison; eight documents also
+received reviewed qualification or migration-warning text. The source diff from D225 contains
+only those 24 Markdown paths: application/test/schema/package/lock bytes are unchanged. All nine
+protected peer planning files retained their hashes. No task status changed.
+
+Receipts: `clean-lint-recheck-20261101.log/json`, `full-static-qualification-20261101.json`
+and the exact runner. The clone remained clean with unchanged package/lock hashes and an
+ordinary node_modules directory. The owned process group had no remaining members; its window
+was released. No PostgreSQL, install, build or service campaign followed by inheritance.
+Full-PG, browser/runtime, actual provider, deployed recovery and release gates remain separate.

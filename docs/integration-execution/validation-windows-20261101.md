@@ -125,5 +125,6 @@ The independently reviewed MCP inventory and trilingual consent design subsequen
 closed AISEC-001/002. Current tracker: **40 completed, 406 planned**, 446 total.
 Those design/source closures do not implement scoped grants. The later D225 checkpoint
 passed the complete 6,024-case unit lane, production/worker compilation and independent
-frozen dependency install; whole-source lint failed at Biome before ESLint. Full-PG,
+frozen dependency install. D225 whole-source lint failed at Biome before ESLint; the later
+docs-only `d238bcb` full-lint recheck passed. Full-PG,
 runtime/browser and provider gates remain separate in the linked current record.

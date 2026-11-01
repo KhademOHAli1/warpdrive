@@ -83,6 +83,7 @@ No task was closed for this refactor; the live tracker owns the current overall 
 
 The [1 November D225 checkpoint](qualification-20261101.md) subsequently completed the
 full 6,024-case unit lane, production/worker compilation and independent frozen dependency
-install. Whole-source lint stopped at Biome before ESLint. Its exact receipts and remaining
+install. D225 whole-source lint stopped at Biome before ESLint; the subsequent docs-only
+`d238bcb` full-lint recheck passed. Its exact receipts and remaining
 full-PG, browser/runtime, authority and provider gates are separate from this focused record.
 This later evidence does not rewrite earlier red/interruption results or close broader tasks.
