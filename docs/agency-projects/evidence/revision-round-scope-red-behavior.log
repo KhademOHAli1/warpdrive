@@ -1,0 +1,378 @@
+$ bun --bun vitest run --project unit src/features/agency-projects/reviews/revisionRoundScope.test.ts src/features/agency-projects/reviews/revisionRoundScopePolicy.test.ts "--maxWorkers=1"
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+  - ESM syntax in a file loaded as CommonJS (vitest.classify.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.5 /Users/ali/Developer/warpdrive-agency-projects
+
+ ❯ |unit| src/features/agency-projects/reviews/revisionRoundScopePolicy.test.ts (7 tests | 7 failed) 7ms
+   ❯ contextual comparison against supplied recorded allowance terms (7)
+     × distinguishes unknown, agreed zero and an explicitly included first round 4ms
+     × includes the recorded limit and requires scope review for the next declared round 0ms
+     × rejects another target or supplied-version mismatch before classification 0ms
+     × returns stable minimal assessments without private provenance or financial claims 0ms
+     × repeats comparisons without consuming rounds or mutating supplied terms 1ms
+     × does not reinterpret an old supplied pair after a different version is assessed 0ms
+     × uses safe-integer bounds without imposing a round-history business cap 0ms
+ ❯ |unit| src/features/agency-projects/reviews/revisionRoundScope.test.ts (24 tests | 5 failed) 9ms
+   ❯ explicit revision-round declaration boundary (16)
+     × requires an explicit ordinal and selected allowance version 3ms
+     × canonicalizes target UUIDs without matching display names 0ms
+   ❯ versioned staff-recorded allowance boundary (7)
+     × retains explicit unknown and agreed zero as distinct declarations 1ms
+     × requires canonical scope and native recorder identities for both variants 1ms
+     × requires exact recording time while preserving source text and references 0ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 12 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| src/features/agency-projects/reviews/revisionRoundScopePolicy.test.ts > contextual comparison against supplied recorded allowance terms > distinguishes unknown, agreed zero and an explicitly included first round
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: true, value: { …(5) } }
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "allowanceVersion": 2,
+-     "classification": "allowance-unknown",
+-     "deliverableId": "defabcde-4567-4def-bcde-456789012abc",
+-     "projectId": "cdefabcd-3456-4cde-abcd-345678901abc",
+-     "roundNumber": 1,
+-   },
++   "error": "round_scope_target_conflict",
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/reviews/revisionRoundScopePolicy.test.ts:22:62
+     20|       [agreed(1), "contextual-included"],
+     21|     ] as const) {
+     22|       expect(evaluateRevisionRoundScope(round(), allowance)).toEqual({
+       |                                                              ^
+     23|         ok: true,
+     24|         value: { projectId, deliverableId, roundNumber: 1, allowanceVe…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/12]⎯
+
+ FAIL  |unit| src/features/agency-projects/reviews/revisionRoundScopePolicy.test.ts > contextual comparison against supplied recorded allowance terms > includes the recorded limit and requires scope review for the next declared round
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: true, value: { …(5) } }
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "allowanceVersion": 2,
+-     "classification": "contextual-included",
+-     "deliverableId": "defabcde-4567-4def-bcde-456789012abc",
+-     "projectId": "cdefabcd-3456-4cde-abcd-345678901abc",
+-     "roundNumber": 2,
+-   },
++   "error": "round_scope_target_conflict",
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/reviews/revisionRoundScopePolicy.test.ts:30:61
+     28|
+     29|   it("includes the recorded limit and requires scope review for the ne…
+     30|     expect(evaluateRevisionRoundScope(round(2), agreed(2))).toEqual({
+       |                                                             ^
+     31|       ok: true,
+     32|       value: {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/12]⎯
+
+ FAIL  |unit| src/features/agency-projects/reviews/revisionRoundScopePolicy.test.ts > contextual comparison against supplied recorded allowance terms > rejects another target or supplied-version mismatch before classification
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: false, …(1) }
+
+- Expected
++ Received
+
+  {
+-   "error": "round_scope_version_conflict",
++   "error": "round_scope_target_conflict",
+    "ok": false,
+  }
+
+ ❯ src/features/agency-projects/reviews/revisionRoundScopePolicy.test.ts:55:10
+     53|     for (const allowance of [agreed(0), unknownAllowance()]) {
+     54|       expect(evaluateRevisionRoundScope(round(), { ...allowance, versi…
+     55|         .toEqual({ ok: false, error: "round_scope_version_conflict" });
+       |          ^
+     56|     }
+     57|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/12]⎯
+
+ FAIL  |unit| src/features/agency-projects/reviews/revisionRoundScopePolicy.test.ts > contextual comparison against supplied recorded allowance terms > returns stable minimal assessments without private provenance or financial claims
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: true, value: { …(5) } }
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "allowanceVersion": 2,
+-     "classification": "contextual-included",
+-     "deliverableId": "defabcde-4567-4def-bcde-456789012abc",
+-     "projectId": "cdefabcd-3456-4cde-abcd-345678901abc",
+-     "roundNumber": 1,
+-   },
++   "error": "round_scope_target_conflict",
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/reviews/revisionRoundScopePolicy.test.ts:61:20
+     59|   it("returns stable minimal assessments without private provenance or…
+     60|     const result = evaluateRevisionRoundScope(round(), agreed());
+     61|     expect(result).toEqual({
+       |                    ^
+     62|       ok: true,
+     63|       value: {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/12]⎯
+
+ FAIL  |unit| src/features/agency-projects/reviews/revisionRoundScopePolicy.test.ts > contextual comparison against supplied recorded allowance terms > repeats comparisons without consuming rounds or mutating supplied terms
+AssertionError: expected { ok: false, …(1) } to match object { ok: true, …(1) }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "classification": "contextual-included",
+-   },
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/reviews/revisionRoundScopePolicy.test.ts:89:19
+     87|     const before = structuredClone({ declaration, allowance });
+     88|     const first = evaluateRevisionRoundScope(declaration, allowance);
+     89|     expect(first).toMatchObject({ ok: true, value: { classification: "…
+       |                   ^
+     90|     expect(evaluateRevisionRoundScope(declaration, allowance)).toEqual…
+     91|     expect({ declaration, allowance }).toEqual(before);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/12]⎯
+
+ FAIL  |unit| src/features/agency-projects/reviews/revisionRoundScopePolicy.test.ts > contextual comparison against supplied recorded allowance terms > does not reinterpret an old supplied pair after a different version is assessed
+AssertionError: expected { ok: false, …(1) } to match object { ok: true, …(1) }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "classification": "scope-review-required",
+-   },
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/reviews/revisionRoundScopePolicy.test.ts:98:8
+     96|     const changed = { ...agreed(0), version: 3 };
+     97|     expect(evaluateRevisionRoundScope({ ...round(2), expectedAllowance…
+     98|       .toMatchObject({ ok: true, value: { classification: "scope-revie…
+       |        ^
+     99|     expect(evaluateRevisionRoundScope(round(2), changed))
+    100|       .toEqual({ ok: false, error: "round_scope_version_conflict" });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/12]⎯
+
+ FAIL  |unit| src/features/agency-projects/reviews/revisionRoundScopePolicy.test.ts > contextual comparison against supplied recorded allowance terms > uses safe-integer bounds without imposing a round-history business cap
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: true, value: { …(4) } }
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "deliverableId": "defabcde-4567-4def-bcde-456789012abc",
+-     "expectedAllowanceVersion": 9007199254740991,
+-     "projectId": "cdefabcd-3456-4cde-abcd-345678901abc",
+-     "roundNumber": 9007199254740991,
+-   },
++   "error": "invalid_round_declaration",
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/reviews/revisionRoundScopePolicy.test.ts:110:56
+    108|     };
+    109|     const allowance = { ...agreed(Number.MAX_SAFE_INTEGER), version: N…
+    110|     expect(parseRevisionRoundDeclaration(declaration)).toEqual({ ok: t…
+       |                                                        ^
+    111|     expect(parseRevisionRoundAllowance(allowance)).toEqual({ ok: true,…
+    112|     expect(evaluateRevisionRoundScope(declaration, allowance)).toMatch…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/12]⎯
+
+ FAIL  |unit| src/features/agency-projects/reviews/revisionRoundScope.test.ts > explicit revision-round declaration boundary > requires an explicit ordinal and selected allowance version
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: true, value: { …(4) } }
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "deliverableId": "defabcde-4567-4def-bcde-456789012abc",
+-     "expectedAllowanceVersion": 2,
+-     "projectId": "cdefabcd-3456-4cde-abcd-345678901abc",
+-     "roundNumber": 1,
+-   },
++   "error": "invalid_round_declaration",
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/reviews/revisionRoundScope.test.ts:22:52
+     20|
+     21|   it("requires an explicit ordinal and selected allowance version", ()…
+     22|     expect(parseRevisionRoundDeclaration(round())).toEqual({ ok: true,…
+       |                                                    ^
+     23|     for (const field of ["roundNumber", "expectedAllowanceVersion"]) {
+     24|       const input = round();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/12]⎯
+
+ FAIL  |unit| src/features/agency-projects/reviews/revisionRoundScope.test.ts > explicit revision-round declaration boundary > canonicalizes target UUIDs without matching display names
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: true, value: { …(4) } }
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "deliverableId": "defabcde-4567-4def-bcde-456789012abc",
+-     "expectedAllowanceVersion": 2,
+-     "projectId": "cdefabcd-3456-4cde-abcd-345678901abc",
+-     "roundNumber": 1,
+-   },
++   "error": "invalid_round_declaration",
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/reviews/revisionRoundScope.test.ts:46:50
+     44|       deliverableId: deliverableId.toUpperCase(),
+     45|     };
+     46|     expect(parseRevisionRoundDeclaration(input)).toEqual({ ok: true, v…
+       |                                                  ^
+     47|     for (const field of ["projectId", "deliverableId"]) {
+     48|       for (const value of ["same-title", "", null, undefined]) {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/12]⎯
+
+ FAIL  |unit| src/features/agency-projects/reviews/revisionRoundScope.test.ts > versioned staff-recorded allowance boundary > retains explicit unknown and agreed zero as distinct declarations
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: true, value: { …(7) } }
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "deliverableId": "defabcde-4567-4def-bcde-456789012abc",
+-     "kind": "unknown",
+-     "projectId": "cdefabcd-3456-4cde-abcd-345678901abc",
+-     "provenance": "staff-recorded",
+-     "recordedAt": "2026-11-01T09:30:00.000000001+03:30",
+-     "recordedByUserId": "abcdefab-1234-4abc-8def-1234567890ab",
+-     "version": 2,
+-   },
++   "error": "invalid_round_allowance",
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/reviews/revisionRoundScope.test.ts:71:8
+     69|   it("retains explicit unknown and agreed zero as distinct declaration…
+     70|     expect(parseRevisionRoundAllowance(unknownAllowance()))
+     71|       .toEqual({ ok: true, value: unknownAllowance() });
+       |        ^
+     72|     expect(parseRevisionRoundAllowance(agreed(0))).toEqual({ ok: true,…
+     73|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/12]⎯
+
+ FAIL  |unit| src/features/agency-projects/reviews/revisionRoundScope.test.ts > versioned staff-recorded allowance boundary > requires canonical scope and native recorder identities for both variants
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: true, value: { …(10) } }
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "agreementSource": "  شرح‌ خدمات / Leistungsbeschreibung  ",
+-     "deliverableId": "defabcde-4567-4def-bcde-456789012abc",
+-     "evidenceReference": "https://agreement.example.invalid/Project/مدل%2Fv1?part=A%2Fb#Teil-1",
+-     "includedRounds": 2,
+-     "kind": "agreed",
+-     "projectId": "cdefabcd-3456-4cde-abcd-345678901abc",
+-     "provenance": "staff-recorded",
+-     "recordedAt": "2026-11-01T09:30:00.000000001+03:30",
+-     "recordedByUserId": "abcdefab-1234-4abc-8def-1234567890ab",
+-     "version": 2,
+-   },
++   "error": "invalid_round_allowance",
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/reviews/revisionRoundScope.test.ts:98:48
+     96|       recordedByUserId: recorderId.toUpperCase(),
+     97|     };
+     98|     expect(parseRevisionRoundAllowance(input)).toEqual({ ok: true, val…
+       |                                                ^
+     99|     for (const allowance of [agreed(), unknownAllowance()]) {
+    100|       for (const field of ["projectId", "deliverableId", "recordedByUs…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/12]⎯
+
+ FAIL  |unit| src/features/agency-projects/reviews/revisionRoundScope.test.ts > versioned staff-recorded allowance boundary > requires exact recording time while preserving source text and references
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: true, value: { …(10) } }
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "agreementSource": "  شرح‌ خدمات / Leistungsbeschreibung  ",
+-     "deliverableId": "defabcde-4567-4def-bcde-456789012abc",
+-     "evidenceReference": "https://agreement.example.invalid/Project/مدل%2Fv1?part=A%2Fb#Teil-1",
+-     "includedRounds": 2,
+-     "kind": "agreed",
+-     "projectId": "cdefabcd-3456-4cde-abcd-345678901abc",
+-     "provenance": "staff-recorded",
+-     "recordedAt": "2026-11-01T09:30:00.000000001+03:30",
+-     "recordedByUserId": "abcdefab-1234-4abc-8def-1234567890ab",
+-     "version": 2,
+-   },
++   "error": "invalid_round_allowance",
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/reviews/revisionRoundScope.test.ts:128:51
+    126|
+    127|   it("requires exact recording time while preserving source text and r…
+    128|     expect(parseRevisionRoundAllowance(agreed())).toEqual({ ok: true, …
+       |                                                   ^
+    129|     for (const recordedAt of [
+    130|       undefined,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/12]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  12 failed | 19 passed (31)
+   Start at  06:32:09
+   Duration  140ms (tests 36%, transform 32%, import 12%, setup 11%, worker 8%)
+
+error: "vitest" exited with code 1
+error: script "test:unit" exited with code 1

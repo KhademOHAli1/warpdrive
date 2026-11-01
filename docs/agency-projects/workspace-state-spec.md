@@ -171,6 +171,18 @@ Language changes relabel the current draft without changing selected contacts, o
 
 Use one page h1, semantic section headings, real buttons and adapter labels naming the field/action. Announce a completed save or error once in an appropriate live region; do not announce every polling refresh. Preserve focus while data updates. At 200% zoom, required content and actions remain reachable without two-direction scrolling. External references render as bounded plain text or safe allowed links with no automatic preview fetch, upload, public grant or hosted asset surface.
 
+## Replay and telemetry protection
+
+1 November source amendment, audited against Agency `3e84bc14c60cd3abb7c6340ba2022e6aa0dc3af2`. This adds implementation and qualification requirements; no Agency UI or telemetry behavior is enabled by the amendment.
+
+The existing `src/features/observability/replayMasking.ts` exports `MASK_CLASS` (`ph-mask-email`) and `BLOCK_CLASS` (`ph-block-email`). Its recording configuration has `maskAllInputs: false`. `TelemetryProvider.tsx` enables autocapture and navigation pageviews, so sensitive Agency content needs deliberate exclusion. Follow the actual email surfaces: `src/features/email/MessageBodyFrame.tsx` blocks the sensitive container with `BLOCK_CLASS`; `composer/RichTextBody.tsx` pairs masking with `ph-no-capture`.
+
+Use the existing `BLOCK_CLASS` on protected Agency containers and `ph-no-capture` to exclude their interactions from autocapture. Cover authored project/client context, briefs, notes, reasons, feedback, agreement/source text, evidence/version references, contact/address details, rates, costs and margins. Apply markers at actual rendered boundaries, including dialog, Sheet, Popover and portal content; a parent outside the portal does not establish descendant coverage. Use `MASK_CLASS` only where its narrower text masking is deliberately sufficient. These markers affect telemetry capture, not native labels, keyboard access, text readability or permissions.
+
+Do not send protected values as telemetry properties, query/path strings, exception messages or console output. The generic scrubber is not the protection boundary: `scrub.ts` permits `reason` and `$` properties, only removes emails from message/error strings, and does not comprehensively remove financial values or nested payloads. Use shape-only failure telemetry following `resultSeam.ts`: registered error ID, fixed surface and pathname without authored/private query values. Preserve existing native employee identification and `next.config.ts` server-function argument logging disabled; introduce no client identity, external actor identification or raw form logging.
+
+Before enabling UI, qualify marker coverage on actual rendered editable/read-only/history/error states and all portaled surfaces in FA/DE/EN. Verify actual browser replay/autocapture behavior with synthetic protected content and an isolated inspected capture boundary; a marker string or passing catalog test alone is not capture evidence. Record that result separately from source review and from any live-provider qualification. Current project/financial authority and Privacy field-disclosure checks remain mandatory even when telemetry markers are present.
+
 ## Required design verification and open decisions
 
 This proposal supplies states and draft copy only. AP-01 acceptance still requires the accepted combined shell, implemented catalogs/ICU parity, actual native-language feedback or an explicit pending record, and rendered/native evidence on the exact candidate. Use the modeling assignment, short-video revision and multi-contact client scenarios; record design hypotheses separately from participant observations.

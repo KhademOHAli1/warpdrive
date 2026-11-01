@@ -46,7 +46,7 @@
     "dependencies": "AP-00.1",
     "owner": "Agency implementation chat; shared edits require owner review",
     "status": "active",
-    "evidence": "Six authorized owner coordination requests; Settings presentation review received and retained in evidence/settings-owner-compatibility-review.md; concrete four-store/authority/Privacy delta prepared.",
+    "evidence": "Six authorized owner coordination channels; Settings presentation review retained; five-store protected-history proposal and concrete registration-only project.create review patch prepared. Platform/Settings received exact patch for contract review.",
     "remaining": "Actual Platform/Privacy permission, admission, writer fence, schema and allocation acceptance remains open; Calendar and quotation contracts remain owner-gated.",
     "accepted": false
   },
@@ -114,8 +114,8 @@
     "dependencies": "AP-00.2",
     "owner": "Agency implementation chat; shared edits require owner review",
     "status": "active",
-    "evidence": "47-file source-check exception completed sequentially under60s owned deadlines/live5GiB floor;7 batch groups verified empty/min20,368,809,984 bytes; window released. Routine selected30s/one-worker units remain separately bounded. No native/PG/build/install/provider or broad suite.",
-    "remaining": "Further checks need a new finite window. No Agency service/DB/migration allocation exists; accepted shared interfaces/base required before persistence qualification.",
+    "evidence": "Completed 47-file source-check batch: all seven groups empty, minimum 20,368,809,984 bytes, released. New explicit-round selected-unit runs used one worker, 30s deadlines and live 5GiB floor; three groups empty. Exact 52-file static/integrated batch requested, not started or inherited.",
+    "remaining": "Await a new finite static window; native/PG/build/install/provider and broad qualification remain separate. No Agency service, DB or migration allocation exists; accepted shared interfaces/base required before persistence qualification.",
     "accepted": false
   },
   {
@@ -284,7 +284,7 @@
     "dependencies": "AP-00.3;AP-00.6",
     "owner": "Agency implementation chat; shared edits require owner review",
     "status": "active",
-    "evidence": "project-core-delta.md specifies four proposed stores, constraints, native identity/CRM links, idempotency and history; pure domain foundation285 prior cases and separate starter 13-case result retained.",
+    "evidence": "project-core-delta.md specifies four historical proposed stores plus a separately reviewable fifth protected/redactable history-content store. Native identity/CRM links, intent replay, constraints and source-only policies remain explicit; no DDL. Read-only CRM audit now makes dangling deal customer links, independent person/org policy, availability-before-admin visibility and inactive historical provenance cases explicit.",
     "remaining": "Full additive domain, exact SQL/schema/FK/privacy review and actual allocation remain open; no DDL or persistence enabled.",
     "accepted": false
   },
@@ -301,7 +301,7 @@
     "dependencies": "AP-02.1",
     "owner": "Agency implementation chat; shared edits require owner review",
     "status": "active",
-    "evidence": "Concrete proposed create/read/edit/lifecycle/owner action table; independent edit/coordinate grants; fresh Settings review identified native admin/high-risk/grantor and team revocation-through-commit gates.",
+    "evidence": "Concrete create/read/edit/lifecycle/owner action table and independent edit/coordinator grants retained. owner-review/project-create-registration-review.patch supplies exact five-path registration-only proposal at 3e84bc1: ordinary defaults deny, high-risk grantors/admin semantics unchanged, FA/DE/EN labels. Unapplied/untested; owner acceptance requested. Settings accepted the exact registration/native-admin/high-risk contract for test-first implementation, with true-map update and exhaustive-write boundary qualifications; verbatim evidence retained. Platform review and application remain pending.",
     "remaining": "Owner acceptance and actual permission/fence patches plus real deny/race evidence remain open. Pure transition validation is not actor authorization.",
     "accepted": false
   },
@@ -709,7 +709,7 @@
     "dependencies": "AP-05.1;AP-01.5",
     "owner": "Agency implementation chat; shared edits require owner review",
     "status": "active",
-    "evidence": "4b74635 commits modeling, short-video and campaign v1 manifests with FA/DE/EN source copy, unresolved roles and editable calendar-day assumptions. Genuine incomplete-catalog red6fail7pass; formatted focused green13pass. Current candidate feature341/13 plus narrow types/lint/Biome pass in qualification-feature-20261101.json.",
+    "evidence": "4b74635 commits modeling, short-video and campaign v1 manifests with FA/DE/EN source copy, unresolved roles and editable calendar-day assumptions. Genuine incomplete-catalog red6fail7pass; formatted focused green13pass. Historical 341/13 qualification is superseded for the preceding 47-file feature by actual 390/16 plus narrow types/Biome/ESLint in qualification-manual-20261101.json; the new round candidate is separately pending.",
     "accepted": false,
     "remaining": "Native-language/UI review, actual role/date preview, persisted publication/install and task acceptance remain open."
   },
@@ -861,10 +861,10 @@
     "expected_passing_tests": "T13/T15: zero/unknown included rounds remain distinct; request counts never automatically create a charge.",
     "dependencies": "AP-06.1",
     "owner": "Agency implementation chat; shared edits require owner review",
-    "status": "planned",
-    "evidence": "Not implemented or qualified",
-    "remaining": "Original outcome, dependencies and applicable acceptance tests remain",
-    "accepted": false
+    "status": "active",
+    "evidence": "Strict explicit per-deliverable round/recorded-allowance parsers and contextual classifier implemented test-first: actual missing-import red, behavioral 12 failed/19 passed, selected 31 passed in 2 files. Unknown and agreed zero remain distinct; supplied-version mismatch fails; no commercial authority. Static/integrated checks pending. revision-round-scope-contract.md.",
+    "accepted": false,
+    "remaining": "AP-06.1 exact work-version and round lifecycle, current authorized term selection, immutable provenance/history/correction/replay, Privacy and real commercial handoff remain open. No round recording or original task acceptance."
   },
   {
     "id": "AP-06.4",
@@ -879,7 +879,7 @@
     "dependencies": "AP-06.2;AP-06.3",
     "owner": "Agency implementation chat; shared edits require owner review",
     "status": "active",
-    "evidence": "Feature-local review boundaries/policy: selected 43/43 green after genuine 17/19 behavioral, 5/34 epoch and 7/36 chronology reds. Exact version/evidence/time strings, separate internal/client records, complete policy receipts, non-resurrecting epochs and monotonic server recording tested. qualification-review-decisions.json. Current candidate feature341/13 plus narrow types/lint/Biome pass in qualification-feature-20261101.json.",
+    "evidence": "Feature-local review boundaries/policy: selected 43/43 green after genuine 17/19 behavioral, 5/34 epoch and 7/36 chronology reds. Exact version/evidence/time strings, separate internal/client records, complete policy receipts, non-resurrecting epochs and monotonic server recording tested. qualification-review-decisions.json. Historical 341/13 qualification is superseded for the preceding 47-file feature by actual 390/16 plus narrow types/Biome/ESLint in qualification-manual-20261101.json; the new round candidate is separately pending.",
     "accepted": false,
     "remaining": "Native authority and current contact/version ownership, trusted snapshot loader, idempotent service envelope, transactional history/CAS, real PG, UI/Privacy and original task dependencies remain open."
   },
@@ -896,7 +896,7 @@
     "dependencies": "AP-06.4",
     "owner": "Agency implementation chat; shared edits require owner review",
     "status": "active",
-    "evidence": "Feature-local review boundaries/policy: selected 43/43 green after genuine 17/19 behavioral, 5/34 epoch and 7/36 chronology reds. Exact version/evidence/time strings, separate internal/client records, complete policy receipts, non-resurrecting epochs and monotonic server recording tested. qualification-review-decisions.json. Current candidate feature341/13 plus narrow types/lint/Biome pass in qualification-feature-20261101.json.",
+    "evidence": "Feature-local review boundaries/policy: selected 43/43 green after genuine 17/19 behavioral, 5/34 epoch and 7/36 chronology reds. Exact version/evidence/time strings, separate internal/client records, complete policy receipts, non-resurrecting epochs and monotonic server recording tested. qualification-review-decisions.json. Historical 341/13 qualification is superseded for the preceding 47-file feature by actual 390/16 plus narrow types/Biome/ESLint in qualification-manual-20261101.json; the new round candidate is separately pending.",
     "accepted": false,
     "remaining": "Native authority and current contact/version ownership, trusted snapshot loader, idempotent service envelope, transactional history/CAS, real PG, UI/Privacy and original task dependencies remain open."
   },
@@ -1201,10 +1201,10 @@
     "expected_passing_tests": "T03/T29: failed/rolled-back mutations have no success audit; no brief, address, key or private amount enters routine logs.",
     "dependencies": "AP-02.3;AP-08.1",
     "owner": "Agency implementation chat; shared edits require owner review",
-    "status": "planned",
-    "evidence": "Not implemented or qualified",
-    "remaining": "Original outcome, dependencies and applicable acceptance tests remain",
-    "accepted": false
+    "status": "active",
+    "evidence": "Read-only audit at 3e84bc1 identified actual replayMasking constants, maskAllInputs:false, email block/no-capture conventions and shape-only failure telemetry. workspace-state-spec.md now requires protected container/portal coverage and forbids raw protected telemetry; no UI or common observability source changed.",
+    "accepted": false,
+    "remaining": "Actual source implementation, native rendered capture exclusion, privacy-safe audited mutation provenance, rollback/race and all original task dependencies remain open."
   },
   {
     "id": "AP-08.8",
@@ -1373,7 +1373,7 @@
     "owner": "Agency implementation chat; shared edits require owner review",
     "status": "active",
     "evidence": "qualification-manual-20261101.json: actual post-format390 cases/16files, narrow types, Biome47 and unchanged-rule ESLint44 TS pass. Meaningful manual16/6 and reason1/28 reds retained, with exact47 source hashes and terminal guarded handles.",
-    "remaining": "Full repository/app/native/real PG/migration/restore and later feature increments remain open; source checks are not task acceptance.",
+    "remaining": "New 52-file candidate adds 31 selected round-scope cases; its integrated/static checks are pending. Full repository/app/native/real PG/migration/restore and later feature increments remain open; source checks are not task acceptance.",
     "accepted": false
   },
   {

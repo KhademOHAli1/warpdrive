@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 1,
+  "scope": "Mail recovery window permits routine small containerless selected units; no heavy campaign",
+  "runs": [
+    {
+      "phase": "red-missing",
+      "pid": 59405,
+      "startedAt": "2026-11-01T05:32:01.259176+00:00",
+      "finishedAt": "2026-11-01T05:32:01.874787+00:00",
+      "terminal": true,
+      "exitCode": 1,
+      "stopReason": null,
+      "beforeFreeBytes": 19916451840,
+      "minimumFreeBytes": 19913375744,
+      "afterFreeBytes": 19913375744,
+      "floorBytes": 5368709120,
+      "timeoutSeconds": 30,
+      "log": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/revision-round-scope-red-missing.log",
+      "command": [
+        "/Users/ali/Developer/warpdrive-agency-projects/.runtime/bin/bun",
+        "run",
+        "test:unit",
+        "src/features/agency-projects/reviews/revisionRoundScope.test.ts",
+        "src/features/agency-projects/reviews/revisionRoundScopePolicy.test.ts",
+        "--maxWorkers=1"
+      ]
+    },
+    {
+      "phase": "red-behavior",
+      "pid": 59586,
+      "startedAt": "2026-11-01T05:32:09.279908+00:00",
+      "finishedAt": "2026-11-01T05:32:09.898706+00:00",
+      "terminal": true,
+      "exitCode": 1,
+      "stopReason": null,
+      "beforeFreeBytes": 19904643072,
+      "minimumFreeBytes": 19901890560,
+      "afterFreeBytes": 19901960192,
+      "floorBytes": 5368709120,
+      "timeoutSeconds": 30,
+      "log": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/revision-round-scope-red-behavior.log",
+      "command": [
+        "/Users/ali/Developer/warpdrive-agency-projects/.runtime/bin/bun",
+        "run",
+        "test:unit",
+        "src/features/agency-projects/reviews/revisionRoundScope.test.ts",
+        "src/features/agency-projects/reviews/revisionRoundScopePolicy.test.ts",
+        "--maxWorkers=1"
+      ]
+    },
+    {
+      "phase": "green",
+      "pid": 59877,
+      "startedAt": "2026-11-01T05:32:35.175355+00:00",
+      "finishedAt": "2026-11-01T05:32:35.801241+00:00",
+      "terminal": true,
+      "exitCode": 0,
+      "stopReason": null,
+      "beforeFreeBytes": 19898699776,
+      "minimumFreeBytes": 19895930880,
+      "afterFreeBytes": 19896561664,
+      "floorBytes": 5368709120,
+      "timeoutSeconds": 30,
+      "log": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/revision-round-scope-green.log",
+      "command": [
+        "/Users/ali/Developer/warpdrive-agency-projects/.runtime/bin/bun",
+        "run",
+        "test:unit",
+        "src/features/agency-projects/reviews/revisionRoundScope.test.ts",
+        "src/features/agency-projects/reviews/revisionRoundScopePolicy.test.ts",
+        "--maxWorkers=1"
+      ]
+    }
+  ]
+}
