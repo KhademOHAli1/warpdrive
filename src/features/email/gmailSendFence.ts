@@ -1,5 +1,9 @@
 import { sql } from "drizzle-orm";
 import type { Db } from "@/db/client";
+import {
+  admitNotificationSubmission,
+  notificationAdmissionContended,
+} from "@/features/notifications/email/notificationAdmission";
 import { readGmailConnection, withGmailConnection } from "./gmailConnectionFence";
 
 export async function isGmailSendCurrent(
@@ -33,23 +37,35 @@ export async function stampGmailSend(
     (expectedGeneration !== undefined && expectedGeneration !== attempt.connection_generation)
   )
     return false;
-  const result = await withGmailConnection(
-    db,
-    attempt.account_id,
-    attempt.connection_generation,
-    signal,
-    async (tx) => {
-      const stamped = await tx.execute(sql`UPDATE email_send_attempts s SET send_started_at=now()
+  try {
+    const result = await withGmailConnection(
+      db,
+      attempt.account_id,
+      attempt.connection_generation,
+      signal,
+      async (tx) => {
+        const admission = await admitNotificationSubmission(tx, {
+          accountId: attempt.account_id,
+          attemptId,
+          signal,
+        });
+        if (admission !== "ordinary" && admission !== "admitted") return false;
+        const stamped = await tx.execute(sql`UPDATE email_send_attempts s SET send_started_at=now()
       FROM email_accounts a WHERE s.id=${attemptId} AND s.claim_token=${token} AND s.send_started_at IS NULL
         AND s.payload_prepared=true AND s.account_id=a.id AND s.connection_generation=a.connection_generation
         AND coalesce((a.capabilities->>'send')::boolean,true)=true RETURNING s.id`);
-      if (stamped.rows.length === 1)
-        await tx.execute(sql`UPDATE email_tracking_tokens SET disabled=false
+        if (stamped.rows.length === 1)
+          await tx.execute(sql`UPDATE email_tracking_tokens SET disabled=false
         WHERE send_attempt_id=${attemptId} AND message_id IS NULL`);
-      return stamped.rows.length === 1;
-    },
-  );
-  return result.ok && result.value;
+        return stamped.rows.length === 1;
+      },
+    );
+    return result.ok && result.value;
+  } catch (error) {
+    signal.throwIfAborted();
+    if (notificationAdmissionContended(error)) return false;
+    throw error;
+  }
 }
 
 export async function releaseUnsubmittedGmailClaim(

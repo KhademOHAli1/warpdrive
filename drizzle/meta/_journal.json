@@ -645,6 +645,20 @@
       "when": 1793504444945,
       "tag": "0091_mail_source_aliases",
       "breakpoints": true
+    },
+    {
+      "idx": 92,
+      "version": "7",
+      "when": 1793507365089,
+      "tag": "0092_mail_delivery_observations",
+      "breakpoints": true
+    },
+    {
+      "idx": 93,
+      "version": "7",
+      "when": 1793508875343,
+      "tag": "0093_notification_send_admission",
+      "breakpoints": true
     }
   ]
 }

@@ -1,0 +1,2 @@
+export const MAIL_RECOVERY_BATCH_SIZE = 100;
+export const MAIL_RECEIPT_REPAIR_LIMIT = 8;

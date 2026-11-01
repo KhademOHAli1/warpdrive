@@ -27,6 +27,7 @@ export const ERROR_IDS = {
   MAIL_CONNECTION_CHANGED: "E_MAIL_007",
   MAIL_WRITE_UNKNOWN: "E_MAIL_008",
   MAIL_WRITE_PARTIAL: "E_MAIL_009",
+  MAIL_DELIVERY_OBSERVATION_FAILED: "E_MAIL_010",
   // AUTH
   AUTH_LOGIN_REJECTED: "E_AUTH_001", // domain / email_verified / signature check failed
   AUTH_STATE_MISMATCH: "E_AUTH_002", // OAuth state/nonce/PKCE mismatch
@@ -182,6 +183,9 @@ export const ERROR_IDS = {
   NOTIF_UNKNOWN_TYPE: "E_NOTIF_001", // unknown/unsupported notification type
   NOTIF_TARGET_NOT_FOUND: "E_NOTIF_002", // mention/notification target user not found
   NOTIF_PRODUCE_FAILED: "E_NOTIF_003", // createNotification failed unexpectedly (DB/internal)
+  NOTIF_SEND_BINDING_CONFLICT: "E_NOTIF_004", // an intent or purpose is already bound differently
+  NOTIF_SEND_PURPOSE_INVALID: "E_NOTIF_005", // retained system purpose does not match canonical authority
+  NOTIF_SEND_SUPPRESSED: "E_NOTIF_006", // notification policy was revoked before submission
   // SEARCH
   SEARCH_EMPTY_QUERY: "E_SEARCH_001", // empty/blank search query
   // STATS

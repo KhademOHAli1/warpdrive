@@ -3,6 +3,7 @@ import { AppError } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import { err, ok, type Result } from "@/types/result";
 import type { GmailClient } from "./gmailClient";
+import { reconcileNotificationGmail } from "./notificationGmailReceipt";
 
 export interface AttemptRow {
   id: string;
@@ -54,6 +55,8 @@ export async function reconcile(
     windowMs: number;
   },
 ): Promise<Result<SendOutcome, AppError>> {
+  const notification = await reconcileNotificationGmail(db, args.attempt.id, args.signal);
+  if (notification !== null) return ok(notification);
   const found = await args.gmail.searchByRfc822({
     messageIdHeader: args.attempt.message_id_header,
     signal: args.signal,

@@ -11,6 +11,7 @@ import { makeRefresh } from "./gmailRefresh";
 import { runImapSyncJob } from "./imapSync";
 import type { ImapSyncDependencies } from "./imapSyncTypes";
 import { loadImapConnection } from "./mailConnectionRuntime";
+import { notificationWorkerPreflight } from "./notificationWorkerPreflight";
 import { processSendAttempt } from "./outbox";
 import { sendFailureOutcome } from "./sendFailureOutcome";
 import { prepareEnqueuedSend } from "./sendPreparation";
@@ -105,6 +106,8 @@ export async function runSendJob(
   deps: SyncDeps = defaultSyncDeps,
 ): Promise<Result<{ status: string }, AppError>> {
   args.signal.throwIfAborted();
+  const notification = await notificationWorkerPreflight(db, args);
+  if (notification !== null) return notification;
   const account = (
     await db.execute(sql`
     SELECT a.user_id,a.provider,a.status,a.paused,a.connection_generation,

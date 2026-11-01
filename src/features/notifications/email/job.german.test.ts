@@ -2,55 +2,30 @@ import { eq, sql } from "drizzle-orm";
 import { expect, it } from "vitest";
 import { notifications } from "@/db/schema";
 import { withTestDb } from "@/db/testing";
-import { seedPipelineWithStages, seedUser } from "@/db/testing/factories";
-import type { SystemMessage } from "@/features/email/sendSystem";
+import { seedUser } from "@/db/testing/factories";
 import { getPreferences, setPreferences } from "@/features/identity/preferencesRepo";
 import { setPreference } from "@/features/notifications/preferences";
-import type { EmailAccountRow } from "@/types/email";
 import { ok } from "@/types/result";
 import { runEmailNotificationJob } from "./job";
-
-async function connectMailbox(
-  db: Parameters<Parameters<typeof withTestDb>[0]>[0],
-  userId: string,
-  address = `mailbox-${Date.now()}@example.com`,
-): Promise<EmailAccountRow> {
-  const row = (
-    await db.execute(sql`
-      INSERT INTO email_accounts (user_id, email_address, status)
-      VALUES (${userId}, ${address}, 'connected')
-      RETURNING id, user_id, email_address
-    `)
-  ).rows[0] as { id: string; user_id: string; email_address: string } | undefined;
-  if (row === undefined) throw new Error("connectMailbox: insert returned no rows");
-  return { id: row.id, userId: row.user_id, emailAddress: row.email_address };
-}
-
-// Insert a deal and return its id. Uses raw SQL (no seedDeal factory exists).
-async function seedDeal(
-  db: Parameters<Parameters<typeof withTestDb>[0]>[0],
-  opts: { ownerId: string; visibilityLevel: "owner" | "all" },
-): Promise<string> {
-  const { pipeline, stages } = await seedPipelineWithStages(db, ["Open"]);
-  const stage = stages[0];
-  if (stage === undefined) throw new Error("seedDeal: no stage");
-  const row = (
-    await db.execute(sql`
-      INSERT INTO deals (title, pipeline_id, stage_id, owner_id, visibility_level)
-      VALUES ('Test Deal', ${pipeline.id}, ${stage.id}, ${opts.ownerId}, ${opts.visibilityLevel})
-      RETURNING id
-    `)
-  ).rows[0] as { id: string } | undefined;
-  if (row === undefined) throw new Error("seedDeal: insert returned no rows");
-  return row.id;
-}
+import {
+  assertNotificationJobAccepted,
+  connectNotificationMailbox,
+  insertJobNotification,
+  notificationJobTransport,
+  seedNotificationDeal,
+} from "./notificationJob.test-helpers";
 
 it("uses a queued recipient's latest German preference and preserves payload, escaping and retry identity", async () => {
   await withTestDb(async (db) => {
     const recipient = await seedUser(db, { name: "Jörg <Nord> & Co" });
     const actor = await seedUser(db);
-    const mailbox = await connectMailbox(db, recipient.id, "german-recipient@example.com");
-    const signal = new AbortController().signal;
+    const signal = AbortSignal.timeout(30_000);
+    const mailbox = await connectNotificationMailbox(
+      db,
+      recipient.id,
+      signal,
+      "german-recipient@example.com",
+    );
     const persian = { locale: "fa", calendar: "persian", timeZone: "Asia/Tehran" } as const;
     await setPreferences(db, recipient.id, { ui: { localePreferences: persian } }, signal);
     await setPreferences(db, actor.id, { ui: { localePreferences: persian } }, signal);
@@ -61,21 +36,20 @@ it("uses a queued recipient's latest German preference and preserves payload, es
       { inApp: true, email: true },
       signal,
     );
-    const dealId = await seedDeal(db, { ownerId: recipient.id, visibilityLevel: "all" });
+    const dealId = await seedNotificationDeal(db, recipient.id, "all", signal);
     const payload = { subject: "Rückruf <Acme> & Co" };
-    const [notification] = await db
-      .insert(notifications)
-      .values({
+    const notification = await insertJobNotification(
+      db,
+      {
         userId: recipient.id,
         type: "activity_reminder",
         entityType: "deal",
         entityId: dealId,
         actorId: actor.id,
         payload,
-      })
-      .returning();
-    if (notification === undefined) throw new Error("notification insert failed");
-    // Language can change after enqueue. Rendering must use the recipient at send time.
+      },
+      signal,
+    );
     const german = {
       locale: "de",
       calendar: "persian",
@@ -88,32 +62,49 @@ it("uses a queued recipient's latest German preference and preserves payload, es
       { timezone: "Europe/Berlin", ui: { localePreferences: german } },
       signal,
     );
-    const sent: SystemMessage[] = [];
-    const send = (account: EmailAccountRow, message: SystemMessage) => {
-      expect(account.userId).toBe(recipient.id);
-      sent.push(message);
-      return Promise.resolve(ok({ gmailMessageId: "fake-german-id" }));
-    };
-
-    const result = await runEmailNotificationJob(db, { notificationId: notification.id }, signal, {
-      send,
-    });
-
-    expect(result).toEqual(ok({ sent: true }));
-    expect(sent).toHaveLength(1);
-    expect(sent[0]?.to).toEqual([mailbox.emailAddress]);
-    expect(sent[0]?.subject).toBe("Erinnerung: Rückruf <Acme> & Co ist bald fällig");
-    expect(sent[0]?.bodyText).toContain("Jörg <Nord> & Co, Ihre Aktivität „Rückruf <Acme> & Co“");
-    expect(sent[0]?.bodyText).toContain(`/deals/${dealId}`);
-    expect(sent[0]?.bodyHtml).toContain('lang="de" dir="ltr"');
-    expect(sent[0]?.bodyHtml).toContain("Jörg &lt;Nord&gt; &amp; Co");
-    expect(sent[0]?.bodyHtml).toContain("Rückruf &lt;Acme&gt; &amp; Co");
-    expect(sent[0]?.bodyHtml).not.toContain("<Acme>");
-    expect(sent[0]?.idempotencyKey).toBe(notification.id);
+    const transport = notificationJobTransport();
     expect(
-      await runEmailNotificationJob(db, { notificationId: notification.id }, signal, { send }),
-    ).toEqual(ok({ sent: false }));
+      await runEmailNotificationJob(
+        db,
+        { notificationId: notification.id },
+        signal,
+        transport.deps,
+      ),
+    ).toEqual(ok({ sent: true }));
+    const sent = await transport.wireMessages(signal);
     expect(sent).toHaveLength(1);
+    const to = sent[0]?.to;
+    const groups = to === undefined ? [] : Array.isArray(to) ? to : [to];
+    expect(groups.flatMap((group) => group.value.map((entry) => entry.address))).toEqual([
+      mailbox.emailAddress,
+    ]);
+    expect(sent[0]?.subject).toBe("Erinnerung: Rückruf <Acme> & Co ist bald fällig");
+    expect(sent[0]?.text).toContain("Jörg <Nord> & Co, Ihre Aktivität „Rückruf <Acme> & Co“");
+    expect(sent[0]?.text).toContain(`/deals/${dealId}`);
+    expect(sent[0]?.html).toContain('lang="de" dir="ltr"');
+    expect(sent[0]?.html).toContain("Jörg &lt;Nord&gt; &amp; Co");
+    expect(sent[0]?.html).toContain("Rückruf &lt;Acme&gt; &amp; Co");
+    expect(sent[0]?.html).not.toContain("<Acme>");
+    const attempts = (
+      await db.execute(
+        sql`SELECT message_id_header FROM email_send_attempts WHERE idempotency_key=${notification.id}`,
+      )
+    ).rows;
+    expect(attempts).toEqual([{ message_id_header: sent[0]?.messageId }]);
+    await assertNotificationJobAccepted(db, {
+      notificationId: notification.id,
+      account: mailbox,
+      signal,
+    });
+    expect(
+      await runEmailNotificationJob(
+        db,
+        { notificationId: notification.id },
+        signal,
+        transport.deps,
+      ),
+    ).toEqual(ok({ sent: false }));
+    expect(transport.gmail.calls.filter((call) => call.method === "sendRaw")).toHaveLength(1);
     const [stored] = await db
       .select()
       .from(notifications)

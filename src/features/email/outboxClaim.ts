@@ -56,6 +56,7 @@ export async function claim(
     SET claim_token=${token}, claimed_at=now(), status='sending'
     WHERE id=${attemptId}
       AND payload_prepared=true
+      AND notification_suppressed_at IS NULL
       AND (
         status IN ('pending','failed')
         OR (status='sending' AND claimed_at < now() - (${CLAIM_LEASE_SECONDS} * interval '1 second'))

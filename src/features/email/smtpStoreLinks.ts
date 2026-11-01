@@ -5,8 +5,11 @@ import type { SmtpAttempt } from "./smtpOutboxTypes";
 import { hydrateOwner } from "./syncCursor";
 
 export async function smtpThreadLinks(db: Db, attempt: SmtpAttempt, signal: AbortSignal) {
+  signal.throwIfAborted();
   let personId: string | null = null;
   let dealId: string | null = null;
+  // Private system snapshots must never become CRM associations, including repair.
+  if (attempt.payload.systemPurpose !== undefined) return { personId, dealId };
   const owner = await hydrateOwner(db, attempt.owner_id, signal);
   if (!owner.ok || !owner.value.isActive) return { personId, dealId };
   const payload = attempt.payload;

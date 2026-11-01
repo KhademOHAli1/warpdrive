@@ -7,9 +7,9 @@ import {
   PGBOSS_QUEUE_EMAIL_SYNC,
 } from "@/constants/jobNames";
 import type { Db } from "@/db/client";
+import { recoverNotificationMailJobs } from "./mailNotificationRecovery";
+import { MAIL_RECEIPT_REPAIR_LIMIT, MAIL_RECOVERY_BATCH_SIZE } from "./mailRecoveryPolicy";
 
-const RECOVERY_BATCH_SIZE = 100;
-const RECEIPT_REPAIR_LIMIT = 8;
 type Queue = Pick<PgBoss, "send">;
 interface SendCandidate {
   id: string;
@@ -34,7 +34,7 @@ export async function recoverMailJobs(
         AND a.provider IN ('gmail','imap_smtp') AND NOT EXISTS(SELECT 1 FROM pgboss.job j
           WHERE j.name=${PGBOSS_QUEUE_EMAIL_SYNC} AND j.state IN ('created','retry','active')
             AND j.data->>'accountId'=a.id::text)
-      ORDER BY a.created_at,a.id LIMIT ${RECOVERY_BATCH_SIZE}`)
+      ORDER BY a.created_at,a.id LIMIT ${MAIL_RECOVERY_BATCH_SIZE}`)
     ).rows as { id: string }[];
     let syncQueued = 0;
     for (const row of syncs) {
@@ -51,13 +51,14 @@ export async function recoverMailJobs(
       s.delivery_outcome->>'state' IN ('accepted','partial') AS repair
       FROM email_send_attempts s JOIN email_accounts a ON a.id=s.account_id JOIN users u ON u.id=a.user_id
       WHERE u.is_active AND u.invited_at IS NULL AND a.provider IN ('gmail','imap_smtp')
+        AND NOT (s.payload ? 'systemPurpose') AND s.notification_suppressed_at IS NULL
         AND NOT EXISTS(SELECT 1 FROM pgboss.job j WHERE j.name=${PGBOSS_QUEUE_EMAIL_SEND}
           AND j.state IN ('created','retry','active') AND j.data->>'accountId'=s.account_id::text
           AND j.data->>'idempotencyKey'=s.idempotency_key::text)
         AND ((a.provider='imap_smtp' AND s.delivery_outcome->>'state' IN ('accepted','partial')
           AND s.provider_message_id IS NOT NULL AND NOT EXISTS(SELECT 1 FROM email_messages m
             WHERE m.account_id=s.account_id AND m.provider_message_id=s.provider_message_id)
-          AND coalesce((s.delivery_outcome->'repair'->>'attempts')::int,0)<${RECEIPT_REPAIR_LIMIT}
+          AND coalesce((s.delivery_outcome->'repair'->>'attempts')::int,0)<${MAIL_RECEIPT_REPAIR_LIMIT}
           AND coalesce((s.delivery_outcome->'repair'->>'nextAt')::timestamptz,'-infinity'::timestamptz)<=now())
         OR (a.provider='gmail' AND a.status<>'disconnected' AND NOT a.paused
           AND s.connection_generation=a.connection_generation AND s.gmail_message_id IS NULL
@@ -65,9 +66,9 @@ export async function recoverMailJobs(
         OR (a.status<>'disconnected' AND NOT a.paused AND coalesce((a.capabilities->>'send')::boolean,true)
           AND s.send_started_at IS NULL AND (s.delivery_outcome->>'state' IS NULL OR s.delivery_outcome->>'state'='rejected') AND (s.status='pending' OR
             (s.status='sending' AND s.claimed_at<now()-(${CLAIM_LEASE_SECONDS}*interval '1 second')))))
-      ORDER BY s.created_at,s.id LIMIT ${RECOVERY_BATCH_SIZE}`)
+      ORDER BY s.created_at,s.id LIMIT ${MAIL_RECOVERY_BATCH_SIZE}`)
     ).rows as unknown as SendCandidate[];
-    let sendQueued = 0;
+    let sendQueued = await recoverNotificationMailJobs(tx, boss, signal);
     for (const row of sends) {
       signal.throwIfAborted();
       if (row.repair)

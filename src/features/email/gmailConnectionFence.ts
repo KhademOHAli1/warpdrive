@@ -47,28 +47,31 @@ export async function withGmailConnection<T>(
   work: (tx: DbOrTx) => Promise<T>,
 ): Promise<Result<T, AppError>> {
   signal.throwIfAborted();
-  return db.transaction(async (tx) => {
-    const pointer = (
-      await tx.execute(sql`SELECT user_id FROM email_accounts WHERE id=${accountId}`)
-    ).rows[0] as { user_id: string } | undefined;
-    if (pointer === undefined) return err(gmailConnectionChanged());
-    const owner = (
-      await tx.execute(
-        sql`SELECT id FROM users WHERE id=${pointer.user_id} AND is_active AND invited_at IS NULL FOR NO KEY UPDATE`,
-      )
-    ).rows[0];
-    if (owner === undefined) return err(gmailConnectionChanged());
-    const account = (
-      await tx.execute(sql`
+  return db.transaction(
+    async (tx) => {
+      const pointer = (
+        await tx.execute(sql`SELECT user_id FROM email_accounts WHERE id=${accountId}`)
+      ).rows[0] as { user_id: string } | undefined;
+      if (pointer === undefined) return err(gmailConnectionChanged());
+      const owner = (
+        await tx.execute(
+          sql`SELECT id FROM users WHERE id=${pointer.user_id} AND is_active AND invited_at IS NULL FOR NO KEY UPDATE`,
+        )
+      ).rows[0];
+      if (owner === undefined) return err(gmailConnectionChanged());
+      const account = (
+        await tx.execute(sql`
       SELECT id FROM email_accounts WHERE id=${accountId} AND user_id=${pointer.user_id}
         AND provider='gmail' AND status<>'disconnected' AND NOT paused AND connection_generation=${generation}
       FOR NO KEY UPDATE
     `)
-    ).rows[0];
-    signal.throwIfAborted();
-    if (account === undefined) return err(gmailConnectionChanged());
-    const value = await work(tx);
-    signal.throwIfAborted();
-    return ok(value);
-  });
+      ).rows[0];
+      signal.throwIfAborted();
+      if (account === undefined) return err(gmailConnectionChanged());
+      const value = await work(tx);
+      signal.throwIfAborted();
+      return ok(value);
+    },
+    { isolationLevel: "read committed" },
+  );
 }

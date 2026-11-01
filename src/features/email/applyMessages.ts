@@ -16,6 +16,7 @@ import {
 import { resolveLink } from "./linking";
 import { messageGoneFromMailbox } from "./messageGone";
 import { parseGmailMessage } from "./mimeParse";
+import { isAcceptedNotificationGmailId } from "./notificationGmailReceipt";
 
 // Apply a list of gmail message ids: fetch + parse each, upsert the thread FIRST
 // (composite FK requires it), run resolveLink on a new thread to set person/deal,
@@ -75,7 +76,6 @@ export async function applyMessageIds(
       return fetched;
     }
     const parsed = parseGmailMessage(fetched.value);
-    args.touchedThreadIds?.add(parsed.threadId);
 
     const inserted = await withGmailConnection(
       args.db,
@@ -83,6 +83,16 @@ export async function applyMessageIds(
       generation,
       args.signal,
       async (tx) => {
+        if (
+          await isAcceptedNotificationGmailId(
+            tx,
+            args.accountId,
+            parsed.gmailMessageId,
+            args.signal,
+          )
+        )
+          return false;
+        args.touchedThreadIds?.add(parsed.threadId);
         const thread = await upsertThread(tx, args, parsed.threadId, parsed);
         const threadId = thread.id;
         const msgRows = await tx.execute(sql`

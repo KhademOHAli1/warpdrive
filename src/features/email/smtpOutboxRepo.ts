@@ -3,8 +3,13 @@ import { sql } from "drizzle-orm";
 import { CLAIM_LEASE_SECONDS } from "@/constants/email";
 import { ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
+import {
+  admitNotificationSubmission,
+  notificationAdmissionContended,
+} from "@/features/notifications/email/notificationAdmission";
 import { guardImapConnection } from "./imapSyncGuard";
 import type { ImapConnectionRuntime } from "./mailConnectionRuntime";
+import { lockMailRemoteWrites } from "./mailRemoteWriteLock";
 import type { SmtpAttempt, SmtpReceipt } from "./smtpOutboxTypes";
 
 export async function loadSmtpAttempt(
@@ -49,20 +54,37 @@ export async function stampSmtpSubmission(
     signal: AbortSignal;
   },
 ): Promise<boolean> {
-  return db.transaction(async (tx) => {
-    if (!(await guardImapConnection(tx, args.runtime, args.signal))) return false;
-    const result = await tx.execute(sql`UPDATE email_send_attempts
+  try {
+    return await db.transaction(
+      async (tx) => {
+        await lockMailRemoteWrites(tx, args.runtime.accountId, args.signal);
+        const admission = await admitNotificationSubmission(tx, {
+          accountId: args.runtime.accountId,
+          attemptId: args.attempt.id,
+          signal: args.signal,
+        });
+        if (admission !== "ordinary" && admission !== "admitted") return false;
+        if (!(await guardImapConnection(tx, args.runtime, args.signal))) return false;
+        const result = await tx.execute(sql`UPDATE email_send_attempts
       SET send_started_at=now(),delivery_outcome=${JSON.stringify(args.receipt)}::jsonb
       WHERE id=${args.attempt.id} AND account_id=${args.runtime.accountId}
         AND connection_generation=${args.runtime.generation} AND claim_token=${args.token}
         AND status='sending' AND send_started_at IS NULL AND payload_prepared=true AND payload=${JSON.stringify(args.attempt.payload)}::jsonb
       RETURNING id`);
-    if (result.rows.length === 1)
-      await tx.execute(sql`UPDATE email_tracking_tokens SET disabled=false
+        if (result.rows.length === 1)
+          await tx.execute(sql`UPDATE email_tracking_tokens SET disabled=false
       WHERE send_attempt_id=${args.attempt.id} AND message_id IS NULL`);
+        args.signal.throwIfAborted();
+        return result.rows.length === 1;
+      },
+      { isolationLevel: "read committed" },
+    );
+  } catch (error) {
     args.signal.throwIfAborted();
-    return result.rows.length === 1;
-  });
+    // The failed NOWAIT transaction has rolled back before deferring this attempt.
+    if (notificationAdmissionContended(error)) return false;
+    throw error;
+  }
 }
 
 export async function releaseSmtpClaim(

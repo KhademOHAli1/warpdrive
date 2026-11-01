@@ -22,6 +22,10 @@ import {
   EMAIL_TRACKING_EVENT_TYPE,
   EMAIL_VISIBILITY,
 } from "@/constants/email";
+import {
+  NOTIFICATION_SUPPRESSION_REASONS,
+  type NotificationSuppressionReason,
+} from "@/features/notifications/email/notificationAdmissionTypes";
 import { citext, users } from "./identity";
 
 // bytea for encrypted OAuth tokens (ops spec); never plaintext, never logged.
@@ -203,12 +207,27 @@ export const emailSendAttempts = pgTable(
     gmailMessageId: text("gmail_message_id"),
     providerMessageId: text("provider_message_id"),
     connectionGeneration: integer("connection_generation"),
-    deliveryOutcome: jsonb("delivery_outcome").$type<{
-      state: "accepted" | "partial" | "unknown" | "rejected";
-      accepted?: string[];
-      rejected?: string[];
-    }>(),
+    deliveryOutcome: jsonb("delivery_outcome").$type<
+      | {
+          state: "accepted" | "partial" | "unknown" | "rejected";
+          accepted?: string[];
+          rejected?: string[];
+        }
+      | {
+          version: 1;
+          provider: "gmail";
+          state: "accepted";
+          evidence: "api_ack";
+          providerMessageId: string;
+          accepted?: never;
+          rejected?: never;
+        }
+    >(),
     errorId: text("error_id"),
+    notificationSuppressedAt: timestamp("notification_suppressed_at", { withTimezone: true }),
+    notificationSuppressionReason: text(
+      "notification_suppression_reason",
+    ).$type<NotificationSuppressionReason>(),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     sentAt: timestamp("sent_at", { withTimezone: true }),
     scheduledAt: timestamp("scheduled_at", { withTimezone: true }),
@@ -216,6 +235,23 @@ export const emailSendAttempts = pgTable(
   (t) => [
     unique("uq_attempt_acct_key").on(t.accountId, t.idempotencyKey),
     unique("uq_attempt_msgid").on(t.messageIdHeader),
+    unique("email_send_attempts_id_account_uq").on(t.id, t.accountId),
+    uniqueIndex("email_send_attempts_notification_purpose_uq")
+      .on(
+        sql`(${t.payload}->'systemPurpose'->>'notificationId')`,
+        sql`(${t.payload}->'systemPurpose'->>'recipientUserId')`,
+      )
+      .where(sql`${t.payload}->'systemPurpose'->>'kind'='notification'
+        AND ${t.payload}->'systemPurpose'->>'version'='1'`),
+    check(
+      "email_attempt_notification_suppression_pair",
+      sql`((${t.notificationSuppressedAt} IS NULL AND ${t.notificationSuppressionReason} IS NULL)
+        OR (${t.notificationSuppressedAt} IS NOT NULL AND ${t.notificationSuppressionReason}
+          IN (${sql.join(
+            NOTIFICATION_SUPPRESSION_REASONS.map((reason) => sql`${reason}`),
+            sql`, `,
+          )}))) IS TRUE`.inlineParams(),
+    ),
     // Composite FK pins a reply attempt to the same mailbox as the thread.
     foreignKey({
       columns: [t.threadId, t.accountId],

@@ -1,316 +1,253 @@
 import { eq, sql } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
-import { notifications, userPreferences } from "@/db/schema";
+import { AppError, ERROR_IDS } from "@/constants/errorIds";
+import { deals, notifications, persons, userPreferences } from "@/db/schema";
 import { withTestDb } from "@/db/testing";
-import { seedPipelineWithStages, seedUser } from "@/db/testing/factories";
-import type { SystemMessage } from "@/features/email/sendSystem";
+import { seedUser } from "@/db/testing/factories";
+import { resolveOutboundLink } from "@/features/email/linking";
+import { hydrateOwner } from "@/features/email/syncCursor";
 import { setPreference } from "@/features/notifications/preferences";
-import type { EmailAccountRow } from "@/types/email";
 import { ok } from "@/types/result";
 import { runEmailNotificationJob } from "./job";
-
-// Insert a connected email_accounts row for the given user. Returns the row.
-async function connectMailbox(
-  db: Parameters<Parameters<typeof withTestDb>[0]>[0],
-  userId: string,
-  address = `mailbox-${Date.now()}@example.com`,
-): Promise<EmailAccountRow> {
-  const row = (
-    await db.execute(sql`
-      INSERT INTO email_accounts (user_id, email_address, status)
-      VALUES (${userId}, ${address}, 'connected')
-      RETURNING id, user_id, email_address
-    `)
-  ).rows[0] as { id: string; user_id: string; email_address: string } | undefined;
-  if (row === undefined) throw new Error("connectMailbox: insert returned no rows");
-  return { id: row.id, userId: row.user_id, emailAddress: row.email_address };
-}
-
-// Insert a deal and return its id. Uses raw SQL (no seedDeal factory exists).
-async function seedDeal(
-  db: Parameters<Parameters<typeof withTestDb>[0]>[0],
-  opts: { ownerId: string; visibilityLevel: "owner" | "all" },
-): Promise<string> {
-  const { pipeline, stages } = await seedPipelineWithStages(db, ["Open"]);
-  const stage = stages[0];
-  if (stage === undefined) throw new Error("seedDeal: no stage");
-  const row = (
-    await db.execute(sql`
-      INSERT INTO deals (title, pipeline_id, stage_id, owner_id, visibility_level)
-      VALUES ('Test Deal', ${pipeline.id}, ${stage.id}, ${opts.ownerId}, ${opts.visibilityLevel})
-      RETURNING id
-    `)
-  ).rows[0] as { id: string } | undefined;
-  if (row === undefined) throw new Error("seedDeal: insert returned no rows");
-  return row.id;
-}
+import {
+  assertNotificationJobAccepted,
+  connectNotificationMailbox,
+  insertJobNotification,
+  notificationJobTransport,
+  seedNotificationDeal,
+} from "./notificationJob.test-helpers";
 
 describe("runEmailNotificationJob", () => {
   it("renders in the recipient's saved language while retaining delivery keys", async () => {
     await withTestDb(async (db) => {
       const recipient = await seedUser(db);
-      await connectMailbox(db, recipient.id);
-      const signal = new AbortController().signal;
+      const signal = AbortSignal.timeout(30_000);
+      const account = await connectNotificationMailbox(db, recipient.id, signal);
       await db.insert(userPreferences).values({
         userId: recipient.id,
         ui: { localePreferences: { locale: "fa", calendar: "persian", timeZone: "Asia/Tehran" } },
       });
       await setPreference(db, recipient.id, "deal_won", { inApp: true, email: true }, signal);
-      const [row] = await db
-        .insert(notifications)
-        .values({
-          userId: recipient.id,
-          type: "deal_won",
-          entityType: null,
-          entityId: null,
-          payload: {},
-        })
-        .returning();
-      const notificationId = row?.id ?? "missing";
-      const sent: SystemMessage[] = [];
-      const result = await runEmailNotificationJob(db, { notificationId }, signal, {
-        send: (_account, message) => {
-          sent.push(message);
-          return Promise.resolve(ok({ gmailMessageId: "fake-id" }));
-        },
-      });
-      expect(result).toEqual(ok({ sent: true }));
+      const row = await insertJobNotification(
+        db,
+        { userId: recipient.id, type: "deal_won", payload: {} },
+        signal,
+      );
+      const transport = notificationJobTransport();
+      expect(
+        await runEmailNotificationJob(db, { notificationId: row.id }, signal, transport.deps),
+      ).toEqual(ok({ sent: true }));
+      const sent = await transport.wireMessages(signal);
       expect(sent).toHaveLength(1);
       expect(sent[0]?.subject).toContain("فرصت فروش");
-      expect(sent[0]?.bodyHtml).toContain('lang="fa" dir="rtl"');
-      expect(sent[0]?.idempotencyKey).toBe(notificationId);
+      expect(sent[0]?.html).toContain('lang="fa" dir="rtl"');
+      await assertNotificationJobAccepted(db, { notificationId: row.id, account, signal });
     });
   });
+
   it("drops (no send) when the referenced deal is no longer visible to the recipient", async () => {
-    // RED: this is the security assertion. runEmailNotificationJob must NOT call send
-    // when the recipient cannot see the deal that the notification references.
     await withTestDb(async (db) => {
       const alice = await seedUser(db);
       const other = await seedUser(db);
-      // Deal owned by 'other' with owner-level visibility: alice cannot see it.
-      const dealId = await seedDeal(db, { ownerId: other.id, visibilityLevel: "owner" });
-      const [n] = await db
-        .insert(notifications)
-        .values({
+      const signal = AbortSignal.timeout(30_000);
+      await connectNotificationMailbox(db, alice.id, signal);
+      await setPreference(
+        db,
+        alice.id,
+        "deal_followed_update",
+        { inApp: true, email: true },
+        signal,
+      );
+      const dealId = await seedNotificationDeal(db, other.id, "owner", signal);
+      const row = await insertJobNotification(
+        db,
+        {
           userId: alice.id,
           type: "deal_followed_update",
           entityType: "deal",
           entityId: dealId,
           actorId: other.id,
           payload: {},
-        })
-        .returning();
-      if (n === undefined) throw new Error("notification insert failed");
-
-      const calls: { acct: EmailAccountRow; msg: SystemMessage }[] = [];
-      // Fake: synchronous return wrapped in Promise.resolve; signal not needed.
-      const fakeSend = (acct: EmailAccountRow, msg: SystemMessage) => {
-        calls.push({ acct, msg });
-        return Promise.resolve(ok({ gmailMessageId: "x" }));
-      };
-
-      const r = await runEmailNotificationJob(
-        db,
-        { notificationId: n.id },
-        new AbortController().signal,
-        {
-          send: fakeSend,
         },
+        signal,
       );
-      expect(r.ok).toBe(true);
-      if (r.ok === true) expect(r.value.sent).toBe(false);
-      // Security assertion: send must NOT have been called.
-      expect(calls).toHaveLength(0);
+      const transport = notificationJobTransport();
+      expect(
+        await runEmailNotificationJob(db, { notificationId: row.id }, signal, transport.deps),
+      ).toEqual(ok({ sent: false }));
+      expect(transport.gmail.calls).toHaveLength(0);
+      expect((await db.execute(sql`SELECT id FROM email_send_attempts`)).rows).toHaveLength(0);
     });
   }, 60_000);
 
   it("suppresses (no send) when recipient has no connected mailbox", async () => {
     await withTestDb(async (db) => {
       const alice = await seedUser(db);
-      // Deal alice owns and can see, but she has no email_accounts row.
-      const dealId = await seedDeal(db, { ownerId: alice.id, visibilityLevel: "all" });
-      const [n] = await db
-        .insert(notifications)
-        .values({
+      const signal = AbortSignal.timeout(30_000);
+      const dealId = await seedNotificationDeal(db, alice.id, "all", signal);
+      await setPreference(db, alice.id, "deal_won", { inApp: true, email: true }, signal);
+      const row = await insertJobNotification(
+        db,
+        {
           userId: alice.id,
           type: "deal_won",
           entityType: "deal",
           entityId: dealId,
-          actorId: null,
           payload: {},
-        })
-        .returning();
-      if (n === undefined) throw new Error("notification insert failed");
-
-      const calls: { acct: EmailAccountRow; msg: SystemMessage }[] = [];
-      const fakeSend = (acct: EmailAccountRow, msg: SystemMessage) => {
-        calls.push({ acct, msg });
-        return Promise.resolve(ok({ gmailMessageId: "x" }));
-      };
-
-      const r = await runEmailNotificationJob(
-        db,
-        { notificationId: n.id },
-        new AbortController().signal,
-        {
-          send: fakeSend,
         },
+        signal,
       );
-      expect(r.ok).toBe(true);
-      if (r.ok === true) expect(r.value.sent).toBe(false);
-      expect(calls).toHaveLength(0);
+      const transport = notificationJobTransport();
+      expect(
+        await runEmailNotificationJob(db, { notificationId: row.id }, signal, transport.deps),
+      ).toEqual(ok({ sent: false }));
+      expect(transport.gmail.calls).toHaveLength(0);
     });
   }, 60_000);
 
-  // Codex finding F35: email delivery preference was checked only at enqueue. If the user
-  // disables email for this type after the job is queued but before it runs, the worker must
-  // re-resolve the preference at send time and drop the send.
   it("drops (no send) when the recipient has disabled email delivery for this type", async () => {
     await withTestDb(async (db) => {
       const alice = await seedUser(db);
-      await connectMailbox(db, alice.id);
-      const dealId = await seedDeal(db, { ownerId: alice.id, visibilityLevel: "all" });
-      const signal = new AbortController().signal;
-      // Explicitly disable email for this type (simulating an opt-out after enqueue).
+      const signal = AbortSignal.timeout(30_000);
+      await connectNotificationMailbox(db, alice.id, signal);
+      const dealId = await seedNotificationDeal(db, alice.id, "all", signal);
       await setPreference(db, alice.id, "deal_won", { inApp: true, email: false }, signal);
-      const [n] = await db
-        .insert(notifications)
-        .values({
+      const row = await insertJobNotification(
+        db,
+        {
           userId: alice.id,
           type: "deal_won",
           entityType: "deal",
           entityId: dealId,
-          actorId: null,
           payload: {},
-        })
-        .returning();
-      if (n === undefined) throw new Error("notification insert failed");
-
-      const calls: { acct: EmailAccountRow; msg: SystemMessage }[] = [];
-      const fakeSend = (acct: EmailAccountRow, msg: SystemMessage) => {
-        calls.push({ acct, msg });
-        return Promise.resolve(ok({ gmailMessageId: "x" }));
-      };
-
-      const r = await runEmailNotificationJob(db, { notificationId: n.id }, signal, {
-        send: fakeSend,
-      });
-      expect(r.ok).toBe(true);
-      if (r.ok === true) expect(r.value.sent).toBe(false);
-      expect(calls).toHaveLength(0);
+        },
+        signal,
+      );
+      const transport = notificationJobTransport();
+      expect(
+        await runEmailNotificationJob(db, { notificationId: row.id }, signal, transport.deps),
+      ).toEqual(ok({ sent: false }));
+      expect(transport.gmail.calls).toHaveLength(0);
     });
   }, 60_000);
 
   it("sends when the recipient can see the entity and has a connected mailbox", async () => {
     await withTestDb(async (db) => {
       const alice = await seedUser(db);
-      const mailbox = await connectMailbox(db, alice.id);
-      const dealId = await seedDeal(db, { ownerId: alice.id, visibilityLevel: "all" });
-      const signal = new AbortController().signal;
-      // Email delivery must be enabled at send time (default is off).
-      await setPreference(db, alice.id, "deal_won", { inApp: true, email: true }, signal);
-      const [n] = await db
-        .insert(notifications)
+      const signal = AbortSignal.timeout(30_000);
+      const account = await connectNotificationMailbox(db, alice.id, signal);
+      const dealId = await seedNotificationDeal(db, alice.id, "all", signal);
+      const [person] = await db
+        .insert(persons)
         .values({
+          name: "Notification auto-link candidate",
+          primaryEmail: account.emailAddress,
+          ownerId: alice.id,
+          visibilityLevel: "owner",
+        })
+        .returning();
+      signal.throwIfAborted();
+      if (person === undefined)
+        throw new AppError(ERROR_IDS.DB_INSERT_FAILED, "Notification fixture contact missing");
+      await db.update(deals).set({ personId: person.id }).where(eq(deals.id, dealId));
+      signal.throwIfAborted();
+      const owner = await hydrateOwner(db, alice.id, signal);
+      if (!owner.ok) throw owner.error;
+      expect(
+        await resolveOutboundLink(
+          db,
+          {
+            owner: owner.value,
+            fromEmail: account.emailAddress,
+            recipients: [account.emailAddress],
+          },
+          signal,
+        ),
+      ).toEqual({ kind: "linked", personId: person.id, dealId, dealCandidates: [] });
+      await setPreference(db, alice.id, "deal_won", { inApp: true, email: true }, signal);
+      const row = await insertJobNotification(
+        db,
+        {
           userId: alice.id,
           type: "deal_won",
           entityType: "deal",
           entityId: dealId,
-          actorId: null,
           payload: {},
-        })
-        .returning();
-      if (n === undefined) throw new Error("notification insert failed");
-
-      const calls: { acct: EmailAccountRow; msg: SystemMessage }[] = [];
-      const fakeSend = (acct: EmailAccountRow, msg: SystemMessage) => {
-        calls.push({ acct, msg });
-        return Promise.resolve(ok({ gmailMessageId: "g1" }));
-      };
-
-      const r = await runEmailNotificationJob(db, { notificationId: n.id }, signal, {
-        send: fakeSend,
-      });
-      expect(r.ok).toBe(true);
-      if (r.ok === true) expect(r.value.sent).toBe(true);
-      expect(calls).toHaveLength(1);
-      expect(calls[0]?.msg.to).toContain(mailbox.emailAddress);
-      expect(calls[0]?.msg.subject.length).toBeGreaterThan(0);
+        },
+        signal,
+      );
+      const transport = notificationJobTransport();
+      expect(
+        await runEmailNotificationJob(db, { notificationId: row.id }, signal, transport.deps),
+      ).toEqual(ok({ sent: true }));
+      const sent = await transport.wireMessages(signal);
+      expect(sent).toHaveLength(1);
+      const to = sent[0]?.to;
+      const groups = to === undefined ? [] : Array.isArray(to) ? to : [to];
+      expect(
+        groups.flatMap((group) => group.value.map((recipient) => recipient.address)),
+      ).toContain(account.emailAddress);
+      expect(sent[0]?.subject?.length).toBeGreaterThan(0);
+      await assertNotificationJobAccepted(db, { notificationId: row.id, account, signal });
     });
   }, 60_000);
 
-  // Codex finding F36: pg-boss is at-least-once. A crash or timeout after Gmail accepted the
-  // message but before the job was acknowledged retries the job. Without a persisted marker
-  // the retry sends a duplicate email. The job must skip a row it has already emailed.
   it("does not re-send when the notification was already emailed (idempotent retry)", async () => {
     await withTestDb(async (db) => {
       const alice = await seedUser(db);
-      await connectMailbox(db, alice.id);
-      const dealId = await seedDeal(db, { ownerId: alice.id, visibilityLevel: "all" });
-      const signal = new AbortController().signal;
+      const signal = AbortSignal.timeout(30_000);
+      await connectNotificationMailbox(db, alice.id, signal);
+      const dealId = await seedNotificationDeal(db, alice.id, "all", signal);
       await setPreference(db, alice.id, "deal_won", { inApp: true, email: true }, signal);
-      const [n] = await db
-        .insert(notifications)
-        .values({
+      const row = await insertJobNotification(
+        db,
+        {
           userId: alice.id,
           type: "deal_won",
           entityType: "deal",
           entityId: dealId,
-          actorId: null,
           payload: {},
-          // Already emailed on a prior (acknowledged-late) attempt.
           emailSentAt: new Date(),
-        })
-        .returning();
-      if (n === undefined) throw new Error("notification insert failed");
-
-      const calls: { acct: EmailAccountRow; msg: SystemMessage }[] = [];
-      const fakeSend = (acct: EmailAccountRow, msg: SystemMessage) => {
-        calls.push({ acct, msg });
-        return Promise.resolve(ok({ gmailMessageId: "dup" }));
-      };
-
-      const r = await runEmailNotificationJob(db, { notificationId: n.id }, signal, {
-        send: fakeSend,
-      });
-      expect(r.ok).toBe(true);
-      if (r.ok === true) expect(r.value.sent).toBe(false);
-      expect(calls).toHaveLength(0);
+        },
+        signal,
+      );
+      const transport = notificationJobTransport();
+      expect(
+        await runEmailNotificationJob(db, { notificationId: row.id }, signal, transport.deps),
+      ).toEqual(ok({ sent: false }));
+      expect(transport.gmail.calls).toHaveLength(0);
+      expect((await db.execute(sql`SELECT id FROM email_send_attempts`)).rows).toHaveLength(0);
     });
   }, 60_000);
 
   it("records the delivery marker after a successful send", async () => {
     await withTestDb(async (db) => {
       const alice = await seedUser(db);
-      await connectMailbox(db, alice.id);
-      const dealId = await seedDeal(db, { ownerId: alice.id, visibilityLevel: "all" });
-      const signal = new AbortController().signal;
+      const signal = AbortSignal.timeout(30_000);
+      const account = await connectNotificationMailbox(db, alice.id, signal);
+      const dealId = await seedNotificationDeal(db, alice.id, "all", signal);
       await setPreference(db, alice.id, "deal_won", { inApp: true, email: true }, signal);
-      const [n] = await db
-        .insert(notifications)
-        .values({
+      const row = await insertJobNotification(
+        db,
+        {
           userId: alice.id,
           type: "deal_won",
           entityType: "deal",
           entityId: dealId,
-          actorId: null,
           payload: {},
-        })
-        .returning();
-      if (n === undefined) throw new Error("notification insert failed");
-
-      const fakeSend = () => Promise.resolve(ok({ gmailMessageId: "g1" }));
-      const r = await runEmailNotificationJob(db, { notificationId: n.id }, signal, {
-        send: fakeSend,
-      });
-      expect(r.ok).toBe(true);
-      if (r.ok === true) expect(r.value.sent).toBe(true);
-
+        },
+        signal,
+      );
+      const transport = notificationJobTransport();
+      expect(
+        await runEmailNotificationJob(db, { notificationId: row.id }, signal, transport.deps),
+      ).toEqual(ok({ sent: true }));
       const [after] = await db
         .select({ emailSentAt: notifications.emailSentAt })
         .from(notifications)
-        .where(eq(notifications.id, n.id));
+        .where(eq(notifications.id, row.id));
       expect(after?.emailSentAt).not.toBeNull();
+      await assertNotificationJobAccepted(db, { notificationId: row.id, account, signal });
     });
   }, 60_000);
 });

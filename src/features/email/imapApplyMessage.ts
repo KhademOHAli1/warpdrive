@@ -6,6 +6,7 @@ import type { AuthUser } from "@/features/permissions/types";
 import { publishEvent } from "@/server/notify";
 import type { DbOrTx } from "@/server/realtime/channelVersions";
 import { imapAttachmentLocators } from "./imapApplyAttachments";
+import { applyImapDeliveryObservations } from "./imapApplyDeliveryObservations";
 import { existingImapMessage } from "./imapApplyIdentity";
 import { imapThreadForMessage } from "./imapApplyThread";
 import type { ImapFolderCheckpoint, PreparedImapMessage } from "./imapSyncTypes";
@@ -40,6 +41,12 @@ export async function applyImapMessage(
       message.parsed,
       signal,
     );
+    const observedExisting = await applyImapDeliveryObservations(
+      tx,
+      { accountId: runtime.accountId, messageId: existing.id, parsed: message.parsed },
+      signal,
+    );
+    if (!observedExisting.ok) throw observedExisting.error;
     return { messageId: existing.id, inserted: false };
   }
   const parsed = message.parsed;
@@ -86,6 +93,12 @@ export async function applyImapMessage(
     parsed,
     signal,
   );
+  const observedNew = await applyImapDeliveryObservations(
+    tx,
+    { accountId: runtime.accountId, messageId: row.id, parsed },
+    signal,
+  );
+  if (!observedNew.ok) throw observedNew.error;
   const recentInbound =
     from?.email.toLowerCase() !== runtime.emailAddress.toLowerCase() &&
     message.internalDate !== null &&

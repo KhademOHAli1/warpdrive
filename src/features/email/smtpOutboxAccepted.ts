@@ -39,13 +39,15 @@ export async function recordAcceptedSmtpSend(
     const stored = await storeSmtpOutboundCopy(db, recorded, args.signal);
     if (!stored.ok) return review(recorded, args.receipt);
     messageId = stored.value;
-    await appendSmtpSentCopy(db, {
-      attempt: recorded,
-      runtime: args.runtime,
-      messageId,
-      raw: args.raw,
-      signal: args.signal,
-    });
+    // Notification snapshots create only the local private receipt copy.
+    if (recorded.payload.systemPurpose === undefined)
+      await appendSmtpSentCopy(db, {
+        attempt: recorded,
+        runtime: args.runtime,
+        messageId,
+        raw: args.raw,
+        signal: args.signal,
+      });
     const final = await loadSmtpAttempt(
       db,
       args.runtime.accountId,
