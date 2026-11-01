@@ -45,12 +45,16 @@ normalization for display and input, and pass an explicit preference object in s
 Language and calendar are independent: an English interface may use Solar Hijri dates, and a
 Persian interface may use Gregorian dates.
 
-Farsi personal settings conditionally expose Persian (`arabext`) or English (`latn`) digits.
-The optional `numberingSystem` preference is saved with the account and mirrored in a cookie;
-older accounts retain language-appropriate defaults. Pass the full preference object to
-formatters and pass its numbering system to pure translation factories. `useFormatters` and
-`useAppTranslations` do this automatically, including dates, money and ICU numeric arguments.
-English uses Latin digits. Keep stored numbers, ISO dates and user-authored text unchanged.
+Personal settings expose Persian (`arabext`) and Latin (`latn`) digits in Farsi, German and
+English. An explicit digit choice is independent of language, calendar and time zone. When
+omitted, Farsi defaults to Persian digits and German/English to Latin digits; rendering or a
+language-only change does not save that fallback as an explicit preference.
+The optional `numberingSystem` preference is saved with the account and mirrored in a cookie.
+Pass the full preference object to formatters and its numbering system to pure translation
+factories. `useFormatters` and `useAppTranslations` do this automatically for dates, money and
+ICU numeric arguments. DatePicker also applies the choice to triggers, grids, captions and
+accessible dates, while retaining caller-supplied labels. Keep stored numbers, ISO dates,
+raw year-option values and user-authored text unchanged.
 
 Use logical CSS directions and the shared control adapters. Root rendering sets `lang` and `dir`
 before hydration, and the provider carries direction into Radix's context and portals. Isolate

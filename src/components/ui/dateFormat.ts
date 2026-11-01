@@ -1,6 +1,7 @@
 // Pure date-string helpers for the shared DatePicker. Value contract is local
 // YYYY-MM-DD (matches the existing action inputs z.string().date() and the
 // composer startDate state). Display order follows the interface language and chosen calendar.
+import { displayNumberingSystem, type NumberingSystem } from "@/lib/numberingSystem";
 
 export function toYmd(d: Date): string {
   const year = d.getFullYear();
@@ -26,125 +27,104 @@ export function parseYmd(v: string): Date | null {
   return isSameCalendarDate ? date : null;
 }
 
-export function formatMdy(v: string): string {
-  const d = parseYmd(v);
-  if (d === null) return "";
-  return `${String(d.getMonth() + 1).padStart(2, "0")}/${String(d.getDate()).padStart(2, "0")}/${d.getFullYear()}`;
-}
-
 // The stored value is a Gregorian civil date, not an instant. Formatting at UTC noon
 // avoids shifting that date when server and browser run in different time zones.
-const dateFormatOptions = {
-  year: "numeric",
-  month: "2-digit",
-  day: "2-digit",
-  timeZone: "UTC",
+const DATE_LOCALES = { en: "en-US", fa: "fa-IR", de: "de-DE" } as const;
+const DATE_STYLES = {
+  numeric: { year: "numeric", month: "2-digit", day: "2-digit" },
+  accessible: { year: "numeric", month: "long", day: "numeric", weekday: "long" },
+  month: { month: "long" },
+  year: { year: "numeric" },
 } as const;
-const persianDateFormatter = new Intl.DateTimeFormat(
-  "fa-IR-u-ca-persian-nu-arabext",
-  dateFormatOptions,
-);
-const englishPersianDateFormatter = new Intl.DateTimeFormat(
-  "fa-IR-u-ca-persian-nu-latn",
-  dateFormatOptions,
-);
-const persianGregorianDateFormatter = new Intl.DateTimeFormat(
-  "fa-IR-u-ca-gregory-nu-arabext",
-  dateFormatOptions,
-);
-const germanDateFormatter = new Intl.DateTimeFormat(
-  "de-DE-u-ca-gregory-nu-latn",
-  dateFormatOptions,
-);
-const germanPersianDateFormatter = new Intl.DateTimeFormat(
-  "de-DE-u-ca-persian-nu-latn",
-  dateFormatOptions,
-);
-const accessibleDateOptions = {
-  year: "numeric",
-  month: "long",
-  day: "numeric",
-  weekday: "long",
-  timeZone: "UTC",
-} as const;
-const solarAccessibleDateFormatter = new Intl.DateTimeFormat(
-  "fa-IR-u-ca-persian-nu-arabext",
-  accessibleDateOptions,
-);
-const gregorianAccessibleDateFormatter = new Intl.DateTimeFormat(
-  "fa-IR-u-ca-gregory-nu-arabext",
-  accessibleDateOptions,
-);
-const germanSolarAccessibleDateFormatter = new Intl.DateTimeFormat(
-  "de-DE-u-ca-persian-nu-latn",
-  accessibleDateOptions,
-);
-const germanGregorianAccessibleDateFormatter = new Intl.DateTimeFormat(
-  "de-DE-u-ca-gregory-nu-latn",
-  accessibleDateOptions,
-);
+type DateLocale = keyof typeof DATE_LOCALES;
+type DateCalendar = "gregory" | "persian";
+type DateStyle = keyof typeof DATE_STYLES;
+type FormatterKey = `${DateLocale}:${DateCalendar}:${NumberingSystem}:${DateStyle}`;
+
+// Only finite display preferences enter the cache, never dates or arbitrary locale strings.
+const dateFormatters = new Map<FormatterKey, Intl.DateTimeFormat>();
+
+function formatterFor(
+  locale: DateLocale,
+  calendar: DateCalendar,
+  style: DateStyle,
+  numberingSystem?: NumberingSystem,
+): Intl.DateTimeFormat {
+  const numbers = displayNumberingSystem({ locale, numberingSystem });
+  const key: FormatterKey = `${locale}:${calendar}:${numbers}:${style}`;
+  const cached = dateFormatters.get(key);
+  if (cached !== undefined) return cached;
+  const formatter = new Intl.DateTimeFormat(DATE_LOCALES[locale], {
+    ...DATE_STYLES[style],
+    calendar,
+    numberingSystem: numbers,
+    timeZone: "UTC",
+  });
+  dateFormatters.set(key, formatter);
+  return formatter;
+}
 
 function utcCivilDate(date: Date): Date {
   return new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 12));
 }
 
-function formatCivilDate(v: string, formatter: Intl.DateTimeFormat): string {
+function numericDateParts(
+  v: string,
+  locale: DateLocale,
+  calendar: DateCalendar,
+  numberingSystem?: NumberingSystem,
+): Intl.DateTimeFormatPart[] | null {
   const date = parseYmd(v);
-  if (date === null) return "";
-  return formatter.format(utcCivilDate(date));
+  return date === null
+    ? null
+    : formatterFor(locale, calendar, "numeric", numberingSystem).formatToParts(utcCivilDate(date));
 }
 
 function datePart(parts: Intl.DateTimeFormatPart[], type: Intl.DateTimeFormatPartTypes): string {
   return parts.find((part) => part.type === type)?.value ?? "";
 }
 
-export function formatDmy(v: string): string {
-  return formatCivilDate(v, germanDateFormatter);
+export function formatMdy(v: string, numberingSystem?: NumberingSystem): string {
+  const parts = numericDateParts(v, "en", "gregory", numberingSystem);
+  return parts === null
+    ? ""
+    : `${datePart(parts, "month")}/${datePart(parts, "day")}/${datePart(parts, "year")}`;
+}
+
+export function formatDmy(v: string, numberingSystem?: NumberingSystem): string {
+  const parts = numericDateParts(v, "de", "gregory", numberingSystem);
+  return parts === null
+    ? ""
+    : `${datePart(parts, "day")}.${datePart(parts, "month")}.${datePart(parts, "year")}`;
 }
 
 export function formatPersianDate(
   v: string,
-  locale: "en" | "fa" | "de" = "fa",
-  numberingSystem?: "latn" | "arabext",
+  locale: DateLocale = "fa",
+  numberingSystem?: NumberingSystem,
 ): string {
+  const parts = numericDateParts(v, locale, "persian", numberingSystem);
+  if (parts === null) return "";
   if (locale === "de") {
-    const date = parseYmd(v);
-    if (date === null) return "";
-    const parts = germanPersianDateFormatter.formatToParts(utcCivilDate(date));
     return `${datePart(parts, "day")}.${datePart(parts, "month")}.${datePart(parts, "year")}`;
   }
-  return formatCivilDate(
-    v,
-    locale === "fa" && numberingSystem !== "latn"
-      ? persianDateFormatter
-      : englishPersianDateFormatter,
-  );
+  return `${datePart(parts, "year")}/${datePart(parts, "month")}/${datePart(parts, "day")}`;
 }
 
-export function formatGregorianPersianDate(
-  v: string,
-  numberingSystem?: "latn" | "arabext",
-): string {
-  return formatCivilDate(
-    v,
-    numberingSystem === "latn"
-      ? new Intl.DateTimeFormat("fa-IR-u-ca-gregory-nu-latn", dateFormatOptions)
-      : persianGregorianDateFormatter,
-  );
+export function formatGregorianPersianDate(v: string, numberingSystem?: NumberingSystem): string {
+  const parts = numericDateParts(v, "fa", "gregory", numberingSystem);
+  return parts === null
+    ? ""
+    : `${datePart(parts, "year")}/${datePart(parts, "month")}/${datePart(parts, "day")}`;
 }
 
 export function formatPersianAccessibleDate(
   date: Date,
-  calendar: "persian" | "gregory",
+  calendar: DateCalendar,
   modifiers?: Record<string, boolean>,
-  numberingSystem?: "latn" | "arabext",
+  numberingSystem?: NumberingSystem,
 ): string {
-  const formatter =
-    numberingSystem === "latn"
-      ? new Intl.DateTimeFormat("fa-IR", { ...accessibleDateOptions, calendar, numberingSystem })
-      : calendar === "persian"
-        ? solarAccessibleDateFormatter
-        : gregorianAccessibleDateFormatter;
+  const formatter = formatterFor("fa", calendar, "accessible", numberingSystem);
   const parts = formatter.formatToParts(utcCivilDate(date));
   const part = (type: Intl.DateTimeFormatPartTypes): string =>
     parts.find((item) => item.type === type)?.value ?? "";
@@ -155,13 +135,11 @@ export function formatPersianAccessibleDate(
 
 export function formatGermanAccessibleDate(
   date: Date,
-  calendar: "persian" | "gregory",
+  calendar: DateCalendar,
   modifiers?: Record<string, boolean>,
+  numberingSystem?: NumberingSystem,
 ): string {
-  const formatter =
-    calendar === "persian"
-      ? germanSolarAccessibleDateFormatter
-      : germanGregorianAccessibleDateFormatter;
+  const formatter = formatterFor("de", calendar, "accessible", numberingSystem);
   const parts = formatter.formatToParts(utcCivilDate(date));
   const formatted = `${datePart(parts, "weekday")}, ${datePart(parts, "day")}. ${datePart(parts, "month")} ${datePart(parts, "year")}`;
   const withToday = modifiers?.today === true ? `Heute, ${formatted}` : formatted;
@@ -170,13 +148,11 @@ export function formatGermanAccessibleDate(
 
 export function calendarFormatters(
   locale: "fa" | "de",
-  calendar: "persian" | "gregory",
-  numberingSystem: "latn" | "arabext",
+  calendar: DateCalendar,
+  numberingSystem: NumberingSystem,
 ) {
-  const options = { calendar, numberingSystem, timeZone: "UTC" };
-  const language = locale === "de" ? "de-DE" : "fa-IR";
-  const month = new Intl.DateTimeFormat(language, { ...options, month: "long" });
-  const year = new Intl.DateTimeFormat(language, { ...options, year: "numeric" });
+  const month = formatterFor(locale, calendar, "month", numberingSystem);
+  const year = formatterFor(locale, calendar, "year", numberingSystem);
   const format = (date: Date, formatter: Intl.DateTimeFormat, type: "month" | "year"): string =>
     datePart(formatter.formatToParts(utcCivilDate(date)), type);
   return {

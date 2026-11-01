@@ -9,7 +9,7 @@ export function displayNumberingSystem({
   locale?: string;
   numberingSystem?: NumberingSystem;
 }): NumberingSystem {
-  return locale.startsWith("fa") ? (numberingSystem ?? "arabext") : "latn";
+  return numberingSystem ?? (locale.startsWith("fa") ? "arabext" : "latn");
 }
 
 export function localeWithNumberingSystem<Locale extends "en" | "fa" | "de">(
