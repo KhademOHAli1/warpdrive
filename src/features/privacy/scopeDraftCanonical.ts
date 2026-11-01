@@ -10,7 +10,7 @@ export function canonicalScopeJson(value: unknown): string {
       .sort(([a], [b]) => compareScopeStrings(a, b))
       .map(([key, child]) => `${JSON.stringify(key)}:${canonicalScopeJson(child)}`)
       .join(",")}}`;
-  return JSON.stringify(value) ?? "null";
+  return JSON.stringify(value);
 }
 
 type ProvenanceRecord = Pick<

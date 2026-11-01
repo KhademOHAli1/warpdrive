@@ -22,6 +22,25 @@ function collectionBudget(key: string, length: number, budget: Budget): boolean 
   return !["fields", "decisions", "provenance"].includes(key) || length <= SCOPE_DRAFT_FIELD_LIMIT;
 }
 
+function visitProperties(
+  value: object,
+  budget: Budget,
+  depth: number,
+  signal: AbortSignal,
+): BudgetResult {
+  const descriptors = Object.getOwnPropertyDescriptors(value);
+  for (const key of Reflect.ownKeys(descriptors)) {
+    if (typeof key !== "string" || key.length > 80) return "invalid";
+    const descriptor = descriptors[key];
+    if (descriptor === undefined || !Object.hasOwn(descriptor, "value")) return "invalid";
+    const child: unknown = descriptor.value;
+    if (Array.isArray(child) && !collectionBudget(key, child.length, budget)) return "limit";
+    const result = visit(child, budget, depth + 1, signal);
+    if (result !== "ok") return result;
+  }
+  return "ok";
+}
+
 function visit(value: unknown, budget: Budget, depth: number, signal: AbortSignal): BudgetResult {
   signal.throwIfAborted();
   if (++budget.nodes > 1_000_000 || depth > 16) return "limit";
@@ -35,17 +54,7 @@ function visit(value: unknown, budget: Budget, depth: number, signal: AbortSigna
   if (budget.ancestors.has(value)) return "invalid";
   budget.ancestors.add(value);
   try {
-    const descriptors = Object.getOwnPropertyDescriptors(value);
-    for (const key of Reflect.ownKeys(descriptors)) {
-      if (typeof key !== "string" || key.length > 80) return "invalid";
-      const descriptor = descriptors[key];
-      if (descriptor === undefined || !Object.hasOwn(descriptor, "value")) return "invalid";
-      const child: unknown = descriptor.value;
-      if (Array.isArray(child) && !collectionBudget(key, child.length, budget)) return "limit";
-      const result = visit(child, budget, depth + 1, signal);
-      if (result !== "ok") return result;
-    }
-    return "ok";
+    return visitProperties(value, budget, depth, signal);
   } finally {
     budget.ancestors.delete(value);
   }

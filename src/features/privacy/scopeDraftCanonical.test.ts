@@ -3,6 +3,15 @@ import { buildScopeDraftPlan } from "./scopeDraft";
 import { draftDigest, draftId, scopeDraftFixture } from "./scopeDraftTestKit";
 
 const signal = () => AbortSignal.timeout(5000);
+function changeProvenance(fixture: ReturnType<typeof scopeDraftFixture>) {
+  const actual = fixture.input.categories[0]?.records[0]?.provenance[0];
+  const expected = fixture.context.categories[0]?.records[0]?.provenance[0];
+  if (actual !== undefined && expected !== undefined) {
+    actual.sourceFingerprint = draftDigest("5");
+    expected.sourceFingerprint = draftDigest("5");
+  }
+}
+
 function hashesDiffer(change: (value: ReturnType<typeof scopeDraftFixture>) => void) {
   const first = scopeDraftFixture();
   const second = structuredClone(first);
@@ -68,14 +77,7 @@ describe("draft semantic commitments", () => {
         record.sourceFingerprint = draftDigest("4");
         source.sourceFingerprint = draftDigest("4");
       }
-      if (kind === "provenance") {
-        const a = record.provenance[0];
-        const b = source.provenance[0];
-        if (a !== undefined && b !== undefined) {
-          a.sourceFingerprint = draftDigest("5");
-          b.sourceFingerprint = draftDigest("5");
-        }
-      }
+      if (kind === "provenance") changeProvenance(f);
       if (kind === "adapter") {
         category.adapterVersion = 3;
         expected.adapterVersion = 3;
