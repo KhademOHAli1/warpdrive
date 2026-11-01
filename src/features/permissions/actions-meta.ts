@@ -21,6 +21,7 @@ type GlobalAction =
   | "deal.create"
   | "contact.create"
   | "activity.create"
+  | "project.create"
   | "bulk.edit"
   | "data.import"
   | "data.export"

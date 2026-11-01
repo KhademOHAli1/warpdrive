@@ -704,6 +704,7 @@
     },
     "permissions": {
       "deal_create": "Verkaufschancen erstellen",
+      "project_create": "Projekt erstellen",
       "contact_create": "Kontakte erstellen",
       "activity_create": "Aktivitäten erstellen",
       "bulk_edit": "Mehrere Datensätze gleichzeitig bearbeiten",

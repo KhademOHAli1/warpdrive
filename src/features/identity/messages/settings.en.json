@@ -704,6 +704,7 @@
     },
     "permissions": {
       "deal_create": "Create deals",
+      "project_create": "Create project",
       "contact_create": "Create contacts",
       "activity_create": "Create activities",
       "bulk_edit": "Edit multiple records",

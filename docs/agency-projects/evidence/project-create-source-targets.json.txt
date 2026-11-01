@@ -1,0 +1,26 @@
+{
+  "files": [
+    "src/constants/permissionFlags.ts",
+    "src/features/permissions/actions-meta.ts",
+    "src/features/permissions/projectCreateRegistration.test.ts",
+    "src/features/identity/messages/settings.fa.json",
+    "src/features/identity/messages/settings.de.json",
+    "src/features/identity/messages/settings.en.json"
+  ],
+  "unitFiles": [
+    "src/features/permissions/projectCreateRegistration.test.ts",
+    "src/constants/permissionFlags.test.ts",
+    "src/features/permissions/can.test.ts",
+    "src/features/identity/guards.test.ts",
+    "src/features/identity/settingsMessages.test.ts",
+    "src/features/identity/germanFactories.test.ts"
+  ],
+  "preFormatHashes": {
+    "src/constants/permissionFlags.ts": "6a5213b101ed6cb03a1430f8ba006e4f14412dd6b5a3cdb1ee975286e69109ee",
+    "src/features/permissions/actions-meta.ts": "049d9ee0864e58b0b0e44b66c215c4af6655cbcd2e305d12a8695c3da9913d9d",
+    "src/features/permissions/projectCreateRegistration.test.ts": "83f6406f003110eac2ca6122a300f9f213cd940343bbb16f8326c4723dee5871",
+    "src/features/identity/messages/settings.fa.json": "db0473c64039891143786973932fe387b7b5e652016392768dd6d53713b4e2fe",
+    "src/features/identity/messages/settings.de.json": "42d7e769bc8fc9adc75e16ad346c1df9c4d0ac5cd5337c0a8abf9f27d82b7d80",
+    "src/features/identity/messages/settings.en.json": "c4bee0a196f68fc9498d175faa0778d8e5bcd13ee75d7b776584eea384f76cb6"
+  }
+}

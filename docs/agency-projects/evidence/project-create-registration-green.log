@@ -1,0 +1,14 @@
+$ bun --bun vitest run --project unit src/features/permissions/projectCreateRegistration.test.ts "--maxWorkers=1"
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+  - ESM syntax in a file loaded as CommonJS (vitest.classify.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.5 /Users/ali/Developer/warpdrive-agency-projects
+
+
+ Test Files  1 passed (1)
+      Tests  17 passed (17)
+   Start at  06:59:00
+   Duration  197ms (transform 48%, import 33%, tests 12%, setup 5%, worker 2%)
+

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "scope": "MAIL-authorized finite sequential feature source-check batch only",
+  "scope": "MAIL-authorized finite 52-file feature source-check batch; initial read-only wrapper overlap recorded below",
   "runs": [
     {
       "phase": "types",

@@ -1,0 +1,222 @@
+$ bun --bun vitest run --project unit src/features/permissions/projectCreateRegistration.test.ts "--maxWorkers=1"
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+  - ESM syntax in a file loaded as CommonJS (vitest.classify.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.5 /Users/ali/Developer/warpdrive-agency-projects
+
+ ❯ |unit| src/features/permissions/projectCreateRegistration.test.ts (17 tests | 11 failed) 17ms
+   ❯ project create registry and ordinary defaults (2)
+     × registers exactly one global high-risk key with no scoped variants 5ms
+     × defaults ordinary creation to false while retaining existing regular defaults 1ms
+   ❯ project create global permission check (4)
+     × keeps an explicitly false editor value out of enabled authority 0ms
+   ❯ project create high-risk grant guard (2)
+     × rejects a delegated manager whenever submitted enabled flags contain project create 1ms
+   ❯ exhaustive permission write schema and editor defaults (6)
+     × accepts the new boolean key in a complete write map: false 1ms
+     × accepts the new boolean key in a complete write map: true 0ms
+     × rejects sparse raw write maps, including a complete map missing the new key 0ms
+     × completes omitted editor keys to false without dropping existing true values 0ms
+   ❯ project create Settings labels (3)
+     × resolves the exact fa label through the adopted lookup 2ms
+     × resolves the exact de label through the adopted lookup 1ms
+     × resolves the exact en label through the adopted lookup 3ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 11 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| src/features/permissions/projectCreateRegistration.test.ts > project create registry and ordinary defaults > registers exactly one global high-risk key with no scoped variants
+AssertionError: expected [] to have a length of 1 but got +0
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ src/features/permissions/projectCreateRegistration.test.ts:34:65
+     32| describe("project create registry and ordinary defaults", () => {
+     33|   it("registers exactly one global high-risk key with no scoped varian…
+     34|     expect(GLOBAL_FLAGS.filter((key) => key === projectCreate)).toHave…
+       |                                                                 ^
+     35|     expect(ALL_PERMISSION_FLAG_KEYS.filter((key) => key === projectCre…
+     36|     expect(HIGH_RISK_FLAGS.filter((key) => key === projectCreate)).toH…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/11]⎯
+
+ FAIL  |unit| src/features/permissions/projectCreateRegistration.test.ts > project create registry and ordinary defaults > defaults ordinary creation to false while retaining existing regular defaults
+AssertionError: expected undefined to be false // Object.is equality
+
+- Expected:
+false
+
++ Received:
+undefined
+
+ ❯ src/features/permissions/projectCreateRegistration.test.ts:45:50
+     43|
+     44|   it("defaults ordinary creation to false while retaining existing reg…
+     45|     expect(REGULAR_DEFAULT_FLAGS[projectCreate]).toBe(false);
+       |                                                  ^
+     46|     expect(ADMIN_DEFAULT_FLAGS[projectCreate]).toBe(true);
+     47|     const enabled = Object.entries(REGULAR_DEFAULT_FLAGS)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/11]⎯
+
+ FAIL  |unit| src/features/permissions/projectCreateRegistration.test.ts > project create global permission check > keeps an explicitly false editor value out of enabled authority
+AssertionError: expected undefined to be false // Object.is equality
+
+- Expected:
+false
+
++ Received:
+undefined
+
+ ❯ src/features/permissions/projectCreateRegistration.test.ts:70:32
+     68|   it("keeps an explicitly false editor value out of enabled authority"…
+     69|     const map = completePermissionFlags({ [projectCreate]: false });
+     70|     expect(map[projectCreate]).toBe(false);
+       |                                ^
+     71|     const enabled: PermissionFlagKey[] = map[projectCreate] ? [project…
+     72|     expect(can(actor("regular", enabled), projectCreate)).toBe(false);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/11]⎯
+
+ FAIL  |unit| src/features/permissions/projectCreateRegistration.test.ts > project create high-risk grant guard > rejects a delegated manager whenever submitted enabled flags contain project create
+AssertionError: expected { ok: true, value: true } to deeply equal { ok: false, …(1) }
+
+- Expected
++ Received
+
+  {
+-   "error": "granting project.create requires admin",
+-   "ok": false,
++   "ok": true,
++   "value": true,
+  }
+
+ ❯ src/features/permissions/projectCreateRegistration.test.ts:92:53
+     90|     const manager = actor("regular", ["permissions.manage"]);
+     91|     const denied = { ok: false, error: "granting project.create requir…
+     92|     expect(canGrantFlags(manager, [projectCreate])).toEqual(denied);
+       |                                                     ^
+     93|     expect(canGrantFlags(manager, ["deal.create", projectCreate])).toE…
+     94|     expect(canGrantFlags(manager, [])).toEqual({ ok: true, value: true…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/11]⎯
+
+ FAIL  |unit| src/features/permissions/projectCreateRegistration.test.ts > exhaustive permission write schema and editor defaults > accepts the new boolean key in a complete write map: false
+ FAIL  |unit| src/features/permissions/projectCreateRegistration.test.ts > exhaustive permission write schema and editor defaults > accepts the new boolean key in a complete write map: true
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/features/permissions/projectCreateRegistration.test.ts:108:28
+    106|     const flags = { ...completePermissionFlags({}), [projectCreate]: v…
+    107|     const result = permissionFlagsSchema.safeParse(flags);
+    108|     expect(result.success).toBe(true);
+       |                            ^
+    109|     if (result.success) expect(result.data).toEqual(flags);
+    110|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/11]⎯
+
+ FAIL  |unit| src/features/permissions/projectCreateRegistration.test.ts > exhaustive permission write schema and editor defaults > rejects sparse raw write maps, including a complete map missing the new key
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/features/permissions/projectCreateRegistration.test.ts:128:60
+    126|     const flags = completePermissionFlags({});
+    127|     Reflect.deleteProperty(flags, projectCreate);
+    128|     expect(permissionFlagsSchema.safeParse(flags).success).toBe(false);
+       |                                                            ^
+    129|   });
+    130|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/11]⎯
+
+ FAIL  |unit| src/features/permissions/projectCreateRegistration.test.ts > exhaustive permission write schema and editor defaults > completes omitted editor keys to false without dropping existing true values
+AssertionError: expected undefined to be false // Object.is equality
+
+- Expected:
+false
+
++ Received:
+undefined
+
+ ❯ src/features/permissions/projectCreateRegistration.test.ts:141:34
+    139|   it("completes omitted editor keys to false without dropping existing…
+    140|     const flags = completePermissionFlags({ "deal.create": true });
+    141|     expect(flags[projectCreate]).toBe(false);
+       |                                  ^
+    142|     expect(flags["deal.create"]).toBe(true);
+    143|     expect(Object.keys(flags)).toHaveLength(ALL_PERMISSION_FLAG_KEYS.l…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/11]⎯
+
+ FAIL  |unit| src/features/permissions/projectCreateRegistration.test.ts > project create Settings labels > resolves the exact fa label through the adopted lookup
+AssertionError: expected 'project.create' to be 'ایجاد پروژه' // Object.is equality
+
+Expected: "ایجاد پروژه"
+Received: "project.create"
+
+ ❯ src/features/permissions/projectCreateRegistration.test.ts:155:62
+    153|   ] as const)("resolves the exact %s label through the adopted lookup"…
+    154|     const messages = settingsMessagesForLocale(locale);
+    155|     expect(settingsPermissionLabel(messages, projectCreate)).toBe(labe…
+       |                                                              ^
+    156|   });
+    157| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/11]⎯
+
+ FAIL  |unit| src/features/permissions/projectCreateRegistration.test.ts > project create Settings labels > resolves the exact de label through the adopted lookup
+AssertionError: expected 'project.create' to be 'Projekt erstellen' // Object.is equality
+
+Expected: "Projekt erstellen"
+Received: "project.create"
+
+ ❯ src/features/permissions/projectCreateRegistration.test.ts:155:62
+    153|   ] as const)("resolves the exact %s label through the adopted lookup"…
+    154|     const messages = settingsMessagesForLocale(locale);
+    155|     expect(settingsPermissionLabel(messages, projectCreate)).toBe(labe…
+       |                                                              ^
+    156|   });
+    157| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/11]⎯
+
+ FAIL  |unit| src/features/permissions/projectCreateRegistration.test.ts > project create Settings labels > resolves the exact en label through the adopted lookup
+AssertionError: expected 'project.create' to be 'Create project' // Object.is equality
+
+Expected: "Create project"
+Received: "project.create"
+
+ ❯ src/features/permissions/projectCreateRegistration.test.ts:155:62
+    153|   ] as const)("resolves the exact %s label through the adopted lookup"…
+    154|     const messages = settingsMessagesForLocale(locale);
+    155|     expect(settingsPermissionLabel(messages, projectCreate)).toBe(labe…
+       |                                                              ^
+    156|   });
+    157| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/11]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  11 failed | 6 passed (17)
+   Start at  06:58:23
+   Duration  187ms (transform 44%, import 35%, tests 15%, setup 4%, worker 2%)
+
+error: "vitest" exited with code 1
+error: script "test:unit" exited with code 1

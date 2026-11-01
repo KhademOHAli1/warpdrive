@@ -3,6 +3,7 @@ export const GLOBAL_FLAGS = [
   "deal.create",
   "contact.create",
   "activity.create",
+  "project.create",
   "bulk.edit",
   "data.import",
   "data.export",
@@ -69,6 +70,7 @@ export const PERMISSION_FLAGS = {
 
 // Granting any of these to a set requires the actor to be an admin (permissions spec 5.2).
 export const HIGH_RISK_FLAGS = [
+  "project.create",
   "workflow.publish",
   "permissions.manage",
   "pipeline.manage",

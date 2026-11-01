@@ -1,0 +1,75 @@
+src/features/permissions/projectCreateRegistration.test.ts format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+     48  48 │         .filter(([, value]) => value)
+     49  49 │         .map(([key]) => key);
+     50     │ - ····expect(new·Set(enabled)).toEqual(new·Set([
+     51     │ - ······"deal.create",
+     52     │ - ······"contact.create",
+     53     │ - ······"activity.create",
+     54     │ - ······"deal.edit_own",
+     55     │ - ······"contact.edit_own",
+     56     │ - ······"activity.edit_own",
+     57     │ - ······"record.share_own",
+     58     │ - ····]));
+         50 │ + ····expect(new·Set(enabled)).toEqual(
+         51 │ + ······new·Set([
+         52 │ + ········"deal.create",
+         53 │ + ········"contact.create",
+         54 │ + ········"activity.create",
+         55 │ + ········"deal.edit_own",
+         56 │ + ········"contact.edit_own",
+         57 │ + ········"activity.edit_own",
+         58 │ + ········"record.share_own",
+         59 │ + ······]),
+         60 │ + ····);
+     59  61 │     });
+     60  62 │   });
+    ······· │ 
+     97  99 │     it("permits the existing native administrator grant path without an explicit manage flag", () => {
+     98 100 │       expect(canGrantFlags(actor("admin"), [projectCreate])).toEqual({ ok: true, value: true });
+     99     │ - ····expect(canGrantFlags(actor(),·[projectCreate]))
+    100     │ - ······.toEqual({·ok:·false,·error:·"permissions.manage·required"·});
+        101 │ + ····expect(canGrantFlags(actor(),·[projectCreate])).toEqual({
+        102 │ + ······ok:·false,
+        103 │ + ······error:·"permissions.manage·required",
+        104 │ + ····});
+    101 105 │     });
+    102 106 │   });
+    ······· │ 
+    112 116 │     it("rejects unknown keys and nonboolean values without relaxing the exhaustive map", () => {
+    113 117 │       const flags = { ...completePermissionFlags({}), [projectCreate]: false };
+    114     │ - ····expect(permissionFlagsSchema.safeParse({·...flags,·"project.create_any":·true·}).success)
+    115     │ - ······.toBe(false);
+        118 │ + ····expect(permissionFlagsSchema.safeParse({·...flags,·"project.create_any":·true·}).success).toBe(
+        119 │ + ······false,
+        120 │ + ····);
+    116 121 │       expect(permissionFlagsSchema.safeParse({ ...flags, unknown: true }).success).toBe(false);
+    117 122 │       for (const value of ["true", 1, null, undefined]) {
+    118     │ - ······expect(permissionFlagsSchema.safeParse({·...flags,·[projectCreate]:·value·}).success)
+    119     │ - ········.toBe(false);
+        123 │ + ······expect(permissionFlagsSchema.safeParse({·...flags,·[projectCreate]:·value·}).success).toBe(
+        124 │ + ········false,
+        125 │ + ······);
+    120 126 │       }
+    121 127 │     });
+    ······· │ 
+    133 139 │       expect(omitted.success).toBe(true);
+    134 140 │       if (omitted.success) expect(omitted.data).toEqual({ name: "Project team", flags: {} });
+    135     │ - ····expect(createPermissionSetInput.safeParse({·name:·"Project·team",·flags:·{}·}).success)
+    136     │ - ······.toBe(false);
+        141 │ + ····expect(createPermissionSetInput.safeParse({·name:·"Project·team",·flags:·{}·}).success).toBe(
+        142 │ + ······false,
+        143 │ + ····);
+    137 144 │     });
+    138 145 │   
+  
+
+Checked 6 files in 34ms. No fixes applied.
+Found 1 error.
+check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Some errors were emitted while running checks.
+  
+
