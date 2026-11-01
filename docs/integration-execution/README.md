@@ -18,19 +18,26 @@ restore is verified. Origin still points to a local auth checkout. No push, merg
 public deployment or provider installation is implied by local execution.
 
 BASE and ARCH are complete as their recorded runtime-baseline/design-review tasks.
-CONN-001 through CONN-003, CONN-023, QA-001/002 and seven reviewed UX design tasks are complete:
-**37 of 446 tasks**, with 409 remaining planned. [Prior provider foundation qualification](provider-contract-qualification.md)
+CONN-001 through CONN-003, CONN-023, QA-001/002 and eight reviewed UX design tasks are complete:
+**38 of 446 tasks**, with 408 remaining planned. [Prior provider foundation qualification](provider-contract-qualification.md)
 records its exact source and evidence. [The current foundation batch](foundation-qualification-20261031.md)
 separates new focused checks from pending broad qualification.
 Design closure does not implement their future grant, event, lifecycle or sandbox behavior.
 
-UX-001 through UX-005, UX-007 and UX-009 have reviewed flow/pattern/copy, fresh Mobbin,
+UX-001 through UX-007 and UX-009 have reviewed flow/pattern/copy, fresh Mobbin,
 Farsi terminology and regional/date scenario evidence. Current digit-display restrictions,
 week-start coupling and unsupported recurrence remain explicit. The local fake harness and
 synthetic CRM factory passed their bounded contract/fixture checks and independent review.
 Current-source standalone types passed; broad unit validation was deliberately interrupted
 at critical disk pressure and other broad gates remain pending. These closures do not qualify
 browser geometry, accessibility, live providers or future runtime journeys.
+
+[UX-006's trilingual design catalog](locale-copy-review.md) adds 100 messages in each
+language, including 45 traced source messages and 55 proposed messages with exact state
+guards. Independent copy/source review and all 300 ICU parses passed. The future runtime
+bindings, rendered journeys and native-speaker acceptance remain open. See the
+[sequential validation record](validation-windows-20261101.md) for the later focused
+actor/Slack checks and the still-pending affected regression gates.
 
 ## BASE evidence
 
