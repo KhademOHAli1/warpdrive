@@ -4,7 +4,6 @@ import { PageHeading } from "@/components/shell/PageHeading";
 import { ListSectionSkeleton } from "@/components/shell/skeletons";
 import { PeopleList } from "@/features/contacts/PeopleList";
 import { QuickAddContact } from "@/features/contacts/QuickAddContact";
-import type { PersonSortField } from "@/features/contacts/schemas";
 import { listDefs } from "@/features/custom-fields/defsRepo";
 import { getAppTranslations } from "@/features/i18n/server";
 import { getPreferencesForActor } from "@/features/identity/preferencesForActor";
@@ -72,7 +71,7 @@ async function PeopleSection({ actorId }: { actorId: string }): Promise<React.Re
             offset: 0,
             limit: 50,
             filter: selected?.definition ?? undefined,
-            sort: sort as { field: PersonSortField; dir: "asc" | "desc" } | undefined,
+            sort,
           }),
       blocked ? [] : caller.contacts.orgOptions(),
       listDefs(ctx.db, "person", {}, AbortSignal.timeout(8000)),

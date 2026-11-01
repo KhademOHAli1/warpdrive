@@ -28,9 +28,13 @@ vi.mock("@/features/saved-filters/savedFilterList", () => ({
   listCompatibleSavedFilterViews: h.views,
 }));
 vi.mock("@/features/identity/preferencesForActor", () => ({ getPreferencesForActor: h.prefs }));
-vi.mock("@/features/i18n/server", () => ({ getAppTranslations: async () => (key: string) => key }));
-vi.mock("@/features/custom-fields/defsRepo", () => ({ listDefs: async () => [] }));
-vi.mock("@/features/settings/readBaseCurrency", () => ({ readBaseCurrency: async () => "EUR" }));
+vi.mock("@/features/i18n/server", () => ({
+  getAppTranslations: () => Promise.resolve((key: string) => key),
+}));
+vi.mock("@/features/custom-fields/defsRepo", () => ({ listDefs: () => Promise.resolve([]) }));
+vi.mock("@/features/settings/readBaseCurrency", () => ({
+  readBaseCurrency: () => Promise.resolve("EUR"),
+}));
 vi.mock("@/features/permissions/can", () => ({ can: () => false }));
 vi.mock("@/features/contacts/PeopleList", () => ({ PeopleList: () => null }));
 vi.mock("@/features/contacts/OrgsList", () => ({ OrgsList: () => null }));

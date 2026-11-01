@@ -40,7 +40,7 @@ vi.mock("@/lib/trpc-client", () => ({
 vi.mock("./AddLeadModal", () => ({ AddLeadModal: () => <div data-testid="add-lead-modal" /> }));
 vi.mock("@/features/identity/preferencesActions", () => ({
   setLeadsViewAction: vi.fn(),
-  setSavedViewSelectionAction: vi.fn(async () => ({ ok: true })),
+  setSavedViewSelectionAction: vi.fn(() => Promise.resolve({ ok: true })),
 }));
 vi.mock("./leadServerActions", () => ({
   archiveLeadAction: vi.fn(),

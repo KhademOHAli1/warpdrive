@@ -4,7 +4,6 @@ import { PageHeading } from "@/components/shell/PageHeading";
 import { ListSectionSkeleton } from "@/components/shell/skeletons";
 import { OrgsList } from "@/features/contacts/OrgsList";
 import { QuickAddContact } from "@/features/contacts/QuickAddContact";
-import type { OrgSortField } from "@/features/contacts/schemas";
 import { listDefs } from "@/features/custom-fields/defsRepo";
 import { getAppTranslations } from "@/features/i18n/server";
 import { getPreferencesForActor } from "@/features/identity/preferencesForActor";
@@ -71,7 +70,7 @@ async function OrgsSection({ actorId }: { actorId: string }): Promise<React.Reac
           offset: 0,
           limit: 50,
           filter: selected?.definition ?? undefined,
-          sort: sort as { field: OrgSortField; dir: "asc" | "desc" } | undefined,
+          sort,
         }),
     listDefs(ctx.db, "organization", {}, AbortSignal.timeout(8000)),
     readBaseCurrency(ctx.db, AbortSignal.timeout(8000)),

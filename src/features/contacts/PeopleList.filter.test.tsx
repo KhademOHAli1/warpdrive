@@ -24,7 +24,7 @@ vi.mock("./actions", () => ({ deletePersonAction: vi.fn(), mergePersonsAction: v
 vi.mock("@/utils/csrfCookie", () => ({ readCsrfToken: () => "csrf" }));
 vi.mock("@/features/identity/preferencesActions", () => ({
   setColumnViewAction: vi.fn(),
-  setSavedViewSelectionAction: vi.fn(async () => ({ ok: true })),
+  setSavedViewSelectionAction: vi.fn(() => Promise.resolve({ ok: true })),
 }));
 
 import { LocaleProvider } from "@/features/i18n/LocaleProvider";

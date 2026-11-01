@@ -10,6 +10,7 @@ import {
   savedViewSelectionActorHintSchema,
   savedViewSelectionInputSchema,
 } from "@/features/saved-filters/savedViewSelectionSchema";
+import type { SavedViewPresentationTarget } from "@/features/saved-filters/viewPresentation";
 import type { Appearance } from "@/features/theme/appearance";
 import { createContext } from "@/server/trpc/context";
 import { setPreferences, setSidebarSectionsPreference } from "./preferencesRepo";
@@ -34,6 +35,23 @@ import {
 } from "./preferencesSchema";
 
 export type PrefActionResult = { ok: true } | { ok: false; error: { id: string } };
+
+async function maySelectSavedView(
+  ctx: Parameters<typeof listCompatibleSavedFilterViews>[0],
+  targetEntity: SavedViewPresentationTarget,
+  savedViewId: string | null,
+): Promise<PrefActionResult> {
+  if (savedViewId === null) return { ok: true };
+  try {
+    const visible = await listCompatibleSavedFilterViews(ctx, targetEntity);
+    if (!visible.some((view) => view.id === savedViewId))
+      return { ok: false, error: { id: ERROR_IDS.PERM_DENIED } };
+    return { ok: true };
+  } catch (cause) {
+    if (cause instanceof Error && cause.name === "AbortError") throw cause;
+    return { ok: false, error: { id: ERROR_IDS.DB_READ_FAILED } };
+  }
+}
 
 export async function setSavedViewSelectionAction(
   input: unknown,
@@ -61,19 +79,8 @@ export async function setSavedViewSelectionAction(
   if (!parsed.success)
     return { ok: false, error: { id: ERROR_IDS.PREF_SAVED_VIEW_SELECTION_INVALID } };
   const { targetEntity, savedViewId } = parsed.data;
-  if (savedViewId !== null) {
-    try {
-      const visible = await listCompatibleSavedFilterViews(
-        { ...ctx, actor: ctx.actor },
-        targetEntity,
-      );
-      if (!visible.some((view) => view.id === savedViewId))
-        return { ok: false, error: { id: ERROR_IDS.PERM_DENIED } };
-    } catch (cause) {
-      if (cause instanceof Error && cause.name === "AbortError") throw cause;
-      return { ok: false, error: { id: ERROR_IDS.DB_READ_FAILED } };
-    }
-  }
+  const allowed = await maySelectSavedView({ ...ctx, actor: ctx.actor }, targetEntity, savedViewId);
+  if (!allowed.ok) return allowed;
   try {
     await setPreferences(
       ctx.db,

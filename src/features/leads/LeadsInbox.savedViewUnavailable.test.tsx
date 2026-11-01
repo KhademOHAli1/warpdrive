@@ -24,7 +24,7 @@ vi.mock("@/lib/trpc-client", () => ({
 }));
 vi.mock("@/features/identity/preferencesActions", () => ({
   setLeadsViewAction: vi.fn(),
-  setSavedViewSelectionAction: vi.fn(async () => ({ ok: true })),
+  setSavedViewSelectionAction: vi.fn(() => Promise.resolve({ ok: true })),
 }));
 vi.mock("./inbox/exportHref", () => ({ buildLeadExportHref: list.exportHref }));
 vi.mock("./leadServerActions", () => ({

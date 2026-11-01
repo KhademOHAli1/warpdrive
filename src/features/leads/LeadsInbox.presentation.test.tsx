@@ -282,7 +282,9 @@ it("shows a failed selection write instead of claiming durable success", async (
 
 it("fences a queued choice when the native actor changes before dispatch", async () => {
   const completions: ((value: { ok: true }) => void)[] = [];
+  const firstWrite = new Promise<{ ok: true }>((resolve) => completions.push(resolve));
   h.selected.mockImplementation(() => new Promise((resolve) => completions.push(resolve)));
+  h.selected.mockReturnValueOnce(firstWrite);
   const first = { initialView, preferenceActorId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" };
   const mounted = render(<LeadsInbox {...first} />);
   fireEvent.click(screen.getByRole("button", { name: "Apply full view" }));
@@ -292,6 +294,7 @@ it("fences a queued choice when the native actor changes before dispatch", async
   mounted.rerender(<LeadsInbox {...second} />);
   await act(async () => {
     completions[0]?.({ ok: true });
+    await firstWrite;
   });
   expect(h.selected).toHaveBeenCalledTimes(1);
 });
