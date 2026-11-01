@@ -1,0 +1,131 @@
+{
+  "schemaVersion": 1,
+  "scope": "MAIL-authorized exact14-file numbering/module-env source-check window,60seconds total",
+  "window": {
+    "grantSourceThreadId": "01a18868-3300-7dc2-b49d-c3bdb067fae7",
+    "budgetSeconds": 60,
+    "teardownReserveSeconds": 1,
+    "startedAt": "2026-11-01T07:54:18.851813+00:00",
+    "deadlineMonotonic": 562700.534897333
+  },
+  "runs": [
+    {
+      "phase": "types",
+      "attempt": "1",
+      "pid": 37826,
+      "startedAt": "2026-11-01T07:54:18.852185+00:00",
+      "finishedAt": "2026-11-01T07:54:21.227744+00:00",
+      "terminal": true,
+      "exitCode": 0,
+      "stopReason": null,
+      "beforeFreeBytes": 13284216832,
+      "minimumFreeBytes": 13279862784,
+      "afterFreeBytes": 13301366784,
+      "floorBytes": 5368709120,
+      "windowRemainingSecondsAtLaunch": 58.999827875057235,
+      "windowBudgetSeconds": 60,
+      "log": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/numbering-source-types-1.log",
+      "command": [
+        "/Users/ali/Developer/warpdrive-agency-projects/.runtime/bin/bun",
+        "--smol",
+        "node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "-p",
+        ".runtime/tsconfig.numbering-adoption.json"
+      ]
+    },
+    {
+      "phase": "biome-check",
+      "attempt": "1",
+      "pid": 37936,
+      "startedAt": "2026-11-01T07:54:29.205260+00:00",
+      "finishedAt": "2026-11-01T07:54:29.421251+00:00",
+      "terminal": true,
+      "exitCode": 0,
+      "stopReason": null,
+      "beforeFreeBytes": 13264547840,
+      "minimumFreeBytes": 13261230080,
+      "afterFreeBytes": 13261230080,
+      "floorBytes": 5368709120,
+      "windowRemainingSecondsAtLaunch": 48.64671862497926,
+      "windowBudgetSeconds": 60,
+      "log": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/numbering-source-biome-check-1.log",
+      "command": [
+        "/Users/ali/Developer/warpdrive-agency-projects/.runtime/bin/bun",
+        "node_modules/@biomejs/biome/bin/biome",
+        "check",
+        "src/app/(app)/settings/profile/LanguageSettings.numbering.test.tsx",
+        "src/app/(app)/settings/profile/LanguageSettings.test.tsx",
+        "src/app/(app)/settings/profile/LanguageSettings.tsx",
+        "src/components/ui/DatePicker.german.test.tsx",
+        "src/components/ui/DatePicker.numbering.test.tsx",
+        "src/components/ui/DatePicker.tsx",
+        "src/components/ui/dateFormat.german.test.ts",
+        "src/components/ui/dateFormat.test.ts",
+        "src/components/ui/dateFormat.ts",
+        "src/components/ui/localizedDayPickers.tsx",
+        "src/features/i18n/numberPreference.test.ts",
+        "src/lib/numberingSystem.ts",
+        "src/config/env.ts",
+        "src/config/agencyModuleEnv.test.ts"
+      ]
+    },
+    {
+      "phase": "eslint",
+      "attempt": "1",
+      "pid": 38011,
+      "startedAt": "2026-11-01T07:54:42.116023+00:00",
+      "finishedAt": "2026-11-01T07:54:45.229788+00:00",
+      "terminal": true,
+      "exitCode": 0,
+      "stopReason": null,
+      "beforeFreeBytes": 13270712320,
+      "minimumFreeBytes": 13256835072,
+      "afterFreeBytes": 13271937024,
+      "floorBytes": 5368709120,
+      "windowRemainingSecondsAtLaunch": 35.73591079202015,
+      "windowBudgetSeconds": 60,
+      "log": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/numbering-source-eslint-1.log",
+      "command": [
+        "/Users/ali/Developer/warpdrive-agency-projects/.runtime/bin/bun",
+        "--smol",
+        "node_modules/eslint/bin/eslint.js",
+        "--config",
+        ".runtime/numbering-eslint.mjs",
+        "src/app/(app)/settings/profile/LanguageSettings.numbering.test.tsx",
+        "src/app/(app)/settings/profile/LanguageSettings.test.tsx",
+        "src/app/(app)/settings/profile/LanguageSettings.tsx",
+        "src/components/ui/DatePicker.german.test.tsx",
+        "src/components/ui/DatePicker.numbering.test.tsx",
+        "src/components/ui/DatePicker.tsx",
+        "src/components/ui/dateFormat.german.test.ts",
+        "src/components/ui/dateFormat.test.ts",
+        "src/components/ui/dateFormat.ts",
+        "src/components/ui/localizedDayPickers.tsx",
+        "src/features/i18n/numberPreference.test.ts",
+        "src/lib/numberingSystem.ts",
+        "src/config/env.ts",
+        "src/config/agencyModuleEnv.test.ts"
+      ]
+    }
+  ],
+  "terminalSummary": {
+    "elapsedSeconds": 26.377603,
+    "groups": [
+      {
+        "pid": 37826,
+        "state": "empty"
+      },
+      {
+        "pid": 37936,
+        "state": "empty"
+      },
+      {
+        "pid": 38011,
+        "state": "empty"
+      }
+    ],
+    "sourceUnchanged": true,
+    "released": true
+  }
+}

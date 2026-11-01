@@ -1,6 +1,6 @@
 # Agency Projects startup configuration, bounded source contract
 
-1 November 2026. **Central parsing field implemented after actual15/15 behavioral red;15 selected and37 affected cases pass. Focused static checks are pending.** `AGENCY_PROJECTS_ENABLED` defaults to false and accepts only exact true/false strings. No real env, deployment, app or worker was changed. Actual Agency readers/commands/consumers remain unimplemented and require their own gates.
+1 November 2026. **Central parsing implemented after 15 failing cases; 15 selected and 37 affected cases pass. Focused static checks pass for both module-env TS files within the exact 14-file numbering/module-env scope.** `AGENCY_PROJECTS_ENABLED` defaults to false and accepts only exact true/false strings. No real env, deployment, app or worker was changed. Actual Agency readers/commands/consumers remain unimplemented and require their own gates.
 
 The Settings owner's selected mechanism is recorded in `evidence/settings-owner-authority-protocol-review.md`, under `Module admission selection`. It selects one central operator boolean with default false and startup drain/restart semantics. The central `AGENCY_PROJECTS_ENABLED` parsing field and operator documentation are now implemented as the bounded source increment. That selection does not establish native module admission or enable Agency persistence.
 
@@ -19,7 +19,7 @@ Implemented parse behavior:
 
 The placed test uses actual `parseEnv()` and `testEnvInput()` from `src/test/envInput.ts`. That fixture serializes the already validated Vitest environment without another raw environment read. The omission case explicitly removes the candidate field from its local fixture so an ambient enabled value cannot decide the result. The explicit cases override the fixture. No real `.env` values were read and no raw `process.env` access is added outside the central boundary. Existing legacy tests' direct environment-spread pattern is not copied.
 
-Root observed all15 new assertions fail before the field existed, followed by15 selected and37 affected cases passing after implementation. This is parsing evidence only. Focused static checks remain pending. Import-time startup rejection follows the existing `loadOrThrow()` design, but no actual process boot or native restart result is claimed here.
+Root observed all15 new assertions fail before the field existed, followed by15 selected and37 affected cases passing after implementation. This is parsing evidence only. Focused static checks now pass for the2 module-env TS files within the14-file supplement. Import-time startup rejection follows the existing `loadOrThrow()` design, but no actual process boot or native restart result is claimed here.
 
 ## Disabled availability contract, not yet an implemented server path
 
@@ -65,9 +65,11 @@ Future durable jobs must check availability at scheduling and actual consumption
 3. Operators and shared authority owners must agree actual drain coordination, bounded completion, consumer behavior, same-cut/config checks and mixed-version handling. The boolean's selection does not implement immediate revocation or the independent through-commit protocol.
 4. Real startup/config propagation, module-off read/write denial, historical-data preservation, re-enable behavior, later durable-job recovery and any immediate-disable requirement need their own observed native tests. Pure `parseEnv` results qualify none of those journeys.
 
-The central field and the listed operator documentation are implemented. The actual observed behavioral red was15 failed/0 passed; selected green was15/1file and affected green37/5files. Focused static checks remain pending. No database, app, build, install, app/worker launch, provider action, actual startup propagation or native claim is included in this increment. Availability/server admission and operator drain/restart gates remain unimplemented.
+The central field and the listed operator documentation are implemented. The actual observed behavioral red was15 failed/0 passed; selected green was15/1file and affected green37/5files. Focused static checks now pass for the2 module-env TS files within the14-file supplement. No database, app, build, install, app/worker launch, provider action, actual startup propagation or native claim is included in this increment. Availability/server admission and operator drain/restart gates remain unimplemented.
 
 
 ## Current execution evidence
 
 Exact source hashes and guarded red/green/affected commands/receipts are indexed in `qualification-module-config-20261101.json`. The three owned unit groups27223/27333/28095 were terminal/empty, with30-second deadlines and live5GiB floor. No actual startup propagation, native off/re-enable, drain, reader or command behavior follows from parser tests. The historical outside-source draft remains preparation, not an additional executed result.
+
+The exact14-file static supplement is `qualification-numbering-module-source-20261101.json`; it supplies no actual startup/config propagation or server admission proof.

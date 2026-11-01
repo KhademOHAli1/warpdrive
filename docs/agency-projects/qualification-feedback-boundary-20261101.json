@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
-  "capturedAt": "2026-11-01T07:53:51.255455+00:00",
+  "capturedAt": "2026-11-01T08:00:26.380465+00:00",
   "base": "9c949bd3dc6c42528ec59f0caa2842614f729f98",
   "scope": "Pure feedback declaration/native-command syntax and exact-data preservation only; no native authority, writer, rendering or disclosure admission.",
   "sourceHashesAtSelectedGreen": {
     "src/features/agency-projects/feedbackRecord.ts": "383ebb9304f2860fff9fcbff4e1075a8b3be1807b07b4de7738842f6d8c5c10f",
-    "src/features/agency-projects/feedbackRecord.test.ts": "07b780901e4fce0656b38e5cae41741f971b4dba634de061807ce27343d45305",
-    "src/features/agency-projects/feedbackRecord.test-support.ts": "07247669d767218d69226acdabcc495bc7dc63886c91cabc6dfe263b51fb54d4"
+    "src/features/agency-projects/feedbackRecord.test.ts": "1fcb9440aa3e5a9edfaed8d8767a8ff00eebac0ee46cc4177b532eb861bff9a9",
+    "src/features/agency-projects/feedbackRecord.test-support.ts": "80a79d90fdf70cda5a05c8939f22315676b21b945f5edc6a1b9acf0a20bbeb29"
   },
   "checks": {
     "missingModuleRed": {
@@ -23,10 +23,50 @@
     "selectedUnits": {
       "passed": 27,
       "files": 1,
-      "durationMilliseconds": 98,
-      "log": "evidence/agency-feedback-green-channel.log"
+      "durationMilliseconds": 113,
+      "log": "evidence/agency-feedback-green-postformat.log",
+      "phase": "post-format"
     },
-    "focusedStatic": "pending separate exact3-primary-TS finite source window",
+    "focusedStatic": {
+      "result": "passed",
+      "scope": "Exact3 primaryTS files; noEmit,Biome3,unchanged-rule typedESLint3",
+      "initialBiome": "Two formatter-only test diagnostics; write touched only2tests; production source unchanged.",
+      "receipt": "evidence/agency-feedback-source-batch-handles.json",
+      "guard": {
+        "groups": [
+          {
+            "pid": 38212,
+            "state": "empty"
+          },
+          {
+            "pid": 38227,
+            "state": "empty"
+          },
+          {
+            "pid": 38266,
+            "state": "empty"
+          },
+          {
+            "pid": 38278,
+            "state": "empty"
+          },
+          {
+            "pid": 38294,
+            "state": "empty"
+          },
+          {
+            "pid": 38305,
+            "state": "empty"
+          }
+        ],
+        "elapsedSeconds": 9.28999,
+        "minimumFreeBytes": 13258711040,
+        "serial": true,
+        "released": true,
+        "productionSourceUnchanged": true,
+        "formatOnlyTestChanges": false
+      }
+    },
     "initialSelectedUnits": {
       "passed": 23,
       "files": 1,
@@ -50,6 +90,23 @@
       "passed": 26,
       "log": "evidence/agency-feedback-red-channel.log",
       "sourceBeforeCorrection": "evidence/feedback-pre-channel-substance.ts.txt"
+    },
+    "postFormatUnits": {
+      "result": "passed",
+      "passed": 27,
+      "files": 1,
+      "pid": 41199,
+      "exitCode": 0,
+      "log": "evidence/agency-feedback-green-postformat.log",
+      "minimumFreeBytes": 13140295680,
+      "groupEmptyVerified": true,
+      "grant": "Explicit27case amendment, onefile/30seconds/oneworker/live5GiB/existingdeps."
+    },
+    "preFormatSelectedUnits": {
+      "passed": 27,
+      "files": 1,
+      "durationMilliseconds": 98,
+      "log": "evidence/agency-feedback-green-channel.log"
     }
   },
   "guard": {
@@ -63,10 +120,11 @@
       34807,
       35170,
       37178,
-      37225
+      37225,
+      41199
     ],
     "receipt": "evidence/agency-feedback-unit-handles.json",
-    "minimumFreeBytes": 13289381888
+    "minimumFreeBytes": 13140295680
   },
   "limits": [
     "No database mocks or actual persistence, replay/current-head, correction/history, Privacy disposition or native session/CRM/project/version/author currentness proof.",
@@ -82,6 +140,17 @@
   "sourceHashesAt26CaseGreen": {
     "src/features/agency-projects/feedbackRecord.ts": "185350e3d0aaab219d08e1ae96eb5ba09e159edc92cd8c2e63e163bd188489b8",
     "src/features/agency-projects/feedbackRecord.test.ts": "1d814efc702c16a95196f92c4037797b891aede32b21fde2d2bff0043dc5b6c8",
+    "src/features/agency-projects/feedbackRecord.test-support.ts": "07247669d767218d69226acdabcc495bc7dc63886c91cabc6dfe263b51fb54d4"
+  },
+  "sourceHashesAtPostFormatStatic": {
+    "src/features/agency-projects/feedbackRecord.ts": "383ebb9304f2860fff9fcbff4e1075a8b3be1807b07b4de7738842f6d8c5c10f",
+    "src/features/agency-projects/feedbackRecord.test.ts": "1fcb9440aa3e5a9edfaed8d8767a8ff00eebac0ee46cc4177b532eb861bff9a9",
+    "src/features/agency-projects/feedbackRecord.test-support.ts": "80a79d90fdf70cda5a05c8939f22315676b21b945f5edc6a1b9acf0a20bbeb29"
+  },
+  "scopeClarification": "The nonzero gitdiff-w comparison in raw source summary is a line-diff result after wraps/trailing commas, not independent semantic-equivalence proof. Formatter diagnostics and exact test diff were reviewed separately.",
+  "sourceHashesAt27CasePreFormatGreen": {
+    "src/features/agency-projects/feedbackRecord.ts": "383ebb9304f2860fff9fcbff4e1075a8b3be1807b07b4de7738842f6d8c5c10f",
+    "src/features/agency-projects/feedbackRecord.test.ts": "07b780901e4fce0656b38e5cae41741f971b4dba634de061807ce27343d45305",
     "src/features/agency-projects/feedbackRecord.test-support.ts": "07247669d767218d69226acdabcc495bc7dc63886c91cabc6dfe263b51fb54d4"
   }
 }

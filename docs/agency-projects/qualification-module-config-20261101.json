@@ -28,7 +28,11 @@
       "durationMilliseconds": 328,
       "log": "evidence/agency-module-env-affected-green.log"
     },
-    "focusedStatic": "pending combined14-primary-file source window"
+    "focusedStatic": {
+      "result": "passed",
+      "qualification": "qualification-numbering-module-source-20261101.json",
+      "scope": "2 module-env primary TS files within exact14 numbering/module-env type/Biome/typedESLint scope, no full repository/build proof"
+    }
   },
   "guard": {
     "workers": 1,

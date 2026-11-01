@@ -1,0 +1,16 @@
+{
+  "files": [
+    "src/features/agency-projects/feedbackRecord.ts",
+    "src/features/agency-projects/feedbackRecord.test.ts",
+    "src/features/agency-projects/feedbackRecord.test-support.ts"
+  ],
+  "unitFiles": [
+    "src/features/agency-projects/feedbackRecord.test.ts"
+  ],
+  "preFormatHashes": {
+    "src/features/agency-projects/feedbackRecord.ts": "383ebb9304f2860fff9fcbff4e1075a8b3be1807b07b4de7738842f6d8c5c10f",
+    "src/features/agency-projects/feedbackRecord.test.ts": "07b780901e4fce0656b38e5cae41741f971b4dba634de061807ce27343d45305",
+    "src/features/agency-projects/feedbackRecord.test-support.ts": "07247669d767218d69226acdabcc495bc7dc63886c91cabc6dfe263b51fb54d4"
+  },
+  "headAtStart": "7dc29e18b6d6223aed7c9f0767805a83c933a7a4"
+}

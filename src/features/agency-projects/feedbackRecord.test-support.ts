@@ -61,7 +61,10 @@ export function nestedExtraDeclarations() {
     { boundary: "source", value: { ...value, source: { ...value.source, unexpected: true } } },
     {
       boundary: "channel",
-      value: { ...value, source: { ...value.source, channel: { kind: "email", unexpected: true } } },
+      value: {
+        ...value,
+        source: { ...value.source, channel: { kind: "email", unexpected: true } },
+      },
     },
     { boundary: "declaration", value: { ...value, unexpected: true } },
   ];

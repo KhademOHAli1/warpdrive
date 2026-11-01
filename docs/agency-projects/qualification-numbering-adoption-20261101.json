@@ -31,7 +31,7 @@
       "durationMilliseconds": 4270,
       "log": "evidence/agency-numbering-adoption-green.log"
     },
-    "combinedTypeLintBuild": "pending; no own merged-candidate static/build proof",
+    "combinedTypeLintBuild": "Focused14-primary-file types/lint passed by supplement; full-repository/combined build remains pending.",
     "nativeUI": "not run"
   },
   "guard": {
@@ -49,5 +49,9 @@
     "Owner historical D225/d238 qualification is not proof for this correction or merged Agency; no149/21 combined pass is claimed.",
     "Inherited caller formatLabel behavior remains limited to Gregorian non-Farsi triggers.",
     "No native/app/PG/build/install/provider/migration/allocation or task/release acceptance."
-  ]
+  ],
+  "focusedSourceSupplement": {
+    "qualification": "qualification-numbering-module-source-20261101.json",
+    "result": "Adopted12 TS/TSX paths plus2 module-env paths pass exact14 focused types/Biome/unchanged-rule typedESLint; hashes unchanged."
+  }
 }

@@ -1,0 +1,48 @@
+{
+  "files": [
+    "src/app/(app)/settings/profile/LanguageSettings.numbering.test.tsx",
+    "src/app/(app)/settings/profile/LanguageSettings.test.tsx",
+    "src/app/(app)/settings/profile/LanguageSettings.tsx",
+    "src/components/ui/DatePicker.german.test.tsx",
+    "src/components/ui/DatePicker.numbering.test.tsx",
+    "src/components/ui/DatePicker.tsx",
+    "src/components/ui/dateFormat.german.test.ts",
+    "src/components/ui/dateFormat.test.ts",
+    "src/components/ui/dateFormat.ts",
+    "src/components/ui/localizedDayPickers.tsx",
+    "src/features/i18n/numberPreference.test.ts",
+    "src/lib/numberingSystem.ts",
+    "src/config/env.ts",
+    "src/config/agencyModuleEnv.test.ts"
+  ],
+  "unitFiles": [
+    "src/app/(app)/settings/profile/LanguageSettings.numbering.test.tsx",
+    "src/app/(app)/settings/profile/LanguageSettings.test.tsx",
+    "src/components/ui/DatePicker.german.test.tsx",
+    "src/components/ui/DatePicker.numbering.test.tsx",
+    "src/components/ui/dateFormat.german.test.ts",
+    "src/components/ui/dateFormat.test.ts",
+    "src/features/i18n/numberPreference.test.ts",
+    "src/config/agencyModuleEnv.test.ts",
+    "src/config/env.test.ts",
+    "src/config/env.auth.test.ts",
+    "src/config/env.mcp.test.ts",
+    "src/config/env.email.test.ts"
+  ],
+  "preFormatHashes": {
+    "src/app/(app)/settings/profile/LanguageSettings.numbering.test.tsx": "2ceb6814f9805ca5e740d7d0585eeea4fc9e543cd6d47d1da48f278c26c32bcf",
+    "src/app/(app)/settings/profile/LanguageSettings.test.tsx": "0d739744c21ff2de6941a7ed95a1c7c00e9da0b9827930f9788688fb8a458d0f",
+    "src/app/(app)/settings/profile/LanguageSettings.tsx": "a5b8d10d12223f730d94d03f173a7b99486f0f51fc6ace57b363fab80d4f5777",
+    "src/components/ui/DatePicker.german.test.tsx": "72d1bb0f591fb514daf17d2ef9734e178c78192d23456d671adffda73aaab97b",
+    "src/components/ui/DatePicker.numbering.test.tsx": "c13aa019f746a07b3a26618d7147d78cb2cc00d5879156bb8b2db297ad3f58ff",
+    "src/components/ui/DatePicker.tsx": "9caa9b527f458fde19f9fb7b3b8c2952bc6b4a50aba594af1f8d1dfc23fbb6cc",
+    "src/components/ui/dateFormat.german.test.ts": "5fe491ad2b849ff5f692aaf871f645e6aeaf37080f52f7fce5ddc1611671476b",
+    "src/components/ui/dateFormat.test.ts": "33523f0234d6421c29a1425fe4db9341c2fa585c46df5fde0159903a5fb05b7b",
+    "src/components/ui/dateFormat.ts": "f8b625c87a3efc5e03f8085b34236639e811f41db8c10440760b35964f6032af",
+    "src/components/ui/localizedDayPickers.tsx": "8396052c007487ef83f1513a0393ddcbc444453c0ae01def30b83cfb60fafeb8",
+    "src/features/i18n/numberPreference.test.ts": "3486723c3a1ddc45a32ae0d15d64bc16db65d2270ef3b2bbeeb0705988b58650",
+    "src/lib/numberingSystem.ts": "fdcd51b3c58c9d59b806c9d4868977da7ba80b4fa04b187af5ced23c5dce375e",
+    "src/config/env.ts": "812ac3d556554a9c931c664102aaa850deaa7726894b14803477e92fc1fff4fa",
+    "src/config/agencyModuleEnv.test.ts": "9661e86efb24e0ecbf7899f48d3e5b65a7bc8c0dfe3349305bad0da15026880c"
+  }
+}
