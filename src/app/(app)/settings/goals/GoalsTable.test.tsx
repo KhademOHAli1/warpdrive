@@ -1,9 +1,13 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
-import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import type { Goal } from "@/db/schema/goals";
 import { GoalsTable } from "./GoalsTable";
+
+const actions = vi.hoisted(() => ({ deleteGoalAction: vi.fn() }));
+vi.mock("@/features/goals/actions", () => actions);
+vi.mock("@/utils/csrfCookie", () => ({ readCsrfToken: () => "csrf" }));
 
 afterEach(cleanup);
 
@@ -30,6 +34,20 @@ function goal(overrides: Partial<Goal>): Goal {
 }
 
 describe("GoalsTable", () => {
+  it("keeps a goal visible and reports a rejected delete for retry", async () => {
+    actions.deleteGoalAction.mockRejectedValueOnce(new Error("offline"));
+    render(
+      <GoalsTable goals={[goal({})]} assigneeNames={{}} onChanged={vi.fn()} onEdit={vi.fn()} />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: /^Delete/ }));
+    fireEvent.click(
+      within(screen.getByRole("alertdialog")).getByRole("button", { name: "Delete" }),
+    );
+    expect(await screen.findByRole("alert")).toHaveTextContent("Could not save the goal.");
+    expect(screen.getByText("200")).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole("button", { name: /^Delete: / })).toBeEnabled());
+  });
+
   it("states a count target as a whole number", () => {
     render(
       <GoalsTable goals={[goal({})]} assigneeNames={{}} onChanged={() => {}} onEdit={() => {}} />,

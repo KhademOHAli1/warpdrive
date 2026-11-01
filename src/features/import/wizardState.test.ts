@@ -3,6 +3,7 @@ import {
   buildColumnMapping,
   initialWizardState,
   isMappingComplete,
+  type WizardAction,
   type WizardState,
   wizardReducer,
 } from "./wizardState";
@@ -51,6 +52,7 @@ it("advances only through the enforced order (upload -> map -> preview)", () => 
   s = wizardReducer(s, { type: "batchCreated", batchId: "b1" });
   expect(s.step).toBe("map");
   expect(s.batchId).toBe("b1");
+  s = wizardReducer(s, { type: "goto", step: "validating" });
   s = wizardReducer(s, { type: "validated", validation: { valid: 1, invalid: 0 } });
   expect(s.step).toBe("preview");
   expect(s.validation).toEqual({ valid: 1, invalid: 0 });
@@ -144,4 +146,46 @@ it("prepared keeps the preview rows so the map step can sample them", () => {
     { agency_name: "New Jersey Transit Corporation", state: "NJ" },
     { agency_name: "Chicago Transit Authority", state: "IL" },
   ]);
+});
+
+const previewState = (): WizardState => ({
+  ...loaded(),
+  step: "preview",
+  batchId: "b1",
+  validation: { valid: 1, invalid: 0 },
+  columns: { "Full Name": { entity: "person", field: "name", isCustom: false, key: "" } },
+});
+
+it("preserves the batch and mapping draft but invalidates validation when returning to editable mapping", () => {
+  const state = previewState();
+  const back = wizardReducer(state, { type: "goto", step: "map" });
+  expect(back.columns).toEqual(state.columns);
+  expect(back.batchId).toBe("b1");
+  expect(back.rows).toEqual(state.rows);
+  expect(back.validation).toBeNull();
+  expect(wizardReducer(back, { type: "goto", step: "commit" }).step).toBe("map");
+});
+
+it.each<WizardAction>([
+  {
+    type: "setColumn",
+    header: "Email",
+    choice: { entity: "person", field: "emails", isCustom: false, key: "" },
+  },
+  { type: "setDedup", dedupMode: "update" },
+  { type: "setRowNote", rowNoteFromUnmapped: true },
+  { type: "setCreateMissingStages", createMissingStages: true },
+  { type: "setTarget", target: "organization" },
+  { type: "setSource", source: "pipedrive" },
+])("invalidates old validation for a mapping change: $type", (action) => {
+  const changed = wizardReducer(previewState(), action);
+  expect(changed.validation).toBeNull();
+  expect(wizardReducer(changed, { type: "goto", step: "commit" }).step).not.toBe("commit");
+});
+
+it("ignores late validation outside the validating phase", () => {
+  const mapping = { ...previewState(), step: "map" as const, validation: null };
+  expect(
+    wizardReducer(mapping, { type: "validated", validation: { valid: 1, invalid: 0 } }),
+  ).toEqual(mapping);
 });

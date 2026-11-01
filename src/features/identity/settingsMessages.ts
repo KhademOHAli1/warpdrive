@@ -3,10 +3,7 @@ import type { EMAIL_SETTINGS_STRINGS } from "@/app/(app)/settings/email/strings"
 import type { EMAIL_SYNC_STRINGS } from "@/app/(app)/settings/email-sync/strings";
 import type { DATA_FIELDS_STRINGS } from "@/app/(app)/settings/fields/strings";
 import type { ENRICHMENT_STRINGS } from "@/constants/enrichmentStrings";
-import type {
-  IDENTITY_ERROR_MESSAGES,
-  IDENTITY_SETTINGS_STRINGS,
-} from "@/constants/settingsIdentity";
+import type { IDENTITY_ERROR_MESSAGES } from "@/constants/settingsIdentity";
 import type { SETTINGS_STRINGS } from "@/constants/settingsStrings";
 import type { MessageCatalog } from "@/features/i18n/messageTypes";
 import type { Locale } from "@/features/i18n/registry";
@@ -25,7 +22,7 @@ type Localized<Value> = Value extends (...args: infer Args) => unknown
       : { [Key in keyof Value]: Localized<Value[Key]> };
 
 type Source = typeof SETTINGS_STRINGS & {
-  _identity: typeof IDENTITY_SETTINGS_STRINGS;
+  _identity: typeof english._identity;
   _errors: typeof IDENTITY_ERROR_MESSAGES;
   _email: typeof EMAIL_SETTINGS_STRINGS;
   _emailSync: typeof EMAIL_SYNC_STRINGS;
@@ -36,6 +33,13 @@ type Source = typeof SETTINGS_STRINGS & {
   _hierarchy: typeof english._hierarchy;
 };
 type ExtraFunctions = {
+  connectionJourney: Omit<
+    typeof english._extra.connectionJourney,
+    "revokeTitle" | "revokeDescription"
+  > & {
+    revokeTitle: (name: string) => string;
+    revokeDescription: (name: string) => string;
+  };
   stageCount: (count: number) => string;
   progressText: (processed: number, total: number, pct: number) => string;
   removeUser: (name: string) => string;

@@ -1,5 +1,5 @@
 "use client";
-import { useReducer, useState } from "react";
+import { useReducer, useRef, useState } from "react";
 import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import { commitBatchAction, setMappingAction } from "@/features/import/actions";
 import { eligibleFields } from "@/features/import/eligibleFields";
@@ -15,6 +15,8 @@ import type { CustomFieldDef } from "@/types/customFields";
 import { assertNever } from "@/types/result";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { CommitStep } from "./CommitStep";
+import { LeaveImportDialog } from "./LeaveImportDialog";
+import { MappingReviewDialog } from "./MappingReviewDialog";
 import { type HiddenBuiltinsMap, MapStep } from "./MapStep";
 import { PhaseWait } from "./PhaseWait";
 import { PreviewStep } from "./PreviewStep";
@@ -58,6 +60,7 @@ export function ImportWizard(props: ImportWizardProps): React.ReactNode {
   const [state, dispatch] = useReducer(wizardReducer, undefined, initialWizardState);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const requestPending = useRef(false);
   const defs = defsForTarget(props, state.target);
   const hiddenBuiltins: HiddenBuiltinsMap = Object.fromEntries(
     Object.entries(props.hiddenBuiltins ?? {}).map(([entity, keys]) => [
@@ -74,40 +77,58 @@ export function ImportWizard(props: ImportWizardProps): React.ReactNode {
   // Persist the mapping then hand off to the background validate job; the wizard waits on
   // the "validating" step for the batch to reach "ready".
   async function saveAndValidate(): Promise<void> {
-    if (state.batchId === null) return;
+    if (state.batchId === null || state.step !== "map" || requestPending.current) return;
+    requestPending.current = true;
     setBusy(true);
     setError(null);
-    const m = await setMappingAction(
-      { batchId: state.batchId, mapping: buildColumnMapping(state) },
-      readCsrfToken(),
-    );
-    setBusy(false);
-    if (m.ok === false) {
-      setError(m.error.id);
-      return;
+    try {
+      const m = await setMappingAction(
+        { batchId: state.batchId, mapping: buildColumnMapping(state) },
+        readCsrfToken(),
+      );
+      if (!m.ok) setError(m.error.id);
+      else dispatch({ type: "goto", step: "validating" });
+    } catch {
+      setError(IMP.errorGeneric);
+    } finally {
+      requestPending.current = false;
+      setBusy(false);
     }
-    dispatch({ type: "goto", step: "validating" });
   }
 
   // Enqueue the background commit job; the commit step follows progress and reads the split.
   async function commit(): Promise<void> {
-    if (state.batchId === null) return;
+    if (
+      state.batchId === null ||
+      state.step !== "preview" ||
+      state.validation === null ||
+      state.validation.valid === 0 ||
+      requestPending.current
+    )
+      return;
+    requestPending.current = true;
     setBusy(true);
     setError(null);
-    const r = await commitBatchAction({ batchId: state.batchId }, readCsrfToken());
-    setBusy(false);
-    if (r.ok === false) {
-      setError(r.error.id);
-      return;
+    try {
+      const r = await commitBatchAction({ batchId: state.batchId }, readCsrfToken());
+      if (!r.ok) setError(r.error.id);
+      else dispatch({ type: "goto", step: "commit" });
+    } catch {
+      setError(IMP.errorGeneric);
+    } finally {
+      requestPending.current = false;
+      setBusy(false);
     }
-    dispatch({ type: "goto", step: "commit" });
   }
 
   return (
     <div className="max-w-3xl space-y-6">
-      <div className="space-y-1">
-        <h1 className="text-display font-[450] leading-tight tracking-tight">{IMP.title}</h1>
-        <p className="text-sm text-muted-foreground">{IMP.subtitle}</p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="space-y-1">
+          <h1 className="text-display font-[450] leading-tight tracking-tight">{IMP.title}</h1>
+          <p className="text-sm text-muted-foreground">{IMP.subtitle}</p>
+        </div>
+        {state.step !== "commit" && <LeaveImportDialog pending={busy} />}
       </div>
 
       <WizardStepper step={state.step} />
@@ -115,7 +136,7 @@ export function ImportWizard(props: ImportWizardProps): React.ReactNode {
       {error !== null && (
         <p
           role="alert"
-          className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+          className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive"
         >
           {IMP.errorGeneric}
         </p>
@@ -169,14 +190,25 @@ export function ImportWizard(props: ImportWizardProps): React.ReactNode {
           />
         )}
         {state.step === "preview" && state.batchId !== null && state.validation !== null && (
-          <PreviewStep
-            target={state.target}
-            defs={defs}
-            batchId={state.batchId}
-            validation={state.validation}
-            busy={busy}
-            onCommit={() => void commit()}
-          />
+          <div className="space-y-5">
+            <MappingReviewDialog
+              state={state}
+              defs={defs}
+              hiddenBuiltins={hiddenBuiltins}
+              busy={busy}
+              onStartOver={() => {
+                if (!requestPending.current) dispatch({ type: "reset" });
+              }}
+            />
+            <PreviewStep
+              target={state.target}
+              defs={defs}
+              batchId={state.batchId}
+              validation={state.validation}
+              busy={busy}
+              onCommit={() => void commit()}
+            />
+          </div>
         )}
         {state.step === "commit" && state.batchId !== null && (
           <CommitStep batchId={state.batchId} onReset={() => dispatch({ type: "reset" })} />

@@ -11,6 +11,7 @@ import { useLocale, useNumberingSystem } from "@/features/i18n/LocaleProvider";
 import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import { localeTagForFormatting } from "@/lib/localeFormatting";
 import { SettingsCard, SettingsCardBody, SettingsCardHeader } from "../SettingsSurface";
+import { useProviderKeySave } from "./useProviderKeySave";
 
 export interface ProviderCardView {
   provider: string;
@@ -46,7 +47,7 @@ export function ProviderCard({
   now: Date | null;
   pending?: boolean;
   onToggle: (enabled: boolean) => void;
-  onSaveKey: (apiKey: string) => void;
+  onSaveKey: (apiKey: string) => Promise<boolean>;
   onRemoveKey: () => void;
   onTest: () => void;
   testing?: boolean;
@@ -91,24 +92,17 @@ export function ProviderCard({
   }
 
   const keyFieldId = useId();
-  const [draftKey, setDraftKey] = useState("");
+  const { draftKey, updateDraft, saving, failed, save } = useProviderKeySave(onSaveKey);
   const [confirming, setConfirming] = useState(false);
   const allowance = quotaLine(testQuota);
   const planGap = notEntitledLine(testNotEntitled);
   // A probe reports on the key the row held when it started, so the key controls are locked for
   // its duration too, not only while a write is in flight.
-  const locked = pending || testing;
+  const locked = pending || testing || saving;
   // A cooling provider is filtered out of the usable set, so a probe can only come back as a
   // missing key, which is not what happened.
   const resting =
     view.throttledUntilIso !== null && now !== null && new Date(view.throttledUntilIso) > now;
-
-  function save(): void {
-    const trimmed = draftKey.trim();
-    if (trimmed === "") return;
-    setDraftKey("");
-    onSaveKey(trimmed);
-  }
 
   return (
     <SettingsCard>
@@ -140,13 +134,15 @@ export function ProviderCard({
             id={keyFieldId}
             className="min-w-48 flex-1"
             type="password"
+            dir="ltr"
             autoComplete="off"
             value={draftKey}
             placeholder={S.apiKeyPlaceholder}
-            onChange={(e) => setDraftKey(e.target.value)}
+            onChange={(e) => updateDraft(e.target.value)}
+            disabled={locked}
           />
-          <Button size="sm" onClick={save} disabled={locked}>
-            {pending ? S.saving : S.save}
+          <Button size="sm" onClick={() => void save()} disabled={locked}>
+            {pending || saving ? S.saving : S.save}
           </Button>
           {view.hasKey && (
             <>
@@ -164,6 +160,11 @@ export function ProviderCard({
             </>
           )}
         </div>
+        {failed && (
+          <p role="alert" className="text-sm text-destructive">
+            {L._extra.enrichmentJourney.keySaveFailed}
+          </p>
+        )}
         {view.hasKey && <p className="text-sm text-muted-foreground">{S.testCost}</p>}
         {testResult !== null && (
           <div className="space-y-2" aria-live="polite">

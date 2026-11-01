@@ -27,6 +27,16 @@ import { FlagEditor } from "./FlagEditor";
 const SET_ID = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa";
 
 describe("FlagEditor", () => {
+  it("uses readable action and ownership labels instead of exposing permission keys", () => {
+    render(<FlagEditor setId={SET_ID} name="Sales" flags={{}} onSaved={vi.fn()} />);
+    expect(screen.getByRole("checkbox", { name: "Create deals" })).toBeInTheDocument();
+    expect(screen.getByRole("checkbox", { name: "Edit own deals" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("checkbox", { name: "Edit deals owned by managed team members" }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("checkbox", { name: "deal.create" })).not.toBeInTheDocument();
+  });
+
   it("prefills checkboxes from the set's current flags", () => {
     render(
       <FlagEditor
@@ -36,17 +46,17 @@ describe("FlagEditor", () => {
         onSaved={vi.fn()}
       />,
     );
-    expect(screen.getByRole("checkbox", { name: "deal.create" })).toBeChecked();
-    expect(screen.getByRole("checkbox", { name: "deal.edit_own" })).toBeChecked();
-    expect(screen.getByRole("checkbox", { name: "contact.create" })).not.toBeChecked();
-    expect(screen.getByRole("checkbox", { name: "deal.edit_any" })).not.toBeChecked();
+    expect(screen.getByRole("checkbox", { name: "Create deals" })).toBeChecked();
+    expect(screen.getByRole("checkbox", { name: "Edit own deals" })).toBeChecked();
+    expect(screen.getByRole("checkbox", { name: "Create contacts" })).not.toBeChecked();
+    expect(screen.getByRole("checkbox", { name: "Edit any deal" })).not.toBeChecked();
   });
 
   it("submits the updated flags map via updateFlagsAction", async () => {
     render(
       <FlagEditor setId={SET_ID} name="Sales" flags={{ "deal.create": true }} onSaved={vi.fn()} />,
     );
-    fireEvent.click(screen.getByRole("checkbox", { name: "contact.create" }));
+    fireEvent.click(screen.getByRole("checkbox", { name: "Create contacts" }));
     fireEvent.click(screen.getByRole("button", { name: "Save flags" }));
     await waitFor(() => expect(updateFlagsAction).toHaveBeenCalledTimes(1));
     expect(updateFlagsAction).toHaveBeenCalledWith(
@@ -65,6 +75,7 @@ describe("FlagEditor", () => {
   it("shows an inline error when the update fails", async () => {
     updateFlagsAction.mockResolvedValueOnce({ ok: false as const, error: "unauthorized" });
     render(<FlagEditor setId={SET_ID} name="Sales" flags={{}} onSaved={vi.fn()} />);
+    fireEvent.click(screen.getByRole("checkbox", { name: "Create contacts" }));
     fireEvent.click(screen.getByRole("button", { name: "Save flags" }));
     expect(await screen.findByRole("alert")).toHaveTextContent(IDENTITY_ERROR_MESSAGES.permission);
   });

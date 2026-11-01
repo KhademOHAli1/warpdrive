@@ -1,0 +1,18 @@
+.container {
+  container: permission-editor / inline-size;
+}
+
+.groups {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.groups > fieldset {
+  min-inline-size: 0;
+}
+
+@container permission-editor (min-width: 40rem) {
+  .groups {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}

@@ -1,16 +1,8 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { forwardRef, useImperativeHandle, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { Checkbox } from "@/components/ui/Checkbox";
-import {
-  GLOBAL_FLAGS,
-  OWNERSHIP_FLAGS,
-  type OwnershipCapability,
-  type PermissionFlagKey,
-  TEAM_SCOPED_FLAGS,
-  type TeamScopedCapability,
-} from "@/constants/permissionFlags";
+import type { PermissionFlagKey } from "@/constants/permissionFlags";
 import { updateFlagsAction } from "@/features/identity/actions/permission-sets";
 import { IdentityActionError } from "@/features/identity/IdentityActionError";
 import {
@@ -18,150 +10,140 @@ import {
   settingsPermissionLabel,
 } from "@/features/identity/settingsMessages";
 import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
+import { cn } from "@/lib/utils";
 import { readCsrfToken } from "@/utils/csrfCookie";
-
-// Ownership capabilities that also expose a _team variant (a team manager acting on a managed
-// member's records). Rendered as a third checkbox alongside own/any. Narrows `cap` so the
-// `${cap}_team` flag key is statically one of the four valid team-scoped keys.
-function isTeamScoped(cap: OwnershipCapability): cap is TeamScopedCapability {
-  return (TEAM_SCOPED_FLAGS as readonly OwnershipCapability[]).includes(cap);
-}
-
-type FlagMap = Partial<Record<PermissionFlagKey, boolean>>;
+import { PermissionFlagGroups } from "./PermissionFlagGroups";
+import styles from "./PermissionFlagGroups.module.css";
+import {
+  changedPermissionFlags,
+  completePermissionFlags,
+  type PermissionFlagMap,
+} from "./permissionSetFlags";
 
 interface Props {
   setId: string;
   name: string;
-  flags: FlagMap;
+  flags: PermissionFlagMap;
   onSaved: () => void;
+  onDirtyChange?: (dirty: boolean) => void;
+  onPendingChange?: (pending: boolean) => void;
 }
 
-function FlagCheckbox({
-  flagKey,
-  checked,
-  onToggle,
-  disabled,
-}: {
-  flagKey: PermissionFlagKey;
-  checked: boolean;
-  onToggle: (key: PermissionFlagKey) => void;
-  disabled: boolean;
-}): React.ReactElement {
-  const L = useSettingsMessages();
-  const label = settingsPermissionLabel(L, flagKey);
-  return (
-    <div className="flex items-center gap-2 text-sm">
-      <Checkbox
-        label={label}
-        checked={checked}
-        disabled={disabled}
-        onCheckedChange={() => onToggle(flagKey)}
-      />
-      <span>{label}</span>
-    </div>
-  );
+export interface FlagEditorHandle {
+  save: () => Promise<boolean>;
 }
 
-export function FlagEditor({ setId, name, flags, onSaved }: Props): React.ReactElement {
+export const FlagEditor = forwardRef<FlagEditorHandle, Props>(function FlagEditor(
+  { setId, name, flags, onSaved, onDirtyChange, onPendingChange },
+  ref,
+) {
   const L = useSettingsMessages();
   const T = L._identity.flagEditor;
-
-  const identityErrorMessage = (error: string) => settingsIdentityError(L, error);
-
-  const [current, setCurrent] = useState<FlagMap>(flags);
-  const [isPending, startTransition] = useTransition();
+  const [saved, setSaved] = useState(() => completePermissionFlags(flags));
+  const [current, setCurrent] = useState(saved);
+  const [isPending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [status, setStatus] = useState(false);
+  const inFlight = useRef<Promise<boolean> | null>(null);
+  const changed = changedPermissionFlags(current, saved);
+  const dirty = changed.length > 0;
 
   function toggle(key: PermissionFlagKey): void {
-    setCurrent((prev) => ({ ...prev, [key]: prev[key] !== true }));
+    const next = { ...current, [key]: !current[key] };
+    setCurrent(next);
+    setStatus(false);
+    setError(null);
+    onDirtyChange?.(changedPermissionFlags(next, saved).length > 0);
   }
 
-  function save(): void {
+  function reset(): void {
+    setCurrent(saved);
     setError(null);
-    const csrf = readCsrfToken();
-    // Send an explicit boolean for every known key so unchecked flags are cleared, not omitted.
-    const complete: Record<string, boolean> = {};
-    for (const key of GLOBAL_FLAGS) complete[key] = current[key] === true;
-    for (const cap of OWNERSHIP_FLAGS) {
-      complete[`${cap}_own`] = current[`${cap}_own`] === true;
-      complete[`${cap}_any`] = current[`${cap}_any`] === true;
-    }
-    for (const cap of TEAM_SCOPED_FLAGS) {
-      complete[`${cap}_team`] = current[`${cap}_team`] === true;
-    }
-    startTransition(async () => {
-      const result = await updateFlagsAction(csrf, { setId, flags: complete });
-      if (result.ok) {
-        onSaved();
-      } else {
-        setError(identityErrorMessage(result.error));
-      }
-    });
+    setStatus(false);
+    onDirtyChange?.(false);
   }
+
+  async function persist(): Promise<boolean> {
+    setError(null);
+    setStatus(false);
+    setPending(true);
+    onPendingChange?.(true);
+    try {
+      const result = await updateFlagsAction(readCsrfToken(), { setId, flags: current });
+      if (!result.ok) {
+        setError(settingsIdentityError(L, result.error));
+        return false;
+      }
+      setSaved(current);
+      setStatus(true);
+      onDirtyChange?.(false);
+      onSaved();
+      return true;
+    } catch {
+      setError(L._errors.generic);
+      return false;
+    } finally {
+      inFlight.current = null;
+      setPending(false);
+      onPendingChange?.(false);
+    }
+  }
+
+  function save(): Promise<boolean> {
+    if (inFlight.current !== null) return inFlight.current;
+    if (!dirty) return Promise.resolve(true);
+    const task = persist();
+    inFlight.current = task;
+    return task;
+  }
+
+  useImperativeHandle(ref, () => ({ save }));
 
   return (
-    <div className="overflow-hidden rounded-lg border bg-card p-5 shadow-sm">
-      <h3 className="mb-3 text-sm font-semibold">{name}</h3>
-      <div className="grid gap-6 md:grid-cols-2">
-        <fieldset>
-          <legend className="mb-2 text-xs font-medium uppercase text-muted-foreground">
-            {T.global}
-          </legend>
-          <div className="flex flex-col gap-1.5">
-            {GLOBAL_FLAGS.map((key) => (
-              <FlagCheckbox
-                key={key}
-                flagKey={key}
-                checked={current[key] === true}
-                onToggle={toggle}
-                disabled={isPending}
-              />
-            ))}
-          </div>
-        </fieldset>
-        <fieldset>
-          <legend className="mb-2 text-xs font-medium uppercase text-muted-foreground">
-            {T.ownership}
-          </legend>
-          <div className="flex flex-col gap-2">
-            {OWNERSHIP_FLAGS.map((cap) => (
-              <div key={cap} className="flex flex-col gap-1 border-b pb-1.5 last:border-b-0">
-                <span className="text-xs text-muted-foreground">
-                  {settingsPermissionLabel(L, cap)}
-                </span>
-                <div className="flex flex-wrap gap-x-4 gap-y-2">
-                  <FlagCheckbox
-                    flagKey={`${cap}_own`}
-                    checked={current[`${cap}_own`] === true}
-                    onToggle={toggle}
-                    disabled={isPending}
-                  />
-                  <FlagCheckbox
-                    flagKey={`${cap}_any`}
-                    checked={current[`${cap}_any`] === true}
-                    onToggle={toggle}
-                    disabled={isPending}
-                  />
-                  {isTeamScoped(cap) && (
-                    <FlagCheckbox
-                      flagKey={`${cap}_team`}
-                      checked={current[`${cap}_team`] === true}
-                      onToggle={toggle}
-                      disabled={isPending}
-                    />
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </fieldset>
+    <div className={cn("overflow-hidden rounded-lg border bg-card shadow-sm", styles.container)}>
+      <div className="border-b px-5 py-4">
+        <h3 className="break-words text-base font-semibold">{name}</h3>
+        <p className="mt-1 text-sm text-muted-foreground">{L._hierarchy.permissionScopeHelp}</p>
       </div>
-      <div className="mt-4 flex items-center gap-3">
-        <Button type="button" onClick={save} disabled={isPending}>
-          {isPending ? T.saving : T.save}
-        </Button>
-        {error !== null && <IdentityActionError message={error} className="text-sm text-red-600" />}
+      <div className="p-5">
+        <PermissionFlagGroups current={current} isPending={isPending} toggle={toggle} />
+        {dirty && (
+          <details className="mt-5 rounded-md border bg-muted/20 p-3 text-sm">
+            <summary className="cursor-pointer font-medium">
+              {L._hierarchy.permissionReview}
+            </summary>
+            <ul className="mt-3 space-y-1 text-muted-foreground">
+              {changed.map((key) => (
+                <li key={key}>
+                  {settingsPermissionLabel(L, key)}:{" "}
+                  {current[key]
+                    ? L._hierarchy.permissionAllowed
+                    : L._hierarchy.permissionNotAllowed}
+                </li>
+              ))}
+            </ul>
+          </details>
+        )}
       </div>
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t bg-muted/20 px-5 py-3">
+        <p className="text-sm text-muted-foreground">
+          {dirty ? L._hierarchy.unsavedChanges : L._hierarchy.noPendingChanges}
+        </p>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={reset} disabled={!dirty || isPending}>
+            {L.cancel}
+          </Button>
+          <Button type="button" onClick={() => void save()} disabled={!dirty || isPending}>
+            {isPending ? T.saving : T.save}
+          </Button>
+        </div>
+      </div>
+      {status && (
+        <p role="status" className="px-5 pb-3 text-sm text-success">
+          {L.saved}
+        </p>
+      )}
+      {error !== null && <IdentityActionError message={error} className="px-5 pb-3 text-sm" />}
     </div>
   );
-}
+});

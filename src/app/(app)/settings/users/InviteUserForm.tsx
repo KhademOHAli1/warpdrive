@@ -25,9 +25,18 @@ const NO_FIELD_ERRORS: FieldErrors = { email: null, name: null };
 interface Props {
   onInvited: () => void;
   viewerIsAdmin?: boolean;
+  embedded?: boolean;
+  onCancel?: () => void;
+  onPendingChange?: (pending: boolean) => void;
 }
 
-export function InviteUserForm({ onInvited, viewerIsAdmin = false }: Props): React.ReactElement {
+export function InviteUserForm({
+  onInvited,
+  viewerIsAdmin = false,
+  embedded = false,
+  onCancel,
+  onPendingChange,
+}: Props): React.ReactElement {
   const L = useSettingsMessages();
   const M = managementMessagesForLocale(useLocale());
 
@@ -63,6 +72,7 @@ export function InviteUserForm({ onInvited, viewerIsAdmin = false }: Props): Rea
 
   const emailRef = useRef<HTMLInputElement>(null);
   const nameRef = useRef<HTMLInputElement>(null);
+  const inFlight = useRef(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -73,6 +83,7 @@ export function InviteUserForm({ onInvited, viewerIsAdmin = false }: Props): Rea
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>): void {
     e.preventDefault();
+    if (inFlight.current) return;
     const email = emailRef.current?.value.trim() ?? "";
     const name = nameRef.current?.value.trim() ?? "";
     const invalid = validate(email, name);
@@ -80,17 +91,26 @@ export function InviteUserForm({ onInvited, viewerIsAdmin = false }: Props): Rea
     if (invalid.email !== null || invalid.name !== null) return;
     setError(null);
     const csrf = readCsrfToken();
+    inFlight.current = true;
+    onPendingChange?.(true);
     startTransition(async () => {
-      const result = await inviteUserAction(csrf, { email, name, isAdmin });
-      if (!result.ok) {
-        setError(inviteErrorMessage(result.error.id));
-        return;
+      try {
+        const result = await inviteUserAction(csrf, { email, name, isAdmin });
+        if (!result.ok) {
+          setError(inviteErrorMessage(result.error.id));
+          return;
+        }
+        if (emailRef.current !== null) emailRef.current.value = "";
+        if (nameRef.current !== null) nameRef.current.value = "";
+        setIsAdmin(false);
+        setInvited({ name, email });
+        onInvited();
+      } catch {
+        setError(L._errors.generic);
+      } finally {
+        inFlight.current = false;
+        onPendingChange?.(false);
       }
-      if (emailRef.current !== null) emailRef.current.value = "";
-      if (nameRef.current !== null) nameRef.current.value = "";
-      setIsAdmin(false);
-      setInvited({ name, email });
-      onInvited();
     });
   }
 
@@ -98,19 +118,21 @@ export function InviteUserForm({ onInvited, viewerIsAdmin = false }: Props): Rea
     <form
       onSubmit={handleSubmit}
       noValidate
-      className="overflow-hidden rounded-lg border bg-card shadow-sm"
+      className={embedded ? "bg-card" : "overflow-hidden rounded-lg border bg-card shadow-sm"}
     >
-      <div className="flex items-start gap-3 border-b px-5 py-4">
-        <div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-accent text-muted-foreground">
-          <UserPlus className="size-4" aria-hidden="true" />
+      {!embedded && (
+        <div className="flex items-start gap-3 border-b px-5 py-4">
+          <div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-accent text-muted-foreground">
+            <UserPlus className="size-4" aria-hidden="true" />
+          </div>
+          <div>
+            <h2 className="text-sm font-semibold">{L._extra.invite_a_user}</h2>
+            <p className="mt-0.5 text-sm text-muted-foreground">
+              {L._extra.add_a_teammate_and_choose_whether_they_can_manage_company_}
+            </p>
+          </div>
         </div>
-        <div>
-          <h2 className="text-sm font-semibold">{L._extra.invite_a_user}</h2>
-          <p className="mt-0.5 text-sm text-muted-foreground">
-            {L._extra.add_a_teammate_and_choose_whether_they_can_manage_company_}
-          </p>
-        </div>
-      </div>
+      )}
       <div className="space-y-4 p-5">
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="flex flex-col gap-1.5">
@@ -160,7 +182,12 @@ export function InviteUserForm({ onInvited, viewerIsAdmin = false }: Props): Rea
         </div>
         {viewerIsAdmin && (
           <span className="flex items-center gap-2 text-sm">
-            <Switch checked={isAdmin} onCheckedChange={setIsAdmin} label={T.admin} />
+            <Switch
+              checked={isAdmin}
+              onCheckedChange={setIsAdmin}
+              label={T.admin}
+              disabled={isPending}
+            />
             {T.admin}
           </span>
         )}
@@ -177,7 +204,12 @@ export function InviteUserForm({ onInvited, viewerIsAdmin = false }: Props): Rea
           </div>
         )}
       </div>
-      <div className="flex justify-end border-t bg-muted/20 px-5 py-3">
+      <div className="flex justify-end gap-2 border-t bg-muted/20 px-5 py-3">
+        {onCancel !== undefined && (
+          <Button variant="outline" disabled={isPending} onClick={onCancel}>
+            {L.cancel}
+          </Button>
+        )}
         <Button type="submit" disabled={isPending}>
           {isPending ? T.inviting : T.invite}
         </Button>

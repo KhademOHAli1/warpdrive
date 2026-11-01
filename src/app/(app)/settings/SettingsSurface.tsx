@@ -88,8 +88,9 @@ export function SettingsCardFooter({
 }
 
 export const SETTINGS_TABLE_HEAD =
-  "bg-muted/30 text-left text-sm font-medium text-muted-foreground";
-export const SETTINGS_TABLE_HEADER_CELL = "px-4 py-2.5 font-medium";
+  "bg-muted/30 text-start text-sm font-medium text-muted-foreground";
+// Browsers may center th independently of the alignment inherited from thead.
+export const SETTINGS_TABLE_HEADER_CELL = "px-4 py-2.5 text-start font-medium";
 export const SETTINGS_TABLE_ROW =
   "border-b transition-colors duration-150 ease-out last:border-b-0 hover:bg-accent/50 motion-reduce:transition-none";
 export const SETTINGS_TABLE_CELL = "px-4 py-2.5";

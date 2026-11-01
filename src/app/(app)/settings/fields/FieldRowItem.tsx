@@ -2,7 +2,6 @@
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { useState } from "react";
-import { useActionError } from "@/components/shell/ActionErrorProvider";
 import { Button } from "@/components/ui/Button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/Collapsible";
 import { Input } from "@/components/ui/Input";
@@ -16,6 +15,7 @@ import { settingsFieldType } from "@/features/identity/settingsMessages";
 import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { ReorderControls } from "../company/ReorderControls";
+import { FieldTaskStatus, useFieldTask } from "./FieldTask";
 import { OptionEditor } from "./OptionEditor";
 import type { FieldRow } from "./types";
 
@@ -38,7 +38,7 @@ export function FieldRowItem({
   const S = L;
 
   const router = useRouter();
-  const reportError = useActionError();
+  const task = useFieldTask();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(row.name);
   const [showOptions, setShowOptions] = useState(false);
@@ -52,56 +52,74 @@ export function FieldRowItem({
       setEditing(false);
       return;
     }
-    const r = await renameDefAction({ id: row.id, name: trimmed }, readCsrfToken());
-    if (r.ok) {
-      setEditing(false);
-      router.refresh();
-    } else reportError(r.error.id);
+    await task.run(async () => {
+      const r = await renameDefAction({ id: row.id, name: trimmed }, readCsrfToken());
+      if (r.ok) {
+        setEditing(false);
+        router.refresh();
+      }
+      return r;
+    });
   }
 
   async function archive(): Promise<void> {
-    const r = await archiveDefAction({ id: row.id }, readCsrfToken());
-    if (r.ok) router.refresh();
-    else reportError(r.error.id);
+    await task.run(async () => {
+      const r = await archiveDefAction({ id: row.id }, readCsrfToken());
+      if (r.ok) router.refresh();
+      return r;
+    });
   }
 
   // Always sends the full { isImportant, showInAddForm } pair so toggling one flag can never
   // clobber the other with a stale default.
   async function setFlags(next: { isImportant: boolean; showInAddForm: boolean }): Promise<void> {
-    const r = await setDefFlagsAction({ id: row.id, ...next }, readCsrfToken());
-    if (r.ok) router.refresh();
-    else reportError(r.error.id);
+    await task.run(async () => {
+      const r = await setDefFlagsAction({ id: row.id, ...next }, readCsrfToken());
+      if (r.ok) router.refresh();
+      return r;
+    });
   }
 
   return (
     <Collapsible open={showOptions} onOpenChange={setShowOptions} asChild>
-      <li className="px-3 py-2 transition-colors duration-150 ease-out hover:bg-accent/30 motion-reduce:transition-none">
-        <div className="flex items-center gap-3">
+      <li
+        aria-busy={task.pending}
+        className="space-y-3 px-3 py-3 transition-colors duration-150 ease-out hover:bg-accent/30 motion-reduce:transition-none"
+      >
+        <div className="min-w-0">
           {editing ? (
             <Input
               aria-label={S.rename}
               value={draft}
-              onChange={(e) => setDraft(e.target.value)}
+              disabled={task.pending}
+              onChange={(e) => {
+                setDraft(e.target.value);
+                task.reset();
+              }}
               className="flex-1"
             />
           ) : (
             <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2">
-                <span className="truncate text-sm font-medium">{row.name}</span>
+              <div className="flex min-w-0 flex-wrap items-center gap-2">
+                <span className="break-words text-sm font-medium [overflow-wrap:anywhere]">
+                  {row.name}
+                </span>
                 <span className="shrink-0 rounded bg-muted px-1.5 py-0.5 text-[11px] capitalize text-muted-foreground">
                   {settingsFieldType(L, row.type)}
                 </span>
               </div>
               {activeOptions.length > 0 && (
-                <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                <p className="mt-0.5 break-words text-xs text-muted-foreground [overflow-wrap:anywhere]">
                   {activeOptions.map((o) => o.label).join(", ")}
                 </p>
               )}
             </div>
           )}
+        </div>
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-t pt-2">
           <ReorderControls
-            canMoveUp={!isFirst}
-            canMoveDown={!isLast}
+            canMoveUp={!isFirst && !task.pending}
+            canMoveDown={!isLast && !task.pending}
             onMoveUp={() => onMove("up")}
             onMoveDown={() => onMove("down")}
           />
@@ -111,6 +129,7 @@ export function FieldRowItem({
                 variant="ghost"
                 size="sm"
                 onClick={() => void saveName()}
+                disabled={task.pending || draft.trim() === "" || draft.trim() === row.name}
                 className={ROW_ACTION}
               >
                 {S.save}
@@ -118,9 +137,11 @@ export function FieldRowItem({
               <Button
                 variant="ghost"
                 size="sm"
+                disabled={task.pending}
                 onClick={() => {
                   setDraft(row.name);
                   setEditing(false);
+                  task.reset();
                 }}
                 className={ROW_ACTION}
               >
@@ -131,9 +152,11 @@ export function FieldRowItem({
             <Button
               variant="ghost"
               size="sm"
+              disabled={task.pending}
               onClick={() => {
                 setDraft(row.name);
                 setEditing(true);
+                task.reset();
               }}
               className={ROW_ACTION}
             >
@@ -142,23 +165,30 @@ export function FieldRowItem({
           )}
           {isOptionType && (
             <CollapsibleTrigger asChild>
-              <Button variant="ghost" size="sm" className={ROW_ACTION}>
+              <Button variant="ghost" size="sm" className={ROW_ACTION} disabled={task.pending}>
                 {S.editOptions}
               </Button>
             </CollapsibleTrigger>
           )}
-          <Button variant="ghost" size="sm" onClick={() => void archive()} className={ROW_ACTION}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => void archive()}
+            className={ROW_ACTION}
+            disabled={task.pending}
+          >
             {S.archive}
           </Button>
         </div>
-        <div className="mt-2 flex flex-wrap items-center gap-x-5 gap-y-2 border-t pt-2">
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
           <span className="flex items-center gap-1.5">
             <Switch
               checked={row.isImportant}
               onCheckedChange={(v) =>
                 void setFlags({ isImportant: v, showInAddForm: row.showInAddForm })
               }
-              label={S.important}
+              label={`${S.important}: ${row.name}`}
+              disabled={task.pending}
             />
             <span className="text-xs text-muted-foreground">{S.important}</span>
           </span>
@@ -168,11 +198,13 @@ export function FieldRowItem({
               onCheckedChange={(v) =>
                 void setFlags({ isImportant: row.isImportant, showInAddForm: v })
               }
-              label={S.showInAddForm}
+              label={`${S.showInAddForm}: ${row.name}`}
+              disabled={task.pending}
             />
             <span className="text-xs text-muted-foreground">{S.showInAddForm}</span>
           </span>
         </div>
+        <FieldTaskStatus state={task.state} />
         {isOptionType ? (
           <CollapsibleContent>
             <OptionEditor defId={row.id} options={row.options} />

@@ -285,7 +285,16 @@
       "managerNone": "Keine Teamleitung",
       "members": "Mitglieder",
       "membersHelp": "Wählen Sie die Personen aus, die zu diesem Team gehören.",
-      "membersPlaceholder": "Mitglieder suchen und hinzufügen"
+      "membersPlaceholder": "Mitglieder suchen und hinzufügen",
+      "emptyTitle": "Noch keine Teams",
+      "emptyDescription": "Erstellen Sie ein Team, um Personen einer Teamleitung zuzuordnen. Mitgliedschaft, Berechtigungen und Datensichtbarkeit sind getrennte Einstellungen.",
+      "partialCreated": "Das Team wurde erstellt, die Mitglieder wurden aber nicht gespeichert. Versuchen Sie es erneut, um dieses Team fertig einzurichten.",
+      "partialUpdated": "Die Teamdaten wurden gespeichert, die Mitglieder aber nicht. Versuchen Sie erneut, die Mitgliederliste zu speichern.",
+      "saveMembers": "Mitglieder speichern",
+      "deleteTitle": "Dieses Team löschen?",
+      "deleteDescription": "Das Team und seine Mitgliederliste werden entfernt.",
+      "currentManager": "Aktuelle Teamleitung",
+      "creationUnknown": "Wir konnten nicht bestätigen, ob das Team erstellt wurde. Schließen Sie dieses Formular und prüfen Sie die Teamliste, bevor Sie es erneut versuchen."
     }
   },
   "_errors": {
@@ -486,7 +495,7 @@
     "you_do_not_have_permission_to_invite_users": "Sie haben keine Berechtigung, Personen einzuladen.",
     "enter_a_valid_email_and_name": "Geben Sie eine gültige E-Mail-Adresse und einen Namen ein.",
     "invite_a_user": "Person einladen",
-    "add_a_teammate_and_choose_whether_they_can_manage_company_": "Teammitglied hinzufügen und festlegen, ob diese Person Unternehmenseinstellungen verwalten darf.",
+    "add_a_teammate_and_choose_whether_they_can_manage_company_": "Senden Sie eine Einladung zu diesem Arbeitsbereich.",
     "all": "Alle",
     "active": "Aktiv",
     "invited": "Eingeladen",
@@ -510,7 +519,7 @@
     "notification_channels": "Benachrichtigungskanäle",
     "choose_how_each_kind_of_update_reaches_you": "Festlegen, wie Sie über die verschiedenen Ereignisse informiert werden.",
     "company_settings": "Unternehmenseinstellungen",
-    "notificationPageTitle": "Benachrichtigungseinstellungen",
+    "notificationPageTitle": "Benachrichtigungen",
     "notificationLoading": "Einstellungen werden geladen…",
     "notificationSaveError": "Die Einstellung konnte nicht gespeichert werden. Bitte versuchen Sie es erneut.",
     "stageCount": "{count, plural, one {# Phase} other {# Phasen}}",
@@ -572,6 +581,33 @@
       "notPermitted": "keine Berechtigung für diese Zuweisung",
       "unassigned": "„{value}“ wurde nicht zugewiesen: {reason}.",
       "historyFallback": "Der ursprüngliche Zeitpunkt fehlt; ein Ersatzzeitpunkt wurde verwendet."
+    },
+    "notificationLoadError": "Die Benachrichtigungseinstellungen konnten nicht geladen werden.",
+    "importJourney": {
+      "backToMapping": "Zurück zur Zuordnung",
+      "leave": "Import verlassen",
+      "leaveTitle": "Diesen Import verlassen?",
+      "leaveDescription": "Der hochgeladene Import bleibt im Importverlauf. Bereits gestartete Vorbereitung oder Prüfung kann weiterlaufen. Datensätze werden erst importiert, wenn Sie den Import starten.",
+      "leaveConfirm": "Einrichtung verlassen",
+      "stay": "Weiter bearbeiten",
+      "retry": "Erneut versuchen",
+      "loadingHistory": "Importverlauf wird geladen...",
+      "loadingRows": "Zeilendetails werden geladen...",
+      "loadingResult": "Importergebnisse werden geladen...",
+      "loadFailed": "Diese Importdetails konnten nicht geladen werden. Ihr Import bleibt unverändert. Versuchen Sie es erneut.",
+      "correctionHint": "Prüfen Sie die Zeilenfehler oder kehren Sie zur Zuordnung zurück, bevor Sie gültige Zeilen importieren.",
+      "reviewMapping": "Zuordnung prüfen",
+      "mappingReadOnlyHint": "Diese Zuordnung wurde bereits geprüft. Starten Sie einen neuen Import, um sie zu ändern. Der ursprüngliche Import bleibt im Verlauf."
+    },
+    "connectionJourney": {
+      "copyFailed": "Die Adresse konnte nicht automatisch kopiert werden. Wählen Sie die Server-URL aus und kopieren Sie sie manuell.",
+      "revokeTitle": "Zugriff für {name} widerrufen?",
+      "revokeDescription": "{name} verliert den Zugriff auf Warpdrive. Sie können die Verbindung später wiederherstellen.",
+      "mailboxHint": "Verwalten Sie Postfächer unter E-Mail-Synchronisierung.",
+      "mailboxLink": "E-Mail-Synchronisierung öffnen"
+    },
+    "enrichmentJourney": {
+      "keySaveFailed": "Das Speichern des Schlüssels konnte nicht bestätigt werden. Ihre Eingabe ist noch vorhanden. Versuchen Sie es erneut."
     }
   },
   "_labels": {
@@ -784,6 +820,26 @@
     "sectionNavigation": "Kategorie der Einstellungen",
     "timeZoneHelp": "Gilt für Aktivitätszeiten, geplante E-Mails und Datumsanzeigen.",
     "activityTargetSaveHint": "Wird beim Verlassen des Feldes oder mit der Eingabetaste gespeichert.",
-    "personalShared": "Persönliche und gemeinsame Inhalte"
+    "personalShared": "Persönliche und gemeinsame Inhalte",
+    "navigationSearch": "Einstellungen suchen",
+    "navigationEmpty": "Keine Einstellungen gefunden.",
+    "clearNavigationSearch": "Einstellungssuche zurücksetzen",
+    "baseCurrencyDescription": "Die Basiswährung gilt für bestehende Unternehmensbeträge. Anzeigeeinstellungen rechnen gespeicherte Werte nicht um.",
+    "peopleSearch": "Personen nach Name oder E-Mail suchen",
+    "peopleSearchEmpty": "Keine Personen entsprechen diesen Filtern.",
+    "peopleScopeDescription": "Verwalten Sie die Mitglieder dieses Arbeitsbereichs und ihre Rollen.",
+    "peopleSecurityHelp": "Anmelderichtlinien, Kontowiederherstellung und Einladungsversand finden Sie unter",
+    "permissionSetList": "Berechtigungssatz auswählen",
+    "permissionSetEmpty": "Erstellen Sie einen Berechtigungssatz, um Zugriffsregeln für Ihre Kolleginnen und Kollegen festzulegen.",
+    "permissionScopeHelp": "Diese Rechte gelten für Konten ohne Administrationsrolle. Administrationskonten behalten den systemweiten Zugriff. Teamrechte gelten für Datensätze von Mitgliedern der Teams, die das Konto leitet.",
+    "permissionReview": "Berechtigungsänderungen prüfen",
+    "permissionAllowed": "Erlaubt",
+    "permissionNotAllowed": "Nicht erlaubt",
+    "unsavedChanges": "Ungespeicherte Änderungen",
+    "noPendingChanges": "Keine ungespeicherten Änderungen",
+    "permissionSwitchTitle": "Ungespeicherte Berechtigungsänderungen",
+    "permissionSwitchDescription": "Speichern Sie die Änderungen vor dem Wechsel, verwerfen Sie sie oder brechen Sie ab, um weiterzuarbeiten.",
+    "permissionDiscard": "Änderungen verwerfen",
+    "permissionSaveAndSwitch": "Speichern und wechseln"
   }
 }

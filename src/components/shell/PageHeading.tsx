@@ -35,7 +35,7 @@ export function PageHeading({
               return (
                 <li
                   key={`${crumb.label}-${crumb.href ?? "current"}`}
-                  className="flex items-center gap-1"
+                  className="flex min-w-0 items-center gap-1 [overflow-wrap:anywhere]"
                 >
                   {i > 0 ? (
                     <span aria-hidden="true" className="text-muted-foreground/60">
@@ -57,9 +57,9 @@ export function PageHeading({
           </ol>
         </nav>
       ) : null}
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex flex-col items-start justify-between gap-3 sm:flex-row">
         {/* Inter is a vendored variable font, so the 450 weight (lighter than semibold) resolves. */}
-        <h1 className="text-display font-[450] leading-tight tracking-tight">
+        <h1 className="min-w-0 max-w-full hyphens-auto text-display font-[450] leading-tight tracking-tight [overflow-wrap:anywhere]">
           <bdi dir="auto">{title}</bdi>
         </h1>
         {actions}

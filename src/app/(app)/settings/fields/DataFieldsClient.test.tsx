@@ -92,9 +92,22 @@ function chooseSelect(label: string, option: string): void {
 }
 
 describe("DataFieldsClient", () => {
+  it("starts creation from the page action and keeps the selected entity in the dialog", async () => {
+    render(<DataFieldsClient byTarget={BY_TARGET} initialTarget="person" />);
+    expect(screen.queryByLabelText("Field name")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Add field" }));
+    expect(screen.getByRole("dialog", { name: "Add field" })).toHaveTextContent("Person");
+    expect(screen.getByLabelText("Field name")).toHaveFocus();
+    fireEvent.change(screen.getByLabelText("Field name"), { target: { value: "Draft field" } });
+    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+    expect(actions.createDefAction).not.toHaveBeenCalled();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole("button", { name: "Add field" })).toHaveFocus());
+  });
   it("lists fields for the selected entity", () => {
     render(<DataFieldsClient byTarget={BY_TARGET} />);
     expect(screen.getByLabelText("Entity")).toHaveTextContent("Deal");
+    fireEvent.click(screen.getByRole("button", { name: "Add field" }));
     expect(screen.getByLabelText("Type")).toHaveTextContent("text");
     // "monetary" also appears as a type-select option, so scope to the row.
     expect(screen.getByText("Budget").closest("li")).toHaveTextContent("monetary");
@@ -146,6 +159,7 @@ describe("DataFieldsClient", () => {
 
   it("creates a field via createDefAction with the selected target and type", async () => {
     render(<DataFieldsClient byTarget={BY_TARGET} />);
+    fireEvent.click(screen.getByRole("button", { name: "Add field" }));
     fireEvent.change(screen.getByLabelText("Field name"), { target: { value: "Region" } });
     fireEvent.click(screen.getByRole("button", { name: "Add field" }));
     await waitFor(() =>

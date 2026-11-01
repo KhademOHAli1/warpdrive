@@ -20,6 +20,31 @@ beforeAll(() => {
 
 afterEach(cleanup);
 
+it("locks every mapping choice while the submitted mapping is being saved", () => {
+  const state = wizardReducer(initialWizardState(), {
+    type: "prepared",
+    headers: ["Name"],
+    totalRows: 1,
+    previewRows: [{ Name: "Jane" }],
+  });
+  const dispatch = vi.fn();
+  render(<MapStep state={state} dispatch={dispatch} defs={[]} busy onContinue={vi.fn()} />);
+  expect(screen.getByLabelText("Maps to: Name")).toBeDisabled();
+  expect(screen.getByRole("radio", { name: "Update the existing contact" })).toBeDisabled();
+  const rowNote = screen.getByRole("checkbox", { name: "Add unmapped columns as a note" });
+  expect(rowNote).toBeDisabled();
+  fireEvent.click(rowNote);
+  expect(dispatch).not.toHaveBeenCalled();
+});
+
+it("locks stage creation with the rest of a pending Pipedrive mapping", () => {
+  const state = { ...initialWizardState(), source: "pipedrive" as const, target: "deal" as const };
+  render(<MapStep state={state} dispatch={vi.fn()} defs={[]} busy onContinue={vi.fn()} />);
+  expect(
+    screen.getByRole("checkbox", { name: "Create missing pipelines and stages" }),
+  ).toBeDisabled();
+});
+
 const DEFS: CustomFieldDef[] = [
   {
     id: "cf1",

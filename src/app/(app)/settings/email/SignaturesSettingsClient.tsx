@@ -2,7 +2,6 @@
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { useState } from "react";
-import { useActionError } from "@/components/shell/ActionErrorProvider";
 import { Button } from "@/components/ui/Button";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { Input } from "@/components/ui/Input";
@@ -15,6 +14,7 @@ import {
 import { RichTextBody } from "@/features/email/composer/RichTextBodyLazy";
 import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import { readCsrfToken } from "@/utils/csrfCookie";
+import { EmailSettingsTaskFeedback, useEmailSettingsTask } from "./EmailSettingsTask";
 
 type Sig = { id: string; name: string; isDefault: boolean; bodyHtml: string };
 type Draft = { id?: string; name: string; bodyHtml: string; isDefault: boolean };
@@ -26,7 +26,7 @@ export function SignaturesSettingsClient({ signatures }: { signatures: Sig[] }):
   const S = L._email;
 
   const router = useRouter();
-  const reportError = useActionError();
+  const task = useEmailSettingsTask();
   const [draft, setDraft] = useState<Draft | null>(null);
   // A blank-name save used to return silently, so Save looked dead. Track the validation
   // failure and render it on the form instead.
@@ -35,48 +35,59 @@ export function SignaturesSettingsClient({ signatures }: { signatures: Sig[] }):
 
   // Every draft transition (open, edit, cancel) clears the stale validation message.
   function changeDraft(next: Draft | null): void {
+    if (task.isPending()) return;
+    task.reset();
     setDraft(next);
     if (next === null || next.name.trim() !== "") setNameError(null);
   }
 
   async function save(): Promise<void> {
-    if (draft === null) return;
+    if (draft === null || task.isPending()) return;
     if (draft.name.trim() === "") {
       setNameError(S.nameRequired);
       return;
     }
     setNameError(null);
     const payload = { name: draft.name, bodyHtml: draft.bodyHtml, isDefault: draft.isDefault };
-    const r =
-      draft.id === undefined
-        ? await createSignatureAction(csrf(), payload)
-        : await updateSignatureAction(csrf(), { id: draft.id, patch: payload });
-    if (r.ok) {
-      changeDraft(null);
-      router.refresh();
-    } else reportError(r.error.id);
+    await task.run(
+      () =>
+        draft.id === undefined
+          ? createSignatureAction(csrf(), payload)
+          : updateSignatureAction(csrf(), { id: draft.id, patch: payload }),
+      () => {
+        setDraft(null);
+        router.refresh();
+      },
+    );
   }
   async function remove(id: string): Promise<void> {
-    const r = await deleteSignatureAction(csrf(), { id });
-    if (r.ok) router.refresh();
-    else reportError(r.error.id);
+    await task.run(
+      () => deleteSignatureAction(csrf(), { id }),
+      () => router.refresh(),
+    );
   }
   async function makeDefault(id: string): Promise<void> {
-    const r = await setDefaultSignatureAction(csrf(), { signatureId: id });
-    if (r.ok) router.refresh();
-    else reportError(r.error.id);
+    await task.run(
+      () => setDefaultSignatureAction(csrf(), { signatureId: id }),
+      () => router.refresh(),
+    );
   }
 
   return (
     <section className="overflow-hidden rounded-lg border bg-card shadow-sm">
       <div className="flex items-center justify-between border-b px-5 py-4">
         <h2 className="text-sm font-semibold">{S.signatures}</h2>
-        <Button size="sm" onClick={() => changeDraft({ name: "", bodyHtml: "", isDefault: false })}>
+        <Button
+          size="sm"
+          disabled={task.pending}
+          onClick={() => changeDraft({ name: "", bodyHtml: "", isDefault: false })}
+        >
           {S.newSignature}
         </Button>
       </div>
 
       <div className="space-y-3 p-5">
+        <EmailSettingsTaskFeedback pending={task.pending} failed={task.failed} />
         <ul className="divide-y overflow-hidden rounded-md border">
           {signatures.map((s) => (
             <li key={s.id} className="flex items-center justify-between px-3 py-2 text-sm">
@@ -93,6 +104,7 @@ export function SignaturesSettingsClient({ signatures }: { signatures: Sig[] }):
                   <Button
                     variant="ghost"
                     size="sm"
+                    disabled={task.pending}
                     className={ROW_BUTTON}
                     onClick={() => void makeDefault(s.id)}
                     aria-label={`${S.setDefault} ${s.name}`}
@@ -103,6 +115,7 @@ export function SignaturesSettingsClient({ signatures }: { signatures: Sig[] }):
                 <Button
                   variant="ghost"
                   size="sm"
+                  disabled={task.pending}
                   className={ROW_BUTTON}
                   onClick={() =>
                     changeDraft({
@@ -119,6 +132,7 @@ export function SignaturesSettingsClient({ signatures }: { signatures: Sig[] }):
                 <Button
                   variant="ghost"
                   size="sm"
+                  disabled={task.pending}
                   className={`${ROW_BUTTON} text-destructive hover:text-destructive/80`}
                   onClick={() => void remove(s.id)}
                   aria-label={`${S.delete} ${s.name}`}
@@ -134,7 +148,12 @@ export function SignaturesSettingsClient({ signatures }: { signatures: Sig[] }):
         </ul>
 
         {draft !== null && (
-          <div className="space-y-2 rounded-md border p-3">
+          <fieldset
+            disabled={task.pending}
+            inert={task.pending}
+            aria-busy={task.pending}
+            className="space-y-2 rounded-md border p-3"
+          >
             <Input
               aria-label={S.nameLabel}
               name="signatureName"
@@ -153,12 +172,12 @@ export function SignaturesSettingsClient({ signatures }: { signatures: Sig[] }):
             <p className="text-xs text-muted-foreground">{S.maxNameHint}</p>
             <RichTextBody
               html={draft.bodyHtml}
-              onChange={(bodyHtml) => setDraft({ ...draft, bodyHtml })}
+              onChange={(bodyHtml) => changeDraft({ ...draft, bodyHtml })}
             />
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Checkbox
                 checked={draft.isDefault}
-                onCheckedChange={(v) => setDraft({ ...draft, isDefault: v })}
+                onCheckedChange={(v) => changeDraft({ ...draft, isDefault: v })}
                 label={S.setDefault}
               />
               {S.setDefault}
@@ -171,7 +190,7 @@ export function SignaturesSettingsClient({ signatures }: { signatures: Sig[] }):
                 {S.cancel}
               </Button>
             </div>
-          </div>
+          </fieldset>
         )}
       </div>
     </section>

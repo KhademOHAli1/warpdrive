@@ -11,7 +11,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { buttonVariants } from "@/components/ui/Button";
+import { Button, buttonVariants } from "@/components/ui/Button";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { cn } from "@/lib/utils";
 
@@ -28,6 +28,7 @@ interface ConfirmDialogProps {
   // Fired when the user affirms. The dialog closes itself first, so the caller only runs the work.
   onConfirm: () => void;
   pending?: boolean;
+  secondaryAction?: { label: string; onClick: () => void; disabled?: boolean };
 }
 
 // The single confirmation surface for irreversible actions (CLAUDE.md "Use the design system,
@@ -44,6 +45,7 @@ export function ConfirmDialog({
   destructive = false,
   onConfirm,
   pending = false,
+  secondaryAction,
 }: ConfirmDialogProps): React.ReactNode {
   const t = useAppTranslations("shell.inline");
   const returnFocus = useRef<HTMLElement | null>(null);
@@ -73,6 +75,16 @@ export function ConfirmDialog({
           >
             {cancelLabel ?? t("cancel")}
           </AlertDialogCancel>
+          {secondaryAction !== undefined && (
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={pending || secondaryAction.disabled === true}
+              onClick={secondaryAction.onClick}
+            >
+              {secondaryAction.label}
+            </Button>
+          )}
           <AlertDialogAction
             disabled={pending}
             onClick={onConfirm}
