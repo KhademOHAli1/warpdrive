@@ -1,0 +1,42 @@
+{
+  "title": "Delivery reports",
+  "warning": "This report is unverified. Review it before linking it to a sent email.",
+  "unverified": "Unverified",
+  "review": "Review report",
+  "reviewDescription": "Associate this report with a sent email and its original recipient, or dismiss it. Your review is stored separately from the email’s submission status.",
+  "sentEmail": "Sent email",
+  "recipient": "Recipient",
+  "chooseSentEmail": "Choose a sent email",
+  "chooseRecipient": "Choose a recipient",
+  "noTargets": "There are no eligible sent emails to associate with this report. You can still dismiss it.",
+  "targetDetails": "Selected email details",
+  "subject": "Subject",
+  "sentAt": "Send time",
+  "reference": "Email reference",
+  "confirmation": "I reviewed this unverified report",
+  "save": "Save association",
+  "dismiss": "Dismiss report",
+  "cancel": "Cancel",
+  "saving": "Saving review…",
+  "saved": "Review saved",
+  "failure": "Your review could not be saved. Try again.",
+  "permission": "Your access has changed. Refresh this message before reviewing again.",
+  "conflict": "This report has changed. Refresh it before reviewing again.",
+  "conflictingStatus": "The reported action and status code conflict. Review the original report.",
+  "associated": "Reviewed association",
+  "dismissed": "Dismissed after review",
+  "unavailable": "The associated email is no longer available.",
+  "provenance": {
+    "direct": "Received report",
+    "nested": "Nested report",
+    "forwarded": "Forwarded report"
+  },
+  "recipientKinds": { "to": "To", "cc": "Cc", "bcc": "Bcc" },
+  "actions": {
+    "failed": "Reported delivery failure",
+    "delayed": "Reported delivery delay",
+    "delivered": "Reported delivery",
+    "relayed": "Reported handoff to another server",
+    "expanded": "Reported mailing-list expansion"
+  }
+}

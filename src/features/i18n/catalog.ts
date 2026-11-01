@@ -33,6 +33,9 @@ import customPersian from "@/features/custom-fields/messages/customFields.fa.jso
 import salesGerman from "@/features/deals/messages/sales.de.json";
 import salesEnglish from "@/features/deals/messages/sales.en.json";
 import salesPersian from "@/features/deals/messages/sales.fa.json";
+import deliveryGerman from "@/features/email/messages/deliveryReports.de.json";
+import deliveryEnglish from "@/features/email/messages/deliveryReports.en.json";
+import deliveryPersian from "@/features/email/messages/deliveryReports.fa.json";
 import emailGerman from "@/features/email/messages/email.de.json";
 import emailEnglish from "@/features/email/messages/email.en.json";
 import emailPersian from "@/features/email/messages/email.fa.json";
@@ -91,6 +94,7 @@ const english = {
   customFields: customEnglish,
   files: filesEnglish,
   email: emailEnglish,
+  deliveryReports: deliveryEnglish,
   quickAdd: quickEnglish,
   boundaries: boundaryEnglish,
   calendar: CALENDAR_MESSAGES.en,
@@ -119,6 +123,7 @@ const persian: typeof english = mergeMessages(english, {
   customFields: customPersian,
   files: filesPersian,
   email: emailPersian,
+  deliveryReports: deliveryPersian,
   quickAdd: quickPersian,
   boundaries: boundaryPersian,
   calendar: CALENDAR_MESSAGES.fa,
@@ -147,6 +152,7 @@ const german: typeof english = mergeMessages(english, {
   customFields: customGerman,
   files: filesGerman,
   email: emailGerman,
+  deliveryReports: deliveryGerman,
   quickAdd: quickGerman,
   boundaries: boundaryGerman,
   calendar: CALENDAR_MESSAGES.de,
