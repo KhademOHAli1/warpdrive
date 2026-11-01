@@ -41,6 +41,7 @@ Fill it in. The deployment-specific values:
 | `AUTH_MAIL_TRANSPORT`     | `smtp` in production                                                        |
 | `AUTH_MAIL_FROM`          | your verified sender address                                                |
 | `AUTH_SMTP_HOST`          | your SMTP relay hostname, with port/TLS/user/password configured as needed  |
+| `AGENCY_PROJECTS_ENABLED` | Optional Agency startup admission. Exact `true`/`false`; omitted defaults to `false`. Keep disabled while persistence/security qualification is open. |
 
 Generate the secrets:
 
@@ -93,6 +94,10 @@ Before upgrading an existing installation, follow the
 [authentication migration report](auth-implementation-report.md).
 
 ## Operating the box
+
+`AGENCY_PROJECTS_ENABLED` is startup configuration. The current source defines the flag; persisted Agency entrypoints are not enabled. Future disabled reads/commands, including history/counts/request recovery, must return unavailable while retaining stored data. The flag supplies no user/project/CRM/financial permission.
+
+Before a later qualified change, stop new admission, drain bounded admitted transactions/effects and relevant consumers, then restart every app/worker/operator replica with the same immutable source and intended value. An env edit does not revoke in-flight work immediately. Verify configuration across replicas before reopening admission; old unfenced writers must not coexist with enabled Agency persistence.
 
 - **Update to a new version:** `git pull && docker compose up -d --build`. Migrations run
   automatically via the one-shot `migrate` service before the app restarts.

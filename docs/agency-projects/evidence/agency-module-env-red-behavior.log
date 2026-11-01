@@ -1,0 +1,123 @@
+$ bun --bun vitest run --project unit src/config/agencyModuleEnv.test.ts "--maxWorkers=1"
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+  - ESM syntax in a file loaded as CommonJS (vitest.classify.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.5 /Users/ali/Developer/warpdrive-agency-projects
+
+ ❯ |unit| src/config/agencyModuleEnv.test.ts (15 tests | 15 failed) 7ms
+   ❯ Agency Projects operator startup boolean (15)
+     × defaults omitted configuration to disabled 3ms
+     × parses exact true as the boolean true 0ms
+     × parses exact false as the boolean false 0ms
+     × rejects noncanonical operator configuration: "" 1ms
+     × rejects noncanonical operator configuration: " " 0ms
+     × rejects noncanonical operator configuration: "TRUE" 0ms
+     × rejects noncanonical operator configuration: "FALSE" 0ms
+     × rejects noncanonical operator configuration: "1" 0ms
+     × rejects noncanonical operator configuration: "0" 0ms
+     × rejects noncanonical operator configuration: "yes" 0ms
+     × rejects noncanonical operator configuration: "on" 0ms
+     × rejects noncanonical operator configuration: "enabled" 0ms
+     × rejects noncanonical operator configuration: "false " 0ms
+     × rejects noncanonical operator configuration: " true" 0ms
+     × rejects noncanonical operator configuration: "false\n" 0ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 15 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| src/config/agencyModuleEnv.test.ts > Agency Projects operator startup boolean > defaults omitted configuration to disabled
+AssertionError: expected undefined to be false // Object.is equality
+
+- Expected:
+false
+
++ Received:
+undefined
+
+ ❯ src/config/agencyModuleEnv.test.ts:16:50
+     14|     expect(result.ok).toBe(true);
+     15|     if (!result.ok) return;
+     16|     expect(result.value.AGENCY_PROJECTS_ENABLED).toBe(false);
+       |                                                  ^
+     17|   });
+     18|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/15]⎯
+
+ FAIL  |unit| src/config/agencyModuleEnv.test.ts > Agency Projects operator startup boolean > parses exact true as the boolean true
+AssertionError: expected undefined to be true // Object.is equality
+
+- Expected:
+true
+
++ Received:
+undefined
+
+ ❯ src/config/agencyModuleEnv.test.ts:29:50
+     27|     expect(result.ok).toBe(true);
+     28|     if (!result.ok) return;
+     29|     expect(result.value.AGENCY_PROJECTS_ENABLED).toBe(expected);
+       |                                                  ^
+     30|   });
+     31|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/15]⎯
+
+ FAIL  |unit| src/config/agencyModuleEnv.test.ts > Agency Projects operator startup boolean > parses exact false as the boolean false
+AssertionError: expected undefined to be false // Object.is equality
+
+- Expected:
+false
+
++ Received:
+undefined
+
+ ❯ src/config/agencyModuleEnv.test.ts:29:50
+     27|     expect(result.ok).toBe(true);
+     28|     if (!result.ok) return;
+     29|     expect(result.value.AGENCY_PROJECTS_ENABLED).toBe(expected);
+       |                                                  ^
+     30|   });
+     31|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/15]⎯
+
+ FAIL  |unit| src/config/agencyModuleEnv.test.ts > Agency Projects operator startup boolean > rejects noncanonical operator configuration: ""
+ FAIL  |unit| src/config/agencyModuleEnv.test.ts > Agency Projects operator startup boolean > rejects noncanonical operator configuration: " "
+ FAIL  |unit| src/config/agencyModuleEnv.test.ts > Agency Projects operator startup boolean > rejects noncanonical operator configuration: "TRUE"
+ FAIL  |unit| src/config/agencyModuleEnv.test.ts > Agency Projects operator startup boolean > rejects noncanonical operator configuration: "FALSE"
+ FAIL  |unit| src/config/agencyModuleEnv.test.ts > Agency Projects operator startup boolean > rejects noncanonical operator configuration: "1"
+ FAIL  |unit| src/config/agencyModuleEnv.test.ts > Agency Projects operator startup boolean > rejects noncanonical operator configuration: "0"
+ FAIL  |unit| src/config/agencyModuleEnv.test.ts > Agency Projects operator startup boolean > rejects noncanonical operator configuration: "yes"
+ FAIL  |unit| src/config/agencyModuleEnv.test.ts > Agency Projects operator startup boolean > rejects noncanonical operator configuration: "on"
+ FAIL  |unit| src/config/agencyModuleEnv.test.ts > Agency Projects operator startup boolean > rejects noncanonical operator configuration: "enabled"
+ FAIL  |unit| src/config/agencyModuleEnv.test.ts > Agency Projects operator startup boolean > rejects noncanonical operator configuration: "false "
+ FAIL  |unit| src/config/agencyModuleEnv.test.ts > Agency Projects operator startup boolean > rejects noncanonical operator configuration: " true"
+ FAIL  |unit| src/config/agencyModuleEnv.test.ts > Agency Projects operator startup boolean > rejects noncanonical operator configuration: "false\n"
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/config/agencyModuleEnv.test.ts:50:23
+     48|       AGENCY_PROJECTS_ENABLED: value,
+     49|     });
+     50|     expect(result.ok).toBe(false);
+       |                       ^
+     51|     if (result.ok) return;
+     52|     expect(result.error).toContain("AGENCY_PROJECTS_ENABLED");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/15]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  15 failed (15)
+   Start at  08:35:06
+   Duration  122ms (transform 46%, import 33%, tests 13%, setup 6%, worker 3%)
+
+error: "vitest" exited with code 1
+error: script "test:unit" exited with code 1

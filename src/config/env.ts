@@ -69,6 +69,8 @@ const base = z.object({
   OAUTH_REGISTRATION: z.enum(["open", "disabled"]).default("open"),
   // Opt-in while lifecycle, access-revocation and upgrade acceptance remain under qualification.
   SALES_PIPELINE_LIFECYCLE_ENABLED: boolFromString.default(false),
+  // Startup admission only; Agency persistence and its reader/writer gates are not enabled yet.
+  AGENCY_PROJECTS_ENABLED: boolFromString.default(false),
   BASE_CURRENCY: z.string().length(3).default("USD"),
   SEED_ADMIN_EMAIL: z.string().email().or(z.literal("")).default(""),
   ALLOW_FIRST_LOGIN_ADMIN: boolFromString.default(false),

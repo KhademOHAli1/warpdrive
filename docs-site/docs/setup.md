@@ -82,6 +82,7 @@ stating plainly:
 | `MAX_FILE_BYTES` | Upload size ceiling. Defaults to `26214400` (25 MiB). |
 | `APP_VERSION` | Version shown as "current" by the update banner. |
 | `DISABLE_UPDATE_CHECK` | Set `true` to disable the update banner and its GitHub poll. |
+| `AGENCY_PROJECTS_ENABLED` | Optional Agency startup admission. Exact `true`/`false`; omitted defaults to `false`. Keep disabled while persistence/security qualification is open. It supplies no project permission. |
 
 ### Generate the secrets
 

@@ -31,6 +31,8 @@ docker compose up -d --build
 Migrations are applied automatically by the one-shot `migrate` service before the app
 restarts, so there is no separate migration step.
 
+The central `AGENCY_PROJECTS_ENABLED` flag defaults to false. Current source defines configuration only; persisted Agency entrypoints are not implemented. Before a later qualified change, stop new admission, drain bounded admitted work/effects and relevant consumers, and restart all app/worker/operator replicas on the same immutable source with the intended value. Verify consistent configuration before reopening admission. A running process does not dynamically reread an env edit, and an admitted transaction may finish during the drain. Future disabled Agency reads/commands, including history/counts/request recovery, must return unavailable and retain data; enabling the flag supplies no permission or Privacy bypass.
+
 ## The update banner
 
 Administrators see an in-app banner when a newer release is published on GitHub.

@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "scope": "Mail recovery window permits routine small containerless selected units; no heavy campaign",
+  "runs": [
+    {
+      "phase": "green",
+      "pid": 28095,
+      "startedAt": "2026-11-01T07:36:25.963562+00:00",
+      "finishedAt": "2026-11-01T07:36:26.781419+00:00",
+      "terminal": true,
+      "exitCode": 0,
+      "stopReason": null,
+      "beforeFreeBytes": 14009667584,
+      "minimumFreeBytes": 14008279040,
+      "afterFreeBytes": 14008279040,
+      "floorBytes": 5368709120,
+      "timeoutSeconds": 30,
+      "log": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/agency-module-env-affected-green.log",
+      "command": [
+        "/Users/ali/Developer/warpdrive-agency-projects/.runtime/bin/bun",
+        "run",
+        "test:unit",
+        "src/config/agencyModuleEnv.test.ts",
+        "src/config/env.test.ts",
+        "src/config/env.auth.test.ts",
+        "src/config/env.mcp.test.ts",
+        "src/config/env.email.test.ts",
+        "--maxWorkers=1"
+      ]
+    }
+  ]
+}

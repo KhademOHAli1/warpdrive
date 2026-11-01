@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-11-01T07:19:27.777949+00:00",
+  "updatedAt": "2026-11-01T07:44:51.950387+00:00",
   "statusMeaning": "Evidence level only. A source-verified task is not accepted or complete. All 96 acceptance flags remain false.",
   "tasks": {
     "AP-00.1": {
@@ -23,8 +23,8 @@
     },
     "AP-00.6": {
       "status": "active",
-      "evidence": "authority-admission-inventory-20261101.md audits actual central-env, lifecycle/MCP availability, workflow/provider and native/CRM lock surfaces at d98574b. No generic Agency module gate or complete writer fence exists; two review-only protocols and participating source surfaces supplied to Platform/Settings. Settings review now recommends coarse shared/exclusive mode, with actual outer-entry/read-only final-auth corrections and central default-false/all-reads-unavailable startup module behavior. Exact review retained; no shared helper/key or gate implemented.",
-      "remaining": "Platform exact API/key and complete participating patch/race evidence remain open; native no-touch final verification, Privacy ordinary fence, module config implementation/consistency and canonical base/schema/allocation still required.",
+      "evidence": "authority-admission-inventory-20261101.md audits actual central-env, lifecycle/MCP availability, workflow/provider and native/CRM lock surfaces at d98574b. No generic Agency module gate or complete writer fence exists; two review-only protocols and participating source surfaces supplied to Platform/Settings. Settings review now recommends coarse shared/exclusive mode, with actual outer-entry/read-only final-auth corrections and central default-false/all-reads-unavailable startup module behavior. Exact review retained; no shared helper/key or gate implemented. Central AGENCY_PROJECTS_ENABLED=false parsing field/operator docs now implemented after actual15-failure red;15 selected and37/5 affected units pass. Static14 pending. It implements no server/worker gate or shared fence.",
+      "remaining": "Platform exact API/key and complete participating patch/race evidence remain open; native no-touch final verification, Privacy ordinary fence, module-config static qualification, native config consistency/drain/restart, and future read/command admission and canonical base/schema/allocation still required.",
       "accepted": false
     },
     "AP-00.7": {
@@ -168,7 +168,7 @@
     "AP-00.5": {
       "status": "active",
       "accepted": false,
-      "evidence": "Concrete protected-history five-store proposal remains unallocated. New mainPrivacy0085 overlaps inspected MAIL0085..0093 reservation;0094 remains unallocated. Review-only coverage patch supplied for existing7 tables.",
+      "evidence": "Current committed allocator6e68bad reserves candidate MAIL85..94;95 remains unallocated and Agency has no slot. Forward94 private-intake source is outside the93-pinned convergence/admission proposal. Exact owner file retained; historical main-lineage audit preserved. Five-store Agency proposal remains unallocated, with no DDL.",
       "remaining": "Resolve accepted combined base and reviewed Agency schema/grants before allocator assigns any new number. No journal/snapshot/DDL generation or applied-history rename."
     },
     "AP-03.3": {

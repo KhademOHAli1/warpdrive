@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "scope": "Mail recovery window permits routine small containerless selected units; no heavy campaign",
+  "runs": [
+    {
+      "phase": "red-behavior",
+      "pid": 27223,
+      "startedAt": "2026-11-01T07:35:05.512917+00:00",
+      "finishedAt": "2026-11-01T07:35:06.565481+00:00",
+      "terminal": true,
+      "exitCode": 1,
+      "stopReason": null,
+      "beforeFreeBytes": 14142115840,
+      "minimumFreeBytes": 14138462208,
+      "afterFreeBytes": 14138462208,
+      "floorBytes": 5368709120,
+      "timeoutSeconds": 30,
+      "log": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/agency-module-env-red-behavior.log",
+      "command": [
+        "/Users/ali/Developer/warpdrive-agency-projects/.runtime/bin/bun",
+        "run",
+        "test:unit",
+        "src/config/agencyModuleEnv.test.ts",
+        "--maxWorkers=1"
+      ]
+    },
+    {
+      "phase": "green",
+      "pid": 27333,
+      "startedAt": "2026-11-01T07:35:11.310509+00:00",
+      "finishedAt": "2026-11-01T07:35:11.940137+00:00",
+      "terminal": true,
+      "exitCode": 0,
+      "stopReason": null,
+      "beforeFreeBytes": 14127218688,
+      "minimumFreeBytes": 14123761664,
+      "afterFreeBytes": 14138855424,
+      "floorBytes": 5368709120,
+      "timeoutSeconds": 30,
+      "log": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/agency-module-env-green.log",
+      "command": [
+        "/Users/ali/Developer/warpdrive-agency-projects/.runtime/bin/bun",
+        "run",
+        "test:unit",
+        "src/config/agencyModuleEnv.test.ts",
+        "--maxWorkers=1"
+      ]
+    }
+  ]
+}
