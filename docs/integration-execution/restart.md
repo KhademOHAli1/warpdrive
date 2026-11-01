@@ -43,25 +43,31 @@ create a replacement goal or mark it complete merely because BASE has closed.
 Application/test source 7c8bb7ed013ef5eb9543399566bc5175a12df633 fixes the digit-choice
 coupling. Read [its current qualification](numbering-qualification-20261101.md): 6,040 unit
 cases in 963 files, full lint, standalone types and application/worker compilation passed.
-The 149 focused cases are included in that full total. No service startup or real native
-account/browser/provider acceptance follows. Task register stays 40 complete/406 planned.
+The 149 focused cases are included in that full total. This source/unit/compile evidence
+alone establishes no service or browser result. The later scoped native record below
+adds separate actual runtime evidence. Task register stays 40 complete/406 planned.
 
 The independent qualification clone was fast-forwarded cleanly to 7c8bb7e for whole lint.
 Its package/lock hashes stayed unchanged; retained dependencies are an ordinary directory.
 Recheck current clone state before use. Pinned Bun remains 1.4.4 and the synthetic profile
 remains private; do not print or export its configuration or keys.
 
-For the next native browser gate, read
-[the prepared fixture and its execution boundary](native-browser-fixture-20261101.md).
-Its reviewed tools are in `outputs/native-browser-fixture-20261101` under the programme
-workspace. The named window remains pending at that record. Use its new disposable
-database/profile, retain the original zero-user profile, and target `/settings/regional`.
-Neither the private preparation nor service launcher has executed. A later actual
-receipt must replace this pending state before making any native/browser claim.
+Read [the later actual native browser record](native-browser-qualification-20261101.md).
+R1 refused its pre-web inet text guard; R2 completed actual native MFA, six account/
+rendering cases and partial geometry. Its 20-minute window is terminal/released and
+all owned services/context are closed. R2's private profile/database are retained and
+populated; do not rerun an empty-profile preparer or reuse a completed grant. Original
+zero-user programme data stayed empty. Regional controls are at `/settings/regional`.
+Actual receipts, failed attempts and unresolved visual/dev issue limits are preserved.
 
 ## Independent source restoration
 
-The latest 1 November records/source delta is
+The later native records/source delta is
+`/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/native-browser-qualified-20261101`.
+Its source bundle preserves the current records with unchanged application source.
+Read its HANDOFF and verify checksums before use; no service launch follows from restore.
+
+The earlier numbering records/source delta is
 `/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/numbering-20261101`.
 It includes the current application source, all actual RED/GREEN/full-unit/lint/build receipts
 and a direct incremental bundle from foundation 67. Its HANDOFF identifies the exact record

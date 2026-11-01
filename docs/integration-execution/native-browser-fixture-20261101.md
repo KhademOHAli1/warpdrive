@@ -1,5 +1,10 @@
 # Native browser fixture: prepared source and execution boundary
 
+Historical preparation at record c840946. Later R1 refused its pre-web inet text
+guard, and repaired R2 completed bounded native MFA/Regional Settings cases. Read
+[the actual qualification and limits](native-browser-qualification-20261101.md).
+The original source-only artifact and its exact tools remain preserved.
+
 1 November 2026. Application source remains
 `7c8bb7ed013ef5eb9543399566bc5175a12df633`. This is an unexecuted operational
 fixture packet, not native authentication or account-persistence qualification.

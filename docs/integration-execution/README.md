@@ -28,15 +28,18 @@ The latest application/test source is `7c8bb7ed013ef5eb9543399566bc5175a12df633`
 [The numbering correction and current qualification](numbering-qualification-20261101.md)
 records independent digit choices across FA/DE/EN, **6,040/6,040 unit cases in 963 files**,
 whole-repository i18n/Biome/ESLint, standalone types, a production Next build and five
-compiled worker bundles. These are source/unit/static/compile results. Native account
-persistence, browser journeys, full real-PG, providers and release remain separate gates.
+compiled worker bundles. These are source/unit/static/compile results. Other native
+journeys, full real-PG, providers and release remain separate gates.
 The 149 focused cases are included in 6,040, not another total. Task status is unchanged.
 
-[The prepared native browser fixture](native-browser-fixture-20261101.md) now has
-reviewed, finite profile/SMTP/native-UI orchestration and six account-preference
-scenarios. Its named resource window is pending; no native fixture or service has
-started. Regional controls are at `/settings/regional`. This is preparation, not
-browser/account-persistence acceptance or another task closure.
+[Actual native browser qualification](native-browser-qualification-20261101.md) adds
+supported invitation/email/password/TOTP and fresh step-up, six FA/EN/DE account cases
+surviving regional-cookie removal, paired rendered previews, and bounded DE geometry/
+Escape evidence. R1 refusal and original runner timing failures remain preserved.
+The actual R2 window completed and all owned services/context closed inside 20 minutes.
+Visual truncation, settled navigation and a visible Next development issue remain open.
+This closes no broader UX/security/provider/release task and does not change 40/446.
+The [earlier source-only fixture](native-browser-fixture-20261101.md) is historical.
 
 UX-001 through UX-007 and UX-009 have reviewed flow/pattern/copy, fresh Mobbin,
 Farsi terminology and regional/date scenario evidence. The later numbering correction resolves the earlier digit-display restriction.
