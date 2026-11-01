@@ -9,6 +9,7 @@ import { trpc } from "@/lib/trpc-client";
 import { useFormatters } from "@/lib/useFormatters";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { cancelWorkflowAction } from "../actions";
+import { RunDetailDialog } from "./RunDetailDialog";
 
 export function RunHistory({ workflowId, canCancel }: { workflowId: string; canCancel: boolean }) {
   const t = useAppTranslations("workflows");
@@ -25,6 +26,7 @@ export function RunHistory({ workflowId, canCancel }: { workflowId: string; canC
   );
   const [pending, setPending] = useState<string | null>(null);
   const [error, setError] = useState(false);
+  const [selected, setSelected] = useState<string | null>(null);
   async function cancel(id: string) {
     setPending(id);
     setError(false);
@@ -95,6 +97,14 @@ export function RunHistory({ workflowId, canCancel }: { workflowId: string; canC
             <p className="mt-3 text-xs text-muted-foreground">
               {t("completedSteps", { count: run.steps.length })}
             </p>
+            <Button
+              variant="outline"
+              size="sm"
+              className="mt-3"
+              onClick={() => setSelected(run.id)}
+            >
+              {t("viewRun")}
+            </Button>
             {run.status === "queued" && (
               <p className="mt-3 text-sm text-muted-foreground">{t("queuedHint")}</p>
             )}
@@ -117,6 +127,13 @@ export function RunHistory({ workflowId, canCancel }: { workflowId: string; canC
           </article>
         ))}
       </div>
+      {selected !== null && (
+        <RunDetailDialog
+          workflowId={workflowId}
+          runId={selected}
+          onClose={() => setSelected(null)}
+        />
+      )}
     </section>
   );
 }

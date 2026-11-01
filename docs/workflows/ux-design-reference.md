@@ -197,3 +197,16 @@ German, and narrow-screen captures for the manual-flow milestone. The remaining 
 states and full WF-005/040 acceptance gates are still open. This specification and the
 [implementation plan](implementation-plan.md) remain the design contract; progress is
 recorded in [status.md](status.md).
+
+## Builder interaction follow-up, 31 October 2026
+
+Fresh Mobbin review revisited M02 (Adding a filter), frame 2, and M03 (Adding a condition),
+frame 8. Frame 2 shows the next-step placeholder and a searchable, grouped block chooser
+next to the selected source. Frame 8 shows separate true/false next-step choices. This
+follow-up adopts source-specific action selection, visible outcome labels, and configuration
+in the existing inspector. It does not copy third-party assets or add unavailable actions.
+
+Pointer feel is evaluated in the running Warpdrive preview, not inferred from static captures:
+forgiving port targets and card drops; preflight validation; original-edge preservation after
+rejection/cancellation; atomic connected insertion; one undo entry per completed drag; and
+readable explicit step navigation. See [interaction review](builder-interaction-review.md).

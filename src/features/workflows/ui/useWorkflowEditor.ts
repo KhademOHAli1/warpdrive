@@ -7,6 +7,7 @@ import type { RouterOutputs } from "@/lib/trpc-client";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { pauseWorkflowAction, publishWorkflowAction, saveWorkflowAction } from "../actions";
 import { validateDefinition } from "../definition";
+import { useGraphHistory } from "./useGraphHistory";
 
 export type WorkflowDetail = RouterOutputs["workflows"]["get"];
 type NoticeKey = "saved" | "published" | "pauseSaved" | "runStarted";
@@ -14,7 +15,8 @@ type ErrorKey = "fresh_auth_required" | "conflict" | "invalid" | "notReady" | "e
 export function useWorkflowEditor(initial: WorkflowDetail) {
   const t = useAppTranslations("workflows");
   const [name, setName] = useState(initial.name);
-  const [definition, setDefinition] = useState(initial.draft);
+  const history = useGraphHistory(initial.draft);
+  const { definition, setDefinition } = history;
   const [revision, setRevision] = useState(initial.revision);
   const [saved, setSaved] = useState(
     JSON.stringify({ name: initial.name, definition: initial.draft }),
@@ -62,7 +64,7 @@ export function useWorkflowEditor(initial: WorkflowDetail) {
     }
     setRevision(result.value.revision);
     setName(result.value.name);
-    setDefinition(result.value.draft);
+    history.adopt(result.value.draft);
     setSaved(JSON.stringify({ name: result.value.name, definition: result.value.draft }));
     return result.value.revision;
   }
@@ -103,10 +105,11 @@ export function useWorkflowEditor(initial: WorkflowDetail) {
     setName,
     definition,
     setDefinition,
+    history,
     active,
     number,
     pending,
-    notice: notice === null ? null : t(notice),
+    notice: notice === null || (dirty && notice === "saved") ? null : t(notice),
     setNotice,
     error: error === null ? null : error === "fresh_auth_required" ? error : t(error),
     dirty,

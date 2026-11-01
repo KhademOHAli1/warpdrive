@@ -32,6 +32,8 @@ for onboarding, MFA, sessions, recovery, and security policy.
 - [UX specification and Mobbin references](workflows/ux-design-reference.md), user journeys and reference-to-task mapping.
 - [Architecture decisions](workflows/architecture.md), definitions, publication, persistence, and authority.
 - [Visual UI review](workflows/ui-review.md), observed journeys, screenshots, and outstanding visual acceptance.
+- [Builder interaction review](workflows/builder-interaction-review.md), connection gestures, undo, mobile editing, and actual execution paths.
+- [Autonomous continuation handoff](workflows/CONTINUATION.md), the remaining approved backlog, evidence, ownership and restart instructions.
 - [Workflow operations](workflows/operations.md), migrations, worker recovery, and current limits.
 - [Public workflow feature guide](../docs-site/docs/features/automations.md), current availability and release boundaries.
 

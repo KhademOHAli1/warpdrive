@@ -1,11 +1,15 @@
 import { expect, it } from "vitest";
 import { initialDefinition } from "./editorModel";
 import { connectNodes, disconnectNodes, insertNode, moveNode, removeNode } from "./graphEditor";
+import { arrangeGraph } from "./nodeLayout";
 import { definitionSchema } from "./schemas";
 
 function sample() {
   return initialDefinition({ start: "Start", read: "Read", task: "Task", subject: "Call" });
 }
+it("leaves room for readable summaries and branch controls when arranging the graph", () => {
+  expect(arrangeGraph(sample()).layout?.task?.y).toBe(520);
+});
 it("adds a disconnected node without changing existing connections", () => {
   const original = sample();
   const edited = insertNode(

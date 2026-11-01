@@ -153,6 +153,7 @@ export function WorkflowEditor({ initial }: { initial: WorkflowDetail }) {
               onChange={editor.setDefinition}
               editable={editable}
               issues={editor.issues}
+              history={editor.history}
             />
           </TabsContent>
           <TabsContent value="runs" className="mt-0 xl:min-h-0 xl:flex-1 xl:overflow-auto">
