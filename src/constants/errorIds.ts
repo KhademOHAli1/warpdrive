@@ -237,6 +237,8 @@ export const ERROR_IDS = {
   UI_ACTION_UNCONFIRMED: "E_UI_003", // action rejected without returning a Result: answer was lost
   // PRIVACY
   PRIVACY_EVIDENCE_UNREADABLE: "E_PRIVACY_001", // malformed, substituted or unauthenticated privacy ciphertext
+  PRIVACY_EXPORT_STREAM_FAILED: "E_PRIVACY_002", // a private archive part could not be uploaded
+  PRIVACY_EXPORT_QUOTA: "E_PRIVACY_003", // a private archive exceeds the admitted storage quota
 
   // PREFERENCES
   PREF_SAVED_VIEW_SELECTION_INVALID: "E_PREF_001", // invalid native saved-view selection input
