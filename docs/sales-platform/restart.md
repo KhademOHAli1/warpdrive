@@ -57,6 +57,9 @@ peer resources are preserved. Source work and review can continue.
 
 Read `platform-handoff-inventory-2026-11-01.md` before adoption. The clean MAIL
 adoption and builder candidates are reviewed sources, not an adopted runtime.
+Current main `a0490c1` now adds privacy 0083 through 0085 and collides with this
+candidate's history. Read `current-main-reconciliation.md` and its source report;
+do not merge main or run either migration tail without an owner-reviewed cut.
 `0094` is explicitly unallocated, not a Sales reservation. A concrete storage
 request exists in `sales-storage-coordination-request.md`; direct human messaging
 permission to the platform allocator is pending. Resource-only coordination with

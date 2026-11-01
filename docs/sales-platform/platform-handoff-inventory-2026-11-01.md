@@ -3,6 +3,17 @@
 Read-only observation, 1 November 2026. This inventory is not an adoption,
 allocation, runtime rerun or owner acceptance. Peer checkouts may advance.
 
+## Later current-main observation
+
+GitHub main `a0490c1` now contains privacy migrations 0083 through 0085, colliding
+with Sales/platform's CONN 0083 and WF 0084 and the combined MAIL reservation.
+The read-only CLI independently confirms divergence at index 83. Local committed
+MAIL `a660039` extends Sales through 0091; preview HEAD is `d2257ce`.
+Read `current-main-reconciliation.md` before any adoption. No reconciled main cut,
+Sales allocation or actual applied-ledger proof follows from these observations.
+
+## Earlier owner observations
+
 | Owner source                           | Observed committed HEAD                    | Qualification boundary                                           |
 | -------------------------------------- | ------------------------------------------ | ---------------------------------------------------------------- |
 | Platform preview                       | `994cecd20a6e56afe4866022c6d2d765ac23af0a` | Ten dirty paths excluded                                         |
