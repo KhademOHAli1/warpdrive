@@ -108,5 +108,6 @@ export const authenticationIds2: string[] = [
   "writer:src/features/oauth/tokens.ts#insert:oauthAccessTokens",
   "writer:src/features/oauth/tokens.ts#insert:oauthRefreshTokens",
   "writer:src/features/oauth/tokens.ts#update:oauthAccessTokens",
+  "writer:src/features/oauth/tokens.ts#update:oauthAuthCodes",
   "writer:src/features/oauth/tokens.ts#update:oauthRefreshTokens",
 ];

@@ -79,6 +79,7 @@ export function RunTrace({ detail }: { detail: RunDetail }) {
                 <li key={item.id}>
                   <Button
                     variant={selected === item.id ? "outline" : "ghost"}
+                    aria-pressed={selected === item.id}
                     className="h-auto min-h-10 w-full justify-start whitespace-normal py-2 text-start"
                     onClick={() => {
                       setSelected(item.id);

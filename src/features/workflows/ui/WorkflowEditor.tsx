@@ -2,7 +2,7 @@
 
 import { ArrowLeft, FlaskConical, Play, Save } from "lucide-react";
 import Link from "next/link";
-import { useId, useState } from "react";
+import { useId, useRef, useState } from "react";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -13,6 +13,7 @@ import { trpc } from "@/lib/trpc-client";
 import { BuilderWorkspace } from "./BuilderWorkspace";
 import { RunDialog } from "./RunDialog";
 import { RunHistory } from "./RunHistory";
+import { useDialogFocus } from "./useDialogFocus";
 import { useWorkflowEditor, type WorkflowDetail } from "./useWorkflowEditor";
 
 export function WorkflowEditor({ initial }: { initial: WorkflowDetail }) {
@@ -22,6 +23,8 @@ export function WorkflowEditor({ initial }: { initial: WorkflowDetail }) {
   const [tab, setTab] = useState("configure");
   const [runMode, setRunMode] = useState<"simulation" | "live" | null>(null);
   const fieldId = useId();
+  const runFocus = useDialogFocus();
+  const runsTab = useRef<HTMLButtonElement>(null);
   const editable = initial.capabilities.edit && !editor.pending;
   const runnable = initial.capabilities.run && editor.active && !editor.pending;
   return (
@@ -120,6 +123,7 @@ export function WorkflowEditor({ initial }: { initial: WorkflowDetail }) {
                 {t("configure")}
               </TabsTrigger>
               <TabsTrigger
+                ref={runsTab}
                 value="runs"
                 className="border-b-2 border-transparent py-2 data-[state=active]:border-primary data-[state=active]:text-primary"
               >
@@ -131,7 +135,10 @@ export function WorkflowEditor({ initial }: { initial: WorkflowDetail }) {
                 variant="outline"
                 size="sm"
                 disabled={!runnable}
-                onClick={() => setRunMode("simulation")}
+                onClick={(event) => {
+                  runFocus.remember(event.currentTarget);
+                  setRunMode("simulation");
+                }}
               >
                 <FlaskConical className="size-4" />
                 {t("simulation")}
@@ -140,7 +147,10 @@ export function WorkflowEditor({ initial }: { initial: WorkflowDetail }) {
                 variant="outline"
                 size="sm"
                 disabled={!runnable}
-                onClick={() => setRunMode("live")}
+                onClick={(event) => {
+                  runFocus.remember(event.currentTarget);
+                  setRunMode("live");
+                }}
               >
                 <Play className="size-4" />
                 {t("live")}
@@ -165,8 +175,10 @@ export function WorkflowEditor({ initial }: { initial: WorkflowDetail }) {
         <RunDialog
           workflowId={initial.id}
           mode={runMode}
+          onCloseAutoFocus={(event) => runFocus.restore(event)}
           onClose={() => setRunMode(null)}
           onStarted={() => {
+            runFocus.remember(runsTab.current);
             void utils.workflows.runs.invalidate({ id: initial.id });
             setRunMode(null);
             editor.setNotice("runStarted");
