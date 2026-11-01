@@ -57,9 +57,9 @@ process groups were terminal. Root source review and a separate independent revi
 accepted the consistent actor checkpoint and the meaningful fixture negatives. The reviewer
 read the actual red/green logs and ran no duplicate campaign.
 
-## Pending qualification and practical limits
+## Affected regression and practical limits
 
-The following affected real-PG files need the next coordinated finite window:
+The following affected real-PG files passed in the later coordinated window:
 
 - `src/features/deals/dealUpdate.test.ts`
 - `src/features/deals/dealUpdatePerms.test.ts`
@@ -73,9 +73,11 @@ The following affected real-PG files need the next coordinated finite window:
 - `src/features/labels/labelsRepo.entities.test.ts`
 - `src/features/saved-filters/filterAst.test.ts`
 
-Together with the new actor file this is a 12-file affected selection, not the full
-application integration suite. Scoped static checks and current-source broad gates also
-remain pending. `notifyDeferral.test.ts` can verify wiring, but its mocked domain cannot
+Together with the new actor file this passed **59 cases in 12 files**, process group
+2298, exit 0, in 7.599 seconds. Only formatting of this domain file followed that run.
+Final standalone types and scoped lint also passed; see
+[the later qualification](qualification-20261101.md). Current-source broad gates remain
+pending. `notifyDeferral.test.ts` can verify wiring, but its mocked domain cannot
 replace the real-PG audit and version assertions. Existing MCP tool-list tests do not
 invoke `update_deal`; a direct-registry invocation needs separate evidence before making
 that caller-specific claim.

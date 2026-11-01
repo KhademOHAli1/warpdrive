@@ -61,6 +61,19 @@ group below that floor, and imposed a 60-second cap. Its successful resource int
 is not a test failure. Database/build/install/broad campaigns still require stable headroom
 above the separate 5 GiB threshold.
 
-No new install, PG, browser, build, full suite, type-aware lint or standalone types ran for
-this change. Those broader gates remain pending. The old source's type/full-suite results
-are not transferred to this helper. No task status changes; the live count remains 37/446.
+At the dated `d96892a` cut, no new install, PG, browser, build, full suite, type-aware lint
+or standalone types ran for this change, and the register had 37 completed tasks. The
+old source's type/full-suite results were not transferred to this helper.
+
+## Later scoped qualification, 1 November 2026
+
+Source `5bf5563` extracts small helpers from the two functions rejected by the first
+type-aware complexity check. Root reviewed unchanged allowlists, budgets, validation
+order and error precedence. The existing selected file then passed **51/51**, process
+group 5094, exit 0, in 1.291 seconds. SVG bytes and fixtures were unchanged. Current
+standalone TypeScript and scoped Biome/type-aware ESLint also passed; see
+[the current focused record](qualification-20261101.md).
+
+The earlier independent execution remains an interruption, not a retroactive pass.
+Current whole-suite/build/browser/appearance and other UX-013 acceptance remain open.
+No task was closed for this refactor; the live tracker owns the current overall count.

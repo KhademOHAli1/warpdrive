@@ -111,3 +111,17 @@ matched source. The task register now records **38 completed, 408 planned**, sti
 446 tasks total. Runtime bindings, future journeys, native-speaker rendering and
 browser acceptance are not implied by this design-copy closure. No other task was
 closed for the actor/Slack work or resource recovery.
+
+## Completed affected/static window
+
+The later explicit handoff admitted the 12-file affected PG16 selection, which
+passed 59/59. Final scoped Biome/type-aware ESLint and standalone types passed
+after bounded repairs; 39 Slack and 51 guard unit cases passed too. Mail then
+took the native lane, and no further programme PG campaign was started. All
+programme campaign processes were terminal when the remaining slot was released.
+See [the exact later evidence](qualification-20261101.md).
+
+The independently reviewed MCP inventory and trilingual consent design subsequently
+closed AISEC-001/002. Current tracker: **40 completed, 406 planned**, 446 total.
+Those design/source closures do not implement scoped grants or erase remaining
+whole-suite/build/runtime/provider gates.

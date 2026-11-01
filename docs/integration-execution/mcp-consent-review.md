@@ -5,8 +5,8 @@ Design/source review date: 2026-11-01. Executable source cut:
 and approved outbound capabilities with understandable FA/DE/EN descriptions.” Verification is
 consent review. AISEC-001 is the prerequisite: root accepted the corrected operation inventory
 in `23c1a85`, normalized its CSV to LF in `5508dc2`, and recorded its closure in `423dd15`.
-Neither this catalog nor the approved vocabulary addition closes AISEC-002, enables a scoped
-client or changes a grant.
+The corrected catalog meets AISEC-002's design/review criterion. It does not enable
+a scoped client or change a grant; runtime implementation remains separate.
 
 [mcp-consent-capabilities.csv](mcp-consent-capabilities.csv) supplies **37 exact names**, each
 with FA-first and natural DE/EN label, description, risk, resource/ownership binding and approval

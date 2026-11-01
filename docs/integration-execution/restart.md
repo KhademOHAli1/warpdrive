@@ -37,6 +37,17 @@ create a replacement goal or mark it complete merely because BASE has closed.
 
 ## Independent source restoration
 
+The latest 1 November source/evidence export is
+`/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/progress-20261101`.
+Its HANDOFF and checksum manifest identify the exact record head. The incremental
+bundle contains all changes since the verified foundation head `67eb151`, so it needs
+the foundation bundle below but no intermediate SVG or review bundle. Its source
+archive is a convenient tree, without dependencies, private configuration or data.
+Read `qualification-20261101.md` for the focused gates and remaining broad acceptance.
+
+The earlier dated foundation export remains an independently verified historical
+37-task baseline, not the current 40-task register:
+
 Durable artifacts are in:
 `/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/foundation-20261031`.
 They contain source and sanitized evidence only. The checksum manifest and Git bundle
@@ -102,7 +113,9 @@ allocate another competing migration or rebuild its connection/queue/domain engi
 
 Use `/tmp/warpdrive-integration-qualification-20261031` as the independent clean
 qualification checkout. The clean clone was moved out of Documents after an ownership and
-active-process check, retaining its own Git metadata, source and dependencies. This keeps
+active-process check, retaining its own Git metadata, source and lockfile. Its idle
+dependencies were later removed during verified critical disk pressure; a fresh frozen
+install needs the next coordinated install window. Do not assume dependencies are present. This keeps
 generated build/dependency churn outside the file-provider tree. Fetch only reviewable commits from the
 preview, fast-forward there, install frozen dependencies under pinned Bun and run gates.
 This avoids changing the active app's `.next` directory or staging peer planning edits.

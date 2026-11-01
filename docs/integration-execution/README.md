@@ -51,6 +51,11 @@ All 555 localized fields parsed as ICU, and independent consent review corrected
 conversion disclosure and derived reminder-email admission. AISEC-003 and the actual
 grant store/evaluator, resource projection and worker-origin enforcement remain open.
 
+[The 1 November focused qualification](qualification-20261101.md) records 59 affected
+PG16 cases, 90 selected unit cases, current standalone types and scoped lint. These
+resolve the selected pending gates only; the full unit lane, broader build/runtime,
+provider and release acceptance remain open.
+
 ## BASE evidence
 
 | Tasks            | Evidence                                                                                                                                          |

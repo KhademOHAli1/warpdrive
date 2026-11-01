@@ -10,8 +10,9 @@ Root observed four deterministic monotonic-clock failures and eight passing cont
 on the actual helper, then authorized the absolute-deadline fix. Root observed the
 updated cancellation file pass 12/12, then reran classification 23/23 and legacy 4/4
 on that final source. Independent source recheck confirmed the identified deadline
-path is closed and caller abort retains precedence. Broader type/lint/regression
-gates remain pending. Synchronous CPU preemption is not claimed.
+path is closed and caller abort retains precedence. Later scoped types/lint passed
+as recorded below; broader regression gates remain pending. Synchronous CPU
+preemption is not claimed.
 
 The comparison base is `994cecd20a6e56afe4866022c6d2d765ac23af0a`; final owned source
 is identified by the fingerprints below. Root ran the finite test windows centrally. The author
@@ -24,16 +25,16 @@ action/UI, MAIL, migration or shared provider schema changed in this slice.
 | Owned path | SHA-256 of reviewed final source |
 | --- | --- |
 | `src/features/integrations/slack.ts` | `4eaa308d24fed9d8a1069d3afcfb1ed4d50d3cfebc2da8554cb678823e21dba5` |
-| `src/features/integrations/slackRead.ts` | `030c76c152354059883b5a2c41be89993ca1dfbacef1ea6f1a9070865f3db9d4` |
-| `src/features/integrations/slackReadFailure.ts` | `d14b079251be19166d1eb2dbe60f21c2ef8b66a920db1fd86cbfccfa78072319` |
+| `src/features/integrations/slackRead.ts` | `83aabc1dfcfeb076684951ca6da6a378091ff3db18a7aab0940f189f212ca36a` |
+| `src/features/integrations/slackReadFailure.ts` | `fdf59462107754c7a767bb98e7261086dbb823e05a8454b1bdb2a276cae02ff4` |
 | `src/features/integrations/slackReadFailures.test.ts` | `db62abf24ffc360d63cc4063e06ae0e0e20b40dfaa9f485f97aa188df510dff3` |
-| `src/features/integrations/slackReadCancellation.test.ts` | `50082bfbdd5ca942eea9ee76c4af933737829e5fe8990716a7f1b6db5c5c2bb0` |
+| `src/features/integrations/slackReadCancellation.test.ts` | `db02c8d2183ddd0f78fe28f04e3ab1daafeb8ab63b0d75c4c09449d132949c71` |
 
 The existing `slackRequest` delegates only `auth.test` and `conversations.list` to the
 new Result-returning `requestSlackRead` (`slack.ts:35`). Existing callers retain their
 signatures and legacy error IDs. The helper requires a real caller `AbortSignal`
 (`slackRead.ts:14`), forwards an owned cancellation signal to fetch, and applies a
-fixed 10-second deadline (`:9`). It races the entire fetch/body operation (`:91`),
+fixed 10-second deadline (`:9`). It races the entire fetch/body operation (`:89`),
 aborts on caller cancellation/deadline, observes late promise rejection, and removes
 its timer/listener in `finally`. A late response is abort-checked before JSON reading
 (`:42`, `:44`); caller cancellation propagates rather than becoming an outage Result.
@@ -144,5 +145,15 @@ No retry, lifecycle transition, credential/grant/proof store, resource authoriza
 queue, sender or MAIL behavior was added. No live Slack request, native provider
 qualification, browser acceptance or provider availability claim follows from these
 units. No response-size or paging overhaul was included. Independent source review
-accepted this bounded slice after the deadline correction. Scoped type/lint/broader
-regression gates remain pending; CONN-014 stays planned.
+accepted this bounded slice after the deadline correction. CONN-014 stays planned.
+
+## Later scoped static qualification
+
+Source `5bf5563` resolves typed lint by using the owned abort signal's state for
+deadline cancellation, preserving caller-abort precedence, and removing unnecessary
+async mock declarations. Final selected reruns again passed 12 cancellation cases
+(group 4363), 23 classification cases (5685) and four legacy controls (5691), with
+matching `slack-static-*-20261101.log/json` receipts. These are the same 39 cases,
+not additional tests. Current standalone TypeScript, scoped Biome and type-aware
+ESLint passed; see [the focused record](qualification-20261101.md). Whole-suite,
+build, browser and provider/action/health acceptance remain open.
