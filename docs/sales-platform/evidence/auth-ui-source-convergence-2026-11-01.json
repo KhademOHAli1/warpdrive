@@ -1,0 +1,184 @@
+{
+  "schemaVersion": 1,
+  "preparedAt": "2026-11-01T11:02:41.506005+00:00",
+  "status": "source-only-prepared-not-qualified",
+  "branch": "codex/sales-auth-ui-source-20261101-fa___qem",
+  "baseCommit": "a011879324c5a636aef04506b4dc8db233184ae5",
+  "ownerSourceCommit": "d86e3f7580667a1201e8b2b4f92e92d7f2cb8d85",
+  "operation": "exact nine-path diff of ownerSource^..ownerSource, not a privacy merge",
+  "patchSha256": "f88043b6abd5bc607491c50e4b5b7a38e5aea5a0ceff46f91d6c79cb8ec8fbd0",
+  "patchBytes": 25655,
+  "paths": [
+    {
+      "path": "src/features/auth/messages/authScreens.de.json",
+      "base": {
+        "mode": "100644",
+        "blob": "39343ffe3b744af1732ddd6d2dcc45f856ce9e95"
+      },
+      "candidate": {
+        "mode": "100644",
+        "blob": "4c8e1951163a10da18a15f95036f57e6f7ebe98f"
+      },
+      "ownerPostimageMatches": true,
+      "sha256": "aea6e55ac45d8c9e24ac787046877af620e07df0e7c981059e5503d9712912f4"
+    },
+    {
+      "path": "src/features/auth/messages/authScreens.en.json",
+      "base": {
+        "mode": "100644",
+        "blob": "43440c76f10afcc5a69fd475b84ed5a06740068a"
+      },
+      "candidate": {
+        "mode": "100644",
+        "blob": "f3eb170f4f12d71c317fac77c16d16ad7bcbe89d"
+      },
+      "ownerPostimageMatches": true,
+      "sha256": "84c86e91f798eec287dd9712606e53a4b022db2bfe29413d3b688be39d128591"
+    },
+    {
+      "path": "src/features/auth/messages/authScreens.fa.json",
+      "base": {
+        "mode": "100644",
+        "blob": "7564559fb7003673ca53ef698e3ae8edf35202f7"
+      },
+      "candidate": {
+        "mode": "100644",
+        "blob": "6a5b82ed59e1a4ed092a4aac13af122b83886354"
+      },
+      "ownerPostimageMatches": true,
+      "sha256": "abba79393722bb0eb61b36316b4da29c6feeedbde5662d25e8a3cf2df0a7eeda"
+    },
+    {
+      "path": "src/features/auth/ui/FreshVerification.tsx",
+      "base": {
+        "mode": "100644",
+        "blob": "28b1da3c00c038fbf4e44239af0dbbba47199d8b"
+      },
+      "candidate": {
+        "mode": "100644",
+        "blob": "2f57142492fc0babbd9fd7a8c6be0ff655f93357"
+      },
+      "ownerPostimageMatches": true,
+      "sha256": "d389d18d37d153f87fa8ea20df7acd36095ae0cd54ee5f87c325db08b53fd7a0"
+    },
+    {
+      "path": "src/features/auth/ui/FreshVerificationNewTab.test.tsx",
+      "base": null,
+      "candidate": {
+        "mode": "100644",
+        "blob": "2e6ff5ae9a85e06429e6bfcb767bbcf84c226be0"
+      },
+      "ownerPostimageMatches": true,
+      "sha256": "d012fb2c021d579f84803fb6273a93baecd2fa238822ae459fbf0c63b2f4541b"
+    },
+    {
+      "path": "src/features/auth/ui/SecurityReplayPrivacy.test.tsx",
+      "base": null,
+      "candidate": {
+        "mode": "100644",
+        "blob": "415063070087adee2c20831e90a8cb07b33b4e02"
+      },
+      "ownerPostimageMatches": true,
+      "sha256": "1bc68329a5900e4eabb36278dcc8bb31237ef201cd0122f5c436c65031dd236b"
+    },
+    {
+      "path": "src/features/auth/ui/SecuritySettings.tsx",
+      "base": {
+        "mode": "100644",
+        "blob": "04e379c21af0f11392defaee71a4b86a9c935bc0"
+      },
+      "candidate": {
+        "mode": "100644",
+        "blob": "96bad9d0286aa40ed1cc054c470bc43710ba602f"
+      },
+      "ownerPostimageMatches": true,
+      "sha256": "ecc4794f3c9aa55ecbb5a34829c1fc1493979f764714a9cfcf3dc112ef0ac1eb"
+    },
+    {
+      "path": "src/features/auth/ui/SecuritySurface.tsx",
+      "base": {
+        "mode": "100644",
+        "blob": "b47d17502fd3476b9f56fce141e38d9bf1562101"
+      },
+      "candidate": {
+        "mode": "100644",
+        "blob": "f3205a979ba2c2487e3b0abe22a52dbbf9929dfc"
+      },
+      "ownerPostimageMatches": true,
+      "sha256": "bce06edd0407c223b90eaa77db6b70102ad4009369940c505a3f630b62ab240b"
+    },
+    {
+      "path": "src/features/auth/ui/__fixtures__/SecurityReplayPrivacyTestKit.tsx",
+      "base": null,
+      "candidate": {
+        "mode": "100644",
+        "blob": "4ae68563736675c7cc7de2069c34b054a449bf7b"
+      },
+      "ownerPostimageMatches": true,
+      "sha256": "9ac06732dceb222e53d46ac7b746a3d73d715e39c5e761d1539fe5f58cfbd46f"
+    }
+  ],
+  "allOtherBaseBlobsUnchanged": true,
+  "unchangedOutsideSubsetPathCount": 4158,
+  "protected": {
+    "packageJson": {
+      "unchanged": true,
+      "paths": 1
+    },
+    "bunLock": {
+      "unchanged": true,
+      "paths": 1
+    },
+    "drizzle": {
+      "unchanged": true,
+      "paths": 167
+    },
+    "approvedOriginals": {
+      "unchanged": true,
+      "paths": 8
+    }
+  },
+  "dependenciesLinkedOrInstalled": false,
+  "combinedQualification": {
+    "static": "not run",
+    "types": "not run",
+    "unit": "not run",
+    "integration": "not run",
+    "build": "not run",
+    "nativeBrowser": "not run"
+  },
+  "candidateCommit": "0443c04f97f57b451facfc342df9804e912af7b7",
+  "candidateTree": "c54bec5a56cc460871f932185bcf9f29ad95808a",
+  "sourcePreparationComplete": true,
+  "workingTreeClean": true,
+  "completedAt": "2026-11-01T11:02:41.750622+00:00",
+  "primaryHeadUnchanged": true,
+  "primaryAdopted": false,
+  "privacyHistoryOrRouteAdopted": false,
+  "authApiServerAndAuthorityUnchanged": true,
+  "scope": {
+    "providerConfirmation": "Optional new_tab uses existing /settings/security; redirect remains default",
+    "replay": "Existing block/autocapture exclusions on security roots and dialog portals",
+    "newAuthTestCasesDescribed": 14,
+    "casesExecutedOnCombinedSource": 0
+  },
+  "remainingGates": [
+    "Actual new-auth assertion RED on test-only a011 baseline before adoption, then candidate GREEN",
+    "Affected regional, Sales, auth and telemetry regressions on exact combined candidate",
+    "Full combined types/lint, separate build and native FA/DE/EN security/regional journeys",
+    "Privacy storage/route and migration reconciliation remain separate; no installed or release qualification"
+  ],
+  "programme": {
+    "projects": 16,
+    "parents": 128,
+    "complete": 0
+  },
+  "testOnlyBaseline": {
+    "commit": "9a8f1253e0cd9f3565cf31c7d8043aab0e925067",
+    "tree": "b42d36009c7ef2c9ee9256b4f405acbd3f50bf98",
+    "base": "a011879324c5a636aef04506b4dc8db233184ae5",
+    "addedTestSupportPaths": 3,
+    "allOtherBaseBlobsUnchanged": true,
+    "checks": "Unexecuted; no dependency link"
+  }
+}
