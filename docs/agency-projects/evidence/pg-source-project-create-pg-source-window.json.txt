@@ -1,0 +1,7 @@
+{
+  "grantSourceThreadId": "01a18868-3300-7dc2-b49d-c3bdb067fae7",
+  "budgetSeconds": 60,
+  "teardownReserveSeconds": 1,
+  "startedAt": "2026-11-01T06:49:34.188117+00:00",
+  "deadlineMonotonic": 558815.857912958
+}

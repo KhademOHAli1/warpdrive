@@ -1,0 +1,16 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "incremental": false,
+    "types": [
+      "node"
+    ]
+  },
+  "include": [
+    "../src/features/identity/projectCreateGrantServices.test.ts",
+    "../src/features/identity/projectCreateGrantServices.test-support.ts",
+    "./project-create-owned-global-setup.ts",
+    "./vitest.project-create-pg.config.ts"
+  ],
+  "exclude": []
+}

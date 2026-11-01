@@ -10,3 +10,4 @@ evidence/agency-manual-source-biome-check-1.log -text whitespace=-blank-at-eof,-
 owner-review/project-create-registration-review.patch -text whitespace=-blank-at-eol
 evidence/agency-round-source-biome-check-1.log -text whitespace=-blank-at-eof,-blank-at-eol
 evidence/project-create-source-biome-check-1.log -text whitespace=-blank-at-eof,-blank-at-eol
+evidence/project-create-pg-source-biome-check-1.log -text whitespace=-blank-at-eof,-blank-at-eol

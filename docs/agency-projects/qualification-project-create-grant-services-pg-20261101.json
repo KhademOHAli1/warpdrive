@@ -1,0 +1,202 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-11-01T07:16:10.969314+00:00",
+  "status": "bounded-real-postgres-green",
+  "attempt": 2,
+  "base": "651295aa648255c2d11e378b8bcd236678375868",
+  "scope": "Eight trusted-service-actor grant-administration cases in one selected test file, actual canonical bootstrap on the owned candidate journal through0084. No project persistence or broad native acceptance.",
+  "result": {
+    "exitCode": 0,
+    "passed": 8,
+    "files": 1,
+    "vitestReportedDurationSeconds": 2.7,
+    "wrapperElapsedSeconds": 4.888742999988608,
+    "pid": 17499,
+    "terminal": true,
+    "stopReason": null,
+    "errors": [],
+    "log": "evidence/pg-attempt2-vitest.log",
+    "receipt": "evidence/pg-attempt2-handles.json"
+  },
+  "command": [
+    "/Users/ali/Developer/warpdrive-agency-projects/.runtime/bin/bun",
+    "--bun",
+    "node_modules/vitest/vitest.mjs",
+    "run",
+    "--config",
+    ".runtime/vitest.project-create-pg.config.ts",
+    "--project",
+    "integration",
+    "src/features/identity/projectCreateGrantServices.test.ts",
+    "--maxWorkers=1"
+  ],
+  "workingDirectory": "/Users/ali/Developer/warpdrive-agency-projects",
+  "sourceIdentity": {
+    "headAtLaunch": "651295aa648255c2d11e378b8bcd236678375868",
+    "sourceUnchangedReportedByWrapper": true,
+    "recordedLaunchHashEntries": 3717,
+    "selectedLaunchHashes": {
+      "src/features/identity/projectCreateGrantServices.test.ts": "1225065a11599a59d1bf8d6f023704234bd625304e4ea48a3f25b0365780f332",
+      "src/features/identity/projectCreateGrantServices.test-support.ts": "e158ec0b0a9bd7d085bc3fd091383eef38c3a80b791c0bb173cdee6ebe0b14d2",
+      "src/features/identity/permission-sets.service.ts": "261de9d334142466cbe3e1f6488599c9666bde95927b5daea298740349eb3a93",
+      "src/features/identity/users.service.ts": "cbd40487c8f5fa1cd6c764f12d800458f2ecb2b63da8deb569aa42b94a1aa92f",
+      "src/features/identity/guards.ts": "fcbdac62eda4db3305a9986aee0093248ae5808c3079f7c924eb0e0888d0a034",
+      "src/features/identity/schemas.ts": "ef08ad47189d89e1af71f6ead254941a64a02382c1d85eda417c6636bf38c84d",
+      "src/features/permissions/schemas.ts": "4c2ce2a16e3fdb26986b4966e2f27f56927d37c49370cca2cc7f2c21030adb92",
+      "src/constants/permissionFlags.ts": "6a5213b101ed6cb03a1430f8ba006e4f14412dd6b5a3cdb1ee975286e69109ee",
+      "src/app/(app)/settings/permission-sets/permissionSetFlags.ts": "b94038c0c3f54a3286d012e882bf1d503c8283d9ccfff19c65816a9a24fef52f",
+      "src/test/db.ts": "a2e17fcd595b368e294c65fbd775566e2b5a91680b075f5a27abe808f9946ba3",
+      "vitest.globalSetup.ts": "a8db8f578b075e64309eac72f1442692a136b03418e368d8ac3a330836479c29",
+      "drizzle/meta/_journal.json": "4d89be8c2d18d22a088ae592ae0345373b6067e5cefc7bb9da9a3fbb4feaa867",
+      "bun.lock": "529a9b6a87d9fc836c45a8e68f0da012ed8a111b0fc60b09a0e5c3c8bfbef0e4"
+    },
+    "fullLaunchHashManifest": "evidence/pg-attempt2-handles.json",
+    "note": "The 3717-entry identity manifest is not a test-coverage or whole-application qualification claim. The raw receipt stores a launch map and an unchanged result, not an exported end-hash map."
+  },
+  "executedPrivateControls": {
+    ".runtime/run-project-create-pg.py": {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/.runtime/run-project-create-pg.py",
+      "copy": "evidence/pg-attempt2-run-project-create-pg.py.txt",
+      "sha256": "03cecf8b53ce5500268e177fd1e624d58ff3d0f07acc24611de1d0996df6b540",
+      "bytes": 12045
+    },
+    ".runtime/project-create-owned-global-setup.ts": {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/.runtime/project-create-owned-global-setup.ts",
+      "copy": "evidence/pg-attempt2-project-create-owned-global-setup.ts.txt",
+      "sha256": "4b9215064c426a20b9987b7f46ec3bc4d1532fc972b1db71130539778b06da40",
+      "bytes": 2419
+    },
+    ".runtime/vitest.project-create-pg.config.ts": {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/.runtime/vitest.project-create-pg.config.ts",
+      "copy": "evidence/pg-attempt2-vitest.project-create-pg.config.ts.txt",
+      "sha256": "a09277eca48f3d635c17a133e3e3c8eea8ba269cd9be62fac5546a84cb4ac323",
+      "bytes": 740
+    },
+    ".runtime/project-create-pg-run.json": {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/.runtime/project-create-pg-run.json",
+      "copy": "evidence/pg-attempt2-project-create-pg-run.json",
+      "sha256": "174f5fe65ad799901634ef8fbde3cdaaa1a9b8576092e0937cde15b5fb05b08f",
+      "bytes": 677
+    }
+  },
+  "controlSnapshotIdentity": "Each copied control matches its exact sourceStartHashes launch digest; snapshots are verbatim and unapplied. The run JSON has only the reviewed run IDs, paths, daemon marker/profile and status, no database credentials.",
+  "runtimeProfile": {
+    "runId": "a86fa9ad-8edd-4d4b-83ea-01689846ecee",
+    "dockerEndpoint": "unix:///Users/ali/.colima/warpdrive/docker.sock",
+    "cachedImages": {
+      "postgres:16-alpine": "sha256:0cefaabd882e42bcb2a2f3dc56d3ce4770560ba62fd7f197f1a2e008fd5731ab",
+      "testcontainers/ryuk:0.14.0": "sha256:7c1a8a9a47c780ed0f983770a662f80deb115d95cce3e2daa3d12115b8cd28f0"
+    },
+    "daemonMarkerId": "a6f9d1b0c5fc70039491d657b90c1acd0a987db3de8da526479c2c629d6c35bb",
+    "sdkDaemonVerified": true,
+    "ownerMetadata": "evidence/pg-attempt2-owned-container.json",
+    "postgresContainerId": "294bf6506d73453fa456801bf5fd572d9f3e6db5bc2a2421b3f6e767c87d4cd6",
+    "readyAt": "2026-11-01T07:11:56.943Z"
+  },
+  "databaseScope": {
+    "description": "owned candidate85-entry journal through0084; no Agency DDL or combined-lineage qualification",
+    "journalEntries": 85,
+    "lastTag": "0084_visual_workflows",
+    "journalSha256": "4d89be8c2d18d22a088ae592ae0345373b6067e5cefc7bb9da9a3fbb4feaa867",
+    "canonicalBootstrapSource": "vitest.globalSetup.ts",
+    "canonicalBootstrapSha256": "a8db8f578b075e64309eac72f1442692a136b03418e368d8ac3a330836479c29",
+    "harnessSource": "src/test/db.ts",
+    "harnessSha256": "a2e17fcd595b368e294c65fbd775566e2b5a91680b075f5a27abe808f9946ba3",
+    "agencyDdlQualified": false,
+    "combinedOrMainLineageQualified": false,
+    "restoreQualified": false
+  },
+  "guard": {
+    "startedAt": "2026-11-01T07:11:54.049487+00:00",
+    "finishedAt": "2026-11-01T07:11:58.938075+00:00",
+    "budgetSeconds": 90,
+    "nativeDeadlineSeconds": 65,
+    "liveFloorBytes": 5368709120,
+    "beforeFreeBytes": 16143273984,
+    "minimumFreeBytes": 16036057088,
+    "withinTotalBudget": true,
+    "ownedProcessGroupEmptyVerified": true,
+    "ownedContainersAbsentObserved": true,
+    "ownedMarkerAbsentObserved": true,
+    "ownedCleanup": [],
+    "sharedRyukOrSessionSweep": false,
+    "interpretation": "Owned PG reached ready and was absent after canonical teardown; marker absent and process group empty were observed by the wrapper. No additional owned PG cleanup or shared Ryuk/session sweep was recorded. This documentation task performs no runtime scan or cleanup."
+  },
+  "caseScope": [
+    "Delegated true create denied with permission-set rows unchanged and no create audit.",
+    "Delegated explicit-false/ordinary-true create succeeds with persisted map and audit.",
+    "Native-admin project-create true creation control succeeds.",
+    "Delegated retained-true update while changing an ordinary flag denies and leaves the row/audit unchanged.",
+    "Delegated removal to false on another set succeeds with old/new audit maps.",
+    "Delegated assignment of a carried true flag denies and preserves the baseline assignment.",
+    "Delegated ordinary assignment with explicit project-create false succeeds with audit.",
+    "Native-admin retained-true update and carried-set assignment controls succeed."
+  ],
+  "historicalSourcePacket": {
+    "json": "qualification-project-create-grant-services-source-20261101.json",
+    "markdown": "qualification-project-create-grant-services-source-20261101.md",
+    "leftUnchanged": true,
+    "meaning": "Historical source-only capture correctly recorded eight NOT RUN cases at that time; this later native result supplements it."
+  },
+  "attempt1": {
+    "status": "held-before-native-launch",
+    "isBehavioralRed": false,
+    "historicalReceipt": "evidence/project-create-pg-source-native-attempt1-held-handles.json",
+    "meaning": "Default-socket cached-image preflight prevented native Popen; not a test red or database pass."
+  },
+  "logWarnings": [
+    "The raw log retains a nonblocking Vite future native-config-loader/ESM-as-CommonJS warning. No suppression or configuration mutation was performed by this capture."
+  ],
+  "evidenceCopies": [
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/project-create-pg-attempt2-handles.json",
+      "copy": "evidence/pg-attempt2-handles.json",
+      "sha256": "733456bc1028c365367ecbe6443dd3b9a663f4448a2861a2fc3ee95cc0708279",
+      "bytes": 443352
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/project-create-pg-attempt2.log",
+      "copy": "evidence/pg-attempt2-vitest.log",
+      "sha256": "5ddf7b8972e725d303890245f4ed4055bc8225bcaa7a49a83f9f2c88bc880673",
+      "bytes": 598
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/project-create-pg-attempt2-owned-container.json",
+      "copy": "evidence/pg-attempt2-owned-container.json",
+      "sha256": "d67190bf205a8d90672e0455a5b4745c24daaacf759a313c41ab29e3c798bb97",
+      "bytes": 378
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/.runtime/run-project-create-pg.py",
+      "copy": "evidence/pg-attempt2-run-project-create-pg.py.txt",
+      "sha256": "03cecf8b53ce5500268e177fd1e624d58ff3d0f07acc24611de1d0996df6b540",
+      "bytes": 12045
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/.runtime/project-create-owned-global-setup.ts",
+      "copy": "evidence/pg-attempt2-project-create-owned-global-setup.ts.txt",
+      "sha256": "4b9215064c426a20b9987b7f46ec3bc4d1532fc972b1db71130539778b06da40",
+      "bytes": 2419
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/.runtime/vitest.project-create-pg.config.ts",
+      "copy": "evidence/pg-attempt2-vitest.project-create-pg.config.ts.txt",
+      "sha256": "a09277eca48f3d635c17a133e3e3c8eea8ba269cd9be62fac5546a84cb4ac323",
+      "bytes": 740
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/.runtime/project-create-pg-run.json",
+      "copy": "evidence/pg-attempt2-project-create-pg-run.json",
+      "sha256": "174f5fe65ad799901634ef8fbde3cdaaa1a9b8576092e0937cde15b5fb05b08f",
+      "bytes": 677
+    }
+  ],
+  "limits": [
+    "Eight passed service cases use trusted manually supplied actor fixtures; they do not qualify native auth, live session freshness, CSRF/fresh identity admission, hydration, originating app/MCP grants or revocation through commit.",
+    "No atomic create/update rollback, failure injection or concurrent grant/revocation race is exercised. Successful audit assertions are not transactional atomicity proof.",
+    "Only the owned candidate85-entry journal through0084 was bootstrapped; no Agency DDL, combined/main lineage, restore, upgrade campaign or allocator acceptance is claimed.",
+    "No whole application, project membership/CRM ceilings, module/Privacy enablement, native UI/T25/RTL/accessibility, external delivery/provider or release acceptance is established.",
+    "No combined aggregate count is formed with prior units, source checks or other programmes.",
+    "The historical source-only packet, ledgers, progress/main plans, source, private controls, runtime inputs and Git state were not modified by this documentation capture."
+  ]
+}

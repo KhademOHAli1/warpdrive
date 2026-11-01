@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-11-01T06:30:31.291266+00:00",
+  "updatedAt": "2026-11-01T07:19:27.777949+00:00",
   "statusMeaning": "Evidence level only. A source-verified task is not accepted or complete. All 96 acceptance flags remain false.",
   "tasks": {
     "AP-00.1": {
@@ -29,7 +29,7 @@
     },
     "AP-00.7": {
       "status": "active",
-      "evidence": "52-file source window released after actual421/18; initial read-only wrapper overlap recorded. Separate six-file registration window completed fully serial in9.909163 seconds; all7 groups empty/min18,897,088,512 bytes, released. No native/PG/app/build/install/provider work.",
+      "evidence": "52-file and registration six-file source windows released. New service-source window six serial tools passed in15.287281s/min17,337,454,592 bytes. First native attempt held before launch on default profile. Fresh verified-Colima attempt2 passed8/1 in4.888743s/min16,036,057,088 bytes; source unchanged, owned PG/marker/group gone, native slot released. No app/worker/build/install/provider activity.",
       "remaining": "Further static/native/heavy campaigns require current finite coordination; routine selected units stay one worker/30s/live5GiB. Accepted combined base/interfaces required before persistence.",
       "accepted": false
     },
@@ -41,7 +41,7 @@
     },
     "AP-01.1": {
       "status": "active",
-      "evidence": "Settings ec9b3f8 adopted by 980833d and owner-reviewed; Sales f006b5a adopted by 264d9b2 as complete 178-path source delta, preserving Settings and baseline byte-for-byte. qualifications distinguish owner reports from combined evidence. Platformed9 complete37-path source slice adopted by f5ac1dd, with focused owner evidence kept separate; all preceding feature/Settings bytes preserved.",
+      "evidence": "Settings ec9b3f8 adopted by 980833d and owner-reviewed; Sales f006b5a adopted by 264d9b2 as complete 178-path source delta, preserving Settings and baseline byte-for-byte. qualifications distinguish owner reports from combined evidence. Platformed9 complete37-path source slice adopted by f5ac1dd, with focused owner evidence kept separate; all preceding feature/Settings bytes preserved. Independent committed numbering correction7c8 adopted as651295a across13 paths, with actual changed UI43/7 unit pass. Agency52, registration6 and native-prep2 hashes retained; no dependency/migration changes. qualification-numbering-adoption-20261101.json.",
       "remaining": "Current combined types/lint/messages/unit/build and native FA/DE/EN acceptance remain open; no Agency workspace is enabled.",
       "accepted": false
     },
@@ -53,8 +53,8 @@
     },
     "AP-02.2": {
       "status": "active",
-      "evidence": "Exact project.create registration reviewed by Settings and Platform is applied after actual 11 failed/6 passed red. New17 selected and affected57/6 pass; focused types, Biome6 and unchanged-rule ESLint3 TS pass. Exact five production hashes match reviewed six-line patch; native-admin/grantor and exhaustive-write boundaries preserved. qualification-project-create-registration-20261101.json.",
-      "remaining": "Real PG service/native evidence, project action/member/admin policy, module admission, accepted owner/CRM checks, Privacy and complete participating-writer revocation fence remain open. Registry alone supplies no project writer or finance grant. Eight real-PG service cases are now source-placed but NOT RUN; owned canonical-bootstrap control wrapper is prepared for a fresh finite slot.",
+      "evidence": "Exact project.create registration reviewed by Settings and Platform is applied after actual 11 failed/6 passed red. New17 selected and affected57/6 pass; focused types, Biome6 and unchanged-rule ESLint3 TS pass. Exact five production hashes match reviewed six-line patch; native-admin/grantor and exhaustive-write boundaries preserved. qualification-project-create-registration-20261101.json. Actual real-PG8/1 service qualification now verifies create/update/assignment denials/allowed controls/audit observations on the isolated candidate profile, source unchanged, owned teardown complete. Source4-input types/Biome2/ESLint2 also pass.",
+      "remaining": "Native session/freshness/through-commit, create/update atomic rollback, project action/member/admin policy, module/accepted-owner/CRM/Privacy contracts remain open. Registry/service evidence supplies no project writer or finance grant.",
       "accepted": false
     },
     "AP-02.4": {
@@ -83,8 +83,8 @@
     },
     "AP-10.1": {
       "status": "active",
-      "evidence": "qualification-round-scope-20261101.json: actual post-format 421 tests/18 files, feature-local types, Biome52 and unchanged-rule ESLint49 TS pass; exact hashes/commands/terminal receipts retained, including initial read-only wrapper overlap. Prior reds and scoped results remain historical. Separate project-create registration qualification supplies actual57/6, scoped types/Biome6/ESLint3 TS; no arithmetic aggregate or full application claim.",
-      "remaining": "Permission registration and later feature increments need their own evidence; full repository/app/native/real PG/migration/restore and original task acceptance remain open.",
+      "evidence": "qualification-round-scope-20261101.json: actual post-format 421 tests/18 files, feature-local types, Biome52 and unchanged-rule ESLint49 TS pass; exact hashes/commands/terminal receipts retained, including initial read-only wrapper overlap. Prior reds and scoped results remain historical. Separate project-create registration qualification supplies actual57/6, scoped types/Biome6/ESLint3 TS; no arithmetic aggregate or full application claim. Actual isolated real-PG8/1 permission-set service run now supplements source evidence, with candidate-lineage/native-auth/atomicity limits retained; full Agency DB/native/migration acceptance remains open.",
+      "remaining": "Merged numbering types/lint/build/native proof, full repository/app/Agency stores/native/auth-fence/migration/restore and later slices remain open. Real8 service cases do not prove broader task acceptance.",
       "accepted": false
     },
     "AP-11.1": {

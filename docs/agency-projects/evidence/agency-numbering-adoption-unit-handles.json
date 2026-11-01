@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "scope": "Mail recovery window permits routine small containerless selected units; no heavy campaign",
+  "runs": [
+    {
+      "phase": "green",
+      "pid": 5032,
+      "startedAt": "2026-11-01T06:45:22.387156+00:00",
+      "finishedAt": "2026-11-01T06:45:27.566291+00:00",
+      "terminal": true,
+      "exitCode": 0,
+      "stopReason": null,
+      "beforeFreeBytes": 17479180288,
+      "minimumFreeBytes": 17449332736,
+      "afterFreeBytes": 17471455232,
+      "floorBytes": 5368709120,
+      "timeoutSeconds": 30,
+      "log": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/agency-numbering-adoption-green.log",
+      "command": [
+        "/Users/ali/Developer/warpdrive-agency-projects/.runtime/bin/bun",
+        "run",
+        "test:unit",
+        "src/app/(app)/settings/profile/LanguageSettings.test.tsx",
+        "src/app/(app)/settings/profile/LanguageSettings.numbering.test.tsx",
+        "src/components/ui/DatePicker.german.test.tsx",
+        "src/components/ui/DatePicker.numbering.test.tsx",
+        "src/components/ui/dateFormat.test.ts",
+        "src/components/ui/dateFormat.german.test.ts",
+        "src/features/i18n/numberPreference.test.ts",
+        "--maxWorkers=1"
+      ]
+    }
+  ]
+}

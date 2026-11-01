@@ -1,5 +1,7 @@
 # Project-create grant services, proposed real-Postgres tests
 
+Current status: the later execution supplement records all eight real-PostgreSQL cases passing. The original preparation and its limits are retained below.
+
 1 November 2026. **Test-only source placement, all eight cases NOT RUN.** Owned source files are `src/features/identity/projectCreateGrantServices.test.ts` and `src/features/identity/projectCreateGrantServices.test-support.ts`, plus this plan. The original work draft is historical preparation. Only these new tests/fixtures were placed; no production/helper/registration source, current qualification, runner, database/container, provider, Git mutation or commit action is included.
 
 The registration's existing unit results are separate evidence. These source tests propose actual service-level database checks for `project.create`; they supply no new red, green, static, PostgreSQL, session, native or through-commit result. They are not authority acceptance or project persistence enablement.
@@ -48,3 +50,8 @@ Project owner/member policy, selected accepted owner admission, canonical CRM ce
 ## Next step
 
 Test-only source placement is complete. Root will prepare a finite owned canonical-bootstrap run and request the native slot before any execution. All eight cases remain **NOT RUN**; this placement grants no runner, static, Docker, PostgreSQL or provider action. Existing selected unit/source qualification must not be extended to these database claims by addition or implication.
+
+
+## Later execution supplement
+
+The eight source-placed cases were subsequently type/format/lint checked and executed on a fresh, bounded local Colima PostgreSQL 16 instance using the real repository bootstrap. All eight passed. `qualification-project-create-grant-services-source-20261101.json` and `qualification-project-create-grant-services-pg-20261101.json` retain the chronological source/preflight/runtime evidence and cleanup. Earlier NOT RUN statements describe preparation; they do not describe this later execution. Trusted-actor, transaction/atomicity, native session and through-commit limitations above remain unchanged.

@@ -1,6 +1,6 @@
 # Project-create grant service run, prepared control boundary
 
-1 November 2026. Prepared and source-reviewed only; the eight real-PostgreSQL cases and control wrapper are NOT RUN. No Docker probe, container, database, provider or application process has been started by this preparation.
+1 November 2026. Current result: the bounded second attempt passed all eight real-PostgreSQL cases with verified owned teardown; see the execution supplement below. The preparation design is retained here, with its source-only review chronology. No application or provider process was started.
 
 The selected suite is `src/features/identity/projectCreateGrantServices.test.ts`, with its bounded support file. It directly uses the existing parameterless `makeTestDb()`. A private Vitest configuration selects only that integration suite with one worker and delegates the repository's actual `vitest.globalSetup.ts`: a disposable PostgreSQL 16 container, real extensions and real migrated template, then isolated clone creation. The current candidate journal has 85 entries through `0084_visual_workflows`; this remains a different lineage from Privacy main and supplies no combined migration or Agency DDL acceptance.
 
@@ -13,3 +13,10 @@ Cleanup first terminates/verifies the exact owned process group, including survi
 Canonical random host-port exposure is retained; loopback-only binding is not guaranteed by its public API. The data is isolated synthetic fixtures. All providers, dispatchers, app/worker startup, builds, installation and image pulls remain outside this proposed run. Local security audit/outbox writes from the actual services are expected test data, not notification delivery.
 
 The resource request must name this frozen eight-case suite, one disposable PG container, one owned marker network, one worker and the finite cleanup budget. Native slot ownership is coordinated separately; a prior static grant supplies none. Native/session freshness, transaction atomicity, through-commit fencing, project module/membership/CRM/Privacy admission and complete application acceptance remain independently open.
+
+
+## Actual profile discovery and bounded attempt
+
+The first attempt held before Popen on the default absent `/var/run/docker.sock` profile; it created no PG/container/network and supplied no test RED. Read-only discovery and the resource owner identified the actual local Warpdrive profile at `unix:///Users/ali/.colima/warpdrive/docker.sock`, with the required `TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock`. Both exact cached images were verified without pulls. The guard accepts only this declared socket override, retains the SDK marker check, and uses fresh per-attempt receipt/log/ownership files so the earlier hold is preserved.
+
+Fresh attempt 2 then passed all eight real service cases in one file. Its wrapper finished in 4.888743 seconds, with source HEAD `651295aa648255c2d11e378b8bcd236678375868` and tracked source/migrations/controls unchanged. SDK daemon identity was verified before PG creation; canonical PG teardown completed, the marker was removed, and the owned process group/CID/marker were observed absent. The native window was released. Exact raw receipts and scope limits are in `qualification-project-create-grant-services-pg-20261101.json`; the source-only packet retains its earlier NOT RUN chronology.

@@ -1,0 +1,14 @@
+$ bun --bun vitest run --project unit "src/app/(app)/settings/profile/LanguageSettings.test.tsx" "src/app/(app)/settings/profile/LanguageSettings.numbering.test.tsx" src/components/ui/DatePicker.german.test.tsx src/components/ui/DatePicker.numbering.test.tsx src/components/ui/dateFormat.test.ts src/components/ui/dateFormat.german.test.ts "src/features/i18n/numberPreference.test.ts" "--maxWorkers=1"
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+  - ESM syntax in a file loaded as CommonJS (vitest.classify.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.5 /Users/ali/Developer/warpdrive-agency-projects
+
+
+ Test Files  7 passed (7)
+      Tests  43 passed (43)
+   Start at  07:45:23
+   Duration  4.27s (tests 45%, environment 22%, import 20%, transform 9%, setup 4%)
+

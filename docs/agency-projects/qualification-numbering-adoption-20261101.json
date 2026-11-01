@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-11-01T06:48:55.991216+00:00",
+  "source": "7c8bb7ed013ef5eb9543399566bc5175a12df633",
+  "sourceParent": "c0afff9a9626611a602520f7684ed2dfc531db46",
+  "commonCodeAncestor": "ed9cdebbb7d379eb393b1a3fd748b8db0fff0d59",
+  "beforeAdoption": "91f719435879658a6913250b8d40419786f5e06d",
+  "adoptionCommit": "651295aa648255c2d11e378b8bcd236678375868",
+  "selection": "One committed13-path correction only; predecessor24 execution-document paths have no source prerequisite and were not adopted.",
+  "sourceHashes": {
+    "src/app/(app)/settings/profile/LanguageSettings.numbering.test.tsx": "2ceb6814f9805ca5e740d7d0585eeea4fc9e543cd6d47d1da48f278c26c32bcf",
+    "src/app/(app)/settings/profile/LanguageSettings.test.tsx": "0d739744c21ff2de6941a7ed95a1c7c00e9da0b9827930f9788688fb8a458d0f",
+    "src/app/(app)/settings/profile/LanguageSettings.tsx": "a5b8d10d12223f730d94d03f173a7b99486f0f51fc6ace57b363fab80d4f5777",
+    "src/components/ui/DatePicker.german.test.tsx": "72d1bb0f591fb514daf17d2ef9734e178c78192d23456d671adffda73aaab97b",
+    "src/components/ui/DatePicker.numbering.test.tsx": "c13aa019f746a07b3a26618d7147d78cb2cc00d5879156bb8b2db297ad3f58ff",
+    "src/components/ui/DatePicker.tsx": "9caa9b527f458fde19f9fb7b3b8c2952bc6b4a50aba594af1f8d1dfc23fbb6cc",
+    "src/components/ui/dateFormat.german.test.ts": "5fe491ad2b849ff5f692aaf871f645e6aeaf37080f52f7fce5ddc1611671476b",
+    "src/components/ui/dateFormat.test.ts": "33523f0234d6421c29a1425fe4db9341c2fa585c46df5fde0159903a5fb05b7b",
+    "src/components/ui/dateFormat.ts": "f8b625c87a3efc5e03f8085b34236639e811f41db8c10440760b35964f6032af",
+    "src/components/ui/localizedDayPickers.tsx": "8396052c007487ef83f1513a0393ddcbc444453c0ae01def30b83cfb60fafeb8",
+    "src/features/i18n/README.md": "1199f325ff305c9e0d01edff011ffcfa6676177d837d442f589ab5df80b1777b",
+    "src/features/i18n/numberPreference.test.ts": "3486723c3a1ddc45a32ae0d15d64bc16db65d2270ef3b2bbeeb0705988b58650",
+    "src/lib/numberingSystem.ts": "fdcd51b3c58c9d59b806c9d4868977da7ba80b4fa04b187af5ced23c5dce375e"
+  },
+  "preserved": "52 Agency feature files, six permission-registration primary files and two prepared PG test files match their previous qualification/preparation hashes. No schema/SQL/journal/package/lock/config change.",
+  "checks": {
+    "selectedUnits": {
+      "exitCode": 0,
+      "passed": 43,
+      "files": 7,
+      "durationMilliseconds": 4270,
+      "log": "evidence/agency-numbering-adoption-green.log"
+    },
+    "combinedTypeLintBuild": "pending; no own merged-candidate static/build proof",
+    "nativeUI": "not run"
+  },
+  "guard": {
+    "workers": 1,
+    "timeoutSeconds": 30,
+    "floorBytes": 5368709120,
+    "minimumFreeBytes": 17449332736,
+    "processGroup": 5032,
+    "groupEmptyVerified": true,
+    "receipt": "evidence/agency-numbering-adoption-unit-handles.json"
+  },
+  "limits": [
+    "Explicit digits now remain independent of locale; omitted preference retains language defaults. Calendar/timezone/currency choices are not changed by adoption.",
+    "Profile unit tests mock persistence; actual account/cookie/rendered/hydration/accessibility proof remains open.",
+    "Owner historical D225/d238 qualification is not proof for this correction or merged Agency; no149/21 combined pass is claimed.",
+    "Inherited caller formatLabel behavior remains limited to Gregorian non-Farsi triggers.",
+    "No native/app/PG/build/install/provider/migration/allocation or task/release acceptance."
+  ]
+}

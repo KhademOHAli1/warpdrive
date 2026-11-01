@@ -1,0 +1,9 @@
+# Explicit digit preference correction, committed source adoption
+
+1 November 2026. Agency `651295aa648255c2d11e378b8bcd236678375868` selects exactly Platform `7c8bb7ed013ef5eb9543399566bc5175a12df633`, after Agency `91f7194`. The correction contains five production files, seven tests and one README. Their bytes exactly match the committed owner source. Earlier Platform commits after adopted `ed9cdebb` contain execution documents only; no code prerequisite, package, migration or dirty peer file was adopted.
+
+The existing displayNumberingSystem signature now respects explicit arabext in English/German while retaining language defaults for omitted choices. The existing digit selector is available in all three languages. Date formatters accept backward-compatible optional numbering arguments; DatePicker and localized calendars forward the chosen digits without changing ISO callbacks, calendar, timezone or authored data. This corrects silent Latin overrides; no new scheduling or currency conversion is introduced.
+
+The changed seven-file unit selection passes43 cases on the merged Agency source. Its one owned process group is empty, with a30-second deadline and minimum17,449,332,736 free bytes. Exact hashes/receipt/raw output are in qualification-numbering-adoption-20261101.json. The earlier52 Agency feature files, six permission-registration files and two prepared native test files retain their prior hashes.
+
+Own merged types/lint/build and native/browser persistence/rendering/accessibility are pending. Profile tests mock persistence. Historical owner qualification at D225/d238 is not this correction's merged proof. Caller-supplied formatLabel retains the inherited Gregorian non-Farsi trigger limitation. All96 acceptance flags remain false; source adoption does not resolve the divergent database lineage or enable Agency persistence.

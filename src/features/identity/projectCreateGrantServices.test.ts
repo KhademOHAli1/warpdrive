@@ -155,9 +155,7 @@ describe("project create grants through real identity services", () => {
     expect(await assignment(h)).toEqual([{ setId: candidateId }]);
     const audit = await auditRows(h, "user.assign_permission_set");
     expect(audit).toHaveLength(1);
-    expect(audit).toMatchObject([
-      { actorId: manager.id, targetId, after: { setId: candidateId } },
-    ]);
+    expect(audit).toMatchObject([{ actorId: manager.id, targetId, after: { setId: candidateId } }]);
   });
 
   it("allows the native-admin retained-true update and carried-set assignment controls", async () => {
