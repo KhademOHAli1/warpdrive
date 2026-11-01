@@ -1,0 +1,13 @@
+# Authority and module admission, owner follow-up
+
+1 November 2026. The verbatim Settings design review is retained in `evidence/settings-owner-authority-protocol-review.md`. It selects the coarse transaction shared/exclusive design as a recommendation, with important corrections. This is not an accepted Platform API/key, complete writer closure, native evidence or persistence enablement.
+
+Shared mode applies only to commands whose exact write set cannot change another command's authority/admission, such as a title-only edit that does not re-emit owner/member/customer fields. Owner/member/grant/relink and admission-changing lifecycle/Privacy writes start exclusive. Unclassified writes start exclusive; no upgrade is allowed. This corrects any blanket interpretation that all project commands may take shared mode.
+
+The fence must be first at the actual outer transaction entry, with Read Committed post-wait reads in separate statements. Nested import/merge/enrichment/recovery operations inherit that transaction and mode. Current session verification can touch `lastSeenAt`; native-auth must supply a real read-only final-verification path. Neither promise rejection nor an error-valued Result returning from a transaction callback proves rollback. PostgreSQL 16 lock/statement bounds and real cancellation/connection disposal need qualification; proposed numeric budgets are not measured service levels.
+
+The recommended module contract uses one proposed central default-false `AGENCY_PROJECTS_ENABLED` field. All ordinary Agency reads/commands, including history/counts/request recovery, are unavailable while disabled; storage is retained and a successful empty list is not substituted. The switch is startup admission: drain/restart consistent app/worker/operator replicas, not an asserted immediate dynamic revocation. No env field, feature gate or new module broker is implemented yet.
+
+Platform still owns the exact fence identity/API/collision and timeout protocol. Native auth, Identity/Settings, CRM/import/enrichment, Agency and Privacy must participate at every real outer writer. Privacy's ordinary restriction/protected-content contract, project action/member policy, canonical migration lineage/schema/allocation and real fresh/upgrade/restore evidence remain separate. No unfenced writer may coexist with enabled project persistence under this proposal.
+
+The narrow project.create registration is independently source-implemented and qualified. It supplies none of these wider contracts. Future source patches must follow the actual current owner cuts rather than import proposed exports from this review.

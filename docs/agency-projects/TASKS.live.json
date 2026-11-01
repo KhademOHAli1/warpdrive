@@ -97,8 +97,8 @@
     "dependencies": "AP-00.3",
     "owner": "Agency implementation chat; shared edits require owner review",
     "status": "active",
-    "evidence": "authority-admission-inventory-20261101.md audits actual central-env, lifecycle/MCP availability, workflow/provider and native/CRM lock surfaces at d98574b. No generic Agency module gate or complete writer fence exists; two review-only protocols and participating source surfaces supplied to Platform/Settings.",
-    "remaining": "Owner choice for module disabled/history/app-worker behavior and complete bounded shared fence protocol, exact namespace/lock order/participating patches and real PG evidence remain open. No invented module registry or case-authority substitution.",
+    "evidence": "authority-admission-inventory-20261101.md audits actual central-env, lifecycle/MCP availability, workflow/provider and native/CRM lock surfaces at d98574b. No generic Agency module gate or complete writer fence exists; two review-only protocols and participating source surfaces supplied to Platform/Settings. Settings review now recommends coarse shared/exclusive mode, with actual outer-entry/read-only final-auth corrections and central default-false/all-reads-unavailable startup module behavior. Exact review retained; no shared helper/key or gate implemented.",
+    "remaining": "Platform exact API/key and complete participating patch/race evidence remain open; native no-touch final verification, Privacy ordinary fence, module config implementation/consistency and canonical base/schema/allocation still required.",
     "accepted": false
   },
   {
@@ -302,7 +302,7 @@
     "owner": "Agency implementation chat; shared edits require owner review",
     "status": "active",
     "evidence": "Exact project.create registration reviewed by Settings and Platform is applied after actual 11 failed/6 passed red. New17 selected and affected57/6 pass; focused types, Biome6 and unchanged-rule ESLint3 TS pass. Exact five production hashes match reviewed six-line patch; native-admin/grantor and exhaustive-write boundaries preserved. qualification-project-create-registration-20261101.json.",
-    "remaining": "Real PG service/native evidence, project action/member/admin policy, module admission, accepted owner/CRM checks, Privacy and complete participating-writer revocation fence remain open. Registry alone supplies no project writer or finance grant.",
+    "remaining": "Real PG service/native evidence, project action/member/admin policy, module admission, accepted owner/CRM checks, Privacy and complete participating-writer revocation fence remain open. Registry alone supplies no project writer or finance grant. Eight real-PG service cases are now source-placed but NOT RUN; owned canonical-bootstrap control wrapper is prepared for a fresh finite slot.",
     "accepted": false
   },
   {
