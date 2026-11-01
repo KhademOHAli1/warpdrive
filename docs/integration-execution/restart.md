@@ -30,7 +30,9 @@ create a replacement goal or mark it complete merely because BASE has closed.
    argument logging; keep private diagnostic files outside artifacts.
    The broad unit campaign was later deliberately terminated at 373 MiB free disk, exit 143;
    its parent and workers exited. Do not resume any campaign until stable headroom returns.
-   Current broad validation is incomplete, while focused evidence is retained separately.
+   The later D225 full unit lane and production build completed in separate finite windows;
+   the independent whole-source lint stopped at Biome. Read the current qualification record
+   before choosing the next gate. No subsequent service startup is established.
 8. The guarded service smoke requires empty users/provider data. Once useful fixtures are
    intentionally added, use another disposable qualification profile or adapt its contract
    with explicit tests; do not erase user data to make that smoke pass.
@@ -43,7 +45,10 @@ Its HANDOFF and checksum manifest identify the exact record head. The incrementa
 bundle contains all changes since the verified foundation head `67eb151`, so it needs
 the foundation bundle below but no intermediate SVG or review bundle. Its source
 archive is a convenient tree, without dependencies, private configuration or data.
-Read `qualification-20261101.md` for the focused gates and remaining broad acceptance.
+The later `outputs/full-unit-20261101` and `outputs/build-20261101` contain passing unit
+and build receipts for that same D225 head. The immutable progress export predates those
+results and retains its historical pending labels. Read `qualification-20261101.md` for the
+later evidence and remaining gates; never reinterpret the old interrupted run as a pass.
 
 The earlier dated foundation export remains an independently verified historical
 37-task baseline, not the current 40-task register:
@@ -81,6 +86,11 @@ restore a database dump from this source bundle: it contains none.
 The source integrates both branches' migration 0083 collision by retaining integration
 0083 and appending workflow 0084, with combined metadata and original workflow SQL guards.
 Clean install and upgrade from this programme's integration-0083 database are qualified.
+Published fork main `a0490c1` additionally contains distinct Privacy 83/84/85 migrations.
+Read the execution hold in `migration-allocation.md`: local reservations are not global,
+and no reviewed combined source/admission implementation or upgrade proof exists for that
+lineage. The ordinary Drizzle timestamp cutoff cannot reconcile it by numeric renaming.
+
 An independently installed workflow-0083 peer database has a divergent migration history;
 upgrading it to this branch needs a separately reviewed additive migration/recovery drill.
 Do not rename files, manipulate its migration ledger, reset it or claim that path passed.
@@ -114,8 +124,10 @@ allocate another competing migration or rebuild its connection/queue/domain engi
 Use `/tmp/warpdrive-integration-qualification-20261031` as the independent clean
 qualification checkout. The clean clone was moved out of Documents after an ownership and
 active-process check, retaining its own Git metadata, source and lockfile. Its idle
-dependencies were later removed during verified critical disk pressure; a fresh frozen
-install needs the next coordinated install window. Do not assume dependencies are present. This keeps
+dependencies were later removed during verified critical disk pressure. A fresh independent
+Bun 1.4.4 frozen install at D225 subsequently passed, leaving an ordinary node_modules
+directory, unchanged package/lock hashes and a clean tree. Whole-source lint then failed at
+Biome before ESLint. Recheck the actual current clone state before reuse. This keeps
 generated build/dependency churn outside the file-provider tree. Fetch only reviewable commits from the
 preview, fast-forward there, install frozen dependencies under pinned Bun and run gates.
 This avoids changing the active app's `.next` directory or staging peer planning edits.
@@ -133,8 +145,9 @@ chat, and the prepared `mail-platform-agreement-proposal.md` was sent there. Tha
 contains named ownership, exact proposed projection/control/attempt hooks and exclusive
 mail migration reservation 0085 through 0091. A later allocator addendum exclusively reserves
 0092 for MAIL delivery observations, followed by a separate notification-binding reservation.
-Read [the current allocation ledger](migration-allocation.md) for the full exclusive range
-before generating any DDL. No other writer should use its reserved slots.
+Read [the current local allocation ledger](migration-allocation.md) and its published-main
+execution hold before DDL. Those reservations apply only to the isolated local lineage,
+not published-main numbering. No other writer should use its local reserved slots.
 The mail owner acknowledged ownership and the 0085 through 0091 reservation. Closed API
 mapping review and an immutable combined mail handoff remain pending; do not generalize
 numbering acceptance into completed runtime integration. Preserve accepted/partial/unknown SMTP attempts and native
@@ -142,11 +155,12 @@ mail freshness/generation fences; generic delivery recovery never resubmits acce
 Current shared broker/lifecycle/EVT services remain design contracts, not available exports.
 The mail branch includes auth main refinements at `a1a8f6d`, now adopted as noted above.
 The immutable MAIL domain source cut is `297c1dd`; its separate combined candidate is still
-pending review. Integrated journal entries 0085 through 0091 must use fresh strictly increasing
-timestamps above platform 0084 (`1793452709228`), while all platform entries through 0084 remain
-byte-for-byte unchanged. The old mail timestamps predate platform 0084 and cannot be reused
-for an integrated upgrade, because the installed Drizzle migrator skips older timestamps.
-This changes candidate source metadata only, never an installed peer ledger. No scope expansion,
+pending review. The earlier local MAIL mapping kept the platform prefix through 84 unchanged and moved
+uninstalled candidate entries above its timestamp cutoff. It does not qualify reconciliation
+with published Privacy 85 or committed MAIL 91's later cutoff. Applied SQL hashes/timestamps
+and full installed ledger histories must remain intact. The work-only admission map has
+unmeasured physical fingerprints and no accepted combined source or append SQL hashes;
+it cannot run. Source agreement and disposable route/guard/data/restore tests remain gates. No scope expansion,
 mail source adoption, real-provider action or DDL is implied by this coordination.
 
 ## Incoming peer planning amendment

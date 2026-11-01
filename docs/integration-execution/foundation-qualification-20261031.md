@@ -84,17 +84,17 @@ below remain pending; the owning fixture record describes current-model scope an
 
 ## Current validation and service state
 
-| Gate | Current evidence |
-| --- | --- |
-| Runtime-safety focused units | 26 passed across four unit-classified files at `6b71b77`; worker wiring belongs to the real-PG lane and was not counted here. |
-| Integration-copy components | 124 focused cases before final wording refinement, then all 12 final narrow regressions passed; broad rerun pending frozen source. |
-| Provider harness/contracts | Independent 46/46 pass; scoped checks recorded in its owning document. |
-| CRM fixtures | Final 13 PostgreSQL/startup validators and two transport helper units passed after both review corrections. |
-| Standalone typecheck | Route generation and no-emit TypeScript passed on frozen source. |
-| Full current unit lane | Started with two workers; deliberately terminated with exit 143 at 373 MiB free disk before a final result. Incomplete, no aggregate pass claim. |
-| Relevant PostgreSQL selection | 64 files selected, including auth, workflow, fixture and queue/worker coverage; broader rerun not started. |
-| Current build/full lint/worker/UI gates | Not started in this window; resource-gated. Do not transfer the prior full counts. |
-| Actual app runtime | Web 3160 deliberately stopped during shared disk/swap pressure; no current healthy-web claim. |
+| Gate                                    | Current evidence                                                                                                                                 |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Runtime-safety focused units            | 26 passed across four unit-classified files at `6b71b77`; worker wiring belongs to the real-PG lane and was not counted here.                    |
+| Integration-copy components             | 124 focused cases before final wording refinement, then all 12 final narrow regressions passed; broad rerun pending frozen source.               |
+| Provider harness/contracts              | Independent 46/46 pass; scoped checks recorded in its owning document.                                                                           |
+| CRM fixtures                            | Final 13 PostgreSQL/startup validators and two transport helper units passed after both review corrections.                                      |
+| Standalone typecheck                    | Route generation and no-emit TypeScript passed on frozen source.                                                                                 |
+| Full current unit lane                  | Started with two workers; deliberately terminated with exit 143 at 373 MiB free disk before a final result. Incomplete, no aggregate pass claim. |
+| Relevant PostgreSQL selection           | 64 files selected, including auth, workflow, fixture and queue/worker coverage; broader rerun not started.                                       |
+| Current build/full lint/worker/UI gates | Not started in this window; resource-gated. Do not transfer the prior full counts.                                                               |
+| Actual app runtime                      | Web 3160 deliberately stopped during shared disk/swap pressure; no current healthy-web claim.                                                    |
 
 The mail owner completed its exclusive five-file PG window with 22 passing cases, then
 released the window. This programme's fixture campaign is sequential with one worker;

@@ -22,12 +22,12 @@ action/UI, MAIL, migration or shared provider schema changed in this slice.
 
 ## Source and behavior
 
-| Owned path | SHA-256 of reviewed final source |
-| --- | --- |
-| `src/features/integrations/slack.ts` | `4eaa308d24fed9d8a1069d3afcfb1ed4d50d3cfebc2da8554cb678823e21dba5` |
-| `src/features/integrations/slackRead.ts` | `83aabc1dfcfeb076684951ca6da6a378091ff3db18a7aab0940f189f212ca36a` |
-| `src/features/integrations/slackReadFailure.ts` | `fdf59462107754c7a767bb98e7261086dbb823e05a8454b1bdb2a276cae02ff4` |
-| `src/features/integrations/slackReadFailures.test.ts` | `db62abf24ffc360d63cc4063e06ae0e0e20b40dfaa9f485f97aa188df510dff3` |
+| Owned path                                                | SHA-256 of reviewed final source                                   |
+| --------------------------------------------------------- | ------------------------------------------------------------------ |
+| `src/features/integrations/slack.ts`                      | `4eaa308d24fed9d8a1069d3afcfb1ed4d50d3cfebc2da8554cb678823e21dba5` |
+| `src/features/integrations/slackRead.ts`                  | `83aabc1dfcfeb076684951ca6da6a378091ff3db18a7aab0940f189f212ca36a` |
+| `src/features/integrations/slackReadFailure.ts`           | `fdf59462107754c7a767bb98e7261086dbb823e05a8454b1bdb2a276cae02ff4` |
+| `src/features/integrations/slackReadFailures.test.ts`     | `db62abf24ffc360d63cc4063e06ae0e0e20b40dfaa9f485f97aa188df510dff3` |
 | `src/features/integrations/slackReadCancellation.test.ts` | `db02c8d2183ddd0f78fe28f04e3ab1daafeb8ab63b0d75c4c09449d132949c71` |
 
 The existing `slackRequest` delegates only `auth.test` and `conversations.list` to the
@@ -53,14 +53,14 @@ retain their previous `SLACK_REQUEST_FAILED`, `SLACK_RATE_LIMITED` or
 `SLACK_UNAVAILABLE` identity; newly normalized network failures use the existing
 unavailable identity.
 
-| CONN-014 distinction | Allowlisted example | Existing ProviderFailure code |
-| --- | --- | --- |
-| Revoked authorization | `token_revoked`, `account_inactive` | `authorization_expired` |
-| Insufficient scope | `missing_scope` | `forbidden` |
-| Missing resource, decoder-only support | `channel_not_found` | `invalid_input` |
-| Rate limit | HTTP 429 or `ratelimited` | `rate_limited` |
-| Transient outage | HTTP 5xx or `service_unavailable` | `unavailable` |
-| Invalid configuration | `invalid_arguments` | `invalid_input` |
+| CONN-014 distinction                   | Allowlisted example                 | Existing ProviderFailure code |
+| -------------------------------------- | ----------------------------------- | ----------------------------- |
+| Revoked authorization                  | `token_revoked`, `account_inactive` | `authorization_expired`       |
+| Insufficient scope                     | `missing_scope`                     | `forbidden`                   |
+| Missing resource, decoder-only support | `channel_not_found`                 | `invalid_input`               |
+| Rate limit                             | HTTP 429 or `ratelimited`           | `rate_limited`                |
+| Transient outage                       | HTTP 5xx or `service_unavailable`   | `unavailable`                 |
+| Invalid configuration                  | `invalid_arguments`                 | `invalid_input`               |
 
 The decoder also has finite expired-authorization, permission-denied, invalid-response
 and unclassified fallbacks. `invalid_auth` can mean invalid credentials or an IP-policy
@@ -80,18 +80,18 @@ Private evidence directory: `/tmp/warpdrive-integration-program-private/`.
 Each named `.log` has a matching `.json` runner record with process group, terminal
 exit code, duration and disk observations. JSON runner records are not Vitest reports.
 
-| Stage | Evidence stem, suffix `-20261101` | Process group | Terminal result |
-| --- | --- | --- | --- |
-| Behavioral red through existing `slackRequest`, before production edits | `slack-read-failures-red` | 81296 | Exit 1, 21 failed and 2 existing-behavior controls passed, 23 total; 0.834 s runner duration. |
-| Classification baseline green | `slack-read-failures-green` | 82444 | Exit 0, 23/23; 0.853 s. |
-| Cancellation red against the actual normalized helper baseline | `slack-read-cancellation-red` | 83065 | Exit 1, 3 failed and 3 controls passed, 6 total; 0.864 s. |
-| Cancellation green after minimum race/cleanup fix | `slack-read-cancellation-green` | 84020 | Exit 0, 6/6; 0.855 s. |
-| Final read-failure regression green | `slack-read-failures-final` | 84029 | Exit 0, 23/23; 0.416 s. |
-| Existing Slack transport controls | `slack-legacy-controls` | 84034 | Exit 0, 4/4; 0.433 s. |
-| Monotonic deadline red on actual helper, without firing timers | `slack-monotonic-red` | 86783 | Exit 1, 4 overdue-phase failures and 8 controls passed, 12 total; 0.640 s. |
-| Monotonic deadline green after absolute checks | `slack-monotonic-green` | 87650 | Exit 0, 12/12; 0.533 s. |
-| Final-source classification rerun after monotonic correction | `slack-final-classification` | 88255 | Exit 0, 23/23; 0.541 s. |
-| Final-source legacy rerun after monotonic correction | `slack-final-legacy` | 88261 | Exit 0, 4/4; 0.528 s. |
+| Stage                                                                   | Evidence stem, suffix `-20261101` | Process group | Terminal result                                                                               |
+| ----------------------------------------------------------------------- | --------------------------------- | ------------- | --------------------------------------------------------------------------------------------- |
+| Behavioral red through existing `slackRequest`, before production edits | `slack-read-failures-red`         | 81296         | Exit 1, 21 failed and 2 existing-behavior controls passed, 23 total; 0.834 s runner duration. |
+| Classification baseline green                                           | `slack-read-failures-green`       | 82444         | Exit 0, 23/23; 0.853 s.                                                                       |
+| Cancellation red against the actual normalized helper baseline          | `slack-read-cancellation-red`     | 83065         | Exit 1, 3 failed and 3 controls passed, 6 total; 0.864 s.                                     |
+| Cancellation green after minimum race/cleanup fix                       | `slack-read-cancellation-green`   | 84020         | Exit 0, 6/6; 0.855 s.                                                                         |
+| Final read-failure regression green                                     | `slack-read-failures-final`       | 84029         | Exit 0, 23/23; 0.416 s.                                                                       |
+| Existing Slack transport controls                                       | `slack-legacy-controls`           | 84034         | Exit 0, 4/4; 0.433 s.                                                                         |
+| Monotonic deadline red on actual helper, without firing timers          | `slack-monotonic-red`             | 86783         | Exit 1, 4 overdue-phase failures and 8 controls passed, 12 total; 0.640 s.                    |
+| Monotonic deadline green after absolute checks                          | `slack-monotonic-green`           | 87650         | Exit 0, 12/12; 0.533 s.                                                                       |
+| Final-source classification rerun after monotonic correction            | `slack-final-classification`      | 88255         | Exit 0, 23/23; 0.541 s.                                                                       |
+| Final-source legacy rerun after monotonic correction                    | `slack-final-legacy`              | 88261         | Exit 0, 4/4; 0.528 s.                                                                         |
 
 The meaningful cancellation reds were noncooperative-fetch deadline, response-body
 abort settlement and caller cancellation while fetch ignored its signal. Their controlled
@@ -155,5 +155,14 @@ async mock declarations. Final selected reruns again passed 12 cancellation case
 (group 4363), 23 classification cases (5685) and four legacy controls (5691), with
 matching `slack-static-*-20261101.log/json` receipts. These are the same 39 cases,
 not additional tests. Current standalone TypeScript, scoped Biome and type-aware
-ESLint passed; see [the focused record](qualification-20261101.md). Whole-suite,
-build, browser and provider/action/health acceptance remain open.
+ESLint passed; see [the focused record](qualification-20261101.md). The later checkpoint
+below adds full-unit and build results. Full-PG, whole-lint, browser and provider/action/health
+acceptance remain separate.
+
+## Later qualification checkpoint
+
+The [1 November D225 checkpoint](qualification-20261101.md) subsequently completed the
+full 6,024-case unit lane, production/worker compilation and independent frozen dependency
+install. Whole-source lint stopped at Biome before ESLint. Its exact receipts and remaining
+full-PG, browser/runtime, authority and provider gates are separate from this focused record.
+This later evidence does not rewrite earlier red/interruption results or close broader tasks.

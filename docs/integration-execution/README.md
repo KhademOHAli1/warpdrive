@@ -28,8 +28,8 @@ UX-001 through UX-007 and UX-009 have reviewed flow/pattern/copy, fresh Mobbin,
 Farsi terminology and regional/date scenario evidence. Current digit-display restrictions,
 week-start coupling and unsupported recurrence remain explicit. The local fake harness and
 synthetic CRM factory passed their bounded contract/fixture checks and independent review.
-Current-source standalone types passed; broad unit validation was deliberately interrupted
-at critical disk pressure and other broad gates remain pending. These closures do not qualify
+Current-source standalone types passed. A later finite four-shard unit campaign passed
+all 6,024 cases in 961 files at `d2257ce`, after the earlier pressure interruption. These closures do not qualify
 browser geometry, accessibility, live providers or future runtime journeys.
 
 [UX-006's trilingual design catalog](locale-copy-review.md) adds 100 messages in each
@@ -37,7 +37,7 @@ language, including 45 traced source messages and 55 proposed messages with exac
 guards. Independent copy/source review and all 300 ICU parses passed. The future runtime
 bindings, rendered journeys and native-speaker acceptance remain open. See the
 [sequential validation record](validation-windows-20261101.md) for the later focused
-actor/Slack checks and the still-pending affected regression gates.
+actor/Slack checks. The later qualification record identifies completed regression gates.
 
 [AISEC-001's operation inventory](mcp-operation-inventory.md) reconciles all 35 current
 MCP tools, including indirect effects, with a separately reviewed 58-row source matrix.
@@ -51,10 +51,12 @@ All 555 localized fields parsed as ICU, and independent consent review corrected
 conversion disclosure and derived reminder-email admission. AISEC-003 and the actual
 grant store/evaluator, resource projection and worker-origin enforcement remain open.
 
-[The 1 November focused qualification](qualification-20261101.md) records 59 affected
-PG16 cases, 90 selected unit cases, current standalone types and scoped lint. These
-resolve the selected pending gates only; the full unit lane, broader build/runtime,
-provider and release acceptance remain open.
+[The 1 November qualification](qualification-20261101.md) records 59 affected PG16 cases,
+6,024 full-lane unit cases in 961 files, standalone types and scoped lint, a production
+Next.js build and five compiled worker bundles at `d2257ce`. An independent clean clone's
+Bun 1.4.4 frozen install passed with unchanged package/lock hashes. Its whole-source lint
+stopped at Biome with 22 errors before ESLint; correction and a fresh full-lint result
+remain required. Full PG, service/runtime, browser, provider and release acceptance stay open.
 
 ## BASE evidence
 
@@ -92,10 +94,16 @@ does not extend the prior full qualification to current source. Other dirty peer
 peer-owned. Re-inventory heads and dirty paths before any further adoption.
 Do not reset, stash, bulk-stage or copy the peer dirty trees.
 
-The web preview on 3160 is deliberately stopped during shared disk/swap pressure. The broad
-unit run was also deliberately stopped when free disk reached 373 MiB; its workers exited.
-Source review continues, while test/build campaigns remain held. Use agreed sequential
-windows after stable headroom returns; recheck ownership, free space and restart instructions.
+The web preview on 3160 remains stopped. The earlier unit run was deliberately stopped at
+373 MiB free disk; its workers exited, and that historical run remains interrupted. The later
+finite full-unit and production-build windows completed with their own receipts. No service
+startup followed. Recheck ownership and fresh headroom, and coordinate each finite next
+campaign; no broad campaign is inherited from a completed window.
+
+[Local migration reservations](migration-allocation.md) now carry an execution hold for the
+published-main Privacy 83..85 collision. Local 85..93 reservations allocate no global slots;
+local 94 is still unallocated. An unaccepted work-only reconciliation proposal does not
+establish a merged source, installed upgrade, Privacy coverage or accepted numbering.
 
 The ARCH design contracts passed independent scenario review after concrete corrections;
 see [architecture acceptance](architecture-review.md) and [evidence taxonomy](evidence-taxonomy.md).

@@ -14,12 +14,12 @@ copying its working tree. Its observed branch was `codex/local-integrations`, HE
 `codex/mail-platform-candidate`. Its mutable combined work is **not an accepted source**
 and was not used to establish implementation or migration acceptance here.
 
-| Anchor | Full commit | Actual parent | Audit treatment |
-| --- | --- | --- | --- |
-| Safety | `aab6c3d0d64eb014a526d270a9bada92a01dc5a8` | `a1a8f6da1ce366c35002900bf33508356dfbb995` | Eleven queue-observation/development-diagnostics paths; platform already reconciled this change. |
-| MAIL | `297c1dd5dbff4e19f6d1559a16bb258cc3368577` | `aab6c3d0d64eb014a526d270a9bada92a01dc5a8` | Main implementation checkpoint: 466 changed paths, 315 added and 151 modified. |
-| Send-status correction | `27326c6808f75645f086149beeaf1e9f89db9e7d` | `297c1dd5dbff4e19f6d1559a16bb258cc3368577` | One source path, `sendFailureOutcome.ts`; preserve this correction when selecting a cut. |
-| Guides | `de74493999dfeac5dc8ebdbf3902e4b5022184ae` | `27326c6808f75645f086149beeaf1e9f89db9e7d` | Three FA/DE/EN guides, progress record and `.env.example`; no further runtime change. |
+| Anchor                 | Full commit                                | Actual parent                              | Audit treatment                                                                                  |
+| ---------------------- | ------------------------------------------ | ------------------------------------------ | ------------------------------------------------------------------------------------------------ |
+| Safety                 | `aab6c3d0d64eb014a526d270a9bada92a01dc5a8` | `a1a8f6da1ce366c35002900bf33508356dfbb995` | Eleven queue-observation/development-diagnostics paths; platform already reconciled this change. |
+| MAIL                   | `297c1dd5dbff4e19f6d1559a16bb258cc3368577` | `aab6c3d0d64eb014a526d270a9bada92a01dc5a8` | Main implementation checkpoint: 466 changed paths, 315 added and 151 modified.                   |
+| Send-status correction | `27326c6808f75645f086149beeaf1e9f89db9e7d` | `297c1dd5dbff4e19f6d1559a16bb258cc3368577` | One source path, `sendFailureOutcome.ts`; preserve this correction when selecting a cut.         |
+| Guides                 | `de74493999dfeac5dc8ebdbf3902e4b5022184ae` | `27326c6808f75645f086149beeaf1e9f89db9e7d` | Three FA/DE/EN guides, progress record and `.env.example`; no further runtime change.            |
 
 Each preceding commit is an actual ancestor of the following commit, verified with
 `git merge-base --is-ancestor`. Safety precedes MAIL; it is not a later MAIL fix.
@@ -44,12 +44,12 @@ owner must select and review the intended adoption boundary explicitly.
 
 The package delta from the actual MAIL parent is exact:
 
-| Section | Added pinned dependency | Immutable reference |
-| --- | --- | --- |
-| Runtime | `imapflow` `2.10.0` | `MAIL:package.json:80` |
-| Runtime | `libphonenumber-js` `1.13.15` | `MAIL:package.json:83` |
-| Runtime | `mailparser` `3.14.1` | `MAIL:package.json:85` |
-| Development | `smtp-server` `3.21.3` | `MAIL:package.json:144` |
+| Section     | Added pinned dependency       | Immutable reference     |
+| ----------- | ----------------------------- | ----------------------- |
+| Runtime     | `imapflow` `2.10.0`           | `MAIL:package.json:80`  |
+| Runtime     | `libphonenumber-js` `1.13.15` | `MAIL:package.json:83`  |
+| Runtime     | `mailparser` `3.14.1`         | `MAIL:package.json:85`  |
+| Development | `smtp-server` `3.21.3`        | `MAIL:package.json:144` |
 
 No existing direct version, script, override or `packageManager` changes in MAIL;
 Bun remains pinned to `bun@1.4.4`. Safety and the two follow-ups add no package delta.
@@ -118,9 +118,9 @@ Representative new boundaries are `imapflow` at line 1520, `mailparser` at 1682,
 
 SHA-256 of exact inspected files:
 
-| Anchor | `package.json` | `bun.lock` |
-| --- | --- | --- |
-| MAIL | `997c4ed2bdebd09f96302beb1bf03c225e30d8bc33a700d90cbbfcbc4487e37e` | `db4036dfbfef40a6d9853f8fac17a3aa2650f745efdf506473b9de69bc4633a2` |
+| Anchor   | `package.json`                                                     | `bun.lock`                                                         |
+| -------- | ------------------------------------------------------------------ | ------------------------------------------------------------------ |
+| MAIL     | `997c4ed2bdebd09f96302beb1bf03c225e30d8bc33a700d90cbbfcbc4487e37e` | `db4036dfbfef40a6d9853f8fac17a3aa2650f745efdf506473b9de69bc4633a2` |
 | PLATFORM | `1c05429930084a2192d70c8d141f5634e109a2135cb73c6630bdbedb2276ac7f` | `529a9b6a87d9fc836c45a8e68f0da012ed8a111b0fc60b09a0e5c3c8bfbef0e4` |
 
 The peer's dependency-security document is triage with pending remediation and frozen
@@ -138,19 +138,19 @@ have identical final blobs. The thirteen differing shared paths are `.env.exampl
 `drizzle/meta/_journal.json`. This identifies source overlap, not a prediction that every
 three-way textual merge conflicts. Migration metadata requires structural review regardless.
 
-| Seam | Source evidence and adoption consequence |
-| --- | --- |
-| Already reconciled safety | Nine of the eleven safety blobs match platform exactly. `next.config.ts` additionally retains workflow/integration message declarations on platform; `src/server/worker.ts` additionally imports/registers workflows. Preserve both additions, the redacted pg-boss observer, and private development diagnostics. Do not replace these files with the older peer versions. |
-| Shared config/error/schema registries | MAIL adds `mailEnvShape` and protected `MAIL_INTERNAL_ENDPOINTS` file resolution (`MAIL:src/config/env.ts:5`, `:19`, `:37`), `email.recovery` (`MAIL:src/constants/jobNames.ts:13`) and mail schema exports. Merge additively with platform's Slack/integration/workflow entries. `GUIDE:.env.example:65` documents exact internal-endpoint grants; it does not grant any endpoint itself. |
-| Endpoint primitive | `src/features/connections` is MAIL's DNS/address/TLS primitive, not a second connection registry. It uses abortable resolution and explicit internal address policy (`MAIL:src/features/connections/endpointPolicy.ts:37`, `:80`, `:111`). Preserve domain ownership and resolve future generic use through an agreed interface. |
-| UI adapters and routes | MAIL replaces the personal email-sync screen with owner-scoped mailbox listing (`MAIL:src/app/(app)/settings/email-sync/page.tsx:18`, `:25`, `:35`). Setup uses the existing settings/Button/Dialog adapters (`MAIL:src/features/email/connections/MailboxConnectionsPanel.tsx:5`). Preserve current integration/workflow surfaces and existing shadcn customizations; source presence does not prove browser/focus/RTL behavior. |
+| Seam                                  | Source evidence and adoption consequence                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Already reconciled safety             | Nine of the eleven safety blobs match platform exactly. `next.config.ts` additionally retains workflow/integration message declarations on platform; `src/server/worker.ts` additionally imports/registers workflows. Preserve both additions, the redacted pg-boss observer, and private development diagnostics. Do not replace these files with the older peer versions.                                                                                                                                                      |
+| Shared config/error/schema registries | MAIL adds `mailEnvShape` and protected `MAIL_INTERNAL_ENDPOINTS` file resolution (`MAIL:src/config/env.ts:5`, `:19`, `:37`), `email.recovery` (`MAIL:src/constants/jobNames.ts:13`) and mail schema exports. Merge additively with platform's Slack/integration/workflow entries. `GUIDE:.env.example:65` documents exact internal-endpoint grants; it does not grant any endpoint itself.                                                                                                                                       |
+| Endpoint primitive                    | `src/features/connections` is MAIL's DNS/address/TLS primitive, not a second connection registry. It uses abortable resolution and explicit internal address policy (`MAIL:src/features/connections/endpointPolicy.ts:37`, `:80`, `:111`). Preserve domain ownership and resolve future generic use through an agreed interface.                                                                                                                                                                                                 |
+| UI adapters and routes                | MAIL replaces the personal email-sync screen with owner-scoped mailbox listing (`MAIL:src/app/(app)/settings/email-sync/page.tsx:18`, `:25`, `:35`). Setup uses the existing settings/Button/Dialog adapters (`MAIL:src/features/email/connections/MailboxConnectionsPanel.tsx:5`). Preserve current integration/workflow surfaces and existing shadcn customizations; source presence does not prove browser/focus/RTL behavior.                                                                                                |
 | Localization and regional conventions | MAIL adds `dataConventions` to all three central catalogs and separate mailbox/composer FA/DE/EN dictionaries. Retain platform integration/workflow catalog namespaces and declaration generation. Language, calendar, numbering system, time zone and Iranian money unit remain separate preferences (`MAIL:src/features/i18n/preferences.ts:13`, `:30`, `:46`; `MAIL:src/features/i18n/LocaleProvider.tsx:49`). Also review contact/deal/custom-field/import/phone consumers rather than treating this as an email-only merge. |
-| Native authority | HTTP writes resolve a fresh native session; reads resolve current native access (`MAIL:src/features/email/mailConnectionHttpAuth.ts:13`). Proof commit rechecks account/session/MFA/freshness under native locks, consumes a single-use proof, and checks identity/generation (`MAIL:src/features/email/mailConnectionProofContext.ts:25`; `MAIL:src/features/email/mailConnectionCommit.ts:129`, `:156`, `:191`). Future platform delegation cannot fabricate this context from an actor ID, MCP bearer or allow flag. |
-| Private mailbox authority | Missing and foreign account IDs return the same ownership denial before credential effects (`MAIL:src/features/email/mailboxOwnership.ts:78`). Runtime credentials remain MAIL-owned, active-owner/account/generation fenced (`MAIL:src/features/email/mailConnectionRuntime.ts:32`, `:108`). Admin connection management grants no private mailbox content bypass. Multi-account adoption must preserve explicit account binding in drafts, attachment download, provider locators, replies and selected sender. |
-| Offboarding and maintenance | MAIL adds native lock ordering, Gmail revocation recording, credential erasure and generation/version increments (`MAIL:src/features/auth/management/offboarding.ts:15`, `:40`, `:65`). Auth maintenance prunes proofs and retains remote revocation retries (`MAIL:src/features/auth/management/workers.ts:79`). Reconcile with current auth, rather than restoring older auth files or introducing ambient worker administration. |
-| One worker stack | Platform registers workflow jobs in the central worker (`PLATFORM:src/server/worker.ts:20`, `:29`). MAIL extends its existing email registrations with the recovery queue and startup recovery (`MAIL:src/features/email/workerJobs.ts:100`). Keep these in one pg-boss stack; no new queue service or workflow engine is implied. |
-| Domain recovery vs future EVT | MAIL recovers bounded sync/send candidates using existing attempts, receipts and account authority (`MAIL:src/features/email/mailJobRecovery.ts:22`, `:49`). `boss.send` is a separate call inside the domain DB transaction (`:27`, `:81`), not a transaction-bound canonical event admission API. Queue failure/rollback/ack and repeated recovery still need integrated crash evidence. Existing domain recovery does not implement the reviewed shared EVT outbox. |
-| Realtime | `email_mailbox_changed` carries an account ID and invalidates inbox/thread queries (`MAIL:src/server/ws/payload.ts:68`; `MAIL:src/features/email/useInboxRealtime.ts:48`). Keep NOTIFY/WebSocket invalidation separate from durable shared events and effect completion. |
+| Native authority                      | HTTP writes resolve a fresh native session; reads resolve current native access (`MAIL:src/features/email/mailConnectionHttpAuth.ts:13`). Proof commit rechecks account/session/MFA/freshness under native locks, consumes a single-use proof, and checks identity/generation (`MAIL:src/features/email/mailConnectionProofContext.ts:25`; `MAIL:src/features/email/mailConnectionCommit.ts:129`, `:156`, `:191`). Future platform delegation cannot fabricate this context from an actor ID, MCP bearer or allow flag.          |
+| Private mailbox authority             | Missing and foreign account IDs return the same ownership denial before credential effects (`MAIL:src/features/email/mailboxOwnership.ts:78`). Runtime credentials remain MAIL-owned, active-owner/account/generation fenced (`MAIL:src/features/email/mailConnectionRuntime.ts:32`, `:108`). Admin connection management grants no private mailbox content bypass. Multi-account adoption must preserve explicit account binding in drafts, attachment download, provider locators, replies and selected sender.                |
+| Offboarding and maintenance           | MAIL adds native lock ordering, Gmail revocation recording, credential erasure and generation/version increments (`MAIL:src/features/auth/management/offboarding.ts:15`, `:40`, `:65`). Auth maintenance prunes proofs and retains remote revocation retries (`MAIL:src/features/auth/management/workers.ts:79`). Reconcile with current auth, rather than restoring older auth files or introducing ambient worker administration.                                                                                              |
+| One worker stack                      | Platform registers workflow jobs in the central worker (`PLATFORM:src/server/worker.ts:20`, `:29`). MAIL extends its existing email registrations with the recovery queue and startup recovery (`MAIL:src/features/email/workerJobs.ts:100`). Keep these in one pg-boss stack; no new queue service or workflow engine is implied.                                                                                                                                                                                               |
+| Domain recovery vs future EVT         | MAIL recovers bounded sync/send candidates using existing attempts, receipts and account authority (`MAIL:src/features/email/mailJobRecovery.ts:22`, `:49`). `boss.send` is a separate call inside the domain DB transaction (`:27`, `:81`), not a transaction-bound canonical event admission API. Queue failure/rollback/ack and repeated recovery still need integrated crash evidence. Existing domain recovery does not implement the reviewed shared EVT outbox.                                                           |
+| Realtime                              | `email_mailbox_changed` carries an account ID and invalidates inbox/thread queries (`MAIL:src/server/ws/payload.ts:68`; `MAIL:src/features/email/useInboxRealtime.ts:48`). Keep NOTIFY/WebSocket invalidation separate from durable shared events and effect completion.                                                                                                                                                                                                                                                         |
 
 ### Relationship to copy patch 4099c9f
 
@@ -213,14 +213,14 @@ through that boundary were compared and are identical. The common 0082 snapshot 
 is `3b26d54e4602737812ca9af0637e812df9b5d7cf198f34e2c78cd28f979dd54a`.
 MAIL local migrations cannot be copied over platform 0083/0084:
 
-| Immutable local MAIL SQL | Material delta | Reserved integrated slot |
-| --- | --- | --- |
-| `0083_natural_deathstrike.sql:1` | Removes one-account-per-owner constraint; adds provider/default/pause/generation/credential/config/history/capability fields and backfills defaults. | 0085 |
-| `0084_military_loki.sql:1` | Encrypted session-bound check proofs and account identity uniqueness. | 0086 |
-| `0085_cooing_night_nurse.sql:1` | Folders/locators, nullable legacy Gmail IDs, provider identity/certainty fields, same-account foreign keys, Gmail identity/generation backfills. | 0087 |
-| `0086_early_tomas.sql:1` | `payload_prepared` with legacy default true. | 0088 |
-| `0087_cool_stryfe.sql:1` | Draft Bcc, attachment snapshot, stable send intent and tracking intent. | 0089 |
-| `0088_skinny_slyde.sql:1` | Explicit remote-trash timestamp. | 0090 |
+| Immutable local MAIL SQL         | Material delta                                                                                                                                       | Reserved integrated slot |
+| -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------ |
+| `0083_natural_deathstrike.sql:1` | Removes one-account-per-owner constraint; adds provider/default/pause/generation/credential/config/history/capability fields and backfills defaults. | 0085                     |
+| `0084_military_loki.sql:1`       | Encrypted session-bound check proofs and account identity uniqueness.                                                                                | 0086                     |
+| `0085_cooing_night_nurse.sql:1`  | Folders/locators, nullable legacy Gmail IDs, provider identity/certainty fields, same-account foreign keys, Gmail identity/generation backfills.     | 0087                     |
+| `0086_early_tomas.sql:1`         | `payload_prepared` with legacy default true.                                                                                                         | 0088                     |
+| `0087_cool_stryfe.sql:1`         | Draft Bcc, attachment snapshot, stable send intent and tracking intent.                                                                              | 0089                     |
+| `0088_skinny_slyde.sql:1`        | Explicit remote-trash timestamp.                                                                                                                     | 0090                     |
 
 All SQL references in the table belong to MAIL's `drizzle/` directory. Integrated 0091
 is reserved for the separate locator sourceFingerprint extension; it is not established

@@ -12,10 +12,10 @@ contents in memory for conflict prediction; it did not write merged files or Git
 Preview anchor: `d164fc18f006744aaf7bdd6094b688c59104a50c`, branch
 `codex/integration-platform-preview`, `/tmp/warpdrive-integrations-preview-20261031`.
 
-| Source | Adopted cut | Reviewable next cut | Ownership and exclusions |
-| --- | --- | --- | --- |
-| Main/auth, `/Users/ali/Developer/warpdrive` | `8539fe8c4aeb0b58b6d05e629710460ef90bbed4` | `a1a8f6da1ce366c35002900bf33508356dfbb995` | Two committed auth/help/recovery changes. Tracked source is clean; two untracked privacy-planning documents remain peer-owned and excluded. |
-| Workflows, `/private/tmp/warpdrive-workflows-20261031` | `b8f25a41fccdb05e24e03d9ce07311a2798817d6` | `d0c83e8ad0ed07097f40bec82727976d022b7742` | Clean committed node-builder/conditions cut. Its separate `codex/workflow-builder-ux` worktree has 37 dirty paths and is excluded. |
+| Source                                                 | Adopted cut                                | Reviewable next cut                        | Ownership and exclusions                                                                                                                    |
+| ------------------------------------------------------ | ------------------------------------------ | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| Main/auth, `/Users/ali/Developer/warpdrive`            | `8539fe8c4aeb0b58b6d05e629710460ef90bbed4` | `a1a8f6da1ce366c35002900bf33508356dfbb995` | Two committed auth/help/recovery changes. Tracked source is clean; two untracked privacy-planning documents remain peer-owned and excluded. |
+| Workflows, `/private/tmp/warpdrive-workflows-20261031` | `b8f25a41fccdb05e24e03d9ce07311a2798817d6` | `d0c83e8ad0ed07097f40bec82727976d022b7742` | Clean committed node-builder/conditions cut. Its separate `codex/workflow-builder-ux` worktree has 37 dirty paths and is excluded.          |
 
 Main/auth commits:
 
@@ -33,13 +33,13 @@ active 446-task execution register until the owner reconciles the proposed 586-r
 
 Other live worktrees at the source snapshot:
 
-| Checkout / HEAD | Dirty paths | Boundary |
-| --- | --- | --- |
-| `/Users/ali/Developer/warpdrive`, `a1a8f6da1ce366c35002900bf33508356dfbb995` | 2 untracked | `docs/PRD-warpdrive-privacy-data-lifecycle.md`, `docs/privacy-data-lifecycle-tasks.md`; do not stage/import. |
-| `/Users/ali/Developer/warpdrive-integrations`, same main/auth head | 456: 143 tracked, 313 untracked | Active independent mail, data conventions, SMS and shared-binding work. Import only a later acknowledged immutable handoff. Its source, migrations, lockfile and tests are excluded here. |
-| `/private/tmp/warpdrive-workflows-20261031`, `d0c83e8ad0ed07097f40bec82727976d022b7742` | 0 | Safe source for the selected committed cut. |
-| `/private/tmp/warpdrive-builder-ux-20261031`, same workflow head | 37: 20 tracked, 17 untracked | Active connection gestures, history/trace and canvas improvements. No dirty-source adoption or test inheritance. |
-| `/Users/ali/Developer/warpdrive-calendar`, `2803183809c646a063f78fe954c110adbb2f453f` | 65: 34 tracked, 31 untracked | Newer calendar peer work is outside the two requested adoption candidates. Preserve current adopted calendar implementation and all peer changes. |
+| Checkout / HEAD                                                                         | Dirty paths                     | Boundary                                                                                                                                                                                  |
+| --------------------------------------------------------------------------------------- | ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/Users/ali/Developer/warpdrive`, `a1a8f6da1ce366c35002900bf33508356dfbb995`            | 2 untracked                     | `docs/PRD-warpdrive-privacy-data-lifecycle.md`, `docs/privacy-data-lifecycle-tasks.md`; do not stage/import.                                                                              |
+| `/Users/ali/Developer/warpdrive-integrations`, same main/auth head                      | 456: 143 tracked, 313 untracked | Active independent mail, data conventions, SMS and shared-binding work. Import only a later acknowledged immutable handoff. Its source, migrations, lockfile and tests are excluded here. |
+| `/private/tmp/warpdrive-workflows-20261031`, `d0c83e8ad0ed07097f40bec82727976d022b7742` | 0                               | Safe source for the selected committed cut.                                                                                                                                               |
+| `/private/tmp/warpdrive-builder-ux-20261031`, same workflow head                        | 37: 20 tracked, 17 untracked    | Active connection gestures, history/trace and canvas improvements. No dirty-source adoption or test inheritance.                                                                          |
+| `/Users/ali/Developer/warpdrive-calendar`, `2803183809c646a063f78fe954c110adbb2f453f`   | 65: 34 tracked, 31 untracked    | Newer calendar peer work is outside the two requested adoption candidates. Preserve current adopted calendar implementation and all peer changes.                                         |
 
 Counts describe changing peer state, not a freeze or permission to alter it. Recheck immediately
 before adoption. Main/auth and calendar/mail share their repository metadata. Workflow and

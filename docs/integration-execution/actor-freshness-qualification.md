@@ -41,10 +41,10 @@ its unchanged disposable `postgres:16-alpine` setup. The private native PostgreS
 profile and the peer workflow database were not used. An owned process-group wrapper
 required two start observations above 5 GiB and enforced disk/deadline stops.
 
-| Evidence | Observed result |
-| --- | --- |
-| `actor-freshness-red-20261101.log` / `.json` | Parent/group 80824, terminal exit 1, 3.460 s; one pass, one failure, two tests |
-| `actor-freshness-green-20261101.log` / `.json` | Parent/group 82612, terminal exit 0, 2.663 s; two passes, two tests |
+| Evidence                                       | Observed result                                                                |
+| ---------------------------------------------- | ------------------------------------------------------------------------------ |
+| `actor-freshness-red-20261101.log` / `.json`   | Parent/group 80824, terminal exit 1, 3.460 s; one pass, one failure, two tests |
+| `actor-freshness-green-20261101.log` / `.json` | Parent/group 82612, terminal exit 0, 2.663 s; two passes, two tests            |
 
 The selected command in both runs was:
 
@@ -76,8 +76,8 @@ The following affected real-PG files passed in the later coordinated window:
 Together with the new actor file this passed **59 cases in 12 files**, process group
 2298, exit 0, in 7.599 seconds. Only formatting of this domain file followed that run.
 Final standalone types and scoped lint also passed; see
-[the later qualification](qualification-20261101.md). Current-source broad gates remain
-pending. `notifyDeferral.test.ts` can verify wiring, but its mocked domain cannot
+[the later qualification](qualification-20261101.md). Full-PG, runtime and provider gates remain
+open; the later checkpoint below records full-unit and build results. `notifyDeferral.test.ts` can verify wiring, but its mocked domain cannot
 replace the real-PG audit and version assertions. Existing MCP tool-list tests do not
 invoke `update_deal`; a direct-registry invocation needs separate evidence before making
 that caller-specific claim.
@@ -89,3 +89,11 @@ version, not authority writers. The domain accepts an already authenticated trus
 ID; it cannot revalidate a native cookie/session, MCP grant, application scope or recipient
 fanout from that ID alone. Those boundaries, concurrent revocation tests, all other mutation
 paths and the planned shared authority fence remain open.
+
+## Later qualification checkpoint
+
+The [1 November D225 checkpoint](qualification-20261101.md) subsequently completed the
+full 6,024-case unit lane, production/worker compilation and independent frozen dependency
+install. Whole-source lint stopped at Biome before ESLint. Its exact receipts and remaining
+full-PG, browser/runtime, authority and provider gates are separate from this focused record.
+This later evidence does not rewrite earlier red/interruption results or close broader tasks.
