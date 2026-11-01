@@ -7,6 +7,7 @@ import { deals } from "@/db/schema/deals";
 import { syncEntityLabelNames } from "@/features/labels/labelsRepo.entities";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { assertReferenceVisible } from "@/features/permissions/referenceCheck";
+import { hydrateActor } from "@/server/hydrateActor";
 import type { DbOrTx } from "@/server/realtime/channelVersions";
 import { publishBoardEvent } from "@/server/realtime/events";
 import { err, ok, type Result } from "@/types/result";
@@ -90,40 +91,42 @@ export async function updateDeal(
   const input = dealUpdateInput.parse(raw);
   signal.throwIfAborted();
 
-  // Trust boundary (data-model 6.5): re-scoping visibility is allowed ONLY to a group the
-  // actor belongs to. Mirrors the CREATE rule (dealActions.createDeal member-only check).
-  // Without this, an editor could set visibilityGroupId to any group UUID, over-sharing.
-  if (input.visibilityGroupId !== undefined && !session.groupIds.has(input.visibilityGroupId)) {
-    return err(
-      new AppError(ERROR_IDS.PERM_DENIED, "visibility group not permitted: actor is not a member", {
-        visibilityGroupId: input.visibilityGroupId,
-      }),
-    );
-  }
-
-  // Load deal + enforce can(deal.edit) via the single shared authorization path.
-  const editable = await loadEditableDeal(db, session, input.dealId, signal);
-  if (editable.ok === false) return editable;
-  const before = editable.value.deal;
-
-  const patch = buildPatch(input, new Date());
-  // Partial custom-field edit: validate the supplied keys/values against the active deal defs
-  // (the input schema is z.unknown(), so this is the only gate: reject unknown/archived keys and
-  // wrong-typed values before they corrupt deals.custom_fields), then merge the coerced values over
-  // the deal's existing JSONB so omitted keys are untouched (per-key changelog diff in logDealUpdateChanges).
-  if (input.customFields !== undefined) {
-    const validated = await validateDealCustomFieldsPartial(db, input.customFields, signal);
-    if (validated.ok === false) return validated;
-    patch.customFields = {
-      ...(before.customFields as Record<string, unknown>),
-      ...validated.value,
-    };
-  }
-
   return db.transaction(async (tx) => {
-    // Relink target visibility (person/org): reject before the write so a hidden contact is
-    // neither linked nor probeable. Runs on tx so the check and the write share a snapshot.
-    const targetsVisible = await assertContactTargetsVisible(tx, session, input, signal);
+    // The trusted caller supplies identity; captured roles and memberships may already be stale.
+    // Keep this checkpoint's actor consistent across every authorization check in the mutation.
+    const currentActor = await hydrateActor(tx, session.id, signal);
+    if (currentActor === null)
+      return err(new AppError(ERROR_IDS.PERM_DENIED, "Not permitted to edit this deal"));
+
+    // Re-scoping visibility requires membership even for an administrator.
+    if (
+      input.visibilityGroupId !== undefined &&
+      !currentActor.groupIds.has(input.visibilityGroupId)
+    ) {
+      return err(
+        new AppError(ERROR_IDS.PERM_DENIED, "visibility group not permitted: actor is not a member", {
+          visibilityGroupId: input.visibilityGroupId,
+        }),
+      );
+    }
+
+    const editable = await loadEditableDeal(tx, currentActor, input.dealId, signal);
+    if (editable.ok === false) return editable;
+    const before = editable.value.deal;
+    const patch = buildPatch(input, new Date());
+
+    // Validate changed keys, then preserve omitted custom fields from the authorized row.
+    if (input.customFields !== undefined) {
+      const validated = await validateDealCustomFieldsPartial(tx, input.customFields, signal);
+      if (validated.ok === false) return validated;
+      patch.customFields = {
+        ...(before.customFields as Record<string, unknown>),
+        ...validated.value,
+      };
+    }
+
+    // Hidden relink targets must use the same current actor as the deal edit gate.
+    const targetsVisible = await assertContactTargetsVisible(tx, currentActor, input, signal);
     if (targetsVisible.ok === false) return targetsVisible;
 
     // Atomic CAS: single UPDATE WHERE id=:d AND date_trunc('milliseconds', updated_at)=:expected.
@@ -157,7 +160,7 @@ export async function updateDeal(
     // the Unit E additions: custom-field edits and person/org relink). Written on `tx` so a
     // failed mutation writes no changelog; a no-op edit logs nothing. `status` is excluded
     // (the won/lost flow owns it) to avoid double-logging.
-    await logDealUpdateChanges(tx, { input, before, after: row, actorId: session.id }, signal);
+    await logDealUpdateChanges(tx, { input, before, after: row, actorId: currentActor.id }, signal);
 
     // Keep the catalog links in step with the array this update wrote.
     if (input.labels !== undefined) {
@@ -169,7 +172,7 @@ export async function updateDeal(
       {
         channel: dealChannel(row.id),
         type: BOARD_EVENT.dealUpdated,
-        actorId: session.id,
+        actorId: currentActor.id,
         data: { dealId: row.id },
       },
       signal,

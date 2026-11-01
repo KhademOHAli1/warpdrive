@@ -2,6 +2,7 @@
 // transaction. Split out of dealUpdate.test.ts to keep both files under the size limit.
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
+import { ERROR_IDS } from "@/constants/errorIds";
 import { deals, organizations, persons } from "@/db/schema";
 import { withTestDb } from "@/db/testing";
 import { seedUser } from "@/db/testing/factories";
@@ -229,7 +230,7 @@ describe("updateDeal: audit change logs", () => {
 
   it("rejects a relink to a person the actor cannot see and logs nothing", async () => {
     await withTestDb(async (db) => {
-      const { u, deal } = await setupDeal(db);
+      const { u, deal } = await setupDeal(db, "owner-editor");
       const stranger = await seedUser(db);
       // Owner-visibility person owned by someone else: a regular (non-admin) editor of the
       // deal must not be able to relink to (or probe) it.
@@ -248,6 +249,7 @@ describe("updateDeal: audit change logs", () => {
         new AbortController().signal,
       );
       expect(r.ok).toBe(false);
+      if (!r.ok) expect(r.error.id).toBe(ERROR_IDS.CONTACT_NOT_FOUND);
 
       const [after] = await db.select().from(deals).where(eq(deals.id, deal.id));
       expect(after?.personId).toBeNull();
