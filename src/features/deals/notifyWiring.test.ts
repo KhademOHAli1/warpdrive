@@ -25,7 +25,7 @@ async function seedDealWithFollower(db: Db): Promise<{
 }> {
   await seedSettings(db);
   const owner = await seedUser(db);
-  const actor = await seedUser(db);
+  const actor = await seedUser(db, { isAdmin: true });
   const follower = await seedUser(db);
   const p = await seedPipelineWithStages(db, ["A", "B"]);
   const stage = p.stages[0];

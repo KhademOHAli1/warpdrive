@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-11-01T04:06:51.805381+00:00",
+  "agencyPreMerge": "f21b5c9d399be7d7f7ddf5fb9fd3234396074b6a",
+  "ownerSource": "ed9cdebbb7d379eb393b1a3fd748b8db0fff0d59",
+  "commonAncestor": "67eb151f228d9a2866d51266420e9fb915a77739",
+  "scope": "Complete committed37-path Platform source delta, no dirty source or runtime adoption",
+  "merge": {
+    "textualConflicts": 0,
+    "agencyFeatureHashesPreserved": 32,
+    "settingsSourcesPreserved": 4,
+    "dependenciesLockConfigSchemaMigrationsAuthPermissionRegistryManagedPrimitivesChanged": false
+  },
+  "actualInterfaces": {
+    "updateDeal": "Existing DbOrTx/PermSetUser/raw/signal signature retained; current actor hydrated within transaction. No native-session/MCP or revocation-through-commit fence.",
+    "slackRead": "requestSlackRead uses caller AbortSignal and bounded async read deadline. Legacy slackRequest wrapper supplies its own signal; end-to-end caller cancellation remains unavailable.",
+    "providerSvgGuard": "Test-only retained asset profile, no asset bytes/runtime rendering or upload handling changed.",
+    "agencyAdmission": "No actual project grant/module admission/generic authority gate added."
+  },
+  "ownerFocusedReport": {
+    "postgresqlPassed": 59,
+    "unitPassed": 90,
+    "standaloneTypes": "reported pass",
+    "scopedLint": "reported pass after5bf5563 correction",
+    "finalEslintBiomeToolMetadata": "terminal0",
+    "limits": "Focused owner evidence at observeded9, not combined Agency/app/build/native acceptance. Earlier committed qualification documents retain earlier source checkpoints."
+  },
+  "allocator": "MAIL0085..0093 reserved,0094 unallocated; no Agency slot or DDL",
+  "limits": [
+    "No Agency campaign is started by source adoption. Feature341/static qualification remains exact to its unchanged32-file source selection.",
+    "Combined source/app/native/PG/migration/restore and actual shared authority/admission acceptance remain open."
+  ]
+}

@@ -202,6 +202,32 @@ amendment and publish a reviewed vocabulary revision before enabling such action
 The same rule applies to later provider-specific outbound actions: no wildcard,
 mail/Slack alias or implicit expansion of existing grants.
 
+### Additive vocabulary revision v1.1, 1 November 2026
+
+The v1 vocabulary and decisions above remain the historical baseline. The
+reviewed v1.1 design adds exactly one canonical name, `crm.notes.write`, for
+initial MCP `add_note` creation. The allowed parent is an exact selected
+`deal`, `person`, `organization` or `lead` kind plus immutable record ID.
+Admission requires current parent visibility, the explicit selected-resource
+grant and the authenticated actor as the note author. It grants no arbitrary
+note update/delete, parent mutation or external communication authority.
+
+Current native `createNote` admission checks parent visibility only; it has no
+parent-edit or separate note-create permission flag. This design does not invent
+such a runtime flag or claim the new grant intersection is enforced. There is
+no `crm.notes.read` addition: current MCP read tools return no collaboration-note
+DTOs. An activity's own free-text `note` field remains an activity projection,
+not a collaboration-note API. New scoped write-only note creation returns a
+minimal creation receipt rather than independent access to stored note fields.
+
+Lead conversion's internal note carry-over remains a separately reviewed
+`crm.leads.write` plus `crm.deals.write` composite, bound to its exact checked
+source and destination parents. It is not a grant to arbitrary notes. Existing
+broad grants are neither converted nor widened by v1.1. Unknown names or
+versions must deny in the proposed scoped evaluator. This approved design
+vocabulary revision adds no runtime permission, migration, tool or provider
+qualification.
+
 Current CRM `can` and `canSee` remain the domain layer
 (`src/features/permissions/can.ts:35-64`, `canSee.ts:5-40`), while workflow access
 is `src/features/workflows/access.ts:5-12`. MCP currently sets empty `scopes` and

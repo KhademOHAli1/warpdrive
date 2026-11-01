@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { env } from "@/config/env";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
+import { requestSlackRead } from "./slackRead";
 
 export const SLACK_SCOPES = ["chat:write", "channels:read"] as const;
 const responseBase = z.object({ ok: z.boolean(), error: z.string().optional() });
@@ -31,6 +32,24 @@ export async function slackRequest(
   // Only fixed, internal method names may reach this boundary. No caller-supplied URLs.
   if (!["auth.test", "conversations.list", "chat.postMessage", "auth.revoke"].includes(method))
     throw new AppError(ERROR_IDS.SLACK_METHOD_INVALID, "slack_method_invalid", {});
+  if (method === "auth.test" || method === "conversations.list") {
+    const read = await requestSlackRead({
+      method,
+      token,
+      body,
+      fetcher,
+      signal: new AbortController().signal,
+    });
+    if (read.ok) return read.value;
+    const { legacyErrorId, ...slackReadFailure } = read.error;
+    throw new AppError(
+      legacyErrorId,
+      legacyErrorId === ERROR_IDS.SLACK_REQUEST_FAILED
+        ? "slack_request_failed"
+        : "slack_unavailable",
+      { slackReadFailure },
+    );
+  }
   const response = await fetcher(`https://slack.com/api/${method}`, {
     method: "POST",
     redirect: "error",

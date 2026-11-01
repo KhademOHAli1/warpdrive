@@ -1,0 +1,144 @@
+{
+  "_meta": {
+    "schemaVersion": 1,
+    "locale": "de",
+    "evidenceClass": "design-copy",
+    "sourceHead": "994cecd20a6e56afe4866022c6d2d765ac23af0a",
+    "catalogBackedMessageCount": 45,
+    "proposedMessageCount": 55
+  },
+  "catalogBacked": {
+    "integrations": {
+      "cancel": "Abbrechen",
+      "busy": "Wird ausgeführt…",
+      "checked": "Zugriffsprüfung erfolgreich",
+      "requestFailed": "Die Anfrage konnte nicht abgeschlossen werden. Versuchen Sie es erneut oder wenden Sie sich an Ihren Administrator.",
+      "freshAuthentication": "Bitte melden Sie sich erneut an, um diese sicherheitsrelevante Änderung zu bestätigen.",
+      "forbidden": "Sie sind nicht berechtigt, diese Änderung vorzunehmen.",
+      "disconnectTitle": "Slack-Verbindung trennen?",
+      "disconnectBody": "Diese Verbindung wird im CRM sofort gesperrt. Der Widerruf des Slack-Tokens kann einen weiteren Versuch erfordern. Durch das Trennen werden vorhandene CRM-Datensätze und bereits gesendete Nachrichten nicht gelöscht.",
+      "callbackConnected": "Slack ist verbunden. Wählen Sie einen Kanal, um die Einrichtung abzuschließen.",
+      "callbackFailed": "Slack konnte nicht verbunden werden. Prüfen Sie die App-Konfiguration und versuchen Sie es erneut.",
+      "neverChecked": "Noch nicht geprüft",
+      "mcpDisabled": "KI-Verbindungen sind auf diesem Server nicht aktiviert. Bitten Sie Ihren Administrator, den MCP-Server und eine öffentliche HTTPS-Adresse einzurichten.",
+      "publicEndpoint": "Cloud-Assistenten benötigen eine erreichbare Serveradresse. Eine localhost-Adresse eignet sich nur für lokale Clients.",
+      "marketBody": "Ein App-Marktplatz ist geplant. Hier können derzeit noch keine Apps installiert werden.",
+      "revocationPending": "In Warpdrive getrennt. Slack konnte den Widerruf noch nicht bestätigen. Wiederholen Sie das Trennen, um den Zugriff vollständig zu entfernen.",
+      "slackSetupTitle": "Slack-App einrichten",
+      "slackSetupStep1": "Erstellen Sie eine Slack-App für Ihren Workspace und tragen Sie diese Weiterleitungs-URL unter OAuth & Permissions ein.",
+      "slackSetupStep2": "Fügen Sie die Bot-Berechtigungen chat:write und channels:read hinzu. Laden Sie die App in die gewünschten öffentlichen Kanäle ein.",
+      "slackSetupStep3": "Hinterlegen Sie SLACK_CLIENT_ID und SLACK_CLIENT_SECRET in der Serverkonfiguration und starten Sie Warpdrive neu.",
+      "slackSetupStep4": "Lassen Sie die Slack-Token-Rotation für diese erste Connector-Version deaktiviert.",
+      "finishSetup": "Einrichtung abschließen",
+      "retryRemoval": "Entfernen erneut versuchen",
+      "emptySearch": "Keine passenden Integrationen gefunden. Versuchen Sie einen anderen Namen oder eine andere Kategorie.",
+      "emptyConnections": "Ihre verbundenen Werkzeuge an einem Ort",
+      "emptyConnectionsBody": "Verbinden Sie zunächst ein Konto aus dem Verzeichnis. Auch den Zugriff Ihrer KI-Assistenten können Sie hier prüfen und widerrufen.",
+      "savedConnections": "{count, plural, =0 {Noch keine Verbindungen gespeichert.} one {# gespeicherte Verbindung.} other {# gespeicherte Verbindungen.}}",
+      "comingSoon": "Diese Integration ist geplant. Konten lassen sich noch nicht verbinden.",
+      "currentGrant": "Diese Verbindung stellt alle MCP-Werkzeuge bereit, die Ihre CRM-Rolle erlaubt. Eine separate Verbindung mit reinem Lesezugriff ist noch nicht verfügbar.",
+      "copyFailed": "Kopieren fehlgeschlagen. Markieren und kopieren Sie die URL manuell.",
+      "promptCopied": "Anfrage kopiert. Fügen Sie sie in Ihren verbundenen Assistenten ein."
+    },
+    "email": {
+      "loadingDraft": "Entwurf wird geladen...",
+      "_composer": {
+        "sendUnconfirmed": "Der Versand konnte nicht bestätigt werden. Prüfen Sie die Unterhaltung, bevor Sie es erneut versuchen."
+      },
+      "workspace": {
+        "empty": "Keine Unterhaltungen in dieser Ansicht",
+        "loadError": "Das Postfach konnte nicht geladen werden. Ihre aktuell angezeigten Nachrichten bleiben verfügbar.",
+        "threadError": "Diese Unterhaltung konnte nicht geladen werden oder ist nicht mehr verfügbar.",
+        "saveFailed": "Der Entwurf konnte nicht gespeichert werden. Lassen Sie diese Antwort geöffnet und versuchen Sie es erneut.",
+        "noMailbox": "Verbinden Sie Ihr E-Mail-Konto"
+      }
+    },
+    "auth": {
+      "flow": {
+        "freshRequired": "Bestätigen Sie Ihre Identität erneut, bevor Sie Sicherheitseinstellungen ändern.",
+        "loading": "Kontosicherheit wird geladen…",
+        "confirmWithProvider": "Mit {provider} bestätigen"
+      }
+    },
+    "workflows": {
+      "publishedHint": "Ausführungen verwenden die veröffentlichte Version. Speichern und veröffentlichen Sie Änderungen, damit diese wirksam werden.",
+      "historyEmpty": "Noch keine Ausführungen",
+      "loading": "Workflows werden geladen…",
+      "runError": "Diese Ausführung wurde vorzeitig beendet. Prüfen Sie Konfiguration und Berechtigungen.",
+      "confirmSimulation": "Simulation starten"
+    }
+  },
+  "proposed": {
+    "actions": {
+      "reviewPermissions": "Berechtigungen prüfen",
+      "selectResources": "Ressourcen auswählen",
+      "checkAccess": "Zugriff prüfen",
+      "reconnectSameAccount": "Dasselbe Konto erneut verbinden",
+      "reviewOutcome": "Ergebnis prüfen",
+      "pauseConnection": "Verbindung pausieren",
+      "retryRevocation": "Widerruf erneut versuchen"
+    },
+    "confirmations": {
+      "pauseTitle": "Diese Verbindung pausieren?",
+      "pauseBody": "Durch das Pausieren werden neue Vorgänge über diese Verbindung im CRM gesperrt. Bereits gestartete Vorgänge können noch abgeschlossen werden.",
+      "revokeClientTitle": "Zugriff für {client} widerrufen?",
+      "revokeClientBody": "Der Zugriff von {client} auf das CRM wird widerrufen. Bereits gestartete Vorgänge können noch abgeschlossen werden.",
+      "removeAppTitle": "App {app} entfernen?",
+      "removeAppBody": "Durch das Entfernen wird der lokale Zugriff dieser App gesperrt. Bereits gestartete Anfragen und der Widerruf beim Anbieter können weitere Bearbeitung erfordern. {retentionSummary}"
+    },
+    "operator": {
+      "credentialsPrivate": "Speichern Sie Zugangsdaten nur in einem geschützten Speicher auf dem Server. Geben Sie sie nicht in URLs, Screenshots oder Protokollen weiter.",
+      "readiness": "Prüfen Sie die Dienstkonfiguration. Gespeicherte Zugangsdaten belegen weder die Autorisierung eines Kontos noch eine funktionierende Verbindung.",
+      "localChecks": "Verwenden Sie für lokale Prüfungen das Profil {profile} und synthetische Daten. Dafür ist kein echtes Anbieterkonto erforderlich.",
+      "capabilityLimit": "Die Aktion {action} wird in dieser Version nicht unterstützt. Wählen Sie eine unterstützte Aktion."
+    },
+    "errors": {
+      "accountMismatch": "Das gewählte Konto entspricht nicht {account}. Die bisherige Verbindung bleibt unverändert.",
+      "resourceUnavailable": "Eine ausgewählte Ressource ist nicht mehr verfügbar. Prüfen Sie vor dem Fortfahren Ihre Ressourcenauswahl und Berechtigungen.",
+      "accessCheckFailed": "Die Zugriffsprüfung war nicht erfolgreich. Prüfen Sie die angezeigten Fehlerhinweise.",
+      "reauthorizationRequired": "Die Zugriffsberechtigung für dieses Konto muss erneuert werden. Verbinden Sie dasselbe Konto erneut.",
+      "securityHold": "Diese Verbindung ist aus Sicherheitsgründen gesperrt. Wenden Sie sich zur Prüfung an die Administration.",
+      "unknownOutcome": "Das Versandresultat ist unbekannt. Die Anfrage könnte angenommen worden sein. Prüfen Sie den Status vor einem erneuten Versand.",
+      "rateLimited": "{provider} nimmt derzeit keine weiteren Anfragen an. Prüfen Sie den Status nach {retryAt} erneut.",
+      "loadFailed": "Die Informationen konnten nicht geladen werden. Versuchen Sie erneut, sie abzurufen.",
+      "unsupportedRecurrence": "Diese Verbindung unterstützt die Umwandlung dieser Wiederholung im iranischen Kalender für {provider} nicht. Behalten Sie die ursprüngliche Regel bei."
+    },
+    "notifications": {
+      "configurationRequired": "Die grundlegende Einrichtung dieser Verbindung ist noch nicht abgeschlossen.",
+      "configured": "Die Serverkonfiguration ist vollständig. Kontoautorisierung und Betriebszustand der Verbindung werden getrennt geprüft.",
+      "authorized": "Die Zugriffsberechtigung für {provider} wurde für das Konto {account} gespeichert. Prüfen Sie die Ressourcenauswahl und den Betriebszustand der Verbindung getrennt.",
+      "resourcesSaved": "Die Ressourcenauswahl wurde gespeichert.",
+      "healthUnknown": "Der Betriebszustand der Verbindung ist noch nicht bekannt. Prüfen Sie Zugriff und Ressourcen.",
+      "healthStale": "Die letzte erfolgreiche Prüfung vom {checkedAt} liegt länger zurück. Prüfen Sie die Verbindung erneut.",
+      "localTested": "Die lokale Prüfung war erfolgreich. Dieses Ergebnis bestätigt keine Verbindung mit einem echten Konto bei {provider}.",
+      "providerValidated": "Für {provider} wurde der Umfang {scopeSummary} mit dem Konto {account} am {checkedAt} geprüft. Das Ergebnis gilt nur für diesen Umfang.",
+      "draftSaved": "Entwurf gespeichert; keine Nachricht gesendet.",
+      "queued": "Anfrage in der Warteschlange; der Versand wurde noch nicht begonnen.",
+      "accepted": "{provider} hat die Anfrage angenommen; die Zustellung ist noch nicht bestätigt.",
+      "delivered": "Die Zustellung wurde bestätigt.",
+      "partialOutcome": "{done, number} von {total, number} Vorgängen wurden abgeschlossen. Prüfen Sie die übrigen Ergebnisse.",
+      "cancelRequested": "Die Abbruchanfrage wurde gespeichert. Bereits gestartete Vorgänge können noch abgeschlossen werden.",
+      "custodianHold": "Die gemeinsame Verbindung ist pausiert, bis eine verantwortliche Person mit Adminrechten bestätigt ist.",
+      "removed": "Diese Verbindung wurde entfernt und kann nicht mehr verwendet werden."
+    },
+    "empty": {
+      "resources": "Für dieses Konto sind keine auswählbaren Ressourcen vorhanden. Prüfen Sie die Berechtigungen und das gewählte Konto.",
+      "deliveryHistory": "Für diese Verbindung wird im gewählten Zeitraum kein Verlauf angezeigt.",
+      "workflowRuns": "Für diese Workflow-Version sind im gewählten Zeitraum keine Ausführungen verzeichnet."
+    },
+    "loading": {
+      "directory": "Integrationsverzeichnis wird geladen…",
+      "resources": "Ressourcen dieses Kontos werden geladen…",
+      "deliveryHistory": "Anfrageverlauf wird geladen…",
+      "checkAccess": "Zugriff wird geprüft…"
+    },
+    "regional": {
+      "independent": "Sprache, Kalender, Ziffernanzeige und Zeitzone sind getrennte Einstellungen. Eine andere Darstellung ändert das gespeicherte Datum nicht.",
+      "numberingLimit": "In dieser Version können Sie die Ziffernanzeige in der persischen Oberfläche wählen. Deutsch und Englisch zeigen lateinische Ziffern.",
+      "allDay": "Dieser Termin ist ganztägig und hat keine Uhrzeit. Das Enddatum gehört zum Termin.",
+      "draftZone": "Die Uhrzeiten dieses Entwurfs beziehen sich auf {zone}.",
+      "ambiguousTime": "Diese Uhrzeit tritt zweimal auf. Für neue oder geänderte Zeiten wird das frühere Vorkommen verwendet.",
+      "invalidWallTime": "Diese Uhrzeit gibt es in der gewählten Zeitzone nicht. Wählen Sie eine andere Uhrzeit."
+    }
+  }
+}

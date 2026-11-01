@@ -12,6 +12,10 @@ light/dark appearance without remote tracking loads.” Verification is asset va
 is the recorded dependency in the active 446-task register. This record does not change status
 or establish vendor approval, endorsement, trademark permission or a live provider connection.
 
+Later update: [repository guard hardening](provider-svg-guard-qualification.md) replaces the
+narrow guard described below. The original source/12-test observations remain dated evidence;
+the later 51-case execution and resource-interrupted independent rerun have separate scope.
+
 ## Registry and retained provenance
 
 `src/features/integrations/catalog.ts:12` defines 21 stable entries. Twenty resolve to local
@@ -148,7 +152,7 @@ deliberate white identity plate. Twelve passing tests do not establish visual ac
 | UX-013 concern | Evidence now available | Remaining boundary or next concrete check |
 | --- | --- | --- |
 | Local inventory and provenance | All 21 IDs accounted for; 20 local SVGs, exact source revisions/file mappings, current hashes and retained licenses. Primary revision/license pages verified. | The manifest is the per-asset origin record; no fresh upstream artwork comparison or brand-owner product-variant approval was obtained. Preserve the pinned revisions when replacing assets. |
-| Safe markup and no remote tracking loads | Current bytes parsed and inspected; no external resource references. Local registry rendering and all 20 asset checks pass. Historical browser record confirms local loading. | Strengthen the existing guard for future asset updates rather than relying on its narrow regex. A fresh network trace, if later required, must be labelled as that separate browser evidence. |
+| Safe markup and no remote tracking loads | Current bytes parsed and inspected; no external resource references. Local registry rendering and all 20 asset checks pass. Later bounded guard hardening has its own 51-case evidence. Historical browser record confirms local loading. | Preserve the explicit static profile for future updates. The helper is not a general runtime sanitizer. A fresh network trace, if later required, is separate browser evidence. |
 | Light/dark appearance | Fixed white branded plates, semantic generic fallback and unchanged provider bytes; historical actual FA light/dark screenshots inspected. | No complete current visual matrix exists for all 20 branded SVGs, both sizes/themes, or the later generic fallback. Inspect those states in the owning future browser/QA slice before claiming that full matrix. |
 | Approved retention | Historical UI review/commit record and this reviewable inventory support a project decision to retain the current artwork. | No explicit per-asset approver/signoff is recorded in the inspected manifest. The register owner must distinguish project review from vendor/trademark permission; this audit invents neither and does not request a new external approval. |
 

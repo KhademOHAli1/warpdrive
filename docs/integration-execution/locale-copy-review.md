@@ -1,0 +1,174 @@
+# UX-006: Farsi-first integration copy with German and English
+
+Review date: 2026-11-01. Source cut: `994cecd20a6e56afe4866022c6d2d765ac23af0a`.
+Evidence class: concrete design catalogs and source/copy review. Exact UX-006 acceptance:
+“Cover confirmations, operator instructions, errors, notifications and empty/loading states
+without untranslated fallbacks.” Verification is catalog and copy review; UX-001 is the recorded
+dependency in the active 446-task register. This author does not change task status.
+
+The reviewable artifacts are [Farsi](integration-copy.fa.json), [German](integration-copy.de.json)
+and [English](integration-copy.en.json). Each contains **100 message leaves: 45 exact copies
+from current source catalogs and 55 proposed messages**, with identical message paths and
+placeholder sets. The JSON files are design artifacts in this directory, not runtime imports.
+The `_meta` object is technical provenance and is not user-facing text or a fallback language.
+
+The independently reviewed UX-004 matrix, [Farsi terminology](farsi-terminology.md) and
+[regional scenarios](regional-date-scenarios.md) govern the new wording. At this source cut,
+current email copy is Gmail-oriented; reading these catalogs does not adopt the parallel MAIL
+UI or qualify its behavior. No future connection/app/calendar screen is implemented by these
+files. No browser, native-speaker usability, accessibility or live-provider qualification is claimed.
+
+Root copy review on 2026-11-01 requested corrections that are applied: credential guidance now
+uses protected server-side storage, including encrypted owner-managed/brokered storage rather
+than an environment-only assumption; the Farsi access-check failure avoids implementation
+jargon; German health wording uses “Betriebszustand der Verbindung”. Custodian wording remains
+aligned with the shared administrator-stewardship contract. State/effect guards remain unchanged.
+
+## Namespace and provenance
+
+`catalogBacked` retains source wording so reviewers can trace it; it does not certify every
+existing caller or create another live message namespace. `proposed` contains contextual new
+wording for later guarded bindings. Do not merge either branch into runtime through a generic
+fallback or select a branch just because a similarly named key exists.
+
+| Design path prefix | Exact source file pattern and selected source keys | Leaves |
+| --- | --- | --- |
+| `catalogBacked.integrations` | `src/features/integrations/messages/integrations.{locale}.json`: `cancel`, `busy`, `checked`, `requestFailed`, `freshAuthentication`, `forbidden`, `disconnectTitle`, `disconnectBody`, `callbackConnected`, `callbackFailed`, `neverChecked`, `mcpDisabled`, `publicEndpoint`, `marketBody`, `revocationPending`, `slackSetupTitle`, `slackSetupStep1`, `slackSetupStep2`, `slackSetupStep3`, `slackSetupStep4`, `finishSetup`, `retryRemoval`, `emptySearch`, `emptyConnections`, `emptyConnectionsBody`, `savedConnections`, `comingSoon`, `currentGrant`, `copyFailed`, `promptCopied` | 30 |
+| `catalogBacked.email` | `src/features/email/messages/email.{locale}.json`: `loadingDraft`, `_composer.sendUnconfirmed`, `workspace.empty`, `workspace.loadError`, `workspace.threadError`, `workspace.saveFailed`, `workspace.noMailbox` | 7 |
+| `catalogBacked.auth` | `src/features/auth/messages/authScreens.{locale}.json`: `flow.freshRequired`, `flow.loading`, `flow.confirmWithProvider` | 3 |
+| `catalogBacked.workflows` | `src/features/workflows/messages/workflows.{locale}.json`: `publishedHint`, `historyEmpty`, `loading`, `runError`, `confirmSimulation` | 5 |
+
+`{locale}` is exactly `fa`, `de` or `en`. Nested keys retain their original paths beneath the
+source-group prefix. Existing ICU plural wording is copied exactly, including locale-specific
+branches; logical placeholders still match across all three catalogs. Source-group copies were
+checked against the files above. Proposed wording follows «مسیر فروش»، «فرصت فروش»، «گردش‌کار»،
+«اتصال» and «مجوز» from the terminology guide; it does not silently rename existing source IDs.
+
+## Source-backed rendering guards
+
+All bindings require a server-authorized, current view for the actor. A visible management
+surface never grants access to another person's mailbox content. Project-local implementation,
+server configuration, upstream authorization, health and real-account validation remain separate.
+
+| Keys beneath `catalogBacked` | Exact allowed use and disallowed inference |
+| --- | --- |
+| `integrations.disconnectTitle`, `disconnectBody`, `cancel` | Current Slack disconnect confirmation. Require the actual authorized removal action, with local blocking before remote revoke and the retained-content behavior described by source. Modal display is not proof a block has already committed. No recall or guaranteed remote revoke. |
+| `integrations.revocationPending`, `retryRemoval` | A local block has committed, remote revoke is unconfirmed, and a credential-cleanup retry is permitted. Retrying revocation is not retrying a send. |
+| `integrations.checked`, `neverChecked` | A successful current access-check result or no recorded check respectively. `checked` reflects the current `auth.test`-style check; it is not action/resource conformance or a live-provider qualification badge. |
+| `integrations.callbackConnected`, `finishSetup` | A verified callback committed this Slack relationship; the required channel/resource selection is still incomplete. A self-reported account/client name is not verified identity. |
+| `integrations.callbackFailed`, `requestFailed`, `copyFailed` | Select the operation-specific failure. Generic retry is for reads, local-only operations or an explicitly safe retry contract. If a send may have happened, use `email._composer.sendUnconfirmed` or `proposed.errors.unknownOutcome`, never a guaranteed-not-sent/retry instruction. A copy failure means clipboard failure only. |
+| `integrations.freshAuthentication`, `auth.flow.freshRequired`, `auth.flow.confirmWithProvider` | The server requires fresh identity verification through an enabled method. Reauthentication does not itself grant resource permissions, remove an administrator MFA requirement or bypass a security hold. `{provider}` names an enabled identity method, not any arbitrary provider label. |
+| `integrations.forbidden` | Authorization denied. Do not attach hidden resource names, raw provider errors, tokens or an existence hint. |
+| `integrations.mcpDisabled`, `publicEndpoint`, `slackSetupTitle`, `slackSetupStep1` through `slackSetupStep4` | Current informational operator setup instructions and applicable prerequisites. These are instructions for the scoped connector version, not a completed setup, an external host-compatibility claim or permission to deploy/provision resources. Existing product UI label `OAuth & Permissions`, scope names and environment-variable names remain literal technical identifiers. Reverify implementation before reusing the version-specific token-rotation instruction. |
+| `integrations.marketBody`, `comingSoon` | The actual installation/provider path is planned and not available in this version. Keep installation/connect actions unavailable; do not attach a date or “next release” promise. |
+| `integrations.currentGrant` | The inspected current MCP grant exposes the tools allowed by the CRM role and has no separate enforced read-only grant. Do not reuse after a later scope model changes the contract without copy review. |
+| `integrations.savedConnections` | Count all stored rows in the matching local UI scope, including disconnected/revocation-pending rows, as the tab badge does. No active/healthy/authorized-account claim. `{count}` is that same authorized count. |
+| `integrations.emptySearch`, `emptyConnections`, `emptyConnectionsBody` | A successful current search/filter or stored-connection query returned no matching authorized rows. Loading, errors, denied access or hidden personal connections are not empty-success states. |
+| `integrations.busy`, `email.loadingDraft`, `auth.flow.loading`, `workflows.loading` | The named request is actually pending. Keep previous permitted content where the current UI contract supports it; never substitute an empty-success or completion message. |
+| `integrations.promptCopied` | Clipboard operation succeeded for a prompt. No workflow or external action was executed by copying. |
+| `email._composer.sendUnconfirmed` | A send may have been accepted but its outcome is unconfirmed. Guide status review before any repeat; do not downgrade it to a pre-send failure. |
+| `email.workspace.empty`, `noMailbox` | Successful authorized mailbox query is empty, or there is no applicable connected mailbox, respectively. An inaccessible or failed mailbox query is neither state. |
+| `email.workspace.loadError`, `threadError`, `saveFailed` | The named read/draft-save failed. `loadError` assumes previously loaded content is retained; `threadError` is deliberately ambiguous about missing versus inaccessible. Draft-save retry must remain local draft persistence, not sending. |
+| `workflows.publishedHint`, `confirmSimulation`, `historyEmpty`, `runError` | Respect the actual immutable published version, explicit simulation path and authorized filtered history. Simulation cannot cause external effects. A run error is not proof that every step had no effect, and a successful run alone is not a delivery receipt. |
+
+## Proposed keys and exact state/action guards
+
+These guards are requirements for future implementation. Their presence is not evidence that
+the corresponding server state, action, DTO or screen exists today. Never bind them to arbitrary
+raw error text or infer a transition from a click, spinner, timeout or optimistic UI update.
+
+| Proposed group and complete key list | Rendering and action contract |
+| --- | --- |
+| `actions`: `reviewPermissions`, `selectResources`, `checkAccess`, `reconnectSameAccount`, `reviewOutcome`, `pauseConnection`, `retryRevocation` (7) | Render a control only if that action is implemented, authorized and currently available. Review permissions/resources without granting them. Reconnect preserves verified account identity; retryRevocation is cleanup-only. Pause is not presented before the server can block new use. ReviewOutcome opens reconciliation/review, not an automatic resend. |
+| `confirmations`: `pauseTitle`, `pauseBody`, `revokeClientTitle`, `revokeClientBody`, `removeAppTitle`, `removeAppBody` (6) | Title/body pairs use the same current target/version and authorized action. Pause/revoke/remove must enforce the local block described by the copy. Already-started effects can still complete. App removal requires a real reviewed removal policy; `{retentionSummary}` is a localized, policy-derived safe summary, never provider HTML or a generic claim that all data is deleted/retained. Cancel is nonmutating; confirmation is not a completion notice. |
+| `operator`: `credentialsPrivate`, `readiness`, `localChecks`, `capabilityLimit` (4) | Operator-facing informational context. Credentials belong in protected server-side storage, which may include encrypted owner-managed connection storage or a credential broker; this is not an environment-only requirement. Do not expose secrets in URLs, screenshots or logs. `localChecks` requires the actually supplied isolated synthetic profile, with no real provider credentials/actions; it does not create a profile or make local work depend on external account approval. `capabilityLimit` is selected from the implementation's supported-action contract, not a vendor-global assertion. No substitute side effect is silently executed. |
+| `empty`: `resources`, `deliveryHistory`, `workflowRuns` (3) | Show only after a successful authorized query, including its account/connection/version, date range and filters. Zero visible rows does not prove no hidden/global history exists. Use errors/loading for failed or pending queries; never display another user's private metadata to explain emptiness. |
+| `loading`: `directory`, `resources`, `deliveryHistory`, `checkAccess` (4) | The specific named read/check is pending in the active view. Cancelled/stale responses cannot clear a newer view or establish success. A check spinner does not imply missing configuration or provider validation. |
+| `regional`: `independent`, `numberingLimit`, `allDay`, `draftZone`, `ambiguousTime`, `invalidWallTime` (6) | Keep language, one calendar field, digits and explicit zone separate. The current digit selector is FA-only; DE/EN display Latin digits. `allDay` describes the local inclusive civil-date model, not external ICS end semantics. `draftZone` uses the editor's frozen zone. `ambiguousTime` applies to the current earlier-occurrence policy for new/changed times; untouched stored offsets persist. `invalidWallTime` applies only to an actual gap/invalid wall-time result. No later-fold selector or Iranian recurrence conversion is implied. |
+
+The following per-key tables complete the two larger proposed groups; there are no unguarded
+notification/error keys hidden behind a generic “success” state.
+
+| `proposed.errors` key | Required state and recovery guard |
+| --- | --- |
+| `accountMismatch` | Verified identity differs from the existing connection and the local relationship really was left unchanged. Do not use the unchanged sentence if any local replacement committed or its outcome is unknown. |
+| `resourceUnavailable` | A previously selected resource cannot be used under the actor's current access. Reveal no hidden name or existence detail; review selection/permissions rather than treating it as absent server configuration. |
+| `accessCheckFailed` | That specific check returned a safe failure result. No “unconfigured” inference and no raw response/body disclosure. |
+| `reauthorizationRequired` | The connector explicitly classifies the grant as needing renewed authorization; preserve account identity. A transient timeout alone does not prove token revocation. |
+| `securityHold` | A committed administrative/security hold blocks use. Fresh login cannot release it; recovery follows the authorized administrative policy. |
+| `unknownOutcome` | A send-start or possible remote effect exists and provider acceptance is unresolved. Preserve attempt identity and review evidence before any retry. Never use not-sent, draft-only, queued-no-send or a blind retry here. |
+| `rateLimited` | A known provider throttle result with a valid safe retry/reset time. `{retryAt}` is explicit-zone formatted; status review is not automatic send replay. If the attempt outcome is uncertain, unknownOutcome takes precedence. |
+| `loadFailed` | A read failed, so retry means fetching again. Do not bind this to a mutation or use it to imply previously loaded data was cleared or retained. |
+| `unsupportedRecurrence` | This connector/profile lacks a qualified conversion for the authored Iranian rule. Preserve that rule and block automatic lossy conversion. This is not a vendor-global claim and says nothing false about whether an earlier remote attempt occurred. |
+
+| `proposed.notifications` key | Required state and evidence guard |
+| --- | --- |
+| `configurationRequired` | Actual required server prerequisites are incomplete. An unhealthy, expired or temporarily unreachable connection is not “unconfigured”. |
+| `configured` | Actual server prerequisites are complete; account authorization and health are independent and may still be unknown. |
+| `authorized` | A grant for the same verified account/provider was committed and is visible to this actor. No resource selection, health, action permission or provider qualification is inferred. |
+| `resourcesSaved` | Only the chosen local resource configuration committed. No upstream write, effective permission or delivery success is implied. |
+| `healthUnknown` | There is no current usable health evidence. Preserve configuration/auth facts rather than collapsing them into failure or unconfigured. |
+| `healthStale` | A real last-success timestamp exists and exceeds the defined freshness threshold. Do not use arrival of new mail or display timezone as evidence of a successful sync/check. |
+| `localTested` | A documented local/synthetic check passed for this implementation. It does not validate a real provider account. The message belongs in diagnostics/operator context. |
+| `providerValidated` | Dated actual-account evidence exists for exactly `{provider}`, `{account}` and `{scopeSummary}`. Scope summary names the tested actions/conditions, not all provider features. A grant, access check, fixture, simulation or unit suite cannot select it. |
+| `draftSaved` | The draft was durably saved **and no send attempt started or possible external effect exists**. Saving a draft alone is insufficient. Otherwise use actual pending/unknown outcome. |
+| `queued` | Durable intent exists, with no send-start or possible remote effect for any relevant attempt. Never reuse for retrying an already-started/ambiguous attempt. |
+| `accepted` | Qualified adapter evidence confirms provider acceptance for that attempt. This is not delivery. |
+| `delivered` | A qualified actual delivery receipt for the same item/attempt supports that statement. No synthetic or run-level inference. |
+| `partialOutcome` | `{done}` and `{total}` are finite, authorized item counts with a known denominator. Done includes only evidenced completed items; unresolved items remain unresolved. Do not expose counts of hidden recipients/resources. |
+| `cancelRequested` | A cancellation request committed. It does not assert that already-started operations were prevented or recalled. |
+| `custodianHold` | A shared connection is actually held pending an authorized custodian. Do not apply shared stewardship to make personal mailbox content admin-readable. |
+| `removed` | The local relationship is unusable and its removal state committed. No promise of remote revocation, message recall or deletion of imported content. |
+
+## Placeholder, locale and fallback contract
+
+- Message paths and placeholder names are stable technical identifiers across FA/DE/EN. Proposed
+  numeric counts use ICU `{done, number}` and `{total, number}`; the existing saved-row message
+  keeps its source ICU plural. Formatting must use the user's independent digit choice, not
+  a hardcoded locale default or manual digit replacement in IDs.
+- `{account}`, `{client}`, `{app}`, `{provider}`, `{profile}`, `{action}` and `{scopeSummary}`
+  must come from safe actor-visible DTOs or controlled localized labels. No credentials, hidden
+  owner names, raw provider error bodies or untrusted markup belong in them. Show technical IDs,
+  URLs and IANA zone identifiers unchanged, with presentation-level direction isolation in FA.
+- `{checkedAt}` and `{retryAt}` are instants formatted with the user's explicit calendar/digit/zone
+  preferences and a visible zone/offset where needed. `{zone}` is the actual frozen draft zone.
+  Date-only values stay civil dates. `{retentionSummary}` must already be localized for the same
+  locale and derived from the actual removal policy; there is no English-string escape hatch.
+- These files provide all 100 strings in each language. They define no English fallback chain.
+  A missing message/placeholder is a review/binding failure, not permission to display English
+  inside FA/DE. Product names, source provider UI labels and API/scope/environment identifiers
+  intentionally remain literal; `_meta` is not rendered.
+- A language switch preserves explicit calendar, digits and zone and does not reinterpret
+  authored recurrence rules or an open draft's instant. The documented current non-FA digit
+  restriction remains visible. Independent preferences do not imply every regional control or
+  every future calendar feature exists.
+
+## Bounded checks and remaining implementation limits
+
+Only Python JSON/text validation was used. Result: all three catalogs parsed without duplicate
+keys; each had 100 nonempty messages (45 source copies plus 55 proposed). All 100 message paths,
+placeholder names/occurrence counts and ICU argument kinds matched across FA/DE/EN. All 135
+source-copy values matched their current source catalogs; brace balance, eight-group coverage,
+Persian prose, absence of copied English proposed values and the no-em-dash check passed.
+The 30 source integration keys include the current guarded access-check,
+saved-row, connection-removal and planned-marketplace wording. Proposed messages are complete
+translations, not copied English values. These are bounded structural/text checks, not compiled
+ICU/runtime or native-speaker evaluation.
+
+The author used no Bun, tests, compiler, database or browser. Root independently repeated strict
+JSON/source-copy checks and parsed all 300 messages with the installed ICU message parser. All
+100 key paths and ICU argument types match across FA/DE/EN; all 135 source-backed values match
+the inspected catalogs. A preliminary regex-only placeholder check confused plural branch prose
+with arguments; the actual ICU parser is the placeholder evidence. The independent copy review
+accepted the corrected catalogs. This does not execute runtime bindings or qualify rendering.
+
+Later binding needs typed state-to-message selection, safe localized DTO
+parameters, current authorization, appropriate action guards and test-first implementation.
+Real rendering still needs FA RTL/mixed direction, German expansion, all three languages,
+keyboard/status announcements, long account names and mobile layouts. Native-speaker evaluation
+and formal accessibility acceptance remain unqualified.
+
+UX-006 acceptance coverage is concrete: confirmations (current Slack plus proposed lifecycle
+pairs), operator instructions (current setup plus scoped new guidance), errors/recovery, truthful
+notifications and empty/loading states all have FA/DE/EN strings and explicit guards. This is
+design/localization evidence for review, not task closure or proof of all future screens.

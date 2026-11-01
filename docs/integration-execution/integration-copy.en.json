@@ -1,0 +1,144 @@
+{
+  "_meta": {
+    "schemaVersion": 1,
+    "locale": "en",
+    "evidenceClass": "design-copy",
+    "sourceHead": "994cecd20a6e56afe4866022c6d2d765ac23af0a",
+    "catalogBackedMessageCount": 45,
+    "proposedMessageCount": 55
+  },
+  "catalogBacked": {
+    "integrations": {
+      "cancel": "Cancel",
+      "busy": "Working…",
+      "checked": "Access check passed",
+      "requestFailed": "The request could not be completed. Try again or ask your administrator.",
+      "freshAuthentication": "Please sign in again to confirm this security-sensitive change.",
+      "forbidden": "You do not have permission to make this change.",
+      "disconnectTitle": "Disconnect Slack?",
+      "disconnectBody": "This connection is blocked in the CRM immediately. Revoking the Slack token may need another attempt. Disconnecting does not delete existing CRM records or already sent messages.",
+      "callbackConnected": "Slack is connected. Choose a channel to finish setup.",
+      "callbackFailed": "Slack could not be connected. Check the app configuration and try again.",
+      "neverChecked": "Not checked yet",
+      "mcpDisabled": "AI connections have not been enabled on this server. Ask your administrator to enable the MCP server and configure a public HTTPS address.",
+      "publicEndpoint": "Cloud AI clients need a reachable server address. A localhost address is for local clients only.",
+      "marketBody": "An app marketplace is planned. Installing apps here is not available yet.",
+      "revocationPending": "Disconnected locally. Slack could not confirm revocation. Retry disconnecting to finish removing its access.",
+      "slackSetupTitle": "Set up the Slack app",
+      "slackSetupStep1": "Create a Slack app for your workspace and add this redirect URL under OAuth & Permissions.",
+      "slackSetupStep2": "Add the bot scopes chat:write and channels:read. Invite the app to the public channels you want to use.",
+      "slackSetupStep3": "Set SLACK_CLIENT_ID and SLACK_CLIENT_SECRET in your server configuration, then restart Warpdrive.",
+      "slackSetupStep4": "Keep Slack token rotation disabled for this first connector release.",
+      "finishSetup": "Finish setup",
+      "retryRemoval": "Retry removal",
+      "emptySearch": "No integrations match your search. Try another name or category.",
+      "emptyConnections": "Your tools, connected in one place",
+      "emptyConnectionsBody": "Connect an account from the directory to get started. You can review and revoke AI access here too.",
+      "savedConnections": "{count, plural, =0 {No saved connections yet.} one {# saved connection.} other {# saved connections.}}",
+      "comingSoon": "This integration is on the roadmap. Connecting accounts is not available yet.",
+      "currentGrant": "This connection exposes all MCP tools your CRM role permits. A separate read-only connection is not yet available.",
+      "copyFailed": "Could not copy. Select the URL and copy it manually.",
+      "promptCopied": "Prompt copied. Paste it into your connected assistant."
+    },
+    "email": {
+      "loadingDraft": "Loading draft...",
+      "_composer": {
+        "sendUnconfirmed": "We could not confirm the send. Check the thread before trying again."
+      },
+      "workspace": {
+        "empty": "Your inbox is clear",
+        "loadError": "Could not load the mailbox. Your current messages remain available.",
+        "threadError": "This conversation could not be loaded or is no longer available.",
+        "saveFailed": "Draft could not be saved. Keep this reply open and try again.",
+        "noMailbox": "Connect your email account"
+      }
+    },
+    "auth": {
+      "flow": {
+        "freshRequired": "Confirm your identity again before changing security settings.",
+        "loading": "Loading account security…",
+        "confirmWithProvider": "Confirm with {provider}"
+      }
+    },
+    "workflows": {
+      "publishedHint": "Runs use the published version. Save and publish your changes to include them.",
+      "historyEmpty": "No runs yet",
+      "loading": "Loading workflows…",
+      "runError": "This run stopped before completion. Review its configuration and permissions.",
+      "confirmSimulation": "Start simulation"
+    }
+  },
+  "proposed": {
+    "actions": {
+      "reviewPermissions": "Review permissions",
+      "selectResources": "Select resources",
+      "checkAccess": "Check access",
+      "reconnectSameAccount": "Reconnect this account",
+      "reviewOutcome": "Review outcome",
+      "pauseConnection": "Pause connection",
+      "retryRevocation": "Retry revocation"
+    },
+    "confirmations": {
+      "pauseTitle": "Pause this connection?",
+      "pauseBody": "Pausing blocks new operations through this connection in the CRM. Operations already started may still complete.",
+      "revokeClientTitle": "Revoke access for {client}?",
+      "revokeClientBody": "Access to the CRM for {client} will be revoked. Operations already started may still complete.",
+      "removeAppTitle": "Remove {app}?",
+      "removeAppBody": "Removing this app blocks its local access. Requests already started and revocation with the provider may need follow-up. {retentionSummary}"
+    },
+    "operator": {
+      "credentialsPrivate": "Store credentials only in protected server-side storage. Keep them out of URLs, screenshots and logs.",
+      "readiness": "Check the service configuration. Stored credentials do not establish account authorization or a working connection.",
+      "localChecks": "Use the {profile} profile and synthetic data for local checks. These checks do not require a real provider account.",
+      "capabilityLimit": "This version does not support {action}. Choose a supported action."
+    },
+    "errors": {
+      "accountMismatch": "The selected account does not match {account}. The existing connection is unchanged.",
+      "resourceUnavailable": "A selected resource is no longer available. Review your resource selection and permissions before continuing.",
+      "accessCheckFailed": "The access check did not pass. Review the displayed error details.",
+      "reauthorizationRequired": "This account needs renewed authorization. Reconnect the same account.",
+      "securityHold": "This connection is on a security hold. Contact an administrator for review.",
+      "unknownOutcome": "The send outcome is unknown. The request may have been accepted. Review its status before sending again.",
+      "rateLimited": "{provider} is currently limiting further requests. Review the status again after {retryAt}.",
+      "loadFailed": "The information could not be loaded. Try fetching it again.",
+      "unsupportedRecurrence": "This connection does not support converting this Iranian-calendar recurrence for {provider}. Keep the original rule."
+    },
+    "notifications": {
+      "configurationRequired": "Initial configuration for this connection is incomplete.",
+      "configured": "Server configuration is complete. Account authorization and connection health are checked separately.",
+      "authorized": "Authorization for {provider} was saved for {account}. Review resource selection and connection health separately.",
+      "resourcesSaved": "Resource selection saved.",
+      "healthUnknown": "Connection health is not known yet. Check access and resources.",
+      "healthStale": "The last successful check at {checkedAt} is no longer recent. Check the connection again.",
+      "localTested": "The local check passed. This result does not validate a connection to a real {provider} account.",
+      "providerValidated": "For {provider}, {scopeSummary} was tested with {account} at {checkedAt}. This result covers only that scope.",
+      "draftSaved": "Draft saved; no message was sent.",
+      "queued": "Request queued; sending has not started.",
+      "accepted": "{provider} accepted the request; delivery is not confirmed yet.",
+      "delivered": "Message delivery confirmed.",
+      "partialOutcome": "{done, number} of {total, number} items completed. Review the remaining outcomes.",
+      "cancelRequested": "Cancellation requested. Operations already started may still complete.",
+      "custodianHold": "The shared connection is paused until an authorized custodian is confirmed.",
+      "removed": "This connection was removed and can no longer be used."
+    },
+    "empty": {
+      "resources": "No selectable resources are available for this account. Review the permissions and selected account.",
+      "deliveryHistory": "No history is shown for this connection in the selected period.",
+      "workflowRuns": "No runs are recorded for this workflow version in the selected period."
+    },
+    "loading": {
+      "directory": "Loading the integration directory…",
+      "resources": "Loading resources for this account…",
+      "deliveryHistory": "Loading request history…",
+      "checkAccess": "Checking access…"
+    },
+    "regional": {
+      "independent": "Language, calendar, digit display and time zone are separate settings. Changing the display does not change the stored date.",
+      "numberingLimit": "This version offers digit selection in the Farsi interface. German and English display Latin digits.",
+      "allDay": "This is an all-day event with no clock time. Its end date is included.",
+      "draftZone": "Times in this draft use {zone}.",
+      "ambiguousTime": "This time occurs twice. A new or changed time uses the earlier occurrence.",
+      "invalidWallTime": "This time does not exist in the selected time zone. Choose another time."
+    }
+  }
+}
