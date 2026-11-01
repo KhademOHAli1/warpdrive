@@ -3,6 +3,7 @@ import { sql } from "drizzle-orm";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import type { AuthUser } from "@/features/permissions/types";
+import { hydrateActor } from "@/server/hydrateActor";
 import { err, ok, type Result } from "@/types/result";
 import { resolveDraftAttachments } from "./draftAttachments";
 import { findDraftCreation } from "./draftCreation";
@@ -35,10 +36,8 @@ export interface DraftInput {
   linkPersonId?: string | null;
 }
 
-// Upsert a draft. The action layer confirms accountId ownership (assertMailboxOwner) before
-// calling. INSERT for a new draft; when id is given, UPDATE only the row that already lives
-// on this same account (an id owned by another mailbox is left untouched: no-op, not an error,
-// because saveDraft is idempotent by design and ownership was checked upstream).
+// Composer and MCP share this boundary. A previously rendered picker or hydrated tool actor
+// cannot authorize a CRM link: recheck the current actor and links in the save transaction.
 export async function saveDraft(
   db: Db,
   args: { actor: AuthUser; draft: DraftInput },
@@ -55,15 +54,15 @@ export async function saveDraft(
     return err(new AppError(ERROR_IDS.GMAIL_DRAFT_NOT_FOUND, "draft unavailable"));
   const creation = await findDraftCreation(db, d, signal);
   if (!creation.ok) return creation;
-  if (creation.value !== null) return ok(creation.value);
-  const attachments = await resolveDraftAttachments(db, args.actor, d.attachments ?? [], signal);
+  const attachments =
+    creation.value === null
+      ? await resolveDraftAttachments(db, args.actor, d.attachments ?? [], signal)
+      : ok([]);
   if (!attachments.ok) return attachments;
   // When a threadId is supplied, verify it lives on this same account BEFORE the write, so a
   // foreign/nonexistent id returns a typed error instead of letting the composite FK throw.
-  const thread = await assertDraftThread(db, d, signal);
+  const thread = creation.value === null ? await assertDraftThread(db, d, signal) : ok(null);
   if (!thread.ok) return thread;
-  const links = await assertDraftLinks(db, d, signal);
-  if (!links.ok) return links;
   const to = JSON.stringify(d.toEmails);
   const cc = JSON.stringify(d.ccEmails);
   const bcc = JSON.stringify(d.bccEmails ?? []);
@@ -71,9 +70,39 @@ export async function saveDraft(
   const visibility = d.visibility ?? "shared";
   const dealId = d.linkDealId ?? null;
   const personId = d.linkPersonId ?? null;
-  if (d.id !== undefined) {
-    const row = (
-      await db.execute(sql`
+  return db.transaction(
+    async (tx) => {
+      // Match mailbox mutations' owner-before-account lock order. Paused or disconnected
+      // mailboxes still support local drafts; their remote submission authority is separate.
+      const owner = (
+        await tx.execute(sql`SELECT id FROM users
+        WHERE id=${args.actor.id} AND is_active=true AND invited_at IS NULL FOR NO KEY UPDATE`)
+      ).rows[0];
+      signal.throwIfAborted();
+      if (owner === undefined)
+        return err(new AppError(ERROR_IDS.GMAIL_DRAFT_NOT_FOUND, "draft unavailable"));
+      const account = (
+        await tx.execute(sql`SELECT id FROM email_accounts
+        WHERE id=${d.accountId} AND user_id=${args.actor.id} FOR NO KEY UPDATE`)
+      ).rows[0];
+      signal.throwIfAborted();
+      if (account === undefined)
+        return err(new AppError(ERROR_IDS.GMAIL_DRAFT_NOT_FOUND, "draft unavailable"));
+      const currentActor = await hydrateActor(tx, args.actor.id, signal);
+      if (currentActor === null)
+        return err(new AppError(ERROR_IDS.GMAIL_DRAFT_NOT_FOUND, "draft unavailable"));
+      const replay = await findDraftCreation(tx, d, signal);
+      if (!replay.ok) return replay;
+      if (replay.value !== null) return ok(replay.value);
+      // A replay that disappeared during preflight must not recreate a draft with skipped
+      // attachment/thread checks, or overwrite the deletion with a partial replacement.
+      if (creation.value !== null)
+        return err(new AppError(ERROR_IDS.GMAIL_DRAFT_NOT_FOUND, "draft unavailable"));
+      const links = await assertDraftLinks(tx, currentActor, d, signal);
+      if (!links.ok) return links;
+      if (d.id !== undefined) {
+        const row = (
+          await tx.execute(sql`
         UPDATE email_drafts
         SET subject = ${d.subject}, body_html = ${d.bodyHtml},
             to_emails = ${to}::jsonb, cc_emails = ${cc}::jsonb,
@@ -85,13 +114,14 @@ export async function saveDraft(
         WHERE id = ${d.id} AND account_id = ${d.accountId}
         RETURNING id
       `)
-    ).rows[0] as { id: string } | undefined;
-    if (row === undefined)
-      return err(new AppError(ERROR_IDS.GMAIL_DRAFT_NOT_FOUND, "draft not found", {}));
-    return ok({ id: row.id });
-  }
-  const inserted = (
-    await db.execute(sql`
+        ).rows[0] as { id: string } | undefined;
+        signal.throwIfAborted();
+        if (row === undefined)
+          return err(new AppError(ERROR_IDS.GMAIL_DRAFT_NOT_FOUND, "draft not found", {}));
+        return ok({ id: row.id });
+      }
+      const inserted = (
+        await tx.execute(sql`
       INSERT INTO email_drafts (id, account_id, thread_id, subject, body_html, to_emails, cc_emails,
         visibility, link_deal_id, link_person_id,bcc_emails,attachments,send_intent_id,track_opens,track_links)
       VALUES (${d.createId ?? randomUUID()}, ${d.accountId}, ${d.threadId ?? null}, ${d.subject}, ${d.bodyHtml}, ${to}::jsonb,
@@ -100,15 +130,19 @@ export async function saveDraft(
       ON CONFLICT (id) DO NOTHING
       RETURNING id
     `)
-  ).rows[0] as { id: string } | undefined;
-  if (inserted === undefined) {
-    const replay = await findDraftCreation(db, d, signal);
-    if (!replay.ok) return replay;
-    return replay.value !== null
-      ? ok(replay.value)
-      : err(new AppError(ERROR_IDS.GMAIL_DRAFT_NOT_FOUND, "draft unavailable"));
-  }
-  return ok({ id: inserted.id });
+      ).rows[0] as { id: string } | undefined;
+      signal.throwIfAborted();
+      if (inserted === undefined) {
+        const concurrent = await findDraftCreation(tx, d, signal);
+        if (!concurrent.ok) return concurrent;
+        return concurrent.value !== null
+          ? ok(concurrent.value)
+          : err(new AppError(ERROR_IDS.GMAIL_DRAFT_NOT_FOUND, "draft unavailable"));
+      }
+      return ok({ id: inserted.id });
+    },
+    { isolationLevel: "read committed" },
+  );
 }
 
 export async function listDrafts(

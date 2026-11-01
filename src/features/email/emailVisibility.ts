@@ -1,8 +1,8 @@
 import { sql } from "drizzle-orm";
-import type { Db } from "@/db/client";
 import { toVisibleDeal } from "@/features/deals/dealAuth";
 import { canSee } from "@/features/permissions/canSee";
 import type { AuthUser } from "@/features/permissions/types";
+import type { DbOrTx } from "@/server/realtime/channelVersions";
 import { toVisiblePerson } from "./linking";
 
 export interface ThreadVisibilityRow {
@@ -22,7 +22,7 @@ export interface ThreadVisibilityRow {
 // thread they do not own. Only the shared-thread path defers to canSee (which does
 // have an admin bypass for the LINKED deal/person, by design).
 export async function canSeeEmail(
-  db: Db,
+  db: DbOrTx,
   actor: AuthUser,
   thread: ThreadVisibilityRow,
   signal: AbortSignal,
@@ -60,7 +60,7 @@ export async function canSeeEmail(
 // row into canSee (a deal row carries no pipelineVisibilityGroupId, so the pipeline
 // restriction gate would fail open). Same pattern as linking.ts.
 export async function canSeeLinkedDeal(
-  db: Db,
+  db: DbOrTx,
   actor: AuthUser,
   dealId: string,
   signal: AbortSignal,
@@ -96,7 +96,7 @@ export async function canSeeLinkedDeal(
 }
 
 export async function canSeeLinkedPerson(
-  db: Db,
+  db: DbOrTx,
   actor: AuthUser,
   personId: string,
   signal: AbortSignal,

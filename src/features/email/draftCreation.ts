@@ -1,10 +1,10 @@
 import { sql } from "drizzle-orm";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
-import type { Db } from "@/db/client";
+import type { DbOrTx } from "@/server/realtime/channelVersions";
 import { err, ok, type Result } from "@/types/result";
 
 export async function findDraftCreation(
-  db: Db,
+  db: DbOrTx,
   input: { createId?: string; accountId: string },
   signal: AbortSignal,
 ): Promise<Result<{ id: string } | null, AppError>> {
