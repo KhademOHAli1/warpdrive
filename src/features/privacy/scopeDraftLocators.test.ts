@@ -118,8 +118,8 @@ describe("strict native record locators", () => {
       source === undefined
     )
       return;
-    category.records.push(structuredClone(record));
-    expected.records.push(structuredClone(source));
+    category.records = [...category.records, structuredClone(record)];
+    expected.records = [...expected.records, structuredClone(source)];
     expect(buildScopeDraftPlan(f.input, f.context, signal())).toEqual({
       ok: false,
       error: "scope_duplicate",
