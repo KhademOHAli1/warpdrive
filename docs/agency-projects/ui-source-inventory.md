@@ -2,7 +2,7 @@
 
 31 October 2026. Source-only review for AP-01.1. This records available implementation seams, not browser acceptance or a proposed redesign.
 
-Latest amendment: the clean Settings cut `ec9b3f8943e42736edc6713c099fd2ef14068d0a` is now being adopted into the Agency candidate. Read `settings-adoption.md` for the exact merge, actual new props, compatibility evidence and remaining combined gates. The initial observations below remain tied to their original source, and their dirty-Settings status is historical.
+1 November amendment: Settings `ec9b3f8943e42736edc6713c099fd2ef14068d0a` is committed in Agency merge `980833d`, and Sales `f006b5a5026449fd2bf792439b9149ba3517feb8` is committed in Agency merge `264d9b2`. Read `settings-adoption.md` and `sales-adoption.md` for exact seams, owner reports and remaining combined gates. Sales adds saved-view/query recovery and guarded pipeline UI without replacing the adopted Settings sources. The initial observations below remain tied to their original source, and their dirty-Settings status is historical. No combined native UI acceptance follows from these source merges.
 
 ## Exact source and adoption boundary
 

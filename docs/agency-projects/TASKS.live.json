@@ -114,8 +114,8 @@
     "dependencies": "AP-00.2",
     "owner": "Agency implementation chat; shared edits require owner review",
     "status": "active",
-    "evidence": "1 November full cwd ps scan found no Agency processes; five generated cache candidates absent; zero bytes reclaimed and no tracked deletion. MAIL recovery hold acknowledged; fresh Data reading in source inventory is a snapshot only.",
-    "remaining": "No Agency test/type/lint/build/install campaign during MAIL window. Require explicit release, finite coordinated window and fresh headroom before checks; no owned runtime/DB or allocated migration.",
+    "evidence": "MAIL authorized only a guarded one-worker selected review-policy UNIT lane on existing dependencies. Five own runs terminal, final43 pass; all process groups verified empty and lane released. No PG/type/lint/build/install or broad selection. Cleanup reclaimed 0.",
+    "remaining": "New checks require finite coordinated lane. No Agency app/worker/DB or migration allocation; stable headroom and actual accepted interfaces/base required before heavy validation.",
     "accepted": false
   },
   {
@@ -148,8 +148,8 @@
     "dependencies": "AP-00.1",
     "owner": "Agency implementation chat; shared edits require owner review",
     "status": "active",
-    "evidence": "Settings source ec9b3f8 merged in980833d with exact owner navigation and structural FA/DE/EN catalog preservation; owner compatibility review found no blocking presentation issue.",
-    "remaining": "Combined type/build/native checks remain open; review latest committed Sales source separately before adoption.",
+    "evidence": "Settings ec9b3f8 adopted by 980833d and owner-reviewed; Sales f006b5a adopted by 264d9b2 as complete 178-path source delta, preserving Settings and baseline byte-for-byte. qualifications distinguish owner reports from combined evidence.",
+    "remaining": "Current combined types/lint/messages/unit/build and native FA/DE/EN acceptance remain open; no Agency workspace is enabled.",
     "accepted": false
   },
   {
@@ -284,7 +284,7 @@
     "dependencies": "AP-00.3;AP-00.6",
     "owner": "Agency implementation chat; shared edits require owner review",
     "status": "active",
-    "evidence": "project-core-delta.md specifies four proposed stores, constraints, native identity/CRM links, idempotency and history; pure domain foundation285 prior cases and separate starter13-case result retained.",
+    "evidence": "project-core-delta.md specifies four proposed stores, constraints, native identity/CRM links, idempotency and history; pure domain foundation285 prior cases and separate starter 13-case result retained.",
     "remaining": "Full additive domain, exact SQL/schema/FK/privacy review and actual allocation remain open; no DDL or persistence enabled.",
     "accepted": false
   },
@@ -878,10 +878,10 @@
     "expected_passing_tests": "T14/T29: a note cannot impersonate client authentication/signature; approval binds the reviewed version exactly.",
     "dependencies": "AP-06.2;AP-06.3",
     "owner": "Agency implementation chat; shared edits require owner review",
-    "status": "planned",
-    "evidence": "Not implemented or qualified",
-    "remaining": "Original outcome, dependencies and applicable acceptance tests remain",
-    "accepted": false
+    "status": "active",
+    "evidence": "Feature-local review boundaries/policy: selected 43/43 green after genuine 17/19 behavioral, 5/34 epoch and 7/36 chronology reds. Exact version/evidence/time strings, separate internal/client records, complete policy receipts, non-resurrecting epochs and monotonic server recording tested. qualification-review-decisions.json.",
+    "accepted": false,
+    "remaining": "Types/type-awarelint/Biome/integrated selection held. Native authority and current contact/version ownership, trusted snapshot loader, idempotent service envelope, transactional history/CAS, real PG, UI/Privacy and original task dependencies remain open."
   },
   {
     "id": "AP-06.5",
@@ -895,10 +895,10 @@
     "expected_passing_tests": "T09/T14/T15: concurrent approval/change has deterministic conflict handling; old approval never silently approves new content.",
     "dependencies": "AP-06.4",
     "owner": "Agency implementation chat; shared edits require owner review",
-    "status": "planned",
-    "evidence": "Not implemented or qualified",
-    "remaining": "Original outcome, dependencies and applicable acceptance tests remain",
-    "accepted": false
+    "status": "active",
+    "evidence": "Feature-local review boundaries/policy: selected 43/43 green after genuine 17/19 behavioral, 5/34 epoch and 7/36 chronology reds. Exact version/evidence/time strings, separate internal/client records, complete policy receipts, non-resurrecting epochs and monotonic server recording tested. qualification-review-decisions.json.",
+    "accepted": false,
+    "remaining": "Types/type-awarelint/Biome/integrated selection held. Native authority and current contact/version ownership, trusted snapshot loader, idempotent service envelope, transactional history/CAS, real PG, UI/Privacy and original task dependencies remain open."
   },
   {
     "id": "AP-06.6",
@@ -1372,8 +1372,8 @@
     "dependencies": "AP-00.8",
     "owner": "Agency implementation chat; shared edits require owner review",
     "status": "active",
-    "evidence": "Historical integrated domain285 passes; separate starter13 passes; Settings navigation18 plus adapters30 and locale audit pass at documented scopes. Raw reds/greens and exact source hashes retained.",
-    "remaining": "Post-starter combined feature/types/lint not run. Pending review-decision tests must first run red after MAIL release; no PG/native/restore acceptance.",
+    "evidence": "Historical integrated domain 285, separate starter 13 and selected review 43 pass at documented source scopes. Settings selected 48 and locale audit are earlier adoption checks. Genuine behavioral/epoch/chronology reds and exact terminal guarded handles retained.",
+    "remaining": "Post-adoption integrated feature/types/lint/Biome/build unrun. Narrow unit lane released. PG/native/restore/source-owner acceptance remains open.",
     "accepted": false
   },
   {

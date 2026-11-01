@@ -1,0 +1,116 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-11-01T03:45:40.708449+00:00",
+  "agencyBase": "264d9b2599833fa08f0bb75794626120e0d2c8c5",
+  "scope": "Feature-local strict review action/server-command ingress and pure version/epoch/chronology policy. No route, store, authorization or effect enabled.",
+  "environment": {
+    "bun": "1.4.4 (fresh --version verified)",
+    "vitest": "5.0.5",
+    "workers": 1
+  },
+  "sourceHashes": {
+    "src/features/agency-projects/reviews/reviewDecisionEntry.ts": "6cac9e4ae543e4a170d775a9ab8ad31fcaafca56971de530efc8e5d92a498809",
+    "src/features/agency-projects/reviews/reviewDecisions.test.ts": "f3681e0dedfc756d0e72e49293f945df73103c35ff5c7b8a95c3bd0f7a56ead2",
+    "src/features/agency-projects/reviews/reviewDecisions.ts": "405a6bdae218aae9144627a8c81e6db65a37a8d57291846cbb273d2cb8b22a39",
+    "src/features/agency-projects/reviews/reviewSchemas.ts": "75f6e70fd77a58938a9fbe182a4a6c8eef209985275165bcefd7625aa80162c9",
+    "src/features/agency-projects/reviews/reviewTypes.ts": "b543e700034372b02cd0dedd04bb250ded85daab42a59115b0970de6f0ed0a8d"
+  },
+  "guard": {
+    "minimumFreeBytes": 3221225472,
+    "timeoutSeconds": 30,
+    "workers": 1,
+    "belowFloorBehavior": "terminate only newly owned process group"
+  },
+  "runs": [
+    {
+      "phase": "red-missing",
+      "sessionId": 76466,
+      "pid": 84878,
+      "terminal": true,
+      "exitCode": 1,
+      "stopReason": null,
+      "beforeFreeBytes": 13880459264,
+      "afterFreeBytes": 13881020416,
+      "log": "evidence/review-decisions-red-missing.log",
+      "failedSuites": 1,
+      "assertionsCollected": 0
+    },
+    {
+      "phase": "red-behavior",
+      "pid": 86177,
+      "terminal": true,
+      "exitCode": 1,
+      "stopReason": null,
+      "beforeFreeBytes": 13153185792,
+      "afterFreeBytes": 13149708288,
+      "log": "evidence/review-decisions-red-behavior.log",
+      "failed": 17,
+      "passed": 19,
+      "files": 1
+    },
+    {
+      "phase": "red-epoch",
+      "pid": 89845,
+      "terminal": true,
+      "exitCode": 1,
+      "stopReason": null,
+      "beforeFreeBytes": 13464244224,
+      "afterFreeBytes": 13459169280,
+      "log": "evidence/review-decisions-red-epoch.log",
+      "failed": 5,
+      "passed": 34,
+      "files": 1
+    },
+    {
+      "phase": "red-time",
+      "sessionId": 40923,
+      "pid": 95591,
+      "terminal": true,
+      "exitCode": 1,
+      "stopReason": null,
+      "beforeFreeBytes": 12725506048,
+      "afterFreeBytes": 12720820224,
+      "log": "evidence/review-decisions-red-time.log",
+      "failed": 7,
+      "passed": 36,
+      "files": 1
+    },
+    {
+      "phase": "green",
+      "pid": 96867,
+      "terminal": true,
+      "exitCode": 0,
+      "stopReason": null,
+      "beforeFreeBytes": 12558118912,
+      "afterFreeBytes": 12569772032,
+      "log": "evidence/review-decisions-green.log",
+      "passed": 43,
+      "files": 1
+    }
+  ],
+  "ownedRunGroupsEmptyVerified": [
+    84878,
+    86177,
+    89845,
+    95591,
+    96867
+  ],
+  "lane": "MAIL-authorized selected policy UNIT only; released after terminal43-case green. No inherited broader lane.",
+  "sourceReview": [
+    "Independent read-only source review identified epoch-opening and recording-chronology gaps, reproduced before fixes.",
+    "Final independent source readback confirmed exact Temporal high-water ordering, opening updates, complete chronology receipts and source-string preservation; no independent test campaign."
+  ],
+  "heldChecks": [
+    "No review/starter typecheck, type-aware ESLint, Biome, integrated feature selection or full combined build executed under the narrow lane.",
+    "Earlier285 domain, starter13 and Settings48 results are separate source scopes, not a new integrated pass."
+  ],
+  "limits": [
+    "No persisted snapshot parser/loader, SQL constraints or immutable database history exists for this increment. Trusted snapshot coherence is an explicit precondition.",
+    "No snapshot before identified deliverable submission; no fabricated placeholder version.",
+    "Native auth/CSRF/actor grants/project and CRM/contact/version ownership checks, transactional CAS/idempotent request envelope and history/receipt writer remain unimplemented.",
+    "Historical late-evidence recording remains unavailable; it cannot be relabeled as current reopened approval.",
+    "Server record history/projections have no browser DTO/read route; no authenticated-client, signature, provider-delivery or universal approval claim.",
+    "Real PostgreSQL/native UI/Privacy lifecycle/migration/restore/provider/pilot and release gates remain open.",
+    "Persisted source timestamp strings/full supported precision must not be silently replaced by database rounding."
+  ]
+}
