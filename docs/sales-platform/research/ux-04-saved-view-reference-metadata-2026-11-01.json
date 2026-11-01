@@ -1,0 +1,119 @@
+{
+  "study": "UX-04",
+  "observedDate": "2026-11-01",
+  "observationClockUTC": "12:03",
+  "captureDateKnown": false,
+  "appVersionKnown": false,
+  "task_intent": "Improve CRM saved-view controls and recovery while preserving the existing application shell.",
+  "output_destination": "code",
+  "platform": "web",
+  "calls": [
+    {
+      "tool": "search_flows",
+      "query": "Attio creating a saved view",
+      "limit": 2,
+      "result": {
+        "query": "Attio creating a saved view",
+        "page": 1,
+        "has_next_page": true,
+        "flows": [
+          {
+            "id": "62a40034-d85a-4d63-9164-0db6725132c4",
+            "name": "Adding to favorites",
+            "actions": [
+              "Saving to Collection"
+            ],
+            "mobbin_url": "https://mobbin.com/flows/62a40034-d85a-4d63-9164-0db6725132c4",
+            "app_name": "Attio",
+            "platform": "web",
+            "screen_count": 4,
+            "screens": [
+              {
+                "screen_id": "df2bcdc2-5f03-430f-ae92-013056040463",
+                "position": 1
+              },
+              {
+                "screen_id": "a1cca18c-6359-46c4-a986-a46332943a05",
+                "position": 2
+              },
+              {
+                "screen_id": "bbd875eb-f4c3-4600-bbd6-44da33761528",
+                "position": 3
+              },
+              {
+                "screen_id": "66dc9e4e-f6c3-43d3-8544-0de050695516",
+                "position": 4
+              }
+            ]
+          },
+          {
+            "id": "26cf9d81-99c8-466c-8a4a-c257690f4551",
+            "name": "Creating a view",
+            "actions": [
+              "Adding & Creating"
+            ],
+            "mobbin_url": "https://mobbin.com/flows/26cf9d81-99c8-466c-8a4a-c257690f4551",
+            "app_name": "Attio",
+            "platform": "web",
+            "screen_count": 4,
+            "screens": [
+              {
+                "screen_id": "df2bcdc2-5f03-430f-ae92-013056040463",
+                "position": 1
+              },
+              {
+                "screen_id": "18bdbbb9-3afa-4b8a-83ae-0bca4b19b66b",
+                "position": 2
+              },
+              {
+                "screen_id": "5b6d7dac-d494-470e-b163-c80d632ce234",
+                "position": 3
+              },
+              {
+                "screen_id": "1519b1e9-e389-473d-b65a-03be39070551",
+                "position": 4
+              }
+            ]
+          }
+        ]
+      },
+      "inspectedPreviewPositionsByFlow": {
+        "62a40034-d85a-4d63-9164-0db6725132c4": [
+          1,
+          3,
+          4
+        ],
+        "26cf9d81-99c8-466c-8a4a-c257690f4551": [
+          1,
+          3,
+          4
+        ]
+      }
+    },
+    {
+      "tool": "search_screens",
+      "query": "Attio company view advanced filters",
+      "limit": 2,
+      "result": {
+        "query": "Attio company view advanced filters",
+        "screens": [
+          {
+            "id": "f85654c3-a89c-444e-bdf4-7ba40c3118f4",
+            "mobbin_url": "https://mobbin.com/screens/f85654c3-a89c-444e-bdf4-7ba40c3118f4",
+            "app_name": "Attio",
+            "platform": "web"
+          },
+          {
+            "id": "e1fcdf36-7726-4a8a-9ca7-7188daa3be36",
+            "mobbin_url": "https://mobbin.com/screens/e1fcdf36-7726-4a8a-9ca7-7188daa3be36",
+            "app_name": "Attio",
+            "platform": "web"
+          }
+        ]
+      },
+      "inspectedAllReturned": true
+    }
+  ],
+  "aiUsageNotice": null,
+  "imagesDownloadedOrStored": false
+}

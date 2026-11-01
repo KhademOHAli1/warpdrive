@@ -104,3 +104,10 @@ Locale cannot select money unit, country, timezone, calendar or recipient langua
 - SP-01.8: publish accepted interactions and glossary only after the dependent reviews. Keep this audit's source/reference evidence separate from local runtime, provider, pilot and production evidence.
 
 No application tests were run for this documentation-only audit. No application code, migration, service or participant record was changed.
+
+
+## UX-04 connector follow-up, 1 November 2026
+
+The later read-only [saved-view reference review](research/ux-04-saved-view-reference-review-2026-11-01.md) adds two Mobbin searches: Attio view creation/favorites and advanced-filter screen discovery. Eight previews were actually inspected, representing seven distinct screen IDs within this inspection. Both four-frame flows lack an inspected position2; the table screenshots do not show an open filter editor. Source dates/versions are unavailable. Exact identifiers, observed frames, concrete adopt/adapt/reject decisions and original Farsi/German state-copy hypotheses are recorded separately.
+
+This extends the earlier access-limited reference set. It does not complete UX-04 or SP-01.3, establish persistence/permissions/accessibility, or supply a current-shell prototype or participant validation. No proprietary image was downloaded, stored or redistributed, and no Mobbin collection, save or comment was created. The approved twenty-study programme remains intact.

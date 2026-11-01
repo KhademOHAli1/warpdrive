@@ -237,17 +237,27 @@
       "projectId": "SP-01",
       "status": "in-progress",
       "owner": "sales-platform",
-      "dependsOn": ["SP-01.1"],
+      "dependsOn": [
+        "SP-01.1"
+      ],
       "evidence": [
         {
           "path": "docs/sales-platform/current-shell-research.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/research/ux-04-saved-view-reference-review-2026-11-01.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/research/ux-04-saved-view-reference-metadata-2026-11-01.json",
           "level": "observed-source"
         }
       ],
       "remainingGates": [
         "Remaining prioritized flow/reference studies and prototype validation still required."
       ],
-      "notes": "18 Mobbin gallery frames actually inspected: 8 sharing, 6 template, 4 workspace. Missing failure/security/keyboard evidence is recorded."
+      "notes": "Historical18 gallery-frame observations are preserved. A later UX-04 connector inspection adds8preview observations representing7distinct screen IDs within that inspection, with actual position1/3/4 coverage for two4-frame flows. Position2/openfilter/recovery/prototype/participant evidence remains missing; no study completion or authority/persistence proof is inferred."
     },
     {
       "id": "SP-01.4",
