@@ -168,17 +168,18 @@ export const registryEntries: RegistryEntry[] = [
     categories: [
       "browser request summary and frozen retry intent",
       "requester and minimal receipt references",
+      "own-case summaries, URL selectors and frozen confirmation commands",
       "native account security status and authentication inputs",
       "localized interface metadata",
     ],
     subjectRelation:
       "The server resolves the current native actor. A browser's expected requester UUID can only deny a changed-account form; it cannot select a subject, recipient or authorized actor.",
     purpose:
-      "Mount the personal privacy settings workspace, submit bounded requester-owned intake through CSRF/fresh-session Server Actions, refresh existing own-security status and retain one transient intent across uncertain retries.",
+      "Mount requester intake/detail routes, read minimal own-case status and submit exact own-account confirmation commands through existing CSRF/fresh-session Server Actions, preserving transient intent across uncertain retries.",
     disclosure:
-      "Only minimal own-request receipts are displayed. Request/security surfaces and portaled controls use existing replay-block and autocapture-exclusion classes; those declarations do not establish installed telemetry or browser acceptance.",
+      "Only minimal own-case summaries and command receipts are displayed. Case status does not establish proof status, approval or a data change; current state requires a fresh read after a command receipt. Existing replay-block/autocapture classes do not establish installed telemetry or browser acceptance.",
     retention:
-      "Summary, attempt and receipt remain in component memory until reset/account invalidation/unmount; success does not explicitly clear the retained summary. No new browser database, durable queue, table or expiry schedule is introduced.",
+      "Summary, case view, exact pending command and receipt remain in component memory until reset/account invalidation/unmount; intake success does not explicitly clear its summary. Opaque case URLs remain linkable data in browser/HTTP history. No new database, durable queue or expiry schedule is introduced.",
     externalEffects:
       "The settings route inherits the existing authenticated app layout. Same-origin Server Actions and existing GET /api/auth-workflows/status reuse classified auth/privacy boundaries, including session/rate-limit/CSRF effects and delegated case/proof writes. Focus/visibility refresh adds no durable store. Browser cancellation cannot undo a dispatched Server Action; provider/device confirmation retains its existing native boundaries.",
     erasureTask: "DPL-26",

@@ -141,7 +141,10 @@ test("fresh authentication uses the existing inline flow and preserves text and 
 });
 
 test.each([
-  ["csrf_rejected", "Refresh this page’s security token, then retry the same request."],
+  [
+    "csrf_rejected",
+    "The security check failed. Retry this request. If it still fails, ask the workspace operator for help.",
+  ],
   ["forbidden", "This request is not currently permitted. Retry after your access is restored."],
   ["not_found", "This request is unavailable."],
   [

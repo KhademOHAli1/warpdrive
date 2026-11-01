@@ -10,6 +10,7 @@ import { BLOCK_CLASS } from "@/features/observability/replayMasking";
 import { err, type Result } from "@/types/result";
 import { privacyRequestMessagesForLocale } from "../privacyRequestMessages";
 import { loadOwnPrivacySecurity } from "./loadOwnPrivacySecurity";
+import { OwnPrivacyCaseStatus } from "./OwnPrivacyCaseStatus";
 import { OwnPrivacyRequestForm } from "./OwnPrivacyRequestForm";
 
 type WorkspaceState = {
@@ -20,8 +21,10 @@ type WorkspaceState = {
   loading: boolean;
 };
 
-export function PersonalPrivacyWorkspace() {
+export function PersonalPrivacyWorkspace({ caseId }: { caseId?: string }) {
   const L = privacyRequestMessagesForLocale(useLocale());
+  const returnPath =
+    caseId === undefined ? "/settings/privacy" : `/settings/privacy/requests/${caseId}`;
   const [view, setView] = useState<WorkspaceState>({
     status: undefined,
     requesterId: null,
@@ -110,7 +113,7 @@ export function PersonalPrivacyWorkspace() {
     <SettingsPage className={`${BLOCK_CLASS} ph-no-capture`}>
       <SettingsHeading
         title={L.workspaceTitle}
-        description={L.workspaceDescription}
+        description={caseId === undefined ? L.workspaceDescription : L.caseWorkspaceDescription}
         scope="personal"
       />
       {(view.loading || view.unavailable || security === null || view.changed || needsSecurity) && (
@@ -136,7 +139,7 @@ export function PersonalPrivacyWorkspace() {
                 <p className="text-sm">{L.workspaceSignedOut}</p>
                 <a
                   className={buttonVariants({ variant: "outline" })}
-                  href="/login?returnTo=%2Fsettings%2Fprivacy"
+                  href={`/login?returnTo=${encodeURIComponent(returnPath)}`}
                 >
                   {L.workspaceSignIn}
                 </a>
@@ -167,9 +170,19 @@ export function PersonalPrivacyWorkspace() {
           </SettingsCardBody>
         </SettingsCard>
       )}
-      {security !== undefined && security !== null && !view.changed && (
-        <OwnPrivacyRequestForm securityStatus={security} refreshSecurity={refreshSecurity} />
-      )}
+      {security !== undefined &&
+        security !== null &&
+        !view.changed &&
+        (caseId === undefined ? (
+          <OwnPrivacyRequestForm securityStatus={security} refreshSecurity={refreshSecurity} />
+        ) : (
+          <OwnPrivacyCaseStatus
+            key={caseId}
+            caseId={caseId}
+            securityStatus={security}
+            refreshSecurity={refreshSecurity}
+          />
+        ))}
     </SettingsPage>
   );
 }

@@ -1,12 +1,13 @@
 "use client";
 
+import Link from "next/link";
 import { useId } from "react";
 import {
   SettingsCard,
   SettingsCardBody,
   SettingsCardHeader,
 } from "@/app/(app)/settings/SettingsSurface";
-import { Button } from "@/components/ui/Button";
+import { Button, buttonVariants } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
 import { Textarea } from "@/components/ui/Textarea";
 import { FreshVerification } from "@/features/auth/ui/FreshVerification";
@@ -58,6 +59,12 @@ export function OwnPrivacyRequestForm(props: OwnPrivacyRequestFormProps) {
                 </dd>
               </div>
             </dl>
+            <Link
+              className={buttonVariants({ variant: "outline" })}
+              href={`/settings/privacy/requests/${task.receipt.id}`}
+            >
+              {L.viewStatus}
+            </Link>
           </div>
         ) : (
           <div className="space-y-5" dir={directionForLocale(locale)}>
