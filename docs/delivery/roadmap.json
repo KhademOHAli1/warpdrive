@@ -79811,6 +79811,111 @@
         "Link the exact published main source and required hosted CI. Attach the applicable real database-backed issuer-response result and authenticated whole-scope maintainer acceptance before Accepted/closure.",
         "Broad AISEC-009/010 criteria, the four full user-journey release gates, stable publication, deployment and provider/installation qualification keep their separate evidence requirements."
       ]
+    },
+    {
+      "id": "ops/security-regressions-2026-11-02",
+      "title": "Track security regression hardening and delivery traceability",
+      "module": "operations",
+      "kind": "maintenance",
+      "parent": "ops/maintenance-intake",
+      "source_tasks": [],
+      "acceptance": [
+        "The bounded security hardening in PR #913 is merged with adversarial regression coverage.",
+        "Unit, integration, typecheck, lint, CodeQL, and relevant configuration checks pass at the reviewed source revision.",
+        "The merged main commit has a canonical delivery link and the post-merge open alert state is reviewed."
+      ],
+      "dependencies": [],
+      "evidence": [
+        {
+          "url": "https://github.com/KhademOHAli1/warpdrive/pull/913",
+          "level": "exact bounded public change set, not global security acceptance",
+          "merged_revision": "a7df229f33e6e47216e4e2ba3b132d9ffcfa6846",
+          "source_revision": "710ddf94dbefb6c94dff66ca8d22bb13918546ae",
+          "paths": [
+            ".env.example",
+            "Caddyfile",
+            "Caddyfile.test.ts",
+            "docker-compose.dev.yml",
+            "docker-compose.security.test.ts",
+            "docker-compose.yml",
+            "docs-site/docs/setup.md",
+            "docs/deploy.md",
+            "src/app/(app)/leads/[leadId]/LeadDetailView.tsx",
+            "src/features/auth/better/rateLimit.integration.test.ts",
+            "src/features/contacts/visibilitySql.ts",
+            "src/features/deal-workspace/summaryRepo.ts",
+            "src/features/deals/dealRepo.ts",
+            "src/features/deals/linkedContactVisibility.integration.test.ts",
+            "src/features/email/attachmentSend.helpers.ts",
+            "src/features/email/emailAttachmentLimits.integration.test.ts",
+            "src/features/email/emailAttachmentLimits.test.ts",
+            "src/features/email/emailAttachmentLimits.ts",
+            "src/features/email/outbox.ts",
+            "src/features/email/send.ts",
+            "src/features/email/sendHelpers.ts",
+            "src/features/files/actions.test.ts",
+            "src/features/files/actions.ts",
+            "src/features/files/storage.ts",
+            "src/features/files/storageFake.ts",
+            "src/features/identity/avatar/avatarService.test.ts",
+            "src/features/identity/avatar/avatarService.ts",
+            "src/features/import/pipeline.integration.test.ts",
+            "src/features/import/prepareJob.test.ts",
+            "src/features/import/upload.test.ts",
+            "src/features/leads/leadActions.test.ts",
+            "src/features/leads/leadActions.ts",
+            "src/features/leads/leadBulk.test.ts",
+            "src/features/leads/leadBulk.ts",
+            "src/features/leads/leadBulkConvert.test.ts",
+            "src/features/leads/leadConvert.test-helpers.ts",
+            "src/features/leads/leadConvert.ts",
+            "src/features/leads/leadConvertPipeline.test.ts",
+            "src/features/leads/leadMutationSecurity.integration.test.ts",
+            "src/features/leads/leadRelations.test.ts",
+            "src/features/leads/leadRepo.ts",
+            "src/features/leads/leadUpdate.test.ts",
+            "src/features/leads/leadUpdate.ts",
+            "src/features/leads/leadWriteAuth.test.ts",
+            "src/features/leads/leadWriteAuth.ts",
+            "src/features/mcp/tools/writes-activities.ts",
+            "src/features/mcp/tools/writes-contacts.ts",
+            "src/features/mcp/tools/writes.createPermissions.test.ts",
+            "src/features/privacy/registryIdsAuthentication1.ts",
+            "src/features/privacy/registryIdsCrm2.ts",
+            "src/features/privacy/registryIdsEmail1.ts",
+            "src/features/privacy/registryIdsFiles1.ts",
+            "src/features/privacy/registryIdsMail1.ts"
+          ],
+          "scope": "Contact visibility and projections; lead mutation/conversion and MCP-create authorization; attachment/avatar integrity and mail resource bounds; inbound proxy identity and database credential configuration; adversarial regressions and reviewed privacy inventory updates."
+        },
+        {
+          "url": "https://github.com/KhademOHAli1/warpdrive/pull/913",
+          "level": "PR-author reported qualification; integrated current-main CI remains a separate gate",
+          "reported_checks": [
+            "8707 unit tests passed, 3 skipped",
+            "3085 integration tests passed",
+            "Lint, typecheck, Caddy validation and both Compose profiles passed",
+            "Conditional copy behavior checked against a disposable S3-compatible server"
+          ],
+          "limits": [
+            "Exact MinIO server verification remains pending.",
+            "Detailed findings remain in the private review for coordinated disclosure; no private exploit details are copied here.",
+            "No global security, dedicated export-regression, production deployment or installation acceptance is inferred from this bounded source record."
+          ]
+        }
+      ],
+      "owner": "KhademOHAli1",
+      "owner_role": "security maintenance",
+      "module_owner_chat": "01a19251-a472-7cd1-86cd-8dc245dd5b84",
+      "observed_status": "active",
+      "observed_stage": "merged source; exact main CI and forward traceability pending",
+      "priority": "P1",
+      "release": "next",
+      "milestone": "Next usable release: Core CRM journeys",
+      "notes": "The detailed security findings remain in the private review report. A source merge and passing CI do not establish deployment or installation qualification. Exact MinIO server behavior remains to be verified separately.\n\nThis preserves the existing issue #914 intake and its three acceptance criteria. The scope is exactly the fifty-three public PR #913 paths listed in supporting evidence. It is distinct from the dated CodeQL-alert batch #910 and the broader maintenance parent. No original legacy task reference is invented or remapped.",
+      "remaining_gates": [
+        "Review post-merge main CI and record any remaining target-specific validation."
+      ]
     }
   ],
   "aliases": {

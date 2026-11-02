@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "KhademOHAli1/warpdrive",
-  "generated_at": "2026-11-02T02:46:02+00:00",
+  "generated_at": "2026-11-02T03:39:55+00:00",
   "issues": {
     "programme/integrations": {
       "number": 7,
@@ -5426,6 +5426,12 @@
       "id": 6155199456,
       "node_id": "I_kwDOVcNfnM8AAAABbuDj4A",
       "url": "https://github.com/KhademOHAli1/warpdrive/issues/912"
+    },
+    "ops/security-regressions-2026-11-02": {
+      "number": 914,
+      "id": 6155530086,
+      "node_id": "I_kwDOVcNfnM8AAAABbuXvZg",
+      "url": "https://github.com/KhademOHAli1/warpdrive/issues/914"
     }
   },
   "sources": [
@@ -20625,8 +20631,8 @@
   "coverage": {
     "complete": true,
     "partial": false,
-    "expected_items": 904,
-    "mapped_items": 904,
+    "expected_items": 905,
+    "mapped_items": 905,
     "missing_ids": [],
     "original_task_references": 2170,
     "mapped_original_task_references": 2170,
@@ -20634,6 +20640,135 @@
   },
   "status_source": "Generated only from live GitHub API reads at generated_at; saved files supply identity hints only. Issue state, labels, assignees and milestones are live evidence. Acceptance, deployment and provider qualification retain their separate evidence gates.",
   "execution": {
+    "ops/security-regressions-2026-11-02": {
+      "number": 914,
+      "id": 6155530086,
+      "node_id": "I_kwDOVcNfnM8AAAABbuXvZg",
+      "html_url": "https://github.com/KhademOHAli1/warpdrive/issues/914",
+      "state": "open",
+      "state_reason": null,
+      "title": "Track security regression hardening and delivery traceability",
+      "updated_at": "2026-11-02T03:36:19Z",
+      "closed_at": null,
+      "milestone": {
+        "url": "https://api.github.com/repos/KhademOHAli1/warpdrive/milestones/1",
+        "html_url": "https://github.com/KhademOHAli1/warpdrive/milestone/1",
+        "labels_url": "https://api.github.com/repos/KhademOHAli1/warpdrive/milestones/1/labels",
+        "id": 19125451,
+        "node_id": "MI_kwDOVcNfnM4BI9TL",
+        "number": 1,
+        "title": "Next usable release: Core CRM journeys",
+        "description": "Accept four usable CRM journeys on a selected integrated revision. Required CI and recorded scope-specific acceptance govern release. This milestone does not authorize deployment or imply general availability for the wider roadmaps.",
+        "creator": {
+          "login": "KhademOHAli1",
+          "id": 118572997,
+          "node_id": "U_kgDOBxFHxQ",
+          "avatar_url": "https://avatars.githubusercontent.com/u/118572997?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/KhademOHAli1",
+          "html_url": "https://github.com/KhademOHAli1",
+          "followers_url": "https://api.github.com/users/KhademOHAli1/followers",
+          "following_url": "https://api.github.com/users/KhademOHAli1/following{/other_user}",
+          "gists_url": "https://api.github.com/users/KhademOHAli1/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/KhademOHAli1/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/KhademOHAli1/subscriptions",
+          "organizations_url": "https://api.github.com/users/KhademOHAli1/orgs",
+          "repos_url": "https://api.github.com/users/KhademOHAli1/repos",
+          "events_url": "https://api.github.com/users/KhademOHAli1/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/KhademOHAli1/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "open_issues": 13,
+        "closed_issues": 0,
+        "state": "open",
+        "created_at": "2026-11-01T23:40:51Z",
+        "updated_at": "2026-11-02T03:36:19Z",
+        "due_on": null,
+        "closed_at": null
+      },
+      "assignees": [
+        {
+          "login": "KhademOHAli1",
+          "id": 118572997,
+          "node_id": "U_kgDOBxFHxQ",
+          "avatar_url": "https://avatars.githubusercontent.com/u/118572997?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/KhademOHAli1",
+          "html_url": "https://github.com/KhademOHAli1",
+          "followers_url": "https://api.github.com/users/KhademOHAli1/followers",
+          "following_url": "https://api.github.com/users/KhademOHAli1/following{/other_user}",
+          "gists_url": "https://api.github.com/users/KhademOHAli1/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/KhademOHAli1/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/KhademOHAli1/subscriptions",
+          "organizations_url": "https://api.github.com/users/KhademOHAli1/orgs",
+          "repos_url": "https://api.github.com/users/KhademOHAli1/repos",
+          "events_url": "https://api.github.com/users/KhademOHAli1/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/KhademOHAli1/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        }
+      ],
+      "labels": [
+        {
+          "id": 12922482140,
+          "node_id": "LA_kwDOVcNfnM8AAAADAj1t3A",
+          "url": "https://api.github.com/repos/KhademOHAli1/warpdrive/labels/import:active",
+          "name": "import:active",
+          "color": "1d76db",
+          "default": false,
+          "description": "Warpdrive delivery tracking",
+          "archived_at": null,
+          "archived_by": null
+        },
+        {
+          "id": 12922483801,
+          "node_id": "LA_kwDOVcNfnM8AAAADAj10WQ",
+          "url": "https://api.github.com/repos/KhademOHAli1/warpdrive/labels/module:operations",
+          "name": "module:operations",
+          "color": "1d76db",
+          "default": false,
+          "description": "Warpdrive delivery tracking",
+          "archived_at": null,
+          "archived_by": null
+        },
+        {
+          "id": 12922484429,
+          "node_id": "LA_kwDOVcNfnM8AAAADAj12zQ",
+          "url": "https://api.github.com/repos/KhademOHAli1/warpdrive/labels/release:next",
+          "name": "release:next",
+          "color": "1d76db",
+          "default": false,
+          "description": "Warpdrive delivery tracking",
+          "archived_at": null,
+          "archived_by": null
+        },
+        {
+          "id": 12922484556,
+          "node_id": "LA_kwDOVcNfnM8AAAADAj13TA",
+          "url": "https://api.github.com/repos/KhademOHAli1/warpdrive/labels/roadmap",
+          "name": "roadmap",
+          "color": "1d76db",
+          "default": false,
+          "description": "Warpdrive delivery tracking",
+          "archived_at": null,
+          "archived_by": null
+        },
+        {
+          "id": 12923056450,
+          "node_id": "LA_kwDOVcNfnM8AAAADAkYxQg",
+          "url": "https://api.github.com/repos/KhademOHAli1/warpdrive/labels/kind:maintenance",
+          "name": "kind:maintenance",
+          "color": "1d76db",
+          "default": false,
+          "description": "Warpdrive delivery tracking",
+          "archived_at": null,
+          "archived_by": null
+        }
+      ]
+    },
     "delivery/mcp-issuer-response-20261102": {
       "number": 912,
       "id": 6155199456,
@@ -20674,11 +20809,11 @@
           "user_view_type": "public",
           "site_admin": false
         },
-        "open_issues": 12,
+        "open_issues": 13,
         "closed_issues": 0,
         "state": "open",
         "created_at": "2026-11-01T23:40:51Z",
-        "updated_at": "2026-11-02T02:43:26Z",
+        "updated_at": "2026-11-02T03:36:19Z",
         "due_on": null,
         "closed_at": null
       },
@@ -20803,11 +20938,11 @@
           "user_view_type": "public",
           "site_admin": false
         },
-        "open_issues": 12,
+        "open_issues": 13,
         "closed_issues": 0,
         "state": "open",
         "created_at": "2026-11-01T23:40:51Z",
-        "updated_at": "2026-11-02T02:43:26Z",
+        "updated_at": "2026-11-02T03:36:19Z",
         "due_on": null,
         "closed_at": null
       },
@@ -20932,11 +21067,11 @@
           "user_view_type": "public",
           "site_admin": false
         },
-        "open_issues": 12,
+        "open_issues": 13,
         "closed_issues": 0,
         "state": "open",
         "created_at": "2026-11-01T23:40:51Z",
-        "updated_at": "2026-11-02T02:43:26Z",
+        "updated_at": "2026-11-02T03:36:19Z",
         "due_on": null,
         "closed_at": null
       },
@@ -21050,11 +21185,11 @@
           "user_view_type": "public",
           "site_admin": false
         },
-        "open_issues": 12,
+        "open_issues": 13,
         "closed_issues": 0,
         "state": "open",
         "created_at": "2026-11-01T23:40:51Z",
-        "updated_at": "2026-11-02T02:43:26Z",
+        "updated_at": "2026-11-02T03:36:19Z",
         "due_on": null,
         "closed_at": null
       },
@@ -21168,11 +21303,11 @@
           "user_view_type": "public",
           "site_admin": false
         },
-        "open_issues": 12,
+        "open_issues": 13,
         "closed_issues": 0,
         "state": "open",
         "created_at": "2026-11-01T23:40:51Z",
-        "updated_at": "2026-11-02T02:43:26Z",
+        "updated_at": "2026-11-02T03:36:19Z",
         "due_on": null,
         "closed_at": null
       },
@@ -21286,11 +21421,11 @@
           "user_view_type": "public",
           "site_admin": false
         },
-        "open_issues": 12,
+        "open_issues": 13,
         "closed_issues": 0,
         "state": "open",
         "created_at": "2026-11-01T23:40:51Z",
-        "updated_at": "2026-11-02T02:43:26Z",
+        "updated_at": "2026-11-02T03:36:19Z",
         "due_on": null,
         "closed_at": null
       },
@@ -21404,11 +21539,11 @@
           "user_view_type": "public",
           "site_admin": false
         },
-        "open_issues": 12,
+        "open_issues": 13,
         "closed_issues": 0,
         "state": "open",
         "created_at": "2026-11-01T23:40:51Z",
-        "updated_at": "2026-11-02T02:43:26Z",
+        "updated_at": "2026-11-02T03:36:19Z",
         "due_on": null,
         "closed_at": null
       },
@@ -80102,11 +80237,11 @@
           "user_view_type": "public",
           "site_admin": false
         },
-        "open_issues": 12,
+        "open_issues": 13,
         "closed_issues": 0,
         "state": "open",
         "created_at": "2026-11-01T23:40:51Z",
-        "updated_at": "2026-11-02T02:43:26Z",
+        "updated_at": "2026-11-02T03:36:19Z",
         "due_on": null,
         "closed_at": null
       },
@@ -80220,11 +80355,11 @@
           "user_view_type": "public",
           "site_admin": false
         },
-        "open_issues": 12,
+        "open_issues": 13,
         "closed_issues": 0,
         "state": "open",
         "created_at": "2026-11-01T23:40:51Z",
-        "updated_at": "2026-11-02T02:43:26Z",
+        "updated_at": "2026-11-02T03:36:19Z",
         "due_on": null,
         "closed_at": null
       },
@@ -80338,11 +80473,11 @@
           "user_view_type": "public",
           "site_admin": false
         },
-        "open_issues": 12,
+        "open_issues": 13,
         "closed_issues": 0,
         "state": "open",
         "created_at": "2026-11-01T23:40:51Z",
-        "updated_at": "2026-11-02T02:43:26Z",
+        "updated_at": "2026-11-02T03:36:19Z",
         "due_on": null,
         "closed_at": null
       },
@@ -80456,11 +80591,11 @@
           "user_view_type": "public",
           "site_admin": false
         },
-        "open_issues": 12,
+        "open_issues": 13,
         "closed_issues": 0,
         "state": "open",
         "created_at": "2026-11-01T23:40:51Z",
-        "updated_at": "2026-11-02T02:43:26Z",
+        "updated_at": "2026-11-02T03:36:19Z",
         "due_on": null,
         "closed_at": null
       },
@@ -80644,11 +80779,11 @@
           "user_view_type": "public",
           "site_admin": false
         },
-        "open_issues": 12,
+        "open_issues": 13,
         "closed_issues": 0,
         "state": "open",
         "created_at": "2026-11-01T23:40:51Z",
-        "updated_at": "2026-11-02T02:43:26Z",
+        "updated_at": "2026-11-02T03:36:19Z",
         "due_on": null,
         "closed_at": null
       },
