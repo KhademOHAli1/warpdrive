@@ -213,5 +213,10 @@
   "simulatedWait": "Simulierte Wartezeit; ohne tatsächliches Warten.",
   "simulatedResume": "Fortsetzung (simuliert)",
   "waitTimingUnavailable": "Zeitpunkt der Fortsetzung nicht verfügbar",
-  "waitRecoveryHint": "Ab diesem Zeitpunkt kann die Ausführung fortgesetzt werden. Die Hintergrundprüfung ist minütlich geplant; die Fortsetzung kann später beginnen. Ein Abbruch stoppt diese Wartezeit und folgende Schritte; abgeschlossene Aktionen bleiben bestehen."
+  "waitRecoveryHint": "Ab diesem Zeitpunkt kann die Ausführung fortgesetzt werden. Die Hintergrundprüfung ist minütlich geplant; die Fortsetzung kann später beginnen. Ein Abbruch stoppt diese Wartezeit und folgende Schritte; abgeschlossene Aktionen bleiben bestehen.",
+  "leaveUnsaved": "Du hast ungespeicherte Änderungen am Workflow. Ohne Speichern verlassen?",
+  "leavePending": "Eine Änderung am Workflow läuft noch. Verlassen bricht sie nicht ab. Trotzdem verlassen?",
+  "leaveTitle": "Diesen Workflow verlassen?",
+  "leaveConfirm": "Workflow verlassen",
+  "leaveCancel": "Hier bleiben"
 }

@@ -1,0 +1,195 @@
+{
+  "date": "2026-11-02",
+  "issue": 674,
+  "scope": "Workflow draft same-tab link navigation; technical qualification, not whole WF-017 acceptance",
+  "baseline": {
+    "revision": "cc6268266885f215e357d440523e9f9dec9cb0a1",
+    "actualLossReproduced": true,
+    "checks": [
+      {
+        "name": "actual native sign-in HTTP200",
+        "ok": true
+      },
+      {
+        "name": "Secure HttpOnly native session",
+        "ok": true
+      },
+      {
+        "name": "app-minted Secure readable CSRF",
+        "ok": true
+      },
+      {
+        "name": "original SPA departure has no native or themed confirmation",
+        "ok": true
+      },
+      {
+        "name": "unsaved authored name is lost on actual library reopen",
+        "ok": true
+      }
+    ]
+  },
+  "sourcePins": {
+    "src/features/workflows/ui/useWorkflowEditor.ts": "b31db62a39cd9cc7e809f4d3dd21cc1165514995ef1c85e45ea6bc207de4b3ba",
+    "src/features/workflows/ui/WorkflowEditor.tsx": "ba4ce0606f1f4c0b34efc6c5499bea831473200202324a11a9717f57cb3c1ff1",
+    "src/features/workflows/ui/useWorkflowEditor.navigation.test.tsx": "e6fe761b6c6f57a797887f0b174c27d3c4fd3f7182c7700188d6c1dec770eaa4",
+    "src/features/workflows/messages/workflows.en.json": "863219636d54971e02e724bf29e74c8b988c6489ff8ace2f15ae781ca29c384e",
+    "src/features/workflows/messages/workflows.de.json": "1f9ca2489ce012e37eef119ea101cd446e45c554b6ce6be27fe18bbd8223a170",
+    "src/features/workflows/messages/workflows.fa.json": "80b1fccce0884d90b5013fd1c96bce878c42c3da0d3e9275d49dffb5fe9cbb92"
+  },
+  "checks": {
+    "focusedUnit": {
+      "passed": true,
+      "total": 21
+    },
+    "nativeBrowserJourney": [
+      {
+        "name": "actual native HTTP sign-in returned 200",
+        "ok": true
+      },
+      {
+        "name": "HTTP session cookie is Secure and HttpOnly",
+        "ok": true
+      },
+      {
+        "name": "app minted its Secure readable CSRF cookie",
+        "ok": true
+      },
+      {
+        "name": "follow-up template has three ordered steps",
+        "ok": true
+      },
+      {
+        "name": "insert-between creates a fourth ordered step",
+        "ok": true
+      },
+      {
+        "name": "undo restores three steps",
+        "ok": true
+      },
+      {
+        "name": "redo restores insertion",
+        "ok": true
+      },
+      {
+        "name": "save control becomes clean",
+        "ok": true
+      },
+      {
+        "name": "dirty internal navigation shows themed confirmation",
+        "ok": true
+      },
+      {
+        "name": "dismiss keeps current editor route",
+        "ok": true
+      },
+      {
+        "name": "dismiss retains typed dirty value",
+        "ok": true
+      },
+      {
+        "name": "reopening discards only explicitly abandoned edits",
+        "ok": true
+      },
+      {
+        "name": "cold reload retains saved custom step",
+        "ok": true
+      },
+      {
+        "name": "non-admin actor has no Publish control",
+        "ok": true
+      }
+    ],
+    "independentPostgreSQL": {
+      "exactlyOneOwnedWorkflow": true,
+      "savedNameExcludesDiscardedEdits": true,
+      "fourNodeGraph": true,
+      "exactStartWaitReadTaskEdges": true,
+      "customWaitNamePersisted": true,
+      "layoutHasAllFourPositions": true,
+      "nonAdmin": true,
+      "exactWorkflowViewCreateEditFlags": true,
+      "notPublishedOrActive": true,
+      "noVersionsOrRuns": true,
+      "nativeSessionPersisted": true
+    },
+    "hydratedBrowserFocusAndFarsi": [
+      {
+        "name": "native sign-in for isolated context",
+        "ok": true
+      },
+      {
+        "name": "safe Stay here action has browser focus",
+        "ok": true
+      },
+      {
+        "name": "Escape restores originating link focus",
+        "ok": true
+      },
+      {
+        "name": "Escape retains exact dirty value",
+        "ok": true
+      },
+      {
+        "name": "zoom changes actual viewport",
+        "ok": true
+      },
+      {
+        "name": "Farsi root sets RTL",
+        "ok": true
+      },
+      {
+        "name": "Farsi preserves authored saved name",
+        "ok": true
+      }
+    ],
+    "browserPageErrors": [],
+    "configuredTypecheck": "passed at the unchanged production cut; subsequent test-only promise annotations passed typed lint and final focused checks",
+    "typedLintI18nBiomeInventory": "passed; inventory coverage has no missing or invalid entries"
+  },
+  "environment": {
+    "runtime": "Bun 1.4.4",
+    "app": "Actual Next development app on owned HTTPS loopback",
+    "database": "Disposable real PostgreSQL 16, canonical migrations 0000-0098",
+    "actor": "Synthetic non-admin, native password HTTP session and application-minted CSRF, view/create/edit only",
+    "globalTrustChanged": false
+  },
+  "execution": {
+    "allocation": "ROOT-GOAL-WF017-BROWSER-20261102-2",
+    "seconds": 291.2058597910218,
+    "limitSeconds": 480,
+    "maxSampledAggregateBytes": 8342570270.72,
+    "aggregateCapBytes": 8589934592
+  },
+  "cleanup": {
+    "allPriorListenerIdentitiesRetained": true,
+    "missingPriorListeners": [],
+    "ownedGroupsGone": true,
+    "ownedContainerGone": true,
+    "foreignContainersRetained": true,
+    "sourcePinsUnchanged": true,
+    "privateFilesDeleted": true,
+    "cleanupErrors": [],
+    "sampledAggregateUnder8GiB": true,
+    "seconds": 291.2058597910218
+  },
+  "browserContexts": {
+    "ownedContextsCreated": 4,
+    "ownedContextsClosedInFinally": 4,
+    "defaultContextModified": false,
+    "globalCertificateTrustModified": false
+  },
+  "retainedFailedAttempts": [
+    {
+      "reason": "Conservative app-only 6GiB guard stopped first allocation after baseline proof; no modified green claim. Owned cleanup complete."
+    },
+    {
+      "reason": "DOM-loaded follow-up did not wait for actual hydrated dirty UI; no dialog appeared. Retried only after canvas ready and Unsaved changes visible; that bounded check passed. No source defect inferred."
+    }
+  ],
+  "limits": [
+    "No browser Back/Forward qualification.",
+    "No publish, live/simulated workflow execution, worker, provider, enrollment, or MFA qualification.",
+    "Pointer pan/drag/reconnect, named condition-branch paths and keyboard graph undo/redo are outside this actual-browser slice.",
+    "Screenshots are synthetic evidence; human acceptance, release and deployment remain separate gates."
+  ]
+}

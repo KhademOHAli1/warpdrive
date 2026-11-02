@@ -3,6 +3,7 @@
 import { ArrowLeft, FlaskConical, Play, Save } from "lucide-react";
 import Link from "next/link";
 import { useId, useRef, useState } from "react";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -171,6 +172,17 @@ export function WorkflowEditor({ initial }: { initial: WorkflowDetail }) {
           </TabsContent>
         </Tabs>
       </div>
+      <ConfirmDialog
+        open={editor.leaveRequest !== null}
+        onOpenChange={(open) => {
+          if (!open) editor.cancelLeave();
+        }}
+        title={t("leaveTitle")}
+        description={t(editor.pending ? "leavePending" : "leaveUnsaved")}
+        confirmLabel={t("leaveConfirm")}
+        cancelLabel={t("leaveCancel")}
+        onConfirm={editor.confirmLeave}
+      />
       {runMode !== null && (
         <RunDialog
           workflowId={initial.id}

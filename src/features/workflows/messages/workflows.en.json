@@ -213,5 +213,10 @@
   "simulatedWait": "Simulated wait; no real waiting.",
   "simulatedResume": "Simulated resume time",
   "waitTimingUnavailable": "Resume time unavailable",
-  "waitRecoveryHint": "The run becomes eligible at this time. Background recovery is scheduled every minute; execution can start later. Cancellation stops this wait and later steps; completed actions remain."
+  "waitRecoveryHint": "The run becomes eligible at this time. Background recovery is scheduled every minute; execution can start later. Cancellation stops this wait and later steps; completed actions remain.",
+  "leaveUnsaved": "You have unsaved workflow changes. Leave without saving?",
+  "leavePending": "A workflow change is still in progress. Leaving will not cancel it. Leave?",
+  "leaveTitle": "Leave this workflow?",
+  "leaveConfirm": "Leave workflow",
+  "leaveCancel": "Stay here"
 }
