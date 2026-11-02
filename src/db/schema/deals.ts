@@ -81,6 +81,8 @@ export const deals = pgTable(
       .notNull()
       .defaultNow()
       .$onUpdate(() => new Date()),
+    // Database-owned on every insert/update; command adoption remains a separate increment.
+    writeVersion: uuid("write_version").notNull().defaultRandom(),
     deletedAt: timestamp("deleted_at", { withTimezone: true }),
     // Archive is orthogonal to status (deal keeps open/won/lost); null = active.
     archivedAt: timestamp("archived_at", { withTimezone: true }),

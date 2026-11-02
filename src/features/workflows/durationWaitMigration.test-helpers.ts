@@ -25,12 +25,12 @@ const journalEnvelope = z.strictObject({
         breakpoints: z.boolean(),
       }),
     )
-    .length(PREFIX_COUNT + 1),
+    .min(PREFIX_COUNT + 1),
 });
 const hash = (value: string | Uint8Array) => createHash("sha256").update(value).digest("hex");
 
-// Only the populated 0..97 baseline is copied. Upgrade against the actual, unrelabeled
-// canonical 0..98 folder, including its reviewed journal identity and unchanged SQL body.
+// Freeze both real historical prefixes so later canonical migrations cannot silently
+// enter this 0098 qualification. Preserve their journal identities and exact SQL bytes.
 export async function durationMigrationFixtures(signal: AbortSignal) {
   const owned = await mkdtemp(join(tmpdir(), "warpdrive-duration-upgrade-"));
   try {
@@ -40,10 +40,10 @@ export async function durationMigrationFixtures(signal: AbortSignal) {
       ),
     );
     const parsed = parseMigrationJournal(raw);
-    if (!parsed.ok || parsed.value.length !== PREFIX_COUNT + 1)
-      throw new TypeError("Missing exact 99-entry canonical duration-wait chain");
+    if (!parsed.ok || parsed.value.length < PREFIX_COUNT + 1)
+      throw new TypeError("Missing canonical duration-wait prefix");
     const baseline = parsed.value.slice(0, PREFIX_COUNT);
-    const candidate = parsed.value.at(-1);
+    const candidate = parsed.value[PREFIX_COUNT];
     if (
       candidate === undefined ||
       candidate.idx !== PREFIX_COUNT ||
@@ -52,7 +52,9 @@ export async function durationMigrationFixtures(signal: AbortSignal) {
     )
       throw new TypeError("Missing exact canonical 0098 duration-wait migration");
     const baselineFolder = join(owned, "baseline");
+    const candidateFolder = join(owned, "candidate");
     await mkdir(join(baselineFolder, "meta"), { recursive: true });
+    await mkdir(join(candidateFolder, "meta"), { recursive: true });
     const sources: Array<MigrationJournalEntry & { sha256: string }> = [];
     for (const entry of baseline) {
       signal.throwIfAborted();
@@ -66,11 +68,13 @@ export async function durationMigrationFixtures(signal: AbortSignal) {
         sha256: hash(body),
       });
       await writeFile(join(baselineFolder, `${entry.tag}.sql`), body, { signal });
+      await writeFile(join(candidateFolder, `${entry.tag}.sql`), body, { signal });
     }
     if (hash(JSON.stringify(sources)) !== PREFIX_DIGEST)
       throw new TypeError("Pre-0098 source prefix differs from the reviewed fixture");
     const body = await readFile(join(canonicalFolder, `${candidate.tag}.sql`), { signal });
     if (hash(body) !== CANDIDATE_HASH) throw new TypeError("0098 SQL body differs from review");
+    await writeFile(join(candidateFolder, `${candidate.tag}.sql`), body, { signal });
     await writeFile(
       join(baselineFolder, "meta/_journal.json"),
       JSON.stringify({
@@ -80,10 +84,19 @@ export async function durationMigrationFixtures(signal: AbortSignal) {
       }),
       { signal },
     );
+    await writeFile(
+      join(candidateFolder, "meta/_journal.json"),
+      JSON.stringify({
+        version: "7",
+        dialect: "postgresql",
+        entries: parsed.value.slice(0, PREFIX_COUNT + 1),
+      }),
+      { signal },
+    );
     signal.throwIfAborted();
     return {
       baselineFolder,
-      candidateFolder: canonicalFolder,
+      candidateFolder,
       sources,
       candidateHash: CANDIDATE_HASH,
       candidateWhen: candidate.when,

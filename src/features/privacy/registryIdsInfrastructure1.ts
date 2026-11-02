@@ -89,7 +89,7 @@ export const infrastructureIds1: string[] = [
   "sourceReview:src/db/schema/customFieldDefs.ts#4cebf168163a7d29aed5892c582b7ea2b367b14be73d3bf8bcab896ff0a4f8ae",
   "sourceReview:src/db/schema/dealFollowers.ts#1110884c8ef060cc6194cacde6e4c63417affb2ca75f2c1feb52ceb6ccb77fb4",
   "sourceReview:src/db/schema/dealParticipants.ts#c5dbc1db85a27b9a864bc2073d60c8d14e01dfc4d1f52d6ef7a4e227b8259c24",
-  "sourceReview:src/db/schema/deals.ts#0f2d7167d29e03cc3e4a3fd88aaa05d4b5240ff2c2bd3b169f781fea04f29f8b",
+  "sourceReview:src/db/schema/deals.ts#06524f5b232c71a076fe8477940d29f86991f5fbb91ce6372f38648c1fb45ce8",
   "sourceReview:src/db/schema/enrichment.ts#28c362f983de5fddbd2914a7bd3ee54fbd97060049225f35d85fb9db593a5184",
   "sourceReview:src/db/schema/files.ts#441aed4631ce3fe968f64e1c450dbdaafa59c9999637f058b424e4129bcd588e",
   "sourceReview:src/db/schema/goals.ts#1622be5e92eb8209972978c8246e47bba53b74b663ef79a2f454ead12bf9d75f",

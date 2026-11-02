@@ -106,6 +106,13 @@ it("preserves populated canonical 0..97 workflow and CRM data through canonical 
       ok: true,
       value: { applied: true },
     });
+    // This qualification ends at 0098 even after later canonical schema additions.
+    expect(
+      (
+        await h.pool.query(`SELECT column_name FROM information_schema.columns
+      WHERE table_schema='public' AND table_name='deals' AND column_name='write_version'`)
+      ).rows,
+    ).toEqual([]);
     const afterLedger = await ledger(h);
     expect(afterLedger.slice(0, beforeLedger.length)).toEqual(beforeLedger);
     expect(afterLedger).toHaveLength(99);
