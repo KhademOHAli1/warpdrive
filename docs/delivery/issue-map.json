@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "KhademOHAli1/warpdrive",
-  "generated_at": "2026-11-02T01:47:57+00:00",
+  "generated_at": "2026-11-02T02:46:02+00:00",
   "issues": {
     "programme/integrations": {
       "number": 7,
@@ -5420,6 +5420,12 @@
       "id": 6154431748,
       "node_id": "I_kwDOVcNfnM8AAAABbtUtBA",
       "url": "https://github.com/KhademOHAli1/warpdrive/issues/910"
+    },
+    "delivery/mcp-issuer-response-20261102": {
+      "number": 912,
+      "id": 6155199456,
+      "node_id": "I_kwDOVcNfnM8AAAABbuDj4A",
+      "url": "https://github.com/KhademOHAli1/warpdrive/issues/912"
     }
   },
   "sources": [

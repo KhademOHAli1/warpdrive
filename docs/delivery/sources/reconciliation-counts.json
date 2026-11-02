@@ -1,11 +1,11 @@
 {
   "recordedAt": "2026-11-02",
   "sourceHead": "ee36663b3318ba84b7a0b1600e34e773f9597d88",
-  "items": 903,
+  "items": 904,
   "kinds": {
     "programme": 11,
     "package": 62,
-    "deliverable": 829,
+    "deliverable": 830,
     "maintenance": 1
   },
   "sourceTaskMappings": 2170,
@@ -53,5 +53,11 @@
   "frozenOriginalSourceTaskMappings": 2169,
   "appendedMaintenanceMappings": 1,
   "frozenSourceHashesVerified": 37,
-  "currentSourceNamespaces": 38
+  "currentSourceNamespaces": 38,
+  "issuerResponseIncrement": {
+    "canonicalId": "delivery/mcp-issuer-response-20261102",
+    "issue": 912,
+    "sourceTaskMappingsAdded": 0,
+    "allPrevious903ItemsUnchanged": true
+  }
 }

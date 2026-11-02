@@ -79710,6 +79710,107 @@
       "remaining_gates": [
         "Review the entire bounded alert set and exact-revision evidence before acceptance."
       ]
+    },
+    {
+      "id": "delivery/mcp-issuer-response-20261102",
+      "title": "Identify the literal MCP OAuth issuer in validated authorization responses",
+      "module": "integrations",
+      "kind": "deliverable",
+      "parent": "integration/AISEC-009",
+      "contributes_to": [
+        "integration/AISEC-010"
+      ],
+      "source_tasks": [],
+      "dependencies": [],
+      "acceptance": [
+        "For approved and denied authorization responses that already passed the existing request, resource and registered-redirect validation, set exactly one literal iss value from the configured issuer. Preserve the approved callback origin/path, opaque state and unrelated callback parameters, and the existing code-versus-access_denied response behavior. Incoming or callback-supplied issuer values must not replace the configured issuer.",
+        "Advertise authorization_response_iss_parameter_supported: true in the authorization-server metadata and keep its issuer value consistent with the literal authorization response issuer across the supported issuer/profile variants. Preserve the existing discovery and registration contract.",
+        "Qualify the actual response and metadata paths plus SDK issuer validation. Cover approved/denied responses, duplicate foreign callback issuer values, advertised missing-issuer rejection, mismatches, and the existing unadvertised compatibility case. Invalid authorization requests retain their preexisting no-redirect/no-credential-mutation boundary.",
+        "Bind the exact integrated source to the focused issuer/SDK tests, types, lint and actual source-inventory evidence. Preserve the historical qualification status of the AISEC-010 evidence documents and the fixture-only Vitest envDir:false guard. Record required hosted CI and scope-specific human acceptance separately from the source-only qualification; wider AISEC-009/010 and provider/installation acceptance remain open."
+      ],
+      "evidence": [
+        {
+          "level": "exact qualified source postimages; canonical publication pending",
+          "base_revision": "1ab8921d9b2763beb0771e29c495733a81c58ca4",
+          "paths": [
+            {
+              "path": "docs/integration-execution/README.md",
+              "sha256": "2d845b176f1a4670a3a5068f7a7b5c22d3e2fb5123ddfab369fc89488f11a64f"
+            },
+            {
+              "path": "docs/integration-execution/mcp-discovery-acceptance-20261102.md",
+              "sha256": "421a7a16282d8407608301621641f88df06adb6b51828c36ef8baea93b6ebce2"
+            },
+            {
+              "path": "docs/integration-execution/tasks.csv",
+              "sha256": "b92b89042d07bf3e8982eef77401507703a07936d7b7a76d47b7805ec6cdada9"
+            },
+            {
+              "path": "docs/mcp-server.md",
+              "sha256": "262cac55304437d691a78fb8c91350f761e0c21a33fef27d8080915ea93876b5"
+            },
+            {
+              "path": "src/features/oauth/authorizationHttp.ts",
+              "sha256": "5ffbe4282c70ffea11cd4267ab6fb470278ab4b524734d90684c17c1993b99e5"
+            },
+            {
+              "path": "src/features/oauth/issuerMetadata.test.ts",
+              "sha256": "9e68f317b93686bd22fc3a00170a1239d6bc1cbe59c3851ce3430160a0bd2738"
+            },
+            {
+              "path": "src/features/oauth/issuerResponse.integration.test.ts",
+              "sha256": "f080d8bf3f4039276a105b67027a29a4d71965565d5d788a9e4d1367d6d03ae9"
+            },
+            {
+              "path": "src/features/oauth/issuerValidation.test.ts",
+              "sha256": "644244d07365b512fb25d0b710a933f167067615f56cafe8e6122833920759f6"
+            },
+            {
+              "path": "src/features/oauth/metadata.ts",
+              "sha256": "5bcea7fdb6086975412a7a93c7f739cf94bda572fb3052de495a80aad87f8b19"
+            },
+            {
+              "path": "src/features/oauth/resourceDiscovery.test.ts",
+              "sha256": "58be8e8cc356240c66427ebf6ee0221433d1d059cc60933d1935f612eec62637"
+            },
+            {
+              "path": "vitest.config.ts",
+              "sha256": "dfd48deb5886d895c579cfb5be4d0060b246c0a1add433e1467d3a999e701005"
+            }
+          ]
+        },
+        {
+          "level": "integration-coordinator source-only qualification, not full-product acceptance",
+          "recorded_at": "2026-11-02T02:32:26.855294+00:00",
+          "qualification_sha256": "21a6a534e6de702ea5d4d246bc0f711c8cf8d51141d5db2db3f6a370b9b8bbe1",
+          "results": [
+            "Next type generation passed",
+            "Full TypeScript check passed",
+            "Typed ESLint and Biome passed on the seven issuer source/test paths",
+            "Forty unit cases passed in four files",
+            "Two actual source-inventory runs agreed; coverage had no missing/invalid declarations"
+          ],
+          "actual_source_report_sha256": "9efd6d84853ac88b20a16011d032bb547e5f57c33415ab18e159b2540f511fc8",
+          "source_fingerprint": "7e11d24407a8ef3cc0069edf923c476653b16d4cf94f8d9abd6dfd1ba849976b",
+          "limits": [
+            "The forty focused cases are not the separate database-backed issuer-response integration evidence.",
+            "No real native/provider/services, installed, release or full-product acceptance is supplied by this qualification."
+          ]
+        }
+      ],
+      "owner": "KhademOHAli1",
+      "owner_role": "MCP security maintainer; canonical publication by the Settings/integration coordinator",
+      "module_owner_chat": "01a19251-a472-7cd1-86cd-8dc245dd5b84",
+      "observed_status": "active",
+      "observed_stage": "qualified bounded source; canonical publication and hosted CI pending",
+      "priority": "P1",
+      "release": "next",
+      "milestone": "Next usable release: Core CRM journeys",
+      "notes": "Bounded issuer-response and discovery-support increment associated with the actual qualified eleven-path MCP packet. The earlier resource-before-grant admission change remains its own delivery/mcp-resource-policy-fc5fae8 issue. The three historical AISEC-010 documentation updates and the Vitest fixture guard retain their explicit evidence limits; this item does not complete either broader source task. No original legacy task row is invented or remapped.",
+      "remaining_gates": [
+        "Link the exact published main source and required hosted CI. Attach the applicable real database-backed issuer-response result and authenticated whole-scope maintainer acceptance before Accepted/closure.",
+        "Broad AISEC-009/010 criteria, the four full user-journey release gates, stable publication, deployment and provider/installation qualification keep their separate evidence requirements."
+      ]
     }
   ],
   "aliases": {

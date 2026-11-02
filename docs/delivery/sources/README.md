@@ -2,7 +2,7 @@
 
 Snapshot date: 2 November 2026. GitHub owns live execution status after import. These files preserve approved specifications and dated observations; their CSV/JSON statuses do not compete with GitHub. Product/technical decisions and all acceptance boundaries remain binding.
 
-The inventory contains **903 canonical issues** (11 programmes, 62 work packages, 829 deliverables and one maintenance item), with **2170 source-ID mappings**. The original 2169 mappings are unchanged; the dated CodeQL maintenance intake appends one new mapping. These are traceability counts. Source scopes overlap and do not define a combined feature denominator or completion percentage.
+The inventory contains **904 canonical issues** (11 programmes, 62 work packages, 830 deliverables and one maintenance item), with **2170 source-ID mappings**. The original 2169 mappings are unchanged; the dated CodeQL maintenance intake appends one new mapping. These are traceability counts. Source scopes overlap and do not define a combined feature denominator or completion percentage.
 
 | Source namespace            | Original records mapped |
 | --------------------------- | ----------------------: |
@@ -56,3 +56,5 @@ The bounded `delivery/mcp-resource-policy-fc5fae8` increment was appended for th
 Four bounded technical support issues now provide the actual prerequisites for the first usable journeys. Only the four journey dependency lists changed. Every original roadmap item, criterion, dependency, source mapping and unfinished scope is unchanged; parent/contribution links retain the full broader obligations.
 
 The bounded `ops/code-scanning-2026-11-02` maintenance intake was appended as issue #910 for the actual merged security changes and subsequent findings. It retains its own full alert-batch acceptance and exact-revision CI gates; neither its merge nor zero open scan alerts completes the broader maintenance parent. The original 37 frozen source entries and 2169 original mappings remain unchanged.
+
+The bounded `delivery/mcp-issuer-response-20261102` increment is registered as issue #912 for literal issuer identification in validated authorization responses, its discovery advertisement and scoped SDK/response tests. It adds no legacy source reference, preserves every previous903 item, and keeps AISEC-009/010 and full provider/installation acceptance separate. The first-release planning milestone now has twelve items.
