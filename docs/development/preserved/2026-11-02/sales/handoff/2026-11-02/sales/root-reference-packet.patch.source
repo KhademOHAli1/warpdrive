@@ -1,0 +1,1295 @@
+--- /dev/null
++++ b/src/features/deals/dealMove.actorFreshness.integration.test.ts
+@@ -0,0 +1,328 @@
++// Follow-on authority regression, separate from deal write-version qualification.
++import { eq } from "drizzle-orm";
++import { drizzle } from "drizzle-orm/node-postgres";
++import type { PoolClient } from "pg";
++import { expect, test } from "vitest";
++import { dealMovedChannel } from "@/constants/boardChannels";
++import { ERROR_IDS } from "@/constants/errorIds";
++import * as schema from "@/db/schema";
++import { deals, permissionSets } from "@/db/schema";
++import { loadLiveSessionByToken } from "@/features/auth/session";
++import { hydrateActor } from "@/server/hydrateActor";
++import { makeTestDb, type TestDb } from "@/test/db";
++import { createIntegrationPlatformFixtures } from "@/test/integrationPlatformFixtures";
++import { loadEditableDeal } from "./dealAuth";
++import { moveDeal } from "./dealMove";
++import type { NativeMoveSession } from "./dealMoveAuthority";
++import { installDealWriteVersionFixture } from "./dealWriteVersion.test-helpers";
++
++type MoveResult = Awaited<ReturnType<typeof moveDeal>>;
++type MoveOutcome = { kind: "result"; value: MoveResult } | { kind: "thrown"; error: unknown };
++type RaceRun = {
++  mover?: Promise<MoveOutcome>;
++  locker?: PoolClient;
++  lockerOpen: boolean;
++};
++type Snapshot = {
++  row: unknown;
++  audit: unknown[];
++  channel: { version: string; updatedAt: string }[];
++};
++
++// A promise deadline does not cancel SQL. Server-side timeouts and retiring only
++// this test's borrowed clients supply the remaining cleanup bounds.
++async function within<T>(pending: Promise<T>, ms: number, label: string): Promise<T> {
++  let timer: ReturnType<typeof setTimeout> | undefined;
++  try {
++    return await Promise.race([
++      pending,
++      new Promise<never>((_resolve, reject) => {
++        timer = setTimeout(() => reject(new Error(`${label}: deadline exceeded`)), ms);
++      }),
++    ]);
++  } finally {
++    if (timer !== undefined) clearTimeout(timer);
++  }
++}
++
++async function backendPid(client: PoolClient): Promise<number> {
++  const result = await client.query<{ pid: number }>("SELECT pg_backend_pid() AS pid");
++  const pid = result.rows[0]?.pid;
++  if (pid === undefined) throw new Error("fixture backend PID is missing");
++  return pid;
++}
++
++async function waitForBlockedDealRowLock(
++  observer: PoolClient,
++  moverPid: number,
++  lockerPid: number,
++): Promise<void> {
++  const deadline = performance.now() + 3_000;
++  while (performance.now() < deadline) {
++    await observer.query("SELECT pg_stat_clear_snapshot()");
++    const result = await observer.query<{
++      state: string;
++      waitType: string | null;
++      blockedByLocker: boolean;
++      dealRowLock: boolean;
++    }>(
++      `SELECT a.state, a.wait_event_type AS "waitType",
++              $2::integer = ANY(pg_blocking_pids(a.pid)) AS "blockedByLocker",
++              (a.query ~* '^update[[:space:]]+"?deals"?[[:space:]]+set'
++               OR a.query ~* '^select[[:space:]].*[[:space:]]from[[:space:]]+"?deals"?[[:space:]]+where[[:space:]].*[[:space:]]for[[:space:]]+update[[:space:]]*$') AS "dealRowLock"
++         FROM pg_stat_activity AS a
++        WHERE a.pid = $1 AND a.datname = current_database()`,
++      [moverPid, lockerPid],
++    );
++    const row = result.rows[0];
++    if (
++      row?.state === "active" &&
++      row.waitType === "Lock" &&
++      row.blockedByLocker &&
++      row.dealRowLock
++    )
++      return;
++    // Polling only paces the observations; the exact SQL lock witness orders the race.
++    await new Promise<void>((resolve) => setTimeout(resolve, 10));
++  }
++  throw new Error("mover did not reach the locker-blocked deal-row lock within 3 seconds");
++}
++
++async function snapshot(client: PoolClient, dealId: string, channel: string): Promise<Snapshot> {
++  // Preserve database timestamp microseconds and every persisted deal field, including its nonce.
++  const row = await client.query<{ value: unknown }>(
++    "SELECT to_jsonb(d) AS value FROM deals AS d WHERE d.id = $1",
++    [dealId],
++  );
++  if (row.rows.length !== 1) throw new Error("fixture deal disappeared");
++  const audit = await client.query<{ value: unknown }>(
++    `SELECT to_jsonb(c) AS value FROM change_logs AS c
++      WHERE c.entity_type = 'deal' AND c.entity_id = $1 ORDER BY c.id`,
++    [dealId],
++  );
++  const version = await client.query<{ version: string; updatedAt: string }>(
++    `SELECT version::text AS version, updated_at::text AS "updatedAt"
++       FROM channel_versions WHERE channel = $1`,
++    [channel],
++  );
++  return {
++    row: row.rows[0]?.value,
++    audit: audit.rows.map((item) => item.value),
++    channel: version.rows,
++  };
++}
++
++function resultSummary(outcome: MoveOutcome) {
++  if (outcome.kind === "thrown") return { kind: "thrown", message: String(outcome.error) };
++  return outcome.value.ok
++    ? { kind: "result", ok: true }
++    : { kind: "result", ok: false, errorId: outcome.value.error.id };
++}
++
++async function captureNativeEditor(h: TestDb, signal: AbortSignal) {
++  const seeded = await createIntegrationPlatformFixtures(
++    h,
++    // Native session expiry is evaluated against the real database clock.
++    { namespace: "moveactorfreshness", now: new Date() },
++    signal,
++  );
++  if (!seeded.ok) throw new Error(`native fixture setup failed: ${seeded.error.code}`);
++  const f = seeded.value;
++  const live = await loadLiveSessionByToken(h.db, f.sessions.member.token, signal);
++  if (!live.ok) throw new Error("native fixture session was not accepted");
++  expect(live.value).toEqual({ userId: f.users.member.id, sessionId: f.sessions.member.id });
++  const actor = await hydrateActor(h.db, live.value.userId, signal);
++  if (actor === null) throw new Error("native fixture actor was not hydrated");
++  expect(actor.type).toBe("regular");
++  expect(actor.isActive).toBe(true);
++  expect(actor.flags.has("deal.edit_own")).toBe(true);
++  const nativeSession: NativeMoveSession = live.value;
++  return { f, actor, live: nativeSession };
++}
++
++async function preparePermissionRace(h: TestDb) {
++  expect(h.pool.options.max).toBe(4);
++  h.pool.options.connectionTimeoutMillis = 2_000;
++  await installDealWriteVersionFixture(h.pool);
++  const { f, actor, live } = await captureNativeEditor(h, AbortSignal.timeout(10_000));
++  const dealId = f.deals.visible.id;
++  // Finish fixture arrangement before capturing the human command's snapshot/token.
++  const [baseline] = await h.db
++    .update(deals)
++    .set({ boardPosition: "2" })
++    .where(eq(deals.id, dealId))
++    .returning();
++  if (baseline === undefined) throw new Error("fixture baseline deal is missing");
++  expect(baseline.ownerId).toBe(actor.id);
++  expect(baseline.boardPosition).toBe("2");
++  const permissionSetId = f.users.member.permissionSetId;
++  if (permissionSetId === null) throw new Error("native member permission set is missing");
++  const [permissionSet] = await h.db
++    .select()
++    .from(permissionSets)
++    .where(eq(permissionSets.id, permissionSetId));
++  if (permissionSet === undefined) throw new Error("native member permission set row is missing");
++  return { f, actor, live, dealId, baseline, permissionSetId, permissionSet };
++}
++
++async function releaseLocker(
++  run: RaceRun,
++  retire: (client: PoolClient) => void,
++  failures: unknown[],
++): Promise<void> {
++  const locker = run.locker;
++  if (locker === undefined) return;
++  if (run.lockerOpen) {
++    try {
++      await within(locker.query("ROLLBACK"), 3_000, "locker rollback");
++      run.lockerOpen = false;
++    } catch (error) {
++      failures.push(error);
++    }
++  }
++  try {
++    retire(locker);
++  } catch (error) {
++    failures.push(error);
++  }
++}
++
++test("a native deal move rejects a permission downgrade committed during its deal-row-lock wait", async () => {
++  const h = await makeTestDb();
++  const owned: PoolClient[] = [];
++  const retired = new Set<PoolClient>();
++  const clientErrors: Error[] = [];
++  const failures: unknown[] = [];
++  const run: RaceRun = { lockerOpen: false };
++  const track = (client: PoolClient) => {
++    client.on("error", (error: Error) => clientErrors.push(error));
++    owned.push(client);
++    return client;
++  };
++  const retire = (client: PoolClient) => {
++    if (retired.has(client)) return;
++    retired.add(client);
++    client.release(true);
++  };
++  try {
++    const { f, actor, live, dealId, baseline, permissionSetId, permissionSet } =
++      await preparePermissionRace(h);
++
++    const locker = track(await h.pool.connect());
++    run.locker = locker;
++    const mover = track(await h.pool.connect());
++    const observer = track(await h.pool.connect());
++    await locker.query("SET statement_timeout = '2000ms'");
++    await locker.query("SET idle_in_transaction_session_timeout = '10000ms'");
++    await mover.query("SET statement_timeout = '10000ms'");
++    await mover.query("SET lock_timeout = '8000ms'");
++    await observer.query("SET statement_timeout = '1000ms'");
++    const lockerPid = await backendPid(locker);
++    const moverPid = await backendPid(mover);
++    expect(moverPid).not.toBe(lockerPid);
++    const moverDb = drizzle(mover, { schema });
++    const observerDb = drizzle(observer, { schema });
++    const channel = dealMovedChannel(baseline.pipelineId);
++    const before = await snapshot(observer, dealId, channel);
++    expect(before.row).toMatchObject({ write_version: baseline.writeVersion });
++
++    await locker.query("BEGIN");
++    run.lockerOpen = true;
++    // A lock alone never rotates write_version. No competing deal writer participates.
++    await locker.query("SELECT id FROM deals WHERE id = $1 FOR UPDATE", [dealId]);
++    run.mover = moveDeal(
++      moverDb,
++      actor,
++      {
++        dealId,
++        toStageId: baseline.stageId,
++        beforePosition: "10",
++        afterPosition: "20",
++        expectedWriteVersion: baseline.writeVersion,
++      },
++      AbortSignal.timeout(12_000),
++      live,
++    ).then(
++      (value): MoveOutcome => ({ kind: "result", value }),
++      (error: unknown): MoveOutcome => {
++        failures.push(error);
++        return { kind: "thrown", error };
++      },
++    );
++    await waitForBlockedDealRowLock(observer, moverPid, lockerPid);
++
++    // This autocommit UPDATE acknowledges the downgrade while the deal-row lock waits.
++    // It follows the existing actor-freshness fixture's SQL authority mutation; no HTTP
++    // permission-editor or browser authentication-flow claim is made by this regression.
++    const revoked = await observerDb
++      .update(permissionSets)
++      .set({ flags: { ...permissionSet.flags, "deal.edit_own": false } })
++      .where(eq(permissionSets.id, permissionSetId))
++      .returning({ id: permissionSets.id });
++    expect(revoked).toEqual([{ id: permissionSetId }]);
++    const checkSignal = AbortSignal.timeout(4_000);
++    const stillLive = await loadLiveSessionByToken(
++      observerDb,
++      f.sessions.member.token,
++      checkSignal,
++    );
++    expect(stillLive).toEqual({ ok: true, value: live });
++    const current = await hydrateActor(observerDb, actor.id, checkSignal);
++    if (current === null)
++      throw new Error("permission downgrade unexpectedly deactivated the owner");
++    expect(current.flags.has("deal.edit_own")).toBe(false);
++    expect(actor.flags.has("deal.edit_own")).toBe(true);
++    expect(await loadEditableDeal(observerDb, current, dealId, checkSignal)).toMatchObject({
++      ok: false,
++      error: { id: ERROR_IDS.PERM_DENIED },
++    });
++    const whileBlocked = await snapshot(observer, dealId, channel);
++    expect(whileBlocked.row).toMatchObject({ write_version: baseline.writeVersion });
++    expect(whileBlocked).toEqual(before);
++    // Reconfirm the same blocker after the committed downgrade and unchanged target checks.
++    await waitForBlockedDealRowLock(observer, moverPid, lockerPid);
++
++    await locker.query("COMMIT");
++    run.lockerOpen = false;
++    // Never join the mover until the owned locker has acknowledged release.
++    const outcome = await within(run.mover, 3_000, "move after permission downgrade");
++    const after = await snapshot(observer, dealId, channel);
++    expect({ outcome: resultSummary(outcome), persisted: after }).toEqual({
++      outcome: { kind: "result", ok: false, errorId: ERROR_IDS.PERM_DENIED },
++      persisted: before,
++    });
++  } catch (error) {
++    failures.push(error);
++  } finally {
++    // Release/destroy the blocker before awaiting any outstanding mover. Retain rollback,
++    // late mover, connection and harness-close failures alongside the original test failure.
++    await releaseLocker(run, retire, failures);
++    try {
++      if (run.mover !== undefined) await within(run.mover, 3_000, "mover cleanup");
++    } catch (error) {
++      failures.push(error);
++    }
++    for (const client of owned) {
++      try {
++        retire(client);
++      } catch (error) {
++        failures.push(error);
++      }
++    }
++    try {
++      if (run.mover !== undefined) await within(run.mover, 2_000, "mover retirement");
++    } catch (error) {
++      failures.push(error);
++    }
++    try {
++      await h.close();
++    } catch (error) {
++      failures.push(error);
++    }
++    if (clientErrors.length > 0)
++      failures.push(new AggregateError(clientErrors, "owned fixture client emitted an error"));
++  }
++  if (failures.length === 1) throw failures[0];
++  if (failures.length > 1)
++    throw new AggregateError(failures, "actor freshness race and cleanup failed");
++}, 30_000);
+--- /dev/null
++++ b/src/features/deals/dealMoveStageRace.integration.test.ts
+@@ -0,0 +1,294 @@
++// Regression fixture for a stale move after an observed competing row lock.
++import { eq, sql } from "drizzle-orm";
++import { drizzle } from "drizzle-orm/node-postgres";
++import type { PoolClient } from "pg";
++import { describe, expect, it } from "vitest";
++import { dealMovedChannel } from "@/constants/boardChannels";
++import { ERROR_IDS } from "@/constants/errorIds";
++import * as schema from "@/db/schema";
++import { deals } from "@/db/schema/deals";
++import { pipelines } from "@/db/schema/pipelines";
++import { seedPipelineWithStages, seedUser } from "@/db/testing/factories";
++import { makeTestDb, type TestDb } from "@/test/db";
++import { createDeal, moveDeal } from "./dealActions";
++import { adminSession, createSession, seedSettings } from "./dealMove.test-helpers";
++import { installDealWriteVersionFixture } from "./dealWriteVersion.test-helpers";
++
++const T0 = "2001-02-02T10:00:00.000000Z";
++const T1 = "2001-02-02T10:00:00.000500Z";
++const expectedUpdatedAt = new Date(T0).toISOString();
++type MoveResult = Awaited<ReturnType<typeof moveDeal>>;
++type MoveOutcome = { kind: "result"; value: MoveResult } | { kind: "thrown"; error: unknown };
++type Snapshot = {
++  row: unknown;
++  audit: unknown[];
++  channel: { version: string; updatedAt: string }[];
++};
++
++// This timeout bounds awaiting an owned promise. It does not cancel its SQL.
++// Server-side timeouts and final destruction of owned clients supply cleanup.
++async function within<T>(pending: Promise<T>, ms: number, label: string): Promise<T> {
++  let timer: ReturnType<typeof setTimeout> | undefined;
++  try {
++    return await Promise.race([
++      pending,
++      new Promise<never>((_resolve, reject) => {
++        timer = setTimeout(() => reject(new Error(`${label}: deadline exceeded`)), ms);
++      }),
++    ]);
++  } finally {
++    if (timer !== undefined) clearTimeout(timer);
++  }
++}
++
++async function backendPid(client: PoolClient): Promise<number> {
++  const result = await client.query<{ pid: number }>("SELECT pg_backend_pid() AS pid");
++  const pid = result.rows[0]?.pid;
++  if (pid === undefined) throw new Error("fixture backend PID is missing");
++  return pid;
++}
++
++async function waitForBlockedDealRowLock(
++  observer: PoolClient,
++  moverPid: number,
++  writerPid: number,
++): Promise<void> {
++  const deadline = performance.now() + 3_000;
++  while (performance.now() < deadline) {
++    await observer.query("SELECT pg_stat_clear_snapshot()");
++    const result = await observer.query<{
++      state: string;
++      waitType: string | null;
++      blockedByWriter: boolean;
++      dealRowLock: boolean;
++    }>(
++      `SELECT a.state, a.wait_event_type AS "waitType",
++              $2::integer = ANY(pg_blocking_pids(a.pid)) AS "blockedByWriter",
++              (a.query ~* '^update[[:space:]]+"?deals"?[[:space:]]+set'
++               OR a.query ~* '^select[[:space:]].*[[:space:]]from[[:space:]]+"?deals"?[[:space:]]+where[[:space:]].*[[:space:]]for[[:space:]]+update[[:space:]]*$') AS "dealRowLock"
++         FROM pg_stat_activity AS a
++        WHERE a.pid = $1 AND a.datname = current_database()`,
++      [moverPid, writerPid],
++    );
++    const row = result.rows[0];
++    if (
++      row?.state === "active" &&
++      row.waitType === "Lock" &&
++      row.blockedByWriter &&
++      row.dealRowLock
++    )
++      return;
++    // A bounded polling interval only paces queries; the lock witness orders the race.
++    await new Promise<void>((resolve) => setTimeout(resolve, 10));
++  }
++  throw new Error("stale mover did not reach the writer-blocked deal-row lock within 3 seconds");
++}
++
++async function snapshot(client: PoolClient, dealId: string, channel: string): Promise<Snapshot> {
++  // JSON/text snapshots retain PostgreSQL timestamp microseconds that JS Date loses.
++  const row = await client.query<{ value: unknown }>(
++    "SELECT to_jsonb(d) AS value FROM deals AS d WHERE d.id = $1",
++    [dealId],
++  );
++  if (row.rows.length !== 1) throw new Error("fixture deal disappeared");
++  const audit = await client.query<{ value: unknown }>(
++    `SELECT to_jsonb(c) AS value FROM change_logs AS c
++      WHERE c.entity_type = 'deal' AND c.entity_id = $1 ORDER BY c.id`,
++    [dealId],
++  );
++  const version = await client.query<{ version: string; updatedAt: string }>(
++    `SELECT version::text AS version, updated_at::text AS "updatedAt"
++       FROM channel_versions WHERE channel = $1`,
++    [channel],
++  );
++  return {
++    row: row.rows[0]?.value,
++    audit: audit.rows.map((item) => item.value),
++    channel: version.rows,
++  };
++}
++
++function resultSummary(outcome: MoveOutcome) {
++  if (outcome.kind === "thrown") return { kind: "thrown", message: String(outcome.error) };
++  return outcome.value.ok
++    ? { kind: "result", ok: true }
++    : { kind: "result", ok: false, errorId: outcome.value.error.id };
++}
++
++async function prepareStageRace(h: TestDb) {
++  await installDealWriteVersionFixture(h.pool);
++  expect(h.pool.options.max).toBe(4);
++  // The isolated harness owns this pool. Bound later fixture-client acquisition.
++  h.pool.options.connectionTimeoutMillis = 2_000;
++  await seedSettings(h.db);
++  const user = await seedUser(h.db, { isAdmin: true });
++  const { pipeline, stages } = await seedPipelineWithStages(h.db, ["A", "B"]);
++  const first = stages[0];
++  const second = stages[1];
++  if (first === undefined || second === undefined) throw new Error("missing fixture stages");
++  // Supplied domain actor: no native session/authentication or provider claim.
++  const actor = adminSession(user.id);
++  const created = await createDeal(
++    h.db,
++    createSession(user.id),
++    { title: "Concurrent stage move", pipelineId: pipeline.id, stageId: first.id },
++    AbortSignal.timeout(10_000),
++  );
++  if (!created.ok) throw created.error;
++  const dealId = created.value.id;
++  const channel = dealMovedChannel(pipeline.id);
++  await h.pool.query(
++    `UPDATE deals SET updated_at = $2::timestamptz,
++                      stage_entered_at = $2::timestamptz,
++                      board_position = '2' WHERE id = $1`,
++    [dealId, T0],
++  );
++  const [baseline] = await h.db.select().from(deals).where(eq(deals.id, dealId)).limit(1);
++  if (baseline === undefined) throw new Error("fixture baseline deal is missing");
++  expect(baseline.stageId).toBe(first.id);
++  expect(baseline.boardPosition).toBe("2");
++  expect(baseline.updatedAt.toISOString()).toBe(expectedUpdatedAt);
++  return { pipeline, first, second, actor, dealId, channel, baseline };
++}
++
++describe("moveDeal rejects a stale stage move after a same-millisecond winner", () => {
++  it("preserves the committed winner row, audit and channel version", async () => {
++    const h = await makeTestDb();
++    const owned: PoolClient[] = [];
++    const clientErrors: Error[] = [];
++    const failures: unknown[] = [];
++    const run: { stale?: Promise<MoveOutcome>; winner?: Snapshot } = {};
++    const track = (client: PoolClient) => {
++      client.on("error", (error: Error) => clientErrors.push(error));
++      owned.push(client);
++      return client;
++    };
++    try {
++      const { pipeline, first, second, actor, dealId, channel, baseline } =
++        await prepareStageRace(h);
++
++      const writer = track(await h.pool.connect());
++      const mover = track(await h.pool.connect());
++      const observer = track(await h.pool.connect());
++      await writer.query("SET statement_timeout = '2000ms'");
++      await writer.query("SET idle_in_transaction_session_timeout = '10000ms'");
++      await mover.query("SET statement_timeout = '8000ms'");
++      await mover.query("SET lock_timeout = '6000ms'");
++      await observer.query("SET statement_timeout = '1000ms'");
++      const writerPid = await backendPid(writer);
++      const moverPid = await backendPid(mover);
++      const writerDb = drizzle(writer, { schema });
++      const moverDb = drizzle(mover, { schema });
++
++      // Any callback failure rolls the writer back before control reaches the outer finally.
++      // Never await the blocked mover while this writer transaction is still open.
++      await writerDb.transaction(async (writerTx) => {
++        // Match service order. Both movers' pipeline SHARE locks remain compatible.
++        await writerTx.execute(
++          sql`SELECT id FROM ${pipelines} WHERE id = ${pipeline.id} FOR SHARE`,
++        );
++        await writerTx.execute(sql`SELECT id FROM ${deals} WHERE id = ${dealId} FOR UPDATE`);
++        run.stale = moveDeal(
++          moverDb,
++          actor,
++          {
++            dealId,
++            toStageId: first.id,
++            beforePosition: "10",
++            afterPosition: "20",
++            expectedUpdatedAt,
++            expectedWriteVersion: baseline.writeVersion,
++          },
++          AbortSignal.timeout(12_000),
++        ).then(
++          (value): MoveOutcome => ({ kind: "result", value }),
++          (error: unknown): MoveOutcome => {
++            failures.push(error);
++            return { kind: "thrown", error };
++          },
++        );
++        await waitForBlockedDealRowLock(observer, moverPid, writerPid);
++
++        // Actual competing mutation. moveDeal(writerTx) uses a nested savepoint.
++        const winner = await moveDeal(
++          writerTx,
++          actor,
++          {
++            dealId,
++            toStageId: second.id,
++            beforePosition: "30",
++            afterPosition: "40",
++            expectedUpdatedAt,
++            expectedWriteVersion: baseline.writeVersion,
++          },
++          AbortSignal.timeout(8_000),
++        );
++        if (!winner.ok) throw winner.error;
++        expect(winner.value.stageId).toBe(second.id);
++        expect(winner.value.boardPosition).toBe("35");
++        // Deliberately construct two distinct DB versions in one client-visible millisecond.
++        // Only version precision is injected; stage/order/audit/event use the real winner path.
++        await writerTx.execute(sql`
++          UPDATE ${deals} SET updated_at = ${T1}::timestamptz WHERE id = ${dealId}
++        `);
++        const precision = await writer.query<{
++          advanced: boolean;
++          sameMillisecond: boolean;
++          exactMicros: string;
++        }>(
++          `SELECT updated_at > $2::timestamptz AS advanced,
++                  date_trunc('milliseconds', updated_at) = $2::timestamptz AS "sameMillisecond",
++                  to_char(updated_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"') AS "exactMicros"
++             FROM deals WHERE id = $1`,
++          [dealId, T0],
++        );
++        expect(precision.rows).toEqual([
++          { advanced: true, sameMillisecond: true, exactMicros: T1 },
++        ]);
++        run.winner = await snapshot(writer, dealId, channel);
++      });
++      // COMMIT has acknowledged and released the blocker before joining the stale request.
++      const stale = run.stale;
++      const winnerSnapshot = run.winner;
++      if (stale === undefined || winnerSnapshot === undefined)
++        throw new Error("fixture did not launch both moves");
++      const outcome = await within(stale, 3_000, "stale move after winner commit");
++      const after = await snapshot(observer, dealId, channel);
++      expect({ outcome: resultSummary(outcome), persisted: after }).toEqual({
++        outcome: { kind: "result", ok: false, errorId: ERROR_IDS.DEAL_PRECONDITION },
++        persisted: winnerSnapshot,
++      });
++    } catch (error) {
++      failures.push(error);
++    } finally {
++      // The writer's transaction already committed or rolled back above. Capture late failures
++      // without an unhandled rejection, then retire all clients this test borrowed before close.
++      try {
++        if (run.stale !== undefined) await within(run.stale, 3_000, "mover cleanup");
++      } catch (error) {
++        failures.push(error);
++      }
++      for (const client of owned) {
++        try {
++          client.release(true);
++        } catch (error) {
++          failures.push(error);
++        }
++      }
++      try {
++        if (run.stale !== undefined) await within(run.stale, 2_000, "mover retirement");
++      } catch (error) {
++        failures.push(error);
++      }
++      try {
++        await h.close();
++      } catch (error) {
++        failures.push(error);
++      }
++      if (clientErrors.length > 0)
++        failures.push(new AggregateError(clientErrors, "owned fixture client emitted an error"));
++    }
++    if (failures.length === 1) throw failures[0];
++    if (failures.length > 1) throw new AggregateError(failures, "stage race and cleanup failed");
++  }, 25_000);
++});
+--- /dev/null
++++ b/src/features/deals/dealVersionCommands.integration.test.ts
+@@ -0,0 +1,134 @@
++import { describe, expect, it } from "vitest";
++import { ZodError } from "zod";
++import { ERROR_IDS } from "@/constants/errorIds";
++import { archiveDeal } from "./archiveDeal";
++import { moveDeal } from "./dealActions";
++import {
++  commandState,
++  readCommandDeal,
++  withCommandFixture,
++} from "./dealVersionCommands.test-helpers";
++
++describe("deal command write-version preconditions", () => {
++  it("rejects timestamp-only legacy moves without changing row, audit or channels", async () => {
++    await withCommandFixture(async ({ h, actor, deal }) => {
++      const before = await commandState(h, deal.id);
++      const result = await moveDeal(
++        h.db,
++        actor,
++        {
++          dealId: deal.id,
++          toStageId: deal.stageId,
++          beforePosition: "10",
++          afterPosition: "20",
++          expectedUpdatedAt: deal.updatedAt.toISOString(),
++        },
++        AbortSignal.timeout(10_000),
++      );
++      expect(result).toMatchObject({ ok: false, error: { id: ERROR_IDS.DEAL_PRECONDITION } });
++      expect(await commandState(h, deal.id)).toEqual(before);
++    });
++  });
++
++  it("rejects an old token after an A-to-B-to-A write with the original visible timestamp", async () => {
++    await withCommandFixture(async ({ h, actor, deal, otherStageId }) => {
++      const originalTime = deal.updatedAt.toISOString();
++      await h.pool.query(
++        "UPDATE deals SET stage_id = $2, updated_at = $3::timestamptz WHERE id = $1",
++        [deal.id, otherStageId, originalTime],
++      );
++      await h.pool.query(
++        "UPDATE deals SET stage_id = $2, updated_at = $3::timestamptz WHERE id = $1",
++        [deal.id, deal.stageId, originalTime],
++      );
++      const current = await readCommandDeal(h, deal.id);
++      expect(current.stageId).toBe(deal.stageId);
++      expect(current.updatedAt.toISOString()).toBe(originalTime);
++      expect(current.writeVersion).not.toBe(deal.writeVersion);
++      const before = await commandState(h, deal.id);
++      const result = await moveDeal(
++        h.db,
++        actor,
++        {
++          dealId: deal.id,
++          toStageId: deal.stageId,
++          beforePosition: "10",
++          afterPosition: "20",
++          expectedUpdatedAt: originalTime,
++          expectedWriteVersion: deal.writeVersion,
++        },
++        AbortSignal.timeout(10_000),
++      );
++      expect(result).toMatchObject({ ok: false, error: { id: ERROR_IDS.DEAL_PRECONDITION } });
++      expect(await commandState(h, deal.id)).toEqual(before);
++    });
++  });
++
++  it("rejects a stale human move after a derived-date writer preserves updatedAt", async () => {
++    await withCommandFixture(async ({ h, actor, deal, otherStageId }) => {
++      await h.pool.query(
++        "UPDATE deals SET next_activity_at = $2::timestamptz, updated_at = updated_at WHERE id = $1",
++        [deal.id, "2030-01-02T12:00:00Z"],
++      );
++      const current = await readCommandDeal(h, deal.id);
++      expect(current.updatedAt).toEqual(deal.updatedAt);
++      expect(current.writeVersion).not.toBe(deal.writeVersion);
++      const before = await commandState(h, deal.id);
++      const result = await moveDeal(
++        h.db,
++        actor,
++        {
++          dealId: deal.id,
++          toStageId: otherStageId,
++          beforePosition: "10",
++          afterPosition: "20",
++          expectedUpdatedAt: deal.updatedAt.toISOString(),
++          expectedWriteVersion: deal.writeVersion,
++        },
++        AbortSignal.timeout(10_000),
++      );
++      expect(result).toMatchObject({ ok: false, error: { id: ERROR_IDS.DEAL_PRECONDITION } });
++      expect(await commandState(h, deal.id)).toEqual(before);
++    });
++  });
++
++  it("checks a stale token even when an unarchive command would leave the logical state unchanged", async () => {
++    await withCommandFixture(async ({ h, actor, deal }) => {
++      await h.pool.query("UPDATE deals SET updated_at = updated_at WHERE id = $1", [deal.id]);
++      const current = await readCommandDeal(h, deal.id);
++      expect(current.archivedAt).toBeNull();
++      expect(current.writeVersion).not.toBe(deal.writeVersion);
++      const before = await commandState(h, deal.id);
++      const result = await archiveDeal(
++        h.db,
++        actor,
++        { dealId: deal.id, archived: false, expectedWriteVersion: deal.writeVersion },
++        AbortSignal.timeout(10_000),
++      );
++      expect(result).toMatchObject({ ok: false, error: { id: ERROR_IDS.DEAL_PRECONDITION } });
++      expect(await commandState(h, deal.id)).toEqual(before);
++    });
++  });
++
++  it("keeps malformed tokens invalid instead of falling back to a valid timestamp", async () => {
++    await withCommandFixture(async ({ h, actor, deal }) => {
++      const before = await commandState(h, deal.id);
++      await expect(
++        moveDeal(
++          h.db,
++          actor,
++          {
++            dealId: deal.id,
++            toStageId: deal.stageId,
++            beforePosition: "10",
++            afterPosition: "20",
++            expectedUpdatedAt: deal.updatedAt.toISOString(),
++            expectedWriteVersion: "not-a-uuid",
++          },
++          AbortSignal.timeout(10_000),
++        ),
++      ).rejects.toBeInstanceOf(ZodError);
++      expect(await commandState(h, deal.id)).toEqual(before);
++    });
++  });
++});
+--- /dev/null
++++ b/src/features/deals/dealVersionCommands.test-helpers.ts
+@@ -0,0 +1,81 @@
++import { eq } from "drizzle-orm";
++import { expect } from "vitest";
++import { deals } from "@/db/schema/deals";
++import { seedPipelineWithStages, seedUser } from "@/db/testing/factories";
++import { makeTestDb } from "@/test/db";
++import { createDeal } from "./dealActions";
++import { adminSession, createSession, seedSettings } from "./dealMove.test-helpers";
++import { installDealWriteVersionFixture } from "./dealWriteVersion.test-helpers";
++
++type Harness = Awaited<ReturnType<typeof makeTestDb>>;
++
++export async function readCommandDeal(h: Harness, id: string) {
++  const [row] = await h.db.select().from(deals).where(eq(deals.id, id)).limit(1);
++  if (row === undefined) {
++    // eslint-disable-next-line no-restricted-syntax -- A missing test fixture is not a domain error.
++    throw new Error("command fixture deal disappeared");
++  }
++  return row;
++}
++
++export async function commandState(h: Harness, id: string) {
++  const row = await h.pool.query<{ value: unknown }>(
++    "SELECT to_jsonb(d) AS value FROM deals d WHERE id = $1",
++    [id],
++  );
++  const audit = await h.pool.query<{ value: unknown }>(
++    "SELECT to_jsonb(c) AS value FROM change_logs c WHERE entity_type = 'deal' AND entity_id = $1 ORDER BY id",
++    [id],
++  );
++  const channels = await h.pool.query<{ value: unknown }>(
++    "SELECT to_jsonb(c) AS value FROM channel_versions c ORDER BY channel",
++  );
++  return {
++    rows: row.rows.map((item) => item.value),
++    audit: audit.rows.map((item) => item.value),
++    channels: channels.rows.map((item) => item.value),
++  };
++}
++
++type Fixture = {
++  h: Harness;
++  actor: ReturnType<typeof adminSession>;
++  deal: Awaited<ReturnType<typeof readCommandDeal>>;
++  otherStageId: string;
++};
++
++export async function withCommandFixture(check: (fixture: Fixture) => Promise<void>) {
++  const h = await makeTestDb();
++  const failures: unknown[] = [];
++  try {
++    await installDealWriteVersionFixture(h.pool);
++    await seedSettings(h.db);
++    const user = await seedUser(h.db, { isAdmin: true });
++    const { pipeline, stages } = await seedPipelineWithStages(h.db, ["A", "B"]);
++    const first = stages[0];
++    const second = stages[1];
++    if (first === undefined || second === undefined) {
++      // eslint-disable-next-line no-restricted-syntax -- Missing test stages are not a domain error.
++      throw new Error("fixture stages are missing");
++    }
++    const created = await createDeal(
++      h.db,
++      createSession(user.id),
++      { title: "Versioned command", pipelineId: pipeline.id, stageId: first.id },
++      AbortSignal.timeout(10_000),
++    );
++    if (!created.ok) throw created.error;
++    const deal = await readCommandDeal(h, created.value.id);
++    expect(created.value).toEqual(deal);
++    await check({ h, actor: adminSession(user.id), deal, otherStageId: second.id });
++  } catch (error) {
++    failures.push(error);
++  }
++  try {
++    await h.close();
++  } catch (error) {
++    failures.push(error);
++  }
++  if (failures.length === 1) throw failures[0];
++  if (failures.length > 1) throw new AggregateError(failures, "command fixture and cleanup failed");
++}
+--- /dev/null
++++ b/src/features/deals/dealWriteVersion.fixtures.ts
+@@ -0,0 +1,91 @@
++import type { Pool } from "pg";
++import { AppError, ERROR_IDS } from "@/constants/errorIds";
++import { seedPipelineWithStages, seedUser } from "@/db/testing/factories";
++import type { TestDb } from "@/test/db";
++
++export const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u;
++export const SUPPLIED_VERSION = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
++
++export async function seedWriteVersionParents(db: TestDb["db"]) {
++  const owner = await seedUser(db);
++  const { pipeline, stages } = await seedPipelineWithStages(db, ["Version fixture"]);
++  const stage = stages[0];
++  if (stage === undefined)
++    throw new AppError(ERROR_IDS.DB_INVARIANT, "version fixture stage is missing");
++  return { ownerId: owner.id, pipelineId: pipeline.id, stageId: stage.id };
++}
++
++export type WriteVersionParents = Awaited<ReturnType<typeof seedWriteVersionParents>>;
++
++export async function insertLegacyWriteVersionDeal(
++  pool: Pool,
++  parents: WriteVersionParents,
++  options: {
++    title?: string;
++    status?: "open" | "won" | "lost";
++    archived?: boolean;
++    deleted?: boolean;
++  } = {},
++): Promise<string> {
++  // Raw SQL deliberately works before write_version exists and preserves microseconds.
++  const inserted = await pool.query<{ id: string }>(
++    `INSERT INTO public.deals (
++      title, status, value, currency, expected_close_date, labels,
++      source_channel, source_channel_id, lost_reason,
++      pipeline_id, stage_id, board_position, owner_id, visibility_level, visible_to_user_ids,
++      last_activity_at, next_activity_at, stage_entered_at, custom_fields,
++      created_at, updated_at, deleted_at, archived_at
++    ) VALUES (
++      $1, $2::deal_status, 123.4567, 'EUR', '2027-06-04'::date, ARRAY['Hot', 'Followup'],
++      'version fixture', 'source:retained', 'retained reason',
++      $3, $4, 12.3456, $5, 'all', ARRAY[$5::uuid],
++      '1999-01-02T03:04:05.654321Z', '2030-04-05T06:07:08.123456Z',
++      '2001-01-02T03:04:05.987654Z', '{"retained":{"flag":true},"list":[1,2]}'::jsonb,
++      '1998-01-02T03:04:05.123456Z', '2001-02-03T04:05:06.123456Z',
++      $6::timestamptz, $7::timestamptz
++    ) RETURNING id`,
++    [
++      options.title ?? "Preserved legacy deal",
++      options.status ?? "open",
++      parents.pipelineId,
++      parents.stageId,
++      parents.ownerId,
++      options.deleted === true ? "2005-06-07T08:09:10.123456Z" : null,
++      options.archived === true ? "2003-04-05T06:07:08.654321Z" : null,
++    ],
++  );
++  const row = inserted.rows[0];
++  if (row === undefined)
++    throw new AppError(ERROR_IDS.DB_INVARIANT, "version fixture insert returned no deal");
++  return row.id;
++}
++
++export async function previousDealFields(pool: Pool, dealId: string) {
++  const result = await pool.query<{ value: Record<string, unknown> }>(
++    "SELECT to_jsonb(d) - 'write_version' AS value FROM public.deals AS d WHERE id = $1",
++    [dealId],
++  );
++  const row = result.rows[0];
++  if (row === undefined)
++    throw new AppError(ERROR_IDS.DB_INVARIANT, "version fixture deal disappeared");
++  return row.value;
++}
++
++export async function storedWriteVersion(pool: Pool, dealId: string): Promise<string> {
++  const result = await pool.query<{ version: string }>(
++    "SELECT write_version::text AS version FROM public.deals WHERE id = $1",
++    [dealId],
++  );
++  const row = result.rows[0];
++  if (row === undefined)
++    throw new AppError(ERROR_IDS.DB_INVARIANT, "version fixture token disappeared");
++  return row.version;
++}
++
++export async function writeVersionFixtureLedger(pool: Pool) {
++  return (
++    await pool.query<{ id: number; hash: string; createdAt: string }>(
++      'SELECT id, hash, created_at::text AS "createdAt" FROM drizzle.__drizzle_migrations ORDER BY id',
++    )
++  ).rows;
++}
+--- /dev/null
++++ b/src/features/deals/dealWriteVersion.globalSetup.ts
+@@ -0,0 +1,46 @@
++import { Pool } from "pg";
++import type { TestProject } from "vitest/node";
++import baseSetup from "../../../vitest.globalSetup";
++import { installDealWriteVersionFixture } from "./dealWriteVersion.test-helpers";
++
++// Private qualification overlay while the integrator reconciles reserved 0101.
++// The canonical migration journal and installed-history receipts stay unchanged.
++export default async function setup(project: TestProject): Promise<() => Promise<void>> {
++  const teardown = await baseSetup(project);
++  let pool: Pool | undefined;
++  try {
++    const connection = project.getProvidedContext().testPg;
++    pool = new Pool({
++      host: connection.host,
++      port: connection.port,
++      user: connection.user,
++      password: connection.password,
++      database: connection.template,
++      max: 1,
++      connectionTimeoutMillis: 2_000,
++      query_timeout: 5_000,
++    });
++    await installDealWriteVersionFixture(pool);
++    const closing = pool.end();
++    pool = undefined;
++    await closing;
++    return teardown;
++  } catch (error) {
++    const failures: unknown[] = [error];
++    if (pool !== undefined) {
++      try {
++        await pool.end();
++      } catch (closeError) {
++        failures.push(closeError);
++      }
++    }
++    try {
++      await teardown();
++    } catch (teardownError) {
++      failures.push(teardownError);
++    }
++    if (failures.length > 1)
++      throw new AggregateError(failures, "deal version fixture setup and cleanup failed");
++    throw error;
++  }
++}
+--- /dev/null
++++ b/src/features/deals/dealWriteVersion.integration.test.ts
+@@ -0,0 +1,140 @@
++import { describe, expect, it } from "vitest";
++import { makeTestDb } from "@/test/db";
++import {
++  insertLegacyWriteVersionDeal,
++  previousDealFields,
++  SUPPLIED_VERSION,
++  seedWriteVersionParents,
++  storedWriteVersion,
++  UUID_V4,
++  writeVersionFixtureLedger,
++} from "./dealWriteVersion.fixtures";
++import { installDealWriteVersionFixture } from "./dealWriteVersion.test-helpers";
++
++describe("database-owned deal write versions", () => {
++  it("replaces supplied, copied and null INSERT tokens instead of trusting producers", async () => {
++    const h = await makeTestDb();
++    try {
++      await installDealWriteVersionFixture(h.pool);
++      const parents = await seedWriteVersionParents(h.db);
++      const original = await insertLegacyWriteVersionDeal(h.pool, parents);
++      const originalVersion = await storedWriteVersion(h.pool, original);
++      const inserted = await h.pool.query<{ version: string }>(
++        `INSERT INTO deals (title, pipeline_id, stage_id, owner_id, currency, visibility_level, write_version)
++         SELECT label, d.pipeline_id, d.stage_id, d.owner_id, d.currency, d.visibility_level, supplied
++         FROM deals AS d CROSS JOIN LATERAL (
++           VALUES ('Explicit token', $2::uuid), ('Copied token', d.write_version), ('Null token', NULL::uuid)
++         ) AS input(label, supplied)
++         WHERE d.id = $1 RETURNING write_version::text AS version`,
++        [original, SUPPLIED_VERSION],
++      );
++      const versions = inserted.rows.map((row) => row.version);
++      expect(versions).toHaveLength(3);
++      for (const version of versions) {
++        expect(version).toMatch(UUID_V4);
++        expect(version).not.toBe(SUPPLIED_VERSION);
++        expect(version).not.toBe(originalVersion);
++      }
++      expect(new Set([originalVersion, ...versions]).size).toBe(4);
++    } finally {
++      await h.close();
++    }
++  });
++
++  it("invalidates a snapshot on a derived-date write that preserves updatedAt", async () => {
++    const h = await makeTestDb();
++    try {
++      await installDealWriteVersionFixture(h.pool);
++      const id = await insertLegacyWriteVersionDeal(h.pool, await seedWriteVersionParents(h.db));
++      const version = await storedWriteVersion(h.pool, id);
++      const before = await previousDealFields(h.pool, id);
++      await h.pool.query(
++        `UPDATE deals SET next_activity_at = '2031-01-02T03:04:05.654321Z',
++                          updated_at = updated_at WHERE id = $1`,
++        [id],
++      );
++      const after = await previousDealFields(h.pool, id);
++      expect(after.updated_at).toBe(before.updated_at);
++      expect(after).toEqual({ ...before, next_activity_at: after.next_activity_at });
++      const instant = await h.pool.query<{ expected: boolean }>(
++        `SELECT next_activity_at = '2031-01-02T03:04:05.654321Z'::timestamptz AS expected
++         FROM deals WHERE id = $1`,
++        [id],
++      );
++      expect(instant.rows).toEqual([{ expected: true }]);
++      expect(await storedWriteVersion(h.pool, id)).not.toBe(version);
++    } finally {
++      await h.close();
++    }
++  });
++
++  it("rotates on a SQL no-op without changing other persisted fields", async () => {
++    const h = await makeTestDb();
++    try {
++      await installDealWriteVersionFixture(h.pool);
++      const id = await insertLegacyWriteVersionDeal(h.pool, await seedWriteVersionParents(h.db));
++      const before = await previousDealFields(h.pool, id);
++      const version = await storedWriteVersion(h.pool, id);
++      await h.pool.query("UPDATE deals SET title = title, updated_at = updated_at WHERE id = $1", [
++        id,
++      ]);
++      expect(await previousDealFields(h.pool, id)).toEqual(before);
++      expect(await storedWriteVersion(h.pool, id)).not.toBe(version);
++    } finally {
++      await h.close();
++    }
++  });
++
++  it("cannot restore an earlier token through an explicit UPDATE", async () => {
++    const h = await makeTestDb();
++    try {
++      await installDealWriteVersionFixture(h.pool);
++      const id = await insertLegacyWriteVersionDeal(h.pool, await seedWriteVersionParents(h.db));
++      const original = await storedWriteVersion(h.pool, id);
++      await h.pool.query("UPDATE deals SET title = 'First update' WHERE id = $1", [id]);
++      const intermediate = await storedWriteVersion(h.pool, id);
++      await h.pool.query("UPDATE deals SET write_version = $2::uuid WHERE id = $1", [id, original]);
++      const current = await storedWriteVersion(h.pool, id);
++      expect(current).toMatch(UUID_V4);
++      expect(current).not.toBe(original);
++      expect(current).not.toBe(intermediate);
++    } finally {
++      await h.close();
++    }
++  });
++
++  it("retains UUID and NOT NULL constraints independently of the producer trigger", async () => {
++    const h = await makeTestDb();
++    try {
++      await installDealWriteVersionFixture(h.pool);
++      const id = await insertLegacyWriteVersionDeal(h.pool, await seedWriteVersionParents(h.db));
++      await expect(
++        h.pool.query("UPDATE deals SET write_version = 'invalid' WHERE id = $1", [id]),
++      ).rejects.toMatchObject({ code: "22P02" });
++      // This privileged fixture isolates the column constraint from trigger repair.
++      await h.pool.query("ALTER TABLE deals DISABLE TRIGGER deals_write_version_owned");
++      await expect(
++        h.pool.query("UPDATE deals SET write_version = NULL WHERE id = $1", [id]),
++      ).rejects.toMatchObject({ code: "23502", column: "write_version" });
++    } finally {
++      await h.close();
++    }
++  });
++
++  it("does not rotate existing versions or fabricate receipts when the fixture overlay is reused", async () => {
++    const h = await makeTestDb();
++    try {
++      await installDealWriteVersionFixture(h.pool);
++      const id = await insertLegacyWriteVersionDeal(h.pool, await seedWriteVersionParents(h.db));
++      const version = await storedWriteVersion(h.pool, id);
++      const before = await previousDealFields(h.pool, id);
++      const ledger = await writeVersionFixtureLedger(h.pool);
++      await installDealWriteVersionFixture(h.pool);
++      expect(await storedWriteVersion(h.pool, id)).toBe(version);
++      expect(await previousDealFields(h.pool, id)).toEqual(before);
++      expect(await writeVersionFixtureLedger(h.pool)).toEqual(ledger);
++    } finally {
++      await h.close();
++    }
++  });
++});
+--- /dev/null
++++ b/src/features/deals/dealWriteVersion.test-helpers.ts
+@@ -0,0 +1,99 @@
++import { readFile } from "node:fs/promises";
++import type { Pool, PoolClient } from "pg";
++import { AppError, ERROR_IDS } from "@/constants/errorIds";
++
++const migrationUrl = new URL("../../../drizzle/0101_deal_write_version.sql", import.meta.url);
++
++type FixtureState = {
++  columnPresent: boolean;
++  columnReady: boolean;
++  functionPresent: boolean;
++  triggerPresent: boolean;
++  triggerReady: boolean;
++};
++
++async function fixtureState(client: PoolClient): Promise<FixtureState> {
++  const result = await client.query<FixtureState>(`
++    SELECT
++      EXISTS (
++        SELECT 1 FROM pg_catalog.pg_attribute
++        WHERE attrelid = 'public.deals'::regclass
++          AND attname = 'write_version' AND NOT attisdropped
++      ) AS "columnPresent",
++      EXISTS (
++        SELECT 1 FROM pg_catalog.pg_attribute AS a
++        JOIN pg_catalog.pg_attrdef AS d ON d.adrelid = a.attrelid AND d.adnum = a.attnum
++        WHERE a.attrelid = 'public.deals'::regclass
++          AND a.attname = 'write_version' AND NOT a.attisdropped
++          AND a.attnotnull AND a.atttypid = 'pg_catalog.uuid'::regtype
++          AND pg_catalog.pg_get_expr(d.adbin, d.adrelid) IN (
++            'gen_random_uuid()', 'pg_catalog.gen_random_uuid()'
++          )
++      ) AS "columnReady",
++      to_regprocedure('public.assign_deal_write_version()') IS NOT NULL AS "functionPresent",
++      EXISTS (
++        SELECT 1 FROM pg_catalog.pg_trigger
++        WHERE tgrelid = 'public.deals'::regclass AND tgname = 'deals_write_version_owned'
++          AND NOT tgisinternal
++      ) AS "triggerPresent",
++      EXISTS (
++        SELECT 1 FROM pg_catalog.pg_trigger
++        WHERE tgrelid = 'public.deals'::regclass AND tgname = 'deals_write_version_owned'
++          AND NOT tgisinternal AND tgenabled IN ('O', 'A') AND tgtype = 23
++          AND tgfoid = to_regprocedure('public.assign_deal_write_version()')
++      ) AS "triggerReady"
++  `);
++  const state = result.rows[0];
++  if (state === undefined)
++    throw new AppError(ERROR_IDS.DB_INVARIANT, "deal write-version fixture state is missing");
++  return state;
++}
++
++// Temporary fixture overlay while reserved migrations 0098–0100 are not present in
++// this private checkout. Do not append an out-of-order canonical journal entry or
++// manufacture a migration receipt. The integrator reconciles the canonical history.
++// Idempotence is for owned fixtures only; this is not installed-history admission.
++export async function installDealWriteVersionFixture(pool: Pool): Promise<void> {
++  const source = await readFile(migrationUrl, "utf8");
++  const client = await pool.connect();
++  let discard = false;
++  try {
++    await client.query("BEGIN");
++    await client.query("SET LOCAL lock_timeout = '2s'");
++    await client.query("SET LOCAL statement_timeout = '5s'");
++    await client.query("SET LOCAL search_path = pg_catalog, public");
++    await client.query(
++      "SELECT pg_advisory_xact_lock(hashtext('warpdrive:test:deal-write-version:0101'))",
++    );
++    const state = await fixtureState(client);
++    if (state.columnReady && state.functionPresent && state.triggerReady) {
++      await client.query("COMMIT");
++      return;
++    }
++    if (state.columnPresent || state.functionPresent || state.triggerPresent) {
++      throw new AppError(
++        ERROR_IDS.DB_INVARIANT,
++        "refusing a partial deal write-version fixture installation",
++      );
++    }
++    await client.query(source);
++    const installed = await fixtureState(client);
++    if (!installed.columnReady || !installed.functionPresent || !installed.triggerReady) {
++      throw new AppError(
++        ERROR_IDS.DB_INVARIANT,
++        "deal write-version fixture installation is incomplete",
++      );
++    }
++    await client.query("COMMIT");
++  } catch (error) {
++    try {
++      await client.query("ROLLBACK");
++    } catch (rollbackError) {
++      discard = true;
++      throw new AggregateError([error, rollbackError], "deal version fixture rollback failed");
++    }
++    throw error;
++  } finally {
++    client.release(discard);
++  }
++}
+--- /dev/null
++++ b/src/features/deals/dealWriteVersionMigration.integration.test.ts
+@@ -0,0 +1,55 @@
++import { describe, expect, it } from "vitest";
++import { freshMigrationDb, installPrefix } from "@/db/migrationAdmission.test-helpers";
++import {
++  insertLegacyWriteVersionDeal,
++  previousDealFields,
++  seedWriteVersionParents,
++  storedWriteVersion,
++  UUID_V4,
++  writeVersionFixtureLedger,
++} from "./dealWriteVersion.fixtures";
++import { installDealWriteVersionFixture } from "./dealWriteVersion.test-helpers";
++
++describe("deal write-version populated migration", () => {
++  it("preserves every old field while backfilling active, archived and soft-deleted rows", async () => {
++    const h = await freshMigrationDb();
++    try {
++      // A true old-schema prefix, even after the default test template gains later migrations.
++      await installPrefix(h, 98);
++      const oldColumn = await h.pool.query<{ present: boolean }>(`
++        SELECT EXISTS (
++          SELECT 1 FROM information_schema.columns
++          WHERE table_schema = 'public' AND table_name = 'deals' AND column_name = 'write_version'
++        ) AS present
++      `);
++      expect(oldColumn.rows).toEqual([{ present: false }]);
++      const parents = await seedWriteVersionParents(h.db);
++      const ids = [
++        await insertLegacyWriteVersionDeal(h.pool, parents, { title: "Active" }),
++        await insertLegacyWriteVersionDeal(h.pool, parents, {
++          title: "Archived won",
++          status: "won",
++          archived: true,
++        }),
++        await insertLegacyWriteVersionDeal(h.pool, parents, {
++          title: "Soft-deleted lost",
++          status: "lost",
++          deleted: true,
++        }),
++      ];
++      const before = await Promise.all(ids.map((id) => previousDealFields(h.pool, id)));
++      const ledger = await writeVersionFixtureLedger(h.pool);
++
++      await installDealWriteVersionFixture(h.pool);
++
++      expect(await Promise.all(ids.map((id) => previousDealFields(h.pool, id)))).toEqual(before);
++      const versions = await Promise.all(ids.map((id) => storedWriteVersion(h.pool, id)));
++      for (const version of versions) expect(version).toMatch(UUID_V4);
++      expect(new Set(versions).size).toBe(ids.length);
++      // The private fixture overlay must not invent or relabel a canonical migration receipt.
++      expect(await writeVersionFixtureLedger(h.pool)).toEqual(ledger);
++    } finally {
++      await h.close();
++    }
++  }, 20_000);
++});

@@ -1,0 +1,154 @@
+"use client";
+
+import Link from "next/link";
+import type React from "react";
+import { useRef, useState } from "react";
+import { createOrgAction } from "@/features/contacts/actions";
+import { dealClientResult } from "@/features/deals/dealClientResult";
+import { updateDealAction } from "@/features/deals/updateAction";
+import { EntityCombobox } from "@/features/entity-create/EntityCombobox";
+import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
+import { InlineEditFooter } from "@/features/inline-edit/InlineEditFooter";
+import { InlineFieldShell } from "@/features/inline-edit/InlineFieldShell";
+import { saveErrorMessage } from "@/features/inline-edit/saveError";
+import { readCsrfToken } from "@/utils/csrfCookie";
+
+interface OrgRef {
+  id: string;
+  name: string;
+}
+
+// A pending organization choice made in the editor but not yet saved. PD's inline edit commits only
+// via Save (no autosave), so the select-or-create combobox writes into this draft and Save persists
+// it: pick an existing org, create a new one by name, clear the link, or leave it unchanged.
+type Draft =
+  | { kind: "unchanged" }
+  | { kind: "existing"; id: string }
+  | { kind: "new"; name: string }
+  | { kind: "clear" };
+
+// The deal Summary's Organization row, inline-editable like Value/Expected-close-date. The name is a
+// record link (navigates); hovering reveals the pencil, which swaps in an EntityCombobox that
+// searches existing organizations OR creates a new one, committed through the Cancel/Save footer.
+export function InlineOrgField({
+  dealId,
+  expectedWriteVersion,
+  org,
+  orgOptions,
+  onSaved,
+}: {
+  dealId: string;
+  expectedWriteVersion: string;
+  org: OrgRef | null;
+  orgOptions: OrgRef[];
+  onSaved: () => void;
+}): React.ReactNode {
+  const translateSales = useAppTranslations("sales");
+  const locale = useLocale();
+
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState<Draft>({ kind: "unchanged" });
+  const [pending, setPending] = useState(false);
+  const [errorId, setErrorId] = useState<string | null>(null);
+  const editVersion = useRef(expectedWriteVersion);
+  const created = useRef<{ name: string; id: string } | null>(null);
+
+  function start(): void {
+    editVersion.current = expectedWriteVersion;
+    setDraft({ kind: "unchanged" });
+    setErrorId(null);
+    setEditing(true);
+  }
+
+  // Save is enabled only when the draft names a real change (PD dirty-gate): a different existing
+  // org, a non-empty new name, or clearing an org that is currently set.
+  const dirty =
+    (draft.kind === "existing" && draft.id !== (org?.id ?? null)) ||
+    (draft.kind === "new" && draft.name.trim() !== "") ||
+    (draft.kind === "clear" && org !== null);
+
+  // Turn the draft into the orgId to persist, creating the org first when the user typed a new name.
+  // Returns { errorId } if the create fails so save() can surface the reason without persisting.
+  async function resolveOrgId(): Promise<string | null | { errorId: string }> {
+    if (draft.kind === "existing") return draft.id;
+    if (draft.kind === "clear") return null;
+    if (draft.kind === "new") {
+      const name = draft.name.trim();
+      if (created.current?.name === name) return created.current.id;
+      const r = await dealClientResult(() =>
+        createOrgAction({ name, address: null, customFields: {} }, readCsrfToken()),
+      );
+      if (!r.ok) return { errorId: r.error.id };
+      created.current = { name, id: r.value.id };
+      return r.value.id;
+    }
+    return org?.id ?? null; // unchanged: unreachable while dirty-gated, kept total.
+  }
+
+  async function save(): Promise<void> {
+    if (!dirty || pending) return;
+    setPending(true);
+    setErrorId(null);
+    const resolved = await resolveOrgId();
+    if (resolved !== null && typeof resolved === "object") {
+      setErrorId(resolved.errorId);
+      setPending(false);
+      return;
+    }
+    const r = await dealClientResult(() =>
+      updateDealAction(
+        { dealId, expectedWriteVersion: editVersion.current, orgId: resolved },
+        readCsrfToken(),
+      ),
+    );
+    setPending(false);
+    if (r.ok) {
+      setEditing(false);
+      onSaved();
+    } else {
+      setErrorId(r.error.id);
+    }
+  }
+
+  return (
+    <InlineFieldShell
+      label={translateSales("organization_d764d")}
+      editing={editing}
+      onStartEdit={start}
+      value={
+        org !== null ? (
+          <Link
+            href={`/contacts/orgs/${org.id}`}
+            className="font-semibold text-primary hover:underline"
+          >
+            <bdi dir="auto">{org.name}</bdi>
+          </Link>
+        ) : null
+      }
+      emptyPrompt={translateSales("add_organization_0ca87")}
+    >
+      <div>
+        <EntityCombobox
+          label={translateSales("organization_d764d")}
+          hideLabel
+          options={orgOptions}
+          placeholder={translateSales("search_or_add_an_organization_36308")}
+          createLabel={(q) => translateSales("add_arg0_as_new_organization_d5252", { arg0: q })}
+          similarWarning={translateSales("similar_organization_already_exists_260ac")}
+          onSelectExisting={(id) => setDraft({ kind: "existing", id })}
+          onCreateNew={(name) => setDraft({ kind: "new", name })}
+          onClear={() => setDraft({ kind: "clear" })}
+        />
+        {errorId !== null && (
+          <p className="mt-1 text-xs text-destructive">{saveErrorMessage(errorId, locale)}</p>
+        )}
+        <InlineEditFooter
+          onCancel={() => setEditing(false)}
+          onSave={() => void save()}
+          saveDisabled={!dirty}
+          pending={pending}
+        />
+      </div>
+    </InlineFieldShell>
+  );
+}

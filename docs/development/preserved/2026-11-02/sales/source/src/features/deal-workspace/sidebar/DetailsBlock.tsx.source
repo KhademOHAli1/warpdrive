@@ -1,0 +1,159 @@
+"use client";
+import { useRouter } from "next/navigation";
+import type React from "react";
+import { useRef, useState } from "react";
+import { reportTimePickerValidity } from "@/components/ui/timePickerValidity";
+import { CustomFieldFormControl, isCustomFieldValueEmpty } from "@/features/custom-fields/render";
+import { useSalesStrings } from "@/features/deals/useSalesStrings";
+import { useLocale } from "@/features/i18n/LocaleProvider";
+import { InlineEditFooter } from "@/features/inline-edit/InlineEditFooter";
+import { saveErrorMessage } from "@/features/inline-edit/saveError";
+import type { CustomFieldDef } from "@/types/customFields";
+import type { CustomFieldsSave } from "./customFieldsSave";
+import { FieldRow } from "./FieldRow";
+import { InlineCustomField } from "./InlineCustomField";
+
+interface DetailsBlockProps {
+  onSave: CustomFieldsSave;
+  writeVersion: string;
+  customFieldDefs: CustomFieldDef[];
+  customFields: Record<string, unknown>;
+  currency: string;
+  bulkEditing?: boolean;
+  editingFieldId?: string;
+  onExitBulk?: () => void;
+}
+
+export function DetailsBlock({
+  onSave,
+  writeVersion,
+  customFieldDefs,
+  customFields,
+  currency,
+  bulkEditing = false,
+  editingFieldId,
+  onExitBulk,
+}: DetailsBlockProps): React.ReactNode {
+  const STRINGS = useSalesStrings();
+
+  if (customFieldDefs.length === 0) {
+    return (
+      <p className="text-muted-foreground text-xs">{STRINGS.dealSidebar.emptyState.details}</p>
+    );
+  }
+  if (bulkEditing) {
+    return (
+      <DetailsBulkEditor
+        onSave={onSave}
+        writeVersion={writeVersion}
+        customFieldDefs={customFieldDefs}
+        customFields={customFields}
+        currency={currency}
+        onExit={onExitBulk ?? (() => {})}
+      />
+    );
+  }
+  return (
+    <>
+      {customFieldDefs.map((def) => {
+        const value = customFields[def.key];
+        return (
+          <FieldRow key={def.id} label={def.name} empty={isCustomFieldValueEmpty(value)}>
+            <InlineCustomField
+              initiallyEditing={def.id === editingFieldId}
+              writeVersion={writeVersion}
+              onSave={onSave}
+              def={def}
+              value={value}
+              currency={currency}
+            />
+          </FieldRow>
+        );
+      })}
+    </>
+  );
+}
+
+function DetailsBulkEditor({
+  onSave,
+  writeVersion,
+  customFieldDefs,
+  customFields,
+  currency,
+  onExit,
+}: {
+  onSave: CustomFieldsSave;
+  writeVersion: string;
+  customFieldDefs: CustomFieldDef[];
+  customFields: Record<string, unknown>;
+  currency: string;
+  onExit: () => void;
+}): React.ReactNode {
+  const [expectedWriteVersion] = useState(writeVersion);
+  const locale = useLocale();
+  const router = useRouter();
+  const fieldsRef = useRef<HTMLDivElement>(null);
+  const [draft, setDraft] = useState<Record<string, unknown>>(() => {
+    const d: Record<string, unknown> = {};
+    for (const def of customFieldDefs) d[def.key] = customFields[def.key];
+    return d;
+  });
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  function changedKeys(): Record<string, unknown> {
+    const patch: Record<string, unknown> = {};
+    for (const def of customFieldDefs) {
+      const next = draft[def.key];
+      if (JSON.stringify(next ?? null) !== JSON.stringify(customFields[def.key] ?? null)) {
+        patch[def.key] = next;
+      }
+    }
+    return patch;
+  }
+
+  function commit(): void {
+    if (!reportTimePickerValidity(fieldsRef.current)) return;
+    const patch = changedKeys();
+    setPending(true);
+    setError(null);
+    onSave(patch, expectedWriteVersion)
+      .then((r) => {
+        setPending(false);
+        if (r.ok) {
+          router.refresh();
+          onExit();
+        } else {
+          setError(saveErrorMessage(r.error, locale));
+        }
+      })
+      .catch(() => {
+        setPending(false);
+        setError(saveErrorMessage(undefined, locale));
+      });
+  }
+
+  return (
+    <div ref={fieldsRef} className="flex flex-col gap-2">
+      {customFieldDefs.map((def) => (
+        <div key={def.id} className="flex flex-col gap-0.5 text-muted-foreground text-xs">
+          <span>
+            <bdi dir="auto">{def.name}</bdi>
+          </span>
+          <CustomFieldFormControl
+            def={def}
+            currency={currency}
+            value={draft[def.key]}
+            onChange={(v) => setDraft((prev) => ({ ...prev, [def.key]: v }))}
+          />
+        </div>
+      ))}
+      {error !== null ? (
+        <span role="alert" className="text-destructive text-xs">
+          {error}
+        </span>
+      ) : null}
+      <InlineEditFooter onCancel={onExit} onSave={commit} saveDisabled={false} pending={pending} />
+    </div>
+  );
+}

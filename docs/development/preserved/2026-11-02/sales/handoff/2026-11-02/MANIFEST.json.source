@@ -1,0 +1,1511 @@
+{
+  "owner": "Sales",
+  "state": "UNFINISHED PRESERVATION - NOT FOR DEPLOYMENT",
+  "originalHead": "43a5fb4d2a6be7bbbd260855a6a8e1ce55fbf3c1",
+  "branch": "codex/preserve-sales-20261102",
+  "sourceFiles": [
+    {
+      "status": " M",
+      "path": "src/db/schema/deals.ts",
+      "mode": 420,
+      "bytes": 6066,
+      "sha256": "261fe4de4354d37ffe6ee66451727c49506cc1e7eb2a58c983084f25ca925a76"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/DealActionErrorProvider.tsx",
+      "mode": 420,
+      "bytes": 2858,
+      "sha256": "3fec8951d2c871d2cc1a7f281860195f6e442c92765ebf6c1627cca5e57ef1b4"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/DealCloseActions.test.tsx",
+      "mode": 420,
+      "bytes": 12011,
+      "sha256": "a5b4106b3fa5b281976c63183eaa7c2dee266f1dfe14b923decc29320b8e0606"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/DealCloseActions.tsx",
+      "mode": 420,
+      "bytes": 7669,
+      "sha256": "0f66794dc7eebeafc4569c31cd7541826542eca3d78201d58a2710430dfd6aae"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/DealSidebar.alignment.test.tsx",
+      "mode": 420,
+      "bytes": 5603,
+      "sha256": "1e46606b3ff1b2211ba39315048e717ce504d7342f8ff7743ffd7771148e2fe8"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/DealSidebar.bulkEdit.test.tsx",
+      "mode": 420,
+      "bytes": 7280,
+      "sha256": "21c34a9d23fad369a4f49441f18a934bccfd0113662ebb7e21c462f4669c7514"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/DealSidebar.customFields.test.tsx",
+      "mode": 420,
+      "bytes": 7033,
+      "sha256": "98781864e7d20f9005bff0351e53643d013c8ded01f0abc11f1e6f4a2762e671"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/DealSidebar.hiddenFields.test.tsx",
+      "mode": 420,
+      "bytes": 4356,
+      "sha256": "3f2a7616ab5e577e00ed5bf605c8ddb25209221ff53dbc3b29ec82cede3a69c0"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/DealSidebar.labels.test.tsx",
+      "mode": 420,
+      "bytes": 5312,
+      "sha256": "78366dd5fcf5ad302a007d8aeb04ac1e16efb69ee5d0860213b83dab0215c164"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/DealSidebar.orgLink.test.tsx",
+      "mode": 420,
+      "bytes": 4283,
+      "sha256": "b01a03f4f6889683f9ef9f17195ad5e90ba0c90acab42640d79428d9348e45a7"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/DealSidebar.sourceChannel.test.tsx",
+      "mode": 420,
+      "bytes": 4375,
+      "sha256": "a457828e0dfb4914e09d38414152690191799cb6437aed78e422a09f5abc686f"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/DealSidebar.test.tsx",
+      "mode": 420,
+      "bytes": 9518,
+      "sha256": "b7bd6efad1b56caa87a0f0fc084b3bd203e9d633faa177b0438e51f07ffb830a"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/DealSidebar.tsx",
+      "mode": 420,
+      "bytes": 12561,
+      "sha256": "ee7f50268213f6cf559a01d8f5d5be0d1ba421ed4f4d3f76608e9da1a08bacf9"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/DealSummaryActionList.test.tsx",
+      "mode": 420,
+      "bytes": 15537,
+      "sha256": "937ceab767d6690e39150e50727995818e8f7ec49515ac6304bf50188f56f068"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/DealSummaryActionList.tsx",
+      "mode": 420,
+      "bytes": 9765,
+      "sha256": "19cc39d46f0859b23f10a72745f075ea8b3a5bab4e9ec5bffa1563eb36eca19d"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/LabelRow.test.tsx",
+      "mode": 420,
+      "bytes": 2386,
+      "sha256": "e62437d59cec104aaf2772c8b7a92aac612e2e830c8fc196bbb3c1c5568a4bdd"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/LabelRow.tsx",
+      "mode": 420,
+      "bytes": 3947,
+      "sha256": "6278d3fe7de08bc517c99c70ed4540e3930abb75725672e49691181b5393f9b0"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/MarkLostDialog.tsx",
+      "mode": 420,
+      "bytes": 5480,
+      "sha256": "c5bc25ee34dd763e9860d3b40e528dc390c376d81a24066a6f63d3f08cb00770"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/actions.ts",
+      "mode": 420,
+      "bytes": 9314,
+      "sha256": "0a2d2a720bba8d2f6f57c4bba0197fa96223f2765b315dd24b1be9549b267b74"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/changeOwner.test.ts",
+      "mode": 420,
+      "bytes": 4741,
+      "sha256": "3686f181edd0a15661c67abd176c386e2694e4b37a63e975598ee9fc7bf4f34e"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/changeOwner.ts",
+      "mode": 420,
+      "bytes": 3399,
+      "sha256": "c7f059f6346d66f5d3f205daad45fee88538b07f84529053cea95c4318390261"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/changeStage.test.ts",
+      "mode": 420,
+      "bytes": 6851,
+      "sha256": "37b4c2335dfee0a2d6cff4850f35efe22b2d6d4d6f66d54efee272df708f8b1f"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/changeStage.ts",
+      "mode": 420,
+      "bytes": 4728,
+      "sha256": "81e64ca778cb7d67a8a2e8ea22e87c5b432db996d5a15109f33164fcbb82448b"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/composer/useActivityComposer.ts",
+      "mode": 420,
+      "bytes": 9570,
+      "sha256": "62554b5266d046b4d9a9602377072d445658a2584faf70e354b55cc6016b8c08"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/convertToLead.test.ts",
+      "mode": 420,
+      "bytes": 7526,
+      "sha256": "d05c727c86c2976b2c9e9d5bc3892c06e1968d8cf74aedf531e5d646c936e1d5"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/convertToLead.ts",
+      "mode": 420,
+      "bytes": 7036,
+      "sha256": "dc110b7558fb51d664ec0a137da156c414865dd77dc3c1bbd78febd15dd92f1f"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/convertToLeadAction.ts",
+      "mode": 420,
+      "bytes": 1821,
+      "sha256": "be63bacfc19eeb11a2595e3f7dcd6dd2d76314cf105dfde7bd7bcfe702b5b44b"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/dealActionError.ts",
+      "mode": 420,
+      "bytes": 1556,
+      "sha256": "862863b6379834858454278d843d3974697f32ed427a9cbc5fa3bcf8edff80be"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/dealCloseSchemas.ts",
+      "mode": 420,
+      "bytes": 448,
+      "sha256": "81c1dc73bc9f9489f40a7b2813ed49a864a31c084925acc6ae75332fba661bc3"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/dealSidebarFixtures.ts",
+      "mode": 420,
+      "bytes": 2191,
+      "sha256": "6de46b920f82e805d0a6ce2ea1a874a4fa226e84fcf360e1dcfe0623b643f24e"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/deleteDeal.test.ts",
+      "mode": 420,
+      "bytes": 7585,
+      "sha256": "aab3c4dfed9f164a8754a1e181cfe93dbc5e4fe8f6d60bb4db21920afe9277c4"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/deleteDeal.ts",
+      "mode": 420,
+      "bytes": 4183,
+      "sha256": "526edf26b461c16f3256d2e0eb4828da7a5fd709a9b71c402dc0199193d3ec16"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/duplicateDeal.test.ts",
+      "mode": 420,
+      "bytes": 8860,
+      "sha256": "5a6e25338542e7d37b04692474bcc722bb92d74f822b8795c5a3e1d746d00e71"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/duplicateDeal.ts",
+      "mode": 420,
+      "bytes": 7160,
+      "sha256": "a77ce7f71c3f51f7e84a0af490d683e165dfa60dcbabba61b2632a71f3d9bb5a"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/duplicateDealAction.ts",
+      "mode": 420,
+      "bytes": 1889,
+      "sha256": "84ee0283bc12a4678397709dadfb7b5b8de1b94937dee840f9693c25f784fa5e"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/header/ConvertToLeadDialog.test.tsx",
+      "mode": 420,
+      "bytes": 2248,
+      "sha256": "ff6f3b19e5c4fff996c7ddd2a38589fccb1a71f27ab0d6a30e2511ae46f1ddb1"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/header/ConvertToLeadDialog.tsx",
+      "mode": 420,
+      "bytes": 2527,
+      "sha256": "dcf874d04ecd729fbcb9c4a66738aae5134ca642332d84dd9b66fb9222de2ec0"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/header/DealActionsMenu.test.tsx",
+      "mode": 420,
+      "bytes": 9903,
+      "sha256": "4d6fa7a62b951b1ecab16836160f963b923c0442cc4b7674f01206fc5fc732da"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/header/DealActionsMenu.tsx",
+      "mode": 420,
+      "bytes": 6537,
+      "sha256": "b1888a5846233227e27e3c2e0cd37008b9a74ec6084dc939e1077ea11d06cf10"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/header/DealHeader.test.tsx",
+      "mode": 420,
+      "bytes": 2614,
+      "sha256": "a17c93be9680b8f66d1c0cbd505c0d8ee5a8b6cd84b71580e8560609fac12377"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/header/DealHeader.tsx",
+      "mode": 420,
+      "bytes": 4582,
+      "sha256": "4e7bd98272455d6e8d9346e4e7a8ef3f0b8a2cd4f5ef055b342a8bb309b14503"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/header/EditableTitle.test.tsx",
+      "mode": 420,
+      "bytes": 4100,
+      "sha256": "236f31c30c369c38572ee81b268f7ccfafcccfacf409c6aad0185ced96139b2d"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/header/EditableTitle.tsx",
+      "mode": 420,
+      "bytes": 1649,
+      "sha256": "6ef0ebec99f6bd209036a92d8a297a47b234d3ae8c84aa03adb4a8c5c315fde7"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/header/MergeDealDialog.test.tsx",
+      "mode": 420,
+      "bytes": 8421,
+      "sha256": "ed57bd24ac173f6dd512504d5b029b6b24b34d345a2552334f83b3e21f6a017a"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/header/MergeDealDialog.tsx",
+      "mode": 420,
+      "bytes": 4597,
+      "sha256": "823b5607e5416960fccec537fd074a0b946cfd8197ec871a8840b5e961b126ad"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/header/OwnerBlock.test.tsx",
+      "mode": 420,
+      "bytes": 3292,
+      "sha256": "a674f8889ff5252219f395fc4b53014929734bf7d429d0bf9fb0000c60e1e389"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/header/OwnerBlock.tsx",
+      "mode": 420,
+      "bytes": 4158,
+      "sha256": "ff9983308e0681a5c5ed2263289ef239def08529a277e2ce47325b4b67e9e9f2"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/header/StageSelector.test.tsx",
+      "mode": 420,
+      "bytes": 5952,
+      "sha256": "d662d0d96d4709b13397b6b096cf00f8f26c49d0ebdd323ea375b6f36a2ccff8"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/header/StageSelector.tsx",
+      "mode": 420,
+      "bytes": 5299,
+      "sha256": "434c2ba22de3fac62a5bf45a663a327016cb2a54bd44b9b390228b7d9660e04a"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/history/ActivityCard.tsx",
+      "mode": 420,
+      "bytes": 11328,
+      "sha256": "e3c570309b2fd3b31b5d881682b9cdcfae32a52083def7ee3d5a5d54e5366db5"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/history/CommentCard.tsx",
+      "mode": 420,
+      "bytes": 4807,
+      "sha256": "51866a9c73b97ae5793bc2b4cf6e1528c25db14380d501c449f48352f3340756"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/history/NoteCard.tsx",
+      "mode": 420,
+      "bytes": 8168,
+      "sha256": "1c7f2aaebd3b5d01de6e0a3a01c87443519407afb3cfc73d1dbab3169c56d41f"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/history/NoteComments.tsx",
+      "mode": 420,
+      "bytes": 3685,
+      "sha256": "fab3581771cac6b3de6e64fe942d437a40a947e31a7823bc5d4563038edc248d"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/mergeDeals.softDeleted.test.ts",
+      "mode": 420,
+      "bytes": 3446,
+      "sha256": "8afeddec25677bf2cba24107d57f3c243692ae6c5421eb1823776b99a3bf3c4b"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/mergeDeals.test.ts",
+      "mode": 420,
+      "bytes": 13008,
+      "sha256": "1a74030eb0b432334e08330e02f68a0251c2812999688fa8a00876dd6efa8f4b"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/mergeDeals.ts",
+      "mode": 420,
+      "bytes": 7030,
+      "sha256": "942ea039f9293c577c10d41ad78fa0f9a80443e68e86fe6fc8a3a0cbff62226b"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/mergeDealsAction.ts",
+      "mode": 420,
+      "bytes": 1884,
+      "sha256": "70cbe3a6c3a3bb99ffd2afaf1e1ce84140c943a5e73ed3a2852541df962e08bc"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/sidebar/DealPersonSection.switch.test.tsx",
+      "mode": 420,
+      "bytes": 8124,
+      "sha256": "388b0f1ee821839b53279f5fa91ea488d070d27a1560803235d6cb13214e6e63"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/sidebar/DealPersonSection.test.tsx",
+      "mode": 420,
+      "bytes": 6200,
+      "sha256": "b0619480583f3ad44cce64d23c1f411af0b2997742646b448391038413519b15"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/sidebar/DealPersonSection.tsx",
+      "mode": 420,
+      "bytes": 5871,
+      "sha256": "562184b881535ce66d1db09db2b93293fb31a8806a8389003e51acac4c3dbbc3"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/sidebar/DetailsBlock.test.tsx",
+      "mode": 420,
+      "bytes": 2649,
+      "sha256": "ba2cc53e172219b17edde518692113913e510dfc3688c637f3efbcfc2ad40fc1"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/sidebar/DetailsBlock.tsx",
+      "mode": 420,
+      "bytes": 4712,
+      "sha256": "a6385870f7d254e85aeb92d6f80a492ee0f7fe545d10582156978e7c0fee9d9c"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/sidebar/InlineCustomField.tsx",
+      "mode": 420,
+      "bytes": 1221,
+      "sha256": "8896b294861397a52edcd70ef88eea8dde4f2dcfe6a10c4149608742712e2d31"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/sidebar/InlineOrgField.test.tsx",
+      "mode": 420,
+      "bytes": 4736,
+      "sha256": "8b7be3fc1ecf04f373c31d106130fb6b369a46bcf3c06ff26aa8ac1d4770e427"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/sidebar/InlineOrgField.tsx",
+      "mode": 420,
+      "bytes": 5668,
+      "sha256": "06a35969a328b64c5762b02d7092cb887eaef18b22e1d2d68c12321968278822"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/sidebar/ManageSectionsDialog.tsx",
+      "mode": 420,
+      "bytes": 6721,
+      "sha256": "1d2e6107c32a4a09aea33e36eaf3ffea9d1068a837633cbea815a2a6838e211f"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/sidebar/OrgAddressField.tsx",
+      "mode": 420,
+      "bytes": 4549,
+      "sha256": "ede91e9e170ca90e0dc4a33324e6a1b7620ce42660a5dee45c96555a7d3d6784"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/sidebar/OrgBlock.tsx",
+      "mode": 420,
+      "bytes": 8974,
+      "sha256": "8fd89d5bec91906978ff4a104f56a1c0f797ddf454b79c2241dd6da7ce673676"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/sidebar/PersonBlock.tsx",
+      "mode": 420,
+      "bytes": 6286,
+      "sha256": "b3e0aa303ef1a64b7eccc58d02135aa3a0f782bb8cc09ddde6134e0faf2f0316"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/sidebar/PersonLinkEditor.test.tsx",
+      "mode": 420,
+      "bytes": 6236,
+      "sha256": "d866aefb9d1a29293d9794d54170a40dc84496614a79716c18dc4dcae2ba2cff"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/sidebar/PersonLinkEditor.tsx",
+      "mode": 420,
+      "bytes": 9900,
+      "sha256": "34ddb94a90b56119c6e9f0a74f0c59e56c1209524a4287bcef7585957b614ef1"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/sidebar/RecordOrganizationSection.tsx",
+      "mode": 420,
+      "bytes": 4229,
+      "sha256": "c43842f757c554d3db0a2abf151d67781c1333fe5c9ad16e386efdffd41f1c5e"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/sidebar/SourceBlock.tsx",
+      "mode": 420,
+      "bytes": 4791,
+      "sha256": "949e561cb0fca47789ee5c3a3539cd44a0192c9115c1beb7bdd703f69890d26a"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/sidebar/SourceChannelField.tsx",
+      "mode": 420,
+      "bytes": 2031,
+      "sha256": "5aa2d614f347f3c600e3808ccae68645bb1759bb3583ae6718b4d329aa06917c"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/sidebar/SourceChannelIdField.tsx",
+      "mode": 420,
+      "bytes": 2002,
+      "sha256": "25de972bffbaa69d38561e3ca5bece08a50f1b5f11cfde5ddfd8bc1589ca1a2f"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/sidebar/customFieldsSave.ts",
+      "mode": 420,
+      "bytes": 215,
+      "sha256": "f92f08d5ea02577fa38fff9b8ee27215c0b69694fca318bd4570a2f0e2dbced5"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/sidebar/fillGapsWiring.test.tsx",
+      "mode": 420,
+      "bytes": 4039,
+      "sha256": "2e40b92dfddaf65551df8cb9d0bb2fff781551ef20847a4b9c4cb48e7190645e"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/sidebar/timePickerValidity.test.tsx",
+      "mode": 420,
+      "bytes": 2751,
+      "sha256": "8fbd46c952f1ad561601dc6549eb90bc84bf444e09febf86157c47ab5a9defe6"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/useParticipants.ts",
+      "mode": 420,
+      "bytes": 3082,
+      "sha256": "c8ca1d85f0c75a4cf6de498c87b3cf411ade04c34ab02c9daf1493bb285f945e"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/wonLost.changeLog.test.ts",
+      "mode": 420,
+      "bytes": 4464,
+      "sha256": "7a995e3affb2a571ae7aa95f61f9c55e60aa7291c56e0712b17837e00fdc8efa"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/wonLost.test.ts",
+      "mode": 420,
+      "bytes": 7964,
+      "sha256": "f3d706cde3087e134a15e22d6895ca34057c70ec5bdd8c2ff3f2e394dac3a242"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/wonLost.ts",
+      "mode": 420,
+      "bytes": 7309,
+      "sha256": "00d56f9e39b3b47d9e5547fbd48ff99485f36be767fbc7a18370b93be0c3f7d4"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deal-workspace/wonLostReopen.test.ts",
+      "mode": 420,
+      "bytes": 5156,
+      "sha256": "952ea10fff9e42de96e06f68af788664fae4b001b96a9a4bd76b3449664a275c"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/AddDealModal.test.tsx",
+      "mode": 420,
+      "bytes": 15712,
+      "sha256": "94c7e52c9977b3c1348d80646539ca7a5ba70cec44f2b587155c99c1cea61406"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/AddDealModal.tsx",
+      "mode": 420,
+      "bytes": 11454,
+      "sha256": "4e53c1c12bde5979d68ff47daa38049062223ef2bace6b9b90aa30f5aab69be6"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/Board.dateFilterRefetch.test.tsx",
+      "mode": 420,
+      "bytes": 7534,
+      "sha256": "891c81f8d176e2982c8725c45aef71dcd1b89f5b18f6cb187ddc376d7e575d4d"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/Board.emptyState.test.tsx",
+      "mode": 420,
+      "bytes": 8121,
+      "sha256": "62d8f7e39df2ab6b8a8bb92db92aa344b3a161e7af53a3fc4bd9f2a24f888e80"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/Board.serverClock.test.tsx",
+      "mode": 420,
+      "bytes": 4120,
+      "sha256": "66b95b3929f1a9e81604fa8c51602e2512046273d73b347ccd31835c223b25dc"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/Board.telemetry.test.tsx",
+      "mode": 420,
+      "bytes": 6010,
+      "sha256": "9eea26b2f5605f902c1ebcbb30dd7cd5cb2f39bd0ad4bf3e0b123b7636eb5d2f"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/Board.test.tsx",
+      "mode": 420,
+      "bytes": 8974,
+      "sha256": "9ef810edcb08e7c67a4504cc5ea5dc57463cc9348669175202d4e663091d91c3"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/Board.tsx",
+      "mode": 420,
+      "bytes": 13182,
+      "sha256": "8eb6cc6c63ca282ba756b9f169edd56f300445c71611ba5ef54a3bb6f092374e"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/Board.viewPersistence.test.tsx",
+      "mode": 420,
+      "bytes": 7785,
+      "sha256": "bd4a6ce4919b151b0d534c53e65860570ed7b70c120b041ca2f95a0db8fcf272"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/BoardFilterControl.tsx",
+      "mode": 420,
+      "bytes": 7345,
+      "sha256": "c2a525ef38974b038e9675d980bc83207b7e62bf14b008e29f62b93d2c6eb980"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/BoardStages.test.tsx",
+      "mode": 420,
+      "bytes": 3382,
+      "sha256": "63b2793b5504b1d6cf796ea9051e57e66426d7967f40e365731236e25212cc90"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/CreateFilterModal.tsx",
+      "mode": 420,
+      "bytes": 8651,
+      "sha256": "cf0dc7bf995bf076d42292a6b1313e3c8263d7cd907e55e5ca8e6316f9941607"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/DealCardRot.test.tsx",
+      "mode": 420,
+      "bytes": 3874,
+      "sha256": "1f574bec349a4ef39af75eb672202d05ba2ce74cdfe95a72181d849bf0dfbd55"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/DealList.bulkArchive.test.tsx",
+      "mode": 420,
+      "bytes": 6580,
+      "sha256": "3919d7c5564d61ded05b5d85b594380a5783bfef055e888cca81e4ae414490db"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/DealList.bulkConfirm.test.tsx",
+      "mode": 420,
+      "bytes": 6044,
+      "sha256": "7c6c4fabaa897023ffd72db05be378454a483068b36bd4abce7798d4d00f92f2"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/DealList.test.tsx",
+      "mode": 420,
+      "bytes": 9866,
+      "sha256": "601c4448cbfd8449e03ea98c99b2c6128a5db94f917eda21be88e667e40561d3"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/DealList.tsx",
+      "mode": 420,
+      "bytes": 10604,
+      "sha256": "3c82308cd94f706de281e136b45e75a67520eb3d91dcf8a30eca395deb8f02d4"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/DealListClient.bulkArchive.test.tsx",
+      "mode": 420,
+      "bytes": 6097,
+      "sha256": "8c5b3fc0622a80b2d27bf4baf6f032461a672b53ec65ed876c816ceaedd6f5a7"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/DealListClient.bulkStage.test.tsx",
+      "mode": 420,
+      "bytes": 4952,
+      "sha256": "3fd2cec53d391f2e43aae617f476c2ebb265f7cbc99e77b1f401675a67d61612"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/DealListClient.empty.test.tsx",
+      "mode": 420,
+      "bytes": 4704,
+      "sha256": "f2929f510bedb176fbb2d5f8a84fa944766d1c63293d5de5cc3bfc4cff6c94cc"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/DealListClient.test.tsx",
+      "mode": 420,
+      "bytes": 6881,
+      "sha256": "b2ebc7c932c7eb2fea213fff19698b11350d8e7eb2cc6c32eafa828162a86fbc"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/DealListClient.tsx",
+      "mode": 420,
+      "bytes": 12257,
+      "sha256": "5553ec7cf6d293bd78215afa20c6ab1d1d6e761e6eaabcf118c93018cfe5f163"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/DealListTableBody.tsx",
+      "mode": 420,
+      "bytes": 5930,
+      "sha256": "969c4d717e4aa5caaa357ef23d4e60fb134d5e6ba7c09e5993de553f9496cdcf"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/archiveActions.ts",
+      "mode": 420,
+      "bytes": 2629,
+      "sha256": "3e2117f9cfe9ed4df18eae717c6bad3937a0294345073eb70084269c1f61e322"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/archiveDeal.test.ts",
+      "mode": 420,
+      "bytes": 3672,
+      "sha256": "e55f1464ff5bd8305c52d33d9bc84958591370570be0e8e0ac29162efff841f4"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/archiveDeal.ts",
+      "mode": 420,
+      "bytes": 3183,
+      "sha256": "34f13efcdb11453671d777ec1e908e9a5cd888e9d14a65ca96cc1b977b8470ce"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/boardCache.test.ts",
+      "mode": 420,
+      "bytes": 2683,
+      "sha256": "8cc7ba89a4e9ec75d8bce8709cdd2c948583766039430330816cfb1846df62e5"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/boardSort.test.ts",
+      "mode": 420,
+      "bytes": 3205,
+      "sha256": "eed19c646c21f6d90a025c1977c0c7064fce360969a8947d5b59fdb14d6189f7"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/bulkActions.ts",
+      "mode": 420,
+      "bytes": 7834,
+      "sha256": "3d2878a0f9051d79e02cd6c87c8e1d0b53eebf8e865df01bb9910e752af87cd1"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/bulkArchive.test.ts",
+      "mode": 420,
+      "bytes": 3795,
+      "sha256": "c8244f906fa63b6c9d522fb7512025707007df01c97fff9382b872156a79556f"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/bulkArchive.ts",
+      "mode": 420,
+      "bytes": 2843,
+      "sha256": "f3d66aa0c8e215b80551f326a75eb74a821be37410bb35fb040186736a5e85ea"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/bulkStageAction.ts",
+      "mode": 420,
+      "bytes": 1898,
+      "sha256": "03157c3e68bb746ead52b2d9b63a47373ec578a44e43e45510046e23e4e08bce"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/bulkStageAction.validation.test.ts",
+      "mode": 420,
+      "bytes": 4049,
+      "sha256": "bb7ddcaa2b8525a3c459661630a06307143d6bc1e79928e75594bdf80eb87d62"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/createDealAction.ts",
+      "mode": 420,
+      "bytes": 2678,
+      "sha256": "61c1cd7dffa145f397a73d0590318328900be2fea3adf94178ba0f763e62b8fe"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/dealActions.csrf.test.ts",
+      "mode": 420,
+      "bytes": 4778,
+      "sha256": "059c91f262342fb631c790c343e5205b1bea263812b00b4109da3022e0496fd6"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/dealActions.ts",
+      "mode": 420,
+      "bytes": 7139,
+      "sha256": "7498766e438f76ff7c6d24378d1cd92f7d3f3b1b3d0c48785fe21c1b718b509a"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/dealArchivedReads.test.ts",
+      "mode": 420,
+      "bytes": 3037,
+      "sha256": "c331ce0e7149a5754b6f771c40e3069f3f7058b6ed4806f296064eb2feac026c"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/dealBulk.test.ts",
+      "mode": 420,
+      "bytes": 12984,
+      "sha256": "8b2174402f6f641d1a4f45dcaf8bcc0b1bab5b7fe1b9400c62e3ecf02e417d3a"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/dealCardTestFixture.ts",
+      "mode": 420,
+      "bytes": 561,
+      "sha256": "853fc6d252137d2b56ae2b73af0624a6aa6a42d4478e8ee658bc7b2ea441009a"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/dealCreate.test.ts",
+      "mode": 420,
+      "bytes": 11460,
+      "sha256": "9126721b322b5d5321d0420a58c4000c2bb142284cfffc9b98501d12d9f7c2b8"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/dealHiddenMutation.test.ts",
+      "mode": 420,
+      "bytes": 2972,
+      "sha256": "b05f12f34ec025c0f143dfd1d420396b113d7f464489d76a60d24a55d9359dd9"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/dealMove.test.ts",
+      "mode": 420,
+      "bytes": 8073,
+      "sha256": "36a8def02c0d506e2f41d2b17306b44a21a90bfeded5a4bfc9994dec076c949a"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/dealMove.ts",
+      "mode": 420,
+      "bytes": 7143,
+      "sha256": "69b9606d19dfd62b617cf817dbc5dd220beb7606c86309f27f9bce07756d3696"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/dealMovePerms.test.ts",
+      "mode": 420,
+      "bytes": 9852,
+      "sha256": "4ee27b0d9f22f532664c7ee3af8f723e1dfbc68b81ebe737c6b8afbc87eef380"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/dealRepo.ts",
+      "mode": 420,
+      "bytes": 11654,
+      "sha256": "52f2d566a37b72153672ffcfcf80e0ff3668659d235cfaf3594fed0f62d343bf"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/dealUpdate.changeLog.test.ts",
+      "mode": 420,
+      "bytes": 10678,
+      "sha256": "206ab4e3b10c77ad53577530d886a52d724dcf14f4531fc0b88a7889201532ed"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/dealUpdate.customFieldsChangeLog.test.ts",
+      "mode": 420,
+      "bytes": 2778,
+      "sha256": "22a9e3b364febc4b0ed5d31b25c5fbab8644782133677f747135f1995b6f3aa7"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/dealUpdate.sourceChannelId.test.ts",
+      "mode": 420,
+      "bytes": 1580,
+      "sha256": "62f12f05244c330fe634950d3d83872a97bbab7b169ed12745e2819b2551e27e"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/dealUpdate.test.ts",
+      "mode": 420,
+      "bytes": 9658,
+      "sha256": "694d8b3a429041ce1775491744110fd8e45532ce020c737c63945cdb1e7b2f6e"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/dealUpdate.ts",
+      "mode": 420,
+      "bytes": 7857,
+      "sha256": "0d1b093a3f486e1d228b00e6247456d6664c905f33b61ae431cb7adb24f07895"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/dealUpdatePerms.test.ts",
+      "mode": 420,
+      "bytes": 4003,
+      "sha256": "4262461d5b2ceaf0cfd7fda32c21a3d2a97fca600deeabd010a1714ca038d6d9"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/deleteDeal.test.ts",
+      "mode": 420,
+      "bytes": 1593,
+      "sha256": "5c04ef2d3526d14c2928f7c84baeead89a790c2edaebdb568c2e2787363823f9"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/deleteDeal.ts",
+      "mode": 420,
+      "bytes": 3677,
+      "sha256": "8e83836cdcf17188f9a95890ae922a5752ccd58185ac2a97768c29fa7e9d8272"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/dragNeighbors.test.ts",
+      "mode": 420,
+      "bytes": 1889,
+      "sha256": "9553055091137f090116d9fad7ddd80deff3e17a6211dcad7af1041d70b48f5d"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/messages/sales.de.json",
+      "mode": 420,
+      "bytes": 30847,
+      "sha256": "c3a168178c389ff16661b54cd74c55522e938f10495f01b104261014c6cc9693"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/messages/sales.en.json",
+      "mode": 420,
+      "bytes": 25881,
+      "sha256": "6c05a1fda20c054298c66944175559b401b7e8d62afb2d34bc7f87499a78bb1b"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/messages/sales.fa.json",
+      "mode": 420,
+      "bytes": 36551,
+      "sha256": "6e2dbe1e69a9f9f91bb4dea0d2e5ab266dc5a74742a607be2de90ee65f2ef5d7"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/moveAction.ts",
+      "mode": 420,
+      "bytes": 1871,
+      "sha256": "b38845261781b843c804902b9afc92919fbd2553ca4a28bb15e2c1f1ed117149"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/notifyDeferral.test.ts",
+      "mode": 420,
+      "bytes": 3760,
+      "sha256": "7530957b1fc8421c52be6b4733676fad458769c71a9ba4190f88ef5a635e7707"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/notifyWiring.test.ts",
+      "mode": 420,
+      "bytes": 5747,
+      "sha256": "7268ef88d10d04c9f2b862f7101def1831e468a3d89f47106707e1983f135174"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/realtimeReducer.test.ts",
+      "mode": 420,
+      "bytes": 4942,
+      "sha256": "b5a4854dd5f652e3bda0543c8a780d7f55665a871101f8904c5a1d342fe90a90"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/realtimeReducer.ts",
+      "mode": 420,
+      "bytes": 2584,
+      "sha256": "f5907e60d6c2ed027d3863ba33ae06feb9af1083088ccc67f126899272a18f6f"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/schemas.ts",
+      "mode": 420,
+      "bytes": 7730,
+      "sha256": "718f5544b3920a38581dd714a42084feb16297fcab1d5a11badb4814c2324cc6"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/updateAction.ts",
+      "mode": 420,
+      "bytes": 2598,
+      "sha256": "e39745712591a97995de8891030e9c2942ad3ccdf953daea1e81b035cc8db4b1"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/updateActionScrub.test.ts",
+      "mode": 420,
+      "bytes": 9780,
+      "sha256": "09bcaea0a79a3077c5472f74481b615b3d6ba9ebafbc1283ba0950352d549139"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/updateDeal.actorFreshness.integration.test.ts",
+      "mode": 420,
+      "bytes": 5940,
+      "sha256": "ac66f34a5e8a4b5bbb3a2b8cb5dcf968fe482e59b2b88168dd3d5ef944d1164e"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/useDealClose.ts",
+      "mode": 420,
+      "bytes": 2750,
+      "sha256": "7da2a00435055c23a48f52fc7760fa876b4b0cca81d8127222eecdeccca3d943"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/useDealListActions.ts",
+      "mode": 420,
+      "bytes": 3866,
+      "sha256": "1ed69a236cf267e071f05422755196e1590e692e50f28a4e722e33e49a362985"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/useDealMove.test.tsx",
+      "mode": 420,
+      "bytes": 6918,
+      "sha256": "3124aefcc2aab96fb8089ba25f17cac102662127508714c743efbc4c23dc69dd"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/useDealMove.ts",
+      "mode": 420,
+      "bytes": 3541,
+      "sha256": "63ad0df49d6a8c0d5a3632a17ac3e4bf9fcf08cbb45110a2f4de20b61fb2e19e"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/useInlineEdit.test.tsx",
+      "mode": 420,
+      "bytes": 9387,
+      "sha256": "54485c6c86eeb7dc11396be67d56c69104f0c9585e77e7532e02aacb83c51793"
+    },
+    {
+      "status": " M",
+      "path": "src/features/deals/useInlineEdit.ts",
+      "mode": 420,
+      "bytes": 4334,
+      "sha256": "3692d1dcda882bd29a29eb4bd6a53bed71ae8044f6a1223131ab4051e307b757"
+    },
+    {
+      "status": " M",
+      "path": "src/features/import/undoDelete.ts",
+      "mode": 420,
+      "bytes": 6854,
+      "sha256": "e86e5226a7a426ff76139a3ef8f8d187fc0e4013ea6b462832de366576de801e"
+    },
+    {
+      "status": " M",
+      "path": "src/features/leads/convertCarryOver.test.ts",
+      "mode": 420,
+      "bytes": 10004,
+      "sha256": "e2fd216591ef92007bfe459cb7a3fc24dbd1475e21337b3b4fd757d21fea1504"
+    },
+    {
+      "status": " M",
+      "path": "src/features/leads/detail/LeadSidebar.test.tsx",
+      "mode": 420,
+      "bytes": 10176,
+      "sha256": "95b0fa642501e315913ea52a6a909e0b95d0b624c028ad498cff48b4208b2250"
+    },
+    {
+      "status": " M",
+      "path": "src/features/leads/detail/LeadSidebar.tsx",
+      "mode": 420,
+      "bytes": 6747,
+      "sha256": "e3b1fee289fe71d136c23807722f45c9d3acbaa826dd461896ef276eded51660"
+    },
+    {
+      "status": " M",
+      "path": "src/features/leads/leadConvert.ts",
+      "mode": 420,
+      "bytes": 11071,
+      "sha256": "125456f8035f518330d478d9d3160a6be412dd428811d668310305d8d0f7f7a2"
+    },
+    {
+      "status": " M",
+      "path": "src/features/leads/leadServerActions.ts",
+      "mode": 420,
+      "bytes": 4988,
+      "sha256": "c269e23dd96e8fbc247c7b877b6c5b85e6945f692105cd16add727f6746bfbd0"
+    },
+    {
+      "status": " M",
+      "path": "src/features/mcp/tools/writes-deals.ts",
+      "mode": 420,
+      "bytes": 5580,
+      "sha256": "73c681bb35bcf31997066aad8d76614abeef56629358b361dae8c1d158aa70ab"
+    },
+    {
+      "status": " M",
+      "path": "src/features/mcp/tools/writes.test.ts",
+      "mode": 420,
+      "bytes": 7088,
+      "sha256": "b4cb5a51060c7877d09c019b967bd63ed212f553e25383f81168c3c55d8bb370"
+    },
+    {
+      "status": "??",
+      "path": "drizzle/0101_deal_write_version.sql",
+      "mode": 420,
+      "bytes": 1477,
+      "sha256": "a5c77f4aa42ad90d87a6834201819166ad8a04f4c02c02e896be34dc751b0bfd"
+    },
+    {
+      "status": "??",
+      "path": "src/features/deal-workspace/DealEditableHeading.tsx",
+      "mode": 420,
+      "bytes": 2861,
+      "sha256": "33ec7526b30b0a221d8a82cb8233cf5bd089be431280766440bf78b62f56ac9c"
+    },
+    {
+      "status": "??",
+      "path": "src/features/deal-workspace/DealInlineCustomFieldEditor.tsx",
+      "mode": 420,
+      "bytes": 3510,
+      "sha256": "ccdf73ef6497f45ea5f1f2bfbd33d611f5b2d82a21e1451b103d32340da6c1d6"
+    },
+    {
+      "status": "??",
+      "path": "src/features/deal-workspace/DealInlineSelectField.tsx",
+      "mode": 420,
+      "bytes": 2493,
+      "sha256": "8fe041f263d4fe4892457f5aaace2fff5c96cc360cbc285d227d8e59d5ef0fe2"
+    },
+    {
+      "status": "??",
+      "path": "src/features/deal-workspace/DealInlineTextField.tsx",
+      "mode": 420,
+      "bytes": 3168,
+      "sha256": "df380a216a69e483fe46223a5394fe3bd3db35efad1de9ec1fe508be50121c43"
+    },
+    {
+      "status": "??",
+      "path": "src/features/deal-workspace/dealEditErrorMessage.ts",
+      "mode": 420,
+      "bytes": 489,
+      "sha256": "87fb137602930dac32e49edd2f2f8e89b8fbfd4020dde0fcae7929878b0f5963"
+    },
+    {
+      "status": "??",
+      "path": "src/features/deal-workspace/sidebar/DealCustomFields.test.tsx",
+      "mode": 420,
+      "bytes": 3669,
+      "sha256": "175072624df02bc3e0fc96b81b21217195b4c11d2ceff76a40b2b23cc1373d7b"
+    },
+    {
+      "status": "??",
+      "path": "src/features/deal-workspace/sidebar/DealCustomFields.tsx",
+      "mode": 420,
+      "bytes": 2890,
+      "sha256": "120c5978de5fa43bbbc9ff77ec8450b29b3988bd5a6c047166af43213a9ba39e"
+    },
+    {
+      "status": "??",
+      "path": "src/features/deal-workspace/useDealEditSnapshot.test.tsx",
+      "mode": 420,
+      "bytes": 6511,
+      "sha256": "1f6e7d723a09fa1df1c147f2f88958bff86d14386b28fc936a6f03b1303368e3"
+    },
+    {
+      "status": "??",
+      "path": "src/features/deal-workspace/useDealEditSnapshot.ts",
+      "mode": 420,
+      "bytes": 2782,
+      "sha256": "354c6ce38a3090927c8b2dcfc15a4388661192aad4a1115a0e99490188d8459c"
+    },
+    {
+      "status": "??",
+      "path": "src/features/deals/boardAck.test.ts",
+      "mode": 420,
+      "bytes": 1705,
+      "sha256": "19916b1f0635bacbc3526c38978d87a249116a02c77284c5d2c513a29fdadfac"
+    },
+    {
+      "status": "??",
+      "path": "src/features/deals/boardAck.ts",
+      "mode": 420,
+      "bytes": 1955,
+      "sha256": "87b515c0bd82c87fd8d92caa8a511b44a1d11da2a64f2fd15b435172079e1673"
+    },
+    {
+      "status": "??",
+      "path": "src/features/deals/dealClientFixture.ts",
+      "mode": 420,
+      "bytes": 1230,
+      "sha256": "43e8b3eca2eb124382df0f4e2a69913cf879406c96ca58cca4146573ce8402b2"
+    },
+    {
+      "status": "??",
+      "path": "src/features/deals/dealClientResult.ts",
+      "mode": 420,
+      "bytes": 419,
+      "sha256": "f2f97bf5f570111687c54c551b13a66cf76ae016702e4194013dd34b6bf09491"
+    },
+    {
+      "status": "??",
+      "path": "src/features/deals/dealMoveAuthority.ts",
+      "mode": 420,
+      "bytes": 4407,
+      "sha256": "4dda4948f66b76bdf48696a263cccb233d339359c5110dc9ea24b285c2e012c9"
+    },
+    {
+      "status": "??",
+      "path": "src/features/deals/dealMoveStageAge.integration.test.ts",
+      "mode": 420,
+      "bytes": 5330,
+      "sha256": "4e7406e417bcb3f2b72438e690f60194f2b178a449c804fbfb624668e9b09050"
+    },
+    {
+      "status": "??",
+      "path": "src/features/deals/dealVersion.test-helpers.ts",
+      "mode": 420,
+      "bytes": 582,
+      "sha256": "c1cf883c06b3748420ae2803a5a048d7b39f6fde176650e1794a8dae9f139ff4"
+    },
+    {
+      "status": "??",
+      "path": "src/features/deals/dealVersion.ts",
+      "mode": 420,
+      "bytes": 3991,
+      "sha256": "c6c8e5095a770fa647026cd932a14d67d216051666b2c41d691aa6c1affa9952"
+    },
+    {
+      "status": "??",
+      "path": "src/features/deals/listAck.ts",
+      "mode": 420,
+      "bytes": 625,
+      "sha256": "84960e49457c9948b0cebc4ec65d4cb1822f0c41d24f2364e0351dc4efdf964a"
+    },
+    {
+      "status": "??",
+      "path": "src/features/deals/moveAction.nativeSession.test.ts",
+      "mode": 420,
+      "bytes": 5080,
+      "sha256": "01f5a717ac3f2f3dc0127e124817a03ce366d7a668fec3dc5d620e118e1cab14"
+    }
+  ],
+  "extraFiles": [
+    {
+      "source": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/next.config.ts",
+      "target": "sales/preexisting-or-root-reference/next.config.ts",
+      "sha256": "9b42a30b9ed3799744ec516d8f75afa618cde93a95c247034af560489e8e6483"
+    },
+    {
+      "source": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/app/(app)/deals/[dealId]/DealDetailView.tsx",
+      "target": "sales/preexisting-or-root-reference/src/app/(app)/deals/[dealId]/DealDetailView.tsx",
+      "sha256": "0bd039b9da73b2ab4f14a552d55c17ba86f0071d4fe4369cad8cef924fa7c26a"
+    },
+    {
+      "source": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/app/(app)/deals/[dealId]/DealWorkspaceClient.tsx",
+      "target": "sales/preexisting-or-root-reference/src/app/(app)/deals/[dealId]/DealWorkspaceClient.tsx",
+      "sha256": "60a6c59236fc909ae65f9d3004c5ff8637991d53d787b937d3740962f4114ae6"
+    },
+    {
+      "source": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/app/(app)/deals/[dealId]/tabs.test.tsx",
+      "target": "sales/preexisting-or-root-reference/src/app/(app)/deals/[dealId]/tabs.test.tsx",
+      "sha256": "3fbcb3e954e02c580e16b0278d873c30c6511a802ae3465c05ad18a906c65d0f"
+    },
+    {
+      "source": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/app/(app)/deals/[dealId]/tabs.tsx",
+      "target": "sales/preexisting-or-root-reference/src/app/(app)/deals/[dealId]/tabs.tsx",
+      "sha256": "ace4c3cce65664a53615183e48dd746007314e7d10c1e0aa8fdb31fbf4dc647e"
+    },
+    {
+      "source": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/custom-fields/InlineCustomFieldEditor.tsx",
+      "target": "sales/preexisting-or-root-reference/src/features/custom-fields/InlineCustomFieldEditor.tsx",
+      "sha256": "1c0f2d9cac9a83af97169fb1b8df9b3f67e12f04d1604bb2831c0ab2213815fa"
+    },
+    {
+      "source": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/custom-fields/messages/customFields.de.json",
+      "target": "sales/preexisting-or-root-reference/src/features/custom-fields/messages/customFields.de.json",
+      "sha256": "6ff96a2b4109e26391240f9d6ab9e1c0fa389beeb124158ab19f4cde644b1bd6"
+    },
+    {
+      "source": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/custom-fields/messages/customFields.en.json",
+      "target": "sales/preexisting-or-root-reference/src/features/custom-fields/messages/customFields.en.json",
+      "sha256": "cbbe69c45953344d75b7057f65af57598641ec3b688e57c94bdeb1dbda54ab83"
+    },
+    {
+      "source": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/custom-fields/messages/customFields.fa.json",
+      "target": "sales/preexisting-or-root-reference/src/features/custom-fields/messages/customFields.fa.json",
+      "sha256": "ebc0e8503e40a7f4d646336afd2bfe6125b3d3d627e2b2bf32a12b88c93b48b0"
+    },
+    {
+      "source": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/CollapsibleSection.test.tsx",
+      "target": "sales/preexisting-or-root-reference/src/features/deal-workspace/CollapsibleSection.test.tsx",
+      "sha256": "f4dde9e556588f57c61fee932d5a07a2790ba325aac2c17b4121b44e7363aaf6"
+    },
+    {
+      "source": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/CollapsibleSection.tsx",
+      "target": "sales/preexisting-or-root-reference/src/features/deal-workspace/CollapsibleSection.tsx",
+      "sha256": "b10e93863ad62b0a56d0cacd261ea6ed5eb3aa27a7835b3ec7794d49d5467cb4"
+    },
+    {
+      "source": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/HistoryFeed.tsx",
+      "target": "sales/preexisting-or-root-reference/src/features/deal-workspace/HistoryFeed.tsx",
+      "sha256": "d92476782359ece18b49421869c2c08aec65e9fe3a43b3e6e489f2ff0dab3bac"
+    },
+    {
+      "source": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/HistoryTypeTabs.tsx",
+      "target": "sales/preexisting-or-root-reference/src/features/deal-workspace/HistoryTypeTabs.tsx",
+      "sha256": "7e164db525ba1b2b83b702a84f964b18684c1c606a7c44a3b3cd8953f7e9656a"
+    },
+    {
+      "source": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/history/AttributionLine.tsx",
+      "target": "sales/preexisting-or-root-reference/src/features/deal-workspace/history/AttributionLine.tsx",
+      "sha256": "b1b50b088e1c2aa386af5868af71133a58dec7982205aa85e8dd8dcea6be4bfe"
+    },
+    {
+      "source": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/history/historyBlocks.test.tsx",
+      "target": "sales/preexisting-or-root-reference/src/features/deal-workspace/history/historyBlocks.test.tsx",
+      "sha256": "daa7f740e00f0d12d8626e234545262894d785f5c62176cc30e83da925a655fb"
+    },
+    {
+      "source": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/sidebar/OrganizationSection.tsx",
+      "target": "sales/preexisting-or-root-reference/src/features/deal-workspace/sidebar/OrganizationSection.tsx",
+      "sha256": "8cc8fe931331b6858d3a53383eecf7e63b6837faa119529af423ff19ee3a9e49"
+    },
+    {
+      "source": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/sidebar/PersonSection.tsx",
+      "target": "sales/preexisting-or-root-reference/src/features/deal-workspace/sidebar/PersonSection.tsx",
+      "sha256": "280a0348f1fd8678eefb5cd37b32ca9c98de22e07d5bba21f0978e90cf193eab"
+    },
+    {
+      "source": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/i18n/messages/de.json",
+      "target": "sales/preexisting-or-root-reference/src/features/i18n/messages/de.json",
+      "sha256": "dc9872c6781b63420bc710d281e2a5badfb1a8119cb684d6093680e3e7a850a0"
+    },
+    {
+      "source": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/i18n/messages/en.json",
+      "target": "sales/preexisting-or-root-reference/src/features/i18n/messages/en.json",
+      "sha256": "3ed570b11c72d81c650ed5c92bf217c9b9b56acc3a87dfe27bd665ad9071ea5e"
+    },
+    {
+      "source": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/i18n/messages/fa.json",
+      "target": "sales/preexisting-or-root-reference/src/features/i18n/messages/fa.json",
+      "sha256": "ac644d90974f7130962b250549d5947baa9acaf35b5e44ca52f261b93adedaca"
+    },
+    {
+      "source": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/inline-edit/useInlineEditField.ts",
+      "target": "sales/preexisting-or-root-reference/src/features/inline-edit/useInlineEditField.ts",
+      "sha256": "3b43c445b30749b597a74ac5216d04c9dd092c0f85692706a28bafc87377a36c"
+    },
+    {
+      "source": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/app/(app)/deals/[dealId]/workspace.refinement.test.tsx",
+      "target": "sales/preexisting-or-root-reference/src/app/(app)/deals/[dealId]/workspace.refinement.test.tsx",
+      "sha256": "3b44abb034d0ec6ffc47fb3a2b59217966ad50203bf0da3a2009bf34dcccfc89"
+    },
+    {
+      "source": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/custom-fields/CreateFieldDialog.tsx",
+      "target": "sales/preexisting-or-root-reference/src/features/custom-fields/CreateFieldDialog.tsx",
+      "sha256": "d628a33bee9020d722591cd70c72d0cc77cbe31e48b442a292a071fd7848bf76"
+    },
+    {
+      "source": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/NextActions.tsx",
+      "target": "sales/preexisting-or-root-reference/src/features/deal-workspace/NextActions.tsx",
+      "sha256": "13f00d034d7808a688b6b6e43880fe0a71d5af87848a010093803174329abe36"
+    },
+    {
+      "source": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/header/DealKeyFacts.tsx",
+      "target": "sales/preexisting-or-root-reference/src/features/deal-workspace/header/DealKeyFacts.tsx",
+      "sha256": "cf96a1c9c29f9ae265e28b799cd91d21bce903d6b3268b71b0d713ad01f6669a"
+    },
+    {
+      "source": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/history/customFieldOptions.test.ts",
+      "target": "sales/preexisting-or-root-reference/src/features/deal-workspace/history/customFieldOptions.test.ts",
+      "sha256": "9c066bd8ebf8aee71cd874a52af2af0b4f57988006c3dac458d8a59aea2190af"
+    },
+    {
+      "source": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/history/customFieldOptions.ts",
+      "target": "sales/preexisting-or-root-reference/src/features/deal-workspace/history/customFieldOptions.ts",
+      "sha256": "954942aa4fff5859a28c8bfc764fd0a0eec52396e587fcca42109de787476c90"
+    },
+    {
+      "source": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/sidebar/SidebarPresentation.tsx",
+      "target": "sales/preexisting-or-root-reference/src/features/deal-workspace/sidebar/SidebarPresentation.tsx",
+      "sha256": "2d1df99fe44aa78fe96d2bb1c0e98c30e66648d3e13f6f7fedf7c7ed804e375c"
+    },
+    {
+      "source": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/dealMove.actorFreshness.integration.test.ts",
+      "target": "sales/preexisting-or-root-reference/src/features/deals/dealMove.actorFreshness.integration.test.ts",
+      "sha256": "4759f76cb972811ab972dda3860b874c0b40d647edd465c809b625e004b2de8d"
+    },
+    {
+      "source": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/dealMoveStageRace.integration.test.ts",
+      "target": "sales/preexisting-or-root-reference/src/features/deals/dealMoveStageRace.integration.test.ts",
+      "sha256": "dcf51aea8e828eb5fe837e8b201526ab1fa36f98ac23489752a0fe71a8d1bcb9"
+    },
+    {
+      "source": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/dealVersionCommands.integration.test.ts",
+      "target": "sales/preexisting-or-root-reference/src/features/deals/dealVersionCommands.integration.test.ts",
+      "sha256": "a897bdaaba92d37b179f11e477e8ee27c0e0d54b4621700acb536992894d1c32"
+    },
+    {
+      "source": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/dealVersionCommands.test-helpers.ts",
+      "target": "sales/preexisting-or-root-reference/src/features/deals/dealVersionCommands.test-helpers.ts",
+      "sha256": "41b2282efabeb17312981e9ce0d2a9363d8d88efc182d0ad34545f1acbf7110d"
+    },
+    {
+      "source": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/dealWriteVersion.fixtures.ts",
+      "target": "sales/preexisting-or-root-reference/src/features/deals/dealWriteVersion.fixtures.ts",
+      "sha256": "ea43194c2f314ab1f6ac410b0996163ee3e697291efefbb6ddfbda8046ca889c"
+    },
+    {
+      "source": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/dealWriteVersion.globalSetup.ts",
+      "target": "sales/preexisting-or-root-reference/src/features/deals/dealWriteVersion.globalSetup.ts",
+      "sha256": "b97b6c0ce4f3c6c377dad9a2c1ad476b7aa232c41e9848e048459334cff003dd"
+    },
+    {
+      "source": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/dealWriteVersion.integration.test.ts",
+      "target": "sales/preexisting-or-root-reference/src/features/deals/dealWriteVersion.integration.test.ts",
+      "sha256": "5c0a8854ef1b73980d7c5f7ed39a4453b2600624f1ccea243092eb34ded91245"
+    },
+    {
+      "source": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/dealWriteVersion.test-helpers.ts",
+      "target": "sales/preexisting-or-root-reference/src/features/deals/dealWriteVersion.test-helpers.ts",
+      "sha256": "da6b4614e6d489b73db71e206a5638e382922a94e984264640d3346247211c65"
+    },
+    {
+      "source": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/dealWriteVersionMigration.integration.test.ts",
+      "target": "sales/preexisting-or-root-reference/src/features/deals/dealWriteVersionMigration.integration.test.ts",
+      "sha256": "a94bf0098af9768ba1ca73c2705a193e29cdaad55f9fb71934fb4c7a64c79409"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-sales-platform-implementation/outputs/sales-safe-stop-20261102/SAFE-STOP.md",
+      "target": "sales/SAFE-STOP.md",
+      "sha256": "72ae54a38e544ddb40155582c3a3c9c09ac96551a7275fa78d3018e3f4ff355c"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-sales-platform-implementation/outputs/sales-safe-stop-20261102/owned-source-allowlist.json",
+      "target": "sales/owned-source-allowlist.json",
+      "sha256": "458b0727d113a70d28e8f55424401b6970642ad047f44c7f93984aa9318cbbf6"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-sales-platform-implementation/outputs/sales-safe-stop-20261102/cleanup-and-head-observation.json",
+      "target": "sales/cleanup-and-head-observation.json",
+      "sha256": "06af3fb1388ef6b07c94cb75673f330da8671adb6ef5f9ae3c995124526460b1"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-sales-platform-implementation/outputs/sales-stage-age-preparation-20261101/current-deal-revision-landing-index-20261102.md",
+      "target": "sales/current-deal-revision-landing-index-20261102.md",
+      "sha256": "a560474a9094f09b7ba87f1fb3bd2302abbd5ff828ae4376993630a2e8e4fd92"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-sales-platform-implementation/outputs/sales-stage-age-preparation-20261101/current-deal-revision-landing-index-20261102.json",
+      "target": "sales/current-deal-revision-landing-index-20261102.json",
+      "sha256": "30b4df565c9f12b217eaabbcca00b7cac68224aefebc83c04d633c7fa0fee481"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-sales-platform-implementation/outputs/sales-stage-age-preparation-20261101/revision-schema-landing-draft/fc5-to-lint-corrected-root-regressions.patch",
+      "target": "sales/root-reference-packet.patch",
+      "sha256": "1aae3de3f016658e1d15ece243b5997f55b7af0563ab7e0773ce148fd3aff951"
+    }
+  ],
+  "qualification": "183 exact Sales-owned dirty source paths preserved at frozen cut. Corrected native11 PASS and recorded configured types/lint2 retained; prior132PASS7fixtureFAIL separate. Thirty-seven preexisting/shared/reference paths preserved archival-only, not attributed to Sales ownership.",
+  "limitations": "UNFINISHED complete dirty preservation cut on older detached HEAD. Do not merge wholesale or deploy. Ownership labels do not qualify every preserved path. Reconcile newer main/security/contracts/private migration metadata; preserve all historical receipts. No safe-stop tests run. Current192apply remains UNVERIFIED; source files in archival subdir must be restored by explicit reviewed mapping if needed.",
+  "authorization": "Human safe-stop instruction verified in Integration chat on 2026-11-02; Root sole closer.",
+  "workspace": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo",
+  "createdAt": "2026-11-02T07:27:45.077437+00:00"
+}

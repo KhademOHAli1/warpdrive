@@ -1,0 +1,149 @@
+"use client";
+import { useRouter } from "next/navigation";
+import type React from "react";
+import { useState } from "react";
+import { Select } from "@/components/ui/Select";
+import { sourceChannelOptions } from "@/constants/sourceChannelLabels";
+import { isSourceChannelKey, type SourceChannelKey } from "@/constants/sourceChannels";
+import { updateDealAction } from "@/features/deals/updateAction";
+import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
+import { InlineEditFooter } from "@/features/inline-edit/InlineEditFooter";
+import { saveErrorMessage } from "@/features/inline-edit/saveError";
+import { readCsrfToken } from "@/utils/csrfCookie";
+import { BulkEditRow } from "./BulkEditRow";
+import { SourceChannelField } from "./SourceChannelField";
+import { SourceChannelIdField } from "./SourceChannelIdField";
+
+interface SourceBlockProps {
+  dealId: string;
+  writeVersion: string;
+  sourceChannel: string | null;
+  sourceChannelId: string | null;
+  bulkEditing?: boolean;
+  onExitBulk?: () => void;
+}
+
+// Source section: Channel (enum) + Channel ID (free text). Per-field inline editing normally; the
+// section pencil opens both at once behind a single Save, committing one updateDealAction with
+// just the changed fields under the deal CAS precondition.
+export function SourceBlock({
+  dealId,
+  writeVersion,
+  sourceChannel,
+  sourceChannelId,
+  bulkEditing = false,
+  onExitBulk,
+}: SourceBlockProps): React.ReactNode {
+  if (bulkEditing) {
+    return (
+      <SourceBulkEditor
+        dealId={dealId}
+        writeVersion={writeVersion}
+        sourceChannel={sourceChannel}
+        sourceChannelId={sourceChannelId}
+        onExit={onExitBulk ?? (() => {})}
+      />
+    );
+  }
+  return (
+    <>
+      <SourceChannelField
+        dealId={dealId}
+        writeVersion={writeVersion}
+        sourceChannel={sourceChannel}
+      />
+      <SourceChannelIdField
+        dealId={dealId}
+        writeVersion={writeVersion}
+        sourceChannelId={sourceChannelId}
+      />
+    </>
+  );
+}
+
+function SourceBulkEditor({
+  dealId,
+  writeVersion,
+  sourceChannel,
+  sourceChannelId,
+  onExit,
+}: {
+  dealId: string;
+  writeVersion: string;
+  sourceChannel: string | null;
+  sourceChannelId: string | null;
+  onExit: () => void;
+}): React.ReactNode {
+  const translateSales = useAppTranslations("sales");
+  const locale = useLocale();
+
+  const router = useRouter();
+  const [expectedWriteVersion] = useState(writeVersion);
+  const initialChannel =
+    sourceChannel !== null && isSourceChannelKey(sourceChannel) ? sourceChannel : "";
+  const [channel, setChannel] = useState<string>(initialChannel);
+  const [channelId, setChannelId] = useState(sourceChannelId ?? "");
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  function onSave(): void {
+    const patch: {
+      dealId: string;
+      expectedWriteVersion: string;
+      sourceChannel?: SourceChannelKey | null;
+      sourceChannelId?: string | null;
+    } = { dealId, expectedWriteVersion };
+    if (channel !== initialChannel)
+      patch.sourceChannel = channel === "" ? null : (channel as SourceChannelKey);
+    if (channelId.trim() !== (sourceChannelId ?? "")) {
+      patch.sourceChannelId = channelId.trim() === "" ? null : channelId.trim();
+    }
+    if (patch.sourceChannel === undefined && patch.sourceChannelId === undefined)
+      patch.sourceChannel = channel === "" ? null : (channel as SourceChannelKey);
+    setPending(true);
+    setError(null);
+    updateDealAction(patch, readCsrfToken())
+      .then((r) => {
+        setPending(false);
+        if (r.ok) {
+          router.refresh();
+          onExit();
+        } else {
+          setError(saveErrorMessage(r.error.id, locale));
+        }
+      })
+      .catch(() => {
+        setPending(false);
+        setError(saveErrorMessage(undefined, locale));
+      });
+  }
+
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-0.5 text-muted-foreground text-xs">
+        <span>{translateSales("channel_ce468")}</span>
+        <Select
+          ariaLabel={translateSales("channel_ce468")}
+          value={channel}
+          onChange={setChannel}
+          options={[
+            { value: "", label: translateSales("computed.none") },
+            ...sourceChannelOptions(locale),
+          ]}
+        />
+      </div>
+      <BulkEditRow
+        label={translateSales("channel_id_8edd6")}
+        value={channelId}
+        onChange={setChannelId}
+        disabled={pending}
+      />
+      {error !== null ? (
+        <span role="alert" className="text-destructive text-xs">
+          {error}
+        </span>
+      ) : null}
+      <InlineEditFooter onCancel={onExit} onSave={onSave} saveDisabled={false} pending={pending} />
+    </div>
+  );
+}

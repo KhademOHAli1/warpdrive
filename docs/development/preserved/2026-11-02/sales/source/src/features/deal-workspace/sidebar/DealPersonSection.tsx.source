@@ -1,0 +1,180 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+import type React from "react";
+import { useState } from "react";
+import type { Person } from "@/db/schema";
+import type { PersonMatchCandidate } from "@/features/contacts/personOptionsRepo";
+import { useDealActionError } from "@/features/deal-workspace/DealActionErrorProvider";
+import { dealClientResult } from "@/features/deals/dealClientResult";
+import { updateDealAction } from "@/features/deals/updateAction";
+import { useSalesStrings } from "@/features/deals/useSalesStrings";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
+import { trpc } from "@/lib/trpc-client";
+import type { CustomFieldDef } from "@/types/customFields";
+import { readCsrfToken } from "@/utils/csrfCookie";
+import { CollapsibleSection } from "../CollapsibleSection";
+import { PersonLinkEditor } from "./PersonLinkEditor";
+import { PersonSection } from "./PersonSection";
+import { PersonSwitchDialog } from "./PersonSwitchDialog";
+import { SectionHeaderMenu, type SectionHeaderMenuItem } from "./SectionHeaderMenu";
+import { SidebarFieldRow } from "./SidebarFieldRow";
+
+const NONE: ReadonlySet<string> = new Set();
+
+// Mirror the rows PersonBlock renders for a linked person, honouring the same Settings > Data
+// fields hides so the empty panel does not offer a row the populated one suppresses.
+function emptyRows(hidden: ReadonlySet<string>): string[] {
+  return ["name"]
+    .concat(hidden.has("firstName") ? [] : ["firstName"])
+    .concat(hidden.has("lastName") ? [] : ["lastName"])
+    .concat(hidden.has("phones") ? [] : ["phone"])
+    .concat(hidden.has("emails") ? [] : ["email"]);
+}
+
+// The deal sidebar's Person node. A linked person renders the shared PersonSection unchanged; a
+// person-less deal still renders the panel (Pipedrive keeps it on screen either way) with empty
+// rows, and the pencil opens an editor that links an existing contact or creates one.
+//
+// The panel used to be dropped entirely when the deal had no person, which both contradicted the
+// Manage-sidebar-sections toggle the user had switched on and left no way to attach a person to an
+// existing deal at all: personId was only ever settable from the Add deal modal.
+export function DealPersonSection({
+  person,
+  dealId,
+  expectedWriteVersion,
+  personOptions,
+  menuItems,
+  bulkEditing,
+  onStartBulk,
+  onExitBulk,
+  hidden = NONE,
+  customFieldDefs = [],
+  currency = "USD",
+}: {
+  person: Person | null;
+  dealId: string;
+  expectedWriteVersion: string;
+  personOptions: PersonMatchCandidate[];
+  menuItems: SectionHeaderMenuItem[];
+  bulkEditing: boolean;
+  onStartBulk: () => void;
+  onExitBulk: () => void;
+  hidden?: ReadonlySet<string>;
+  customFieldDefs?: CustomFieldDef[];
+  currency?: string;
+}): React.ReactNode {
+  const STRINGS = useSalesStrings();
+
+  const translateSales = useAppTranslations("sales");
+
+  const router = useRouter();
+  const reportError = useDealActionError();
+  const utils = trpc.useUtils();
+  const [switchOpen, setSwitchOpen] = useState(false);
+  const [switchVersion, setSwitchVersion] = useState(expectedWriteVersion);
+  const menu = STRINGS.dealSidebar.menu;
+
+  async function savePersonLink(
+    personId: string | null,
+    version = expectedWriteVersion,
+  ): Promise<void> {
+    const r = await dealClientResult(() =>
+      updateDealAction({ dealId, expectedWriteVersion: version, personId }, readCsrfToken()),
+    );
+    if (!r.ok) {
+      reportError(r.error.id);
+      return;
+    }
+    setSwitchOpen(false);
+    await refreshLinkedReads();
+  }
+
+  async function refreshLinkedReads(): Promise<void> {
+    await Promise.all([
+      utils.deal.participants.invalidate({ dealId }),
+      utils.contacts.dealsForPerson.invalidate(),
+      utils.contacts.personOptions.invalidate(),
+    ]);
+    router.refresh();
+  }
+
+  if (person !== null) {
+    return (
+      <>
+        <PersonSection
+          person={person}
+          menuItems={[
+            {
+              label: menu.switchPerson,
+              onSelect: () => {
+                setSwitchVersion(expectedWriteVersion);
+                setSwitchOpen(true);
+              },
+            },
+            {
+              label: menu.unlinkPerson,
+              onSelect: () => void savePersonLink(null),
+              destructive: true,
+            },
+            ...menuItems,
+          ]}
+          bulkEditing={bulkEditing}
+          onStartBulk={onStartBulk}
+          onExitBulk={onExitBulk}
+          hidden={hidden}
+          customFieldDefs={customFieldDefs}
+          currency={currency}
+          showLabels
+          onSaved={() => void refreshLinkedReads()}
+        />
+        {switchOpen && (
+          <PersonSwitchDialog
+            open
+            currentPersonId={person.id}
+            onOpenChange={setSwitchOpen}
+            onSave={(id) => savePersonLink(id, switchVersion)}
+          />
+        )}
+      </>
+    );
+  }
+
+  return (
+    <CollapsibleSection
+      title={translateSales("person_6007d")}
+      headerActions={() => (
+        <SectionHeaderMenu
+          sectionLabel={translateSales("person_6007d")}
+          onEdit={onStartBulk}
+          menuItems={menuItems}
+        />
+      )}
+    >
+      {bulkEditing ? (
+        <PersonLinkEditor
+          dealId={dealId}
+          expectedWriteVersion={expectedWriteVersion}
+          personOptions={personOptions}
+          hidden={hidden}
+          customFieldDefs={customFieldDefs}
+          onDone={() => {
+            onExitBulk();
+            void refreshLinkedReads();
+          }}
+          onError={reportError}
+        />
+      ) : (
+        emptyRows(hidden).map((label) => (
+          <SidebarFieldRow
+            key={label}
+            label={translateSales(`computed.${label}` as "computed.name")}
+            value="-"
+            empty
+            readOnly
+          />
+        ))
+      )}
+    </CollapsibleSection>
+  );
+}

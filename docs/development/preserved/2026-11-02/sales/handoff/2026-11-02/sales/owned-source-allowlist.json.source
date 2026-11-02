@@ -1,0 +1,952 @@
+{
+  "status": "EXACT_183_OWNED_PATHS",
+  "privateWorkspace": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo",
+  "declaredOwnedPathCount": 183,
+  "sourceCandidatePaths": [
+    {
+      "relativePath": "src/features/deal-workspace/actions.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/actions.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/changeOwner.test.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/changeOwner.test.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/changeOwner.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/changeOwner.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/changeStage.test.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/changeStage.test.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/changeStage.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/changeStage.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/convertToLead.test.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/convertToLead.test.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/convertToLead.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/convertToLead.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/convertToLeadAction.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/convertToLeadAction.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/dealCloseSchemas.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/dealCloseSchemas.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/deleteDeal.test.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/deleteDeal.test.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/deleteDeal.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/deleteDeal.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/duplicateDeal.test.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/duplicateDeal.test.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/duplicateDeal.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/duplicateDeal.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/duplicateDealAction.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/duplicateDealAction.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/mergeDeals.softDeleted.test.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/mergeDeals.softDeleted.test.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/mergeDeals.test.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/mergeDeals.test.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/mergeDeals.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/mergeDeals.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/mergeDealsAction.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/mergeDealsAction.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/wonLost.changeLog.test.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/wonLost.changeLog.test.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/wonLost.test.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/wonLost.test.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/wonLost.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/wonLost.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/wonLostReopen.test.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/wonLostReopen.test.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/deals/archiveActions.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/archiveActions.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/deals/archiveDeal.test.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/archiveDeal.test.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/deals/archiveDeal.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/archiveDeal.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/deals/bulkActions.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/bulkActions.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/deals/bulkArchive.test.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/bulkArchive.test.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/deals/bulkArchive.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/bulkArchive.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/deals/bulkStageAction.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/bulkStageAction.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/deals/bulkStageAction.validation.test.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/bulkStageAction.validation.test.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/deals/createDealAction.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/createDealAction.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/deals/dealActions.csrf.test.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/dealActions.csrf.test.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/deals/dealActions.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/dealActions.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/deals/dealArchivedReads.test.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/dealArchivedReads.test.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/deals/dealBulk.test.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/dealBulk.test.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/deals/dealCreate.test.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/dealCreate.test.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/deals/dealHiddenMutation.test.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/dealHiddenMutation.test.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/deals/dealMove.test.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/dealMove.test.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/deals/dealMove.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/dealMove.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/deals/dealMovePerms.test.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/dealMovePerms.test.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/deals/dealMoveStageAge.integration.test.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/dealMoveStageAge.integration.test.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/deals/dealRepo.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/dealRepo.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/deals/dealUpdate.changeLog.test.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/dealUpdate.changeLog.test.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/deals/dealUpdate.customFieldsChangeLog.test.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/dealUpdate.customFieldsChangeLog.test.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/deals/dealUpdate.sourceChannelId.test.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/dealUpdate.sourceChannelId.test.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/deals/dealUpdate.test.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/dealUpdate.test.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/deals/dealUpdate.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/dealUpdate.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/deals/dealUpdatePerms.test.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/dealUpdatePerms.test.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/deals/dealVersion.test-helpers.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/dealVersion.test-helpers.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/deals/dealVersion.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/dealVersion.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/deals/deleteDeal.test.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/deleteDeal.test.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/deals/deleteDeal.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/deleteDeal.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/deals/moveAction.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/moveAction.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/deals/notifyDeferral.test.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/notifyDeferral.test.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/deals/notifyWiring.test.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/notifyWiring.test.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/deals/schemas.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/schemas.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/deals/updateAction.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/updateAction.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/deals/updateActionScrub.test.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/updateActionScrub.test.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/deals/updateDeal.actorFreshness.integration.test.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/updateDeal.actorFreshness.integration.test.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/import/undoDelete.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/import/undoDelete.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/leads/convertCarryOver.test.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/leads/convertCarryOver.test.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/leads/leadConvert.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/leads/leadConvert.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/leads/leadServerActions.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/leads/leadServerActions.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/mcp/tools/writes-deals.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/mcp/tools/writes-deals.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/mcp/tools/writes.test.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/mcp/tools/writes.test.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/deals/dealMoveAuthority.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/dealMoveAuthority.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/deals/moveAction.nativeSession.test.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/moveAction.nativeSession.test.ts",
+      "owner": "Sales backend"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/DealActionErrorProvider.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/DealActionErrorProvider.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/DealCloseActions.test.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/DealCloseActions.test.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/DealCloseActions.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/DealCloseActions.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/DealEditableHeading.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/DealEditableHeading.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/DealInlineCustomFieldEditor.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/DealInlineCustomFieldEditor.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/DealInlineSelectField.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/DealInlineSelectField.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/DealInlineTextField.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/DealInlineTextField.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/DealSidebar.alignment.test.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/DealSidebar.alignment.test.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/DealSidebar.bulkEdit.test.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/DealSidebar.bulkEdit.test.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/DealSidebar.customFields.test.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/DealSidebar.customFields.test.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/DealSidebar.hiddenFields.test.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/DealSidebar.hiddenFields.test.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/DealSidebar.labels.test.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/DealSidebar.labels.test.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/DealSidebar.orgLink.test.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/DealSidebar.orgLink.test.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/DealSidebar.sourceChannel.test.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/DealSidebar.sourceChannel.test.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/DealSidebar.test.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/DealSidebar.test.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/DealSidebar.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/DealSidebar.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/DealSummaryActionList.test.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/DealSummaryActionList.test.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/DealSummaryActionList.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/DealSummaryActionList.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/LabelRow.test.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/LabelRow.test.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/LabelRow.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/LabelRow.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/MarkLostDialog.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/MarkLostDialog.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/composer/useActivityComposer.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/composer/useActivityComposer.ts",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/dealActionError.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/dealActionError.ts",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/dealEditErrorMessage.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/dealEditErrorMessage.ts",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/dealSidebarFixtures.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/dealSidebarFixtures.ts",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/header/ConvertToLeadDialog.test.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/header/ConvertToLeadDialog.test.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/header/ConvertToLeadDialog.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/header/ConvertToLeadDialog.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/header/DealActionsMenu.test.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/header/DealActionsMenu.test.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/header/DealActionsMenu.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/header/DealActionsMenu.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/header/DealHeader.test.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/header/DealHeader.test.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/header/DealHeader.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/header/DealHeader.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/header/EditableTitle.test.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/header/EditableTitle.test.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/header/EditableTitle.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/header/EditableTitle.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/header/MergeDealDialog.test.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/header/MergeDealDialog.test.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/header/MergeDealDialog.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/header/MergeDealDialog.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/header/OwnerBlock.test.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/header/OwnerBlock.test.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/header/OwnerBlock.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/header/OwnerBlock.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/header/StageSelector.test.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/header/StageSelector.test.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/header/StageSelector.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/header/StageSelector.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/history/ActivityCard.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/history/ActivityCard.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/history/CommentCard.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/history/CommentCard.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/history/NoteCard.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/history/NoteCard.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/history/NoteComments.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/history/NoteComments.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/sidebar/DealCustomFields.test.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/sidebar/DealCustomFields.test.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/sidebar/DealCustomFields.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/sidebar/DealCustomFields.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/sidebar/DealPersonSection.switch.test.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/sidebar/DealPersonSection.switch.test.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/sidebar/DealPersonSection.test.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/sidebar/DealPersonSection.test.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/sidebar/DealPersonSection.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/sidebar/DealPersonSection.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/sidebar/DetailsBlock.test.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/sidebar/DetailsBlock.test.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/sidebar/DetailsBlock.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/sidebar/DetailsBlock.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/sidebar/InlineCustomField.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/sidebar/InlineCustomField.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/sidebar/InlineOrgField.test.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/sidebar/InlineOrgField.test.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/sidebar/InlineOrgField.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/sidebar/InlineOrgField.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/sidebar/ManageSectionsDialog.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/sidebar/ManageSectionsDialog.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/sidebar/OrgAddressField.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/sidebar/OrgAddressField.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/sidebar/OrgBlock.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/sidebar/OrgBlock.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/sidebar/PersonBlock.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/sidebar/PersonBlock.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/sidebar/PersonLinkEditor.test.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/sidebar/PersonLinkEditor.test.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/sidebar/PersonLinkEditor.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/sidebar/PersonLinkEditor.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/sidebar/RecordOrganizationSection.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/sidebar/RecordOrganizationSection.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/sidebar/SourceBlock.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/sidebar/SourceBlock.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/sidebar/SourceChannelField.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/sidebar/SourceChannelField.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/sidebar/SourceChannelIdField.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/sidebar/SourceChannelIdField.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/sidebar/customFieldsSave.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/sidebar/customFieldsSave.ts",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/sidebar/fillGapsWiring.test.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/sidebar/fillGapsWiring.test.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/sidebar/timePickerValidity.test.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/sidebar/timePickerValidity.test.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/useDealEditSnapshot.test.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/useDealEditSnapshot.test.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/useDealEditSnapshot.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/useDealEditSnapshot.ts",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deal-workspace/useParticipants.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deal-workspace/useParticipants.ts",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deals/AddDealModal.test.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/AddDealModal.test.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deals/AddDealModal.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/AddDealModal.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deals/Board.dateFilterRefetch.test.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/Board.dateFilterRefetch.test.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deals/Board.emptyState.test.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/Board.emptyState.test.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deals/Board.serverClock.test.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/Board.serverClock.test.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deals/Board.telemetry.test.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/Board.telemetry.test.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deals/Board.test.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/Board.test.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deals/Board.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/Board.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deals/Board.viewPersistence.test.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/Board.viewPersistence.test.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deals/BoardFilterControl.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/BoardFilterControl.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deals/BoardStages.test.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/BoardStages.test.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deals/CreateFilterModal.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/CreateFilterModal.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deals/DealCardRot.test.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/DealCardRot.test.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deals/DealList.bulkArchive.test.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/DealList.bulkArchive.test.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deals/DealList.bulkConfirm.test.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/DealList.bulkConfirm.test.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deals/DealList.test.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/DealList.test.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deals/DealList.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/DealList.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deals/DealListClient.bulkArchive.test.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/DealListClient.bulkArchive.test.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deals/DealListClient.bulkStage.test.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/DealListClient.bulkStage.test.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deals/DealListClient.empty.test.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/DealListClient.empty.test.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deals/DealListClient.test.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/DealListClient.test.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deals/DealListClient.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/DealListClient.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deals/DealListTableBody.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/DealListTableBody.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deals/boardAck.test.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/boardAck.test.ts",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deals/boardAck.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/boardAck.ts",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deals/boardCache.test.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/boardCache.test.ts",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deals/boardSort.test.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/boardSort.test.ts",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deals/dealCardTestFixture.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/dealCardTestFixture.ts",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deals/dealClientFixture.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/dealClientFixture.ts",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deals/dealClientResult.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/dealClientResult.ts",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deals/dragNeighbors.test.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/dragNeighbors.test.ts",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deals/listAck.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/listAck.ts",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deals/messages/sales.de.json",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/messages/sales.de.json",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deals/messages/sales.en.json",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/messages/sales.en.json",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deals/messages/sales.fa.json",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/messages/sales.fa.json",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deals/realtimeReducer.test.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/realtimeReducer.test.ts",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deals/realtimeReducer.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/realtimeReducer.ts",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deals/useDealClose.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/useDealClose.ts",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deals/useDealListActions.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/useDealListActions.ts",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deals/useDealMove.test.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/useDealMove.test.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deals/useDealMove.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/useDealMove.ts",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deals/useInlineEdit.test.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/useInlineEdit.test.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/deals/useInlineEdit.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/deals/useInlineEdit.ts",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/leads/detail/LeadSidebar.test.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/leads/detail/LeadSidebar.test.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/features/leads/detail/LeadSidebar.tsx",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/features/leads/detail/LeadSidebar.tsx",
+      "owner": "Sales client"
+    },
+    {
+      "relativePath": "src/db/schema/deals.ts",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/src/db/schema/deals.ts",
+      "owner": "Sales schema/privateSQL"
+    },
+    {
+      "relativePath": "drizzle/0101_deal_write_version.sql",
+      "absolutePath": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/drizzle/0101_deal_write_version.sql",
+      "owner": "Sales schema/privateSQL"
+    }
+  ],
+  "exactManifestReferences": [
+    "/Users/ali/Documents/Codex/2026-10-31/warpdrive-sales-platform-implementation/outputs/sales-stage-age-preparation-20261101/deal-write-version-backend-owned-paths.json",
+    "/Users/ali/Documents/Codex/2026-10-31/warpdrive-sales-platform-implementation/outputs/sales-stage-age-preparation-20261101/deal-write-version-client-owned-paths.json",
+    "/Users/ali/Documents/Codex/2026-10-31/warpdrive-sales-platform-implementation/outputs/sales-stage-age-preparation-20261101/revision-schema-landing-draft/schema-and-private0101.patch"
+  ],
+  "gitStatus": "Dirty/untracked classification not queried by Sales; Root sole common-Git inventory required. Not a blanket staging instruction.",
+  "peerReferences": {
+    "paths": 9,
+    "owner": "Root, not Sales",
+    "packet": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-sales-platform-implementation/outputs/sales-stage-age-preparation-20261101/revision-schema-landing-draft/fc5-to-lint-corrected-root-regressions.patch"
+  },
+  "preserveAllOtherBytes": true,
+  "excludedFromAutomaticGitPublication": [
+    ".git/**",
+    ".runtime/**",
+    "node_modules/**",
+    ".next/**",
+    ".env*",
+    "credentials",
+    "opaque tokens/cache contents",
+    "unreviewed raw runtime/log evidence"
+  ],
+  "evidencePreserveInPlace": [
+    "/Users/ali/Documents/Codex/2026-10-31/warpdrive-sales-platform-implementation/outputs",
+    "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/.runtime"
+  ],
+  "protectedBranchWorkspace": "codex/deal-workspace-premium untouched/uninspected; excluded",
+  "schemaCandidatesFromFrozenPinPrefix": [
+    "src/db/schema/deals.ts"
+  ]
+}

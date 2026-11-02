@@ -1,0 +1,108 @@
+{
+  "atUtc": "2026-11-02T08:50:47.995314+00:00",
+  "operation": "Merge main INTO existing branch; never publish branch work to main",
+  "branch": "codex/preserve-sales-20261102",
+  "preSyncSnapshot": "f0de0768a25dc89b3f11cc0b8a431f5b495fdd95",
+  "mainMerged": "09288d518fd574fd069fb6a1dc670596f71a8831",
+  "behindBefore": 31,
+  "resolvedConflictPaths": [
+    "src/features/deal-workspace/DealCloseActions.tsx",
+    "src/features/deal-workspace/DealSidebar.tsx",
+    "src/features/deal-workspace/sidebar/DealCustomFields.test.tsx",
+    "src/features/deal-workspace/sidebar/DealCustomFields.tsx",
+    "src/features/deal-workspace/sidebar/DetailsBlock.tsx",
+    "src/features/deal-workspace/sidebar/InlineCustomField.tsx",
+    "src/features/deal-workspace/sidebar/RecordOrganizationSection.tsx",
+    "src/features/deals/dealMove.ts",
+    "src/features/deals/dealMoveStageAge.integration.test.ts"
+  ],
+  "sourceResolutions": [
+    {
+      "path": "src/features/deal-workspace/DealCloseActions.tsx",
+      "mode": "100644",
+      "oid": "8130f34aa430ef546e819346820185001587d24b",
+      "sha256": "0f66794dc7eebeafc4569c31cd7541826542eca3d78201d58a2710430dfd6aae"
+    },
+    {
+      "path": "src/features/deal-workspace/DealSidebar.tsx",
+      "mode": "100644",
+      "oid": "250705e6e2a76f1d9c6a1ed26f040e64d5d209c7",
+      "sha256": "ee7f50268213f6cf559a01d8f5d5be0d1ba421ed4f4d3f76608e9da1a08bacf9"
+    },
+    {
+      "path": "src/features/deal-workspace/sidebar/DealCustomFields.test.tsx",
+      "mode": "100644",
+      "oid": "08ae2f89494f65ad8a69b808d96d2512fc6bd3bd",
+      "sha256": "175072624df02bc3e0fc96b81b21217195b4c11d2ceff76a40b2b23cc1373d7b"
+    },
+    {
+      "path": "src/features/deal-workspace/sidebar/DealCustomFields.tsx",
+      "mode": "100644",
+      "oid": "9ebb6f14864a42d70eca0bbc3f3cbd2a677008a5",
+      "sha256": "120c5978de5fa43bbbc9ff77ec8450b29b3988bd5a6c047166af43213a9ba39e"
+    },
+    {
+      "path": "src/features/deal-workspace/sidebar/DetailsBlock.tsx",
+      "mode": "100644",
+      "oid": "bee82deb77662c04d431913e7e360a54ef9293d0",
+      "sha256": "a6385870f7d254e85aeb92d6f80a492ee0f7fe545d10582156978e7c0fee9d9c"
+    },
+    {
+      "path": "src/features/deal-workspace/sidebar/InlineCustomField.tsx",
+      "mode": "100644",
+      "oid": "e673e6d8ae7b2b1340e4d0479f8221c4393b1ef0",
+      "sha256": "8896b294861397a52edcd70ef88eea8dde4f2dcfe6a10c4149608742712e2d31"
+    },
+    {
+      "path": "src/features/deal-workspace/sidebar/RecordOrganizationSection.tsx",
+      "mode": "100644",
+      "oid": "7ffbfa584043e446318875c41b5b584a8fb75d6d",
+      "sha256": "c43842f757c554d3db0a2abf151d67781c1333fe5c9ad16e386efdffd41f1c5e"
+    },
+    {
+      "path": "src/features/deals/dealMove.ts",
+      "mode": "100644",
+      "oid": "c603d06143ad3d8b8e8a131342807fab3e08372a",
+      "sha256": "69b9606d19dfd62b617cf817dbc5dd220beb7606c86309f27f9bce07756d3696"
+    },
+    {
+      "path": "src/features/deals/dealMoveStageAge.integration.test.ts",
+      "mode": "100644",
+      "oid": "b42bd2a056a38f6a89a4acfbe75aab69961a46e5",
+      "sha256": "4e7406e417bcb3f2b72438e690f60194f2b178a449c804fbfb624668e9b09050"
+    }
+  ],
+  "canonicalDrizzleTree": "1a496c5a05b7a3d78257149d639645b4eb2c30cf",
+  "canonicalMigrationFiles": 195,
+  "preSyncMigrationSnapshots": [
+    {
+      "originalPath": "drizzle/0101_deal_write_version.sql",
+      "archivePath": ".safe-stop/2026-11-02/branch-sync/private-migration-proposals/drizzle/0101_deal_write_version.sql.source",
+      "sha256": "a5c77f4aa42ad90d87a6834201819166ad8a04f4c02c02e896be34dc751b0bfd",
+      "gitBlob": "1e91a52df6eff943254797115e7b69ca9d2f46f7",
+      "mode": "100644"
+    },
+    {
+      "originalPath": "drizzle/meta/_journal.json",
+      "archivePath": ".safe-stop/2026-11-02/branch-sync/private-migration-proposals/drizzle/meta/_journal.json.source",
+      "sha256": "d1d8fbde03d5671d7bc5e21aaf1cbdd623039bc9c8894669c5b5a6d900d0d2ac",
+      "gitBlob": "9536e4c3525496d9513be9e7d08605243197ee54",
+      "mode": "100644"
+    }
+  ],
+  "validation": {
+    "passed": 31,
+    "failed": 0,
+    "pending": 0,
+    "allRequestedFilesObserved": true,
+    "candidateBytesUnchanged": true,
+    "ownedGroupGone": true,
+    "seconds": 3.8810831250157207
+  },
+  "limitations": [
+    "This synchronization preserves unfinished work; it is not branch-wide type/native/CI, user-journey or deployment acceptance.",
+    "Original snapshot commits remain ancestors; archived migration proposals are inert and have not been renumbered/admitted.",
+    "Existing status/CI/inventory receipts qualify their named historical cuts and are not re-aged to this merged tree.",
+    "Paused dirty source workspaces remain byte-exact and detached at their original source heads; existing branch references advance separately."
+  ]
+}

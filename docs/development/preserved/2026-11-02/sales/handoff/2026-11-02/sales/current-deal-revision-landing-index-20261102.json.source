@@ -1,0 +1,130 @@
+{
+  "at": "2026-11-02T04:35:39.244884+00:00",
+  "status": "AUTHORITATIVE_CURRENT_REVIEW_PACKET_NOT_MAIN_ACCEPTANCE",
+  "publicTarget": "fc5fae837b4b8e532a8bfd89ff303e941bcf1439",
+  "distinctPatchPaths": 192,
+  "patches": [
+    {
+      "role": "Backend/support",
+      "path": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-sales-platform-implementation/outputs/sales-stage-age-preparation-20261101/backend-public-fc5-reconciliation/fc5-to-native11-qualified-backend-20261102.patch",
+      "sha256": "1460c21ab97fe99742ec5d2b9053205c96c83b8e977c6aa2e628fc04cb7564ba",
+      "paths": 67
+    },
+    {
+      "role": "UI/support",
+      "path": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-sales-platform-implementation/outputs/sales-stage-age-preparation-20261101/ui-public-fc5-reconciliation/fc5-to-lint-corrected-ui.patch",
+      "sha256": "c607e39f4ed3c96bb59851b4e68e4d6ca97eaecc3fc989e24e2ce9dfaa48a412",
+      "paths": 114
+    },
+    {
+      "role": "Schema/private SQL",
+      "path": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-sales-platform-implementation/outputs/sales-stage-age-preparation-20261101/revision-schema-landing-draft/schema-and-private0101.patch",
+      "sha256": "e49b1bc63968219715720c4680d0ebc9eabc71bb782beefc7a30e72e224e1c9f",
+      "paths": 2
+    },
+    {
+      "role": "Root regressions/fixtures",
+      "path": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-sales-platform-implementation/outputs/sales-stage-age-preparation-20261101/revision-schema-landing-draft/fc5-to-lint-corrected-root-regressions.patch",
+      "sha256": "1aae3de3f016658e1d15ece243b5997f55b7af0563ab7e0773ce148fd3aff951",
+      "paths": 9
+    }
+  ],
+  "backendManifest": {
+    "path": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-sales-platform-implementation/outputs/sales-stage-age-preparation-20261101/backend-public-fc5-reconciliation/native11-qualified-backend-20261102-manifest.json",
+    "sha256": "1e8206b04f913c1e26d95320751750d6d0ea4e9a38cd4cff9bda3019392ebdf1"
+  },
+  "native11Evidence": {
+    "status": "ACTUAL_NATIVE11_GREEN_PRIVATE_CUT_ONLY",
+    "summary": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-sales-platform-implementation/outputs/sales-stage-age-preparation-20261101/native-move11-current2-actual-evidence/write-version-move11-current-2-result-summary.json",
+    "summary_sha256": "75fc08db7bd9c03cfec4b40fcd08e9667e767a0717f21f1e6cb227d696fbaa33",
+    "queueId": "SALES-MOVE11-BODY-CUSTODY-20261102-1",
+    "files": 3,
+    "collected": 11,
+    "passed": 11,
+    "failed": 0,
+    "vitestSeconds": 3.48,
+    "controllerSeconds": 4.972296,
+    "RootAllPhaseSeconds": 5.434237,
+    "actualNativeSlotWithin65Seconds": true,
+    "all368ActualRunPinsUnchanged": true,
+    "groupsRemaining": [],
+    "ownedPostgresAndLinkGone": true,
+    "foreign3AndListenersPreserved": true,
+    "runtimeHeadVerified": false,
+    "gitObjectLineageOrAvailabilityVerified": false
+  },
+  "retainedActualFullTypesAndTypedLint2": {
+    "status": "ACTUAL_FULL_TYPES_AND_TYPED_LINT2_PASS_RETAINED_NO_REPEAT",
+    "facts": {
+      "status": "ACTUAL_PASS_RETAINED_NO_REPEAT",
+      "input": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/.runtime/sales-evidence/revision-validation-20261101/move-fixture-static-local-1-inputs.json",
+      "inputSha256": "b0b71bd0af3b0054ebf7a5a11b205025bae60de9690c4f8d30bae013ff47648d",
+      "supervisorReceipt": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/.runtime/sales-evidence/revision-validation-20261101/move-fixture-static-local-1-supervisor-receipt.json",
+      "supervisorReceiptSha256": "298bc3aa51bf45a6152bac4c58df41e14e1fe6c6e2fab9f12c498b619a9f12ec",
+      "terminalProof": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/.runtime/sales-evidence/revision-validation-20261101/move-fixture-static-local-1-terminal-proof.json",
+      "terminalProofSha256": "d4e327593cd7750ff33c9aa54a04948e17596abf2c3ed69d104daec31a6a755a",
+      "fullDeclaredTypecheckSeconds": 4.355526,
+      "typedLint2Seconds": 4.414752,
+      "allAppTestDependencyPinsEqualStaticPass": true,
+      "onlyNonAppHelperDelta": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/.runtime/sales-evidence/revision-validation-20261101/run-native-phase-local.py",
+      "oldHelperSha256": "10e363330ee9b80588cdfb8d401606a6245d63f8aa72d2cd041ef751a51ae8ea",
+      "newHelperSha256": "4d5f54c2eba782631a0a2229974098f2626df9e75013dbbe316ab932827e8f8c",
+      "runtimeHelperContractProof": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo/.runtime/sales-evidence/revision-validation-20261101/native-source-pointer-only-contract-proof.json",
+      "runtimeHelperContractProofSha256": "d388b76c528eb842933ac77fab67da9dcc7fe449b67db37c2b1658a040a84133"
+    },
+    "allAppTestDependencyBodiesEqualNativeCut": true,
+    "nonAppHelperDeltaExplicitlyBound": true,
+    "newChecksPerformedByMetadataPromotion": false
+  },
+  "nativeAccounting": {
+    "priorUnaffectedCases": 129,
+    "correctedCases": 10,
+    "newPermissionCase": 1,
+    "sourceBoundPassingWitnessesAcrossRuns": 140,
+    "one140CaseRun": false,
+    "MainAcceptance": false,
+    "original139_132PASS_7FAIL_andSETUP0Retained": true
+  },
+  "combined192ScratchApply": {
+    "current192ScratchApply": "UNVERIFIED",
+    "proof": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-sales-platform-implementation/outputs/sales-stage-age-preparation-20261101/current-landing-packet-native11-plain-apply-proof-20261102.json",
+    "proof_sha256": "57f0227b3ea231f823a83fdb98b5e2d8371d26dcae211a83a07b08dc0ee317d7",
+    "status": "LIMITATION_60_SECOND_BOUND_EXCEEDED",
+    "elapsedSeconds": 87.32987308304291,
+    "boundSeconds": 60,
+    "stalledBeforeGit": true,
+    "gitCommandsStarted": 0,
+    "stalledRead": "Preserved UI preimage Path.read_bytes; exact last filename not captured",
+    "scratchRemoved": true,
+    "all367PinsUnchangedBeforeAndAfterAttempt": true,
+    "retryPerformed": false,
+    "actualNativeSlotUnaffected": true,
+    "priorSuccessful192ProofScope": "Only the earlier accepted 85ce backend packet, not the current 1460 packet"
+  },
+  "securityLandingGates": {
+    "reconciliationFirstOverlaps": [
+      "src/features/deals/dealRepo.ts",
+      "src/features/leads/leadConvert.ts"
+    ],
+    "noFullFileMainOverlay": true,
+    "baseIsExactFc5NotUninspectedLatestMain": true
+  },
+  "backups": {
+    "existingPendingDraftAndOldIndexBackupsPreservedUnder": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-sales-platform-implementation/outputs/sales-stage-age-preparation-20261101/backend-public-fc5-reconciliation/native11-promotion-backups",
+    "additionalExactPrePromotionIndexCopies": [
+      {
+        "original": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-sales-platform-implementation/outputs/sales-stage-age-preparation-20261101/current-deal-revision-landing-index-20261102.json",
+        "backup": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-sales-platform-implementation/outputs/sales-stage-age-preparation-20261101/backend-public-fc5-reconciliation/native11-promotion-backups/metadata-only-20261102T043539243504Z/current-deal-revision-landing-index-20261102.json",
+        "sha256": "2ab5cfd1584305bd8a9796f6cc60e96477733f0272a7488e28658222136ba674"
+      },
+      {
+        "original": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-sales-platform-implementation/outputs/sales-stage-age-preparation-20261101/current-deal-revision-landing-index-20261102.md",
+        "backup": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-sales-platform-implementation/outputs/sales-stage-age-preparation-20261101/backend-public-fc5-reconciliation/native11-promotion-backups/metadata-only-20261102T043539243504Z/current-deal-revision-landing-index-20261102.md",
+        "sha256": "387977972903f2289c90044af3b5afc83ca99152f6f954bcc87eacd382f1b3f6"
+      }
+    ]
+  },
+  "MainAcceptance": false,
+  "actualSourceAdoption": false,
+  "metadataOnlyPromotionNoNewContentQualification": true
+}

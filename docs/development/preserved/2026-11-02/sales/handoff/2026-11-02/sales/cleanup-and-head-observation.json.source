@@ -1,0 +1,33 @@
+{
+  "recordedAt": "2026-11-02T07:17:07.287668+00:00",
+  "privateWorkspace": "/private/tmp/warpdrive-sales-stage-age-red-01a19263-b91_a8qb/repo",
+  "goalStatus": "paused",
+  "subagentsInterrupted": [
+    "deal_version_contract",
+    "deal_write_version_backend",
+    "remote_move_freshness"
+  ],
+  "headRead": {
+    "path": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-sales-platform-implementation/work/warpdrive-sales/.git/worktrees/repo5/HEAD",
+    "exitCode": 0,
+    "value": "43a5fb4d2a6be7bbbd260855a6a8e1ce55fbf3c1",
+    "verified": true
+  },
+  "currentPrivatePathProcessMatches": [],
+  "nodeModulesLinkAbsent": true,
+  "ownedNativeHistoricalGroups": [
+    51283,
+    51295
+  ],
+  "signalsSent": [],
+  "ownedPgCurrentCheck": {
+    "id": "68fdab64fbe7b7e7e463070446276ba151221673877682061e64d2f346015d5e",
+    "exitCode": 1,
+    "absent": true,
+    "metadata": null,
+    "stderr": "Error response from daemon: No such container: 68fdab64fbe7b7e7e463070446276ba151221673877682061e64d2f346015d5e"
+  },
+  "packetHeaderInventory": "UNAVAILABLE_SINGLE_BOUNDED_READ_NO_RETRY",
+  "packetHeaderInventoryError": "TimeoutExpired",
+  "packetPathCounts": {}
+}

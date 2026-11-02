@@ -1,0 +1,185 @@
+// updateDeal: compare-and-swap field update with won/lost transition rules and realtime event.
+// Split from dealActions.ts to keep both files under 200 lines.
+import { and, eq } from "drizzle-orm";
+import { BOARD_EVENT, dealChannel } from "@/constants/boardChannels";
+import { AppError, ERROR_IDS } from "@/constants/errorIds";
+import { deals } from "@/db/schema/deals";
+import { syncEntityLabelNames } from "@/features/labels/labelsRepo.entities";
+import type { PermSetUser } from "@/features/permissions/effective";
+import { assertReferenceVisible } from "@/features/permissions/referenceCheck";
+import { hydrateActor } from "@/server/hydrateActor";
+import type { DbOrTx } from "@/server/realtime/channelVersions";
+import { publishBoardEvent } from "@/server/realtime/events";
+import { err, ok, type Result } from "@/types/result";
+import type { DealVisibilitySession } from "@/types/session";
+import { loadEditableDeal } from "./dealAuth";
+import { validateDealCustomFieldsPartial } from "./dealCustomFieldsValidation";
+import { logDealUpdateChanges } from "./dealUpdateChangeLog";
+import { missingDealVersion, readFinalDeal } from "./dealVersion";
+import { type DealUpdateInput, dealUpdateInput } from "./schemas";
+import { applyStatusTransition, type DealPatch } from "./statusTransition";
+
+// Shape assertReferenceVisible expects, built from the acting PermSetUser (mirrors
+// participants.ts). Admin bypasses contact visibility inside canSee.
+function toRefActor(actor: PermSetUser): DealVisibilitySession {
+  return {
+    userId: actor.id,
+    isActive: actor.isActive,
+    sessionLive: true,
+    isAdmin: actor.type === "admin",
+    visibilityGroupIds: Array.from(actor.groupIds),
+    managedUserIds: Array.from(actor.managedUserIds ?? []),
+  };
+}
+
+// A relink to a person/org must target a contact the actor can SEE, else the deal could be
+// pointed at (or used to probe for) a hidden contact. Null (unlink) needs no check.
+async function assertContactTargetsVisible(
+  tx: DbOrTx,
+  actor: PermSetUser,
+  input: DealUpdateInput,
+  signal: AbortSignal,
+): Promise<Result<void, AppError>> {
+  const refActor = toRefActor(actor);
+  if (input.personId !== undefined && input.personId !== null) {
+    const r = await assertReferenceVisible(
+      tx,
+      refActor,
+      { kind: "person", id: input.personId },
+      signal,
+    );
+    if (r.ok === false) return r;
+  }
+  if (input.orgId !== undefined && input.orgId !== null) {
+    const r = await assertReferenceVisible(
+      tx,
+      refActor,
+      { kind: "organization", id: input.orgId },
+      signal,
+    );
+    if (r.ok === false) return r;
+  }
+  return ok(undefined);
+}
+
+// Build the column patch from validated input. Status transitions stamp/clear timestamps.
+// visibilityGroupId is a visibility-narrowing field: when present it re-scopes a
+// group-visibility deal. The caller (updateDealAction) must call scrubInaccessible
+// after the transaction commits whenever this field appears in the input.
+function buildPatch(input: DealUpdateInput, now: Date): DealPatch {
+  const patch: DealPatch = { updatedAt: now };
+  if (input.title !== undefined) patch.title = input.title;
+  if (input.currency !== undefined) patch.currency = input.currency;
+  if (input.value !== undefined) patch.value = input.value === null ? null : String(input.value);
+  if (input.expectedCloseDate !== undefined) patch.expectedCloseDate = input.expectedCloseDate;
+  if (input.status !== undefined) applyStatusTransition(patch, input.status, input.lostReason, now);
+  if (input.labels !== undefined) patch.labels = input.labels;
+  if (input.sourceChannel !== undefined) patch.sourceChannel = input.sourceChannel;
+  if (input.sourceChannelId !== undefined) patch.sourceChannelId = input.sourceChannelId;
+  if (input.visibilityGroupId !== undefined) patch.visibilityGroupId = input.visibilityGroupId;
+  // Primary person/org relink (visibility of a non-null target is gated separately).
+  if (input.personId !== undefined) patch.personId = input.personId;
+  if (input.orgId !== undefined) patch.orgId = input.orgId;
+  return patch;
+}
+
+export async function updateDeal(
+  db: DbOrTx,
+  session: PermSetUser,
+  raw: unknown,
+  signal: AbortSignal,
+): Promise<Result<typeof deals.$inferSelect, AppError>> {
+  const versionError = missingDealVersion(raw);
+  if (versionError !== null) return err(versionError);
+  const input = dealUpdateInput.parse(raw);
+  signal.throwIfAborted();
+
+  return db.transaction(async (tx) => {
+    // The trusted caller supplies identity; captured roles and memberships may already be stale.
+    // Keep this checkpoint's actor consistent across every authorization check in the mutation.
+    const currentActor = await hydrateActor(tx, session.id, signal);
+    if (currentActor === null)
+      return err(new AppError(ERROR_IDS.PERM_DENIED, "Not permitted to edit this deal"));
+
+    // Re-scoping visibility requires membership even for an administrator.
+    if (
+      input.visibilityGroupId !== undefined &&
+      !currentActor.groupIds.has(input.visibilityGroupId)
+    ) {
+      return err(
+        new AppError(
+          ERROR_IDS.PERM_DENIED,
+          "visibility group not permitted: actor is not a member",
+          {
+            visibilityGroupId: input.visibilityGroupId,
+          },
+        ),
+      );
+    }
+
+    const editable = await loadEditableDeal(tx, currentActor, input.dealId, signal);
+    if (editable.ok === false) return editable;
+    const before = editable.value.deal;
+    const patch = buildPatch(input, new Date());
+
+    // Validate changed keys, then preserve omitted custom fields from the authorized row.
+    if (input.customFields !== undefined) {
+      const validated = await validateDealCustomFieldsPartial(tx, input.customFields, signal);
+      if (validated.ok === false) return validated;
+      patch.customFields = {
+        ...(before.customFields as Record<string, unknown>),
+        ...validated.value,
+      };
+    }
+
+    // Hidden relink targets must use the same current actor as the deal edit gate.
+    const targetsVisible = await assertContactTargetsVisible(tx, currentActor, input, signal);
+    if (targetsVisible.ok === false) return targetsVisible;
+
+    // Atomic CAS uses the database-owned opaque row version.
+    // 0 rows means a concurrent write won; we write nothing.
+    const updated = await tx
+      .update(deals)
+      .set(patch)
+      .where(and(eq(deals.id, input.dealId), eq(deals.writeVersion, input.expectedWriteVersion)))
+      .returning();
+
+    if (updated.length === 0) {
+      return err(
+        new AppError(ERROR_IDS.DEAL_PRECONDITION, "Deal was modified by a concurrent request", {
+          dealId: input.dealId,
+        }),
+      );
+    }
+
+    const row = updated[0];
+    if (row === undefined) {
+      throw new AppError(ERROR_IDS.DB_INVARIANT, "updateDeal: UPDATE RETURNING produced undefined");
+    }
+
+    // Audit trail (deal-history parity): one change_log row per field present-in-input AND
+    // actually changed (labels/source_channel/title/value/expected_close plus
+    // the Unit E additions: custom-field edits and person/org relink). Written on `tx` so a
+    // failed mutation writes no changelog; a no-op edit logs nothing. `status` is excluded
+    // (the won/lost flow owns it) to avoid double-logging.
+    await logDealUpdateChanges(tx, { input, before, after: row, actorId: currentActor.id }, signal);
+
+    // Keep the catalog links in step with the array this update wrote.
+    if (input.labels !== undefined) {
+      await syncEntityLabelNames(tx, "deal", row.id, row.labels, signal);
+    }
+
+    await publishBoardEvent(
+      tx,
+      {
+        channel: dealChannel(row.id),
+        type: BOARD_EVENT.dealUpdated,
+        actorId: currentActor.id,
+        data: { dealId: row.id },
+      },
+      signal,
+    );
+
+    return ok(await readFinalDeal(tx, row.id, signal));
+  });
+}

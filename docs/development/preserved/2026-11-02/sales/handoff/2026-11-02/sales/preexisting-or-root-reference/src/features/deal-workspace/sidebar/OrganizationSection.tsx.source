@@ -1,0 +1,84 @@
+"use client";
+import type React from "react";
+import type { Organization } from "@/db/schema";
+import { ContactLabelsControl } from "@/features/contacts/ContactLabelsControl";
+import { EnrichButton } from "@/features/enrichment/EnrichButton";
+import { FindPeopleButton } from "@/features/enrichment/prospects/FindPeopleButton";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
+import type { CustomFieldDef } from "@/types/customFields";
+import { CollapsibleSection } from "../CollapsibleSection";
+import { OrgBlock } from "./OrgBlock";
+import { SectionHeaderMenu, type SectionHeaderMenuItem } from "./SectionHeaderMenu";
+
+const NONE: ReadonlySet<string> = new Set();
+
+// Shared Organization section for deal, lead, and organization-detail surfaces. Children let the
+// deal workspace append its own custom fields to this same card without introducing another box.
+// showLabels opts a surface into the interactive org-labels row (deal + lead drawers, where the
+// linked org has no header of its own); organization-detail leaves it off (its header owns labels).
+export function OrganizationSection({
+  org,
+  menuItems,
+  bulkEditing,
+  onStartBulk,
+  onExitBulk,
+  hidden = NONE,
+  customFieldDefs = [],
+  currency = "USD",
+  showLabels = false,
+  defaultOpen = true,
+  children,
+}: {
+  org: Organization;
+  menuItems: SectionHeaderMenuItem[];
+  bulkEditing: boolean;
+  onStartBulk: () => void;
+  onExitBulk: () => void;
+  hidden?: ReadonlySet<string>;
+  customFieldDefs?: CustomFieldDef[];
+  currency?: string;
+  showLabels?: boolean;
+  defaultOpen?: boolean;
+  children?: React.ReactNode;
+}): React.ReactNode {
+  const translateSales = useAppTranslations("sales");
+
+  return (
+    <CollapsibleSection
+      title={translateSales("organization_d764d")}
+      defaultOpen={defaultOpen}
+      headerActions={({ showEmptyFields }) => (
+        <EnrichButton entityType="organization" entityId={org.id} entityName={org.name}>
+          {(fill) => (
+            <FindPeopleButton orgId={org.id} orgName={org.name}>
+              {(findPeople) => (
+                <SectionHeaderMenu
+                  sectionLabel={translateSales("organization_d764d")}
+                  onEdit={() => {
+                    showEmptyFields();
+                    onStartBulk();
+                  }}
+                  menuItems={findPeople === null ? menuItems : [...menuItems, findPeople]}
+                  {...fill}
+                />
+              )}
+            </FindPeopleButton>
+          )}
+        </EnrichButton>
+      )}
+    >
+      <OrgBlock
+        org={org}
+        bulkEditing={bulkEditing}
+        onExitBulk={onExitBulk}
+        hidden={hidden}
+        customFieldDefs={customFieldDefs}
+        currency={currency}
+      />
+      {showLabels && !bulkEditing ? (
+        <ContactLabelsControl entityType="organization" entityId={org.id} labels={org.labels} />
+      ) : null}
+      {children}
+    </CollapsibleSection>
+  );
+}

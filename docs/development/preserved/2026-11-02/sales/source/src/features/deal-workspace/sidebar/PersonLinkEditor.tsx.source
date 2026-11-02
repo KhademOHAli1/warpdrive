@@ -1,0 +1,300 @@
+"use client";
+
+import type React from "react";
+import { useId, useMemo, useRef, useState } from "react";
+import { reportTimePickerValidity } from "@/components/ui/timePickerValidity";
+import { FIELD_INPUT } from "@/constants/formStyles";
+import { createPersonAction } from "@/features/contacts/actions";
+import { PhoneNumberInput } from "@/features/contacts/PhoneNumberInput";
+import type { PersonMatchCandidate } from "@/features/contacts/personOptionsRepo";
+import {
+  CustomFieldCreateFields,
+  type CustomFieldValues,
+  customFieldCreatePayload,
+  firstMissingImportantField,
+} from "@/features/custom-fields/CustomFieldCreateFields";
+import { dealClientResult } from "@/features/deals/dealClientResult";
+import { updateDealAction } from "@/features/deals/updateAction";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
+import type { CustomFieldDef } from "@/types/customFields";
+import { readCsrfToken } from "@/utils/csrfCookie";
+import type { PhoneCountry } from "@/utils/phoneNormalization";
+import { findPersonMatches, type PersonMatchReason } from "./personMatch";
+
+// Translate whole explanations so the matched person's name can appear naturally in each language.
+const REASON_MESSAGE = {
+  email: "computed.personMatchEmail",
+  phone: "computed.personMatchPhone",
+  name: "computed.personMatchName",
+} as const satisfies Record<PersonMatchReason, string>;
+
+interface Draft {
+  firstName: string;
+  lastName: string;
+  phone: string;
+  phoneCountry?: PhoneCountry;
+  email: string;
+}
+
+const EMPTY: Draft = { firstName: "", lastName: "", phone: "", email: "" };
+
+function fullName(d: Draft): string {
+  return [d.firstName.trim(), d.lastName.trim()].filter((s) => s !== "").join(" ");
+}
+
+// The editor behind the pencil on a person-less deal. Every keystroke is checked against the
+// visible people so an existing contact can be linked instead of duplicated; Save falls through to
+// creating one only when the user did not take a suggestion.
+export function PersonLinkEditor({
+  dealId,
+  expectedWriteVersion,
+  personOptions,
+  hidden,
+  customFieldDefs,
+  onDone,
+  onError,
+}: {
+  dealId: string;
+  expectedWriteVersion: string;
+  personOptions: PersonMatchCandidate[];
+  hidden: ReadonlySet<string>;
+  customFieldDefs: CustomFieldDef[];
+  onDone: () => void;
+  onError: (errorId: string) => void;
+}): React.ReactNode {
+  const translateSales = useAppTranslations("sales");
+  const fieldsRef = useRef<HTMLDivElement>(null);
+
+  const [draft, setDraft] = useState<Draft>(EMPTY);
+  const [editVersion] = useState(expectedWriteVersion);
+  const [values, setValues] = useState<CustomFieldValues>({});
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  // A create that succeeded before its deal link failed must not create a second person when the
+  // user hits Save again; reuse the one already committed.
+  const createdId = useRef<string | null>(null);
+  const ids = { first: useId(), last: useId(), phone: useId(), email: useId() };
+
+  const matches = useMemo(
+    () =>
+      findPersonMatches(
+        {
+          name: fullName(draft),
+          email: draft.email,
+          phone: draft.phone,
+          phoneCountry: draft.phoneCountry,
+        },
+        personOptions,
+      ),
+    [draft, personOptions],
+  );
+
+  function set(patch: Partial<Draft>): void {
+    setDraft((prev) => ({ ...prev, ...patch }));
+  }
+
+  async function linkDeal(personId: string): Promise<boolean> {
+    const r = await dealClientResult(() =>
+      updateDealAction({ dealId, expectedWriteVersion: editVersion, personId }, readCsrfToken()),
+    );
+    if (r.ok) return true;
+    onError(r.error.id);
+    return false;
+  }
+
+  async function link(personId: string): Promise<void> {
+    setPending(true);
+    const ok = await linkDeal(personId);
+    setPending(false);
+    if (ok) onDone();
+  }
+
+  // Create-then-link. The deal link only happens once the person exists, so a failed create cannot
+  // leave the deal pointing at nothing.
+  async function save(): Promise<void> {
+    if (!reportTimePickerValidity(fieldsRef.current)) return;
+    const name = fullName(draft);
+    if (name === "") return;
+    // createPerson validates important/required person fields server-side, so catch it here and
+    // name the field rather than surfacing a bare E_CF_003 (mirrors ConvertLeadDialog).
+    const missing = firstMissingImportantField(customFieldDefs, values);
+    if (missing !== null) {
+      setError(translateSales("computed.requiredField", { name: `\u2068${missing.name}\u2069` }));
+      return;
+    }
+    setError(null);
+    setPending(true);
+    // Retry after a failed link: the person exists already, so go straight back to linking it.
+    if (createdId.current !== null) {
+      const relinked = await linkDeal(createdId.current);
+      setPending(false);
+      if (relinked) onDone();
+      return;
+    }
+    const created = await dealClientResult(() =>
+      createPersonAction(
+        {
+          name,
+          firstName: draft.firstName.trim() === "" ? null : draft.firstName.trim(),
+          lastName: draft.lastName.trim() === "" ? null : draft.lastName.trim(),
+          emails:
+            draft.email.trim() === ""
+              ? []
+              : [{ label: "work", value: draft.email.trim(), primary: true }],
+          phones:
+            draft.phone.trim() === ""
+              ? []
+              : [
+                  {
+                    label: "work",
+                    value: draft.phone,
+                    primary: true,
+                    ...(draft.phoneCountry === undefined ? {} : { country: draft.phoneCountry }),
+                  },
+                ],
+          orgId: null,
+          customFields: customFieldCreatePayload(customFieldDefs, values),
+        },
+        readCsrfToken(),
+      ),
+    );
+    if (!created.ok) {
+      setPending(false);
+      onError(created.error.id);
+      return;
+    }
+    createdId.current = created.value.id;
+    const ok = await linkDeal(created.value.id);
+    setPending(false);
+    if (ok) {
+      createdId.current = null;
+      onDone();
+    }
+  }
+
+  return (
+    <div ref={fieldsRef} className="space-y-2 py-1 text-sm">
+      <Field
+        id={ids.first}
+        label={translateSales("first_name_702ef")}
+        value={draft.firstName}
+        onChange={(v) => set({ firstName: v })}
+      />
+      <Field
+        id={ids.last}
+        label={translateSales("last_name_7b488")}
+        value={draft.lastName}
+        onChange={(v) => set({ lastName: v })}
+      />
+      {!hidden.has("phones") && (
+        <div className="flex items-start gap-2">
+          <label htmlFor={ids.phone} className="w-24 shrink-0 pt-2 text-end text-muted-foreground">
+            {translateSales("phone_63dce")}
+          </label>
+          <PhoneNumberInput
+            id={ids.phone}
+            ariaLabel={translateSales("phone_63dce")}
+            value={draft.phone}
+            country={draft.phoneCountry}
+            onChange={(phone) => set({ phone })}
+            onCountryChange={(phoneCountry) => set({ phoneCountry })}
+            disabled={pending}
+          />
+        </div>
+      )}
+      {!hidden.has("emails") && (
+        <Field
+          id={ids.email}
+          label={translateSales("email_969cc")}
+          value={draft.email}
+          onChange={(v) => set({ email: v })}
+        />
+      )}
+
+      <CustomFieldCreateFields
+        defs={customFieldDefs}
+        values={values}
+        onChange={(key, value) => setValues((current) => ({ ...current, [key]: value }))}
+        title={translateSales("person_fields_31c77")}
+      />
+
+      {matches.length > 0 && (
+        <ul className="space-y-1 rounded-md border border-warning/40 bg-warning/10 p-2">
+          {matches.map((m) => (
+            <li key={m.option.id} className="flex items-center justify-between gap-2">
+              <span className="min-w-0 truncate">
+                {translateSales.rich(REASON_MESSAGE[m.reason], {
+                  name: m.option.name,
+                  person: (chunks) => (
+                    <bdi dir="auto" className="font-medium">
+                      {chunks}
+                    </bdi>
+                  ),
+                })}
+              </span>
+              <button
+                type="button"
+                disabled={pending}
+                onClick={() => void link(m.option.id)}
+                className="shrink-0 rounded border px-2 py-0.5 text-xs hover:bg-accent disabled:opacity-50"
+              >
+                {translateSales("link_a6a32")}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {error !== null && (
+        <p role="alert" className="text-xs text-destructive">
+          {error}
+        </p>
+      )}
+
+      <div className="flex justify-end gap-2 pt-1">
+        <button
+          type="button"
+          disabled={pending}
+          onClick={onDone}
+          className="rounded-md border px-2.5 py-1 text-xs hover:bg-accent disabled:opacity-50"
+        >
+          {translateSales("cancel_19766")}
+        </button>
+        <button
+          type="button"
+          disabled={pending}
+          onClick={() => void save()}
+          className="rounded-md bg-primary px-2.5 py-1 text-xs text-primary-foreground hover:opacity-90 disabled:opacity-50"
+        >
+          {translateSales("save_1509f")}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function Field({
+  id,
+  label,
+  value,
+  onChange,
+}: {
+  id: string;
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+}): React.ReactNode {
+  return (
+    <div className="flex items-center gap-2">
+      <label htmlFor={id} className="w-24 shrink-0 text-end text-muted-foreground">
+        {label}
+      </label>
+      <input
+        id={id}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className={`${FIELD_INPUT} flex-1`}
+      />
+    </div>
+  );
+}

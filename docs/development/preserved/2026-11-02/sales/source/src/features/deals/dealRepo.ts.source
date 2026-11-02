@@ -1,0 +1,340 @@
+// Board and list reads behind the deal visibility predicate.
+// All queries JOIN pipelines (alias p) so dealVisibilityClause can reference
+// p.visibility_group_id; none leak hidden deals into counts or totals.
+
+import { type SQL, sql } from "drizzle-orm";
+import type { DealStatus } from "@/constants/dealStatus";
+import { contactVisibilityClause } from "@/features/contacts/visibilitySql";
+import { type FilterCompileOptions, filterToSql } from "@/features/saved-filters/filterAst";
+import { hasStatusCondition } from "@/features/saved-filters/filterFields";
+import type { FilterDefinition } from "@/features/saved-filters/schemas";
+import { canonicalMoney } from "@/lib/canonicalMoney";
+import type { DbOrTx } from "@/server/realtime/channelVersions";
+import type { DealVisibilitySession } from "@/types/session";
+import { dealVisibilityClause } from "./visibility";
+
+function linkedContactVisibility(session: DealVisibilitySession): { person: SQL; org: SQL } {
+  return {
+    person: contactVisibilityClause(session, {
+      ownerId: sql`pe.owner_id`,
+      visibilityLevel: sql`pe.visibility_level`,
+      visibilityGroupId: sql`pe.visibility_group_id`,
+      visibleToUserIds: sql`pe.visible_to_user_ids`,
+    }),
+    org: contactVisibilityClause(session, {
+      ownerId: sql`o.owner_id`,
+      visibilityLevel: sql`o.visibility_level`,
+      visibilityGroupId: sql`o.visibility_group_id`,
+      visibleToUserIds: sql`o.visible_to_user_ids`,
+    }),
+  };
+}
+
+// Raw pg returns timestamptz columns as strings; the SELECT aliases below map to
+// this shape before coercion. Card type promises Date, so normalize once here.
+interface RawCard
+  extends Omit<BoardCard, "nextActivityAt" | "lastActivityAt" | "stageEnteredAt" | "updatedAt"> {
+  nextActivityAt: string | null;
+  lastActivityAt: string | null;
+  stageEnteredAt: string;
+  updatedAt: string;
+}
+
+function toDate(v: string | null): Date | null {
+  return v === null ? null : new Date(v);
+}
+
+function normalizeCard<T extends RawCard>(
+  row: T,
+): Omit<T, "nextActivityAt" | "lastActivityAt" | "stageEnteredAt" | "updatedAt"> & {
+  nextActivityAt: Date | null;
+  lastActivityAt: Date | null;
+  stageEnteredAt: Date;
+  updatedAt: Date;
+  writeVersion: string;
+} {
+  return {
+    ...row,
+    nextActivityAt: toDate(row.nextActivityAt),
+    lastActivityAt: toDate(row.lastActivityAt),
+    stageEnteredAt: new Date(row.stageEnteredAt),
+    updatedAt: new Date(row.updatedAt),
+  };
+}
+
+export interface BoardCard {
+  id: string;
+  title: string;
+  value: string | null;
+  currency?: string;
+  status?: DealStatus;
+  // Label keys (hot/warm/cold); resolved to name+color at the card boundary.
+  // Optional like the other join-provided display fields so hand-built fixtures need not set it.
+  labels?: string[];
+  stageId: string;
+  boardPosition: string;
+  ownerId: string;
+  personId: string | null;
+  orgId: string | null;
+  // Resolved display names (LEFT JOINed by the board/list reads). Optional so hand-built
+  // fixtures need not set them; null when the related row is absent.
+  ownerName?: string | null;
+  // The owner's uploaded photo (users.avatar_url), so the card avatar shows the real picture
+  // instead of only initials. Null/absent when the owner has no avatar.
+  ownerAvatarUrl?: string | null;
+  personName?: string | null;
+  orgName?: string | null;
+  nextActivityAt: Date | null;
+  // Subject of the soonest open, dated activity (the row that drives nextActivityAt), so the card's
+  // next-action badge tooltip can name the action. Null when nothing is scheduled. Optional/absent
+  // on hand-built fixtures and on reads that do not join it (only the board read populates it).
+  nextActivityTitle?: string | null;
+  lastActivityAt: Date | null;
+  // Date-only column (YYYY-MM-DD): kept as the raw string so the list can format it in local time
+  // without a UTC off-by-one. Optional so hand-built fixtures need not set it.
+  expectedCloseDate?: string | null;
+  stageEnteredAt: Date;
+  // Display timestamp; writeVersion is the opaque mutation precondition.
+  updatedAt: Date;
+  writeVersion: string;
+}
+
+export type DealListCard = BoardCard & { customFields: Record<string, unknown> };
+
+// Returns open, non-deleted, visible cards for the pipeline ordered by
+// (stageId, boardPosition). Owner/person/org are returned as IDs only;
+// name resolution is Phase 3.
+export async function getBoardColumns(
+  db: DbOrTx,
+  session: DealVisibilitySession,
+  pipelineId: string,
+  signal: AbortSignal,
+  filter?: FilterDefinition,
+  dateContext: FilterCompileOptions | string | null = {},
+): Promise<{ cards: BoardCard[] }> {
+  signal.throwIfAborted();
+  const visClause = dealVisibilityClause(session);
+  const contacts = linkedContactVisibility(session);
+  const filterClause =
+    filter !== undefined
+      ? filterToSql(
+          filter,
+          typeof dateContext === "string" || dateContext === null
+            ? { timeZone: dateContext }
+            : dateContext,
+        )
+      : sql`true`;
+  const openGate = hasStatusCondition(filter) ? sql`` : sql`AND d.status = 'open'`;
+  const result = await db.execute(sql`
+    SELECT
+      d.id,
+      d.title,
+      d.status,
+      d.value,
+      d.currency,
+      d.labels,
+      d.stage_id        AS "stageId",
+      d.board_position  AS "boardPosition",
+      d.owner_id        AS "ownerId",
+      pe.id             AS "personId",
+      o.id              AS "orgId",
+      u.name            AS "ownerName",
+      u.avatar_url      AS "ownerAvatarUrl",
+      pe.name           AS "personName",
+      o.name            AS "orgName",
+      d.next_activity_at   AS "nextActivityAt",
+      na.subject           AS "nextActivityTitle",
+      d.last_activity_at   AS "lastActivityAt",
+      d.expected_close_date AS "expectedCloseDate",
+      d.stage_entered_at   AS "stageEnteredAt",
+      d.updated_at         AS "updatedAt",
+      d.write_version      AS "writeVersion"
+    FROM deals d
+    JOIN pipelines p ON p.id = d.pipeline_id
+    LEFT JOIN stages s ON s.id = d.stage_id
+    LEFT JOIN users u ON u.id = d.owner_id
+    LEFT JOIN persons pe ON pe.id = d.person_id AND pe.deleted_at IS NULL AND ${contacts.person}
+    LEFT JOIN organizations o ON o.id = d.org_id AND o.deleted_at IS NULL AND ${contacts.org}
+    -- Soonest OPEN, DATED activity's subject: the same predicate recomputeNextActivity uses, so the
+    -- title always pairs with next_activity_at. LATERAL keeps it one row per deal (no fan-out).
+    LEFT JOIN LATERAL (
+      SELECT a.subject
+      FROM activities a
+      WHERE a.deal_id = d.id
+        AND a.done = false
+        AND a.deleted_at IS NULL
+        AND a.due_at IS NOT NULL
+      ORDER BY a.due_at ASC
+      LIMIT 1
+    ) na ON true
+    WHERE d.pipeline_id = ${pipelineId}
+      ${openGate}
+      AND d.deleted_at IS NULL
+      AND d.archived_at IS NULL
+      AND p.is_archived = false
+      AND ${visClause}
+      AND ${filterClause}
+    ORDER BY d.stage_id, d.board_position
+  `);
+  signal.throwIfAborted();
+  // Drizzle's db.execute returns { rows: unknown[] } for raw SQL with string timestamps.
+  const rows = (result as unknown as { rows: RawCard[] }).rows;
+  return { cards: rows.map(normalizeCard) };
+}
+
+// Per-stage value sums (data-model spec §13). Visibility predicate is injected
+// via the same JOIN + WHERE so hidden deals are excluded from both count and sum.
+export async function getStageSums(
+  db: DbOrTx,
+  session: DealVisibilitySession,
+  pipelineId: string,
+  signal: AbortSignal,
+): Promise<Array<{ stageId: string; currency: string; dealCount: number; total: string }>> {
+  signal.throwIfAborted();
+  const visClause = dealVisibilityClause(session);
+  const result = await db.execute(sql`
+    SELECT
+      d.stage_id          AS "stageId",
+      d.currency,
+      count(*)::int       AS "dealCount",
+      coalesce(sum(d.value), 0)::text AS total
+    FROM deals d
+    JOIN pipelines p ON p.id = d.pipeline_id
+    WHERE d.pipeline_id = ${pipelineId}
+      AND d.status = 'open'
+      AND d.deleted_at IS NULL
+      AND d.archived_at IS NULL
+      AND p.is_archived = false
+      AND ${visClause}
+    GROUP BY d.stage_id, d.currency
+  `);
+  signal.throwIfAborted();
+  const rows = (
+    result as unknown as {
+      rows: Array<{ stageId: string; currency: string; dealCount: number; total: string }>;
+    }
+  ).rows;
+  return rows.map((row) => ({ ...row, total: canonicalMoney(row.total) }));
+}
+
+// Paginated deal list behind the visibility predicate.
+// total and totalValue are computed over the FULL filtered set, not just the page,
+// so the footer is always accurate regardless of offset/limit.
+export async function listDeals(
+  db: DbOrTx,
+  session: DealVisibilitySession,
+  opts: {
+    pipelineId?: string;
+    offset: number;
+    limit: number;
+    archived?: boolean;
+    filter?: FilterDefinition;
+    timeZone?: string | null;
+    dateContext?: FilterCompileOptions;
+  },
+  signal: AbortSignal,
+): Promise<{
+  rows: DealListCard[];
+  total: number;
+  totalValue: string | null;
+  currencyTotals: Array<{ currency: string; value: string }>;
+}> {
+  signal.throwIfAborted();
+  const pipelineFilter =
+    opts.pipelineId !== undefined ? sql`AND d.pipeline_id = ${opts.pipelineId}` : sql``;
+  const archiveGate =
+    opts.archived === true ? sql`d.archived_at IS NOT NULL` : sql`d.archived_at IS NULL`;
+  const statusGate =
+    opts.archived === true || hasStatusCondition(opts.filter) ? sql`` : sql`AND d.status = 'open'`;
+  const visClause = dealVisibilityClause(session);
+  const contacts = linkedContactVisibility(session);
+  const filterClause =
+    opts.filter !== undefined
+      ? filterToSql(opts.filter, opts.dateContext ?? { timeZone: opts.timeZone })
+      : sql`true`;
+  const base = sql`
+    FROM deals d
+    JOIN pipelines p ON p.id = d.pipeline_id
+    LEFT JOIN stages s ON s.id = d.stage_id
+    LEFT JOIN users u ON u.id = d.owner_id
+    LEFT JOIN persons pe ON pe.id = d.person_id AND pe.deleted_at IS NULL AND ${contacts.person}
+    LEFT JOIN organizations o ON o.id = d.org_id AND o.deleted_at IS NULL AND ${contacts.org}
+    WHERE d.deleted_at IS NULL
+      ${statusGate}
+      AND ${archiveGate}
+      AND p.is_archived = false
+      ${pipelineFilter}
+      AND ${visClause}
+      AND ${filterClause}
+  `;
+
+  // The page query and the full-set aggregate are independent and both derive from `base`,
+  // so run them concurrently. On a pooled read connection (the only caller path) this is two
+  // parallel round trips instead of two serial ones; on a single tx connection node-postgres
+  // queues them, so it is never worse.
+  const [rowsRes, aggRes] = await Promise.all([
+    db.execute(sql`
+      SELECT
+        d.id,
+        d.title,
+        d.status,
+        d.value,
+      d.currency,
+        d.labels,
+        d.stage_id        AS "stageId",
+        d.board_position  AS "boardPosition",
+        d.owner_id        AS "ownerId",
+        pe.id             AS "personId",
+        o.id              AS "orgId",
+        u.name            AS "ownerName",
+        u.avatar_url      AS "ownerAvatarUrl",
+        pe.name           AS "personName",
+        o.name            AS "orgName",
+        d.next_activity_at   AS "nextActivityAt",
+        d.last_activity_at   AS "lastActivityAt",
+        d.expected_close_date AS "expectedCloseDate",
+        d.stage_entered_at   AS "stageEnteredAt",
+        d.updated_at         AS "updatedAt",
+      d.write_version      AS "writeVersion",
+        d.custom_fields       AS "customFields"
+      ${base}
+      ORDER BY d.updated_at DESC
+      LIMIT ${opts.limit} OFFSET ${opts.offset}
+    `),
+    db.execute(sql`
+      SELECT
+        d.currency,
+        public.warpdrive_base_currency() AS "baseCurrency",
+        count(*)::int AS total,
+        coalesce(sum(d.value), 0)::text AS value
+      ${base}
+      GROUP BY d.currency
+      ORDER BY d.currency
+    `),
+  ]);
+  signal.throwIfAborted();
+
+  const aggregates = (
+    aggRes as unknown as {
+      rows: Array<{ total: number; currency: string; baseCurrency: string; value: string }>;
+    }
+  ).rows;
+  const currencyTotals = aggregates.map(({ currency, value }) => ({
+    currency,
+    value: canonicalMoney(value),
+  }));
+  const rawRows = (
+    rowsRes as unknown as { rows: (RawCard & { customFields: Record<string, unknown> })[] }
+  ).rows;
+  return {
+    rows: rawRows.map(normalizeCard),
+    total: aggregates.reduce((total, row) => total + row.total, 0),
+    totalValue:
+      currencyTotals.length === 0
+        ? "0.00"
+        : currencyTotals.length === 1 && currencyTotals[0]?.currency === aggregates[0]?.baseCurrency
+          ? (currencyTotals[0]?.value ?? "0.00")
+          : null,
+    currencyTotals,
+  };
+}
