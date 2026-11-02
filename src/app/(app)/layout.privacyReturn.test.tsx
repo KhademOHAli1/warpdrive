@@ -4,6 +4,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { isValidElement } from "react";
 import { afterEach, beforeEach, expect, type MockInstance, test, vi } from "vitest";
 import { db } from "@/db/client";
+import { CurrencyProvider } from "@/features/currencies/CurrencyProvider";
+import { NativeActorProvider } from "@/features/identity/NativeActorProvider";
 import { PRIVACY_CASE_PATH_HEADER } from "@/features/privacy/requestPath";
 import { proxy } from "@/proxy";
 
@@ -135,7 +137,14 @@ test("an authenticated actor keeps the existing shell without a return-path redi
   mocks.requestHeaders.set(PRIVACY_CASE_PATH_HEADER, CASE_PATH);
   const tree = await AppLayout({ children: "PRIVATE-child" });
   expect(isValidElement(tree)).toBe(true);
-  expect(tree).toMatchObject({ props: { currency: "EUR" } });
+  expect(tree).toMatchObject({
+    type: NativeActorProvider,
+    key: actor.id,
+    props: {
+      actorId: actor.id,
+      children: { type: CurrencyProvider, props: { currency: "EUR" } },
+    },
+  });
   expect(redirect).not.toHaveBeenCalled();
   expect(mocks.pending).not.toHaveBeenCalled();
   expect(mocks.headers).not.toHaveBeenCalled();

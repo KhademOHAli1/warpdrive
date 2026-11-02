@@ -6,6 +6,7 @@ import { afterEach, beforeAll, expect, it, vi } from "vitest";
 import { CurrencyProvider } from "@/features/currencies/CurrencyProvider";
 import { AddDealModal } from "@/features/deals/AddDealModal";
 import { LocaleProvider } from "@/features/i18n/LocaleProvider";
+import { NativeActorProvider } from "@/features/identity/NativeActorProvider";
 import { AddLeadModal } from "@/features/leads/AddLeadModal";
 import type { CustomFieldDef } from "@/types/customFields";
 import { CustomFieldCreateFields } from "./CustomFieldCreateFields";
@@ -145,13 +146,18 @@ it.each(["deal", "lead"] as const)(
         <CurrencyProvider currency="EUR">
           <QueryClientProvider client={client}>
             {entity === "deal" ? (
-              <AddDealModal
-                baseCurrency="IRR"
-                pipelineId="11111111-1111-4111-8111-111111111111"
-                pipelines={[]}
-                onClose={vi.fn()}
-                onCreated={vi.fn()}
-              />
+              <NativeActorProvider
+                key="aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+                actorId="aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+              >
+                <AddDealModal
+                  baseCurrency="IRR"
+                  pipelineId="11111111-1111-4111-8111-111111111111"
+                  pipelines={[]}
+                  onClose={vi.fn()}
+                  onCreated={vi.fn()}
+                />
+              </NativeActorProvider>
             ) : (
               <AddLeadModal baseCurrency="IRR" onClose={vi.fn()} onCreated={vi.fn()} />
             )}
