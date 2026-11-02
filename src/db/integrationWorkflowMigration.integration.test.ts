@@ -83,7 +83,7 @@ async function businessSnapshot(h: TestDb) {
       "SELECT * FROM privacy_cases ORDER BY id",
       "SELECT * FROM workflows ORDER BY id",
       "SELECT * FROM workflow_versions ORDER BY id",
-      "SELECT * FROM workflow_runs ORDER BY id",
+      "SELECT to_jsonb(r) - 'resume_at' AS value FROM workflow_runs r ORDER BY id",
       "SELECT * FROM workflow_steps ORDER BY id",
     ].map(async (query) => (await h.pool.query(query)).rows),
   );
@@ -161,7 +161,14 @@ test("connection upgrade preserves canonical workflow, privacy and identity data
     await assertWorkflowConstraints(h, owner);
     const beforeLedger = await ledger(h);
     const beforeBusiness = await businessSnapshot(h);
+    const legacyRunIds = (
+      await h.pool.query<{ id: string }>("SELECT id FROM workflow_runs ORDER BY id")
+    ).rows;
+    expect(legacyRunIds.length).toBeGreaterThan(0);
     expect(await applyMigrations(h.db)).toEqual({ ok: true, value: { applied: true } });
+    expect(
+      (await h.pool.query("SELECT id, resume_at FROM workflow_runs ORDER BY id")).rows,
+    ).toEqual(legacyRunIds.map(({ id }) => ({ id, resume_at: null })));
     expect((await ledger(h)).slice(0, beforeLedger.length)).toEqual(beforeLedger);
     expect(await ledger(h)).toHaveLength(entries.length);
     expect(await businessSnapshot(h)).toEqual(beforeBusiness);
@@ -186,6 +193,9 @@ test("connection upgrade preserves canonical workflow, privacy and identity data
     const events = (await h.pool.query("SELECT * FROM integration_events ORDER BY id")).rows;
     const completedLedger = await ledger(h);
     expect(await applyMigrations(h.db)).toEqual({ ok: true, value: { applied: true } });
+    expect(
+      (await h.pool.query("SELECT id, resume_at FROM workflow_runs ORDER BY id")).rows,
+    ).toEqual(legacyRunIds.map(({ id }) => ({ id, resume_at: null })));
     expect(await ledger(h)).toEqual(completedLedger);
     expect(await businessSnapshot(h)).toEqual(beforeBusiness);
     expect((await h.pool.query("SELECT * FROM integration_connections ORDER BY id")).rows).toEqual(
