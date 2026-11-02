@@ -3,7 +3,21 @@
 import { Tip } from "@/components/ui/tooltip";
 import { useAppTranslations, useMessages } from "@/features/i18n/LocaleProvider";
 import { useFormatters } from "@/lib/useFormatters";
+import { delayMinutesSchema } from "../registry";
 import { bindingSchema, type WorkflowNode } from "../schemas";
+
+function describeDelay(
+  raw: unknown,
+  invalid: string,
+  mapped: string,
+  format: (minutes: number) => string,
+) {
+  const binding = bindingSchema.safeParse(raw);
+  if (!binding.success) return invalid;
+  if (binding.data.kind === "reference") return mapped;
+  const minutes = delayMinutesSchema.safeParse(binding.data.value);
+  return minutes.success ? format(minutes.data) : invalid;
+}
 
 export function NodeSummary({ node }: { node: WorkflowNode }) {
   const t = useAppTranslations("workflows");
@@ -29,6 +43,13 @@ export function NodeSummary({ node }: { node: WorkflowNode }) {
     return binding.value;
   }
   let summary = t("manualSummary");
+  if (node.type === "delay")
+    summary = describeDelay(
+      node.config.minutes,
+      t("setupRequired"),
+      t("delayLiteralRequired"),
+      (minutes) => t("delaySummary", { minutes: fmt.number(minutes) }),
+    );
   if (node.type === "activity.create") summary = value(node.config.subject);
   if (node.type === "record.read")
     summary = t("readSummary", { source: value(node.config.recordId) });

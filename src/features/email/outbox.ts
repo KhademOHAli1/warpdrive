@@ -6,6 +6,11 @@ import type { Db } from "@/db/client";
 import type { StorageClient } from "@/features/files/storage";
 import type { DbOrTx } from "@/server/realtime/channelVersions";
 import { err, ok, type Result } from "@/types/result";
+import {
+  attachmentLimitError,
+  GMAIL_ATTACHMENT_LIMITS,
+  hasDuplicateAttachmentIds,
+} from "./emailAttachmentLimits";
 import type { GmailClient } from "./gmailClient";
 import { gmailConnectionChanged } from "./gmailConnectionFence";
 import { isGmailSendCurrent, releaseUnsubmittedGmailClaim } from "./gmailSendFence";
@@ -293,10 +298,24 @@ async function fetchAttachmentBytes(
   storage: StorageClient,
   signal: AbortSignal,
 ): Promise<Result<MimeAttachment[], AppError>> {
+  const sources = payload.attachments ?? [];
+  if (sources.length > GMAIL_ATTACHMENT_LIMITS.count || hasDuplicateAttachmentIds(sources))
+    return err(attachmentLimitError("Too many or duplicate email attachments"));
   const result: MimeAttachment[] = [];
-  for (const att of payload.attachments ?? []) {
+  let totalBytes = 0;
+  for (const att of sources) {
+    const metadata = await storage.headObject(att.s3Key, signal);
+    if (!metadata.ok) return metadata;
+    totalBytes += metadata.value.size;
+    if (
+      metadata.value.size > GMAIL_ATTACHMENT_LIMITS.itemBytes ||
+      totalBytes > GMAIL_ATTACHMENT_LIMITS.totalBytes
+    )
+      return err(attachmentLimitError("Email attachment size limit exceeded"));
     const bytes = await storage.getObjectBytes(att.s3Key, signal);
     if (!bytes.ok) return bytes;
+    if (bytes.value.length !== metadata.value.size)
+      return err(new AppError(ERROR_IDS.FILE_METADATA_MISMATCH, "Email attachment changed"));
     result.push({ filename: att.filename, contentType: att.contentType, bytes: bytes.value });
   }
   return ok(result);

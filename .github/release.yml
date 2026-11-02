@@ -1,0 +1,12 @@
+changelog:
+  exclude:
+    labels: ["release:exclude"]
+  categories:
+    - title: Features and improvements
+      labels: ["type:feature", "type:improvement"]
+    - title: Fixes
+      labels: ["type:bug"]
+    - title: Maintenance and operations
+      labels: ["type:maintenance", "type:dependency", "type:migration", "type:operations"]
+    - title: Other changes
+      labels: ["*"]

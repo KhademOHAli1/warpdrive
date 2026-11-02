@@ -112,7 +112,7 @@ export async function withPrivacyAuthority<R extends Result<unknown, unknown>>(
   effect: (tx: Db, ticket: PrivacyAuthorityTicket) => Promise<R>,
 ): Promise<R | { ok: false; error: "forbidden" }> {
   signal.throwIfAborted();
-  let failedResult: R | undefined;
+  let failedResult: R | { ok: false; error: "forbidden" } | undefined;
   try {
     return await db.transaction(async (tx) => {
       await lockAuthAccount(tx, actor.userId, signal);
@@ -136,6 +136,12 @@ export async function withPrivacyAuthority<R extends Result<unknown, unknown>>(
       signal.throwIfAborted();
       if (!result.ok) {
         failedResult = result;
+        tx.rollback();
+      }
+      const sessionCurrent = await currentPrivacySession(tx, actor, signal);
+      signal.throwIfAborted();
+      if (!sessionCurrent) {
+        failedResult = err("forbidden" as const);
         tx.rollback();
       }
       return result;

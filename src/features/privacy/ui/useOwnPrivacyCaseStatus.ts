@@ -15,22 +15,42 @@ export function useOwnPrivacyCaseStatus(props: OwnPrivacyCaseStatusProps) {
   const { refreshSecurity } = props;
   const [requesterId] = useState(props.securityStatus.user.id);
   const [blocked, setBlocked] = useState<"account_changed" | "signed_out" | null>(null);
-  const [view, setView] = useState(() => emptyOwnCase(props.caseId, props.securityStatus.fresh));
+  const [view, setView] = useState(() =>
+    emptyOwnCase(props.caseId, props.securityStatus.fresh, props.securityStatus.emailVerified),
+  );
   const active = useRef<AbortController | null>(null);
   const running = useRef(false);
   const security = useRef(props.securityStatus);
   const changed = props.securityStatus.user.id !== requesterId;
+  const emailVerified = props.securityStatus.emailVerified;
+  const [previousEmailVerified, setPreviousEmailVerified] = useState(emailVerified);
 
   if (changed && blocked !== "account_changed") {
     setBlocked("account_changed");
     setView(emptyOwnCase(props.caseId, false));
   } else if (view.caseId !== props.caseId) {
-    setView(emptyOwnCase(props.caseId, props.securityStatus.fresh));
+    setView(emptyOwnCase(props.caseId, props.securityStatus.fresh, emailVerified));
+  }
+  if (previousEmailVerified !== emailVerified) {
+    setPreviousEmailVerified(emailVerified);
+    // Keep an uncertain confirmation's exact command; its prior data and notice are private cache.
+    if (!emailVerified)
+      setView((previous) => ({
+        ...previous,
+        data: null,
+        recorded: false,
+        busy: false,
+        error: "email_verification_required",
+      }));
   }
   useLayoutEffect(() => {
     security.current = props.securityStatus;
-    if (changed) active.current?.abort();
-  }, [changed, props.securityStatus]);
+    if (changed || !emailVerified) {
+      active.current?.abort();
+      active.current = null;
+      running.current = false;
+    }
+  }, [changed, emailVerified, props.securityStatus]);
 
   const invalidate = useCallback(
     (reason: "account_changed" | "signed_out") => {
@@ -47,9 +67,13 @@ export function useOwnPrivacyCaseStatus(props: OwnPrivacyCaseStatusProps) {
       ...previous,
       error,
       data:
-        error === "forbidden" || error === "not_found" || error === "fresh_auth_required"
+        error === "forbidden" ||
+        error === "not_found" ||
+        error === "fresh_auth_required" ||
+        error === "email_verification_required"
           ? null
           : previous.data,
+      recorded: error === "email_verification_required" ? false : previous.recorded,
     }));
   }, []);
   const read = useCallback(
@@ -105,7 +129,8 @@ export function useOwnPrivacyCaseStatus(props: OwnPrivacyCaseStatusProps) {
     const initial = new AbortController();
     void Promise.resolve().then(() => {
       if (initial.signal.aborted || blocked !== null || changed) return;
-      if (security.current.fresh) run(read, true);
+      if (!security.current.emailVerified) failure("email_verification_required");
+      else if (security.current.fresh) run(read, true);
       else failure("fresh_auth_required");
     });
     return () => {
@@ -126,6 +151,10 @@ export function useOwnPrivacyCaseStatus(props: OwnPrivacyCaseStatusProps) {
       }
       if (result.value === null || result.value.user.id !== requesterId) {
         invalidate(result.value === null ? "signed_out" : "account_changed");
+        return false;
+      }
+      if (!result.value.emailVerified) {
+        failure("email_verification_required");
         return false;
       }
       if (!result.value.fresh) {
@@ -183,11 +212,16 @@ export function useOwnPrivacyCaseStatus(props: OwnPrivacyCaseStatusProps) {
     (view.command !== null || canConfirmOwnCase(view.data.status)) &&
     !view.recorded &&
     !["stale_version", "case_not_mutable", "idempotency_conflict"].includes(view.error ?? "");
+  const needsEmailVerification = !emailVerified || view.error === "email_verification_required";
   return {
     ...view,
-    data: view.caseId === props.caseId && !changed && blocked === null ? view.data : null,
+    data:
+      view.caseId === props.caseId && !changed && blocked === null && !needsEmailVerification
+        ? view.data
+        : null,
+    recorded: !needsEmailVerification && view.recorded,
     blocked: changed ? ("account_changed" as const) : blocked,
-    canConfirm,
+    canConfirm: !needsEmailVerification && canConfirm,
     refresh,
     confirm,
     confirmFreshIdentity: () =>

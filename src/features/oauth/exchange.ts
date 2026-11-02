@@ -1,29 +1,16 @@
 import { eq } from "drizzle-orm";
-import { z } from "zod";
+import { env } from "@/config/env";
 import { ACCESS_TOKEN_TTL_SECONDS } from "@/constants/oauth";
 import type { Db } from "@/db/client";
 import { users } from "@/db/schema";
 import { lockMcpGrants } from "@/features/auth/management/mcpGrants";
 import { err, ok, type Result } from "@/types/result";
 import { consumeAuthCode } from "./authorize";
+import { requestInputError, type TokenRequest, tokenRequestInput } from "./requestSchemas";
+import { resolveMcpResourceProfile } from "./resource";
 import { issueAccessToken, issueRefreshToken, rotateRefreshToken } from "./tokens";
 
-export const tokenRequestInput = z.discriminatedUnion("grant_type", [
-  z.object({
-    grant_type: z.literal("authorization_code"),
-    code: z.string().min(1),
-    code_verifier: z.string().min(43).max(128),
-    client_id: z.string().min(1),
-    redirect_uri: z.string().url(),
-    resource: z.string().url().optional(),
-  }),
-  z.object({
-    grant_type: z.literal("refresh_token"),
-    refresh_token: z.string().min(1),
-    client_id: z.string().min(1),
-    resource: z.string().url().optional(),
-  }),
-]);
+export { tokenRequestInput } from "./requestSchemas";
 
 interface TokenPair {
   access_token: string;
@@ -34,18 +21,26 @@ interface TokenPair {
 
 export async function exchangeMcpGrant(
   db: Db,
-  input: z.infer<typeof tokenRequestInput>,
+  input: unknown,
   signal: AbortSignal,
-): Promise<Result<TokenPair, "invalid_grant">> {
-  return db.transaction(async (tx) => {
+): Promise<Result<TokenPair, "invalid_request" | "invalid_target" | "invalid_grant">> {
+  signal.throwIfAborted();
+  const profile = resolveMcpResourceProfile(env.BASE_URL);
+  if (!profile.ok) return profile;
+  const parsed = tokenRequestInput.safeParse(input);
+  if (!parsed.success) return err(requestInputError(parsed.error));
+  const exchanged = await db.transaction(async (tx) => {
     await lockMcpGrants(tx, signal);
-    return exchangeLockedGrant(tx, input, signal);
+    signal.throwIfAborted();
+    return exchangeLockedGrant(tx, parsed.data, signal);
   });
+  signal.throwIfAborted();
+  return exchanged;
 }
 
 async function exchangeLockedGrant(
   db: Db,
-  input: z.infer<typeof tokenRequestInput>,
+  input: TokenRequest,
   signal: AbortSignal,
 ): Promise<Result<TokenPair, "invalid_grant">> {
   const owner =
@@ -61,19 +56,23 @@ async function exchangeLockedGrant(
           signal,
         )
       : await rotateRefreshToken(db, input.refresh_token, signal, input.client_id);
+  signal.throwIfAborted();
   if (!owner.ok) return err("invalid_grant");
   const [user] = await db
     .select({ active: users.isActive })
     .from(users)
     .where(eq(users.id, owner.value.userId))
     .limit(1);
+  signal.throwIfAborted();
   if (user?.active !== true) return err("invalid_grant");
   const binding = { clientId: input.client_id, userId: owner.value.userId };
   const refresh =
     "refreshToken" in owner.value && typeof owner.value.refreshToken === "string"
       ? owner.value.refreshToken
       : await issueRefreshToken(db, binding, signal);
+  signal.throwIfAborted();
   const { token } = await issueAccessToken(db, binding, signal);
+  signal.throwIfAborted();
   return ok({
     access_token: token,
     token_type: "Bearer",

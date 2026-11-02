@@ -65,6 +65,7 @@ export async function readRunHistory(
       id: workflowRuns.id,
       status: workflowRuns.status,
       mode: workflowRuns.mode,
+      resumeAt: workflowRuns.resumeAt,
       versionId: workflowRuns.versionId,
       errorId: workflowRuns.errorId,
       createdAt: workflowRuns.createdAt,

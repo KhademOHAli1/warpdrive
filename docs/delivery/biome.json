@@ -1,0 +1,14 @@
+{
+  "root": false,
+  "extends": "//",
+  "files": {
+    "includes": [
+      "**",
+      "!sources",
+      "!roadmap.json",
+      "!issue-map.json",
+      "!execution-snapshot.json",
+      "!import-state.json"
+    ]
+  }
+}

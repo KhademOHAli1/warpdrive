@@ -29,6 +29,36 @@ describe("applyMergeFields", () => {
     expect(applyMergeFields("Hi {{\u00a0person.name\u00a0}}", { "person.name": "Jane" })).toBe(
       "Hi Jane",
     );
+    expect(applyMergeFields("Hi {{&#160;person.name&nbsp;}}", { "person.name": "Jane" })).toBe(
+      "Hi Jane",
+    );
+  });
+
+  it("handles balanced nested formatting and quoted greater-than signs", () => {
+    expect(
+      applyMergeFields('{{person.<span title="a > b"><em>name</em></span>}}', {
+        "person.name": "Jane",
+      }),
+    ).toBe("Jane");
+  });
+
+  it("does not resolve inherited object keys", () => {
+    expect(applyMergeFields("{{constructor}}/{{toString}}/{{__proto__}}", {})).toBe("//");
+    expect(applyMergeFields("{{constructor}}", {}, { keepUnresolved: true })).toBe(
+      "{{constructor}}",
+    );
+    expect(applyMergeFields("{{constructor}}", { constructor: "own value" })).toBe("own value");
+  });
+
+  it.each([
+    "{{person.<em>name}}",
+    "{{person.<em>name</strong>}}",
+    "{{person.<em><strong>name</em></strong>}}",
+    '{{person.<em title="unterminated>name</em>}}',
+    "{{person.< 3 >name}}",
+    "{{person.<script>name</script>}}",
+  ])("leaves a malformed or non-formatting token untouched: %s", (template) => {
+    expect(applyMergeFields(template, { "person.name": "Jane" })).toBe(template);
   });
 
   it("keeps an unresolved token when the caller asks, so the send path can still resolve it", () => {

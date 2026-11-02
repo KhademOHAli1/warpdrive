@@ -130,7 +130,7 @@ it("shows Focus and History at once with no toggle", () => {
     />,
   );
   // Both section headings render together (stacked, not toggled).
-  expect(screen.getByRole("heading", { name: /Focus/ })).toBeInTheDocument();
+  expect(screen.getByRole("heading", { name: /Next actions/ })).toBeInTheDocument();
   expect(screen.getByRole("heading", { name: /History/ })).toBeInTheDocument();
   // The History Email sub-tab is reachable immediately (no Focus/History toggle to click first).
   expect(screen.getByRole("tab", { name: /Email/ })).toBeInTheDocument();
@@ -222,7 +222,7 @@ describe("WorkspaceTabs", () => {
 
   it("Focus and History are both visible: Focus holds only the open activity, History holds the full log", () => {
     renderTabs();
-    const focusSection = within(screen.getByRole("region", { name: "focus" }));
+    const focusSection = within(screen.getByRole("region", { name: "Next actions" }));
     const historySection = within(screen.getByRole("region", { name: "history" }));
 
     // renderTabs()'s single activity is open (done: false), so it's Focus-bound.
@@ -252,7 +252,7 @@ describe("WorkspaceTabs", () => {
     // The pinned note renders in its own Pinned region (above Focus), not in Focus or History.
     const pinnedSection = within(screen.getByRole("region", { name: "pinned" }));
     expect(pinnedSection.getByText("keep me on top")).toBeInTheDocument();
-    const focusSection = within(screen.getByRole("region", { name: "focus" }));
+    const focusSection = within(screen.getByRole("region", { name: "Next actions" }));
     expect(focusSection.queryByText("keep me on top")).not.toBeInTheDocument();
     const historySection = within(screen.getByRole("region", { name: "history" }));
     expect(historySection.queryByText("keep me on top")).not.toBeInTheDocument();
@@ -277,7 +277,7 @@ describe("WorkspaceTabs", () => {
         createdActorName="Nick"
       />,
     );
-    const focusSection = within(screen.getByRole("region", { name: "focus" }));
+    const focusSection = within(screen.getByRole("region", { name: "Next actions" }));
     expect(focusSection.getByText("Nothing needs your attention")).toBeInTheDocument();
   });
 });
