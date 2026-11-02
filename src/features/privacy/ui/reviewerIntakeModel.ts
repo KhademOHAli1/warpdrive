@@ -8,6 +8,7 @@ export type ReviewerIntakeRow = Extract<QueueOutcome, { ok: true }>["value"]["it
 export type ReviewerClaimReceipt = Extract<ClaimOutcome, { ok: true }>["value"];
 export type ReviewerIntakeError =
   | Extract<QueueOutcome | ClaimOutcome, { ok: false }>["error"]
+  | "email_verification_required"
   | "security_unavailable"
   | "transport_interrupted";
 export type ReviewerClaimIntent = Readonly<{
@@ -32,7 +33,7 @@ export interface ReviewerIntakeView {
   receipt: ReviewerClaimReceipt | null;
 }
 export const reviewerIsFresh = (status: SecurityStatus) =>
-  status.fresh && !status.needsMfa && !status.needsEnrollment;
+  status.emailVerified && status.fresh && !status.needsMfa && !status.needsEnrollment;
 export function emptyReviewerIntake(): ReviewerIntakeView {
   return {
     rows: [],
@@ -58,8 +59,12 @@ export function isDefinitiveClaimFailure(error: ReviewerIntakeError): boolean {
 }
 export function hideQueueForFailure(error: ReviewerIntakeError): boolean {
   return (
-    ["forbidden", "fresh_auth_required", "reviewer_changed", "security_unavailable"].includes(
-      error,
-    ) || isDefinitiveClaimFailure(error)
+    [
+      "forbidden",
+      "fresh_auth_required",
+      "email_verification_required",
+      "reviewer_changed",
+      "security_unavailable",
+    ].includes(error) || isDefinitiveClaimFailure(error)
   );
 }

@@ -24,10 +24,22 @@ export function useReviewerIntake(props: ReviewerIntakeCardProps) {
   const [blocked, setBlocked] = useState<"account_changed" | "signed_out" | null>(null);
   const active = useRef<AbortController | null>(null);
   const running = useRef(false);
-  const changed = props.securityStatus.user.id !== reviewerId;
+  const userId = props.securityStatus.user.id;
+  const changed = userId !== reviewerId;
   const unavailable = props.securityUnavailable === true;
+  const emailVerified = props.securityStatus.emailVerified;
+  const rawFresh = props.securityStatus.fresh;
+  const needsMfa = props.securityStatus.needsMfa;
+  const needsEnrollment = props.securityStatus.needsEnrollment;
   const fresh = reviewerIsFresh(props.securityStatus);
-  const securityBoundary = `${props.securityStatus.user.id}:${unavailable}:${fresh}`;
+  const securityBoundary = JSON.stringify([
+    userId,
+    unavailable,
+    emailVerified,
+    rawFresh,
+    needsMfa,
+    needsEnrollment,
+  ]);
   const [previousBoundary, setPreviousBoundary] = useState(securityBoundary);
 
   // Clear cached disclosure before committing a changed security boundary.
@@ -46,7 +58,9 @@ export function useReviewerIntake(props: ReviewerIntakeCardProps) {
         error: previous.engaged
           ? unavailable
             ? "security_unavailable"
-            : "fresh_auth_required"
+            : emailVerified
+              ? "fresh_auth_required"
+              : "email_verification_required"
           : null,
       }));
     }
@@ -77,12 +91,19 @@ export function useReviewerIntake(props: ReviewerIntakeCardProps) {
   }, []);
 
   useLayoutEffect(() => {
-    if (changed || unavailable || !fresh) {
+    if (
+      userId !== reviewerId ||
+      unavailable ||
+      !emailVerified ||
+      !rawFresh ||
+      needsMfa ||
+      needsEnrollment
+    ) {
       active.current?.abort();
       active.current = null;
       running.current = false;
     }
-  }, [changed, fresh, unavailable]);
+  }, [emailVerified, needsEnrollment, needsMfa, rawFresh, reviewerId, unavailable, userId]);
   useLayoutEffect(
     () => () => {
       active.current?.abort();
@@ -105,7 +126,7 @@ export function useReviewerIntake(props: ReviewerIntakeCardProps) {
         return false;
       }
       if (!reviewerIsFresh(current.value)) {
-        fail("fresh_auth_required");
+        fail(current.value.emailVerified ? "fresh_auth_required" : "email_verification_required");
         return false;
       }
       return true;

@@ -34,6 +34,7 @@
     "erasure": "Personal-data erasure"
   },
   "errors": {
+    "email_verification_required": "Verify your email address before continuing.",
     "csrf_rejected": "The security check failed. Retry after refreshing the page if needed.",
     "fresh_auth_required": "Confirm your identity before loading or assigning requests.",
     "reviewer_changed": "Your signed-in account changed. Reload privacy settings to continue.",

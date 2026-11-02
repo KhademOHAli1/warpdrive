@@ -109,7 +109,7 @@ export function PersonalPrivacyWorkspace({ caseId }: { caseId?: string }) {
     !view.changed &&
     security !== undefined &&
     security !== null &&
-    (!security.fresh || security.needsEnrollment || security.needsMfa);
+    (!security.emailVerified || !security.fresh || security.needsEnrollment || security.needsMfa);
   return (
     <SettingsPage className={`${BLOCK_CLASS} ph-no-capture`}>
       <SettingsHeading
@@ -157,6 +157,11 @@ export function PersonalPrivacyWorkspace({ caseId }: { caseId?: string }) {
             ) : null}
             {needsSecurity && (
               <div className="space-y-2">
+                {security.emailVerified === false && (
+                  <p role="alert" className="text-sm text-destructive">
+                    {L.errors.email_verification_required}
+                  </p>
+                )}
                 <a
                   className={buttonVariants({ variant: "outline" })}
                   href="/settings/security"

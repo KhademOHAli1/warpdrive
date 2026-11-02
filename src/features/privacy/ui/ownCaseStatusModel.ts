@@ -5,7 +5,10 @@ import type { readOwnPrivacyRequestAction } from "../requestActions";
 
 type ReadOutcome = Awaited<ReturnType<typeof readOwnPrivacyRequestAction>>;
 export type OwnCaseStatus = Extract<ReadOutcome, { ok: true }>["value"];
-export type OwnCaseFailure = Extract<ReadOutcome, { ok: false }>["error"] | "transport_interrupted";
+export type OwnCaseFailure =
+  | Extract<ReadOutcome, { ok: false }>["error"]
+  | "transport_interrupted"
+  | "email_verification_required";
 export type OwnPrivacyCaseStatusProps = {
   caseId: string;
   securityStatus: SecurityStatus;
@@ -22,12 +25,12 @@ export type OwnCaseView = {
 export const canConfirmOwnCase = (status: string) =>
   status === "received" || status === "verification_needed";
 
-export function emptyOwnCase(caseId: string, fresh: boolean): OwnCaseView {
+export function emptyOwnCase(caseId: string, fresh: boolean, emailVerified = true): OwnCaseView {
   return {
     caseId,
     data: null,
-    error: fresh ? null : "fresh_auth_required",
-    busy: fresh,
+    error: !emailVerified ? "email_verification_required" : fresh ? null : "fresh_auth_required",
+    busy: fresh && emailVerified,
     recorded: false,
     command: null,
   };

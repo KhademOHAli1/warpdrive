@@ -22,6 +22,7 @@
     "erasure": "Erase personal data"
   },
   "errors": {
+    "email_verification_required": "Verify your email address before continuing.",
     "csrf_rejected": "The security check failed. Retry this request. If it still fails, ask the workspace operator for help.",
     "fresh_auth_required": "Confirm your identity, then explicitly retry the same request. Your draft is preserved.",
     "request_failed": "Receipt is not confirmed. Retry the same request; do not create another one.",

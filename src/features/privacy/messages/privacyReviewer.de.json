@@ -34,6 +34,7 @@
     "erasure": "Löschung personenbezogener Daten"
   },
   "errors": {
+    "email_verification_required": "Bestätigen Sie Ihre E-Mail-Adresse, bevor Sie fortfahren.",
     "csrf_rejected": "Die Sicherheitsprüfung ist fehlgeschlagen. Aktualisieren Sie bei Bedarf die Seite und versuchen Sie es erneut.",
     "fresh_auth_required": "Bestätigen Sie Ihre Identität, bevor Sie Anfragen laden oder übernehmen.",
     "reviewer_changed": "Ihr angemeldetes Konto hat sich geändert. Laden Sie die Datenschutzeinstellungen neu.",
