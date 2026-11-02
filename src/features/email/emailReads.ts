@@ -94,10 +94,15 @@ export async function getThread(
     await db.execute(sql`
       SELECT id, subject, last_message_at, person_id, deal_id, visibility, account_id,
         follow_up_status, labels,
+        NOT EXISTS (
+          SELECT 1 FROM email_thread_reads r
+          WHERE r.thread_id=email_threads.id AND r.user_id=${args.actor.id}
+            AND (email_threads.last_message_at IS NULL OR r.read_at>=email_threads.last_message_at)
+        ) AS unread,
         ${privateIntakeBlocksThread(sql`email_threads.account_id`, sql`email_threads.id`)} AS private_intake_protected
       FROM email_threads WHERE id=${args.threadId} AND trashed_at IS NULL
     `)
-  ).rows[0] as unknown as ThreadRow | undefined;
+  ).rows[0] as unknown as (ThreadRow & { unread: boolean }) | undefined;
   signal.throwIfAborted();
   if (t === undefined || !(await canSeeEmail(db, args.actor, toVisibilityRow(t), signal))) {
     return err(new AppError("E_GMAIL_011", "thread not found", {}));
@@ -219,9 +224,8 @@ export async function getThread(
       personId: t.person_id,
       dealId: t.deal_id,
       visibility: t.visibility,
-      // The reader marks the thread read itself (mark-read-on-open in ThreadPane); this
-      // projection isn't used to render unread state, so default false keeps the shape uniform.
-      unread: false,
+      // This actor's current watermark is an observation, not a prior mutation receipt.
+      unread: t.unread,
       followUpStatus: t.follow_up_status,
       labels: t.labels,
       isOwner,

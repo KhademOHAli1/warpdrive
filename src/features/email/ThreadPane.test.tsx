@@ -2,21 +2,37 @@
 import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { ERROR_IDS } from "@/constants/errorIds";
 import { STRINGS } from "@/constants/strings";
+import { emailMessagesForLocale } from "./emailMessages";
 import type { ThreadMailCapabilities } from "./imapThreadOperationsCapabilities";
+import {
+  applyReadIntent,
+  applyUnreadIntent,
+  prepareCreatedReadIntent,
+  READ_OPERATION_ID,
+  type ReadInput,
+  reconcileAppliedReadIntent,
+  UNREAD_OPERATION_ID,
+} from "./ThreadPane.readIntent.test.fixtures";
 
 // Typed so `mockResolvedValueOnce({ ok: false, ... })` typechecks alongside the default
 // ok:true resolution; the runtime values match the action's Result shape exactly.
 type Res = { ok: true; value: { threadId: string } } | { ok: false; error: string };
-const markReadMock = vi.fn<() => Promise<Res>>(() =>
-  Promise.resolve({ ok: true, value: { threadId: "t1" } }),
+const prepareReadMock = vi.fn((_csrf: string, input: { threadId: string; read: boolean }) =>
+  prepareCreatedReadIntent(input),
 );
-const markUnreadMock = vi.fn<() => Promise<Res>>(() =>
-  Promise.resolve({ ok: true, value: { threadId: "t1" } }),
-);
+const markReadMock = vi.fn((_csrf: string, input: ReadInput) => applyReadIntent(input));
+const markUnreadMock = vi.fn((_csrf: string, input: ReadInput) => applyUnreadIntent(input));
 vi.mock("./readActions", () => ({
-  markThreadReadAction: (...a: unknown[]) => markReadMock(...(a as [])),
-  markThreadUnreadAction: (...a: unknown[]) => markUnreadMock(...(a as [])),
+  markThreadReadAction: (csrf: string, input: ReadInput) => markReadMock(csrf, input),
+  markThreadUnreadAction: (csrf: string, input: ReadInput) => markUnreadMock(csrf, input),
+}));
+vi.mock("./readIntentActions", () => ({
+  prepareThreadReadIntentAction: (csrf: string, input: { threadId: string; read: boolean }) =>
+    prepareReadMock(csrf, input),
+  reconcileThreadReadIntentAction: (_csrf: string, input: ReadInput) =>
+    reconcileAppliedReadIntent(input),
 }));
 const setFollowUpStatusMock = vi.fn<() => Promise<Res>>(() =>
   Promise.resolve({ ok: true, value: { threadId: "t1" } }),
@@ -95,6 +111,7 @@ import { ThreadPane } from "./ThreadPane";
 
 afterEach(() => {
   cleanup();
+  prepareReadMock.mockClear();
   markReadMock.mockClear();
   markUnreadMock.mockClear();
   setFollowUpStatusMock.mockClear();
@@ -114,22 +131,31 @@ describe("ThreadPane", () => {
       trash: false,
     };
     render(<ThreadPane threadId="t1" trackingBadge={null} />);
+    expect(prepareReadMock).not.toHaveBeenCalled();
     expect(markReadMock).not.toHaveBeenCalled();
     expect(screen.getByRole("button", { name: "Mark as unread" })).toBeDisabled();
   });
-  it("marks the thread read exactly once on render, even across a rerender", () => {
+  it("marks the thread read exactly once on render, even across a rerender", async () => {
     const { rerender } = render(<ThreadPane threadId="t1" trackingBadge={null} />);
-    expect(markReadMock).toHaveBeenCalledTimes(1);
-    expect(markReadMock).toHaveBeenCalledWith("csrf", { threadId: "t1" });
+    await waitFor(() => expect(markReadMock).toHaveBeenCalledTimes(1));
+    expect(prepareReadMock).toHaveBeenCalledExactlyOnceWith("csrf", { threadId: "t1", read: true });
+    expect(markReadMock).toHaveBeenCalledWith("csrf", {
+      threadId: "t1",
+      operationId: READ_OPERATION_ID,
+    });
 
     // Force a second effect pass with the SAME threadId (e.g. a Composer send triggering
     // refetch()). The once-guard must still hold: no second call.
     rerender(<ThreadPane threadId="t1" trackingBadge={null} />);
+    expect(prepareReadMock).toHaveBeenCalledTimes(1);
     expect(markReadMock).toHaveBeenCalledTimes(1);
   });
 
   it("does not invalidate the unread count when the mark-read action fails", async () => {
-    markReadMock.mockResolvedValueOnce({ ok: false, error: "boom" });
+    markReadMock.mockResolvedValueOnce({
+      ok: false,
+      error: { id: ERROR_IDS.MAIL_CAPABILITY_DENIED },
+    });
     render(<ThreadPane threadId="t1" trackingBadge={null} />);
     await waitFor(() => expect(markReadMock).toHaveBeenCalledTimes(1));
     expect(invalidateUnreadCount).not.toHaveBeenCalled();
@@ -150,13 +176,22 @@ describe("ThreadPane", () => {
     invalidateUnreadCount.mockClear();
 
     fireEvent.click(screen.getByRole("button", { name: "Mark as unread" }));
-    expect(markUnreadMock).toHaveBeenCalledWith("csrf", { threadId: "t1" });
+    await waitFor(() =>
+      expect(markUnreadMock).toHaveBeenCalledWith("csrf", {
+        threadId: "t1",
+        operationId: UNREAD_OPERATION_ID,
+      }),
+    );
+    expect(prepareReadMock).toHaveBeenCalledWith("csrf", { threadId: "t1", read: false });
     await waitFor(() => expect(invalidateInboxList).toHaveBeenCalled());
     await waitFor(() => expect(invalidateUnreadCount).toHaveBeenCalled());
   });
 
   it("shows an inline error and skips invalidation when marking unread fails", async () => {
-    markUnreadMock.mockResolvedValueOnce({ ok: false, error: "boom" });
+    markUnreadMock.mockResolvedValueOnce({
+      ok: false,
+      error: { id: ERROR_IDS.MAIL_CAPABILITY_DENIED },
+    });
     render(<ThreadPane threadId="t1" trackingBadge={null} />);
     // Let the mark-read-on-open effect settle so its invalidations aren't mistaken for the click.
     await waitFor(() => expect(invalidateUnreadCount).toHaveBeenCalledTimes(1));
@@ -164,7 +199,9 @@ describe("ThreadPane", () => {
     invalidateInboxList.mockClear();
 
     fireEvent.click(screen.getByRole("button", { name: "Mark as unread" }));
-    expect(await screen.findByText(STRINGS.inbox.errorMarkUnread)).toBeInTheDocument();
+    expect(
+      await screen.findByText(emailMessagesForLocale("en").remoteActions.readStatusFailed),
+    ).toBeInTheDocument();
     expect(invalidateInboxList).not.toHaveBeenCalled();
     expect(invalidateUnreadCount).not.toHaveBeenCalled();
   });

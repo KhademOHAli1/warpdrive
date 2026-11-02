@@ -1,0 +1,812 @@
+{
+  "owner": "MAIL",
+  "state": "UNFINISHED PRESERVATION - NOT FOR DEPLOYMENT",
+  "originalHead": "43a5fb4d2a6be7bbbd260855a6a8e1ce55fbf3c1",
+  "branch": "codex/preserve-mail-20261102",
+  "sourceFiles": [
+    {
+      "path": "docs/handoffs/MAIL-SAFE-STOP-20261102.md",
+      "mode": 420,
+      "sha256": "d41ebe26c63bb92e4aff772931a2d68e8a900c354c82a995203e33d49c6a9df5",
+      "bytes": 4691,
+      "status": "??"
+    },
+    {
+      "path": "docs/handoffs/mail-safe-stop-allowlist-20261102.json",
+      "mode": 420,
+      "sha256": "8a064ab3bf571b6ec818f9c22d234aa170e303e11cea9471d7c48a19d149ce61",
+      "bytes": 38008,
+      "status": "??"
+    },
+    {
+      "path": "docs/handoffs/mail-source-proposals-20261102/MANIFEST.json",
+      "mode": 420,
+      "sha256": "b6aff287d9e68fd18b018411dba89d604237d85f405ed5bd09942fc93870d808",
+      "bytes": 7946,
+      "status": "??"
+    },
+    {
+      "path": "docs/handoffs/mail-source-proposals-20261102/browser-fixtures/mailBrowserFixtures.prepared.ts.source",
+      "mode": 420,
+      "sha256": "6873f39ae041fde62496651a49be622e3bb384b49ea7794c9d2c152090abae83",
+      "bytes": 8029,
+      "status": "??"
+    },
+    {
+      "path": "docs/handoffs/mail-source-proposals-20261102/protocol-fixtures/mailProtocolImap.ts.source",
+      "mode": 420,
+      "sha256": "38091878fcfd159d1df53d5643df5c0383497ff4f35036dd486b12b507a5d889",
+      "bytes": 7867,
+      "status": "??"
+    },
+    {
+      "path": "docs/handoffs/mail-source-proposals-20261102/protocol-fixtures/mailProtocolSmtp.ts.source",
+      "mode": 420,
+      "sha256": "26eefe916c7722abbe235223b35af730409d8e45faba661d16faa17da7bc0dab",
+      "bytes": 3636,
+      "status": "??"
+    },
+    {
+      "path": "docs/handoffs/mail-source-proposals-20261102/read-intents/0102_mail_read_intents.sql.source",
+      "mode": 420,
+      "sha256": "390fdee27409509e046352ab1f575a2a9a74a7a1170a197ff0beed7a8b8ad124",
+      "bytes": 5944,
+      "status": "??"
+    },
+    {
+      "path": "docs/handoffs/mail-source-proposals-20261102/read-intents/prepared/readIntentAdmission.integration.test.ts.source",
+      "mode": 420,
+      "sha256": "d675269aafc1d57bedae15e06d78071f41ffbcca0114023b0003047a23e2609a",
+      "bytes": 3466,
+      "status": "??"
+    },
+    {
+      "path": "docs/handoffs/mail-source-proposals-20261102/read-intents/prepared/readIntentConstraints.integration.test.ts.source",
+      "mode": 420,
+      "sha256": "733dfa9e4613224e9395daf135ed8995021db01459fdf46c4a77c506ec3ad2f3",
+      "bytes": 8227,
+      "status": "??"
+    },
+    {
+      "path": "docs/handoffs/mail-source-proposals-20261102/read-intents/prepared/readIntentConstraints.test-fixtures.ts.source",
+      "mode": 420,
+      "sha256": "1d02797a760da3472bd75ebff345e237fca42e38c08f46f2d4139ca3cda4a5ec",
+      "bytes": 4428,
+      "status": "??"
+    },
+    {
+      "path": "docs/handoffs/mail-source-proposals-20261102/read-intents/prepared/readIntentImap.integration.test.ts.source",
+      "mode": 420,
+      "sha256": "6b4b478a3ef262e4492012ba54eca1adce132f12843e6dff94c9472bace7999b",
+      "bytes": 12938,
+      "status": "??"
+    },
+    {
+      "path": "docs/handoffs/mail-source-proposals-20261102/read-intents/prepared/readIntentLifecycle.integration.test.ts.source",
+      "mode": 420,
+      "sha256": "1aeef0244653d858113f8e1b16df6cde447119fe6ae0c214fc683e88bd7c13f6",
+      "bytes": 12453,
+      "status": "??"
+    },
+    {
+      "path": "docs/handoffs/mail-source-proposals-20261102/read-intents/prepared/readIntentRemoteAuthority.integration.test.ts.source",
+      "mode": 420,
+      "sha256": "d3171a50ba1f6dd8033db4bede1b169678f0f7e666f232765c47107972059105",
+      "bytes": 9181,
+      "status": "??"
+    },
+    {
+      "path": "docs/handoffs/mail-source-proposals-20261102/read-intents/prepared/readIntentTruncate.integration.test.ts.source",
+      "mode": 420,
+      "sha256": "96b8e53ccaf2c6c2fc9fc7dfdfbc5e586cc49349d64a5cf7fdcb3a5bfe5553ff",
+      "bytes": 5601,
+      "status": "??"
+    },
+    {
+      "path": "docs/handoffs/mail-source-proposals-20261102/read-intents/proposals/emailReadIntents-model-note.md.source",
+      "mode": 420,
+      "sha256": "7c3fa52f1522597c326bd7b07606419dea32ba0b73e0109d2ec40818b9b0d696",
+      "bytes": 2501,
+      "status": "??"
+    },
+    {
+      "path": "docs/handoffs/mail-source-proposals-20261102/read-intents/proposals/emailReadIntents.ts.source",
+      "mode": 420,
+      "sha256": "610126876e45020cee2af34cb0f0e28fb16e22f72916e6a5c1740c3c94b8fe77",
+      "bytes": 4529,
+      "status": "??"
+    },
+    {
+      "path": "src/app/(app)/settings/email-sync/MailboxConnectionsClient.test.tsx",
+      "mode": 420,
+      "sha256": "639b2ccc85ff4cc94a421e9428b10a89736a30d8460f48ba44854b1b73e036d6",
+      "bytes": 6105,
+      "status": " M"
+    },
+    {
+      "path": "src/db/mailMigrationQualification.integration.test.ts",
+      "mode": 420,
+      "sha256": "e32f5bfc86fc91f3bff432715be9887e5b65036fe1365556ecf79e73cc806395",
+      "bytes": 6813,
+      "status": "??"
+    },
+    {
+      "path": "src/db/mailMigrationQualification.md",
+      "mode": 420,
+      "sha256": "c68732d2a2cbdca086401faa5afda8dcd4720820f6876e11fb618a5ccd9bc862",
+      "bytes": 6346,
+      "status": "??"
+    },
+    {
+      "path": "src/db/mailMigrationQualification.test-helpers.ts",
+      "mode": 420,
+      "sha256": "b35e98dab43bfa266b06d1dde5f9b00fa735a46fa1bb19031fbc8b08a6df86f3",
+      "bytes": 10114,
+      "status": "??"
+    },
+    {
+      "path": "src/db/mailMigrationQualification.vitest.config.ts",
+      "mode": 420,
+      "sha256": "ace7ee33687e2b969ea49f5dfe6dcda29937bb99da46d3ba9123588abb17516c",
+      "bytes": 582,
+      "status": "??"
+    },
+    {
+      "path": "src/db/mailMigrationQualificationAlias.ts",
+      "mode": 420,
+      "sha256": "5de114405ceacab6c37c8edc77afe99fe5074ea05f80b034267e1c3e1e156f64",
+      "bytes": 6040,
+      "status": "??"
+    },
+    {
+      "path": "src/db/mailMigrationQualificationAuth.ts",
+      "mode": 420,
+      "sha256": "d9b733cca0548473e67d89657920eafe9f32309a73801f1595ea9b1252efd540",
+      "bytes": 3467,
+      "status": "??"
+    },
+    {
+      "path": "src/db/mailMigrationQualificationBaseline.ts",
+      "mode": 420,
+      "sha256": "5837fa43043547134ad127c3af27bf676bf88cf416eea9f98adf8094874d5680",
+      "bytes": 8820,
+      "status": "??"
+    },
+    {
+      "path": "src/db/mailMigrationQualificationDeadline.ts",
+      "mode": 420,
+      "sha256": "674b7e89f31c25c451bc4b706242be6252c3cc6c6fddce761d2f7be713050a16",
+      "bytes": 4211,
+      "status": "??"
+    },
+    {
+      "path": "src/db/mailMigrationQualificationFixtures.ts",
+      "mode": 420,
+      "sha256": "df98995acea91ee8bcdeb06b3a80ab1eb916d62e55e504e43d75d2ce19d438ab",
+      "bytes": 11351,
+      "status": "??"
+    },
+    {
+      "path": "src/db/mailMigrationQualificationGuards.ts",
+      "mode": 420,
+      "sha256": "2922bd1facf864ec39d72ffbbd6248f4c9be196846de8082dbf56bcf53cd4341",
+      "bytes": 4547,
+      "status": "??"
+    },
+    {
+      "path": "src/db/mailMigrationQualificationNative.ts",
+      "mode": 420,
+      "sha256": "49b917a631815d73ca08c490e4023fa72f65b40f0bba1e69e070cebc4370445c",
+      "bytes": 9966,
+      "status": "??"
+    },
+    {
+      "path": "src/db/mailMigrationQualificationSafety.ts",
+      "mode": 420,
+      "sha256": "59c313b366f1d30ad0b5ab2abb6eb1897e803c5049dcc4bdcc866fbe8d5a04e0",
+      "bytes": 3562,
+      "status": "??"
+    },
+    {
+      "path": "src/db/mailMigrationQualificationSnapshot.ts",
+      "mode": 420,
+      "sha256": "3f4f65e3846a60743380651a27107f835b039235e94f14dc54a90cb4dc0b3e87",
+      "bytes": 4470,
+      "status": "??"
+    },
+    {
+      "path": "src/db/mailMigrationQualificationSource.ts",
+      "mode": 420,
+      "sha256": "6e0d17c198a95cd3e8140114ece668396c84a719e24167ac1cbae39812be9ad6",
+      "bytes": 6201,
+      "status": "??"
+    },
+    {
+      "path": "src/features/email/DeliveryReportReview.tsx",
+      "mode": 420,
+      "sha256": "3e922a9b3d0526c17858547eebb173694c045d02089bfc19661636371f4bf710",
+      "bytes": 10479,
+      "status": " M"
+    },
+    {
+      "path": "src/features/email/DeliveryReportReview.uncertainty.test.tsx",
+      "mode": 420,
+      "sha256": "a8bc3a898ed07f0c51eddbbc5340008e7c2b1eee8d6db4c4a634b5d3a58ad39d",
+      "bytes": 5736,
+      "status": "??"
+    },
+    {
+      "path": "src/features/email/DeliveryReportReviewError.tsx",
+      "mode": 420,
+      "sha256": "a76bd41619c74738847cd2e45d62f7d3cc8c9034c5e39edf65a89c86d928f58e",
+      "bytes": 727,
+      "status": "??"
+    },
+    {
+      "path": "src/features/email/DeliveryReportsPanel.test.tsx",
+      "mode": 420,
+      "sha256": "8e2cbb991a864acf6ac80e0cc4be66a9a775c62915edd7a90d99dff290fa64be",
+      "bytes": 12690,
+      "status": " M"
+    },
+    {
+      "path": "src/features/email/InboxWorkspace.tsx",
+      "mode": 420,
+      "sha256": "065ae7cc0feb5ed768cf662c0af80b74dd262b6aa7dd5272964ffa62b687079b",
+      "bytes": 9610,
+      "status": " M"
+    },
+    {
+      "path": "src/features/email/InboxWorkspaceToolbar.tsx",
+      "mode": 420,
+      "sha256": "cac46752947426deb9fca7386ef0172a0e1c3d6b349acf0433647a0da46b8536",
+      "bytes": 7780,
+      "status": " M"
+    },
+    {
+      "path": "src/features/email/PrivateIntakeAffordances.test.tsx",
+      "mode": 420,
+      "sha256": "b04a92bfb8524ca7e70a4de34d84b2820e5f596199f2f1ed825c731d1334c883",
+      "bytes": 8284,
+      "status": " M"
+    },
+    {
+      "path": "src/features/email/PrivateIntakeWorkspace.test.tsx",
+      "mode": 420,
+      "sha256": "66632957e937c04f3393c8319c5aa293277468fb528611fd9a3a63b77045dd10",
+      "bytes": 8554,
+      "status": " M"
+    },
+    {
+      "path": "src/features/email/ReaderDeliveryReports.uncertainty.test.tsx",
+      "mode": 420,
+      "sha256": "3b07ffc6b1bb03a78a6828ae25a79d962913160dd62a9190e546008b5bd98387",
+      "bytes": 4533,
+      "status": "??"
+    },
+    {
+      "path": "src/features/email/ThreadList.test.tsx",
+      "mode": 420,
+      "sha256": "118b6138708895d5930ff4d408afa765e222873aa2e376cc215285ccda01d701",
+      "bytes": 15194,
+      "status": " M"
+    },
+    {
+      "path": "src/features/email/ThreadList.tsx",
+      "mode": 420,
+      "sha256": "da18f5046f98b5398b305a7dcf1037c566e32ea66f803dc46252c9acc2318a75",
+      "bytes": 13390,
+      "status": " M"
+    },
+    {
+      "path": "src/features/email/ThreadPane.privacy.test.tsx",
+      "mode": 420,
+      "sha256": "ee1831ca8af9932bf668cd7292195345f032ffd7a7693b9c5e1db08b7174728d",
+      "bytes": 4515,
+      "status": " M"
+    },
+    {
+      "path": "src/features/email/ThreadPane.privateIntake.test.tsx",
+      "mode": 420,
+      "sha256": "fdde5f67ed28114f03f9a2090676ce503bab617db99d5f6ff8a8c5c07ede1b28",
+      "bytes": 11567,
+      "status": " M"
+    },
+    {
+      "path": "src/features/email/ThreadPane.readIntent.test.fixtures.ts",
+      "mode": 420,
+      "sha256": "bc3b01e2c654e3aaee17068cb7df25bc86f5171fcb87893176d7b6c8b49941d5",
+      "bytes": 1895,
+      "status": "??"
+    },
+    {
+      "path": "src/features/email/ThreadPane.readIntent.test.tsx",
+      "mode": 420,
+      "sha256": "6e50d37306b10ba5e6a2fcdf3e6d1d8cea2f1ba715130c2dceba41f3b07c7d81",
+      "bytes": 9283,
+      "status": "??"
+    },
+    {
+      "path": "src/features/email/ThreadPane.readOutcomeProof.test.tsx",
+      "mode": 420,
+      "sha256": "f12fcd1513144dcead9c46ddfde12785a7ce1a072c08cc7949233a89ee7b56c0",
+      "bytes": 4669,
+      "status": "??"
+    },
+    {
+      "path": "src/features/email/ThreadPane.readReceipt.test.tsx",
+      "mode": 420,
+      "sha256": "6708828cef0ab2eefd036db443cb0042ae1727c2cb4e891dacff2ee22fb3baad",
+      "bytes": 5380,
+      "status": "??"
+    },
+    {
+      "path": "src/features/email/ThreadPane.readRefreshDeadline.test.tsx",
+      "mode": 420,
+      "sha256": "135e7dd9f36b8a9a00f6da8fbce80e4984ab38d022f0b8abcc46dd88970773e6",
+      "bytes": 4209,
+      "status": "??"
+    },
+    {
+      "path": "src/features/email/ThreadPane.readState.test.fixtures.tsx",
+      "mode": 420,
+      "sha256": "8292c4d8b327c241e5d612ef102ebfdc6ede70b6f965fba395105a40659e4ee8",
+      "bytes": 7582,
+      "status": "??"
+    },
+    {
+      "path": "src/features/email/ThreadPane.readStateRecovery.test.tsx",
+      "mode": 420,
+      "sha256": "e562edeeb1674de7118bd33c6fec35e676b6ae53a8412c3c9595e951a371c313",
+      "bytes": 8239,
+      "status": "??"
+    },
+    {
+      "path": "src/features/email/ThreadPane.readerColumn.test.tsx",
+      "mode": 420,
+      "sha256": "6e26904c6bfb3b32c6a3ef04762fb3f65f89f1ee2c4042ce066128dd145b33ed",
+      "bytes": 5525,
+      "status": " M"
+    },
+    {
+      "path": "src/features/email/ThreadPane.recordTimelines.test.tsx",
+      "mode": 420,
+      "sha256": "542d870424af554daf14b08bc08ece4f8c746f07bf1dceb53656dc552a9c035b",
+      "bytes": 4575,
+      "status": " M"
+    },
+    {
+      "path": "src/features/email/ThreadPane.test.tsx",
+      "mode": 420,
+      "sha256": "00e36996b3ecb06ac9cadbf9dac26bb194457cf2e3aaa05f5a8fe4e8d396251d",
+      "bytes": 13853,
+      "status": " M"
+    },
+    {
+      "path": "src/features/email/ThreadPane.tsx",
+      "mode": 420,
+      "sha256": "5d8a5399bf2a7b17e6c7659b7ebaa9c014bb622df94ea8f44981739907404413",
+      "bytes": 12395,
+      "status": " M"
+    },
+    {
+      "path": "src/features/email/composer/SendReviewNotice.test.tsx",
+      "mode": 420,
+      "sha256": "1cdd73e534b3a22f49fdc0b72bd716a239d208798466de4e15a92cf308015c27",
+      "bytes": 4717,
+      "status": " M"
+    },
+    {
+      "path": "src/features/email/composer/SendReviewNotice.tsx",
+      "mode": 420,
+      "sha256": "c75882e84f4934529968329dfe3a9bb480781f9988025b48fb5b6512b49165d3",
+      "bytes": 4147,
+      "status": " M"
+    },
+    {
+      "path": "src/features/email/composer/messages/composerMailbox.de.json",
+      "mode": 420,
+      "sha256": "a820851499f40839581aca1763863ce138f4830f8f2598e9ae615774a3b63dc1",
+      "bytes": 5043,
+      "status": " M"
+    },
+    {
+      "path": "src/features/email/composer/messages/composerMailbox.en.json",
+      "mode": 420,
+      "sha256": "828fbd8991abf296391d10aaae73883ac692cd5df1afcfe0cfc3944bf446e405",
+      "bytes": 4252,
+      "status": " M"
+    },
+    {
+      "path": "src/features/email/composer/messages/composerMailbox.fa.json",
+      "mode": 420,
+      "sha256": "658404e4974a55f75bf46ba48bc92656d866ec9d36f6f7bb879be40fbf59acb9",
+      "bytes": 6515,
+      "status": " M"
+    },
+    {
+      "path": "src/features/email/connections/MailboxConnectionsPanel.test.tsx",
+      "mode": 420,
+      "sha256": "3625cfccdfa464f637f89de54448f23afe0bb778d493b7ca911f4da37f2e11ea",
+      "bytes": 11038,
+      "status": " M"
+    },
+    {
+      "path": "src/features/email/connections/MailboxHubEntry.test.tsx",
+      "mode": 420,
+      "sha256": "f1df4b2fdd83fae62d8a9b60b59a73362cc42e889f623b4557a9d25dcd5e59d4",
+      "bytes": 1721,
+      "status": "??"
+    },
+    {
+      "path": "src/features/email/connections/MailboxManagementEntry.tsx",
+      "mode": 420,
+      "sha256": "f4d7b35078cb7b0782d3f66745ae8ff48a8dbecb16221e2d63ecf3d84adcdb07",
+      "bytes": 769,
+      "status": "??"
+    },
+    {
+      "path": "src/features/email/connections/messages/mailConnections.de.json",
+      "mode": 420,
+      "sha256": "e62cbff2399da6c2417a31434df5688d38e66b28c4666b87501169ebaeaeeb9c",
+      "bytes": 9056,
+      "status": " M"
+    },
+    {
+      "path": "src/features/email/connections/messages/mailConnections.en.json",
+      "mode": 420,
+      "sha256": "59bd326ee4693f4353042192668f806bc1488cd60d0607a8cc52dc83a0b573b6",
+      "bytes": 7954,
+      "status": " M"
+    },
+    {
+      "path": "src/features/email/connections/messages/mailConnections.fa.json",
+      "mode": 420,
+      "sha256": "7b9da15c2f2d01555b341b5abeb6884e5cd5681f9ecca1cff4212cccd1564317",
+      "bytes": 11672,
+      "status": " M"
+    },
+    {
+      "path": "src/features/email/emailReads.ts",
+      "mode": 420,
+      "sha256": "a268de8c12c8535cdeaccf54f8ecff17733c23a47f738355f0de07b4e633b0f0",
+      "bytes": 10361,
+      "status": " M"
+    },
+    {
+      "path": "src/features/email/imapThreadOperations.actions.integration.test.ts",
+      "mode": 420,
+      "sha256": "9440f46dd51e4814ad2d43816ded5a769cea28c997ee2bc6543e19777d1954e3",
+      "bytes": 8415,
+      "status": " M"
+    },
+    {
+      "path": "src/features/email/imapThreadOperations.test-helpers.ts",
+      "mode": 420,
+      "sha256": "497335f525f2295049cdd31802e6bb39d3324118bcaddcdda39c6193de5b01ae",
+      "bytes": 1495,
+      "status": " M"
+    },
+    {
+      "path": "src/features/email/imapThreadOperations.ts",
+      "mode": 420,
+      "sha256": "a34559efe0f1bdb7d04b7131c481f25bd366ee36af03e7b8462d1782d959b856",
+      "bytes": 6442,
+      "status": " M"
+    },
+    {
+      "path": "src/features/email/imapThreadOperationsTypes.ts",
+      "mode": 420,
+      "sha256": "86252ac8ea07dcbc249759c52fe7f81774e28dc3dfa65adf3430e3134a9a27e0",
+      "bytes": 1540,
+      "status": " M"
+    },
+    {
+      "path": "src/features/email/mailProtocolIdentity.integration.test.ts",
+      "mode": 420,
+      "sha256": "16670e38460249af5133254962e6fcdf3d93737c1189ed2d6e21e27a92eff674",
+      "bytes": 6462,
+      "status": "??"
+    },
+    {
+      "path": "src/features/email/messages/deliveryReports.de.json",
+      "mode": 420,
+      "sha256": "9d31749d41fe4d8e3726feb2ae05be6b1c3a0e35366f210db3d287ed3988cade",
+      "bytes": 2500,
+      "status": " M"
+    },
+    {
+      "path": "src/features/email/messages/deliveryReports.en.json",
+      "mode": 420,
+      "sha256": "581b8a91aa0a31cef5c9d9dd459faf734e28192b951b06b0b8d3c518622630dd",
+      "bytes": 2132,
+      "status": " M"
+    },
+    {
+      "path": "src/features/email/messages/deliveryReports.fa.json",
+      "mode": 420,
+      "sha256": "f74fa51a6d7e90cce849ff4ddf995a324beba4894d42b4c1c0c59696ae35e904",
+      "bytes": 3342,
+      "status": " M"
+    },
+    {
+      "path": "src/features/email/messages/email.de.json",
+      "mode": 420,
+      "sha256": "8f2c1e34831da177cd47b01b465cc11f989dd1aab2129a563a439491e0b639f9",
+      "bytes": 18659,
+      "status": " M"
+    },
+    {
+      "path": "src/features/email/messages/email.en.json",
+      "mode": 420,
+      "sha256": "9e85047736436f8e5176097a389ba5211d4824e4f00ad7c779cfd48e75075e9c",
+      "bytes": 15748,
+      "status": " M"
+    },
+    {
+      "path": "src/features/email/messages/email.fa.json",
+      "mode": 420,
+      "sha256": "30696778d214ec44629ea84a2a14a9b0cbd4b86743270f58dd4b30f3d3d3a2f0",
+      "bytes": 23211,
+      "status": " M"
+    },
+    {
+      "path": "src/features/email/privateIntakeLocalRead.cancel.integration.test.ts",
+      "mode": 420,
+      "sha256": "2bf9788f90643f3b9dd1c76ed76c2cb8c294ac1c459ccbb454aa8aa6a945fc83",
+      "bytes": 12297,
+      "status": "??"
+    },
+    {
+      "path": "src/features/email/privateIntakeLocalRead.checkout.integration.test.ts",
+      "mode": 420,
+      "sha256": "057bf2a47889a55a12e7b39f5557d981658b3444b99c5bd0864e80c3414dc077",
+      "bytes": 7355,
+      "status": "??"
+    },
+    {
+      "path": "src/features/email/privateIntakeLocalRead.commit.integration.test.ts",
+      "mode": 420,
+      "sha256": "6769024d88e0703bf3c407527dc2b0af9c1eb356d95337744acacade852c4ce8",
+      "bytes": 8999,
+      "status": "??"
+    },
+    {
+      "path": "src/features/email/privateIntakeLocalRead.commit.test.ts",
+      "mode": 420,
+      "sha256": "e0ca07495a1205c669bff2d4831a431d4d542ceda71d92c9c3be30c5f887b253",
+      "bytes": 6860,
+      "status": "??"
+    },
+    {
+      "path": "src/features/email/privateIntakeLocalRead.integration.test.ts",
+      "mode": 420,
+      "sha256": "e68f31a16e2fb1457b2baaa728ffb552249727b2ffc8ee8ae43a920b1f5dfe4f",
+      "bytes": 12213,
+      "status": " M"
+    },
+    {
+      "path": "src/features/email/privateIntakeLocalRead.race.integration.test.ts",
+      "mode": 420,
+      "sha256": "a6f9e1e84bfff219470eba0b7d37c4ec573d54f87522c3376dcc2207ed278cf7",
+      "bytes": 11722,
+      "status": " M"
+    },
+    {
+      "path": "src/features/email/privateIntakeLocalRead.ts",
+      "mode": 420,
+      "sha256": "4ced21fc6cc631832d1dfc92c61743deacf86850cc54e9aaff8b3f4527914738",
+      "bytes": 3033,
+      "status": " M"
+    },
+    {
+      "path": "src/features/email/privateIntakeLocalReadConnection.ts",
+      "mode": 420,
+      "sha256": "16290a32530c31b2ec10f640f9c0a5a1371422021e587aece843126a2f029e74",
+      "bytes": 9033,
+      "status": "??"
+    },
+    {
+      "path": "src/features/email/privateIntakeLocalReadLifecycle.ts",
+      "mode": 420,
+      "sha256": "ee26b85cd451e9ad4873ed0f90a521f4b519f1e1740d3dc1f955b3004daff6bb",
+      "bytes": 3089,
+      "status": "??"
+    },
+    {
+      "path": "src/features/email/privateIntakeLocalReadLock.ts",
+      "mode": 420,
+      "sha256": "7667124ee16bec544e5541a76a0689592343a112a4c5c7844a546c9efb56b8cc",
+      "bytes": 1798,
+      "status": "??"
+    },
+    {
+      "path": "src/features/email/privateIntakeLocalReadTransaction.ts",
+      "mode": 420,
+      "sha256": "b7966a19b5fc9be3fb5de99bba0085e0a0b0d934fb0e58374f719b08dfea3c92",
+      "bytes": 7856,
+      "status": "??"
+    },
+    {
+      "path": "src/features/email/readActions.boundary.test.ts",
+      "mode": 420,
+      "sha256": "05b24815cd2ea46a24541ff97215ee45b57d53dc6c2b9f74073afeef70768f43",
+      "bytes": 4592,
+      "status": "??"
+    },
+    {
+      "path": "src/features/email/readActions.test.ts",
+      "mode": 420,
+      "sha256": "34ed26354ee7647ab6023fecda3dd86c27afeb54c269cb6ec9a796cadb16bc50",
+      "bytes": 8639,
+      "status": " M"
+    },
+    {
+      "path": "src/features/email/readActions.ts",
+      "mode": 420,
+      "sha256": "22458e706b6464f1394d151bdb9068b4bc81e69c3a41daf3e1f1e95349796372",
+      "bytes": 2279,
+      "status": " M"
+    },
+    {
+      "path": "src/features/email/readIntentActionContext.ts",
+      "mode": 420,
+      "sha256": "d7e8ad79be5192e643dff325aa7f66559ccc5a7ba795b6ad5d0c877991056c2c",
+      "bytes": 871,
+      "status": "??"
+    },
+    {
+      "path": "src/features/email/readIntentActions.ts",
+      "mode": 420,
+      "sha256": "3510e81ab8e5cba552b4bb7c1df095b36fc8c1a6d52f9f4d121b83d3158e3513",
+      "bytes": 2227,
+      "status": "??"
+    },
+    {
+      "path": "src/features/email/readIntentExecution.ts",
+      "mode": 420,
+      "sha256": "afdb3f51cd9f7371a4522138a33d79a0947296e1b968775b83d70b79457e9965",
+      "bytes": 5977,
+      "status": "??"
+    },
+    {
+      "path": "src/features/email/readIntentLifecycle.ts",
+      "mode": 420,
+      "sha256": "86ef691fcece7accf78d484aa1bc0bb4583809a53f8dcf3194dc7f66b2467c9e",
+      "bytes": 3398,
+      "status": "??"
+    },
+    {
+      "path": "src/features/email/readIntentLocalMarker.ts",
+      "mode": 420,
+      "sha256": "cab33d8940cb7ab4ec84816e9cde91d90ed59f004c19b6efab21557917188899",
+      "bytes": 2931,
+      "status": "??"
+    },
+    {
+      "path": "src/features/email/readIntentRemoteFailure.ts",
+      "mode": 420,
+      "sha256": "5552569411574defe18e5b6ec48afd9f43fd593c59fb809ee93930f43622081d",
+      "bytes": 2320,
+      "status": "??"
+    },
+    {
+      "path": "src/features/email/readIntentRemoteReceipt.ts",
+      "mode": 420,
+      "sha256": "cd87c2e6294a7bcc6a82b3d56edfaf9942f29876b8da81f46957fb894db919b4",
+      "bytes": 3859,
+      "status": "??"
+    },
+    {
+      "path": "src/features/email/readIntentRemoteResult.test.ts",
+      "mode": 420,
+      "sha256": "5157df684792f4df6ec54f227fe50da62be128daa7285f49099f98a807b1de9c",
+      "bytes": 2236,
+      "status": "??"
+    },
+    {
+      "path": "src/features/email/readIntentRemoteResult.ts",
+      "mode": 420,
+      "sha256": "bb79438ea7ede56cf701d3b6bf646999ce90af8703452842d36fee82d5bdc69a",
+      "bytes": 1155,
+      "status": "??"
+    },
+    {
+      "path": "src/features/email/readIntentRemoteSession.ts",
+      "mode": 420,
+      "sha256": "d35bf6e464b2ca03f3256bb6566f35b077b878b7d9355b86812f7d3f051c8420",
+      "bytes": 2052,
+      "status": "??"
+    },
+    {
+      "path": "src/features/email/readIntentRows.test.ts",
+      "mode": 420,
+      "sha256": "f88114441f9473469017608ffe79ded69f02a99c1f4982e92193be46c45bcbf0",
+      "bytes": 3236,
+      "status": "??"
+    },
+    {
+      "path": "src/features/email/readIntentRows.ts",
+      "mode": 420,
+      "sha256": "d3f9f27d957e7a3556dda7dcf89ba2c4e8b19bec0008450a78be48c8b531870a",
+      "bytes": 2371,
+      "status": "??"
+    },
+    {
+      "path": "src/features/email/readIntentScope.ts",
+      "mode": 420,
+      "sha256": "ee043a1006103cd90c3266ac7635559a77a55c7110c5be5f63d9d2fa0f5ee337",
+      "bytes": 3615,
+      "status": "??"
+    },
+    {
+      "path": "src/features/email/readIntentStore.ts",
+      "mode": 420,
+      "sha256": "620e0bc7e2b1084d1376fa3b6713a23a97e987eef193b9a2ef91094d11828988",
+      "bytes": 3631,
+      "status": "??"
+    },
+    {
+      "path": "src/features/email/readIntentTransitions.ts",
+      "mode": 420,
+      "sha256": "dc63463d8a38cb53b0a8d15a2eabb14bf36eb04e50450d228753486a8c265484",
+      "bytes": 3377,
+      "status": "??"
+    },
+    {
+      "path": "src/features/email/readIntentTypes.ts",
+      "mode": 420,
+      "sha256": "49e56c6116abed56439b98e67198dba7eabf8d554c8a4ef4725dd66f83c38f53",
+      "bytes": 1144,
+      "status": "??"
+    },
+    {
+      "path": "src/features/email/readIntents.ts",
+      "mode": 420,
+      "sha256": "6e25355218968284fab42b3f8fbea0bdfadf7ca6123a5872b41897b6745452b7",
+      "bytes": 1505,
+      "status": "??"
+    },
+    {
+      "path": "src/features/email/threadReadIntent.client.ts",
+      "mode": 420,
+      "sha256": "99535bb9834f90e19ab1753f48be23b1f77992a3cef9e8210bd2ad141fb446ab",
+      "bytes": 5064,
+      "status": "??"
+    },
+    {
+      "path": "src/features/email/threadReadObservation.integration.test.ts",
+      "mode": 420,
+      "sha256": "a5c9be6dc3848bd4c9985fec94c1bbe45d330fb604a3a64510a77ff9abd33e54",
+      "bytes": 3951,
+      "status": "??"
+    },
+    {
+      "path": "src/features/email/useBulkThreadReadState.ts",
+      "mode": 420,
+      "sha256": "74b2e303867c825958c6079d3c018fb21914e4027f23db9475cd736fafd282d2",
+      "bytes": 7659,
+      "status": "??"
+    },
+    {
+      "path": "src/features/email/useThreadReadState.ts",
+      "mode": 420,
+      "sha256": "296dfdac59c71479bc475d18e1739daed57a4c6acfc02e8ebc496a3247aa9275",
+      "bytes": 7179,
+      "status": "??"
+    },
+    {
+      "path": "src/features/integrations/IntegrationHub.tsx",
+      "mode": 420,
+      "sha256": "ec83e31a93d78e25dd6e18ad1f93a558e3a484ce11fa02f295c659b5e4a626a3",
+      "bytes": 7764,
+      "status": " M"
+    }
+  ],
+  "extraFiles": [],
+  "qualification": "Frozen83 read-recovery packet qualified at recorded cuts: configured types/TL71,199 affected unit passes,6 native regressions. This98-file complete dirty snapshot also preserves protected legacy work outside that qualified83. Socket4 baseline unrun. Final owner safe-stop extended snapshot to114paths:13 inert .source proposals and3 administrative files preserve drafts without activation. All114 owner hashes checked except self-manifest hash computed here; bounded credential scan clear.",
+  "limitations": "UNFINISHED preservation cut at older workspace HEAD. Do not merge wholesale onto main or deploy. Reconcile current main, private migration labels, metadata and real journey acceptance separately. Runtime/dependencies/secrets/raw unreviewed artifacts excluded; exact local evidence remains preserved.",
+  "authorization": "Human safe-stop instruction verified in Integration chat on 2026-11-02; Root sole closer.",
+  "workspace": "/Users/ali/Developer/warpdrive-mail-platform",
+  "createdAt": "2026-11-02T07:28:59.217254+00:00"
+}

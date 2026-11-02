@@ -1,0 +1,132 @@
+-- PRIVATE DRAFT: reserved0102; not canonical or installed.
+-- Native26 exercised the prior draft; this amended TRUNCATE guard is not executed.
+-- MAIL-only operation receipts. execute requires an existing prepared UUID;
+-- missing/expired/deleted IDs are never recreated by execution.
+CREATE TABLE email_read_intents (
+  actor_id uuid NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
+  operation_id uuid NOT NULL DEFAULT gen_random_uuid(),
+  account_id uuid NOT NULL REFERENCES email_accounts(id) ON DELETE RESTRICT,
+  thread_id uuid NOT NULL,
+  mailbox_owner_id uuid NOT NULL,
+  account_provider text NOT NULL CHECK (account_provider IN ('gmail','imap_smtp','microsoft')),
+  connection_generation integer NOT NULL CHECK (connection_generation > 0),
+  private_copy boolean NOT NULL,
+  desired_read boolean NOT NULL,
+  read_mode text NOT NULL CHECK (read_mode IN ('local','imap')),
+  state text NOT NULL DEFAULT 'prepared'
+    CHECK (state IN ('prepared','admitted','applied','denied','cancelled','unknown')),
+  created_at timestamptz NOT NULL,
+  admit_before timestamptz NOT NULL,
+  admitted_at timestamptz,
+  terminal_at timestamptz,
+  dispatch_claim uuid,
+  error_id text,
+  PRIMARY KEY (actor_id,operation_id),
+  FOREIGN KEY (thread_id,account_id) REFERENCES email_threads(id,account_id) ON DELETE RESTRICT,
+  CHECK (admit_before > created_at),
+  CHECK (NOT private_copy OR read_mode='local'),
+  CHECK (read_mode<>'imap' OR (account_provider='imap_smtp' AND mailbox_owner_id=actor_id)),
+  CHECK ((dispatch_claim IS NULL) = (admitted_at IS NULL)),
+  CHECK (state NOT IN ('admitted','applied','unknown') OR dispatch_claim IS NOT NULL),
+  CHECK (state NOT IN ('prepared','cancelled') OR dispatch_claim IS NULL),
+  CHECK ((terminal_at IS NOT NULL) = (state IN ('applied','denied','cancelled'))),
+  CHECK ((error_id IS NOT NULL) = (state IN ('denied','unknown')))
+);
+
+-- The barrier includes preparation: concurrent prepare cannot create two live
+-- commands. INSERT ... ON CONFLICT DO NOTHING is required, not a preflight count.
+CREATE UNIQUE INDEX email_read_intents_unresolved_actor_thread
+  ON email_read_intents (actor_id,thread_id)
+  WHERE state IN ('prepared','admitted','unknown');
+CREATE INDEX email_read_intents_expired_preparations
+  ON email_read_intents (admit_before)
+  WHERE state='prepared';
+CREATE INDEX email_read_intents_account ON email_read_intents (account_id);
+
+CREATE FUNCTION guard_email_read_intent_mutation() RETURNS trigger
+LANGUAGE plpgsql AS $$
+BEGIN
+  IF TG_OP='DELETE' THEN
+    IF OLD.state IN ('admitted','unknown') THEN
+      RAISE EXCEPTION 'unresolved mail read intent cannot be pruned' USING ERRCODE='23514';
+    END IF;
+    RETURN OLD;
+  END IF;
+
+  IF TG_OP='INSERT' THEN
+    IF NEW.state<>'prepared' THEN
+      RAISE EXCEPTION 'mail read intent must begin prepared' USING ERRCODE='23514';
+    END IF;
+    RETURN NEW;
+  END IF;
+
+  IF ROW(NEW.actor_id,NEW.operation_id,NEW.account_id,NEW.thread_id,
+      NEW.mailbox_owner_id,NEW.account_provider,NEW.connection_generation,
+      NEW.private_copy,NEW.desired_read,NEW.read_mode,NEW.created_at,NEW.admit_before)
+    IS DISTINCT FROM
+    ROW(OLD.actor_id,OLD.operation_id,OLD.account_id,OLD.thread_id,
+      OLD.mailbox_owner_id,OLD.account_provider,OLD.connection_generation,
+      OLD.private_copy,OLD.desired_read,OLD.read_mode,OLD.created_at,OLD.admit_before) THEN
+    RAISE EXCEPTION 'immutable mail read intent' USING ERRCODE='23514';
+  END IF;
+
+  IF OLD.state IN ('applied','denied','cancelled') THEN
+    IF NEW IS DISTINCT FROM OLD THEN
+      RAISE EXCEPTION 'terminal mail read receipt' USING ERRCODE='23514';
+    END IF;
+    RETURN NEW;
+  END IF;
+
+  IF OLD.dispatch_claim IS NOT NULL AND
+      ROW(NEW.dispatch_claim,NEW.admitted_at) IS DISTINCT FROM
+      ROW(OLD.dispatch_claim,OLD.admitted_at) THEN
+    RAISE EXCEPTION 'immutable mail read dispatch claim' USING ERRCODE='23514';
+  END IF;
+
+  IF NOT (
+    (OLD.state='prepared' AND NEW.state IN ('prepared','admitted','denied','cancelled')) OR
+    (OLD.state='admitted' AND NEW.state IN ('admitted','applied','denied','unknown')) OR
+    (OLD.state='unknown' AND NEW.state='unknown')
+  ) THEN
+    RAISE EXCEPTION 'invalid mail read intent transition' USING ERRCODE='23514';
+  END IF;
+
+  -- This is an admission cutoff, not a claim that in-flight work has stopped.
+  IF OLD.state='prepared' AND NEW.state='admitted' AND
+      clock_timestamp() >= OLD.admit_before THEN
+    RAISE EXCEPTION 'expired mail read intent admission' USING ERRCODE='23514';
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER email_read_intents_guard_mutation
+  BEFORE INSERT OR UPDATE OR DELETE ON email_read_intents
+  FOR EACH ROW EXECUTE FUNCTION guard_email_read_intent_mutation();
+
+-- TRUNCATE bypasses row DELETE triggers, including through a parent CASCADE.
+-- Its ACCESS EXCLUSIVE lock excludes writers while this statement guard runs.
+CREATE FUNCTION guard_email_read_intent_truncate() RETURNS trigger
+LANGUAGE plpgsql VOLATILE AS $$
+BEGIN
+  -- A zero-length physical heap has no rows, independent of the caller's MVCC snapshot.
+  IF pg_catalog.pg_relation_size(TG_RELID::pg_catalog.regclass,'main')=0 THEN
+    RETURN NULL;
+  END IF;
+
+  -- A nonempty heap cannot be certified empty/terminal from an old transaction snapshot.
+  -- At READ COMMITTED, this VOLATILE function reads after the TRUNCATE lock was acquired.
+  IF pg_catalog.current_setting('transaction_isolation')<>'read committed' THEN
+    RAISE EXCEPTION 'unresolved mail read intent cannot be truncated without fresh visibility'
+      USING ERRCODE='23514';
+  END IF;
+  IF EXISTS (SELECT 1 FROM public.email_read_intents WHERE state IN ('admitted','unknown')) THEN
+    RAISE EXCEPTION 'unresolved mail read intent cannot be truncated' USING ERRCODE='23514';
+  END IF;
+  RETURN NULL;
+END;
+$$;
+
+CREATE TRIGGER email_read_intents_guard_truncate
+  BEFORE TRUNCATE ON email_read_intents
+  FOR EACH STATEMENT EXECUTE FUNCTION guard_email_read_intent_truncate();
