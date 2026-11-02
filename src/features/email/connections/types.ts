@@ -95,6 +95,7 @@ export type MailboxConnectionMutation = "pause" | "resume" | "retry" | "disconne
 export type MailboxConnectionResult<T> = Result<T, MailboxConnectionError>;
 
 export interface MailboxConnectionActions {
+  list?: (signal: AbortSignal) => Promise<MailboxConnectionResult<MailboxConnectionView[]>>;
   check: (
     input: CheckMailboxInput,
     signal: AbortSignal,

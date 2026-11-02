@@ -132,6 +132,11 @@ export function MailboxConnectionRow({
                   onChanged();
                   onNotice(L.saveSuccess);
                 }}
+                onReviewSavedSettings={() => {
+                  close(false);
+                  onChanged();
+                  onNotice(L.savedSettingsReloaded);
+                }}
               />
             ) : (
               <MailboxManagement

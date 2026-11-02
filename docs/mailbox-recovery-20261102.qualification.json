@@ -1,0 +1,344 @@
+{
+  "schemaVersion": 1,
+  "status": "LOCAL_MAIL_AND_PRIVACY_SOURCE_QUALIFIED_REPORT_ADOPTED_WIP_BUILD_BROWSER_PUBLICATION_PENDING",
+  "recordedAtUtc": "2026-11-02T21:26:39.774123+00:00",
+  "issues": [908, 280],
+  "scope": "Truthful current IMAP connection health, current-selected-folder failure projection, explicit credential-free saved-settings reload after uncertain save; bounded contribution only.",
+  "source": {
+    "qualificationBase": "7d13fc714dee96db1b5920a4661377f801c3b61e",
+    "nextCandidateBase": "099c5dc998ed51a0133629fe3648ab5800e5e66e",
+    "baseDifference": "baa changes one Markdown format file over7d13;099 then commits only two already-qualified CI fixture updates. Product blobs equal7d13. No MAIL candidate commit is assigned.",
+    "mailPaths": [
+      {
+        "path": "src/features/email/imapSyncHealth.ts",
+        "sha256": "4a75a881d05b35e7c966e506f81946845fac7422c48eabff56213e2dcd54687a"
+      },
+      {
+        "path": "src/features/email/imapSyncHealth.integration.test.ts",
+        "sha256": "9a7e9b0d1ea28d5407b90bd1ffaf00dfd96b62b9a6f1118157449e51fb4f78f3"
+      },
+      {
+        "path": "src/features/email/imapSync.ts",
+        "sha256": "73a702e4ad8e447be9ed28945e2327e24c6fdc2629b7a5ab1e96a2444b907d02"
+      },
+      {
+        "path": "src/features/email/mailAccountsRepo.ts",
+        "sha256": "87a5df820a07af77de16b6a5e32bb047e9511089e0cb4233cc01290c12364161"
+      },
+      {
+        "path": "src/features/email/mailConnectionHttpView.ts",
+        "sha256": "66f186428b9e95f2dcb8eec5fe758308641234b81ebe119f8926b65faea4a304"
+      },
+      {
+        "path": "src/features/email/connections/MailboxSaveRecovery.tsx",
+        "sha256": "083257ac56ea06f2745b7e30c918c3967dc441619fab146147f02a4ec6bd5e4a"
+      },
+      {
+        "path": "src/features/email/connections/MailboxSaveRecovery.test.tsx",
+        "sha256": "0e32f9219c4c8bb4c1c783a44c6a77706d3f127f2fb9db747f0e4d0289b98033"
+      },
+      {
+        "path": "src/features/email/connections/MailboxScopeForm.tsx",
+        "sha256": "1e5efe56710538c163e65293ce3f8d198fc1f873a2f0dc48a806cba18b7b2e24"
+      },
+      {
+        "path": "src/features/email/connections/MailboxSetupFlow.tsx",
+        "sha256": "3c6042b3b404e9e537b1713a3d76ae68b6bff0ff85099d792247c81b4962c07f"
+      },
+      {
+        "path": "src/features/email/connections/MailboxConnectionsPanel.tsx",
+        "sha256": "290393acaf267e034faad4ddfcb5cf48d5cacdf5bbb75fa6ef5a86c7a3c48393"
+      },
+      {
+        "path": "src/features/email/connections/MailboxConnectionRow.tsx",
+        "sha256": "7adfa56bb380eac803fc9bdf65fbddcfebdb86fc84d343a9f1e600fcddc97262"
+      },
+      {
+        "path": "src/features/email/connections/MailboxManagement.tsx",
+        "sha256": "a42cee5db2689cb4a9157d66eef75ac2eed2405fae22dd2020d2f73afa84b742"
+      },
+      {
+        "path": "src/features/email/connections/types.ts",
+        "sha256": "5aa2490eaccea60e6702d2bab9da5e43edbf39f3a26ec3b21899e9dd967652cf"
+      },
+      {
+        "path": "src/app/(app)/settings/email-sync/MailboxConnectionsClient.tsx",
+        "sha256": "859b8e80534287554ea9c29f2acd23606678d1a51b0326bcc7e2a86877476ffe"
+      },
+      {
+        "path": "src/features/email/connections/messages/mailConnections.en.json",
+        "sha256": "13726b9605a1de3472ba81d9e7c24be888193d0c4122f8f464d9ee66ad0fe6fb"
+      },
+      {
+        "path": "src/features/email/connections/messages/mailConnections.de.json",
+        "sha256": "80c8dd743144897bf68fecfc0ff75ab7e3c9ac8d91374c479659902821ee70cc"
+      },
+      {
+        "path": "src/features/email/connections/messages/mailConnections.fa.json",
+        "sha256": "a380d261e66d6ccf5332323aabb6e6076653b1067e0a7493d01bda3331d79e48"
+      }
+    ],
+    "privacyCompanion": {
+      "path": "src/features/privacy/registryIdsMail1.ts",
+      "sha256": "aeb1cba1afb975fa84e095c78674bd832fc20247de39b5ca189d5d4c1f252f0c",
+      "status": "Root-applied reviewed MAIL registry companion; actual isolated inventory clean,31registry units and registry lint passed. Canonical inventory report adopted in WIP; original stdin-CHECK failure and separate passing filesystem check retained."
+    },
+    "manifests": [
+      {
+        "path": "/Users/ali/Developer/warpdrive-settings-ux/.runtime/goal-mailbox-recovery-next/qualification/control/source-manifest.json",
+        "sha256": "60efdc3c8c80728e07e2644abff632722c910d623325aaa4e7e3dcad736865e2"
+      },
+      {
+        "path": "/Users/ali/Developer/warpdrive-settings-ux/.runtime/goal-mailbox-recovery-next/qualification-attempt2/control/source-manifest.json",
+        "sha256": "4c1d1243c5dac7582dec5fc0a84782632dd070cd3352642be7e02a99580322e5"
+      }
+    ],
+    "privacyInventoryReport": {
+      "path": "docs/privacy-inventory-report.json",
+      "sha256": "582ac423ed20ae157b74c4ec2f54d34b0f91b8b315934b50d3c3c3de370c28e9",
+      "state": "ADOPTED_ROOT_REVIEWED_REPORT_WIP",
+      "sourceFingerprint": "d72ba6e707b1dedd046b0e79f537bb34395f570c221012c83bb33df4a18aa9e4",
+      "sourceFiles": 2380,
+      "baseEligibleFiles": 2378,
+      "addedEligibleFiles": [
+        "src/features/email/connections/MailboxSaveRecovery.tsx",
+        "src/features/email/imapSyncHealth.ts"
+      ],
+      "removedEligibleFiles": [],
+      "priorReportFiles": 2406,
+      "priorReportScope": "Earlier Root qualification3 used shared canonical working tree; count2406 is not the isolated Git099 baseline. Do not infer one-file or deletion delta from it.",
+      "actualDelta": "ExactGit099 eligible2378 +two new MAIL production files =2380, no removed eligible committed source. Discovered sourceReview+1/writer+1/classified declarations+3; derived unchanged; remaining metadata exact.",
+      "initialAdoptionGuard": "Refused naive +1file/+1derived assumption before any write; Root adopted only after actual eligible path-set reconciliation.",
+      "discoveredCounts": {
+        "browserStore": 3,
+        "derived": 320,
+        "external": 33,
+        "log": 46,
+        "objectNamespace": 23,
+        "queue": 15,
+        "sourceReview": 772,
+        "table": 109,
+        "writer": 744
+      },
+      "classifiedDeclarations": 2176
+    }
+  },
+  "localEvidence": [
+    {
+      "kind": "ui",
+      "path": "/Users/ali/Developer/warpdrive-settings-ux/.runtime/goal-mailbox-recovery-next/focused1/receipt.json",
+      "sha256": "3624ef658dfdf492b2e2c099be2ba9fdd6e49f3ea993e1561b3bd610a59e53e9",
+      "state": "PASS",
+      "seconds": 2.5890159170376137,
+      "maximumSampledBytes": 600948736
+    },
+    {
+      "kind": "static1",
+      "path": "/Users/ali/Developer/warpdrive-settings-ux/.runtime/goal-mailbox-recovery-next/qualification/control/static.receipt.json",
+      "sha256": "f06e211f19bb28dd74bc3302c5f05e7587b562f565675cb755ab284acb9e3f85",
+      "state": "FAIL",
+      "seconds": 29.45558650000021,
+      "maximumSampledBytes": 6337150976
+    },
+    {
+      "kind": "formatAst",
+      "path": "/Users/ali/Developer/warpdrive-settings-ux/.runtime/goal-mailbox-recovery-next/format2/receipt.json",
+      "sha256": "b7f3343eefc2eaf48b0ed1ec23d1edf106d955fc70badddb79227ff0340749a8",
+      "state": "TWOFILE_FORMAT_AST_EQUIVALENCE_PASS",
+      "seconds": null,
+      "maximumSampledBytes": null
+    },
+    {
+      "kind": "static2",
+      "path": "/Users/ali/Developer/warpdrive-settings-ux/.runtime/goal-mailbox-recovery-next/qualification-attempt2/control/static.receipt.json",
+      "sha256": "4af2de2176586cd5db2a755564e50d800d5c8a3195551e9d902e60897157ee98",
+      "state": "PASS",
+      "seconds": 6.180160292075016,
+      "maximumSampledBytes": 2394619904
+    },
+    {
+      "kind": "native2",
+      "path": "/Users/ali/Developer/warpdrive-settings-ux/.runtime/goal-mailbox-recovery-next/qualification-attempt2/control/native.receipt.json",
+      "sha256": "194c59a47e5fefede443e0825f203174c94eaaf72cbe54cccbe4e597b00c42e6",
+      "state": "PASS",
+      "seconds": 9.012316375039518,
+      "maximumSampledBytes": 645849415.68
+    },
+    {
+      "kind": "privacyPhase1",
+      "path": "/Users/ali/Developer/warpdrive-settings-ux/.runtime/goal-mail-candidate-build/phase1/control/phase1.receipt.json",
+      "sha256": "bc7c3d347fb670a1769878eaf5e6abf0723ccb6eb55b4e81b26b971881a5793b",
+      "state": "FAIL",
+      "seconds": 8.70905462501105,
+      "maximumSampledBytes": 2257616896
+    },
+    {
+      "kind": "privacyFormatCheckAddendum",
+      "path": "/Users/ali/Developer/warpdrive-settings-ux/.runtime/goal-mail-candidate-build/phase1-format-focused1/receipt.json",
+      "sha256": "20770dc0763c0937b72d781cb6da7c42123a22b3f3353e8d5458841ed2ad8307",
+      "state": "PASS",
+      "seconds": 1.150629667,
+      "maximumSampledBytes": 138215424
+    },
+    {
+      "kind": "privacyRootAdoption",
+      "path": "/Users/ali/Developer/warpdrive-settings-ux/.runtime/goal-mail-candidate-build/phase1-format-focused1/root-adoption.json",
+      "sha256": "47ca9de377a3e10dea1bbdd8c7e61fbf54795b23dd2544dcbf734f7fd956685e",
+      "state": "ADOPTED_ROOT_REVIEWED_REPORT_WIP",
+      "seconds": null,
+      "maximumSampledBytes": null
+    },
+    {
+      "kind": "privacyReportScope",
+      "path": "/Users/ali/Developer/warpdrive-settings-ux/.runtime/goal-mail-candidate-build/phase1-format-focused1/report-scope-reconciliation.json",
+      "sha256": "104ef8b2744626de92422b2a9543ea4c01ecb4b36eeedc967bf32ce4642577dc",
+      "state": "SOURCE_SCOPE_RECONCILIATION",
+      "seconds": null,
+      "maximumSampledBytes": null
+    }
+  ],
+  "results": {
+    "ui": {
+      "cases": 7,
+      "passed": 7,
+      "failed": 0,
+      "componentSeconds": 1.5506809579674155,
+      "inclusiveSeconds": 2.5890159170376137,
+      "sourceCut": "Original focused1 UI source cut; unchanged UI bytes remain in final17. Later backend3 corrections are not claimed as rerun UI evidence.",
+      "capBytes": 2147483648,
+      "inclusiveLimitSeconds": 20,
+      "services": 0,
+      "cleanup": "All owned groups gone,5339 foreign input pins held; no services."
+    },
+    "static1": {
+      "overall": "FAIL retained: two Biome formatting differences only; subsequent phases not automatically retried.",
+      "typegenExit": 0,
+      "typegenSeconds": 0.7913314159959555,
+      "fullConfiguredTscExit": 0,
+      "fullConfiguredTscSeconds": 19.13024433294777,
+      "typedLintFiles": 14,
+      "typedLintExit": 0,
+      "typedLintSeconds": 7.418477208004333,
+      "biomeExit": 1,
+      "changedAfter": "Only helper/test formatting; two TypeScript ASTs equivalent with SQL/assertions preserved.",
+      "capBytes": 8589934592,
+      "inclusiveLimitSeconds": 60,
+      "workLimitSeconds": 45,
+      "cleanup": "All4 owned groups gone,source7658/17 canonical pins held,foreign listeners held/private credentials deleted."
+    },
+    "formatDelta": {
+      "paths": [
+        "src/features/email/imapSyncHealth.ts",
+        "src/features/email/imapSyncHealth.integration.test.ts"
+      ],
+      "bothAstsEquivalent": true,
+      "other15InputsUnchanged": true,
+      "retainedComparatorFailure": "Initial comparator included SourceFile raw text and reported a false formatting mismatch. Original failure retained; corrected ASTv2 excludes raw text/trivia and compares semantic nodes/tokens/literals/templates, including SQL/assertions. No formatter rerun.",
+      "receipt": "/Users/ali/Developer/warpdrive-settings-ux/.runtime/goal-mailbox-recovery-next/format2/receipt.json"
+    },
+    "static2": {
+      "typedLintFiles": 2,
+      "biomeFiles": 17,
+      "exit": 0,
+      "inclusiveSeconds": 6.180160292075016,
+      "typegenOrFullTscRerun": false,
+      "capBytes": 8589934592,
+      "inclusiveLimitSeconds": 60,
+      "workLimitSeconds": 45,
+      "cleanup": "All2 groups gone,source7663/17 canonical pins held,listeners held/private credentials deleted."
+    },
+    "native2": {
+      "cases": 10,
+      "passed": 10,
+      "failed": 0,
+      "nativeSeconds": 4.251263832906261,
+      "inclusiveSeconds": 9.012316375039518,
+      "sourcePinCount": 7663,
+      "capBytes": 3221225472,
+      "inclusiveLimitSeconds": 60,
+      "workLimitSeconds": 45,
+      "postgres": "Cached PostgreSQL16 image sha256:0cefaabd882e42bcb2a2f3dc56d3ce4770560ba62fd7f197f1a2e008fd5731ab; pull never,owned label/CID,1GiB container,102 canonical migrations,normal withTestDb clones. No Ryuk/external provider.",
+      "casesCovered": [
+        "Real loopback TLS authentication/LIST failure and later recovery preserve one imported message/history without duplicates.",
+        "Five current-binding mutations: reconfiguration,paused,disconnected,new owner,inactive owner; both recording and retirement guarded.",
+        "Only current selected folder errors affect health; removed-folder history retained.",
+        "Unknown failure persists only fixed safe code.",
+        "Actual successful LIST then injected typed folder TLS failure supersedes prior authentication classification.",
+        "No-page LIST recovery clears only owned LIST code; lastSync and unrelated legacy error/folder history preserved."
+      ],
+      "cleanup": "All native groups,owned PostgreSQL/CID-label resources gone; foreign containers/states/networks/volumes/listeners exactly retained; private credentials deleted."
+    },
+    "privacyPhase1": {
+      "overall": "FAIL retained: stdin CHECK protocol returned exit1 despite report bytes already formatted. The final owned Biome phase was not run in this campaign.",
+      "inventory": {
+        "exit": 0,
+        "seconds": 0.7753650830127299,
+        "coverage": {
+          "ok": true,
+          "missing": [],
+          "invalid": []
+        },
+        "sourceFiles": 2380,
+        "sourceFingerprint": "d72ba6e707b1dedd046b0e79f537bb34395f570c221012c83bb33df4a18aa9e4"
+      },
+      "units": {
+        "files": 4,
+        "cases": 31,
+        "passed": 31,
+        "failed": 0,
+        "seconds": 1.6614718749187887
+      },
+      "typedLint": {
+        "files": 1,
+        "exit": 0,
+        "seconds": 4.458579334081151
+      },
+      "stdinCheck": {
+        "exit": 1,
+        "seconds": 0.3105602910509333,
+        "meaning": "Harness protocol failure, not a malformed JSON formatting result; subsequent supported format COPY is byte-identical."
+      },
+      "inclusiveSeconds": 8.70905462501105,
+      "maximumSampledBytes": 2257616896,
+      "capBytes": 4294967296,
+      "workLimitSeconds": 45,
+      "inclusiveLimitSeconds": 60,
+      "cleanup": "All4 owned groups gone,7659 source/harness and20 canonical pins held,listeners unchanged,no credentials or services."
+    },
+    "privacyFormatCheckAddendum": {
+      "overall": "PASS separate finite format-only addendum; no inventory/unit/lint repetition.",
+      "formatCopyExit": 0,
+      "filesystemBiomeFiles": 4,
+      "filesystemBiomeExit": 0,
+      "filesystemBiomeResult": "Checked4files; no fixes applied. Formatted report +byte-equal Rootregistry +two docs in minimal private overlay.",
+      "parsedJSONExactlyEqual": true,
+      "formattedCopyByteIdentical": true,
+      "reportSha256": "582ac423ed20ae157b74c4ec2f54d34b0f91b8b315934b50d3c3c3de370c28e9",
+      "inclusiveSeconds": 1.150629667,
+      "maximumSampledBytes": 138215424,
+      "capBytes": 1073741824,
+      "inclusiveLimitSeconds": 15,
+      "cleanup": "Both owned groups gone,all source/original report/original failed receipt and20 canonical inputs held; no services or canonical adoption by sub-agent."
+    }
+  },
+  "implementation": [
+    "Initial LIST failure records one fixed safe error classification in existing email_accounts.last_error_id, fenced by captured owner/account/generation/current active connected unpaused binding.",
+    "Successful LIST retires only these owned codes under the same fences; last_sync_at and folder evidence remain separate.",
+    "Public error projection prefers current fixed account error; current selected folders alone contribute folder health.",
+    "Uncertain save disables automatic same-proof resubmission in the mounted form. Explicit existing owned list readback shows only current public settings and states it is not proof the previous save committed. Returning to the list has a distinct truthful notice.",
+    "No credential readback, new receipt/DDL/store/provider policy or lifecycle capability. Existing authorized list/check/save/mutate channels remain."
+  ],
+  "limits": [
+    "Results are separate exact source cuts, not a combined17-case campaign or new full TSC run after formatting.",
+    "Sampled RSS is not continuous peak or every-machine memory proof. Entry normal pressure1/Q40/disk8GiB,stop Qbelow30/unknown/cap/deadline; direct+inherited Bun1.4.4 noenv/private outputs/Vite envDirfalse.",
+    "Injected fresh folder TLS error is not a physical post-LIST TLS fault; five binding mutations are not a held transaction race; no same-generation chronology guarantee.",
+    "No live Gmail/customer provider/email reads or sends. Native fixture uses owned synthetic loopback TLS with approved endpoint policy; no customer acceptance.",
+    "Build,actual MAIL browser recovery journey,new exact candidate CI,publication,installation/provider/release/human acceptance remain pending.",
+    "This slice does not complete #908/#280/#276/#272/#84 or claim overall roadmap completion."
+  ],
+  "nextGates": [
+    "Root freezes actual Git candidate with exact adopted report and final documentation; final src/scripts path+SHA set must equal qualified phase1 production/source cut.",
+    "Phase2: freshly allocated normal production Next webpack/full TypeScript build and exact source/artifact provenance audit.",
+    "Freshly allocated real HTTP/UI browser qualification with owned TLS IMAP and auth-only SMTP, followed by exact candidate CI/publication and appropriate issue acceptance."
+  ]
+}

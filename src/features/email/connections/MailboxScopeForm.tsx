@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/Input";
 import { useLocale } from "@/features/i18n/LocaleProvider";
 import { useFormatters } from "@/lib/useFormatters";
 import { mailboxFolderLabel } from "./folderLabels";
+import { MailboxSaveRecovery } from "./MailboxSaveRecovery";
 import { MailboxSentCopyOptions } from "./MailboxSentCopyOptions";
 import { mailboxConnectionMessages } from "./messages";
 import { buildMailboxScope, DEFAULT_MAIL_HISTORY_DAYS } from "./model";
@@ -26,6 +27,7 @@ export function MailboxScopeForm({
   onConnected,
   onCheckAgain,
   onRequireFreshAuth,
+  onReviewSavedSettings,
 }: {
   checked: CheckedMailboxConnection;
   initialSettings?: MailboxConnectionView;
@@ -34,6 +36,7 @@ export function MailboxScopeForm({
   onConnected: () => void;
   onCheckAgain: () => void;
   onRequireFreshAuth?: () => void;
+  onReviewSavedSettings?: () => void;
 }) {
   const id = useId();
   const L = mailboxConnectionMessages(useLocale());
@@ -67,12 +70,14 @@ export function MailboxScopeForm({
   const [isDefault, setIsDefault] = useState(defaultSender && checked.capabilities.send);
   const [validation, setValidation] = useState<string | null>(null);
   const task = useMailboxConnectionTask();
+  const [uncertain, setUncertain] = useState(false);
   return (
     <form
       className="space-y-5"
       noValidate
       onSubmit={(event) => {
         event.preventDefault();
+        if (uncertain) return;
         const input = buildMailboxScope({
           checked,
           folders,
@@ -86,7 +91,21 @@ export function MailboxScopeForm({
           return;
         }
         setValidation(null);
-        void task.run((signal) => actions.save(input.value, signal), onConnected);
+        void task.run(async (signal) => {
+          try {
+            const result = await actions.save(input.value, signal);
+            if (
+              !signal.aborted &&
+              !result.ok &&
+              (result.error === "network" || result.error === "unknown")
+            )
+              setUncertain(true);
+            return result;
+          } catch (error) {
+            if (!signal.aborted) setUncertain(true);
+            throw error;
+          }
+        }, onConnected);
       }}
     >
       <div className="rounded-lg border bg-muted/20 px-4 py-3 text-sm">
@@ -194,11 +213,20 @@ export function MailboxScopeForm({
         </p>
       )}
       <MailboxConnectionFeedback error={task.error} onRequireFreshAuth={onRequireFreshAuth} />
+      {uncertain && (
+        <MailboxSaveRecovery
+          actions={actions}
+          mailboxAddress={checked.mailboxAddress}
+          accountId={initialSettings?.id}
+          onRequireFreshAuth={onRequireFreshAuth}
+          onReviewSavedSettings={onReviewSavedSettings}
+        />
+      )}
       <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-4">
         <Button variant="ghost" onClick={onCheckAgain} disabled={task.busy}>
           {task.error === "stale_check" ? L.retryCheck : L.back}
         </Button>
-        <Button type="submit" disabled={task.busy || checked.folders.length === 0}>
+        <Button type="submit" disabled={uncertain || task.busy || checked.folders.length === 0}>
           {task.busy ? L.connecting : L.connect}
         </Button>
       </div>

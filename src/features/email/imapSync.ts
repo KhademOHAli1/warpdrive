@@ -3,6 +3,7 @@ import type { Db } from "@/db/client";
 import { err, ok, type Result } from "@/types/result";
 import { syncImapFolder } from "./imapSyncFolder";
 import { imapFolderOrder } from "./imapSyncFolders";
+import { recordImapSyncFailure, retireImapSyncFailure } from "./imapSyncHealth";
 import type { ImapSyncDependencies, ImapSyncOutcome } from "./imapSyncTypes";
 import { loadImapConnection } from "./mailConnectionRuntime";
 
@@ -22,12 +23,15 @@ export async function runImapSyncJob(
   const now = args.now ?? new Date();
   try {
     const listed = await runtime.imap.listFolders({ signal: args.signal });
-    if (!listed.ok)
+    if (!listed.ok) {
+      await recordImapSyncFailure(db, runtime, listed.error.kind, args.signal);
       return err(
         new AppError(ERROR_IDS.MAIL_SYNC_FAILED, "IMAP folder discovery failed", {
           reason: listed.error.kind,
         }),
       );
+    }
+    await retireImapSyncFailure(db, runtime, args.signal);
     const sentPaths = new Set(
       listed.value.folders
         .filter((folder) => folder.specialUse === "\\Sent" && folder.authoritativeSpecialUse)
@@ -65,6 +69,7 @@ export async function runImapSyncJob(
     return ok(outcome);
   } catch (error) {
     args.signal.throwIfAborted();
+    await recordImapSyncFailure(db, runtime, "unknown", args.signal);
     return err(
       error instanceof AppError
         ? error

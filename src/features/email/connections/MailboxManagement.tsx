@@ -47,7 +47,7 @@ export function MailboxManagement({
       () => {
         onChanged();
         if (action === "disconnect") onDisconnected();
-        else setNotice(L.actionSuccess);
+        else setNotice(action === "retry" ? L.retryRequested : L.actionSuccess);
       },
     );
   }

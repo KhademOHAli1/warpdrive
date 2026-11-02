@@ -21,6 +21,7 @@ import { useMailboxRefresh } from "@/features/email/connections/useMailboxRefres
 import { useLocale } from "@/features/i18n/LocaleProvider";
 
 const actions: MailboxConnectionActions = {
+  list: listMailboxConnections,
   check: checkMailboxConnection,
   save: saveMailboxConnection,
   mutate: mutateMailboxConnection,

@@ -62,6 +62,11 @@ export function MailboxConnectionsPanel({
                   setNotice(L.saveSuccess);
                   refresh();
                 }}
+                onReviewSavedSettings={() => {
+                  setOpen(false);
+                  setNotice(L.savedSettingsReloaded);
+                  refresh();
+                }}
               />
             )}
             <DialogFooter className="border-t pt-4">

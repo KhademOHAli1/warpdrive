@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { MailboxConnectionError, MailboxConnectionView } from "./connections/types";
+import { publicImapSyncFailure } from "./imapSyncHealth";
 import { mailboxCapabilitiesSchema } from "./mailConnectionSchemas";
 
 const endpointMetadata = z.object({
@@ -88,6 +89,8 @@ export function publicMailboxError(
   folderKind: string | null,
   status: string,
 ): MailboxConnectionError | undefined {
+  const syncFailure = publicImapSyncFailure(lastError);
+  if (syncFailure !== undefined) return syncFailure;
   if (folderKind !== null) {
     const parsed = folderError.safeParse(folderKind);
     return parsed.success ? parsed.data : "unknown";

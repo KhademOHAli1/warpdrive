@@ -45,7 +45,10 @@ export async function listActorMailboxes(
       r.status AS revocation_status, a.last_error_id, f.last_error_kind AS folder_error_kind,p.progress
     FROM email_accounts a LEFT JOIN auth_integration_revocations r
       ON r.id::text=a.connection_settings->>'remoteRevocationId' AND r.user_id=a.user_id AND r.provider='google'
-    LEFT JOIN LATERAL (SELECT last_error_kind FROM mail_folders WHERE account_id=a.id AND last_error_kind IS NOT NULL ORDER BY updated_at DESC LIMIT 1) f ON true
+    LEFT JOIN LATERAL (SELECT last_error_kind FROM mail_folders
+      WHERE account_id=a.id AND last_error_kind IS NOT NULL
+        AND path IN (SELECT jsonb_array_elements_text(a.folder_paths))
+      ORDER BY updated_at DESC LIMIT 1) f ON true
     LEFT JOIN LATERAL (SELECT jsonb_build_object('processed',count(*),'skipped',count(*) FILTER(WHERE l.skipped_reason IS NOT NULL),
       'skipReasons',jsonb_build_object('messageTooLarge',count(*) FILTER(WHERE l.skipped_reason='message_too_large'),
         'invalidMessage',count(*) FILTER(WHERE l.skipped_reason='invalid_message'),

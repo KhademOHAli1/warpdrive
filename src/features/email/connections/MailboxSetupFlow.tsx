@@ -37,6 +37,7 @@ export function MailboxSetupFlow({
   defaultSender,
   onConnected,
   onRequireFreshAuth,
+  onReviewSavedSettings,
 }: {
   actions: MailboxConnectionActions;
   existing?: MailboxConnectionView;
@@ -44,6 +45,7 @@ export function MailboxSetupFlow({
   defaultSender: boolean;
   onConnected: () => void;
   onRequireFreshAuth?: () => void;
+  onReviewSavedSettings?: () => void;
 }) {
   const L = mailboxConnectionMessages(useLocale());
   const [providerChosen, setProviderChosen] = useState(existing !== undefined);
@@ -70,6 +72,7 @@ export function MailboxSetupFlow({
           onConnected={onConnected}
           onCheckAgain={() => setChecked(null)}
           onRequireFreshAuth={onRequireFreshAuth}
+          onReviewSavedSettings={onReviewSavedSettings}
         />
       ) : providerChosen ? (
         <MailboxCredentialsForm
