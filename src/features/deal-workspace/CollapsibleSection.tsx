@@ -4,6 +4,7 @@ import type React from "react";
 import { useState } from "react";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { cn } from "@/lib/utils";
+import { useSidebarPresentation } from "./sidebar/SidebarPresentation";
 import { HideEmptyContext } from "./sidebar/sectionFilter";
 
 // A titled, collapsible sidebar section (Pipedrive's deal detail groups Summary/Details/Source/
@@ -14,6 +15,7 @@ export function CollapsibleSection({
   defaultOpen = true,
   headerActions,
   showFilter = true,
+  defaultHideEmpty,
   children,
 }: {
   title: string;
@@ -22,14 +24,22 @@ export function CollapsibleSection({
   // PD's Summary header carries only the kebab (no hide-empty funnel: its action-list rows are
   // never empty), so that section opts out of the filter toggle.
   showFilter?: boolean;
+  defaultHideEmpty?: boolean;
   children: React.ReactNode;
 }): React.ReactNode {
   const translateSales = useAppTranslations("sales");
 
+  const presentation = useSidebarPresentation();
   const [open, setOpen] = useState(defaultOpen);
-  const [hideEmpty, setHideEmpty] = useState(false);
+  const [hideEmpty, setHideEmpty] = useState(defaultHideEmpty ?? presentation.hideEmpty);
   return (
-    <section aria-label={title} className="overflow-hidden rounded-md border bg-card">
+    <section
+      aria-label={title}
+      className={cn(
+        "overflow-hidden bg-card",
+        presentation.compact ? "border-b last:border-b-0" : "rounded-md border",
+      )}
+    >
       <div className="flex items-center gap-1 pe-2">
         <button
           type="button"
@@ -61,7 +71,13 @@ export function CollapsibleSection({
             <Filter aria-hidden="true" className="h-3.5 w-3.5" />
           </button>
         )}
-        {headerActions?.({ hideEmpty, showEmptyFields: () => setHideEmpty(false) })}
+        {headerActions?.({
+          hideEmpty,
+          showEmptyFields: () => {
+            setHideEmpty(false);
+            setOpen(true);
+          },
+        })}
       </div>
       <div
         aria-hidden={!open}

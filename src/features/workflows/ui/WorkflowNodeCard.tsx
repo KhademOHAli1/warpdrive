@@ -1,7 +1,15 @@
 "use client";
 
 import { Handle, type Node, type NodeProps, Position } from "@xyflow/react";
-import { CirclePlay, Database, GitBranch, ListTodo, Plus, TriangleAlert } from "lucide-react";
+import {
+  CirclePlay,
+  Clock,
+  Database,
+  GitBranch,
+  ListTodo,
+  Plus,
+  TriangleAlert,
+} from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
 import { directionForLocale } from "@/features/i18n/registry";
@@ -36,7 +44,9 @@ export function WorkflowNodeCard({ data, selected, isConnectable }: NodeProps<Ca
         ? Database
         : node.type === "condition"
           ? GitBranch
-          : ListTodo;
+          : node.type === "delay"
+            ? Clock
+            : ListTodo;
   const ports = portsFor(node);
   return (
     <section

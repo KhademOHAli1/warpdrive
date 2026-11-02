@@ -57,7 +57,11 @@ export async function moveDeal(
       .set({
         stageId: input.toStageId,
         boardPosition: position,
-        stageEnteredAt: new Date(),
+        // Compare the current row, since the pre-transaction read may be stale.
+        stageEnteredAt: sql<Date>`CASE
+          WHEN ${deals.stageId} = ${input.toStageId} THEN ${deals.stageEnteredAt}
+          ELSE ${new Date().toISOString()}
+        END`,
         updatedAt: new Date(),
       })
       .where(

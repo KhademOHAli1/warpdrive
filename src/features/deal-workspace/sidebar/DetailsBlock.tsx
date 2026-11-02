@@ -19,6 +19,7 @@ interface DetailsBlockProps {
   customFields: Record<string, unknown>;
   currency: string;
   bulkEditing?: boolean;
+  editingFieldId?: string;
   onExitBulk?: () => void;
 }
 
@@ -28,6 +29,7 @@ export function DetailsBlock({
   customFields,
   currency,
   bulkEditing = false,
+  editingFieldId,
   onExitBulk,
 }: DetailsBlockProps): React.ReactNode {
   const STRINGS = useSalesStrings();
@@ -54,7 +56,13 @@ export function DetailsBlock({
         const value = customFields[def.key];
         return (
           <FieldRow key={def.id} label={def.name} empty={isCustomFieldValueEmpty(value)}>
-            <InlineCustomField onSave={onSave} def={def} value={value} currency={currency} />
+            <InlineCustomField
+              initiallyEditing={def.id === editingFieldId}
+              onSave={onSave}
+              def={def}
+              value={value}
+              currency={currency}
+            />
           </FieldRow>
         );
       })}

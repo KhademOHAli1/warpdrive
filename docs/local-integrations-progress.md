@@ -1,10 +1,16 @@
 # Local integrations implementation record
 
+> GitHub migration notice, 2 November 2026: live execution, assignments, blockers and release status are maintained in [the mail issues](https://github.com/KhademOHAli1/warpdrive/issues?q=is%3Aissue+label%3Amodule%3Amail) and [the central Warpdrive Project](https://github.com/users/KhademOHAli1/projects/3). Use [the roadmap index](https://github.com/KhademOHAli1/warpdrive/blob/main/ROADMAP.md) and [tracking guide](https://github.com/KhademOHAli1/warpdrive/blob/main/docs/delivery/tracking.md) to find the canonical issue and preserved original task ID.
+>
+> This document and its linked execution CSV/JSON records retain dated observations. Earlier references to a live register, current status or source of truth in these historical records are superseded by GitHub. Approved scope, technical decisions, acceptance criteria, dependencies, receipts and unfinished gates remain preserved; historical branch or ownership notes do not authorize current publication.
+>
+> Keep the original task rows and machine-readable schemas intact. Generate new execution snapshots from GitHub with `python3 scripts/delivery/tracking.py snapshot`; record new live progress on the canonical issue instead of maintaining another manual ledger. Source implementation, green integrated CI, user-journey acceptance, release, deployment and real provider/installation acceptance remain separate gates.
+
 Approved 31 October 2026. Active goal: deliver the approved P0/P1 plan, beginning with independent email, preserving the current UI, Gmail, Better Auth, permissions and FA/DE/EN workflows. P2 remains deferred.
 
 Original baseline: main `8539fe8c4aeb0b58b6d05e629710460ef90bbed4`. Current committed base includes exact latest auth refinement history at `a1a8f6da1ce366c35002900bf33508356dfbb995`. Work is isolated on `codex/local-integrations`; the main checkout and its preview are preserved.
 
-## Current implementation
+## Historical implementation observation
 
 - IG-01: additive provider-neutral account/message/thread/attachment identifiers, multiple personal mailboxes and deterministic default sender. Existing Gmail UUIDs and identifiers are retained. Fresh-schema tests pass; migrated-installation and export/restore rehearsals remain required.
 - IG-02: encrypted, short-lived credential checks bound to a verified fresh native session; safe endpoint/DNS/TLS policy; opaque single-use proofs; lifecycle management and FA/DE/EN setup UI. Gmail state now uses session-bound PKCE and the same fresh-authority fences. Security tests pass; full browser acceptance remains pending.

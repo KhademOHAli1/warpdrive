@@ -1,18 +1,25 @@
 # Integration programme execution
 
+> GitHub migration notice, 2 November 2026: live execution, assignments, blockers and release status are maintained in [the integrations issues](https://github.com/KhademOHAli1/warpdrive/issues?q=is%3Aissue+label%3Amodule%3Aintegrations) and [the central Warpdrive Project](https://github.com/users/KhademOHAli1/projects/3). Use [the roadmap index](https://github.com/KhademOHAli1/warpdrive/blob/main/ROADMAP.md) and [tracking guide](https://github.com/KhademOHAli1/warpdrive/blob/main/docs/delivery/tracking.md) to find the canonical issue and preserved original task ID.
+>
+> This document and its linked execution CSV/JSON records retain dated observations. Earlier references to a live register, current status or source of truth in these historical records are superseded by GitHub. Approved scope, technical decisions, acceptance criteria, dependencies, receipts and unfinished gates remain preserved; historical branch or ownership notes do not authorize current publication.
+>
+> Keep the original task rows and machine-readable schemas intact. Generate new execution snapshots from GitHub with `python3 scripts/delivery/tracking.py snapshot`; record new live progress on the canonical issue instead of maintaining another manual ledger. Source implementation, green integrated CI, user-journey acceptance, release, deployment and real provider/installation acceptance remain separate gates.
+
 Dated main admission, 1 November 2026: [`43a5fb4d2a6be7bbbd260855a6a8e1ce55fbf3c1`](https://github.com/KhademOHAli1/warpdrive/commit/43a5fb4d2a6be7bbbd260855a6a8e1ce55fbf3c1), tree `4b477872f1e9010383343060dc15949169dcf89e`, has a verified successful [Public Bun CI run](https://github.com/KhademOHAli1/warpdrive/actions/runs/41320388147). [The main admission record](main-admission-20261101.md) separates that exact CI cut, the two new review admissions, three skipped unit cases and the previous failed cuts. That cut preserves canonical migration prefix 0 through 85, including Privacy 83 through 85, then Workflow 86, CONN 87 and MAIL 88 through 97. Installed database histories, providers, browsers, deployment and publication retain their own gates. New work follows the main-only policy in `CLAUDE.md`; historical preview and migration-allocation instructions are not the current upgrade procedure. The [source inventory register](../privacy-data-inventory.md) retains the broader ledger at its recorded cuts and evidence limits.
 
 
 Persistent goal: active from 31 October 2026, with no token budget. The acceptance
 contract remains the 446 tasks across 23 packages in the source project plan.
 
-## Authoritative status
+## Historical execution snapshot
 
-[The live task register](tasks.csv) is the single execution-status source. The older
-`docs/integration-platform-tasks.csv`, Markdown checklist and plan-summary JSON retain
-the dated starting snapshot. They do not override this register. Preserve all task IDs,
-acceptance criteria, stage and dependency scope when updating status. Completion needs
-attributable evidence; a narrower implementation subcase does not close a broader row.
+[The preserved task register](tasks.csv) records the pre-migration execution observation.
+The older `docs/integration-platform-tasks.csv`, Markdown checklist and plan-summary JSON
+also remain dated snapshots. GitHub now owns live execution status; none of these files
+is a competing manual ledger. Preserve all task IDs, acceptance criteria, stage and
+dependency scope. Completion needs attributable evidence covering the canonical issue;
+a narrower implementation subcase does not close a broader row.
 
 The former `codex/integration-platform-preview` programme checkout and its later detached
 worktree/alias history are retained historical source context. They are not the current
@@ -23,8 +30,9 @@ record. Later main changes follow the current owner's sequential publication bou
 BASE and ARCH are complete as their recorded runtime-baseline/design-review tasks.
 CONN-001 through CONN-003, CONN-023, QA-001/002, AISEC-001/002 and eight reviewed UX design tasks retain their earlier completions.
 EVT-001's [source reconciliation](workflow-event-reconciliation-20261101.md) and MS-001's
-[official account/consent review](microsoft-account-consent-review-20261101.md) add only their stated review criteria:
-**42 of 446 tasks**, with 404 remaining planned. [Prior provider foundation qualification](provider-contract-qualification.md)
+[official account/consent review](microsoft-account-consent-review-20261101.md) add only their stated review criteria.
+[AISEC-010's discovery acceptance](mcp-discovery-acceptance-20261102.md) adds the local compatibility closure:
+**43 of 446 tasks**, with 403 remaining planned. [Prior provider foundation qualification](provider-contract-qualification.md)
 records its exact source and evidence. [The historical foundation batch](foundation-qualification-20261031.md)
 separates new focused checks from pending broad qualification.
 Design closure does not implement their future grant, event, lifecycle or sandbox behavior.

@@ -6,6 +6,7 @@ import type { Db } from "@/db/client";
 import type { StorageClient } from "@/features/files/storage";
 import type { SendEmailOutcome } from "@/types/mail";
 import { err, type Result } from "@/types/result";
+import { GMAIL_ATTACHMENT_LIMITS, hasDuplicateAttachmentIds } from "./emailAttachmentLimits";
 import type { GmailClient } from "./gmailClient";
 import { assertMailboxOwner } from "./mailboxOwnership";
 import type { ImapConnectionRuntime } from "./mailConnectionRuntime";
@@ -45,7 +46,11 @@ export const sendEmailInput = z.object({
   // attachments: fileIds (already confirmed via files upload handshake) to embed
   // as MIME parts. Each file must be readable by the actor; a denied file fails the
   // entire send with E_GMAIL_012 so no partial attachment leaks.
-  attachments: z.array(z.object({ fileId: z.string().uuid() })).optional(),
+  attachments: z
+    .array(z.object({ fileId: z.string().uuid() }))
+    .max(GMAIL_ATTACHMENT_LIMITS.count)
+    .refine((items) => !hasDuplicateAttachmentIds(items), "Duplicate attachments are not allowed")
+    .optional(),
   // scheduledSendAt: when set to a future time, the attempt is stored with
   // scheduled_at set and no Gmail call is made. The worker promotes the row
   // when it becomes due via the normal processSendAttempt path.

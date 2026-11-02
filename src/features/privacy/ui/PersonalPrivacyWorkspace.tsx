@@ -12,6 +12,7 @@ import { privacyRequestMessagesForLocale } from "../privacyRequestMessages";
 import { loadOwnPrivacySecurity } from "./loadOwnPrivacySecurity";
 import { OwnPrivacyCaseStatus } from "./OwnPrivacyCaseStatus";
 import { OwnPrivacyRequestForm } from "./OwnPrivacyRequestForm";
+import { ReviewerIntakeCard } from "./ReviewerIntakeCard";
 
 type WorkspaceState = {
   status: SecurityStatus | null | undefined;
@@ -108,7 +109,7 @@ export function PersonalPrivacyWorkspace({ caseId }: { caseId?: string }) {
     !view.changed &&
     security !== undefined &&
     security !== null &&
-    (!security.fresh || security.needsEnrollment || security.needsMfa);
+    (!security.emailVerified || !security.fresh || security.needsEnrollment || security.needsMfa);
   return (
     <SettingsPage className={`${BLOCK_CLASS} ph-no-capture`}>
       <SettingsHeading
@@ -156,6 +157,11 @@ export function PersonalPrivacyWorkspace({ caseId }: { caseId?: string }) {
             ) : null}
             {needsSecurity && (
               <div className="space-y-2">
+                {security.emailVerified === false && (
+                  <p role="alert" className="text-sm text-destructive">
+                    {L.errors.email_verification_required}
+                  </p>
+                )}
                 <a
                   className={buttonVariants({ variant: "outline" })}
                   href="/settings/security"
@@ -174,7 +180,14 @@ export function PersonalPrivacyWorkspace({ caseId }: { caseId?: string }) {
         security !== null &&
         !view.changed &&
         (caseId === undefined ? (
-          <OwnPrivacyRequestForm securityStatus={security} refreshSecurity={refreshSecurity} />
+          <>
+            <OwnPrivacyRequestForm securityStatus={security} refreshSecurity={refreshSecurity} />
+            <ReviewerIntakeCard
+              securityStatus={security}
+              refreshSecurity={refreshSecurity}
+              securityUnavailable={view.unavailable}
+            />
+          </>
         ) : (
           <OwnPrivacyCaseStatus
             key={caseId}

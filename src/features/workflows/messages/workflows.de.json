@@ -68,10 +68,15 @@
     "ownerId": "Verantwortliche Person",
     "stageId": "Deal-Phase",
     "result": "Bedingungsergebnis",
-    "value": "Betrag"
+    "value": "Betrag",
+    "resumeAt": "Geplante Fortsetzung"
   },
   "condition": "Bedingung",
   "delay": "Warten",
+  "delaySummary": "Wartezeit (Minuten): {minutes}",
+  "delayLiteralRequired": "Die Wartezeit kann noch nicht aus einem anderen Schritt übernommen werden. Geben Sie eine feste Anzahl von Minuten ein.",
+  "delayMinutesLabel": "Wartezeit (Minuten)",
+  "delayMinutesHint": "Gemessen in ganzen verstrichenen Minuten ({min} bis {max}), nicht in Arbeits- oder Kalendertagen.",
   "notification": "Benachrichtigung",
   "title": "Workflows",
   "subtitle": "Machen Sie aus wiederkehrenden Abläufen klare, verlässliche Workflows.",
@@ -95,7 +100,7 @@
   "publish": "Veröffentlichen",
   "published": "Veröffentlicht",
   "pause": "Pausieren",
-  "pauseHint": "Neue Ausführungen werden angehalten. Bereits eingereihte Ausführungen laufen weiter.",
+  "pauseHint": "Pausieren verhindert neue Ausführungen. Bestehende Ausführungen, auch wartende, können fortgesetzt werden, solange der Workflow nicht archiviert ist und die Person, die sie gestartet hat, weiterhin dazu berechtigt ist.",
   "version": "Veröffentlichte Version {number, number}",
   "notPublished": "Noch nicht veröffentlicht",
   "configure": "Konfiguration",
@@ -161,7 +166,8 @@
     "running": "Wird ausgeführt",
     "succeeded": "Abgeschlossen",
     "failed": "Fehlgeschlagen",
-    "cancelled": "Abgebrochen"
+    "cancelled": "Abgebrochen",
+    "waiting": "Wartend"
   },
   "searchHint": "Geben Sie mindestens zwei Zeichen ein, um einen Deal zu finden.",
   "searchLoading": "Deals werden gesucht…",
@@ -200,5 +206,11 @@
   "stepSimulated": "Simuliert, keine Änderung gespeichert",
   "stepNotReached": "Nicht erreicht",
   "stoppedHere": "An diesem Schritt gestoppt",
-  "rewiringConnection": "Neuen Eingang wählen. Beim Loslassen auf freier Fläche bleibt die bestehende Verbindung erhalten."
+  "rewiringConnection": "Neuen Eingang wählen. Beim Loslassen auf freier Fläche bleibt die bestehende Verbindung erhalten.",
+  "scheduledResume": "Geplante Fortsetzung",
+  "stepWaiting": "Wartet auf Fortsetzung",
+  "simulatedWait": "Simulierte Wartezeit; ohne tatsächliches Warten.",
+  "simulatedResume": "Fortsetzung (simuliert)",
+  "waitTimingUnavailable": "Zeitpunkt der Fortsetzung nicht verfügbar",
+  "waitRecoveryHint": "Ab diesem Zeitpunkt kann die Ausführung fortgesetzt werden. Die Hintergrundprüfung ist minütlich geplant; die Fortsetzung kann später beginnen. Ein Abbruch stoppt diese Wartezeit und folgende Schritte; abgeschlossene Aktionen bleiben bestehen."
 }

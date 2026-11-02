@@ -13,6 +13,7 @@ function storageWith(csv: string): StorageClient {
     headObject: () => Promise.resolve(ok({ size: csv.length, etag: "e", contentType: "text/csv" })),
     presignGet: () => Promise.resolve(ok("")),
     copyObject: () => Promise.resolve(ok(undefined)),
+    putObjectBytes: () => Promise.resolve(ok(undefined)),
     deleteObject: () => Promise.resolve(ok(undefined)),
     getObjectBytes: () => Promise.resolve(ok(Buffer.from(csv, "utf8"))),
   };

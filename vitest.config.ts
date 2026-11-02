@@ -10,6 +10,7 @@ const ROOT = fileURLToPath(new URL(".", import.meta.url));
 const { unit, integration } = classifyTests(ROOT);
 
 export default defineConfig({
+  envDir: false,
   plugins: [react()],
   test: {
     globals: false,

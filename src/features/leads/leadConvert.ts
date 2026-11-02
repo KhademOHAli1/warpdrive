@@ -14,6 +14,7 @@ import { midpoint } from "@/features/deals/boardPosition";
 import { validateDealCustomFieldsForCreate } from "@/features/deals/dealCustomFieldsValidation";
 import { syncEntityLabelNames } from "@/features/labels/labelsRepo.entities";
 import { resolveVisibilityGroup } from "@/features/permissions/entityCreate";
+import { admitPipelineWrite } from "@/features/pipelines/admitPipelineWrite";
 import { publishBoardEvent } from "@/server/realtime/events";
 import type { EntityType } from "@/types/entityRef";
 import { err, ok, type Result } from "@/types/result";
@@ -21,6 +22,7 @@ import { carryLeadHistoryToDeal } from "./convertCarryOver";
 import { carryCustomFields, overlayCustomFields } from "./convertCustomFields";
 import { resolveConvertReferences } from "./convertReferences";
 import type { LeadSession } from "./leadActions";
+import { canLeadAction, leadActionClause } from "./leadWriteAuth";
 import { type ConvertLeadInput, convertLeadInput } from "./schemas";
 import { leadVisibilityClause } from "./visibility";
 
@@ -137,6 +139,9 @@ export async function convertLead(
       }),
     );
   }
+  if (!canLeadAction(session, "deal.edit", lead)) {
+    return err(new AppError(ERROR_IDS.PERM_DENIED, "Not permitted to convert this lead"));
+  }
   if (lead.convertedDealId !== null) {
     return err(
       new AppError(ERROR_IDS.LEAD_ALREADY_CONVERTED, "Lead already converted", {
@@ -151,6 +156,8 @@ export async function convertLead(
   const target = await resolveTargetStage(db, input, cfg?.defaultPipelineId ?? null, signal);
   if (!target.ok) return target;
   const { pipelineId, stageId } = target.value;
+  const admitted = await admitPipelineWrite(db, session, pipelineId, signal, false);
+  if (!admitted.ok) return admitted;
 
   const refs = await resolveConvertReferences(db, session, lead, signal);
   if (!refs.ok) return refs;
@@ -183,6 +190,9 @@ export async function convertLead(
 
   try {
     return await db.transaction(async (tx) => {
+      // Lock admission with the insert so archive and group restriction cannot race it.
+      const lockedAdmission = await admitPipelineWrite(tx, session, pipelineId, signal, true);
+      if (!lockedAdmission.ok) return lockedAdmission;
       const [bottom] = await tx
         .select({ pos: deals.boardPosition })
         .from(deals)
@@ -236,6 +246,8 @@ export async function convertLead(
           and(
             eq(leads.id, lead.id),
             isNull(leads.convertedDealId),
+            leadVisibilityClause(session),
+            leadActionClause(session, "deal.edit"),
             sql`date_trunc('milliseconds', ${leads.updatedAt}) = ${new Date(input.expectedUpdatedAt)}`,
           ),
         )

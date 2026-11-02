@@ -154,7 +154,7 @@ it("the Organization section pencil bulk-edits firmographics in one action call"
   );
 });
 
-it("inline-edits deal custom fields from inside the Organization section", async () => {
+it("inline-edits deal custom fields from the dedicated Details section", async () => {
   render(
     <DealSidebar
       workspace={makeWorkspace()}
@@ -164,8 +164,8 @@ it("inline-edits deal custom fields from inside the Organization section", async
     />,
   );
 
-  const organization = within(screen.getByRole("region", { name: "Organization" }));
-  expect(screen.queryByRole("region", { name: "Details" })).not.toBeInTheDocument();
+  const organization = within(screen.getByRole("region", { name: "Details" }));
+  expect(screen.getByRole("region", { name: "Details" })).toBeInTheDocument();
   fireEvent.click(organization.getAllByRole("button", { name: "Edit Industry" }).at(-1)!);
   fireEvent.change(organization.getByLabelText("Industry"), { target: { value: "Finance" } });
   fireEvent.click(organization.getByRole("button", { name: "Save" }));

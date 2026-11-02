@@ -1,6 +1,6 @@
 "use client";
 
-import { useId } from "react";
+import { type Ref, useId } from "react";
 import { Button } from "@/components/ui/Button";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { Input } from "@/components/ui/Input";
@@ -9,6 +9,7 @@ import { displayNodeName, isAutomaticNodeName } from "../nodeNames";
 import type { WorkflowDefinition, WorkflowNode } from "../schemas";
 import { BindingField } from "./BindingField";
 import { ConditionFields } from "./ConditionFields";
+import { DelayFields } from "./DelayFields";
 
 export function NodeInspector({
   definition,
@@ -16,12 +17,14 @@ export function NodeInspector({
   editable,
   onChange,
   onRemove,
+  nameInputRef,
 }: {
   definition: WorkflowDefinition;
   node: WorkflowNode;
   editable: boolean;
   onChange: (node: WorkflowNode) => void;
   onRemove: () => void;
+  nameInputRef?: Ref<HTMLInputElement>;
 }) {
   const t = useAppTranslations("workflows");
   const locale = useLocale();
@@ -42,6 +45,7 @@ export function NodeInspector({
             {t("stepName")}
           </label>
           <Input
+            ref={nameInputRef}
             dir="auto"
             id={id}
             value={name}
@@ -53,7 +57,7 @@ export function NodeInspector({
           />
           <div className="flex items-center gap-2">
             <Checkbox
-              id={id + "-auto"}
+              id={`${id}-auto`}
               label={t("stepNameAutomatic")}
               checked={automatic}
               disabled={!editable}
@@ -61,7 +65,7 @@ export function NodeInspector({
                 onChange({ ...node, name, nameMode: value ? "automatic" : "custom" })
               }
             />
-            <label className="text-xs text-muted-foreground" htmlFor={id + "-auto"}>
+            <label className="text-xs text-muted-foreground" htmlFor={`${id}-auto`}>
               {t("stepNameAutomatic")}
             </label>
           </div>
@@ -110,6 +114,13 @@ export function NodeInspector({
               allowLiteral={false}
             />
           </>
+        )}
+        {node.type === "delay" && (
+          <DelayFields
+            value={node.config.minutes}
+            editable={editable}
+            onChange={(minutes) => onChange({ ...node, config: { ...node.config, minutes } })}
+          />
         )}
         {node.type === "condition" && (
           <ConditionFields

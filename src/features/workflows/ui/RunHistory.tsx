@@ -1,7 +1,7 @@
 "use client";
 
 import { Activity, RefreshCw } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
@@ -10,6 +10,8 @@ import { useFormatters } from "@/lib/useFormatters";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { cancelWorkflowAction } from "../actions";
 import { RunDetailDialog } from "./RunDetailDialog";
+import { useDialogFocus } from "./useDialogFocus";
+import { WaitTimestamp } from "./WaitTimestamp";
 
 export function RunHistory({ workflowId, canCancel }: { workflowId: string; canCancel: boolean }) {
   const t = useAppTranslations("workflows");
@@ -18,7 +20,7 @@ export function RunHistory({ workflowId, canCancel }: { workflowId: string; canC
     { id: workflowId },
     {
       refetchInterval: (query) =>
-        query.state.data?.some((row) => row.status === "queued" || row.status === "running") ===
+        query.state.data?.some((row) => ["queued", "running", "waiting"].includes(row.status)) ===
         true
           ? 2500
           : false,
@@ -27,6 +29,9 @@ export function RunHistory({ workflowId, canCancel }: { workflowId: string; canC
   const [pending, setPending] = useState<string | null>(null);
   const [error, setError] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
+  const detailFocus = useDialogFocus();
+  const refreshButton = useRef<HTMLButtonElement>(null);
+  const historyHeading = useRef<HTMLHeadingElement>(null);
   async function cancel(id: string) {
     setPending(id);
     setError(false);
@@ -43,8 +48,11 @@ export function RunHistory({ workflowId, canCancel }: { workflowId: string; canC
   return (
     <section className="space-y-5 p-6" aria-label={t("runs")}>
       <header className="flex items-center justify-between">
-        <h2 className="font-semibold">{t("runs")}</h2>
+        <h2 ref={historyHeading} tabIndex={-1} className="font-semibold">
+          {t("runs")}
+        </h2>
         <Button
+          ref={refreshButton}
           variant="outline"
           size="sm"
           onClick={() => void list.refetch()}
@@ -97,11 +105,20 @@ export function RunHistory({ workflowId, canCancel }: { workflowId: string; canC
             <p className="mt-3 text-xs text-muted-foreground">
               {t("completedSteps", { count: run.steps.length })}
             </p>
+            {run.status === "waiting" && (
+              <p className="mt-3 text-sm text-muted-foreground">
+                <WaitTimestamp value={run.resumeAt} label={t("scheduledResume")} />
+                <span className="mt-1 block text-xs">{t("waitRecoveryHint")}</span>
+              </p>
+            )}
             <Button
               variant="outline"
               size="sm"
               className="mt-3"
-              onClick={() => setSelected(run.id)}
+              onClick={(event) => {
+                detailFocus.remember(event.currentTarget);
+                setSelected(run.id);
+              }}
             >
               {t("viewRun")}
             </Button>
@@ -113,7 +130,7 @@ export function RunHistory({ workflowId, canCancel }: { workflowId: string; canC
                 {t("runError")} <bdi className="font-mono text-xs">{run.errorId}</bdi>
               </p>
             )}
-            {canCancel && (run.status === "queued" || run.status === "running") && (
+            {canCancel && ["queued", "running", "waiting"].includes(run.status) && (
               <Button
                 className="mt-3"
                 variant="outline"
@@ -131,6 +148,12 @@ export function RunHistory({ workflowId, canCancel }: { workflowId: string; canC
         <RunDetailDialog
           workflowId={workflowId}
           runId={selected}
+          onCloseAutoFocus={(event) => {
+            const refresh = refreshButton.current;
+            const fallback =
+              refresh?.isConnected === true && !refresh.disabled ? refresh : historyHeading.current;
+            detailFocus.restore(event, fallback);
+          }}
           onClose={() => setSelected(null)}
         />
       )}

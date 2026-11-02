@@ -1,5 +1,11 @@
 # Better Auth implementation and qualification
 
+> GitHub migration notice, 2 November 2026: live execution, assignments, blockers and release status are maintained in [the auth issues](https://github.com/KhademOHAli1/warpdrive/issues?q=is%3Aissue+label%3Amodule%3Aauth) and [the central Warpdrive Project](https://github.com/users/KhademOHAli1/projects/3). Use [the roadmap index](https://github.com/KhademOHAli1/warpdrive/blob/main/ROADMAP.md) and [tracking guide](https://github.com/KhademOHAli1/warpdrive/blob/main/docs/delivery/tracking.md) to find the canonical issue and preserved original task ID.
+>
+> This document and its linked execution CSV/JSON records retain dated observations. Earlier references to a live register, current status or source of truth in these historical records are superseded by GitHub. Approved scope, technical decisions, acceptance criteria, dependencies, receipts and unfinished gates remain preserved; historical branch or ownership notes do not authorize current publication.
+>
+> Keep the original task rows and machine-readable schemas intact. Generate new execution snapshots from GitHub with `python3 scripts/delivery/tracking.py snapshot`; record new live progress on the canonical issue instead of maintaining another manual ledger. Source implementation, green integrated CI, user-journey acceptance, release, deployment and real provider/installation acceptance remain separate gates.
+
 Prepared 31 October 2026 from fork baseline `01dd1dd`, then merged with latest main `d37518a`
 and its upstream import/permission updates. The upstream migration 0077 is preserved;
 authentication migrations follow as 0078 through 0082. The scope is the
@@ -27,7 +33,7 @@ alone does not satisfy required MFA. The default idle, absolute and freshness li
 30 minutes, 168 hours and 5 minutes. The same CRM authority and active-user checks remain in
 HTTP, tRPC, server actions and WebSocket admission.
 
-## Implementation coverage
+## Historical implementation coverage
 
 | Plan           | Implemented evidence                                                                                                                                                                                                  |
 | -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
