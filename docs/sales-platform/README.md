@@ -1,5 +1,11 @@
 # Sales platform implementation
 
+> GitHub migration notice, 2 November 2026: live execution, assignments, blockers and release status are maintained in [the sales issues](https://github.com/KhademOHAli1/warpdrive/issues?q=is%3Aissue+label%3Amodule%3Asales) and [the central Warpdrive Project](https://github.com/users/KhademOHAli1/projects/3). Use [the roadmap index](https://github.com/KhademOHAli1/warpdrive/blob/main/ROADMAP.md) and [tracking guide](https://github.com/KhademOHAli1/warpdrive/blob/main/docs/delivery/tracking.md) to find the canonical issue and preserved original task ID.
+>
+> This document and its linked execution CSV/JSON records retain dated observations. Earlier references to a live register, current status or source of truth in these historical records are superseded by GitHub. Approved scope, technical decisions, acceptance criteria, dependencies, receipts and unfinished gates remain preserved; historical branch or ownership notes do not authorize current publication.
+>
+> Keep the original task rows and machine-readable schemas intact. Generate new execution snapshots from GitHub with `python3 scripts/delivery/tracking.py snapshot`; record new live progress on the canonical issue instead of maintaining another manual ledger. Source implementation, green integrated CI, user-journey acceptance, release, deployment and real provider/installation acceptance remain separate gates.
+
 Ali approved the complete sixteen-project, 128-task programme on 31 October 2026.
 The `approved/` directory preserves the original eight-file roadmap byte for byte.
 Its proposal wording describes the earlier planning state. The handoff approval
@@ -28,10 +34,11 @@ further migrations. Sales has no migration number allocated and will not
 independently use unreserved 0094 or combine dirty MAIL snapshots. See the existing
 [agreement](../integration-execution/mail-platform-agreement-proposal.md).
 
-## Progress and evidence
+## Historical progress and evidence
 
-- `task-ledger.json` retains every approved parent ID and dependency. No parent
-  task is complete merely because a source audit or test subset passes.
+- `task-ledger.json` retains every approved parent ID and dependency as a historical
+  execution observation. GitHub owns subsequent live progress. No parent task is
+  complete merely because a source audit or test subset passes.
 - `critical-journeys.json` maps existing protection checks, fixtures and missing
   runtime/provider/reviewer evidence.
 - [Permission and fixture bindings](critical-journey-permission-fixtures.json)

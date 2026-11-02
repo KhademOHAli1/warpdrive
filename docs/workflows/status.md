@@ -1,11 +1,17 @@
 # Visual workflow implementation status
 
+> GitHub migration notice, 2 November 2026: live execution, assignments, blockers and release status are maintained in [the workflow issues](https://github.com/KhademOHAli1/warpdrive/issues?q=is%3Aissue+label%3Amodule%3Aworkflow) and [the central Warpdrive Project](https://github.com/users/KhademOHAli1/projects/3). Use [the roadmap index](https://github.com/KhademOHAli1/warpdrive/blob/main/ROADMAP.md) and [tracking guide](https://github.com/KhademOHAli1/warpdrive/blob/main/docs/delivery/tracking.md) to find the canonical issue and preserved original task ID.
+>
+> This document and its linked execution CSV/JSON records retain dated observations. Earlier references to a live register, current status or source of truth in these historical records are superseded by GitHub. Approved scope, technical decisions, acceptance criteria, dependencies, receipts and unfinished gates remain preserved; historical branch or ownership notes do not authorize current publication.
+>
+> Keep the original task rows and machine-readable schemas intact. Generate new execution snapshots from GitHub with `python3 scripts/delivery/tracking.py snapshot`; record new live progress on the canonical issue instead of maintaining another manual ledger. Source implementation, green integrated CI, user-journey acceptance, release, deployment and real provider/installation acceptance remain separate gates.
+
 Updated: 31 October 2026. Builder interaction continuation: `codex/workflow-builder-ux`,
 based on `d0c83e8` of `codex/visual-workflows`, with fork main `a1a8f6d` merged. The branch incorporates fork main
 `a1a8f6d`, including the latest sign-in/help/recovery interface, and remains separate from other active
 checkouts. No workflow changes have been merged into main by this work.
 
-## Current milestone
+## Historical milestone observation
 
 The connectable manual node builder is implemented: choose a blank canvas or follow-up
 template, insert nodes, drag/save positions, draw/reconnect/remove edges, configure exclusive
@@ -24,7 +30,7 @@ The root README, documentation index, introduction, architecture, setup, updatin
 contributing, regional-settings guide, workflow user guide, and operations notes were
 refreshed. The index now also links the merged authentication documentation.
 
-## Task ledger
+## Historical task ledger
 
 | Tasks      | Current state and remaining scope                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

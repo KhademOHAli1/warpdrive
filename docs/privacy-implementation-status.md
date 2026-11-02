@@ -1,5 +1,11 @@
 # Privacy implementation status and evidence
 
+> GitHub migration notice, 2 November 2026: live execution, assignments, blockers and release status are maintained in [the privacy issues](https://github.com/KhademOHAli1/warpdrive/issues?q=is%3Aissue+label%3Amodule%3Aprivacy) and [the central Warpdrive Project](https://github.com/users/KhademOHAli1/projects/3). Use [the roadmap index](https://github.com/KhademOHAli1/warpdrive/blob/main/ROADMAP.md) and [tracking guide](https://github.com/KhademOHAli1/warpdrive/blob/main/docs/delivery/tracking.md) to find the canonical issue and preserved original task ID.
+>
+> This document and its linked execution CSV/JSON records retain dated observations. Earlier references to a live register, current status or source of truth in these historical records are superseded by GitHub. Approved scope, technical decisions, acceptance criteria, dependencies, receipts and unfinished gates remain preserved; historical branch or ownership notes do not authorize current publication.
+>
+> Keep the original task rows and machine-readable schemas intact. Generate new execution snapshots from GitHub with `python3 scripts/delivery/tracking.py snapshot`; record new live progress on the canonical issue instead of maintaining another manual ledger. Source implementation, green integrated CI, user-journey acceptance, release, deployment and real provider/installation acceptance remain separate gates.
+
 Execution started 31 October 2026 on `codex/privacy-data-lifecycle`, from `a1a8f6da1ce366c35002900bf33508356dfbb995`. The integration and calendar worktrees remain independently owned. The approved [PRD](PRD-warpdrive-privacy-data-lifecycle.md), [backlog](privacy-data-lifecycle-tasks.md) and [test design](privacy-data-lifecycle-tests.md) remain the full scope.
 
 The persistent goal is ACTIVE. Source implementation, local synthetic qualification, exact-revision CI, operator review and installed acceptance are separate gates. No task is ACCEPTED by this document.
@@ -8,7 +14,7 @@ Private progress on 1 November 2026: current object storage passed all 12 real s
 
 The next private UI increment adds localized reviewer intake at the existing privacy root, with minimal paged rows and frozen assignment retries. After actual missing-UI and cached-receipt denial failures, 69 focused UI/workspace/registry cases passed. The locale audit passed. After correcting three typed-lint errors and one warning, all 69 regressions passed again, and the declared Next type-generation/full TSC plus 12-file typed ESLint passed under the third one-use compiler allocation. The second allocation returned unstarted because another compiler was active. These are private-source results; current-main integration, exact-revision CI, browser/native-auth/device acceptance and the remainder of the reviewer workspace stay open. See [reviewer intake](privacy-reviewer-intake.md).
 
-## Task register
+## Historical task register
 
 | Task   | Status      | Current evidence or next required work                                                                                                                                                                                                                   |
 | ------ | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

@@ -1,0 +1,51 @@
+name: Delivery checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: read
+  pull-requests: read
+
+concurrency:
+  group: delivery-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tooling:
+    name: Delivery tooling
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Test import reconciliation and release gates
+        run: python3 -m unittest discover -s scripts/delivery -p '*test*.py' -v
+      - name: Validate complete roadmap
+        run: python3 scripts/delivery/tracking.py validate
+
+  traceability:
+    name: Delivery traceability
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Link every included main commit to canonical issues
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BEFORE: ${{ github.event.before }}
+          REVISION: ${{ github.sha }}
+        run: |
+          if [ -z "$BEFORE" ]; then
+            BEFORE=$(python3 -c 'import json; print(json.load(open("docs/delivery/release-policy.json"))["traceability_baseline"])')
+          fi
+          python3 scripts/delivery/release.py verify-commits --base "$BEFORE" --revision "$REVISION"

@@ -1,0 +1,37 @@
+name: Delivery completion gate
+
+on:
+  issues:
+    types: [closed]
+  workflow_dispatch:
+    inputs:
+      issue:
+        description: Canonical issue number to audit
+        required: true
+        type: number
+
+permissions:
+  contents: read
+  actions: read
+  issues: write
+
+concurrency:
+  group: delivery-acceptance-${{ github.event.issue.number || inputs.issue }}
+  cancel-in-progress: false
+
+jobs:
+  acceptance:
+    name: Verify completed scope
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Reopen completed issues without exact-main CI and acceptance
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ github.event.issue.number || inputs.issue }}
+        run: python3 scripts/delivery/release.py audit-closed --issue "$ISSUE_NUMBER"

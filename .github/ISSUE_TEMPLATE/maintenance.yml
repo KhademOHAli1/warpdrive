@@ -1,0 +1,46 @@
+name: Maintenance, dependency, migration or operations
+description: Track a bounded maintenance change with verification and recovery.
+title: "[Maintenance]: "
+labels: ["type:maintenance", "module:operations"]
+assignees: [KhademOHAli1]
+body:
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      options:
+        - Dependency update
+        - Database migration
+        - Operational improvement
+        - Release tooling
+        - Documentation or housekeeping
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Problem, approved scope and canonical links
+      description: Include original IDs, exact versions or revisions, affected consumers and actual owner. Keep credentials and installed evidence private.
+    validations:
+      required: true
+  - type: textarea
+    id: impact
+    attributes:
+      label: Compatibility, data impact and recovery
+      description: For migrations, coordinate canonical numbering with the integrator and preserve applied history. Describe rollback or forward recovery.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria and checks
+      description: Exact expected outcome, bounded tests, lockfile behavior and any installed/provider acceptance. Use the existing heavy-job queue for builds, databases and whole-app compiler checks.
+    validations:
+      required: true
+  - type: textarea
+    id: authorization
+    attributes:
+      label: Publication and operational boundary
+      description: Name the integration owner, target milestone and any separate deployment or external-provider authorization still required.
+    validations:
+      required: true

@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "repository": "KhademOHAli1/warpdrive",
+  "traceability_baseline": "ee36663b3318ba84b7a0b1600e34e773f9597d88",
+  "required_workflows": {
+    "ci.yml": ["CRM checks", "Marketing site checks", "Documentation site checks"],
+    "delivery.yml": ["Delivery tooling", "Delivery traceability"]
+  },
+  "initial_milestone": "Next usable release: Core CRM journeys",
+  "initial_journeys": [
+    "deal-stages",
+    "calendar-reminders",
+    "mailbox-recovery",
+    "durable-follow-up"
+  ],
+  "initial_journey_ids": {
+    "deal-stages": "ops/journey-deal-stages",
+    "calendar-reminders": "ops/journey-calendar-reminders",
+    "mailbox-recovery": "ops/journey-mailbox-recovery",
+    "durable-follow-up": "ops/journey-durable-follow-up"
+  }
+}

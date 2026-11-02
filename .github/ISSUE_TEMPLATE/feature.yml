@@ -1,0 +1,44 @@
+name: Feature or improvement
+description: Propose a bounded outcome or reconcile an approved roadmap item.
+title: "[Feature]: "
+labels: ["type:feature"]
+assignees: [KhademOHAli1]
+body:
+  - type: markdown
+    attributes:
+      value: "Search existing canonical issues first. Product/technical decisions stay in specifications; execution status lives in GitHub. Do not include private customer evidence."
+  - type: textarea
+    id: outcome
+    attributes:
+      label: User outcome and approved scope
+      description: Who needs this, what usable outcome changes, and links to the approved specification or proposal requiring approval.
+    validations:
+      required: true
+  - type: textarea
+    id: mapping
+    attributes:
+      label: Existing canonical issue and roadmap IDs
+      description: Identify overlapping requirements. One implementation should have one canonical issue.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: Complete observable criteria, permissions, persistence, failure/recovery and scope-specific provider/installation checks.
+    validations:
+      required: true
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Blocking dependencies and owner
+      description: Link actual blockers and responsible owner. Separate shared-contract decisions from private implementation work.
+    validations:
+      required: true
+  - type: textarea
+    id: validation
+    attributes:
+      label: Validation and release scope
+      description: Planned checks and usable journey milestone. Source implementation, integration, acceptance, release and deployment are distinct.
+    validations:
+      required: true

@@ -1,0 +1,42 @@
+name: Bug report
+description: Report a reproducible problem with a usable CRM journey.
+title: "[Bug]: "
+labels: ["type:bug"]
+assignees: [KhademOHAli1]
+body:
+  - type: markdown
+    attributes:
+      value: "This repository is public. Remove customer data, messages, addresses, credentials and private logs. Report vulnerabilities through the private security link instead."
+  - type: input
+    id: version
+    attributes:
+      label: Version and revision
+      description: Release tag or full commit SHA, and installation type.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction and expected result
+      description: Minimal sanitized steps, actual result, expected result and affected user journey.
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Canonical issue, scope and impact
+      description: Link existing issue or original roadmap IDs. Describe frequency and any recoverable failure.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: Observable conditions that prove the whole reported problem is fixed, including a regression and failure/retry case.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Sanitized evidence
+      description: Public CI links or synthetic screenshots only. State which installed/provider checks are still unperformed.
