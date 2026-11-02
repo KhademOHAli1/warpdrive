@@ -9,6 +9,7 @@ import { displayNodeName, isAutomaticNodeName } from "../nodeNames";
 import type { WorkflowDefinition, WorkflowNode } from "../schemas";
 import { BindingField } from "./BindingField";
 import { ConditionFields } from "./ConditionFields";
+import { DelayFields } from "./DelayFields";
 
 export function NodeInspector({
   definition,
@@ -113,6 +114,13 @@ export function NodeInspector({
               allowLiteral={false}
             />
           </>
+        )}
+        {node.type === "delay" && (
+          <DelayFields
+            value={node.config.minutes}
+            editable={editable}
+            onChange={(minutes) => onChange({ ...node, config: { ...node.config, minutes } })}
+          />
         )}
         {node.type === "condition" && (
           <ConditionFields

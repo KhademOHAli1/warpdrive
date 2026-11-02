@@ -23,6 +23,7 @@ export async function readRunDetail(
       id: workflowRuns.id,
       status: workflowRuns.status,
       mode: workflowRuns.mode,
+      resumeAt: workflowRuns.resumeAt,
       nextNodeId: workflowRuns.nextNodeId,
       errorId: workflowRuns.errorId,
       createdAt: workflowRuns.createdAt,
@@ -46,10 +47,19 @@ export async function readRunDetail(
       nodeId: workflowSteps.nodeId,
       simulated: workflowSteps.simulated,
       completedAt: workflowSteps.completedAt,
+      output: workflowSteps.output,
     })
     .from(workflowSteps)
     .where(eq(workflowSteps.runId, runId))
     .orderBy(workflowSteps.completedAt);
   signal.throwIfAborted();
-  return ok({ ...run, steps });
+  const safeSteps = steps.map(({ output, ...step }) => {
+    const node = run.definition.nodes.find((item) => item.id === step.nodeId);
+    const deadline = node?.type === "delay" ? z.iso.datetime().safeParse(output.resumeAt) : null;
+    return {
+      ...step,
+      ...(deadline?.success === true ? { waitResumeAt: new Date(deadline.data) } : {}),
+    };
+  });
+  return ok({ ...run, steps: safeSteps });
 }

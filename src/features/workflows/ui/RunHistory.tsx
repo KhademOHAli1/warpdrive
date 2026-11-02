@@ -11,6 +11,7 @@ import { readCsrfToken } from "@/utils/csrfCookie";
 import { cancelWorkflowAction } from "../actions";
 import { RunDetailDialog } from "./RunDetailDialog";
 import { useDialogFocus } from "./useDialogFocus";
+import { WaitTimestamp } from "./WaitTimestamp";
 
 export function RunHistory({ workflowId, canCancel }: { workflowId: string; canCancel: boolean }) {
   const t = useAppTranslations("workflows");
@@ -19,7 +20,7 @@ export function RunHistory({ workflowId, canCancel }: { workflowId: string; canC
     { id: workflowId },
     {
       refetchInterval: (query) =>
-        query.state.data?.some((row) => row.status === "queued" || row.status === "running") ===
+        query.state.data?.some((row) => ["queued", "running", "waiting"].includes(row.status)) ===
         true
           ? 2500
           : false,
@@ -104,6 +105,12 @@ export function RunHistory({ workflowId, canCancel }: { workflowId: string; canC
             <p className="mt-3 text-xs text-muted-foreground">
               {t("completedSteps", { count: run.steps.length })}
             </p>
+            {run.status === "waiting" && (
+              <p className="mt-3 text-sm text-muted-foreground">
+                <WaitTimestamp value={run.resumeAt} label={t("scheduledResume")} />
+                <span className="mt-1 block text-xs">{t("waitRecoveryHint")}</span>
+              </p>
+            )}
             <Button
               variant="outline"
               size="sm"
@@ -123,7 +130,7 @@ export function RunHistory({ workflowId, canCancel }: { workflowId: string; canC
                 {t("runError")} <bdi className="font-mono text-xs">{run.errorId}</bdi>
               </p>
             )}
-            {canCancel && (run.status === "queued" || run.status === "running") && (
+            {canCancel && ["queued", "running", "waiting"].includes(run.status) && (
               <Button
                 className="mt-3"
                 variant="outline"

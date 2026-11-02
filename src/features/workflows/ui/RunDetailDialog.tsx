@@ -27,7 +27,8 @@ export function RunDetailDialog({
     { id: workflowId, runId },
     {
       refetchInterval: (state) =>
-        state.state.data?.status === "queued" || state.state.data?.status === "running"
+        state.state.data !== undefined &&
+        ["queued", "running", "waiting"].includes(state.state.data.status)
           ? 2500
           : false,
     },

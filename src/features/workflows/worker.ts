@@ -1,4 +1,4 @@
-import { asc, inArray } from "drizzle-orm";
+import { and, asc, eq, inArray, lte, notInArray, sql } from "drizzle-orm";
 import type { PgBoss } from "pg-boss";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import { PGBOSS_QUEUE_WORKFLOW_RECONCILE, PGBOSS_QUEUE_WORKFLOW_RUN } from "@/constants/jobNames";
@@ -8,6 +8,8 @@ import { getBoss } from "@/jobs/boss";
 import { advanceWorkflowRun } from "./execution";
 
 const JOB_OPTIONS = { retryLimit: 3, expireInSeconds: 60, singletonSeconds: 30 };
+const RECONCILE_BATCH_SIZE = 100;
+const DUE_WAIT_CAPACITY = 50;
 
 export async function enqueueWorkflowRun(boss: PgBoss, runId: string) {
   return boss.send(PGBOSS_QUEUE_WORKFLOW_RUN, { runId }, { ...JOB_OPTIONS, singletonKey: runId });
@@ -26,14 +28,37 @@ export async function nudgeWorkflowRun(runId: string): Promise<void> {
 }
 
 export async function reconcileWorkflowRuns(boss: PgBoss, db: Db, signal: AbortSignal) {
-  const rows = await db
+  // A stalled ready backlog must not exclude due waits from every sweep.
+  const waiting = await db
     .select({ id: workflowRuns.id })
     .from(workflowRuns)
-    .where(inArray(workflowRuns.status, ["queued", "running"]))
-    .orderBy(asc(workflowRuns.updatedAt))
-    .limit(100);
+    .where(
+      and(
+        eq(workflowRuns.status, "waiting"),
+        lte(workflowRuns.resumeAt, sql`statement_timestamp()`),
+      ),
+    )
+    .orderBy(asc(workflowRuns.resumeAt), asc(workflowRuns.id))
+    .limit(DUE_WAIT_CAPACITY);
   signal.throwIfAborted();
-  for (const row of rows) {
+  const ready = await db
+    .select({ id: workflowRuns.id })
+    .from(workflowRuns)
+    .where(
+      and(
+        inArray(workflowRuns.status, ["queued", "running"]),
+        waiting.length === 0
+          ? undefined
+          : notInArray(
+              workflowRuns.id,
+              waiting.map((row) => row.id),
+            ),
+      ),
+    )
+    .orderBy(asc(workflowRuns.updatedAt), asc(workflowRuns.id))
+    .limit(RECONCILE_BATCH_SIZE - waiting.length);
+  signal.throwIfAborted();
+  for (const row of [...waiting, ...ready]) {
     await enqueueWorkflowRun(boss, row.id);
     signal.throwIfAborted();
   }

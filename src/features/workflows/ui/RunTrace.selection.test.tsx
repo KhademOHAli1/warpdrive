@@ -25,6 +25,7 @@ it("exposes the selected historical step and updates its accessible state by key
     number: 1,
     status: "succeeded",
     mode: "simulation",
+    resumeAt: null,
     errorId: null,
     nextNodeId: null,
     createdAt: new Date("2026-10-31T12:00:00Z"),
