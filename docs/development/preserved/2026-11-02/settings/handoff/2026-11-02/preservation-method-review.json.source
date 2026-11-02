@@ -1,0 +1,11 @@
+{
+  "at": "2026-11-02T07:34:02.687230+00:00",
+  "review": "preserve.py independent read-only review completed before execution",
+  "correctionsBeforeFirstExecution": [
+    "Push explicitly to verified GitHub URL rather than trusting origin pushurl",
+    "Disable Git hooks for every preservation Git invocation",
+    "Hash original index bytes; use alternate index exclusively for staged tree",
+    "Reject absolute/traversing allowlist paths and symlinked parents"
+  ],
+  "execution": "No checkout/reset/stash/normal index mutation; old HEAD and dirty status retained. Local blobs verified against source hashes before push; exact remote ref SHA verified after push. Unfinished commits use skip ci; no publication to main."
+}

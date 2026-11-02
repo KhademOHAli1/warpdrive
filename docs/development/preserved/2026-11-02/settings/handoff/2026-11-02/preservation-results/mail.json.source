@@ -1,0 +1,15 @@
+{
+  "owner": "MAIL",
+  "branch": "codex/preserve-mail-20261102",
+  "commit": "300f0784be93b2e187980f0894db30fea64d42d5",
+  "tree": "82aaaca392d6c9e7bf4a9caff0a3091a1ca1efa4",
+  "sourceFiles": 114,
+  "extras": 0,
+  "remoteVerified": true,
+  "sourceIndexHeadStatusUnchanged": true,
+  "allPreservedBlobsVerified": true,
+  "mainMutated": false,
+  "deployment": false,
+  "ci": "intentionally skipped for unfinished preservation",
+  "at": "2026-11-02T07:29:03.421643+00:00"
+}

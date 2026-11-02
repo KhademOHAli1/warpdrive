@@ -19,6 +19,7 @@ import {
   SettingsIcon,
 } from "./NavIcons";
 import { type SidebarChild, SidebarMenuItem } from "./SidebarMenuItem";
+import { SidebarToggle } from "./SidebarToggle";
 
 const ICONS: Record<NavKey, typeof PipelineIcon> = {
   pipeline: PipelineIcon,
@@ -34,10 +35,12 @@ const ICONS: Record<NavKey, typeof PipelineIcon> = {
 export function SidebarMenu({
   expanded,
   onNavigate,
+  onToggle,
   mobile = false,
 }: {
   expanded: boolean;
   onNavigate?: () => void;
+  onToggle: () => void;
   mobile?: boolean;
 }) {
   const pathname = usePathname();
@@ -58,6 +61,22 @@ export function SidebarMenu({
         { href: "/activities/calendar", label: activities("calendar") },
       ];
     return undefined;
+  }
+  function menuItem(item: (typeof NAV_ITEMS)[number]) {
+    return (
+      <SidebarMenuItem
+        key={item.key}
+        item={{
+          ...item,
+          label: messages.nav[item.key],
+          Icon: ICONS[item.key],
+          children: children(item.key),
+        }}
+        pathname={pathname}
+        expanded={expanded}
+        onNavigate={onNavigate}
+      />
+    );
   }
   const docs = (
     <a
@@ -89,26 +108,16 @@ export function SidebarMenu({
         aria-label={messages.navigation.primary}
         className={styles.nav}
       >
-        <p className={styles.sidebarSectionTitle} aria-hidden={!expanded}>
-          {t("section")}
-        </p>
-        <div className={cn(styles.menuList, !expanded && styles.menuListCollapsed)}>
-          {NAV_ITEMS.map((item) => (
-            <SidebarMenuItem
-              key={item.key}
-              item={{
-                ...item,
-                label: messages.nav[item.key],
-                Icon: ICONS[item.key],
-                children: children(item.key),
-              }}
-              pathname={pathname}
-              expanded={expanded}
-              onNavigate={onNavigate}
-            />
-          ))}
+        <div className={styles.workspaceNav}>
+          <p className={styles.sidebarSectionTitle} aria-hidden={!expanded}>
+            {t("section")}
+          </p>
+          <div className={cn(styles.menuList, !expanded && styles.menuListCollapsed)}>
+            {NAV_ITEMS.filter((item) => item.key !== "settings").map(menuItem)}
+          </div>
         </div>
-        <div className={styles.docsSlot}>
+        <div className={styles.utilityNav}>
+          {NAV_ITEMS.filter((item) => item.key === "settings").map(menuItem)}
           {expanded ? (
             docs
           ) : (
@@ -122,6 +131,7 @@ export function SidebarMenu({
               {docs}
             </Tip>
           )}
+          {!mobile && <SidebarToggle expanded={expanded} onToggle={onToggle} />}
         </div>
       </nav>
     </div>

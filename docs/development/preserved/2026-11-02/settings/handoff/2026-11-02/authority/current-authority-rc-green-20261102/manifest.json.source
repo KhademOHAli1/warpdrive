@@ -1,0 +1,508 @@
+{
+  "status": "MINIMAL_RC_FIX_FROZEN_AFTER_ACTUAL_18PASS_4RRRED_AWAIT_COMPILER_GREEN22",
+  "createdAtUtc": "2026-11-02T01:21:37.302635+00:00",
+  "publicBase": "a29c08c356af8a308056086ecbac98f2d70683e4",
+  "archiveSha256": "8683c72be2ce30e35635c0f8abc3ed9170690f9470fd26b16e99d8c9dc3baa7a",
+  "artifactRoot": "/private/tmp/warpdrive-current-authority-baseline-a29-01a19251",
+  "plainExportNoGit": true,
+  "originalNinePostimages": [
+    {
+      "path": "src/features/auth/currentAuthorityFence.ts",
+      "postSha256": "1b8f9e4371e020adcd6582a0fe73f4ffb6853c4b61cbd5a2423875cf3a32bf9d",
+      "mode": "100644",
+      "baseSha256": null,
+      "sourcePacket": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-settings-ux/outputs/current-authority-spine-ee-20261102",
+      "failedCutSha256": "a5bcdcabaeebe4d58eb9e1fb008157b66ec2158b342b90d354f51360bcc795b8",
+      "changedSinceFailure": false,
+      "lines": 29,
+      "priorFullTscPassedSha256": "a5bcdcabaeebe4d58eb9e1fb008157b66ec2158b342b90d354f51360bcc795b8",
+      "changedSinceLintFailure": false,
+      "actualRedSha256": "a5bcdcabaeebe4d58eb9e1fb008157b66ec2158b342b90d354f51360bcc795b8",
+      "changedAfterActualRed": true
+    },
+    {
+      "path": "src/features/auth/currentNativeSession.ts",
+      "postSha256": "864f339efb4c2f0a89513819da987810a273adacf688188369cc9fbd552e052f",
+      "mode": "100644",
+      "baseSha256": null,
+      "sourcePacket": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-settings-ux/outputs/current-authority-spine-ee-20261102",
+      "failedCutSha256": "7ebf7abd3189c82c038850837fa21b20f09144db8287d260162804a8a737e481",
+      "changedSinceFailure": true,
+      "lines": 110,
+      "priorFullTscPassedSha256": "5af3a9da23c83cf3126bd0d0f3741866fce12ac51b4202a735cdc04287d1049a",
+      "changedSinceLintFailure": false,
+      "actualRedSha256": "5af3a9da23c83cf3126bd0d0f3741866fce12ac51b4202a735cdc04287d1049a",
+      "changedAfterActualRed": true
+    },
+    {
+      "path": "src/features/identity/permission-sets.service.ts",
+      "postSha256": "31b91f21a5d8498daa3034034ad538f6dec9b783f845a4f52c9d563da3abbefa",
+      "mode": "100644",
+      "baseSha256": "261de9d334142466cbe3e1f6488599c9666bde95927b5daea298740349eb3a93",
+      "sourcePacket": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-settings-ux/outputs/current-authority-spine-ee-20261102",
+      "failedCutSha256": "9eeb4b8da0833cd3718b25a71b8a2543f08e7f18258dba340dc576e347170e65",
+      "changedSinceFailure": false,
+      "lines": 104,
+      "priorFullTscPassedSha256": "9eeb4b8da0833cd3718b25a71b8a2543f08e7f18258dba340dc576e347170e65",
+      "changedSinceLintFailure": false,
+      "actualRedSha256": "9eeb4b8da0833cd3718b25a71b8a2543f08e7f18258dba340dc576e347170e65",
+      "changedAfterActualRed": true
+    },
+    {
+      "path": "src/features/auth/currentAuthority.test-helpers.ts",
+      "postSha256": "074fdad3ab511e34e98e2752558ad5e0b1796d892aa497a4a03f14703472916c",
+      "mode": "100644",
+      "baseSha256": null,
+      "sourcePacket": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-settings-ux/outputs/current-authority-spine-ee-20261102",
+      "failedCutSha256": "a46ae37690b21927599f4fe810cfd4549cf7c6437955a3011bd2123a6f44c52e",
+      "changedSinceFailure": true,
+      "lines": 248,
+      "priorFullTscPassedSha256": "54dcd25ddd2c04539c935e541bc0523ba3a2f8efaa8b9aa1e4a741e4a2031102",
+      "changedSinceLintFailure": true,
+      "actualRedSha256": "074fdad3ab511e34e98e2752558ad5e0b1796d892aa497a4a03f14703472916c",
+      "changedAfterActualRed": false
+    },
+    {
+      "path": "src/features/auth/currentNativeSession.integration.test.ts",
+      "postSha256": "73bcf7450a394fdcf2bcbf912b748626f36db09ce42e0da19ab0a5dc6885ce13",
+      "mode": "100644",
+      "baseSha256": null,
+      "sourcePacket": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-settings-ux/outputs/current-authority-spine-ee-20261102",
+      "failedCutSha256": "08da67d82da997389f181d89e3f199034eb1eb33cea45c2461791861124725ea",
+      "changedSinceFailure": false,
+      "lines": 229,
+      "priorFullTscPassedSha256": "08da67d82da997389f181d89e3f199034eb1eb33cea45c2461791861124725ea",
+      "changedSinceLintFailure": true,
+      "actualRedSha256": "73bcf7450a394fdcf2bcbf912b748626f36db09ce42e0da19ab0a5dc6885ce13",
+      "changedAfterActualRed": false
+    },
+    {
+      "path": "src/features/auth/currentAuthorityFence.integration.test.ts",
+      "postSha256": "ca73621af34b03440c121f0fd9bc0e6c87622a461d11890bfedab76ade69551a",
+      "mode": "100644",
+      "baseSha256": null,
+      "sourcePacket": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-settings-ux/outputs/current-authority-spine-ee-20261102",
+      "failedCutSha256": "ca73621af34b03440c121f0fd9bc0e6c87622a461d11890bfedab76ade69551a",
+      "changedSinceFailure": false,
+      "lines": 142,
+      "priorFullTscPassedSha256": "ca73621af34b03440c121f0fd9bc0e6c87622a461d11890bfedab76ade69551a",
+      "changedSinceLintFailure": false,
+      "actualRedSha256": "ca73621af34b03440c121f0fd9bc0e6c87622a461d11890bfedab76ade69551a",
+      "changedAfterActualRed": false
+    },
+    {
+      "path": "src/features/auth/currentAuthorityClock.integration.test.ts",
+      "postSha256": "27ac0f5a9f4173020047b3d149ee29e3e834fd6775892a1149599f7011254e56",
+      "mode": "100644",
+      "baseSha256": null,
+      "sourcePacket": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-settings-ux/outputs/current-authority-spine-ee-20261102",
+      "failedCutSha256": "27ac0f5a9f4173020047b3d149ee29e3e834fd6775892a1149599f7011254e56",
+      "changedSinceFailure": false,
+      "lines": 108,
+      "priorFullTscPassedSha256": "27ac0f5a9f4173020047b3d149ee29e3e834fd6775892a1149599f7011254e56",
+      "changedSinceLintFailure": false,
+      "actualRedSha256": "27ac0f5a9f4173020047b3d149ee29e3e834fd6775892a1149599f7011254e56",
+      "changedAfterActualRed": false
+    },
+    {
+      "path": "src/features/auth/currentAuthorityIsolation.test-helpers.ts",
+      "postSha256": "0c52b9f57b7874443e6af74fc1fd1f29392987e7b0966118086007de5ea21c93",
+      "mode": "100644",
+      "baseSha256": null,
+      "sourcePacket": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-settings-ux/outputs/current-authority-spine-rr-red-ee-20261102",
+      "failedCutSha256": "2041227f55c49dfdc469fffbacc89c706fd2fac8292a54c1fe6ad28cd2a090fd",
+      "changedSinceFailure": true,
+      "lines": 141,
+      "priorFullTscPassedSha256": "0c52b9f57b7874443e6af74fc1fd1f29392987e7b0966118086007de5ea21c93",
+      "changedSinceLintFailure": false,
+      "actualRedSha256": "0c52b9f57b7874443e6af74fc1fd1f29392987e7b0966118086007de5ea21c93",
+      "changedAfterActualRed": false
+    },
+    {
+      "path": "src/features/auth/currentAuthorityIsolation.integration.test.ts",
+      "postSha256": "09a8adafd2a505f0dfab94b1cdfcefe6c6675c57dbd46162c0ea84892225377d",
+      "mode": "100644",
+      "baseSha256": null,
+      "sourcePacket": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-settings-ux/outputs/current-authority-spine-rr-red-ee-20261102",
+      "failedCutSha256": "9c591575d95e148366478cfa689e0c58dc31e421c176bd569e8b18582b5e6af6",
+      "changedSinceFailure": true,
+      "lines": 203,
+      "priorFullTscPassedSha256": "5a07f991b07b3c82648ab854f48dfe2bcca804486854e47746e5bfbd50302e17",
+      "changedSinceLintFailure": true,
+      "actualRedSha256": "09a8adafd2a505f0dfab94b1cdfcefe6c6675c57dbd46162c0ea84892225377d",
+      "changedAfterActualRed": false
+    }
+  ],
+  "original18Preserved": true,
+  "added4Preserved": true,
+  "nativeLiteralSelection": [
+    "src/features/auth/currentNativeSession.integration.test.ts",
+    "src/features/auth/currentAuthorityFence.integration.test.ts",
+    "src/features/auth/currentAuthorityClock.integration.test.ts",
+    "src/features/auth/currentAuthorityIsolation.integration.test.ts"
+  ],
+  "preparedCaseCount": 22,
+  "productionIsolationFixApplied": true,
+  "registryPublicUnchangedKnownBlocked": true,
+  "registryInventoryRun": false,
+  "sourceReviewMetadataReconciled": false,
+  "fullPublicSourcePinCount": 5132,
+  "migrationJournalEntries": 98,
+  "migrationPinCount": 99,
+  "nativeConfig": {
+    "path": "/private/tmp/warpdrive-current-authority-baseline-a29-01a19251/.runtime/native.config.mts",
+    "sha256": "709b3983872e247568747b47addeae98e816cf6042aad353f4427422185c1a9a",
+    "envDir": false,
+    "workers": 1,
+    "fsAndViteCaches": "artifact-only; runner config loader required",
+    "configLoaded": false
+  },
+  "nativeGlobalSetup": {
+    "path": "/private/tmp/warpdrive-current-authority-baseline-a29-01a19251/.runtime/native.globalSetup.ts",
+    "sha256": "a4e17dc61760646e2487eff483256c19ccade51fa8d04716f1713cf4f30d872e",
+    "publicSetupPlus": "PG neverPull/startup30s and codex.authority.baseline=a29-01a19251 label only",
+    "postgresImage": "postgres:16-alpine",
+    "postgresPullPolicy": "neverPull",
+    "ryukImage": "testcontainers/ryuk:0.14.0",
+    "ryukPolicy": "installed separate default pull policy; Root must admit fresh cached image before imports; no shared dependency override",
+    "ryukEnabled": true,
+    "baselineRyuk": "may be reused and must be retained as protected, never assume owned by label/session alone",
+    "actualImagesOrDockerProbesPerformed": false
+  },
+  "environment": {
+    "path": "/private/tmp/warpdrive-current-authority-baseline-a29-01a19251/.runtime/synthetic-environment-lintfix.json",
+    "sha256": "0b06162689010f924debb4089b9722f40e249f122fb95a621915b0b53c79d788",
+    "cleanEnvI": true,
+    "HOMEAssigned": false,
+    "envFilesLoaded": false,
+    "dockerHost": "unix:///Users/ali/.colima/warpdrive/docker.sock",
+    "socketOverride": "/var/run/docker.sock",
+    "dockerAuth": "{} before any Testcontainers import; owned empty DOCKER_CONFIG",
+    "secrets": "synthetic placeholders only, no *_FILE values or personal config contents read",
+    "BUN_OPTIONS": "--no-env-file (job-local inside clean env before any nested Bun)"
+  },
+  "commands": {
+    "compiler": [
+      "/opt/homebrew/bin/gtimeout",
+      "--signal=TERM",
+      "--kill-after=10s",
+      "150s",
+      "/usr/bin/env",
+      "-i",
+      "PATH=/Users/ali/Developer/warpdrive/.runtime/bin:/opt/homebrew/bin:/usr/bin:/bin",
+      "NODE_ENV=test",
+      "CI=1",
+      "NEXT_TELEMETRY_DISABLED=1",
+      "DISABLE_TELEMETRY=true",
+      "DISABLE_UPDATE_CHECK=true",
+      "BASE_URL=https://app.example.test",
+      "DATABASE_URL=postgres://placeholder:placeholder@127.0.0.1:1/authority_validation_placeholder",
+      "GOOGLE_OAUTH_CLIENT_ID=synthetic-validation-only",
+      "GOOGLE_OAUTH_CLIENT_SECRET=synthetic-validation-only",
+      "GOOGLE_WORKSPACE_DOMAIN=example.test",
+      "WS_TICKET_SECRET=synthetic-authority-validation-secret-not-real-12345",
+      "WS_PUBLIC_URL=wss://app.example.test/ws",
+      "MINIO_ENDPOINT=http://127.0.0.1:1",
+      "MINIO_ACCESS_KEY=synthetic-validation-only",
+      "MINIO_SECRET_KEY=synthetic-validation-only",
+      "MINIO_BUCKET=authority-validation-only",
+      "TOKEN_ENCRYPTION_KEY=AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE=",
+      "OAUTH_SIGNING_KEY=AgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgI=",
+      "MCP_ENABLED=true",
+      "AUTH_SECRET=synthetic-authority-native-validation-only-not-real-12345",
+      "AUTH_MAIL_TRANSPORT=capture",
+      "BASE_CURRENCY=USD",
+      "SEED_ADMIN_EMAIL=admin@example.test",
+      "ALLOW_FIRST_LOGIN_ADMIN=false",
+      "TMPDIR=/private/tmp/warpdrive-current-authority-baseline-a29-01a19251/.runtime/tmp",
+      "XDG_CACHE_HOME=/private/tmp/warpdrive-current-authority-baseline-a29-01a19251/.runtime/cache/xdg",
+      "BUN_INSTALL_CACHE_DIR=/private/tmp/warpdrive-current-authority-baseline-a29-01a19251/.runtime/cache/bun-install",
+      "BUN_RUNTIME_TRANSPILER_CACHE_PATH=/private/tmp/warpdrive-current-authority-baseline-a29-01a19251/.runtime/cache/bun-transpiler",
+      "RAYON_NUM_THREADS=1",
+      "DOCKER_HOST=unix:///Users/ali/.colima/warpdrive/docker.sock",
+      "TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock",
+      "DOCKER_CONFIG=/private/tmp/warpdrive-current-authority-baseline-a29-01a19251/.runtime/docker-config",
+      "DOCKER_AUTH_CONFIG={}",
+      "TESTCONTAINERS_RYUK_DISABLED=false",
+      "RYUK_CONTAINER_IMAGE=testcontainers/ryuk:0.14.0",
+      "DEBUG=testcontainers",
+      "BUN_OPTIONS=--no-env-file",
+      "/bin/bash",
+      "/private/tmp/warpdrive-current-authority-baseline-a29-01a19251/.runtime/compiler-rcgreen-inner.sh"
+    ],
+    "native": [
+      "/opt/homebrew/bin/gtimeout",
+      "--signal=TERM",
+      "--kill-after=10s",
+      "90s",
+      "/usr/bin/env",
+      "-i",
+      "PATH=/Users/ali/Developer/warpdrive/.runtime/bin:/opt/homebrew/bin:/usr/bin:/bin",
+      "NODE_ENV=test",
+      "CI=1",
+      "NEXT_TELEMETRY_DISABLED=1",
+      "DISABLE_TELEMETRY=true",
+      "DISABLE_UPDATE_CHECK=true",
+      "BASE_URL=https://app.example.test",
+      "DATABASE_URL=postgres://placeholder:placeholder@127.0.0.1:1/authority_validation_placeholder",
+      "GOOGLE_OAUTH_CLIENT_ID=synthetic-validation-only",
+      "GOOGLE_OAUTH_CLIENT_SECRET=synthetic-validation-only",
+      "GOOGLE_WORKSPACE_DOMAIN=example.test",
+      "WS_TICKET_SECRET=synthetic-authority-validation-secret-not-real-12345",
+      "WS_PUBLIC_URL=wss://app.example.test/ws",
+      "MINIO_ENDPOINT=http://127.0.0.1:1",
+      "MINIO_ACCESS_KEY=synthetic-validation-only",
+      "MINIO_SECRET_KEY=synthetic-validation-only",
+      "MINIO_BUCKET=authority-validation-only",
+      "TOKEN_ENCRYPTION_KEY=AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE=",
+      "OAUTH_SIGNING_KEY=AgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgI=",
+      "MCP_ENABLED=true",
+      "AUTH_SECRET=synthetic-authority-native-validation-only-not-real-12345",
+      "AUTH_MAIL_TRANSPORT=capture",
+      "BASE_CURRENCY=USD",
+      "SEED_ADMIN_EMAIL=admin@example.test",
+      "ALLOW_FIRST_LOGIN_ADMIN=false",
+      "TMPDIR=/private/tmp/warpdrive-current-authority-baseline-a29-01a19251/.runtime/tmp",
+      "XDG_CACHE_HOME=/private/tmp/warpdrive-current-authority-baseline-a29-01a19251/.runtime/cache/xdg",
+      "BUN_INSTALL_CACHE_DIR=/private/tmp/warpdrive-current-authority-baseline-a29-01a19251/.runtime/cache/bun-install",
+      "BUN_RUNTIME_TRANSPILER_CACHE_PATH=/private/tmp/warpdrive-current-authority-baseline-a29-01a19251/.runtime/cache/bun-transpiler",
+      "RAYON_NUM_THREADS=1",
+      "DOCKER_HOST=unix:///Users/ali/.colima/warpdrive/docker.sock",
+      "TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock",
+      "DOCKER_CONFIG=/private/tmp/warpdrive-current-authority-baseline-a29-01a19251/.runtime/docker-config",
+      "DOCKER_AUTH_CONFIG={}",
+      "TESTCONTAINERS_RYUK_DISABLED=false",
+      "RYUK_CONTAINER_IMAGE=testcontainers/ryuk:0.14.0",
+      "DEBUG=testcontainers",
+      "BUN_OPTIONS=--no-env-file",
+      "/bin/bash",
+      "/private/tmp/warpdrive-current-authority-baseline-a29-01a19251/.runtime/native-rcgreen-inner.sh"
+    ]
+  },
+  "budget": {
+    "overallIncludingCleanupSeconds": 300,
+    "compilerWorkSeconds": 150,
+    "compilerKillGraceSeconds": 10,
+    "nativeWorkSeconds": 90,
+    "nativeKillGraceSeconds": 10,
+    "cleanupReserveSeconds": 40,
+    "rootOwnsOverallClockGroupResourcesCleanup": true,
+    "nativeGate": "all compiler+typedLint9+Biome9 PASS; fresh Docker/cache/baseline; >=140s overall remaining; pressure2 requiresQ>=40, stopQ<30/critical4; all other current resource gates honored",
+    "retry": "none"
+  },
+  "expectedBaseline": "predicted original18 PASS +4 genuine RR behavior RED; no results yet. Any compile/setup/native-control/cleanup failure is not the requested RED.",
+  "execution": {
+    "actualBaselineCompiler": "PASS26.582288875s",
+    "actualBaselineNative": "18PASS4intendedRRRED8.181373667s",
+    "actualBaselineTotalCleanup": "45.793347083s/foreign3preserved",
+    "affectedBiome3": "PASS",
+    "freshConfiguredTsc": false,
+    "freshTypedLint3": false,
+    "freshNative22Green": false
+  },
+  "sourceOnlyReview": {
+    "level": "independent source-only PASS before formatting-only Biome",
+    "reviewer": "authority_rr_witness_review",
+    "result": "Both root transactions explicitlyRC; private executed current_setting assertion rejects unsupported adapters before either advisory request; exact invariant and existing error propagation, eligibility/fence key/scope retained. No runtime qualification.",
+    "finalBiome": "PASS3, formatting-only changes2files, no later semantic edits",
+    "testsSixByteIdenticalToActualRed": true
+  },
+  "pins": {
+    "postRedProductionPatchSha256": "99b12e3cf37e78dfbec29acae0aba8a5a7acd2e5b5c55ebadde62eb3be1fe651",
+    "sourceNinePatchAgainstB7Sha256": "c052d1a1afe4c4e3b6a41210f9a9a814509c5f639982ceb1db1a1e632de3d458",
+    "registryProposalPatchSha256": "02f085a88939c7de57027cda3365b3e5ea51478f3cc7294d645acf818bb4fcd0",
+    "registryProposalJsonSha256": "2a1d5db9fba2569cbabe09b9197fce4a9da349814f0290f9a48caaed974f4160",
+    "protectedRegistryPinsSha256": "178dfe7a542393513caa66d38777d0ebde04653a0843db7072a10ac90ea03840",
+    "sourcePinsSha256": "1dfc6812abeeec590eb0d931cb8f64d851b560b83f3e56f440b8664de3737d3f",
+    "runtimePinsSha256": "d3fd1a2c7543656de18d41df5f63b357fd499d2147c9ccc100b0304b52f109fe",
+    "inputPinsSha256": "c8c441cd118024e405a504daf56b2d746d999215ee3ca0f8f9db914049869a84",
+    "commandsSha256": "4680944110fdec8ac6e635ea4ff6c81f9d0c3acf92a0200da17645221ec45630",
+    "runCompilerScriptSha256": "c29a353f5cc54cdaf82d0754d6c99e1319700a616add6e2d52d149ae6a1d6020",
+    "runNativeScriptSha256": "979380fa3709d16855b93616faa4c928345d6af8ed3754e55328d56878ddffa0",
+    "biomeReceiptSha256": "d9b31ed3c46ef4e31ced7e7d732d15471014069154bc738ab62e45e3857dc03f"
+  },
+  "predecessorExecution": {
+    "receipt": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-settings-ux/outputs/current-authority-baseline-a29-20261102/execution-result.json",
+    "sha256": "a0323cc67cd363c86dd39dcee021d4c696fef930022328ebbec2021e94d05dd5",
+    "compilerExit": 2,
+    "tscDiagnostics": 14,
+    "nativeRan": false,
+    "foreign3Preserved": true,
+    "newContainersRemaining": 0
+  },
+  "failedCutPreservation": "/private/tmp/warpdrive-current-authority-baseline-a29-01a19251/.runtime/failed-corrected-lint-cut-1",
+  "changedOwnedPathsSinceCompilerFailure": [
+    "src/features/auth/currentAuthority.test-helpers.ts",
+    "src/features/auth/currentAuthorityIsolation.integration.test.ts",
+    "src/features/auth/currentNativeSession.integration.test.ts"
+  ],
+  "corrections": [
+    "4scalar statements execute tx.execute<Row>(sql SELECT AS alias) and consume rows[0], including actual production DB wall clock",
+    "bounded native observation uses public dedicated pg.Client/ClientConfig with 1s connect,1s server SQL,1.5s JS timeout,pipelinefalse and an owned error handler; connect/query/end awaited",
+    "QueryConfig has only typed text/values, no unsupported query_timeout; explicit manager actor!==null guard"
+  ],
+  "original18CasesAndThreeFilesBytePreserved": true,
+  "added4RRExpectationsPreserved": true,
+  "newInferredProductionIdDeferredUntilActualRrFix": "writer:src/features/auth/currentNativeSession.ts#execute:sql",
+  "previousExecution": {
+    "receipt": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-settings-ux/outputs/current-authority-baseline-a29-corrected-20261102/execution-result.json",
+    "sha256": "01c977a8f0049c0b509cf514d63cdc3453ddecfe4effb86a09765eeb61f17e8c",
+    "nextTypegen": "actualPASS",
+    "fullTsc": "actualPASS",
+    "typedLint9": "4findingsin3fixturepaths",
+    "native": 0,
+    "compilerSeconds": 32.760367583017796,
+    "totalCleanupSeconds": 33.28640037495643,
+    "foreign3Preserved": true
+  },
+  "productionChangedSinceActualFullTsc": false,
+  "all22ExpectationsUnchanged": true,
+  "retainedTypegen": {
+    "appConfigProductionUnchanged": true,
+    "actualPassRetained": true,
+    "concreteGeneratedOutputCount": 33,
+    "pinsSha256": "818cc35e970217d87f378b6c91917069c809148c9ddccc3043f502957be9eb5e"
+  },
+  "integrationTargetPublicCommit": "b7f4bf9c6b2e88887493441aadb01ea3dcefde44",
+  "validationCounterfactualPublicBase": "a29c08c356af8a308056086ecbac98f2d70683e4",
+  "publicCompiledInputDiffA29ToB7": [],
+  "ownedSourcePreimagesA29ToB7Unchanged": true,
+  "actualBaseline": {
+    "preservedAtUtc": "2026-11-02T01:13:37.155072+00:00",
+    "cut": "/private/tmp/warpdrive-current-authority-baseline-a29-01a19251/.runtime/rr-red-cut-1",
+    "sourcePins": [
+      {
+        "path": "src/features/auth/currentAuthorityFence.ts",
+        "sha256": "a5bcdcabaeebe4d58eb9e1fb008157b66ec2158b342b90d354f51360bcc795b8",
+        "mode": "100644"
+      },
+      {
+        "path": "src/features/auth/currentNativeSession.ts",
+        "sha256": "5af3a9da23c83cf3126bd0d0f3741866fce12ac51b4202a735cdc04287d1049a",
+        "mode": "100644"
+      },
+      {
+        "path": "src/features/identity/permission-sets.service.ts",
+        "sha256": "9eeb4b8da0833cd3718b25a71b8a2543f08e7f18258dba340dc576e347170e65",
+        "mode": "100644"
+      },
+      {
+        "path": "src/features/auth/currentAuthority.test-helpers.ts",
+        "sha256": "074fdad3ab511e34e98e2752558ad5e0b1796d892aa497a4a03f14703472916c",
+        "mode": "100644"
+      },
+      {
+        "path": "src/features/auth/currentNativeSession.integration.test.ts",
+        "sha256": "73bcf7450a394fdcf2bcbf912b748626f36db09ce42e0da19ab0a5dc6885ce13",
+        "mode": "100644"
+      },
+      {
+        "path": "src/features/auth/currentAuthorityFence.integration.test.ts",
+        "sha256": "ca73621af34b03440c121f0fd9bc0e6c87622a461d11890bfedab76ade69551a",
+        "mode": "100644"
+      },
+      {
+        "path": "src/features/auth/currentAuthorityClock.integration.test.ts",
+        "sha256": "27ac0f5a9f4173020047b3d149ee29e3e834fd6775892a1149599f7011254e56",
+        "mode": "100644"
+      },
+      {
+        "path": "src/features/auth/currentAuthorityIsolation.test-helpers.ts",
+        "sha256": "0c52b9f57b7874443e6af74fc1fd1f29392987e7b0966118086007de5ea21c93",
+        "mode": "100644"
+      },
+      {
+        "path": "src/features/auth/currentAuthorityIsolation.integration.test.ts",
+        "sha256": "09a8adafd2a505f0dfab94b1cdfcefe6c6675c57dbd46162c0ea84892225377d",
+        "mode": "100644"
+      }
+    ],
+    "compiler": "actualPASS26.582288875s",
+    "native": {
+      "total": 22,
+      "passed": 18,
+      "failed": 4,
+      "seconds": 8.181373666971922
+    },
+    "failedCases": [
+      "root native admission overrides RR defaults and sees flag revocation committed while queued",
+      "root flags writer overrides RR defaults and rechecks a revoked manager grant after its wait",
+      "an already-open RR native adapter fails with the operational invariant before asking for a fence",
+      "an already-open RR flags adapter fails with the operational invariant before asking for a fence"
+    ],
+    "cleanupTotalSeconds": 45.793347082915716,
+    "foreign3Preserved": true,
+    "nativeReportSha256": "dfd58e66e470da7308ad9ff2f209fa49826a58cf67688688f9a76651aa8dce8f",
+    "executionResultSha256": "0fb51234fd1157bb689eaf658d55c2c033868954272b7d230eadfc6e377e378c"
+  },
+  "changedAfterSealedRed": [
+    "src/features/auth/currentAuthorityFence.ts",
+    "src/features/auth/currentNativeSession.ts",
+    "src/features/identity/permission-sets.service.ts"
+  ],
+  "sixTestHelperFilesByteUnchanged": true,
+  "all22CasesOraclesUnchanged": true,
+  "fix": "root read committed options in native callback wrapper and flags service; shared private runtime assertion in both low-level fence functions BEFORE advisory requests",
+  "unsupportedAdapterError": {
+    "class": "AppError",
+    "id": "ERROR_IDS.DB_INVARIANT",
+    "message": "Current authority requires read committed"
+  },
+  "noScopeExpansion": [
+    "fence key/modes",
+    "enrolled writer set",
+    "native eligibility/legacy/freshness/touch",
+    "operational/rollback/commit/abort error translation",
+    "production SQL cancellation",
+    "provider/process effects"
+  ],
+  "registryProposal": {
+    "status": "PROPOSAL_ONLY_NOT_APPLIED_SOURCE_CLASSIFICATION_NOT_INSTALLED_CAPABILITY",
+    "publicBase": "b7f4bf9c6b2e88887493441aadb01ea3dcefde44",
+    "paths": [
+      {
+        "path": "src/features/privacy/registryIdsAuthentication1.ts",
+        "publicBaseSha256": "cda2c111b762f8dd8d6e31264b6948bb269ffd0b38381a3f7cd6f7412f9e942e",
+        "proposedSha256": "60e578d458b239176041f547e6c5c761dd88b77878a897b59e8990a4b9bc6469"
+      },
+      {
+        "path": "src/features/privacy/registryIdsAuthentication2.ts",
+        "publicBaseSha256": "03d97d57a557506b881ef8b84a9cf42bbdb8052a303ed8fe1273cef5fa8ca68c",
+        "proposedSha256": "e932615b374952353bff082e86738c82cec1a947538dcaa134d43384379057e0"
+      }
+    ],
+    "replace": [
+      {
+        "from": "sourceReview:src/features/identity/permission-sets.service.ts#261de9d334142466cbe3e1f6488599c9666bde95927b5daea298740349eb3a93",
+        "to": "sourceReview:src/features/identity/permission-sets.service.ts#31b91f21a5d8498daa3034034ad538f6dec9b783f845a4f52c9d563da3abbefa"
+      }
+    ],
+    "add": [
+      "sourceReview:src/features/auth/currentAuthorityFence.ts#1b8f9e4371e020adcd6582a0fe73f4ffb6853c4b61cbd5a2423875cf3a32bf9d",
+      "sourceReview:src/features/auth/currentNativeSession.ts#864f339efb4c2f0a89513819da987810a273adacf688188369cc9fbd552e052f",
+      "writer:src/features/auth/currentAuthorityFence.ts#execute:sql",
+      "writer:src/features/auth/currentNativeSession.ts#execute:sql",
+      "writer:src/features/auth/currentNativeSession.ts#effect:caller_adapter"
+    ],
+    "automaticSyntaxIds": [
+      "sourceReview:src/features/auth/currentAuthorityFence.ts#1b8f9e4371e020adcd6582a0fe73f4ffb6853c4b61cbd5a2423875cf3a32bf9d",
+      "sourceReview:src/features/auth/currentNativeSession.ts#864f339efb4c2f0a89513819da987810a273adacf688188369cc9fbd552e052f",
+      "sourceReview:src/features/identity/permission-sets.service.ts#31b91f21a5d8498daa3034034ad538f6dec9b783f845a4f52c9d563da3abbefa",
+      "writer:src/features/auth/currentAuthorityFence.ts#execute:sql",
+      "writer:src/features/auth/currentNativeSession.ts#execute:sql"
+    ],
+    "manualResidualId": "writer:src/features/auth/currentNativeSession.ts#effect:caller_adapter",
+    "clockClassification": "Inferred execute:sql writer identifier is a read-only DB wall-clock SELECT, not a new persistent data writer. Fence execute includes read-only isolation assertion and existing advisory locks. Classify under existing authentication; lifecycle capabilities stay unchanged/unsupported.",
+    "callbackClassification": "Explicit transaction-local caller effect boundary; domains own actual SQL mutations/publication. No provider/process side effect or generic lifecycle adapter is introduced.",
+    "preservedMcpIds": [
+      "sourceReview:src/features/oauth/authorize.ts#8c912d297b1c7950dea8780e8f8f25e66d4dab292ba99963cd232c483620432f",
+      "sourceReview:src/features/mcp/http.ts#6271ea875e43fcde24eeb2d1a2496f2ef89cbc707c1c3d2b6a8d2674f44f5e9a"
+    ],
+    "protectedRegistryFileCount": 52,
+    "registryEntriesPrivacyGroupsChanged": false,
+    "capabilityChanges": false,
+    "inventoryCliRun": false
+  },
+  "registryProposalApplied": false,
+  "expectedNative": "same22 GREEN; no tests removed/changed/skipped; not observed yet"
+}

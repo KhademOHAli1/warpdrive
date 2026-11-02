@@ -1,0 +1,48 @@
+name: Bun dependency audit
+
+on:
+  pull_request:
+    paths:
+      - "**/package.json"
+      - "**/bun.lock"
+      - ".github/workflows/bun-audit.yml"
+  push:
+    branches: [main]
+    paths:
+      - "**/package.json"
+      - "**/bun.lock"
+      - ".github/workflows/bun-audit.yml"
+  schedule:
+    - cron: "30 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bun-audit-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    name: Audit (${{ matrix.directory }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      matrix:
+        directory: [".", site, docs-site]
+    defaults:
+      run:
+        working-directory: ${{ matrix.directory }}
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Set up package-pinned Bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version-file: ${{ matrix.directory }}/package.json
+      - name: Audit the committed lockfile
+        run: bun --no-env-file audit --audit-level=high

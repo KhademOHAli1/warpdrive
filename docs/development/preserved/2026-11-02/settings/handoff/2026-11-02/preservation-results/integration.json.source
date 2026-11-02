@@ -1,0 +1,15 @@
+{
+  "owner": "Integration",
+  "branch": "codex/preserve-integration-20261102",
+  "commit": "76e6f7bb7c0e1861a8ae668fc86be5c05bfcee4c",
+  "tree": "79c2e6a1548e08e8d6492346b5f89b30d98ca472",
+  "sourceFiles": 61,
+  "extras": 113,
+  "remoteVerified": true,
+  "sourceIndexHeadStatusUnchanged": true,
+  "allPreservedBlobsVerified": true,
+  "mainMutated": false,
+  "deployment": false,
+  "ci": "intentionally skipped for unfinished preservation",
+  "at": "2026-11-02T07:32:20.202599+00:00"
+}

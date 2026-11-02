@@ -1,0 +1,15 @@
+{
+  "owner": "Privacy",
+  "branch": "codex/preserve-privacy-20261102",
+  "commit": "05c99625341f85928b10e73df9e7fda0ae6955af",
+  "tree": "b8547e5f2dbac9636d0459997c01662b4491d495",
+  "sourceFiles": 156,
+  "extras": 370,
+  "remoteVerified": true,
+  "sourceIndexHeadStatusUnchanged": true,
+  "allPreservedBlobsVerified": true,
+  "mainMutated": false,
+  "deployment": false,
+  "ci": "intentionally skipped for unfinished preservation",
+  "at": "2026-11-02T07:23:25.069349+00:00"
+}

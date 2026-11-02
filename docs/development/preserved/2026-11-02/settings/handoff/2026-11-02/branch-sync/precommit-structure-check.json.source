@@ -1,0 +1,51 @@
+[
+  {
+    "owner": "agency",
+    "conflictsResolved": 4,
+    "canonicalFilesExact": 195,
+    "packageManager": "bun@1.4.4",
+    "bunEngine": null
+  },
+  {
+    "owner": "calendar",
+    "conflictsResolved": 13,
+    "canonicalFilesExact": 195,
+    "packageManager": "bun@1.4.4",
+    "bunEngine": null
+  },
+  {
+    "owner": "integration",
+    "conflictsResolved": 1,
+    "canonicalFilesExact": 195,
+    "packageManager": "bun@1.4.4",
+    "bunEngine": null
+  },
+  {
+    "owner": "mail",
+    "conflictsResolved": 0,
+    "canonicalFilesExact": 195,
+    "packageManager": "bun@1.4.4",
+    "bunEngine": null
+  },
+  {
+    "owner": "privacy",
+    "conflictsResolved": 7,
+    "canonicalFilesExact": 195,
+    "packageManager": "bun@1.4.4",
+    "bunEngine": null
+  },
+  {
+    "owner": "sales",
+    "conflictsResolved": 9,
+    "canonicalFilesExact": 195,
+    "packageManager": "bun@1.4.4",
+    "bunEngine": null
+  },
+  {
+    "owner": "workflow",
+    "conflictsResolved": 7,
+    "canonicalFilesExact": 195,
+    "packageManager": "bun@1.4.4",
+    "bunEngine": null
+  }
+]

@@ -1,0 +1,15 @@
+{
+  "owner": "Agency",
+  "branch": "codex/preserve-agency-20261102",
+  "commit": "e87e99174aa0d6b393d16b93f2650e652d19856c",
+  "tree": "8e4a941ec20f486108ebb70128a455fde28348ac",
+  "sourceFiles": 95,
+  "extras": 175,
+  "remoteVerified": true,
+  "sourceIndexHeadStatusUnchanged": true,
+  "allPreservedBlobsVerified": true,
+  "mainMutated": false,
+  "deployment": false,
+  "ci": "intentionally skipped for unfinished preservation",
+  "at": "2026-11-02T07:37:04.971912+00:00"
+}

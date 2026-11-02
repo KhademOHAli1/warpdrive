@@ -1,0 +1,485 @@
+{
+  "id": "ROOT-AUTHORITY-RC22-GREEN-20261102-1",
+  "startedAtUtc": "2026-11-02T01:38:56.797094+00:00",
+  "artifact": "/private/tmp/warpdrive-current-authority-baseline-a29-01a19251",
+  "phases": [
+    {
+      "name": "compiler",
+      "exit": 0,
+      "seconds": 25.1336439170409,
+      "resourceStop": null
+    },
+    {
+      "name": "native",
+      "exit": 0,
+      "seconds": 7.320849208976142,
+      "resourceStop": null
+    }
+  ],
+  "samples": [
+    {
+      "phase": "compiler",
+      "seconds": 1.1501227089902386,
+      "level": 1,
+      "availablePercent": 54,
+      "freeBytes": 16320733184,
+      "ownedRssBytes": 11649024
+    },
+    {
+      "phase": "compiler",
+      "seconds": 2.184309083968401,
+      "level": 1,
+      "availablePercent": 55,
+      "freeBytes": 16318926848,
+      "ownedRssBytes": 214712320
+    },
+    {
+      "phase": "compiler",
+      "seconds": 3.219247833942063,
+      "level": 1,
+      "availablePercent": 55,
+      "freeBytes": 16315506688,
+      "ownedRssBytes": 647233536
+    },
+    {
+      "phase": "compiler",
+      "seconds": 4.264329458936118,
+      "level": 1,
+      "availablePercent": 54,
+      "freeBytes": 16318840832,
+      "ownedRssBytes": 1137606656
+    },
+    {
+      "phase": "compiler",
+      "seconds": 5.31758320890367,
+      "level": 1,
+      "availablePercent": 54,
+      "freeBytes": 16317689856,
+      "ownedRssBytes": 1816133632
+    },
+    {
+      "phase": "compiler",
+      "seconds": 6.363791166921146,
+      "level": 1,
+      "availablePercent": 54,
+      "freeBytes": 16317521920,
+      "ownedRssBytes": 2595241984
+    },
+    {
+      "phase": "compiler",
+      "seconds": 7.416225208900869,
+      "level": 1,
+      "availablePercent": 53,
+      "freeBytes": 16313298944,
+      "ownedRssBytes": 3050881024
+    },
+    {
+      "phase": "compiler",
+      "seconds": 8.463438499951735,
+      "level": 1,
+      "availablePercent": 51,
+      "freeBytes": 16307720192,
+      "ownedRssBytes": 3838574592
+    },
+    {
+      "phase": "compiler",
+      "seconds": 9.512417791993357,
+      "level": 1,
+      "availablePercent": 51,
+      "freeBytes": 16309575680,
+      "ownedRssBytes": 4181540864
+    },
+    {
+      "phase": "compiler",
+      "seconds": 10.55906887492165,
+      "level": 1,
+      "availablePercent": 50,
+      "freeBytes": 16307126272,
+      "ownedRssBytes": 4534206464
+    },
+    {
+      "phase": "compiler",
+      "seconds": 11.612831458915025,
+      "level": 1,
+      "availablePercent": 49,
+      "freeBytes": 16320815104,
+      "ownedRssBytes": 4723163136
+    },
+    {
+      "phase": "compiler",
+      "seconds": 12.66184970899485,
+      "level": 1,
+      "availablePercent": 48,
+      "freeBytes": 16322072576,
+      "ownedRssBytes": 5134598144
+    },
+    {
+      "phase": "compiler",
+      "seconds": 13.703584708971903,
+      "level": 1,
+      "availablePercent": 48,
+      "freeBytes": 16321937408,
+      "ownedRssBytes": 5360173056
+    },
+    {
+      "phase": "compiler",
+      "seconds": 14.782803833950311,
+      "level": 1,
+      "availablePercent": 47,
+      "freeBytes": 16321662976,
+      "ownedRssBytes": 5867257856
+    },
+    {
+      "phase": "compiler",
+      "seconds": 15.8281494169496,
+      "level": 1,
+      "availablePercent": 47,
+      "freeBytes": 16319406080,
+      "ownedRssBytes": 5774753792
+    },
+    {
+      "phase": "compiler",
+      "seconds": 16.86668474995531,
+      "level": 1,
+      "availablePercent": 47,
+      "freeBytes": 16317542400,
+      "ownedRssBytes": 5958746112
+    },
+    {
+      "phase": "compiler",
+      "seconds": 17.916260749916546,
+      "level": 1,
+      "availablePercent": 47,
+      "freeBytes": 16318693376,
+      "ownedRssBytes": 6465617920
+    },
+    {
+      "phase": "compiler",
+      "seconds": 18.963408416952007,
+      "level": 1,
+      "availablePercent": 46,
+      "freeBytes": 16300670976,
+      "ownedRssBytes": 2048000
+    },
+    {
+      "phase": "compiler",
+      "seconds": 20.002008209004998,
+      "level": 1,
+      "availablePercent": 46,
+      "freeBytes": 16312209408,
+      "ownedRssBytes": 175898624
+    },
+    {
+      "phase": "compiler",
+      "seconds": 21.046309458906762,
+      "level": 1,
+      "availablePercent": 47,
+      "freeBytes": 16304275456,
+      "ownedRssBytes": 455458816
+    },
+    {
+      "phase": "compiler",
+      "seconds": 22.089963458944112,
+      "level": 1,
+      "availablePercent": 47,
+      "freeBytes": 16304050176,
+      "ownedRssBytes": 876756992
+    },
+    {
+      "phase": "compiler",
+      "seconds": 23.131915833917446,
+      "level": 1,
+      "availablePercent": 47,
+      "freeBytes": 16302006272,
+      "ownedRssBytes": 1260437504
+    },
+    {
+      "phase": "compiler",
+      "seconds": 24.17243762500584,
+      "level": 1,
+      "availablePercent": 47,
+      "freeBytes": 16301592576,
+      "ownedRssBytes": 1744486400
+    },
+    {
+      "phase": "compiler",
+      "seconds": 25.213781166938134,
+      "level": 1,
+      "availablePercent": 47,
+      "freeBytes": 16300052480,
+      "ownedRssBytes": 10534912
+    },
+    {
+      "phase": "native",
+      "seconds": 26.324608041904867,
+      "level": 1,
+      "availablePercent": 47,
+      "freeBytes": 16298426368,
+      "ownedRssBytes": 11419648
+    },
+    {
+      "phase": "native",
+      "seconds": 27.366283458890393,
+      "level": 1,
+      "availablePercent": 47,
+      "freeBytes": 16302972928,
+      "ownedRssBytes": 120487936
+    },
+    {
+      "phase": "native",
+      "seconds": 28.414339374983683,
+      "level": 1,
+      "availablePercent": 47,
+      "freeBytes": 16297684992,
+      "ownedRssBytes": 148291584
+    },
+    {
+      "phase": "native",
+      "seconds": 29.45556354196742,
+      "level": 1,
+      "availablePercent": 48,
+      "freeBytes": 16249196544,
+      "ownedRssBytes": 153600000
+    },
+    {
+      "phase": "native",
+      "seconds": 30.494917833944783,
+      "level": 1,
+      "availablePercent": 48,
+      "freeBytes": 16244514816,
+      "ownedRssBytes": 366608384
+    },
+    {
+      "phase": "native",
+      "seconds": 31.531621041940525,
+      "level": 1,
+      "availablePercent": 48,
+      "freeBytes": 16243367936,
+      "ownedRssBytes": 346062848
+    },
+    {
+      "phase": "native",
+      "seconds": 32.57710649992805,
+      "level": 1,
+      "availablePercent": 48,
+      "freeBytes": 16242225152,
+      "ownedRssBytes": 365035520
+    }
+  ],
+  "groups": [
+    {
+      "phase": "compiler",
+      "pid": 74351,
+      "pgid": 74351,
+      "leaderBirth": "Mon Nov  2 02:38:57 2026    ",
+      "afterWait": []
+    },
+    {
+      "phase": "native",
+      "pid": 74552,
+      "pgid": 74552,
+      "leaderBirth": "Mon Nov  2 02:39:23 2026    ",
+      "afterWait": []
+    }
+  ],
+  "inputVerification": {
+    "artifactPins": 5204,
+    "externalTools": 2,
+    "mismatch": [],
+    "manifestSha256": "ed9aed6bd9b657736d8749fc5ba6ceb8fe935db616031a392155cc9f704d4f72"
+  },
+  "resourceBefore": {
+    "level": 1,
+    "availablePercent": 54,
+    "freeBytes": 16325259264
+  },
+  "foreignBefore": [
+    {
+      "id": "1b39c2e0cb523a1d36a2053a33cddd6391fbe26b84ca626121ee22da133bca59",
+      "image": "sha256:309ba544ea482e5d4265d09921cdab07c8dad2cc4481d715c9b8ff5d3f0a149f",
+      "created": "2026-10-31T13:42:20.377260633Z",
+      "name": "/warpdrive-mail-qualification-20261031",
+      "state": "running",
+      "running": true,
+      "pid": 565248,
+      "labels": {
+        "org.opencontainers.image.source": "https://github.com/greenmail-mail-test/greenmail/blob/master/greenmail-docker/standalone/Dockerfile",
+        "org.opencontainers.image.url": "https://github.com/greenmail-mail-test/greenmail/blob/master/greenmail-docker/standalone",
+        "warpdrive.purpose": "local-mail-qualification"
+      }
+    },
+    {
+      "id": "958f91d8250e2bf9bce3819320a47fd30ecac7711ed8007de7dcabb60d6cddee",
+      "image": "sha256:c2658820e763294a9e9de7b36c81e59b879e3459148351aee4e31a126ca64860",
+      "created": "2026-10-31T13:18:49.900308616Z",
+      "name": "/warpdrive-integration-program-s3",
+      "state": "running",
+      "running": true,
+      "pid": 527654,
+      "labels": {
+        "author": "Chris Lu",
+        "codex.owner": "warpdrive-integration-program",
+        "org.opencontainers.image.created": "2026-10-25T04:11:27.501Z",
+        "org.opencontainers.image.description": "SeaweedFS is a distributed storage system for blobs, objects, files, and data lake, to store and serve billions of files fast!",
+        "org.opencontainers.image.licenses": "Apache-2.0",
+        "org.opencontainers.image.revision": "ec8f9793502c59ce3381cc4151bfc0806afd92e8",
+        "org.opencontainers.image.source": "https://github.com/seaweedfs/seaweedfs",
+        "org.opencontainers.image.title": "seaweedfs",
+        "org.opencontainers.image.url": "https://github.com/seaweedfs/seaweedfs",
+        "org.opencontainers.image.vendor": "Chris Lu",
+        "org.opencontainers.image.version": "4.50"
+      }
+    },
+    {
+      "id": "d31835d6d2bf86f9984408fb4b01bded8395915cefe64cac7230a3ebfb6a2e6e",
+      "image": "sha256:c2658820e763294a9e9de7b36c81e59b879e3459148351aee4e31a126ca64860",
+      "created": "2026-10-29T16:16:15.648512577Z",
+      "name": "/warpdrive-local-s3",
+      "state": "running",
+      "running": true,
+      "pid": 1868,
+      "labels": {
+        "author": "Chris Lu",
+        "org.opencontainers.image.created": "2026-10-25T04:11:27.501Z",
+        "org.opencontainers.image.description": "SeaweedFS is a distributed storage system for blobs, objects, files, and data lake, to store and serve billions of files fast!",
+        "org.opencontainers.image.licenses": "Apache-2.0",
+        "org.opencontainers.image.revision": "ec8f9793502c59ce3381cc4151bfc0806afd92e8",
+        "org.opencontainers.image.source": "https://github.com/seaweedfs/seaweedfs",
+        "org.opencontainers.image.title": "seaweedfs",
+        "org.opencontainers.image.url": "https://github.com/seaweedfs/seaweedfs",
+        "org.opencontainers.image.vendor": "Chris Lu",
+        "org.opencontainers.image.version": "4.50"
+      }
+    }
+  ],
+  "dockerSetsBefore": {
+    "networks": [
+      "48cea036ee2d88be55172b37be54f8aed33f426ddb0f4459002d5b9d1b8b01b5",
+      "c8fe6619dcd06043734949f3e0eb5fc0338e5c3d248e2dfc2a2114fecdf2c7e9",
+      "e3440ebc7f565e9cac351d7ddadbd09343bdee4a6a3dcbb57a06fe85824ddac6"
+    ],
+    "volumes": [
+      "warpdrive-integration-program-s3",
+      "warpdrive-seaweed-data"
+    ]
+  },
+  "cachedImages": [
+    {
+      "tag": "postgres:16-alpine",
+      "id": "sha256:0cefaabd882e42bcb2a2f3dc56d3ce4770560ba62fd7f197f1a2e008fd5731ab",
+      "digests": [
+        "postgres@sha256:0cefaabd882e42bcb2a2f3dc56d3ce4770560ba62fd7f197f1a2e008fd5731ab"
+      ]
+    },
+    {
+      "tag": "testcontainers/ryuk:0.14.0",
+      "id": "sha256:7c1a8a9a47c780ed0f983770a662f80deb115d95cce3e2daa3d12115b8cd28f0",
+      "digests": [
+        "testcontainers/ryuk@sha256:7c1a8a9a47c780ed0f983770a662f80deb115d95cce3e2daa3d12115b8cd28f0"
+      ]
+    }
+  ],
+  "preflightSeconds": 1.0903770419536158,
+  "nativeGate": {
+    "level": 1,
+    "availablePercent": 47,
+    "freeBytes": 16298442752
+  },
+  "nativeRemainingSeconds": 273.73314733302686,
+  "cleanupStartedSeconds": 33.6274464589078,
+  "foreignAfter": [
+    {
+      "id": "1b39c2e0cb523a1d36a2053a33cddd6391fbe26b84ca626121ee22da133bca59",
+      "image": "sha256:309ba544ea482e5d4265d09921cdab07c8dad2cc4481d715c9b8ff5d3f0a149f",
+      "created": "2026-10-31T13:42:20.377260633Z",
+      "name": "/warpdrive-mail-qualification-20261031",
+      "state": "running",
+      "running": true,
+      "pid": 565248,
+      "labels": {
+        "org.opencontainers.image.source": "https://github.com/greenmail-mail-test/greenmail/blob/master/greenmail-docker/standalone/Dockerfile",
+        "org.opencontainers.image.url": "https://github.com/greenmail-mail-test/greenmail/blob/master/greenmail-docker/standalone",
+        "warpdrive.purpose": "local-mail-qualification"
+      }
+    },
+    {
+      "id": "958f91d8250e2bf9bce3819320a47fd30ecac7711ed8007de7dcabb60d6cddee",
+      "image": "sha256:c2658820e763294a9e9de7b36c81e59b879e3459148351aee4e31a126ca64860",
+      "created": "2026-10-31T13:18:49.900308616Z",
+      "name": "/warpdrive-integration-program-s3",
+      "state": "running",
+      "running": true,
+      "pid": 527654,
+      "labels": {
+        "author": "Chris Lu",
+        "codex.owner": "warpdrive-integration-program",
+        "org.opencontainers.image.created": "2026-10-25T04:11:27.501Z",
+        "org.opencontainers.image.description": "SeaweedFS is a distributed storage system for blobs, objects, files, and data lake, to store and serve billions of files fast!",
+        "org.opencontainers.image.licenses": "Apache-2.0",
+        "org.opencontainers.image.revision": "ec8f9793502c59ce3381cc4151bfc0806afd92e8",
+        "org.opencontainers.image.source": "https://github.com/seaweedfs/seaweedfs",
+        "org.opencontainers.image.title": "seaweedfs",
+        "org.opencontainers.image.url": "https://github.com/seaweedfs/seaweedfs",
+        "org.opencontainers.image.vendor": "Chris Lu",
+        "org.opencontainers.image.version": "4.50"
+      }
+    },
+    {
+      "id": "d31835d6d2bf86f9984408fb4b01bded8395915cefe64cac7230a3ebfb6a2e6e",
+      "image": "sha256:c2658820e763294a9e9de7b36c81e59b879e3459148351aee4e31a126ca64860",
+      "created": "2026-10-29T16:16:15.648512577Z",
+      "name": "/warpdrive-local-s3",
+      "state": "running",
+      "running": true,
+      "pid": 1868,
+      "labels": {
+        "author": "Chris Lu",
+        "org.opencontainers.image.created": "2026-10-25T04:11:27.501Z",
+        "org.opencontainers.image.description": "SeaweedFS is a distributed storage system for blobs, objects, files, and data lake, to store and serve billions of files fast!",
+        "org.opencontainers.image.licenses": "Apache-2.0",
+        "org.opencontainers.image.revision": "ec8f9793502c59ce3381cc4151bfc0806afd92e8",
+        "org.opencontainers.image.source": "https://github.com/seaweedfs/seaweedfs",
+        "org.opencontainers.image.title": "seaweedfs",
+        "org.opencontainers.image.url": "https://github.com/seaweedfs/seaweedfs",
+        "org.opencontainers.image.vendor": "Chris Lu",
+        "org.opencontainers.image.version": "4.50"
+      }
+    }
+  ],
+  "newContainersRemaining": [],
+  "foreignPreserved": true,
+  "dockerSetsAfter": {
+    "networks": [
+      "48cea036ee2d88be55172b37be54f8aed33f426ddb0f4459002d5b9d1b8b01b5",
+      "c8fe6619dcd06043734949f3e0eb5fc0338e5c3d248e2dfc2a2114fecdf2c7e9",
+      "e3440ebc7f565e9cac351d7ddadbd09343bdee4a6a3dcbb57a06fe85824ddac6"
+    ],
+    "volumes": [
+      "warpdrive-integration-program-s3",
+      "warpdrive-seaweed-data"
+    ]
+  },
+  "dockerSetsPreserved": true,
+  "groupTerminalCensus": [
+    {
+      "phase": "compiler",
+      "pgid": 74351,
+      "members": []
+    },
+    {
+      "phase": "native",
+      "pgid": 74552,
+      "members": []
+    }
+  ],
+  "groupsGone": true,
+  "resourceAfter": {
+    "level": 1,
+    "availablePercent": 49,
+    "freeBytes": 16209338368
+  },
+  "inputsPreserved": true,
+  "totalSeconds": 44.060252541908994,
+  "finishedAtUtc": "2026-11-02T01:39:40.857243+00:00",
+  "cleanupConfirmed": true
+}

@@ -1,0 +1,18 @@
+{
+  "formatAndErasedTypeImportOrderOnly": true,
+  "files": [
+    {
+      "path": "src/app/(app)/settings/connections/ConnectionsClient.test.tsx",
+      "beforeSha256": "635b57717ae32d0c15314eab3525a474b27de81d6eefca046bbca42c54a47e89",
+      "afterSha256": "c1c262294e76a4e11185e9651578efd71f8f1cdc49100cdef850b8e909b6ce1b",
+      "emittedJavaScriptIdentical": true
+    },
+    {
+      "path": "src/app/(app)/settings/connections/ConnectionsClient.tsx",
+      "beforeSha256": "29aba40d6c3a47b5792dacf8115e8d926f9069ce7d512201d19e6196231c79b0",
+      "afterSha256": "6f70f1d84b99557c2aad5363eee9cce17774a1562bd51df0e2e0d9da592b170a",
+      "emittedJavaScriptIdentical": true
+    }
+  ],
+  "retainedUnitEvidence": "Calendar87 pre-format passes; no re-execution claimed"
+}

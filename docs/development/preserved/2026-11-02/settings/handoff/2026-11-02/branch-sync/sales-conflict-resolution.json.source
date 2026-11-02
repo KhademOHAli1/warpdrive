@@ -1,0 +1,328 @@
+{
+  "state": "SOURCE_CONFLICTS_RESOLVED_NOT_FEATURE_QUALIFIED",
+  "atUtc": "2026-11-02T08:39:41.115974+00:00",
+  "candidate": "/private/tmp/warpdrive-branch-sync-20261102-__96l2qz/sales/repo",
+  "privateHead": "f0de0768a25dc89b3f11cc0b8a431f5b495fdd95",
+  "main": "09288d518fd574fd069fb6a1dc670596f71a8831",
+  "ownedConflictFiles": [
+    {
+      "path": "src/features/deal-workspace/DealCloseActions.tsx",
+      "mode": "0o644",
+      "bytes": 7669,
+      "postSha256": "0f66794dc7eebeafc4569c31cd7541826542eca3d78201d58a2710430dfd6aae",
+      "postGitBlob": "8130f34aa430ef546e819346820185001587d24b",
+      "versions": {
+        "mergeBase": {
+          "gitBlob": "35cb4e65e2ed9bb1307d5b7d851d415a96b789a0",
+          "sha256": "cf091665c5ff94dddfc5cadd83de5647b7dd7c0e232bee99b6d325b7ce1b39e3"
+        },
+        "privateSales": {
+          "gitBlob": "8130f34aa430ef546e819346820185001587d24b",
+          "sha256": "0f66794dc7eebeafc4569c31cd7541826542eca3d78201d58a2710430dfd6aae"
+        },
+        "main": {
+          "gitBlob": "9fc48467a62c6d0693c5f21ca6767ec4334d1466",
+          "sha256": "6125f90841dce5793873bd6162f474d2844a39e5de541be61881ac90f8cec8dc"
+        }
+      },
+      "equalsPrivateSalesPostimage": true,
+      "equalsMainPostimage": false,
+      "semanticResolution": "Capture the displayed write revision when opening Lost, retaining the private draft token; preserve the current shared close/reopen/error UI outside this hunk."
+    },
+    {
+      "path": "src/features/deal-workspace/DealSidebar.tsx",
+      "mode": "0o644",
+      "bytes": 12561,
+      "postSha256": "ee7f50268213f6cf559a01d8f5d5be0d1ba421ed4f4d3f76608e9da1a08bacf9",
+      "postGitBlob": "250705e6e2a76f1d9c6a1ed26f040e64d5d209c7",
+      "versions": {
+        "mergeBase": {
+          "gitBlob": "d76eb1c1ae1376c86e961ab3bdb8ac56c73e5dd9",
+          "sha256": "0e5c9c4032ac373994ccd636ef2073c225c1b563cfca63ddddf47cad0b838ebe"
+        },
+        "privateSales": {
+          "gitBlob": "250705e6e2a76f1d9c6a1ed26f040e64d5d209c7",
+          "sha256": "ee7f50268213f6cf559a01d8f5d5be0d1ba421ed4f4d3f76608e9da1a08bacf9"
+        },
+        "main": {
+          "gitBlob": "77088c60ba7c05cbe070bbae8729b95c4bb8f547",
+          "sha256": "ed732f334629deb5db0bd88d4cad9c5e12ff48acd2dbae1af4453db6f30ddad8"
+        }
+      },
+      "equalsPrivateSalesPostimage": true,
+      "equalsMainPostimage": false,
+      "semanticResolution": "Organization picker saves its opening revision rather than latest props; custom-field saves receive the deal revision. Keep Main sidebar ordering and contextual field-creation UI from the auto-merged context."
+    },
+    {
+      "path": "src/features/deal-workspace/sidebar/DealCustomFields.test.tsx",
+      "mode": "0o644",
+      "bytes": 3669,
+      "postSha256": "175072624df02bc3e0fc96b81b21217195b4c11d2ceff76a40b2b23cc1373d7b",
+      "postGitBlob": "08ae2f89494f65ad8a69b808d96d2512fc6bd3bd",
+      "versions": {
+        "privateSales": {
+          "gitBlob": "08ae2f89494f65ad8a69b808d96d2512fc6bd3bd",
+          "sha256": "175072624df02bc3e0fc96b81b21217195b4c11d2ceff76a40b2b23cc1373d7b"
+        },
+        "main": {
+          "gitBlob": "5a07284ea2a91dd4fe7812087af9f3d94632a2ab",
+          "sha256": "aed0d5504b556142d993d4e53de066bfb466c99cefdf137c41a8f3fb15ecbda0"
+        }
+      },
+      "equalsPrivateSalesPostimage": true,
+      "equalsMainPostimage": false,
+      "semanticResolution": "Retain Main empty/create/pending interaction cases, adding the private required revision prop and exact revision callback assertion; remove no behavioral oracles."
+    },
+    {
+      "path": "src/features/deal-workspace/sidebar/DealCustomFields.tsx",
+      "mode": "0o644",
+      "bytes": 2890,
+      "postSha256": "120c5978de5fa43bbbc9ff77ec8450b29b3988bd5a6c047166af43213a9ba39e",
+      "postGitBlob": "9ebb6f14864a42d70eca0bbc3f3cbd2a677008a5",
+      "versions": {
+        "privateSales": {
+          "gitBlob": "9ebb6f14864a42d70eca0bbc3f3cbd2a677008a5",
+          "sha256": "120c5978de5fa43bbbc9ff77ec8450b29b3988bd5a6c047166af43213a9ba39e"
+        },
+        "main": {
+          "gitBlob": "980abd145a0fe42f104369643c2d5d01bbd2a33c",
+          "sha256": "022e6d75f4cbfaa13089136c8bbe6f5dd799e167dfe0758a5f13b33c410132b4"
+        }
+      },
+      "equalsPrivateSalesPostimage": true,
+      "equalsMainPostimage": false,
+      "semanticResolution": "Thread mandatory writeVersion to the private deal-specific editor while retaining contextual definition creation and immediate value edit."
+    },
+    {
+      "path": "src/features/deal-workspace/sidebar/DetailsBlock.tsx",
+      "mode": "0o644",
+      "bytes": 4712,
+      "postSha256": "a6385870f7d254e85aeb92d6f80a492ee0f7fe545d10582156978e7c0fee9d9c",
+      "postGitBlob": "bee82deb77662c04d431913e7e360a54ef9293d0",
+      "versions": {
+        "mergeBase": {
+          "gitBlob": "ec8cf112e1fccf40b209fa3e7ceaa70ed960ee38",
+          "sha256": "9e52451132d5f571b0cd88b6cc2d5da94fab9064677ef9535e60b4d436b32146"
+        },
+        "privateSales": {
+          "gitBlob": "bee82deb77662c04d431913e7e360a54ef9293d0",
+          "sha256": "a6385870f7d254e85aeb92d6f80a492ee0f7fe545d10582156978e7c0fee9d9c"
+        },
+        "main": {
+          "gitBlob": "d18b5ec7051aafea1f67aa30b1d379601c0e0072",
+          "sha256": "c510db2059788eb4c10b5486d9f6921bd38ec3c7a2317e91da59e49568a1787d"
+        }
+      },
+      "equalsPrivateSalesPostimage": true,
+      "equalsMainPostimage": false,
+      "semanticResolution": "Thread the same captured revision into inline/bulk deal saves. Retain private revision semantics, all shared field controls, validation and error recovery; no new no-op or feature behavior introduced by conflict repair."
+    },
+    {
+      "path": "src/features/deal-workspace/sidebar/InlineCustomField.tsx",
+      "mode": "0o644",
+      "bytes": 1221,
+      "postSha256": "8896b294861397a52edcd70ef88eea8dde4f2dcfe6a10c4149608742712e2d31",
+      "postGitBlob": "e673e6d8ae7b2b1340e4d0479f8221c4393b1ef0",
+      "versions": {
+        "mergeBase": {
+          "gitBlob": "b500673b428f409e43695e9482d76a3921270d76",
+          "sha256": "38d355552629e34f65521f9393d5ab2d8bc8f77e624c8a76aafde1d72daa4d53"
+        },
+        "privateSales": {
+          "gitBlob": "e673e6d8ae7b2b1340e4d0479f8221c4393b1ef0",
+          "sha256": "8896b294861397a52edcd70ef88eea8dde4f2dcfe6a10c4149608742712e2d31"
+        },
+        "main": {
+          "gitBlob": "c9503fafded4987f58d21a7ce5ee29da069e200b",
+          "sha256": "84a5fa22377b887e6b37e8f47018ddb45509c5609dba1cfceeadb06566fa4b8a"
+        }
+      },
+      "equalsPrivateSalesPostimage": true,
+      "equalsMainPostimage": false,
+      "semanticResolution": "Use the existing private DealInlineCustomFieldEditor snapshot wrapper, with one initiallyEditing prop and mandatory token. It still delegates rendering/input to exact Main shared controls, including currency, numeric validation and monetary units."
+    },
+    {
+      "path": "src/features/deal-workspace/sidebar/RecordOrganizationSection.tsx",
+      "mode": "0o644",
+      "bytes": 4229,
+      "postSha256": "c43842f757c554d3db0a2abf151d67781c1333fe5c9ad16e386efdffd41f1c5e",
+      "postGitBlob": "7ffbfa584043e446318875c41b5b584a8fb75d6d",
+      "versions": {
+        "mergeBase": {
+          "gitBlob": "79c416e6e3e796d6a80d7840e25b054cdca3b3aa",
+          "sha256": "cb0f9655a2e90143353aa1c1fb16708432fb41cb9f37955c56fd31f5db5c3122"
+        },
+        "privateSales": {
+          "gitBlob": "7ffbfa584043e446318875c41b5b584a8fb75d6d",
+          "sha256": "c43842f757c554d3db0a2abf151d67781c1333fe5c9ad16e386efdffd41f1c5e"
+        },
+        "main": {
+          "gitBlob": "449686c18feab554c9a0e3110ca680f6be794060",
+          "sha256": "c8c097c7d4d955580cfdf2fb03d574a8363909f9d898d2a53688b8566f6e13c5"
+        }
+      },
+      "equalsPrivateSalesPostimage": true,
+      "equalsMainPostimage": false,
+      "semanticResolution": "Retain explicit deal-vs-alternate discriminated persistence: deal requires writeVersion; lead opts into alternate mode and the generic editor. Preserve Main organization fields/sections and currency propagation."
+    },
+    {
+      "path": "src/features/deals/dealMove.ts",
+      "mode": "0o644",
+      "bytes": 7143,
+      "postSha256": "69b9606d19dfd62b617cf817dbc5dd220beb7606c86309f27f9bce07756d3696",
+      "postGitBlob": "c603d06143ad3d8b8e8a131342807fab3e08372a",
+      "versions": {
+        "mergeBase": {
+          "gitBlob": "096c76920b3a0f3872cd6a4d0d0c95b3c7f6d122",
+          "sha256": "9add90a964a99df6c1f60b0048d6f9c056963869a2554df5ae8b449ec9af3854"
+        },
+        "privateSales": {
+          "gitBlob": "c603d06143ad3d8b8e8a131342807fab3e08372a",
+          "sha256": "69b9606d19dfd62b617cf817dbc5dd220beb7606c86309f27f9bce07756d3696"
+        },
+        "main": {
+          "gitBlob": "52fa72cfd2f9a79d9fd6af5a32887a8f769731eb",
+          "sha256": "240257888e7e4fe9f4ea283d0a91efb3a46fe9a4d3bf1809b5bb495d79cf6665"
+        }
+      },
+      "equalsPrivateSalesPostimage": true,
+      "equalsMainPostimage": false,
+      "semanticResolution": "Remove the duplicate incompatible transaction fragment. Preserve private pipeline-before-deal locking, live permission rechecks, UUID revision CAS, rollback/final-read behavior; retain Main identical current-row CASE for stageEnteredAt and conditional real-transition stage log. No shared authority fence implementation/adoption claimed."
+    },
+    {
+      "path": "src/features/deals/dealMoveStageAge.integration.test.ts",
+      "mode": "0o644",
+      "bytes": 5330,
+      "postSha256": "4e7406e417bcb3f2b72438e690f60194f2b178a449c804fbfb624668e9b09050",
+      "postGitBlob": "b42bd2a056a38f6a89a4acfbe75aab69961a46e5",
+      "versions": {
+        "privateSales": {
+          "gitBlob": "b42bd2a056a38f6a89a4acfbe75aab69961a46e5",
+          "sha256": "4e7406e417bcb3f2b72438e690f60194f2b178a449c804fbfb624668e9b09050"
+        },
+        "main": {
+          "gitBlob": "e3319180ba66dac67d00d38dcbce7286538a1b60",
+          "sha256": "34abb22147b71564b5a5c8b75f6b96e35b816a5d57b8138bd14a8071ef49f14d"
+        }
+      },
+      "equalsPrivateSalesPostimage": true,
+      "equalsMainPostimage": false,
+      "semanticResolution": "Retain both Main stage-age cases and every timestamp/order/history assertion, with the private expectedWriteVersion precondition in addition to the retained legacy timestamp fixture field."
+    }
+  ],
+  "conflictMarkersRemaining": 0,
+  "nonownedPreservation": {
+    "files": 5301,
+    "beforeAfterAggregateSha256": "0f01f185d400b7c6756a9f464ca2a581a40cd2f0cc687732faeb8578ad418658",
+    "allBytesAndModesUnchanged": true
+  },
+  "sharedMainMoneyControls": [
+    {
+      "path": "src/features/custom-fields/render.tsx",
+      "exactMain": true,
+      "sha256": "00ed66352788f69b8a050765d36142f79dfbfe5a5a10d53e49e34d95c09be037"
+    },
+    {
+      "path": "src/features/custom-fields/InlineCustomFieldEditor.tsx",
+      "exactMain": true,
+      "sha256": "1c0f2d9cac9a83af97169fb1b8df9b3f67e12f04d1604bb2831c0ab2213815fa"
+    }
+  ],
+  "canonicalDDL": {
+    "exactMain": true,
+    "files": 195,
+    "newMigrationAdmitted": false,
+    "privateSQLAndJournalRemainOnlyArchivedProposals": [
+      {
+        "originalPath": "drizzle/0101_deal_write_version.sql",
+        "archivePath": ".safe-stop/2026-11-02/branch-sync/private-migration-proposals/drizzle/0101_deal_write_version.sql.source",
+        "sha256": "a5c77f4aa42ad90d87a6834201819166ad8a04f4c02c02e896be34dc751b0bfd",
+        "gitBlob": "1e91a52df6eff943254797115e7b69ca9d2f46f7",
+        "mode": "100644"
+      },
+      {
+        "originalPath": "drizzle/meta/_journal.json",
+        "archivePath": ".safe-stop/2026-11-02/branch-sync/private-migration-proposals/drizzle/meta/_journal.json.source",
+        "sha256": "d1d8fbde03d5671d7bc5e21aaf1cbdd623039bc9c8894669c5b5a6d900d0d2ac",
+        "gitBlob": "9536e4c3525496d9513be9e7d08605243197ee54",
+        "mode": "100644"
+      }
+    ],
+    "live0101ReferencesFound": false,
+    "fixturePathMappings": []
+  },
+  "semanticReview": {
+    "method": "Each conflict hunk inspected against merge base, private Sales and Main; no blanket ours/theirs command was used. Private revised interfaces are coherent with their already-present callers, while Main stage-age logic and shared numeric/money controls remain.",
+    "postimageNote": "The selected private version-aware implementations already contained the relevant landed Main stage-age and shared-control behavior. Outcomes matching private file bytes are deliberate per-hunk resolutions, not qualification or whole-branch adoption.",
+    "mainSecurity": "Owned move path retains loadEditableDeal and private current-actor checks; all5301 non-owned auto-merged files, including Main security changes, are byte/mode unchanged by this worker. No complete through-commit/native authority closure is inferred.",
+    "deferredIncompatibleOwnedSource": []
+  },
+  "actualFocusedChecks": {
+    "Biome9": {
+      "scope": "only nine Sales conflict files",
+      "argv": [
+        "/opt/homebrew/bin/gtimeout",
+        "--signal=TERM",
+        "--kill-after=5s",
+        "60s",
+        "/Users/ali/Developer/warpdrive/.runtime/bin/bun",
+        "--no-env-file",
+        "--bun",
+        "/Users/ali/Developer/warpdrive-settings-ux/node_modules/@biomejs/biome/bin/biome",
+        "check",
+        "src/features/deal-workspace/DealCloseActions.tsx",
+        "src/features/deal-workspace/DealSidebar.tsx",
+        "src/features/deal-workspace/sidebar/DealCustomFields.test.tsx",
+        "src/features/deal-workspace/sidebar/DealCustomFields.tsx",
+        "src/features/deal-workspace/sidebar/DetailsBlock.tsx",
+        "src/features/deal-workspace/sidebar/InlineCustomField.tsx",
+        "src/features/deal-workspace/sidebar/RecordOrganizationSection.tsx",
+        "src/features/deals/dealMove.ts",
+        "src/features/deals/dealMoveStageAge.integration.test.ts"
+      ],
+      "exit": 0,
+      "seconds": 0.13044412503950298,
+      "pressure": 1,
+      "Q": 52,
+      "diskFreeBytes": 13765517312,
+      "bunSha256": "0a2237cdcfa0d16ef501d9acca9f0026309ef348bea7393a64e8d1e3609565cc",
+      "logSha256": "86f3b31f61be5c58b56bac934d3a78ec03a744ce45398f515903a4f19c2c0782",
+      "sourceWrites": false,
+      "dependencyInstallOrLink": false
+    },
+    "compiler": "NOT_RUN_PROHIBITED",
+    "native": "NOT_RUN_PROHIBITED",
+    "unit": "NOT_RUN: candidate has no node_modules pointer; no dependency link/install or additional runner setup was introduced"
+  },
+  "meaningfulFocusedTestsForLater": {
+    "unitLiteralFiles": [
+      "src/features/deal-workspace/DealCloseActions.test.tsx",
+      "src/features/deal-workspace/DealSidebar.orgLink.test.tsx",
+      "src/features/deal-workspace/DealSidebar.customFields.test.tsx",
+      "src/features/deal-workspace/DealSidebar.hiddenFields.test.tsx",
+      "src/features/deal-workspace/sidebar/DealCustomFields.test.tsx",
+      "src/features/deal-workspace/sidebar/DetailsBlock.test.tsx",
+      "src/features/deal-workspace/useDealEditSnapshot.test.tsx",
+      "src/features/custom-fields/monetaryEntryUnit.test.tsx"
+    ],
+    "oracles": [
+      "Capture the original version across org/lost/custom-field drafts and prop refreshes",
+      "Preserve pending/error/contextual field creation and hidden field behavior",
+      "Canonical IRR/rial entry remains in shared money controls"
+    ],
+    "nativeLiteralFiles": [
+      "src/features/deals/dealMoveStageAge.integration.test.ts"
+    ],
+    "nativeOracles": [
+      "Same-stage reorder preserves stageEnteredAt and stage-log count",
+      "Cross-stage move starts a new stay and records exactly one real transition"
+    ],
+    "nativePrerequisite": "Reconcile the private write_version schema/proposal in an explicitly isolated fixture or canonical admission; active canonical Main DDL intentionally has no private0101. Do not run these private revision tests against a missing column and call that a merge regression."
+  },
+  "scopeLimits": [
+    "Preservation branch merge preparation only, not a Main publication or deployable feature",
+    "Private write_version source remains unadmitted; canonical migrations remain Main exact",
+    "No extra source paths, dependencies, flags, migrations or authority framework changed",
+    "No real workspace, Git metadata/index/ref, push, services, compiler/native or premium inspection"
+  ]
+}

@@ -1,23 +1,10 @@
-import { Mail } from "lucide-react";
-import type { CSSProperties, ReactNode } from "react";
+import { Icon, Mail } from "lucide-react";
+import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import { FINANCE_NAV_GLYPHS } from "./financeNavGlyphs";
 import styles from "./NavIcons.module.css";
 
-// Finance OS geometry plus CRM-specific symbols drawn to its 1.5px rounded outline style.
-const bounds = {
-  "pipeline-board": [21.5, 21.5],
-  "lead-person-plus": [21.5, 21.5],
-  "performance-bars": [21.5, 21.5],
-  "settings-cog": [21.5, 21.5],
-  "guide-open-book": [21.5, 21.5],
-  "user-group": [21.4998, 21.5],
-  "folder-open": [21.5, 19.5001],
-  "calendar-01": [19.5, 21.5],
-  "chevron-left": [7.5, 13.5],
-  "chevron-right": [7.5, 13.5],
-  "chevron-down": [13.5, 7.5],
-  bars: [21.5, 13.5],
-} as const;
+type FinanceGlyphName = keyof typeof FINANCE_NAV_GLYPHS;
 
 type IconProps = { className?: string; size?: number };
 const NAV_ICON_CLASS = "h-[18px] w-[18px] shrink-0";
@@ -28,24 +15,25 @@ export function FinanceNavGlyph({
   className,
   mirror = true,
 }: IconProps & {
-  name: keyof typeof bounds;
+  name: FinanceGlyphName;
   mirror?: boolean;
 }): ReactNode {
-  const [width, height] = bounds[name];
-  const style = {
-    "--nav-icon-url": `url("/finance-os-icons/${name}.svg")`,
-    "--nav-icon-width": `${(size * width) / 24}px`,
-    "--nav-icon-height": `${(size * height) / 24}px`,
-    width: size,
-    height: size,
-  } as CSSProperties;
+  const { width, height, node } = FINANCE_NAV_GLYPHS[name];
   return (
-    <span
+    <Icon
+      iconNode={node}
+      size={size}
+      viewBox={`${(width - 24) / 2} ${(height - 24) / 2} 24 24`}
+      stroke="none"
+      strokeWidth={1.5}
+      strokeLinecap="butt"
+      strokeLinejoin="miter"
       aria-hidden="true"
+      focusable="false"
       data-finance-icon={name}
       data-rtl-mirror={mirror ? undefined : "false"}
       className={cn(styles.icon, className)}
-      style={style}
+      style={{ width: size, height: size }}
     />
   );
 }
@@ -54,7 +42,7 @@ function NavIcon({
   name,
   className,
   size = 18,
-}: IconProps & { name: keyof typeof bounds }): ReactNode {
+}: IconProps & { name: FinanceGlyphName }): ReactNode {
   return <FinanceNavGlyph name={name} size={size} className={className ?? NAV_ICON_CLASS} />;
 }
 

@@ -1,0 +1,82 @@
+{
+  "nav": {
+    "workflows": "گردش‌کارها",
+    "pipeline": "فروش",
+    "leads": "سرنخ‌ها",
+    "deals": "فرصت‌های فروش",
+    "contacts": "مخاطبان",
+    "people": "افراد",
+    "orgs": "سازمان‌ها",
+    "contactsTimeline": "تاریخچه تعاملات",
+    "activities": "فعالیت‌ها",
+    "inbox": "صندوق ورودی",
+    "dashboard": "عملکرد",
+    "settings": "تنظیمات",
+    "docs": "راهنما و مستندات"
+  },
+  "auth": {
+    "signInWithGoogle": "ورود با حساب گوگل",
+    "loginTitle": "ورود به ⁦Warpdrive⁩",
+    "domainOnly": "برای ورود از حساب ⁦Google Workspace⁩ سازمان خود استفاده کنید."
+  },
+  "account": {
+    "menu": "منوی حساب کاربری",
+    "heading": "حساب کاربری من",
+    "settings": "تنظیمات",
+    "logout": "خروج از حساب"
+  },
+  "navigation": {
+    "primary": "ناوبری اصلی",
+    "collapse": "جمع کردن نوار کناری",
+    "expand": "باز کردن نوار کناری",
+    "collapseShort": "جمع کردن"
+  },
+  "language": {
+    "switchTo": "English",
+    "switchLabel": "تغییر زبان به انگلیسی"
+  },
+  "datePicker": {
+    "selectDate": "انتخاب تاریخ",
+    "clear": "پاک کردن",
+    "usePersianCalendar": "نمایش تقویم هجری شمسی",
+    "useGregorianCalendar": "نمایش تقویم میلادی"
+  },
+  "preferences": {
+    "saveError": "تنظیمات زبان و منطقه ذخیره نشد. لطفاً دوباره تلاش کنید.",
+    "saving": "در حال ذخیره تنظیمات زبان و منطقه...",
+    "language": "زبان",
+    "calendar": "تقویم",
+    "timeZone": "منطقه زمانی",
+    "persianCalendar": "هجری شمسی (ایران)",
+    "gregorianCalendar": "میلادی",
+    "calendarHelp": "تقویم نمایش و انتخاب تاریخ را تعیین می‌کند. تاریخ‌های ذخیره‌شده تغییر نمی‌کنند.",
+    "settingsTitle": "زبان، تقویم و اعداد",
+    "settingsDescription": "زبان و تقویم برنامه را انتخاب کنید. در حالت فارسی، می‌توانید شیوهٔ نمایش اعداد را هم تغییر دهید.",
+    "numberDisplay": "نمایش اعداد",
+    "persianNumbers": "اعداد فارسی (۱۲۳)",
+    "englishNumbers": "اعداد انگلیسی (123)",
+    "numberHelp": "این تنظیم، نمایش اعداد و تاریخ‌ها را تغییر می‌دهد و تأثیری بر اطلاعات ذخیره‌شده ندارد.",
+    "numberPreview": "پیش‌نمایش: {value, number}"
+  },
+  "dealWorkspace": {
+    "nextActions": "اقدام‌های بعدی",
+    "openCount": "{count} باز",
+    "loadingActivities": "در حال بارگذاری فعالیت‌ها…",
+    "activitiesFailed": "فعالیت‌ها به‌روز نشدند.",
+    "retry": "تلاش دوباره",
+    "viewAll": "نمایش هر {count} مورد",
+    "showLess": "نمایش کمتر",
+    "loadingHistory": "در حال بارگذاری تاریخچه…",
+    "historyFailed": "بخشی از تاریخچه بارگذاری نشد.",
+    "retryHistory": "بارگذاری دوباره تاریخچه",
+    "details": "جزئیات",
+    "deals": "فرصت‌ها",
+    "fieldScope": "برای همه فرصت‌ها در دسترس است. هر فرصت مقدار مخصوص خود را دارد.",
+    "addField": "افزودن فیلد",
+    "manageFields": "مدیریت فیلدها",
+    "closes": "تاریخ نهایی {date}",
+    "scheduleActivity": "برنامه‌ریزی فعالیت",
+    "noNextAction": "اقدام بعدی برنامه‌ریزی نشده است.",
+    "noCustomFields": "برای ثبت جزئیات مورد نیاز تیمتان، یک فیلد اضافه کنید."
+  }
+}

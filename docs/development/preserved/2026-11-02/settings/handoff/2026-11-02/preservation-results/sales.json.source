@@ -1,0 +1,15 @@
+{
+  "owner": "Sales",
+  "branch": "codex/preserve-sales-20261102",
+  "commit": "f0de0768a25dc89b3f11cc0b8a431f5b495fdd95",
+  "tree": "914e362a8aca88aa862b0845f9798b7ba50fc49b",
+  "sourceFiles": 183,
+  "extras": 43,
+  "remoteVerified": true,
+  "sourceIndexHeadStatusUnchanged": true,
+  "allPreservedBlobsVerified": true,
+  "mainMutated": false,
+  "deployment": false,
+  "ci": "intentionally skipped for unfinished preservation",
+  "at": "2026-11-02T07:28:06.433755+00:00"
+}

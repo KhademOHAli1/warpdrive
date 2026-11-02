@@ -1,0 +1,48 @@
+version: 2
+updates:
+  # Bun version-update PRs are disabled to keep the maintenance queue small.
+  # Enabled security updates still open PRs when advisories require them.
+  - package-ecosystem: bun
+    directory: /
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 0
+    groups:
+      app-security:
+        applies-to: security-updates
+        patterns:
+          - "*"
+  - package-ecosystem: bun
+    directory: /site
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 0
+    groups:
+      site-security:
+        applies-to: security-updates
+        patterns:
+          - "*"
+  - package-ecosystem: bun
+    directory: /docs-site
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 0
+    groups:
+      docs-security:
+        applies-to: security-updates
+        patterns:
+          - "*"
+  # One grouped maintenance PR for pinned Actions each month; no automatic merge.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 1
+    groups:
+      actions-maintenance:
+        patterns:
+          - "*"
+      actions-security:
+        applies-to: security-updates
+        patterns:
+          - "*"

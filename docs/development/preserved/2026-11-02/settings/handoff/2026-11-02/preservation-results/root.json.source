@@ -1,0 +1,15 @@
+{
+  "owner": "Root",
+  "branch": "codex/preserve-settings-20261102",
+  "commit": "7abdb82f5faa747a38fc02099048348ce5ad4e23",
+  "tree": "ac1ddf32ff7024d5b17f841309768b0ac79926cd",
+  "sourceFiles": 26,
+  "extras": 12,
+  "remoteVerified": true,
+  "sourceIndexHeadStatusUnchanged": true,
+  "allPreservedBlobsVerified": true,
+  "mainMutated": false,
+  "deployment": false,
+  "ci": "intentionally skipped for unfinished preservation",
+  "at": "2026-11-02T07:19:31.272949+00:00"
+}

@@ -1,0 +1,111 @@
+{
+  "id": "ROOT-AUTHORITY-RC22-GREEN-20261102-1",
+  "result": "PASS",
+  "grantConsumedOnce": true,
+  "executionStartedAtUtc": "2026-11-02T01:38:56.797094+00:00",
+  "finishedAtUtc": "2026-11-02T01:39:40.857243+00:00",
+  "artifact": "/private/tmp/warpdrive-current-authority-baseline-a29-01a19251",
+  "sourcePacket": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-settings-ux/outputs/current-authority-rc-fix-a29-20261102",
+  "frozenManifestSha256": "ed9aed6bd9b657736d8749fc5ba6ceb8fe935db616031a392155cc9f704d4f72",
+  "commandsSha256": "4680944110fdec8ac6e635ea4ff6c81f9d0c3acf92a0200da17645221ec45630",
+  "controllerSha256": "0021cc4c3641275505f1d9db8f5a3659785ccbd4f0d9af6750e66323507c4433",
+  "compiler": {
+    "result": "PASS",
+    "seconds": 25.1336439170409,
+    "checks": [
+      "retained previously actual PASS Next typegen33 pinned outputs; not regenerated",
+      "full configured TSC",
+      "typed ESLint production3",
+      "Biome production3"
+    ],
+    "noDiagnostics": true
+  },
+  "native": {
+    "result": "PASS",
+    "seconds": 7.320849208976142,
+    "files": 4,
+    "tests": 22,
+    "passed": 22,
+    "failed": 0,
+    "pending": 0,
+    "original18And4RROraclesUnchanged": true,
+    "actualRedReceipt": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-settings-ux/outputs/current-authority-baseline-a29-lint-corrected-20261102/execution-result.json",
+    "actualRed": "same22:18PASS+4 genuine RR behavior RED before three production-path fix",
+    "filesAndCounts": [
+      {
+        "path": "/private/tmp/warpdrive-current-authority-baseline-a29-01a19251/src/features/auth/currentNativeSession.integration.test.ts",
+        "tests": 13,
+        "result": "passed"
+      },
+      {
+        "path": "/private/tmp/warpdrive-current-authority-baseline-a29-01a19251/src/features/auth/currentAuthorityIsolation.integration.test.ts",
+        "tests": 4,
+        "result": "passed"
+      },
+      {
+        "path": "/private/tmp/warpdrive-current-authority-baseline-a29-01a19251/src/features/auth/currentAuthorityClock.integration.test.ts",
+        "tests": 2,
+        "result": "passed"
+      },
+      {
+        "path": "/private/tmp/warpdrive-current-authority-baseline-a29-01a19251/src/features/auth/currentAuthorityFence.integration.test.ts",
+        "tests": 3,
+        "result": "passed"
+      }
+    ]
+  },
+  "cleanup": {
+    "confirmed": true,
+    "groupsGone": true,
+    "newContainersRemaining": [],
+    "foreignContainers": 3,
+    "foreignPreserved": true,
+    "networksAndVolumesPreserved": true,
+    "forcedRemoval": [],
+    "allFrozenPinsPreserved": true
+  },
+  "resources": {
+    "before": {
+      "level": 1,
+      "availablePercent": 54,
+      "freeBytes": 16325259264
+    },
+    "nativeGate": {
+      "level": 1,
+      "availablePercent": 47,
+      "freeBytes": 16298442752
+    },
+    "after": {
+      "level": 1,
+      "availablePercent": 49,
+      "freeBytes": 16209338368
+    },
+    "maxObservedOwnedRssBytes": 6465617920
+  },
+  "totalSeconds": 44.060252541908994,
+  "limitations": [
+    "private artifact qualification only; no canonical source/index/ref/registry/publication changes",
+    "native-only private API; no legacy auth adoption or production Sales/Agency consumer adoption",
+    "no broader authority-writer/session/deactivation/team/group/parent closure",
+    "no held-SQL cancellation, provider IO, installed or full-product acceptance claim"
+  ],
+  "receipts": {
+    "commands.json": "4680944110fdec8ac6e635ea4ff6c81f9d0c3acf92a0200da17645221ec45630",
+    "compiler-outer.log": "b1950e761bbd4e2df1493cf8ecd59f5e0ae3e32dd0c023de87697dcd5c490805",
+    "consumed": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "execute-once.py": "0021cc4c3641275505f1d9db8f5a3659785ccbd4f0d9af6750e66323507c4433",
+    "execution-result.json": "a043b8638b72c6385fdf33111536da25374a08938a598fef0bd890f8b612e47f",
+    "grant.json": "5d485dd181859137c988141e895f31042cfc4931693a7bb73fd03862c6c21dd9",
+    "logs/biome-three.log": "bb3e99fec9f6fbb7a72996f2cd737e7b5e18a222189d89a430f0db6638ed1f45",
+    "logs/compiler-final-pins.log": "d00d6bedc2dbd84c06b0b7c4cf79672bdfb6ce29463363be57ee76d1c3391ff1",
+    "logs/compiler-input-pins.log": "d00d6bedc2dbd84c06b0b7c4cf79672bdfb6ce29463363be57ee76d1c3391ff1",
+    "logs/full-tsc.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "logs/native-input-pins.log": "d00d6bedc2dbd84c06b0b7c4cf79672bdfb6ce29463363be57ee76d1c3391ff1",
+    "logs/native-report.json": "98ece29d07b233e355083dd51eb978e2477259866c2e6c72fbe5da1017d0600e",
+    "logs/typed-eslint-three.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "manifest.json": "ed9aed6bd9b657736d8749fc5ba6ceb8fe935db616031a392155cc9f704d4f72",
+    "native-outer.log": "a18257b0178b254b8a69ddb9a5efbcdd064e085016b5ce994d222bd14cf1ce1e",
+    "runtime-input-pins.json": "d3fd1a2c7543656de18d41df5f63b357fd499d2147c9ccc100b0304b52f109fe",
+    "source-pins.json": "1dfc6812abeeec590eb0d931cb8f64d851b560b83f3e56f440b8664de3737d3f"
+  }
+}

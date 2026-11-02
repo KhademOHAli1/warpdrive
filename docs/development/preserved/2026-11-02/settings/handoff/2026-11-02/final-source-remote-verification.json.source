@@ -1,0 +1,87 @@
+{
+  "observedAtUtc": "2026-11-02T07:38:22.324147+00:00",
+  "main": "09288d518fd574fd069fb6a1dc670596f71a8831",
+  "mainUnchanged": true,
+  "allEightRemoteRefsVerified": true,
+  "sourceIndexHeadStatusUnchanged": true,
+  "completedSecurityNamedRefsAbsent": [
+    "refs/heads/fix/code-scanning-alerts-2026-11-02",
+    "refs/heads/fix/delivery-security-alerts-2026-11-02",
+    "refs/heads/security/validation-regressions-2026-11-02"
+  ],
+  "premiumRefNotQueried": true,
+  "modules": [
+    {
+      "owner": "Root",
+      "originalHead": "09288d518fd574fd069fb6a1dc670596f71a8831",
+      "sourceFilesUnchanged": 26,
+      "archivedWorkspaceFilesUnchanged": 0,
+      "indexHeadStatusUnchanged": true,
+      "branch": "codex/preserve-settings-20261102",
+      "commit": "7abdb82f5faa747a38fc02099048348ce5ad4e23"
+    },
+    {
+      "owner": "Privacy",
+      "originalHead": "7e747e99524e08037da6eba1bd01f6558663f8f0",
+      "sourceFilesUnchanged": 156,
+      "archivedWorkspaceFilesUnchanged": 0,
+      "indexHeadStatusUnchanged": true,
+      "branch": "codex/preserve-privacy-20261102",
+      "commit": "05c99625341f85928b10e73df9e7fda0ae6955af"
+    },
+    {
+      "owner": "Workflow",
+      "originalHead": "43a5fb4d2a6be7bbbd260855a6a8e1ce55fbf3c1",
+      "sourceFilesUnchanged": 76,
+      "archivedWorkspaceFilesUnchanged": 1,
+      "indexHeadStatusUnchanged": true,
+      "branch": "codex/preserve-workflow-20261102",
+      "commit": "4e0280e973aa04fe2fb1946c86b3509dbea8289b"
+    },
+    {
+      "owner": "Sales",
+      "originalHead": "43a5fb4d2a6be7bbbd260855a6a8e1ce55fbf3c1",
+      "sourceFilesUnchanged": 183,
+      "archivedWorkspaceFilesUnchanged": 37,
+      "indexHeadStatusUnchanged": true,
+      "branch": "codex/preserve-sales-20261102",
+      "commit": "f0de0768a25dc89b3f11cc0b8a431f5b495fdd95"
+    },
+    {
+      "owner": "MAIL",
+      "originalHead": "43a5fb4d2a6be7bbbd260855a6a8e1ce55fbf3c1",
+      "sourceFilesUnchanged": 114,
+      "archivedWorkspaceFilesUnchanged": 0,
+      "indexHeadStatusUnchanged": true,
+      "branch": "codex/preserve-mail-20261102",
+      "commit": "300f0784be93b2e187980f0894db30fea64d42d5"
+    },
+    {
+      "owner": "Calendar",
+      "originalHead": "2803183809c646a063f78fe954c110adbb2f453f",
+      "sourceFilesUnchanged": 299,
+      "archivedWorkspaceFilesUnchanged": 0,
+      "indexHeadStatusUnchanged": true,
+      "branch": "codex/preserve-calendar-20261102",
+      "commit": "1e93e8e4f7fc67da3fa204b688731dc551334c4b"
+    },
+    {
+      "owner": "Integration",
+      "originalHead": "9fb734e0129f6dcc5be69963e2aafddd0b7836ea",
+      "sourceFilesUnchanged": 61,
+      "archivedWorkspaceFilesUnchanged": 5,
+      "indexHeadStatusUnchanged": true,
+      "branch": "codex/preserve-integration-20261102",
+      "commit": "76e6f7bb7c0e1861a8ae668fc86be5c05bfcee4c"
+    },
+    {
+      "owner": "Agency",
+      "originalHead": "ec63a5bea531849c96202c859e8055845908895d",
+      "sourceFilesUnchanged": 95,
+      "archivedWorkspaceFilesUnchanged": 163,
+      "indexHeadStatusUnchanged": true,
+      "branch": "codex/preserve-agency-20261102",
+      "commit": "e87e99174aa0d6b393d16b93f2650e652d19856c"
+    }
+  ]
+}

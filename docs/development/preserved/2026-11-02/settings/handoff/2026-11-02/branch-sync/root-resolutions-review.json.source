@@ -1,0 +1,183 @@
+{
+  "schema_version": 1,
+  "atUtc": "2026-11-02T08:42:25.493179+00:00",
+  "review": "Independent read-only review of Root12 manual Agency/Integration/Workflow resolutions",
+  "sourceResolutionReceiptSha256": "790a89390363965be38eae9fbad6037796cb5d719336284c7fe50efaa39aa472",
+  "result": "PASS_SOURCE_REVIEW",
+  "findings": [],
+  "perPath": [
+    {
+      "owner": "agency",
+      "path": ".env.example",
+      "reviewedSha256": "882f8952ca9ee12e9f22230b56292c05a49dd0b146a6578dd58320f088a218c5",
+      "matchesRootResolutionReceipt": true,
+      "mainSha256": "cceefa11c77a76f7019934c92758cf965611fa9eef8526e10dcfd934c9c6d457",
+      "oldBranchSha256": "1414c04074929bd1e4c4db9d0f1efd556fd5d11fabe0f489b51540cfc7f36dd6",
+      "result": "PASS_SOURCE_REVIEW"
+    },
+    {
+      "owner": "agency",
+      "path": "src/config/env.ts",
+      "reviewedSha256": "0ef80ea49532e5e7c99050fadd3cd8cb9b35d4c533195d719c8d2a57f0fe9ce6",
+      "matchesRootResolutionReceipt": true,
+      "mainSha256": "ca6f8e9650a02069899aa038b6faabd236974635cc039a40317795167ec49d7e",
+      "oldBranchSha256": "812ac3d556554a9c931c664102aaa850deaa7726894b14803477e92fc1fff4fa",
+      "result": "PASS_SOURCE_REVIEW"
+    },
+    {
+      "owner": "agency",
+      "path": "src/app/(app)/settings/SettingsNav.test.tsx",
+      "reviewedSha256": "1e22438d1cdb37988f2bf1c6080248b4b335f0e312da4eb20d4ed097e3ae8156",
+      "matchesRootResolutionReceipt": true,
+      "mainSha256": "0f1b0aef384d4b597246d31d545f626ef35c7e293e096e0a8ad38be4310c7dae",
+      "oldBranchSha256": "2c8550b900e416665dadf78753f43c57b4528166c83d2008b2efd1ba3753f5c6",
+      "result": "PASS_SOURCE_REVIEW"
+    },
+    {
+      "owner": "agency",
+      "path": "src/lib/iranianMoney.ts",
+      "reviewedSha256": "76b955d01ac18fe84d279eca8133da93b4641369029bf101e897fef9a8cf663a",
+      "matchesRootResolutionReceipt": true,
+      "mainSha256": "a320a91d931a1c81a33ed578d68eeab289077577c09c0e4725dd0d13b3f7029c",
+      "oldBranchSha256": "76b955d01ac18fe84d279eca8133da93b4641369029bf101e897fef9a8cf663a",
+      "result": "PASS_SOURCE_REVIEW"
+    },
+    {
+      "owner": "integration",
+      "path": "src/features/privacy/registryIdsAuthentication1.ts",
+      "reviewedSha256": "e78770cb16f976796b64d0eb95dfcca5ba65f72061ec50db450be9857171fc4c",
+      "matchesRootResolutionReceipt": true,
+      "mainSha256": "00a3a197d21034863d56c16dab287ffe24ba9786ce1d907e2827ac18af7865cb",
+      "oldBranchSha256": "7d7e6bd4e71892947134ea4a50c2574c0891bf15bd738e79fc1ca74152f0aafb",
+      "result": "PASS_SOURCE_REVIEW"
+    },
+    {
+      "owner": "workflow",
+      "path": "src/features/workflows/ui/BuilderWorkspace.tsx",
+      "reviewedSha256": "446596405640d73895234fe5acb23a1456995523a683e377ecc660677586d059",
+      "matchesRootResolutionReceipt": true,
+      "mainSha256": "091ebc66b373ed6ee9da46765c90b19d44d308cf6c4c2b0cf1a973a91709f879",
+      "oldBranchSha256": "446596405640d73895234fe5acb23a1456995523a683e377ecc660677586d059",
+      "result": "PASS_SOURCE_REVIEW"
+    },
+    {
+      "owner": "workflow",
+      "path": "src/features/workflows/ui/NodePalette.tsx",
+      "reviewedSha256": "421324b005a73f559b332f6abde063402f5c61403851bf48f757d063fa70b423",
+      "matchesRootResolutionReceipt": true,
+      "mainSha256": "b080356e9d05e34c14a1003f3af4feda47de9e54ae195c1aced24e9c8cd4b8bb",
+      "oldBranchSha256": "421324b005a73f559b332f6abde063402f5c61403851bf48f757d063fa70b423",
+      "result": "PASS_SOURCE_REVIEW"
+    },
+    {
+      "owner": "workflow",
+      "path": "src/features/workflows/ui/RunTrace.selection.test.tsx",
+      "reviewedSha256": "d55e5596c0c0164c8d04d299efb35274d7e3ce9cdaa900af625efa29caf50496",
+      "matchesRootResolutionReceipt": true,
+      "mainSha256": "fafd9882d2d6b3ca5fdad21372bbfdb318857a197e4e813f8e3cd88d9a7f4b6b",
+      "oldBranchSha256": "d55e5596c0c0164c8d04d299efb35274d7e3ce9cdaa900af625efa29caf50496",
+      "result": "PASS_SOURCE_REVIEW"
+    },
+    {
+      "owner": "workflow",
+      "path": "docs/workflows/CONTINUATION.md",
+      "reviewedSha256": "4dbaf3532b43c8134bf2bf5e901aaa871c8bc3565b9617c57481a3491d80857b",
+      "matchesRootResolutionReceipt": true,
+      "mainSha256": "81ff9aa58029dec755f2ec938a8f68744ef7ef662959f22a9666e1071473cf58",
+      "oldBranchSha256": "97a781df7ff9fa4f330786570cd78bd546fb2c2b6742851bf95f441f7da5fdd2",
+      "result": "PASS_SOURCE_REVIEW",
+      "evidence": {
+        "mainByteExact": false,
+        "changesAgainstMainAreInsertionsOnly": true,
+        "tableRows": 0,
+        "oldAndMainTableCellValuesRetained": true,
+        "githubAuthorityNoticeRetained": true
+      }
+    },
+    {
+      "owner": "workflow",
+      "path": "docs/workflows/lifecycle-contract.md",
+      "reviewedSha256": "b6931fbb4ffc0a1d58bd7bdaf608d1a8856e68ea7dff69d07cf6eca60f5fc121",
+      "matchesRootResolutionReceipt": true,
+      "mainSha256": "b6931fbb4ffc0a1d58bd7bdaf608d1a8856e68ea7dff69d07cf6eca60f5fc121",
+      "oldBranchSha256": "ae5096330793111e20dbfea9b1cee8a093202dbd18cdd61dfe7a05363607d31a",
+      "result": "PASS_SOURCE_REVIEW",
+      "evidence": {
+        "mainByteExact": true,
+        "changesAgainstMainAreInsertionsOnly": true,
+        "tableRows": 45,
+        "oldAndMainTableCellValuesRetained": true,
+        "githubAuthorityNoticeRetained": true
+      }
+    },
+    {
+      "owner": "workflow",
+      "path": "docs/workflows/status.md",
+      "reviewedSha256": "498776bc1dc50432692d82d39fbb997dc22c63f108531b16373ab8dce66aa97d",
+      "matchesRootResolutionReceipt": true,
+      "mainSha256": "dfe6a57a935579348bdd87ce7cbbd9d6dcc3d0ca67de5898357686d70c8446ce",
+      "oldBranchSha256": "5f8eb603e2c1ef28d4022f15f8940ae9763af1643c910629864869cf2f6d234b",
+      "result": "PASS_SOURCE_REVIEW",
+      "evidence": {
+        "mainByteExact": false,
+        "changesAgainstMainAreInsertionsOnly": true,
+        "tableRows": 43,
+        "oldAndMainTableCellValuesRetained": true,
+        "githubAuthorityNoticeRetained": true
+      }
+    },
+    {
+      "owner": "workflow",
+      "path": "docs/workflows/ux-design-reference.md",
+      "reviewedSha256": "29b0267d47a1dd04e707bbb6c94ecceb399a291f4af4dfaf18c9132f7dcab808",
+      "matchesRootResolutionReceipt": true,
+      "mainSha256": "29b0267d47a1dd04e707bbb6c94ecceb399a291f4af4dfaf18c9132f7dcab808",
+      "oldBranchSha256": "121888ca46143e7e34f8fbb743fd62529e50c9abe10685eb135cc76ff1230352",
+      "result": "PASS_SOURCE_REVIEW",
+      "evidence": {
+        "mainByteExact": true,
+        "changesAgainstMainAreInsertionsOnly": true,
+        "tableRows": 49,
+        "oldAndMainTableCellValuesRetained": true,
+        "githubAuthorityNoticeRetained": true
+      }
+    }
+  ],
+  "specificEvidence": {
+    "agencyMoney": {
+      "exactPrivateBranchSource": true,
+      "mainConversionFormattingTailExact": true,
+      "finiteNumberGuardRetained": true,
+      "strictStringRegexRetained": true
+    },
+    "integrationAuthenticationMetadata": {
+      "actualTokenSha256": "9a79e82208a2cc9d387040afab6d8d6b60dfa33bfaf8d5b2050fd5ae116cc9e3",
+      "tokenPostimageMatches": true,
+      "tokenBindingMatches": true,
+      "actualAvatarSha256": "829ce18d0365be40cf80f01f211e7fa13147854c9e4155dec01cbdba3a881af5",
+      "mainSecurityAvatarBodyExact": true,
+      "avatarBindingMatches": true
+    },
+    "workflowSelectionTests": {
+      "mainOriginalSelectionTestBodyExact": true,
+      "newConnectedOrderTestPresent": true
+    }
+  },
+  "specificConclusions": {
+    "agencyFlags": "Main SALES_NEXT_ACTION_QUEUE_ENABLED and private AGENCY_PROJECTS_ENABLED both remain false by default in env schema/example. Main mailEnvShape and MAIL_INTERNAL_ENDPOINTS additions remain.",
+    "agencyMoney": "Finite Number inputs use exponent expansion before decimal movement; expansion remains bounded by the finite Number representation. Decimal strings keep the original100-digit/four-decimal domain and do not gain exponent acceptance. Main conversion/formatting tail is unchanged.",
+    "agencySettingsNav": "Main permission denials, regional href and Connected-apps selected-route assertions remain; private regional-link click/dismiss assertion is additive. Mock Link prevents jsdom navigation and forwards onClick. Actual focused execution remains pending.",
+    "integrationAuth": "Merged token postimage9a79e822\u2026 and its sourceReview agree. Main Security avatar source829ce18d\u2026 and binding remain exact. Derived-token declaration retains the private refresh-family writer addition. No evidence is added to the unrelated known stale invoke digest.",
+    "workflowApiAndFocus": "Optional allowedTypes preserves unrestricted Main palettes and restricts occupied-output insertion to linear read/task/delay. Main remember/restore and inserted-step focus callbacks are unchanged. RunTrace retains Main selected-step behavior test and adds the private connected-order case.",
+    "workflowDocs": "lifecycle-contract and ux-design-reference are byte-exact Main. CONTINUATION/status only insert text relative to Main, retaining every Main line and GitHub authority notice. Old/Main table cell values are identical for45 lifecycle,43 status and49 UX rows. Added top synchronization notices scope older current/unstarted prose as dated history, state latest static14 withdrawn and leave broader journey/AT/programme acceptance open."
+  },
+  "limits": [
+    "Source review only; no candidate edits, tests, compilers, native jobs, services, browser or deployment.",
+    "Root owns the later serial focused checks. This review establishes no new static/runtime/installed qualification.",
+    "Only explicit candidate paths and token/avatar content hashes needed for metadata validation were read. No premium or other peer source workspace inspected."
+  ],
+  "mutation": {
+    "onlyCreatedReport": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-settings-ux/outputs/branch-sync-20261102/root-resolutions-review.json",
+    "candidateEdits": false
+  }
+}

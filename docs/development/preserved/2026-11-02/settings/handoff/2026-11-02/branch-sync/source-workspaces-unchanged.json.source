@@ -1,0 +1,54 @@
+{
+  "atUtc": "2026-11-02T09:13:13.827368+00:00",
+  "workspaces": [
+    {
+      "workspace": "root",
+      "sourceFilesUnchanged": 26,
+      "archivalWorkspaceFilesUnchanged": 0,
+      "headIndexStatusUnchanged": true
+    },
+    {
+      "workspace": "privacy",
+      "sourceFilesUnchanged": 156,
+      "archivalWorkspaceFilesUnchanged": 0,
+      "headIndexStatusUnchanged": true
+    },
+    {
+      "workspace": "workflow",
+      "sourceFilesUnchanged": 76,
+      "archivalWorkspaceFilesUnchanged": 1,
+      "headIndexStatusUnchanged": true
+    },
+    {
+      "workspace": "sales",
+      "sourceFilesUnchanged": 183,
+      "archivalWorkspaceFilesUnchanged": 37,
+      "headIndexStatusUnchanged": true
+    },
+    {
+      "workspace": "mail",
+      "sourceFilesUnchanged": 114,
+      "archivalWorkspaceFilesUnchanged": 0,
+      "headIndexStatusUnchanged": true
+    },
+    {
+      "workspace": "calendar",
+      "sourceFilesUnchanged": 299,
+      "archivalWorkspaceFilesUnchanged": 0,
+      "headIndexStatusUnchanged": true
+    },
+    {
+      "workspace": "integration",
+      "sourceFilesUnchanged": 61,
+      "archivalWorkspaceFilesUnchanged": 5,
+      "headIndexStatusUnchanged": true
+    },
+    {
+      "workspace": "agency",
+      "sourceFilesUnchanged": 95,
+      "archivalWorkspaceFilesUnchanged": 163,
+      "headIndexStatusUnchanged": true
+    }
+  ],
+  "allPassed": true
+}
