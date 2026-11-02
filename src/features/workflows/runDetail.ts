@@ -6,6 +6,8 @@ import { workflowRuns, workflowSteps, workflowVersions } from "@/db/schema";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { err, ok } from "@/types/result";
 import { getWorkflow } from "./queries";
+import { describeRunRecovery, readFailureHistories } from "./runRecovery";
+import { definitionSchema } from "./schemas";
 
 // Return the historical configuration and execution metadata, never stored CRM outputs.
 export async function readRunDetail(
@@ -30,6 +32,7 @@ export async function readRunDetail(
       updatedAt: workflowRuns.updatedAt,
       number: workflowVersions.number,
       definition: workflowVersions.definition,
+      stored: workflowRuns,
     })
     .from(workflowRuns)
     .innerJoin(
@@ -42,24 +45,40 @@ export async function readRunDetail(
     .where(and(eq(workflowRuns.id, runId), eq(workflowRuns.workflowId, workflowId)));
   signal.throwIfAborted();
   if (run === undefined) return err(ERROR_IDS.WORKFLOW_DENIED);
+  const definition = definitionSchema.safeParse(run.definition);
+  if (!definition.success) return err(ERROR_IDS.WORKFLOW_INVALID);
   const steps = await db
-    .select({
-      nodeId: workflowSteps.nodeId,
-      simulated: workflowSteps.simulated,
-      completedAt: workflowSteps.completedAt,
-      output: workflowSteps.output,
-    })
+    .select()
     .from(workflowSteps)
     .where(eq(workflowSteps.runId, runId))
     .orderBy(workflowSteps.completedAt);
   signal.throwIfAborted();
-  const safeSteps = steps.map(({ output, ...step }) => {
-    const node = run.definition.nodes.find((item) => item.id === step.nodeId);
+  const safeSteps = steps.map(({ nodeId, simulated, completedAt, output }) => {
+    const node = definition.data.nodes.find((item) => item.id === nodeId);
     const deadline = node?.type === "delay" ? z.iso.datetime().safeParse(output.resumeAt) : null;
     return {
-      ...step,
+      nodeId,
+      simulated,
+      completedAt,
       ...(deadline?.success === true ? { waitResumeAt: new Date(deadline.data) } : {}),
     };
   });
-  return ok({ ...run, steps: safeSteps });
+  const failures = await readFailureHistories(db, [runId], signal);
+  const { stored, ...safeRun } = run;
+  const recovery = await describeRunRecovery(
+    db,
+    actor,
+    workflow.value,
+    stored,
+    run.definition,
+    steps,
+    failures.get(runId) ?? [],
+    signal,
+  );
+  return ok({
+    ...safeRun,
+    definition: definition.data,
+    steps: safeSteps,
+    ...(recovery === null ? {} : { recovery }),
+  });
 }

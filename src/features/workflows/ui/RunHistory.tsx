@@ -10,6 +10,7 @@ import { useFormatters } from "@/lib/useFormatters";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { cancelWorkflowAction } from "../actions";
 import { RunDetailDialog } from "./RunDetailDialog";
+import { RunRecovery } from "./RunRecovery";
 import { useDialogFocus } from "./useDialogFocus";
 import { WaitTimestamp } from "./WaitTimestamp";
 
@@ -129,6 +130,14 @@ export function RunHistory({ workflowId, canCancel }: { workflowId: string; canC
               <p className="mt-3 text-sm text-destructive">
                 {t("runError")} <bdi className="font-mono text-xs">{run.errorId}</bdi>
               </p>
+            )}
+            {run.recovery !== undefined && (
+              <RunRecovery
+                workflowId={workflowId}
+                runId={run.id}
+                status={run.status}
+                recovery={run.recovery}
+              />
             )}
             {canCancel && ["queued", "running", "waiting"].includes(run.status) && (
               <Button

@@ -701,6 +701,13 @@
       "when": 1793629642667,
       "tag": "0099_deal_write_version",
       "breakpoints": true
+    },
+    {
+      "idx": 100,
+      "version": "7",
+      "when": 1793638279185,
+      "tag": "0100_workflow_failed_step_retry",
+      "breakpoints": true
     }
   ]
 }

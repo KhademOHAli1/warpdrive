@@ -1,0 +1,321 @@
+{
+  "schema_version": 1,
+  "record_type": "bounded_build_qualification_summary",
+  "canonical_id": "ops/build-memory-2026-11-02",
+  "issue": 916,
+  "parent_issue": 81,
+  "acceptance_sha256": "0c800bed30186d743ec3925ccdd4b880f4a0909fdb3528fe651cad666cdf67eb",
+  "original_acceptance": [
+    "Preserve bun@1.4.4, package.json/bun.lock, configuration and security checks, and normal production TypeScript checking. Do not use ignoreBuildErrors or skip required checks to obtain a successful build.",
+    "Complete the actual local webpack production build within a declared, enforced 8 GiB aggregate owned-process RSS budget. Retain exact revision/input hashes, measurement cadence and limits, successful exit/output, and complete owned-resource cleanup evidence.",
+    "Existing configuration regressions and required CI pass for the exact integrated main revision. Retain both failed attempts and successful candidate qualification separately; no application runtime, provider/installation, release, or deployment acceptance is inferred."
+  ],
+  "original_source_tasks": [],
+  "qualified_source_revision": "e0eba73266ce7a15bba2f3893a720710fee4ca17",
+  "baseline_revision": "13f7a20464118ab45a0a3bfbabebd0e99f19eeea",
+  "status": "LOCAL_BUILD_QUALIFIED_EXACT_INTEGRATED_CI_PENDING",
+  "source_pins": [
+    {
+      "path": "next.config.ts",
+      "sha256": "e84ae8a6a38e0e6438c527a1c053e9fad2b4c148ca83fa59ee9bd5ea9e397337"
+    },
+    {
+      "path": "next.config.test.ts",
+      "sha256": "090a4365c3347c408660f9bcf85afdcca43cb06ece66081d383e8dc623fab0b0"
+    },
+    {
+      "path": "src/config/developmentCache.ts",
+      "sha256": "a568b3224411d19865ae771d72d13c67cf4d87509789806b46e33992f2472697"
+    },
+    {
+      "path": "src/config/developmentCache.test.ts",
+      "sha256": "28f471cee4a6524856348d659afa2904bdd9a64b086635f78e237f4f7c1501ff"
+    },
+    {
+      "path": "package.json",
+      "sha256": "33e0ea11342a92b351845f2f5760f67d3463a6ce359bc6747df6a30bc1c14f04"
+    },
+    {
+      "path": "bun.lock",
+      "sha256": "5f609b438462d5f1a06bfeae500c5a7e266f664dc4b19b0ca6cd91c5ee56ca2b"
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "0d28ae0fb0ee2504f67842e31a21fc16a5b244d807fe32990e27ead98e2716a0"
+    },
+    {
+      "path": "docs/delivery/roadmap.json",
+      "sha256": "6cac31491544181a89c7b01b33dd15e67b479185cc9dd1411751c99a7680f28b"
+    },
+    {
+      "path": "docs/delivery/issue-map.json",
+      "sha256": "d6c78fdcab0b164ec88756bc116edc15e30b09dfa294d738f3230a8393e1269d"
+    }
+  ],
+  "pinned_bun": {
+    "version": "1.4.4",
+    "sha256": "0a2237cdcfa0d16ef501d9acca9f0026309ef348bea7393a64e8d1e3609565cc"
+  },
+  "attempts": [
+    {
+      "allocation": "ROOT-GOAL-WF909-PRODUCTION-BUILD-20261102-1",
+      "revision": "13f7a20464118ab45a0a3bfbabebd0e99f19eeea",
+      "startedAtUtc": "2026-11-02T15:15:22.821754+00:00",
+      "state": "FAIL",
+      "exit": null,
+      "seconds": 60.054559333017096,
+      "maxSampledRss": 8612446208,
+      "groupGone": true,
+      "inputsUnchanged": true,
+      "servicesStarted": 0,
+      "memoryMode": null,
+      "ownedGroup": {
+        "pid": 48378,
+        "pgid": 48378,
+        "birth": "Mon Nov  2 16:15:22 2026"
+      }
+    },
+    {
+      "allocation": "ROOT-GOAL-WF909-PRODUCTION-BUILD-20261102-2",
+      "revision": "13f7a20464118ab45a0a3bfbabebd0e99f19eeea",
+      "startedAtUtc": "2026-11-02T15:23:31.050965+00:00",
+      "state": "FAIL",
+      "exit": null,
+      "seconds": 34.32468920806423,
+      "maxSampledRss": 8814018560,
+      "groupGone": true,
+      "inputsUnchanged": true,
+      "servicesStarted": 0,
+      "memoryMode": "documented Bun --smol; full normal Next build/type checks",
+      "ownedGroup": {
+        "pid": 69044,
+        "pgid": 69044,
+        "birth": "Mon Nov  2 16:23:31 2026"
+      }
+    },
+    {
+      "allocation": "ROOT-GOAL-WF909-PRODUCTION-BUILD-20261102-3",
+      "revision": "e0eba73266ce7a15bba2f3893a720710fee4ca17",
+      "startedAtUtc": "2026-11-02T15:59:54.518303+00:00",
+      "state": "FAIL",
+      "exit": 0,
+      "seconds": 87.81696275004651,
+      "maxSampledRss": 6923714560,
+      "groupGone": true,
+      "inputsUnchanged": true,
+      "servicesStarted": 0,
+      "memoryMode": "documented direct+inherited Bun --smol plus committed webpackBuildWorker:true; full normal Next build/type checks",
+      "ownedGroup": {
+        "pid": 96991,
+        "pgid": 96991,
+        "birth": "Mon Nov  2 16:59:54 2026"
+      }
+    }
+  ],
+  "configuration_tests": {
+    "files": ["next.config.test.ts", "src/config/developmentCache.test.ts"],
+    "passed": 18,
+    "failed": 0,
+    "seconds": 2.0931383339921013,
+    "max_sampled_rss_bytes": 390021120,
+    "exit": 0,
+    "group_gone": true,
+    "inputs_unchanged": true
+  },
+  "build": {
+    "exit": 0,
+    "qualification_invocation_seconds": 87.81696275004651,
+    "max_sampled_rss_bytes": 6923714560,
+    "build_id": "7MA33MOvK-_-pbN6jjC-v",
+    "normal_type_checking": true,
+    "all_build_phases_completed": true,
+    "static_pages": 67,
+    "group_gone": true,
+    "inputs_unchanged": true,
+    "services_started": 0,
+    "original_strict_receipt_state": "FAIL",
+    "separate_metadata_addendum_state": "PASS",
+    "later_admitted_pointer_state": "PASS"
+  },
+  "resource_method": {
+    "scope": "RSS sum of processes in the owned new-session PGID, including inherited compiler/checker descendants",
+    "rss_stop_bytes": 8589934592,
+    "build_loop_stop_seconds": 240,
+    "sleep_after_probes_seconds": 0.5,
+    "cadence_limit": "Synchronous pressure/disk/ps probes precede the sleep. This is not a fixed500ms interval. Per-sample timestamps/RSS are not retained.",
+    "probe_timeout_seconds": 3,
+    "entry_memory_indicator_min_percent": 40,
+    "stop_memory_indicator_below_percent": 30,
+    "admitted_pressure_levels": [1, 2],
+    "free_disk_min_bytes": 8589934592,
+    "post_build_trace_timeout_seconds": 20,
+    "cleanup_term_wait_seconds": 10,
+    "cleanup_kill_wait_seconds": 5,
+    "cleanup_descendant_check_seconds": 3,
+    "configuration_rss_stop_bytes": 2147483648,
+    "configuration_loop_stop_seconds": 30,
+    "limits": [
+      "Sampled maximum is not a continuous peak or guarantee against a between-sample excursion.",
+      "The recorded group scope does not measure escaped process groups.",
+      "The configured8GiB sampled stop was enforced; no application/database/worker/browser services were launched."
+    ]
+  },
+  "frozen_input_provenance": {
+    "tracked_files": 7596,
+    "tracked_manifest_sha256": "893065cc9809f40b612f5e864cefdf2c45b463ba42a3f12521c9692e3352fdf4",
+    "archive_sha256": "ddcb51e897bed945a91db720468d0f4d569c054897e5355ebf7b3cf02e4a98a8",
+    "frozen_app": "/Users/ali/Developer/warpdrive-settings-ux/.runtime/goal-wf909-production-e0eba73266/app",
+    "dependency_bridge": "/Users/ali/Developer/warpdrive-settings-ux/node_modules",
+    "positive_export_module_resource_events": 9711,
+    "positive_unique_frozen_source_paths": 2122,
+    "client_reference_manifest_count": 96,
+    "positive_client_frozen_source_paths": 223,
+    "nft_files": 103,
+    "nft_resolved_counts": {
+      "borrowedDependency": 85720,
+      "declaredExactAncestorMetadata": 96,
+      "export": 8180
+    },
+    "extra_metadata": {
+      "path": "/Users/ali/Developer/warpdrive-settings-ux/package.json",
+      "realpath": "/Users/ali/Developer/warpdrive-settings-ux/package.json",
+      "type": "regular non-symlink file",
+      "bytes": 6599,
+      "sha256": "33e0ea11342a92b351845f2f5760f67d3463a6ce359bc6747df6a30bc1c14f04",
+      "equalFrozenExport": true,
+      "equalExactGitRevision": "e0eba73266ce7a15bba2f3893a720710fee4ca17",
+      "nftReferenceCount": 96,
+      "reason": "Borrowed dependencies resolve below the canonical package boundary. Package metadata can influence module resolution; its exact bytes are a declared additional input. No reasons graph/syscall read trace was retained to prove each dependency edge."
+    },
+    "limits": [
+      "NFT omits bundled source. Frozen full input manifest, launch cwd, positive compiler events and client references jointly establish this scoped boundary; numeric module IDs do not.",
+      "This is one retained local build with exact dependency-resolution metadata admitted; it is not hermetic export-only input. No runtime, installed, provider, release, deployment or exact-main CI acceptance is implied. Original strict FAIL and both13f7 resource failures remain retained."
+    ]
+  },
+  "operator_evidence_base": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-settings-ux/outputs/goal-core-journeys-20261102",
+  "operator_evidence": [
+    {
+      "path": "workflow-follow-up/production-13f7a20464/build.public.json",
+      "sha256": "52ccb2e7ac469a998350ce03505b1ee9be2308d90994840b41d47279ed1fa1e3"
+    },
+    {
+      "path": "workflow-follow-up/production-13f7a20464/build-smol.public.json",
+      "sha256": "33cf9f489da337f156111a3c41cca37c055fbd04a2f8813eb95d35788370fabd"
+    },
+    {
+      "path": "workflow-follow-up/production-13f7a20464/build.public.log",
+      "sha256": "8cfd714299ccba873bb7eafc180d470bc8582ca72a543ec280a68f82ce6e52d9"
+    },
+    {
+      "path": "workflow-follow-up/production-13f7a20464/build-smol.public.log",
+      "sha256": "346ba6b8687084489467cf725fab7193086f3a86b73e6a03b5b6638782cc2a4a"
+    },
+    {
+      "path": "workflow-follow-up/production-e0eba73266/focused-config.public.json",
+      "sha256": "1b4c0680f44c2841739f7876fc70cb620e8e30ebec5e8389e7b43cef4df48ca9"
+    },
+    {
+      "path": "workflow-follow-up/production-e0eba73266/focused-config.public.log",
+      "sha256": "787721b342d69c1fe77d4c63d16c3489b3824f1f4e82d753c2845523744eaa08"
+    },
+    {
+      "path": "workflow-follow-up/production-e0eba73266/build-worker.public.json",
+      "sha256": "6f66cd3b34b0efd7539a2251ba4958b801482226559a9a1b5b9d68bcb94db0d1"
+    },
+    {
+      "path": "workflow-follow-up/production-e0eba73266/build-worker.public.log",
+      "sha256": "0acd36305484f24bb9f65f4fd72d634edf9613632067e72cbdbc1496866e893b"
+    },
+    {
+      "path": "workflow-follow-up/production-e0eba73266/build3-outcome.public.json",
+      "sha256": "265c67189069199f9df99e5c047e7665c6d198bc076967d099d920316322a19e"
+    },
+    {
+      "path": "workflow-follow-up/production-e0eba73266/foundation.public.json",
+      "sha256": "20cd52af52c53674125f300a0aeeeb80063cc1998ad784e44ee7ebe278a5cc25"
+    },
+    {
+      "path": "workflow-follow-up/production-e0eba73266/tracked-source-manifest.public.json",
+      "sha256": "893065cc9809f40b612f5e864cefdf2c45b463ba42a3f12521c9692e3352fdf4"
+    },
+    {
+      "path": "workflow-follow-up/production-e0eba73266/tracing.public.json",
+      "sha256": "e056c3b7fdce370c2385127fd5f58bfc39de48518d0e279a448d3c423eef7384"
+    },
+    {
+      "path": "workflow-follow-up/production-e0eba73266/tracing-closure.public.json",
+      "sha256": "90e567aae99305e800b19fcfbf8c1f8b0948885ecfbecbc4aef1d4ab27b422e2"
+    },
+    {
+      "path": "workflow-follow-up/production-e0eba73266/metadata-admission-addendum.public.json",
+      "sha256": "8f633c05aaa02e0cd81585192ee3e63f360601e16878b86c95161cbfd2206e53"
+    },
+    {
+      "path": "workflow-follow-up/production-e0eba73266/metadata-tracing-closure.public.json",
+      "sha256": "f5a1ab353fc2c90e23291f8becc5bce999cc79a401a49bd99762f972e44f07a7"
+    },
+    {
+      "path": "workflow-follow-up/production-e0eba73266/admitted-build.public.json",
+      "sha256": "aef3f50ca14d094e90108ee1808854c509f6c6dc42b2a958aaa23a4fb0103fc8"
+    },
+    {
+      "path": "closure-readiness/build-916-independent-source-review.json",
+      "sha256": "3e23b816b5721096773433ffc42eb6c4d786b50e520434a08dfdd6b15488360c"
+    },
+    {
+      "path": "closure-readiness/build3-metadata-independent-review.json",
+      "sha256": "40176de3b2dbbba22c1402f54929c8c847cba645fd496e2154de51c270cbe6dc"
+    },
+    {
+      "path": "workflow-follow-up/build-production.py",
+      "sha256": "03aa5289f12f0d8d19a7c5b8ecf3110ab45bad0b6568286a2f34bc7c5ef03df7"
+    },
+    {
+      "path": "workflow-follow-up/build-production-smol.py",
+      "sha256": "86a3cfe0e933e7ba52415b48e60f272b15d7fac525e3216f5425770bdde2fa41"
+    },
+    {
+      "path": "workflow-follow-up/build-production-worker.py",
+      "sha256": "aa2a5029f749f01988ff1b02c39202b74f82477e6e6001fdfc089f02350a63de"
+    },
+    {
+      "path": "workflow-follow-up/focused-production-config.py",
+      "sha256": "3bf0c73b2ce9ec29850df38b313f8baea24a299e1cc2467d5306d2561568a3f6"
+    },
+    {
+      "path": "workflow-follow-up/audit-production-tracing.py",
+      "sha256": "5c3b8eb06e19090b95f30f693cde04066c9032014659fea5fe01b2229522f15d"
+    },
+    {
+      "path": "workflow-follow-up/audit-build3-metadata-addendum.py",
+      "sha256": "583045cb8f91797e0fd7784c257d64f083ecfdb492d707734753ff356967023c"
+    }
+  ],
+  "independent_review_provenance": {
+    "original_source_review_task": "/root/deal_core_next_slice",
+    "original_metadata_review_task": "/root/deal_core_next_slice",
+    "documentation_and_pending_review_task": "/root/live_issue_checkpoints",
+    "runtime": "codex",
+    "session_id": "01a19251-a472-7cd1-86cd-8dc245dd5b84",
+    "limit": "Declared independent internal process provenance; not separate authenticated GitHub human reviewers."
+  },
+  "hosted_ci": {
+    "status": "PENDING",
+    "exact_integrated_revision": null,
+    "required_jobs_passed": null,
+    "runs": null,
+    "limit": "Green baseline13f7 CI does not qualify the unintegrated candidate."
+  },
+  "acceptance": {
+    "AC1": "source/local build evidence supports preserved checks",
+    "AC2": "actual local build qualifies the declared sampled guard and separately declared metadata boundary",
+    "AC3": "configuration tests passed; exact integrated main CI pending",
+    "technical_acceptance": "PENDING",
+    "issue_closed": false
+  },
+  "limits": [
+    "Both original resource stops and original strict tracingFAIL remain immutable.",
+    "No runtime, installation/packaging, provider, full user journey, release or deployment acceptance.",
+    "This committed summary pins retained local artifacts; it does not pretend they are published GitHub artifact URLs."
+  ]
+}

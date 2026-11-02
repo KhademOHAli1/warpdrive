@@ -11,16 +11,17 @@ import { displayNodeName } from "../nodeNames";
 import { orderedWorkflowNodes } from "../nodeOrder";
 import { NodeSummary } from "./NodeSummary";
 import type { RevealNode } from "./ResponsiveViewport";
+import { RunRecovery } from "./RunRecovery";
 import { WaitTimestamp } from "./WaitTimestamp";
 import { WorkflowCanvas } from "./WorkflowCanvas";
 
 export type RunDetail = RouterOutputs["workflows"]["run"];
-export function RunTrace({ detail }: { detail: RunDetail }) {
+export function RunTrace({ detail, workflowId }: { detail: RunDetail; workflowId?: string }) {
   const t = useAppTranslations("workflows");
   const locale = useLocale();
   const fmt = useFormatters();
   const [selected, setSelected] = useState(
-    detail.status === "waiting" && detail.nextNodeId !== null
+    (detail.status === "waiting" || detail.status === "failed") && detail.nextNodeId !== null
       ? detail.nextNodeId
       : (detail.definition.nodes[0]?.id ?? "start"),
   );
@@ -62,6 +63,21 @@ export function RunTrace({ detail }: { detail: RunDetail }) {
         <p role="alert" className="px-5 text-sm text-destructive">
           {t("runError")} <bdi className="font-mono text-xs">{detail.errorId}</bdi>
         </p>
+      )}
+      {workflowId !== undefined && detail.recovery !== undefined && (
+        <div className="px-5">
+          <RunRecovery
+            workflowId={workflowId}
+            runId={detail.id}
+            status={detail.status}
+            recovery={detail.recovery}
+            detailed
+            nodeName={(id) => {
+              const item = detail.definition.nodes.find((entry) => entry.id === id);
+              return item === undefined ? undefined : displayNodeName(item, locale);
+            }}
+          />
+        </div>
       )}
       <div className="grid min-h-[500px] overflow-hidden border-t xl:min-h-0 xl:flex-1 xl:grid-cols-[minmax(0,1fr)_320px]">
         <WorkflowCanvas

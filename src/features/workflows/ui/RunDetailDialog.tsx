@@ -59,7 +59,9 @@ export function RunDetailDialog({
           </p>
         )}
         <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
-          {query.data !== undefined && <RunTrace key={query.data.id} detail={query.data} />}
+          {query.data !== undefined && (
+            <RunTrace key={query.data.id} detail={query.data} workflowId={workflowId} />
+          )}
         </div>
       </DialogContent>
     </Dialog>

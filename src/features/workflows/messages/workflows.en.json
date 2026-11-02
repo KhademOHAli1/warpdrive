@@ -218,5 +218,31 @@
   "leavePending": "A workflow change is still in progress. Leaving will not cancel it. Leave?",
   "leaveTitle": "Leave this workflow?",
   "leaveConfirm": "Leave workflow",
-  "leaveCancel": "Stay here"
+  "leaveCancel": "Stay here",
+  "retryRecovery": "Run recovery",
+  "retryRun": "Retry failed step",
+  "retrying": "Requesting retry…",
+  "retryHint": "Continue this run from the failed step. Completed tasks will not run again.",
+  "retryRequested": "Retry requested. Current progress is shown above.",
+  "retryDenied": "Your access changed. Refresh or sign in again before retrying.",
+  "retryConflict": "This run changed. Refresh to see its current state before retrying.",
+  "retryUnavailable": "This step cannot be retried yet. Refresh after resolving the reported issue.",
+  "retryUnknown": "We could not confirm the retry. Refresh its status before trying again.",
+  "retryHistory": "Recent recovery history",
+  "retryRecorded": "Retry requested by the original runner:",
+  "retryFailureRecorded": "Failure recorded:",
+  "retryLegacyFailure": "Earlier failure snapshot, stored update time:",
+  "retryFailedStep": "Failed step",
+  "retryOriginalDeadline": "Original wait deadline (automatic restart unavailable):",
+  "retryReason": {
+    "available": "This step can be retried.",
+    "notFailed": "Current progress is shown above.",
+    "legacy": "This older failure has no reliable recovery record. Review completed work before starting another run.",
+    "actor": "Only the person who started this run can retry it.",
+    "permission": "Access changed. Restore the required access and refresh before retrying.",
+    "paused": "Re-enable this workflow before retrying its failed step.",
+    "unsupported": "This run cannot safely resume from this step. Review completed work before starting another run.",
+    "repair": "Resolve the reported issue, then refresh to check whether the step can be retried.",
+    "inconsistent": "The saved progress needs review before this run can be resumed."
+  }
 }

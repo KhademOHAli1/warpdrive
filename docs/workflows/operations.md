@@ -41,9 +41,27 @@ run row; database task creation and cursor/step persistence share one transactio
 rolls both back. Competing workers serialize. Cancellation waits for an in-flight step
 transaction and then prevents subsequent steps.
 
-Terminal validation/permission failures are recorded and not blindly replayed. The UI has
-no manual retry action yet. Unexpected database failures leave the cursor available for
-retry/reconciliation. Persistent infrastructure failures need operator intervention.
+Terminal validation/permission failures retain an opaque failure generation. The original
+runner can select **Retry failed step** after repairing an eligible database task failure.
+The server checks the live native session, current workflow permissions, active/unarchived
+workflow, pinned graph, completed progress and current deal/task access. Recovery keeps the
+same run, version, actor, cursor, completed steps and outputs. Completed tasks are not replayed.
+A durable receipt binds the request key to that exact failure: lost responses and concurrent
+clicks cannot consume a newer failure. Boot/minutely reconciliation also recovers a committed
+retry whose queue nudge failed.
+
+Migration `0100_workflow_failed_step_retry.sql` copies existing failed-run facts into
+`legacy_snapshot` history without changing their runs, steps or CRM effects. The stored
+update timestamp is shown as a snapshot time, not an invented historical attempt time.
+Stop old application/worker writers before applying this migration and start the new
+application and workers together afterward. An old worker failing after the backfill
+snapshot cannot record a generation; mixed-version failure writing is unsupported.
+Malformed progress, unsupported graphs/versions, simulations and failed waits remain
+ineligible. In particular, an old failed wait has lost its deadline; retry never starts its
+duration again. New wait failures retain their original deadline as history only.
+
+Unexpected database failures leave the cursor available for retry/reconciliation.
+Persistent infrastructure failures need operator intervention.
 A dead-letter/needs-review policy, quotas, retention, and alerting remain production gates.
 
 Pausing prevents admission and leaves existing runs unchanged. Cancel those separately
@@ -54,7 +72,8 @@ when needed. Neither pausing nor cancellation reverses completed CRM effects.
 Runs retain trigger references and step outputs internally. History responses expose coarse
 metadata and completed-step counts. Do not expose payloads without current record-level
 authorization and redaction. A retention/redaction job and broader audit/event journal
-remain required for full R1.
+remain required for full R1. Failure history exposes stable error IDs, node references and
+failure/retry times; retry request keys, actor/session IDs and CRM output payloads stay private.
 
 Simulation rolls back the canonical database-only task action inside a savepoint. This does
 not authorize future external-provider testing. No email, conferencing, or HTTP handler is

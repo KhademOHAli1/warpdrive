@@ -2,10 +2,11 @@ import { and, desc, eq, isNull } from "drizzle-orm";
 import { z } from "zod";
 import { ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
-import { workflowRuns, workflowSteps, workflows } from "@/db/schema";
+import { workflowRuns, workflowSteps, workflows, workflowVersions } from "@/db/schema";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { err, ok } from "@/types/result";
 import { canWorkflow } from "./access";
+import { describeRunRecovery, readFailureHistories } from "./runRecovery";
 
 export async function listWorkflows(db: Db, actor: PermSetUser, signal: AbortSignal) {
   if (!canWorkflow(actor, "view")) return err(ERROR_IDS.WORKFLOW_DENIED);
@@ -70,24 +71,52 @@ export async function readRunHistory(
       errorId: workflowRuns.errorId,
       createdAt: workflowRuns.createdAt,
       updatedAt: workflowRuns.updatedAt,
+      run: workflowRuns,
+      definition: workflowVersions.definition,
     })
     .from(workflowRuns)
+    .leftJoin(
+      workflowVersions,
+      and(
+        eq(workflowVersions.id, workflowRuns.versionId),
+        eq(workflowVersions.workflowId, workflowRuns.workflowId),
+      ),
+    )
     .where(eq(workflowRuns.workflowId, workflowId))
     .orderBy(desc(workflowRuns.createdAt))
     .limit(50);
+  const failures = await readFailureHistories(
+    db,
+    rows.map((row) => row.id),
+    signal,
+  );
   const history = await Promise.all(
-    rows.map(async (row) => ({
-      ...row,
-      steps: await db
-        .select({
-          nodeId: workflowSteps.nodeId,
-          simulated: workflowSteps.simulated,
-          completedAt: workflowSteps.completedAt,
-        })
+    rows.map(async ({ run, definition, ...row }) => {
+      const steps = await db
+        .select()
         .from(workflowSteps)
         .where(eq(workflowSteps.runId, row.id))
-        .orderBy(workflowSteps.completedAt),
-    })),
+        .orderBy(workflowSteps.completedAt);
+      const recovery = await describeRunRecovery(
+        db,
+        actor,
+        workflow.value,
+        run,
+        definition,
+        steps,
+        failures.get(row.id) ?? [],
+        signal,
+      );
+      return {
+        ...row,
+        steps: steps.map(({ nodeId, simulated, completedAt }) => ({
+          nodeId,
+          simulated,
+          completedAt,
+        })),
+        ...(recovery === null ? {} : { recovery }),
+      };
+    }),
   );
   signal.throwIfAborted();
   return ok(history);

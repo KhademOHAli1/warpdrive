@@ -9,13 +9,14 @@ import { createWorkflow, publishWorkflow, saveWorkflowDraft } from "./persistenc
 import { pauseWorkflow } from "./queries";
 import { admitManualRun } from "./runAdmission";
 import { cancelWorkflowRun } from "./runControl";
+import { retryWorkflowRun } from "./runRetry";
 import { nudgeWorkflowRun } from "./worker";
 
 async function authorizedContext(token: string | null) {
   const csrf = await guardCsrf(token);
   if (!csrf.ok) return null;
   const ctx = await createContext();
-  return ctx.actor === null ? null : { db: ctx.db, actor: ctx.actor };
+  return ctx.actor === null ? null : { db: ctx.db, actor: ctx.actor, session: ctx.session };
 }
 
 export async function createWorkflowAction(input: unknown, token: string | null) {
@@ -51,4 +52,13 @@ export async function cancelWorkflowAction(id: string, token: string | null) {
   const ctx = await authorizedContext(token);
   if (ctx === null) return err(ERROR_IDS.WORKFLOW_DENIED);
   return cancelWorkflowRun(ctx.db, ctx.actor, id, AbortSignal.timeout(10_000));
+}
+
+export async function retryWorkflowAction(input: unknown, token: string | null) {
+  const ctx = await authorizedContext(token);
+  if (ctx === null || ctx.session == null || ctx.session.userId !== ctx.actor.id)
+    return err(ERROR_IDS.WORKFLOW_DENIED);
+  const result = await retryWorkflowRun(ctx.db, ctx.session, input, AbortSignal.timeout(10_000));
+  if (result.ok) await nudgeWorkflowRun(result.value.id);
+  return result.ok ? { ok: true as const, value: { id: result.value.id } } : result;
 }

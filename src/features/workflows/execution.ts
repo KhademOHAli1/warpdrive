@@ -2,7 +2,13 @@ import { eq, sql } from "drizzle-orm";
 import { z } from "zod";
 import { ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
-import { workflowRuns, workflowSteps, workflows, workflowVersions } from "@/db/schema";
+import {
+  workflowRunFailures,
+  workflowRuns,
+  workflowSteps,
+  workflows,
+  workflowVersions,
+} from "@/db/schema";
 import { hydrateActor } from "@/server/hydrateActor";
 import { err, ok } from "@/types/result";
 import { canWorkflow } from "./access";
@@ -45,14 +51,14 @@ export async function advanceWorkflowRun(db: Db, runId: string, signal: AbortSig
       workflow.archivedAt !== null ||
       version === undefined
     )
-      return failRun(tx, runId, ERROR_IDS.WORKFLOW_DENIED, now, signal);
+      return failRun(tx, run, ERROR_IDS.WORKFLOW_DENIED, now, signal);
     const parsed = definitionSchema.safeParse(version.definition);
-    if (!parsed.success) return failRun(tx, runId, ERROR_IDS.WORKFLOW_INVALID, now, signal);
+    if (!parsed.success) return failRun(tx, run, ERROR_IDS.WORKFLOW_INVALID, now, signal);
     const definition = parsed.data;
     const node = definition.nodes.find((item) => item.id === run.nextNodeId);
-    if (node === undefined) return failRun(tx, runId, ERROR_IDS.WORKFLOW_DENIED, now, signal);
+    if (node === undefined) return failRun(tx, run, ERROR_IDS.WORKFLOW_DENIED, now, signal);
     const result = await advanceRunStep(tx, actor, node, run, now, signal);
-    if (!result.ok) return failRun(tx, runId, result.error, now, signal);
+    if (!result.ok) return failRun(tx, run, result.error, now, signal);
     if (result.value.status === "waiting") return ok("waiting" as const);
     const output = result.value.output;
     await tx.insert(workflowSteps).values({
@@ -80,11 +86,24 @@ export async function advanceWorkflowRun(db: Db, runId: string, signal: AbortSig
   });
 }
 
-async function failRun(db: Db, runId: string, errorId: string, now: Date, signal: AbortSignal) {
+async function failRun(
+  db: Db,
+  run: typeof workflowRuns.$inferSelect,
+  errorId: string,
+  now: Date,
+  signal: AbortSignal,
+) {
+  await db.insert(workflowRunFailures).values({
+    runId: run.id,
+    nodeId: run.nextNodeId,
+    errorId,
+    failedAt: now,
+    originalResumeAt: run.resumeAt,
+  });
   await db
     .update(workflowRuns)
     .set({ status: "failed", resumeAt: null, errorId, updatedAt: now })
-    .where(eq(workflowRuns.id, runId));
+    .where(eq(workflowRuns.id, run.id));
   signal.throwIfAborted();
   return ok("failed" as const);
 }

@@ -9,6 +9,7 @@ import {
   text,
   timestamp,
   unique,
+  uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
 import type { RunOutputs, StepOutput } from "@/features/workflows/runTypes";
@@ -78,4 +79,46 @@ export const workflowSteps = pgTable(
     completedAt: timestamp("completed_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [unique("workflow_step_effect_unique").on(t.runId, t.nodeId)],
+);
+
+// Failure facts survive recovery. A retry consumes one exact generation, never a
+// later failure or the original run admission key. Users are soft-deactivated;
+// keep the same restrictive identity references as the run and its effects.
+export const workflowRunFailures = pgTable(
+  "workflow_run_failures",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    runId: uuid("run_id")
+      .notNull()
+      .references(() => workflowRuns.id),
+    nodeId: text("node_id"),
+    errorId: text("error_id").notNull(),
+    failedAt: timestamp("failed_at", { withTimezone: true }).notNull(),
+    origin: text("origin", { enum: ["recorded", "legacy_snapshot"] })
+      .notNull()
+      .default("recorded"),
+    originalResumeAt: timestamp("original_resume_at", { withTimezone: true }),
+    retryRequestKey: uuid("retry_request_key"),
+    retriedBy: uuid("retried_by").references(() => users.id),
+    retriedAt: timestamp("retried_at", { withTimezone: true }),
+  },
+  (t) => [
+    unique("workflow_run_retry_request_unique").on(t.retriedBy, t.retryRequestKey),
+    uniqueIndex("workflow_run_open_failure_unique").on(t.runId).where(sql`${t.retriedAt} IS NULL`),
+    index("workflow_run_failures_history_idx").on(t.runId, t.failedAt),
+    check(
+      "workflow_run_failure_retry_receipt_ck",
+      sql`(${t.retryRequestKey} IS NULL AND ${t.retriedBy} IS NULL AND ${t.retriedAt} IS NULL)
+        OR (${t.retryRequestKey} IS NOT NULL AND ${t.retriedBy} IS NOT NULL AND ${t.retriedAt} IS NOT NULL)`,
+    ),
+    check(
+      "workflow_run_failure_deadline_ck",
+      sql`${t.originalResumeAt} IS NULL OR isfinite(${t.originalResumeAt})`,
+    ),
+    check("workflow_run_failure_origin_ck", sql`${t.origin} IN ('recorded','legacy_snapshot')`),
+    check(
+      "workflow_run_failure_times_ck",
+      sql`isfinite(${t.failedAt}) AND (${t.retriedAt} IS NULL OR isfinite(${t.retriedAt}))`,
+    ),
+  ],
 );

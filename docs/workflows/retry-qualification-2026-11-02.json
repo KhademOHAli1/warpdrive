@@ -1,0 +1,153 @@
+{
+  "version": 1,
+  "issues": [909, 85],
+  "state": "local_technical_qualification_only",
+  "acceptance": {
+    "full_issue_85": false,
+    "full_issue_909": false,
+    "production_browser_follow_up": false,
+    "deployment": false,
+    "release": false
+  },
+  "contract": {
+    "same_run": true,
+    "original_native_actor": true,
+    "pinned_version_cursor_completed_steps_outputs_preserved": true,
+    "failure_bound_durable_retry_receipt": true,
+    "legacy_snapshot_backfill": true,
+    "failed_wait_retry_supported": false,
+    "mixed_version_writers_supported": false,
+    "global_revocation_fence_claimed": false
+  },
+  "actual_cuts": [
+    {
+      "allocation": "ROOT-GOAL-WORKFLOW-RETRY-UI-RED-20261102-1",
+      "result": "1 intended missing Retry RED;2controlsPASS"
+    },
+    {
+      "allocation": "ROOT-GOAL-WORKFLOW-RETRY-STATIC-20261102-1",
+      "result": "27unitsPASS,Nexttypegen/fullconfiguredTSC PASS,typedlint16FAIL;later phases unrun",
+      "receipt_sha256": "e6776186df2af2533c8c5e558e1cb751312cf1bd44d261e7548c2d7048e57d18"
+    },
+    {
+      "allocation": "ROOT-GOAL-WORKFLOW-RETRY-REMAINING-20261102-2",
+      "result": "14affectedprofileunitsPASS,scopedTSC5/lint5/i18n/Biome26PASS;unchanged5action+8UI retained at preceding cut",
+      "receipt_sha256": "1f9c12055b82defd0f1780e18de9ffd1ecbbe0599acfc60e8b5be48d46a3acfb"
+    },
+    {
+      "allocation": "ROOT-GOAL-WORKFLOW-RETRY-NATIVE34-20261102-1",
+      "result": "scopedTSC3+harness2/lint3/Biome3PASS;34native=31PASS/3FAIL",
+      "native_seconds": 16.12811149994377,
+      "all_in_seconds": 29.346434958046302,
+      "receipt_sha256": "219b12ef7f491398885cae12f6089b90bb3d81d2f534b0aafa78d267d9a97d53",
+      "tests_sha256": "2b851b4a8587b199c497d4c9225f5100a2a1f21b2622ea0a0cc7f167459c728c"
+    },
+    {
+      "allocation": "ROOT-GOAL-WORKFLOW-RETRY-NATIVE9-20261102-1",
+      "result": "scopedTSC3+harness2/lint3/Biome3PASS;9selectedPASS/27unselected;3repaired cases plus6read/executionregressions",
+      "native_seconds": 4.086173250107095,
+      "all_in_seconds": 16.336928999982774,
+      "receipt_sha256": "a76eb56aedadadad580b9281bc598349cf10a0df46f51fd878cd271bf3626168",
+      "tests_sha256": "6ee99bdc2b886ba72ed5001e8602917244ac940d89e5ab0544abf9d5a237a1f4"
+    }
+  ],
+  "coverage": {
+    "retry_cases_with_passing_witnesses_across_actual_cuts": 34,
+    "single_all_34_green_run": false,
+    "additional_read_execution_regressions": 6,
+    "legacy_session_policy_cases": 4,
+    "populated_predecessor_upgrade": true,
+    "production_worker_boot_and_observed_stale_job": true
+  },
+  "original_native_failures": [
+    {
+      "case": "same-run later-task recovery",
+      "cause": "nested Drizzle window-subquery selection retained base-table columns",
+      "repair": "flatten inner columns and select explicit outer alias fields;verify both safe detail/history"
+    },
+    {
+      "case": "archived workflow fixture",
+      "cause": "fixture attempted archive while active, violating canonical active/published/archive check",
+      "repair": "archive with active=false; preserve database constraint"
+    },
+    {
+      "case": "unsupported stored-version fixture",
+      "cause": "fixture attempted UPDATE of immutable published version",
+      "repair": "insert unsupported historical version and pin fixture run to it; preserve immutability trigger"
+    }
+  ],
+  "cleanup": {
+    "native34-receipt.json": {
+      "allGroupsGone": true,
+      "ownedRunLabelGone": true,
+      "ownedContainerGone": true,
+      "foreignContainerStatesRetained": true,
+      "noNewResources": {
+        "containers": true,
+        "networks": true,
+        "volumes": true
+      },
+      "inputPinsUnchanged": true,
+      "privateCredentialsDeleted": true,
+      "allInConformant": true
+    },
+    "native9-receipt.json": {
+      "allGroupsGone": true,
+      "ownedRunLabelGone": true,
+      "ownedContainerGone": true,
+      "foreignContainerStatesRetained": true,
+      "noNewResources": {
+        "containers": true,
+        "networks": true,
+        "volumes": true
+      },
+      "inputPinsUnchanged": true,
+      "privateCredentialsDeleted": true,
+      "allInConformant": true
+    }
+  },
+  "canonical_metadata": {
+    "drizzle/0100_workflow_failed_step_retry.sql": "69b420cb2f8219dd82889f70569d9ae41ca5affddf54b6083b08b5ef3d1a266c",
+    "drizzle/meta/0100_snapshot.json": "58edcc18d2456aba70ac9f65e5c6435a7f795d1559f19843fd54211a2d9579d5",
+    "drizzle/meta/_journal.json": "f2a2c854f76f6085707712b8d417e0260e2e36ce3524106205f15baa197ff4ce"
+  },
+  "source_pins": {
+    "src/db/schema/workflowExecutions.ts": "a548ec7bba706d46094b43a12b50a1eb7b9952b5efea740418a17205cb2e8578",
+    "src/features/workflows/actions.ts": "d64dc3bdb1a27036c815935066c084082b3310e70aadb2ec21f2f65db147f029",
+    "src/features/workflows/execution.ts": "79aaf3a06069215f4c9d1fcdf69d84c9e56ec26a5266f6c12d5339c26218fb38",
+    "src/features/workflows/queries.ts": "3b1846580968a7a7eb7663df1eaba4fb767b80bd65438633e9396fca9da81b9b",
+    "src/features/workflows/runDetail.ts": "ba7cfcf82821cbfa5b95b9806d28c77f7d5bee576b8612ba73bd15b859439ea9",
+    "src/features/workflows/runRecovery.ts": "d4f80230671bfccc536931ca0b92e75b96629c66f8c00eb6ee63040d048fb81a",
+    "src/features/workflows/runRetry.ts": "476b3f2705554b9e80a4a786a9a992ba791177cd0066c27f68721ed1dda49a07",
+    "src/features/workflows/runRetrySession.ts": "15e2695c16ee8aea582baba1d5f09aecca4d19e05b4bb944792f9d5694686378",
+    "src/features/workflows/runRetryProfile.ts": "a54bf4430cf9ec84c68f580bff4cd6c9016efc7f606a25b28b511f96bab8f5c5",
+    "src/features/workflows/runRetryTypes.ts": "1a00f7e429ef749fdb350b96438a02398a21498b318faff62abcca2d1b6dbfc2",
+    "src/features/workflows/runRetry.test-helpers.ts": "39194bc99a16387129f25385e9f89a5ff1be54c68ce34b4860ccfd9d98b9d766",
+    "src/features/workflows/runRetryProfile.test.ts": "fcc7b952eb7656bd0ea13467739be02271076afab2c8df8e2da466c9fd78d708",
+    "src/features/workflows/runRetryActions.test.ts": "1c24794fae888a7597cee95f50cca605b419cf857cf359c87713c48a5a9b9768",
+    "src/features/workflows/runRetry.integration.test.ts": "8a38cc843135117e2a62d87e8dbe318727b08d602b8c15552c3dd1058763b42c",
+    "src/features/workflows/runRetryMigration.integration.test.ts": "da41ad90d5ce58ad31299da4ba8b98a5acca0c3a8c0f0ca1a974f2f1c81a26c8",
+    "src/features/workflows/runRetrySafety.integration.test.ts": "b1c199deec44314d4ca8955f2b4380173b900948a9a83c83ce23ef2ecd006d9e",
+    "src/features/workflows/runRetrySchema.integration.test.ts": "31f90a26f8429cb9f804fceae316b2f3035c19f6d1e29434783e3c5d93aea5b5",
+    "src/features/workflows/runRetryWorker.integration.test.ts": "03ef388f2688191197f3493fad94c7370d837e546794297561cacd8c5ebbf6f2",
+    "src/features/workflows/ui/RunDetailDialog.tsx": "83cdb21752b532a8e542ba047c20b42387f7eee2217f6dd5152f725833e695d9",
+    "src/features/workflows/ui/RunHistory.tsx": "39d7685abac3908b74e49dc960168a4a3004f0320c52901d97ce401e72cc55e6",
+    "src/features/workflows/ui/RunTrace.tsx": "960dbc06d93d22a2916d7a2760fcb1214bf0d77f260b23fe8c630a4a617dd7a0",
+    "src/features/workflows/ui/RunRecovery.tsx": "0b6effb5ec6ef89b56265b52e774ed4980003f77e40eb5c0d5c78ca709fbcfea",
+    "src/features/workflows/ui/RunRecovery.test.tsx": "b608a61b1723345313ee2bbdad193d79e0a0f1a0e989cc788af4acd1a9980b50",
+    "src/features/workflows/messages/workflows.en.json": "7000e3fcedf55eda885e15a85a7c6667354803b4f32e51e4cb83e0408e98ffe7",
+    "src/features/workflows/messages/workflows.de.json": "88d004577f16c76849611385d7938691bc2396962cab337256838ac30545f406",
+    "src/features/workflows/messages/workflows.fa.json": "0ea1d4b687ab6f018d8671078415d7423a8c52ebf0b44bba5eebbb4c22bb3a32",
+    "docs/workflows/operations.md": "642b2b9be3364b0cb9a60d4f5ed7e096b1dc3148e4845f1dc8d286fa5d13b637",
+    "docs-site/docs/features/automations.md": "5b9207f2e0a7995cd64d0f7d928095d63d0f87d551ecb8e29a11e44556b14cc8"
+  },
+  "evidence_workspace": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-settings-ux/outputs/goal-core-journeys-20261102/workflow-terminal-retry",
+  "limits": [
+    "Only supported live manual deal/task profile with literal task subjects",
+    "Unsafe failed waits,simulations,unsupported graphs/versions and malformed progress remain ineligible",
+    "Old app/worker writers quiesced through0100;no mixed-version failure-writing qualification",
+    "Current native authority is rechecked after row wait and before commit;no global fence for unenrolled writers",
+    "Browser/production follow-up,hosted CI and human journey/release acceptance remain separate open gates",
+    "Resource figures are samples;no continuous-peak claim"
+  ]
+}

@@ -218,5 +218,31 @@
   "leavePending": "Eine Änderung am Workflow läuft noch. Verlassen bricht sie nicht ab. Trotzdem verlassen?",
   "leaveTitle": "Diesen Workflow verlassen?",
   "leaveConfirm": "Workflow verlassen",
-  "leaveCancel": "Hier bleiben"
+  "leaveCancel": "Hier bleiben",
+  "retryRecovery": "Ausführung wiederaufnehmen",
+  "retryRun": "Fehlgeschlagenen Schritt wiederholen",
+  "retrying": "Wiederholung wird angefordert…",
+  "retryHint": "Diese Ausführung am fehlgeschlagenen Schritt fortsetzen. Abgeschlossene Aufgaben werden nicht erneut ausgeführt.",
+  "retryRequested": "Wiederholung angefordert. Der aktuelle Fortschritt steht oben.",
+  "retryDenied": "Dein Zugriff hat sich geändert. Aktualisiere die Ansicht oder melde dich vor der Wiederholung erneut an.",
+  "retryConflict": "Diese Ausführung hat sich geändert. Aktualisiere zuerst ihren aktuellen Status.",
+  "retryUnavailable": "Dieser Schritt kann noch nicht wiederholt werden. Behebe das angezeigte Problem und aktualisiere die Ansicht.",
+  "retryUnknown": "Die Wiederholung konnte nicht bestätigt werden. Aktualisiere ihren Status, bevor du es erneut versuchst.",
+  "retryHistory": "Letzte Wiederaufnahmeversuche",
+  "retryRecorded": "Wiederholung durch die ursprünglich ausführende Person angefordert:",
+  "retryFailureRecorded": "Fehler aufgezeichnet:",
+  "retryLegacyFailure": "Älterer Fehlerstand, gespeicherter Änderungszeitpunkt:",
+  "retryFailedStep": "Fehlgeschlagener Schritt",
+  "retryOriginalDeadline": "Ursprünglicher Wartezeitpunkt (kein automatischer Neustart):",
+  "retryReason": {
+    "available": "Dieser Schritt kann wiederholt werden.",
+    "notFailed": "Der aktuelle Fortschritt steht oben.",
+    "legacy": "Für diesen älteren Fehler fehlt ein verlässlicher Wiederaufnahmedatensatz. Prüfe abgeschlossene Aufgaben vor einer neuen Ausführung.",
+    "actor": "Nur die Person, die diese Ausführung gestartet hat, kann sie wiederholen.",
+    "permission": "Der Zugriff hat sich geändert. Stelle die benötigten Berechtigungen wieder her und aktualisiere die Ansicht.",
+    "paused": "Aktiviere diesen Workflow wieder, bevor du den fehlgeschlagenen Schritt wiederholst.",
+    "unsupported": "Diese Ausführung kann hier nicht sicher fortgesetzt werden. Prüfe abgeschlossene Aufgaben vor einer neuen Ausführung.",
+    "repair": "Behebe das angezeigte Problem und aktualisiere die Ansicht, um die Wiederholung erneut zu prüfen.",
+    "inconsistent": "Der gespeicherte Fortschritt muss geprüft werden, bevor diese Ausführung fortgesetzt werden kann."
+  }
 }

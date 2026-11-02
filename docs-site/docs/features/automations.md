@@ -136,7 +136,19 @@ them later. Queued, running, and waiting details update while open.
 ![Farsi simulation graph and step results](../../../docs/images/workflows/interaction-review/run-fa.jpg)
 
 Raw CRM inputs/outputs are withheld because historical access may change. Detailed redacted
-step payloads, attempt timing, and manual retry are later milestones.
+step payloads and broader attempt timing are later milestones.
+
+**Retry failed step** appears for the original runner when the server can safely recover an
+eligible task failure. Repair the reported access or task prerequisite first. Retry resumes
+the same run and published version at the failed task; completed tasks remain completed.
+Run details retain failure and retry history. Existing failures imported during upgrade show
+their stored snapshot time. Repeating a request after an uncertain response acknowledges the
+same retry, even if the run has since failed again; it cannot retry that newer failure.
+
+Recovery currently supports the database-only manual deal/task profile with literal task
+subjects. A paused or archived workflow, lost task/deal access, changed execution facts,
+unsupported graph/version, simulation or failed wait is not eligible. Failed waits are not
+restarted with a new duration. Refresh the run details to see the latest state and reason.
 
 **Cancel run** stops a pending wait and subsequent steps; already completed tasks remain.
 **Pause** prevents new runs while previously admitted runs continue. Publishing reactivates
