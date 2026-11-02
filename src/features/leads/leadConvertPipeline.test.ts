@@ -1,14 +1,98 @@
+import { randomUUID } from "node:crypto";
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { deals } from "@/db/schema/deals";
+import { visibilityGroups } from "@/db/schema/identity";
+import { leads } from "@/db/schema/leads";
 import { withTestDb } from "@/db/testing";
 import { seedPipelineWithStages, seedUser } from "@/db/testing/factories";
+import { bulkConvertLeads } from "./leadBulkConvert";
 import { convertLead } from "./leadConvert";
 import { insertLead, seedSettings, session, sig } from "./leadConvert.test-helpers";
 
 // Which pipeline a converted lead lands in. Split out of leadConvert.test.ts (size budget); the
 // rest of convert's behaviour (custom fields, visibility, references, CAS) stays there.
 describe("convertLead pipeline resolution", () => {
+  it("rejects an explicit restricted pipeline outside the actor's groups", async () => {
+    await withTestDb(async (db) => {
+      const owner = await seedUser(db);
+      const [group] = await db
+        .insert(visibilityGroups)
+        .values({ name: `Restricted-${randomUUID()}` })
+        .returning();
+      if (group === undefined) throw new Error("group seed failed");
+      const restricted = await seedPipelineWithStages(db, ["Private"], {
+        visibilityGroupId: group.id,
+      });
+      await seedSettings(db);
+      const lead = await insertLead(db, owner.id);
+
+      const result = await convertLead(
+        db,
+        session(owner.id),
+        {
+          leadId: lead.id,
+          pipelineId: restricted.pipeline.id,
+          expectedUpdatedAt: lead.updatedAt.toISOString(),
+        },
+        sig(),
+      );
+      expect(result.ok).toBe(false);
+      if (!result.ok) expect(result.error.id).toBe("E_PERM_001");
+      expect(await db.select().from(deals)).toHaveLength(0);
+      const [after] = await db.select().from(leads).where(eq(leads.id, lead.id));
+      expect(after?.convertedDealId).toBeNull();
+    });
+  });
+
+  it("rejects a restricted default pipeline during bulk conversion", async () => {
+    await withTestDb(async (db) => {
+      const owner = await seedUser(db);
+      const [group] = await db
+        .insert(visibilityGroups)
+        .values({ name: `Restricted-${randomUUID()}` })
+        .returning();
+      if (group === undefined) throw new Error("group seed failed");
+      const restricted = await seedPipelineWithStages(db, ["Private"], {
+        visibilityGroupId: group.id,
+      });
+      await seedSettings(db, { defaultPipelineId: restricted.pipeline.id });
+      const lead = await insertLead(db, owner.id);
+
+      const result = await bulkConvertLeads(db, session(owner.id), { ids: [lead.id] }, sig());
+      expect(result.ok).toBe(false);
+      if (!result.ok) expect(result.error.id).toBe("E_PERM_001");
+      expect(await db.select().from(deals)).toHaveLength(0);
+    });
+  });
+
+  it("permits a member of a restricted target pipeline", async () => {
+    await withTestDb(async (db) => {
+      const owner = await seedUser(db);
+      const [group] = await db
+        .insert(visibilityGroups)
+        .values({ name: `Restricted-${randomUUID()}` })
+        .returning();
+      if (group === undefined) throw new Error("group seed failed");
+      const restricted = await seedPipelineWithStages(db, ["Private"], {
+        visibilityGroupId: group.id,
+      });
+      await seedSettings(db);
+      const lead = await insertLead(db, owner.id);
+
+      const result = await convertLead(
+        db,
+        session(owner.id, { visibilityGroupIds: [group.id] }),
+        {
+          leadId: lead.id,
+          pipelineId: restricted.pipeline.id,
+          expectedUpdatedAt: lead.updatedAt.toISOString(),
+        },
+        sig(),
+      );
+      expect(result.ok).toBe(true);
+    });
+  });
   it("errors when no target pipeline is resolvable", async () => {
     await withTestDb(async (db) => {
       const owner = await seedUser(db);

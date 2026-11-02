@@ -31,8 +31,8 @@ export interface InlineEditField<T> {
 // received without a round-trip through `setDraft` first; setting draft and reading it back in
 // the same synchronous handler would see the pre-update value (React state updates are not
 // applied synchronously), so those callers pass the new value straight to `commit`.
-export function useInlineEditField<T>(current: T): InlineEditField<T> {
-  const [editing, setEditing] = useState(false);
+export function useInlineEditField<T>(current: T, initiallyEditing = false): InlineEditField<T> {
+  const [editing, setEditing] = useState(initiallyEditing);
   const [draft, setDraft] = useState<T>(current);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);

@@ -6,6 +6,7 @@ import {
   completeImapAppend,
   imapFixtureCommand,
   type MailProtocolImapState,
+  type MailProtocolSession,
 } from "./mailProtocolImapCommands";
 import { MAIL_PROTOCOL_TEST_CERT, MAIL_PROTOCOL_TEST_KEY } from "./mailProtocolTls";
 
@@ -54,13 +55,16 @@ export async function startMailProtocolImap(
     key: MAIL_PROTOCOL_TEST_KEY,
     cert: MAIL_PROTOCOL_TEST_CERT,
   });
+  const starttlsAvailable = options.starttls === true && options.missingStarttls !== true;
   function accepted(initial: Socket) {
     let socket = initial;
     let input = Buffer.alloc(0);
     let secured = options.starttls !== true;
+    let upgrading = false;
+    let closed = false;
     let authTag: string | null = null;
     let append: { length: number; tag: string; path: string } | null = null;
-    const session = { selected: "" };
+    const session: MailProtocolSession = { selected: "", authenticated: false };
     sockets.add(socket);
     socket.on("close", () => sockets.delete(initial));
     socket.on("error", () => {});
@@ -81,8 +85,11 @@ export async function startMailProtocolImap(
     function authentication(tag: string, encoded: string) {
       authenticationAttempts += 1;
       const pieces = Buffer.from(encoded, "base64").toString().split("\0");
+      const validCredentials =
+        pieces.at(-2) === "owner@mail.test" && pieces.at(-1) === "synthetic-password";
+      if (validCredentials) session.authenticated = true;
       write(
-        pieces.at(-2) === "owner@mail.test" && pieces.at(-1) === "synthetic-password"
+        validCredentials
           ? `${tag} OK authenticated\r\n`
           : `${tag} NO [AUTHENTICATIONFAILED] rejected\r\n`,
       );
@@ -103,22 +110,38 @@ export async function startMailProtocolImap(
     }
     function capability(tag: string) {
       write(
-        `* CAPABILITY IMAP4rev1 AUTH=PLAIN SASL-IR NAMESPACE UIDPLUS ${state.move ? "MOVE" : ""} ${!secured && options.missingStarttls !== true ? "STARTTLS" : ""}\r\n${tag} OK capabilities\r\n`,
+        `* CAPABILITY IMAP4rev1 AUTH=PLAIN SASL-IR NAMESPACE UIDPLUS ${state.move ? "MOVE" : ""} ${!secured && starttlsAvailable ? "STARTTLS" : ""}\r\n${tag} OK capabilities\r\n`,
       );
     }
     function upgrade(tag: string) {
-      if (options.missingStarttls === true) {
-        write(`${tag} NO unsupported\r\n`);
+      if (secured || upgrading || session.authenticated) {
+        write(`${tag} BAD STARTTLS unavailable\r\n`);
         return;
       }
       socket.removeListener("data", data);
       write(`${tag} OK Begin TLS\r\n`);
-      socket = new TLSSocket(socket, { isServer: true, secureContext });
-      secured = true;
-      socket.on("data", data);
-      socket.on("error", () => {});
+      // Any commands coalesced with STARTTLS arrived in plaintext. Do not parse
+      // them after the upgrade or mark the session secure before the handshake.
+      input = Buffer.alloc(0);
+      upgrading = true;
+      const tlsSocket = new TLSSocket(socket, { isServer: true, secureContext });
+      socket = tlsSocket;
+      tlsSocket.once("secure", () => {
+        secured = true;
+        upgrading = false;
+        tlsSocket.on("data", data);
+      });
+      tlsSocket.on("error", () => {});
     }
     function authenticate(tag: string, rest: string) {
+      if (!secured) {
+        write(`${tag} NO [PRIVACYREQUIRED] Start TLS first\r\n`);
+        return;
+      }
+      if (session.authenticated) {
+        write(`${tag} BAD Already authenticated\r\n`);
+        return;
+      }
       const encoded = rest.split(" ")[1];
       if (encoded === undefined) {
         authTag = tag;
@@ -135,16 +158,15 @@ export async function startMailProtocolImap(
       append = { length: Number(literal[1]), tag, path };
       write("+ Ready for literal\r\n");
     }
-    const commands: Record<string, (tag: string, rest: string) => void> = {
-      CAPABILITY: capability,
-      STARTTLS: upgrade,
-      AUTHENTICATE: authenticate,
-      APPEND: beginAppend,
-      LOGOUT(tag) {
-        write(`* BYE closing\r\n${tag} OK logout\r\n`);
-        socket.end();
-      },
-    };
+    function logout(tag: string) {
+      closed = true;
+      session.authenticated = false;
+      session.selected = "";
+      append = null;
+      input = Buffer.alloc(0);
+      write(`* BYE closing\r\n${tag} OK logout\r\n`);
+      socket.end();
+    }
     function commandLine(line: string) {
       if (authTag !== null) {
         authentication(authTag, line);
@@ -152,14 +174,36 @@ export async function startMailProtocolImap(
         return;
       }
       const match = /^(\S+) (\S+)(?: (.*))?$/.exec(line);
-      if (match === null) return;
+      if (match === null) {
+        write(`${/^(\S+)/.exec(line)?.[1] ?? "*"} BAD Malformed command\r\n`);
+        return;
+      }
       const [, tag = "", verb = "", rest = ""] = match;
       const command = verb.toUpperCase();
-      const handler = commands[command];
-      if (handler !== undefined) handler(tag, rest);
-      else imapFixtureCommand(state, session, tag, command, rest, write);
+      switch (command) {
+        case "CAPABILITY":
+          capability(tag);
+          return;
+        case "STARTTLS":
+          if (starttlsAvailable) upgrade(tag);
+          else imapFixtureCommand(state, session, tag, command, rest, write);
+          return;
+        case "AUTHENTICATE":
+          authenticate(tag, rest);
+          return;
+        case "APPEND":
+          if (!session.authenticated) write(`${tag} NO Authenticate first\r\n`);
+          else beginAppend(tag, rest);
+          return;
+        case "LOGOUT":
+          logout(tag);
+          return;
+        default:
+          imapFixtureCommand(state, session, tag, command, rest, write);
+      }
     }
     function data(chunk: Buffer) {
+      if (closed) return;
       input = Buffer.concat([input, chunk]);
       for (;;) {
         if (append !== null) {
@@ -171,6 +215,7 @@ export async function startMailProtocolImap(
         const line = input.subarray(0, end).toString();
         input = input.subarray(end + 2);
         commandLine(line);
+        if (upgrading || closed) return;
       }
     }
     socket.on("data", data);

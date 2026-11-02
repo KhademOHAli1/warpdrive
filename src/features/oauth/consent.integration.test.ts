@@ -1,5 +1,6 @@
 import { randomBytes, randomUUID } from "node:crypto";
 import { afterAll, beforeAll, expect, test } from "vitest";
+import { env } from "@/config/env";
 import { authPolicies, authUsers, oauthClients, sessions, users } from "@/db/schema";
 import { hashSessionCredential } from "@/features/auth/better/sessionToken";
 import { lockMcpGrants, revokeMcpGrants } from "@/features/auth/management/mcpGrants";
@@ -14,6 +15,7 @@ afterAll(async () => {
   await h.close();
 });
 const signal = () => AbortSignal.timeout(10000);
+const resource = `${env.BASE_URL.replace(/\/$/, "")}/api/mcp`;
 async function setup(stale = false) {
   const id = randomUUID();
   const clientId = randomUUID();
@@ -42,6 +44,7 @@ async function setup(stale = false) {
       clientId,
       redirectUri: "https://client.example.com/callback",
       codeChallenge: "a".repeat(43),
+      resource,
     },
   };
 }

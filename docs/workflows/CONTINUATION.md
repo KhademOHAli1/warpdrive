@@ -1,5 +1,7 @@
 # Autonomous workflow-builder continuation
 
+> Branch synchronization, 2 November 2026: this branch now includes main `09288d5`, including canonical0098 and its green populated-upgrade/compatibility checks. The private insertion/ordered-step follow-up remains unfinished; older “current”, unstarted and publication-pending paragraphs below are retained as dated observations. Latest static14 was withdrawn unstarted at the safe stop. Live next work is tracked in [#674](https://github.com/KhademOHAli1/warpdrive/issues/674), with the shared [restart index #80](https://github.com/KhademOHAli1/warpdrive/issues/80).
+
 ## Current editor insertion checkpoint, 2 November 2026
 
 The private checkout now includes a 12-file editor insertion increment. Selecting a predecessor's

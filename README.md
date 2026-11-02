@@ -2,35 +2,38 @@
 
 <p align="center">
   An open-source, self-hosted <b>Pipedrive alternative</b> for business-development teams.<br/>
-  Pipeline management, a deal workspace, contacts, and two-way Gmail, running entirely on your own infrastructure.
+  Your pipeline, customers and conversations, on your own infrastructure.<br/>
+  Built for English, فارسی and Deutsch.
 </p>
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
-  <img src="https://img.shields.io/badge/self--hosted-single--tenant-2ea44f" alt="Self-hosted">
+  <img src="https://img.shields.io/badge/self--hosted-single--tenant-2ea44f" alt="Self-hosted, single-tenant">
+  <img src="https://img.shields.io/badge/Bun-1.4.4-f9f1e1?logo=bun&logoColor=000" alt="Bun 1.4.4">
   <img src="https://img.shields.io/badge/Next.js-000?logo=next.js&logoColor=fff" alt="Next.js">
   <img src="https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=fff" alt="TypeScript">
-  <img src="https://img.shields.io/badge/Postgres-4169E1?logo=postgresql&logoColor=fff" alt="Postgres">
+  <img src="https://img.shields.io/badge/Postgres-4169E1?logo=postgresql&logoColor=fff" alt="PostgreSQL">
 </p>
 
 <p align="center">
-  <img src="docs/screenshots/pipeline.png" alt="warpdrive pipeline board" width="100%">
+  <a href="https://github.com/KhademOHAli1/warpdrive/actions/workflows/ci.yml"><img src="https://github.com/KhademOHAli1/warpdrive/actions/workflows/ci.yml/badge.svg?branch=main" alt="Public Bun CI"></a>
 </p>
 
-warpdrive reimplements the core business-development workflow of Pipedrive as software you
-run yourself. It is **single-tenant and self-hosted**: your own box, your own Postgres and
-object storage, with invitation-only authentication powered by Better Auth. Core CRM records
-are stored on your infrastructure; connected email and enrichment services process the data
-used by their integrations. There is no per-seat application license fee.
+<p align="center">
+  <img src="docs/screenshots/pipeline.png" alt="Warpdrive pipeline board" width="100%">
+</p>
 
-The information architecture and workflows follow the tools BD teams already know, but all
-code, styling, and assets are original, and the interface ships its own visual layer built
-on [shadcn/ui](https://ui.shadcn.com). warpdrive is not affiliated with or endorsed by
-Pipedrive.
+warpdrive brings the core business-development workflow into software you run yourself:
+move deals through a pipeline, keep customer context together and follow up from one
+workspace. It is **single-tenant and self-hosted**, with your own application, PostgreSQL
+and object storage. There is no per-seat application license fee; hosting, operations and
+connected services have their own costs.
 
-This [maintained open source fork](https://github.com/KhademOHAli1/warpdrive) adds the Bun
-runtime and Persian/German localization to [upstream Warpdrive](https://github.com/sneg55/warpdrive).
-It retains the upstream relationship, history and MIT attribution.
+This [maintained fork](https://github.com/KhademOHAli1/warpdrive) builds on
+[upstream Warpdrive](https://github.com/sneg55/warpdrive), preserving its history and MIT
+attribution. It adds the Bun runtime, contextual Persian/German workflows, Iranian date
+input and the ongoing CRM roadmaps below. Core records live on your infrastructure;
+connected mail, identity and other providers process the data used by their integrations.
 
 ## Contents
 
@@ -40,247 +43,274 @@ It retains the upstream relationship, history and MIT attribution.
 - [Tech stack](#tech-stack)
 - [Quickstart (local development)](#quickstart-local-development)
 - [Languages and regional settings](#languages-and-regional-settings)
-- [Documentation and implementation status](#documentation-and-implementation-status)
-- [Self-hosting](#self-hosting)
-- [Tests](#tests)
+- [Self-hosting and upgrades](#self-hosting-and-upgrades)
+- [Tests and checks](#tests-and-checks)
 - [Project status](#project-status)
+- [Roadmaps](#roadmaps)
+- [Documentation](#documentation)
 - [Contributing](#contributing)
 - [License](#license)
 
 ## Features
 
 **Pipeline**
-- Kanban board with drag-and-drop stages, multiple pipelines, and custom stages
-- Per-stage weighted totals, rotting-deal indicators, and saved filters
-- Board / list / archive views
+
+- Kanban board with drag-and-drop deals, multiple pipelines and custom stages
+- Per-stage weighted totals, rotting-deal indicators and saved filters
+- Board, list and archive views
 
 **Deals**
-- Deal workspace with a unified timeline: activities, notes, files, email, and full change history
-- Participants, followers, labels, lost reasons, and close dates
-- Won / lost handling with a stage-progress bar
+
+- A deal workspace with activities, notes, files, email and change history
+- Participants, followers, labels, lost reasons and close dates
+- Won/lost handling and a visible stage-progress bar
 
 **Contacts**
-- People and organizations with custom fields (JSONB)
-- Organization firmographics and org-to-org relationships
+
+- People and organizations with custom fields
+- Organization firmographics and organization-to-organization relationships
 - Leads inbox and CSV import with an undo step
 
-**Email (two-way Gmail)**
-- Send and receive over the Gmail API, with thread linking to deals and people
-- Open and click tracking, templates, signatures, merge fields, and scheduled send
-- Personal inbox plus shared, deal- and contact-linked threads
+**Email**
+
+- Two-way Gmail through OAuth/API, with threads linked to deals and people
+- A separate generic IMAP/SMTP path, verified TLS and multiple personal mailboxes
+- Templates, signatures, merge fields, open/click tracking and scheduled send
+
+Provider capabilities and acceptance differ. The [mailbox guide](docs/mailbox-guide.en.md)
+and [capability matrix](docs/email-provider-capabilities.md) record the current boundaries.
+
+**Activities and workflows**
+
+- CRM-linked activities and a localized calendar event editor
+- Iranian date input and time-zone-aware editing
+- An early-access visual workflow builder with manual start, deal reads, conditions,
+  follow-up tasks, simulation, publication, run history and cancellation
 
 **Team and platform**
-- Role-based permissions, teams, and user management
-- Invitation-only onboarding, configurable sign-in methods, and mandatory strong authentication for administrators
-- Personal security settings for passkeys, authenticator apps, recovery codes, and device sessions
-- Notifications and basic pipeline stats (funnel, deal and activity performance)
-- Realtime updates across the board, inbox, notifications, and presence over WebSocket
+
+- Role-based permissions, teams, notifications and basic pipeline statistics
+- Invitation-only onboarding and configured sign-in methods, with administrator MFA
+- Passkeys, authenticator apps, recovery codes and device-session controls
+- Realtime board, inbox, notification and presence updates over WebSocket
+- Regional, appearance, privacy and notification preferences
 
 ## Screenshots
 
-**Deal workspace:** activities, notes, files, and the full history timeline in one view.
+**Deal workspace:** customer context, activities, notes, files and history in one view.
 
 ![Deal workspace](docs/screenshots/deal-workspace.png)
 
-**Inbox:** two-way Gmail with thread linking, follow-up labels, and unread state.
+**Inbox:** conversations, follow-up labels and CRM links.
 
 ![Email inbox](docs/screenshots/inbox.png)
 
-**Contacts:** people and organizations with custom fields.
+**Contacts:** people, organizations and custom fields.
 
 ![Contacts](docs/screenshots/contacts.png)
 
+_English interface captured on 1 November 2026 using synthetic demo data._
+
 ## warpdrive vs Pipedrive
 
-The table records this fork's current scope. Planned work is identified separately from
-features available in the application.
+warpdrive offers a self-hosted foundation for the core sales workflow. This fork also has
+seven active implementation roadmaps. The comparison distinguishes current features,
+early-access capabilities and planned work.
 
-|                                                            |                     warpdrive                     |   Pipedrive    |
-| ---------------------------------------------------------- | :-----------------------------------------------: | :------------: |
-| License                                                    |                 MIT, open source                  |  Proprietary   |
-| Hosting                                                    |            Self-hosted, single-tenant             |  Vendor cloud  |
-| Pricing                                                    |          Free (your infrastructure only)          | Paid, per seat |
-| Your data                                                  |           Stays on your infrastructure            | Vendor servers |
-| Kanban pipeline + custom stages                            |                        ✅                         |       ✅       |
-| Multiple pipelines                                         |                        ✅                         |       ✅       |
-| Deal workspace (activities, notes, files, history)         |                        ✅                         |       ✅       |
-| Contacts and organizations + custom fields                 |                        ✅                         |       ✅       |
-| Leads inbox + CSV import (with undo)                       |                        ✅                         |       ✅       |
-| Two-way Gmail (send/receive, threads, open/click tracking) |                        ✅                         |       ✅       |
-| Email templates, signatures, scheduled send                |                        ✅                         |       ✅       |
-| Permissions, teams, user management                        |                        ✅                         |       ✅       |
-| Saved filters                                              |                        ✅                         |       ✅       |
-| Realtime board / inbox / presence                          |                        ✅                         |       ✅       |
-| Notifications                                              |                        ✅                         |       ✅       |
-| Pipeline stats (funnel, performance)                       |                     ✅ Basic                      |  ✅ Advanced   |
-| Products, Projects, Invoicing, Forecast                    |                  ➖ Out of scope                  |       ✅       |
-| Native currency values and separate currency totals        |                        ✅                         |       ✅       |
-| Workflow automation                                        | Manual workflows (early access); email scheduling |       ✅       |
-| Web forms / chatbot / marketplace                          |                  ➖ Out of scope                  |       ✅       |
-| Native mobile apps                                         |                    ➖ Web app                     |       ✅       |
+| Feature                                        |                   warpdrive                   |                 Pipedrive                  |
+| ---------------------------------------------- | :-------------------------------------------: | :----------------------------------------: |
+| Software                                       |               MIT, open source                |              Commercial SaaS               |
+| Hosting                                        |          Self-hosted, single-tenant           |                Vendor cloud                |
+| Application pricing                            |            No per-seat license fee            |           Paid per seat, by plan           |
+| Core data storage                              |        Your database and object store         |               Vendor-hosted                |
+| Kanban pipelines and custom stages             |                      ✅                       |                     ✅                     |
+| Multiple pipelines                             |                      ✅                       |                     ✅                     |
+| Deals, activities, notes and files             |                      ✅                       |                     ✅                     |
+| People, organizations and custom fields        |                      ✅                       |                     ✅                     |
+| Leads inbox and CSV import                     |                      ✅                       |                     ✅                     |
+| Gmail send/receive and tracking                |              ✅ Configured OAuth              |            ✅ Growth and above             |
+| Generic IMAP/SMTP mailboxes                    | ◐ Implemented, provider qualification ongoing |  ✅ Supported providers, Growth and above  |
+| Email templates, signatures and scheduled send |                      ✅                       |            ✅ Growth and above             |
+| Permissions and user management                |                      ✅                       |         ✅ Plan-dependent controls         |
+| Notifications                                  |                      ✅                       |                     ✅                     |
+| Native currency values                         |          ✅ Separate currency totals          |           ✅ Multiple currencies           |
+| Pipeline reports                               |     ✅ Basic; advanced analytics planned      | ✅ Insights; forecasts on Growth and above |
+| Visual workflow automation                     |       ◐ Manual workflows, early access        |     ✅ Automations on Growth and above     |
+| Calendar event editing                         |                      ✅                       |                     ✅                     |
+| External calendar synchronization              |                    Planned                    |          ✅ Google and Microsoft           |
+| Project coordination                           |             Planned Agency module             |             ✅ Plan or add-on              |
+| Product catalog                                |              ➖ Not implemented               |                     ✅                     |
+| Marketplace and web forms                      |              ➖ Not implemented               | ✅ Marketplace; LeadBooster plan or add-on |
+| Native mobile apps                             |              Responsive web app               |             ✅ iOS and Android             |
 
-✅ supported · ➖ outside the current implementation
+✅ implemented · ◐ limited or early access · Planned = roadmap work · ➖ unavailable
+
+Pipedrive availability varies by plan and add-on. Comparison checked **1 November 2026**
+against its [feature matrix](https://support.pipedrive.com/en/article/what-features-do-the-pipedrive-plans-have),
+[pricing](https://www.pipedrive.com/en/pricing), [hosting information](https://support.pipedrive.com/en/article/how-secure-is-my-data-in-pipedrive)
+and [currency support](https://www.pipedrive.com/en/features/multilingual-multi-currency).
+Feature depth and provider behavior differ; use the linked guides for the exact scope.
 
 ## Tech stack
 
-Next.js (App Router) and React with TypeScript, Drizzle ORM on Postgres, tRPC with TanStack
-Query, Next server actions, shadcn/ui with Tailwind, dnd-kit for the board, Zustand for
-board-local state, a self-hosted WebSocket server backed by Postgres LISTEN/NOTIFY, MinIO
-(or any S3-compatible store) for files, Better Auth for authentication, and the Gmail API via Google OAuth. Package manager:
-Bun.
+Next.js and React with TypeScript, Drizzle ORM on PostgreSQL, tRPC with TanStack Query,
+Next server actions, shadcn/ui with Tailwind, dnd-kit, Zustand, pg-boss background jobs,
+S3-compatible storage and a self-hosted WebSocket server backed by PostgreSQL LISTEN/NOTIFY.
+Authentication uses Better Auth. The root application uses **Bun 1.4.4**.
 
 ## Quickstart (local development)
 
-Requires Bun and Docker.
+Requires Bun 1.4.4, PostgreSQL 16, a private S3-compatible bucket and configured authentication
+mail. Docker is used by the integration-test lane and the supplied Compose topology.
 
-The upstream MinIO container references in the compose file may no longer be publicly available.
-An S3-compatible service can be used for local development, but the shipped compose setup needs
-an updated storage image before it can be relied on for a fresh installation.
-
-```bash
+```sh
 git clone https://github.com/KhademOHAli1/warpdrive.git
 cd warpdrive
 bun install --frozen-lockfile
 cp .env.example .env
-# bring up Postgres and MinIO with host ports and no TLS:
-docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d postgres minio
+```
+
+Configure [.env](.env.example) using the [deployment guide](docs/deploy.md): database, storage,
+public URLs, authentication and secrets. For local development use
+`BASE_URL=http://localhost:3000`. Storage must be browser-reachable and the private bucket
+must exist before testing uploads.
+
+The Compose files reference unversioned MinIO server/client images. Confirm their availability
+and pin suitable images, or provide another S3-compatible service, before a fresh installation.
+The [development override](docker-compose.dev.yml) exposes PostgreSQL on host port **5433**;
+match that port in your local `DATABASE_URL`.
+
+With a fresh, dedicated development database and configured environment:
+
+```sh
 bun run db:migrate
 bun run dev
 ```
 
-The app runs at `http://localhost:3000`. Configure `.env` with a dedicated `AUTH_SECRET`,
-`SEED_ADMIN_EMAIL`, and working SMTP delivery for normal onboarding. Start the background
-worker in a separate terminal with the same environment:
+Open **http://localhost:3000**. Run the background worker and realtime service in separate
+terminals with the same environment:
 
-```bash
+```sh
+# Background jobs
 bun src/entrypoints/worker.ts
 ```
 
-After migration, queue the first administrator's invitation from the source checkout:
+```sh
+# Realtime updates on port 8080
+bun src/entrypoints/ws.ts
+```
 
-```bash
+For a host-local realtime service set `WS_HOST=127.0.0.1`. Configure `WS_PUBLIC_URL` and
+`NEXT_PUBLIC_WS_URL` consistently; the browser-facing URL is also required at build time.
+
+Set `SEED_ADMIN_EMAIL`, then queue the first administrator's invitation using that address:
+
+```sh
 bun run auth:operator bootstrap --email owner@example.com --name "Workspace owner" --locale fa --confirm
 ```
 
-Use the address configured in `SEED_ADMIN_EMAIL`. Complete invitation acceptance, email
-verification and administrator MFA through the normal UI. The
-[authentication operator runbook](docs/auth-operations.md) covers bootstrap, invitation
-renewal, mail delivery and recovery. The default development mail transport, `capture`,
-does not deliver messages; use SMTP to exercise the complete email workflows.
-
-Sign-in can use email/password, passkeys, Google, Microsoft or configured OIDC providers,
-according to the installation's enabled methods. Google sign-in is optional; Gmail mailbox
-access has its own Google OAuth consent. See the [deployment guide](docs/deploy.md) for configuration.
-
-For development-only CRM exploration, `/auth/dev-login?email=developer@example.com` is
-available when `ALLOW_FIRST_LOGIN_ADMIN=true` outside production. This synthetic helper
-does not exercise Better Auth onboarding or security workflows. Keep the flag `false`
-for normal authentication testing and production.
+Complete invitation acceptance, email verification and administrator MFA in the normal UI.
+The `capture` mail transport does not deliver email; use SMTP for normal onboarding.
+`AUTH_SMTP_*` delivers authentication notices, separately from a user's connected mailbox.
+Google sign-in and Gmail mailbox consent are separate. Keep `ALLOW_FIRST_LOGIN_ADMIN=false`
+for normal authentication testing and production. See the [operator runbook](docs/auth-operations.md).
 
 ## Languages and regional settings
 
-Select English, Iranian Persian (Farsi), or German in Settings > Regional settings.
-Language, calendar and account time zone are independent saved preferences. Persian uses
-right-to-left layout and offers Persian or Latin digits. German uses decimal commas and
-localized dates. Both the Gregorian and Iranian Solar Hijri calendars are available in the
-shared date pickers and activities calendar. Saved dates remain Gregorian ISO values; stored
-amounts and API/export formats retain their canonical representation.
+Work in **English, فارسی or Deutsch** in the same application shell. Persian uses RTL layout
+and contextual wording. Language, calendar, digits and time zone are independent preferences.
+Gregorian and Iranian Solar Hijri date input are available in the shared controls; localized
+display preserves canonical stored dates and API values. Currency totals remain separated
+by their native currency.
 
-Translations use whole messages, contextual terminology, ICU plurals and localized accessibility
-labels. See [the localization glossary](docs/i18n-glossary.md) and
-[localization progress and verification](docs/i18n-progress.md). Run `bun run i18n:check` when
-changing interface copy; catalog validity is followed by contextual workflow review.
+See [regional settings](docs-site/docs/features/regional-settings.md),
+[the glossary](docs/i18n-glossary.md) and [multiple currencies](docs/multicurrency.md).
 
-## Calendar roadmap
+## Self-hosting and upgrades
 
-The next calendar milestone is the Google Calendar web event workflow, including its
-advanced fields, invitations, recurrence, conferencing and account-dependent options.
-The [workflow specification](docs/google-calendar-event-workflow.md) records the reference
-behavior, current gaps and acceptance criteria.
-The [implementation plan](docs/calendar-implementation-plan.md) tracks the first localized
-event-editor slice and the remaining service work. Google Meet, Zoom, Teams and
-external calendar synchronization are planned capabilities, not current integrations.
+The [single-box Compose topology](docker-compose.yml) includes the app, WebSocket service,
+worker, migration runner, PostgreSQL, MinIO and Caddy. After configuring the domain, SMTP,
+storage images and secrets, follow the [deployment guide](docs/deploy.md) for HTTPS startup
+and the packaged administrator bootstrap command.
 
-The current UI includes the updated sidebar and top bar, separate regional, appearance
-and workflow settings, contact directories and inbox workspace. These changes are kept
-together with the English, Persian and German catalogs.
+Production requires HTTPS, working authentication mail and installation-specific secrets.
+Back up the database, private objects and encryption/signing keys together, then verify
+recovery. A database dump alone does not preserve every attachment or credential.
 
-## Documentation and implementation status
+Before updating, read the [upgrade guide](docs-site/docs/operations/updating.md),
+[authentication migration report](docs/auth-implementation-report.md) and
+[consolidated migration map](docs/mail-integrated-migration-map.md). Historical branch
+databases can have incompatible migration histories requiring explicit upgrade/restore
+qualification. Preserve applied SQL and installed journals.
 
-Start with the [documentation index](docs/README.md) and the [current user guide](docs-site/docs/intro.md).
-The guide now covers the updated navigation, separate regional/appearance/workflow preferences,
-Farsi/German behavior, Iranian date input, and native currency values. Existing screenshots are
-historical illustrations and may precede the current shell.
+## Tests and checks
 
-The [visual workflow builder](docs/workflows/status.md) is in implementation. Its approved
-42-task plan, Mobbin design references, architecture decisions, and verification ledger live
-in `docs/workflows/`. The early-access node builder supports explicit connections, saved
-positions, conditional branches, deal reads, and follow-up tasks, with English/Farsi/German
-editing, contextual step creation, undo/redo, simulation, publication, background execution,
-historical graph inspection, and cancellation. The broader R1 scope is still in progress.
-Personal workflow preferences
-in Settings are a separate existing feature.
-
-## Self-hosting
-
-The repo ships a single-box Docker topology (app, WebSocket server, background worker,
-Postgres, MinIO, and Caddy for automatic HTTPS):
-
-```bash
-cp .env.example .env    # fill in domain, authentication, SMTP, storage, and secrets
-docker compose up -d --build
+```sh
+bun run typecheck          # Next type generation and the configured TypeScript project
+bun run lint               # Translation audit, Biome and type-aware ESLint
+bun run test:unit          # Container-free unit tests
+bun run test:integration   # Disposable real PostgreSQL through Testcontainers
+bun run build              # Application production build
+bun run build:workers      # Worker, realtime, migration and operator bundles
 ```
 
-Caddy provisions TLS for your domain automatically; Postgres and MinIO stay on the internal
-network. Queue the first administrator's invitation from the host using the packaged operator:
-
-```bash
-docker compose exec app bun dist/auth-operator.mjs bootstrap --email owner@example.com --name "Workspace owner" --locale fa --confirm
-```
-
-Bootstrap is one-use and creates no password or authenticated session. The recipient completes
-onboarding and mandatory administrator MFA in the UI. Production requires HTTPS and working
-SMTP; keep `ALLOW_FIRST_LOGIN_ADMIN=false`. See the [operator runbook](docs/auth-operations.md)
-for source and container commands, and the [deployment guide](docs/deploy.md) for configured
-sign-in providers, separate Gmail consent, the `s3.` upload subdomain and required variables.
-Before upgrading an existing installation, read the
-[authentication migration report](docs/auth-implementation-report.md).
-
-## Tests
-
-```bash
-bun run test:unit          # fast unit tests
-bun run test:integration   # spins up a disposable Postgres via Testcontainers
-```
-
-Integration tests run against a real Postgres (never a mock) so migrations and queries are
-exercised as they run in production.
+Use the configured `typecheck` script to generate the declarations required by type tests.
+Integration tests exercise the real database and migrations. Evidence applies to its exact
+source revision and environment. The marketing and documentation sites have their own Bun
+version pins, lockfiles and checks.
 
 ## Project status
 
-This fork focuses on the Bun runtime, Iranian calendar support and contextual Persian/German
-localization. [Localization progress](docs/i18n-progress.md) records source, test, CI and local
-browser evidence. Production deployment and external OAuth/Gmail configuration remain
-specific to the installation.
+This fork is actively developed. Core CRM functionality and initial extension slices are
+integrated, with English, Persian and German workflows. The manual workflow builder is early
+access. Advanced automation, calendar synchronization/conferencing, Microsoft Graph mail,
+Agency Projects and broader data-lifecycle operations remain in progress.
 
-The [advanced pipeline analytics proposal](docs/pipeline-analytics-proposal.md) outlines an
-Insights view, richer funnel analysis, bottlenecks, pipeline movement and future forecasting.
-It records a proposed direction rather than additional shipped features.
+Source implementation, automated checks, browser acceptance, external-provider qualification
+and deployment are tracked separately. The [documentation index](docs/README.md) and each
+roadmap's evidence record describe the current scope; plans and previews are not release claims.
+
+## Roadmaps
+
+Seven implementation roadmaps extend the CRM:
+
+1. **Sales platform:** pipeline lifecycle, views, templates, analytics and post-sale work.
+   [Programme](docs/sales-platform/README.md) · [Approved plan](docs/sales-platform/approved/README.md)
+2. **Calendar:** event workflows, reminders, recurrence, sharing and provider integrations.
+   [Implementation plan](docs/calendar-implementation-plan.md) · [Workflow specification](docs/google-calendar-event-workflow.md)
+3. **Workflows and automation:** triggers, durable waits, additional actions and operational controls.
+   [Plan](docs/workflows/implementation-plan.md) · [Status](docs/workflows/status.md)
+4. **Email / MAIL:** mailbox workflows, delivery handling, private intake, recovery and provider acceptance.
+   [Capabilities](docs/email-provider-capabilities.md) · [Validation](docs/mail-candidate-validation-status.md)
+5. **Privacy and data lifecycle:** requests, export, erasure, restriction, retention and recovery.
+   [PRD](docs/PRD-warpdrive-privacy-data-lifecycle.md) · [Tasks](docs/privacy-data-lifecycle-tasks.md)
+6. **Agency projects:** internal client projects, templates, assignments, approvals and project margin.
+   Planned module; [CRM interface review](docs/sales-platform/agency-interface-review.md).
+7. **Integrations, MCP and app platform:** connections, capabilities, consent, events and platform foundations.
+   [Programme](docs/integration-execution/README.md) · [Live register](docs/integration-execution/tasks.csv)
+
+Settings, shared UX and main integration are the supporting cross-cutting workstream.
+
+## Documentation
+
+- [Documentation index](docs/README.md) and [user guide](docs-site/docs/intro.md)
+- [Architecture](docs-site/docs/architecture.md) and [deployment](docs/deploy.md)
+- [Mailbox guide: English](docs/mailbox-guide.en.md), [فارسی](docs/mailbox-guide.fa.md), [Deutsch](docs/mailbox-guide.de.md)
+- [Authentication operations: English](docs/auth-operations.md), [فارسی](docs/auth-operations.fa.md), [Deutsch](docs/auth-operations.de.md)
+- [Privacy inventory](docs/privacy-data-inventory.md) and [shared UI maintenance](docs/ui-updates.md)
 
 ## Contributing
 
-Focused pull requests to this fork are welcome. Include tests for new behavior and run the
-Bun typecheck, translation audit and lint checks. Keep identifiers, stored records and API
-contracts independent of interface language; use the [localization glossary](docs/i18n-glossary.md)
-for translation changes. Changes of general interest can also be proposed to the upstream project.
+Read the [contribution guide](docs-site/docs/contributing.md), [AGENTS.md](AGENTS.md) and
+[CLAUDE.md](CLAUDE.md). Keep changes focused, preserve other contributors' work and add
+meaningful failing tests before new behavior or a bugfix. Use the declared Bun version and
+lockfile, retain permission boundaries and update documentation with behavior changes.
+
+Changes reach `main` through sequential integration. Preserve unfinished work, close completed
+branches after verifying containment, and report the checks actually run and remaining limits.
 
 ## License
 
-MIT. See [`LICENSE`](LICENSE).
-
-## Shared UI updates
-
-The shared UI follows the current shadcn Radix Nova registry with RTL support. Run
-`bun run ui:check` to preview registry updates and `bun run ui:update` to apply and verify them.
-CRM adapters are kept outside the replaceable registry directory. See
-[the UI update guide](docs/ui-updates.md) for the workflow and compatibility notes.
+MIT. See [LICENSE](LICENSE). Original copyright: **Nikita Sawinyh**. This fork preserves the
+upstream attribution. Warpdrive is independent software, not affiliated with or endorsed by
+Pipedrive.

@@ -57,5 +57,26 @@
     "englishNumbers": "English digits (123)",
     "numberHelp": "This changes how numbers and dates are displayed. Saved values stay the same.",
     "numberPreview": "Preview: {value, number}"
+  },
+  "dealWorkspace": {
+    "nextActions": "Next actions",
+    "openCount": "{count} open",
+    "loadingActivities": "Loading activities…",
+    "activitiesFailed": "Activities could not be refreshed.",
+    "retry": "Retry",
+    "viewAll": "View all {count}",
+    "showLess": "Show less",
+    "loadingHistory": "Loading history…",
+    "historyFailed": "Some history could not be loaded.",
+    "retryHistory": "Retry history",
+    "details": "Details",
+    "deals": "Deals",
+    "fieldScope": "Available on all deals. Each deal keeps its own value.",
+    "addField": "Add field",
+    "manageFields": "Manage fields",
+    "closes": "Closes {date}",
+    "scheduleActivity": "Schedule activity",
+    "noNextAction": "No next action scheduled.",
+    "noCustomFields": "Add a field to track the details your team needs."
   }
 }

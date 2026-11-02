@@ -178,6 +178,7 @@ export const ERROR_IDS = {
   OAUTH_CODE_EXPIRED: "E_OAUTH_004",
   OAUTH_TOKEN_REVOKED: "E_OAUTH_005",
   OAUTH_CONSENT_REQUIRED: "E_OAUTH_006",
+  OAUTH_INVALID_TARGET: "E_OAUTH_007",
   // SYNC
   SYNC_CURSOR_EXPIRED: "E_SYNC_001", // History cursor expired (404): gap-recovery resync triggered
   // JOBS
@@ -237,6 +238,8 @@ export const ERROR_IDS = {
   UI_ACTION_UNCONFIRMED: "E_UI_003", // action rejected without returning a Result: answer was lost
   // PRIVACY
   PRIVACY_EVIDENCE_UNREADABLE: "E_PRIVACY_001", // malformed, substituted or unauthenticated privacy ciphertext
+  PRIVACY_EXPORT_STREAM_FAILED: "E_PRIVACY_002", // a private archive part could not be uploaded
+  PRIVACY_EXPORT_QUOTA: "E_PRIVACY_003", // a private archive exceeds the admitted storage quota
 
   // PREFERENCES
   PREF_SAVED_VIEW_SELECTION_INVALID: "E_PREF_001", // invalid native saved-view selection input

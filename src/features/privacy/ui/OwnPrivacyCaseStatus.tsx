@@ -32,6 +32,8 @@ function errorText(error: OwnCaseFailure, L: CaseMessages) {
       return L.caseUnavailable;
     case "fresh_auth_required":
       return L.caseFreshRequired;
+    case "email_verification_required":
+      return L.errors.email_verification_required;
     case "stale_version":
       return L.caseChanged;
     case "idempotency_conflict":

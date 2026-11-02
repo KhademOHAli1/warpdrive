@@ -1,0 +1,64 @@
+name: Warpdrive release
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Prepare files, create/update a verified draft, or explicitly publish
+        required: true
+        default: prepare
+        type: choice
+        options: [prepare, draft, publish]
+      revision:
+        description: Full 40-character SHA on main with all required checks passed
+        required: true
+        type: string
+      plan:
+        description: Committed release plan at the selected revision
+        required: true
+        default: docs/delivery/releases/next.json
+        type: string
+
+permissions:
+  contents: write
+  actions: read
+  issues: write
+  pull-requests: read
+
+concurrency:
+  group: warpdrive-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Gate and prepare release
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Validate candidate SHA from trusted main code before exposing release credentials
+        env:
+          RELEASE_REVISION: ${{ inputs.revision }}
+        run: python3 scripts/delivery/release.py preflight --revision "$RELEASE_REVISION"
+      - name: Verify revision, milestone, complete scope and CI; execute selected action
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_MODE: ${{ inputs.mode }}
+          RELEASE_PLAN: ${{ inputs.plan }}
+          RELEASE_REVISION: ${{ inputs.revision }}
+        run: python3 scripts/delivery/release.py "$RELEASE_MODE" --plan "$RELEASE_PLAN" --revision "$RELEASE_REVISION" --output "$RUNNER_TEMP/warpdrive-release"
+      - name: Keep operator-visible release files in the run summary
+        if: success()
+        run: cat "$RUNNER_TEMP/warpdrive-release/release-notes.md" >> "$GITHUB_STEP_SUMMARY"
+      - name: Save verified release artifacts
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: warpdrive-release-${{ inputs.revision }}
+          path: ${{ runner.temp }}/warpdrive-release/
+          if-no-files-found: error
+          retention-days: 30
