@@ -15,6 +15,15 @@ export interface ActionErrorContent {
 type ErrorReason = keyof ReturnType<typeof messagesForLocale>["shell"]["errors"];
 
 const REASONS: Record<string, ErrorReason> = {
+  [ERROR_IDS.MAIL_CONNECTION_UNAVAILABLE]: "mailConnection",
+  [ERROR_IDS.MAIL_CONNECTION_INVALID]: "mailInvalid",
+  [ERROR_IDS.MAIL_SYNC_FAILED]: "mailSync",
+  [ERROR_IDS.MAIL_SEND_REJECTED]: "mailRejected",
+  [ERROR_IDS.MAIL_SEND_UNKNOWN]: "mailUnknown",
+  [ERROR_IDS.MAIL_CAPABILITY_DENIED]: "mailUnsupported",
+  [ERROR_IDS.MAIL_CONNECTION_CHANGED]: "mailChanged",
+  [ERROR_IDS.MAIL_WRITE_UNKNOWN]: "mailWriteUnknown",
+  [ERROR_IDS.MAIL_WRITE_PARTIAL]: "mailWritePartial",
   [ERROR_IDS.PERM_DENIED]: "permission",
   [ERROR_IDS.AUTH_SESSION_DEAD]: "session",
   E_AUTH_CSRF: "csrf",

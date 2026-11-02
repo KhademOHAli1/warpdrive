@@ -1,4 +1,5 @@
 import type { PgBoss } from "pg-boss";
+import { observeBossErrors } from "./bossObserver";
 
 // Injectable deps so the wiring is unit-testable without a live queue. The Next app process boots
 // pg-boss here purely as a PRODUCER: it must publish a live boss so `getBoss()` stops returning
@@ -14,6 +15,7 @@ export type StartAppBossDeps = {
 
 export async function startAppBoss(deps: StartAppBossDeps): Promise<PgBoss> {
   const boss = deps.createBoss();
+  observeBossErrors(boss, "app");
   await boss.start();
   // Publish only after start resolves so producers never see an unstarted boss.
   deps.setBoss(boss);

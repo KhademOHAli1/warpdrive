@@ -7,6 +7,7 @@ import {
   removeSavedFilterAction,
   toggleFavoriteAction,
 } from "@/features/saved-filters/serverActions";
+import { missingSavedView } from "@/features/saved-filters/viewAvailability";
 import { trpc } from "@/lib/trpc-client";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { BoardFilterMenu } from "./BoardFilterMenu";
@@ -47,7 +48,11 @@ function sameSavedFilter(a: SavedFilterView, b: SavedFilterView): boolean {
   return (
     a.id === b.id &&
     a.name === b.name &&
-    JSON.stringify(a.definition) === JSON.stringify(b.definition)
+    JSON.stringify(a.definition) === JSON.stringify(b.definition) &&
+    a.availability === b.availability &&
+    (a.availability !== "unavailable" ||
+      b.availability !== "unavailable" ||
+      a.problem.code === b.problem.code)
   );
 }
 
@@ -68,7 +73,8 @@ export function BoardFilterControl(props: BoardFilterControlProps): React.ReactN
   useEffect(() => {
     if (!rowsFresh || appliedFilter === undefined || appliedFilter === null) return;
     if (selectedFilter === undefined) {
-      onSelectFilter(null);
+      const missing = missingSavedView(appliedFilter.id, appliedFilter.name);
+      if (!sameSavedFilter(missing, appliedFilter)) onSelectFilter(missing);
       return;
     }
     if (!sameSavedFilter(selectedFilter, appliedFilter)) onSelectFilter(selectedFilter);
@@ -87,9 +93,9 @@ export function BoardFilterControl(props: BoardFilterControlProps): React.ReactN
       reportError(r.error.id);
       return;
     }
-    // Otherwise the board keeps filtering by a filter that no longer exists.
-    if (selectedFilterId === id) onSelectFilter(null);
-    await utils.deal.savedFilters.invalidate();
+    const refreshing = utils.deal.savedFilters.invalidate();
+    if (selectedFilterId === id) onSelectFilter(missingSavedView(id, appliedFilter?.name));
+    await refreshing;
   }
 
   return (
@@ -120,7 +126,7 @@ export function BoardFilterControl(props: BoardFilterControlProps): React.ReactN
           owners={owners}
           stages={stages}
           onPreview={onPreviewFilter}
-          savedFilter={selectedFilter}
+          savedFilter={selectedFilter?.availability === "unavailable" ? undefined : selectedFilter}
           initialDefinition={appliedDefinition ?? undefined}
           onApply={
             onApplyDefinition === undefined

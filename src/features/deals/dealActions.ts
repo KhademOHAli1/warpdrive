@@ -6,7 +6,6 @@ export { updateDeal } from "./dealUpdate";
 import { BOARD_EVENT, dealMovedChannel } from "@/constants/boardChannels";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import { deals } from "@/db/schema/deals";
-import { pipelines } from "@/db/schema/pipelines";
 import { stages } from "@/db/schema/stages";
 import { settings } from "@/db/schema/system";
 import { syncEntityLabelNames } from "@/features/labels/labelsRepo.entities";
@@ -16,6 +15,7 @@ import {
   resolveVisibilityGroup,
 } from "@/features/permissions/entityCreate";
 import { assertReferenceVisible } from "@/features/permissions/referenceCheck";
+import { admitPipelineWrite } from "@/features/pipelines/admitPipelineWrite";
 import type { DbOrTx } from "@/server/realtime/channelVersions";
 import { publishBoardEvent } from "@/server/realtime/events";
 import { err, ok, type Result } from "@/types/result";
@@ -58,45 +58,8 @@ export async function createDeal(
   );
   if (customFieldsResult.ok === false) return customFieldsResult;
 
-  // Pipeline-visibility gate (permissions spec §5 / §2 rule 2): a deal is created INTO a
-  // pipeline, so a user must not insert into a restricted pipeline they cannot see by
-  // submitting a known or stale pipeline UUID. Require unrestricted OR member of the
-  // pipeline's visibility group. Admin bypasses. Rejected as PERM_DENIED (not silently
-  // allowed to create a deal the creator could not then see).
-  const [pipe] = await db
-    .select({ visibilityGroupId: pipelines.visibilityGroupId, isArchived: pipelines.isArchived })
-    .from(pipelines)
-    .where(eq(pipelines.id, input.pipelineId));
-  if (pipe === undefined) {
-    return err(
-      new AppError(ERROR_IDS.DEAL_STAGE_MISMATCH, "Pipeline does not exist", {
-        pipelineId: input.pipelineId,
-      }),
-    );
-  }
-  // An archived pipeline is hidden from every read (F7/F15/F16/F21-F24); creating a deal
-  // into one would produce an immediately-hidden, effectively lost record (F28). Reject as
-  // if the pipeline were absent, for everyone including admins (consistent with the reads).
-  if (pipe.isArchived) {
-    return err(
-      new AppError(ERROR_IDS.DEAL_STAGE_MISMATCH, "Pipeline is archived", {
-        pipelineId: input.pipelineId,
-      }),
-    );
-  }
-  if (
-    session.isAdmin !== true &&
-    pipe.visibilityGroupId !== null &&
-    !session.visibilityGroupIds.includes(pipe.visibilityGroupId)
-  ) {
-    return err(
-      new AppError(ERROR_IDS.PERM_DENIED, "restricted pipeline not visible to actor", {
-        userId: session.userId,
-        pipelineId: input.pipelineId,
-      }),
-    );
-  }
-  signal.throwIfAborted();
+  const admitted = await admitPipelineWrite(db, session, input.pipelineId, signal, false);
+  if (!admitted.ok) return admitted;
 
   // Validate stage belongs to the pipeline before opening a transaction.
   const [stage] = await db
@@ -134,6 +97,8 @@ export async function createDeal(
 
   // Run insert + event publish atomically.
   return db.transaction(async (tx) => {
+    const currentPipeline = await admitPipelineWrite(tx, session, input.pipelineId, signal, true);
+    if (!currentPipeline.ok) return currentPipeline;
     // Check person/org references (Phase 2 stub always returns ok; Phase 3 does real lookup).
     if (input.personId !== null) {
       const ref = await assertReferenceVisible(

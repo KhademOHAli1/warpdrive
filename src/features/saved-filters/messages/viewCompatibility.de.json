@@ -1,0 +1,16 @@
+{
+  "title": "Diese gespeicherte Ansicht ist nicht verfügbar",
+  "body": "Die ursprünglichen Bedingungen bleiben erhalten. Wählen Sie eine andere Ansicht oder lassen Sie ausdrücklich alle zugänglichen Datensätze anzeigen.",
+  "showAll": "Alle zugänglichen Datensätze anzeigen",
+  "unavailableLabel": "Nicht verfügbar",
+  "checkingTitle": "Gespeicherte Ansicht wird geprüft",
+  "checkingBody": "Die gespeicherten Bedingungen werden geprüft, bevor Datensätze angezeigt werden.",
+  "queryError": "Diese Ansicht konnte nicht geladen werden. Ihre ausgewählten Bedingungen bleiben erhalten.",
+  "retry": "Erneut versuchen",
+  "missingBody": "Diese Ansicht wurde entfernt oder ist für Sie nicht mehr zugänglich. Wählen Sie eine andere Ansicht oder lassen Sie ausdrücklich alle zugänglichen Datensätze anzeigen.",
+  "unsupportedColumns": "Diese Spalten können noch nicht in einer Ansicht gespeichert werden. Wählen Sie unterstützte Spalten und versuchen Sie es erneut.",
+  "unsupportedSort": "Diese Sortierung kann noch nicht in einer Ansicht gespeichert werden. Wählen Sie eine unterstützte Sortierung und versuchen Sie es erneut.",
+  "selectionSaving": "Ausgewählte Ansicht wird gespeichert…",
+  "selectionSaveFailed": "Die ausgewählte Ansicht konnte nicht gespeichert werden. Wählen Sie sie erneut aus, um es noch einmal zu versuchen.",
+  "unsupportedScope": "Löschen Sie die Suche oder Schnellfilter, bevor Sie diese Ansicht speichern."
+}

@@ -90,38 +90,54 @@ export function EnrichmentClient({
   const [testResults, setTestResults] = useState<Record<string, TestVerdict | null>>({});
   const now = useCooldownClock(providers.map((p) => p.throttledUntilIso));
   const [pending, setPending] = useState<ReadonlySet<string>>(() => new Set());
+  const providerRequests = useRef(new Set<string>());
   // Canonical keys are unique across both entities, so one set covers both mapping tables.
   const [mappingPending, setMappingPending] = useState<ReadonlySet<string>>(() => new Set());
 
   // Every mutation on this page ends here, so a failure always reaches the shared error surface
   // instead of leaving a control that looks like it did something.
-  async function run(action: Promise<ActionResult>, onSuccess?: () => void): Promise<void> {
+  async function run(action: Promise<ActionResult>, onSuccess?: () => void): Promise<boolean> {
+    let result: ActionResult;
     try {
-      const result = await action;
-      if (!result.ok) {
-        reportError(result.error.id);
-        return;
-      }
-      onSuccess?.();
+      result = await action;
+    } catch {
+      reportError();
+      return false;
+    }
+    if (!result.ok) {
+      reportError(result.error.id);
+      return false;
+    }
+    onSuccess?.();
+    try {
       // router.refresh redraws this page, not the enrichment.status query the Fill the gaps button
       // holds for five minutes. Without this, a provider connected here stays invisible on a record,
       // and one removed here keeps looking ready, until that cache expires.
       await utils.enrichment.status.invalidate();
-      router.refresh();
     } catch {
-      // A rejected action carries no error id, so it reports as the generic "couldn't complete
-      // that action" rather than a cause the server never named.
+      // The mutation was acknowledged even if its cached readiness could not be refreshed.
       reportError();
     }
+    router.refresh();
+    return true;
   }
 
   // Two writes to one provider must not overlap: whichever the server finishes last would win,
   // which is not necessarily the one the admin clicked last. Other providers stay clickable.
-  async function runForProvider(provider: string, action: Promise<ActionResult>): Promise<void> {
+  async function runForProvider(
+    provider: string,
+    action: () => Promise<ActionResult>,
+  ): Promise<boolean> {
+    if (providerRequests.current.has(provider)) return false;
+    providerRequests.current.add(provider);
     setPending((current) => new Set(current).add(provider));
     try {
-      await run(action);
+      return await run(action());
+    } catch {
+      reportError();
+      return false;
     } finally {
+      providerRequests.current.delete(provider);
       setPending((current) => without(current, provider));
     }
   }
@@ -214,8 +230,7 @@ export function EnrichmentClient({
           now={now}
           pending={pending.has(view.provider)}
           onToggle={(enabled) =>
-            void runForProvider(
-              view.provider,
+            void runForProvider(view.provider, () =>
               setProviderEnabledAction({ provider: view.provider, enabled }, readCsrfToken()),
             )
           }
@@ -223,15 +238,13 @@ export function EnrichmentClient({
             // A verdict describes the key that was tested. router.refresh keeps client state, so
             // without this the card would still say "Key works" about a credential just replaced.
             forgetVerdict(view.provider);
-            void runForProvider(
-              view.provider,
+            return runForProvider(view.provider, () =>
               setProviderKeyAction({ provider: view.provider, apiKey }, readCsrfToken()),
             );
           }}
           onRemoveKey={() => {
             forgetVerdict(view.provider);
-            void runForProvider(
-              view.provider,
+            void runForProvider(view.provider, () =>
               clearProviderKeyAction({ provider: view.provider }, readCsrfToken()),
             );
           }}

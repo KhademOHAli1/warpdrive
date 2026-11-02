@@ -46,6 +46,12 @@ describe("next.config React Compiler", () => {
   });
 });
 
+describe("next.config development privacy", () => {
+  it("does not serialize server-action arguments into developer logs", () => {
+    expect(nextConfig.logging !== false && nextConfig.logging?.serverFunctions).toBe(false);
+  });
+});
+
 // Icons are imported from the `lucide-react` barrel across the app. Without this hint Next pulls
 // the whole barrel into any chunk touching one icon. Listing the package makes Next rewrite each
 // barrel import to its direct module path at build time.

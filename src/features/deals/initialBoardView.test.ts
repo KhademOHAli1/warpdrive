@@ -58,7 +58,7 @@ it("resolves a stored saved-filter id to the filter the board must apply", async
   expect(boardViewDefinition(view)).toEqual(definition);
 });
 
-it("drops a stored saved filter the actor can no longer see", async () => {
+it("keeps a missing saved selection unavailable until the user explicitly recovers", async () => {
   const view = await resolveInitialBoardView(
     {
       boardView: {
@@ -71,8 +71,13 @@ it("drops a stored saved filter the actor can no longer see", async () => {
     },
     () => Promise.resolve([]),
   );
-  expect(view.savedFilter).toBeNull();
-  expect(boardViewDefinition(view)).toBeUndefined();
+  expect(view.savedFilter).toMatchObject({
+    id: FILTER_ID,
+    definition: null,
+    availability: "unavailable",
+    problem: { kind: "missing" },
+  });
+  expect(boardViewDefinition(view)).toBeNull();
 });
 
 it("ad-hoc conditions win over the saved view, matching the client precedence", async () => {

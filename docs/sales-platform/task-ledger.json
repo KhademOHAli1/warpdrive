@@ -1,0 +1,2077 @@
+{
+  "schemaVersion": 1,
+  "baselineCommit": "b8b2708d4076551b803451ce10d4928a87ce35cd",
+  "approvedManifestSha256": "c82698c35f908357da555d6745c05fa8e5bd7ced27a69454d5da4c456adc0b30",
+  "tasks": [
+    {
+      "id": "SP-00.1",
+      "projectId": "SP-00",
+      "status": "in-progress",
+      "owner": "sales-platform",
+      "dependsOn": [],
+      "evidence": [
+        {
+          "path": "docs/sales-platform/baseline.json",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/baseline.sha256",
+          "level": "observed-source"
+        }
+      ],
+      "remainingGates": ["Named maintainer review and full runtime/owner attestation remain open."],
+      "notes": "Five live checkout boundaries captured; isolated committed candidate selected; no dirty peer adoption."
+    },
+    {
+      "id": "SP-00.2",
+      "projectId": "SP-00",
+      "status": "in-progress",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-00.1"],
+      "evidence": [
+        {
+          "path": "docs/sales-platform/current-shell-research.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/verification.md",
+          "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/evidence/board-fa-desktop.png",
+          "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/evidence/board-de-desktop.png",
+          "level": "local-runtime"
+        }
+      ],
+      "remainingGates": [
+        "Complete affected record-screen/theme/state and persisted-preference matrix still required."
+      ],
+      "notes": "Native synthetic sign-in and real FA/DE/EN shell captured; Farsi 390px captured; calendar/timezone persistence observed."
+    },
+    {
+      "id": "SP-00.3",
+      "projectId": "SP-00",
+      "status": "in-progress",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-00.1"],
+      "evidence": [
+        {
+          "path": "docs/sales-platform/migration-inspection.md",
+          "level": "local-unit"
+        },
+        {
+          "path": "docs/sales-platform/evidence/source-lineages.json",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/evidence/local-lineage.json",
+          "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/evidence/current-main-source-lineage-2026-11-01.json",
+          "level": "observed-source"
+        }
+      ],
+      "remainingGates": [
+        "Retained-installation ledgers absent.",
+        "WF-0083 and MAIL-dev forward convergence/recovery not qualified.",
+        "New privacy branch migration drift needs allocator-owned reconciliation."
+      ],
+      "notes": "Read-only fail-closed tool implemented; 24 tests pass. Newly created candidate DB ledger matches 85 migrations; no retained path inferred. Current main a0490c1 and committed MAIL a660039 were independently inspected: shared prefix through 0082, divergent 0083; all applied retained ledgers remain unknown and no history was changed."
+    },
+    {
+      "id": "SP-00.4",
+      "projectId": "SP-00",
+      "status": "in-progress",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-00.1"],
+      "evidence": [
+        {
+          "path": "docs/sales-platform/critical-journeys.json",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/verification.md",
+          "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/critical-journey-permission-fixtures.json",
+          "level": "observed-source"
+        }
+      ],
+      "remainingGates": [
+        "All protected browser/provider/state fixtures and domain-owner review still required."
+      ],
+      "notes": "Twelve protected categories now bind82 exact test definitions across41 source files to concrete fixtures, actors, permission context, oracles and limits. Missing browser/provider/revocation/isolation journeys and owner review remain explicit. Source inspection is separate from historical or rerun evidence."
+    },
+    {
+      "id": "SP-00.5",
+      "projectId": "SP-00",
+      "status": "in-progress",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-00.3", "SP-00.4"],
+      "evidence": [
+        {
+          "path": "docs/sales-platform/README.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/integration-execution/mail-platform-agreement-proposal.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/platform-handoff-inventory-2026-11-01.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/evidence/builder-source-adoption-2026-11-01.json",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/sales-storage-coordination-request.md",
+          "level": "observed-source"
+        }
+      ],
+      "remainingGates": [
+        "Existing WF outbox/shared command and MAIL integration interfaces await actual exports/owner acceptance."
+      ],
+      "notes": "Preserves one Better Auth, one WF engine and one IG sender; existing platform allocator and MAIL 0085-0091 reservation retained. Current committed shared-source inventory and history-aware builder adoption preserve Sales code. The combined source remains unqualified pending its selected window; Sales storage allocation and actual event/wait/MAIL bindings remain absent."
+    },
+    {
+      "id": "SP-00.6",
+      "projectId": "SP-00",
+      "status": "in-progress",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-00.2", "SP-00.3", "SP-00.5"],
+      "evidence": [
+        {
+          "path": "docs/sales-platform/verification.md",
+          "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/evidence/local-restore.json",
+          "level": "local-runtime"
+        }
+      ],
+      "remainingGates": [
+        "Immutable MAIL candidate unavailable.",
+        "Each supported divergent branch upgrade/recovery remains open."
+      ],
+      "notes": "Exact committed platform cut adopted in own clone; PostgreSQL16 integration 82 tests passed; synthetic PostgreSQL18 restore 90 tables and 1862 rows matched."
+    },
+    {
+      "id": "SP-00.7",
+      "projectId": "SP-00",
+      "status": "in-progress",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-00.6"],
+      "evidence": [
+        {
+          "path": "docs/sales-platform/verification.md",
+          "level": "local-unit"
+        },
+        {
+          "path": "docs/sales-platform/distribution-notices-review.md",
+          "level": "observed-source"
+        }
+      ],
+      "remainingGates": [
+        "Full production web build and complete combined candidate still required.",
+        "Fix private .runtime Docker-context exclusion and explicit application/third-party notice distribution, then inspect exact runtime artifacts and unresolved/transitive license entries."
+      ],
+      "notes": "Pinned Bun 1.4.4 frozen install no changes; typecheck/lint/worker bundling/UI-source audit pass. Inherited broad unit 5897 pass plus expected red collection failure, final tool 44 pass. Current f006 source preserves the frozen lock. A bounded notice inventory identified explicit Docker context/runtime notice-copy work; no Docker image or transitive notice closure is claimed."
+    },
+    {
+      "id": "SP-00.8",
+      "projectId": "SP-00",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-00.4", "SP-00.6", "SP-00.7", "SP-01.8", "SP-15.1"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-01.1",
+      "projectId": "SP-01",
+      "status": "in-progress",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-00.2"],
+      "evidence": [
+        {
+          "path": "docs/sales-platform/current-shell-research.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/verification.md",
+          "level": "local-runtime"
+        }
+      ],
+      "remainingGates": [
+        "Complete screen/state/token exceptions and reviewer matrix still required."
+      ],
+      "notes": "Preserved actual current shell, fonts, adapters, Farsi desktop/mobile and German/English baselines."
+    },
+    {
+      "id": "SP-01.2",
+      "projectId": "SP-01",
+      "status": "waiting-external",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-00.4"],
+      "evidence": [
+        {
+          "path": "docs/sales-platform/approved/UX-RESEARCH.md",
+          "level": "observed-source"
+        }
+      ],
+      "remainingGates": ["Real consenting participants and moderator sessions not available yet."],
+      "notes": "No interviews, timings, completion rates or outcomes invented. Synthetic examples support preparation."
+    },
+    {
+      "id": "SP-01.3",
+      "projectId": "SP-01",
+      "status": "in-progress",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-01.1"],
+      "evidence": [
+        {
+          "path": "docs/sales-platform/current-shell-research.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/research/ux-04-saved-view-reference-review-2026-11-01.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/research/ux-04-saved-view-reference-metadata-2026-11-01.json",
+          "level": "observed-source"
+        }
+      ],
+      "remainingGates": [
+        "Remaining prioritized flow/reference studies and prototype validation still required."
+      ],
+      "notes": "Historical18 gallery-frame observations are preserved. A later UX-04 connector inspection adds8preview observations representing7distinct screen IDs within that inspection, with actual position1/3/4 coverage for two4-frame flows. Position2/openfilter/recovery/prototype/participant evidence remains missing; no study completion or authority/persistence proof is inferred."
+    },
+    {
+      "id": "SP-01.4",
+      "projectId": "SP-01",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-01.2"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-01.5",
+      "projectId": "SP-01",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-01.3", "SP-01.4"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-01.6",
+      "projectId": "SP-01",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-01.5"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-01.7",
+      "projectId": "SP-01",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-01.6"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-01.8",
+      "projectId": "SP-01",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-01.7"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-02.1",
+      "projectId": "SP-02",
+      "status": "in-progress",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-00.8", "SP-01.4"],
+      "evidence": [
+        {
+          "path": "docs/sales-platform/pipeline-lifecycle-contract.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "src/features/pipelines/pipelineLifecycleQuery.ts",
+          "level": "observed-source"
+        },
+        {
+          "path": "src/features/pipelines/PipelineDirectory.tsx",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/evidence/r1-lifecycle/native-journey.json",
+          "level": "local-runtime"
+        }
+      ],
+      "remainingGates": [
+        "First-class ownership, server pagination/search limits, directory ordering/favorites and complete switcher behavior remain unimplemented or unqualified.",
+        "Full SP-00.8 and vocabulary-study dependencies remain open; native captures cover only the opt-in lifecycle increment."
+      ],
+      "notes": "Checkpoint c655b8e: an opt-in directory in the existing company-pipelines settings supports active/archived status, name filtering and legacy scope explanations while retaining pipeline IDs, URLs and stages. Actual synthetic native FA/DE/EN directory and Farsi 390px flows were observed; this is partial metadata/directory delivery."
+    },
+    {
+      "id": "SP-02.2",
+      "projectId": "SP-02",
+      "status": "in-progress",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-02.1", "SP-15.2"],
+      "evidence": [
+        {
+          "path": "docs/sales-platform/pipeline-lifecycle-contract.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "src/features/pipelines/pipelineLifecycleAccess.ts",
+          "level": "observed-source"
+        },
+        {
+          "path": "src/features/pipelines/pipelineLifecycleAuthority.integration.test.ts",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/evidence/r1-lifecycle/fresh-proof-required-de.png",
+          "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/evidence/r1-lifecycle/qualification.json",
+          "level": "local-runtime"
+        }
+      ],
+      "remainingGates": [
+        "First-class per-pipeline role/delegated-management model and complete capability truth tables still require implementation and review.",
+        "Every API, worker, export, search, cache and realtime revocation surface is not qualified by the lifecycle-only authority batch."
+      ],
+      "notes": "The lifecycle contract records legacy admin/member/nonmember/manager allow-deny examples. Native fresh-session authority is rechecked after the real lifecycle queue wait. Eight PostgreSQL authority tests cover current proof, session revocation, permission downgrade, group removal and injected client authority; names/counts are omitted for restricted nonmembers."
+    },
+    {
+      "id": "SP-02.3",
+      "projectId": "SP-02",
+      "status": "in-progress",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-02.2"],
+      "evidence": [
+        {
+          "path": "docs/sales-platform/pipeline-rename-contract.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "src/features/pipelines/pipelineRename.integration.test.ts",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/evidence/r1-rename/native-journey.json",
+          "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/evidence/r1-rename/qualification.json",
+          "level": "local-runtime"
+        }
+      ],
+      "remainingGates": [
+        "Durable creation/duplicate intent receipts, atomic native creation authority and duplicate-configuration behavior remain unimplemented.",
+        "Native global MFA/passkey-policy concurrency, create/stage authority and all required cross-surface/FA-DE-EN/recovery criteria remain open."
+      ],
+      "notes": "Existing rename now uses native fresh proof, scope, CAS and transactional audit. Focused native-PG and editor recovery tests passed; native warm two-tab conflict/refetch/review/save preserved the draft and produced only three intended rename audits. Cold dev error-boundary draft durability is not qualified. Full root 6068/972 and affected PG 245/51 passed on unchanged f006b5a source. Full typecheck/lint and the later coordinated production webpack build passed. No production operation or whole parent completion is inferred."
+    },
+    {
+      "id": "SP-02.4",
+      "projectId": "SP-02",
+      "status": "in-progress",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-02.3"],
+      "evidence": [
+        {
+          "path": "docs/sales-platform/pipeline-lifecycle-contract.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "src/features/pipelines/PipelineDirectoryRow.tsx",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/evidence/r1-lifecycle/directory-fa.png",
+          "level": "local-runtime"
+        }
+      ],
+      "remainingGates": [
+        "Scope selection, people/team access editing, explicit gain/loss preview and scope-change revision handling are not implemented.",
+        "Legacy scope explanations do not constitute new memberships, roles, grants or complete cross-surface revocation."
+      ],
+      "notes": "Partial effective-access presentation is implemented: workspace/restricted legacy scope is shown separately from individual opportunity permissions, and directory counts intersect the executing viewer record predicate. Actual Farsi rendering was captured. No sharing editor or scope mutation is claimed."
+    },
+    {
+      "id": "SP-02.5",
+      "projectId": "SP-02",
+      "status": "in-progress",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-02.3"],
+      "evidence": [
+        {
+          "path": "docs/sales-platform/pipeline-lifecycle-contract.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "src/features/pipelines/pipelineLifecycle.ts",
+          "level": "observed-source"
+        },
+        {
+          "path": "src/features/pipelines/pipelineLifecycle.integration.test.ts",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/evidence/r1-lifecycle/native-journey.json",
+          "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/evidence/r1-lifecycle/restore.json",
+          "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/evidence/r1-lifecycle/qualification.json",
+          "level": "local-runtime"
+        }
+      ],
+      "remainingGates": [
+        "Owner handover, protected removal and complete dependency previews remain unimplemented.",
+        "Literal workflow references, stage/configuration/default-setting races and all supported recovery/upgrade shapes remain open."
+      ],
+      "notes": "Archive/restore now use existing isArchived metadata, native freshness, locked current authority, monotonic CAS revisions and one transactional audit per transition. Retry is idempotent; default and last-active safeguards apply; audit failure rolls back. Native re-verification, archive and restore persisted on a synthetic pipeline with its five stages retained. Latest local database restore matched 103 tables and 1885 rows; no retained-installation closure is inferred."
+    },
+    {
+      "id": "SP-02.6",
+      "projectId": "SP-02",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-02.3", "SP-00.5"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-02.7",
+      "projectId": "SP-02",
+      "status": "in-progress",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-02.4", "SP-02.5", "SP-02.6"],
+      "evidence": [
+        {
+          "path": "docs/sales-platform/pipeline-lifecycle-contract.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "src/features/pipelines/pipelineLifecycle.ts",
+          "level": "observed-source"
+        },
+        {
+          "path": "src/features/pipelines/pipelineLifecycle.integration.test.ts",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/evidence/r1-lifecycle/native-journey.json",
+          "level": "local-runtime"
+        }
+      ],
+      "remainingGates": [
+        "Permission-safe user-facing lifecycle/access history, owner/scope/transfer audit coverage and complete affected-resource explanation remain open.",
+        "New pipeline scope revisions and full recovery history are not supplied by timestamp-only archive/restore CAS."
+      ],
+      "notes": "Archive and restore write actor, pipeline target, action, before/after archive state and revision timestamps to the existing audit log in the same database transaction. Native proof contains exactly one pipeline.archive and one pipeline.restore action; rollback and duplicate-retry tests cover the atomic path. No new audit-history screen or access/transfer audit completion is claimed."
+    },
+    {
+      "id": "SP-02.8",
+      "projectId": "SP-02",
+      "status": "in-progress",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-02.7", "SP-15.3"],
+      "evidence": [
+        {
+          "path": "docs/sales-platform/pipeline-lifecycle-contract.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "src/features/pipelines/pipelineLifecycleAuthority.integration.test.ts",
+          "level": "observed-source"
+        },
+        {
+          "path": "src/features/pipelines/pipelineArchiveCreation.integration.test.ts",
+          "level": "observed-source"
+        },
+        {
+          "path": "src/features/pipelines/PipelineDirectoryRecovery.test.tsx",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/evidence/r1-lifecycle/native-journey.json",
+          "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/evidence/r1-lifecycle/archive-confirm-de.png",
+          "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/evidence/r1-lifecycle/restored-de.png",
+          "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/evidence/r1-lifecycle/directory-fa-mobile.png",
+          "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/evidence/r1-lifecycle/qualification.json",
+          "level": "local-runtime"
+        }
+      ],
+      "remainingGates": [
+        "Pipeline creation/access editing/ownership transfer/deal transfer and every required worker, export, search, cache and realtime case remain outside this partial qualification.",
+        "Full FA/DE/EN state, theme, keyboard, screen-reader and contextual native-language acceptance remains open."
+      ],
+      "notes": "The opt-in lifecycle increment has real PostgreSQL authority, CAS/concurrency, atomic audit and deal-create/archive race evidence, plus component conflict/unconfirmed-outcome recovery. Native synthetic FA/DE/EN directory, German freshness/archive/restore and Farsi 390px states were captured. Affected PostgreSQL checkpoint passed 239 tests across 50 files; that aggregate does not qualify the full SP-02 journey set."
+    },
+    {
+      "id": "SP-03.1",
+      "projectId": "SP-03",
+      "status": "in-progress",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-00.8"],
+      "evidence": [
+        {
+          "path": "docs/sales-platform/view-compatibility.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "src/features/saved-filters/viewDefinitionVersion.ts",
+          "level": "observed-source"
+        },
+        {
+          "path": "src/features/saved-filters/viewDefinitionVersion.test.ts",
+          "level": "observed-source"
+        },
+        {
+          "path": "src/features/saved-filters/router.compatibility.test.ts",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/evidence/r1-lifecycle/native-journey.json",
+          "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/evidence/r1-lifecycle/unavailable-view-fa.png",
+          "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/evidence/r1-lifecycle/qualification.json",
+          "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/saved-view-presentation-contract.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/evidence/saved-view-presentation-2026-11-01.json",
+          "level": "local-runtime"
+        }
+      ],
+      "remainingGates": [
+        "A bounded inventory of real retained definitions, unknown keys and installed entity variants still requires evidence.",
+        "Old-client compatibility, custom-field presentation, complete recovery/edit workflows and current-source native browser/retained-upgrade qualification remain open."
+      ],
+      "notes": "Bare historical and explicit V1 definitions retain strict entity validation. Checked source 03100336 adds full builtin presentation envelopes for person, organization and lead while unknown/future/unsupported definitions remain unavailable without rewriting raw JSONB. Actual envelope round trips and metadata preservation passed within the 18-case PostgreSQL batch. Native current-source browser and old-client/retained data evidence remain separate."
+    },
+    {
+      "id": "SP-03.2",
+      "projectId": "SP-03",
+      "status": "in-progress",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-03.1", "SP-02.4"],
+      "evidence": [
+        {
+          "path": "docs/sales-platform/view-compatibility.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "src/features/deals/dealRouter.ts",
+          "level": "observed-source"
+        },
+        {
+          "path": "src/features/contacts/useContactListPaging.ts",
+          "level": "observed-source"
+        },
+        {
+          "path": "src/features/leads/inbox/useLeadList.ts",
+          "level": "observed-source"
+        },
+        {
+          "path": "src/features/contacts/ContactList.savedViewUnavailable.test.tsx",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/evidence/r1-lifecycle/native-journey.json",
+          "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/evidence/r1-lifecycle/qualification.json",
+          "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/evidence/saved-view-write-boundary-2026-11-01.json",
+          "level": "local-unit"
+        },
+        {
+          "path": "docs/sales-platform/evidence/activity-replay-and-view-preservation-2026-11-01.json",
+          "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/saved-view-presentation-contract.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/evidence/saved-view-presentation-2026-11-01.json",
+          "level": "local-runtime"
+        }
+      ],
+      "remainingGates": [
+        "Complete new pipeline/owner/team/source/date/status/label/custom-field composition and SQL/UI parity qualification remain open.",
+        "Permission-aware dynamic custom-field filter resolution, scope editing and all server export/search/realtime paths remain unqualified by client availability guards.",
+        "Builtin person/organization/lead read-write and PostgreSQL checks passed; current-source browser qualification and the separate Deals global server sort/paging contract remain open."
+      ],
+      "notes": "Existing executing-viewer authority is preserved. Checked source 03100336 applies conditions/columns/sort together, blocks unavailable selections before initial record/count/reference-label admission and refuses unsaved search/quick-filter scope rather than weakening it. Actual affected 425/33 units, PostgreSQL18/3, full types and full lint passed. Existing strict writes and metadata preservation remain. This does not complete dynamic-field, cross-surface authority, native browser, build or main-history upgrade qualification."
+    },
+    {
+      "id": "SP-03.3",
+      "projectId": "SP-03",
+      "status": "in-progress",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-03.2"],
+      "evidence": [
+        {
+          "path": "docs/sales-platform/view-compatibility.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "src/features/saved-filters/savedView.ts",
+          "level": "observed-source"
+        },
+        {
+          "path": "src/features/saved-filters/SavedViewControl.tsx",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/evidence/r1-lifecycle/native-journey.json",
+          "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/evidence/saved-view-write-boundary-2026-11-01.json",
+          "level": "local-unit"
+        },
+        {
+          "path": "docs/sales-platform/evidence/activity-replay-and-view-preservation-2026-11-01.json",
+          "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/saved-view-presentation-contract.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/evidence/saved-view-presentation-2026-11-01.json",
+          "level": "local-runtime"
+        }
+      ],
+      "remainingGates": [
+        "Duplicate/rename/reset behavior, full return-navigation/preferences matrix and native FA/DE/EN browser acceptance remain open.",
+        "Existing personal/shared/favorite metadata preservation is not new sharing authority; execution-time shared revocation remains open.",
+        "Deals full presentation/global server sorting and custom-field presentation remain outside the adopted three-entity builtin contract."
+      ],
+      "notes": "Checked source 03100336 persists person/organization/lead V1 builtin columns/sort and native actor ID-only selected-view preferences. Selecting a view preserves the personal baseline; view-mode debounce/unmount writes are cancelled. Clear restores personal mode, while local editing detaches selection without overwriting personal layout. Malformed/private/missing selections block data. Queued writes fence principal changes, and actual native preferences passed nine PostgreSQL cases within 18/3. Affected 425/33 units, full types and full lint passed; no new browser/release claim."
+    },
+    {
+      "id": "SP-03.4",
+      "projectId": "SP-03",
+      "status": "in-progress",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-03.3"],
+      "evidence": [
+        {
+          "path": "docs/sales-platform/next-action-queue-contract.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/verification.md",
+          "level": "local-unit"
+        },
+        {
+          "path": "docs/sales-platform/activity-command-admission-review.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/evidence/next-action-queue-2026-11-01.json",
+          "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/evidence/activity-replay-and-view-preservation-2026-11-01.json",
+          "level": "local-runtime"
+        }
+      ],
+      "remainingGates": [
+        "Literal unassigned work requires an approved ownership/storage decision; current fields are nonnullable.",
+        "Shared current-native/OAuth/job mutation admission, revocation and unknown-outcome qualification remain open.",
+        "Full exact-candidate build, native FA/DE/EN accessibility/state journeys and performance remain open."
+      ],
+      "notes": "Partial default-off read queue for canonical overdue work and opportunities with no nondeleted open activity. Strict protected RPC, bounded permission-scoped counts/pages, redacted links and existing native edit/schedule forms. Actor/input/preference/revision-scoped client hides stale reads, including preference-save and late pre-save races. Adjacent containerless run of 125 tests across 16 files passed; 14 actual read PostgreSQL tests across 4 files and later focused units 44/5 plus scoped typed ESLint 38 files passed. At that queue checkpoint, full types/lint/build/browser remained separate. Later full types/lint are recorded below; current build/browser, release and parent completion remain open. Later d4bf15a passed six actual PostgreSQL replay/saved-preservation cases; strict completion action input passed 24 units. Full current types/lint passed after a preserved test-only type failure and repair. Native authority/browser/build and main-history upgrade gates remain open."
+    },
+    {
+      "id": "SP-03.5",
+      "projectId": "SP-03",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-03.3"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-03.6",
+      "projectId": "SP-03",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-03.3"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-03.7",
+      "projectId": "SP-03",
+      "status": "in-progress",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-03.2", "SP-15.2"],
+      "evidence": [
+        {
+          "path": "src/features/leads/LeadsInbox.tsx",
+          "level": "observed-source"
+        },
+        {
+          "path": "src/features/leads/inbox/LeadsActionBar.tsx",
+          "level": "observed-source"
+        },
+        {
+          "path": "src/features/leads/LeadsInbox.savedViewUnavailable.test.tsx",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/view-compatibility.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/evidence/r1-lifecycle/qualification.json",
+          "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/saved-view-presentation-contract.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/evidence/saved-view-presentation-2026-11-01.json",
+          "level": "local-runtime"
+        }
+      ],
+      "remainingGates": [
+        "Asynchronous scoped export jobs, field/currency/unit/date manifests, safe CSV text and progress are not delivered by this increment.",
+        "Execution/download authorization rechecks and shared-view export revocation require complete server/runtime qualification."
+      ],
+      "notes": "Leads unavailable selections continue to disable both CSV entry and handler. Checked source 03100336 reuses the existing CSV path with effective builtin columns, sort, conditions and quick filters; unsupported capture cannot silently weaken scope. The native export route independently retains current session/data.export checks. Affected presentation units and 18/3 PostgreSQL passed, but this is not asynchronous export/download authority, after-wait revocation or current-source browser qualification."
+    },
+    {
+      "id": "SP-03.8",
+      "projectId": "SP-03",
+      "status": "in-progress",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-03.4", "SP-03.5", "SP-03.6", "SP-03.7"],
+      "evidence": [
+        {
+          "path": "docs/sales-platform/view-compatibility.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "src/features/saved-filters/router.compatibility.test.ts",
+          "level": "observed-source"
+        },
+        {
+          "path": "src/features/contacts/ContactList.savedViewUnavailable.test.tsx",
+          "level": "observed-source"
+        },
+        {
+          "path": "src/features/leads/inbox/useLeadList.savedView.test.tsx",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/evidence/r1-lifecycle/native-journey.json",
+          "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/evidence/r1-lifecycle/unavailable-view-fa.png",
+          "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/evidence/r1-lifecycle/qualification.json",
+          "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/saved-view-presentation-contract.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/evidence/saved-view-presentation-2026-11-01.json",
+          "level": "local-runtime"
+        }
+      ],
+      "remainingGates": [
+        "Hidden-field changes, complete shared-view revocation, server export/search/cache/realtime authority and mobile next-action queues remain open.",
+        "Native cross-entity language/accessibility/theme matrices and actual retained-filter inventory are still required."
+      ],
+      "notes": "Compatibility/recovery remains integrated across deal board/list and person/organization/lead selection. Checked source 03100336 adds three-entity builtin presentation and native preference persistence with initial query blocking, personal-baseline isolation, actor queue fences and explicit unsupported transient scope guidance. Actual 425/33 units,18/3 PostgreSQL, full types and full lint passed. Existing older Farsi unsupported-deal-view browser evidence remains historical; no current-source native matrix or broader authority closure is inferred."
+    },
+    {
+      "id": "SP-04.1",
+      "projectId": "SP-04",
+      "status": "in-progress",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-00.5", "SP-01.8"],
+      "evidence": [
+        {
+          "path": "docs/sales-platform/template-contract.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "src/features/process-templates/templateManifest.test.ts",
+          "level": "local-unit"
+        },
+        {
+          "path": "src/features/process-templates/templatePlan.test.ts",
+          "level": "local-unit"
+        },
+        {
+          "path": "src/features/process-templates/basicCatalog.test.ts",
+          "level": "local-unit"
+        },
+        {
+          "path": "docs/sales-platform/evidence/r1-rename/qualification.json",
+          "level": "local-runtime"
+        }
+      ],
+      "remainingGates": [
+        "Native field/rule/action capability registries, contextual copy/design review and original parent dependencies remain open.",
+        "Runtime immutability does not bind historical template versions to content. Reviewed persistence, durable intent receipts, installation ID mapping and upgrade/local-override behavior remain unimplemented.",
+        "No UI, installer, authorization, DB operation, rule or provider effect is supplied by this source-only manifest/preview increment."
+      ],
+      "notes": "Strict bounded JSON manifests, duplicate/prototype-key rejection, deep readonly values and deterministic FA/DE/EN stage-only previews implemented. Thirty-six focused tests passed. Unknown capabilities block preview, native IDs are unallocated and installation stays explicitly unavailable. Basic and one-stage structures are original optional design proposals."
+    },
+    {
+      "id": "SP-04.2",
+      "projectId": "SP-04",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-04.1", "SP-02.3"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-04.3",
+      "projectId": "SP-04",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-04.2"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-04.4",
+      "projectId": "SP-04",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-04.3", "SP-02.7"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-04.5",
+      "projectId": "SP-04",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-04.1", "SP-02.2"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-04.6",
+      "projectId": "SP-04",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-04.4", "SP-04.5"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-04.7",
+      "projectId": "SP-04",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-04.4", "SP-04.6"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-04.8",
+      "projectId": "SP-04",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-04.7"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-05.1",
+      "projectId": "SP-05",
+      "status": "in-progress",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-04.1", "SP-01.8"],
+      "evidence": [
+        {
+          "path": "docs/sales-platform/qualification-framework-research.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/qualification-contract.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/evidence/qualification-export-static-2026-11-01.json",
+          "level": "local-unit"
+        }
+      ],
+      "remainingGates": [
+        "Rights/content/contextual language decision for exact copy/naming/distribution remains open.",
+        "Real per-pipeline opt-in selection, controlled authoring and durable definition/version bindings require owner-reviewed storage and authority.",
+        "Native selection/switching/historical evidence/UI/recovery acceptance remains open; no installed framework exists."
+      ],
+      "notes": "Partial original neutral catalog covers six researched framework families in FA/DE/EN; strict frozen definitions and stable localized previews have seven unit tests, plus 43 adjacent stage/qualification tests across 6 files. Rights status pending; installation/persisted selection/evidence writes/scoring/stage policy/effects all unavailable. Full types and scoped 18-file typed lint passed on 15950b6; this does not complete SP-05.1 or later evidence/rule tasks."
+    },
+    {
+      "id": "SP-05.2",
+      "projectId": "SP-05",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-05.1", "SP-02.2"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-05.3",
+      "projectId": "SP-05",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-05.2"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-05.4",
+      "projectId": "SP-05",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-05.2"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-05.5",
+      "projectId": "SP-05",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-05.3"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-05.6",
+      "projectId": "SP-05",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-05.3", "SP-05.4"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-05.7",
+      "projectId": "SP-05",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-05.4", "SP-03.2", "SP-04.6"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-05.8",
+      "projectId": "SP-05",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-05.5", "SP-05.6", "SP-05.7"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-06.1",
+      "projectId": "SP-06",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-00.5", "SP-01.8"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-06.2",
+      "projectId": "SP-06",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-06.1"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-06.3",
+      "projectId": "SP-06",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-06.2", "SP-02.2"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-06.4",
+      "projectId": "SP-06",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-06.3"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-06.5",
+      "projectId": "SP-06",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-06.2", "SP-05.2"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-06.6",
+      "projectId": "SP-06",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-06.2", "SP-00.5"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-06.7",
+      "projectId": "SP-06",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-06.4", "SP-03.3"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-06.8",
+      "projectId": "SP-06",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-06.5", "SP-06.6", "SP-06.7"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-07.1",
+      "projectId": "SP-07",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-00.5", "SP-04.1"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-07.2",
+      "projectId": "SP-07",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-07.1", "SP-00.6"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-07.3",
+      "projectId": "SP-07",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-07.2", "SP-04.6"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-07.4",
+      "projectId": "SP-07",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-07.3", "SP-01.8"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-07.5",
+      "projectId": "SP-07",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-07.1", "SP-15.3"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-07.6",
+      "projectId": "SP-07",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-07.3", "SP-07.5"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-07.7",
+      "projectId": "SP-07",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-07.4", "SP-07.6"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-07.8",
+      "projectId": "SP-07",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-07.7"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-08.1",
+      "projectId": "SP-08",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-00.5", "SP-01.8"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-08.2",
+      "projectId": "SP-08",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-08.1", "SP-07.2"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-08.3",
+      "projectId": "SP-08",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-08.2", "SP-04.4"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-08.4",
+      "projectId": "SP-08",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-08.3", "SP-03.2"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-08.5",
+      "projectId": "SP-08",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-08.2", "SP-08.4"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-08.6",
+      "projectId": "SP-08",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-08.1", "SP-08.5"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-08.7",
+      "projectId": "SP-08",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-08.4", "SP-08.6", "SP-03.7"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-08.8",
+      "projectId": "SP-08",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-08.7", "SP-15.4"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-09.1",
+      "projectId": "SP-09",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-06.1", "SP-08.1"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-09.2",
+      "projectId": "SP-09",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-09.1", "SP-15.3"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-09.3",
+      "projectId": "SP-09",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-09.2", "SP-03.4"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-09.4",
+      "projectId": "SP-09",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-09.3", "SP-07.3"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-09.5",
+      "projectId": "SP-09",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-09.2", "SP-07.5"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-09.6",
+      "projectId": "SP-09",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-09.2", "SP-06.7"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-09.7",
+      "projectId": "SP-09",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-09.5", "SP-09.6", "SP-08.7"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-09.8",
+      "projectId": "SP-09",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-09.4", "SP-09.7"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-10.1",
+      "projectId": "SP-10",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-01.2", "SP-06.1"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-10.2",
+      "projectId": "SP-10",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-10.1", "SP-06.2"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-10.3",
+      "projectId": "SP-10",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-10.2", "SP-02.2"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-10.4",
+      "projectId": "SP-10",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-10.3"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-10.5",
+      "projectId": "SP-10",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-10.3", "SP-04.8", "SP-07.8"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-10.6",
+      "projectId": "SP-10",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-10.4", "SP-08.7"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-10.7",
+      "projectId": "SP-10",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-10.3", "SP-14.8"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-10.8",
+      "projectId": "SP-10",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-10.5", "SP-10.6"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-11.1",
+      "projectId": "SP-11",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-01.2", "SP-06.1"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-11.2",
+      "projectId": "SP-11",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-11.1", "SP-06.2"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-11.3",
+      "projectId": "SP-11",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-11.2", "SP-05.2"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-11.4",
+      "projectId": "SP-11",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-11.2", "SP-07.5"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-11.5",
+      "projectId": "SP-11",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-11.2", "SP-02.2"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-11.6",
+      "projectId": "SP-11",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-11.3", "SP-11.5"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-11.7",
+      "projectId": "SP-11",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-11.6", "SP-08.7"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-11.8",
+      "projectId": "SP-11",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-11.4", "SP-11.7"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-12.1",
+      "projectId": "SP-12",
+      "status": "in-progress",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-01.2", "SP-07.1"],
+      "evidence": [
+        {
+          "path": "docs/sales-platform/product-signal-source-decision.md",
+          "level": "observed-source"
+        }
+      ],
+      "remainingGates": [
+        "Actual operational source instance/owner, permitted live purpose and retention/suppression contract remain unqualified."
+      ],
+      "notes": "User delegated choice to research/judgment. Default customer-controlled first-party API; synthetic local Warpdrive reference; optional PostHog/Segment mapping."
+    },
+    {
+      "id": "SP-12.2",
+      "projectId": "SP-12",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-12.1", "SP-06.2"],
+      "evidence": [
+        {
+          "path": "docs/sales-platform/product-signal-event-contract.md",
+          "level": "observed-source"
+        }
+      ],
+      "remainingGates": [
+        "SP-12.1 still requires a named permitted actual source, operational owner, purpose, consent/suppression and retention decisions before any connector.",
+        "SP-06.2 native account/person identity and shared server-owned source/destination authority contracts remain dependencies; no automatic contact merge or parallel auth store is admitted.",
+        "The specified strict object parser and bounded synthetic preview require meaningful test-first implementation and actual passing checks; this specification includes no executed tests or implementation.",
+        "Native body-byte/UTF-8/duplicate-key limits, authenticated/rate-bounded ingestion, real PostgreSQL duplicate races, current authority after waits, durable deletion/tombstone/retention and restore/replay guarantees remain unimplemented and unqualified.",
+        "Versioned native rules, evidence/work queues, explicitly activated shared WF/IG effects, provider/source qualification, contextual FA/DE/EN UI and pilot/release acceptance remain separate open work."
+      ],
+      "notes": "Original proposed V1 specification defines five allowlisted event shapes, bounded opaque source IDs/timestamps/properties and a pure synthetic preview. Only syntactically valid payloads form semantic duplicate groups; invalid records expose safe index-based diagnostics without untrusted identifiers. One current source/account/user lookup context applies across every copy: suppression/revocation outranks earliest delivery, and mapping changes do not silently promote history. All heuristics are proposed and unqualified; no parser, evaluator, native ingestion, durable state or effects are implemented. SP-12.2 remains planned with its original dependencies."
+    },
+    {
+      "id": "SP-12.3",
+      "projectId": "SP-12",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-12.2", "SP-15.2"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-12.4",
+      "projectId": "SP-12",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-12.3", "SP-05.4"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-12.5",
+      "projectId": "SP-12",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-12.4", "SP-03.4"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-12.6",
+      "projectId": "SP-12",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-12.5", "SP-07.8"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-12.7",
+      "projectId": "SP-12",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-12.5", "SP-08.7"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-12.8",
+      "projectId": "SP-12",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-12.6", "SP-12.7"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-13.1",
+      "projectId": "SP-13",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-08.1", "SP-01.8"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-13.2",
+      "projectId": "SP-13",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-13.1", "SP-00.5"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-13.3",
+      "projectId": "SP-13",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-13.2", "SP-07.8"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-13.4",
+      "projectId": "SP-13",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-13.2", "SP-08.3"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-13.5",
+      "projectId": "SP-13",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-13.3", "SP-06.2"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-13.6",
+      "projectId": "SP-13",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-13.5", "SP-09.3"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-13.7",
+      "projectId": "SP-13",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-13.4", "SP-13.6", "SP-08.7"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-13.8",
+      "projectId": "SP-13",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-13.7"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-14.1",
+      "projectId": "SP-14",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-01.2", "SP-00.5"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-14.2",
+      "projectId": "SP-14",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-14.1", "SP-15.2"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-14.3",
+      "projectId": "SP-14",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-14.2", "SP-00.6"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-14.4",
+      "projectId": "SP-14",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-14.3", "SP-15.5"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-14.5",
+      "projectId": "SP-14",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-14.4"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-14.6",
+      "projectId": "SP-14",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-14.5", "SP-01.8"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-14.7",
+      "projectId": "SP-14",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-14.6", "SP-15.5"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-14.8",
+      "projectId": "SP-14",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-14.7", "SP-15.7"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-15.1",
+      "projectId": "SP-15",
+      "status": "in-progress",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-00.4"],
+      "evidence": [
+        {
+          "path": "docs/sales-platform/critical-journeys.json",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/verification.md",
+          "level": "local-unit"
+        },
+        {
+          "path": "docs/sales-platform/pipeline-lifecycle-contract.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/view-compatibility.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/evidence/r1-lifecycle/native-journey.json",
+          "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/evidence/r1-lifecycle/restore.json",
+          "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/evidence/r1-lifecycle/qualification.json",
+          "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/evidence/lead-export-permission-2026-11-01.json",
+          "level": "local-unit"
+        },
+        {
+          "path": "docs/sales-platform/evidence/qualification-export-static-2026-11-01.json",
+          "level": "local-unit"
+        },
+        {
+          "path": "docs/sales-platform/evidence/activity-replay-and-view-preservation-2026-11-01.json",
+          "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/saved-view-presentation-contract.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/evidence/saved-view-presentation-2026-11-01.json",
+          "level": "local-runtime"
+        }
+      ],
+      "remainingGates": [
+        "Remaining exact-candidate functional/browser/provider/release acceptance still required.",
+        "Full protected foreground/background/provider/browser/state and release acceptance remains open."
+      ],
+      "notes": "Checkpoint c655b8e: final root unit summary inspected with 6020 tests across 966 files passing; affected PostgreSQL summary inspected with 239 tests across 50 files passing. Existing registry and guards retain all 128 parent IDs and evidence ceilings. Native lifecycle/unavailable-view journeys and the 103-table synthetic restore add current local runtime evidence; aggregate checks do not complete parent acceptance. Version-matched qualification.json now records the checkpoint build/check evidence separately from release acceptance. Later lead CSV export gate 6efe4dd adds native session/global data.export refusal before reads; 44 adjacent units across 5 files passed. Full 15950b6 types passed with 18-file affected typed lint; that type/unit record alone establishes no newer build/browser/native replay result; subsequent actual replay evidence is recorded below. Later d4bf15a passed six actual PostgreSQL replay/saved-preservation cases; strict completion action input passed 24 units. Full current types/lint passed after a preserved test-only type failure and repair. Native authority/browser/build and main-history upgrade gates remain open. Later checked source 03100336, locally adopted 7c1076 with an identical tree, passed 425 affected units/33 files, 18 actual PostgreSQL cases/three files, full Next types/TypeScript and full repository lint. Failed presentation type/lint attempts and behavioral RED classifications remain preserved. Current-source browser/build/provider/release and current-main/retained upgrades remain open."
+    },
+    {
+      "id": "SP-15.2",
+      "projectId": "SP-15",
+      "status": "in-progress",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-00.5"],
+      "evidence": [
+        {
+          "path": "docs/sales-platform/critical-journeys.json",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/verification.md",
+          "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/pipeline-lifecycle-contract.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "src/features/pipelines/pipelineLifecycleAuthority.integration.test.ts",
+          "level": "observed-source"
+        },
+        {
+          "path": "src/features/pipelines/pipelineLifecycleActions.test.ts",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/evidence/r1-lifecycle/native-journey.json",
+          "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/evidence/r1-lifecycle/qualification.json",
+          "level": "local-runtime"
+        }
+      ],
+      "remainingGates": [
+        "Full new-role/workspace/export/files/MCP threat matrix and independent review remain open.",
+        "The complete threat model, independent security review and incident ownership for every new surface remain open.",
+        "New pipeline roles/workspace isolation plus file/download/export/search/realtime/MCP and provider authority need their own deny/race qualification."
+      ],
+      "notes": "Current lifecycle security evidence adds eight native-session PostgreSQL authority cases, strict client-authority rejection, CSRF/server feature-gate action checks and source-group/record-ceiling protection. Queued commands recheck revoked sessions, downgraded permission sets, removed group membership and expired fresh proof. A native German fresh-proof refusal and existing security re-verification succeeded. No new auth or record authority is introduced."
+    },
+    {
+      "id": "SP-15.3",
+      "projectId": "SP-15",
+      "status": "in-progress",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-01.6"],
+      "evidence": [
+        {
+          "path": "src/features/pipelines/messages/lifecycle.fa.json",
+          "level": "observed-source"
+        },
+        {
+          "path": "src/features/saved-filters/messages/viewCompatibility.fa.json",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/evidence/r1-lifecycle/directory-fa.png",
+          "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/evidence/r1-lifecycle/directory-fa-mobile.png",
+          "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/evidence/r1-lifecycle/archive-confirm-de.png",
+          "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/evidence/r1-lifecycle/directory-en.png",
+          "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/evidence/r1-lifecycle/unavailable-view-fa.png",
+          "level": "local-runtime"
+        }
+      ],
+      "remainingGates": [
+        "Contextual native-human review, moderated tasks and the complete keyboard/screen-reader/reflow/theme matrix remain open.",
+        "The exact-candidate date/money/phone and IRR/toman invariants require their full combined regional qualification; directory screenshots do not establish them."
+      ],
+      "notes": "FA/DE/EN lifecycle and view-recovery copy is authored and integrated in the current shell. Actual synthetic Farsi desktop/390px, German freshness/archive/restore and English directory captures retain the authored bilingual pipeline name. Recovery distinguishes checking/unavailable/missing/query failure. These are component/native browser observations, not native-language or accessibility sign-off."
+    },
+    {
+      "id": "SP-15.4",
+      "projectId": "SP-15",
+      "status": "planned",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-02.1", "SP-15.1"],
+      "evidence": [],
+      "remainingGates": [],
+      "notes": ""
+    },
+    {
+      "id": "SP-15.5",
+      "projectId": "SP-15",
+      "status": "in-progress",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-00.3", "SP-15.1"],
+      "evidence": [
+        {
+          "path": "docs/sales-platform/evidence/local-restore.json",
+          "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/evidence/local-disposable-ledger.json",
+          "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/evidence/r1-lifecycle/restore.json",
+          "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/evidence/r1-lifecycle/native-journey.json",
+          "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/evidence/r1-lifecycle/qualification.json",
+          "level": "local-runtime"
+        }
+      ],
+      "remainingGates": [
+        "Retained source lineages, object-store, migration interruption, old-binary compatibility, external receipts and timed recovery targets remain unqualified.",
+        "Object files, external delivery/unknown receipts, retained divergent lineages, interrupted migration, older-binary rollback and timed RTO/RPO targets remain unqualified."
+      ],
+      "notes": "Latest checkpoint c655b8e synthetic PostgreSQL 18.1 backup/restore matched all 103 public/drizzle/pgboss tables and 1885 rows by counts and ordered row digests after frontend/import-producer quiescence. The general outbound worker was not started; no provider effect or retained-installation recovery is inferred. Earlier R0 restore artifacts remain historical evidence."
+    },
+    {
+      "id": "SP-15.6",
+      "projectId": "SP-15",
+      "status": "in-progress",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-00.5", "SP-15.2"],
+      "evidence": [
+        {
+          "path": "docs/sales-platform/pipeline-lifecycle-contract.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "src/config/env.ts",
+          "level": "observed-source"
+        },
+        {
+          "path": "src/features/pipelines/pipelineLifecycleActions.ts",
+          "level": "observed-source"
+        },
+        {
+          "path": "src/features/pipelines/pipelineLifecycleActions.test.ts",
+          "level": "observed-source"
+        }
+      ],
+      "remainingGates": [
+        "Versioned redacted operator diagnostics, metric/alert ownership and complete stuck-job/provider-revocation runbooks remain open.",
+        "Feature disablement of existing records/history and in-flight work needs its full operator/runtime qualification beyond admission tests."
+      ],
+      "notes": "A server-owned opt-in pipeline lifecycle flag defaults off, and both new actions reject admission when it is disabled rather than trusting a submitted enable flag. Archive changes retain records/history and have no outbound provider effect. Source/action tests establish this bounded admission control; no broad operational disablement or diagnostics closure is claimed."
+    },
+    {
+      "id": "SP-15.7",
+      "projectId": "SP-15",
+      "status": "in-progress",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-15.1", "SP-15.2", "SP-15.3", "SP-15.4", "SP-15.5", "SP-15.6"],
+      "evidence": [
+        {
+          "path": "docs/sales-platform/pipeline-lifecycle-contract.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/view-compatibility.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/evidence/r1-lifecycle/native-journey.json",
+          "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/evidence/r1-lifecycle/restore.json",
+          "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/evidence/r1-lifecycle/qualification.json",
+          "level": "local-runtime"
+        }
+      ],
+      "remainingGates": [
+        "Applicable G0-G5 baseline/design, retained migration, full authority/regional/accessibility, performance, recovery and controlled-use gates remain open.",
+        "Explicit code-rollback versus data-recovery behavior, full G0-G5 acceptance and provider/pilot/production evidence remain open despite the local build/check results."
+      ],
+      "notes": "The c655b8e candidate evidence pack is being assembled with substantive pipeline lifecycle, saved-view recovery, full unit 6020/966 and affected PostgreSQL 239/50 results, native synthetic journeys and the 103-table/1885-row restore. Feature admission remains opt-in. No broad R1 release acceptance, provider qualification or pilot/production operation is claimed. The completed local production-build and check summary is retained in qualification.json; it does not close the broader release gates."
+    },
+    {
+      "id": "SP-15.8",
+      "projectId": "SP-15",
+      "status": "in-progress",
+      "owner": "sales-platform",
+      "dependsOn": ["SP-15.7"],
+      "evidence": [
+        {
+          "path": "docs/sales-platform/distribution-notices-review.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/evidence/distribution-fix-2026-11-01.json",
+          "level": "local-unit"
+        }
+      ],
+      "remainingGates": [
+        "Actual runtime image artifact and transitive notice/license closure remain unqualified.",
+        "Version-matched install/upgrade/disable/diagnose/recovery maintainer acceptance and release gates remain open."
+      ],
+      "notes": "Partial source packaging repair at 0d8247f: private .runtime excluded by effective Docker ignore matching and root/curated notices explicitly copied. Two focused tests, scoped Biome and typed ESLint passed. No Docker image was built or distributed and no release was published."
+    }
+  ]
+}

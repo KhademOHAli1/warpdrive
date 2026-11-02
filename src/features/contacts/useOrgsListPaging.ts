@@ -15,6 +15,7 @@ export function useOrgsListPaging({
   initialRefLabels,
   sort,
   filter,
+  enabled = true,
   search,
 }: {
   initial: OrgsListRow[];
@@ -22,6 +23,7 @@ export function useOrgsListPaging({
   initialRefLabels: CustomFieldRefLabels;
   sort: ColumnSort<OrgSortField>;
   filter: ContactFilterDefinition | null;
+  enabled?: boolean;
   search: string;
 }) {
   const t = useAppTranslations("contacts");
@@ -60,6 +62,7 @@ export function useOrgsListPaging({
     initialTotal,
     initialRefLabels,
     fetchPage,
+    enabled,
     reloadError: t("couldnTLoadOrganizationsPleaseTryAgain"),
     moreError: t("couldnTLoadMoreOrganizationsPleaseTryAgain"),
   });

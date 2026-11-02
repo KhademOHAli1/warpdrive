@@ -1,4 +1,5 @@
 import type { McpServer } from "@modelcontextprotocol/server";
+import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import { createOrg, updateOrg } from "@/features/contacts/orgsRepo";
 import { createPerson, updatePerson } from "@/features/contacts/personsRepo";
@@ -9,6 +10,7 @@ import {
   personUpdateInput,
 } from "@/features/contacts/schemas";
 import { buildContactActor } from "@/features/mcp/actorContext";
+import { can } from "@/features/permissions/can";
 import {
   type GetCtx,
   getToolActor,
@@ -31,6 +33,8 @@ export function registerContactWriteTools(
     run: async (input, signal) => {
       const actor = getToolActor(getCtx);
       if (!actor.ok) return toolError(actor.error);
+      if (!can(actor.value, "contact.create"))
+        return toolError(new AppError(ERROR_IDS.PERM_DENIED, "contact creation denied"));
       return resultToTool(
         await createPerson(db, await buildContactActor(db, actor.value, signal), input, signal),
       );
@@ -55,6 +59,8 @@ export function registerContactWriteTools(
     run: async (input, signal) => {
       const actor = getToolActor(getCtx);
       if (!actor.ok) return toolError(actor.error);
+      if (!can(actor.value, "contact.create"))
+        return toolError(new AppError(ERROR_IDS.PERM_DENIED, "contact creation denied"));
       return resultToTool(
         await createOrg(db, await buildContactActor(db, actor.value, signal), input, signal),
       );

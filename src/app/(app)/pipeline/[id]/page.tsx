@@ -72,11 +72,13 @@ export default async function PipelineBoardPage({
   );
   void viewPromise.catch(() => {});
   const boardPromise = viewPromise.then((view) =>
-    createCaller(ctx).deal.board({
-      pipelineId: id,
-      definition: boardViewDefinition(view),
-      ...datePreferences,
-    }),
+    boardViewDefinition(view) === null
+      ? Promise.resolve({ cards: [] })
+      : createCaller(ctx).deal.board({
+          pipelineId: id,
+          definition: boardViewDefinition(view) ?? undefined,
+          ...datePreferences,
+        }),
   );
   void boardPromise.catch(() => {});
 

@@ -1,6 +1,34 @@
 // Stable error-ID registry. Append-only: one ID per distinct cause; retired IDs
 // stay searchable (commented) and are never reused or renumbered.
 export const ERROR_IDS = {
+  // Third-party integrations
+  INTEGRATION_FORBIDDEN: "E_INTEGRATION_001",
+  INTEGRATION_NEEDS_CONFIGURATION: "E_INTEGRATION_002",
+  INTEGRATION_STATE_INVALID: "E_INTEGRATION_003",
+  INTEGRATION_SAVE_FAILED: "E_INTEGRATION_004",
+  INTEGRATION_NOT_CONNECTED: "E_INTEGRATION_005",
+  INTEGRATION_CREDENTIALS_UNAVAILABLE: "E_INTEGRATION_006",
+  CHANNEL_UNAVAILABLE: "E_INTEGRATION_007",
+  SLACK_METHOD_INVALID: "E_INTEGRATION_008",
+  SLACK_RATE_LIMITED: "E_INTEGRATION_009",
+  SLACK_UNAVAILABLE: "E_INTEGRATION_010",
+  SLACK_REQUEST_FAILED: "E_INTEGRATION_011",
+  SLACK_EXCHANGE_FAILED: "E_INTEGRATION_012",
+  SLACK_SCOPE_MISSING: "E_INTEGRATION_013",
+  SLACK_CHANNEL_LIMIT: "E_INTEGRATION_014",
+  INTEGRATION_CUSTODY_CONFLICT: "E_INTEGRATION_015",
+
+  // Provider-neutral customer email.
+  MAIL_CONNECTION_UNAVAILABLE: "E_MAIL_001",
+  MAIL_CONNECTION_INVALID: "E_MAIL_002",
+  MAIL_SYNC_FAILED: "E_MAIL_003",
+  MAIL_SEND_REJECTED: "E_MAIL_004",
+  MAIL_SEND_UNKNOWN: "E_MAIL_005",
+  MAIL_CAPABILITY_DENIED: "E_MAIL_006",
+  MAIL_CONNECTION_CHANGED: "E_MAIL_007",
+  MAIL_WRITE_UNKNOWN: "E_MAIL_008",
+  MAIL_WRITE_PARTIAL: "E_MAIL_009",
+  MAIL_DELIVERY_OBSERVATION_FAILED: "E_MAIL_010",
   // AUTH
   AUTH_LOGIN_REJECTED: "E_AUTH_001", // domain / email_verified / signature check failed
   AUTH_STATE_MISMATCH: "E_AUTH_002", // OAuth state/nonce/PKCE mismatch
@@ -25,6 +53,7 @@ export const ERROR_IDS = {
   DB_INVARIANT: "E_DB_001", // a DB invariant we believed impossible was violated
   DB_INSERT_FAILED: "E_DB_002", // insert returned no rows (should never happen)
   DB_WRITE_FAILED: "E_DB_003", // the write threw: Postgres unreachable, aborted, or rejected
+  DB_READ_FAILED: "E_DB_004", // the authorized read failed without a safe result
   // DEAL
   DEAL_NOT_FOUND: "E_DEAL_001", // deal not found or not visible (404-on-invisible)
   DEAL_PRECONDITION: "E_DEAL_002", // optimistic precondition failed (stale compare-and-swap on move)
@@ -53,6 +82,9 @@ export const ERROR_IDS = {
   LEAD_FILTER_INVALID: "E_LEAD_008", // leads list filter compiled with a field/op outside the allow-list
   // PIPELINE
   PIPELINE_NOT_FOUND: "E_PIPELINE_001", // pipeline not found or restricted (404-on-invisible)
+  PIPELINE_REVISION_CONFLICT: "E_PIPELINE_002", // rename source revision changed
+  PIPELINE_FRESH_AUTH_REQUIRED: "E_PIPELINE_003", // rename requires current native fresh proof
+  PIPELINE_RENAME_INPUT_INVALID: "E_PIPELINE_004", // rename input failed strict validation
   // STAGE
   STAGE_NOT_FOUND: "E_STAGE_001", // stage not found (delete/update targeted a missing stage)
   STAGE_HAS_DEALS: "E_STAGE_002", // refuse to delete a stage that still holds deals (move them first)
@@ -106,7 +138,7 @@ export const ERROR_IDS = {
   ACTIVITY_UPDATE_INPUT_INVALID: "E_ACTIVITY_005", // edit action input failed Zod validation
   ACTIVITY_TYPE_INVALID: "E_ACTIVITY_006", // patched typeId is missing or archived (activity WAS found)
   ACTIVITY_END_BEFORE_START: "E_ACTIVITY_007", // multi-day endAt is earlier than the start (dueAt)
-  ACTIVITY_COMPLETE_INPUT_INVALID: "E_ACTIVITY_008", // completion action input failed strict validation
+  ACTIVITY_COMPLETE_INPUT_INVALID: "E_ACTIVITY_008", // complete action input failed strict Zod validation
   ACTIVITY_CONFLICT: "E_ACTIVITY_009", // event revision changed since the editor opened
   CALENDAR_NOT_FOUND: "E_CALENDAR_001",
   CALENDAR_FORBIDDEN: "E_CALENDAR_002",
@@ -161,6 +193,7 @@ export const ERROR_IDS = {
   OAUTH_CODE_EXPIRED: "E_OAUTH_004",
   OAUTH_TOKEN_REVOKED: "E_OAUTH_005",
   OAUTH_CONSENT_REQUIRED: "E_OAUTH_006",
+  OAUTH_INVALID_TARGET: "E_OAUTH_007",
   // SYNC
   SYNC_CURSOR_EXPIRED: "E_SYNC_001", // History cursor expired (404): gap-recovery resync triggered
   // JOBS
@@ -172,6 +205,9 @@ export const ERROR_IDS = {
   NOTIF_UNKNOWN_TYPE: "E_NOTIF_001", // unknown/unsupported notification type
   NOTIF_TARGET_NOT_FOUND: "E_NOTIF_002", // mention/notification target user not found
   NOTIF_PRODUCE_FAILED: "E_NOTIF_003", // createNotification failed unexpectedly (DB/internal)
+  NOTIF_SEND_BINDING_CONFLICT: "E_NOTIF_004", // an intent or purpose is already bound differently
+  NOTIF_SEND_PURPOSE_INVALID: "E_NOTIF_005", // retained system purpose does not match canonical authority
+  NOTIF_SEND_SUPPRESSED: "E_NOTIF_006", // notification policy was revoked before submission
   // SEARCH
   SEARCH_EMPTY_QUERY: "E_SEARCH_001", // empty/blank search query
   // STATS
@@ -203,10 +239,25 @@ export const ERROR_IDS = {
   ENRICH_APPLIED_PERSON_GONE: "E_ENRICH_020",
   ENRICH_PROSPECT_MISMATCH: "E_ENRICH_021",
 
+  // WORKFLOW
+  WORKFLOW_DENIED: "E_WORKFLOW_001", // unavailable workflow or insufficient authority
+  WORKFLOW_INVALID: "E_WORKFLOW_002", // invalid graph or action input
+  WORKFLOW_CONFLICT: "E_WORKFLOW_003", // stale draft revision
+  WORKFLOW_WRITE_FAILED: "E_WORKFLOW_004", // insert returned no persisted row
+  WORKFLOW_NOT_READY: "E_WORKFLOW_005", // action contract has no qualified execution handler
+  WORKFLOW_BINDING_MISSING: "E_WORKFLOW_006", // referenced value is unavailable at execution
+
   // UI
   UI_CHART_CONTEXT_MISSING: "E_UI_001", // a chart part rendered outside its ChartContainer
   UI_STALE_BUILD: "E_UI_002", // server action posted from a page loaded before the running deploy
   UI_ACTION_UNCONFIRMED: "E_UI_003", // action rejected without returning a Result: answer was lost
+  // PRIVACY
+  PRIVACY_EVIDENCE_UNREADABLE: "E_PRIVACY_001", // malformed, substituted or unauthenticated privacy ciphertext
+  PRIVACY_EXPORT_STREAM_FAILED: "E_PRIVACY_002", // a private archive part could not be uploaded
+  PRIVACY_EXPORT_QUOTA: "E_PRIVACY_003", // a private archive exceeds the admitted storage quota
+
+  // PREFERENCES
+  PREF_SAVED_VIEW_SELECTION_INVALID: "E_PREF_001", // invalid native saved-view selection input
 } as const;
 
 export type ErrorId = (typeof ERROR_IDS)[keyof typeof ERROR_IDS];

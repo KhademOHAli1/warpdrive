@@ -1,3 +1,4 @@
+import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import { startAppBoss } from "@/jobs/appInstrumentation";
 import { setBoss } from "@/jobs/boss";
 
@@ -10,9 +11,9 @@ import { setBoss } from "@/jobs/boss";
 // lets the edge runtime bail out BEFORE importing the node-only env module. This file is exempted
 // from the process.env lint boundary for exactly that reason.
 export async function registerNode(): Promise<void> {
-  const { PgBoss } = await import("pg-boss");
-  const { env } = await import("@/config/env");
   try {
+    const { PgBoss } = await import("pg-boss");
+    const { env } = await import("@/config/env");
     const boss = await startAppBoss({
       createBoss: () => new PgBoss(env.DATABASE_URL),
       setBoss,
@@ -27,14 +28,17 @@ export async function registerNode(): Promise<void> {
       const { registerImportWorkers } = await import("@/features/import/registerImportWorkers");
       await registerImportWorkers(boss);
     }
-  } catch (e) {
+  } catch {
     // A boot failure must be loud: if it were swallowed, the web process would come up with a null
     // boss and silently drop every backgrounded job (the exact gap this fix closes). Log a clear
-    // FATAL line for the operator, then rethrow to fail the process start.
-    const message = e instanceof Error ? e.message : String(e);
-    console.error(
-      `FATAL: app pg-boss failed to start; background jobs would silently no-op: ${message}`,
-    );
-    throw e;
+    // FATAL line and registered error fail startup without exposing the original
+    // DSN/error to framework diagnostics. Deliberately attach no raw cause.
+    const failure = new AppError(ERROR_IDS.DB_WRITE_FAILED, "background queue startup failed");
+    try {
+      console.error("FATAL: app pg-boss failed to start", { id: failure.id });
+    } catch {
+      // Keep the sanitized fatal failure even if the diagnostics sink throws.
+    }
+    throw failure;
   }
 }

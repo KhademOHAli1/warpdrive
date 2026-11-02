@@ -5,6 +5,7 @@ import type React from "react";
 import { Tip } from "@/components/ui/tooltip";
 import { useEmailMessages } from "@/features/email/useEmailMessages";
 import { cn } from "@/lib/utils";
+import type { ComposerMailbox } from "./composerMailbox.types";
 import { FromPicker } from "./FromPicker";
 
 // Email-tab compose header: the From row with the Settings cog (links to email settings) and Close
@@ -12,21 +13,43 @@ import { FromPicker } from "./FromPicker";
 // Without a fromAddress (inbox thread reply) the row carries the actions alone and no divider.
 export function ComposerHeader({
   fromAddress,
+  accountId,
+  mailboxes,
+  onMailboxChange,
+  senderLocked,
+  senderDisabled,
+  senderContainerRef,
   onClose,
 }: {
   fromAddress?: string;
+  accountId?: string;
+  mailboxes?: ComposerMailbox[];
+  onMailboxChange?: (accountId: string) => void;
+  senderLocked?: boolean;
+  senderDisabled?: boolean;
+  senderContainerRef?: React.Ref<HTMLDivElement>;
   onClose?: () => void;
 }): React.ReactNode {
   const E = useEmailMessages();
 
   return (
     <div
+      ref={senderContainerRef}
       className={cn(
         "flex items-center gap-2 py-1",
         fromAddress !== undefined && "border-b border-border",
       )}
     >
-      {fromAddress !== undefined && <FromPicker address={fromAddress} />}
+      {fromAddress !== undefined && (
+        <FromPicker
+          address={fromAddress}
+          accountId={accountId}
+          mailboxes={mailboxes}
+          onChange={onMailboxChange}
+          locked={senderLocked}
+          disabled={senderDisabled}
+        />
+      )}
       <div className="ms-auto flex items-center gap-1">
         <Tip label={E._composer.headerSettingsLabel}>
           <Link

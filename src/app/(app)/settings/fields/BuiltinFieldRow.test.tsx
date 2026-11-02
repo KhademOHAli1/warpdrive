@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -20,6 +21,28 @@ vi.mock("@/components/shell/ActionErrorProvider", () => ({
 import { BuiltinFieldRow } from "./BuiltinFieldRow";
 
 describe("BuiltinFieldRow", () => {
+  it("locks a pending toggle and reports a transport failure without a stuck control", async () => {
+    let rejectToggle: (reason: unknown) => void = () => {};
+    setBuiltinFieldHiddenAction.mockImplementationOnce(
+      () =>
+        new Promise((_, reject) => {
+          rejectToggle = reject;
+        }),
+    );
+    render(
+      <BuiltinFieldRow
+        entity="organization"
+        row={{ key: "industry", label: "Industry", locked: false, hidden: false }}
+      />,
+    );
+    const toggle = screen.getByRole("switch", { name: /hidden: industry/i });
+    fireEvent.click(toggle);
+    expect(toggle).toBeDisabled();
+    rejectToggle(new Error("offline"));
+    await waitFor(() => expect(screen.getByRole("alert")).toBeInTheDocument());
+    expect(toggle).toBeEnabled();
+    expect(toggle).toHaveAttribute("aria-checked", "false");
+  });
   it("shows the label and a Built-in badge", () => {
     render(
       <BuiltinFieldRow

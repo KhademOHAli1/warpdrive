@@ -61,7 +61,8 @@ export function PersonBulkEditor({
     const change: PersonBulkChange = {};
     if (textOrNull(first) !== firstName) change.firstName = textOrNull(first);
     if (textOrNull(last) !== lastName) change.lastName = textOrNull(last);
-    if (phoneDraft !== initialPhones) change.phones = committedPoints(parsePoints(phoneDraft));
+    if (phoneDraft !== initialPhones)
+      change.phones = committedPoints(parsePoints(phoneDraft), true);
     if (emailDraft !== initialEmails) change.emails = committedPoints(parsePoints(emailDraft));
 
     if (Object.keys(change).length === 0) {

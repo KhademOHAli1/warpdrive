@@ -7,19 +7,24 @@ import { type EmailMessages, emailMessagesForLocale } from "../emailMessages";
 
 import { unstable_isUnrecognizedActionError } from "next/navigation";
 import { ERROR_IDS } from "@/constants/errorIds";
-import { createActivityAction } from "@/features/activities/actions";
 import { capture, currentRoute } from "@/features/observability/capture";
 import { EVENTS } from "@/features/observability/events";
+import type { SendEmailOutcome } from "@/types/mail";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { sendEmail } from "../actions";
 import { deleteDraftAction } from "../folderActions";
 import type { EmailVisibility } from "../threadVisibility";
 import { COMPOSER_STRINGS } from "./composer.constants";
 import type { ComposerContext } from "./composer.types";
+import { recordComposerActivity } from "./recordComposerActivity";
 import { sendFailureMessage } from "./sendFailure";
 
 export interface ComposerSendDeps {
   messages?: EmailMessages;
+  idempotencyKeyRef?: { current: string };
+  beforeSend?: () => Promise<boolean>;
+  draftSaveError?: string;
+  setOutcome?: (outcome: SendEmailOutcome) => void;
   accountId: string;
   resolvedThreadId: string | undefined;
   toList: string[];
@@ -71,8 +76,6 @@ export function buildSendHandlers(deps: ComposerSendDeps) {
     context,
     linkDealId,
     linkPersonId,
-    activityTypes,
-    addAsActivity,
     setSending,
     setError,
     resetDraft,
@@ -80,6 +83,7 @@ export function buildSendHandlers(deps: ComposerSendDeps) {
     draftIdRef,
     inFlightRef,
   } = deps;
+  const idempotencyKeyRef = deps.idempotencyKeyRef ?? { current: crypto.randomUUID() };
 
   // Delete the autosaved draft once its message is sent, and clear the shared ref so the
   // trailing autosave tick (fired by resetDraft emptying the composer) is a no-op. Await any
@@ -97,7 +101,7 @@ export function buildSendHandlers(deps: ComposerSendDeps) {
   function buildInput(scheduledSendAt?: Date) {
     return {
       accountId,
-      idempotencyKey: crypto.randomUUID(),
+      idempotencyKey: idempotencyKeyRef.current,
       to: toList,
       cc: ccList.length > 0 ? ccList : undefined,
       bcc: bccList.length > 0 ? bccList : undefined,
@@ -120,51 +124,6 @@ export function buildSendHandlers(deps: ComposerSendDeps) {
       linkDealId: linkDealId ?? (context?.kind === "deal" ? context.dealId : undefined),
       linkPersonId: linkPersonId ?? (context?.kind === "deal" ? context.personId : undefined),
     };
-  }
-
-  // Fire-and-forget add-as-activity. Gated on the toggle only: deal context logs a deal-linked
-  // activity; an inbox compose falls back to linkDealId (the ComposeLinkSidebar pick, the same
-  // value buildInput uses for the email thread link) so add-as-activity stays consistent with
-  // the deal the thread was linked to. With neither, the activity is standalone (dealId/personId/
-  // orgId null). Subject must be captured by the caller BEFORE resetDraft clears it. Shared by
-  // immediate and scheduled sends.
-  function fireActivity(capturedSubject: string, scheduled: boolean): void {
-    if (!addAsActivity) return;
-
-    const emailType = activityTypes.find((t) => t.key === COMPOSER_STRINGS.emailActivityTypeKey);
-    const typeId = emailType?.id ?? activityTypes[0]?.id;
-    if (typeId === undefined) {
-      console.warn(
-        "add-as-activity: typeId unavailable (activity types not loaded), activity not created",
-      );
-      return;
-    }
-
-    void createActivityAction(
-      {
-        typeId,
-        subject: capturedSubject,
-        priority: null,
-        // The email has gone out, so the activity is already done. Logged open it would sit in
-        // the dashboard's undated bucket forever: no due date to schedule it by, and nobody
-        // goes back to tick off a mail they already sent.
-        done: true,
-        dueAt: null,
-        durationMinutes: null,
-        dealId: context?.kind === "deal" ? context.dealId : (linkDealId ?? null),
-        personId: (context?.kind === "deal" ? context.personId : linkPersonId) ?? null,
-        orgId: context?.kind === "deal" ? (context.orgId ?? null) : null,
-        guestPersonIds: [],
-        participantUserIds: [],
-        customFields: {},
-      },
-      readCsrfToken(),
-    ).then((activityResult) => {
-      if (!activityResult.ok) {
-        const label = scheduled ? "add-as-activity (scheduled)" : "add-as-activity";
-        console.warn(`${label} failed after send`, activityResult.error.id);
-      }
-    });
   }
 
   function capturedSubjectValue(): string {
@@ -195,14 +154,26 @@ export function buildSendHandlers(deps: ComposerSendDeps) {
   // never succeed, so it asks for a reload instead.
   async function attemptSend(
     scheduledAt?: Date,
-  ): Promise<{ ok: true } | { ok: false; msg: string }> {
+  ): Promise<{ ok: true; outcome?: SendEmailOutcome } | { ok: false; msg: string }> {
     const scheduled = scheduledAt !== undefined;
     try {
+      if (deps.beforeSend !== undefined && !(await deps.beforeSend()))
+        return {
+          ok: false,
+          msg:
+            deps.draftSaveError ??
+            deps.messages?.errorSend ??
+            emailMessagesForLocale("en").errorSend,
+        };
       const result = await sendEmail(readCsrfToken(), buildInput(scheduledAt));
-      return result.ok ? { ok: true } : failed(result.error.id, scheduled);
+      return result.ok ? { ok: true, outcome: result.value } : failed(result.error.id, scheduled);
     } catch (e) {
       if (unstable_isUnrecognizedActionError(e)) return failed(ERROR_IDS.UI_STALE_BUILD, scheduled);
-      console.warn("send action rejected without returning a Result", e);
+      if (deps.setOutcome !== undefined)
+        return {
+          ok: true,
+          outcome: { status: "needs_review", deliveryOutcome: { state: "unknown" } },
+        };
       return failed(ERROR_IDS.UI_ACTION_UNCONFIRMED, scheduled);
     }
   }
@@ -220,13 +191,14 @@ export function buildSendHandlers(deps: ComposerSendDeps) {
       return;
     }
 
+    if (showReview(result.outcome, true)) return;
     // Reset immediately so the Send button is disabled before any async activity call.
     resetDraft();
     onSent?.();
     await discardSentDraft();
     setSending(false);
 
-    fireActivity(capturedSubject, true);
+    recordComposerActivity(deps, capturedSubject, true);
   }
 
   async function handleSend(): Promise<void> {
@@ -242,14 +214,36 @@ export function buildSendHandlers(deps: ComposerSendDeps) {
       return;
     }
 
+    if (showReview(result.outcome, false)) return;
     // Reset immediately so the Send button is disabled before any async activity call.
     resetDraft();
     onSent?.();
     await discardSentDraft();
     setSending(false);
 
-    fireActivity(capturedSubject, false);
+    recordComposerActivity(deps, capturedSubject, false);
   }
 
-  return { handleSend, handleSendLater };
+  function showReview(outcome: SendEmailOutcome | undefined, scheduled: boolean): boolean {
+    const status = outcome?.status;
+    const complete =
+      status === "sent" || (scheduled && (status === "pending" || status === "scheduled"));
+    const review =
+      outcome !== undefined &&
+      (!complete || (outcome.sentCopy !== undefined && outcome.sentCopy.state !== "complete"));
+    if (!review) return false;
+    deps.setOutcome?.(outcome);
+    setSending(false);
+    return true;
+  }
+
+  async function acknowledgeAccepted(): Promise<void> {
+    const capturedSubject = capturedSubjectValue();
+    resetDraft();
+    onSent?.();
+    await discardSentDraft();
+    recordComposerActivity(deps, capturedSubject, false);
+  }
+
+  return { handleSend, handleSendLater, acknowledgeAccepted };
 }

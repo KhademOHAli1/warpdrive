@@ -2,6 +2,7 @@
 import type React from "react";
 import { useInterfacePrefs } from "@/features/identity/InterfacePrefsProvider";
 import { formatUsPhone } from "@/utils/phone";
+import type { PhoneCountry } from "@/utils/phoneNormalization";
 
 export { telHref } from "@/utils/phone";
 
@@ -23,10 +24,12 @@ export function externalHref(raw: string): string {
 export function LinkValue({
   href,
   external = false,
+  phoneCountry,
   children,
 }: {
   href: string;
   external?: boolean;
+  phoneCountry?: PhoneCountry;
   children: React.ReactNode;
 }): React.ReactNode {
   const { usPhoneFormat, emailLinksNewTab } = useInterfacePrefs();
@@ -36,7 +39,10 @@ export function LinkValue({
   // US phone formatting is display-only: reformat the visible text of a tel: link, leaving the
   // digit-stripped href untouched so the dialer still gets a clean number.
   const display =
-    usPhoneFormat && href.startsWith("tel:") && typeof children === "string"
+    usPhoneFormat &&
+    (phoneCountry === undefined || phoneCountry === "US") &&
+    href.startsWith("tel:") &&
+    typeof children === "string"
       ? formatUsPhone(children)
       : children;
   return (

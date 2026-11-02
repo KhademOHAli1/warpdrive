@@ -65,6 +65,10 @@ const event = z.discriminatedUnion("type", [
     }),
   }),
   envelope.extend({
+    type: z.literal("email_mailbox_changed"),
+    data: z.object({ accountId: z.string() }),
+  }),
+  envelope.extend({
     type: z.literal("email_tracking"),
     data: z.object({
       sendAttemptId: z.string(),

@@ -153,6 +153,8 @@
     "signInWithProvider": "ورود با {provider}",
     "linkWithProvider": "اتصال {provider}",
     "confirmWithProvider": "تأیید با {provider}",
+    "confirmIdentityInNewTab": "تأیید هویت در برگهٔ جدید",
+    "confirmNewTabDescription": "تأیید هویت را در تنظیمات امنیتی انجام دهید، سپس به این برگه بازگردید و دوباره تلاش کنید.",
     "eventSignIn": "تلاش برای ورود",
     "eventSignOut": "خروج از حساب",
     "eventSessions": "تغییر دسترسی نشست‌ها",

@@ -37,6 +37,7 @@ async function defaultResolveClient(
 ): Promise<Result<GmailClient, AppError>> {
   signal.throwIfAborted();
   const token = await ensureAccessToken(db, {
+    signal,
     accountId: account.id,
     deps: { refresh: makeRefresh(signal) },
   });

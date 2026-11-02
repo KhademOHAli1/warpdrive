@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/Textarea";
 import { useLocale, useLocalePreferences } from "@/features/i18n/LocaleProvider";
+import { BLOCK_CLASS } from "@/features/observability/replayMasking";
 import { authScreensMessagesForLocale } from "../authScreensMessages";
 import type { AuthProviders, SecurityStatus } from "../better/contracts";
 import { authEventLabel, formatAuthDate } from "./authUiModel";
@@ -124,7 +125,7 @@ function SecurityActivity({ status }: { status: SecurityStatus }) {
       />
       <SettingsCardBody>{events(3)}</SettingsCardBody>
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-h-[85dvh] overflow-y-auto">
+        <DialogContent className={`${BLOCK_CLASS} ph-no-capture max-h-[85dvh] overflow-y-auto`}>
           <DialogHeader>
             <DialogTitle>{L.auditTitle}</DialogTitle>
             <DialogDescription>{L.securityDescription}</DialogDescription>
@@ -238,7 +239,7 @@ export function SecuritySettings({ initial }: { initial?: SecurityStatus }) {
   const { status, error, refresh: reload } = useAccountStatus(initial);
   const refresh = () => void reload(new AbortController().signal);
   return (
-    <SettingsPage className="max-w-3xl">
+    <SettingsPage className={`${BLOCK_CLASS} ph-no-capture max-w-3xl`}>
       <SettingsHeading
         title={L.securityTitle}
         description={L.securityDescription}

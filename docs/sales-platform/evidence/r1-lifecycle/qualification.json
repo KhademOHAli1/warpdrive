@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 1,
+  "observedAt": "2026-10-31T16:39:14.318309+00:00",
+  "applicationSourceCommit": "c655b8e3aa0d9aada5ac3c533bef13688b8ec700",
+  "runtime": "Bun 1.4.4",
+  "framework": "Next 16.4.3 webpack",
+  "checks": [
+    {
+      "check": "full-unit",
+      "command": "bun run test:unit --maxWorkers=2",
+      "outcome": "passed",
+      "testFiles": 966,
+      "tests": 6020,
+      "durationSeconds": 227.6,
+      "privateLog": ".runtime/sales-evidence/slice-unit-final.log"
+    },
+    {
+      "check": "affected-postgresql-integration",
+      "command": "bun run test:integration src/features/pipelines src/features/saved-filters src/features/deals src/features/permissions src/jobs/bossObserver.integration.test.ts --maxWorkers=1",
+      "outcome": "passed",
+      "testFiles": 50,
+      "tests": 239,
+      "durationSeconds": 38.67,
+      "privateLog": ".runtime/sales-evidence/slice-db-final.log",
+      "database": "disposable PostgreSQL16 Testcontainers"
+    },
+    {
+      "check": "full-typecheck",
+      "command": "bun run typecheck",
+      "outcome": "passed",
+      "privateLog": ".runtime/sales-evidence/slice-typecheck-final.log"
+    },
+    {
+      "check": "full-lint",
+      "command": "bun run lint",
+      "outcome": "passed",
+      "warnings": 11,
+      "informationalNotices": 9,
+      "privateLog": ".runtime/sales-evidence/slice-lint-final.log"
+    },
+    {
+      "check": "production-web-build",
+      "command": "bun --env-file=.runtime/sales-build.env --bun next build --webpack",
+      "outcome": "passed",
+      "privateLog": ".runtime/sales-evidence/r1-web-build.log",
+      "profile": "synthetic production-mode HTTPS and dummy SMTP configuration; no application start/deployment/provider qualification"
+    },
+    {
+      "check": "worker-ws-operator-bundles",
+      "command": "bun run build:workers",
+      "outcome": "passed",
+      "privateLog": ".runtime/sales-evidence/r1-workers.log",
+      "limit": "bundles only, no worker/provider execution"
+    },
+    {
+      "check": "ui-pristine-source-audit",
+      "command": "bun run ui:audit",
+      "outcome": "passed",
+      "privateLog": ".runtime/sales-evidence/r1-ui-audit.log",
+      "limit": "source registry hashes only, not accessibility/usability acceptance"
+    },
+    {
+      "check": "programme-register",
+      "command": "bun run sales:check",
+      "outcome": "passed",
+      "privateLog": ".runtime/sales-evidence/r1-programme-check.json",
+      "limit": "Register/source and supplied-export consistency only, not runtime/retained upgrade acceptance"
+    },
+    {
+      "check": "migration-source-and-export",
+      "command": "bun run sales:migrations:inspect --checkout candidate=. --ledger candidate=docs/sales-platform/evidence/local-disposable-ledger.json",
+      "outcome": "passed",
+      "privateLog": ".runtime/sales-evidence/r1-migration-inspection.json",
+      "limit": "Register/source and supplied-export consistency only, not runtime/retained upgrade acceptance"
+    }
+  ],
+  "nativeJourney": "native-journey.json",
+  "restoreEvidence": "restore.json",
+  "limits": [
+    "Local synthetic/disposable qualification only",
+    "New lifecycle directory defaults to disabled",
+    "All 128 broad parent tasks remain open",
+    "No retained divergent-lineage upgrade, object-file recovery, provider, pilot, contextual native-review, performance or production acceptance",
+    "Private logs/env/dumps/credentials are excluded from delivery"
+  ]
+}

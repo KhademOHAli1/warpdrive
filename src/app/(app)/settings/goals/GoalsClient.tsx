@@ -1,8 +1,15 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useRef, useState } from "react";
+import { Button } from "@/components/ui/Button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import type { Goal } from "@/db/schema/goals";
 import { createGoalAction, updateGoalAction } from "@/features/goals/actions";
 import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
@@ -31,6 +38,9 @@ export function GoalsClient({
   const router = useRouter();
   const refresh = () => router.refresh();
   const [editing, setEditing] = useState<Goal | null>(null);
+  const [creating, setCreating] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const editReturnFocus = useRef<HTMLElement | null>(null);
 
   async function create(draft: GoalDraft) {
     const r = await createGoalAction(draft, readCsrfToken());
@@ -49,31 +59,69 @@ export function GoalsClient({
 
   return (
     <>
-      <GoalForm
-        baseCurrency={baseCurrency}
-        users={users}
-        teams={teams}
-        pipelines={pipelines}
-        activityTypes={activityTypes}
-        submitLabel={S.goalCreate}
-        onSubmit={create}
-        onDone={refresh}
-      />
+      <Dialog
+        open={creating}
+        onOpenChange={(open) => {
+          if (!busy) setCreating(open);
+        }}
+      >
+        <div className="flex justify-end">
+          <DialogTrigger asChild>
+            <Button>{S.goalNew}</Button>
+          </DialogTrigger>
+        </div>
+        <DialogContent
+          className="max-h-[90dvh] max-w-2xl overflow-y-auto"
+          aria-describedby={undefined}
+        >
+          <DialogHeader>
+            <DialogTitle>{S.goalNew}</DialogTitle>
+          </DialogHeader>
+          <GoalForm
+            baseCurrency={baseCurrency}
+            users={users}
+            teams={teams}
+            pipelines={pipelines}
+            activityTypes={activityTypes}
+            submitLabel={S.goalCreate}
+            onSubmit={create}
+            onBusyChange={setBusy}
+            onCancel={() => setCreating(false)}
+            onDone={() => {
+              setCreating(false);
+              refresh();
+            }}
+          />
+        </DialogContent>
+      </Dialog>
       <div className="mt-6">
         <GoalsTable
           goals={goals}
           assigneeNames={assigneeNames}
           onChanged={refresh}
-          onEdit={setEditing}
+          onEdit={(goal) => {
+            editReturnFocus.current =
+              document.activeElement instanceof HTMLElement ? document.activeElement : null;
+            setEditing(goal);
+          }}
         />
       </div>
       <Dialog
         open={editing !== null}
         onOpenChange={(open) => {
-          if (!open) setEditing(null);
+          if (!open && !busy) setEditing(null);
         }}
       >
-        <DialogContent className="max-w-3xl">
+        <DialogContent
+          onCloseAutoFocus={(event) => {
+            if (editReturnFocus.current?.isConnected === true) {
+              event.preventDefault();
+              editReturnFocus.current.focus();
+            }
+          }}
+          className="max-h-[90dvh] max-w-2xl overflow-y-auto"
+          aria-describedby={undefined}
+        >
           <DialogHeader>
             <DialogTitle>{S.goalEdit}</DialogTitle>
           </DialogHeader>
@@ -87,6 +135,8 @@ export function GoalsClient({
               initial={editing}
               submitLabel={S.goalSave}
               onSubmit={(draft) => update(editing.id, draft)}
+              onBusyChange={setBusy}
+              onCancel={() => setEditing(null)}
               onDone={() => {
                 setEditing(null);
                 refresh();

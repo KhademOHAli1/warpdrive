@@ -149,6 +149,8 @@ export async function applyCreateActivity(
     typeId: typeResult.value,
     subject: parsed.data.subject,
     dueAt: parsed.data.dueAt,
+    allDay: parsed.data.allDay,
+    dueDate: parsed.data.dueDate,
     durationMinutes: parsed.data.durationMinutes,
     customFields: parsed.data.customFields,
   };

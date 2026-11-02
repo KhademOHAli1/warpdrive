@@ -1,0 +1,270 @@
+{
+  "atUtc": "2026-11-02T08:50:44.191380+00:00",
+  "operation": "Merge main INTO existing branch; never publish branch work to main",
+  "branch": "codex/preserve-calendar-20261102",
+  "preSyncSnapshot": "1e93e8e4f7fc67da3fa204b688731dc551334c4b",
+  "mainMerged": "09288d518fd574fd069fb6a1dc670596f71a8831",
+  "behindBefore": 193,
+  "resolvedConflictPaths": [
+    "src/app/(app)/activities/calendar/CalendarClient.tsx",
+    "src/app/(app)/activities/calendar/CalendarNavigation.test.tsx",
+    "src/app/(app)/activities/calendar/CalendarPortalShortcut.test.tsx",
+    "src/app/(app)/settings/connections/ConnectionsClient.test.tsx",
+    "src/app/(app)/settings/connections/ConnectionsClient.tsx",
+    "src/config/env.ts",
+    "src/constants/errorIds.ts",
+    "src/features/activities/actions.ts",
+    "src/features/activities/completeActivityAction.validation.test.ts",
+    "src/features/activities/completeActivityInput.ts",
+    "src/features/activities/repo.ts",
+    "src/features/auth/management/offboarding.ts",
+    "src/features/notifications/email/job.ts"
+  ],
+  "sourceResolutions": [
+    {
+      "path": "src/app/(app)/activities/calendar/CalendarClient.tsx",
+      "mode": "100644",
+      "oid": "eaab821148be363eca0f1c2653ecc63a9b80df46",
+      "sha256": "52b76d341c537cf34ec86d355114e3c5e047f383a3d7a0415fad44d6b9ffc2a4"
+    },
+    {
+      "path": "src/app/(app)/activities/calendar/CalendarNavigation.test.tsx",
+      "mode": "100644",
+      "oid": "7d099c2db810fb33dba1d64126e996c63741c5c6",
+      "sha256": "acf654c9aa0e9d98e5381dfd75c43109dd8e9793d1a7795edaf06bfcc34e8bc0"
+    },
+    {
+      "path": "src/app/(app)/activities/calendar/CalendarPortalShortcut.test.tsx",
+      "mode": "100644",
+      "oid": "23bcf7d19c8fae9d870163994301b333a5f9fbf0",
+      "sha256": "7a5010cbe9405306b0b97a93c4cd240d890439f2f27992f6a70c53535236a8a1"
+    },
+    {
+      "path": "src/app/(app)/settings/connections/ConnectionsClient.test.tsx",
+      "mode": "100644",
+      "oid": "0c07b432544027ca4039cd7d8f6104c06f02e52e",
+      "sha256": "c1c262294e76a4e11185e9651578efd71f8f1cdc49100cdef850b8e909b6ce1b"
+    },
+    {
+      "path": "src/app/(app)/settings/connections/ConnectionsClient.tsx",
+      "mode": "100644",
+      "oid": "71e19114aa7cacd8186cd8512667cbaf398d9afe",
+      "sha256": "6f70f1d84b99557c2aad5363eee9cce17774a1562bd51df0e2e0d9da592b170a"
+    },
+    {
+      "path": "src/config/env.ts",
+      "mode": "100644",
+      "oid": "dfa4ebc179de5c4aced2fae9561434f8603c80c8",
+      "sha256": "dd0a77ff54fc0ead609d3d5170b78360aa5b175e0931a40da7f332558c37fe31"
+    },
+    {
+      "path": "src/constants/errorIds.ts",
+      "mode": "100644",
+      "oid": "68dd2f8b9010e49a0e85d0387a3114e5a08b623e",
+      "sha256": "7d172501461d4b0756f0bbfc3e54bca8eb460a51e439042fbc7951f0025b0100"
+    },
+    {
+      "path": "src/features/activities/actions.ts",
+      "mode": "100644",
+      "oid": "ed5be7517b79dbee9ec85fea79ba7f885edef1ae",
+      "sha256": "1580aaca6882158d3b2caefc29f252e1963854673d940f37bc022c6350c54bbf"
+    },
+    {
+      "path": "src/features/activities/completeActivityAction.validation.test.ts",
+      "mode": "100644",
+      "oid": "2d38773ab2e303c812d36ad02a5a7bf2de261038",
+      "sha256": "f09b5dfcc563839a427af8f4c127104be67272dc45a596aee65a7a8e1b1b9897"
+    },
+    {
+      "path": "src/features/activities/completeActivityInput.ts",
+      "mode": "100644",
+      "oid": "97210e598f85192de238cb8c050a47e49d218b90",
+      "sha256": "d337da3d9b7594100ced17bd98a8c22ee705b90b0615d391acdd08c96458f77a"
+    },
+    {
+      "path": "src/features/activities/repo.ts",
+      "mode": "100644",
+      "oid": "b91057dcb694d5c5e807986d58b0cb91864f90f4",
+      "sha256": "6e8a9abbb34ac17fe51affe4ee84c3e716f7500704477ce5a5d194dfd031e62e"
+    },
+    {
+      "path": "src/features/auth/management/offboarding.ts",
+      "mode": "100644",
+      "oid": "82cffd7aac56a0e6376fce87d82d00ac1c75a1d4",
+      "sha256": "a21fe39c4185645229ddb1d157578783bfc596e0d263482853c0037269d412aa"
+    },
+    {
+      "path": "src/features/notifications/email/job.ts",
+      "mode": "100644",
+      "oid": "e84466054daaa5d2ef02b9ac07cfad977c8c2089",
+      "sha256": "cc7658c940935038e549dfabfad8f219b7e32b84116302a2673c39baaa431e57"
+    }
+  ],
+  "canonicalDrizzleTree": "1a496c5a05b7a3d78257149d639645b4eb2c30cf",
+  "canonicalMigrationFiles": 195,
+  "preSyncMigrationSnapshots": [
+    {
+      "originalPath": "drizzle/0083_calendar_event_revision.sql",
+      "archivePath": ".safe-stop/2026-11-02/branch-sync/private-migration-proposals/drizzle/0083_calendar_event_revision.sql.source",
+      "sha256": "e808b67306e4dbef50dcb6599bb5869041325d51705ada0db3085c381dbc44f3",
+      "gitBlob": "0cc60c7386b3e3793ba80a7e8c4caa26f546b087",
+      "mode": "100644"
+    },
+    {
+      "originalPath": "drizzle/0084_calendar_ownership.sql",
+      "archivePath": ".safe-stop/2026-11-02/branch-sync/private-migration-proposals/drizzle/0084_calendar_ownership.sql.source",
+      "sha256": "778f61c6cb514f65d7a380dd518a1cd4fab54299e3c8e789e589a6d19cbab543",
+      "gitBlob": "e552d3da5bbd76de88bfe563ced4ea49b56b7079",
+      "mode": "100644"
+    },
+    {
+      "originalPath": "drizzle/0085_activity_reminder_intents.sql",
+      "archivePath": ".safe-stop/2026-11-02/branch-sync/private-migration-proposals/drizzle/0085_activity_reminder_intents.sql.source",
+      "sha256": "d14601facebcf3e573fb422ce0d8f758bf746fc4f0fd1ff6b15bad64fec443e7",
+      "gitBlob": "83ca5b27be60db833ddca7f66c468152349082ca",
+      "mode": "100644"
+    },
+    {
+      "originalPath": "drizzle/0086_calendar_reminders_and_google_grants.sql",
+      "archivePath": ".safe-stop/2026-11-02/branch-sync/private-migration-proposals/drizzle/0086_calendar_reminders_and_google_grants.sql.source",
+      "sha256": "b2b7680863a60701faf2cd1516614d8f9d81d48d61ed3e061f3bb85b3eaf5e22",
+      "gitBlob": "1d8516f0d40cb2eaac2eb07e4367c30ef842c35f",
+      "mode": "100644"
+    },
+    {
+      "originalPath": "drizzle/0087_calendar_reminder_rebuilds.sql",
+      "archivePath": ".safe-stop/2026-11-02/branch-sync/private-migration-proposals/drizzle/0087_calendar_reminder_rebuilds.sql.source",
+      "sha256": "acfeede51b1cc17d2e23b3449eeeb59b13ddfdedc9b7c0124ce8271e9cd18a4a",
+      "gitBlob": "3b3ac5e5fc2d986dacd0fa1c58c6d9b9e9d85516",
+      "mode": "100644"
+    },
+    {
+      "originalPath": "drizzle/0088_calendar_reminder_acl_rebuilds.sql",
+      "archivePath": ".safe-stop/2026-11-02/branch-sync/private-migration-proposals/drizzle/0088_calendar_reminder_acl_rebuilds.sql.source",
+      "sha256": "bb4ab2f8c3d34d9b6a6e4cc21c8704dbc0a90108ff65ff85c8133afbd11ad705",
+      "gitBlob": "07d8b8dc35d55113bc1647f9ab73c6d949c3225c",
+      "mode": "100644"
+    },
+    {
+      "originalPath": "drizzle/0089_calendar_reminder_receipt_index.sql",
+      "archivePath": ".safe-stop/2026-11-02/branch-sync/private-migration-proposals/drizzle/0089_calendar_reminder_receipt_index.sql.source",
+      "sha256": "99761a3d1eeaf9568bd1a8713474343af1cc3fd3068a1894dab7a4556fc5cec4",
+      "gitBlob": "aea9ebec6149395225d22f195820099e13859707",
+      "mode": "100644"
+    },
+    {
+      "originalPath": "drizzle/0090_calendar_reminder_activation.sql",
+      "archivePath": ".safe-stop/2026-11-02/branch-sync/private-migration-proposals/drizzle/0090_calendar_reminder_activation.sql.source",
+      "sha256": "edb6a3d15b4e2b3e3cac51373e8185e7f4a433aca24dfc4bcdd75c9a5b8220af",
+      "gitBlob": "22921fe7926d327e1c70933f77df1690eab44640",
+      "mode": "100644"
+    },
+    {
+      "originalPath": "drizzle/0091_calendar_connection_generation.sql",
+      "archivePath": ".safe-stop/2026-11-02/branch-sync/private-migration-proposals/drizzle/0091_calendar_connection_generation.sql.source",
+      "sha256": "1683c236349ac7c84317400fd4835b6b1ac5a7659f9d6fe4303dd5c2485d1042",
+      "gitBlob": "d579c99aa9075c182d34330cf6578a6a22afeeb3",
+      "mode": "100644"
+    },
+    {
+      "originalPath": "drizzle/0092_calendar_provider_catalog.sql",
+      "archivePath": ".safe-stop/2026-11-02/branch-sync/private-migration-proposals/drizzle/0092_calendar_provider_catalog.sql.source",
+      "sha256": "a5ec44e6fb1c74484ac61ae863aadf7411f9dd6b2e748fc612bbff4e06f85321",
+      "gitBlob": "f0d350480f48c5aa9a96a3cb533a59cb1b7e286e",
+      "mode": "100644"
+    },
+    {
+      "originalPath": "drizzle/meta/0083_snapshot.json",
+      "archivePath": ".safe-stop/2026-11-02/branch-sync/private-migration-proposals/drizzle/meta/0083_snapshot.json.source",
+      "sha256": "feda0dddcc4f5c17500d847dc047194f817aef205279c804a4a3ac3c954a3784",
+      "gitBlob": "80628036770c88505e4293046d45c27a07473e38",
+      "mode": "100644"
+    },
+    {
+      "originalPath": "drizzle/meta/0084_snapshot.json",
+      "archivePath": ".safe-stop/2026-11-02/branch-sync/private-migration-proposals/drizzle/meta/0084_snapshot.json.source",
+      "sha256": "edee5e72acc4721db81101ad02261c40976a8856fd870941120a12135e3c48b9",
+      "gitBlob": "a98623c0b89e9411f1d1018c02dc9c67283a736e",
+      "mode": "100644"
+    },
+    {
+      "originalPath": "drizzle/meta/0085_snapshot.json",
+      "archivePath": ".safe-stop/2026-11-02/branch-sync/private-migration-proposals/drizzle/meta/0085_snapshot.json.source",
+      "sha256": "ab2d1e860cf8446c078e453f2ce2e84b654d9d2c58822b090106975ee0cc5905",
+      "gitBlob": "1bde31ba0a0a89e2f4a061f52dbdd2a971132611",
+      "mode": "100644"
+    },
+    {
+      "originalPath": "drizzle/meta/0086_snapshot.json",
+      "archivePath": ".safe-stop/2026-11-02/branch-sync/private-migration-proposals/drizzle/meta/0086_snapshot.json.source",
+      "sha256": "a53d8a15fc3034c7a77bde473b12448c0888e2793eb037ee2b7d4d7346dbbacd",
+      "gitBlob": "8d96727f6fd4868c1852812190fef055af2ce9c6",
+      "mode": "100644"
+    },
+    {
+      "originalPath": "drizzle/meta/0087_snapshot.json",
+      "archivePath": ".safe-stop/2026-11-02/branch-sync/private-migration-proposals/drizzle/meta/0087_snapshot.json.source",
+      "sha256": "826cc0fa592b3169141199f6d575ab691b32a405712bcfdb323b5f80874c7c36",
+      "gitBlob": "982f0a00085234d4890b938faa88707215fa9d8d",
+      "mode": "100644"
+    },
+    {
+      "originalPath": "drizzle/meta/0088_snapshot.json",
+      "archivePath": ".safe-stop/2026-11-02/branch-sync/private-migration-proposals/drizzle/meta/0088_snapshot.json.source",
+      "sha256": "91ca28b079d78f55df6b85389d56cb2af95dcd21331e8a14c0f54ad408a04274",
+      "gitBlob": "ffaefcecf2c41ac020f0b8d97e6a9508f8fcf5f1",
+      "mode": "100644"
+    },
+    {
+      "originalPath": "drizzle/meta/0089_snapshot.json",
+      "archivePath": ".safe-stop/2026-11-02/branch-sync/private-migration-proposals/drizzle/meta/0089_snapshot.json.source",
+      "sha256": "82cf8dbd86973b1614110fd099bf6cc0b67fe699ec0be9d86a4b7a402279dc1d",
+      "gitBlob": "5e414ad83ce16bb7bc8e41921229ec7044a07ae7",
+      "mode": "100644"
+    },
+    {
+      "originalPath": "drizzle/meta/0090_snapshot.json",
+      "archivePath": ".safe-stop/2026-11-02/branch-sync/private-migration-proposals/drizzle/meta/0090_snapshot.json.source",
+      "sha256": "7b707ad085722cd108d83e03577e388b2ec546b5843fcd96e58eb86d6a80005c",
+      "gitBlob": "f208eaadfa1d52653edbc82c280ea92e65cbd189",
+      "mode": "100644"
+    },
+    {
+      "originalPath": "drizzle/meta/0091_snapshot.json",
+      "archivePath": ".safe-stop/2026-11-02/branch-sync/private-migration-proposals/drizzle/meta/0091_snapshot.json.source",
+      "sha256": "bd03a2329b463e3b26f508cb86b82df239f97788eb38f118aa8bd711c2ad47e0",
+      "gitBlob": "bc1cc58fb474096a406d6f1790a55d83f7c44c49",
+      "mode": "100644"
+    },
+    {
+      "originalPath": "drizzle/meta/0092_snapshot.json",
+      "archivePath": ".safe-stop/2026-11-02/branch-sync/private-migration-proposals/drizzle/meta/0092_snapshot.json.source",
+      "sha256": "0d45bc6f5e83b78d1f025e54f03c1255f50daaa0a8c151722279b301c5cb97a1",
+      "gitBlob": "4f73fee2cec56005829141591a9162b959706072",
+      "mode": "100644"
+    },
+    {
+      "originalPath": "drizzle/meta/_journal.json",
+      "archivePath": ".safe-stop/2026-11-02/branch-sync/private-migration-proposals/drizzle/meta/_journal.json.source",
+      "sha256": "6bc68085e7777359e2d1932d22723a90dfdc88514c6a85d83766cd6cbf512f4e",
+      "gitBlob": "c37f101e8a7056ae4d3237786f5796d3a9c2fd64",
+      "mode": "100644"
+    }
+  ],
+  "validation": {
+    "passed": 87,
+    "failed": 0,
+    "pending": 0,
+    "allRequestedFilesObserved": true,
+    "candidateBytesUnchanged": true,
+    "ownedGroupGone": true,
+    "seconds": 3.399062625016086,
+    "formatBridge": "87 tests executed before2format/import-order adjustments; emitted JavaScript identical, Biome2PASS, no repeat claimed."
+  },
+  "limitations": [
+    "This synchronization preserves unfinished work; it is not branch-wide type/native/CI, user-journey or deployment acceptance.",
+    "Original snapshot commits remain ancestors; archived migration proposals are inert and have not been renumbered/admitted.",
+    "Existing status/CI/inventory receipts qualify their named historical cuts and are not re-aged to this merged tree.",
+    "Paused dirty source workspaces remain byte-exact and detached at their original source heads; existing branch references advance separately."
+  ]
+}

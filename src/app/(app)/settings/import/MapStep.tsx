@@ -6,6 +6,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/RadioGroup";
 import { Select } from "@/components/ui/Select";
 import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import type { HiddenBuiltinsMap } from "@/features/import/eligibleFields";
+import { IMPORT_DATE_FIELDS } from "@/features/import/importDateConventions";
 import { sampleValues } from "@/features/import/sampleValues";
 import {
   isMappingComplete,
@@ -19,6 +20,8 @@ import {
   UNMAPPED_SELECT_VALUE,
   valueToChoice,
 } from "./columnOptions";
+import { ImportDateOptions } from "./ImportDateOptions";
+import { PhoneImportCountryOption } from "./PhoneImportCountryOption";
 import { StageOptions } from "./StageOptions";
 
 export type { HiddenBuiltinsMap };
@@ -56,7 +59,7 @@ export function MapStep({
       <div className="overflow-hidden rounded-md border">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b bg-muted/50 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            <tr className="border-b bg-muted/50 text-start text-xs font-medium uppercase tracking-wide text-muted-foreground">
               <th className="px-3 py-2">{IMP.column}</th>
               <th className="px-3 py-2">{IMP.mapTo}</th>
             </tr>
@@ -73,14 +76,15 @@ export function MapStep({
                     <span
                       // biome-ignore lint/suspicious/noArrayIndexKey: static, never-reordered list
                       key={`${header}-${i}`}
-                      className="mt-0.5 block truncate text-xs text-muted-foreground"
+                      className="mt-0.5 block text-xs text-muted-foreground [overflow-wrap:anywhere]"
                     >
-                      {value}
+                      <bdi>{value}</bdi>
                     </span>
                   ))}
                 </td>
                 <td className="px-3 py-2">
                   <Select
+                    disabled={busy}
                     ariaLabel={`${IMP.mapTo}: ${header}`}
                     value={choiceToValue(state.columns[header] ?? valueToChoice("", state.target))}
                     onChange={(value) =>
@@ -103,10 +107,36 @@ export function MapStep({
         </table>
       </div>
 
+      {Object.values(state.columns).some((column) => column.field === "phones") && (
+        <PhoneImportCountryOption
+          value={state.phoneCountry}
+          onChange={(phoneCountry) => dispatch({ type: "setPhoneCountry", phoneCountry })}
+          disabled={busy}
+        />
+      )}
+
+      {Object.values(state.columns).some(
+        (column) =>
+          IMPORT_DATE_FIELDS.some((field) => field === column.field) ||
+          (column.isCustom &&
+            defs.some(
+              (def) => def.key === column.key && (def.type === "date" || def.type === "date_range"),
+            )),
+      ) && (
+        <ImportDateOptions
+          calendar={state.dateCalendar ?? "gregory"}
+          timeZone={state.dateTimeZone ?? "UTC"}
+          onCalendar={(dateCalendar) => dispatch({ type: "setDateCalendar", dateCalendar })}
+          onTimeZone={(dateTimeZone) => dispatch({ type: "setDateTimeZone", dateTimeZone })}
+          disabled={busy}
+        />
+      )}
+
       {showDedup && (
         <fieldset className="space-y-1.5">
           <legend className="mb-1 text-sm font-medium">{IMP.dedup}</legend>
           <RadioGroup
+            disabled={busy}
             value={state.dedupMode}
             onValueChange={(v) => dispatch({ type: "setDedup", dedupMode: v as "skip" | "update" })}
             aria-label={IMP.dedup}
@@ -126,6 +156,7 @@ export function MapStep({
 
       {state.source === "pipedrive" && state.target === "deal" && (
         <StageOptions
+          disabled={busy}
           checked={state.createMissingStages}
           onChange={(createMissingStages) =>
             dispatch({ type: "setCreateMissingStages", createMissingStages })
@@ -138,6 +169,7 @@ export function MapStep({
           <div className="flex items-center gap-2">
             <Checkbox
               id="row-note"
+              disabled={busy}
               checked={state.rowNoteFromUnmapped}
               onCheckedChange={(checked) =>
                 dispatch({ type: "setRowNote", rowNoteFromUnmapped: checked })

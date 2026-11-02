@@ -10,15 +10,18 @@ export function SecondaryNavLink({
   label,
   icon: Icon,
   active,
+  onNavigate,
 }: {
   href: string;
   label: string;
   icon: LucideIcon;
   active: boolean;
+  onNavigate?: () => void;
 }): React.ReactNode {
   return (
     <Link
       href={href}
+      onClick={onNavigate}
       aria-current={active ? "page" : undefined}
       className={cn(
         "flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm transition-colors",

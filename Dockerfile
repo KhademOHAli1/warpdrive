@@ -83,6 +83,9 @@ COPY --from=build /app/public ./public
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/drizzle ./drizzle
 COPY package.json next.config.ts ./
+# Application and curated component notices accompany the distributed runtime.
+COPY LICENSE ./LICENSE
+COPY third-party ./third-party
 # Declared after the COPYs on purpose: this value changes every commit, and an earlier layer would
 # invalidate the node_modules/.next copies on every build. Serves the dynamically rendered pages,
 # which read it at request time.

@@ -103,7 +103,7 @@ function localizedLabels(
 ): Partial<Labels> {
   const label = (date: Date, modifiers?: Modifiers): string =>
     locale === "de"
-      ? formatGermanAccessibleDate(date, calendar, modifiers)
+      ? formatGermanAccessibleDate(date, calendar, modifiers, numberingSystem)
       : formatPersianAccessibleDate(date, calendar, modifiers, numberingSystem);
   return { labelDayButton: label, labelGridcell: label, labelGrid };
 }
@@ -132,8 +132,8 @@ function dateLabel(
   if (value === null) return "";
   if (calendar === "persian") return formatPersianDate(value, locale, numberingSystem);
   if (locale === "fa") return formatGregorianPersianDate(value, numberingSystem);
-  if (locale === "de") return (formatLabel ?? formatDmy)(value);
-  return (formatLabel ?? formatMdy)(value);
+  if (formatLabel !== undefined) return formatLabel(value);
+  return locale === "de" ? formatDmy(value, numberingSystem) : formatMdy(value, numberingSystem);
 }
 
 // Popover + react-day-picker calendar. Value/onChange use local YYYY-MM-DD so

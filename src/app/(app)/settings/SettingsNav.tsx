@@ -1,158 +1,105 @@
 "use client";
-import {
-  Bell,
-  Building2,
-  Eye,
-  Globe2,
-  ListChecks,
-  type LucideIcon,
-  Mail,
-  MailCheck,
-  Palette,
-  Plug,
-  ShieldCheck,
-  Sparkles,
-  Table2,
-  Target,
-  Upload,
-  User,
-  Users,
-  UsersRound,
-} from "lucide-react";
+
+import { ChevronDown, Settings2 } from "lucide-react";
 import { usePathname } from "next/navigation";
 import type React from "react";
-import { useId } from "react";
-import { SecondaryNavLink } from "@/components/navigation/SecondaryNavLink";
-import { authScreensMessagesForLocale } from "@/features/auth/authScreensMessages";
-import { managementMessagesForLocale } from "@/features/auth/management/messages";
+import { useEffect, useId, useRef, useState } from "react";
+import { Button } from "@/components/ui/Button";
+import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { useLocale } from "@/features/i18n/LocaleProvider";
 import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
+import { SettingsNavContent } from "./SettingsNavContent";
+import {
+  activeSettingsItem,
+  type SettingsNavAccess,
+  type SettingsNavSection,
+  settingsNavSections,
+} from "./settingsNavSections";
 
-interface NavItem {
-  href: string;
-  label: string;
-  icon: LucideIcon;
-}
-interface NavSection {
-  id: string;
-  title: string;
-  items: NavItem[];
-}
+const DESKTOP_SETTINGS_QUERY = "(min-width: 768px)";
 
-// Group by the task being configured. Existing permission gates and URLs remain authoritative.
-export function SettingsNav({
-  isAdmin,
-  canManageCompany,
-  canImport,
+function MobileSettingsNav({
+  sections,
+  activeHref,
+  currentLabel,
 }: {
-  isAdmin: boolean;
-  canManageCompany: boolean;
-  canImport: boolean;
+  sections: SettingsNavSection[];
+  activeHref?: string;
+  currentLabel: string;
 }): React.ReactNode {
   const L = useSettingsMessages();
-  const locale = useLocale();
-  const securityLabel = authScreensMessagesForLocale(locale).flow.securityTitle;
-  const managementLabel = managementMessagesForLocale(locale).title;
-  const H = L._hierarchy;
-  const id = useId();
-  const pathname = usePathname();
-  const sections: NavSection[] = [
-    {
-      id: "personal",
-      title: H.personal,
-      items: [
-        { href: "/settings/profile", label: H.profile, icon: User },
-        { href: "/settings/security", label: securityLabel, icon: ShieldCheck },
-        { href: "/settings/regional", label: H.regional, icon: Globe2 },
-        { href: "/settings/appearance", label: H.appearance, icon: Palette },
-        { href: "/settings/workflow", label: H.workflow, icon: ListChecks },
-        { href: "/settings/notifications", label: L.notifications, icon: Bell },
-      ],
-    },
-    ...(isAdmin || canManageCompany
-      ? [
-          {
-            id: "workspace",
-            title: H.workspace,
-            items: [
-              { href: "/settings/company", label: H.workspaceDetails, icon: Building2 },
-              { href: "/settings/users", label: L.users, icon: Users },
-              { href: "/settings/security-admin", label: managementLabel, icon: ShieldCheck },
-              { href: "/settings/teams", label: L.teams, icon: UsersRound },
-              { href: "/settings/permission-sets", label: L.permissionSets, icon: ShieldCheck },
-              { href: "/settings/visibility-groups", label: L.visibilityGroups, icon: Eye },
-            ],
-          },
-          {
-            id: "sales",
-            title: H.salesWorkflow,
-            items: [
-              { href: "/settings/company/pipelines", label: L.pipelines, icon: ListChecks },
-              { href: "/settings/company/activities", label: H.activityTypes, icon: ListChecks },
-              { href: "/settings/goals", label: L.goals, icon: Target },
-              { href: "/settings/company/labels", label: L.labels, icon: Table2 },
-              { href: "/settings/company/lost-reasons", label: L.lostReasons, icon: ListChecks },
-            ],
-          },
-        ]
-      : []),
-    {
-      id: "email",
-      title: H.email,
-      items: [
-        { href: "/settings/email-sync", label: L.emailSync, icon: MailCheck },
-        { href: "/settings/email", label: H.emailContent, icon: Mail },
-      ],
-    },
-    {
-      id: "data",
-      title: H.dataIntegrations,
-      items: [
-        ...(isAdmin || canManageCompany
-          ? [{ href: "/settings/fields", label: L.dataFields, icon: Table2 }]
-          : []),
-        ...(canImport ? [{ href: "/settings/import", label: L.importData, icon: Upload }] : []),
-        { href: "/settings/connections", label: L.connectedApps, icon: Plug },
-        // Enrichment requires a real administrator; MANAGE alone is insufficient.
-        ...(isAdmin
-          ? [{ href: "/settings/enrichment", label: L._enrichment.nav, icon: Sparkles }]
-          : []),
-      ],
-    },
-  ];
-  // Nested company routes are their own destinations, so only the most specific link is active.
-  const activeHref = sections
-    .flatMap((section) => section.items)
-    .filter((item) => pathname === item.href || pathname.startsWith(`${item.href}/`))
-    .sort((a, b) => b.href.length - a.href.length)[0]?.href;
+  const rtl = useLocale() === "fa";
+  const [open, setOpen] = useState(false);
+  const trigger = useRef<HTMLButtonElement>(null);
+  const sheetId = useId();
+
+  useEffect(() => {
+    if (typeof window.matchMedia !== "function") return;
+    const media = window.matchMedia(DESKTOP_SETTINGS_QUERY);
+    const onBreakpoint = (): void => {
+      if (media.matches) setOpen(false);
+    };
+    media.addEventListener("change", onBreakpoint);
+    return () => media.removeEventListener("change", onBreakpoint);
+  }, []);
 
   return (
-    <nav
-      aria-label={L._extra.settingsSections}
-      className="w-full shrink-0 space-y-6 md:sticky md:top-4 md:max-h-[calc(100dvh-6rem)] md:w-60 md:self-start md:overflow-y-auto md:pe-2"
-    >
-      {sections.map((section) => (
-        <section key={section.id} aria-labelledby={`${id}-${section.id}`}>
-          <h2
-            id={`${id}-${section.id}`}
-            className="mb-2 px-2 text-xs font-semibold text-muted-foreground"
-          >
-            {section.title}
-          </h2>
-          <ul className="space-y-0.5">
-            {section.items.map((item) => (
-              <li key={item.href}>
-                <SecondaryNavLink
-                  href={item.href}
-                  label={item.label}
-                  icon={item.icon}
-                  active={activeHref === item.href}
-                />
-              </li>
-            ))}
-          </ul>
-        </section>
-      ))}
-    </nav>
+    <div className="md:hidden">
+      <Button
+        ref={trigger}
+        variant="outline"
+        className="h-auto min-h-10 w-full justify-between gap-3 px-3 py-2 text-start"
+        aria-label={`${L._hierarchy.sectionNavigation}: ${currentLabel}`}
+        aria-controls={sheetId}
+        aria-expanded={open}
+        aria-haspopup="dialog"
+        onClick={() => setOpen(true)}
+      >
+        <Settings2 className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+        <span className="min-w-0 flex-1 whitespace-normal">{currentLabel}</span>
+        <ChevronDown className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+      </Button>
+      <Sheet open={open} onOpenChange={setOpen}>
+        <SheetContent
+          id={sheetId}
+          side={rtl ? "right" : "left"}
+          aria-describedby={undefined}
+          className="w-80 max-w-[calc(100vw-2rem)] p-4 pt-5"
+          onCloseAutoFocus={(event) => {
+            event.preventDefault();
+            trigger.current?.focus();
+          }}
+        >
+          <SheetTitle className="mb-5 pe-8 text-base">{L._extra.settingsSections}</SheetTitle>
+          <SettingsNavContent
+            sections={sections}
+            activeHref={activeHref}
+            onNavigate={() => setOpen(false)}
+          />
+        </SheetContent>
+      </Sheet>
+    </div>
+  );
+}
+
+export function SettingsNav(access: SettingsNavAccess): React.ReactNode {
+  const L = useSettingsMessages();
+  const locale = useLocale();
+  const pathname = usePathname();
+  const sections = settingsNavSections(L, locale, access);
+  const active = activeSettingsItem(sections, pathname);
+
+  return (
+    <>
+      <MobileSettingsNav
+        key={pathname}
+        sections={sections}
+        activeHref={active?.href}
+        currentLabel={active?.label ?? L._extra.settingsNav}
+      />
+      <div className="hidden w-60 shrink-0 md:sticky md:top-4 md:block md:max-h-[calc(100dvh-6rem)] md:self-start md:overflow-y-auto md:pe-2">
+        <SettingsNavContent sections={sections} activeHref={active?.href} />
+      </div>
+    </>
   );
 }

@@ -62,7 +62,7 @@ describe("resolveNewPersonId", () => {
   });
 });
 
-it("normalizes Persian phone digits while preserving email text and label identifiers", async () => {
+it("preserves authored Persian phone digits, email text and label identifiers", async () => {
   createPersonAction.mockResolvedValue({ ok: true, value: { id: "p-fa" } });
   const state = {
     ...initialEntityCreateState(),
@@ -74,7 +74,7 @@ it("normalizes Persian phone digits while preserving email text and label identi
   await resolveNewPersonId(state, null, "csrf", "fa");
   expect(createPersonAction).toHaveBeenCalledWith(
     expect.objectContaining({
-      phones: [{ label: "Work", value: "+98 912 3456789", primary: true }],
+      phones: [{ label: "Work", value: "+۹۸ ۹۱۲ ۳۴۵۶۷۸۹", primary: true }],
       emails: [{ label: "Work", value: "mail۲@example.com", primary: true }],
     }),
     "csrf",

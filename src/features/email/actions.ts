@@ -1,9 +1,9 @@
 "use server";
 
-import { randomUUID } from "node:crypto";
 import { sql } from "drizzle-orm";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { z } from "zod";
+import { env } from "@/config/env";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import { db } from "@/db/client";
 import { makeStorageClient } from "@/features/files/storage";
@@ -11,36 +11,20 @@ import { guardCsrf } from "@/features/identity/actions/shared";
 import { SIG } from "@/features/identity/actions/sig";
 import { createContext } from "@/server/trpc/context";
 import { type ActionResult, clientErr, toClientResult } from "@/types/actionResult";
+import type { SendEmailOutcome } from "@/types/mail";
 import { ok } from "@/types/result";
-import { softDisconnectMailbox } from "./disconnect";
-import { createGmailClient, type GmailClient } from "./gmailClient";
+import { createGmailClient } from "./gmailClient";
 import { makeRefresh } from "./gmailRefresh";
+import { reconcileImapOperation } from "./imapThreadOperationsQueue";
 import { assertMailboxOwner } from "./mailboxOwnership";
-import { buildAuthUrl, GMAIL_OAUTH_STATE_COOKIE } from "./oauth";
+import { disconnectMailboxWithNativeSession } from "./mailConnectionMutations";
+import { GMAIL_OAUTH_STATE_COOKIE } from "./oauth";
+import { startGmailOAuth } from "./oauthStart";
 import { sendEmail as orchestrateSend, type SendEmailInput, sendEmailInput } from "./send";
-import { isFutureScheduledSend } from "./sendScheduling";
+import { resolveSendConnection } from "./sendConnection";
+import { readOwnedSendStatus } from "./sendStatus";
 import { trashThread } from "./threadTrash";
 import { ensureAccessToken } from "./tokens";
-
-// Stub Gmail client for the future-scheduled path: runSend enqueues + prepares the body
-// then returns before any Gmail I/O, so this is never invoked. Any call is a programmer
-// error (the scheduled path reached Gmail), so it throws.
-function scheduledStubGmail(): GmailClient {
-  const unreachable = (): never => {
-    throw new AppError("E_GMAIL_009", "Gmail called on the future-scheduled send path", {});
-  };
-  return {
-    sendRaw: unreachable,
-    historyList: unreachable,
-    getMessage: unreachable,
-    getThread: unreachable,
-    searchByRfc822: unreachable,
-    getAttachment: unreachable,
-    listMessages: unreachable,
-    getProfile: unreachable,
-    trashThread: unreachable,
-  };
-}
 
 // Interactive send action. CSRF first (before any DB/actor work), then the actor from
 // the trusted context (NEVER client identity), Zod-validate the input, build the real
@@ -48,7 +32,7 @@ function scheduledStubGmail(): GmailClient {
 export async function sendEmail(
   csrfToken: string | null,
   rawInput: unknown,
-): Promise<ActionResult<{ status: string; messageId?: string }>> {
+): Promise<ActionResult<SendEmailOutcome>> {
   const csrf = await guardCsrf(csrfToken);
   if (!csrf.ok) return clientErr(new AppError("E_PERM_001", "csrf check failed", {}));
 
@@ -69,37 +53,33 @@ export async function sendEmail(
   // non-owner must never reach ensureAccessToken and trigger refresh-token rotation.
   const owner = await assertMailboxOwner(db, input.accountId, ctx.actor.id, signal);
   if (!owner.ok) return clientErr(owner.error);
-
-  // A future scheduled send never calls Gmail now: runSend enqueues + prepares the body,
-  // then returns before Gmail I/O. Skip ensureAccessToken so we do NOT trigger a
-  // refresh-token rotation (a side effect) for a token this request will never use.
-  if (isFutureScheduledSend(input.scheduledSendAt, Date.now())) {
-    return toClientResult(
-      await orchestrateSend(db, {
-        actorId: ctx.actor.id,
-        actorType: ctx.actor.type,
-        actorGroupIds: ctx.actor.groupIds,
-        gmail: scheduledStubGmail(),
-        storage: makeStorageClient(),
-        input,
-        signal,
-      }),
-    );
-  }
-
-  const token = await ensureAccessToken(db, {
+  const receipt = await readOwnedSendStatus(db, {
     accountId: input.accountId,
-    deps: { refresh: makeRefresh(signal) },
+    actorId: ctx.actor.id,
+    idempotencyKey: input.idempotencyKey,
+    signal,
   });
-  if (!token.ok) return clientErr(token.error);
+  if (!receipt.ok) return clientErr(receipt.error);
+  if (
+    receipt.value?.provider === "imap_smtp" &&
+    ["sent", "needs_review"].includes(receipt.value.outcome.status)
+  )
+    return ok(receipt.value.outcome);
 
-  const gmail = createGmailClient(token.value.token);
+  const connection = await resolveSendConnection(db, {
+    accountId: input.accountId,
+    actorId: ctx.actor.id,
+    idempotencyKey: input.idempotencyKey,
+    scheduledSendAt: input.scheduledSendAt,
+    signal,
+  });
+  if (!connection.ok) return clientErr(connection.error);
   return toClientResult(
     await orchestrateSend(db, {
       actorId: ctx.actor.id,
       actorType: ctx.actor.type,
       actorGroupIds: ctx.actor.groupIds,
-      gmail,
+      ...connection.value,
       storage: makeStorageClient(),
       input,
       signal,
@@ -134,14 +114,27 @@ export async function trashThreadAction(
   const signal = SIG();
   const acct = (
     await db.execute(sql`
-      SELECT a.id FROM email_threads t JOIN email_accounts a ON a.id = t.account_id
+      SELECT a.id,a.provider FROM email_threads t JOIN email_accounts a ON a.id = t.account_id
       WHERE t.id = ${parsed.data.threadId} AND a.user_id = ${ctx.actor.id}
     `)
-  ).rows[0] as { id: string } | undefined;
+  ).rows[0] as { id: string; provider: string } | undefined;
   if (acct === undefined)
     return clientErr(new AppError(ERROR_IDS.GMAIL_THREAD_NOT_FOUND, "thread not found", {}));
 
+  if (acct.provider === "imap_smtp") {
+    const result = await trashThread(
+      db,
+      { actor: ctx.actor, threadId: parsed.data.threadId },
+      signal,
+    );
+    await reconcileImapOperation(acct.id, signal);
+    return toClientResult(result);
+  }
+  if (acct.provider !== "gmail")
+    return clientErr(new AppError(ERROR_IDS.MAIL_CAPABILITY_DENIED, "mailbox trash unsupported"));
+
   const token = await ensureAccessToken(db, {
+    signal,
     accountId: acct.id,
     deps: { refresh: makeRefresh(signal) },
   });
@@ -153,28 +146,30 @@ export async function trashThreadAction(
   );
 }
 
-// Start the Gmail connect flow: mints a single-use OAuth state, stores it in an
-// HttpOnly cookie (the callback compares it constant-time for login-CSRF defense),
-// and returns the Google consent URL for the signed-in user. Route-guarded in the
-// app flow; the no-session branch is a programmer error (unreachable when the UI
-// gates this behind auth), so it throws AppError.
+// OAuth consent is a credential grant: native fresh authority is required even
+// when this legacy action is invoked outside its usual settings screen.
 export async function connectGmailStart(): Promise<{ url: string }> {
-  const ctx = await createContext();
-  if (ctx.session === null) {
-    throw new AppError("E_AUTH_001", "connectGmailStart called without a session", {});
-  }
-
-  const state = randomUUID();
+  const signal = SIG();
+  const grant = await startGmailOAuth(db, await headers(), signal);
+  if (!grant.ok)
+    throw new AppError(
+      grant.error === "fresh_auth_required"
+        ? "E_AUTH_009"
+        : grant.error === "permission"
+          ? "E_PERM_001"
+          : "E_GMAIL_006",
+      "gmail consent unavailable",
+      { reason: grant.error },
+    );
   const jar = await cookies();
-  jar.set(GMAIL_OAUTH_STATE_COOKIE, state, {
+  jar.set(GMAIL_OAUTH_STATE_COOKIE, grant.value.state, {
     httpOnly: true,
-    secure: true,
+    secure: new URL(env.BASE_URL).protocol === "https:",
     sameSite: "lax",
     path: "/",
-    maxAge: 600, // single-use, short-lived; cleared by the callback after use
+    maxAge: 600,
   });
-
-  return { url: buildAuthUrl({ userId: ctx.session.userId, state }) };
+  return { url: grant.value.url };
 }
 
 const disconnectMailboxInput = z.object({ accountId: z.string().uuid() });
@@ -190,21 +185,22 @@ export async function disconnectMailboxAction(
 ): Promise<ActionResult<{ disconnected: true }>> {
   const csrf = await guardCsrf(csrfToken);
   if (!csrf.ok) return clientErr(new AppError("E_PERM_001", "csrf check failed", {}));
-
-  const ctx = await createContext();
-  if (ctx.actor === null) return clientErr(new AppError("E_PERM_001", "unauthenticated", {}));
-
   const parsed = disconnectMailboxInput.safeParse(rawInput);
-  if (!parsed.success) {
+  if (!parsed.success)
+    return clientErr(new AppError("E_GMAIL_013", "invalid disconnect input", {}));
+  const result = await disconnectMailboxWithNativeSession(
+    db,
+    await headers(),
+    parsed.data.accountId,
+    SIG(),
+  );
+  if (!result.ok)
     return clientErr(
-      new AppError("E_GMAIL_013", "invalid disconnect input", { issues: parsed.error.issues }),
+      new AppError(
+        result.error === "fresh_auth_required" ? "E_AUTH_009" : "E_PERM_001",
+        "mailbox change requires current native authority",
+        {},
+      ),
     );
-  }
-
-  const signal = SIG();
-  const owner = await assertMailboxOwner(db, parsed.data.accountId, ctx.actor.id, signal);
-  if (!owner.ok) return clientErr(owner.error);
-
-  await softDisconnectMailbox(db, parsed.data.accountId, signal);
   return ok({ disconnected: true });
 }

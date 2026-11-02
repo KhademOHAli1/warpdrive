@@ -260,3 +260,32 @@ describe("RichTextBody – editor frame", () => {
     expect(container.querySelector("div.flex-1")).toBeNull();
   });
 });
+
+describe("RichTextBody read-only send review", () => {
+  it("locks and unlocks the existing editor without replacing its content or DOM", async () => {
+    const { RichTextBody } = await import("./RichTextBody");
+    const onChange = vi.fn();
+    const view = render(
+      <RichTextBody html="<p>سلام، Grüße</p>" onChange={onChange} ariaLabel="Email body" />,
+    );
+    await waitFor(() =>
+      expect(document.querySelector("[contenteditable=true]")).toBeInTheDocument(),
+    );
+    const editor = document.querySelector("[contenteditable]");
+    view.rerender(
+      <RichTextBody
+        html="<p>سلام، Grüße</p>"
+        onChange={onChange}
+        ariaLabel="Email body"
+        readOnly
+      />,
+    );
+    await waitFor(() => expect(editor).toHaveAttribute("contenteditable", "false"));
+    expect(editor).toHaveTextContent("سلام، Grüße");
+    expect(document.querySelector("[contenteditable]")).toBe(editor);
+    view.rerender(
+      <RichTextBody html="<p>سلام، Grüße</p>" onChange={onChange} ariaLabel="Email body" />,
+    );
+    await waitFor(() => expect(editor).toHaveAttribute("contenteditable", "true"));
+  });
+});

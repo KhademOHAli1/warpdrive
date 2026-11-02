@@ -1,0 +1,29 @@
+{
+  "phone": {
+    "country": "Land der Telefonnummer",
+    "international": "Internationale Nummer",
+    "internationalFormat": "Internationales Format",
+    "chooseCountry": "Wählen Sie ein Land oder beginnen Sie die Nummer mit + und der Ländervorwahl.",
+    "review": "Prüfen Sie die Nummer vor einem Anruf oder einer Nachricht. Ihre Eingabe bleibt unverändert.",
+    "extension": "Diese Nummer enthält eine Durchwahl. Prüfen Sie den Empfänger vor einem Anruf oder einer Nachricht.",
+    "importCountry": "Land für nationale Telefonnummern",
+    "importHint": "Gilt nur für Nummern ohne internationale Vorwahl. Die ursprünglichen CSV-Werte bleiben erhalten."
+  },
+  "money": {
+    "unit": "Iranische Beträge anzeigen in",
+    "rial": "Iranischer Rial (IRR)",
+    "toman": "Toman ({factor, number} Rial)",
+    "help": "Ändert nur die Anzeige von IRR-Beträgen. Gespeicherte Beträge und andere Währungen bleiben gleich.",
+    "preview": "Betragsvorschau",
+    "entryUnit": "Eingabeeinheit: <unit>{currency}</unit>. Die Anzeigeeinstellung ändert die Eingabeeinheit nicht."
+  },
+  "dates": {
+    "calendar": "Kalender der Quelldatei",
+    "gregory": "Gregorianisch",
+    "persian": "Persisch (Jalali)",
+    "timeZone": "Zeitzone für Angaben ohne UTC-Versatz",
+    "hint": "Verwenden Sie YYYY-MM-DD, YYYY/MM/DD oder DD.MM.YYYY. ISO-Zeitstempel mit explizitem UTC-Versatz sind immer gregorianisch. Reine Datumswerte behalten ihren Kalendertag.",
+    "ambiguous": "Diese Uhrzeit kommt zweimal vor. Geben Sie einen gregorianischen ISO-Zeitstempel mit explizitem UTC-Versatz an, um den richtigen Zeitpunkt zu wählen.",
+    "nonexistent": "Diese Uhrzeit existiert in der gewählten Zeitzone nicht. Prüfen Sie die Zeit in der Quelldatei."
+  }
+}

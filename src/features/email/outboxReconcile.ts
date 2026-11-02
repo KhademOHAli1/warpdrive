@@ -3,6 +3,7 @@ import { AppError } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import { err, ok, type Result } from "@/types/result";
 import type { GmailClient } from "./gmailClient";
+import { reconcileNotificationGmail } from "./notificationGmailReceipt";
 
 export interface AttemptRow {
   id: string;
@@ -12,6 +13,7 @@ export interface AttemptRow {
   send_started_at: string | null;
   claim_token: string | null;
   gmail_message_id: string | null;
+  connection_generation?: number | null;
 }
 
 export type SendOutcome = { status: "sent" | "failed" | "needs_review"; gmailMessageId?: string };
@@ -29,7 +31,7 @@ export async function markSent(
 ): Promise<void> {
   await db.execute(sql`
     UPDATE email_send_attempts
-    SET status='sent', gmail_message_id=${gmailMessageId}, sent_at=now(), error_id=NULL
+    SET status='sent', gmail_message_id=${gmailMessageId}, provider_message_id=${gmailMessageId}, sent_at=now(), error_id=NULL
     WHERE id=${attemptId}
       AND status <> 'sent'
       AND (gmail_message_id IS NULL OR gmail_message_id = ${gmailMessageId})
@@ -53,6 +55,8 @@ export async function reconcile(
     windowMs: number;
   },
 ): Promise<Result<SendOutcome, AppError>> {
+  const notification = await reconcileNotificationGmail(db, args.attempt.id, args.signal);
+  if (notification !== null) return ok(notification);
   const found = await args.gmail.searchByRfc822({
     messageIdHeader: args.attempt.message_id_header,
     signal: args.signal,

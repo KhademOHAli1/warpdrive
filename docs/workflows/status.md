@@ -1,0 +1,321 @@
+# Visual workflow implementation status
+
+> GitHub migration notice, 2 November 2026: live execution, assignments, blockers and release status are maintained in [the workflow issues](https://github.com/KhademOHAli1/warpdrive/issues?q=is%3Aissue+label%3Amodule%3Aworkflow) and [the central Warpdrive Project](https://github.com/users/KhademOHAli1/projects/3). Use [the roadmap index](https://github.com/KhademOHAli1/warpdrive/blob/main/ROADMAP.md) and [tracking guide](https://github.com/KhademOHAli1/warpdrive/blob/main/docs/delivery/tracking.md) to find the canonical issue and preserved original task ID.
+>
+> This document and its linked execution CSV/JSON records retain dated observations. Earlier references to a live register, current status or source of truth in these historical records are superseded by GitHub. Approved scope, technical decisions, acceptance criteria, dependencies, receipts and unfinished gates remain preserved; historical branch or ownership notes do not authorize current publication.
+>
+> Keep the original task rows and machine-readable schemas intact. Generate new execution snapshots from GitHub with `python3 scripts/delivery/tracking.py snapshot`; record new live progress on the canonical issue instead of maintaining another manual ledger. Source implementation, green integrated CI, user-journey acceptance, release, deployment and real provider/installation acceptance remain separate gates.
+
+## Current duration-wait checkpoint, 2 November 2026
+
+The full WF-001 through WF-042 goal remains active and incomplete. The private checkout is detached
+at 43a5fb4. The separate 13-file keyboard-focus increment is Delivered in Main at af10dc2 with
+exact-head CI 41352755179 passing 8,322 unit and 2,947 PostgreSQL tests plus required types, lint
+and builds. Application/browser/AT acceptance remains separate. The current duration-wait increment
+is not delivered in Main or deployed.
+
+The private wait contract accepts a literal integer from 1 through 525600 elapsed minutes. It does
+not coerce values or execute mapped durations. Reference syntax remains authorable. A live wait
+stores one deadline from the database clock after locking the run. Early wakeups preserve it; due
+progression checks current authority and archive state, then rereads the current deal before
+creating a linked task assigned to the initiator. Cancellation shares the run lock and clears its
+active deadline. Simulation records a projected instant and rolls the task back. Absolute dates,
+rescheduling, civil-calendar waits, automatic events and complete R1 templates remain open.
+
+WORKFLOW-PUBLIC-RUNTIME17-R2-20261102-2 passed the declared Next typegen/full TSC pipeline and
+factory typed lint/Biome in 11.68 seconds. Native17 returned 13 PASS and four intended runtime RED
+cases, with zero setup failures or unselected cases, in 6.87 seconds. All seven strict
+stored-version admission tests, five public save/publish/admit journeys and the supported v1 runtime
+control passed. The public tests cover live wait/read/task, immediate simulation/rollback, N versus
+N+1 pinning, pause/new-admission denial and the intentional archive fixture fence. Deadline and
+archive changes are explicit fixture controls, so this is not elapsed-timer or public archive-API
+proof.
+
+The runtime failures were concrete: queued schema 2, queued delay-node 2 and an early schema string
+"1" returned waiting; a due delay-node string "1" returned running instead of failed. Later negative
+post-state assertions were unreached. Final cleanup was observed after 77.506 seconds for native and
+129.307 seconds overall. All 268 then-pins and the three foreign containers were preserved, with no
+owned process left. A transient extra container disappeared naturally. Pressure was warning level 2
+with Q50-52 snapshots; local samples do not establish a continuous aggregate or PostgreSQL peak.
+
+After that RED, execution.ts validates the pinned stored definition with the existing structural
+schema before accessing nodes or edges, after current actor/owner/archive and missing-version
+checks. Fresh Native10 now passes all five runtime cases, including exact WORKFLOW_INVALID rejection
+of four unsupported versions, cleared deadlines, retained version/actor/workflow IDs,
+trigger/outputs/prior steps, no CRM effects and terminal stale delivery. Cursor retention is
+source-inspected in failRun; Native10 has no separate post-failure nextNodeId equality assertion.
+The supported numeric-v1 control still creates its linked assigned task. Missing-node denial and
+existing failure/abort behavior are preserved. This adds no current graph/reference validation or
+public-readiness dependency.
+
+The fixed ASCII bounds hint first produced two intended RED cases and two Latin controls. Its new
+ICU template then exposed a missing-argument palette consumer, reproduced by four more targeted RED
+cases. Both consumers now format the existing schema bounds using account preferences, with EN/FA/DE
+min/max placeholders. Input normalization, raw ASCII editing, stored numbers,
+invalid/reference/readonly behavior and domain limits are unchanged. All 31 affected GUI cases
+across five files now pass, including eight numbering cases and three locale authoring paths. Biome
+checked 11 files without fixes; command time was 4.61 seconds and cleanup 9.651 seconds, at normal
+pressure with Q52-53 snapshots. These counts overlap earlier cuts and must not be added together.
+This is JSDOM/component evidence, not native app, pixel, mobile-keyboard or AT proof.
+
+Jobs now use job-local BUN_OPTIONS=--no-env-file plus direct flags, Vite envDir:false, and actual
+absence of .env, .env.local, .env.test and .env.test.local before and after execution. The current
+compiler and Native10, both numbering runs and GUI31 record fresh absence. A bounded historical
+review found no contemporaneous four-file proof in earlier reviewed r2/focus records. Current
+absence is not retroactive proof; original functional results remain as observed, without blanket
+invalidation or reruns.
+
+Main accepted only the narrow archive-fence reconciliation in lifecycle-contract.md. Archive retains
+the draft, immutable versions, history and completed effects, blocks new admission, and preserves
+the later-advance fence and eligible explicit cancellation. It does not promise a global abort or
+prohibit every commit by an already-running transaction. The original draft and approved WF010 plan
+are preserved. Lifecycle commands, unarchive, locking and races remain proposed. All six Privacy
+lifecycle capabilities remain Unsupported for all four Workflow stores. Clearing the active deadline
+is not erasure; prior step and cumulative outputs remain. Main owns reviewed privacy bindings and
+inventory reconciliation at landing.
+
+Current qualification is complete for this private cut: full declared Next typegen/TSC, typed
+ESLint8 and Biome11 passed in 18.51 seconds with actual compiler cleanup at 35.351 seconds. Fresh
+WORKFLOW-RUNTIME10-NATIVE-20261102-2 then passed exactly runtime5/public5, ten cases across two
+files with no name filters, failures, skips or setup errors. Command time was 4.81 seconds; full
+cleanup including admission was observed in 18.222 seconds within its 180-second allocation. All 289
+inputs, three foreign containers, three networks, two volumes and both cached image identities were
+preserved. No owned process remained. Normal-pressure snapshots were Q54-55; local samples do not
+establish a continuous aggregate/PG peak. Main explicitly accepted the frozen SDK local-cache path
+with fresh identities; no pull, removal, prune or source policy change was performed.
+
+The earlier combined allocation passed its compiler phase but did not launch Native10: source
+inspection consumed the remaining window, native admission failed at 230.578 seconds and final
+return was observed at 370.614 seconds. No combined 300-second conformance is claimed. The compiler
+cleanup had actually completed at 35.351 seconds, and Main retained that valid static result for the
+separate fresh native-only allocation. No ID was retried or reused. The populated SQL-body upgrade
+and earlier fairness/cancellation evidence remain tied to their actual cuts; canonical
+migration/journal/snapshot and installed acceptance remain open. The older native9 cleanup
+observation also exceeded its 120-second sublimit by 21.990 seconds, with an unmeasured actual
+cleanup instant. Both caveats remain preserved.
+
+Figma R2 playback remains partial and failed its timing envelope: 309.197 seconds versus 300. Only
+DE Light library/editor interaction was verified. The static 112 frames and 20 corrected viewport
+reviews do not close full playback or WF005. Farsi, narrow/theme/scroll/keyboard/AT,
+application/provider and current Main-CI acceptance remain separate. All broader R1/R2/R3
+requirements remain active.
+
+Next: freeze the qualified increment for Main review, reconcile the canonical migration and reviewed
+privacy source bindings/inventory, then run integration checks and exact-head CI. Prepare a fresh
+synthetic app/worker/browser journey for actual elapsed-minute, native authentication, language,
+keyboard and accessibility acceptance. No old preview or closed Figma handle is reusable. Current
+receipts are workflow-runtime-version-green-compiler-observed.json,
+workflow-runtime-version-green-native10-observed.json,
+workflow-runtime-numbering-unit-green-observed.json and workflow-duration-wait-current-source.json
+in the continuation outputs. Historical cuts and failed/unstarted attempts remain in their original
+manifests.
+
+## Earlier correction, 1 November 2026 (19:35 UTC), preserved
+
+The WF-001–WF-042 roadmap remains active and incomplete. The existing managed checkout is now detached at admitted main `43a5fb4d2a6be7bbbd260855a6a8e1ce55fbf3c1`; `codex/workflow-roadmap-managed`/`92a9432` below describe an earlier continuation. Canonical local HEAD was observed at `9fb734e0129f6dcc5be69963e2aafddd0b7836ea`; current remote/CI and landing of this dirty focus increment are not established here. No fallback-checkout approval is needed. Private Bun1.4.4 dependency R3 passed and the managed dependency link now targets the task-owned `warpdrive-focus-deps-main43-20261101/node_modules`; the original shared target and preview source are preserved.
+
+Actual RED4R2 produced3intended BODY-focus failures+1control pass (6unselected skipped;6.932s,exit1,groupgone). The minimum WorkflowLibrary fix then passed final GREEN13:13tests/3files/no skips (Vitest3.21s/supervisor3.823s). Final BiomeR2 passed with zero diagnostics (0.434s), scoped ESLint13R2 passed with no diagnostics (8.929s), and the declared Next typegen→tsc typecheck pipeline passed (5.061s). All final owned groups were absent; no owned job remains. Receipts/logs are in the continuation outputs: `workflow-focus-creation-red4-r2-*`, `workflow-focus-green13-final-supervisor-receipt.json`, `workflow-focus-typecheck-final-supervisor-receipt.json`, `workflow-focus-eslint13-r2-supervisor-receipt.json`, `workflow-focus-format13-r2-supervisor-receipt.json`. Earlier initial ESLint failures/style diagnostics and resource-sampling gaps remain in the checkpoint history; these final results qualify only this working candidate, not canonical9fb or broader WF-040 application/browser/AT acceptance.
+
+The native R2 package has112primary frames and an independent pixel review of all20corrected exports closing the four captured-state/copy findings. Actual Figma playback remains terminal **partial/failed timing** at309.197s (9.197s over300s): only DE Light library→editor was verified, with remaining journeys/narrow scroll/keyboard/AT/app/provider behavior unqualified. See continuation `outputs/workflow-prototype-playback-r2-20261101/terminal.json` and `timing-and-scope-addendum.json`; WF-005 remains incomplete. No browser retry is claimed.
+
+The effective1November [operating agreement](/Users/ali/Documents/Codex/2026-10-31/warpdrive-settings-ux/WARPDRIVE-OPERATING-AGREEMENT.md) grants standing Workflow module ownership and self-serve finite focused/static checks. One owned invocation/chat: focused format/lint/unit/component<=120s/1worker; declared typegen/typecheck+scopedlint<=180s, subject to normal-pressure/>=20%memory/>=8GiBdisk preflight and<8GiB owned aggregateRSS. Heavy install/DB/browser/build/service work uses the sole integrator queue; canonical stage/commit/push remains integrator-owned. Old fresh-MAIL/per-file/hash/exact012 freeze requirements below are historical. Original preview3117/ownedworker are stopped, shared services and peer work preserved. Next: integrator landing of the13-file focus increment, then planned WF-010 lifecycle and remaining roadmap acceptance; no main integration or full roadmap completion is claimed.
+
+## Historical status and baseline evidence (preserved)
+
+The sections below retain the earlier branch/source/verification state. Their baseline evidence remains valid only for the exact old source cuts; older “current”, pending-install and source-freeze statements are superseded by the dated correction above.
+
+Updated: 1 November 2026. The managed continuation is on
+`codex/workflow-roadmap-managed`, recovered from `92a94324601a7335f4a9a42e38e53355909c93c3`
+into `/Users/ali/.codex/worktrees/workflow-roadmap-owned/warpdrive-builder-ux-20261031`.
+The attached managed checkout is available; no fallback-checkout approval is needed.
+
+The inherited `codex/workflow-builder-ux` baseline includes `d0c83e8` and fork main
+`a1a8f6d`, including the sign-in/help/recovery interface. Current fork main is `a0490c1`,
+which adds the privacy work. Integrating that main, reconciling competing local migration
+numbers and updating privacy inventory coverage remain pending. Do not overwrite peer
+calendar, settings, authentication or privacy work. No workflow changes have been merged
+into main by this work.
+
+The source preview checkout `/private/tmp/warpdrive-builder-ux-20261031` and its synthetic
+fixture are preserved. Its owned preview/consumer are stopped under the coordinated
+resource hold; the shared PostgreSQL cluster is not stopped. Further tests, builds and
+browser requalification use finite coordinated slots.
+
+## Historical milestone observation
+
+The connectable manual node builder is implemented: choose a blank canvas or follow-up
+template, insert nodes, drag/save positions, draw/reconnect/remove edges, configure exclusive
+conditions and ancestor mappings, save, publish with fresh authentication, choose a visible
+deal, simulate or execute in the background, inspect history and its immutable execution graph, and cancel. A focused
+canvas and per-node connection selects complement the regular editor. English, Farsi RTL,
+and German retain the existing application shell.
+
+Supported execution is manual start, reading a visible deal, strict text/boolean conditions,
+and undated follow-up tasks assigned to the initiator. Conditions offer equals, not-equals,
+exists, and string contains; only one branch executes. Other registry entries, money/numeric
+comparisons, and additional activity fields remain blocked. This is an early-access milestone
+within R1, not completion of the approved 42-task plan.
+
+The root README, documentation index, introduction, architecture, setup, updating,
+contributing, regional-settings guide, workflow user guide, and operations notes were
+refreshed. The index now also links the merged authentication documentation.
+
+## Historical task ledger
+
+States apply to the actual criteria in [the approved plan](implementation-plan.md):
+`todo` means implementation is not established; `in-progress` means only part of the
+criteria has evidence; `verified` means the stated task's bounded acceptance is evidenced;
+`externally-blocked` requires a specific external dependency that currently prevents that
+task. No task is presently assigned `externally-blocked`: later consent/provider gates
+are requirements to qualify, not evidence that independent work has stopped.
+
+Verified rows below refer to their recorded specification or manual-slice baseline.
+They do not qualify the current uncommitted continuation. Exact inherited head `92a9432`
+has green [CI #29](https://github.com/KhademOHAli1/warpdrive/actions/runs/41215606072) and
+[CI #30](https://github.com/KhademOHAli1/warpdrive/actions/runs/41215609795); neither run
+contains the new focus/selection changes or current-main reconciliation.
+
+| Task   | State       | Actual evidence / implemented scope                                                                                                                                                                                                                     | Remaining acceptance                                                                                                                                                                                        |
+| ------ | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| WF-001 | in-progress | [Architecture](architecture.md), [handoff](CONTINUATION.md) and recovered managed checkout identify services, permissions, event gaps and UI baseline.                                                                                                  | Reconcile current fork main `a0490c1`, privacy migration/inventory contracts and peer-owned changes before combined acceptance.                                                                             |
+| WF-002 | in-progress | [Ten exact Mobbin references](ux-design-reference.md#verified-mobbin-reference-register) record observed frames, limitations and task mappings.                                                                                                         | Complete the required captured-flow review; several sequences, particularly library filtering M08, were only partly inspected.                                                                              |
+| WF-003 | verified    | [Release scope](implementation-plan.md#product-boundaries-and-releases) specifies the three R1 workflows, explicit routing/overdue rules, later scope and [draft Farsi/German vocabulary](ux-design-reference.md#language-and-direction-specification). | Specification acceptance only; implemented templates and natural-language review across new surfaces remain WF-029/039 work.                                                                                |
+| WF-004 | verified    | [Fourteen-surface inventory](ux-design-reference.md#information-architecture-and-screen-inventory) includes authoring, variables, testing, publication, runs, connections, permissions and alternate states.                                            | Specification acceptance only; rendered prototypes and every implemented state require WF-005/040 qualification.                                                                                            |
+| WF-005 | in-progress | [UI review](ui-review.md) and [interaction captures](builder-interaction-review.md#captures) show working Farsi/German desktop and narrow manual flows.                                                                                                 | Complete linked prototype states for waiting, revoked connections, validation and publication review; contrast, focus and hierarchy review remain open.                                                     |
+| WF-006 | in-progress | [Manual execution contract](architecture.md) defines identity, tree/exclusive branches, pinned versions, cancellation and rolled-back database simulation.                                                                                              | Freeze broader trigger snapshots, bounded retry/ambiguity semantics, waits and external-effect simulation decisions before enabling them.                                                                   |
+| WF-007 | in-progress | `schemas.ts`, `definition.ts`, `graph.ts` and `references.ts` validate bounded graphs, ports, versions, reachability, cycles and typed ancestor references; baseline unit evidence below.                                                               | Extend validated registry/configuration/output contracts for the remaining R1 actions and richer CRM/null/date metadata; registry entries alone are not executable support.                                 |
+| WF-008 | in-progress | Migration `0083_visual_workflows.sql` creates definitions, versions, runs and completed steps with uniqueness, indexes, pinned-version and immutability guards; baseline real-PG evidence below.                                                        | Add events, attempts/effects and retention/sensitive-field rules; reconcile main's competing migrations and qualify combined upgrades/rollback without altering the preserved preview ledger.               |
+| WF-009 | in-progress | Six owner-aware capabilities, inactive-user denial, fresh publication and current CRM checks exist; baseline PG tests cover hidden records, downgrades and inactive actors.                                                                             | Add manage-connection and automatic-owner approved-scope authority; qualify event/historical payload access, revocation and escalation across new actions.                                                  |
+| WF-010 | in-progress | `persistence.ts` and `queries.ts` implement revision saves, validated atomic/idempotent immutable publication and pause; concurrency/pinned-run tests are recorded below.                                                                               | Archive, duplicate and revision-checked historical-version restore-as-draft, including concurrent edits and their effect on existing runs.                                                                  |
+| WF-011 | todo        | Canonical CRM services and transactional NOTIFY boundaries are inventoried; no durable workflow CRM outbox is implemented.                                                                                                                              | Persist committed create/update/stage events with field diffs and causation across UI, API/import and alternate mutation paths; test rollback and worker outage.                                            |
+| WF-012 | in-progress | `admitManualRun` deduplicates caller keys, pins publication and persists the initial cursor atomically; baseline PG tests cover conflicts and retries.                                                                                                  | Automatic event matching/filtering, event/workflow delivery uniqueness, quotas, causation-depth and event-schema checks.                                                                                    |
+| WF-013 | in-progress | `advanceWorkflowRun` serializes cursor/effects with row locks; worker boot/minutely reconciliation and competing-worker recovery have real-PG/pg-boss evidence.                                                                                         | Waiting/needs-review transitions, durable attempts/leases and bounded retry exhaustion; restart/competition qualification for every new state.                                                              |
+| WF-014 | in-progress | Current database-only task effects and progress commit together; persistence-failure regression proves rollback and duplicate-free recovery.                                                                                                            | Durable cross-attempt effect keys, retryable/terminal/ambiguous classification, provider-acceptance crash cases and safe email reconciliation.                                                              |
+| WF-015 | verified    | Baseline Bun/real-PG/pg-boss and [browser evidence](ui-review.md#publication-simulation-execution-and-cancellation) cover visible-deal-to-task success, invalid/denied input, duplicate delivery, recovery and actor attribution.                       | This verifies the initial manual slice only. New handlers and the current continuation require their own evidence; R1 remains open.                                                                         |
+| WF-016 | in-progress | Existing-shell library/routes, blank/follow-up creation and draft/active/paused presentation are implemented and browser-reviewed.                                                                                                                      | Search/status/owner/error filters, ownership display, duplicate/archive controls and visibility-aware matching/archived empty states.                                                                       |
+| WF-017 | in-progress | Baseline canvas supports nodes/branches, pan/zoom/fit, selection, persisted layout, auto-layout, save status, contextual insertion and bounded undo/redo; [pointer evidence](builder-interaction-review.md).                                            | Insert-between control, meaningful ordered graph/branch alternative and complete keyboard/focus/large-graph qualification; current focus changes are source-only.                                           |
+| WF-018 | in-progress | Localized searchable picker exposes three executable actions, descriptions and connected-source context; search/no-results/branch insertion were observed.                                                                                              | Registry categories, compatible-input/readiness metadata and permission reasons; retain clear supported/unavailable distinctions as actions expand.                                                         |
+| WF-019 | in-progress | Current manual/deal/task/condition forms use shared adapters, backend registry validation and localized errors.                                                                                                                                         | Schema-driven settings plus canonical CRM required/custom metadata, nullable fields/references and shared frontend/backend contracts for remaining actions.                                                 |
+| WF-020 | in-progress | Compatible ancestor choices, human-readable sources, missing-reference feedback and branch-aware defaults have unit/browser evidence.                                                                                                                   | Source browsing/previews, explicit null/missing policy and date types; invalidate and qualify mappings after predecessor edits/deletion across new schemas.                                                 |
+| WF-021 | in-progress | Permission-checked deal read and canonical undated self-assigned task creation are qualified in the manual slice.                                                                                                                                       | Bounded search/read/create/update for contacts, deals and activities; local notification, routing authority and concurrent-update semantics.                                                                |
+| WF-022 | in-progress | Strict text/boolean exists/equals/notEquals/contains and exclusive true/false paths have both-branch PG/browser evidence.                                                                                                                               | Typed AND/OR groups, explicit default semantics, numeric/exact-money/null/empty behavior and readable grouped summaries.                                                                                    |
+| WF-023 | todo        | Delay registry contract exists, but publication/execution remain disabled and no durable wait is implemented.                                                                                                                                           | Persist duration/date resume state and due display; qualify cancellation, rescheduling, expired waits and restart recovery without holding workers.                                                         |
+| WF-024 | todo        | Existing email outbox is a reuse boundary; no workflow mailbox draft/send handler is enabled.                                                                                                                                                           | Authorized mailbox draft/send, recipient/body preview and mapping validation, ownership/rate limits, reconciliation and default simulated mail tests.                                                       |
+| WF-025 | in-progress | Authorized-deal selection and published-version simulation use the canonical task service with rolled-back effects; live admission is a separate explicit action.                                                                                       | Draft-revision/sample-trigger testing, richer per-step results, complete effect summaries and simulation adapters for waits/mail/other R1 effects.                                                          |
+| WF-026 | in-progress | Validation issues, explicit publication/fresh authentication and inactive draft saves are implemented; immutable-version evidence is recorded.                                                                                                          | Publication review covering trigger, identity, effects, permissions, connections, missing mappings, version changes and current test/revision validity.                                                     |
+| WF-027 | in-progress | Authorized history and immutable graph/safe-step metadata with completed-path highlighting are implemented; CRM payloads are withheld.                                                                                                                  | Run filters, reauthorized/redacted data, attempts/errors/wait time/causation and realtime streaming rather than polling alone.                                                                              |
+| WF-028 | in-progress | Cooperative cancellation records identity, preserves completed effects and prevents subsequent steps; baseline PG/browser evidence exists.                                                                                                              | Eligible step retry without replay, new-execution rerun/effect review and repeated-failure/stuck-work alerts.                                                                                               |
+| WF-029 | todo        | A manual follow-up starter and synthetic branch fixture exist; they are not the three complete R1 acceptance templates.                                                                                                                                 | Deliver stage follow-up, explicit-rule lead assignment and reschedule-safe overdue escalation, each with success, denial, failure and interruption/recovery evidence in EN/FA/DE.                           |
+| WF-030 | todo        | Account calendar/timezone timestamp display is implemented; it is not scheduling evidence.                                                                                                                                                              | Persist Iranian/Gregorian recurrence, IANA timezone, next five dates and missed-run policy; test Iranian month/leap boundaries, date-only values and Berlin DST gaps/overlaps.                              |
+| WF-031 | todo        | Business-calendar execution is not implemented.                                                                                                                                                                                                         | Configurable workweek/hours, maintained holiday sources/overrides, business-day delays, migration policy, resolved dates and missing-data behavior after WF-030.                                            |
+| WF-032 | todo        | No incoming workflow webhook handler is enabled.                                                                                                                                                                                                        | Secret references/rotation, signatures/timestamps/replay policy, bounded validated requests, rate limits, durable admission and deduplication after engine prerequisites.                                   |
+| WF-033 | todo        | No outgoing workflow HTTP/connection handler is enabled.                                                                                                                                                                                                | Encrypted references, approved origins, DNS/IP/redirect SSRF controls, time/size bounds, redaction, OAuth lifecycle, throttling and provider idempotency.                                                   |
+| WF-034 | todo        | Separate calendar/provider work remains peer-owned; catalog proposals do not qualify workflow integrations.                                                                                                                                             | Reuse qualified adapters with consent/capability/reconciliation; distinguish CRM tasks, remote events and meetings, and verify Google/Zoom/Teams separately.                                                |
+| WF-035 | todo        | Persistent approvals/input forms are not implemented.                                                                                                                                                                                                   | Durable wait, authorized approvers, validated responses, one winning reply, expiry/escalation, cancellation/audit and current-access checks on resume.                                                      |
+| WF-036 | todo        | Current exclusive branches are not parallel execution or iteration.                                                                                                                                                                                     | Bounded iteration IDs, ordered/concurrent semantics, joins, output aggregation and partial-failure/cancellation/recovery without duplicated effects.                                                        |
+| WF-037 | todo        | Pinned top-level runs and starter templates do not implement sub-workflows or portable definitions.                                                                                                                                                     | Typed arguments/results, pinned called versions, depth/recursion budgets, causation, validated versioned import/migration and secret-free export.                                                           |
+| WF-038 | todo        | Internal registry and dependency license notes are not an extension contribution contract.                                                                                                                                                              | Manifest, schemas, localized permission declarations, compatibility harness, versioning, provider setup and license review without implicit code/secret access.                                             |
+| WF-039 | in-progress | Existing EN/FA/DE catalogs, stable IDs, localized names/status/timestamps and RTL have unit/browser baseline evidence; custom mixed-language names survive switching.                                                                                   | Natural terminology, German expansion and LTR isolation across all remaining routes, errors, accessibility text and acceptance templates as features land.                                                  |
+| WF-040 | in-progress | Baseline pointer/locale/narrow checks are recorded. Test-first replay and the detached-opener failure preceded fixes; all nine focused keyboard/selection cases now pass under Bun.                                                                     | Complete broader checks and current-revision browser focus/visual review, ordered-step representation, screen-reader status, reduced motion, gestures and large-graph qualification.                        |
+| WF-041 | in-progress | Initial transactions/races/revocation/cancellation and real pg-boss recovery plus Bun builds/CI are baseline-qualified below.                                                                                                                           | Events/waits/attempts/effects/retention security tests, budgets, queue lag/stuck detection, redaction, backup/restore, kill switch, staged rollout and recovery; provider contracts need distinct evidence. |
+| WF-042 | in-progress | [Handoff](CONTINUATION.md), baseline docs/captures and draft [PR #3](https://github.com/KhademOHAli1/warpdrive/pull/3) preserve reviewable evidence; managed continuation recovered.                                                                    | Reconcile current main/migrations/privacy inventory, qualify current revision with required CI/install/startup checks and all release workflows, and separate source/local/provider/production acceptance.  |
+
+No release-level acceptance is inferred from a registry contract, screenshot, simulated
+provider or earlier green CI. Nine focused unit cases pass; broader/current browser and CI
+qualification remain pending. Baseline verification sections below remain historical evidence.
+
+## Managed keyboard regression milestone
+
+The managed branch contains explicit opener restoration for creation, run setup, historical
+details and the node picker; successful insertion targets the new step-name field. Historical
+step buttons expose selected state. All nine focused cases pass on the final fallback source.
+
+A coordinated replay against the untouched `92a9432` application source reproduced all
+eight intended failures across two test files in 9.24 seconds. The guard finished in
+9.59 seconds, confirmed all twelve pinned test/configuration/baseline files unchanged,
+and confirmed the owned process group gone. The earlier replay stopped during setup-path
+resolution with zero tests and is not regression evidence. No database, provider, worker,
+preview or installation ran in either replay.
+
+The managed-source run passed eight cases and failed the ninth, which removes a run-history
+opener while its dialog remains open. It completed in 3.74 seconds (4.54 seconds including
+the guard), conserved all thirteen pinned inputs and left no owned test process group.
+Only after that failing observation, the helper gained a close-time fallback to the current
+Refresh control; palette cancellation also has a stable Add node fallback. Intentional
+navigation still suppresses restoration to a departing control. The final green run passed
+nine tests across three files in 2.46 seconds (3.56 seconds with the guard), conserved all
+thirteen inputs and left no owned process group. Formatting, lint, types, broader workflow tests, browser focus verification
+and exact-head CI remain required before this milestone is qualified. The full WF-040
+release gate remains open.
+
+## Builder interaction continuation
+
+The interaction milestone adds connected-step creation from free outputs or empty-canvas
+drops, source-aware defaults, protected reconnection, 36px handle hit areas, a 32px snap
+radius, readable node summaries, explicit step reveal, and 50-edit graph undo/redo. Drag
+previews stay local until release, so undo does not walk through individual pointer frames.
+A new authorized read endpoint supplies historical version configuration and step metadata
+without recorded CRM outputs. No dependencies, migrations, or queue names changed.
+
+The integrated application and documentation builds, typecheck and server bundles pass.
+The combined workflow/auth-UI/locale unit lane passes 110 tests across 37 files; workflow
+PostgreSQL qualification passes 22 tests across eight files. Pointer/branch execution and
+Farsi/German mobile checks are recorded, with final browser-automation limitations retained.
+
+See [interaction review](builder-interaction-review.md) for the current acceptance record,
+Mobbin observations, qualification results, and known limits. Earlier evidence below is
+retained as baseline evidence; it does not by itself qualify this continuation.
+
+## Verification
+
+Evidence on the merged Better Auth baseline:
+
+- Full unit suite: **5,753 tests across 930 files passed**, under root Bun 1.4.4.
+- Workflow integration suite: **21 tests across seven files passed**, using real PostgreSQL
+  and the actual migration chain through `0083_visual_workflows.sql`.
+- The pg-boss test boots a real queue instance and recovers a partially completed run.
+- Database tests cover concurrent/idempotent publication and admission, stale drafts,
+  immutable snapshots, pinned runs after republishing, competing workers, exact-one task
+  creation, simulation rollback and archived-record parity, invalid mappings, deactivated
+  users, downgraded/hidden-record access, unsupported action refusal, cancellation, and
+  rollback when persisting progress fails.
+- Unit coverage includes fresh authentication at publication, typed graph validation,
+  explicit graph edits, strict conditional evaluation, localized generated names/status choices, Farsi/German task editing, prototype-safe output resolution, and live language feedback.
+- Type generation/typecheck and lint passed. Lint retains the existing eleven cookie
+  warnings. The broad unit run first caught a page-title token mismatch, corrected and
+  verified; a new red test also caught blank task titles, now rejected before publication.
+- After the node-builder refinements, **43 workflow unit tests across fourteen files passed**.
+  New red-to-green regressions cover retained node measurements, live feedback translation,
+  translated status choices with stable stored codes, inherited output-property rejection, and
+  responsive camera behavior without unnecessary resets.
+  The broad unit run precedes the final measurement regression; the focused run covers the
+  current feature sources.
+- Application production build: **passed** with the current editor and merged authentication,
+  using ignored synthetic build-only configuration.
+- Worker/WebSocket/operator bundles: **passed**, including the workflow handlers.
+- Documentation production build: **passed**, including the new Farsi screenshot asset and
+  link validation. Documentation uses its own declared Bun version and lockfile.
+- Application frozen-lockfile install under Bun 1.4.4: **passed without changes**.
+
+Browser checks use a loopback-only disposable database, synthetic CRM records, and a
+synthetic test authentication session. They qualify workflow behavior, not real identity
+provider/MFA onboarding. Creation and Persian text editing, stale-freshness refusal,
+publication, visible-deal selection, simulation, live execution, and completed history
+were observed in Chrome. A five-node branch graph was connected through real drag gestures,
+reconnected by its endpoint, saved, reloaded, and switched between all three languages.
+Database inspection showed zero tasks after simulation, one Persian task after the true-path
+live run, and one additional German task after the false-path run. Native Farsi and German templates were created through
+the UI. See [UI review](ui-review.md) for current captures and remaining design gates.
+
+No customer records, real provider messages, external integrations, or production
+deployment were involved.
+
+## Next implementation milestone
+
+Complete the finite keyboard-focus/selection replay and remaining visual acceptance checks,
+then qualify the bounded changes in the managed checkout. Reconcile current fork main and
+its privacy/migration contracts without disturbing peer work. Continue R1 with lifecycle
+and library controls, the transactional CRM event outbox and automatic admission, grouped
+conditions and durable waits in dependency order. Expand configuration/mapping alongside
+qualified handlers, and complete all three R1 templates and release gates before claiming
+R1 production readiness. R2/R3 follow their approved prerequisites.

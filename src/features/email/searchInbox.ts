@@ -3,6 +3,7 @@ import type { Db } from "@/db/client";
 import type { AuthUser } from "@/features/permissions/types";
 import { type InboxFilter, type InboxThread, toInboxThread } from "./emailReads";
 import { canSeeEmail } from "./emailVisibility";
+import { decorateThreadMailCapabilities } from "./imapThreadOperationsCapabilities";
 import { quickFilterPredicate } from "./inboxList";
 
 interface SearchThreadRow {
@@ -91,5 +92,5 @@ export async function searchInbox(
     if (!visible) continue;
     out.push(toInboxThread(t, args.actor.id));
   }
-  return out;
+  return decorateThreadMailCapabilities(db, args.actor, out, signal);
 }

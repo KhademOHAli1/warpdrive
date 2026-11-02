@@ -1,4 +1,6 @@
 import type { MappedRow } from "@/types/import";
+import { normalizeDigits } from "@/utils/normalizeNumberInput";
+import type { PhoneCountry } from "@/utils/phoneNormalization";
 import { ADDRESS_PREFIX, PERSON_NAME_PARTS, primaryEntityOf } from "./importFields";
 import { buildRowNoteBody } from "./rowNote";
 import type { ResolvedColumnMapping } from "./schemas";
@@ -9,9 +11,16 @@ export { validateMappedRow } from "./validateMappedRow";
 export type { MappedRow };
 
 // CSV gives a single email/phone cell; model it as one labeled primary contact point.
-function coerceField(field: string, value: string): unknown {
+function coerceField(field: string, value: string, phoneCountry?: PhoneCountry): unknown {
   if (field === "emails" || field === "phones") {
-    return [{ label: "work", value, primary: true }];
+    return [
+      {
+        label: "work",
+        value,
+        primary: true,
+        ...(field === "phones" && phoneCountry !== undefined ? { country: phoneCountry } : {}),
+      },
+    ];
   }
   return value;
 }
@@ -42,12 +51,13 @@ function deriveDisplayName(group: Record<string, unknown> | undefined): void {
   if (parts.length > 0) group.name = parts.join(" ");
 }
 
-const DATE_ONLY = /^\d{4}-\d{2}-\d{2}$/;
+const DATE_ONLY = /^(?:\d{4}[-/]\d{1,2}[-/]\d{1,2}|\d{1,2}\.\d{1,2}\.\d{4})$/;
 
 function mergeDueTime(primary: Record<string, unknown>): void {
   const { dueAt, dueTime } = primary;
   if (typeof dueAt !== "string" || typeof dueTime !== "string") return;
-  if (DATE_ONLY.test(dueAt.trim())) primary.dueAt = `${dueAt.trim()} ${dueTime.trim()}`;
+  if (DATE_ONLY.test(normalizeDigits(dueAt).trim()))
+    primary.dueAt = `${dueAt.trim()} ${dueTime.trim()}`;
   delete primary.dueTime;
 }
 
@@ -65,7 +75,9 @@ function routeCell(
   col: ResolvedColumnMapping["columns"][string],
   cell: string,
   primaryEntity: string,
+  phoneCountry?: PhoneCountry,
 ): void {
+  cell = col.isCustom || col.field !== "phones" ? cell.trim() : cell;
   if (col.isCustom) {
     // Only the target's own custom-field defs are offered, so a custom column is always primary.
     if (col.key !== "") acc.customFields[col.key] = cell;
@@ -77,11 +89,11 @@ function routeCell(
     return;
   }
   if (col.entity === primaryEntity) {
-    setNested(acc.primary, col.field, coerceField(col.field, cell));
+    setNested(acc.primary, col.field, coerceField(col.field, cell, phoneCountry));
     return;
   }
   const group = acc.related[col.entity] ?? {};
-  setNested(group, col.field, coerceField(col.field, cell));
+  setNested(group, col.field, coerceField(col.field, cell, phoneCountry));
   acc.related[col.entity] = group;
 }
 
@@ -99,8 +111,8 @@ export function applyMapping(
 
   for (const [header, col] of Object.entries(mapping.columns)) {
     const cell = raw[header];
-    if (cell === undefined || cell === "") continue;
-    routeCell(acc, col, cell, primaryEntity);
+    if (cell === undefined || cell.trim() === "") continue;
+    routeCell(acc, col, cell, primaryEntity, mapping.options.phoneCountry);
   }
 
   acc.primary.customFields = acc.customFields;

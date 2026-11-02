@@ -1,0 +1,24 @@
+{
+  "registryVersion": 1,
+  "evidenceLevel": "source_inventory",
+  "sourceFingerprint": "daba9645a3ba8ec345f1a87cfe92c144fef63c08bb533f678bf49a033899f0c2",
+  "sourceFiles": 2379,
+  "discoveredCounts": {
+    "browserStore": 3,
+    "derived": 311,
+    "external": 33,
+    "log": 46,
+    "objectNamespace": 23,
+    "queue": 15,
+    "sourceReview": 757,
+    "table": 107,
+    "writer": 726
+  },
+  "classifiedDeclarations": 2129,
+  "coverage": {
+    "ok": true,
+    "missing": [],
+    "invalid": []
+  },
+  "installationGates": "OPEN: physical storage, provider contracts/receipts, production logs and backup destinations require separate acceptance."
+}

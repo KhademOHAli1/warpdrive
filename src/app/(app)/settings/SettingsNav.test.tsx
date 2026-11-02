@@ -1,10 +1,13 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
 import { cleanup, render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 const route = vi.hoisted(() => ({ pathname: "/settings/users" }));
-vi.mock("next/navigation", () => ({ usePathname: () => route.pathname }));
+vi.mock("next/navigation", () => ({
+  usePathname: () => route.pathname,
+}));
 vi.mock("next/link", () => ({
   default: ({ href, children, ...rest }: { href: string; children: React.ReactNode }) => (
     <a href={href} {...rest}>
@@ -18,6 +21,24 @@ import { SettingsNav } from "./SettingsNav";
 afterEach(() => {
   cleanup();
   route.pathname = "/settings/users";
+});
+
+it("provides permitted mobile section routes through the searchable Settings sheet", async () => {
+  route.pathname = "/settings/connections";
+  render(<SettingsNav isAdmin={false} canManageCompany={false} canImport={false} />);
+  const user = userEvent.setup();
+  await user.click(screen.getByRole("button", { name: "Settings category: Connected apps" }));
+  const sheet = within(screen.getByRole("dialog", { name: "Settings sections" }));
+  expect(sheet.queryByRole("link", { name: "Security administration" })).not.toBeInTheDocument();
+  expect(sheet.queryByRole("link", { name: "Enrichment" })).not.toBeInTheDocument();
+  expect(sheet.getByRole("link", { name: "Language & region" })).toHaveAttribute(
+    "href",
+    "/settings/regional",
+  );
+  expect(sheet.getByRole("link", { name: "Connected apps" })).toHaveAttribute(
+    "aria-current",
+    "page",
+  );
 });
 
 describe("SettingsNav", () => {

@@ -3,6 +3,7 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { STRINGS } from "@/constants/strings";
+import type { ThreadMailCapabilities } from "./imapThreadOperationsCapabilities";
 
 // Typed so `mockResolvedValueOnce({ ok: false, ... })` typechecks alongside the default
 // ok:true resolution; the runtime values match the action's Result shape exactly.
@@ -66,6 +67,7 @@ const threadData = {
   ownerEmail: "me@gunsnation.com",
   personName: null as string | null,
   dealTitle: null as string | null,
+  mailCapabilities: undefined as ThreadMailCapabilities | undefined,
 };
 const invalidateInboxList = vi.fn();
 const invalidateUnreadCount = vi.fn();
@@ -99,9 +101,22 @@ afterEach(() => {
   setThreadLabelsMock.mockClear();
   invalidateInboxList.mockClear();
   invalidateUnreadCount.mockClear();
+  threadData.mailCapabilities = undefined;
 });
 
 describe("ThreadPane", () => {
+  it("does not auto-mark a readonly mailbox and disables its manual unread action", () => {
+    threadData.mailCapabilities = {
+      read: true,
+      send: true,
+      markRead: false,
+      move: false,
+      trash: false,
+    };
+    render(<ThreadPane threadId="t1" trackingBadge={null} />);
+    expect(markReadMock).not.toHaveBeenCalled();
+    expect(screen.getByRole("button", { name: "Mark as unread" })).toBeDisabled();
+  });
   it("marks the thread read exactly once on render, even across a rerender", () => {
     const { rerender } = render(<ThreadPane threadId="t1" trackingBadge={null} />);
     expect(markReadMock).toHaveBeenCalledTimes(1);

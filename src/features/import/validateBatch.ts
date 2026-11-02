@@ -72,7 +72,7 @@ export async function validateBatch(
       // lines in column order; row.raw's own key order is unreliable once round-tripped through
       // JSONB. Falls back to raw order for legacy batches with no stored headers.
       const mapped = applyMapping(row.raw, mapping, target, batch.headers ?? undefined);
-      const r = validateMappedRow(target, mapped, defs, source);
+      const r = validateMappedRow(target, mapped, defs, source, mapping.options);
       if (r.ok) {
         await tx
           .update(importRows)

@@ -12,7 +12,7 @@ Guidance for working in this codebase (with an AI coding assistant or by hand).
 - tRPC (typesafe reads) + TanStack Query; Next server actions for mutations/forms
 - shadcn/ui + Tailwind; dnd-kit for the board; Zustand for board-local state
 - Self-hosted WebSocket server + Postgres LISTEN/NOTIFY for realtime
-- Gmail API via OAuth (Google Workspace); Google SSO for auth
+- Gmail API via OAuth (Google Workspace); invitation-only Better Auth with configured sign-in methods and administrator MFA
 - pg-boss for background jobs; MinIO (S3-compatible) for file storage
 - Bun
 
@@ -83,6 +83,10 @@ Type-aware rules on include: `no-floating-promises`, `no-misused-promises`, `no-
 
 ## Git Safety
 
+- `main` is the integration branch. Merge completed work into it one branch at a time, verify the combined result, push it, and close the completed branch after confirming containment. Do not accumulate completed feature branches.
+- Make small, verified changes directly on `main` when ownership and concurrent work permit. Use a separate branch only for a bounded task that needs isolation, with explicit file ownership and an integration plan that avoids conflicting parallel edits.
+- Before integrating, inspect current remote heads, worktrees, dirty files and migration lineage. Preserve unfinished work. Never resolve competing installed migration histories by choosing one journal or renumbering applied SQL.
+- Delete a branch only after its exact committed work is preserved in `main`; retain unfinished changes and active worktree/runtime data.
 - Never force push
 - Never skip hooks
 - Never commit secrets

@@ -11,7 +11,8 @@ describe("localized sign-in", () => {
       <LocaleProvider locale="fa">{await LoginPage({})}</LocaleProvider>,
     );
     expect(html).toContain("ورود به Warpdrive");
-    expect(html).toContain("از یکی از روش‌های ورودی استفاده کنید که مدیر فضای کاری فعال کرده است.");
+    expect(html).toContain("خوش آمدید. برای ادامه وارد فضای کاری خود شوید.");
+    expect(html).toContain("برای ورود به مشکل خورده‌اید؟");
     expect(html).toContain('dir="rtl"');
     expect(html).not.toContain("Sign in to Warpdrive");
   });
@@ -21,7 +22,8 @@ describe("localized sign-in", () => {
       <LocaleProvider locale="en">{await LoginPage({})}</LocaleProvider>,
     );
     expect(html).toContain("Sign in to Warpdrive");
-    expect(html).toContain("Use a sign-in method enabled by your workspace administrator.");
+    expect(html).toContain("Welcome back. Sign in to your workspace.");
+    expect(html).toContain("Trouble signing in?");
     expect(html).toContain('dir="ltr"');
   });
 
@@ -30,10 +32,9 @@ describe("localized sign-in", () => {
       <LocaleProvider locale="de">{await LoginPage({})}</LocaleProvider>,
     );
     expect(html).toContain("Bei Warpdrive anmelden");
-    expect(html).toContain(
-      "Verwenden Sie eine von Ihrer Administration freigegebene Anmeldemethode.",
-    );
+    expect(html).toContain("Willkommen zurück. Melden Sie sich in Ihrem Arbeitsbereich an.");
+    expect(html).toContain("Probleme beim Anmelden?");
     expect(html).toContain('dir="ltr"');
-    expect(html).not.toContain("Use a sign-in method");
+    expect(html).not.toContain("Welcome back.");
   });
 });

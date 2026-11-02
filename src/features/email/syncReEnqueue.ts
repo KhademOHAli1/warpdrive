@@ -29,13 +29,15 @@ export async function reEnqueueSync(
   boss: SendsJobs,
   accountId: string,
   pendingTicks: PendingTickCount,
+  options: { more?: boolean; deferred?: boolean; isEnabled?: () => Promise<boolean> } = {},
 ): Promise<void> {
+  if (options.isEnabled && !(await options.isEnabled())) return;
   if ((await pendingTicks(accountId)) > 0) return;
   await boss.send(
     PGBOSS_QUEUE_EMAIL_SYNC,
     { accountId },
     {
-      startAfter: SYNC_CADENCE_SECONDS,
+      startAfter: options.deferred === true ? 5 : options.more === true ? 1 : SYNC_CADENCE_SECONDS,
       singletonKey: accountId,
       retryLimit: EMAIL_JOB_RETRY_LIMIT,
       retryBackoff: true,

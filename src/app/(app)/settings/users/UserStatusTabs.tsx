@@ -25,7 +25,7 @@ export function UserStatusTabs({
   return (
     <fieldset
       aria-label={L._extra.user_status_filter}
-      className="flex min-w-0 items-center gap-1 border-0 p-0"
+      className="flex min-w-0 flex-wrap items-center gap-1 border-0 p-0"
     >
       {TABS.map((tab) => (
         <Button

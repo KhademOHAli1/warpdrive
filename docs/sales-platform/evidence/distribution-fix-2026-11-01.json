@@ -1,0 +1,26 @@
+{
+  "observedAt": "2026-11-01T04:08:36.503737+00:00",
+  "sourceCommit": "0d8247f676f54899aa8b54c3699e3eaba9f22ead",
+  "changedPaths": [
+    ".dockerignore",
+    "Dockerfile",
+    "third-party/shadcn-LICENSE.md",
+    "scripts/distribution.test.ts"
+  ],
+  "unitTests": 2,
+  "unitOutcome": "passed after 2 intended RED failures",
+  "scopedBiome": "passed",
+  "typedEslint": {
+    "exitCode": 0,
+    "durationSeconds": 7.091,
+    "privateLog": ".runtime/sales-evidence/distribution-static.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "shadcnNoticeSha256": "1564074e13439397221ffd522e2e504d56561994a23d371aa5e3ad43e4f5423f",
+  "limits": [
+    "Effective ignore matching and bounded COPY contract/notice bytes were tested",
+    "No Docker image/build/disclosure or actual runtime-image contents observed",
+    "No dependencies, versions, schema or private runtime data changed",
+    "Transitive notices and eventual image artifact still require qualification"
+  ]
+}

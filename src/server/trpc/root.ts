@@ -19,6 +19,7 @@ import { versionRouter } from "@/features/release/router";
 import { savedFiltersRouter } from "@/features/saved-filters/router";
 import { searchRouter } from "@/features/search/router";
 import { statsRouter } from "@/features/stats/router";
+import { workflowsRouter } from "@/features/workflows/router";
 import { identityRouter } from "./routers/identity";
 import { realtimeRouter } from "./routers/realtime";
 import { router } from "./trpc";
@@ -46,6 +47,7 @@ export const appRouter = router({
   savedFilters: savedFiltersRouter,
   search: searchRouter,
   stats: statsRouter,
+  workflows: workflowsRouter,
   version: versionRouter,
 });
 

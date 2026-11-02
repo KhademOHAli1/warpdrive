@@ -1,6 +1,6 @@
 {
-  "id": "fb6dc7c0-2c25-4938-b4e6-6490acb3bdfd",
-  "prevId": "80c5cb0f-6c26-4395-8375-fe54d6d86bb3",
+  "id": "88d667fd-b19c-47a1-877e-f1a8e8454e64",
+  "prevId": "d1969358-f19d-406b-9068-2473c761a661",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -26,39 +26,6 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true
-        },
-        "version": {
-          "name": "version",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 1
-        },
-        "event_time_zone": {
-          "name": "event_time_zone",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "calendar_id": {
-          "name": "calendar_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "event_visibility": {
-          "name": "event_visibility",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'default'"
-        },
-        "availability": {
-          "name": "availability",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'busy'"
         },
         "due_at": {
           "name": "due_at",
@@ -102,13 +69,6 @@
           "type": "text",
           "primaryKey": false,
           "notNull": false
-        },
-        "reminder_automation_enabled": {
-          "name": "reminder_automation_enabled",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": true
         },
         "done": {
           "name": "done",
@@ -229,30 +189,9 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
-        },
-        "activity_calendar_idx": {
-          "name": "activity_calendar_idx",
-          "columns": [
-            {
-              "expression": "calendar_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "due_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "with": {},
-          "method": "btree",
-          "concurrently": false
+          "with": {}
         },
         "activity_deal_idx": {
           "name": "activity_deal_idx",
@@ -265,9 +204,9 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         },
         "activity_lead_idx": {
           "name": "activity_lead_idx",
@@ -280,9 +219,9 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         },
         "activity_person_idx": {
           "name": "activity_person_idx",
@@ -295,9 +234,9 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         },
         "activity_org_idx": {
           "name": "activity_org_idx",
@@ -310,9 +249,9 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         },
         "activity_reminder_idx": {
           "name": "activity_reminder_idx",
@@ -325,130 +264,109 @@
             }
           ],
           "isUnique": false,
-          "with": {},
-          "method": "btree",
           "where": "done = false",
-          "concurrently": false
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
         "activities_type_id_activity_types_id_fk": {
           "name": "activities_type_id_activity_types_id_fk",
           "tableFrom": "activities",
+          "tableTo": "activity_types",
           "columnsFrom": [
             "type_id"
           ],
-          "tableTo": "activity_types",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
-        },
-        "activities_calendar_id_calendars_id_fk": {
-          "name": "activities_calendar_id_calendars_id_fk",
-          "tableFrom": "activities",
-          "columnsFrom": [
-            "calendar_id"
-          ],
-          "tableTo": "calendars",
-          "columnsTo": [
-            "id"
-          ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         },
         "activities_owner_id_users_id_fk": {
           "name": "activities_owner_id_users_id_fk",
           "tableFrom": "activities",
+          "tableTo": "users",
           "columnsFrom": [
             "owner_id"
           ],
-          "tableTo": "users",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         },
         "activities_assignee_id_users_id_fk": {
           "name": "activities_assignee_id_users_id_fk",
           "tableFrom": "activities",
+          "tableTo": "users",
           "columnsFrom": [
             "assignee_id"
           ],
-          "tableTo": "users",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         },
         "activities_deal_id_deals_id_fk": {
           "name": "activities_deal_id_deals_id_fk",
           "tableFrom": "activities",
+          "tableTo": "deals",
           "columnsFrom": [
             "deal_id"
           ],
-          "tableTo": "deals",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         },
         "activities_lead_id_leads_id_fk": {
           "name": "activities_lead_id_leads_id_fk",
           "tableFrom": "activities",
+          "tableTo": "leads",
           "columnsFrom": [
             "lead_id"
           ],
-          "tableTo": "leads",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         },
         "activities_person_id_persons_id_fk": {
           "name": "activities_person_id_persons_id_fk",
           "tableFrom": "activities",
+          "tableTo": "persons",
           "columnsFrom": [
             "person_id"
           ],
-          "tableTo": "persons",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         },
         "activities_org_id_organizations_id_fk": {
           "name": "activities_org_id_organizations_id_fk",
           "tableFrom": "activities",
+          "tableTo": "organizations",
           "columnsFrom": [
             "org_id"
           ],
-          "tableTo": "organizations",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {
-        "activity_event_visibility": {
-          "name": "activity_event_visibility",
-          "value": "\"activities\".\"event_visibility\" in ('default','private')"
-        },
-        "activity_availability": {
-          "name": "activity_availability",
-          "value": "\"activities\".\"availability\" in ('busy','free')"
-        },
         "activity_single_parent": {
           "name": "activity_single_parent",
           "value": "num_nonnulls(\"activities\".\"deal_id\", \"activities\".\"lead_id\") <= 1"
@@ -478,28 +396,28 @@
         "activity_guests_activity_id_activities_id_fk": {
           "name": "activity_guests_activity_id_activities_id_fk",
           "tableFrom": "activity_guests",
+          "tableTo": "activities",
           "columnsFrom": [
             "activity_id"
           ],
-          "tableTo": "activities",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "activity_guests_person_id_persons_id_fk": {
           "name": "activity_guests_person_id_persons_id_fk",
           "tableFrom": "activity_guests",
+          "tableTo": "persons",
           "columnsFrom": [
             "person_id"
           ],
-          "tableTo": "persons",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
@@ -551,37 +469,37 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "activity_participants_activity_id_activities_id_fk": {
           "name": "activity_participants_activity_id_activities_id_fk",
           "tableFrom": "activity_participants",
+          "tableTo": "activities",
           "columnsFrom": [
             "activity_id"
           ],
-          "tableTo": "activities",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "activity_participants_user_id_users_id_fk": {
           "name": "activity_participants_user_id_users_id_fk",
           "tableFrom": "activity_participants",
+          "tableTo": "users",
           "columnsFrom": [
             "user_id"
           ],
-          "tableTo": "users",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
@@ -596,352 +514,6 @@
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.activity_reminder_intents": {
-      "name": "activity_reminder_intents",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "activity_id": {
-          "name": "activity_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "assignee_id": {
-          "name": "assignee_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "settings_id": {
-          "name": "settings_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "settings_version": {
-          "name": "settings_version",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
-        },
-        "defaults_version": {
-          "name": "defaults_version",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
-        },
-        "event_signature": {
-          "name": "event_signature",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "''"
-        },
-        "in_app": {
-          "name": "in_app",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": true
-        },
-        "email": {
-          "name": "email",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": true
-        },
-        "due_at": {
-          "name": "due_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "fire_at": {
-          "name": "fire_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "state": {
-          "name": "state",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'pending'"
-        },
-        "dispatched_at": {
-          "name": "dispatched_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "delivered_at": {
-          "name": "delivered_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "cancelled_at": {
-          "name": "cancelled_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "notification_id": {
-          "name": "notification_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "email_enqueued_at": {
-          "name": "email_enqueued_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {
-        "activity_reminder_dispatch_idx": {
-          "name": "activity_reminder_dispatch_idx",
-          "columns": [
-            {
-              "expression": "state",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "fire_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "with": {},
-          "method": "btree",
-          "concurrently": false
-        },
-        "activity_reminder_activity_idx": {
-          "name": "activity_reminder_activity_idx",
-          "columns": [
-            {
-              "expression": "activity_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "with": {},
-          "method": "btree",
-          "concurrently": false
-        }
-      },
-      "foreignKeys": {
-        "activity_reminder_intents_activity_id_activities_id_fk": {
-          "name": "activity_reminder_intents_activity_id_activities_id_fk",
-          "tableFrom": "activity_reminder_intents",
-          "columnsFrom": [
-            "activity_id"
-          ],
-          "tableTo": "activities",
-          "columnsTo": [
-            "id"
-          ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
-        },
-        "activity_reminder_intents_assignee_id_users_id_fk": {
-          "name": "activity_reminder_intents_assignee_id_users_id_fk",
-          "tableFrom": "activity_reminder_intents",
-          "columnsFrom": [
-            "assignee_id"
-          ],
-          "tableTo": "users",
-          "columnsTo": [
-            "id"
-          ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
-        },
-        "activity_reminder_intents_settings_id_activity_reminder_settings_id_fk": {
-          "name": "activity_reminder_intents_settings_id_activity_reminder_settings_id_fk",
-          "tableFrom": "activity_reminder_intents",
-          "columnsFrom": [
-            "settings_id"
-          ],
-          "tableTo": "activity_reminder_settings",
-          "columnsTo": [
-            "id"
-          ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
-        },
-        "activity_reminder_intents_notification_id_notifications_id_fk": {
-          "name": "activity_reminder_intents_notification_id_notifications_id_fk",
-          "tableFrom": "activity_reminder_intents",
-          "columnsFrom": [
-            "notification_id"
-          ],
-          "tableTo": "notifications",
-          "columnsTo": [
-            "id"
-          ],
-          "onUpdate": "no action",
-          "onDelete": "set null"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.activity_reminder_settings": {
-      "name": "activity_reminder_settings",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "activity_id": {
-          "name": "activity_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "source": {
-          "name": "source",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'assignment'"
-        },
-        "use_default": {
-          "name": "use_default",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": true
-        },
-        "rules": {
-          "name": "rules",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'{\"timed\":[{\"method\":\"notification\",\"minutesBefore\":10},{\"method\":\"email\",\"minutesBefore\":10}],\"allDay\":[{\"method\":\"notification\",\"daysBefore\":0,\"time\":\"09:00\"},{\"method\":\"email\",\"daysBefore\":0,\"time\":\"09:00\"}]}'::jsonb"
-        },
-        "version": {
-          "name": "version",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 1
-        },
-        "time_zone": {
-          "name": "time_zone",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {
-        "activity_reminder_settings_user_idx": {
-          "name": "activity_reminder_settings_user_idx",
-          "columns": [
-            {
-              "expression": "activity_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "user_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "with": {},
-          "method": "btree",
-          "concurrently": false
-        }
-      },
-      "foreignKeys": {
-        "activity_reminder_settings_activity_id_activities_id_fk": {
-          "name": "activity_reminder_settings_activity_id_activities_id_fk",
-          "tableFrom": "activity_reminder_settings",
-          "columnsFrom": [
-            "activity_id"
-          ],
-          "tableTo": "activities",
-          "columnsTo": [
-            "id"
-          ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
-        },
-        "activity_reminder_settings_user_id_users_id_fk": {
-          "name": "activity_reminder_settings_user_id_users_id_fk",
-          "tableFrom": "activity_reminder_settings",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "tableTo": "users",
-          "columnsTo": [
-            "id"
-          ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {
-        "activity_reminder_source": {
-          "name": "activity_reminder_source",
-          "value": "\"activity_reminder_settings\".\"source\" in ('assignment','personal')"
-        }
-      },
       "isRLSEnabled": false
     },
     "public.activity_types": {
@@ -1007,10 +579,10 @@
       "uniqueConstraints": {
         "activity_types_key_unique": {
           "name": "activity_types_key_unique",
+          "nullsNotDistinct": false,
           "columns": [
             "key"
-          ],
-          "nullsNotDistinct": false
+          ]
         }
       },
       "policies": {},
@@ -1147,24 +719,24 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "audit_events_actor_id_users_id_fk": {
           "name": "audit_events_actor_id_users_id_fk",
           "tableFrom": "audit_events",
+          "tableTo": "users",
           "columnsFrom": [
             "actor_id"
           ],
-          "tableTo": "users",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -1277,9 +849,9 @@
             }
           ],
           "isUnique": true,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         },
         "auth_accounts_user_idx": {
           "name": "auth_accounts_user_idx",
@@ -1292,24 +864,24 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "auth_accounts_user_id_auth_users_id_fk": {
           "name": "auth_accounts_user_id_auth_users_id_fk",
           "tableFrom": "auth_accounts",
+          "tableTo": "auth_users",
           "columnsFrom": [
             "user_id"
           ],
-          "tableTo": "auth_users",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -1402,9 +974,9 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         },
         "auth_email_verification_expiry_idx": {
           "name": "auth_email_verification_expiry_idx",
@@ -1417,24 +989,24 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "auth_email_verification_tokens_user_id_auth_users_id_fk": {
           "name": "auth_email_verification_tokens_user_id_auth_users_id_fk",
           "tableFrom": "auth_email_verification_tokens",
+          "tableTo": "auth_users",
           "columnsFrom": [
             "user_id"
           ],
-          "tableTo": "auth_users",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -1537,24 +1109,24 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "auth_integration_revocations_user_id_users_id_fk": {
           "name": "auth_integration_revocations_user_id_users_id_fk",
           "tableFrom": "auth_integration_revocations",
+          "tableTo": "users",
           "columnsFrom": [
             "user_id"
           ],
-          "tableTo": "users",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -1643,47 +1215,47 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "auth_invitations_user_id_users_id_fk": {
           "name": "auth_invitations_user_id_users_id_fk",
           "tableFrom": "auth_invitations",
+          "tableTo": "users",
           "columnsFrom": [
             "user_id"
           ],
-          "tableTo": "users",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         },
         "auth_invitations_invited_by_users_id_fk": {
           "name": "auth_invitations_invited_by_users_id_fk",
           "tableFrom": "auth_invitations",
+          "tableTo": "users",
           "columnsFrom": [
             "invited_by"
           ],
-          "tableTo": "users",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "auth_invitations_token_hash_unique": {
           "name": "auth_invitations_token_hash_unique",
+          "nullsNotDistinct": false,
           "columns": [
             "token_hash"
-          ],
-          "nullsNotDistinct": false
+          ]
         }
       },
       "policies": {},
@@ -1813,37 +1385,37 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "auth_mail_outbox_user_id_users_id_fk": {
           "name": "auth_mail_outbox_user_id_users_id_fk",
           "tableFrom": "auth_mail_outbox",
+          "tableTo": "users",
           "columnsFrom": [
             "user_id"
           ],
-          "tableTo": "users",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         },
         "auth_mail_outbox_invitation_id_auth_invitations_id_fk": {
           "name": "auth_mail_outbox_invitation_id_auth_invitations_id_fk",
           "tableFrom": "auth_mail_outbox",
+          "tableTo": "auth_invitations",
           "columnsFrom": [
             "invitation_id"
           ],
-          "tableTo": "auth_invitations",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -1943,34 +1515,34 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "auth_passkeys_user_id_auth_users_id_fk": {
           "name": "auth_passkeys_user_id_auth_users_id_fk",
           "tableFrom": "auth_passkeys",
+          "tableTo": "auth_users",
           "columnsFrom": [
             "user_id"
           ],
-          "tableTo": "auth_users",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "auth_passkeys_credential_id_unique": {
           "name": "auth_passkeys_credential_id_unique",
+          "nullsNotDistinct": false,
           "columns": [
             "credential_id"
-          ],
-          "nullsNotDistinct": false
+          ]
         }
       },
       "policies": {},
@@ -2035,15 +1607,15 @@
         "auth_policies_updated_by_users_id_fk": {
           "name": "auth_policies_updated_by_users_id_fk",
           "tableFrom": "auth_policies",
+          "tableTo": "users",
           "columnsFrom": [
             "updated_by"
           ],
-          "tableTo": "users",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -2098,10 +1670,10 @@
       "uniqueConstraints": {
         "auth_rate_limits_key_unique": {
           "name": "auth_rate_limits_key_unique",
+          "nullsNotDistinct": false,
           "columns": [
             "key"
-          ],
-          "nullsNotDistinct": false
+          ]
         }
       },
       "policies": {},
@@ -2182,37 +1754,37 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "auth_recovery_requests_user_id_users_id_fk": {
           "name": "auth_recovery_requests_user_id_users_id_fk",
           "tableFrom": "auth_recovery_requests",
+          "tableTo": "users",
           "columnsFrom": [
             "user_id"
           ],
-          "tableTo": "users",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         },
         "auth_recovery_requests_reviewed_by_users_id_fk": {
           "name": "auth_recovery_requests_reviewed_by_users_id_fk",
           "tableFrom": "auth_recovery_requests",
+          "tableTo": "users",
           "columnsFrom": [
             "reviewed_by"
           ],
-          "tableTo": "users",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -2292,9 +1864,9 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         },
         "auth_security_event_user_idx": {
           "name": "auth_security_event_user_idx",
@@ -2313,37 +1885,37 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "auth_security_events_actor_id_users_id_fk": {
           "name": "auth_security_events_actor_id_users_id_fk",
           "tableFrom": "auth_security_events",
+          "tableTo": "users",
           "columnsFrom": [
             "actor_id"
           ],
-          "tableTo": "users",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         },
         "auth_security_events_target_user_id_users_id_fk": {
           "name": "auth_security_events_target_user_id_users_id_fk",
           "tableFrom": "auth_security_events",
+          "tableTo": "users",
           "columnsFrom": [
             "target_user_id"
           ],
-          "tableTo": "users",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -2387,24 +1959,24 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "auth_totp_replays_factor_id_auth_two_factors_id_fk": {
           "name": "auth_totp_replays_factor_id_auth_two_factors_id_fk",
           "tableFrom": "auth_totp_replays",
+          "tableTo": "auth_two_factors",
           "columnsFrom": [
             "factor_id"
           ],
-          "tableTo": "auth_two_factors",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
@@ -2476,25 +2048,25 @@
         "auth_two_factors_user_id_auth_users_id_fk": {
           "name": "auth_two_factors_user_id_auth_users_id_fk",
           "tableFrom": "auth_two_factors",
+          "tableTo": "auth_users",
           "columnsFrom": [
             "user_id"
           ],
-          "tableTo": "auth_users",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "auth_two_factors_user_id_unique": {
           "name": "auth_two_factors_user_id_unique",
+          "nullsNotDistinct": false,
           "columns": [
             "user_id"
-          ],
-          "nullsNotDistinct": false
+          ]
         }
       },
       "policies": {},
@@ -2563,25 +2135,25 @@
         "auth_users_id_users_id_fk": {
           "name": "auth_users_id_users_id_fk",
           "tableFrom": "auth_users",
+          "tableTo": "users",
           "columnsFrom": [
             "id"
           ],
-          "tableTo": "users",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "auth_users_email_unique": {
           "name": "auth_users_email_unique",
+          "nullsNotDistinct": false,
           "columns": [
             "email"
-          ],
-          "nullsNotDistinct": false
+          ]
         }
       },
       "policies": {},
@@ -2644,572 +2216,12 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.calendar_members": {
-      "name": "calendar_members",
-      "schema": "",
-      "columns": {
-        "calendar_id": {
-          "name": "calendar_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "role": {
-          "name": "role",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "calendar_members_calendar_id_calendars_id_fk": {
-          "name": "calendar_members_calendar_id_calendars_id_fk",
-          "tableFrom": "calendar_members",
-          "columnsFrom": [
-            "calendar_id"
-          ],
-          "tableTo": "calendars",
-          "columnsTo": [
-            "id"
-          ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
-        },
-        "calendar_members_user_id_users_id_fk": {
-          "name": "calendar_members_user_id_users_id_fk",
-          "tableFrom": "calendar_members",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "tableTo": "users",
-          "columnsTo": [
-            "id"
-          ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
-        }
-      },
-      "compositePrimaryKeys": {
-        "calendar_members_calendar_id_user_id_pk": {
-          "name": "calendar_members_calendar_id_user_id_pk",
-          "columns": [
-            "calendar_id",
-            "user_id"
-          ]
-        }
-      },
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {
-        "calendar_member_role": {
-          "name": "calendar_member_role",
-          "value": "\"calendar_members\".\"role\" in ('freeBusy','reader','editor')"
-        }
-      },
-      "isRLSEnabled": false
-    },
-    "public.calendar_oauth_attempts": {
-      "name": "calendar_oauth_attempts",
-      "schema": "",
-      "columns": {
-        "state_hash": {
-          "name": "state_hash",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "browser_binding_hash": {
-          "name": "browser_binding_hash",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "code_verifier_enc": {
-          "name": "code_verifier_enc",
-          "type": "bytea",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "client_id": {
-          "name": "client_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "redirect_uri": {
-          "name": "redirect_uri",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "requested_access": {
-          "name": "requested_access",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "account_id": {
-          "name": "account_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "account_version": {
-          "name": "account_version",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "expires_at": {
-          "name": "expires_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "consumed_at": {
-          "name": "consumed_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "cancelled_at": {
-          "name": "cancelled_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {
-        "calendar_oauth_owner_expiry_idx": {
-          "name": "calendar_oauth_owner_expiry_idx",
-          "columns": [
-            {
-              "expression": "user_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "expires_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "with": {},
-          "method": "btree",
-          "concurrently": false
-        }
-      },
-      "foreignKeys": {
-        "calendar_oauth_attempts_user_id_users_id_fk": {
-          "name": "calendar_oauth_attempts_user_id_users_id_fk",
-          "tableFrom": "calendar_oauth_attempts",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "tableTo": "users",
-          "columnsTo": [
-            "id"
-          ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
-        },
-        "calendar_oauth_attempts_account_id_user_id_calendar_provider_accounts_id_user_id_fk": {
-          "name": "calendar_oauth_attempts_account_id_user_id_calendar_provider_accounts_id_user_id_fk",
-          "tableFrom": "calendar_oauth_attempts",
-          "columnsFrom": [
-            "account_id",
-            "user_id"
-          ],
-          "tableTo": "calendar_provider_accounts",
-          "columnsTo": [
-            "id",
-            "user_id"
-          ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {
-        "calendar_oauth_access": {
-          "name": "calendar_oauth_access",
-          "value": "\"calendar_oauth_attempts\".\"requested_access\" in ('readOnly','readWrite')"
-        }
-      },
-      "isRLSEnabled": false
-    },
-    "public.calendar_provider_accounts": {
-      "name": "calendar_provider_accounts",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "provider": {
-          "name": "provider",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'google'"
-        },
-        "provider_subject": {
-          "name": "provider_subject",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "client_id": {
-          "name": "client_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "email_address": {
-          "name": "email_address",
-          "type": "citext",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "refresh_token_enc": {
-          "name": "refresh_token_enc",
-          "type": "bytea",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "scopes": {
-          "name": "scopes",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'[]'::jsonb"
-        },
-        "status": {
-          "name": "status",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'connected'"
-        },
-        "version": {
-          "name": "version",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 1
-        },
-        "last_error_code": {
-          "name": "last_error_code",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "connected_at": {
-          "name": "connected_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "disconnected_at": {
-          "name": "disconnected_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {
-        "calendar_provider_owner_status_idx": {
-          "name": "calendar_provider_owner_status_idx",
-          "columns": [
-            {
-              "expression": "user_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "status",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "with": {},
-          "method": "btree",
-          "concurrently": false
-        }
-      },
-      "foreignKeys": {
-        "calendar_provider_accounts_user_id_users_id_fk": {
-          "name": "calendar_provider_accounts_user_id_users_id_fk",
-          "tableFrom": "calendar_provider_accounts",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "tableTo": "users",
-          "columnsTo": [
-            "id"
-          ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "calendar_provider_owner_subject_uniq": {
-          "name": "calendar_provider_owner_subject_uniq",
-          "columns": [
-            "user_id",
-            "provider",
-            "provider_subject"
-          ],
-          "nullsNotDistinct": false
-        },
-        "calendar_provider_id_owner_uniq": {
-          "name": "calendar_provider_id_owner_uniq",
-          "columns": [
-            "id",
-            "user_id"
-          ],
-          "nullsNotDistinct": false
-        }
-      },
-      "policies": {},
-      "checkConstraints": {
-        "calendar_provider_google": {
-          "name": "calendar_provider_google",
-          "value": "\"calendar_provider_accounts\".\"provider\" = 'google'"
-        },
-        "calendar_provider_status": {
-          "name": "calendar_provider_status",
-          "value": "\"calendar_provider_accounts\".\"status\" in ('connected','reauthRequired','disconnected')"
-        },
-        "calendar_provider_scope_array": {
-          "name": "calendar_provider_scope_array",
-          "value": "jsonb_typeof(\"calendar_provider_accounts\".\"scopes\") = 'array'"
-        }
-      },
-      "isRLSEnabled": false
-    },
-    "public.calendar_reminder_defaults": {
-      "name": "calendar_reminder_defaults",
-      "schema": "",
-      "columns": {
-        "calendar_id": {
-          "name": "calendar_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "rules": {
-          "name": "rules",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'{\"timed\":[{\"method\":\"notification\",\"minutesBefore\":10},{\"method\":\"email\",\"minutesBefore\":10}],\"allDay\":[{\"method\":\"notification\",\"daysBefore\":0,\"time\":\"09:00\"},{\"method\":\"email\",\"daysBefore\":0,\"time\":\"09:00\"}]}'::jsonb"
-        },
-        "version": {
-          "name": "version",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 1
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "calendar_reminder_defaults_calendar_id_calendars_id_fk": {
-          "name": "calendar_reminder_defaults_calendar_id_calendars_id_fk",
-          "tableFrom": "calendar_reminder_defaults",
-          "columnsFrom": [
-            "calendar_id"
-          ],
-          "tableTo": "calendars",
-          "columnsTo": [
-            "id"
-          ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
-        },
-        "calendar_reminder_defaults_user_id_users_id_fk": {
-          "name": "calendar_reminder_defaults_user_id_users_id_fk",
-          "tableFrom": "calendar_reminder_defaults",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "tableTo": "users",
-          "columnsTo": [
-            "id"
-          ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
-        }
-      },
-      "compositePrimaryKeys": {
-        "calendar_reminder_defaults_calendar_id_user_id_pk": {
-          "name": "calendar_reminder_defaults_calendar_id_user_id_pk",
-          "columns": [
-            "calendar_id",
-            "user_id"
-          ]
-        }
-      },
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.calendars": {
-      "name": "calendars",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "owner_id": {
-          "name": "owner_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "time_zone": {
-          "name": "time_zone",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "is_primary": {
-          "name": "is_primary",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "deleted_at": {
-          "name": "deleted_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {
-        "calendar_primary_owner": {
-          "name": "calendar_primary_owner",
-          "columns": [
-            {
-              "expression": "owner_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "with": {},
-          "method": "btree",
-          "where": "\"calendars\".\"is_primary\" = true",
-          "concurrently": false
-        }
-      },
-      "foreignKeys": {
-        "calendars_owner_id_users_id_fk": {
-          "name": "calendars_owner_id_users_id_fk",
-          "tableFrom": "calendars",
-          "columnsFrom": [
-            "owner_id"
-          ],
-          "tableTo": "users",
-          "columnsTo": [
-            "id"
-          ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
-        }
-      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
@@ -3295,24 +2307,24 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "change_logs_actor_id_users_id_fk": {
           "name": "change_logs_actor_id_users_id_fk",
           "tableFrom": "change_logs",
+          "tableTo": "users",
           "columnsFrom": [
             "actor_id"
           ],
-          "tableTo": "users",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -3410,37 +2422,37 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "comments_note_id_notes_id_fk": {
           "name": "comments_note_id_notes_id_fk",
           "tableFrom": "comments",
+          "tableTo": "notes",
           "columnsFrom": [
             "note_id"
           ],
-          "tableTo": "notes",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "comments_author_id_users_id_fk": {
           "name": "comments_author_id_users_id_fk",
           "tableFrom": "comments",
+          "tableTo": "users",
           "columnsFrom": [
             "author_id"
           ],
-          "tableTo": "users",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -3484,15 +2496,15 @@
         "contact_followers_user_id_users_id_fk": {
           "name": "contact_followers_user_id_users_id_fk",
           "tableFrom": "contact_followers",
+          "tableTo": "users",
           "columnsFrom": [
             "user_id"
           ],
-          "tableTo": "users",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
@@ -3609,11 +2621,11 @@
       "uniqueConstraints": {
         "cf_def_target_key_unique": {
           "name": "cf_def_target_key_unique",
+          "nullsNotDistinct": false,
           "columns": [
             "target_entity",
             "key"
-          ],
-          "nullsNotDistinct": false
+          ]
         }
       },
       "policies": {},
@@ -3649,28 +2661,28 @@
         "deal_followers_deal_id_deals_id_fk": {
           "name": "deal_followers_deal_id_deals_id_fk",
           "tableFrom": "deal_followers",
+          "tableTo": "deals",
           "columnsFrom": [
             "deal_id"
           ],
-          "tableTo": "deals",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "deal_followers_user_id_users_id_fk": {
           "name": "deal_followers_user_id_users_id_fk",
           "tableFrom": "deal_followers",
+          "tableTo": "users",
           "columnsFrom": [
             "user_id"
           ],
-          "tableTo": "users",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
@@ -3709,28 +2721,28 @@
         "deal_labels_deal_id_deals_id_fk": {
           "name": "deal_labels_deal_id_deals_id_fk",
           "tableFrom": "deal_labels",
+          "tableTo": "deals",
           "columnsFrom": [
             "deal_id"
           ],
-          "tableTo": "deals",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "deal_labels_label_id_labels_id_fk": {
           "name": "deal_labels_label_id_labels_id_fk",
           "tableFrom": "deal_labels",
+          "tableTo": "labels",
           "columnsFrom": [
             "label_id"
           ],
-          "tableTo": "labels",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
@@ -3789,24 +2801,24 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "deal_participants_deal_id_deals_id_fk": {
           "name": "deal_participants_deal_id_deals_id_fk",
           "tableFrom": "deal_participants",
+          "tableTo": "deals",
           "columnsFrom": [
             "deal_id"
           ],
-          "tableTo": "deals",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
@@ -3999,8 +3011,8 @@
           "primaryKey": false,
           "notNull": true,
           "generated": {
-            "type": "stored",
-            "as": "to_tsvector('simple', coalesce(title, ''))"
+            "as": "to_tsvector('simple', coalesce(title, ''))",
+            "type": "stored"
           }
         },
         "created_at": {
@@ -4054,10 +3066,10 @@
             }
           ],
           "isUnique": false,
-          "with": {},
-          "method": "btree",
           "where": "deleted_at is null",
-          "concurrently": false
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         },
         "deals_stage_pos_idx": {
           "name": "deals_stage_pos_idx",
@@ -4076,9 +3088,9 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         },
         "deals_archived_idx": {
           "name": "deals_archived_idx",
@@ -4091,10 +3103,10 @@
             }
           ],
           "isUnique": false,
-          "with": {},
-          "method": "btree",
           "where": "deleted_at is null",
-          "concurrently": false
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         },
         "deals_owner_idx": {
           "name": "deals_owner_idx",
@@ -4107,9 +3119,9 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         },
         "deals_person_idx": {
           "name": "deals_person_idx",
@@ -4122,9 +3134,9 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         },
         "deals_org_idx": {
           "name": "deals_org_idx",
@@ -4137,9 +3149,9 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         },
         "deals_pipeline_idx": {
           "name": "deals_pipeline_idx",
@@ -4152,9 +3164,9 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         },
         "deals_next_activity_idx": {
           "name": "deals_next_activity_idx",
@@ -4167,9 +3179,9 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         },
         "deals_close_date_idx": {
           "name": "deals_close_date_idx",
@@ -4182,9 +3194,9 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         },
         "deals_visible_to_gin": {
           "name": "deals_visible_to_gin",
@@ -4197,9 +3209,9 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "gin",
-          "concurrently": false
+          "with": {}
         },
         "deals_visibility_group_idx": {
           "name": "deals_visibility_group_idx",
@@ -4212,10 +3224,10 @@
             }
           ],
           "isUnique": false,
-          "with": {},
-          "method": "btree",
           "where": "visibility_level = 'group'",
-          "concurrently": false
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         },
         "deals_custom_fields_gin": {
           "name": "deals_custom_fields_gin",
@@ -4228,9 +3240,9 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "gin",
-          "concurrently": false
+          "with": {}
         },
         "deals_search_gin": {
           "name": "deals_search_gin",
@@ -4243,78 +3255,78 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "gin",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "deals_lost_reason_id_lost_reasons_id_fk": {
           "name": "deals_lost_reason_id_lost_reasons_id_fk",
           "tableFrom": "deals",
+          "tableTo": "lost_reasons",
           "columnsFrom": [
             "lost_reason_id"
           ],
-          "tableTo": "lost_reasons",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         },
         "deals_pipeline_id_pipelines_id_fk": {
           "name": "deals_pipeline_id_pipelines_id_fk",
           "tableFrom": "deals",
+          "tableTo": "pipelines",
           "columnsFrom": [
             "pipeline_id"
           ],
-          "tableTo": "pipelines",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         },
         "deals_owner_id_users_id_fk": {
           "name": "deals_owner_id_users_id_fk",
           "tableFrom": "deals",
+          "tableTo": "users",
           "columnsFrom": [
             "owner_id"
           ],
-          "tableTo": "users",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         },
         "deals_visibility_group_id_visibility_groups_id_fk": {
           "name": "deals_visibility_group_id_visibility_groups_id_fk",
           "tableFrom": "deals",
+          "tableTo": "visibility_groups",
           "columnsFrom": [
             "visibility_group_id"
           ],
-          "tableTo": "visibility_groups",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         },
         "deals_stage_pipeline_fk": {
           "name": "deals_stage_pipeline_fk",
           "tableFrom": "deals",
+          "tableTo": "stages",
           "columnsFrom": [
             "stage_id",
             "pipeline_id"
           ],
-          "tableTo": "stages",
           "columnsTo": [
             "id",
             "pipeline_id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -4350,6 +3362,73 @@
           "type": "citext",
           "primaryKey": false,
           "notNull": true
+        },
+        "provider": {
+          "name": "provider",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'gmail'"
+        },
+        "display_name": {
+          "name": "display_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "is_default": {
+          "name": "is_default",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "paused": {
+          "name": "paused",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "connection_generation": {
+          "name": "connection_generation",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        },
+        "credentials_enc": {
+          "name": "credentials_enc",
+          "type": "bytea",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "connection_settings": {
+          "name": "connection_settings",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "history_days": {
+          "name": "history_days",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 90
+        },
+        "folder_paths": {
+          "name": "folder_paths",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'[]'::jsonb"
+        },
+        "capabilities": {
+          "name": "capabilities",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{\"read\":true,\"send\":true,\"markRead\":false,\"move\":false,\"trash\":true}'::jsonb"
         },
         "refresh_token_enc": {
           "name": "refresh_token_enc",
@@ -4411,37 +3490,62 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "email_accounts_owner_idx": {
+          "name": "email_accounts_owner_idx",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "email_accounts_default_owner_uq": {
+          "name": "email_accounts_default_owner_uq",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"email_accounts\".\"is_default\" = true",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "email_accounts_user_id_users_id_fk": {
           "name": "email_accounts_user_id_users_id_fk",
           "tableFrom": "email_accounts",
+          "tableTo": "users",
           "columnsFrom": [
             "user_id"
           ],
-          "tableTo": "users",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "email_accounts_user_id_unique": {
-          "name": "email_accounts_user_id_unique",
-          "columns": [
-            "user_id"
-          ],
-          "nullsNotDistinct": false
-        },
         "email_accounts_email_address_unique": {
           "name": "email_accounts_email_address_unique",
+          "nullsNotDistinct": false,
           "columns": [
             "email_address"
-          ],
-          "nullsNotDistinct": false
+          ]
         }
       },
       "policies": {},
@@ -4537,30 +3641,30 @@
         "email_drafts_account_id_email_accounts_id_fk": {
           "name": "email_drafts_account_id_email_accounts_id_fk",
           "tableFrom": "email_drafts",
+          "tableTo": "email_accounts",
           "columnsFrom": [
             "account_id"
           ],
-          "tableTo": "email_accounts",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         },
         "fk_draft_thread_same_mailbox": {
           "name": "fk_draft_thread_same_mailbox",
           "tableFrom": "email_drafts",
+          "tableTo": "email_threads",
           "columnsFrom": [
             "thread_id",
             "account_id"
           ],
-          "tableTo": "email_threads",
           "columnsTo": [
             "id",
             "account_id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -4629,15 +3733,15 @@
         "email_message_attachments_message_id_email_messages_id_fk": {
           "name": "email_message_attachments_message_id_email_messages_id_fk",
           "tableFrom": "email_message_attachments",
+          "tableTo": "email_messages",
           "columnsFrom": [
             "message_id"
           ],
-          "tableTo": "email_messages",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -4758,28 +3862,28 @@
         "fk_msg_thread_same_mailbox": {
           "name": "fk_msg_thread_same_mailbox",
           "tableFrom": "email_messages",
+          "tableTo": "email_threads",
           "columnsFrom": [
             "thread_id",
             "account_id"
           ],
-          "tableTo": "email_threads",
           "columnsTo": [
             "id",
             "account_id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "uq_msg_acct_gmail": {
           "name": "uq_msg_acct_gmail",
+          "nullsNotDistinct": false,
           "columns": [
             "account_id",
             "gmail_message_id"
-          ],
-          "nullsNotDistinct": false
+          ]
         }
       },
       "policies": {},
@@ -4890,48 +3994,48 @@
         "email_send_attempts_account_id_email_accounts_id_fk": {
           "name": "email_send_attempts_account_id_email_accounts_id_fk",
           "tableFrom": "email_send_attempts",
+          "tableTo": "email_accounts",
           "columnsFrom": [
             "account_id"
           ],
-          "tableTo": "email_accounts",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         },
         "fk_attempt_thread_same_mailbox": {
           "name": "fk_attempt_thread_same_mailbox",
           "tableFrom": "email_send_attempts",
+          "tableTo": "email_threads",
           "columnsFrom": [
             "thread_id",
             "account_id"
           ],
-          "tableTo": "email_threads",
           "columnsTo": [
             "id",
             "account_id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "uq_attempt_acct_key": {
           "name": "uq_attempt_acct_key",
+          "nullsNotDistinct": false,
           "columns": [
             "account_id",
             "idempotency_key"
-          ],
-          "nullsNotDistinct": false
+          ]
         },
         "uq_attempt_msgid": {
           "name": "uq_attempt_msgid",
+          "nullsNotDistinct": false,
           "columns": [
             "message_id_header"
-          ],
-          "nullsNotDistinct": false
+          ]
         }
       },
       "policies": {},
@@ -5006,15 +4110,15 @@
         "email_templates_owner_id_users_id_fk": {
           "name": "email_templates_owner_id_users_id_fk",
           "tableFrom": "email_templates",
+          "tableTo": "users",
           "columnsFrom": [
             "owner_id"
           ],
-          "tableTo": "users",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -5052,15 +4156,15 @@
         "email_thread_reads_user_id_users_id_fk": {
           "name": "email_thread_reads_user_id_users_id_fk",
           "tableFrom": "email_thread_reads",
+          "tableTo": "users",
           "columnsFrom": [
             "user_id"
           ],
-          "tableTo": "users",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
@@ -5196,44 +4300,44 @@
             }
           ],
           "isUnique": false,
-          "with": {},
-          "method": "btree",
           "where": "archived_at IS NULL",
-          "concurrently": false
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
         "email_threads_account_id_email_accounts_id_fk": {
           "name": "email_threads_account_id_email_accounts_id_fk",
           "tableFrom": "email_threads",
+          "tableTo": "email_accounts",
           "columnsFrom": [
             "account_id"
           ],
-          "tableTo": "email_accounts",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "uq_thread_acct_gmail": {
           "name": "uq_thread_acct_gmail",
+          "nullsNotDistinct": false,
           "columns": [
             "account_id",
             "gmail_thread_id"
-          ],
-          "nullsNotDistinct": false
+          ]
         },
         "uq_thread_id_acct": {
           "name": "uq_thread_id_acct",
+          "nullsNotDistinct": false,
           "columns": [
             "id",
             "account_id"
-          ],
-          "nullsNotDistinct": false
+          ]
         }
       },
       "policies": {},
@@ -5314,37 +4418,37 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "email_tracking_events_token_id_email_tracking_tokens_id_fk": {
           "name": "email_tracking_events_token_id_email_tracking_tokens_id_fk",
           "tableFrom": "email_tracking_events",
+          "tableTo": "email_tracking_tokens",
           "columnsFrom": [
             "token_id"
           ],
-          "tableTo": "email_tracking_tokens",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "email_tracking_events_message_id_email_messages_id_fk": {
           "name": "email_tracking_events_message_id_email_messages_id_fk",
           "tableFrom": "email_tracking_events",
+          "tableTo": "email_messages",
           "columnsFrom": [
             "message_id"
           ],
-          "tableTo": "email_messages",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -5434,9 +4538,9 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         },
         "ett_message_idx": {
           "name": "ett_message_idx",
@@ -5449,47 +4553,47 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "email_tracking_tokens_send_attempt_id_email_send_attempts_id_fk": {
           "name": "email_tracking_tokens_send_attempt_id_email_send_attempts_id_fk",
           "tableFrom": "email_tracking_tokens",
+          "tableTo": "email_send_attempts",
           "columnsFrom": [
             "send_attempt_id"
           ],
-          "tableTo": "email_send_attempts",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "email_tracking_tokens_message_id_email_messages_id_fk": {
           "name": "email_tracking_tokens_message_id_email_messages_id_fk",
           "tableFrom": "email_tracking_tokens",
+          "tableTo": "email_messages",
           "columnsFrom": [
             "message_id"
           ],
-          "tableTo": "email_messages",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "email_tracking_tokens_token_unique": {
           "name": "email_tracking_tokens_token_unique",
+          "nullsNotDistinct": false,
           "columns": [
             "token"
-          ],
-          "nullsNotDistinct": false
+          ]
         }
       },
       "policies": {},
@@ -5572,10 +4676,10 @@
             }
           ],
           "isUnique": true,
-          "with": {},
-          "method": "btree",
           "where": "\"enrichment_field_mappings\".\"target_kind\" = 'builtin'",
-          "concurrently": false
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         },
         "enrichment_mapping_custom_target_unique": {
           "name": "enrichment_mapping_custom_target_unique",
@@ -5594,36 +4698,36 @@
             }
           ],
           "isUnique": true,
-          "with": {},
-          "method": "btree",
           "where": "\"enrichment_field_mappings\".\"target_kind\" = 'custom'",
-          "concurrently": false
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
         "enrichment_field_mappings_target_field_def_id_custom_field_defs_id_fk": {
           "name": "enrichment_field_mappings_target_field_def_id_custom_field_defs_id_fk",
           "tableFrom": "enrichment_field_mappings",
+          "tableTo": "custom_field_defs",
           "columnsFrom": [
             "target_field_def_id"
           ],
-          "tableTo": "custom_field_defs",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "enrichment_mapping_key_unique": {
           "name": "enrichment_mapping_key_unique",
+          "nullsNotDistinct": false,
           "columns": [
             "entity",
             "canonical_key"
-          ],
-          "nullsNotDistinct": false
+          ]
         }
       },
       "policies": {},
@@ -5800,24 +4904,24 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "enrichment_runs_requested_by_users_id_fk": {
           "name": "enrichment_runs_requested_by_users_id_fk",
           "tableFrom": "enrichment_runs",
+          "tableTo": "users",
           "columnsFrom": [
             "requested_by"
           ],
-          "tableTo": "users",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -5966,24 +5070,24 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "files_uploaded_by_users_id_fk": {
           "name": "files_uploaded_by_users_id_fk",
           "tableFrom": "files",
+          "tableTo": "users",
           "columnsFrom": [
             "uploaded_by"
           ],
-          "tableTo": "users",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -6120,37 +5224,37 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "goals_pipeline_id_pipelines_id_fk": {
           "name": "goals_pipeline_id_pipelines_id_fk",
           "tableFrom": "goals",
+          "tableTo": "pipelines",
           "columnsFrom": [
             "pipeline_id"
           ],
-          "tableTo": "pipelines",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         },
         "goals_activity_type_id_activity_types_id_fk": {
           "name": "goals_activity_type_id_activity_types_id_fk",
           "tableFrom": "goals",
+          "tableTo": "activity_types",
           "columnsFrom": [
             "activity_type_id"
           ],
-          "tableTo": "activity_types",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -6330,15 +5434,15 @@
         "import_batches_created_by_users_id_fk": {
           "name": "import_batches_created_by_users_id_fk",
           "tableFrom": "import_batches",
+          "tableTo": "users",
           "columnsFrom": [
             "created_by"
           ],
-          "tableTo": "users",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -6408,9 +5512,9 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         },
         "import_external_ids_entity_local_idx": {
           "name": "import_external_ids_entity_local_idx",
@@ -6429,36 +5533,36 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "import_external_ids_batch_id_import_batches_id_fk": {
           "name": "import_external_ids_batch_id_import_batches_id_fk",
           "tableFrom": "import_external_ids",
+          "tableTo": "import_batches",
           "columnsFrom": [
             "batch_id"
           ],
-          "tableTo": "import_batches",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "import_external_ids_source_entity_external_unique": {
           "name": "import_external_ids_source_entity_external_unique",
+          "nullsNotDistinct": false,
           "columns": [
             "source",
             "entity",
             "external_id"
-          ],
-          "nullsNotDistinct": false
+          ]
         }
       },
       "policies": {},
@@ -6578,37 +5682,337 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "import_rows_batch_id_import_batches_id_fk": {
           "name": "import_rows_batch_id_import_batches_id_fk",
           "tableFrom": "import_rows",
+          "tableTo": "import_batches",
           "columnsFrom": [
             "batch_id"
           ],
-          "tableTo": "import_batches",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "import_row_unique": {
           "name": "import_row_unique",
+          "nullsNotDistinct": false,
           "columns": [
             "batch_id",
             "row_number"
-          ],
-          "nullsNotDistinct": false
+          ]
         }
       },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.integration_connections": {
+      "name": "integration_connections",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "provider": {
+          "name": "provider",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "account_id": {
+          "name": "account_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "account_name": {
+          "name": "account_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "owner_id": {
+          "name": "owner_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "credentials": {
+          "name": "credentials",
+          "type": "bytea",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'connected'"
+        },
+        "scopes": {
+          "name": "scopes",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'[]'::jsonb"
+        },
+        "settings": {
+          "name": "settings",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::jsonb"
+        },
+        "connected_at": {
+          "name": "connected_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "last_checked_at": {
+          "name": "last_checked_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "integration_connections_provider_account_uq": {
+          "name": "integration_connections_provider_account_uq",
+          "columns": [
+            {
+              "expression": "provider",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "account_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "integration_connections_owner_id_users_id_fk": {
+          "name": "integration_connections_owner_id_users_id_fk",
+          "tableFrom": "integration_connections",
+          "tableTo": "users",
+          "columnsFrom": [
+            "owner_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.integration_events": {
+      "name": "integration_events",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "connection_id": {
+          "name": "connection_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "actor_id": {
+          "name": "actor_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "action": {
+          "name": "action",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "integration_events_connection_idx": {
+          "name": "integration_events_connection_idx",
+          "columns": [
+            {
+              "expression": "connection_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "integration_events_connection_id_integration_connections_id_fk": {
+          "name": "integration_events_connection_id_integration_connections_id_fk",
+          "tableFrom": "integration_events",
+          "tableTo": "integration_connections",
+          "columnsFrom": [
+            "connection_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "integration_events_actor_id_users_id_fk": {
+          "name": "integration_events_actor_id_users_id_fk",
+          "tableFrom": "integration_events",
+          "tableTo": "users",
+          "columnsFrom": [
+            "actor_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.integration_oauth_attempts": {
+      "name": "integration_oauth_attempts",
+      "schema": "",
+      "columns": {
+        "state_hash": {
+          "name": "state_hash",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "provider": {
+          "name": "provider",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "session_id": {
+          "name": "session_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "consumed_at": {
+          "name": "consumed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "integration_oauth_attempts_expiry_idx": {
+          "name": "integration_oauth_attempts_expiry_idx",
+          "columns": [
+            {
+              "expression": "expires_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "integration_oauth_attempts_user_id_users_id_fk": {
+          "name": "integration_oauth_attempts_user_id_users_id_fk",
+          "tableFrom": "integration_oauth_attempts",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -6689,28 +6093,28 @@
         "lead_labels_lead_id_leads_id_fk": {
           "name": "lead_labels_lead_id_leads_id_fk",
           "tableFrom": "lead_labels",
+          "tableTo": "leads",
           "columnsFrom": [
             "lead_id"
           ],
-          "tableTo": "leads",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "lead_labels_label_id_labels_id_fk": {
           "name": "lead_labels_label_id_labels_id_fk",
           "tableFrom": "lead_labels",
+          "tableTo": "labels",
           "columnsFrom": [
             "label_id"
           ],
-          "tableTo": "labels",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
@@ -6870,8 +6274,8 @@
           "primaryKey": false,
           "notNull": true,
           "generated": {
-            "type": "stored",
-            "as": "to_tsvector('simple', coalesce(title, ''))"
+            "as": "to_tsvector('simple', coalesce(title, ''))",
+            "type": "stored"
           }
         },
         "created_at": {
@@ -6907,10 +6311,10 @@
             }
           ],
           "isUnique": false,
-          "with": {},
-          "method": "btree",
           "where": "deleted_at is null",
-          "concurrently": false
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         },
         "leads_owner_idx": {
           "name": "leads_owner_idx",
@@ -6923,9 +6327,9 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         },
         "leads_visible_to_gin": {
           "name": "leads_visible_to_gin",
@@ -6938,9 +6342,9 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "gin",
-          "concurrently": false
+          "with": {}
         },
         "leads_visibility_group_idx": {
           "name": "leads_visibility_group_idx",
@@ -6953,10 +6357,10 @@
             }
           ],
           "isUnique": false,
-          "with": {},
-          "method": "btree",
           "where": "visibility_level = 'group'",
-          "concurrently": false
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         },
         "leads_search_idx": {
           "name": "leads_search_idx",
@@ -6969,9 +6373,9 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "gin",
-          "concurrently": false
+          "with": {}
         },
         "leads_cf_idx": {
           "name": "leads_cf_idx",
@@ -6984,50 +6388,50 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "gin",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "leads_owner_id_users_id_fk": {
           "name": "leads_owner_id_users_id_fk",
           "tableFrom": "leads",
+          "tableTo": "users",
           "columnsFrom": [
             "owner_id"
           ],
-          "tableTo": "users",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         },
         "leads_visibility_group_id_visibility_groups_id_fk": {
           "name": "leads_visibility_group_id_visibility_groups_id_fk",
           "tableFrom": "leads",
+          "tableTo": "visibility_groups",
           "columnsFrom": [
             "visibility_group_id"
           ],
-          "tableTo": "visibility_groups",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         },
         "leads_converted_deal_id_deals_id_fk": {
           "name": "leads_converted_deal_id_deals_id_fk",
           "tableFrom": "leads",
+          "tableTo": "deals",
           "columnsFrom": [
             "converted_deal_id"
           ],
-          "tableTo": "deals",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -7133,10 +6537,10 @@
       "uniqueConstraints": {
         "mail_labels_key_unique": {
           "name": "mail_labels_key_unique",
+          "nullsNotDistinct": false,
           "columns": [
             "key"
-          ],
-          "nullsNotDistinct": false
+          ]
         }
       },
       "policies": {},
@@ -7199,37 +6603,37 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "mentions_mentioned_user_id_users_id_fk": {
           "name": "mentions_mentioned_user_id_users_id_fk",
           "tableFrom": "mentions",
+          "tableTo": "users",
           "columnsFrom": [
             "mentioned_user_id"
           ],
-          "tableTo": "users",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         },
         "mentions_author_id_users_id_fk": {
           "name": "mentions_author_id_users_id_fk",
           "tableFrom": "mentions",
+          "tableTo": "users",
           "columnsFrom": [
             "author_id"
           ],
-          "tableTo": "users",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -7319,25 +6723,25 @@
             }
           ],
           "isUnique": false,
-          "with": {},
-          "method": "btree",
           "where": "deleted_at is null",
-          "concurrently": false
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
         "notes_author_id_users_id_fk": {
           "name": "notes_author_id_users_id_fk",
           "tableFrom": "notes",
+          "tableTo": "users",
           "columnsFrom": [
             "author_id"
           ],
-          "tableTo": "users",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -7383,15 +6787,15 @@
         "notification_preferences_user_id_users_id_fk": {
           "name": "notification_preferences_user_id_users_id_fk",
           "tableFrom": "notification_preferences",
+          "tableTo": "users",
           "columnsFrom": [
             "user_id"
           ],
-          "tableTo": "users",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
@@ -7495,9 +6899,9 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         },
         "notifications_user_created_idx": {
           "name": "notifications_user_created_idx",
@@ -7516,37 +6920,37 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "notifications_user_id_users_id_fk": {
           "name": "notifications_user_id_users_id_fk",
           "tableFrom": "notifications",
+          "tableTo": "users",
           "columnsFrom": [
             "user_id"
           ],
-          "tableTo": "users",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         },
         "notifications_actor_id_users_id_fk": {
           "name": "notifications_actor_id_users_id_fk",
           "tableFrom": "notifications",
+          "tableTo": "users",
           "columnsFrom": [
             "actor_id"
           ],
-          "tableTo": "users",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -7615,24 +7019,24 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "oauth_access_tokens_client_id_oauth_clients_id_fk": {
           "name": "oauth_access_tokens_client_id_oauth_clients_id_fk",
           "tableFrom": "oauth_access_tokens",
+          "tableTo": "oauth_clients",
           "columnsFrom": [
             "client_id"
           ],
-          "tableTo": "oauth_clients",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -7700,24 +7104,24 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "oauth_auth_codes_client_id_oauth_clients_id_fk": {
           "name": "oauth_auth_codes_client_id_oauth_clients_id_fk",
           "tableFrom": "oauth_auth_codes",
+          "tableTo": "oauth_clients",
           "columnsFrom": [
             "client_id"
           ],
-          "tableTo": "oauth_clients",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -7817,24 +7221,24 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "oauth_refresh_tokens_client_id_oauth_clients_id_fk": {
           "name": "oauth_refresh_tokens_client_id_oauth_clients_id_fk",
           "tableFrom": "oauth_refresh_tokens",
+          "tableTo": "oauth_clients",
           "columnsFrom": [
             "client_id"
           ],
-          "tableTo": "oauth_clients",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -7865,28 +7269,28 @@
         "org_labels_org_id_organizations_id_fk": {
           "name": "org_labels_org_id_organizations_id_fk",
           "tableFrom": "org_labels",
+          "tableTo": "organizations",
           "columnsFrom": [
             "org_id"
           ],
-          "tableTo": "organizations",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "org_labels_label_id_labels_id_fk": {
           "name": "org_labels_label_id_labels_id_fk",
           "tableFrom": "org_labels",
+          "tableTo": "labels",
           "columnsFrom": [
             "label_id"
           ],
-          "tableTo": "labels",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
@@ -7938,28 +7342,28 @@
         "organization_relations_source_org_id_organizations_id_fk": {
           "name": "organization_relations_source_org_id_organizations_id_fk",
           "tableFrom": "organization_relations",
+          "tableTo": "organizations",
           "columnsFrom": [
             "source_org_id"
           ],
-          "tableTo": "organizations",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "organization_relations_target_org_id_organizations_id_fk": {
           "name": "organization_relations_target_org_id_organizations_id_fk",
           "tableFrom": "organization_relations",
+          "tableTo": "organizations",
           "columnsFrom": [
             "target_org_id"
           ],
-          "tableTo": "organizations",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
@@ -8080,8 +7484,8 @@
           "primaryKey": false,
           "notNull": true,
           "generated": {
-            "type": "stored",
-            "as": "setweight(to_tsvector('simple', coalesce(name, '')), 'A') || setweight(to_tsvector('simple', split_part(regexp_replace(lower(coalesce(domain, '')), '^(https?://)?(www\\.)?', ''), '/', 1)), 'B')"
+            "as": "setweight(to_tsvector('simple', coalesce(name, '')), 'A') || setweight(to_tsvector('simple', split_part(regexp_replace(lower(coalesce(domain, '')), '^(https?://)?(www\\.)?', ''), '/', 1)), 'B')",
+            "type": "stored"
           }
         },
         "created_at": {
@@ -8117,9 +7521,9 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         },
         "org_cf_idx": {
           "name": "org_cf_idx",
@@ -8132,9 +7536,9 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "gin",
-          "concurrently": false
+          "with": {}
         },
         "org_search_idx": {
           "name": "org_search_idx",
@@ -8147,9 +7551,9 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "gin",
-          "concurrently": false
+          "with": {}
         },
         "org_visible_idx": {
           "name": "org_visible_idx",
@@ -8162,9 +7566,9 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "gin",
-          "concurrently": false
+          "with": {}
         },
         "org_group_idx": {
           "name": "org_group_idx",
@@ -8177,38 +7581,38 @@
             }
           ],
           "isUnique": false,
-          "with": {},
-          "method": "btree",
           "where": "visibility_level = 'group'",
-          "concurrently": false
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
         "organizations_owner_id_users_id_fk": {
           "name": "organizations_owner_id_users_id_fk",
           "tableFrom": "organizations",
+          "tableTo": "users",
           "columnsFrom": [
             "owner_id"
           ],
-          "tableTo": "users",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         },
         "organizations_visibility_group_id_visibility_groups_id_fk": {
           "name": "organizations_visibility_group_id_visibility_groups_id_fk",
           "tableFrom": "organizations",
+          "tableTo": "visibility_groups",
           "columnsFrom": [
             "visibility_group_id"
           ],
-          "tableTo": "visibility_groups",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -8280,9 +7684,9 @@
             }
           ],
           "isUnique": true,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {},
@@ -8314,28 +7718,28 @@
         "person_labels_person_id_persons_id_fk": {
           "name": "person_labels_person_id_persons_id_fk",
           "tableFrom": "person_labels",
+          "tableTo": "persons",
           "columnsFrom": [
             "person_id"
           ],
-          "tableTo": "persons",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "person_labels_label_id_labels_id_fk": {
           "name": "person_labels_label_id_labels_id_fk",
           "tableFrom": "person_labels",
+          "tableTo": "labels",
           "columnsFrom": [
             "label_id"
           ],
-          "tableTo": "labels",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
@@ -8453,8 +7857,8 @@
           "primaryKey": false,
           "notNull": true,
           "generated": {
-            "type": "stored",
-            "as": "setweight(to_tsvector('simple', coalesce(name, '')), 'A') || setweight(to_tsvector('simple', coalesce(primary_email::text, '')), 'B')"
+            "as": "setweight(to_tsvector('simple', coalesce(name, '')), 'A') || setweight(to_tsvector('simple', coalesce(primary_email::text, '')), 'B')",
+            "type": "stored"
           }
         },
         "created_at": {
@@ -8490,9 +7894,9 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         },
         "person_org_idx": {
           "name": "person_org_idx",
@@ -8505,9 +7909,9 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         },
         "person_owner_idx": {
           "name": "person_owner_idx",
@@ -8520,9 +7924,9 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         },
         "person_cf_idx": {
           "name": "person_cf_idx",
@@ -8535,9 +7939,9 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "gin",
-          "concurrently": false
+          "with": {}
         },
         "person_search_idx": {
           "name": "person_search_idx",
@@ -8550,9 +7954,9 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "gin",
-          "concurrently": false
+          "with": {}
         },
         "person_visible_idx": {
           "name": "person_visible_idx",
@@ -8565,9 +7969,9 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "gin",
-          "concurrently": false
+          "with": {}
         },
         "person_group_idx": {
           "name": "person_group_idx",
@@ -8580,51 +7984,51 @@
             }
           ],
           "isUnique": false,
-          "with": {},
-          "method": "btree",
           "where": "visibility_level = 'group'",
-          "concurrently": false
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
         "persons_org_id_organizations_id_fk": {
           "name": "persons_org_id_organizations_id_fk",
           "tableFrom": "persons",
+          "tableTo": "organizations",
           "columnsFrom": [
             "org_id"
           ],
-          "tableTo": "organizations",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         },
         "persons_owner_id_users_id_fk": {
           "name": "persons_owner_id_users_id_fk",
           "tableFrom": "persons",
+          "tableTo": "users",
           "columnsFrom": [
             "owner_id"
           ],
-          "tableTo": "users",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         },
         "persons_visibility_group_id_visibility_groups_id_fk": {
           "name": "persons_visibility_group_id_visibility_groups_id_fk",
           "tableFrom": "persons",
+          "tableTo": "visibility_groups",
           "columnsFrom": [
             "visibility_group_id"
           ],
-          "tableTo": "visibility_groups",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -8695,21 +8099,1457 @@
         "pipelines_visibility_group_id_visibility_groups_id_fk": {
           "name": "pipelines_visibility_group_id_visibility_groups_id_fk",
           "tableFrom": "pipelines",
+          "tableTo": "visibility_groups",
           "columnsFrom": [
             "visibility_group_id"
           ],
-          "tableTo": "visibility_groups",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.privacy_authority": {
+      "name": "privacy_authority",
+      "schema": "",
+      "columns": {
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "capabilities": {
+          "name": "capabilities",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'[]'::jsonb"
+        },
+        "generation": {
+          "name": "generation",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        },
+        "updated_by": {
+          "name": "updated_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "privacy_authority_user_id_users_id_fk": {
+          "name": "privacy_authority_user_id_users_id_fk",
+          "tableFrom": "privacy_authority",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "privacy_authority_updated_by_users_id_fk": {
+          "name": "privacy_authority_updated_by_users_id_fk",
+          "tableFrom": "privacy_authority",
+          "tableTo": "users",
+          "columnsFrom": [
+            "updated_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "privacy_authority_capabilities": {
+          "name": "privacy_authority_capabilities",
+          "value": "jsonb_typeof(\"privacy_authority\".\"capabilities\") = 'array'"
+        },
+        "privacy_authority_generation": {
+          "name": "privacy_authority_generation",
+          "value": "\"privacy_authority\".\"generation\" > 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.privacy_case_events": {
+      "name": "privacy_case_events",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "case_id": {
+          "name": "case_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "case_version": {
+          "name": "case_version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "command_id": {
+          "name": "command_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "actor_id": {
+          "name": "actor_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "action": {
+          "name": "action",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "from_status": {
+          "name": "from_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "to_status": {
+          "name": "to_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "detail_enc": {
+          "name": "detail_enc",
+          "type": "bytea",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "privacy_case_event_command_uq": {
+          "name": "privacy_case_event_command_uq",
+          "columns": [
+            {
+              "expression": "case_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "command_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "privacy_case_event_version_uq": {
+          "name": "privacy_case_event_version_uq",
+          "columns": [
+            {
+              "expression": "case_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "case_version",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "privacy_case_events_case_id_privacy_cases_id_fk": {
+          "name": "privacy_case_events_case_id_privacy_cases_id_fk",
+          "tableFrom": "privacy_case_events",
+          "tableTo": "privacy_cases",
+          "columnsFrom": [
+            "case_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "privacy_case_events_actor_id_users_id_fk": {
+          "name": "privacy_case_events_actor_id_users_id_fk",
+          "tableFrom": "privacy_case_events",
+          "tableTo": "users",
+          "columnsFrom": [
+            "actor_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "privacy_case_event_version": {
+          "name": "privacy_case_event_version",
+          "value": "\"privacy_case_events\".\"case_version\" > 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.privacy_case_members": {
+      "name": "privacy_case_members",
+      "schema": "",
+      "columns": {
+        "case_id": {
+          "name": "case_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "capabilities": {
+          "name": "capabilities",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'[]'::jsonb"
+        },
+        "generation": {
+          "name": "generation",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        },
+        "revoked_at": {
+          "name": "revoked_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "privacy_case_members_case_id_privacy_cases_id_fk": {
+          "name": "privacy_case_members_case_id_privacy_cases_id_fk",
+          "tableFrom": "privacy_case_members",
+          "tableTo": "privacy_cases",
+          "columnsFrom": [
+            "case_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "privacy_case_members_user_id_users_id_fk": {
+          "name": "privacy_case_members_user_id_users_id_fk",
+          "tableFrom": "privacy_case_members",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "privacy_case_members_case_id_user_id_pk": {
+          "name": "privacy_case_members_case_id_user_id_pk",
+          "columns": [
+            "case_id",
+            "user_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "privacy_case_member_capabilities": {
+          "name": "privacy_case_member_capabilities",
+          "value": "jsonb_typeof(\"privacy_case_members\".\"capabilities\") = 'array'"
+        },
+        "privacy_case_member_generation": {
+          "name": "privacy_case_member_generation",
+          "value": "\"privacy_case_members\".\"generation\" > 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.privacy_case_verifications": {
+      "name": "privacy_case_verifications",
+      "schema": "",
+      "columns": {
+        "case_id": {
+          "name": "case_id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "subject_kind": {
+          "name": "subject_kind",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "subject_reference_id": {
+          "name": "subject_reference_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "subject_enc": {
+          "name": "subject_enc",
+          "type": "bytea",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "recipient_enc": {
+          "name": "recipient_enc",
+          "type": "bytea",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "recipient_digest": {
+          "name": "recipient_digest",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "evidence_enc": {
+          "name": "evidence_enc",
+          "type": "bytea",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "method": {
+          "name": "method",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "verified_by": {
+          "name": "verified_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "verified_at": {
+          "name": "verified_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "scope_version": {
+          "name": "scope_version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "recipient_version": {
+          "name": "recipient_version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "verification_version": {
+          "name": "verification_version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "revoked_at": {
+          "name": "revoked_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "privacy_case_verifications_case_id_privacy_cases_id_fk": {
+          "name": "privacy_case_verifications_case_id_privacy_cases_id_fk",
+          "tableFrom": "privacy_case_verifications",
+          "tableTo": "privacy_cases",
+          "columnsFrom": [
+            "case_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "privacy_case_verifications_verified_by_users_id_fk": {
+          "name": "privacy_case_verifications_verified_by_users_id_fk",
+          "tableFrom": "privacy_case_verifications",
+          "tableTo": "users",
+          "columnsFrom": [
+            "verified_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "privacy_verification_versions": {
+          "name": "privacy_verification_versions",
+          "value": "\"privacy_case_verifications\".\"scope_version\" > 0 AND \"privacy_case_verifications\".\"recipient_version\" > 0 AND \"privacy_case_verifications\".\"verification_version\" > 0"
+        },
+        "privacy_verification_subject": {
+          "name": "privacy_verification_subject",
+          "value": "\"privacy_case_verifications\".\"subject_kind\" IS NULL OR \"privacy_case_verifications\".\"subject_kind\" IN ('user','contact','external')"
+        },
+        "privacy_verification_method": {
+          "name": "privacy_verification_method",
+          "value": "\"privacy_case_verifications\".\"method\" IS NULL OR \"privacy_case_verifications\".\"method\" IN ('operator_review','authenticated_self')"
+        },
+        "privacy_verification_complete": {
+          "name": "privacy_verification_complete",
+          "value": "\"privacy_case_verifications\".\"verified_at\" IS NULL OR (\"privacy_case_verifications\".\"verified_by\" IS NOT NULL AND \"privacy_case_verifications\".\"method\" IS NOT NULL AND \"privacy_case_verifications\".\"subject_kind\" IS NOT NULL AND \"privacy_case_verifications\".\"subject_enc\" IS NOT NULL AND \"privacy_case_verifications\".\"evidence_enc\" IS NOT NULL AND length(\"privacy_case_verifications\".\"recipient_digest\") > 0 AND ((\"privacy_case_verifications\".\"subject_kind\" = 'external' AND \"privacy_case_verifications\".\"subject_reference_id\" IS NULL) OR (\"privacy_case_verifications\".\"subject_kind\" IN ('user','contact') AND \"privacy_case_verifications\".\"subject_reference_id\" IS NOT NULL)))"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.privacy_cases": {
+      "name": "privacy_cases",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "kind": {
+          "name": "kind",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'received'"
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "requester_user_id": {
+          "name": "requester_user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "intake_key": {
+          "name": "intake_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "intake_digest": {
+          "name": "intake_digest",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "metadata_enc": {
+          "name": "metadata_enc",
+          "type": "bytea",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "version": {
+          "name": "version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        },
+        "scope_version": {
+          "name": "scope_version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        },
+        "policy_version": {
+          "name": "policy_version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "recipient_version": {
+          "name": "recipient_version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        },
+        "verification_version": {
+          "name": "verification_version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        },
+        "verified_at": {
+          "name": "verified_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "received_at": {
+          "name": "received_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "due_at": {
+          "name": "due_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "response_recorded_at": {
+          "name": "response_recorded_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "unresolved_obligations": {
+          "name": "unresolved_obligations",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "privacy_case_intake_uq": {
+          "name": "privacy_case_intake_uq",
+          "columns": [
+            {
+              "expression": "created_by",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "intake_key",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "privacy_case_queue_idx": {
+          "name": "privacy_case_queue_idx",
+          "columns": [
+            {
+              "expression": "status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "due_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "privacy_cases_created_by_users_id_fk": {
+          "name": "privacy_cases_created_by_users_id_fk",
+          "tableFrom": "privacy_cases",
+          "tableTo": "users",
+          "columnsFrom": [
+            "created_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "privacy_cases_requester_user_id_users_id_fk": {
+          "name": "privacy_cases_requester_user_id_users_id_fk",
+          "tableFrom": "privacy_cases",
+          "tableTo": "users",
+          "columnsFrom": [
+            "requester_user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "privacy_case_kind": {
+          "name": "privacy_case_kind",
+          "value": "\"privacy_cases\".\"kind\" IN ('access','portability','correction','restriction','objection','closure','erasure')"
+        },
+        "privacy_case_status": {
+          "name": "privacy_case_status",
+          "value": "\"privacy_cases\".\"status\" IN ('received','verification_needed','under_review','action_approved','running','needs_attention','refused','response_ready','responded','closed','cancelled')"
+        },
+        "privacy_case_versions": {
+          "name": "privacy_case_versions",
+          "value": "\"privacy_cases\".\"version\" > 0 AND \"privacy_cases\".\"scope_version\" > 0 AND \"privacy_cases\".\"recipient_version\" > 0 AND \"privacy_cases\".\"verification_version\" > 0 AND (\"privacy_cases\".\"policy_version\" IS NULL OR \"privacy_cases\".\"policy_version\" > 0) AND \"privacy_cases\".\"unresolved_obligations\" >= 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.privacy_deadline_decisions": {
+      "name": "privacy_deadline_decisions",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "case_id": {
+          "name": "case_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "command_id": {
+          "name": "command_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "input_digest": {
+          "name": "input_digest",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "result_enc": {
+          "name": "result_enc",
+          "type": "bytea",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "privacy_deadline_command_uq": {
+          "name": "privacy_deadline_command_uq",
+          "columns": [
+            {
+              "expression": "case_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "command_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "privacy_deadline_decisions_case_id_privacy_deadline_records_case_id_fk": {
+          "name": "privacy_deadline_decisions_case_id_privacy_deadline_records_case_id_fk",
+          "tableFrom": "privacy_deadline_decisions",
+          "tableTo": "privacy_deadline_records",
+          "columnsFrom": [
+            "case_id"
+          ],
+          "columnsTo": [
+            "case_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "privacy_deadline_decisions_created_by_users_id_fk": {
+          "name": "privacy_deadline_decisions_created_by_users_id_fk",
+          "tableFrom": "privacy_deadline_decisions",
+          "tableTo": "users",
+          "columnsFrom": [
+            "created_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.privacy_deadline_records": {
+      "name": "privacy_deadline_records",
+      "schema": "",
+      "columns": {
+        "case_id": {
+          "name": "case_id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "policy_version": {
+          "name": "policy_version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "received_at": {
+          "name": "received_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "original_due_at": {
+          "name": "original_due_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "due_at": {
+          "name": "due_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "snapshot_enc": {
+          "name": "snapshot_enc",
+          "type": "bytea",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "extension_months": {
+          "name": "extension_months",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "version": {
+          "name": "version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "privacy_deadline_records_case_id_privacy_cases_id_fk": {
+          "name": "privacy_deadline_records_case_id_privacy_cases_id_fk",
+          "tableFrom": "privacy_deadline_records",
+          "tableTo": "privacy_cases",
+          "columnsFrom": [
+            "case_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "privacy_deadline_records_policy_version_privacy_policy_versions_version_fk": {
+          "name": "privacy_deadline_records_policy_version_privacy_policy_versions_version_fk",
+          "tableFrom": "privacy_deadline_records",
+          "tableTo": "privacy_policy_versions",
+          "columnsFrom": [
+            "policy_version"
+          ],
+          "columnsTo": [
+            "version"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "privacy_deadline_version": {
+          "name": "privacy_deadline_version",
+          "value": "\"privacy_deadline_records\".\"version\" > 0 AND \"privacy_deadline_records\".\"extension_months\" >= 0"
+        },
+        "privacy_deadline_instants": {
+          "name": "privacy_deadline_instants",
+          "value": "\"privacy_deadline_records\".\"original_due_at\" > \"privacy_deadline_records\".\"received_at\" AND \"privacy_deadline_records\".\"due_at\" >= \"privacy_deadline_records\".\"original_due_at\""
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.privacy_jobs": {
+      "name": "privacy_jobs",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "case_id": {
+          "name": "case_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "kind": {
+          "name": "kind",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'queued'"
+        },
+        "idempotency_key": {
+          "name": "idempotency_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "requested_by": {
+          "name": "requested_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "originating_session_id": {
+          "name": "originating_session_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "authority_generation": {
+          "name": "authority_generation",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "member_generation": {
+          "name": "member_generation",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "scope_version": {
+          "name": "scope_version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "policy_version": {
+          "name": "policy_version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "active_policy_version": {
+          "name": "active_policy_version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "policy_generation": {
+          "name": "policy_generation",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "recipient_version": {
+          "name": "recipient_version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "verification_version": {
+          "name": "verification_version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "claim_token": {
+          "name": "claim_token",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "lease_until": {
+          "name": "lease_until",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "attempts": {
+          "name": "attempts",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "result_enc": {
+          "name": "result_enc",
+          "type": "bytea",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_error_code": {
+          "name": "last_error_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "privacy_job_command_uq": {
+          "name": "privacy_job_command_uq",
+          "columns": [
+            {
+              "expression": "case_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "kind",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "idempotency_key",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "privacy_job_claim_idx": {
+          "name": "privacy_job_claim_idx",
+          "columns": [
+            {
+              "expression": "status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "lease_until",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "privacy_jobs_case_id_privacy_cases_id_fk": {
+          "name": "privacy_jobs_case_id_privacy_cases_id_fk",
+          "tableFrom": "privacy_jobs",
+          "tableTo": "privacy_cases",
+          "columnsFrom": [
+            "case_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "privacy_jobs_requested_by_users_id_fk": {
+          "name": "privacy_jobs_requested_by_users_id_fk",
+          "tableFrom": "privacy_jobs",
+          "tableTo": "users",
+          "columnsFrom": [
+            "requested_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "privacy_jobs_originating_session_id_sessions_id_fk": {
+          "name": "privacy_jobs_originating_session_id_sessions_id_fk",
+          "tableFrom": "privacy_jobs",
+          "tableTo": "sessions",
+          "columnsFrom": [
+            "originating_session_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "privacy_job_kind": {
+          "name": "privacy_job_kind",
+          "value": "\"privacy_jobs\".\"kind\" IN ('discovery','export','erasure','closure','correction','restriction','retention')"
+        },
+        "privacy_job_status": {
+          "name": "privacy_job_status",
+          "value": "\"privacy_jobs\".\"status\" IN ('queued','running','needs_attention','succeeded','failed','cancelled')"
+        },
+        "privacy_job_versions": {
+          "name": "privacy_job_versions",
+          "value": "\"privacy_jobs\".\"authority_generation\" > 0 AND \"privacy_jobs\".\"member_generation\" > 0 AND \"privacy_jobs\".\"scope_version\" > 0 AND \"privacy_jobs\".\"recipient_version\" > 0 AND \"privacy_jobs\".\"verification_version\" > 0 AND (\"privacy_jobs\".\"policy_version\" IS NULL OR \"privacy_jobs\".\"policy_version\" > 0) AND (\"privacy_jobs\".\"active_policy_version\" IS NULL OR \"privacy_jobs\".\"active_policy_version\" > 0) AND \"privacy_jobs\".\"policy_generation\" >= 0 AND \"privacy_jobs\".\"attempts\" >= 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.privacy_policy_drafts": {
+      "name": "privacy_policy_drafts",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "revision": {
+          "name": "revision",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        },
+        "content_enc": {
+          "name": "content_enc",
+          "type": "bytea",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "updated_by": {
+          "name": "updated_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "privacy_policy_drafts_created_by_users_id_fk": {
+          "name": "privacy_policy_drafts_created_by_users_id_fk",
+          "tableFrom": "privacy_policy_drafts",
+          "tableTo": "users",
+          "columnsFrom": [
+            "created_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "privacy_policy_drafts_updated_by_users_id_fk": {
+          "name": "privacy_policy_drafts_updated_by_users_id_fk",
+          "tableFrom": "privacy_policy_drafts",
+          "tableTo": "users",
+          "columnsFrom": [
+            "updated_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "privacy_policy_draft_revision": {
+          "name": "privacy_policy_draft_revision",
+          "value": "\"privacy_policy_drafts\".\"revision\" > 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.privacy_policy_state": {
+      "name": "privacy_policy_state",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "boolean",
+          "primaryKey": true,
+          "notNull": true,
+          "default": true
+        },
+        "version": {
+          "name": "version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "generation": {
+          "name": "generation",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        },
+        "updated_by": {
+          "name": "updated_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "privacy_policy_state_version_privacy_policy_versions_version_fk": {
+          "name": "privacy_policy_state_version_privacy_policy_versions_version_fk",
+          "tableFrom": "privacy_policy_state",
+          "tableTo": "privacy_policy_versions",
+          "columnsFrom": [
+            "version"
+          ],
+          "columnsTo": [
+            "version"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "privacy_policy_state_updated_by_users_id_fk": {
+          "name": "privacy_policy_state_updated_by_users_id_fk",
+          "tableFrom": "privacy_policy_state",
+          "tableTo": "users",
+          "columnsFrom": [
+            "updated_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "privacy_policy_state_singleton": {
+          "name": "privacy_policy_state_singleton",
+          "value": "\"privacy_policy_state\".\"id\" = true"
+        },
+        "privacy_policy_state_generation": {
+          "name": "privacy_policy_state_generation",
+          "value": "\"privacy_policy_state\".\"generation\" > 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.privacy_policy_versions": {
+      "name": "privacy_policy_versions",
+      "schema": "",
+      "columns": {
+        "version": {
+          "name": "version",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "draft_id": {
+          "name": "draft_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "draft_revision": {
+          "name": "draft_revision",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "profile_enc": {
+          "name": "profile_enc",
+          "type": "bytea",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "review_enc": {
+          "name": "review_enc",
+          "type": "bytea",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "activated_by": {
+          "name": "activated_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "activated_at": {
+          "name": "activated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "privacy_policy_draft_activation_uq": {
+          "name": "privacy_policy_draft_activation_uq",
+          "columns": [
+            {
+              "expression": "draft_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "draft_revision",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "privacy_policy_versions_draft_id_privacy_policy_drafts_id_fk": {
+          "name": "privacy_policy_versions_draft_id_privacy_policy_drafts_id_fk",
+          "tableFrom": "privacy_policy_versions",
+          "tableTo": "privacy_policy_drafts",
+          "columnsFrom": [
+            "draft_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "privacy_policy_versions_activated_by_users_id_fk": {
+          "name": "privacy_policy_versions_activated_by_users_id_fk",
+          "tableFrom": "privacy_policy_versions",
+          "tableTo": "users",
+          "columnsFrom": [
+            "activated_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "privacy_policy_version": {
+          "name": "privacy_policy_version",
+          "value": "\"privacy_policy_versions\".\"version\" > 0 AND \"privacy_policy_versions\".\"draft_revision\" > 0"
+        }
+      },
       "isRLSEnabled": false
     },
     "public.prospect_reveals": {
@@ -8804,103 +9644,63 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "prospect_reveals_org_id_organizations_id_fk": {
           "name": "prospect_reveals_org_id_organizations_id_fk",
           "tableFrom": "prospect_reveals",
+          "tableTo": "organizations",
           "columnsFrom": [
             "org_id"
           ],
-          "tableTo": "organizations",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "prospect_reveals_requested_by_users_id_fk": {
           "name": "prospect_reveals_requested_by_users_id_fk",
           "tableFrom": "prospect_reveals",
+          "tableTo": "users",
           "columnsFrom": [
             "requested_by"
           ],
-          "tableTo": "users",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         },
         "prospect_reveals_person_id_persons_id_fk": {
           "name": "prospect_reveals_person_id_persons_id_fk",
           "tableFrom": "prospect_reveals",
+          "tableTo": "persons",
           "columnsFrom": [
             "person_id"
           ],
-          "tableTo": "persons",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "set null"
+          "onDelete": "set null",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "prospect_reveal_batch_ref_unique": {
           "name": "prospect_reveal_batch_ref_unique",
+          "nullsNotDistinct": false,
           "columns": [
             "batch_id",
             "provider_ref"
-          ],
-          "nullsNotDistinct": false
+          ]
         }
       },
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.reminder_rebuilds": {
-      "name": "reminder_rebuilds",
-      "schema": "",
-      "columns": {
-        "activity_id": {
-          "name": "activity_id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "touched_at": {
-          "name": "touched_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "reminder_rebuilds_activity_id_activities_id_fk": {
-          "name": "reminder_rebuilds_activity_id_activities_id_fk",
-          "tableFrom": "reminder_rebuilds",
-          "columnsFrom": [
-            "activity_id"
-          ],
-          "tableTo": "activities",
-          "columnsTo": [
-            "id"
-          ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -8982,24 +9782,24 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "saved_filters_owner_id_users_id_fk": {
           "name": "saved_filters_owner_id_users_id_fk",
           "tableFrom": "saved_filters",
+          "tableTo": "users",
           "columnsFrom": [
             "owner_id"
           ],
-          "tableTo": "users",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -9115,34 +9915,34 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "sessions_user_id_users_id_fk": {
           "name": "sessions_user_id_users_id_fk",
           "tableFrom": "sessions",
+          "tableTo": "users",
           "columnsFrom": [
             "user_id"
           ],
-          "tableTo": "users",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "sessions_token_hash_unique": {
           "name": "sessions_token_hash_unique",
+          "nullsNotDistinct": false,
           "columns": [
             "token_hash"
-          ],
-          "nullsNotDistinct": false
+          ]
         }
       },
       "policies": {},
@@ -9283,15 +10083,15 @@
         "signatures_user_id_users_id_fk": {
           "name": "signatures_user_id_users_id_fk",
           "tableFrom": "signatures",
+          "tableTo": "users",
           "columnsFrom": [
             "user_id"
           ],
-          "tableTo": "users",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -9369,35 +10169,35 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "stages_pipeline_id_pipelines_id_fk": {
           "name": "stages_pipeline_id_pipelines_id_fk",
           "tableFrom": "stages",
+          "tableTo": "pipelines",
           "columnsFrom": [
             "pipeline_id"
           ],
-          "tableTo": "pipelines",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "stages_id_pipeline_uq": {
           "name": "stages_id_pipeline_uq",
+          "nullsNotDistinct": false,
           "columns": [
             "id",
             "pipeline_id"
-          ],
-          "nullsNotDistinct": false
+          ]
         }
       },
       "policies": {},
@@ -9433,28 +10233,28 @@
         "team_members_team_id_teams_id_fk": {
           "name": "team_members_team_id_teams_id_fk",
           "tableFrom": "team_members",
+          "tableTo": "teams",
           "columnsFrom": [
             "team_id"
           ],
-          "tableTo": "teams",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "team_members_user_id_users_id_fk": {
           "name": "team_members_user_id_users_id_fk",
           "tableFrom": "team_members",
+          "tableTo": "users",
           "columnsFrom": [
             "user_id"
           ],
-          "tableTo": "users",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
@@ -9514,15 +10314,15 @@
         "teams_manager_id_users_id_fk": {
           "name": "teams_manager_id_users_id_fk",
           "tableFrom": "teams",
+          "tableTo": "users",
           "columnsFrom": [
             "manager_id"
           ],
-          "tableTo": "users",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -9574,15 +10374,15 @@
         "user_preferences_user_id_users_id_fk": {
           "name": "user_preferences_user_id_users_id_fk",
           "tableFrom": "user_preferences",
+          "tableTo": "users",
           "columnsFrom": [
             "user_id"
           ],
-          "tableTo": "users",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -9691,54 +10491,54 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "users_permission_set_id_permission_sets_id_fk": {
           "name": "users_permission_set_id_permission_sets_id_fk",
           "tableFrom": "users",
+          "tableTo": "permission_sets",
           "columnsFrom": [
             "permission_set_id"
           ],
-          "tableTo": "permission_sets",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         },
         "users_primary_visibility_group_id_visibility_groups_id_fk": {
           "name": "users_primary_visibility_group_id_visibility_groups_id_fk",
           "tableFrom": "users",
+          "tableTo": "visibility_groups",
           "columnsFrom": [
             "primary_visibility_group_id"
           ],
-          "tableTo": "visibility_groups",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "users_email_unique": {
           "name": "users_email_unique",
+          "nullsNotDistinct": false,
           "columns": [
             "email"
-          ],
-          "nullsNotDistinct": false
+          ]
         },
         "users_google_sub_unique": {
           "name": "users_google_sub_unique",
+          "nullsNotDistinct": false,
           "columns": [
             "google_sub"
-          ],
-          "nullsNotDistinct": false
+          ]
         }
       },
       "policies": {},
@@ -9781,9 +10581,9 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         },
         "vgm_group_idx": {
           "name": "vgm_group_idx",
@@ -9796,37 +10596,37 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "visibility_group_members_group_id_visibility_groups_id_fk": {
           "name": "visibility_group_members_group_id_visibility_groups_id_fk",
           "tableFrom": "visibility_group_members",
+          "tableTo": "visibility_groups",
           "columnsFrom": [
             "group_id"
           ],
-          "tableTo": "visibility_groups",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "visibility_group_members_user_id_users_id_fk": {
           "name": "visibility_group_members_user_id_users_id_fk",
           "tableFrom": "visibility_group_members",
+          "tableTo": "users",
           "columnsFrom": [
             "user_id"
           ],
-          "tableTo": "users",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
@@ -9887,9 +10687,9 @@
             }
           ],
           "isUnique": true,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {},
@@ -9897,6 +10697,507 @@
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.workflow_runs": {
+      "name": "workflow_runs",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "workflow_id": {
+          "name": "workflow_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "version_id": {
+          "name": "version_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "actor_id": {
+          "name": "actor_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "request_key": {
+          "name": "request_key",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "mode": {
+          "name": "mode",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'queued'"
+        },
+        "trigger": {
+          "name": "trigger",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "next_node_id": {
+          "name": "next_node_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "outputs": {
+          "name": "outputs",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::jsonb"
+        },
+        "error_id": {
+          "name": "error_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cancelled_by": {
+          "name": "cancelled_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cancelled_at": {
+          "name": "cancelled_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "workflow_runs_ready_idx": {
+          "name": "workflow_runs_ready_idx",
+          "columns": [
+            {
+              "expression": "status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "workflow_runs_workflow_id_workflows_id_fk": {
+          "name": "workflow_runs_workflow_id_workflows_id_fk",
+          "tableFrom": "workflow_runs",
+          "tableTo": "workflows",
+          "columnsFrom": [
+            "workflow_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "workflow_runs_actor_id_users_id_fk": {
+          "name": "workflow_runs_actor_id_users_id_fk",
+          "tableFrom": "workflow_runs",
+          "tableTo": "users",
+          "columnsFrom": [
+            "actor_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "workflow_runs_cancelled_by_users_id_fk": {
+          "name": "workflow_runs_cancelled_by_users_id_fk",
+          "tableFrom": "workflow_runs",
+          "tableTo": "users",
+          "columnsFrom": [
+            "cancelled_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "workflow_run_pinned_version_fk": {
+          "name": "workflow_run_pinned_version_fk",
+          "tableFrom": "workflow_runs",
+          "tableTo": "workflow_versions",
+          "columnsFrom": [
+            "version_id",
+            "workflow_id"
+          ],
+          "columnsTo": [
+            "id",
+            "workflow_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "workflow_run_admission_unique": {
+          "name": "workflow_run_admission_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "workflow_id",
+            "actor_id",
+            "request_key"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "workflow_runs_status_ck": {
+          "name": "workflow_runs_status_ck",
+          "value": "\"workflow_runs\".\"status\" IN ('queued','running','succeeded','failed','cancelled')"
+        },
+        "workflow_runs_mode_ck": {
+          "name": "workflow_runs_mode_ck",
+          "value": "\"workflow_runs\".\"mode\" IN ('simulation','live')"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.workflow_steps": {
+      "name": "workflow_steps",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "run_id": {
+          "name": "run_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "node_id": {
+          "name": "node_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "simulated": {
+          "name": "simulated",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "output": {
+          "name": "output",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "completed_at": {
+          "name": "completed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "workflow_steps_run_id_workflow_runs_id_fk": {
+          "name": "workflow_steps_run_id_workflow_runs_id_fk",
+          "tableFrom": "workflow_steps",
+          "tableTo": "workflow_runs",
+          "columnsFrom": [
+            "run_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "workflow_step_effect_unique": {
+          "name": "workflow_step_effect_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "run_id",
+            "node_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.workflow_versions": {
+      "name": "workflow_versions",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "workflow_id": {
+          "name": "workflow_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "number": {
+          "name": "number",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "definition": {
+          "name": "definition",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "published_by": {
+          "name": "published_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "workflow_versions_workflow_id_workflows_id_fk": {
+          "name": "workflow_versions_workflow_id_workflows_id_fk",
+          "tableFrom": "workflow_versions",
+          "tableTo": "workflows",
+          "columnsFrom": [
+            "workflow_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "workflow_versions_published_by_users_id_fk": {
+          "name": "workflow_versions_published_by_users_id_fk",
+          "tableFrom": "workflow_versions",
+          "tableTo": "users",
+          "columnsFrom": [
+            "published_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "workflow_version_number_unique": {
+          "name": "workflow_version_number_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "workflow_id",
+            "number"
+          ]
+        },
+        "workflow_version_identity_unique": {
+          "name": "workflow_version_identity_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "id",
+            "workflow_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "workflow_version_number_positive": {
+          "name": "workflow_version_number_positive",
+          "value": "\"workflow_versions\".\"number\" > 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.workflows": {
+      "name": "workflows",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "owner_id": {
+          "name": "owner_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "revision": {
+          "name": "revision",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        },
+        "draft": {
+          "name": "draft",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "published_number": {
+          "name": "published_number",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "active": {
+          "name": "active",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "archived_at": {
+          "name": "archived_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "workflows_owner_idx": {
+          "name": "workflows_owner_idx",
+          "columns": [
+            {
+              "expression": "owner_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "workflows_owner_id_users_id_fk": {
+          "name": "workflows_owner_id_users_id_fk",
+          "tableFrom": "workflows",
+          "tableTo": "users",
+          "columnsFrom": [
+            "owner_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "workflows_revision_positive": {
+          "name": "workflows_revision_positive",
+          "value": "\"workflows\".\"revision\" > 0"
+        },
+        "workflows_active_published": {
+          "name": "workflows_active_published",
+          "value": "NOT \"workflows\".\"active\" OR (\"workflows\".\"published_number\" IS NOT NULL AND \"workflows\".\"archived_at\" IS NULL)"
+        }
+      },
       "isRLSEnabled": false
     },
     "public.ws_tickets": {
@@ -9934,15 +11235,15 @@
         "ws_tickets_user_id_users_id_fk": {
           "name": "ws_tickets_user_id_users_id_fk",
           "tableFrom": "ws_tickets",
+          "tableTo": "users",
           "columnsFrom": [
             "user_id"
           ],
-          "tableTo": "users",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -10233,10 +11534,10 @@
     }
   },
   "schemas": {},
-  "views": {},
   "sequences": {},
   "roles": {},
   "policies": {},
+  "views": {},
   "_meta": {
     "columns": {},
     "schemas": {},

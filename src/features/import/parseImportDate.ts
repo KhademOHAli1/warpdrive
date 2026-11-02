@@ -1,3 +1,10 @@
+import { normalizeDigits } from "@/utils/normalizeNumberInput";
+import {
+  hasImportDateOptions,
+  type ImportDateOptions,
+  parseRegionalImportDate,
+} from "./importDateConventions";
+
 const LOCAL_DATE_TIME =
   /^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{1,9}))?)?)?$/;
 
@@ -27,8 +34,12 @@ function utcIsoFromParts(match: RegExpExecArray): string | null {
   return roundTrips ? date.toISOString() : null;
 }
 
-export function parseImportDate(value: string): string | null {
-  const trimmed = value.trim();
+export function parseImportDate(value: string, options: ImportDateOptions = {}): string | null {
+  if (hasImportDateOptions(options)) {
+    const parsed = parseRegionalImportDate(value, options);
+    return parsed.ok ? parsed.value.iso : null;
+  }
+  const trimmed = normalizeDigits(value).trim();
   const local = LOCAL_DATE_TIME.exec(trimmed);
   if (local !== null) return utcIsoFromParts(local);
   const parsed = Date.parse(trimmed);

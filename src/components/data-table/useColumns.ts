@@ -13,6 +13,7 @@ export interface ColumnsState<T extends ColumnDef> {
   visibleColumns: T[];
   toggle: (key: string) => void;
   reorder: (from: string, to: string) => void;
+  replace: (order: readonly string[]) => void;
 }
 
 // Generic column visibility/order hook: seeds from a stored order (user_preferences) and drives the
@@ -34,6 +35,10 @@ export function useColumns<T extends ColumnDef>(
     (from: string, to: string) => setOrder((cur) => reorderColumns(catalog, cur, from, to)),
     [catalog],
   );
+  const replace = useCallback(
+    (next: readonly string[]) => setOrder(resolveVisibleOrder(catalog, next)),
+    [catalog],
+  );
 
   const visibleKeys = useMemo(() => new Set(order), [order]);
   const visibleColumns = useMemo(
@@ -45,5 +50,5 @@ export function useColumns<T extends ColumnDef>(
     [order, catalog],
   );
 
-  return { order, visibleKeys, visibleColumns, toggle, reorder };
+  return { order, visibleKeys, visibleColumns, toggle, reorder, replace };
 }

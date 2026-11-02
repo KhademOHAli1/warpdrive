@@ -7,7 +7,9 @@ import { de } from "react-day-picker/locale/de";
 import { faIR } from "react-day-picker/locale/fa-IR";
 
 export function PersianEnglishCalendar(props: DayPickerProps): React.ReactNode {
-  return <PersianDayPicker {...props} locale={enUS} dir="ltr" numerals="latn" />;
+  return (
+    <PersianDayPicker {...props} locale={enUS} dir="ltr" numerals={props.numerals ?? "latn"} />
+  );
 }
 
 export function GregorianPersianCalendar(props: DayPickerProps): React.ReactNode {
@@ -15,9 +17,9 @@ export function GregorianPersianCalendar(props: DayPickerProps): React.ReactNode
 }
 
 export function GregorianGermanCalendar(props: DayPickerProps): React.ReactNode {
-  return <DayPicker {...props} locale={de} dir="ltr" numerals="latn" />;
+  return <DayPicker {...props} locale={de} dir="ltr" numerals={props.numerals ?? "latn"} />;
 }
 
 export function PersianGermanCalendar(props: DayPickerProps): React.ReactNode {
-  return <PersianDayPicker {...props} locale={de} dir="ltr" numerals="latn" />;
+  return <PersianDayPicker {...props} locale={de} dir="ltr" numerals={props.numerals ?? "latn"} />;
 }

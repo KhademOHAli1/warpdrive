@@ -22,6 +22,7 @@ import {
   useLocalePreferences,
   useSetLocalePreferences,
 } from "@/features/i18n/LocaleProvider";
+import { isOverlayOpen, isTypingTarget } from "@/features/shortcuts/shortcutTarget";
 import { MonthView } from "./MonthView";
 import { WeekAgendaGrid } from "./WeekAgendaGrid";
 
@@ -81,6 +82,9 @@ export function CalendarClient({
           event.ctrlKey ||
           event.metaKey ||
           event.altKey ||
+          event.shiftKey ||
+          event.nativeEvent.isComposing ||
+          event.nativeEvent.keyCode === 229 ||
           !(event.target instanceof Node) ||
           !event.currentTarget.contains(event.target) ||
           event.key.toLowerCase() !== "c" ||
@@ -88,13 +92,7 @@ export function CalendarClient({
           editingId !== null
         )
           return;
-        if (
-          event.target instanceof Element &&
-          event.target.closest(
-            'input,textarea,select,[role="combobox"],[contenteditable="true"]',
-          ) !== null
-        )
-          return;
+        if (isTypingTarget(event.target) || isOverlayOpen(document)) return;
         event.preventDefault();
         setCreateDate(anchorIso);
       }}

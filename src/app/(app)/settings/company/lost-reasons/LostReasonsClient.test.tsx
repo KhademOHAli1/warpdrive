@@ -66,6 +66,36 @@ describe("LostReasonsClient", () => {
 });
 
 describe("LostReasonsClient surfaces failed mutations", () => {
+  it("retains an added draft and releases busy state after transport failure", async () => {
+    actions.createLostReasonAction.mockRejectedValueOnce(new Error("offline"));
+    render(<LostReasonsClient rows={ROWS} />);
+    fireEvent.change(screen.getByLabelText(S.lostReasonName), { target: { value: "New reason" } });
+    fireEvent.click(screen.getByRole("button", { name: S.addLostReason }));
+    await waitFor(() => expect(report).toHaveBeenCalledWith());
+    expect(screen.getByLabelText(S.lostReasonName)).toHaveValue("New reason");
+    expect(screen.getByRole("button", { name: S.addLostReason })).toBeEnabled();
+  });
+
+  it("retains a renamed draft after transport failure", async () => {
+    actions.renameLostReasonAction.mockRejectedValueOnce(new Error("offline"));
+    render(<LostReasonsClient rows={ROWS} />);
+    fireEvent.click(screen.getByRole("button", { name: S.rename }));
+    fireEvent.change(first(screen.getAllByLabelText(S.lostReasonName), "row draft"), {
+      target: { value: "New name" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: S.save }));
+    await waitFor(() => expect(report).toHaveBeenCalledWith());
+    expect(first(screen.getAllByLabelText(S.lostReasonName), "row draft")).toHaveValue("New name");
+  });
+
+  it("reports a rejected archive without removing the saved row", async () => {
+    actions.archiveLostReasonAction.mockRejectedValueOnce(new Error("offline"));
+    render(<LostReasonsClient rows={ROWS} />);
+    fireEvent.click(screen.getByRole("button", { name: S.archive }));
+    await waitFor(() => expect(report).toHaveBeenCalledWith());
+    expect(screen.getByText("Too expensive")).toBeInTheDocument();
+  });
+
   const TWO = [
     { id: "a", name: "Too expensive" },
     { id: "b", name: "Chose a competitor" },
@@ -116,5 +146,39 @@ describe("LostReasonsClient surfaces failed mutations", () => {
     render(<LostReasonsClient rows={TWO} />);
     fireEvent.click(first(screen.getAllByRole("button", { name: S.moveDown }), "move-down button"));
     await waitFor(() => expect(report).toHaveBeenCalledWith("E_PERM_001"));
+  });
+
+  it("restores the saved order immediately when a reorder is denied", async () => {
+    actions.reorderLostReasonsAction.mockResolvedValueOnce({
+      ok: false,
+      error: { id: "E_PERM_001" },
+    });
+    render(<LostReasonsClient rows={TWO} />);
+    fireEvent.click(first(screen.getAllByRole("button", { name: S.moveDown }), "move-down button"));
+    await waitFor(() => expect(report).toHaveBeenCalledWith("E_PERM_001"));
+    expect(first(screen.getAllByRole("listitem"), "first reason")).toHaveTextContent(
+      "Too expensive",
+    );
+  });
+
+  it("restores the saved order after a network rejection", async () => {
+    actions.reorderLostReasonsAction.mockRejectedValueOnce(new Error("offline"));
+    render(<LostReasonsClient rows={TWO} />);
+    fireEvent.click(first(screen.getAllByRole("button", { name: S.moveDown }), "move-down button"));
+    await waitFor(() => expect(report).toHaveBeenCalledWith());
+    expect(first(screen.getAllByRole("listitem"), "first reason")).toHaveTextContent(
+      "Too expensive",
+    );
+  });
+
+  it("cancels a rename without sending an action", () => {
+    render(<LostReasonsClient rows={ROWS} />);
+    fireEvent.click(screen.getByRole("button", { name: S.rename }));
+    fireEvent.change(first(screen.getAllByLabelText(S.lostReasonName), "reason draft"), {
+      target: { value: "Unwanted draft" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: S.cancel }));
+    expect(screen.getByText("Too expensive")).toBeInTheDocument();
+    expect(actions.renameLostReasonAction).not.toHaveBeenCalled();
   });
 });

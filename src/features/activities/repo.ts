@@ -251,7 +251,7 @@ export async function completeActivity(
       .select()
       .from(activities)
       .where(and(eq(activities.id, id), isNull(activities.deletedAt)))
-      .for("no key update");
+      .for("update");
 
     if (current === undefined) {
       return err(new AppError(ERROR_IDS.ACTIVITY_NOT_FOUND, "activity not found", { id }));

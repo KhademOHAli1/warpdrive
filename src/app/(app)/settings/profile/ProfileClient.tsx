@@ -26,17 +26,21 @@ export function ProfileClient(props: ProfileClientProps): React.ReactNode {
   const router = useRouter();
   const nameFieldId = useId();
   const [draftName, setDraftName] = useState(props.name);
+  const [savedName, setSavedName] = useState(props.name);
   const [nameSaving, setNameSaving] = useState(false);
   const [nameSaved, setNameSaved] = useState(false);
   const [nameError, setNameError] = useState<string | null>(null);
 
   async function saveName(): Promise<void> {
+    const submittedName = draftName.trim();
+    if (nameSaving || submittedName === "" || submittedName === savedName) return;
     setNameSaving(true);
     setNameSaved(false);
     setNameError(null);
     try {
-      const r = await updateUserProfileAction({ name: draftName.trim() }, readCsrfToken());
+      const r = await updateUserProfileAction({ name: submittedName }, readCsrfToken());
       if (r.ok) {
+        setSavedName(submittedName);
         setNameSaved(true);
         router.refresh();
       } else setNameError(r.error.id);
@@ -62,13 +66,17 @@ export function ProfileClient(props: ProfileClientProps): React.ReactNode {
           <Input
             id={nameFieldId}
             value={draftName}
+            maxLength={255}
+            aria-invalid={nameError !== null}
+            aria-describedby={nameError !== null ? `${nameFieldId}-error` : undefined}
             onChange={(e) => {
               setDraftName(e.target.value);
               setNameSaved(false);
+              setNameError(null);
             }}
           />
           {nameError !== null && (
-            <p role="alert" className="mt-1 text-xs text-destructive">
+            <p id={`${nameFieldId}-error`} role="alert" className="mt-1 text-xs text-destructive">
               {nameError === "" ? L._errors.generic : L._extra.nameSaveError(nameError)}
             </p>
           )}
@@ -81,7 +89,7 @@ export function ProfileClient(props: ProfileClientProps): React.ReactNode {
         </div>
       </SettingsCardBody>
       <SettingsCardFooter>
-        {nameSaved && (
+        {nameSaved && draftName.trim() === savedName && (
           <span role="status" className="me-auto text-sm text-muted-foreground">
             {L.saved}
           </span>
@@ -90,7 +98,7 @@ export function ProfileClient(props: ProfileClientProps): React.ReactNode {
           type="button"
           variant="default"
           size="sm"
-          disabled={nameSaving}
+          disabled={nameSaving || draftName.trim() === "" || draftName.trim() === savedName}
           onClick={() => void saveName()}
         >
           {L.saveName}

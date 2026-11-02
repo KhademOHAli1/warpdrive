@@ -39,6 +39,31 @@ vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
 
 afterEach(cleanup);
 
+it("offers field creation on the deal even without an organization, only to metadata managers", () => {
+  const workspace = makeWorkspace([], {});
+  workspace.org = null;
+  const view = render(
+    <DealSidebar
+      workspace={workspace}
+      now={new Date()}
+      isHidden={() => false}
+      baseCurrency="USD"
+      canManageFields
+    />,
+  );
+  expect(screen.getByRole("button", { name: "Add field" })).toBeInTheDocument();
+  view.rerender(
+    <DealSidebar
+      workspace={workspace}
+      now={new Date()}
+      isHidden={() => false}
+      baseCurrency="USD"
+      canManageFields={false}
+    />,
+  );
+  expect(screen.queryByRole("button", { name: "Add field" })).not.toBeInTheDocument();
+});
+
 const def = (over: Partial<CustomFieldDef>): CustomFieldDef => ({
   id: "d",
   targetEntity: "deal",
@@ -137,6 +162,7 @@ it("titles the deal custom fields Details, with the deal fields menu, when the d
   render(
     <DealSidebar
       workspace={makeWorkspace([def({ id: "d1", key: "notes", name: "Notes" })], { notes: "x" })}
+      canManageFields
       now={new Date()}
       isHidden={showAll}
       baseCurrency="USD"

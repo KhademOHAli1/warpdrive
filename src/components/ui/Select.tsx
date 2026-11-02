@@ -25,6 +25,8 @@ interface SelectProps {
   // Override/extend the trigger classes (twMerge dedupes), e.g. to drop the border and bg when
   // the select is composed inside a larger segmented control.
   triggerClassName?: string;
+  // Portal content leaves the trigger's ancestors, including their privacy exclusions.
+  contentClassName?: string;
   // Custom content to show in the trigger instead of the selected option's label (e.g. a
   // static icon for a compact icon-only trigger). Radix's SelectValue portals the selected
   // item's label into the trigger only when it has no children of its own, so passing
@@ -145,6 +147,7 @@ export function Select({
   ariaLabel,
   placeholder,
   triggerClassName,
+  contentClassName,
   triggerContent,
   triggerTitle,
   disabled,
@@ -173,7 +176,10 @@ export function Select({
       <RadixSelect.SelectContent
         position="popper"
         sideOffset={4}
-        className="z-50 overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 [transform-origin:var(--radix-select-content-transform-origin)] motion-reduce:animate-none"
+        className={cn(
+          "z-50 overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 [transform-origin:var(--radix-select-content-transform-origin)] motion-reduce:animate-none",
+          contentClassName,
+        )}
       >
         <div className="p-1">
           {groupOptions(options).map((section) => (

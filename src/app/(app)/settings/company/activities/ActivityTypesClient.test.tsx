@@ -55,7 +55,7 @@ describe("ActivityTypesClient", () => {
     expect(screen.getByText("Demo")).toBeInTheDocument();
     expect(screen.getByText("System")).toBeInTheDocument();
     // Only the non-system row exposes a Delete button.
-    expect(screen.getAllByRole("button", { name: "Delete" })).toHaveLength(1);
+    expect(screen.getAllByRole("button", { name: "Delete: Demo" })).toHaveLength(1);
   });
 
   it("submits the add form via createActivityTypeAction", async () => {
@@ -74,7 +74,7 @@ describe("ActivityTypesClient", () => {
 
   it("shows the guarded-delete message when the action is blocked", async () => {
     render(<ActivityTypesClient rows={ROWS} />);
-    fireEvent.click(screen.getByRole("button", { name: "Delete" }));
+    fireEvent.click(screen.getByRole("button", { name: "Delete: Demo" }));
     await waitFor(() => expect(deleteActivityTypeAction).toHaveBeenCalled());
     expect(await screen.findByText(/Can't delete/)).toBeInTheDocument();
   });

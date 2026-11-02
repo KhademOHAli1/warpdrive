@@ -30,6 +30,7 @@ export function useLeadSort(initial: LeadSort | null = null): {
   sort: LeadSort | null;
   effective: LeadSort;
   cycle: (field: LeadSortField) => void;
+  replace: (sort: LeadSort | null) => void;
 } {
   return useColumnSort<LeadSortField>(DEFAULT_LEAD_SORT, initial);
 }

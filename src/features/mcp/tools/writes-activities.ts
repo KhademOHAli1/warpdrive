@@ -1,5 +1,6 @@
 import type { McpServer } from "@modelcontextprotocol/server";
 import { z } from "zod";
+import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import { updateActivity } from "@/features/activities/activityUpdate";
 import { completeActivity, createActivity } from "@/features/activities/repo";
@@ -7,6 +8,7 @@ import { activityCreateInput, activityUpdateInput } from "@/features/activities/
 import { createNote } from "@/features/collaboration/notesRepo";
 import { noteCreateInput } from "@/features/collaboration/notesSchemas";
 import { toAuthUser, toPermSetUser } from "@/features/mcp/actorContext";
+import { can } from "@/features/permissions/can";
 import {
   type GetCtx,
   getToolActor,
@@ -31,6 +33,8 @@ export function registerActivityWriteTools(
     run: async (input, signal) => {
       const actor = getToolActor(getCtx);
       if (!actor.ok) return toolError(actor.error);
+      if (!can(actor.value, "activity.create"))
+        return toolError(new AppError(ERROR_IDS.PERM_DENIED, "activity creation denied"));
       return resultToTool(await createActivity(db, toPermSetUser(actor.value), input, signal));
     },
   });

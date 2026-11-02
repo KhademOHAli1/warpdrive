@@ -1,5 +1,5 @@
 "use client";
-import { ChevronDown, Paperclip } from "lucide-react";
+import { ChevronDown, Lock, Paperclip } from "lucide-react";
 import { useState } from "react";
 import { useActionError } from "@/components/shell/ActionErrorProvider";
 import { Checkbox } from "@/components/ui/Checkbox";
@@ -12,6 +12,8 @@ import { readCsrfToken } from "@/utils/csrfCookie";
 import type { InboxThread } from "./emailReads";
 import { archiveThreadAction, unarchiveThreadAction } from "./folderActions";
 import { formatInboxListDate } from "./inboxDate";
+import { MailOperationHint } from "./MailOperationHint";
+import { isProtectedPrivateIntake } from "./privateIntakePolicy";
 import { decodeEmailSnippet } from "./snippetText";
 import { ThreadLabelChips } from "./ThreadLabelChips";
 import { ThreadPrivacyToggle } from "./ThreadPrivacyToggle";
@@ -40,10 +42,12 @@ function RowArchiveButton({
   folder,
   threadId,
   onDone,
+  protectedCopy,
 }: {
   folder: ThreadFolder;
   threadId: string;
   onDone: () => void;
+  protectedCopy: boolean;
 }): React.ReactNode {
   const E = useEmailMessages();
 
@@ -53,6 +57,7 @@ function RowArchiveButton({
   const isArchive = folder === "archive";
 
   async function run(): Promise<void> {
+    if (protectedCopy) return;
     setBusy(true);
     const action = isArchive ? unarchiveThreadAction : archiveThreadAction;
     const res = await action(readCsrfToken(), { threadId });
@@ -62,14 +67,16 @@ function RowArchiveButton({
   }
 
   return (
-    <button
-      type="button"
-      disabled={busy}
-      onClick={() => void run()}
-      className={`${ROW_ACTION_BUTTON} self-start`}
-    >
-      {isArchive ? E._extra.unarchive : E._extra.archive}
-    </button>
+    <MailOperationHint enabled={!protectedCopy} reason={E.privateIntake.restrictions}>
+      <button
+        type="button"
+        disabled={busy || protectedCopy}
+        onClick={() => void run()}
+        className={`${ROW_ACTION_BUTTON} self-start`}
+      >
+        {isArchive ? E._extra.unarchive : E._extra.archive}
+      </button>
+    </MailOperationHint>
   );
 }
 
@@ -104,6 +111,7 @@ export function ThreadRow({
 
   const subject = thread.subject ?? E._extra.no_subject;
   const weight = thread.unread ? "font-semibold" : "font-normal";
+  const protectedCopy = isProtectedPrivateIntake(thread.privateIntake);
   // Pipedrive-style single-line row: sender column, then subject + inline snippet, then the date
   // on the right (archive appears on hover). No persistent reading pane; the row opens the thread.
   return (
@@ -174,7 +182,7 @@ export function ThreadRow({
       {/* Privacy toggle stays visible (the lock reflects private/shared at a glance); owner-only.
           A16: a caret sits next to the lock so the affordance reads as a dropdown (the lock is the
           real DropdownMenu trigger; the caret is decorative). */}
-      {thread.isOwner && (
+      {thread.isOwner && !protectedCopy && (
         <div className="flex shrink-0 items-center text-muted-foreground">
           <ThreadPrivacyToggle
             threadId={thread.id}
@@ -184,8 +192,20 @@ export function ThreadRow({
           <ChevronDown data-privacy-caret="true" aria-hidden="true" className="-ms-1 h-3 w-3" />
         </div>
       )}
+      {protectedCopy && (
+        <Lock
+          role="img"
+          aria-label={E._extra.private}
+          className="h-3.5 w-3.5 shrink-0 text-muted-foreground"
+        />
+      )}
       <div className="shrink-0 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
-        <RowArchiveButton folder={folder} threadId={thread.id} onDone={onArchiveDone} />
+        <RowArchiveButton
+          folder={folder}
+          threadId={thread.id}
+          protectedCopy={protectedCopy}
+          onDone={onArchiveDone}
+        />
       </div>
       {/* A14: row date at the larger 14px font (text-sm) to match Pipedrive's list. */}
       <span className="w-16 shrink-0 text-end text-sm text-muted-foreground tabular-nums">

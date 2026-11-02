@@ -27,6 +27,7 @@ const INSERT_ITEMS = MERGE_TOKEN_FIELDS.map((f) => ({
 
 export function TemplateDraftEditor({
   draft,
+  pending,
   canShare,
   nameError,
   onChange,
@@ -34,6 +35,7 @@ export function TemplateDraftEditor({
   onCancel,
 }: {
   draft: TemplateDraft;
+  pending: boolean;
   canShare: boolean;
   // Set when a save was attempted with a blank name, so the form explains why nothing happened.
   nameError: string | null;
@@ -51,7 +53,12 @@ export function TemplateDraftEditor({
   });
 
   return (
-    <div className="space-y-2 rounded-md border p-3">
+    <fieldset
+      disabled={pending}
+      inert={pending}
+      aria-busy={pending}
+      className="space-y-2 rounded-md border p-3"
+    >
       <Input
         aria-label={S.nameLabel}
         name="templateName"
@@ -103,6 +110,6 @@ export function TemplateDraftEditor({
           {S.cancel}
         </Button>
       </div>
-    </div>
+    </fieldset>
   );
 }

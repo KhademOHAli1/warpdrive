@@ -1,6 +1,8 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import type { ReactNode } from "react";
+import { createPortal as renderPortal } from "react-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { CalendarEventDialogProps } from "@/features/activities/useCalendarEventEditor";
 import { LocaleProvider } from "@/features/i18n/LocaleProvider";
@@ -26,6 +28,13 @@ vi.mock("@/features/activities/calendarActions", () => ({
 vi.mock("@/features/activities/reminderSettingsActions", () => ({
   setCalendarReminderDefaultsAction: vi.fn(),
   setEventReminderSettingsAction: vi.fn(),
+}));
+
+vi.mock("@/features/activities/CalendarEventEditDialog", () => ({
+  CalendarEventEditDialog: () => null,
+}));
+vi.mock("@/features/activities/FollowUpActivityDialog", () => ({
+  FollowUpActivityDialog: () => null,
 }));
 
 vi.mock("@/features/activities/CalendarEventDialog", async () => {
@@ -164,5 +173,109 @@ describe.each([
     expect(screen.queryByRole("dialog", { name: "Slot creation fixture" })).not.toBeInTheDocument();
     expect(within(dialog).getByRole("textbox", { name: "Date draft" })).toHaveValue(anchor);
     expect(within(dialog).getByRole("textbox", { name: "Time draft" })).toHaveValue("");
+  });
+});
+
+function guardCalendar(content: ReactNode, overlay?: ReactNode) {
+  render(
+    <>
+      <LocaleProvider locale="en" calendar="gregory" timeZone="Asia/Tehran">
+        <CalendarClient
+          view="week"
+          anchorIso={anchor}
+          initialTodayIso={anchor}
+          dayIsos={week}
+          activities={[]}
+          empty={content}
+        />
+      </LocaleProvider>
+      {overlay}
+    </>,
+  );
+  const region = screen.getByRole("region", { name: "Calendar" });
+  const target = screen.getByTestId("shortcut-target");
+  expect(region.contains(target)).toBe(true);
+  target.focus();
+  expect(target).toHaveFocus();
+  return { region, target };
+}
+
+function expectShortcutIgnored(target: HTMLElement, init: KeyboardEventInit = {}) {
+  const event = new KeyboardEvent("keydown", {
+    bubbles: true,
+    cancelable: true,
+    key: "c",
+    code: "KeyC",
+    ...init,
+  });
+  if (init.isComposing === true) expect(event.isComposing).toBe(true);
+  if (init.keyCode === 229) expect(event.keyCode).toBe(229);
+  if (init.shiftKey === true) expect(event.shiftKey).toBe(true);
+  fireEvent(target, event);
+  expect(
+    screen.queryByRole("dialog", { name: "Calendar creation fixture" }),
+  ).not.toBeInTheDocument();
+  expect(target).toHaveFocus();
+}
+
+describe("shared shortcut admission inside the calendar", () => {
+  it.each(["textbox", "searchbox", "spinbutton"] as const)(
+    "keeps C in a rendered role=%s editing context",
+    (role) => {
+      const { target } = guardCalendar(
+        <div role={role} tabIndex={0} data-testid="shortcut-target">
+          Typing draft
+        </div>,
+      );
+      expectShortcutIgnored(target);
+    },
+  );
+
+  it("keeps C in an empty contenteditable host", () => {
+    const { target } = guardCalendar(
+      <div
+        // biome-ignore lint/a11y/noNoninteractiveTabindex: The ref installs the exact empty contenteditable attribute under test.
+        tabIndex={0}
+        data-testid="shortcut-target"
+        ref={(node) => {
+          node?.setAttribute("contenteditable", "");
+        }}
+      >
+        Typing draft
+      </div>,
+    );
+    expect(target).toHaveAttribute("contenteditable", "");
+    expectShortcutIgnored(target);
+  });
+
+  it.each([
+    { name: "Shift+C", event: { key: "C", shiftKey: true } },
+    { name: "IME composition", event: { isComposing: true } },
+    { name: "legacy IME keyCode229", event: { keyCode: 229 } },
+  ])("ignores $name on a focused calendar button", ({ event }) => {
+    const { target } = guardCalendar(
+      <button type="button" data-testid="shortcut-target">
+        Calendar action
+      </button>,
+    );
+    expectShortcutIgnored(target, event);
+  });
+
+  it("ignores C inside the calendar while a floating overlay is open elsewhere", () => {
+    const { region, target } = guardCalendar(
+      <button type="button" data-testid="shortcut-target">
+        Calendar action
+      </button>,
+      renderPortal(
+        <div data-radix-popper-content-wrapper>
+          <div role="menu" aria-label="Floating overlay">
+            Overlay actions
+          </div>
+        </div>,
+        document.body,
+      ),
+    );
+    expect(region.contains(screen.getByRole("menu", { name: "Floating overlay" }))).toBe(false);
+    expectShortcutIgnored(target);
   });
 });

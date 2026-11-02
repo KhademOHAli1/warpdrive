@@ -3,7 +3,7 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { FilterDefinition } from "@/features/saved-filters/schemas";
-import type { SavedFilterView } from "./savedFilterView";
+import type { AvailableSavedFilterView } from "./savedFilterView";
 
 const createSavedFilterAction = vi.fn();
 const updateSavedFilterAction = vi.fn();
@@ -37,7 +37,7 @@ const DEFINITION: FilterDefinition = {
   ],
 };
 
-function view(overrides: Partial<SavedFilterView> = {}): SavedFilterView {
+function view(overrides: Partial<AvailableSavedFilterView> = {}): AvailableSavedFilterView {
   return {
     id: "f1",
     name: "Acme or Corp",

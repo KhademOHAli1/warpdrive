@@ -1,0 +1,62 @@
+{
+  "branch": "codex/sales-regional-source-integration-20261101",
+  "salesParent": "5de8a12a940236895a889df7cfaffca160ae0661",
+  "ownerParent": "7c8bb7ed013ef5eb9543399566bc5175a12df633",
+  "commonAncestor": "6b71b771d921df8930eebc15259ec0648bff0b73",
+  "salesChangedPaths": 376,
+  "ownerChangedPaths": 93,
+  "overlap": [],
+  "startedAt": "2026-11-01T10:44:53.348051+00:00",
+  "status": "source merge complete, combined checks UNRUN",
+  "mergeCommit": "a011879324c5a636aef04506b4dc8db233184ae5",
+  "allSalesChangedBlobsPreserved": true,
+  "allOwnerChangedBlobsPreserved": true,
+  "packageJsonSalesScriptsPreserved": true,
+  "bunLockUnchanged": true,
+  "entireDrizzleTreeUnchanged": true,
+  "approvedOriginalsUnchanged": true,
+  "primaryHeadUnchanged": true,
+  "checks": "No unit/type/lint/PG/build/browser executed for this combined source",
+  "completedAt": "2026-11-01T10:44:54.232443+00:00",
+  "kind": "Isolated source-only normal merge; no primary adoption or combined runtime qualification",
+  "sourceScope": {
+    "ownerPaths": 93,
+    "regionalCommitPaths": 13,
+    "otherOwnerPaths": 80,
+    "includes": [
+      "language/digit preferences and date pickers",
+      "Deals actor freshness",
+      "Slack/provider read guards",
+      "fake-provider and CRM fixtures",
+      "owner documentation"
+    ],
+    "privacyD86Adopted": false
+  },
+  "ownerRecordedEvidence": {
+    "reportedForSource": "7c8bb7ed013ef5eb9543399566bc5175a12df633",
+    "laterCommittedOwnerRecord": "12dd62cb4f7fbec3cd66129a3527ee54a7937cce",
+    "selectedCases": 149,
+    "selectedFiles": 21,
+    "unitCases": 6040,
+    "unitFiles": 963,
+    "reportedFullTypes": 0,
+    "reportedFullLint": 0,
+    "reportedNextBuild": 0,
+    "reportedWorkerCompilation": 0,
+    "reportedNative": "MFA and six account-persisted regional cases",
+    "rawExportsIndependentlyRechecked": false,
+    "qualifiesMergedSalesSource": false
+  },
+  "remainingGates": [
+    "Affected regional and Sales consumer units for this exact merged source",
+    "Affected authority/provider units and actual PostgreSQL cases on selected85 history",
+    "Full combined route type generation, TypeScript and repository lint",
+    "Separately granted exact combined-source build and native FA/DE/EN browser journeys",
+    "Privacy auth UI and conflicting migration histories remain separate; no retained upgrade, provider or release acceptance"
+  ],
+  "programme": {
+    "projects": 16,
+    "parents": 128,
+    "complete": 0
+  }
+}

@@ -1,11 +1,13 @@
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
+import { applyDevelopmentCachePolicy } from "./src/config/developmentCache";
 
 // Security response headers, applied to every route.
 //
 // script-src is deliberately ABSENT. Locking it down under the App Router requires nonce
-// injection from middleware, and this project has no middleware.ts by design (auth is enforced
-// per route). The directives below are the ones that are correct without a nonce pipeline and
+// injection through a nonce pipeline. The request proxy only carries an allowlisted own-case
+// path; it does not issue CSP nonces, and native route/action code still enforces authentication.
+// The directives below are the ones that are correct without a nonce pipeline and
 // that carry the actual exploit mitigations; adding script-src is a separate change that must
 // land together with nonce plumbing, not a value tweak here.
 //
@@ -58,7 +60,14 @@ function securityHeaders(directives: string[]): { key: string; value: string }[]
   ];
 }
 
+const ACTION_BODY_SIZE_LIMIT = "64mb";
+
 const nextConfig: NextConfig = {
+  webpack(config: Record<string, unknown>, context: { dev: boolean }) {
+    return applyDevelopmentCachePolicy(config, context.dev);
+  },
+  // Action arguments include credentials, CSRF tokens and private email content.
+  logging: { serverFunctions: false },
   // Its server DOM depends on packages with mixed module formats; load it through Bun.
   serverExternalPackages: ["pg", "pg-boss", "isomorphic-dompurify"],
   // HSTS is set by Caddy, not here: it terminates TLS and so is the layer that knows the
@@ -78,16 +87,18 @@ const nextConfig: NextConfig = {
   // Top-level, not experimental: Next 16 promoted the key.
   reactCompiler: true,
   experimental: {
+    // TypeScript 6 provides the compiler API. Keep build-time checking in process:
+    // the CLI path has intermittently returned truncated --showConfig JSON under Bun.
+    useTypeScriptCli: false,
     // Icons are imported from the lucide-react barrel in ~13 files. Without this, any chunk that
     // touches one icon pulls the whole barrel; Next rewrites them to direct module paths instead.
     optimizePackageImports: ["lucide-react"],
-    // The CSV importer POSTs the entire parsed rows array through the createBatchAction
-    // server action, whose JSON encoding runs ~2.2x the raw file bytes. Next defaults this
-    // to ~1 MB, so any CSV over a few hundred KB passes the 25 MB client cap
-    // (MAX_IMPORT_CSV_BYTES) then fails at the server. Raise it to cover that cap's JSON
-    // expansion. Stopgap: the storage-backed import overhaul moves the bytes off the request
-    // path entirely, making this irrelevant. Tied to the client cap by next.config.test.ts.
-    serverActions: { bodySizeLimit: "64mb" },
+    // Preserve the existing action contract. Current import bytes travel directly to storage;
+    // the compatibility envelope remains tied to the CSV cap by next.config.test.ts.
+    serverActions: { bodySizeLimit: ACTION_BODY_SIZE_LIMIT },
+    // Next clones matched POST bodies before handlers run. Its smaller default would truncate
+    // bodies that the action boundary accepts; keep both finite limits aligned.
+    proxyClientMaxBodySize: ACTION_BODY_SIZE_LIMIT,
   },
 };
 
@@ -95,11 +106,16 @@ export default createNextIntlPlugin({
   requestConfig: "./src/features/i18n/request.ts",
   experimental: {
     createMessagesDeclaration: [
+      "./src/features/activities/messages/nextActionQueue.en.json",
+      "./src/features/pipelines/messages/lifecycle.en.json",
+      "./src/features/saved-filters/messages/viewCompatibility.en.json",
+      "./src/features/workflows/messages/workflows.en.json",
       "./src/features/i18n/messages/en.json",
       "./src/components/shell/messages/utilities.en.json",
       "./src/features/enrichment/messages/enrichment.en.json",
       "./src/features/stats/messages/stats.en.json",
       "./src/features/auth/messages/authScreens.en.json",
+      "./src/features/integrations/messages/integrations.en.json",
       "./src/features/custom-fields/messages/customFields.en.json",
       "./src/features/files/messages/files.en.json",
       "./src/features/email/messages/email.en.json",
@@ -110,6 +126,7 @@ export default createNextIntlPlugin({
       "./src/components/ui/messages/shared.en.json",
       "./src/components/shell/messages/shell.en.json",
       "./src/features/identity/messages/settings.en.json",
+      "./src/features/privacy/messages/privacyRequest.en.json",
       "./src/features/contacts/messages/contacts.en.json",
       "./src/features/leads/messages/leads.en.json",
       "./src/features/entity-create/messages/entityCreate.en.json",

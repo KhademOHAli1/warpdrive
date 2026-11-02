@@ -1,231 +1,97 @@
 "use client";
-import { useRouter } from "next/navigation";
+
 import type React from "react";
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select, type SelectOption } from "@/components/ui/Select";
-import { Switch } from "@/components/ui/Switch";
-import { ERROR_IDS } from "@/constants/errorIds";
 import { ACTIVITY_TYPE_ICON_KEYS, ActivityTypeIcon } from "@/features/activities/ActivityTypeIcon";
-import { activityTypeName } from "@/features/activities/activityTypeLabels";
-import {
-  createActivityTypeAction,
-  deleteActivityTypeAction,
-  renameActivityTypeAction,
-  reorderActivityTypesAction,
-  setActivityTypeActiveAction,
-} from "@/features/activities/typeActions";
-import { useLocale } from "@/features/i18n/LocaleProvider";
 import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
-import { moveInArray } from "@/features/settings/reorder";
-import { useSyncedState } from "@/lib/useSyncedState";
-import { readCsrfToken } from "@/utils/csrfCookie";
-import { ReorderControls } from "../ReorderControls";
+import { ActivityTypeItem } from "./ActivityTypeItem";
+import type { ActivityTypeRow } from "./types";
+import { useActivityTypeCatalog } from "./useActivityTypeCatalog";
 
-export interface ActivityTypeRow {
-  id: string;
-  key: string;
-  name: string;
-  icon: string | null;
-  isSystem: boolean;
-  active: boolean;
-}
+export type { ActivityTypeRow } from "./types";
 
-function slug(name: string): string {
-  return name
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "_")
-    .replace(/^_+|_+$/g, "");
-}
-
-const ROW_BUTTON =
-  "relative h-auto px-0 py-0 text-xs font-medium text-muted-foreground hover:bg-transparent hover:text-foreground after:absolute after:left-0 after:top-1/2 after:h-10 after:w-full after:-translate-y-1/2 after:content-['']";
-// Activities tab (spec 6.2): list + rename + enable/disable + up/down reorder + guarded delete +
-// add form with an icon picker. Reorder uses buttons (dnd deferred).
 export function ActivityTypesClient({
   rows: initial,
 }: {
   rows: ActivityTypeRow[];
 }): React.ReactNode {
   const L = useSettingsMessages();
-  const locale = useLocale();
-  const S = L;
-  const ACTIVITY_ICON_OPTIONS: SelectOption[] = ACTIVITY_TYPE_ICON_KEYS.map((key) => ({
+  const catalog = useActivityTypeCatalog(initial);
+  const [addName, setAddName] = useState("");
+  const [addIcon, setAddIcon] = useState(ACTIVITY_TYPE_ICON_KEYS[0] ?? "task");
+  const icons: SelectOption[] = ACTIVITY_TYPE_ICON_KEYS.map((key) => ({
     value: key,
     label: (L._labels.icons as Record<string, string>)[key] ?? key,
     icon: <ActivityTypeIcon typeKey={key} />,
   }));
 
-  const router = useRouter();
-  // Re-seeds from refreshed server props (ACTIVITIES-17). See LostReasonsClient for why this is a
-  // render-time sync rather than an effect.
-  const [rows, setRows] = useSyncedState(initial);
-  const [addName, setAddName] = useState("");
-  const [addIcon, setAddIcon] = useState(ACTIVITY_TYPE_ICON_KEYS[0] ?? "task");
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editName, setEditName] = useState("");
-  const [rowError, setRowError] = useState<{ id: string; msg: string } | null>(null);
-  const [pending, setPending] = useState(false);
-
   async function add(): Promise<void> {
     const name = addName.trim();
-    if (name === "") return;
-    setPending(true);
-    const r = await createActivityTypeAction(
-      {
-        key: slug(name).slice(0, 64) || `custom_${crypto.randomUUID().replaceAll("-", "")}`,
-        name,
-        icon: addIcon,
-      },
-      readCsrfToken(),
-    );
-    setPending(false);
-    if (r.ok) {
-      setAddName("");
-      router.refresh();
-    }
-  }
-
-  async function rename(id: string): Promise<void> {
-    const name = editName.trim();
-    if (name === "") return;
-    await renameActivityTypeAction({ id, name }, readCsrfToken());
-    setEditingId(null);
-    router.refresh();
-  }
-
-  async function toggle(row: ActivityTypeRow): Promise<void> {
-    await setActivityTypeActiveAction({ id: row.id, active: !row.active }, readCsrfToken());
-    router.refresh();
-  }
-
-  async function del(id: string): Promise<void> {
-    setRowError(null);
-    const r = await deleteActivityTypeAction({ id }, readCsrfToken());
-    if (r.ok) router.refresh();
-    else if (r.error.id === ERROR_IDS.ACTIVITY_TYPE_IN_USE)
-      setRowError({ id, msg: S.deleteTypeBlocked });
-  }
-
-  async function move(index: number, dir: "up" | "down"): Promise<void> {
-    const next = moveInArray(rows, index, dir);
-    if (next[index]?.id === rows[index]?.id) return;
-    setRows(next);
-    await reorderActivityTypesAction({ orderedIds: next.map((r) => r.id) }, readCsrfToken());
-    router.refresh();
+    if (name !== "" && (await catalog.add(name, addIcon))) setAddName("");
   }
 
   return (
     <div className="space-y-4">
       <ul className="divide-y overflow-hidden rounded-lg border bg-card shadow-sm">
-        {rows.map((row, i) => (
-          <li key={row.id} className="flex items-center gap-3 px-3 py-2">
-            <ActivityTypeIcon typeKey={row.icon ?? row.key} />
-            {editingId === row.id ? (
-              <Input
-                aria-label={S.activityTypeName}
-                value={editName}
-                onChange={(e) => setEditName(e.target.value)}
-                className="h-8 flex-1"
-              />
-            ) : (
-              <span
-                className={`flex-1 text-sm ${row.active ? "" : "text-muted-foreground line-through"}`}
-              >
-                {activityTypeName(row, locale)}
-              </span>
-            )}
-            {row.isSystem && (
-              <span className="rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
-                {S.systemBadge}
-              </span>
-            )}
-            <div className="flex items-center gap-3">
-              <ReorderControls
-                canMoveUp={i > 0}
-                canMoveDown={i < rows.length - 1}
-                onMoveUp={() => void move(i, "up")}
-                onMoveDown={() => void move(i, "down")}
-              />
-              {editingId === row.id ? (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className={ROW_BUTTON}
-                  onClick={() => void rename(row.id)}
-                >
-                  {S.save}
-                </Button>
-              ) : (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className={ROW_BUTTON}
-                  onClick={() => {
-                    setEditingId(row.id);
-                    setEditName(row.name);
-                  }}
-                >
-                  {S.rename}
-                </Button>
-              )}
-              <Switch
-                checked={row.active}
-                onCheckedChange={() => void toggle(row)}
-                label={row.active ? S.disable : S.enable}
-              />
-              {!row.isSystem && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className={ROW_BUTTON}
-                  onClick={() => void del(row.id)}
-                >
-                  {S.delete}
-                </Button>
-              )}
-            </div>
-          </li>
+        {catalog.rows.map((row, index) => (
+          <ActivityTypeItem
+            key={row.id}
+            row={row}
+            first={index === 0}
+            last={index === catalog.rows.length - 1}
+            pending={catalog.pending}
+            onRename={(name) => catalog.rename(row.id, name)}
+            onToggle={() => void catalog.toggle(row)}
+            onDelete={() => void catalog.remove(row.id)}
+            onMove={(direction) => void catalog.move(index, direction)}
+          />
         ))}
-        {rows.length === 0 && (
-          <li className="px-3 py-2 text-sm text-muted-foreground">{S.emptyList}</li>
+        {catalog.rows.length === 0 && (
+          <li className="px-4 py-3 text-sm text-muted-foreground">{L.emptyList}</li>
         )}
       </ul>
-      {rowError && <p className="text-sm text-red-600">{rowError.msg}</p>}
-
-      <div className="flex flex-wrap items-end gap-3 rounded-lg border bg-card p-4 shadow-sm">
-        <label htmlFor="new-activity-type" className="min-w-56 flex-1">
-          <span className="mb-1 block text-sm font-medium">{S.activityTypeName}</span>
+      {catalog.error !== null && (
+        <p role="alert" className="text-sm text-destructive">
+          {catalog.error}
+        </p>
+      )}
+      {(catalog.pending || catalog.saved) && (
+        <p role="status" className="text-sm text-muted-foreground">
+          {catalog.pending ? L._extra.saving : L.saved}
+        </p>
+      )}
+      <div className="grid gap-3 rounded-lg border bg-card p-4 shadow-sm sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-end">
+        <label htmlFor="new-activity-type" className="block min-w-0">
+          <span className="mb-1 block text-sm font-medium">{L.activityTypeName}</span>
           <Input
             id="new-activity-type"
-            aria-label={S.activityTypeName}
+            aria-label={L.activityTypeName}
             required
             maxLength={120}
             value={addName}
-            onChange={(e) => setAddName(e.target.value)}
-            className="w-full"
+            disabled={catalog.pending}
+            onChange={(event) => setAddName(event.target.value)}
           />
         </label>
-        <div className="block">
-          <span className="mb-1 block text-sm font-medium">{S.iconLabel}</span>
+        <div>
+          <span className="mb-1 block text-sm font-medium">{L.iconLabel}</span>
           <Select
-            ariaLabel={S.iconLabel}
+            ariaLabel={L.iconLabel}
             value={addIcon}
             onChange={setAddIcon}
-            options={ACTIVITY_ICON_OPTIONS}
+            options={icons}
+            disabled={catalog.pending}
           />
         </div>
         <Button
-          type="button"
-          variant="default"
           size="sm"
-          className="px-3"
-          disabled={pending}
+          disabled={catalog.pending || addName.trim() === ""}
           onClick={() => void add()}
         >
-          {S.addActivityType}
+          {L.addActivityType}
         </Button>
       </div>
     </div>

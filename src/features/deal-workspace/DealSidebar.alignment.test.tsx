@@ -135,7 +135,7 @@ it("renders Summary as PD's action list (no field-label column), other section l
   expect(summary.getByText("$1,000 USD")).toBeInTheDocument();
   expect(summary.queryAllByTestId("field-row")).toHaveLength(0);
   // Every other section keeps the right-aligned label default.
-  expectLabelAlign("Organization", "Deal segment", "right");
+  expectLabelAlign("Details", "Deal segment", "right");
   expectLabelAlign("Person", "Name", "right");
 });
 
@@ -149,7 +149,7 @@ it("renders representative sidebar values through the shared start-aligned Field
     />,
   );
 
-  expectSharedLeftValue("Organization", "Deal segment");
+  expectSharedLeftValue("Details", "Deal segment");
   expectSharedLeftValue("Organization", "Name");
   expectSharedLeftValue("Person", "Name");
   expectSharedLeftValue("Source", "Channel");
