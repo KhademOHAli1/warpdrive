@@ -75,6 +75,8 @@ python3 scripts/delivery/release.py bump-version --version 1.4.1 --apply
 
 Have the coordinator integrate that ordinary version change with its canonical issue. The selected release must exactly match its committed package version and exceed every other stable tag/release. `VERSION`, source package metadata, and release tag therefore agree.
 
+The committed `docs/delivery/releases/next.json` is the initial planning plan used by the manual workflow default. It proposes version `1.4.1` and the actual first-release milestone items, including the four required journeys. This file records planned scope; the selected version, exact main CI and full authenticated acceptance must still pass the release checks. Refresh it when reviewed milestone membership changes.
+
 Commit a plan such as `docs/delivery/releases/1.4.1.json` through the integration coordinator:
 
 ```json

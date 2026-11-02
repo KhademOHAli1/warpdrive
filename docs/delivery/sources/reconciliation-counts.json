@@ -1,13 +1,14 @@
 {
   "recordedAt": "2026-11-02",
   "sourceHead": "ee36663b3318ba84b7a0b1600e34e773f9597d88",
-  "items": 902,
+  "items": 903,
   "kinds": {
     "programme": 11,
     "package": 62,
-    "deliverable": 829
+    "deliverable": 829,
+    "maintenance": 1
   },
-  "sourceTaskMappings": 2169,
+  "sourceTaskMappings": 2170,
   "expectedSourceCounts": {
     "integration-execution": 446,
     "integration-package-summary": 23,
@@ -29,7 +30,8 @@
     "localization-audit": 5,
     "calendar-reconciled": 510,
     "calendar-supplements": 9,
-    "operating-agreement": 4
+    "operating-agreement": 4,
+    "code-scanning-2026-11-02": 1
   },
   "allSourceCountsMatch": true,
   "allSourceHashesMatch": true,
@@ -37,29 +39,19 @@
   "missingDependencies": 0,
   "dependencyCycles": 0,
   "maximumImmediateChildren": 52,
-  "falseCalendarSourceMatchFlagsRetained": [
-    "G3-005",
-    "G5-038",
-    "G5-039",
-    "G5-040",
-    "G5-043"
-  ],
+  "falseCalendarSourceMatchFlagsRetained": ["G3-005", "G5-038", "G5-039", "G5-040", "G5-043"],
   "calendarFrozenDocumentHashesMatch": true,
   "secretPatternFindings": [],
   "scope": "Bounded source inventory validation only, no runtime, provider, release or deployment acceptance.",
   "originalRoadmapRecordsUnchangedByJourneyScopeReconciliation": true,
   "journeyDependenciesReconciledToBoundedSupport": {
-    "ops/journey-deal-stages": [
-      "delivery/core-deal-stage-support"
-    ],
-    "ops/journey-calendar-reminders": [
-      "delivery/core-calendar-reminder-support"
-    ],
-    "ops/journey-mailbox-recovery": [
-      "delivery/core-mailbox-recovery-support"
-    ],
-    "ops/journey-durable-follow-up": [
-      "delivery/core-workflow-follow-up-support"
-    ]
-  }
+    "ops/journey-deal-stages": ["delivery/core-deal-stage-support"],
+    "ops/journey-calendar-reminders": ["delivery/core-calendar-reminder-support"],
+    "ops/journey-mailbox-recovery": ["delivery/core-mailbox-recovery-support"],
+    "ops/journey-durable-follow-up": ["delivery/core-workflow-follow-up-support"]
+  },
+  "frozenOriginalSourceTaskMappings": 2169,
+  "appendedMaintenanceMappings": 1,
+  "frozenSourceHashesVerified": 37,
+  "currentSourceNamespaces": 38
 }

@@ -79544,7 +79544,13 @@
       "kind": "deliverable",
       "source_tasks": [],
       "dependencies": [],
-      "evidence": [],
+      "evidence": [
+        {
+          "url": "https://github.com/KhademOHAli1/warpdrive/commit/a29c08c356af8a308056086ecbac98f2d70683e4",
+          "level": "bounded source contribution only",
+          "scope": "Safe keyboard creation opens the existing calendar event-create path. The broader CAL-021 mobile editing qualification and this issue's full durable-reminder criteria remain open."
+        }
+      ],
       "owner": "KhademOHAli1",
       "owner_role": "calendar module owner; canonical publication by the Settings/integration coordinator",
       "module_owner_chat": "01a19290-d076-74e2-ac3f-46c9853bc5b5",

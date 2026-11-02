@@ -2,7 +2,17 @@
   "schema_version": 1,
   "commit_issues": {
     "fc5fae837b4b8e532a8bfd89ff303e941bcf1439": [214],
-    "3dc7fe76ea9c90b1321754873c349b50caaef3a1": [910]
+    "3dc7fe76ea9c90b1321754873c349b50caaef3a1": [910],
+    "a29c08c356af8a308056086ecbac98f2d70683e4": [302]
   },
-  "delivery_scope": {}
+  "delivery_scope": {
+    "fc5fae837b4b8e532a8bfd89ff303e941bcf1439": {
+      "delivery_issues": [905],
+      "contributes_to": [214]
+    },
+    "a29c08c356af8a308056086ecbac98f2d70683e4": {
+      "delivery_issues": [907],
+      "contributes_to": [302]
+    }
+  }
 }
