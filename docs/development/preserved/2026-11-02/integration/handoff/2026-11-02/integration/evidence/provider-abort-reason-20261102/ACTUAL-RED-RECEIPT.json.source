@@ -1,0 +1,112 @@
+{
+  "at": "2026-11-02T06:59:22.595429+00:00",
+  "admission": {
+    "pressure": 2,
+    "q": 51,
+    "freeBytes": 13594533888
+  },
+  "terminal": {
+    "pressure": 2,
+    "q": 51,
+    "freeBytes": 13596807168
+  },
+  "testBeforeFormattingSha256": "7ba980a9dcd1e552b824a0c764a96d9bcc1729dab7c17c5d47ad78a52e2e78bf",
+  "testSha256": "3ed29f2f4618dca64754bbed3a44ece6706c7d1da0ba81b183fcf897570d5e89",
+  "invokerSha256": "9ff62214d4d2f6bc25e8ed7f704b318d16013545c4d3294264abad4e4d1a400f",
+  "phases": [
+    {
+      "name": "biome",
+      "exitCode": 0,
+      "seconds": 0.18786387494765222,
+      "command": [
+        "/Users/ali/Developer/warpdrive-integrations/.runtime/bin/bun",
+        "--no-env-file",
+        "--bun",
+        "node_modules/@biomejs/biome/bin/biome",
+        "check",
+        "--write",
+        "src/features/integrations/providers/invokeAbortReason.test.ts"
+      ],
+      "resourceStop": null,
+      "sampledGroupMaxKiB": 4720
+    },
+    {
+      "name": "unit-red",
+      "exitCode": 1,
+      "seconds": 0.9298186670057476,
+      "command": [
+        "/usr/bin/time",
+        "-l",
+        "/Users/ali/Developer/warpdrive-integrations/.runtime/bin/bun",
+        "--no-env-file",
+        "--bun",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        ".runtime/handoffs/mcp-validation-20261102/vitest.isolated.config.ts",
+        "--project",
+        "unit",
+        "--pool=forks",
+        "--maxWorkers=1",
+        "--no-file-parallelism",
+        "--execArgv=--no-env-file",
+        "src/features/integrations/providers/invokeAbortReason.test.ts"
+      ],
+      "resourceStop": null,
+      "sampledGroupMaxKiB": 241232
+    }
+  ],
+  "samples": [
+    {
+      "pressure": 2,
+      "q": 51,
+      "freeBytes": 13594529792,
+      "ownedGroupRssKiB": 4720
+    },
+    {
+      "pressure": 2,
+      "q": 51,
+      "freeBytes": 13594189824,
+      "ownedGroupRssKiB": 3344
+    },
+    {
+      "pressure": 2,
+      "q": 51,
+      "freeBytes": 13598355456,
+      "ownedGroupRssKiB": 98704
+    },
+    {
+      "pressure": 2,
+      "q": 51,
+      "freeBytes": 13598322688,
+      "ownedGroupRssKiB": 105056
+    },
+    {
+      "pressure": 2,
+      "q": 51,
+      "freeBytes": 13597110272,
+      "ownedGroupRssKiB": 173984
+    },
+    {
+      "pressure": 2,
+      "q": 51,
+      "freeBytes": 13596835840,
+      "ownedGroupRssKiB": 241232
+    }
+  ],
+  "wholeSeconds": 1.1788878749357536,
+  "eighteenNative2InputsUnchanged": true,
+  "databaseProviderOrBrowserCalls": false,
+  "actual": {
+    "tests": 6,
+    "assertionFailures": 3,
+    "successControls": 3,
+    "setupOrCollectionErrors": 0,
+    "failure": "mid-flight object/string/null caller abort identity replaced",
+    "controls": "same three caller reasons preserved before adapter start",
+    "noncooperativeAdapter": "entered, inner reason preserved, held until finally; no underlying cancellation claim",
+    "executionMode": "warning2; Q51; focused container-free run below60seconds",
+    "laterAssertions": "only those before failure and finally cleanup reached"
+  },
+  "aggregatePeak": "unmeasured"
+}

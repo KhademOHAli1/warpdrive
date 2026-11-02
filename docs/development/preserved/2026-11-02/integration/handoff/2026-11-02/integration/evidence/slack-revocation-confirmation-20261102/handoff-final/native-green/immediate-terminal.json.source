@@ -1,0 +1,90 @@
+{
+  "at": "2026-11-02T05:08:26.963825+00:00",
+  "containers": [
+    {
+      "Command": "\"/bin/ryuk\"",
+      "CreatedAt": "2026-11-02 06:08:24 +0100 CET",
+      "HealthStatus": "none",
+      "ID": "678cf56e22d5e8128e3d89de047055d0824ee9746b8d7d4dcd267bf2d53d4399",
+      "Image": "testcontainers/ryuk:0.14.0",
+      "Labels": "org.testcontainers.lang=node,org.testcontainers.ryuk=true,org.testcontainers.session-id=57909dfc9eb0,org.testcontainers.version=12.2.1,org.testcontainers=true",
+      "LocalVolumes": "0",
+      "Mounts": "/var/run/docker.sock",
+      "Names": "testcontainers-ryuk-57909dfc9eb0",
+      "Networks": "bridge",
+      "Platform": {
+        "architecture": "arm64",
+        "os": "linux"
+      },
+      "Ports": "0.0.0.0:33896->8080/tcp, [::]:33896->8080/tcp",
+      "RunningFor": "2 seconds ago",
+      "Size": "12.3kB (virtual 2.18MB)",
+      "State": "running",
+      "Status": "Up 2 seconds"
+    },
+    {
+      "Command": "\"/home/greenmail/run_greenmail.sh\"",
+      "CreatedAt": "2026-10-31 14:42:20 +0100 CET",
+      "HealthStatus": "none",
+      "ID": "1b39c2e0cb523a1d36a2053a33cddd6391fbe26b84ca626121ee22da133bca59",
+      "Image": "greenmail/standalone@sha256:309ba544ea482e5d4265d09921cdab07c8dad2cc4481d715c9b8ff5d3f0a149f",
+      "Labels": "org.opencontainers.image.source=https://github.com/greenmail-mail-test/greenmail/blob/master/greenmail-docker/standalone/Dockerfile,org.opencontainers.image.url=https://github.com/greenmail-mail-test/greenmail/blob/master/greenmail-docker/standalone,warpdrive.purpose=local-mail-qualification",
+      "LocalVolumes": "0",
+      "Mounts": "",
+      "Names": "warpdrive-mail-qualification-20261031",
+      "Networks": "bridge",
+      "Platform": {
+        "architecture": "arm64",
+        "os": "linux"
+      },
+      "Ports": "3025/tcp, 3110/tcp, 3143/tcp, 3995/tcp, 8080/tcp, 127.0.0.1:13465->3465/tcp, 127.0.0.1:13993->3993/tcp",
+      "RunningFor": "39 hours ago",
+      "Size": "69.6kB (virtual 344MB)",
+      "State": "running",
+      "Status": "Up 39 hours"
+    },
+    {
+      "Command": "\"/entrypoint.sh mini -dir=/data -s3.config=/tmp/s3.json -s3.allowedOrigins=http://127.0.0.1:3160 -bucket=integration-program\"",
+      "CreatedAt": "2026-10-31 14:18:49 +0100 CET",
+      "HealthStatus": "none",
+      "ID": "958f91d8250e2bf9bce3819320a47fd30ecac7711ed8007de7dcabb60d6cddee",
+      "Image": "chrislusf/seaweedfs@sha256:c2658820e763294a9e9de7b36c81e59b879e3459148351aee4e31a126ca64860",
+      "Labels": "author=Chris Lu,codex.owner=warpdrive-integration-program,org.opencontainers.image.created=2026-10-25T04:11:27.501Z,org.opencontainers.image.description=SeaweedFS is a distributed storage system for blobs, objects, files, and data lake, to store and serve billions of files fast!,org.opencontainers.image.licenses=Apache-2.0,org.opencontainers.image.revision=ec8f9793502c59ce3381cc4151bfc0806afd92e8,org.opencontainers.image.source=https://github.com/seaweedfs/seaweedfs,org.opencontainers.image.title=seaweedfs,org.opencontainers.image.url=https://github.com/seaweedfs/seaweedfs,org.opencontainers.image.vendor=Chris Lu,org.opencontainers.image.version=4.50",
+      "LocalVolumes": "1",
+      "Mounts": "warpdrive-integration-program-s3",
+      "Names": "warpdrive-integration-program-s3",
+      "Networks": "bridge",
+      "Platform": {
+        "architecture": "arm64",
+        "os": "linux"
+      },
+      "Ports": "7333/tcp, 8080/tcp, 8888/tcp, 9333/tcp, 18080/tcp, 18888/tcp, 19333/tcp, 127.0.0.1:9160->8333/tcp",
+      "RunningFor": "40 hours ago",
+      "Size": "197kB (virtual 511MB)",
+      "State": "running",
+      "Status": "Up 40 hours"
+    },
+    {
+      "Command": "\"/entrypoint.sh mini -dir=/data\"",
+      "CreatedAt": "2026-10-29 17:16:15 +0100 CET",
+      "HealthStatus": "none",
+      "ID": "d31835d6d2bf86f9984408fb4b01bded8395915cefe64cac7230a3ebfb6a2e6e",
+      "Image": "chrislusf/seaweedfs@sha256:c2658820e763294a9e9de7b36c81e59b879e3459148351aee4e31a126ca64860",
+      "Labels": "author=Chris Lu,org.opencontainers.image.created=2026-10-25T04:11:27.501Z,org.opencontainers.image.description=SeaweedFS is a distributed storage system for blobs, objects, files, and data lake, to store and serve billions of files fast!,org.opencontainers.image.licenses=Apache-2.0,org.opencontainers.image.revision=ec8f9793502c59ce3381cc4151bfc0806afd92e8,org.opencontainers.image.source=https://github.com/seaweedfs/seaweedfs,org.opencontainers.image.title=seaweedfs,org.opencontainers.image.url=https://github.com/seaweedfs/seaweedfs,org.opencontainers.image.vendor=Chris Lu,org.opencontainers.image.version=4.50",
+      "LocalVolumes": "1",
+      "Mounts": "warpdrive-seaweed-data",
+      "Names": "warpdrive-local-s3",
+      "Networks": "bridge",
+      "Platform": {
+        "architecture": "arm64",
+        "os": "linux"
+      },
+      "Ports": "7333/tcp, 8080/tcp, 8888/tcp, 9333/tcp, 18080/tcp, 18888/tcp, 19333/tcp, 127.0.0.1:9000->8333/tcp",
+      "RunningFor": "3 days ago",
+      "Size": "184kB (virtual 511MB)",
+      "State": "running",
+      "Status": "Up 3 days"
+    }
+  ],
+  "ownedProcesses": []
+}

@@ -1,0 +1,422 @@
+{
+  "at": "2026-11-02T04:57:07.736Z",
+  "status": "DEFINITIONS_ONLY_NOT_EXECUTED",
+  "sourcePath": "src/features/integrations/slackOperationFailures.test.ts",
+  "sourceSha256": "1705b56a885c558c3aac262bc71e0c363b10a4391b3b8dd89e08e4ccbca81655",
+  "original18SourceSha256": "4dffa31acd7f4005ec543dd627462f016b71251c828e71a9a28196904ed09c1e",
+  "declaredCases": 47,
+  "counts": {
+    "explicitRejections": 5,
+    "rateHints": 15,
+    "outages": 12,
+    "fallbacks": 12,
+    "underScopedCandidate": 1,
+    "successControls": 2
+  },
+  "comparison": {
+    "sameResponseVectors": true,
+    "sharedFailureOraclesByteIdentical": true,
+    "successControlsByteIdentical": true,
+    "responseFactoriesPerTest": true,
+    "frozenNative6PinsUnchanged": {
+      "src/features/integrations/slack.ts": "2fece3be197eb962310615034ddcefccbf3cd204a57e2870b2cb2cc532b8c0a2",
+      "src/features/integrations/service.ts": "9b8374acfc0cbcbff6e0feed36a541de0c1fbe334f91873d585d4b44534ed228",
+      "src/features/integrations/slackRevocation.integration.test.ts": "790c380056521344e121113a35310ec15293c9effdac5c0eb2b90b6330859950",
+      "src/features/integrations/slackRevocation.test.ts": "491e6dec299c57cd0891441192ac8eec6fa439520979295c628564a20e9d76e3",
+      "src/features/privacy/registryIdsSales1.ts": "31075c8b9044e6a3c107f4daf4223825541cc88fa1bc1b65553c7df2dd211bd3",
+      "src/features/email/crypto.ts": "fbe1633057080384f7f58a78f7f0bf4a57b5717022d553664f6c087cc0e1d1f3",
+      "src/db/schema/integrations.ts": "195d6ff5e836745f8c71b5e728c8389777d4e554e27a78644b37a81dd7608d35",
+      "src/db/schema/identity.ts": "40a58a28e60bca38a94a0ed0e353b0ba52245c9e2928aad42554c7662e199a32",
+      "src/test/db.ts": "a2e17fcd595b368e294c65fbd775566e2b5a91680b075f5a27abe808f9946ba3",
+      "vitest.config.ts": "eb300f409ce431f415b89619bb5c3150e63ff14b1c6864a52f66dfe56989e6f7",
+      ".runtime/handoffs/mcp-validation-20261102/vitest.isolated.config.ts": "0cab1ace68ee361d17a82fbfad0ff0a6fe32582c809e3939c69b35aa67077c01"
+    }
+  },
+  "originalObserved18": {
+    "assertionFailures": 16,
+    "successControlsPassed": 2,
+    "setupFailures": 0,
+    "receipt": "../operation-definitions/ACTUAL-RED-RECEIPT.json",
+    "limitation": "Nested loops stopped at first failing assertion; later vectors are not credited as executed."
+  },
+  "cases": [
+    {
+      "group": "explicit rejection",
+      "name": "send revoked authorization",
+      "original18Case": "send revoked authorization",
+      "nestedVector": null
+    },
+    {
+      "group": "explicit rejection",
+      "name": "send insufficient scope",
+      "original18Case": "send insufficient scope",
+      "nestedVector": null
+    },
+    {
+      "group": "explicit rejection",
+      "name": "send unavailable selected resource",
+      "original18Case": "send unavailable selected resource",
+      "nestedVector": null
+    },
+    {
+      "group": "explicit rejection",
+      "name": "exchange invalid client configuration",
+      "original18Case": "exchange invalid client configuration",
+      "nestedVector": null
+    },
+    {
+      "group": "explicit rejection",
+      "name": "revoke ambiguous authentication is not proved revocation",
+      "original18Case": "revoke ambiguous authentication is not proved revocation",
+      "nestedVector": null
+    },
+    {
+      "group": "rate limit",
+      "name": "send HTTP429 Retry-After \"7\" retains only a bounded hint without reading the body",
+      "original18Case": "HTTP429 retains only bounded retry hints without reading operation response bodies",
+      "nestedVector": {
+        "operation": "send",
+        "retryAfter": "7"
+      }
+    },
+    {
+      "group": "rate limit",
+      "name": "send HTTP429 Retry-After \"86400\" retains only a bounded hint without reading the body",
+      "original18Case": "HTTP429 retains only bounded retry hints without reading operation response bodies",
+      "nestedVector": {
+        "operation": "send",
+        "retryAfter": "86400"
+      }
+    },
+    {
+      "group": "rate limit",
+      "name": "send HTTP429 Retry-After \"86401\" retains only a bounded hint without reading the body",
+      "original18Case": "HTTP429 retains only bounded retry hints without reading operation response bodies",
+      "nestedVector": {
+        "operation": "send",
+        "retryAfter": "86401"
+      }
+    },
+    {
+      "group": "rate limit",
+      "name": "send HTTP429 Retry-After \"0\" retains only a bounded hint without reading the body",
+      "original18Case": "HTTP429 retains only bounded retry hints without reading operation response bodies",
+      "nestedVector": {
+        "operation": "send",
+        "retryAfter": "0"
+      }
+    },
+    {
+      "group": "rate limit",
+      "name": "send HTTP429 Retry-After \"tomorrow\" retains only a bounded hint without reading the body",
+      "original18Case": "HTTP429 retains only bounded retry hints without reading operation response bodies",
+      "nestedVector": {
+        "operation": "send",
+        "retryAfter": "tomorrow"
+      }
+    },
+    {
+      "group": "rate limit",
+      "name": "exchange HTTP429 Retry-After \"7\" retains only a bounded hint without reading the body",
+      "original18Case": "HTTP429 retains only bounded retry hints without reading operation response bodies",
+      "nestedVector": {
+        "operation": "exchange",
+        "retryAfter": "7"
+      }
+    },
+    {
+      "group": "rate limit",
+      "name": "exchange HTTP429 Retry-After \"86400\" retains only a bounded hint without reading the body",
+      "original18Case": "HTTP429 retains only bounded retry hints without reading operation response bodies",
+      "nestedVector": {
+        "operation": "exchange",
+        "retryAfter": "86400"
+      }
+    },
+    {
+      "group": "rate limit",
+      "name": "exchange HTTP429 Retry-After \"86401\" retains only a bounded hint without reading the body",
+      "original18Case": "HTTP429 retains only bounded retry hints without reading operation response bodies",
+      "nestedVector": {
+        "operation": "exchange",
+        "retryAfter": "86401"
+      }
+    },
+    {
+      "group": "rate limit",
+      "name": "exchange HTTP429 Retry-After \"0\" retains only a bounded hint without reading the body",
+      "original18Case": "HTTP429 retains only bounded retry hints without reading operation response bodies",
+      "nestedVector": {
+        "operation": "exchange",
+        "retryAfter": "0"
+      }
+    },
+    {
+      "group": "rate limit",
+      "name": "exchange HTTP429 Retry-After \"tomorrow\" retains only a bounded hint without reading the body",
+      "original18Case": "HTTP429 retains only bounded retry hints without reading operation response bodies",
+      "nestedVector": {
+        "operation": "exchange",
+        "retryAfter": "tomorrow"
+      }
+    },
+    {
+      "group": "rate limit",
+      "name": "revoke HTTP429 Retry-After \"7\" retains only a bounded hint without reading the body",
+      "original18Case": "HTTP429 retains only bounded retry hints without reading operation response bodies",
+      "nestedVector": {
+        "operation": "revoke",
+        "retryAfter": "7"
+      }
+    },
+    {
+      "group": "rate limit",
+      "name": "revoke HTTP429 Retry-After \"86400\" retains only a bounded hint without reading the body",
+      "original18Case": "HTTP429 retains only bounded retry hints without reading operation response bodies",
+      "nestedVector": {
+        "operation": "revoke",
+        "retryAfter": "86400"
+      }
+    },
+    {
+      "group": "rate limit",
+      "name": "revoke HTTP429 Retry-After \"86401\" retains only a bounded hint without reading the body",
+      "original18Case": "HTTP429 retains only bounded retry hints without reading operation response bodies",
+      "nestedVector": {
+        "operation": "revoke",
+        "retryAfter": "86401"
+      }
+    },
+    {
+      "group": "rate limit",
+      "name": "revoke HTTP429 Retry-After \"0\" retains only a bounded hint without reading the body",
+      "original18Case": "HTTP429 retains only bounded retry hints without reading operation response bodies",
+      "nestedVector": {
+        "operation": "revoke",
+        "retryAfter": "0"
+      }
+    },
+    {
+      "group": "rate limit",
+      "name": "revoke HTTP429 Retry-After \"tomorrow\" retains only a bounded hint without reading the body",
+      "original18Case": "HTTP429 retains only bounded retry hints without reading operation response bodies",
+      "nestedVector": {
+        "operation": "revoke",
+        "retryAfter": "tomorrow"
+      }
+    },
+    {
+      "group": "outage or uncertain effect",
+      "name": "send internal_error retains unknown effects and a redacted transient classification",
+      "original18Case": "send partial provider errors retains unknown effects and a redacted transient classification",
+      "nestedVector": {
+        "providerError": "internal_error"
+      }
+    },
+    {
+      "group": "outage or uncertain effect",
+      "name": "send fatal_error retains unknown effects and a redacted transient classification",
+      "original18Case": "send partial provider errors retains unknown effects and a redacted transient classification",
+      "nestedVector": {
+        "providerError": "fatal_error"
+      }
+    },
+    {
+      "group": "outage or uncertain effect",
+      "name": "send HTTP503 retains unknown effects and a redacted transient classification",
+      "original18Case": "send HTTP503 retains unknown effects and a redacted transient classification",
+      "nestedVector": null
+    },
+    {
+      "group": "outage or uncertain effect",
+      "name": "send transport failure retains unknown effects and a redacted transient classification",
+      "original18Case": "send transport failure retains unknown effects and a redacted transient classification",
+      "nestedVector": null
+    },
+    {
+      "group": "outage or uncertain effect",
+      "name": "exchange internal_error retains unknown effects and a redacted transient classification",
+      "original18Case": "exchange partial provider errors retains unknown effects and a redacted transient classification",
+      "nestedVector": {
+        "providerError": "internal_error"
+      }
+    },
+    {
+      "group": "outage or uncertain effect",
+      "name": "exchange fatal_error retains unknown effects and a redacted transient classification",
+      "original18Case": "exchange partial provider errors retains unknown effects and a redacted transient classification",
+      "nestedVector": {
+        "providerError": "fatal_error"
+      }
+    },
+    {
+      "group": "outage or uncertain effect",
+      "name": "exchange HTTP503 retains unknown effects and a redacted transient classification",
+      "original18Case": "exchange HTTP503 retains unknown effects and a redacted transient classification",
+      "nestedVector": null
+    },
+    {
+      "group": "outage or uncertain effect",
+      "name": "exchange transport failure retains unknown effects and a redacted transient classification",
+      "original18Case": "exchange transport failure retains unknown effects and a redacted transient classification",
+      "nestedVector": null
+    },
+    {
+      "group": "outage or uncertain effect",
+      "name": "revoke internal_error retains unknown effects and a redacted transient classification",
+      "original18Case": "revoke partial provider errors retains unknown effects and a redacted transient classification",
+      "nestedVector": {
+        "providerError": "internal_error"
+      }
+    },
+    {
+      "group": "outage or uncertain effect",
+      "name": "revoke fatal_error retains unknown effects and a redacted transient classification",
+      "original18Case": "revoke partial provider errors retains unknown effects and a redacted transient classification",
+      "nestedVector": {
+        "providerError": "fatal_error"
+      }
+    },
+    {
+      "group": "outage or uncertain effect",
+      "name": "revoke HTTP503 retains unknown effects and a redacted transient classification",
+      "original18Case": "revoke HTTP503 retains unknown effects and a redacted transient classification",
+      "nestedVector": null
+    },
+    {
+      "group": "outage or uncertain effect",
+      "name": "revoke transport failure retains unknown effects and a redacted transient classification",
+      "original18Case": "revoke transport failure retains unknown effects and a redacted transient classification",
+      "nestedVector": null
+    },
+    {
+      "group": "fallback",
+      "name": "send unknown provider error preserves a finite reason and unknown effects",
+      "original18Case": "fallbacks and unusable exchange candidates preserve finite reasons and unknown effects",
+      "nestedVector": {
+        "operation": "send",
+        "shape": "unknown provider error"
+      }
+    },
+    {
+      "group": "fallback",
+      "name": "send provider request_timeout preserves a finite reason and unknown effects",
+      "original18Case": "fallbacks and unusable exchange candidates preserve finite reasons and unknown effects",
+      "nestedVector": {
+        "operation": "send",
+        "shape": "provider request_timeout"
+      }
+    },
+    {
+      "group": "fallback",
+      "name": "send malformed response shape preserves a finite reason and unknown effects",
+      "original18Case": "fallbacks and unusable exchange candidates preserve finite reasons and unknown effects",
+      "nestedVector": {
+        "operation": "send",
+        "shape": "malformed response shape"
+      }
+    },
+    {
+      "group": "fallback",
+      "name": "send unreadable JSON response preserves a finite reason and unknown effects",
+      "original18Case": "fallbacks and unusable exchange candidates preserve finite reasons and unknown effects",
+      "nestedVector": {
+        "operation": "send",
+        "shape": "unreadable JSON response"
+      }
+    },
+    {
+      "group": "fallback",
+      "name": "exchange unknown provider error preserves a finite reason and unknown effects",
+      "original18Case": "fallbacks and unusable exchange candidates preserve finite reasons and unknown effects",
+      "nestedVector": {
+        "operation": "exchange",
+        "shape": "unknown provider error"
+      }
+    },
+    {
+      "group": "fallback",
+      "name": "exchange provider request_timeout preserves a finite reason and unknown effects",
+      "original18Case": "fallbacks and unusable exchange candidates preserve finite reasons and unknown effects",
+      "nestedVector": {
+        "operation": "exchange",
+        "shape": "provider request_timeout"
+      }
+    },
+    {
+      "group": "fallback",
+      "name": "exchange malformed response shape preserves a finite reason and unknown effects",
+      "original18Case": "fallbacks and unusable exchange candidates preserve finite reasons and unknown effects",
+      "nestedVector": {
+        "operation": "exchange",
+        "shape": "malformed response shape"
+      }
+    },
+    {
+      "group": "fallback",
+      "name": "exchange unreadable JSON response preserves a finite reason and unknown effects",
+      "original18Case": "fallbacks and unusable exchange candidates preserve finite reasons and unknown effects",
+      "nestedVector": {
+        "operation": "exchange",
+        "shape": "unreadable JSON response"
+      }
+    },
+    {
+      "group": "fallback",
+      "name": "revoke unknown provider error preserves a finite reason and unknown effects",
+      "original18Case": "fallbacks and unusable exchange candidates preserve finite reasons and unknown effects",
+      "nestedVector": {
+        "operation": "revoke",
+        "shape": "unknown provider error"
+      }
+    },
+    {
+      "group": "fallback",
+      "name": "revoke provider request_timeout preserves a finite reason and unknown effects",
+      "original18Case": "fallbacks and unusable exchange candidates preserve finite reasons and unknown effects",
+      "nestedVector": {
+        "operation": "revoke",
+        "shape": "provider request_timeout"
+      }
+    },
+    {
+      "group": "fallback",
+      "name": "revoke malformed response shape preserves a finite reason and unknown effects",
+      "original18Case": "fallbacks and unusable exchange candidates preserve finite reasons and unknown effects",
+      "nestedVector": {
+        "operation": "revoke",
+        "shape": "malformed response shape"
+      }
+    },
+    {
+      "group": "fallback",
+      "name": "revoke unreadable JSON response preserves a finite reason and unknown effects",
+      "original18Case": "fallbacks and unusable exchange candidates preserve finite reasons and unknown effects",
+      "nestedVector": {
+        "operation": "revoke",
+        "shape": "unreadable JSON response"
+      }
+    },
+    {
+      "group": "under-scoped candidate",
+      "name": "exchange unusable successful candidate retains insufficient scope and unknown effects",
+      "original18Case": "fallbacks and unusable exchange candidates preserve finite reasons and unknown effects",
+      "nestedVector": {
+        "operation": "exchange",
+        "shape": "successful candidate with channels:read only"
+      }
+    },
+    {
+      "group": "success control",
+      "name": "revoke already token_revoked retains existing success",
+      "original18Case": "revoke already token_revoked retains existing success",
+      "nestedVector": null
+    },
+    {
+      "group": "success control",
+      "name": "revoke explicit revoked:true retains existing success",
+      "original18Case": "revoke explicit revoked:true retains existing success",
+      "nestedVector": null
+    }
+  ]
+}

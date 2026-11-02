@@ -1,0 +1,39 @@
+{
+  "atUtc": "2026-11-02T08:50:45.366293+00:00",
+  "operation": "Merge main INTO existing branch; never publish branch work to main",
+  "branch": "codex/preserve-integration-20261102",
+  "preSyncSnapshot": "76e6f7bb7c0e1861a8ae668fc86be5c05bfcee4c",
+  "mainMerged": "09288d518fd574fd069fb6a1dc670596f71a8831",
+  "behindBefore": 29,
+  "resolvedConflictPaths": [
+    "src/features/privacy/registryIdsAuthentication1.ts"
+  ],
+  "sourceResolutions": [
+    {
+      "path": "src/features/privacy/registryIdsAuthentication1.ts",
+      "mode": "100644",
+      "oid": "6e474f756110152db5ddeef024e2bddded69f257",
+      "sha256": "e78770cb16f976796b64d0eb95dfcca5ba65f72061ec50db450be9857171fc4c"
+    }
+  ],
+  "canonicalDrizzleTree": "1a496c5a05b7a3d78257149d639645b4eb2c30cf",
+  "canonicalMigrationFiles": 195,
+  "preSyncMigrationSnapshots": [
+    {
+      "originalPath": "drizzle/meta/_journal.json",
+      "archivePath": ".safe-stop/2026-11-02/branch-sync/private-migration-proposals/drizzle/meta/_journal.json.source",
+      "sha256": "d1d8fbde03d5671d7bc5e21aaf1cbdd623039bc9c8894669c5b5a6d900d0d2ac",
+      "gitBlob": "9536e4c3525496d9513be9e7d08605243197ee54",
+      "mode": "100644"
+    }
+  ],
+  "validation": {
+    "scope": "No functional rerun; conflict-free merge or metadata-only resolution; broader validation remains pending."
+  },
+  "limitations": [
+    "This synchronization preserves unfinished work; it is not branch-wide type/native/CI, user-journey or deployment acceptance.",
+    "Original snapshot commits remain ancestors; archived migration proposals are inert and have not been renumbered/admitted.",
+    "Existing status/CI/inventory receipts qualify their named historical cuts and are not re-aged to this merged tree.",
+    "Paused dirty source workspaces remain byte-exact and detached at their original source heads; existing branch references advance separately."
+  ]
+}

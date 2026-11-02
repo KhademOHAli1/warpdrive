@@ -1,0 +1,20 @@
+{
+  "at": "2026-11-02T03:40:09.290290+00:00",
+  "exitCode": 0,
+  "seconds": 0.8319325000047684,
+  "pressure": 1,
+  "availablePercent": 54,
+  "command": [
+    "/Users/ali/Developer/warpdrive-integrations/.runtime/bin/bun",
+    "--no-env-file",
+    "scripts/privacy-inventory.ts"
+  ],
+  "sourceSha256": "2fece3be197eb962310615034ddcefccbf3cd204a57e2870b2cb2cc532b8c0a2",
+  "coverage": {
+    "ok": true,
+    "missing": [],
+    "invalid": []
+  },
+  "sourceFiles": 2350,
+  "canonicalReportInstalled": false
+}

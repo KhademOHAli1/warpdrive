@@ -1,0 +1,15 @@
+{
+  "at": "2026-11-02T03:42:17.226797+00:00",
+  "changedProductionSource": "src/features/integrations/slack.ts",
+  "preSha256": "4eaa308d24fed9d8a1069d3afcfb1ed4d50d3cfebc2da8554cb678823e21dba5",
+  "reviewedPostSha256": "2fece3be197eb962310615034ddcefccbf3cd204a57e2870b2cb2cc532b8c0a2",
+  "reviewedDelta": "One boundary schema requires explicit revocation or explicit already-unusable current-token error; ambiguous/negative/missing acknowledgement retains existing error path. No storage/DTO/capability expansion.",
+  "actualUnmodifiedCliBeforeMaintenance": "PASS empty missing/invalid; this does not establish freshness of manually declared bindings.",
+  "actualSingleFileDiscovery": "slack-discovery-observation.json items[]; fetcher-indirection wrapper is not independently discovered by this heuristic.",
+  "maintenance": "Replace only existing manual Slack source-review digest after source review; no derived IDs added, no auto acceptance, no lifecycle/provider/installed capability changes.",
+  "registryPreSha256": "b5876ce716368695faa0392dd644ae5c8475d1c4cc691c641eb8f2f298fad3eb",
+  "independentReview": "SOURCE-REVIEW.md PASS",
+  "canonicalReportInstalled": false,
+  "registryPostSha256": "31075c8b9044e6a3c107f4daf4223825541cc88fa1bc1b65553c7df2dd211bd3",
+  "verification": "privacy-maintenance.receipt.json: registry30/Biome1/unmodified inventory PASS, empty missing/invalid, private source2350 only"
+}

@@ -1,0 +1,10 @@
+{
+  "at": "2026-11-02T07:22:36.373273+00:00",
+  "head": "9fb734e0129f6dcc5be69963e2aafddd0b7836ea",
+  "statusSha256": "4e87585edc3fe062643e9328f59c620e5fbf9796a52c063d4219e3ce0dd0f32e",
+  "owned61BytesUnchanged": true,
+  "sourceFrozen": true,
+  "publisher": "Main only",
+  "goal": "paused",
+  "commitPush": "pending Main sole-closer remote preservation"
+}

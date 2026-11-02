@@ -1,0 +1,153 @@
+{
+  "at": "2026-11-02T05:08:23.588846+00:00",
+  "authorization": "SLACK-REVOCATION6-GREEN-20261102-1",
+  "boardSection": "\n\n- ID: `SLACK-REVOCATION6-GREEN-20261102-1`.\n- Owner: Integration chat `01a19217-d257-7813-88e0-cf41cb36d93a`.\n- State: allocated after RootPrivacy18 ID1 actual25.303scleanup/allpins+foreign3-3-2/listenersexact. Rootprivate minimumlint6 correction underpreparation, no other heavyjob. Sidebarfocused16GREEN/Biome2 finished/allownedgroupsgone. Main df26904 remoteCIunitrunning; featurepublicationhold.\n- Scope: NATIVE6-COMMAND.json exactoneSlackrevocationfile/6cases/11frozeninputs/native6-exec32d6fe8a\u2026; <=180allin/inner100/outer165/oneworker/native2GiB/currentBun1.4.4hash/directnoenv+BUN_OPTIONS/cleanenv/envDirfalse/privatecache/cachedPG16+Ryuk/fullforeigncontainers-networks-volumes/listener/deps/source/dotenv/groupcleanup. Freshnormal1orwarn2Q>=40/disk8GiB/stopQ<30/critical4/uncertainty. SyntheticHTTPnotrealSlack/provider. No compiler/othernative/issuer/native15refresh/DDL/ownedcodeedit/operationclassifier47/newcontract/docs/browser/build/install/provider/pub/scopeadd/retry/IDreuse. Keepolderissuer8/resource52/units46/registry30, no repeats; originalAppErrorproposal remainsseparate.\n\n",
+  "metrics": {
+    "pressure": 1,
+    "availablePercent": 50,
+    "freeBytes": 13465882624
+  },
+  "containers": [
+    {
+      "Command": "\"/home/greenmail/run_greenmail.sh\"",
+      "CreatedAt": "2026-10-31 14:42:20 +0100 CET",
+      "HealthStatus": "none",
+      "ID": "1b39c2e0cb523a1d36a2053a33cddd6391fbe26b84ca626121ee22da133bca59",
+      "Image": "greenmail/standalone@sha256:309ba544ea482e5d4265d09921cdab07c8dad2cc4481d715c9b8ff5d3f0a149f",
+      "Labels": "org.opencontainers.image.source=https://github.com/greenmail-mail-test/greenmail/blob/master/greenmail-docker/standalone/Dockerfile,org.opencontainers.image.url=https://github.com/greenmail-mail-test/greenmail/blob/master/greenmail-docker/standalone,warpdrive.purpose=local-mail-qualification",
+      "LocalVolumes": "0",
+      "Mounts": "",
+      "Names": "warpdrive-mail-qualification-20261031",
+      "Networks": "bridge",
+      "Platform": {
+        "architecture": "arm64",
+        "os": "linux"
+      },
+      "Ports": "3025/tcp, 3110/tcp, 3143/tcp, 3995/tcp, 8080/tcp, 127.0.0.1:13465->3465/tcp, 127.0.0.1:13993->3993/tcp",
+      "RunningFor": "39 hours ago",
+      "Size": "69.6kB (virtual 344MB)",
+      "State": "running",
+      "Status": "Up 39 hours"
+    },
+    {
+      "Command": "\"/entrypoint.sh mini -dir=/data -s3.config=/tmp/s3.json -s3.allowedOrigins=http://127.0.0.1:3160 -bucket=integration-program\"",
+      "CreatedAt": "2026-10-31 14:18:49 +0100 CET",
+      "HealthStatus": "none",
+      "ID": "958f91d8250e2bf9bce3819320a47fd30ecac7711ed8007de7dcabb60d6cddee",
+      "Image": "chrislusf/seaweedfs@sha256:c2658820e763294a9e9de7b36c81e59b879e3459148351aee4e31a126ca64860",
+      "Labels": "author=Chris Lu,codex.owner=warpdrive-integration-program,org.opencontainers.image.created=2026-10-25T04:11:27.501Z,org.opencontainers.image.description=SeaweedFS is a distributed storage system for blobs, objects, files, and data lake, to store and serve billions of files fast!,org.opencontainers.image.licenses=Apache-2.0,org.opencontainers.image.revision=ec8f9793502c59ce3381cc4151bfc0806afd92e8,org.opencontainers.image.source=https://github.com/seaweedfs/seaweedfs,org.opencontainers.image.title=seaweedfs,org.opencontainers.image.url=https://github.com/seaweedfs/seaweedfs,org.opencontainers.image.vendor=Chris Lu,org.opencontainers.image.version=4.50",
+      "LocalVolumes": "1",
+      "Mounts": "warpdrive-integration-program-s3",
+      "Names": "warpdrive-integration-program-s3",
+      "Networks": "bridge",
+      "Platform": {
+        "architecture": "arm64",
+        "os": "linux"
+      },
+      "Ports": "7333/tcp, 8080/tcp, 8888/tcp, 9333/tcp, 18080/tcp, 18888/tcp, 19333/tcp, 127.0.0.1:9160->8333/tcp",
+      "RunningFor": "40 hours ago",
+      "Size": "197kB (virtual 511MB)",
+      "State": "running",
+      "Status": "Up 40 hours"
+    },
+    {
+      "Command": "\"/entrypoint.sh mini -dir=/data\"",
+      "CreatedAt": "2026-10-29 17:16:15 +0100 CET",
+      "HealthStatus": "none",
+      "ID": "d31835d6d2bf86f9984408fb4b01bded8395915cefe64cac7230a3ebfb6a2e6e",
+      "Image": "chrislusf/seaweedfs@sha256:c2658820e763294a9e9de7b36c81e59b879e3459148351aee4e31a126ca64860",
+      "Labels": "author=Chris Lu,org.opencontainers.image.created=2026-10-25T04:11:27.501Z,org.opencontainers.image.description=SeaweedFS is a distributed storage system for blobs, objects, files, and data lake, to store and serve billions of files fast!,org.opencontainers.image.licenses=Apache-2.0,org.opencontainers.image.revision=ec8f9793502c59ce3381cc4151bfc0806afd92e8,org.opencontainers.image.source=https://github.com/seaweedfs/seaweedfs,org.opencontainers.image.title=seaweedfs,org.opencontainers.image.url=https://github.com/seaweedfs/seaweedfs,org.opencontainers.image.vendor=Chris Lu,org.opencontainers.image.version=4.50",
+      "LocalVolumes": "1",
+      "Mounts": "warpdrive-seaweed-data",
+      "Names": "warpdrive-local-s3",
+      "Networks": "bridge",
+      "Platform": {
+        "architecture": "arm64",
+        "os": "linux"
+      },
+      "Ports": "7333/tcp, 8080/tcp, 8888/tcp, 9333/tcp, 18080/tcp, 18888/tcp, 19333/tcp, 127.0.0.1:9000->8333/tcp",
+      "RunningFor": "3 days ago",
+      "Size": "184kB (virtual 511MB)",
+      "State": "running",
+      "Status": "Up 3 days"
+    }
+  ],
+  "dockerResources": {
+    "networks": [
+      "48cea036ee2d88be55172b37be54f8aed33f426ddb0f4459002d5b9d1b8b01b5",
+      "c8fe6619dcd06043734949f3e0eb5fc0338e5c3d248e2dfc2a2114fecdf2c7e9",
+      "e3440ebc7f565e9cac351d7ddadbd09343bdee4a6a3dcbb57a06fe85824ddac6"
+    ],
+    "volumes": [
+      "warpdrive-integration-program-s3",
+      "warpdrive-seaweed-data"
+    ]
+  },
+  "sourceHashes": {
+    "src/features/integrations/slack.ts": "2fece3be197eb962310615034ddcefccbf3cd204a57e2870b2cb2cc532b8c0a2",
+    "src/features/integrations/service.ts": "9b8374acfc0cbcbff6e0feed36a541de0c1fbe334f91873d585d4b44534ed228",
+    "src/features/integrations/slackRevocation.integration.test.ts": "790c380056521344e121113a35310ec15293c9effdac5c0eb2b90b6330859950",
+    "src/features/integrations/slackRevocation.test.ts": "491e6dec299c57cd0891441192ac8eec6fa439520979295c628564a20e9d76e3",
+    "src/features/privacy/registryIdsSales1.ts": "31075c8b9044e6a3c107f4daf4223825541cc88fa1bc1b65553c7df2dd211bd3",
+    "src/features/email/crypto.ts": "fbe1633057080384f7f58a78f7f0bf4a57b5717022d553664f6c087cc0e1d1f3",
+    "src/db/schema/integrations.ts": "195d6ff5e836745f8c71b5e728c8389777d4e554e27a78644b37a81dd7608d35",
+    "src/db/schema/identity.ts": "40a58a28e60bca38a94a0ed0e353b0ba52245c9e2928aad42554c7662e199a32",
+    "src/test/db.ts": "a2e17fcd595b368e294c65fbd775566e2b5a91680b075f5a27abe808f9946ba3",
+    "vitest.config.ts": "eb300f409ce431f415b89619bb5c3150e63ff14b1c6864a52f66dfe56989e6f7",
+    ".runtime/handoffs/mcp-validation-20261102/vitest.isolated.config.ts": "0cab1ace68ee361d17a82fbfad0ff0a6fe32582c809e3939c69b35aa67077c01"
+  },
+  "cachedImages": [
+    "sha256:0cefaabd882e42bcb2a2f3dc56d3ce4770560ba62fd7f197f1a2e008fd5731ab",
+    "sha256:7c1a8a9a47c780ed0f983770a662f80deb115d95cce3e2daa3d12115b8cd28f0"
+  ],
+  "bunVersion": "1.4.4",
+  "bunSha256": "0a2237cdcfa0d16ef501d9acca9f0026309ef348bea7393a64e8d1e3609565cc",
+  "automaticDotenvAbsent": {
+    ".env": true,
+    ".env.local": true,
+    ".env.test": true,
+    ".env.test.local": true,
+    ".env.production": true,
+    ".env.production.local": true
+  },
+  "command": [
+    "/opt/homebrew/bin/gtimeout",
+    "--signal=INT",
+    "--kill-after=10s",
+    "100s",
+    "/usr/bin/time",
+    "-l",
+    "/Users/ali/Developer/warpdrive-integrations/.runtime/bin/bun",
+    "--no-env-file",
+    "--bun",
+    "node_modules/vitest/vitest.mjs",
+    "run",
+    "--config",
+    ".runtime/handoffs/mcp-validation-20261102/vitest.isolated.config.ts",
+    "--project",
+    "integration",
+    "--pool=forks",
+    "--maxWorkers=1",
+    "--no-file-parallelism",
+    "--execArgv=--no-env-file",
+    "--testTimeout=60000",
+    "--hookTimeout=90000",
+    "--teardownTimeout=20000",
+    "src/features/integrations/slackRevocation.integration.test.ts"
+  ],
+  "environmentKeys": [
+    "BASE_URL",
+    "BUN_OPTIONS",
+    "DOCKER_CONFIG",
+    "DOCKER_HOST",
+    "HOME",
+    "LANG",
+    "LOGNAME",
+    "NODE_ENV",
+    "PATH",
+    "TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE",
+    "TMPDIR",
+    "USER"
+  ],
+  "jobLocalBunOptions": "--no-env-file"
+}

@@ -1,10 +1,48 @@
 import { z } from "zod";
 import { env } from "@/config/env";
-import { AppError, ERROR_IDS } from "@/constants/errorIds";
+import { AppError, ERROR_IDS, type ErrorId } from "@/constants/errorIds";
+import {
+  classifySlackOperationError,
+  classifySlackOperationHttpFailure,
+  type SlackOperationFailure,
+  slackOperationFailure,
+} from "./slackOperationFailure";
 import { requestSlackRead } from "./slackRead";
 
 export const SLACK_SCOPES = ["chat:write", "channels:read"] as const;
-const responseBase = z.object({ ok: z.boolean(), error: z.string().optional() });
+const responseFailure = z.object({ ok: z.literal(false), error: z.string().max(128).optional() });
+const responseBase = z.union([z.object({ ok: z.literal(true) }), responseFailure]);
+const revocationResponse = z.union([
+  z.object({ ok: z.literal(true), revoked: z.literal(true) }),
+  responseFailure,
+]);
+const exchangeResponse = z.union([
+  z.object({
+    ok: z.literal(true),
+    access_token: z.string().min(1),
+    scope: z.string(),
+    team: z.object({ id: z.string().min(1), name: z.string().min(1) }),
+  }),
+  responseFailure,
+]);
+
+function operationError(id: ErrorId, message: string, detail: SlackOperationFailure) {
+  return new AppError(id, message, { slackOperationFailure: detail });
+}
+
+function mutationBodyError(signal: AbortSignal) {
+  if (signal.aborted)
+    return operationError(
+      ERROR_IDS.SLACK_UNAVAILABLE,
+      "slack_unavailable",
+      slackOperationFailure("transient_outage", "unavailable", "unknown"),
+    );
+  return operationError(
+    ERROR_IDS.SLACK_REQUEST_FAILED,
+    "slack_request_failed",
+    slackOperationFailure("invalid_response", "invalid_response", "unknown"),
+  );
+}
 
 export function slackConfiguration() {
   const clientId = env.SLACK_CLIENT_ID;
@@ -50,34 +88,68 @@ export async function slackRequest(
       { slackReadFailure },
     );
   }
-  const response = await fetcher(`https://slack.com/api/${method}`, {
-    method: "POST",
-    redirect: "error",
-    signal: AbortSignal.timeout(10_000),
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-    body: new URLSearchParams(body ?? {}),
-  });
+  return requestSlackMutation(method, token, body, fetcher, AbortSignal.timeout(10_000));
+}
+
+async function requestSlackMutation(
+  method: string,
+  token: string,
+  body: Record<string, string> | undefined,
+  fetcher: typeof fetch,
+  signal: AbortSignal,
+) {
+  let response: Response;
+  try {
+    response = await fetcher(`https://slack.com/api/${method}`, {
+      method: "POST",
+      redirect: "error",
+      signal,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams(body ?? {}),
+    });
+  } catch {
+    throw operationError(
+      ERROR_IDS.SLACK_UNAVAILABLE,
+      "slack_unavailable",
+      slackOperationFailure("transient_outage", "unavailable", "unknown"),
+    );
+  }
   if (!response.ok)
-    throw new AppError(
+    throw operationError(
       response.status === 429 ? ERROR_IDS.SLACK_RATE_LIMITED : ERROR_IDS.SLACK_UNAVAILABLE,
       "slack_unavailable",
-      {},
+      classifySlackOperationHttpFailure(response.status, response.headers.get("Retry-After")),
     );
-  const data: unknown = await response.json();
-  const parsed = responseBase.safeParse(data);
-  if (
-    method === "auth.revoke" &&
-    parsed.success &&
-    ["invalid_auth", "token_revoked", "token_expired", "account_inactive"].includes(
-      parsed.data.error ?? "",
+  let data: unknown;
+  try {
+    data = await response.json();
+    signal.throwIfAborted();
+  } catch {
+    throw mutationBodyError(signal);
+  }
+  const parsed = (method === "auth.revoke" ? revocationResponse : responseBase).safeParse(data);
+  if (!parsed.success)
+    throw operationError(
+      ERROR_IDS.SLACK_REQUEST_FAILED,
+      "slack_request_failed",
+      slackOperationFailure("invalid_response", "invalid_response", "unknown"),
+    );
+  if (!parsed.data.ok) {
+    // Ambiguous authentication failures do not prove revocation, so retain retry material.
+    if (
+      method === "auth.revoke" &&
+      ["token_revoked", "token_expired", "account_inactive"].includes(parsed.data.error ?? "")
     )
-  )
-    return { ok: true };
-  if (!parsed.success || !parsed.data.ok)
-    throw new AppError(ERROR_IDS.SLACK_REQUEST_FAILED, "slack_request_failed", {});
+      return { ok: true };
+    throw operationError(
+      ERROR_IDS.SLACK_REQUEST_FAILED,
+      "slack_request_failed",
+      classifySlackOperationError(parsed.data.error),
+    );
+  }
   return data;
 }
 
@@ -87,33 +159,67 @@ export async function exchangeSlackCode(
   config: { clientId: string; clientSecret: string },
   fetcher: typeof fetch = fetch,
 ) {
-  const response = await fetcher("https://slack.com/api/oauth.v2.access", {
-    method: "POST",
-    redirect: "error",
-    signal: AbortSignal.timeout(10_000),
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({
-      code,
-      redirect_uri: redirectUri,
-      client_id: config.clientId,
-      client_secret: config.clientSecret,
-    }),
-  });
+  const signal = AbortSignal.timeout(10_000);
+  let response: Response;
+  try {
+    response = await fetcher("https://slack.com/api/oauth.v2.access", {
+      method: "POST",
+      redirect: "error",
+      signal,
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        code,
+        redirect_uri: redirectUri,
+        client_id: config.clientId,
+        client_secret: config.clientSecret,
+      }),
+    });
+  } catch {
+    throw operationError(
+      ERROR_IDS.SLACK_EXCHANGE_FAILED,
+      "slack_exchange_failed",
+      slackOperationFailure("transient_outage", "unavailable", "unknown"),
+    );
+  }
   if (!response.ok)
-    throw new AppError(ERROR_IDS.SLACK_EXCHANGE_FAILED, "slack_exchange_failed", {});
-  const parsed = z
-    .object({
-      ok: z.literal(true),
-      access_token: z.string().min(1),
-      scope: z.string(),
-      team: z.object({ id: z.string().min(1), name: z.string().min(1) }),
-    })
-    .safeParse(await response.json());
+    throw operationError(
+      ERROR_IDS.SLACK_EXCHANGE_FAILED,
+      "slack_exchange_failed",
+      classifySlackOperationHttpFailure(response.status, response.headers.get("Retry-After")),
+    );
+  let data: unknown;
+  try {
+    data = await response.json();
+    signal.throwIfAborted();
+  } catch {
+    throw operationError(
+      ERROR_IDS.SLACK_EXCHANGE_FAILED,
+      "slack_exchange_failed",
+      signal.aborted
+        ? slackOperationFailure("transient_outage", "unavailable", "unknown")
+        : slackOperationFailure("invalid_response", "invalid_response", "unknown"),
+    );
+  }
+  const parsed = exchangeResponse.safeParse(data);
   if (!parsed.success)
-    throw new AppError(ERROR_IDS.SLACK_EXCHANGE_FAILED, "slack_exchange_failed", {});
+    throw operationError(
+      ERROR_IDS.SLACK_EXCHANGE_FAILED,
+      "slack_exchange_failed",
+      slackOperationFailure("invalid_response", "invalid_response", "unknown"),
+    );
+  if (!parsed.data.ok)
+    throw operationError(
+      ERROR_IDS.SLACK_EXCHANGE_FAILED,
+      "slack_exchange_failed",
+      classifySlackOperationError(parsed.data.error),
+    );
   const scopes = parsed.data.scope.split(",");
   if (!SLACK_SCOPES.every((scope) => scopes.includes(scope)))
-    throw new AppError(ERROR_IDS.SLACK_SCOPE_MISSING, "slack_scope_missing", {});
+    throw operationError(
+      ERROR_IDS.SLACK_SCOPE_MISSING,
+      "slack_scope_missing",
+      slackOperationFailure("insufficient_scope", "invalid_response", "unknown"),
+    );
   return { token: parsed.data.access_token, scopes, team: parsed.data.team };
 }
 

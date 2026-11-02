@@ -1,0 +1,40 @@
+{
+  "at": "2026-11-02T03:36:15.750126+00:00",
+  "exitCode": 1,
+  "seconds": 0.7119154579704627,
+  "command": [
+    "/usr/bin/time",
+    "-l",
+    "/Users/ali/Developer/warpdrive-integrations/.runtime/bin/bun",
+    "--no-env-file",
+    "--bun",
+    "node_modules/vitest/vitest.mjs",
+    "run",
+    "--config",
+    ".runtime/handoffs/mcp-validation-20261102/vitest.isolated.config.ts",
+    "--project",
+    "unit",
+    "--pool=forks",
+    "--maxWorkers=1",
+    "--no-file-parallelism",
+    "--execArgv=--no-env-file",
+    "src/features/integrations/slackRevocation.test.ts"
+  ],
+  "pressure": 1,
+  "availablePercent": 53,
+  "freeBytes": 17503404032,
+  "canonicalObservedHead": "a7df229f33e6e47216e4e2ba3b132d9ffcfa6846",
+  "baselineSourceSha256": "4eaa308d24fed9d8a1069d3afcfb1ed4d50d3cfebc2da8554cb678823e21dba5",
+  "testSha256": "491e6dec299c57cd0891441192ac8eec6fa439520979295c628564a20e9d76e3",
+  "productionUnchanged": true,
+  "automaticDotenvAbsent": {
+    ".env": true,
+    ".env.local": true,
+    ".env.test": true,
+    ".env.test.local": true,
+    ".env.production": true,
+    ".env.production.local": true
+  },
+  "BUN_OPTIONS": "--no-env-file",
+  "databaseOrProviderCalls": false
+}

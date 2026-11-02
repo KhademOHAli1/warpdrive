@@ -1,0 +1,10 @@
+{
+  "startedAt": "2026-11-02T05:08:23.628070+00:00",
+  "endedAt": "2026-11-02T05:08:26.922251+00:00",
+  "exitCode": 0,
+  "commandSeconds": 3.2942153749754652,
+  "resourceStop": null,
+  "monitorError": null,
+  "sampledHostProcessGroupMaxKiB": 352720,
+  "aggregateIncludingDockerAndSupervisorPeakMeasured": false
+}

@@ -1,0 +1,164 @@
+{
+  "unit-red.receipt.json": {
+    "sourcePath": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/unit-red.receipt.json",
+    "packetPath": "evidence/unit-red.receipt.json",
+    "sha256": "8e65ecf656060a130b8b09215fcbd2c787f59493850159e483d805546332a431",
+    "copiedUnchanged": true
+  },
+  "unit-red.log": {
+    "sourcePath": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/unit-red.log",
+    "packetPath": "evidence/unit-red.log",
+    "sha256": "ad019c9025a1ae4857c86a6c4ee5e722e2c79b58fb7315d76d3ad902fc05236e",
+    "copiedUnchanged": true
+  },
+  "focused-green.receipt.json": {
+    "sourcePath": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/focused-green.receipt.json",
+    "packetPath": "evidence/focused-green.receipt.json",
+    "sha256": "89e61156f74356ba1ba505c79ee8c374a86d0ce0b2883086298f75a8d88cba33",
+    "copiedUnchanged": true
+  },
+  "biome.log": {
+    "sourcePath": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/biome.log",
+    "packetPath": "evidence/biome.log",
+    "sha256": "a76fadf49391ed388bb5babe1f024a3833df7177125633d724dcc9736460a1bf",
+    "copiedUnchanged": true
+  },
+  "unit-green.log": {
+    "sourcePath": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/unit-green.log",
+    "packetPath": "evidence/unit-green.log",
+    "sha256": "9aa67575ee5abac85550aebcc025a633486f30dcc106395259e7c64a09980a15",
+    "copiedUnchanged": true
+  },
+  "inventory-diagnostic.receipt.json": {
+    "sourcePath": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/inventory-diagnostic.receipt.json",
+    "packetPath": "evidence/inventory-diagnostic.receipt.json",
+    "sha256": "9b92d022bff91cc856bc8ac500b2ba6edbd89915cce422c6b384f80685558708",
+    "copiedUnchanged": true
+  },
+  "inventory-diagnostic.json": {
+    "sourcePath": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/inventory-diagnostic.json",
+    "packetPath": "evidence/inventory-diagnostic.json",
+    "sha256": "ec5226a282b5037fee5e2bcbca7adaaa56b72f734a8f9dcc95430acce448531d",
+    "copiedUnchanged": true
+  },
+  "inventory-diagnostic.stderr.log": {
+    "sourcePath": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/inventory-diagnostic.stderr.log",
+    "packetPath": "evidence/inventory-diagnostic.stderr.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "copiedUnchanged": true
+  },
+  "slack-discovery-observation.json": {
+    "sourcePath": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/slack-discovery-observation.json",
+    "packetPath": "evidence/slack-discovery-observation.json",
+    "sha256": "8ed9f2e450c395e529ae259cd20a883fcd69e8d0d076a5a56ea2ce405ad5817d",
+    "copiedUnchanged": true
+  },
+  "slack-discovery-observation.stderr.log": {
+    "sourcePath": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/slack-discovery-observation.stderr.log",
+    "packetPath": "evidence/slack-discovery-observation.stderr.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "copiedUnchanged": true
+  },
+  "PRIVACY-REVIEW.json": {
+    "sourcePath": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/PRIVACY-REVIEW.json",
+    "packetPath": "evidence/PRIVACY-REVIEW.json",
+    "sha256": "567c5cb251dbabc76ad529d8ce72d2cfb69be438e2043c9147ab0ae826e3daa5",
+    "copiedUnchanged": true
+  },
+  "privacy-maintenance.receipt.json": {
+    "sourcePath": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/privacy-maintenance.receipt.json",
+    "packetPath": "evidence/privacy-maintenance.receipt.json",
+    "sha256": "3a0d7cc7ba3c63d36fe76faa36e2b8d7058a025c6603784f0e74070720457c65",
+    "copiedUnchanged": true
+  },
+  "registry-units.log": {
+    "sourcePath": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/registry-units.log",
+    "packetPath": "evidence/registry-units.log",
+    "sha256": "7e504d20902bfa79174a72618d5f3994bd89929c8016324dadbd16f033212367",
+    "copiedUnchanged": true
+  },
+  "registry-units.stderr.log": {
+    "sourcePath": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/registry-units.stderr.log",
+    "packetPath": "evidence/registry-units.stderr.log",
+    "sha256": "b5d193ec935c0ff2c2d1a43af83417a367fc5f94a41fd5a3b570b8d155ac797f",
+    "copiedUnchanged": true
+  },
+  "registry-biome.log": {
+    "sourcePath": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/registry-biome.log",
+    "packetPath": "evidence/registry-biome.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "copiedUnchanged": true
+  },
+  "registry-biome.stderr.log": {
+    "sourcePath": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/registry-biome.stderr.log",
+    "packetPath": "evidence/registry-biome.stderr.log",
+    "sha256": "4b21d2316607b252636601a39949b2be3394cefb0d5b199d5b4f883fd205f9cd",
+    "copiedUnchanged": true
+  },
+  "inventory-green.json": {
+    "sourcePath": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/inventory-green.json",
+    "packetPath": "evidence/inventory-green.json",
+    "sha256": "6a8e3dd773818a7262250fa68d64c81b73124357adcb0fd94e5b3796ec730b99",
+    "copiedUnchanged": true
+  },
+  "inventory-green.stderr.log": {
+    "sourcePath": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/inventory-green.stderr.log",
+    "packetPath": "evidence/inventory-green.stderr.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "copiedUnchanged": true
+  },
+  "SOURCE-REVIEW.md": {
+    "sourcePath": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/SOURCE-REVIEW.md",
+    "packetPath": "evidence/SOURCE-REVIEW.md",
+    "sha256": "97ecca50ab5595221859fce08b07626276cd35eb5ae43f6c53c4923134502a3f",
+    "copiedUnchanged": true
+  },
+  "NATIVE-DEFINITIONS-REVIEW.md": {
+    "sourcePath": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/NATIVE-DEFINITIONS-REVIEW.md",
+    "packetPath": "evidence/NATIVE-DEFINITIONS-REVIEW.md",
+    "sha256": "091cdee99e1407989675901bda6ba4e25b00df29e8ac6add6d765e7844450b22",
+    "copiedUnchanged": true
+  },
+  "native-definitions-biome.receipt.json": {
+    "sourcePath": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/native-definitions-biome.receipt.json",
+    "packetPath": "evidence/native-definitions-biome.receipt.json",
+    "sha256": "4ab468d74f1aca8d3db28b9ad66fd7c1308543e947de77fd2e8d11721f706de9",
+    "copiedUnchanged": true
+  },
+  "native-definitions-biome.log": {
+    "sourcePath": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/native-definitions-biome.log",
+    "packetPath": "evidence/native-definitions-biome.log",
+    "sha256": "e98d4041ac3c16c85d6a2ff47bc7b56c09976fcd68cc6d4d7d7bedf7aa06b373",
+    "copiedUnchanged": true
+  },
+  "native-definitions-biome-final.receipt.json": {
+    "sourcePath": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/native-definitions-biome-final.receipt.json",
+    "packetPath": "evidence/native-definitions-biome-final.receipt.json",
+    "sha256": "31926a152f14e746877c2e0819a6e3b9d2c4aef63cbb02aada5eecae038e949b",
+    "copiedUnchanged": true
+  },
+  "native-definitions-biome-final.log": {
+    "sourcePath": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/native-definitions-biome-final.log",
+    "packetPath": "evidence/native-definitions-biome-final.log",
+    "sha256": "46ca58d1a0d217dd8b8d1e6a136761e8d6d6065831ad21da206745d7fb2d12dd",
+    "copiedUnchanged": true
+  },
+  "native-definitions/DEFINITIONS.json": {
+    "sourcePath": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/native-definitions/DEFINITIONS.json",
+    "packetPath": "evidence/native-definitions/DEFINITIONS.json",
+    "sha256": "0c2f6931264d453997f04229dcbb377b604db6b0a08f154b9136fedfc6cf6c51",
+    "copiedUnchanged": true
+  },
+  "NATIVE6-PINS.json": {
+    "sourcePath": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/NATIVE6-PINS.json",
+    "packetPath": "evidence/NATIVE6-PINS.json",
+    "sha256": "2b91965cd3bfc27f14619fc8a62cc8bb9e7505bb2e843f72e66a60284a42592a",
+    "copiedUnchanged": true
+  },
+  "NATIVE6-COMMAND.json": {
+    "sourcePath": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/NATIVE6-COMMAND.json",
+    "packetPath": "evidence/NATIVE6-COMMAND.json",
+    "sha256": "d322a9e65f211b141095087de18ebdd14a837b7933c31a5e882b7b7e55532631",
+    "copiedUnchanged": true
+  }
+}

@@ -1,5 +1,5 @@
 import { randomBytes, randomUUID } from "node:crypto";
-import { and, eq, gt, isNull } from "drizzle-orm";
+import { and, eq, gt, inArray, isNull } from "drizzle-orm";
 import { jwtVerify, SignJWT } from "jose";
 import { env } from "@/config/env";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
@@ -124,6 +124,60 @@ export async function issueRefreshToken(
   return token;
 }
 
+function invalidRefreshGrant(message = "refresh token is invalid"): AppError {
+  return new AppError(ERROR_IDS.OAUTH_INVALID_GRANT, message, {});
+}
+
+async function containRefreshFamily(
+  db: Db,
+  first: typeof oauthRefreshTokens.$inferSelect,
+  signal: AbortSignal,
+): Promise<Result<void, AppError>> {
+  const seen = new Set<string>();
+  const hashes: string[] = [];
+  let current = first;
+  for (;;) {
+    signal.throwIfAborted();
+    if (
+      current.clientId !== first.clientId ||
+      current.userId !== first.userId ||
+      seen.has(current.tokenHash) ||
+      (current.rotatedTo !== null && current.revokedAt === null)
+    ) {
+      return err(invalidRefreshGrant("refresh token rotation chain is inconsistent"));
+    }
+    seen.add(current.tokenHash);
+    hashes.push(current.tokenHash);
+    if (current.rotatedTo === null) break;
+    // Expired or already-revoked ancestors still identify the same successor chain.
+    const [next] = await db
+      .select()
+      .from(oauthRefreshTokens)
+      .where(eq(oauthRefreshTokens.tokenHash, current.rotatedTo))
+      .limit(1);
+    signal.throwIfAborted();
+    if (next === undefined) {
+      return err(invalidRefreshGrant("refresh token rotation chain is incomplete"));
+    }
+    current = next;
+  }
+
+  // Validate the complete chain before any update; corrupt links cannot cause a partial sweep.
+  await db
+    .update(oauthRefreshTokens)
+    .set({ revokedAt: new Date() })
+    .where(
+      and(
+        inArray(oauthRefreshTokens.tokenHash, hashes),
+        eq(oauthRefreshTokens.clientId, first.clientId),
+        eq(oauthRefreshTokens.userId, first.userId),
+        isNull(oauthRefreshTokens.revokedAt),
+      ),
+    );
+  signal.throwIfAborted();
+  return ok(undefined);
+}
+
 export async function rotateRefreshToken(
   db: Db,
   token: string,
@@ -134,36 +188,57 @@ export async function rotateRefreshToken(
   const tokenHash = sha256Base64Url(token);
   const refreshToken = randomBytes(32).toString("base64url");
   const successorHash = sha256Base64Url(refreshToken);
-  const owner = await db.transaction(async (tx) => {
+  const owner = await db.transaction(async (tx): Promise<Result<TokenOwner, AppError>> => {
+    await lockMcpGrants(tx, signal);
+    const [presented] = await tx
+      .select()
+      .from(oauthRefreshTokens)
+      .where(eq(oauthRefreshTokens.tokenHash, tokenHash))
+      .limit(1);
+    signal.throwIfAborted();
+    if (
+      presented === undefined ||
+      (expectedClientId !== undefined && presented.clientId !== expectedClientId)
+    ) {
+      return err(invalidRefreshGrant());
+    }
+    if (presented.revokedAt !== null) {
+      if (presented.rotatedTo !== null) {
+        const contained = await containRefreshFamily(tx, presented, signal);
+        if (!contained.ok) return contained;
+      }
+      // Return a denial so the transaction commits containment instead of rolling it back.
+      return err(invalidRefreshGrant());
+    }
+    if (presented.rotatedTo !== null) {
+      return err(invalidRefreshGrant("refresh token rotation chain is inconsistent"));
+    }
     const [claimed] = await tx
       .update(oauthRefreshTokens)
       .set({ revokedAt: new Date(), rotatedTo: successorHash })
       .where(
         and(
           eq(oauthRefreshTokens.tokenHash, tokenHash),
-          expectedClientId === undefined
-            ? undefined
-            : eq(oauthRefreshTokens.clientId, expectedClientId),
+          eq(oauthRefreshTokens.clientId, presented.clientId),
+          eq(oauthRefreshTokens.userId, presented.userId),
           isNull(oauthRefreshTokens.revokedAt),
           gt(oauthRefreshTokens.expiresAt, new Date()),
         ),
       )
       .returning({ clientId: oauthRefreshTokens.clientId, userId: oauthRefreshTokens.userId });
     signal.throwIfAborted();
-    if (claimed === undefined) return undefined;
+    if (claimed === undefined) return err(invalidRefreshGrant());
     await tx.insert(oauthRefreshTokens).values({
       tokenHash: successorHash,
       ...claimed,
       expiresAt: new Date(Date.now() + REFRESH_TOKEN_TTL_MS),
     });
     signal.throwIfAborted();
-    return claimed;
+    return ok(claimed);
   });
   signal.throwIfAborted();
-  if (owner === undefined) {
-    return err(new AppError(ERROR_IDS.OAUTH_INVALID_GRANT, "refresh token is invalid", {}));
-  }
-  return ok({ ...owner, refreshToken });
+  if (!owner.ok) return owner;
+  return ok({ ...owner.value, refreshToken });
 }
 
 export async function revokeAllForClientUser(

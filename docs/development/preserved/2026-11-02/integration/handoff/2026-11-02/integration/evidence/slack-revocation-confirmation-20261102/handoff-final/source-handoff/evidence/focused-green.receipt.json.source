@@ -1,0 +1,54 @@
+{
+  "at": "2026-11-02T03:37:55.732256+00:00",
+  "pressure": 1,
+  "availablePercent": 54,
+  "BUN_OPTIONS": "--no-env-file",
+  "phases": [
+    {
+      "phase": "biome",
+      "exitCode": 0,
+      "seconds": 0.18474937498103827,
+      "command": [
+        "/Users/ali/Developer/warpdrive-integrations/.runtime/bin/bun",
+        "--no-env-file",
+        "--bun",
+        "node_modules/@biomejs/biome/bin/biome",
+        "check",
+        "--write",
+        "src/features/integrations/slack.ts",
+        "src/features/integrations/slackRevocation.test.ts"
+      ]
+    },
+    {
+      "phase": "unit-green",
+      "exitCode": 0,
+      "seconds": 0.87705241702497,
+      "command": [
+        "/usr/bin/time",
+        "-l",
+        "/Users/ali/Developer/warpdrive-integrations/.runtime/bin/bun",
+        "--no-env-file",
+        "--bun",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        ".runtime/handoffs/mcp-validation-20261102/vitest.isolated.config.ts",
+        "--project",
+        "unit",
+        "--pool=forks",
+        "--maxWorkers=1",
+        "--no-file-parallelism",
+        "--execArgv=--no-env-file",
+        "src/features/integrations/slackRevocation.test.ts",
+        "src/features/integrations/slack.test.ts",
+        "src/features/integrations/slackReadFailures.test.ts",
+        "src/features/integrations/slackReadCancellation.test.ts"
+      ]
+    }
+  ],
+  "sourceSha256": {
+    "src/features/integrations/slack.ts": "2fece3be197eb962310615034ddcefccbf3cd204a57e2870b2cb2cc532b8c0a2",
+    "src/features/integrations/slackRevocation.test.ts": "491e6dec299c57cd0891441192ac8eec6fa439520979295c628564a20e9d76e3"
+  },
+  "databaseOrProviderCalls": false
+}

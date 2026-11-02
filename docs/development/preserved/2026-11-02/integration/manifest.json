@@ -1,0 +1,1107 @@
+{
+  "module": "integration",
+  "sourceBranch": "codex/preserve-integration-20261102",
+  "originalHead": "80e53189f26885a6a02b0c2e9197bd2052478d92",
+  "baseMain": "09288d518fd574fd069fb6a1dc670596f71a8831",
+  "files": [
+    {
+      "originalPath": ".safe-stop/2026-11-02/MANIFEST.json",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/MANIFEST.json.source",
+      "gitBlob": "167f400067148bbcb8477972dc2a679e32a4c3a7",
+      "originalMode": "100644",
+      "sha256": "fb3f51e9bd5b478370fb9539cea46c5ff07880278896477d73b4a81fad8981de",
+      "bytes": 70260
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/branch-sync/SYNC.json",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/branch-sync/SYNC.json.source",
+      "gitBlob": "0ee2b7b94ec6aea39101de67da31872d5ec3838a",
+      "originalMode": "100644",
+      "sha256": "aebd1df709596fd4d03318f5e532a6d6d9877d04da32bb9659a8d01b3afc7b98",
+      "bytes": 1890
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/branch-sync/SYNC.md",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/branch-sync/SYNC.md.source",
+      "gitBlob": "c022bf8948926e41c631bff0ae1033b8c5074226",
+      "originalMode": "100644",
+      "sha256": "a379f97dd7f49a1d52a0a0f4bfc875e9f4a5d587b28197ba83cea1bab71bf5c2",
+      "bytes": 1065
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/branch-sync/private-migration-proposals/drizzle/meta/_journal.json.source",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/branch-sync/private-migration-proposals/drizzle/meta/_journal.json.source.source",
+      "gitBlob": "9536e4c3525496d9513be9e7d08605243197ee54",
+      "originalMode": "100644",
+      "sha256": "d1d8fbde03d5671d7bc5e21aaf1cbdd623039bc9c8894669c5b5a6d900d0d2ac",
+      "bytes": 14370
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence-review.json",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence-review.json.source",
+      "gitBlob": "6737306f95e43d761b69b168df820ea1fe1153c8",
+      "originalMode": "100644",
+      "sha256": "c93c46d4652611b838d1b8544a920dbaf609cb02fdef7fa31da4b69a1cb0718f",
+      "bytes": 125802
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/APPLY-CHECK.json",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/APPLY-CHECK.json.source",
+      "gitBlob": "d590420cca06ba18605c8e3b45f3a6e89438db20",
+      "originalMode": "100644",
+      "sha256": "271ac914d604822c97606c464811bb0ac46d158a6cf40f3c94138519d75ce4cf",
+      "bytes": 2733
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/CANDIDATE.json",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/CANDIDATE.json.source",
+      "gitBlob": "cfd36f55abf88c04813996ed5a4ba90f6d30603b",
+      "originalMode": "100644",
+      "sha256": "93d3118e3f8fa26f73a65d7ec69c7bbef8f60cf798120d310751b2e22721ca2f",
+      "bytes": 9082
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/EVIDENCE-COPY-MAP.json",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/EVIDENCE-COPY-MAP.json.source",
+      "gitBlob": "96a2e9aeeadab1b475bb3cf2e43974f0f3bf2961",
+      "originalMode": "100644",
+      "sha256": "a1e61c97920bd3ef26830f4c785ca0c6fc3b0cad0fcb18e73bb32c95dee9fe8a",
+      "bytes": 23446
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/HANDOFF.md",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/HANDOFF.md.source",
+      "gitBlob": "b34a4dad51afac7f51eb56d5496643a0fc50c502",
+      "originalMode": "100644",
+      "sha256": "9a07587a61889abc6688d127f7c3435cdc313e18baa2c177547cfd7720fdfc21",
+      "bytes": 6907
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/RESTART-AND-DATA-IMPACT.md",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/RESTART-AND-DATA-IMPACT.md.source",
+      "gitBlob": "a9cb793a0913f9065f3eac2ae60a445c2523b203",
+      "originalMode": "100644",
+      "sha256": "06433c318d48c6cac3fad8f630fb3af79aaf1dac9ba5b914a684daa1bb6a3162",
+      "bytes": 2878
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/SHA256SUMS",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/SHA256SUMS.source",
+      "gitBlob": "a01cd2b58b2ff3e2ced6dc1447ea43ca8472ed57",
+      "originalMode": "100644",
+      "sha256": "3c02aa1690fc102363a1f378773ed3708796395e47ce8b475c108b79f325e7b2",
+      "bytes": 9710
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/SOURCE-HASHES.md",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/SOURCE-HASHES.md.source",
+      "gitBlob": "80037f77edd900aaeb35dc879d77e7b78ec573f9",
+      "originalMode": "100644",
+      "sha256": "b7d8f94ce599d5e06e8544f38fd1169c9c1318a53d1d7c79fd80c4fde02ace24",
+      "bytes": 1369
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/SOURCE-MAP.json",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/SOURCE-MAP.json.source",
+      "gitBlob": "86ccdc53b612d63c09776fcb5a0381ffd049992b",
+      "originalMode": "100644",
+      "sha256": "49d4bc5013995646b9e28768ca875a7b205708b6cae9b4df24369464832cc96a",
+      "bytes": 1680
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/PRIMARY-SOURCES.md",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/PRIMARY-SOURCES.md.source",
+      "gitBlob": "412266ceb4e8abf8324365502e1dee20a81dbfbc",
+      "originalMode": "100644",
+      "sha256": "c606e4ef0649fde3cc965000032fad6e873138e7fa09a784c6b0a8becb3b5211",
+      "bytes": 3073
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/REQUIREMENT-SCOPE.md",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/REQUIREMENT-SCOPE.md.source",
+      "gitBlob": "b82a246aa8bf900e8850ae9e4f11705c391b4734",
+      "originalMode": "100644",
+      "sha256": "0e15bfb8bf3fa363b268fea872b7df3a93b6eded34dab34e0cece8f8d544fb03",
+      "bytes": 12552
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/ACCEPTANCE-AUDIT.md",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/ACCEPTANCE-AUDIT.md.source",
+      "gitBlob": "2ba6bf92e49500ca1f2e02f24c6aa76ac1cd3f44",
+      "originalMode": "100644",
+      "sha256": "cf13eed3c8b605d7547b48eaaf4b17d9a667be176431a2e60ab8fa3266f532b5",
+      "bytes": 2916
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/CONTRACT-DECISION.md",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/CONTRACT-DECISION.md.source",
+      "gitBlob": "c6f0ef355f4341775e69bbeaa95b6f32415c3e73",
+      "originalMode": "100644",
+      "sha256": "0b80b413a7f1dfe5dcdd53ea37d21fc387f22f7ee77cba665f072554d5257cf5",
+      "bytes": 2424
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/ISSUE-137.json",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/ISSUE-137.json.source",
+      "gitBlob": "5534503597111ebd8ea2cafb86878aecff04eac5",
+      "originalMode": "100644",
+      "sha256": "04d2cf9c44739e2724344161e847241dbac090c5eb681882f0a95ced4bded0c5",
+      "bytes": 3764
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/LOCAL-GREEN-RECEIPT.json",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/LOCAL-GREEN-RECEIPT.json.source",
+      "gitBlob": "b8657a1980d4a78ee622c688058f381cdcf714a0",
+      "originalMode": "100644",
+      "sha256": "d5e9904e1f6ca1468a5668709783c02dd38094d98445de1d5607351b0ce79890",
+      "bytes": 4763
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/PRIVACY-RECEIPT.json",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/PRIVACY-RECEIPT.json.source",
+      "gitBlob": "438f5523826cfe3df477f3251379c943b59eaf28",
+      "originalMode": "100644",
+      "sha256": "045283a6598a8470f771bb1c2b68a2a00b94829ca82c81c5d79e1af12b293e3f",
+      "bytes": 5087
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/REFINED-RECEIPT.json",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/REFINED-RECEIPT.json.source",
+      "gitBlob": "240464ff5d7f0588757d5450a7c1d1211558179c",
+      "originalMode": "100644",
+      "sha256": "2ea8ecd6417a25af637b4c8fe6a4e5cb3485ad3e4067df3a3d38ed23b835251e",
+      "bytes": 4744
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/REGISTRY-REMAINING-RECEIPT.json",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/REGISTRY-REMAINING-RECEIPT.json.source",
+      "gitBlob": "6c5e9af7071b1340928dddf189693fb26ac90ef1",
+      "originalMode": "100644",
+      "sha256": "fc90e6ec4b0482fd660b146c22d1be5f2fa68c2633417ab814ec90a267786d44",
+      "bytes": 2214
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/SOURCE-REVIEW.md",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/SOURCE-REVIEW.md.source",
+      "gitBlob": "61b66d6dc2693be02cfd788bfe511c4969d4a07f",
+      "originalMode": "100644",
+      "sha256": "7ab14c83b05cd975a74e552acc92d2bd378ae158aa9d30fa3dddd7a82f5f8024",
+      "bytes": 3587
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/before.json",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/before.json.source",
+      "gitBlob": "0d1bcff047566d0edf0fe67248761f249f980c7b",
+      "originalMode": "100644",
+      "sha256": "ba653ee1b0165bc7e07deba569986f0deafc94a1637ac0624234787a2641ff39",
+      "bytes": 351
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/before/src/features/integrations/slack.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/before/src/features/integrations/slack.ts.source",
+      "gitBlob": "44cbd3bb2a59058994dde7d5d0371d7d7e35cf13",
+      "originalMode": "100644",
+      "sha256": "2fece3be197eb962310615034ddcefccbf3cd204a57e2870b2cb2cc532b8c0a2",
+      "bytes": 5207
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/before/src/features/integrations/slackReadFailures.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/before/src/features/integrations/slackReadFailures.test.ts.source",
+      "gitBlob": "dbf041b1c923a7ffc46081b0ad0b5268b04479f0",
+      "originalMode": "100644",
+      "sha256": "db62abf24ffc360d63cc4063e06ae0e0e20b40dfaa9f485f97aa188df510dff3",
+      "bytes": 6696
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/before/src/features/privacy/registryIdsSales1.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/before/src/features/privacy/registryIdsSales1.ts.source",
+      "gitBlob": "71c45ea990cdf8f4a5980058eed84fe887ab140e",
+      "originalMode": "100644",
+      "sha256": "31075c8b9044e6a3c107f4daf4223825541cc88fa1bc1b65553c7df2dd211bd3",
+      "bytes": 5333
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/first-green-source/src/features/integrations/slack.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/first-green-source/src/features/integrations/slack.ts.source",
+      "gitBlob": "3a554719de4a3305c15847545180aa7ae2daf736",
+      "originalMode": "100644",
+      "sha256": "c37d1481cd0836b11488e97c0c379de48611953127bce1ec2fd654ea84db5fbb",
+      "bytes": 8063
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/first-green-source/src/features/integrations/slackOperationFailure.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/first-green-source/src/features/integrations/slackOperationFailure.ts.source",
+      "gitBlob": "e6c85d39cdf106d33d76cfab3779d6905350fb34",
+      "originalMode": "100644",
+      "sha256": "6d841bb5ea5bae3939273ea443c3f7bf321452497324ac585b5c87db155c1f37",
+      "bytes": 2597
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/first-green-source/src/features/integrations/slackOperationFailures.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/first-green-source/src/features/integrations/slackOperationFailures.test.ts.source",
+      "gitBlob": "17c99ccd275de1d22b7eb838de7487bde63f1d7c",
+      "originalMode": "100644",
+      "sha256": "8bbbfcc93517590492ecefd0512ea0c7b8dca7c28691ab84a312f3cdd39d2ba7",
+      "bytes": 10013
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/first-green-source/src/features/integrations/slackReadFailures.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/first-green-source/src/features/integrations/slackReadFailures.test.ts.source",
+      "gitBlob": "9a9357194abe9457c29b2bffadc954c397cf855b",
+      "originalMode": "100644",
+      "sha256": "3d2ed3d7f648321d55c29d694555104604acaf00ef138f5252a97798663e3e4e",
+      "bytes": 6903
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/operation-consumption/ACTUAL-RED-RECEIPT.json",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/operation-consumption/ACTUAL-RED-RECEIPT.json.source",
+      "gitBlob": "9173889b264aee6490de37e6a35089c679e23781",
+      "originalMode": "100644",
+      "sha256": "5956d3529287a5f2c4291d18dc26b642166d4269a76e8c980a4676ecd92def6f",
+      "bytes": 2957
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/operation-consumption/CURRENT.json",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/operation-consumption/CURRENT.json.source",
+      "gitBlob": "cd443ffb046af6625ee0bc26f30a9429017f98cc",
+      "originalMode": "100644",
+      "sha256": "df6a3bb2760d6aae37d0ef4329d68da402112fb12fc39b0bcba3e21f85b2891b",
+      "bytes": 668
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/operation-consumption/SHA256SUMS",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/operation-consumption/SHA256SUMS.source",
+      "gitBlob": "f53bff2b41c09355e02091f01c231ffbd4694767",
+      "originalMode": "100644",
+      "sha256": "c6f8fc7ea69933d9ca22de93874ff45b8ba1262abbbd936c2e3021beb91b8654",
+      "bytes": 581
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/operation-consumption/source-47.original.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/operation-consumption/source-47.original.ts.source",
+      "gitBlob": "fd722e9452b9e625b4990e4ce195e7ea1ac40f1e",
+      "originalMode": "100644",
+      "sha256": "1705b56a885c558c3aac262bc71e0c363b10a4391b3b8dd89e08e4ccbca81655",
+      "bytes": 9883
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/operation-definitions/ACTUAL-RED-RECEIPT.json",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/operation-definitions/ACTUAL-RED-RECEIPT.json.source",
+      "gitBlob": "9541c0c51abbefe14836e09ec60b2e0a60829fed",
+      "originalMode": "100644",
+      "sha256": "1aaeae73f4ac6b67c08e729e64014c53f10b8283568936b219bbfa12f936ade9",
+      "bytes": 2137
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/operation-definitions/CASE-MATRIX.csv",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/operation-definitions/CASE-MATRIX.csv.source",
+      "gitBlob": "64ac0f5d51df86c593637dd4cefea575c77d5927",
+      "originalMode": "100644",
+      "sha256": "145aacfa10531a15b25c1a82820380824e3c0bb34eacbbcc02ac0d2a71b158dd",
+      "bytes": 1570
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/operation-definitions/CONTRACT-PROPOSAL.md",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/operation-definitions/CONTRACT-PROPOSAL.md.source",
+      "gitBlob": "be65aa753207fe69e3613a891bc3bfdd62982293",
+      "originalMode": "100644",
+      "sha256": "7f4e785ff3654ea7a53b9261ccad5755c1146a6e6e8a1e8de42ca0dfb4d7cad8",
+      "bytes": 6330
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/operation-definitions/DEFINITIONS.json",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/operation-definitions/DEFINITIONS.json.source",
+      "gitBlob": "be7477a4b9303d031df5d9e116602490d9f524a2",
+      "originalMode": "100644",
+      "sha256": "34d771972273d726b0693eef5ce1c4de2a03fd7cf64c659efcf33b3ad88cdde4",
+      "bytes": 2552
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/operation-definitions/RESTART.md",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/operation-definitions/RESTART.md.source",
+      "gitBlob": "34b6071375eea42f8f5c5499ce206637d4c05511",
+      "originalMode": "100644",
+      "sha256": "2121a54360ac54f52885ccd58f1deed05ac7e7f66c8b6898e3c52bf6f8e4f4f0",
+      "bytes": 1606
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/operation-definitions/SHA256SUMS",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/operation-definitions/SHA256SUMS.source",
+      "gitBlob": "b8126b7ad1a11aa42d7338a199270ee8f65aec8e",
+      "originalMode": "100644",
+      "sha256": "5d4aa553473b912d87faef5ad7279f2dac1cf503cfae756dd9b24da7e46c74ac",
+      "bytes": 574
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/ACTUAL-RED-AUDIT.md",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/ACTUAL-RED-AUDIT.md.source",
+      "gitBlob": "4df04c091c361bb56e229177d83fa84535bc85d6",
+      "originalMode": "100644",
+      "sha256": "ea3e18b0ac78309b751b30e0b1285321b49e86aaca578d88dd09e7670fcab5ad",
+      "bytes": 2528
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/ACTUAL-RED-RECEIPT.json",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/ACTUAL-RED-RECEIPT.json.source",
+      "gitBlob": "3f4f7f805d86bc2d7d5037069deba26eb6637c3b",
+      "originalMode": "100644",
+      "sha256": "5d7c8ea3f6d2adab5875b78560765519576d0a062fec8012006fc986e69ccd0e",
+      "bytes": 3082
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/ACTUAL-SHA256SUMS",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/ACTUAL-SHA256SUMS.source",
+      "gitBlob": "1ff4f5deb3486e115f56f34debec249864c3700d",
+      "originalMode": "100644",
+      "sha256": "eca6882e94985bb5a126202454cbc2a77cb81c20fbcb1b7b265cbb56d34a8faf",
+      "bytes": 1227
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/CURRENT.json",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/CURRENT.json.source",
+      "gitBlob": "d0820f9bb648ec0407de58a7a698aaa99942aebc",
+      "originalMode": "100644",
+      "sha256": "446c322286411aa8552d631a66f30c2bb98a7032ec2fda2006ddb4f87566d6f3",
+      "bytes": 634
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/DEFINITIONS.json",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/DEFINITIONS.json.source",
+      "gitBlob": "d9ed48a1a4af856111fe28ee5d3efe4fdf122795",
+      "originalMode": "100644",
+      "sha256": "9d1cfd30046d7be33549497ab8b00c1572b085c0c76bfe779b33f21f544f7031",
+      "bytes": 17560
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/DEFINITIONS.md",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/DEFINITIONS.md.source",
+      "gitBlob": "1183b085822eb4b5a9f86f65494d9bd021a1883e",
+      "originalMode": "100644",
+      "sha256": "0b5b20ac7c43ac01c12c44ac38b0f8b4ed7a8bb41a717661e2f1e3588d7638a6",
+      "bytes": 2207
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/FOCUSED-FIRST-FAILURE.json",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/FOCUSED-FIRST-FAILURE.json.source",
+      "gitBlob": "61f048d39df5ab0c25e2b2b3a1eb124cd513aebc",
+      "originalMode": "100644",
+      "sha256": "2e59317b3712f68fef59a8245f7426db2dc23d18dfb898c31bb75945cc170f67",
+      "bytes": 517
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/SHA256SUMS",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/SHA256SUMS.source",
+      "gitBlob": "43f6c5b4e0420c772659710590e44fb0465b0b91",
+      "originalMode": "100644",
+      "sha256": "c60eb6e8d7941c3212e54a7ea79891749b6b39b0737261a738f08ea6a69165a3",
+      "bytes": 384
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/slackOperationFailures.18-case.original.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/slackOperationFailures.18-case.original.ts.source",
+      "gitBlob": "a810e9c5c1050985125b604b8a70a8f187537770",
+      "originalMode": "100644",
+      "sha256": "4dffa31acd7f4005ec543dd627462f016b71251c828e71a9a28196904ed09c1e",
+      "bytes": 9594
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/slackOperationFailures.47-case.definition.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/slackOperationFailures.47-case.definition.ts.source",
+      "gitBlob": "fd722e9452b9e625b4990e4ce195e7ea1ac40f1e",
+      "originalMode": "100644",
+      "sha256": "1705b56a885c558c3aac262bc71e0c363b10a4391b3b8dd89e08e4ccbca81655",
+      "bytes": 9883
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/increment.patch",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/increment.patch.source",
+      "gitBlob": "8e7dda6290d4c0d2ec19cad6541371ed688de3b7",
+      "originalMode": "100644",
+      "sha256": "ab61f73d7cf8f233ad85a701a0ec98aa8227ee9ba91606a8c0ea7a4e84c97641",
+      "bytes": 23429
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/provider-abort-reason-20261102/ACTUAL-RED-RECEIPT.json",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/provider-abort-reason-20261102/ACTUAL-RED-RECEIPT.json.source",
+      "gitBlob": "dee6756b83021a82aa514a28c765f6721124c0ea",
+      "originalMode": "100644",
+      "sha256": "689c1d36ba740d760c54b07b61b4c1a445093911eaa6525ff90be77b6a995bd7",
+      "bytes": 3091
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/provider-abort-reason-20261102/CURRENT.json",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/provider-abort-reason-20261102/CURRENT.json.source",
+      "gitBlob": "95e0b45b7069b2e03f23861098081118ef4e6646",
+      "originalMode": "100644",
+      "sha256": "c7f493e1c0cda58af0b5628f635148cd0eb30a02a868558ae507a52f065c05dc",
+      "bytes": 634
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/provider-abort-reason-20261102/before.json",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/provider-abort-reason-20261102/before.json.source",
+      "gitBlob": "2cc6a2901afe9a1776a3ad5efb686b4f35da3a1b",
+      "originalMode": "100644",
+      "sha256": "31bc39bc52bc5fb6387f45a6b505ba9d55b7126a441a710159fcd4b1449ad9ef",
+      "bytes": 237
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/provider-abort-reason-20261102/before/src/features/integrations/providers/invoke.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/provider-abort-reason-20261102/before/src/features/integrations/providers/invoke.ts.source",
+      "gitBlob": "eb0f96edca7f96683dea1374fc2bce5cb6e4fa18",
+      "originalMode": "100644",
+      "sha256": "9ff62214d4d2f6bc25e8ed7f704b318d16013545c4d3294264abad4e4d1a400f",
+      "bytes": 6149
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/provider-abort-reason-20261102/before/src/features/privacy/registryIdsSales1.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/provider-abort-reason-20261102/before/src/features/privacy/registryIdsSales1.ts.source",
+      "gitBlob": "6e8eebc4b34ca56f749054bceda69bf1384676a5",
+      "originalMode": "100644",
+      "sha256": "7e302626a62212c2051dacdf0d9736600719f6563a1b2ca075b9dbec16c6be2a",
+      "bytes": 5333
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/provider-abort-reason-20261102/source/src/features/integrations/providers/invokeAbortReason.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/provider-abort-reason-20261102/source/src/features/integrations/providers/invokeAbortReason.test.ts.source",
+      "gitBlob": "cf95fab628c7d62166804c5c9fc514af3150654d",
+      "originalMode": "100644",
+      "sha256": "3ed29f2f4618dca64754bbed3a44ece6706c7d1da0ba81b183fcf897570d5e89",
+      "bytes": 4098
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/safe-stop-20261102/FREEZE-VERIFICATION.json",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/safe-stop-20261102/FREEZE-VERIFICATION.json.source",
+      "gitBlob": "232ecbdf6570c40abe49148e951fd1c1786ae967",
+      "originalMode": "100644",
+      "sha256": "a38441266cbdb499109a78cd5d61c4ee096113ddf0ebcaa039090062cf764aed",
+      "bytes": 356
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/safe-stop-20261102/HANDOFF.md",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/safe-stop-20261102/HANDOFF.md.source",
+      "gitBlob": "ced3b7bd8f4dd5bd0323f723f25c5e94aea911e7",
+      "originalMode": "100644",
+      "sha256": "c5a979220f4b04890f531908359d1a6413e95c25d4a19eab54228f1aca99744c",
+      "bytes": 9623
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/safe-stop-20261102/NOTIFICATIONS.json",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/safe-stop-20261102/NOTIFICATIONS.json.source",
+      "gitBlob": "0b5a54860d1487f8abf76ea39636c922ca7da07c",
+      "originalMode": "100644",
+      "sha256": "1f97ac6d6309c8f03adf8a10180bbd0e3a578306736862845ffc36f1ef51f694",
+      "bytes": 2505
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/safe-stop-20261102/OWNED-ALLOWLIST.json",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/safe-stop-20261102/OWNED-ALLOWLIST.json.source",
+      "gitBlob": "89e7308dca7b4fd200a068fc38f954eb930bd61d",
+      "originalMode": "100644",
+      "sha256": "4efeff3fad001a3de7d826218d0da4465e32354418b8f55c7c279db53a841069",
+      "bytes": 21958
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/safe-stop-20261102/PRIVATE-INVENTORY.json",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/safe-stop-20261102/PRIVATE-INVENTORY.json.source",
+      "gitBlob": "25d6034dfd95dd0625ec0d7eddd4dc7ce1692d1f",
+      "originalMode": "100644",
+      "sha256": "294c214a084516b1e20e6575a03267d7bb1a199fb2f80e186c38b30240fc09d6",
+      "bytes": 20704
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/safe-stop-20261102/PROCESS-STATE.json",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/safe-stop-20261102/PROCESS-STATE.json.source",
+      "gitBlob": "45c97cd4fd5890e40fb8fc3fba26174ef6171dbb",
+      "originalMode": "100644",
+      "sha256": "ae2eb6179b855fcf8b672eb5d476e70c26a5bf1cde2205bcec2f937fcc015a31",
+      "bytes": 353
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/safe-stop-20261102/SHA256SUMS",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/safe-stop-20261102/SHA256SUMS.source",
+      "gitBlob": "2dd944128fb22254fcb509870b45cbf6066d6e70",
+      "originalMode": "100644",
+      "sha256": "625a0de9165286a40c984825c0b04c8a6e41087bbd41a52d79eb7fc05b83c769",
+      "bytes": 689
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/safe-stop-20261102/owned-paths.txt",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/safe-stop-20261102/owned-paths.txt.source",
+      "gitBlob": "9b62151ee2f1d8adf06bc737db1b7f36a56eef99",
+      "originalMode": "100644",
+      "sha256": "4d571e7ff2a0aff29a166056d94b02970f1912d909cd52db060e110399ba5165",
+      "bytes": 2612
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/safe-stop-20261102/private-status.porcelain.z",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/safe-stop-20261102/private-status.porcelain.z.source",
+      "gitBlob": "fd9b177a4facb04463f7c0c8d21a7180230b2f66",
+      "originalMode": "100644",
+      "sha256": "4e87585edc3fe062643e9328f59c620e5fbf9796a52c063d4219e3ce0dd0f32e",
+      "bytes": 3361
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/CANDIDATE.json",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/CANDIDATE.json.source",
+      "gitBlob": "6693f51a7a544849fe0baccf71ff7bfffc96990f",
+      "originalMode": "100644",
+      "sha256": "a080f16da7b3f80cc0f80ef942e6df54090bd7251f0de5674b46e01580955214",
+      "bytes": 6943
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/CURRENT-MAIN-PREIMAGES.json",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/CURRENT-MAIN-PREIMAGES.json.source",
+      "gitBlob": "417b1efecd4ef140f7aca911155793c5cd23de92",
+      "originalMode": "100644",
+      "sha256": "d3ca9711b2108582bd4d17a0bb703b6430ddc7e566215cad8de9d644286ffdda",
+      "bytes": 1651
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/HANDOFF.md",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/HANDOFF.md.source",
+      "gitBlob": "43bb5fd2b3eae2c5fa490aed6fd709c5990589e6",
+      "originalMode": "100644",
+      "sha256": "3a99612f763d9d5b6784ea24b5a2d36a9b12761e27e234322771d8b0ddc70f39",
+      "bytes": 5700
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/RESTART-AND-DATA-IMPACT.md",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/RESTART-AND-DATA-IMPACT.md.source",
+      "gitBlob": "070cfb2af2a4a4083e469b00e5dbd98cc72e37dc",
+      "originalMode": "100644",
+      "sha256": "2f25d37f0c280101776700c70b09d0acb423606e5c39a12e7b0c80f8bbacd931",
+      "bytes": 2492
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/SHA256SUMS",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/SHA256SUMS.source",
+      "gitBlob": "ab123ea78b68f4e519e3941d19673577c267d3d7",
+      "originalMode": "100644",
+      "sha256": "29b69457e62cf0a5c42174dcd1e47ffc4cbde82c63301632aad66d46011a7bb4",
+      "bytes": 6566
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/SOURCE-LINKAGE.json",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/SOURCE-LINKAGE.json.source",
+      "gitBlob": "02bc9ecccc961b092f82ce73780b6c9b08001952",
+      "originalMode": "100644",
+      "sha256": "9fafe00a47456c10bb2e5cd4c703b599907341ccf971746aed4eb47fbeda2189",
+      "bytes": 21415
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/current-main-preimages/src/features/integrations/slack.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/current-main-preimages/src/features/integrations/slack.ts.source",
+      "gitBlob": "21f13c963ba2074fddb23a9a4a2c067bfb4d0a53",
+      "originalMode": "100644",
+      "sha256": "4eaa308d24fed9d8a1069d3afcfb1ed4d50d3cfebc2da8554cb678823e21dba5",
+      "bytes": 4965
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/current-main-preimages/src/features/privacy/registryIdsSales1.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/current-main-preimages/src/features/privacy/registryIdsSales1.ts.source",
+      "gitBlob": "63516c0946bf87a470ef001958369f0fb2ca6ad6",
+      "originalMode": "100644",
+      "sha256": "b5876ce716368695faa0392dd644ae5c8475d1c4cc691c641eb8f2f298fad3eb",
+      "bytes": 5333
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/native-green/ACTUAL6-REVIEW.md",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/native-green/ACTUAL6-REVIEW.md.source",
+      "gitBlob": "a83961410bb49bb13a665e3020b7ad3ff7707dfc",
+      "originalMode": "100644",
+      "sha256": "9249bde829812d3ea5090936532b70f81b3b0154158c0fb84a0f1a08defa916c",
+      "bytes": 2357
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/native-green/NATIVE-RESULT.json",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/native-green/NATIVE-RESULT.json.source",
+      "gitBlob": "aa6eed545d79202dd7dc059baa771d8e78cdb0b3",
+      "originalMode": "100644",
+      "sha256": "c4bd7c4531fc39b04cc0565c3488d73f4f7abacfc8ec892e5210b4ca38215b4d",
+      "bytes": 5753
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/native-green/SHA256SUMS",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/native-green/SHA256SUMS.source",
+      "gitBlob": "4685752a257c42944550638e400d51330445bf47",
+      "originalMode": "100644",
+      "sha256": "20cb3d448df47fc9876a1c8cf8ed6489d15c0f6cb9b90540b34a6d87903382e2",
+      "bytes": 665
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/native-green/before.json",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/native-green/before.json.source",
+      "gitBlob": "515c6b7f199a875ee8741bb3bbc913e4252c8406",
+      "originalMode": "100644",
+      "sha256": "ff5d6ec05d4bfec84d2dc3ef05a727a9da14dc7b875464150b6c674480c68833",
+      "bytes": 8581
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/native-green/immediate-terminal.json",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/native-green/immediate-terminal.json.source",
+      "gitBlob": "71e2aa86b82a4e88987a2d30f1934ef6af10ecc1",
+      "originalMode": "100644",
+      "sha256": "66f41b1c11f03e6c0976ed88d2230ca9a8fe0d12a03915d2865971c8134082dd",
+      "bytes": 5114
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/native-green/resource-observations.json",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/native-green/resource-observations.json.source",
+      "gitBlob": "6b5970d923ceb17ff083f2856326a2492cfb9b30",
+      "originalMode": "100644",
+      "sha256": "970a3bdba62ea09e4240ca2a5cfd19a673d9bf5a01be02302be6bc529adfb74a",
+      "bytes": 339
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/native-green/result.json",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/native-green/result.json.source",
+      "gitBlob": "2bc702c9a56b15f796e2bc2498c599951e225f64",
+      "originalMode": "100644",
+      "sha256": "0848a014237454ec68fa0c74184061f46e3b60f8039ab9d08328817ddede5bb7",
+      "bytes": 313
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/native-green/terminal.json",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/native-green/terminal.json.source",
+      "gitBlob": "d3330fee5cd6c30325990acfa74e20520554642c",
+      "originalMode": "100644",
+      "sha256": "351cff9f7250db72d93ab89add7031db64ac23222eba2c1421b881ef1c8ca36a",
+      "bytes": 621
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/APPLY-CHECK.json",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/APPLY-CHECK.json.source",
+      "gitBlob": "09a5bf42aa14b57234488762db16585003a1c635",
+      "originalMode": "100644",
+      "sha256": "210b1f5e7ac6661543b51b2bf7367878eabd5f27de706439344f08477d55d2c0",
+      "bytes": 940
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/CANDIDATE.json",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/CANDIDATE.json.source",
+      "gitBlob": "afe95e32513a19473b1eea045cc5f7ade5d210f0",
+      "originalMode": "100644",
+      "sha256": "f11f54717288457c48971bee27d6340b22578ce8deb02929bd98939b0ca22883",
+      "bytes": 5691
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/EVIDENCE-COPY-MAP.json",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/EVIDENCE-COPY-MAP.json.source",
+      "gitBlob": "d6c967ecd02d0277bae232d44f41915832bf6f8e",
+      "originalMode": "100644",
+      "sha256": "e0b5027a6175798b668f0176c0a18701e20ae81919a380e19a54396116947948",
+      "bytes": 9906
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/HANDOFF.md",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/HANDOFF.md.source",
+      "gitBlob": "ebd24636532f31a8ee4e00e5bbc205fe607a8e27",
+      "originalMode": "100644",
+      "sha256": "29b74b51c1ed69e5606ef5ad0f4ea695475f14a29f2e3265ee948a3de864d433",
+      "bytes": 5141
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/NATIVE6-PINS.pre-run.json",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/NATIVE6-PINS.pre-run.json.source",
+      "gitBlob": "76172a2e77c580733e10b70ad7a5b22a312694b2",
+      "originalMode": "100644",
+      "sha256": "2b91965cd3bfc27f14619fc8a62cc8bb9e7505bb2e843f72e66a60284a42592a",
+      "bytes": 1807
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/RESTART-AND-DATA-IMPACT.md",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/RESTART-AND-DATA-IMPACT.md.source",
+      "gitBlob": "e82429b1aefbae700b26d07787525f149f7955d7",
+      "originalMode": "100644",
+      "sha256": "121815950d3287067c2bd825a27c3ef09ce1d4629fa73fa54f065b756f3e05bc",
+      "bytes": 2241
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/SHA256SUMS",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/SHA256SUMS.source",
+      "gitBlob": "8fee024778295b1a8404048538b1fc1f0b28d59f",
+      "originalMode": "100644",
+      "sha256": "2b4289efc731dacb649c670ebc62b2c81f708102d6b773057f0384c38f088964",
+      "bytes": 4284
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/SOURCE-HASHES.md",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/SOURCE-HASHES.md.source",
+      "gitBlob": "215d0be74c3e2ae631def2a661ffb0aaa78e4926",
+      "originalMode": "100644",
+      "sha256": "4625ea25007edfda8dded230ebae3bfe0c772c69bfc3d2b1afda6f23f435a2fe",
+      "bytes": 820
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/base/src/features/integrations/slack.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/base/src/features/integrations/slack.ts.source",
+      "gitBlob": "21f13c963ba2074fddb23a9a4a2c067bfb4d0a53",
+      "originalMode": "100644",
+      "sha256": "4eaa308d24fed9d8a1069d3afcfb1ed4d50d3cfebc2da8554cb678823e21dba5",
+      "bytes": 4965
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/base/src/features/privacy/registryIdsSales1.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/base/src/features/privacy/registryIdsSales1.ts.source",
+      "gitBlob": "63516c0946bf87a470ef001958369f0fb2ca6ad6",
+      "originalMode": "100644",
+      "sha256": "b5876ce716368695faa0392dd644ae5c8475d1c4cc691c641eb8f2f298fad3eb",
+      "bytes": 5333
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/NATIVE-DEFINITIONS-REVIEW.md",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/NATIVE-DEFINITIONS-REVIEW.md.source",
+      "gitBlob": "53bde46d52eefde0e00c6ea9b7e77e5e0f89aab0",
+      "originalMode": "100644",
+      "sha256": "091cdee99e1407989675901bda6ba4e25b00df29e8ac6add6d765e7844450b22",
+      "bytes": 4018
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/NATIVE6-COMMAND.json",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/NATIVE6-COMMAND.json.source",
+      "gitBlob": "68ef584cc6f9637553776f50748ca2c058d09418",
+      "originalMode": "100644",
+      "sha256": "d322a9e65f211b141095087de18ebdd14a837b7933c31a5e882b7b7e55532631",
+      "bytes": 2995
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/NATIVE6-PINS.json",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/NATIVE6-PINS.json.source",
+      "gitBlob": "76172a2e77c580733e10b70ad7a5b22a312694b2",
+      "originalMode": "100644",
+      "sha256": "2b91965cd3bfc27f14619fc8a62cc8bb9e7505bb2e843f72e66a60284a42592a",
+      "bytes": 1807
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/PRIVACY-REVIEW.json",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/PRIVACY-REVIEW.json.source",
+      "gitBlob": "020c6d38374f4e90e6216a572b34f8429eaa5dee",
+      "originalMode": "100644",
+      "sha256": "567c5cb251dbabc76ad529d8ce72d2cfb69be438e2043c9147ab0ae826e3daa5",
+      "bytes": 1418
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/SOURCE-REVIEW.md",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/SOURCE-REVIEW.md.source",
+      "gitBlob": "5176cc81104ac15d2736222e5b99c273bfe9e071",
+      "originalMode": "100644",
+      "sha256": "97ecca50ab5595221859fce08b07626276cd35eb5ae43f6c53c4923134502a3f",
+      "bytes": 6354
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/focused-green.receipt.json",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/focused-green.receipt.json.source",
+      "gitBlob": "03a4c133d2f6fd390832cf5d5dd1a7baaffbac30",
+      "originalMode": "100644",
+      "sha256": "89e61156f74356ba1ba505c79ee8c374a86d0ce0b2883086298f75a8d88cba33",
+      "bytes": 1696
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/inventory-diagnostic.json",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/inventory-diagnostic.json.source",
+      "gitBlob": "7e03573b303684be41f7a2ff702df70481a1fe7b",
+      "originalMode": "100644",
+      "sha256": "ec5226a282b5037fee5e2bcbca7adaaa56b72f734a8f9dcc95430acce448531d",
+      "bytes": 648
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/inventory-diagnostic.receipt.json",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/inventory-diagnostic.receipt.json.source",
+      "gitBlob": "3328d5d35a4da3c9e03dc0d6ebd67575f4d55636",
+      "originalMode": "100644",
+      "sha256": "9b92d022bff91cc856bc8ac500b2ba6edbd89915cce422c6b384f80685558708",
+      "bytes": 504
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/inventory-green.json",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/inventory-green.json.source",
+      "gitBlob": "31b06e2125be0b69ea3a0a3deb8be8965b0e9076",
+      "originalMode": "100644",
+      "sha256": "6a8e3dd773818a7262250fa68d64c81b73124357adcb0fd94e5b3796ec730b99",
+      "bytes": 648
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/native-definitions-biome-final.receipt.json",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/native-definitions-biome-final.receipt.json.source",
+      "gitBlob": "e50845a341ecdf1408c3448016c7469771ed6d0b",
+      "originalMode": "100644",
+      "sha256": "31926a152f14e746877c2e0819a6e3b9d2c4aef63cbb02aada5eecae038e949b",
+      "bytes": 253
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/native-definitions-biome.receipt.json",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/native-definitions-biome.receipt.json.source",
+      "gitBlob": "ea393d45b71b3cc6f440dff14992a28c5edde8eb",
+      "originalMode": "100644",
+      "sha256": "4ab468d74f1aca8d3db28b9ad66fd7c1308543e947de77fd2e8d11721f706de9",
+      "bytes": 516
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/native-definitions/DEFINITIONS.json",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/native-definitions/DEFINITIONS.json.source",
+      "gitBlob": "982a202b23a1d82192cf1ecb4b41213044262c07",
+      "originalMode": "100644",
+      "sha256": "0c2f6931264d453997f04229dcbb377b604db6b0a08f154b9136fedfc6cf6c51",
+      "bytes": 1703
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/privacy-maintenance.receipt.json",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/privacy-maintenance.receipt.json.source",
+      "gitBlob": "31da5e31c9c71af564596be8ded4eb60a4dcb01e",
+      "originalMode": "100644",
+      "sha256": "3a0d7cc7ba3c63d36fe76faa36e2b8d7058a025c6603784f0e74070720457c65",
+      "bytes": 2038
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/slack-discovery-observation.json",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/slack-discovery-observation.json.source",
+      "gitBlob": "d1f247d401df1998cecc5de7d0c0cd8f1a675b96",
+      "originalMode": "100644",
+      "sha256": "8ed9f2e450c395e529ae259cd20a883fcd69e8d0d076a5a56ea2ce405ad5817d",
+      "bytes": 66
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/unit-red.receipt.json",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/unit-red.receipt.json.source",
+      "gitBlob": "501f9a07add4530a9739f7e09d7b392ed5df1903",
+      "originalMode": "100644",
+      "sha256": "8e65ecf656060a130b8b09215fcbd2c787f59493850159e483d805546332a431",
+      "bytes": 1190
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/increment.patch",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/increment.patch.source",
+      "gitBlob": "4c94b659e0dce8b5220c0e818cf62f05f7dd8fbd",
+      "originalMode": "100644",
+      "sha256": "b3ed5a65d43bf9737307f16b2d6c9ceb6c49e87357f6a33375e80b4417f13e7b",
+      "bytes": 13352
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/repo/src/features/integrations/slack.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/repo/src/features/integrations/slack.ts.source",
+      "gitBlob": "44cbd3bb2a59058994dde7d5d0371d7d7e35cf13",
+      "originalMode": "100644",
+      "sha256": "2fece3be197eb962310615034ddcefccbf3cd204a57e2870b2cb2cc532b8c0a2",
+      "bytes": 5207
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/repo/src/features/integrations/slackRevocation.integration.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/repo/src/features/integrations/slackRevocation.integration.test.ts.source",
+      "gitBlob": "fd2458227665c83a610c29794bd8287ac8a8e892",
+      "originalMode": "100644",
+      "sha256": "790c380056521344e121113a35310ec15293c9effdac5c0eb2b90b6330859950",
+      "bytes": 8526
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/repo/src/features/integrations/slackRevocation.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/repo/src/features/integrations/slackRevocation.test.ts.source",
+      "gitBlob": "9790cb8d71f29d42289e90e4fba41b5578e6454a",
+      "originalMode": "100644",
+      "sha256": "491e6dec299c57cd0891441192ac8eec6fa439520979295c628564a20e9d76e3",
+      "bytes": 1726
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/repo/src/features/privacy/registryIdsSales1.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/repo/src/features/privacy/registryIdsSales1.ts.source",
+      "gitBlob": "71c45ea990cdf8f4a5980058eed84fe887ab140e",
+      "originalMode": "100644",
+      "sha256": "31075c8b9044e6a3c107f4daf4223825541cc88fa1bc1b65553c7df2dd211bd3",
+      "bytes": 5333
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/preexisting-protected-drafts/docs/integration-coordination.md",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/preexisting-protected-drafts/docs/integration-coordination.md.source",
+      "gitBlob": "2be8f22f52942a708c301e2485b93eae3fc24fe5",
+      "originalMode": "100644",
+      "sha256": "959d1348a6f3e6e66f07d939c3e53d1d10459b2be5a0fbe8be4fd0f6001689e2",
+      "bytes": 9204
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/preexisting-protected-drafts/docs/integration-sms-providers.csv",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/preexisting-protected-drafts/docs/integration-sms-providers.csv.source",
+      "gitBlob": "8f658dcc808f7e45cc0851cefe1ef9add3265f56",
+      "originalMode": "100644",
+      "sha256": "0265706600bf3375526743ff779fd03e15340bb7cce08d9d6ffbfbef930ac36c",
+      "bytes": 9072
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/preexisting-protected-drafts/docs/integration-sms-providers.md",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/preexisting-protected-drafts/docs/integration-sms-providers.md.source",
+      "gitBlob": "4c972c07419936f897326f603506aec152407d07",
+      "originalMode": "100644",
+      "sha256": "66b55da20f4f43674e5a6bcc8bd6a5a3eae0d19440e11d22d547ccfa117f50eb",
+      "bytes": 10177
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/integration/preexisting-protected-drafts/docs/local-integrations-plan.md",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/handoff/2026-11-02/integration/preexisting-protected-drafts/docs/local-integrations-plan.md.source",
+      "gitBlob": "d09c7d4a30f7829919e498e42c57b012cf3f4b04",
+      "originalMode": "100644",
+      "sha256": "2de23ba8ab7afb58579ccbeb6426d10ddbfde3850413f9e895ebcffc00fed923",
+      "bytes": 40917
+    },
+    {
+      "originalPath": "docs/mcp-security-operations.de.md",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/source/docs/mcp-security-operations.de.md.source",
+      "gitBlob": "67da60af49cfcd76d6b6fbffdb1a7d1c791e5083",
+      "originalMode": "100644",
+      "sha256": "2fb1b6523d5859a59d9358f8540b7b8e09001aeacd7e1e8019cdad62ad8ab62d",
+      "bytes": 15045
+    },
+    {
+      "originalPath": "docs/mcp-security-operations.fa.md",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/source/docs/mcp-security-operations.fa.md.source",
+      "gitBlob": "08cd11f2806989d7a4bee7d31973f7e7ead7a048",
+      "originalMode": "100644",
+      "sha256": "28323ee0f2bdb600c5615b6e25e47aea80832029a5f85c78c82b98f030451a6a",
+      "bytes": 20201
+    },
+    {
+      "originalPath": "docs/mcp-security-operations.md",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/source/docs/mcp-security-operations.md.source",
+      "gitBlob": "8cd2012484367fb860c54cc617f7036bd094d9ca",
+      "originalMode": "100644",
+      "sha256": "2e218735b6b64e5dfc92cc7ea397ed662ff706a9d5dff7cf73a050139722d701",
+      "bytes": 11029
+    },
+    {
+      "originalPath": "src/features/integrations/SlackConnectionPhases.test.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/source/src/features/integrations/SlackConnectionPhases.test.tsx.source",
+      "gitBlob": "c61e286182607c61b3400046d0fd63d91d2f98be",
+      "originalMode": "100644",
+      "sha256": "4bedf1fde9d9c157e90748ed3caee84eeb38472db74b47a48ab8c0b61ad3586d",
+      "bytes": 2786
+    },
+    {
+      "originalPath": "src/features/integrations/providers/invoke.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/source/src/features/integrations/providers/invoke.ts.source",
+      "gitBlob": "d371b5d5fc8ec8507a50c04c3cfa35898e989bf9",
+      "originalMode": "100644",
+      "sha256": "946301672e4b59dc86a24272ba91244d0f613d9a4bdc9bc64a93b1ac5ff1706e",
+      "bytes": 6147
+    },
+    {
+      "originalPath": "src/features/integrations/providers/invokeAbortReason.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/source/src/features/integrations/providers/invokeAbortReason.test.ts.source",
+      "gitBlob": "cf95fab628c7d62166804c5c9fc514af3150654d",
+      "originalMode": "100644",
+      "sha256": "3ed29f2f4618dca64754bbed3a44ece6706c7d1da0ba81b183fcf897570d5e89",
+      "bytes": 4098
+    },
+    {
+      "originalPath": "src/features/integrations/slack.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/source/src/features/integrations/slack.ts.source",
+      "gitBlob": "3805f4b9e223885385518e2dcffa3802a9eca994",
+      "originalMode": "100644",
+      "sha256": "8585d466afbbfd91cff7b64306de14e7a13383e1f17d794a6c7ed669dc43e1e3",
+      "bytes": 8148
+    },
+    {
+      "originalPath": "src/features/integrations/slackChannelResponse.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/source/src/features/integrations/slackChannelResponse.test.ts.source",
+      "gitBlob": "c0f22ff0c8a96f5d97caed7c1d5177f4a9151905",
+      "originalMode": "100644",
+      "sha256": "781fc5c7f0c6194d3ba97808946f18b66ffca9926ed5898f0700e1a9c0f83a9d",
+      "bytes": 3320
+    },
+    {
+      "originalPath": "src/features/integrations/slackOperationFailure.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/source/src/features/integrations/slackOperationFailure.ts.source",
+      "gitBlob": "e6c85d39cdf106d33d76cfab3779d6905350fb34",
+      "originalMode": "100644",
+      "sha256": "6d841bb5ea5bae3939273ea443c3f7bf321452497324ac585b5c87db155c1f37",
+      "bytes": 2597
+    },
+    {
+      "originalPath": "src/features/integrations/slackOperationFailures.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/source/src/features/integrations/slackOperationFailures.test.ts.source",
+      "gitBlob": "17c99ccd275de1d22b7eb838de7487bde63f1d7c",
+      "originalMode": "100644",
+      "sha256": "8bbbfcc93517590492ecefd0512ea0c7b8dca7c28691ab84a312f3cdd39d2ba7",
+      "bytes": 10013
+    },
+    {
+      "originalPath": "src/features/integrations/slackReadFailures.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/source/src/features/integrations/slackReadFailures.test.ts.source",
+      "gitBlob": "9a9357194abe9457c29b2bffadc954c397cf855b",
+      "originalMode": "100644",
+      "sha256": "3d2ed3d7f648321d55c29d694555104604acaf00ef138f5252a97798663e3e4e",
+      "bytes": 6903
+    },
+    {
+      "originalPath": "src/features/integrations/slackReauthorization.integration.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/source/src/features/integrations/slackReauthorization.integration.test.ts.source",
+      "gitBlob": "15f3f3c2cbdd4cf1e03dd286f70c8ad4a5d57d2e",
+      "originalMode": "100644",
+      "sha256": "176f47512ceb41f98d1fcb05d9e7653efd8ae0aba0a996caaa59ddb29cbb124e",
+      "bytes": 7356
+    },
+    {
+      "originalPath": "src/features/integrations/slackRevocation.integration.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/source/src/features/integrations/slackRevocation.integration.test.ts.source",
+      "gitBlob": "fd2458227665c83a610c29794bd8287ac8a8e892",
+      "originalMode": "100644",
+      "sha256": "790c380056521344e121113a35310ec15293c9effdac5c0eb2b90b6330859950",
+      "bytes": 8526
+    },
+    {
+      "originalPath": "src/features/integrations/slackRevocation.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/source/src/features/integrations/slackRevocation.test.ts.source",
+      "gitBlob": "9790cb8d71f29d42289e90e4fba41b5578e6454a",
+      "originalMode": "100644",
+      "sha256": "491e6dec299c57cd0891441192ac8eec6fa439520979295c628564a20e9d76e3",
+      "bytes": 1726
+    },
+    {
+      "originalPath": "src/features/oauth/refreshFamily.integration.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/source/src/features/oauth/refreshFamily.integration.test.ts.source",
+      "gitBlob": "8de43ea3ef4b288117ba2480955b80a5839741b0",
+      "originalMode": "100644",
+      "sha256": "9bff863fe8dd9451cfcd43a1f79c977adbe1f812b038ebb470d8e55403055adc",
+      "bytes": 5619
+    },
+    {
+      "originalPath": "src/features/oauth/refreshFamilyIntegrity.integration.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/source/src/features/oauth/refreshFamilyIntegrity.integration.test.ts.source",
+      "gitBlob": "e2b2542c01075bdcaee05f908c4ae28958163cb1",
+      "originalMode": "100644",
+      "sha256": "e121f612c3aebf22847920dfd714c48ad60cf61b3cecbb33084127f13136afa6",
+      "bytes": 6482
+    },
+    {
+      "originalPath": "src/features/oauth/refreshFamilySafety.integration.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/source/src/features/oauth/refreshFamilySafety.integration.test.ts.source",
+      "gitBlob": "716a90171bbc10d94fea765f54328ccd53a0c380",
+      "originalMode": "100644",
+      "sha256": "36bd6100ac276df075ce37a1c0f0ed9eb0adbfd4afd8c5c5c8ce8f9b0e058b06",
+      "bytes": 14475
+    },
+    {
+      "originalPath": "src/features/oauth/tokens.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/source/src/features/oauth/tokens.ts.source",
+      "gitBlob": "4934ae4431672eda280801d6b6b6d7f8a93f13d2",
+      "originalMode": "100644",
+      "sha256": "9a79e82208a2cc9d387040afab6d8d6b60dfa33bfaf8d5b2050fd5ae116cc9e3",
+      "bytes": 8993
+    },
+    {
+      "originalPath": "src/features/privacy/registryIdsAuthentication1.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/source/src/features/privacy/registryIdsAuthentication1.ts.source",
+      "gitBlob": "6e474f756110152db5ddeef024e2bddded69f257",
+      "originalMode": "100644",
+      "sha256": "e78770cb16f976796b64d0eb95dfcca5ba65f72061ec50db450be9857171fc4c",
+      "bytes": 12361
+    },
+    {
+      "originalPath": "src/features/privacy/registryIdsSales1.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/integration/source/src/features/privacy/registryIdsSales1.ts.source",
+      "gitBlob": "6e8eebc4b34ca56f749054bceda69bf1384676a5",
+      "originalMode": "100644",
+      "sha256": "7e302626a62212c2051dacdf0d9736600719f6563a1b2ca075b9dbec16c6be2a",
+      "bytes": 5333
+    }
+  ],
+  "meaning": "Dated inert preservation, not active implementation/qualification. Exact original history is retained by the consolidation merge parents. Only the explicit qualified adoption manifest determines active code.",
+  "originalFileExtensionSuffix": ".source",
+  "activeCodeExecution": false
+}

@@ -1,0 +1,27 @@
+{
+  "at": "2026-11-02T05:08:37.698161+00:00",
+  "newContainersRemaining": [],
+  "baselineContainersMissing": [],
+  "foreignContainersRetained": 3,
+  "foreignStateChanges": [],
+  "dockerResourceChanges": {
+    "networks": {
+      "added": [],
+      "missing": []
+    },
+    "volumes": {
+      "added": [],
+      "missing": []
+    }
+  },
+  "ownedProcessesRemaining": [],
+  "sourceChanges": [],
+  "totalSecondsIncludingCleanup": 14.070198375033215,
+  "wholeInvocationSeconds": 14.323396250023507,
+  "forcedRemoval": false,
+  "postMetrics": {
+    "pressure": 1,
+    "availablePercent": 51,
+    "freeBytes": 13453230080
+  }
+}

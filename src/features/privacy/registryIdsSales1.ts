@@ -1,14 +1,14 @@
 // Exact reviewed Sales and Integration boundaries from the frozen inventory packet.
 export const salesIntegrationIds1: string[] = [
   "derived:src/features/integrations/slackReadFailure.ts",
-  "sourceReview:src/features/integrations/slack.ts#4eaa308d24fed9d8a1069d3afcfb1ed4d50d3cfebc2da8554cb678823e21dba5",
+  "sourceReview:src/features/integrations/slack.ts#8585d466afbbfd91cff7b64306de14e7a13383e1f17d794a6c7ed669dc43e1e3",
   "sourceReview:src/features/integrations/slackRead.ts#83aabc1dfcfeb076684951ca6da6a378091ff3db18a7aab0940f189f212ca36a",
   "sourceReview:src/features/integrations/slackReadFailure.ts#fdf59462107754c7a767bb98e7261086dbb823e05a8454b1bdb2a276cae02ff4",
 
   "derived:src/features/integrations/providers/invoke.ts",
   "sourceReview:src/db/schema/integrations.ts#195d6ff5e836745f8c71b5e728c8389777d4e554e27a78644b37a81dd7608d35",
   "sourceReview:src/features/integrations/actions.ts#adfdca8ec760f29260cf78c120b7c783d0647f29dfdbb58ee7a825006b507256",
-  "sourceReview:src/features/integrations/providers/invoke.ts#9ff62214d4d2f6bc25e8ed7f704b318d16013545c4d3294264abad4e4d1a400f",
+  "sourceReview:src/features/integrations/providers/invoke.ts#03cbca4c055bc3d71586e3213ed5d87e63cf476646ad22a05c3669edde073233",
   "sourceReview:src/features/integrations/service.ts#9b8374acfc0cbcbff6e0feed36a541de0c1fbe334f91873d585d4b44534ed228",
   "table:integration_connections",
   "table:integration_events",

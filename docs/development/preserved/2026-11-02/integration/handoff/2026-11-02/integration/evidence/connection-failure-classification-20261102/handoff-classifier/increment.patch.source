@@ -1,0 +1,639 @@
+diff --git a/src/features/integrations/slack.ts b/src/features/integrations/slack.ts
+index 44cbd3b..3805f4b 100644
+--- a/src/features/integrations/slack.ts
++++ b/src/features/integrations/slack.ts
+@@ -1,18 +1,49 @@
+ import { z } from "zod";
+ import { env } from "@/config/env";
+-import { AppError, ERROR_IDS } from "@/constants/errorIds";
++import { AppError, ERROR_IDS, type ErrorId } from "@/constants/errorIds";
++import {
++  classifySlackOperationError,
++  classifySlackOperationHttpFailure,
++  type SlackOperationFailure,
++  slackOperationFailure,
++} from "./slackOperationFailure";
+ import { requestSlackRead } from "./slackRead";
+ 
+ export const SLACK_SCOPES = ["chat:write", "channels:read"] as const;
+-const responseBase = z.object({ ok: z.boolean(), error: z.string().optional() });
++const responseFailure = z.object({ ok: z.literal(false), error: z.string().max(128).optional() });
++const responseBase = z.union([z.object({ ok: z.literal(true) }), responseFailure]);
+ const revocationResponse = z.union([
+   z.object({ ok: z.literal(true), revoked: z.literal(true) }),
++  responseFailure,
++]);
++const exchangeResponse = z.union([
+   z.object({
+-    ok: z.literal(false),
+-    error: z.enum(["token_revoked", "token_expired", "account_inactive"]),
++    ok: z.literal(true),
++    access_token: z.string().min(1),
++    scope: z.string(),
++    team: z.object({ id: z.string().min(1), name: z.string().min(1) }),
+   }),
++  responseFailure,
+ ]);
+ 
++function operationError(id: ErrorId, message: string, detail: SlackOperationFailure) {
++  return new AppError(id, message, { slackOperationFailure: detail });
++}
++
++function mutationBodyError(signal: AbortSignal) {
++  if (signal.aborted)
++    return operationError(
++      ERROR_IDS.SLACK_UNAVAILABLE,
++      "slack_unavailable",
++      slackOperationFailure("transient_outage", "unavailable", "unknown"),
++    );
++  return operationError(
++    ERROR_IDS.SLACK_REQUEST_FAILED,
++    "slack_request_failed",
++    slackOperationFailure("invalid_response", "invalid_response", "unknown"),
++  );
++}
++
+ export function slackConfiguration() {
+   const clientId = env.SLACK_CLIENT_ID;
+   const clientSecret = env.SLACK_CLIENT_SECRET;
+@@ -57,28 +88,68 @@ export async function slackRequest(
+       { slackReadFailure },
+     );
+   }
+-  const response = await fetcher(`https://slack.com/api/${method}`, {
+-    method: "POST",
+-    redirect: "error",
+-    signal: AbortSignal.timeout(10_000),
+-    headers: {
+-      Authorization: `Bearer ${token}`,
+-      "Content-Type": "application/x-www-form-urlencoded",
+-    },
+-    body: new URLSearchParams(body ?? {}),
+-  });
++  return requestSlackMutation(method, token, body, fetcher, AbortSignal.timeout(10_000));
++}
++
++async function requestSlackMutation(
++  method: string,
++  token: string,
++  body: Record<string, string> | undefined,
++  fetcher: typeof fetch,
++  signal: AbortSignal,
++) {
++  let response: Response;
++  try {
++    response = await fetcher(`https://slack.com/api/${method}`, {
++      method: "POST",
++      redirect: "error",
++      signal,
++      headers: {
++        Authorization: `Bearer ${token}`,
++        "Content-Type": "application/x-www-form-urlencoded",
++      },
++      body: new URLSearchParams(body ?? {}),
++    });
++  } catch {
++    throw operationError(
++      ERROR_IDS.SLACK_UNAVAILABLE,
++      "slack_unavailable",
++      slackOperationFailure("transient_outage", "unavailable", "unknown"),
++    );
++  }
+   if (!response.ok)
+-    throw new AppError(
++    throw operationError(
+       response.status === 429 ? ERROR_IDS.SLACK_RATE_LIMITED : ERROR_IDS.SLACK_UNAVAILABLE,
+       "slack_unavailable",
+-      {},
++      classifySlackOperationHttpFailure(response.status, response.headers.get("Retry-After")),
+     );
+-  const data: unknown = await response.json();
++  let data: unknown;
++  try {
++    data = await response.json();
++    signal.throwIfAborted();
++  } catch {
++    throw mutationBodyError(signal);
++  }
+   const parsed = (method === "auth.revoke" ? revocationResponse : responseBase).safeParse(data);
+-  // Ambiguous authentication failures do not prove revocation, so retain retry material.
+-  if (method === "auth.revoke" && parsed.success && !parsed.data.ok) return { ok: true };
+-  if (!parsed.success || !parsed.data.ok)
+-    throw new AppError(ERROR_IDS.SLACK_REQUEST_FAILED, "slack_request_failed", {});
++  if (!parsed.success)
++    throw operationError(
++      ERROR_IDS.SLACK_REQUEST_FAILED,
++      "slack_request_failed",
++      slackOperationFailure("invalid_response", "invalid_response", "unknown"),
++    );
++  if (!parsed.data.ok) {
++    // Ambiguous authentication failures do not prove revocation, so retain retry material.
++    if (
++      method === "auth.revoke" &&
++      ["token_revoked", "token_expired", "account_inactive"].includes(parsed.data.error ?? "")
++    )
++      return { ok: true };
++    throw operationError(
++      ERROR_IDS.SLACK_REQUEST_FAILED,
++      "slack_request_failed",
++      classifySlackOperationError(parsed.data.error),
++    );
++  }
+   return data;
+ }
+ 
+@@ -88,33 +159,67 @@ export async function exchangeSlackCode(
+   config: { clientId: string; clientSecret: string },
+   fetcher: typeof fetch = fetch,
+ ) {
+-  const response = await fetcher("https://slack.com/api/oauth.v2.access", {
+-    method: "POST",
+-    redirect: "error",
+-    signal: AbortSignal.timeout(10_000),
+-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+-    body: new URLSearchParams({
+-      code,
+-      redirect_uri: redirectUri,
+-      client_id: config.clientId,
+-      client_secret: config.clientSecret,
+-    }),
+-  });
++  const signal = AbortSignal.timeout(10_000);
++  let response: Response;
++  try {
++    response = await fetcher("https://slack.com/api/oauth.v2.access", {
++      method: "POST",
++      redirect: "error",
++      signal,
++      headers: { "Content-Type": "application/x-www-form-urlencoded" },
++      body: new URLSearchParams({
++        code,
++        redirect_uri: redirectUri,
++        client_id: config.clientId,
++        client_secret: config.clientSecret,
++      }),
++    });
++  } catch {
++    throw operationError(
++      ERROR_IDS.SLACK_EXCHANGE_FAILED,
++      "slack_exchange_failed",
++      slackOperationFailure("transient_outage", "unavailable", "unknown"),
++    );
++  }
+   if (!response.ok)
+-    throw new AppError(ERROR_IDS.SLACK_EXCHANGE_FAILED, "slack_exchange_failed", {});
+-  const parsed = z
+-    .object({
+-      ok: z.literal(true),
+-      access_token: z.string().min(1),
+-      scope: z.string(),
+-      team: z.object({ id: z.string().min(1), name: z.string().min(1) }),
+-    })
+-    .safeParse(await response.json());
++    throw operationError(
++      ERROR_IDS.SLACK_EXCHANGE_FAILED,
++      "slack_exchange_failed",
++      classifySlackOperationHttpFailure(response.status, response.headers.get("Retry-After")),
++    );
++  let data: unknown;
++  try {
++    data = await response.json();
++    signal.throwIfAborted();
++  } catch {
++    throw operationError(
++      ERROR_IDS.SLACK_EXCHANGE_FAILED,
++      "slack_exchange_failed",
++      signal.aborted
++        ? slackOperationFailure("transient_outage", "unavailable", "unknown")
++        : slackOperationFailure("invalid_response", "invalid_response", "unknown"),
++    );
++  }
++  const parsed = exchangeResponse.safeParse(data);
+   if (!parsed.success)
+-    throw new AppError(ERROR_IDS.SLACK_EXCHANGE_FAILED, "slack_exchange_failed", {});
++    throw operationError(
++      ERROR_IDS.SLACK_EXCHANGE_FAILED,
++      "slack_exchange_failed",
++      slackOperationFailure("invalid_response", "invalid_response", "unknown"),
++    );
++  if (!parsed.data.ok)
++    throw operationError(
++      ERROR_IDS.SLACK_EXCHANGE_FAILED,
++      "slack_exchange_failed",
++      classifySlackOperationError(parsed.data.error),
++    );
+   const scopes = parsed.data.scope.split(",");
+   if (!SLACK_SCOPES.every((scope) => scopes.includes(scope)))
+-    throw new AppError(ERROR_IDS.SLACK_SCOPE_MISSING, "slack_scope_missing", {});
++    throw operationError(
++      ERROR_IDS.SLACK_SCOPE_MISSING,
++      "slack_scope_missing",
++      slackOperationFailure("insufficient_scope", "invalid_response", "unknown"),
++    );
+   return { token: parsed.data.access_token, scopes, team: parsed.data.team };
+ }
+ 
+diff --git a/src/features/integrations/slackOperationFailure.ts b/src/features/integrations/slackOperationFailure.ts
+new file mode 100644
+index 0000000..e6c85d3
+--- /dev/null
++++ b/src/features/integrations/slackOperationFailure.ts
+@@ -0,0 +1,66 @@
++import type { ProviderFailure } from "./providers/models";
++import type { SlackReadFailureReason } from "./slackReadFailure";
++
++export interface SlackOperationFailure {
++  reason: SlackReadFailureReason;
++  providerFailure: ProviderFailure;
++}
++
++const MAX_RETRY_AFTER_SECONDS = 86_400;
++
++function retryDelay(raw: string | null): number | undefined {
++  if (raw === null || !/^[0-9]{1,5}$/.test(raw)) return undefined;
++  const seconds = Number(raw);
++  return seconds >= 1 && seconds <= MAX_RETRY_AFTER_SECONDS ? seconds * 1000 : undefined;
++}
++
++export function slackOperationFailure(
++  reason: SlackReadFailureReason,
++  code: ProviderFailure["code"],
++  outcome?: "unknown",
++  retryAfter: string | null = null,
++): SlackOperationFailure {
++  const providerFailure: ProviderFailure = { code };
++  if (outcome === "unknown") providerFailure.outcome = "unknown";
++  if (code === "rate_limited") {
++    const retryAfterMs = retryDelay(retryAfter);
++    if (retryAfterMs !== undefined) providerFailure.retryAfterMs = retryAfterMs;
++  }
++  return { reason, providerFailure };
++}
++
++export function classifySlackOperationError(error: string | undefined): SlackOperationFailure {
++  switch (error) {
++    case "token_revoked":
++    case "account_inactive":
++      return slackOperationFailure("authorization_revoked", "authorization_expired");
++    case "token_expired":
++      return slackOperationFailure("authorization_expired", "authorization_expired");
++    case "missing_scope":
++      return slackOperationFailure("insufficient_scope", "forbidden");
++    case "channel_not_found":
++      return slackOperationFailure("missing_resource", "invalid_input");
++    case "bad_client_secret":
++      return slackOperationFailure("invalid_configuration", "invalid_input");
++    case "invalid_auth":
++      return slackOperationFailure("permission_denied", "forbidden");
++    case "internal_error":
++    case "fatal_error":
++    case "service_unavailable":
++      // These errors can follow partial mutation, so they cannot authorize a safe replay.
++      return slackOperationFailure("transient_outage", "unavailable", "unknown");
++    default:
++      return slackOperationFailure("unclassified", "failed", "unknown");
++  }
++}
++
++export function classifySlackOperationHttpFailure(
++  status: number,
++  retryAfter: string | null,
++): SlackOperationFailure {
++  if (status === 429)
++    return slackOperationFailure("rate_limited", "rate_limited", undefined, retryAfter);
++  if (status >= 500 && status < 600)
++    return slackOperationFailure("transient_outage", "unavailable", "unknown");
++  return slackOperationFailure("unclassified", "failed", "unknown");
++}
+diff --git a/src/features/integrations/slackOperationFailures.test.ts b/src/features/integrations/slackOperationFailures.test.ts
+new file mode 100644
+index 0000000..17c99cc
+--- /dev/null
++++ b/src/features/integrations/slackOperationFailures.test.ts
+@@ -0,0 +1,296 @@
++import assert from "node:assert/strict";
++import { expect, test } from "vitest";
++import { AppError, ERROR_IDS } from "@/constants/errorIds";
++import { type ProviderFailure, providerFailureSchema } from "./providers/models";
++import { exchangeSlackCode, slackRequest } from "./slack";
++
++type Operation = "send" | "exchange" | "revoke";
++type Detail = { reason: string; providerFailure: ProviderFailure };
++const operations = ["send", "exchange", "revoke"] as const;
++const targets: Record<Operation, string> = {
++  send: "https://slack.com/api/chat.postMessage",
++  exchange: "https://slack.com/api/oauth.v2.access",
++  revoke: "https://slack.com/api/auth.revoke",
++};
++const token = "synthetic-operation-private-token";
++const clientSecret = "synthetic-operation-private-client-secret";
++const code = "synthetic-operation-private-code";
++const payload = "synthetic-operation-private-message";
++const rawDetail = "synthetic-operation-private-provider-detail";
++const privateValues = [token, clientSecret, code, payload, rawDetail];
++
++function invoke(operation: Operation, fetcher: typeof fetch) {
++  if (operation === "exchange") {
++    return exchangeSlackCode(
++      code,
++      "https://client.example.test/slack/callback",
++      {
++        clientId: "synthetic-operation-client",
++        clientSecret,
++      },
++      fetcher,
++    );
++  }
++  return slackRequest(
++    operation === "send" ? "chat.postMessage" : "auth.revoke",
++    token,
++    operation === "send" ? { channel: "C_SYNTHETIC", text: payload } : undefined,
++    fetcher,
++  );
++}
++
++function legacy(operation: Operation, kind: "json" | "unavailable" | "rate" = "json") {
++  if (operation === "exchange")
++    return { id: ERROR_IDS.SLACK_EXCHANGE_FAILED, message: "slack_exchange_failed" };
++  if (kind === "unavailable")
++    return { id: ERROR_IDS.SLACK_UNAVAILABLE, message: "slack_unavailable" };
++  if (kind === "rate") return { id: ERROR_IDS.SLACK_RATE_LIMITED, message: "slack_unavailable" };
++  return { id: ERROR_IDS.SLACK_REQUEST_FAILED, message: "slack_request_failed" };
++}
++
++function providerError(error: string) {
++  return Response.json({ ok: false, error, token, client_secret: clientSecret, detail: rawDetail });
++}
++
++function unreadBody(status: number, headers?: HeadersInit) {
++  const response = new Response(rawDetail, { status, headers });
++  let bodyReads = 0;
++  response.json = () => {
++    bodyReads++;
++    return Promise.resolve({ raw: rawDetail, token });
++  };
++  return { response, bodyReads: () => bodyReads + Number(response.bodyUsed) };
++}
++
++async function expectFailure(
++  operation: Operation,
++  handler: () => Promise<Response>,
++  detail: Detail,
++  expectedLegacy: { id: string; message: string } = legacy(operation),
++  assertResponse?: () => void,
++) {
++  const requests: { target: string; method: string | undefined }[] = [];
++  const fetcher: typeof fetch = (input, init) => {
++    requests.push({
++      target: typeof input === "string" ? input : input instanceof URL ? input.href : input.url,
++      method: init?.method,
++    });
++    return handler();
++  };
++  const [outcome] = await Promise.allSettled([invoke(operation, fetcher)]);
++  assertResponse?.();
++  assert(outcome !== undefined);
++  expect(requests.length).toBe(1);
++  expect(requests[0]?.target === targets[operation] && requests[0].method === "POST").toBe(true);
++  expect(outcome.status === "rejected").toBe(true);
++  assert(outcome.status === "rejected");
++  const failure: unknown = outcome.reason;
++  // Boolean assertions avoid printing deliberately hostile transport/body material on RED.
++  expect(failure instanceof AppError).toBe(true);
++  assert(failure instanceof AppError);
++  const cause = "cause" in failure ? failure.cause : undefined;
++  const diagnostic = JSON.stringify({
++    id: failure.id,
++    message: failure.message,
++    context: failure.context,
++    cause,
++    causeMessage: cause instanceof Error ? cause.message : undefined,
++  });
++  expect(privateValues.every((value) => !diagnostic.includes(value))).toBe(true);
++  expect(failure.id).toBe(expectedLegacy.id);
++  expect(failure.message).toBe(expectedLegacy.message);
++  expect(failure.context).toEqual({ slackOperationFailure: detail });
++  const normalized = failure.context?.slackOperationFailure;
++  assert(typeof normalized === "object" && normalized !== null && "providerFailure" in normalized);
++  expect(providerFailureSchema.safeParse(normalized.providerFailure).success).toBe(true);
++}
++
++const rejections: {
++  name: string;
++  operation: Operation;
++  error: string;
++  reason: string;
++  code: ProviderFailure["code"];
++}[] = [
++  {
++    name: "send revoked authorization",
++    operation: "send",
++    error: "token_revoked",
++    reason: "authorization_revoked",
++    code: "authorization_expired",
++  },
++  {
++    name: "send insufficient scope",
++    operation: "send",
++    error: "missing_scope",
++    reason: "insufficient_scope",
++    code: "forbidden",
++  },
++  {
++    name: "send unavailable selected resource",
++    operation: "send",
++    error: "channel_not_found",
++    reason: "missing_resource",
++    code: "invalid_input",
++  },
++  {
++    name: "exchange invalid client configuration",
++    operation: "exchange",
++    error: "bad_client_secret",
++    reason: "invalid_configuration",
++    code: "invalid_input",
++  },
++  {
++    name: "revoke ambiguous authentication is not proved revocation",
++    operation: "revoke",
++    error: "invalid_auth",
++    reason: "permission_denied",
++    code: "forbidden",
++  },
++];
++test.each(rejections)("$name", async ({ operation, error, reason, code: failureCode }) => {
++  await expectFailure(operation, () => Promise.resolve(providerError(error)), {
++    reason,
++    providerFailure: { code: failureCode },
++  });
++});
++
++const retryHints = [
++  ["7", 7_000],
++  ["86400", 86_400_000],
++  ["86401", undefined],
++  ["0", undefined],
++  ["tomorrow", undefined],
++] as const;
++test.each(
++  operations.flatMap((operation) =>
++    retryHints.map(([raw, milliseconds]) => ({ operation, raw, milliseconds })),
++  ),
++)(
++  '$operation HTTP429 Retry-After "$raw" retains only a bounded hint without reading the body',
++  async ({ operation, raw, milliseconds }) => {
++    const fixture = unreadBody(429, { "Retry-After": raw });
++    await expectFailure(
++      operation,
++      () => Promise.resolve(fixture.response),
++      {
++        reason: "rate_limited",
++        providerFailure: {
++          code: "rate_limited",
++          ...(milliseconds === undefined ? {} : { retryAfterMs: milliseconds }),
++        },
++      },
++      legacy(operation, "rate"),
++      () => expect(fixture.bodyReads()).toBe(0),
++    );
++  },
++);
++
++const outageModes = ["internal_error", "fatal_error", "HTTP503", "transport failure"] as const;
++test.each(operations.flatMap((operation) => outageModes.map((mode) => ({ operation, mode }))))(
++  "$operation $mode retains unknown effects and a redacted transient classification",
++  async ({ operation, mode }) => {
++    const outage = unreadBody(503);
++    const partial = mode === "internal_error" || mode === "fatal_error";
++    const handler =
++      mode === "transport failure"
++        ? () =>
++            Promise.reject({
++              message: rawDetail,
++              headers: { authorization: token },
++              body: payload,
++            })
++        : mode === "HTTP503"
++          ? () => Promise.resolve(outage.response)
++          : () => Promise.resolve(providerError(mode));
++    await expectFailure(
++      operation,
++      handler,
++      {
++        reason: "transient_outage",
++        providerFailure: { code: "unavailable", outcome: "unknown" },
++      },
++      legacy(operation, partial ? "json" : "unavailable"),
++      mode === "HTTP503" ? () => expect(outage.bodyReads()).toBe(0) : undefined,
++    );
++  },
++);
++
++const fallbacks = [
++  {
++    name: "unknown provider error",
++    createResponse: () => providerError(token),
++    reason: "unclassified",
++    code: "failed",
++  },
++  {
++    name: "provider request_timeout",
++    createResponse: () => providerError("request_timeout"),
++    reason: "unclassified",
++    code: "failed",
++  },
++  {
++    name: "malformed response shape",
++    createResponse: () => Response.json({ ok: "false", raw: rawDetail, token }),
++    reason: "invalid_response",
++    code: "invalid_response",
++  },
++  {
++    name: "unreadable JSON response",
++    createResponse: () => new Response(rawDetail),
++    reason: "invalid_response",
++    code: "invalid_response",
++  },
++] as const;
++test.each(operations.flatMap((operation) => fallbacks.map((item) => ({ operation, ...item }))))(
++  "$operation $name preserves a finite reason and unknown effects",
++  async ({ operation, createResponse, reason, code: failureCode }) => {
++    await expectFailure(operation, () => Promise.resolve(createResponse()), {
++      reason,
++      providerFailure: { code: failureCode, outcome: "unknown" },
++    });
++  },
++);
++
++test("exchange unusable successful candidate retains insufficient scope and unknown effects", async () => {
++  // An unusable successful candidate may already have created a remote token.
++  await expectFailure(
++    "exchange",
++    () =>
++      Promise.resolve(
++        Response.json({
++          ok: true,
++          access_token: token,
++          scope: "channels:read",
++          team: { id: "T_SYNTHETIC", name: "Synthetic workspace" },
++        }),
++      ),
++    {
++      reason: "insufficient_scope",
++      providerFailure: { code: "invalid_response", outcome: "unknown" },
++    },
++    { id: ERROR_IDS.SLACK_SCOPE_MISSING, message: "slack_scope_missing" },
++  );
++});
++
++test.each([
++  {
++    name: "already token_revoked",
++    response: { ok: false, error: "token_revoked" },
++    expected: { ok: true },
++  },
++  {
++    name: "explicit revoked:true",
++    response: { ok: true, revoked: true },
++    expected: { ok: true, revoked: true },
++  },
++])("revoke $name retains existing success", async ({ response, expected }) => {
++  let calls = 0;
++  const fetcher: typeof fetch = (input, init) => {
++    calls++;
++    expect(input === targets.revoke && init?.method === "POST").toBe(true);
++    return Promise.resolve(Response.json(response));
++  };
++  expect(await invoke("revoke", fetcher)).toEqual(expected);
++  expect(calls).toBe(1);
++});
+diff --git a/src/features/integrations/slackReadFailures.test.ts b/src/features/integrations/slackReadFailures.test.ts
+index dbf041b..9a93571 100644
+--- a/src/features/integrations/slackReadFailures.test.ts
++++ b/src/features/integrations/slackReadFailures.test.ts
+@@ -160,5 +160,11 @@ it("does not apply read classifications or no-effect claims to a mutating reques
+     "chat.postMessage",
+   );
+   expect(result?.id).toBe(ERROR_IDS.SLACK_REQUEST_FAILED);
+-  expect(result?.context).toEqual({});
++  expect(result?.context).toEqual({
++    slackOperationFailure: {
++      reason: "transient_outage",
++      providerFailure: { code: "unavailable", outcome: "unknown" },
++    },
++  });
++  expect(result?.context).not.toHaveProperty("slackReadFailure");
+ });
+diff --git a/src/features/privacy/registryIdsSales1.ts b/src/features/privacy/registryIdsSales1.ts
+index 71c45ea..6e8eebc 100644
+--- a/src/features/privacy/registryIdsSales1.ts
++++ b/src/features/privacy/registryIdsSales1.ts
+@@ -1,7 +1,7 @@
+ // Exact reviewed Sales and Integration boundaries from the frozen inventory packet.
+ export const salesIntegrationIds1: string[] = [
+   "derived:src/features/integrations/slackReadFailure.ts",
+-  "sourceReview:src/features/integrations/slack.ts#2fece3be197eb962310615034ddcefccbf3cd204a57e2870b2cb2cc532b8c0a2",
++  "sourceReview:src/features/integrations/slack.ts#8585d466afbbfd91cff7b64306de14e7a13383e1f17d794a6c7ed669dc43e1e3",
+   "sourceReview:src/features/integrations/slackRead.ts#83aabc1dfcfeb076684951ca6da6a378091ff3db18a7aab0940f189f212ca36a",
+   "sourceReview:src/features/integrations/slackReadFailure.ts#fdf59462107754c7a767bb98e7261086dbb823e05a8454b1bdb2a276cae02ff4",
+ 

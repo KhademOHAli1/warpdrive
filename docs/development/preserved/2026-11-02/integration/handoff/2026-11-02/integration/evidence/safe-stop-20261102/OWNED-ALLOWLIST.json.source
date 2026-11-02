@@ -1,0 +1,671 @@
+{
+  "at": "2026-11-02T07:20:42.044484+00:00",
+  "workspace": "/Users/ali/Developer/warpdrive-integrations",
+  "head": "9fb734e0129f6dcc5be69963e2aafddd0b7836ea",
+  "sourceOwnedAllowlist": [
+    {
+      "status": " M",
+      "path": "docs/mcp-server.md",
+      "mode": 420,
+      "kind": "file",
+      "size": 9163,
+      "sha256": "262cac55304437d691a78fb8c91350f761e0c21a33fef27d8080915ea93876b5",
+      "excludedSensitiveOrRuntime": false
+    },
+    {
+      "status": " M",
+      "path": "src/app/.well-known/oauth-authorization-server/route.ts",
+      "mode": 420,
+      "kind": "file",
+      "size": 511,
+      "sha256": "5509574914473a505cf72d81e0ed313f27a0cab06b3e62d2ef099b1cc572ef15",
+      "excludedSensitiveOrRuntime": false
+    },
+    {
+      "status": " M",
+      "path": "src/app/.well-known/oauth-protected-resource/route.ts",
+      "mode": 420,
+      "kind": "file",
+      "size": 474,
+      "sha256": "6dcefd5e0bc280ec797731fb307beafe142e97c5ff1dc8e29a1f2cfb2960cacf",
+      "excludedSensitiveOrRuntime": false
+    },
+    {
+      "status": " M",
+      "path": "src/app/oauth/authorize/route.ts",
+      "mode": 420,
+      "kind": "file",
+      "size": 236,
+      "sha256": "4b373d00bb9f112ee186574a7216f8ec19b97267b5eb4c1af328fbea482fec68",
+      "excludedSensitiveOrRuntime": false
+    },
+    {
+      "status": " M",
+      "path": "src/app/oauth/register/route.ts",
+      "mode": 420,
+      "kind": "file",
+      "size": 3256,
+      "sha256": "6478812fc8ac09ab8915e473d18d25726b60e082758d4616b47efb9dcb5e93d3",
+      "excludedSensitiveOrRuntime": false
+    },
+    {
+      "status": " M",
+      "path": "src/app/oauth/token/route.ts",
+      "mode": 420,
+      "kind": "file",
+      "size": 144,
+      "sha256": "5afe4fbbc7a3d151dfb0726a2bfa4b5f4ed8bd93d16cc6c1e483cffb6b1feec5",
+      "excludedSensitiveOrRuntime": false
+    },
+    {
+      "status": " M",
+      "path": "src/constants/errorIds.ts",
+      "mode": 420,
+      "kind": "file",
+      "size": 18572,
+      "sha256": "9c2fd47faab1fe8aa4e9f9dcfc6a6cadebadc8c2e87fb97890950c91b353e1e7",
+      "excludedSensitiveOrRuntime": false
+    },
+    {
+      "status": " M",
+      "path": "src/features/integrations/providers/invoke.ts",
+      "mode": 420,
+      "kind": "file",
+      "size": 6147,
+      "sha256": "946301672e4b59dc86a24272ba91244d0f613d9a4bdc9bc64a93b1ac5ff1706e",
+      "excludedSensitiveOrRuntime": false
+    },
+    {
+      "status": " M",
+      "path": "src/features/integrations/slack.ts",
+      "mode": 420,
+      "kind": "file",
+      "size": 8148,
+      "sha256": "8585d466afbbfd91cff7b64306de14e7a13383e1f17d794a6c7ed669dc43e1e3",
+      "excludedSensitiveOrRuntime": false
+    },
+    {
+      "status": " M",
+      "path": "src/features/integrations/slackReadFailures.test.ts",
+      "mode": 420,
+      "kind": "file",
+      "size": 6903,
+      "sha256": "3d2ed3d7f648321d55c29d694555104604acaf00ef138f5252a97798663e3e4e",
+      "excludedSensitiveOrRuntime": false
+    },
+    {
+      "status": " M",
+      "path": "src/features/mcp/auth.ts",
+      "mode": 420,
+      "kind": "file",
+      "size": 1938,
+      "sha256": "0d263ca89d3c9ebcdcbe2a06ed38579bf9c18defaf7b1aa079624f824996e42f",
+      "excludedSensitiveOrRuntime": false
+    },
+    {
+      "status": " M",
+      "path": "src/features/mcp/http.test.ts",
+      "mode": 420,
+      "kind": "file",
+      "size": 5313,
+      "sha256": "8a627e1e83929fe6039afd6a5e114d35e839c3cc34071c6958755289c7f67c81",
+      "excludedSensitiveOrRuntime": false
+    },
+    {
+      "status": " M",
+      "path": "src/features/mcp/http.ts",
+      "mode": 420,
+      "kind": "file",
+      "size": 2129,
+      "sha256": "6271ea875e43fcde24eeb2d1a2496f2ef89cbc707c1c3d2b6a8d2674f44f5e9a",
+      "excludedSensitiveOrRuntime": false
+    },
+    {
+      "status": " M",
+      "path": "src/features/oauth/authorize.test.ts",
+      "mode": 420,
+      "kind": "file",
+      "size": 2650,
+      "sha256": "974c30477af4bea4fcfc507823f149f275ad60218f1bd663b3ef90b5e5a05fae",
+      "excludedSensitiveOrRuntime": false
+    },
+    {
+      "status": " M",
+      "path": "src/features/oauth/authorize.ts",
+      "mode": 420,
+      "kind": "file",
+      "size": 3639,
+      "sha256": "8c912d297b1c7950dea8780e8f8f25e66d4dab292ba99963cd232c483620432f",
+      "excludedSensitiveOrRuntime": false
+    },
+    {
+      "status": " M",
+      "path": "src/features/oauth/consent.integration.test.ts",
+      "mode": 420,
+      "kind": "file",
+      "size": 3306,
+      "sha256": "8f445d11b3810da4944d5095b8c021892cda95df4fc8bbe62483eb36c02d1710",
+      "excludedSensitiveOrRuntime": false
+    },
+    {
+      "status": " M",
+      "path": "src/features/oauth/consent.ts",
+      "mode": 420,
+      "kind": "file",
+      "size": 1336,
+      "sha256": "0dffa6a9f18560041a27278da04952b070101c7575aad0ea5747e754d46b4be5",
+      "excludedSensitiveOrRuntime": false
+    },
+    {
+      "status": " M",
+      "path": "src/features/oauth/exchange.integration.test.ts",
+      "mode": 420,
+      "kind": "file",
+      "size": 4328,
+      "sha256": "88c857623ff71c73430f93965d615c9225e45d1a89978e0e636e12573f7af340",
+      "excludedSensitiveOrRuntime": false
+    },
+    {
+      "status": " M",
+      "path": "src/features/oauth/exchange.ts",
+      "mode": 420,
+      "kind": "file",
+      "size": 2818,
+      "sha256": "3018cac74f7a590288d5ba365fa0dcda9c5ba71b0a22cc4cc1c60295ef997ca3",
+      "excludedSensitiveOrRuntime": false
+    },
+    {
+      "status": " M",
+      "path": "src/features/oauth/mcpEndpoint.test.ts",
+      "mode": 420,
+      "kind": "file",
+      "size": 1024,
+      "sha256": "3b7374b43ed34cc0cdf173712f6b93990050008bea9eb729f09bdabc847ae47d",
+      "excludedSensitiveOrRuntime": false
+    },
+    {
+      "status": " M",
+      "path": "src/features/oauth/mcpEndpoint.ts",
+      "mode": 420,
+      "kind": "file",
+      "size": 327,
+      "sha256": "9b59f6c071000a86367e9ed760480c4e7905f126cad8650cb5e6e62ddc987bc3",
+      "excludedSensitiveOrRuntime": false
+    },
+    {
+      "status": " M",
+      "path": "src/features/oauth/metadata.test.ts",
+      "mode": 420,
+      "kind": "file",
+      "size": 1781,
+      "sha256": "cc93b0d5bcc7cad2bf81a37c14073323d863c825c6638fcb5b2db2b56e12395c",
+      "excludedSensitiveOrRuntime": false
+    },
+    {
+      "status": " M",
+      "path": "src/features/oauth/metadata.ts",
+      "mode": 420,
+      "kind": "file",
+      "size": 1266,
+      "sha256": "5bcea7fdb6086975412a7a93c7f739cf94bda572fb3052de495a80aad87f8b19",
+      "excludedSensitiveOrRuntime": false
+    },
+    {
+      "status": " M",
+      "path": "src/features/oauth/tokens.ts",
+      "mode": 420,
+      "kind": "file",
+      "size": 8993,
+      "sha256": "9a79e82208a2cc9d387040afab6d8d6b60dfa33bfaf8d5b2050fd5ae116cc9e3",
+      "excludedSensitiveOrRuntime": false
+    },
+    {
+      "status": " M",
+      "path": "src/features/privacy/registryIdsAuthentication1.ts",
+      "mode": 420,
+      "kind": "file",
+      "size": 12361,
+      "sha256": "7d7e6bd4e71892947134ea4a50c2574c0891bf15bd738e79fc1ca74152f0aafb",
+      "excludedSensitiveOrRuntime": false
+    },
+    {
+      "status": " M",
+      "path": "src/features/privacy/registryIdsAuthentication2.ts",
+      "mode": 420,
+      "kind": "file",
+      "size": 7998,
+      "sha256": "03d97d57a557506b881ef8b84a9cf42bbdb8052a303ed8fe1273cef5fa8ca68c",
+      "excludedSensitiveOrRuntime": false
+    },
+    {
+      "status": " M",
+      "path": "src/features/privacy/registryIdsInfrastructure1.ts",
+      "mode": 420,
+      "kind": "file",
+      "size": 12415,
+      "sha256": "8a4e7ae363bdd3d7969c7948f8f872ab25258b68606cfbd727b10773ae5bb1f0",
+      "excludedSensitiveOrRuntime": false
+    },
+    {
+      "status": " M",
+      "path": "src/features/privacy/registryIdsSales1.ts",
+      "mode": 420,
+      "kind": "file",
+      "size": 5333,
+      "sha256": "7e302626a62212c2051dacdf0d9736600719f6563a1b2ca075b9dbec16c6be2a",
+      "excludedSensitiveOrRuntime": false
+    },
+    {
+      "status": " M",
+      "path": "src/test/integrationPlatformFixtures.integration.test.ts",
+      "mode": 420,
+      "kind": "file",
+      "size": 9592,
+      "sha256": "55a2582e60a243d04bd56f9c785feedf21f3ff8e1ee6297573f618e5e29eeede",
+      "excludedSensitiveOrRuntime": false
+    },
+    {
+      "status": "??",
+      "path": "docs/mcp-security-operations.de.md",
+      "mode": 420,
+      "kind": "file",
+      "size": 15045,
+      "sha256": "2fb1b6523d5859a59d9358f8540b7b8e09001aeacd7e1e8019cdad62ad8ab62d",
+      "excludedSensitiveOrRuntime": false
+    },
+    {
+      "status": "??",
+      "path": "docs/mcp-security-operations.fa.md",
+      "mode": 420,
+      "kind": "file",
+      "size": 20201,
+      "sha256": "28323ee0f2bdb600c5615b6e25e47aea80832029a5f85c78c82b98f030451a6a",
+      "excludedSensitiveOrRuntime": false
+    },
+    {
+      "status": "??",
+      "path": "docs/mcp-security-operations.md",
+      "mode": 420,
+      "kind": "file",
+      "size": 11029,
+      "sha256": "2e218735b6b64e5dfc92cc7ea397ed662ff706a9d5dff7cf73a050139722d701",
+      "excludedSensitiveOrRuntime": false
+    },
+    {
+      "status": "??",
+      "path": "src/features/integrations/SlackConnectionPhases.test.tsx",
+      "mode": 420,
+      "kind": "file",
+      "size": 2786,
+      "sha256": "4bedf1fde9d9c157e90748ed3caee84eeb38472db74b47a48ab8c0b61ad3586d",
+      "excludedSensitiveOrRuntime": false
+    },
+    {
+      "status": "??",
+      "path": "src/features/integrations/providers/invokeAbortReason.test.ts",
+      "mode": 420,
+      "kind": "file",
+      "size": 4098,
+      "sha256": "3ed29f2f4618dca64754bbed3a44ece6706c7d1da0ba81b183fcf897570d5e89",
+      "excludedSensitiveOrRuntime": false
+    },
+    {
+      "status": "??",
+      "path": "src/features/integrations/slackChannelResponse.test.ts",
+      "mode": 420,
+      "kind": "file",
+      "size": 3320,
+      "sha256": "781fc5c7f0c6194d3ba97808946f18b66ffca9926ed5898f0700e1a9c0f83a9d",
+      "excludedSensitiveOrRuntime": false
+    },
+    {
+      "status": "??",
+      "path": "src/features/integrations/slackOperationFailure.ts",
+      "mode": 420,
+      "kind": "file",
+      "size": 2597,
+      "sha256": "6d841bb5ea5bae3939273ea443c3f7bf321452497324ac585b5c87db155c1f37",
+      "excludedSensitiveOrRuntime": false
+    },
+    {
+      "status": "??",
+      "path": "src/features/integrations/slackOperationFailures.test.ts",
+      "mode": 420,
+      "kind": "file",
+      "size": 10013,
+      "sha256": "8bbbfcc93517590492ecefd0512ea0c7b8dca7c28691ab84a312f3cdd39d2ba7",
+      "excludedSensitiveOrRuntime": false
+    },
+    {
+      "status": "??",
+      "path": "src/features/integrations/slackReauthorization.integration.test.ts",
+      "mode": 420,
+      "kind": "file",
+      "size": 7356,
+      "sha256": "176f47512ceb41f98d1fcb05d9e7653efd8ae0aba0a996caaa59ddb29cbb124e",
+      "excludedSensitiveOrRuntime": false
+    },
+    {
+      "status": "??",
+      "path": "src/features/integrations/slackRevocation.integration.test.ts",
+      "mode": 420,
+      "kind": "file",
+      "size": 8526,
+      "sha256": "790c380056521344e121113a35310ec15293c9effdac5c0eb2b90b6330859950",
+      "excludedSensitiveOrRuntime": false
+    },
+    {
+      "status": "??",
+      "path": "src/features/integrations/slackRevocation.test.ts",
+      "mode": 420,
+      "kind": "file",
+      "size": 1726,
+      "sha256": "491e6dec299c57cd0891441192ac8eec6fa439520979295c628564a20e9d76e3",
+      "excludedSensitiveOrRuntime": false
+    },
+    {
+      "status": "??",
+      "path": "src/features/oauth/authorizationHttp.ts",
+      "mode": 420,
+      "kind": "file",
+      "size": 6253,
+      "sha256": "5ffbe4282c70ffea11cd4267ab6fb470278ab4b524734d90684c17c1993b99e5",
+      "excludedSensitiveOrRuntime": false
+    },
+    {
+      "status": "??",
+      "path": "src/features/oauth/connectionJourney.integration.test.ts",
+      "mode": 420,
+      "kind": "file",
+      "size": 5683,
+      "sha256": "757f62ce3d565391564cc0dc61f24f3a7e7885936d4fdad5c1bf6ee6e5956007",
+      "excludedSensitiveOrRuntime": false
+    },
+    {
+      "status": "??",
+      "path": "src/features/oauth/issuerMetadata.test.ts",
+      "mode": 420,
+      "kind": "file",
+      "size": 1470,
+      "sha256": "9e68f317b93686bd22fc3a00170a1239d6bc1cbe59c3851ce3430160a0bd2738",
+      "excludedSensitiveOrRuntime": false
+    },
+    {
+      "status": "??",
+      "path": "src/features/oauth/issuerResponse.integration.test.ts",
+      "mode": 420,
+      "kind": "file",
+      "size": 6850,
+      "sha256": "f080d8bf3f4039276a105b67027a29a4d71965565d5d788a9e4d1367d6d03ae9",
+      "excludedSensitiveOrRuntime": false
+    },
+    {
+      "status": "??",
+      "path": "src/features/oauth/issuerValidation.test.ts",
+      "mode": 420,
+      "kind": "file",
+      "size": 2595,
+      "sha256": "644244d07365b512fb25d0b710a933f167067615f56cafe8e6122833920759f6",
+      "excludedSensitiveOrRuntime": false
+    },
+    {
+      "status": "??",
+      "path": "src/features/oauth/jsonResourceIngress.ts",
+      "mode": 420,
+      "kind": "file",
+      "size": 4187,
+      "sha256": "4c2b98d8c51597de68c548ea38419f8c43a03d8291d9ea3d7cf48179a3421794",
+      "excludedSensitiveOrRuntime": false
+    },
+    {
+      "status": "??",
+      "path": "src/features/oauth/refreshFamily.integration.test.ts",
+      "mode": 420,
+      "kind": "file",
+      "size": 5619,
+      "sha256": "9bff863fe8dd9451cfcd43a1f79c977adbe1f812b038ebb470d8e55403055adc",
+      "excludedSensitiveOrRuntime": false
+    },
+    {
+      "status": "??",
+      "path": "src/features/oauth/refreshFamilyIntegrity.integration.test.ts",
+      "mode": 420,
+      "kind": "file",
+      "size": 6482,
+      "sha256": "e121f612c3aebf22847920dfd714c48ad60cf61b3cecbb33084127f13136afa6",
+      "excludedSensitiveOrRuntime": false
+    },
+    {
+      "status": "??",
+      "path": "src/features/oauth/refreshFamilySafety.integration.test.ts",
+      "mode": 420,
+      "kind": "file",
+      "size": 14475,
+      "sha256": "36bd6100ac276df075ce37a1c0f0ed9eb0adbfd4afd8c5c5c8ce8f9b0e058b06",
+      "excludedSensitiveOrRuntime": false
+    },
+    {
+      "status": "??",
+      "path": "src/features/oauth/requestIngress.test.ts",
+      "mode": 420,
+      "kind": "file",
+      "size": 9085,
+      "sha256": "08480fdb4e8ac1edddea1f4af3193966c223c0684b99861d8b70b975a85382eb",
+      "excludedSensitiveOrRuntime": false
+    },
+    {
+      "status": "??",
+      "path": "src/features/oauth/requestIngress.ts",
+      "mode": 420,
+      "kind": "file",
+      "size": 4980,
+      "sha256": "711a57a9d1f6c43f89346c3860467f1404a5c7031ad828f809502b156177d9ea",
+      "excludedSensitiveOrRuntime": false
+    },
+    {
+      "status": "??",
+      "path": "src/features/oauth/requestSchemas.ts",
+      "mode": 420,
+      "kind": "file",
+      "size": 1705,
+      "sha256": "53b9f70f6ebee0799068a533cc22ca86a0840f7c3d4e3108e56d7680e08cda2f",
+      "excludedSensitiveOrRuntime": false
+    },
+    {
+      "status": "??",
+      "path": "src/features/oauth/resource.test.ts",
+      "mode": 420,
+      "kind": "file",
+      "size": 6351,
+      "sha256": "2719bf9abf89b24ca13ee402b7120d5e3ff2feae825e6704731a18b14cd143ba",
+      "excludedSensitiveOrRuntime": false
+    },
+    {
+      "status": "??",
+      "path": "src/features/oauth/resource.ts",
+      "mode": 420,
+      "kind": "file",
+      "size": 1967,
+      "sha256": "b8020b551a1a868f9a04633256336f77081859b016bcf765cb67fe949d1157f0",
+      "excludedSensitiveOrRuntime": false
+    },
+    {
+      "status": "??",
+      "path": "src/features/oauth/resourceDiscovery.test.ts",
+      "mode": 420,
+      "kind": "file",
+      "size": 3349,
+      "sha256": "58be8e8cc356240c66427ebf6ee0221433d1d059cc60933d1935f612eec62637",
+      "excludedSensitiveOrRuntime": false
+    },
+    {
+      "status": "??",
+      "path": "src/features/oauth/resourceHttp.integration.test.ts",
+      "mode": 420,
+      "kind": "file",
+      "size": 10376,
+      "sha256": "2e413bd74da5ed3828514fbb8c318f80826f854f00081fb62138c3ccfe4b2f39",
+      "excludedSensitiveOrRuntime": false
+    },
+    {
+      "status": "??",
+      "path": "src/features/oauth/resourcePolicy.test.ts",
+      "mode": 420,
+      "kind": "file",
+      "size": 2574,
+      "sha256": "6f5510cf353b0cca4147b297a1267b51408ab4528309094fc21b4c46c9433aa8",
+      "excludedSensitiveOrRuntime": false
+    },
+    {
+      "status": "??",
+      "path": "src/features/oauth/resourceServices.integration.test.ts",
+      "mode": 420,
+      "kind": "file",
+      "size": 7634,
+      "sha256": "eca1d114713837f6bd35692bc1df245f97796ebef8ab95178827d78e439916ca",
+      "excludedSensitiveOrRuntime": false
+    },
+    {
+      "status": "??",
+      "path": "src/features/oauth/revoke.integration.test.ts",
+      "mode": 420,
+      "kind": "file",
+      "size": 8558,
+      "sha256": "9d7de52ec03bdb8351c0de2cebc68305564affdee46f1f00485c5961b7d1fa9b",
+      "excludedSensitiveOrRuntime": false
+    },
+    {
+      "status": "??",
+      "path": "src/features/oauth/tokenHttp.ts",
+      "mode": 420,
+      "kind": "file",
+      "size": 1581,
+      "sha256": "494fea3658970f9088ebe809dd72cffdd0f3b326ca68138852ede263f2062627",
+      "excludedSensitiveOrRuntime": false
+    },
+    {
+      "status": "??",
+      "path": "src/test/mcpResourceFixtures.ts",
+      "mode": 420,
+      "kind": "file",
+      "size": 5627,
+      "sha256": "28079b1dd08f6a8af6ca3c83ed96fa5b6a2381184b62446ca70440ca48afb83d",
+      "excludedSensitiveOrRuntime": false
+    }
+  ],
+  "evidenceReviewOnly": [
+    {
+      "status": "??",
+      "path": "outputs/mcp-resource-policy-20261101/resource/biome.json",
+      "mode": 420,
+      "kind": "file",
+      "size": 1125,
+      "sha256": "8e0269afbe0304554ebbb2e258795c0beb46c3e4cb1e7c98a6acb080bd8534af",
+      "excludedSensitiveOrRuntime": false,
+      "reason": "task evidence; review/sanitize separately before archival, not default source allowlist"
+    },
+    {
+      "status": "??",
+      "path": "outputs/mcp-resource-policy-20261101/resource/biome.log",
+      "mode": 420,
+      "kind": "file",
+      "size": 1127,
+      "sha256": "f8c3da3c88838a94bc5672401b830ed0313c5c821986c8fe2545a95b0413559d",
+      "excludedSensitiveOrRuntime": false,
+      "reason": "task evidence; review/sanitize separately before archival, not default source allowlist"
+    },
+    {
+      "status": "??",
+      "path": "outputs/mcp-resource-policy-20261101/resource/green.json",
+      "mode": 420,
+      "kind": "file",
+      "size": 1267,
+      "sha256": "771ffea25eb1657ed24e35db06d8505f6545d15548fffe15975a6f28f79462fa",
+      "excludedSensitiveOrRuntime": false,
+      "reason": "task evidence; review/sanitize separately before archival, not default source allowlist"
+    },
+    {
+      "status": "??",
+      "path": "outputs/mcp-resource-policy-20261101/resource/green.log",
+      "mode": 420,
+      "kind": "file",
+      "size": 2205,
+      "sha256": "b37af6c840e5874ae24c8f2ae2d99e5f9971d0fbb12e3f4c9281bc667b6be510",
+      "excludedSensitiveOrRuntime": false,
+      "reason": "task evidence; review/sanitize separately before archival, not default source allowlist"
+    },
+    {
+      "status": "??",
+      "path": "outputs/mcp-resource-policy-20261101/resource/receipt-runner.py",
+      "mode": 420,
+      "kind": "file",
+      "size": 4876,
+      "sha256": "6c767f18b29b7fd80df13e70e0118448c9930fb88d3720c747e65df95064b664",
+      "excludedSensitiveOrRuntime": false,
+      "reason": "task evidence; review/sanitize separately before archival, not default source allowlist"
+    },
+    {
+      "status": "??",
+      "path": "outputs/mcp-resource-policy-20261101/resource/red.json",
+      "mode": 420,
+      "kind": "file",
+      "size": 1265,
+      "sha256": "b1161f2646095885e9d0ac95e7de8dd7b8536daf202e42f8dc760048e24da08e",
+      "excludedSensitiveOrRuntime": false,
+      "reason": "task evidence; review/sanitize separately before archival, not default source allowlist"
+    },
+    {
+      "status": "??",
+      "path": "outputs/mcp-resource-policy-20261101/resource/red.log",
+      "mode": 420,
+      "kind": "file",
+      "size": 12654,
+      "sha256": "17f4fe768ffff3e534301dc67b6cd4df3f10090794ee27ed4d17be96eac87521",
+      "excludedSensitiveOrRuntime": false,
+      "reason": "task evidence; review/sanitize separately before archival, not default source allowlist"
+    }
+  ],
+  "protectedOrExcluded": [
+    {
+      "status": "??",
+      "path": "docs/integration-coordination.md",
+      "mode": 420,
+      "kind": "file",
+      "size": 9204,
+      "sha256": "959d1348a6f3e6e66f07d939c3e53d1d10459b2be5a0fbe8be4fd0f6001689e2",
+      "excludedSensitiveOrRuntime": false,
+      "reason": "pre-existing protected/unowned draft; preserve untouched, do not stage as Integration-owned"
+    },
+    {
+      "status": "??",
+      "path": "docs/integration-sms-providers.csv",
+      "mode": 420,
+      "kind": "file",
+      "size": 9072,
+      "sha256": "0265706600bf3375526743ff779fd03e15340bb7cce08d9d6ffbfbef930ac36c",
+      "excludedSensitiveOrRuntime": false,
+      "reason": "pre-existing protected/unowned draft; preserve untouched, do not stage as Integration-owned"
+    },
+    {
+      "status": "??",
+      "path": "docs/integration-sms-providers.md",
+      "mode": 420,
+      "kind": "file",
+      "size": 10177,
+      "sha256": "66b55da20f4f43674e5a6bcc8bd6a5a3eae0d19440e11d22d547ccfa117f50eb",
+      "excludedSensitiveOrRuntime": false,
+      "reason": "pre-existing protected/unowned draft; preserve untouched, do not stage as Integration-owned"
+    },
+    {
+      "status": "??",
+      "path": "docs/local-integrations-plan.md",
+      "mode": 420,
+      "kind": "file",
+      "size": 40917,
+      "sha256": "2de23ba8ab7afb58579ccbeb6426d10ddbfde3850413f9e895ebcffc00fed923",
+      "excludedSensitiveOrRuntime": false,
+      "reason": "pre-existing protected/unowned draft; preserve untouched, do not stage as Integration-owned"
+    }
+  ],
+  "instruction": "Main sole closer may preserve exact source allowlist on unfinished branch; do not merge entire stale private checkout into main."
+}

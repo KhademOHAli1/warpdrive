@@ -1,0 +1,177 @@
+{
+  "at": "2026-11-02T05:23:34.202698+00:00",
+  "admission": {
+    "pressure": 1,
+    "q": 55,
+    "freeBytes": 12611252224
+  },
+  "terminal": {
+    "pressure": 1,
+    "q": 55,
+    "freeBytes": 12608442368
+  },
+  "sourceBefore": {
+    "src/features/integrations/slack.ts": "8585d466afbbfd91cff7b64306de14e7a13383e1f17d794a6c7ed669dc43e1e3",
+    "src/features/integrations/slackOperationFailure.ts": "6d841bb5ea5bae3939273ea443c3f7bf321452497324ac585b5c87db155c1f37",
+    "src/features/integrations/slackOperationFailures.test.ts": "8bbbfcc93517590492ecefd0512ea0c7b8dca7c28691ab84a312f3cdd39d2ba7",
+    "src/features/integrations/slackReadFailures.test.ts": "3d2ed3d7f648321d55c29d694555104604acaf00ef138f5252a97798663e3e4e",
+    "src/features/privacy/registryIdsSales1.ts": "7e302626a62212c2051dacdf0d9736600719f6563a1b2ca075b9dbec16c6be2a"
+  },
+  "sourceAfter": {
+    "src/features/integrations/slack.ts": "8585d466afbbfd91cff7b64306de14e7a13383e1f17d794a6c7ed669dc43e1e3",
+    "src/features/integrations/slackOperationFailure.ts": "6d841bb5ea5bae3939273ea443c3f7bf321452497324ac585b5c87db155c1f37",
+    "src/features/integrations/slackOperationFailures.test.ts": "8bbbfcc93517590492ecefd0512ea0c7b8dca7c28691ab84a312f3cdd39d2ba7",
+    "src/features/integrations/slackReadFailures.test.ts": "3d2ed3d7f648321d55c29d694555104604acaf00ef138f5252a97798663e3e4e",
+    "src/features/privacy/registryIdsSales1.ts": "7e302626a62212c2051dacdf0d9736600719f6563a1b2ca075b9dbec16c6be2a"
+  },
+  "phases": [
+    {
+      "name": "privacy-biome",
+      "exitCode": 0,
+      "seconds": 0.18679745902772993,
+      "command": [
+        "/Users/ali/Developer/warpdrive-integrations/.runtime/bin/bun",
+        "--no-env-file",
+        "--bun",
+        "node_modules/@biomejs/biome/bin/biome",
+        "check",
+        "src/features/privacy/registryIdsSales1.ts"
+      ],
+      "resourceStop": null,
+      "sampledGroupMaxKiB": 6576
+    },
+    {
+      "name": "registry-units",
+      "exitCode": 0,
+      "seconds": 1.5224399169674143,
+      "command": [
+        "/usr/bin/time",
+        "-l",
+        "/Users/ali/Developer/warpdrive-integrations/.runtime/bin/bun",
+        "--no-env-file",
+        "--bun",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        ".runtime/handoffs/mcp-validation-20261102/vitest.isolated.config.ts",
+        "--project",
+        "unit",
+        "--pool=forks",
+        "--maxWorkers=1",
+        "--no-file-parallelism",
+        "--execArgv=--no-env-file",
+        "src/features/privacy/registry.test.ts"
+      ],
+      "resourceStop": null,
+      "sampledGroupMaxKiB": 597360
+    },
+    {
+      "name": "inventory",
+      "exitCode": 0,
+      "seconds": 0.7445792090147734,
+      "command": [
+        "/Users/ali/Developer/warpdrive-integrations/.runtime/bin/bun",
+        "--no-env-file",
+        "scripts/privacy-inventory.ts"
+      ],
+      "resourceStop": null,
+      "sampledGroupMaxKiB": 373776
+    }
+  ],
+  "samples": [
+    {
+      "pressure": 1,
+      "q": 55,
+      "freeBytes": 12611248128,
+      "ownedGroupRssKiB": 6576
+    },
+    {
+      "pressure": 1,
+      "q": 55,
+      "freeBytes": 12610162688,
+      "ownedGroupRssKiB": 6592
+    },
+    {
+      "pressure": 1,
+      "q": 55,
+      "freeBytes": 12609880064,
+      "ownedGroupRssKiB": 156512
+    },
+    {
+      "pressure": 1,
+      "q": 55,
+      "freeBytes": 12612608000,
+      "ownedGroupRssKiB": 234912
+    },
+    {
+      "pressure": 1,
+      "q": 55,
+      "freeBytes": 12612567040,
+      "ownedGroupRssKiB": 320640
+    },
+    {
+      "pressure": 1,
+      "q": 55,
+      "freeBytes": 12612562944,
+      "ownedGroupRssKiB": 328208
+    },
+    {
+      "pressure": 1,
+      "q": 55,
+      "freeBytes": 12612558848,
+      "ownedGroupRssKiB": 495824
+    },
+    {
+      "pressure": 1,
+      "q": 55,
+      "freeBytes": 12612165632,
+      "ownedGroupRssKiB": 591520
+    },
+    {
+      "pressure": 1,
+      "q": 55,
+      "freeBytes": 12611977216,
+      "ownedGroupRssKiB": 597360
+    },
+    {
+      "pressure": 1,
+      "q": 55,
+      "freeBytes": 12611796992,
+      "ownedGroupRssKiB": 6048
+    },
+    {
+      "pressure": 1,
+      "q": 55,
+      "freeBytes": 12609511424,
+      "ownedGroupRssKiB": 112864
+    },
+    {
+      "pressure": 1,
+      "q": 55,
+      "freeBytes": 12609527808,
+      "ownedGroupRssKiB": 276000
+    },
+    {
+      "pressure": 1,
+      "q": 55,
+      "freeBytes": 12608466944,
+      "ownedGroupRssKiB": 373776
+    }
+  ],
+  "wholeSeconds": 2.569634958053939,
+  "databaseOrProviderCalls": false,
+  "inventoryClaim": "privatecurrentcut only; Maincanonicalreport regeneration required",
+  "aggregatePeak": "unmeasured",
+  "actual": {
+    "registryTests": 18,
+    "registryPassed": 18,
+    "scope": "registry.test.ts18; historical30 also included discovery10+validity2, now separately passed at unchanged five-source cut",
+    "privateInventorySourceFiles": 2351,
+    "privateInventorySourceFingerprint": "e16142f3a02134ee5997d67884c234b22100917f58be93ab1c6000224673e30d",
+    "coverage": {
+      "ok": true,
+      "missing": [],
+      "invalid": []
+    }
+  }
+}
