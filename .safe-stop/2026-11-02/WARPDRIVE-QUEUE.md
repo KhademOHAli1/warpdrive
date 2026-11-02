@@ -220,3 +220,5 @@ For this Mac's existing daemon use job-local DOCKER_HOST=unix:///Users/ali/.coli
 - ROOT-WORKFLOW0098-CURRENT-VALIDATE-20261102-1 partial: typegen/fullTSC PASS, typedlint42exactonefixturecognitivecomplexity19>15 atseedDurationUpgradeData. Biome0/native0/inventory0/reportnotgenerated; actualcompiler26.242s/total27.996s/ownedgroup49988gone/foreign3-3-2/deps/dotenv/5454pins+53source exact. Sample5.64GiB/minQ46/noresourcestop. Minimumfixtureloop-extractionallowed, sameoracles/IDs; no native10repeat/sourceSQLchanges.
 
 Tracking-only checkpoint:57 existing GitHub issues updated; restart through issue80. No heavy allocation is reopened by this update.
+
+Branch sync, 2 November 2026: all eight managed remote/local branch refs now include main `09288d5` / zero behind; seven ordinary branch merges, main unchanged, 279 focused unit passes. Private proposals/source work remain unqualified and old source workspaces intact. Dated report `outputs/branch-sync-20261102/SYNC-REPORT.md`.

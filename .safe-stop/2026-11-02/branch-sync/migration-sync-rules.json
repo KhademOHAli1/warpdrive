@@ -1,0 +1,484 @@
+{
+  "schemaVersion": 1,
+  "preparedAtUtc": "2026-11-02T08:26:13.182593+00:00",
+  "mode": "READ_ONLY_INITIAL_ASSESSMENT",
+  "ownedOutput": "outputs/branch-sync-20261102/migration-sync-rules.json",
+  "actionsPerformed": {
+    "sourceRefMutations": false,
+    "tests": false,
+    "chatWakeups": false,
+    "newBranches": false,
+    "networkFetches": false,
+    "protectedPremiumInspection": false
+  },
+  "instructionsRead": {
+    "path": "/Users/ali/Developer/warpdrive-settings-ux/AGENTS.md",
+    "relevantRule": "Private migration numbers are reservations. At integration use the next contiguous canonical ordinal, preserve historical SQL, generate matching snapshot and validate actual populated upgrade; a skipped private journal is not canonical. This branch-sync task does not authorize feature admission."
+  },
+  "observedCanonicalMain": {
+    "commit": "09288d518fd574fd069fb6a1dc670596f71a8831",
+    "scope": "Local refs/heads/main only; Root must freeze actual latestmain before executing.",
+    "drizzlePathCount": 195,
+    "journalEntries": 99,
+    "journalContiguous": true,
+    "journalSha256": "0f61d0561c4c8973c06deb550381d9dc3da2990780d41894860ba7ce67a9b3ca",
+    "lastJournalEntry": {
+      "idx": 98,
+      "version": "7",
+      "when": 1793563011200,
+      "tag": "0098_workflow_duration_wait",
+      "breakpoints": true
+    },
+    "canonicalSql83to98": [
+      "drizzle/0083_privacy_foundations.sql",
+      "drizzle/0084_privacy_policy_deadlines.sql",
+      "drizzle/0085_privacy_identity.sql",
+      "drizzle/0086_visual_workflows.sql",
+      "drizzle/0087_integration_connections.sql",
+      "drizzle/0088_natural_deathstrike.sql",
+      "drizzle/0089_military_loki.sql",
+      "drizzle/0090_cooing_night_nurse.sql",
+      "drizzle/0091_early_tomas.sql",
+      "drizzle/0092_cool_stryfe.sql",
+      "drizzle/0093_skinny_slyde.sql",
+      "drizzle/0094_mail_source_aliases.sql",
+      "drizzle/0095_mail_delivery_observations.sql",
+      "drizzle/0096_notification_send_admission.sql",
+      "drizzle/0097_private_mail_intake.sql",
+      "drizzle/0098_workflow_duration_wait.sql"
+    ]
+  },
+  "rules": [
+    {
+      "id": "direction",
+      "rule": "Merge the frozen latest main commit INTO each existing preservation branch only. Do not merge, cherry-pick or squash its private commits into main; create no new branch. Main ref must remain unchanged."
+    },
+    {
+      "id": "freeze",
+      "rule": "Root fetches only the named main and explicitly targeted existing preservation refs, fixes the exact latest-main hash for the operation, and inventories original head/index/dirt. This read-only assessment observed local main09288d5; do not assume it remains latest. Never enumerate or inspect the protected premium ref/workspace."
+    },
+    {
+      "id": "ancestry",
+      "rule": "Retain the original preservation snapshot as an ancestor of the synchronized branch; use an ordinary merge commit with prior branch head and frozen main as parents. No rebase/reset/force-push/squash. Verify both parents and ancestry before a normal fast-forward remote push."
+    },
+    {
+      "id": "canonical-sql",
+      "rule": "Every canonical historical drizzle SQL file already present in frozen main stays byte-identical to that main version. Private old files sharing an ordinal but a different basename are still ordinal conflicts; do not leave both active. Never resolve by copying old private drizzle directories over main."
+    },
+    {
+      "id": "journal",
+      "rule": "Use frozen main drizzle/meta/_journal.json unchanged for a synchronization-only merge. Do not concatenate private entries, preserve skipped indices, add0101/0102/0099 reservations, change when/checksums, or rewrite historical entries. Current observed main has99 entries, idx==position==tag prefix0000\u20130098."
+    },
+    {
+      "id": "snapshots",
+      "rule": "Use frozen main canonical snapshot files unchanged. Never hand-merge JSON state, copy private historical snapshots onto canonical names or generate a new snapshot during this synchronization. Private snapshot provenance is retained inert with the source snapshot."
+    },
+    {
+      "id": "private-draft-custody",
+      "rule": "Before replacing/removing any active private migration metadata, preserve its exact bytes/mode/hash/original path in explicit inert archive entries on the same existing branch and in merge-parent ancestry. Proposed destination: .safe-stop/branch-sync/2026-11-02/unlanded-migrations/<Owner>/<original-path>.source with a manifest. No active drizzle registration/admission is implied."
+    },
+    {
+      "id": "future-admission",
+      "rule": "Private0098/0099/0101/0102 names remain evidence/reservation labels. Renumbering, canonical registration, generated matching snapshot and populated-upgrade qualification belong to a separate future feature landing; do none merely to make this sync appear admitted."
+    },
+    {
+      "id": "schema-source",
+      "rule": "Schema TypeScript files require semantic reconciliation: preserve newer main columns/indexes/enums/constraints and intended private additions with clear unadmitted status. Do not globally choose ours/theirs or discard private models. If safe coexistence requires feature activation, preserve the unresolved model as inert source and retain main active model; explicitly record that the feature remains unadopted."
+    },
+    {
+      "id": "fixture-isolation",
+      "rule": "Keep private migration/fixture proposals separate from canonical readers. Any path adjustment needed after inert archival must be reviewed as a fixture-only source change and preserve exercised SQL bytes and original receipts. Do not teach canonical readCanonicalMigrations to accept a skipped/private journal or broad overlay, mute assertions, or relabel old results as fresh main proof."
+    },
+    {
+      "id": "security-and-digests",
+      "rule": "Preserve current main security, permission, privacy completion guards and data-disposition behavior. Reconcile overlapping logic manually. Existing registry implementation digests must match final source; do not select a stale digest or invent a capability/writer ID to silence a check. Archived original bindings retain their original provenance."
+    },
+    {
+      "id": "workspaces",
+      "rule": "Existing dirty source workspaces/indexes remain intact; work through Root's established reversible immutable-export/alternate-index method if needed. No new worktree/clone/branch, no stash/reset/bulk-stage of peer source, and no chat wakeup or tests during this read-only phase."
+    },
+    {
+      "id": "honest-result",
+      "rule": "A clean merge is branch synchronization only. It does not rerun private qualification, pass CI, admit DDL, complete a journey, deploy or close roadmap items. Record per-file resolutions, inert archives and all unresolved integration gates."
+    }
+  ],
+  "modules": [
+    {
+      "owner": "Privacy",
+      "existingBranch": "codex/preserve-privacy-20261102",
+      "originalPreservationSnapshot": "05c99625341f85928b10e73df9e7fda0ae6955af",
+      "originalWorkspaceBase": "7e747e99524e08037da6eba1bd01f6558663f8f0",
+      "mustRetainSnapshotAncestry": "05c99625341f85928b10e73df9e7fda0ae6955af",
+      "sourceSnapshotUrl": "https://github.com/KhademOHAli1/warpdrive/commit/05c99625341f85928b10e73df9e7fda0ae6955af",
+      "manifestUrl": "https://github.com/KhademOHAli1/warpdrive/blob/05c99625341f85928b10e73df9e7fda0ae6955af/.safe-stop/2026-11-02/MANIFEST.json",
+      "preservedSourceFiles": 156,
+      "originalQualification": "Public expiry guard and recovery UI delivered separately in green09288d5. Broader private319 static plan unrun; status15 factory-only; verification/actions/native observations separate; twelve installed gates open. Three preexisting shared package/lock/errorId deltas preserved without claiming Privacy ownership.",
+      "scopeBoundary": "UNFINISHED complete dirty preservation cut on older detached HEAD. Do not merge wholesale or deploy. Ownership labels do not qualify every preserved path. Reconcile newer main/security/contracts/private migration metadata; preserve all historical receipts. No safe-stop tests run.",
+      "privateCanonicalMigrationPaths": [],
+      "manualReviewPaths": [
+        "package.json",
+        "bun.lock",
+        "src/constants/errorIds.ts",
+        "src/features/privacy/permissions.ts",
+        "src/features/privacy/identityTransaction.ts",
+        "src/features/privacy/selfService.ts",
+        "src/features/privacy/identitySelf.ts",
+        "src/features/privacy/registryIdsPrivacy1.ts",
+        "src/features/privacy/registryIdsRequestServices1.ts",
+        "src/features/privacy/registryIdsPersonalRequests1.ts",
+        "src/features/privacy/registryIdsExportStorage1.ts"
+      ],
+      "currentLocalRefObserved": "05c99625341f85928b10e73df9e7fda0ae6955af",
+      "originalManifestRead": true,
+      "originalManifestSha256": "e07e6ae1b8d46ebdd465e060575dd03737c8d80c08f0b5a38fc2ed697f50a64e",
+      "resolution": "No owned migration delta. Bring current canonical drizzle tree from main; reconcile private privacy source with already-delivered public guards/UI rather than replacing either whole module.",
+      "notes": [
+        "Package/lock/errorId deltas include preexisting shared work; do not attribute or overwrite blindly.",
+        "319 private static plan remains unrun; status15 is factory-only; twelve installed gates stay open."
+      ]
+    },
+    {
+      "owner": "Workflow",
+      "existingBranch": "codex/preserve-workflow-20261102",
+      "originalPreservationSnapshot": "4e0280e973aa04fe2fb1946c86b3509dbea8289b",
+      "originalWorkspaceBase": "43a5fb4d2a6be7bbbd260855a6a8e1ce55fbf3c1",
+      "mustRetainSnapshotAncestry": "4e0280e973aa04fe2fb1946c86b3509dbea8289b",
+      "sourceSnapshotUrl": "https://github.com/KhademOHAli1/warpdrive/commit/4e0280e973aa04fe2fb1946c86b3509dbea8289b",
+      "manifestUrl": "https://github.com/KhademOHAli1/warpdrive/blob/4e0280e973aa04fe2fb1946c86b3509dbea8289b/.safe-stop/2026-11-02/MANIFEST.json",
+      "preservedSourceFiles": 76,
+      "originalQualification": "Main duration0098/focus delivered separately. Private editor insertion evidence and ordered-step37 affected passes/Figma2 retained at recorded cuts. Current static14 and actual app/AT journey unstarted.",
+      "scopeBoundary": "UNFINISHED preservation cut at older workspace HEAD. Do not merge wholesale onto main or deploy. Reconcile current main, private migration labels, metadata and real journey acceptance separately. Runtime/dependencies/secrets/raw unreviewed artifacts excluded; exact local evidence remains preserved. One pre-existing standalone test config is archival-only, not claimed Workflow-owned.",
+      "privateCanonicalMigrationPaths": [],
+      "manualReviewPaths": [
+        "src/db/schema/workflowExecutions.ts",
+        "src/features/workflows/durationWaitMigration.integration.test.ts",
+        "src/features/workflows/durationWaitMigration.test-helpers.ts",
+        "src/features/workflows/durationPublicAdmission.integration.test.ts",
+        "src/features/workflows/durationPublicAdmission.test-helpers.ts",
+        "src/db/integrationWorkflowMigration.test.ts",
+        "src/features/workflows/execution.ts",
+        "src/features/workflows/worker.ts",
+        "src/features/workflows/runControl.ts",
+        "src/features/workflows/registry.ts",
+        "vitest.config.ts"
+      ],
+      "currentLocalRefObserved": "4e0280e973aa04fe2fb1946c86b3509dbea8289b",
+      "originalManifestRead": true,
+      "originalManifestSha256": "aea959f383c10030f800a5f38cf8a48e89f43f8232d2d6e1122689b6bb066c61",
+      "resolution": "These four preserved Workflow postimages were independently compared to actual main0928 and are byte-identical. Keep canonical forms; do not append a duplicate0100/0098 migration or rewrite the journal. Preserve the unlanded editor/ordered-step work separately.",
+      "byteIdenticalToObservedMain": [
+        {
+          "path": "drizzle/0098_workflow_duration_wait.sql",
+          "sha256": "ba65deaf21f4f5c38cd7414afd851f91a14b5c2aed3e758bb75b36b56b3a63ef"
+        },
+        {
+          "path": "drizzle/meta/0098_snapshot.json",
+          "sha256": "8aa7cd440a3c143b06db9aec895f13d789e8595e537614f1b0a6567dd6865d9b"
+        },
+        {
+          "path": "drizzle/meta/_journal.json",
+          "sha256": "0f61d0561c4c8973c06deb550381d9dc3da2990780d41894860ba7ce67a9b3ca"
+        },
+        {
+          "path": "src/db/schema/workflowExecutions.ts",
+          "sha256": "2739e061068d58fc6854a25d7f5c626b9483efd207378fd9d27e6966553fa066"
+        }
+      ],
+      "notes": [
+        "Retain main generic migration compatibility fixture repair for resume_at and old-field/history checks.",
+        "Current static14 and actual app/AT remain unstarted; old37/Figma2 do not qualify the merged tree."
+      ]
+    },
+    {
+      "owner": "Agency",
+      "existingBranch": "codex/preserve-agency-20261102",
+      "originalPreservationSnapshot": "e87e99174aa0d6b393d16b93f2650e652d19856c",
+      "originalWorkspaceBase": "ec63a5bea531849c96202c859e8055845908895d",
+      "mustRetainSnapshotAncestry": "e87e99174aa0d6b393d16b93f2650e652d19856c",
+      "sourceSnapshotUrl": "https://github.com/KhademOHAli1/warpdrive/commit/e87e99174aa0d6b393d16b93f2650e652d19856c",
+      "manifestUrl": "https://github.com/KhademOHAli1/warpdrive/blob/e87e99174aa0d6b393d16b93f2650e652d19856c/.safe-stop/2026-11-02/MANIFEST.json",
+      "preservedSourceFiles": 95,
+      "originalQualification": "Configured types andTL19 PASS. Legacy12 and private0098 admission1 nativePASS. Final full preservation receipt181.361096s exceeded180; no all-in conformance. Canonical admission/native authority/full96 acceptance remain open. Full156+7 qualified source/config cut archived as inert evidence; exact native13 receipts retained with false timing conformance. All96 programme items unaccepted.",
+      "scopeBoundary": "UNFINISHED preservation cut at older workspace HEAD. Do not merge wholesale onto main or deploy. Reconcile current main, private migration labels, metadata and real journey acceptance separately. Runtime/dependencies/secrets/raw unreviewed artifacts excluded; exact local evidence remains preserved.",
+      "privateCanonicalMigrationPaths": [
+        {
+          "path": "src/features/agency-projects/persistence/0099_agency_projects.sql",
+          "kind": "private noncanonical source-only SQL; not a drizzle entry"
+        }
+      ],
+      "manualReviewPaths": [
+        "src/features/agency-projects/persistence/0099_agency_projects.sql",
+        "src/features/agency-projects/schema/agencyProjectAudit.ts",
+        "src/features/agency-projects/schema/agencyProjects.ts",
+        "src/features/agency-projects/authorityTransactionCandidate.ts",
+        "src/features/agency-projects/authorityConnectionBoundary.test.ts"
+      ],
+      "currentLocalRefObserved": "e87e99174aa0d6b393d16b93f2650e652d19856c",
+      "originalManifestRead": true,
+      "originalManifestSha256": "c1c0cca6dc62dd1cb974e3a107c4507dea4fa0b06cf924d27eb4c1d7e8f0e6b4",
+      "resolution": "Private0099 SQL is under the module persistence directory, outside canonical drizzle. Keep its exact draft bytes there, unregistered; leave canonical main journal/snapshots unchanged. Do not activate default adapters/module or claim real native authority.",
+      "notes": [
+        "Private current0098 admission fixture is frozen evidence, not admission of Agency into main or a replacement for a future canonical upgrade.",
+        "All96 programme criteria remain unaccepted; native13 passes and181.361096s timing overrun remain separate facts."
+      ]
+    },
+    {
+      "owner": "Calendar",
+      "existingBranch": "codex/preserve-calendar-20261102",
+      "originalPreservationSnapshot": "1e93e8e4f7fc67da3fa204b688731dc551334c4b",
+      "originalWorkspaceBase": "2803183809c646a063f78fe954c110adbb2f453f",
+      "mustRetainSnapshotAncestry": "1e93e8e4f7fc67da3fa204b688731dc551334c4b",
+      "sourceSnapshotUrl": "https://github.com/KhademOHAli1/warpdrive/commit/1e93e8e4f7fc67da3fa204b688731dc551334c4b",
+      "manifestUrl": "https://github.com/KhademOHAli1/warpdrive/blob/1e93e8e4f7fc67da3fa204b688731dc551334c4b/.safe-stop/2026-11-02/MANIFEST.json",
+      "preservedSourceFiles": 299,
+      "originalQualification": "Keyboard creation delivered separately. Private engine11/history22/corrected populated upgrade1 passed at recorded cuts. Exact299 dirty source files and a curated360-member source/config/fixture archive preserved without canonical admission.",
+      "scopeBoundary": "UNFINISHED old detached-head snapshot. Canonical model/journal/admission, ownership5, final durable MAIL, installed/provider/browser journey remain open. Private SQL labels need next ordinal at landing. No blanket activation, release or deployment. No tests started during safe stop.",
+      "privateCanonicalMigrationPaths": [
+        {
+          "path": "drizzle/meta/_journal.json",
+          "sha256": "6bc68085e7777359e2d1932d22723a90dfdc88514c6a85d83766cd6cbf512f4e",
+          "archiveSuggested": ".safe-stop/branch-sync/2026-11-02/unlanded-migrations/Calendar/drizzle/meta/_journal.json.source"
+        },
+        {
+          "path": "drizzle/0083_calendar_event_revision.sql",
+          "sha256": "e808b67306e4dbef50dcb6599bb5869041325d51705ada0db3085c381dbc44f3",
+          "archiveSuggested": ".safe-stop/branch-sync/2026-11-02/unlanded-migrations/Calendar/drizzle/0083_calendar_event_revision.sql.source"
+        },
+        {
+          "path": "drizzle/0084_calendar_ownership.sql",
+          "sha256": "778f61c6cb514f65d7a380dd518a1cd4fab54299e3c8e789e589a6d19cbab543",
+          "archiveSuggested": ".safe-stop/branch-sync/2026-11-02/unlanded-migrations/Calendar/drizzle/0084_calendar_ownership.sql.source"
+        },
+        {
+          "path": "drizzle/0085_activity_reminder_intents.sql",
+          "sha256": "d14601facebcf3e573fb422ce0d8f758bf746fc4f0fd1ff6b15bad64fec443e7",
+          "archiveSuggested": ".safe-stop/branch-sync/2026-11-02/unlanded-migrations/Calendar/drizzle/0085_activity_reminder_intents.sql.source"
+        },
+        {
+          "path": "drizzle/0086_calendar_reminders_and_google_grants.sql",
+          "sha256": "b2b7680863a60701faf2cd1516614d8f9d81d48d61ed3e061f3bb85b3eaf5e22",
+          "archiveSuggested": ".safe-stop/branch-sync/2026-11-02/unlanded-migrations/Calendar/drizzle/0086_calendar_reminders_and_google_grants.sql.source"
+        },
+        {
+          "path": "drizzle/0087_calendar_reminder_rebuilds.sql",
+          "sha256": "acfeede51b1cc17d2e23b3449eeeb59b13ddfdedc9b7c0124ce8271e9cd18a4a",
+          "archiveSuggested": ".safe-stop/branch-sync/2026-11-02/unlanded-migrations/Calendar/drizzle/0087_calendar_reminder_rebuilds.sql.source"
+        },
+        {
+          "path": "drizzle/0088_calendar_reminder_acl_rebuilds.sql",
+          "sha256": "bb4ab2f8c3d34d9b6a6e4cc21c8704dbc0a90108ff65ff85c8133afbd11ad705",
+          "archiveSuggested": ".safe-stop/branch-sync/2026-11-02/unlanded-migrations/Calendar/drizzle/0088_calendar_reminder_acl_rebuilds.sql.source"
+        },
+        {
+          "path": "drizzle/0089_calendar_reminder_receipt_index.sql",
+          "sha256": "99761a3d1eeaf9568bd1a8713474343af1cc3fd3068a1894dab7a4556fc5cec4",
+          "archiveSuggested": ".safe-stop/branch-sync/2026-11-02/unlanded-migrations/Calendar/drizzle/0089_calendar_reminder_receipt_index.sql.source"
+        },
+        {
+          "path": "drizzle/0090_calendar_reminder_activation.sql",
+          "sha256": "edb6a3d15b4e2b3e3cac51373e8185e7f4a433aca24dfc4bcdd75c9a5b8220af",
+          "archiveSuggested": ".safe-stop/branch-sync/2026-11-02/unlanded-migrations/Calendar/drizzle/0090_calendar_reminder_activation.sql.source"
+        },
+        {
+          "path": "drizzle/0091_calendar_connection_generation.sql",
+          "sha256": "1683c236349ac7c84317400fd4835b6b1ac5a7659f9d6fe4303dd5c2485d1042",
+          "archiveSuggested": ".safe-stop/branch-sync/2026-11-02/unlanded-migrations/Calendar/drizzle/0091_calendar_connection_generation.sql.source"
+        },
+        {
+          "path": "drizzle/0092_calendar_provider_catalog.sql",
+          "sha256": "a5ec44e6fb1c74484ac61ae863aadf7411f9dd6b2e748fc612bbff4e06f85321",
+          "archiveSuggested": ".safe-stop/branch-sync/2026-11-02/unlanded-migrations/Calendar/drizzle/0092_calendar_provider_catalog.sql.source"
+        },
+        {
+          "path": "drizzle/meta/0083_snapshot.json",
+          "sha256": "feda0dddcc4f5c17500d847dc047194f817aef205279c804a4a3ac3c954a3784",
+          "archiveSuggested": ".safe-stop/branch-sync/2026-11-02/unlanded-migrations/Calendar/drizzle/meta/0083_snapshot.json.source"
+        },
+        {
+          "path": "drizzle/meta/0084_snapshot.json",
+          "sha256": "edee5e72acc4721db81101ad02261c40976a8856fd870941120a12135e3c48b9",
+          "archiveSuggested": ".safe-stop/branch-sync/2026-11-02/unlanded-migrations/Calendar/drizzle/meta/0084_snapshot.json.source"
+        },
+        {
+          "path": "drizzle/meta/0085_snapshot.json",
+          "sha256": "ab2d1e860cf8446c078e453f2ce2e84b654d9d2c58822b090106975ee0cc5905",
+          "archiveSuggested": ".safe-stop/branch-sync/2026-11-02/unlanded-migrations/Calendar/drizzle/meta/0085_snapshot.json.source"
+        },
+        {
+          "path": "drizzle/meta/0086_snapshot.json",
+          "sha256": "a53d8a15fc3034c7a77bde473b12448c0888e2793eb037ee2b7d4d7346dbbacd",
+          "archiveSuggested": ".safe-stop/branch-sync/2026-11-02/unlanded-migrations/Calendar/drizzle/meta/0086_snapshot.json.source"
+        },
+        {
+          "path": "drizzle/meta/0087_snapshot.json",
+          "sha256": "826cc0fa592b3169141199f6d575ab691b32a405712bcfdb323b5f80874c7c36",
+          "archiveSuggested": ".safe-stop/branch-sync/2026-11-02/unlanded-migrations/Calendar/drizzle/meta/0087_snapshot.json.source"
+        },
+        {
+          "path": "drizzle/meta/0088_snapshot.json",
+          "sha256": "91ca28b079d78f55df6b85389d56cb2af95dcd21331e8a14c0f54ad408a04274",
+          "archiveSuggested": ".safe-stop/branch-sync/2026-11-02/unlanded-migrations/Calendar/drizzle/meta/0088_snapshot.json.source"
+        },
+        {
+          "path": "drizzle/meta/0089_snapshot.json",
+          "sha256": "82cf8dbd86973b1614110fd099bf6cc0b67fe699ec0be9d86a4b7a402279dc1d",
+          "archiveSuggested": ".safe-stop/branch-sync/2026-11-02/unlanded-migrations/Calendar/drizzle/meta/0089_snapshot.json.source"
+        },
+        {
+          "path": "drizzle/meta/0090_snapshot.json",
+          "sha256": "7b707ad085722cd108d83e03577e388b2ec546b5843fcd96e58eb86d6a80005c",
+          "archiveSuggested": ".safe-stop/branch-sync/2026-11-02/unlanded-migrations/Calendar/drizzle/meta/0090_snapshot.json.source"
+        },
+        {
+          "path": "drizzle/meta/0091_snapshot.json",
+          "sha256": "bd03a2329b463e3b26f508cb86b82df239f97788eb38f118aa8bd711c2ad47e0",
+          "archiveSuggested": ".safe-stop/branch-sync/2026-11-02/unlanded-migrations/Calendar/drizzle/meta/0091_snapshot.json.source"
+        },
+        {
+          "path": "drizzle/meta/0092_snapshot.json",
+          "sha256": "0d45bc6f5e83b78d1f025e54f03c1255f50daaa0a8c151722279b301c5cb97a1",
+          "archiveSuggested": ".safe-stop/branch-sync/2026-11-02/unlanded-migrations/Calendar/drizzle/meta/0092_snapshot.json.source"
+        }
+      ],
+      "manualReviewPaths": [
+        "src/db/schema/activities.ts",
+        "src/db/schema/index.ts",
+        "src/db/schema/activityReminderIntents.ts",
+        "src/db/schema/calendarProviderAccounts.ts",
+        "src/db/schema/calendarProviderCatalog.ts",
+        "src/db/schema/calendarReminderSettings.ts",
+        "src/db/schema/calendars.ts",
+        "src/features/activities/providers/google/accountConnectionMigration.integration.test.ts",
+        "src/features/activities/providers/google/accountConnectionMigration.schema-helpers.ts",
+        "src/features/activities/providers/google/accountConnectionMigration.test-helpers.ts"
+      ],
+      "currentLocalRefObserved": "1e93e8e4f7fc67da3fa204b688731dc551334c4b",
+      "originalManifestRead": true,
+      "originalManifestSha256": "339298c8be0b8d3683851341003e2e4791500c884d05dbd0d9cf933f28006b21",
+      "resolution": "Archive all21 preserved private drizzle deltas inert before canonical resolution:10 SQL files0083\u20130092,10 snapshots and the private journal. Canonical main0083\u20130098, all historical snapshots and journal win active migration paths. Do not activate/relabel private Calendar0098 during branch sync.",
+      "notes": [
+        "Ordinal83\u201385 are canonical Privacy SQL,86 Workflow,87 Integrations,94\u201397 MAIL/notification; private Calendar basenames sharing numbers are still conflicts even without filename conflicts.",
+        "Preserve amended private0085/0087/composite0098 evidence; never confuse it with public0085/0087.",
+        "Queue fencing, consumer draining/history transfer, final canonical durable MAIL and ownership5 remain open."
+      ]
+    },
+    {
+      "owner": "MAIL",
+      "existingBranch": "codex/preserve-mail-20261102",
+      "originalPreservationSnapshot": "300f0784be93b2e187980f0894db30fea64d42d5",
+      "originalWorkspaceBase": "43a5fb4d2a6be7bbbd260855a6a8e1ce55fbf3c1",
+      "mustRetainSnapshotAncestry": "300f0784be93b2e187980f0894db30fea64d42d5",
+      "sourceSnapshotUrl": "https://github.com/KhademOHAli1/warpdrive/commit/300f0784be93b2e187980f0894db30fea64d42d5",
+      "manifestUrl": "https://github.com/KhademOHAli1/warpdrive/blob/300f0784be93b2e187980f0894db30fea64d42d5/.safe-stop/2026-11-02/MANIFEST.json",
+      "preservedSourceFiles": 114,
+      "originalQualification": "Frozen83 read-recovery packet qualified at recorded cuts: configured types/TL71,199 affected unit passes,6 native regressions. This98-file complete dirty snapshot also preserves protected legacy work outside that qualified83. Socket4 baseline unrun. Final owner safe-stop extended snapshot to114paths:13 inert .source proposals and3 administrative files preserve drafts without activation. All114 owner hashes checked except self-manifest hash computed here; bounded credential scan clear.",
+      "scopeBoundary": "UNFINISHED preservation cut at older workspace HEAD. Do not merge wholesale onto main or deploy. Reconcile current main, private migration labels, metadata and real journey acceptance separately. Runtime/dependencies/secrets/raw unreviewed artifacts excluded; exact local evidence remains preserved.",
+      "privateCanonicalMigrationPaths": [
+        {
+          "path": "docs/handoffs/mail-source-proposals-20261102/read-intents/0102_mail_read_intents.sql.source",
+          "kind": "already-inert .source proposal; leave unregistered"
+        },
+        {
+          "path": "docs/handoffs/mail-source-proposals-20261102/read-intents/prepared/readIntentAdmission.integration.test.ts.source",
+          "kind": "already-inert .source proposal; leave unregistered"
+        },
+        {
+          "path": "docs/handoffs/mail-source-proposals-20261102/read-intents/prepared/readIntentConstraints.integration.test.ts.source",
+          "kind": "already-inert .source proposal; leave unregistered"
+        },
+        {
+          "path": "docs/handoffs/mail-source-proposals-20261102/read-intents/prepared/readIntentConstraints.test-fixtures.ts.source",
+          "kind": "already-inert .source proposal; leave unregistered"
+        },
+        {
+          "path": "docs/handoffs/mail-source-proposals-20261102/read-intents/prepared/readIntentImap.integration.test.ts.source",
+          "kind": "already-inert .source proposal; leave unregistered"
+        },
+        {
+          "path": "docs/handoffs/mail-source-proposals-20261102/read-intents/prepared/readIntentLifecycle.integration.test.ts.source",
+          "kind": "already-inert .source proposal; leave unregistered"
+        },
+        {
+          "path": "docs/handoffs/mail-source-proposals-20261102/read-intents/prepared/readIntentRemoteAuthority.integration.test.ts.source",
+          "kind": "already-inert .source proposal; leave unregistered"
+        },
+        {
+          "path": "docs/handoffs/mail-source-proposals-20261102/read-intents/prepared/readIntentTruncate.integration.test.ts.source",
+          "kind": "already-inert .source proposal; leave unregistered"
+        },
+        {
+          "path": "docs/handoffs/mail-source-proposals-20261102/read-intents/proposals/emailReadIntents-model-note.md.source",
+          "kind": "already-inert .source proposal; leave unregistered"
+        },
+        {
+          "path": "docs/handoffs/mail-source-proposals-20261102/read-intents/proposals/emailReadIntents.ts.source",
+          "kind": "already-inert .source proposal; leave unregistered"
+        }
+      ],
+      "manualReviewPaths": [
+        "src/db/mailMigrationQualification.integration.test.ts",
+        "src/db/mailMigrationQualification.test-helpers.ts",
+        "src/db/mailMigrationQualification.vitest.config.ts",
+        "src/db/mailMigrationQualificationAlias.ts",
+        "src/db/mailMigrationQualificationBaseline.ts",
+        "src/db/mailMigrationQualificationSource.ts",
+        "src/features/email/privateIntakeLocalRead.integration.test.ts",
+        "src/features/email/privateIntakeLocalRead.race.integration.test.ts",
+        "docs/handoffs/mail-source-proposals-20261102/MANIFEST.json"
+      ],
+      "currentLocalRefObserved": "300f0784be93b2e187980f0894db30fea64d42d5",
+      "originalManifestRead": true,
+      "originalManifestSha256": "9921c2850da498a7a6439779e1f1ebd604c959d4d12a0b04fac53b30be9bbacf",
+      "resolution": "Private0102 SQL/model/fixture proposals are already inert .source files under docs/handoffs. Preserve them unchanged and keep them outside canonical compiler/migrator/test discovery. Adopt no0102 journal/snapshot/model during sync.",
+      "notes": [
+        "Inspect actual overlay import conflicts before changing tests: canonical tests must not silently depend on ignored .runtime fixtures.",
+        "Current Security-mail/private-intake/source registry metadata, privacy discovery/export/retention/parent-erasure and admitted/unknown disposition need semantic review.",
+        "Qualified83 is a private subset;114 preservation paths and inert proposals are not all qualified."
+      ]
+    },
+    {
+      "owner": "Sales",
+      "existingBranch": "codex/preserve-sales-20261102",
+      "originalPreservationSnapshot": "f0de0768a25dc89b3f11cc0b8a431f5b495fdd95",
+      "originalWorkspaceBase": "43a5fb4d2a6be7bbbd260855a6a8e1ce55fbf3c1",
+      "mustRetainSnapshotAncestry": "f0de0768a25dc89b3f11cc0b8a431f5b495fdd95",
+      "sourceSnapshotUrl": "https://github.com/KhademOHAli1/warpdrive/commit/f0de0768a25dc89b3f11cc0b8a431f5b495fdd95",
+      "manifestUrl": "https://github.com/KhademOHAli1/warpdrive/blob/f0de0768a25dc89b3f11cc0b8a431f5b495fdd95/.safe-stop/2026-11-02/MANIFEST.json",
+      "preservedSourceFiles": 183,
+      "originalQualification": "183 exact Sales-owned dirty source paths preserved at frozen cut. Corrected native11 PASS and recorded configured types/lint2 retained; prior132PASS7fixtureFAIL separate. Thirty-seven preexisting/shared/reference paths preserved archival-only, not attributed to Sales ownership.",
+      "scopeBoundary": "UNFINISHED complete dirty preservation cut on older detached HEAD. Do not merge wholesale or deploy. Ownership labels do not qualify every preserved path. Reconcile newer main/security/contracts/private migration metadata; preserve all historical receipts. No safe-stop tests run. Current192apply remains UNVERIFIED; source files in archival subdir must be restored by explicit reviewed mapping if needed.",
+      "privateCanonicalMigrationPaths": [
+        {
+          "path": "drizzle/0101_deal_write_version.sql",
+          "sha256": "a5c77f4aa42ad90d87a6834201819166ad8a04f4c02c02e896be34dc751b0bfd",
+          "archiveSuggested": ".safe-stop/branch-sync/2026-11-02/unlanded-migrations/Sales/drizzle/0101_deal_write_version.sql.source"
+        }
+      ],
+      "manualReviewPaths": [
+        "src/db/schema/deals.ts",
+        "drizzle/0101_deal_write_version.sql",
+        "src/features/deals/dealRepo.ts",
+        "src/features/leads/leadConvert.ts",
+        "src/features/deals/dealMove.actorFreshness.integration.test.ts",
+        "src/features/deals/dealMoveStageRace.integration.test.ts",
+        "src/features/deals/dealWriteVersionMigration.integration.test.ts"
+      ],
+      "currentLocalRefObserved": null,
+      "originalManifestRead": false,
+      "headEvidence": "Saved exact remote-ref verification07:38:22Z binds f0de076. A bounded10s private-worktree Git read timed out; no retry or invented fresh head claim. Root must inspect its actual chosen local/ref before mutation.",
+      "resolution": "Preserve private0101 SQL as inert source outside active drizzle before keeping main canonical journal/snapshots. Do not fill missing0099/0100, retag/register0101 or activate schema-reading code as an incidental branch sync. Retain the exact original SQL through snapshot ancestry/archive.",
+      "notes": [
+        "Preserve newer main Security behavior in dealRepo/leadConvert; no whole-file old-source overlay.",
+        "37 preexisting/shared/Root-reference files remain archival-only; do not promote them automatically into active source.",
+        "Current192 applicability remains unverified; strict authority spine/clock/all-writer-through-commit and installed/backfill gates stay open."
+      ]
+    }
+  ],
+  "postMergeChecksForRoot": [
+    "Verify exact frozen main is ancestor of each synchronized branch and the original preservation snapshot remains ancestor; verify main ref unchanged.",
+    "Compare all active canonical drizzle SQL/journal/snapshot blobs against frozen main. No private extra ordinal left active; any archived private bytes match original SHA/mode.",
+    "Write explicit resolution/archival manifest on each existing branch and retain original .safe-stop manifest unchanged. Do not replace old evidence with a merged-tree PASS.",
+    "Inspect final conflicts/semantic deltas before normal pushing each existing branch. If a safe resolution is not yet known, leave that branch unchanged and report the concrete blocker; do not claim sync success."
+  ],
+  "assessmentLimit": "Actual merge conflicts have not been supplied. ManualReviewPaths are targeted risk paths, not a claim every listed path conflicts. Sales current-ref lookup timed out once; only prior exact remote-ref receipt is available here."
+}

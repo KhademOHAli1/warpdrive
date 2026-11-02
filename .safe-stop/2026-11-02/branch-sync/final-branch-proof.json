@@ -1,0 +1,87 @@
+{
+  "atUtc": "2026-11-02T09:11:09.488936+00:00",
+  "mainUnchanged": "09288d518fd574fd069fb6a1dc670596f71a8831",
+  "branches": [
+    {
+      "branch": "codex/preserve-agency-20261102",
+      "beforeHead": "e87e99174aa0d6b393d16b93f2650e652d19856c",
+      "head": "6b54329ce42189d7f901232dce82961e6276b23d",
+      "behindMain": 0,
+      "aheadMain": 45,
+      "originalSnapshotPreserved": true,
+      "localRefSynchronized": true
+    },
+    {
+      "branch": "codex/preserve-calendar-20261102",
+      "beforeHead": "1e93e8e4f7fc67da3fa204b688731dc551334c4b",
+      "head": "dce675d4dd57e42a07064de25e1d6886ff187eff",
+      "behindMain": 0,
+      "aheadMain": 2,
+      "originalSnapshotPreserved": true,
+      "localRefSynchronized": true
+    },
+    {
+      "branch": "codex/preserve-integration-20261102",
+      "beforeHead": "76e6f7bb7c0e1861a8ae668fc86be5c05bfcee4c",
+      "head": "80e53189f26885a6a02b0c2e9197bd2052478d92",
+      "behindMain": 0,
+      "aheadMain": 2,
+      "originalSnapshotPreserved": true,
+      "localRefSynchronized": true
+    },
+    {
+      "branch": "codex/preserve-mail-20261102",
+      "beforeHead": "300f0784be93b2e187980f0894db30fea64d42d5",
+      "head": "c950ed70a88d9b69ba6394dfc9a72f7f7218b043",
+      "behindMain": 0,
+      "aheadMain": 2,
+      "originalSnapshotPreserved": true,
+      "localRefSynchronized": true
+    },
+    {
+      "branch": "codex/preserve-privacy-20261102",
+      "beforeHead": "05c99625341f85928b10e73df9e7fda0ae6955af",
+      "head": "d935f22e0d1e82b73264db1e1603066c5d8be3d8",
+      "behindMain": 0,
+      "aheadMain": 2,
+      "originalSnapshotPreserved": true,
+      "localRefSynchronized": true
+    },
+    {
+      "branch": "codex/preserve-sales-20261102",
+      "beforeHead": "f0de0768a25dc89b3f11cc0b8a431f5b495fdd95",
+      "head": "f4cda0ddf5d46a2220334b5942a9106d31b92649",
+      "behindMain": 0,
+      "aheadMain": 2,
+      "originalSnapshotPreserved": true,
+      "localRefSynchronized": true
+    },
+    {
+      "branch": "codex/preserve-settings-20261102",
+      "beforeHead": "6796bf62a44e49be01d8f5f4b78d845ee0364fcc",
+      "head": "6796bf62a44e49be01d8f5f4b78d845ee0364fcc",
+      "behindMain": 0,
+      "aheadMain": 3,
+      "originalSnapshotPreserved": true,
+      "localRefSynchronized": true
+    },
+    {
+      "branch": "codex/preserve-workflow-20261102",
+      "beforeHead": "4e0280e973aa04fe2fb1946c86b3509dbea8289b",
+      "head": "9ab13d225e98c7bbe88042505c03dd0bbec01324",
+      "behindMain": 0,
+      "aheadMain": 2,
+      "originalSnapshotPreserved": true,
+      "localRefSynchronized": true
+    }
+  ],
+  "allEightRemoteBranchesZeroBehind": true,
+  "allEightExistingLocalBranchRefsCurrent": true,
+  "newBranches": 0,
+  "mainPushed": false,
+  "focusedUnitPasses": 279,
+  "focusedSuiteFailures": 0,
+  "fullBranchCIClaimed": false,
+  "premiumExcluded": true,
+  "legacySalesIORecovered": true
+}

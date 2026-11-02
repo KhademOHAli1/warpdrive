@@ -1,0 +1,533 @@
+{
+  "atUtc": "2026-11-02T08:43:06.831099+00:00",
+  "results": [
+    {
+      "owner": "agency",
+      "exitCode": 0,
+      "seconds": 2.4484201250597835,
+      "filesRequested": [
+        "src/app/(app)/settings/SettingsNav.test.tsx",
+        "src/lib/iranianMoney.test.ts",
+        "src/lib/iranianMoneyExponent.test.ts"
+      ],
+      "nativeMarkerExcluded": [],
+      "allRequestedFilesObserved": true,
+      "passed": 25,
+      "failed": 0,
+      "pending": 0,
+      "success": true,
+      "sampledGroupMaxKiB": 695424,
+      "admission": {
+        "pressure": 1,
+        "q": 52,
+        "freeBytes": 13569597440
+      },
+      "terminal": {
+        "pressure": 1,
+        "q": 52,
+        "freeBytes": 13563031552
+      },
+      "samples": [
+        {
+          "pressure": 1,
+          "q": 52,
+          "freeBytes": 13569576960,
+          "ownedRssKiB": 5072
+        },
+        {
+          "pressure": 1,
+          "q": 52,
+          "freeBytes": 13569572864,
+          "ownedRssKiB": 114704
+        },
+        {
+          "pressure": 1,
+          "q": 52,
+          "freeBytes": 13569527808,
+          "ownedRssKiB": 237888
+        },
+        {
+          "pressure": 1,
+          "q": 52,
+          "freeBytes": 13569527808,
+          "ownedRssKiB": 284000
+        },
+        {
+          "pressure": 1,
+          "q": 52,
+          "freeBytes": 13569458176,
+          "ownedRssKiB": 307088
+        },
+        {
+          "pressure": 1,
+          "q": 52,
+          "freeBytes": 13569179648,
+          "ownedRssKiB": 364560
+        },
+        {
+          "pressure": 1,
+          "q": 52,
+          "freeBytes": 13564588032,
+          "ownedRssKiB": 500208
+        },
+        {
+          "pressure": 1,
+          "q": 52,
+          "freeBytes": 13563121664,
+          "ownedRssKiB": 549056
+        },
+        {
+          "pressure": 1,
+          "q": 52,
+          "freeBytes": 13563121664,
+          "ownedRssKiB": 695424
+        }
+      ],
+      "resourceStop": null,
+      "candidateBytesUnchanged": true,
+      "ownedGroupGone": true,
+      "report": "/private/tmp/warpdrive-branch-sync-20261102-__96l2qz/focused-checks/agency/report.json"
+    },
+    {
+      "owner": "workflow",
+      "exitCode": 0,
+      "seconds": 2.6615195410558954,
+      "filesRequested": [
+        "src/features/workflows/ui/NodePalette.test.tsx",
+        "src/features/workflows/ui/NodePalette.numbering.test.tsx",
+        "src/features/workflows/ui/RunTrace.selection.test.tsx",
+        "src/features/workflows/connectionInsertion.test.ts"
+      ],
+      "nativeMarkerExcluded": [],
+      "allRequestedFilesObserved": true,
+      "passed": 11,
+      "failed": 0,
+      "pending": 0,
+      "success": true,
+      "sampledGroupMaxKiB": 599776,
+      "admission": {
+        "pressure": 1,
+        "q": 52,
+        "freeBytes": 13563031552
+      },
+      "terminal": {
+        "pressure": 1,
+        "q": 52,
+        "freeBytes": 13562740736
+      },
+      "samples": [
+        {
+          "pressure": 1,
+          "q": 52,
+          "freeBytes": 13563158528,
+          "ownedRssKiB": 6496
+        },
+        {
+          "pressure": 1,
+          "q": 52,
+          "freeBytes": 13569298432,
+          "ownedRssKiB": 185104
+        },
+        {
+          "pressure": 1,
+          "q": 52,
+          "freeBytes": 13569126400,
+          "ownedRssKiB": 295584
+        },
+        {
+          "pressure": 1,
+          "q": 52,
+          "freeBytes": 13568589824,
+          "ownedRssKiB": 374976
+        },
+        {
+          "pressure": 1,
+          "q": 52,
+          "freeBytes": 13564092416,
+          "ownedRssKiB": 501456
+        },
+        {
+          "pressure": 1,
+          "q": 52,
+          "freeBytes": 13562957824,
+          "ownedRssKiB": 599776
+        },
+        {
+          "pressure": 1,
+          "q": 52,
+          "freeBytes": 13562937344,
+          "ownedRssKiB": 448320
+        },
+        {
+          "pressure": 1,
+          "q": 52,
+          "freeBytes": 13562806272,
+          "ownedRssKiB": 551056
+        },
+        {
+          "pressure": 1,
+          "q": 52,
+          "freeBytes": 13562781696,
+          "ownedRssKiB": 421120
+        },
+        {
+          "pressure": 1,
+          "q": 52,
+          "freeBytes": 13562773504,
+          "ownedRssKiB": 524896
+        }
+      ],
+      "resourceStop": null,
+      "candidateBytesUnchanged": true,
+      "ownedGroupGone": true,
+      "report": "/private/tmp/warpdrive-branch-sync-20261102-__96l2qz/focused-checks/workflow/report.json"
+    },
+    {
+      "owner": "calendar",
+      "exitCode": 0,
+      "seconds": 3.399062625016086,
+      "filesRequested": [
+        "src/app/(app)/activities/calendar/CalendarNavigation.test.tsx",
+        "src/app/(app)/activities/calendar/CalendarPortalShortcut.test.tsx",
+        "src/app/(app)/settings/connections/ConnectionsClient.test.tsx",
+        "src/features/activities/completeActivityAction.validation.test.ts",
+        "src/features/activities/completeActivityContract.test.ts",
+        "src/config/env.calendar.test.ts"
+      ],
+      "nativeMarkerExcluded": [],
+      "allRequestedFilesObserved": true,
+      "passed": 87,
+      "failed": 0,
+      "pending": 0,
+      "success": true,
+      "sampledGroupMaxKiB": 641072,
+      "admission": {
+        "pressure": 1,
+        "q": 52,
+        "freeBytes": 13562740736
+      },
+      "terminal": {
+        "pressure": 1,
+        "q": 52,
+        "freeBytes": 13559959552
+      },
+      "samples": [
+        {
+          "pressure": 1,
+          "q": 52,
+          "freeBytes": 13562724352,
+          "ownedRssKiB": 6528
+        },
+        {
+          "pressure": 1,
+          "q": 52,
+          "freeBytes": 13569150976,
+          "ownedRssKiB": 189488
+        },
+        {
+          "pressure": 1,
+          "q": 52,
+          "freeBytes": 13569150976,
+          "ownedRssKiB": 309792
+        },
+        {
+          "pressure": 1,
+          "q": 52,
+          "freeBytes": 13566676992,
+          "ownedRssKiB": 412784
+        },
+        {
+          "pressure": 1,
+          "q": 52,
+          "freeBytes": 13563731968,
+          "ownedRssKiB": 523424
+        },
+        {
+          "pressure": 1,
+          "q": 52,
+          "freeBytes": 13563203584,
+          "ownedRssKiB": 636960
+        },
+        {
+          "pressure": 1,
+          "q": 52,
+          "freeBytes": 13563203584,
+          "ownedRssKiB": 385360
+        },
+        {
+          "pressure": 1,
+          "q": 52,
+          "freeBytes": 13563138048,
+          "ownedRssKiB": 491152
+        },
+        {
+          "pressure": 1,
+          "q": 52,
+          "freeBytes": 13561831424,
+          "ownedRssKiB": 542496
+        },
+        {
+          "pressure": 1,
+          "q": 52,
+          "freeBytes": 13561294848,
+          "ownedRssKiB": 641072
+        },
+        {
+          "pressure": 1,
+          "q": 52,
+          "freeBytes": 13560127488,
+          "ownedRssKiB": 433712
+        },
+        {
+          "pressure": 1,
+          "q": 52,
+          "freeBytes": 13560074240,
+          "ownedRssKiB": 473984
+        },
+        {
+          "pressure": 1,
+          "q": 52,
+          "freeBytes": 13560049664,
+          "ownedRssKiB": 592096
+        }
+      ],
+      "resourceStop": null,
+      "candidateBytesUnchanged": true,
+      "ownedGroupGone": true,
+      "report": "/private/tmp/warpdrive-branch-sync-20261102-__96l2qz/focused-checks/calendar/report.json"
+    },
+    {
+      "owner": "sales",
+      "exitCode": 0,
+      "seconds": 3.8810831250157207,
+      "filesRequested": [
+        "src/features/deal-workspace/DealCloseActions.test.tsx",
+        "src/features/deal-workspace/DealSidebar.test.tsx",
+        "src/features/deal-workspace/DealSidebar.customFields.test.tsx"
+      ],
+      "nativeMarkerExcluded": [],
+      "allRequestedFilesObserved": true,
+      "passed": 31,
+      "failed": 0,
+      "pending": 0,
+      "success": true,
+      "sampledGroupMaxKiB": 758688,
+      "admission": {
+        "pressure": 1,
+        "q": 52,
+        "freeBytes": 13559959552
+      },
+      "terminal": {
+        "pressure": 1,
+        "q": 51,
+        "freeBytes": 13557813248
+      },
+      "samples": [
+        {
+          "pressure": 1,
+          "q": 52,
+          "freeBytes": 13559910400,
+          "ownedRssKiB": 6480
+        },
+        {
+          "pressure": 1,
+          "q": 52,
+          "freeBytes": 13569175552,
+          "ownedRssKiB": 183504
+        },
+        {
+          "pressure": 1,
+          "q": 52,
+          "freeBytes": 13568475136,
+          "ownedRssKiB": 291168
+        },
+        {
+          "pressure": 1,
+          "q": 51,
+          "freeBytes": 13568016384,
+          "ownedRssKiB": 383136
+        },
+        {
+          "pressure": 1,
+          "q": 51,
+          "freeBytes": 13563539456,
+          "ownedRssKiB": 474240
+        },
+        {
+          "pressure": 1,
+          "q": 51,
+          "freeBytes": 13561868288,
+          "ownedRssKiB": 507040
+        },
+        {
+          "pressure": 1,
+          "q": 51,
+          "freeBytes": 13561692160,
+          "ownedRssKiB": 585632
+        },
+        {
+          "pressure": 1,
+          "q": 51,
+          "freeBytes": 13561692160,
+          "ownedRssKiB": 416256
+        },
+        {
+          "pressure": 1,
+          "q": 51,
+          "freeBytes": 13561364480,
+          "ownedRssKiB": 512176
+        },
+        {
+          "pressure": 1,
+          "q": 51,
+          "freeBytes": 13559504896,
+          "ownedRssKiB": 546640
+        },
+        {
+          "pressure": 1,
+          "q": 51,
+          "freeBytes": 13557940224,
+          "ownedRssKiB": 609760
+        },
+        {
+          "pressure": 1,
+          "q": 51,
+          "freeBytes": 13557923840,
+          "ownedRssKiB": 758688
+        },
+        {
+          "pressure": 1,
+          "q": 51,
+          "freeBytes": 13557911552,
+          "ownedRssKiB": 425456
+        },
+        {
+          "pressure": 1,
+          "q": 51,
+          "freeBytes": 13557882880,
+          "ownedRssKiB": 537440
+        },
+        {
+          "pressure": 1,
+          "q": 51,
+          "freeBytes": 13557874688,
+          "ownedRssKiB": 731280
+        }
+      ],
+      "resourceStop": null,
+      "candidateBytesUnchanged": true,
+      "ownedGroupGone": true,
+      "report": "/private/tmp/warpdrive-branch-sync-20261102-__96l2qz/focused-checks/sales/report.json"
+    },
+    {
+      "owner": "privacy",
+      "exitCode": 0,
+      "seconds": 3.264889082987793,
+      "filesRequested": [
+        "src/features/privacy/ui/ReviewerIntakeCard.test.tsx",
+        "src/features/privacy/ui/ReviewerIntakeCard.boundaries.test.tsx",
+        "src/features/privacy/ui/ReviewerIntakeCard.lifecycle.test.tsx",
+        "src/features/privacy/reviewerActions.test.ts",
+        "src/features/privacy/reviewerActions.fencing.test.ts"
+      ],
+      "nativeMarkerExcluded": [],
+      "allRequestedFilesObserved": true,
+      "passed": 125,
+      "failed": 0,
+      "pending": 0,
+      "success": true,
+      "sampledGroupMaxKiB": 587856,
+      "admission": {
+        "pressure": 1,
+        "q": 51,
+        "freeBytes": 13557813248
+      },
+      "terminal": {
+        "pressure": 1,
+        "q": 50,
+        "freeBytes": 13561597952
+      },
+      "samples": [
+        {
+          "pressure": 1,
+          "q": 51,
+          "freeBytes": 13557739520,
+          "ownedRssKiB": 6544
+        },
+        {
+          "pressure": 1,
+          "q": 51,
+          "freeBytes": 13568241664,
+          "ownedRssKiB": 185552
+        },
+        {
+          "pressure": 1,
+          "q": 51,
+          "freeBytes": 13567770624,
+          "ownedRssKiB": 313376
+        },
+        {
+          "pressure": 1,
+          "q": 51,
+          "freeBytes": 13566857216,
+          "ownedRssKiB": 270976
+        },
+        {
+          "pressure": 1,
+          "q": 51,
+          "freeBytes": 13566840832,
+          "ownedRssKiB": 375856
+        },
+        {
+          "pressure": 1,
+          "q": 51,
+          "freeBytes": 13562388480,
+          "ownedRssKiB": 483808
+        },
+        {
+          "pressure": 1,
+          "q": 51,
+          "freeBytes": 13561659392,
+          "ownedRssKiB": 587856
+        },
+        {
+          "pressure": 1,
+          "q": 50,
+          "freeBytes": 13561802752,
+          "ownedRssKiB": 419168
+        },
+        {
+          "pressure": 1,
+          "q": 50,
+          "freeBytes": 13561745408,
+          "ownedRssKiB": 497280
+        },
+        {
+          "pressure": 1,
+          "q": 50,
+          "freeBytes": 13561724928,
+          "ownedRssKiB": 367584
+        },
+        {
+          "pressure": 1,
+          "q": 50,
+          "freeBytes": 13561700352,
+          "ownedRssKiB": 466752
+        },
+        {
+          "pressure": 1,
+          "q": 50,
+          "freeBytes": 13561696256,
+          "ownedRssKiB": 554288
+        }
+      ],
+      "resourceStop": null,
+      "candidateBytesUnchanged": true,
+      "ownedGroupGone": true,
+      "report": "/private/tmp/warpdrive-branch-sync-20261102-__96l2qz/focused-checks/privacy/report.json"
+    }
+  ],
+  "wholeSeconds": 20.08474370802287,
+  "within120Seconds": true,
+  "scope": "Focused container-free units only; not branch-wide types/native/CI/acceptance. Stop first failure; do not repeat passed suites without source changes."
+}

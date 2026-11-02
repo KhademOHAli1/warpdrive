@@ -1,0 +1,10 @@
+{
+  "localSalesRefUpdated": true,
+  "head": "f4cda0ddf5d46a2220334b5942a9106d31b92649",
+  "allSevenExistingLocalRefsUpdated": true,
+  "noAlternateObjectDependency": true,
+  "originalCloudReadProbeExitCodes": [
+    128,
+    0
+  ]
+}

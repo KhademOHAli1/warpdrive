@@ -1,0 +1,89 @@
+{
+  "tokenPostimage": "9a79e82208a2cc9d387040afab6d8d6b60dfa33bfaf8d5b2050fd5ae116cc9e3",
+  "resolutions": [
+    {
+      "owner": "agency",
+      "path": ".env.example",
+      "beforeSha256": "4436cc50013a5f2b2ed234b5e789f09abdd6728496197e33f117be40c64f59bd",
+      "afterSha256": "882f8952ca9ee12e9f22230b56292c05a49dd0b146a6578dd58320f088a218c5",
+      "reason": "Union independent false-by-default Main queue and Agency startup admissions."
+    },
+    {
+      "owner": "agency",
+      "path": "src/config/env.ts",
+      "beforeSha256": "e2042960a71adc1d88a001fff7cb933d8560dd865c345d0d6a13a0b9b26356b1",
+      "afterSha256": "0ef80ea49532e5e7c99050fadd3cd8cb9b35d4c533195d719c8d2a57f0fe9ce6",
+      "reason": "Union independent false-by-default Main queue and Agency startup admissions."
+    },
+    {
+      "owner": "agency",
+      "path": "src/app/(app)/settings/SettingsNav.test.tsx",
+      "beforeSha256": "4cea38ee80cdc5874c498fb7856da7f6f05f94273f5e1e8de4c149ea54e29491",
+      "afterSha256": "1e22438d1cdb37988f2bf1c6080248b4b335f0e312da4eb20d4ed097e3ae8156",
+      "reason": "Retain Main permission/selected-route checks plus Agency regional-link dismissal behavior."
+    },
+    {
+      "owner": "agency",
+      "path": "src/lib/iranianMoney.ts",
+      "beforeSha256": "e3f11e944d0b351a1c5aba065732dc13c42cd6f9c1bf67843a02b36fe1a758cc",
+      "afterSha256": "76b955d01ac18fe84d279eca8133da93b4641369029bf101e897fef9a8cf663a",
+      "reason": "Retain branch finite-number exponent expansion while strict bounded decimal-string contract and Main formatting tail remain unchanged."
+    },
+    {
+      "owner": "integration",
+      "path": "src/features/privacy/registryIdsAuthentication1.ts",
+      "beforeSha256": "062499643760aceab1f09d85bd72930edada1fb86d495f8337ce3ab8090372fe",
+      "afterSha256": "e78770cb16f976796b64d0eb95dfcca5ba65f72061ec50db450be9857171fc4c",
+      "reason": "Digest-only resolution to actual merged tokens; preserve Main Security avatar metadata and branch refresh-family source. Unrelated known stale invoke digest remains explicitly unqualified."
+    },
+    {
+      "owner": "workflow",
+      "path": "src/features/workflows/ui/BuilderWorkspace.tsx",
+      "beforeSha256": "94a7c8e82a0064aba005c2078f98e60fdfbb3bae5bb2c116ab6ad292511aaf4c",
+      "afterSha256": "446596405640d73895234fe5acb23a1456995523a683e377ecc660677586d059",
+      "reason": "Keep branch additive insertion/ordering API and test while the automatic merge retains Main focus-restoration changes."
+    },
+    {
+      "owner": "workflow",
+      "path": "src/features/workflows/ui/NodePalette.tsx",
+      "beforeSha256": "9fc41412e3b1540d9d5e5d7724439af842644d817893b7f03391ebf104bdd703",
+      "afterSha256": "421324b005a73f559b332f6abde063402f5c61403851bf48f757d063fa70b423",
+      "reason": "Keep branch additive insertion/ordering API and test while the automatic merge retains Main focus-restoration changes."
+    },
+    {
+      "owner": "workflow",
+      "path": "src/features/workflows/ui/RunTrace.selection.test.tsx",
+      "beforeSha256": "179635e071f7938083385e2464bb7b202c5884688defa4604c0eef92ea3ba532",
+      "afterSha256": "d55e5596c0c0164c8d04d299efb35274d7e3ce9cdaa900af625efa29caf50496",
+      "reason": "Keep branch additive insertion/ordering API and test while the automatic merge retains Main focus-restoration changes."
+    },
+    {
+      "owner": "workflow",
+      "path": "docs/workflows/CONTINUATION.md",
+      "beforeSha256": "d2ba0db56ec6477951d77701b49e5fff84513b2e1f4410705aad15f5b6c074c4",
+      "afterSha256": "4dbaf3532b43c8134bf2bf5e901aaa871c8bc3565b9617c57481a3491d80857b",
+      "reason": "Keep Main formatted cell-equivalent tables and GitHub authority notice; retain additive private editor/prototype/history observations without rewriting old results."
+    },
+    {
+      "owner": "workflow",
+      "path": "docs/workflows/lifecycle-contract.md",
+      "beforeSha256": "7e1fffffd83b01cf6fb5e4255075f8570fddee2a49864409cf7d34a59228da47",
+      "afterSha256": "b6931fbb4ffc0a1d58bd7bdaf608d1a8856e68ea7dff69d07cf6eca60f5fc121",
+      "reason": "Keep Main formatted cell-equivalent tables and GitHub authority notice; retain additive private editor/prototype/history observations without rewriting old results."
+    },
+    {
+      "owner": "workflow",
+      "path": "docs/workflows/status.md",
+      "beforeSha256": "80cec05c525da1951c21a390d8da3bb486b4af3c15602c019cb6a7476b369243",
+      "afterSha256": "498776bc1dc50432692d82d39fbb997dc22c63f108531b16373ab8dce66aa97d",
+      "reason": "Keep Main formatted cell-equivalent tables and GitHub authority notice; retain additive private editor/prototype/history observations without rewriting old results."
+    },
+    {
+      "owner": "workflow",
+      "path": "docs/workflows/ux-design-reference.md",
+      "beforeSha256": "90a83e23576c6ce21f4eaef6c67a4c4a4c59866ba3d4a23dae23ae01ead4f97c",
+      "afterSha256": "29b0267d47a1dd04e707bbb6c94ecceb399a291f4af4dfaf18c9132f7dcab808",
+      "reason": "Keep Main formatted cell-equivalent tables and GitHub authority notice; retain additive private editor/prototype/history observations without rewriting old results."
+    }
+  ]
+}
