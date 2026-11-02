@@ -1,0 +1,955 @@
+{
+  "module": "mail",
+  "sourceBranch": "codex/preserve-mail-20261102",
+  "originalHead": "c950ed70a88d9b69ba6394dfc9a72f7f7218b043",
+  "baseMain": "09288d518fd574fd069fb6a1dc670596f71a8831",
+  "files": [
+    {
+      "originalPath": ".safe-stop/2026-11-02/MANIFEST.json",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/handoff/2026-11-02/MANIFEST.json.source",
+      "gitBlob": "a7eb03ae7a2c0af423802ebf22d59bf5aadcb18b",
+      "originalMode": "100644",
+      "sha256": "9921c2850da498a7a6439779e1f1ebd604c959d4d12a0b04fac53b30be9bbacf",
+      "bytes": 27647
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/branch-sync/SYNC.json",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/handoff/2026-11-02/branch-sync/SYNC.json.source",
+      "gitBlob": "b53b3520d026a0646a2d2522b563136e96be53a3",
+      "originalMode": "100644",
+      "sha256": "e085b58909ac691452322107347767d2ff28118cdc3a6c89813f74d8a4e0a7e8",
+      "bytes": 1576
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/branch-sync/SYNC.md",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/handoff/2026-11-02/branch-sync/SYNC.md.source",
+      "gitBlob": "b77e3d631937886793de5a32b4e2e3a796193655",
+      "originalMode": "100644",
+      "sha256": "a774a52cf060b9e3364a424f8f2bbe967cb5413eced71eedb862fe4103c9592e",
+      "bytes": 1065
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/branch-sync/private-migration-proposals/drizzle/meta/_journal.json.source",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/handoff/2026-11-02/branch-sync/private-migration-proposals/drizzle/meta/_journal.json.source.source",
+      "gitBlob": "9536e4c3525496d9513be9e7d08605243197ee54",
+      "originalMode": "100644",
+      "sha256": "d1d8fbde03d5671d7bc5e21aaf1cbdd623039bc9c8894669c5b5a6d900d0d2ac",
+      "bytes": 14370
+    },
+    {
+      "originalPath": "docs/handoffs/MAIL-SAFE-STOP-20261102.md",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/docs/handoffs/MAIL-SAFE-STOP-20261102.md.source",
+      "gitBlob": "315179a92a9e9694ee26b74718a2ec5ea490154e",
+      "originalMode": "100644",
+      "sha256": "d41ebe26c63bb92e4aff772931a2d68e8a900c354c82a995203e33d49c6a9df5",
+      "bytes": 4691
+    },
+    {
+      "originalPath": "docs/handoffs/mail-safe-stop-allowlist-20261102.json",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/docs/handoffs/mail-safe-stop-allowlist-20261102.json.source",
+      "gitBlob": "c6a073ea960c827583501d8898f4de9f1d8cdd7a",
+      "originalMode": "100644",
+      "sha256": "8a064ab3bf571b6ec818f9c22d234aa170e303e11cea9471d7c48a19d149ce61",
+      "bytes": 38008
+    },
+    {
+      "originalPath": "docs/handoffs/mail-source-proposals-20261102/MANIFEST.json",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/docs/handoffs/mail-source-proposals-20261102/MANIFEST.json.source",
+      "gitBlob": "e58285faa260dcbc351bfba916a6761235f4ff7e",
+      "originalMode": "100644",
+      "sha256": "b6aff287d9e68fd18b018411dba89d604237d85f405ed5bd09942fc93870d808",
+      "bytes": 7946
+    },
+    {
+      "originalPath": "docs/handoffs/mail-source-proposals-20261102/browser-fixtures/mailBrowserFixtures.prepared.ts.source",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/docs/handoffs/mail-source-proposals-20261102/browser-fixtures/mailBrowserFixtures.prepared.ts.source.source",
+      "gitBlob": "ba993065ce8bdedfa9ec72c3b9ee36ee1b215d6a",
+      "originalMode": "100644",
+      "sha256": "6873f39ae041fde62496651a49be622e3bb384b49ea7794c9d2c152090abae83",
+      "bytes": 8029
+    },
+    {
+      "originalPath": "docs/handoffs/mail-source-proposals-20261102/protocol-fixtures/mailProtocolImap.ts.source",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/docs/handoffs/mail-source-proposals-20261102/protocol-fixtures/mailProtocolImap.ts.source.source",
+      "gitBlob": "cc003ea19a13138b2dcc357cf9cf2cfe00c202af",
+      "originalMode": "100644",
+      "sha256": "38091878fcfd159d1df53d5643df5c0383497ff4f35036dd486b12b507a5d889",
+      "bytes": 7867
+    },
+    {
+      "originalPath": "docs/handoffs/mail-source-proposals-20261102/protocol-fixtures/mailProtocolSmtp.ts.source",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/docs/handoffs/mail-source-proposals-20261102/protocol-fixtures/mailProtocolSmtp.ts.source.source",
+      "gitBlob": "8a8f4d65d9fcc1d935d36679f937c2488f936002",
+      "originalMode": "100644",
+      "sha256": "26eefe916c7722abbe235223b35af730409d8e45faba661d16faa17da7bc0dab",
+      "bytes": 3636
+    },
+    {
+      "originalPath": "docs/handoffs/mail-source-proposals-20261102/read-intents/0102_mail_read_intents.sql.source",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/docs/handoffs/mail-source-proposals-20261102/read-intents/0102_mail_read_intents.sql.source.source",
+      "gitBlob": "2a06f9510de0ca3b2fd1360fbe11b850d920e26a",
+      "originalMode": "100644",
+      "sha256": "390fdee27409509e046352ab1f575a2a9a74a7a1170a197ff0beed7a8b8ad124",
+      "bytes": 5944
+    },
+    {
+      "originalPath": "docs/handoffs/mail-source-proposals-20261102/read-intents/prepared/readIntentAdmission.integration.test.ts.source",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/docs/handoffs/mail-source-proposals-20261102/read-intents/prepared/readIntentAdmission.integration.test.ts.source.source",
+      "gitBlob": "b2d5a58074590a867c30725f36de183eec7bed5b",
+      "originalMode": "100644",
+      "sha256": "d675269aafc1d57bedae15e06d78071f41ffbcca0114023b0003047a23e2609a",
+      "bytes": 3466
+    },
+    {
+      "originalPath": "docs/handoffs/mail-source-proposals-20261102/read-intents/prepared/readIntentConstraints.integration.test.ts.source",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/docs/handoffs/mail-source-proposals-20261102/read-intents/prepared/readIntentConstraints.integration.test.ts.source.source",
+      "gitBlob": "e4a016fdd97deaa7cc409b87b060fd0cb148b8d3",
+      "originalMode": "100644",
+      "sha256": "733dfa9e4613224e9395daf135ed8995021db01459fdf46c4a77c506ec3ad2f3",
+      "bytes": 8227
+    },
+    {
+      "originalPath": "docs/handoffs/mail-source-proposals-20261102/read-intents/prepared/readIntentConstraints.test-fixtures.ts.source",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/docs/handoffs/mail-source-proposals-20261102/read-intents/prepared/readIntentConstraints.test-fixtures.ts.source.source",
+      "gitBlob": "2905885840df6d4d8471a07ec1057318dc1af5ad",
+      "originalMode": "100644",
+      "sha256": "1d02797a760da3472bd75ebff345e237fca42e38c08f46f2d4139ca3cda4a5ec",
+      "bytes": 4428
+    },
+    {
+      "originalPath": "docs/handoffs/mail-source-proposals-20261102/read-intents/prepared/readIntentImap.integration.test.ts.source",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/docs/handoffs/mail-source-proposals-20261102/read-intents/prepared/readIntentImap.integration.test.ts.source.source",
+      "gitBlob": "9d50beea51c1d6e283bfa57a308f854f4b7584a1",
+      "originalMode": "100644",
+      "sha256": "6b4b478a3ef262e4492012ba54eca1adce132f12843e6dff94c9472bace7999b",
+      "bytes": 12938
+    },
+    {
+      "originalPath": "docs/handoffs/mail-source-proposals-20261102/read-intents/prepared/readIntentLifecycle.integration.test.ts.source",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/docs/handoffs/mail-source-proposals-20261102/read-intents/prepared/readIntentLifecycle.integration.test.ts.source.source",
+      "gitBlob": "07c0016226aa0b5f6da8965fc2dc43b8e8b3d1cc",
+      "originalMode": "100644",
+      "sha256": "1aeef0244653d858113f8e1b16df6cde447119fe6ae0c214fc683e88bd7c13f6",
+      "bytes": 12453
+    },
+    {
+      "originalPath": "docs/handoffs/mail-source-proposals-20261102/read-intents/prepared/readIntentRemoteAuthority.integration.test.ts.source",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/docs/handoffs/mail-source-proposals-20261102/read-intents/prepared/readIntentRemoteAuthority.integration.test.ts.source.source",
+      "gitBlob": "3360c6a1a948c53ce609fbabd18586fc0d94872e",
+      "originalMode": "100644",
+      "sha256": "d3171a50ba1f6dd8033db4bede1b169678f0f7e666f232765c47107972059105",
+      "bytes": 9181
+    },
+    {
+      "originalPath": "docs/handoffs/mail-source-proposals-20261102/read-intents/prepared/readIntentTruncate.integration.test.ts.source",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/docs/handoffs/mail-source-proposals-20261102/read-intents/prepared/readIntentTruncate.integration.test.ts.source.source",
+      "gitBlob": "2f5190104e10383c9ed130e15cde1b88682a3148",
+      "originalMode": "100644",
+      "sha256": "96b8e53ccaf2c6c2fc9fc7dfdfbc5e586cc49349d64a5cf7fdcb3a5bfe5553ff",
+      "bytes": 5601
+    },
+    {
+      "originalPath": "docs/handoffs/mail-source-proposals-20261102/read-intents/proposals/emailReadIntents-model-note.md.source",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/docs/handoffs/mail-source-proposals-20261102/read-intents/proposals/emailReadIntents-model-note.md.source.source",
+      "gitBlob": "e77f908a5721bf8082aa714fed4a2c41d95b2ddc",
+      "originalMode": "100644",
+      "sha256": "7c3fa52f1522597c326bd7b07606419dea32ba0b73e0109d2ec40818b9b0d696",
+      "bytes": 2501
+    },
+    {
+      "originalPath": "docs/handoffs/mail-source-proposals-20261102/read-intents/proposals/emailReadIntents.ts.source",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/docs/handoffs/mail-source-proposals-20261102/read-intents/proposals/emailReadIntents.ts.source.source",
+      "gitBlob": "ab5060b5e84def37fca7d255088841650faf64d7",
+      "originalMode": "100644",
+      "sha256": "610126876e45020cee2af34cb0f0e28fb16e22f72916e6a5c1740c3c94b8fe77",
+      "bytes": 4529
+    },
+    {
+      "originalPath": "src/app/(app)/settings/email-sync/MailboxConnectionsClient.test.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/app/(app)/settings/email-sync/MailboxConnectionsClient.test.tsx.source",
+      "gitBlob": "a4c0cf9466d7026f77ad4c9accf4bff353d82170",
+      "originalMode": "100644",
+      "sha256": "639b2ccc85ff4cc94a421e9428b10a89736a30d8460f48ba44854b1b73e036d6",
+      "bytes": 6105
+    },
+    {
+      "originalPath": "src/db/mailMigrationQualification.integration.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/db/mailMigrationQualification.integration.test.ts.source",
+      "gitBlob": "2c8145d494ef09814333df7deedf2969300ee277",
+      "originalMode": "100644",
+      "sha256": "e32f5bfc86fc91f3bff432715be9887e5b65036fe1365556ecf79e73cc806395",
+      "bytes": 6813
+    },
+    {
+      "originalPath": "src/db/mailMigrationQualification.md",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/db/mailMigrationQualification.md.source",
+      "gitBlob": "eee4f02e203ced2f7e829fb04ab17c6e630e0353",
+      "originalMode": "100644",
+      "sha256": "c68732d2a2cbdca086401faa5afda8dcd4720820f6876e11fb618a5ccd9bc862",
+      "bytes": 6346
+    },
+    {
+      "originalPath": "src/db/mailMigrationQualification.test-helpers.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/db/mailMigrationQualification.test-helpers.ts.source",
+      "gitBlob": "a149c282ca7e60fa2a422d9ffcf75640d1a4c20c",
+      "originalMode": "100644",
+      "sha256": "b35e98dab43bfa266b06d1dde5f9b00fa735a46fa1bb19031fbc8b08a6df86f3",
+      "bytes": 10114
+    },
+    {
+      "originalPath": "src/db/mailMigrationQualification.vitest.config.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/db/mailMigrationQualification.vitest.config.ts.source",
+      "gitBlob": "0693a5366256fe46a6f88c0f20fe165f490eab1f",
+      "originalMode": "100644",
+      "sha256": "ace7ee33687e2b969ea49f5dfe6dcda29937bb99da46d3ba9123588abb17516c",
+      "bytes": 582
+    },
+    {
+      "originalPath": "src/db/mailMigrationQualificationAlias.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/db/mailMigrationQualificationAlias.ts.source",
+      "gitBlob": "d78ff1b6900f45bf9530870db25842fbf5300fd2",
+      "originalMode": "100644",
+      "sha256": "5de114405ceacab6c37c8edc77afe99fe5074ea05f80b034267e1c3e1e156f64",
+      "bytes": 6040
+    },
+    {
+      "originalPath": "src/db/mailMigrationQualificationAuth.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/db/mailMigrationQualificationAuth.ts.source",
+      "gitBlob": "94ef165ed88a7164c0d2e937cb4f3dac5ef4f05f",
+      "originalMode": "100644",
+      "sha256": "d9b733cca0548473e67d89657920eafe9f32309a73801f1595ea9b1252efd540",
+      "bytes": 3467
+    },
+    {
+      "originalPath": "src/db/mailMigrationQualificationBaseline.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/db/mailMigrationQualificationBaseline.ts.source",
+      "gitBlob": "3c2029b38843730b27235c8275647fe1e6a616e4",
+      "originalMode": "100644",
+      "sha256": "5837fa43043547134ad127c3af27bf676bf88cf416eea9f98adf8094874d5680",
+      "bytes": 8820
+    },
+    {
+      "originalPath": "src/db/mailMigrationQualificationDeadline.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/db/mailMigrationQualificationDeadline.ts.source",
+      "gitBlob": "b62a859354e8ce6a2a61657b356dc567bad6c9ac",
+      "originalMode": "100644",
+      "sha256": "674b7e89f31c25c451bc4b706242be6252c3cc6c6fddce761d2f7be713050a16",
+      "bytes": 4211
+    },
+    {
+      "originalPath": "src/db/mailMigrationQualificationFixtures.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/db/mailMigrationQualificationFixtures.ts.source",
+      "gitBlob": "8f9a14f50e856cfba113008109e97c30e6cdb498",
+      "originalMode": "100644",
+      "sha256": "df98995acea91ee8bcdeb06b3a80ab1eb916d62e55e504e43d75d2ce19d438ab",
+      "bytes": 11351
+    },
+    {
+      "originalPath": "src/db/mailMigrationQualificationGuards.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/db/mailMigrationQualificationGuards.ts.source",
+      "gitBlob": "4f752c64a670b5da4b0efa2548a30b5aed68e2d1",
+      "originalMode": "100644",
+      "sha256": "2922bd1facf864ec39d72ffbbd6248f4c9be196846de8082dbf56bcf53cd4341",
+      "bytes": 4547
+    },
+    {
+      "originalPath": "src/db/mailMigrationQualificationNative.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/db/mailMigrationQualificationNative.ts.source",
+      "gitBlob": "7a3ba3da1c6b6d0c3cf09d938d4112a5d65f9dec",
+      "originalMode": "100644",
+      "sha256": "49b917a631815d73ca08c490e4023fa72f65b40f0bba1e69e070cebc4370445c",
+      "bytes": 9966
+    },
+    {
+      "originalPath": "src/db/mailMigrationQualificationSafety.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/db/mailMigrationQualificationSafety.ts.source",
+      "gitBlob": "606804c19690f40a4b7d568a7d5241d26e2b07ce",
+      "originalMode": "100644",
+      "sha256": "59c313b366f1d30ad0b5ab2abb6eb1897e803c5049dcc4bdcc866fbe8d5a04e0",
+      "bytes": 3562
+    },
+    {
+      "originalPath": "src/db/mailMigrationQualificationSnapshot.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/db/mailMigrationQualificationSnapshot.ts.source",
+      "gitBlob": "4f76fd151dd1df65823ad571850ea93520133318",
+      "originalMode": "100644",
+      "sha256": "3f4f65e3846a60743380651a27107f835b039235e94f14dc54a90cb4dc0b3e87",
+      "bytes": 4470
+    },
+    {
+      "originalPath": "src/db/mailMigrationQualificationSource.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/db/mailMigrationQualificationSource.ts.source",
+      "gitBlob": "59f1f59d73ff006517c89d6c4b5021e46d6cb0ca",
+      "originalMode": "100644",
+      "sha256": "6e0d17c198a95cd3e8140114ece668396c84a719e24167ac1cbae39812be9ad6",
+      "bytes": 6201
+    },
+    {
+      "originalPath": "src/features/email/DeliveryReportReview.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/DeliveryReportReview.tsx.source",
+      "gitBlob": "704d5e4414e7ea6e8270abec3358b8d5eaa8b83d",
+      "originalMode": "100644",
+      "sha256": "3e922a9b3d0526c17858547eebb173694c045d02089bfc19661636371f4bf710",
+      "bytes": 10479
+    },
+    {
+      "originalPath": "src/features/email/DeliveryReportReview.uncertainty.test.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/DeliveryReportReview.uncertainty.test.tsx.source",
+      "gitBlob": "9ca0fcdfe596a0f3bcba442caf0f3266a7ee78ee",
+      "originalMode": "100644",
+      "sha256": "a8bc3a898ed07f0c51eddbbc5340008e7c2b1eee8d6db4c4a634b5d3a58ad39d",
+      "bytes": 5736
+    },
+    {
+      "originalPath": "src/features/email/DeliveryReportReviewError.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/DeliveryReportReviewError.tsx.source",
+      "gitBlob": "548fccc34381266a560b3f98c6b22335a87790ae",
+      "originalMode": "100644",
+      "sha256": "a76bd41619c74738847cd2e45d62f7d3cc8c9034c5e39edf65a89c86d928f58e",
+      "bytes": 727
+    },
+    {
+      "originalPath": "src/features/email/DeliveryReportsPanel.test.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/DeliveryReportsPanel.test.tsx.source",
+      "gitBlob": "9bd69def73435acd1ec51f29f41847db91a37e6e",
+      "originalMode": "100644",
+      "sha256": "8e2cbb991a864acf6ac80e0cc4be66a9a775c62915edd7a90d99dff290fa64be",
+      "bytes": 12690
+    },
+    {
+      "originalPath": "src/features/email/InboxWorkspace.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/InboxWorkspace.tsx.source",
+      "gitBlob": "854a3924d6d90095def7cbb84fd4e30c7528aade",
+      "originalMode": "100644",
+      "sha256": "065ae7cc0feb5ed768cf662c0af80b74dd262b6aa7dd5272964ffa62b687079b",
+      "bytes": 9610
+    },
+    {
+      "originalPath": "src/features/email/InboxWorkspaceToolbar.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/InboxWorkspaceToolbar.tsx.source",
+      "gitBlob": "454d70a5018b8da39e6acc34fc7e94f1da50a0dd",
+      "originalMode": "100644",
+      "sha256": "cac46752947426deb9fca7386ef0172a0e1c3d6b349acf0433647a0da46b8536",
+      "bytes": 7780
+    },
+    {
+      "originalPath": "src/features/email/PrivateIntakeAffordances.test.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/PrivateIntakeAffordances.test.tsx.source",
+      "gitBlob": "1487a1e80a0a3e03ddd326b81de597feed357273",
+      "originalMode": "100644",
+      "sha256": "b04a92bfb8524ca7e70a4de34d84b2820e5f596199f2f1ed825c731d1334c883",
+      "bytes": 8284
+    },
+    {
+      "originalPath": "src/features/email/PrivateIntakeWorkspace.test.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/PrivateIntakeWorkspace.test.tsx.source",
+      "gitBlob": "2d09198155a85de2f412c0617f330376baf78255",
+      "originalMode": "100644",
+      "sha256": "66632957e937c04f3393c8319c5aa293277468fb528611fd9a3a63b77045dd10",
+      "bytes": 8554
+    },
+    {
+      "originalPath": "src/features/email/ReaderDeliveryReports.uncertainty.test.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/ReaderDeliveryReports.uncertainty.test.tsx.source",
+      "gitBlob": "d2ad83b9b0de979afda0e121fa8d8cadee4c1773",
+      "originalMode": "100644",
+      "sha256": "3b07ffc6b1bb03a78a6828ae25a79d962913160dd62a9190e546008b5bd98387",
+      "bytes": 4533
+    },
+    {
+      "originalPath": "src/features/email/ThreadList.test.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/ThreadList.test.tsx.source",
+      "gitBlob": "d9637710f6eabacb1ce3a6c39e844d7f490bac34",
+      "originalMode": "100644",
+      "sha256": "118b6138708895d5930ff4d408afa765e222873aa2e376cc215285ccda01d701",
+      "bytes": 15194
+    },
+    {
+      "originalPath": "src/features/email/ThreadList.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/ThreadList.tsx.source",
+      "gitBlob": "bd7d6066638eadbed799fa0130bfce7a7cea55b8",
+      "originalMode": "100644",
+      "sha256": "da18f5046f98b5398b305a7dcf1037c566e32ea66f803dc46252c9acc2318a75",
+      "bytes": 13390
+    },
+    {
+      "originalPath": "src/features/email/ThreadPane.privacy.test.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/ThreadPane.privacy.test.tsx.source",
+      "gitBlob": "2b1922df115ac5d8193d4d038022164a63e39f63",
+      "originalMode": "100644",
+      "sha256": "ee1831ca8af9932bf668cd7292195345f032ffd7a7693b9c5e1db08b7174728d",
+      "bytes": 4515
+    },
+    {
+      "originalPath": "src/features/email/ThreadPane.privateIntake.test.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/ThreadPane.privateIntake.test.tsx.source",
+      "gitBlob": "68c611ac9fcc3517a15f60aec9d9e7ba0e660a06",
+      "originalMode": "100644",
+      "sha256": "fdde5f67ed28114f03f9a2090676ce503bab617db99d5f6ff8a8c5c07ede1b28",
+      "bytes": 11567
+    },
+    {
+      "originalPath": "src/features/email/ThreadPane.readIntent.test.fixtures.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/ThreadPane.readIntent.test.fixtures.ts.source",
+      "gitBlob": "fc15b9724d41233a191873fe96a5d6be7bf061fa",
+      "originalMode": "100644",
+      "sha256": "bc3b01e2c654e3aaee17068cb7df25bc86f5171fcb87893176d7b6c8b49941d5",
+      "bytes": 1895
+    },
+    {
+      "originalPath": "src/features/email/ThreadPane.readIntent.test.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/ThreadPane.readIntent.test.tsx.source",
+      "gitBlob": "51ccf89ca1afd3691b103914700577f65610175d",
+      "originalMode": "100644",
+      "sha256": "6e50d37306b10ba5e6a2fcdf3e6d1d8cea2f1ba715130c2dceba41f3b07c7d81",
+      "bytes": 9283
+    },
+    {
+      "originalPath": "src/features/email/ThreadPane.readOutcomeProof.test.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/ThreadPane.readOutcomeProof.test.tsx.source",
+      "gitBlob": "ec5de536817987c779d5e294684dd181bbae79f4",
+      "originalMode": "100644",
+      "sha256": "f12fcd1513144dcead9c46ddfde12785a7ce1a072c08cc7949233a89ee7b56c0",
+      "bytes": 4669
+    },
+    {
+      "originalPath": "src/features/email/ThreadPane.readReceipt.test.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/ThreadPane.readReceipt.test.tsx.source",
+      "gitBlob": "6d0011488db61a77e2fcf1ba3dace1cc9dde3d77",
+      "originalMode": "100644",
+      "sha256": "6708828cef0ab2eefd036db443cb0042ae1727c2cb4e891dacff2ee22fb3baad",
+      "bytes": 5380
+    },
+    {
+      "originalPath": "src/features/email/ThreadPane.readRefreshDeadline.test.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/ThreadPane.readRefreshDeadline.test.tsx.source",
+      "gitBlob": "5cc2d1a876e918cdd8ea8bb6f1b049124aa5c457",
+      "originalMode": "100644",
+      "sha256": "135e7dd9f36b8a9a00f6da8fbce80e4984ab38d022f0b8abcc46dd88970773e6",
+      "bytes": 4209
+    },
+    {
+      "originalPath": "src/features/email/ThreadPane.readState.test.fixtures.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/ThreadPane.readState.test.fixtures.tsx.source",
+      "gitBlob": "06a1503f7538c4a87544664bdd5d6b8182983494",
+      "originalMode": "100644",
+      "sha256": "8292c4d8b327c241e5d612ef102ebfdc6ede70b6f965fba395105a40659e4ee8",
+      "bytes": 7582
+    },
+    {
+      "originalPath": "src/features/email/ThreadPane.readStateRecovery.test.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/ThreadPane.readStateRecovery.test.tsx.source",
+      "gitBlob": "8dff4c5bb5dad3c30be603e4494cce8d448537c3",
+      "originalMode": "100644",
+      "sha256": "e562edeeb1674de7118bd33c6fec35e676b6ae53a8412c3c9595e951a371c313",
+      "bytes": 8239
+    },
+    {
+      "originalPath": "src/features/email/ThreadPane.readerColumn.test.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/ThreadPane.readerColumn.test.tsx.source",
+      "gitBlob": "49ca7c6fd95caeba03a2de0e05c66d56696cba59",
+      "originalMode": "100644",
+      "sha256": "6e26904c6bfb3b32c6a3ef04762fb3f65f89f1ee2c4042ce066128dd145b33ed",
+      "bytes": 5525
+    },
+    {
+      "originalPath": "src/features/email/ThreadPane.recordTimelines.test.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/ThreadPane.recordTimelines.test.tsx.source",
+      "gitBlob": "5424f64355ac45e66fb2336ad53738404b05154d",
+      "originalMode": "100644",
+      "sha256": "542d870424af554daf14b08bc08ece4f8c746f07bf1dceb53656dc552a9c035b",
+      "bytes": 4575
+    },
+    {
+      "originalPath": "src/features/email/ThreadPane.test.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/ThreadPane.test.tsx.source",
+      "gitBlob": "f98ac2b11f021214cdcc8729a12645fde888a5af",
+      "originalMode": "100644",
+      "sha256": "00e36996b3ecb06ac9cadbf9dac26bb194457cf2e3aaa05f5a8fe4e8d396251d",
+      "bytes": 13853
+    },
+    {
+      "originalPath": "src/features/email/ThreadPane.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/ThreadPane.tsx.source",
+      "gitBlob": "15d5cd74d7cf83b66e627a89c90a9f116234cc8b",
+      "originalMode": "100644",
+      "sha256": "5d8a5399bf2a7b17e6c7659b7ebaa9c014bb622df94ea8f44981739907404413",
+      "bytes": 12395
+    },
+    {
+      "originalPath": "src/features/email/composer/SendReviewNotice.test.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/composer/SendReviewNotice.test.tsx.source",
+      "gitBlob": "54218b4d19ff6be35d2c96f8b07cf50137b71321",
+      "originalMode": "100644",
+      "sha256": "1cdd73e534b3a22f49fdc0b72bd716a239d208798466de4e15a92cf308015c27",
+      "bytes": 4717
+    },
+    {
+      "originalPath": "src/features/email/composer/SendReviewNotice.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/composer/SendReviewNotice.tsx.source",
+      "gitBlob": "770a5053e400e3a9d375859e0a640842934ebaf6",
+      "originalMode": "100644",
+      "sha256": "c75882e84f4934529968329dfe3a9bb480781f9988025b48fb5b6512b49165d3",
+      "bytes": 4147
+    },
+    {
+      "originalPath": "src/features/email/composer/messages/composerMailbox.de.json",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/composer/messages/composerMailbox.de.json.source",
+      "gitBlob": "73644f161df686011585d8bfc201a55cb12e1223",
+      "originalMode": "100644",
+      "sha256": "a820851499f40839581aca1763863ce138f4830f8f2598e9ae615774a3b63dc1",
+      "bytes": 5043
+    },
+    {
+      "originalPath": "src/features/email/composer/messages/composerMailbox.en.json",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/composer/messages/composerMailbox.en.json.source",
+      "gitBlob": "6d9b1622a9fe07e1560b67c9a2a89630c5a337b0",
+      "originalMode": "100644",
+      "sha256": "828fbd8991abf296391d10aaae73883ac692cd5df1afcfe0cfc3944bf446e405",
+      "bytes": 4252
+    },
+    {
+      "originalPath": "src/features/email/composer/messages/composerMailbox.fa.json",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/composer/messages/composerMailbox.fa.json.source",
+      "gitBlob": "f021f5cbb188bd34cee7332b4f80f7ad29b9bed4",
+      "originalMode": "100644",
+      "sha256": "658404e4974a55f75bf46ba48bc92656d866ec9d36f6f7bb879be40fbf59acb9",
+      "bytes": 6515
+    },
+    {
+      "originalPath": "src/features/email/connections/MailboxConnectionsPanel.test.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/connections/MailboxConnectionsPanel.test.tsx.source",
+      "gitBlob": "759a85a16c781f349bf343f22f309271946eb1a4",
+      "originalMode": "100644",
+      "sha256": "3625cfccdfa464f637f89de54448f23afe0bb778d493b7ca911f4da37f2e11ea",
+      "bytes": 11038
+    },
+    {
+      "originalPath": "src/features/email/connections/MailboxHubEntry.test.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/connections/MailboxHubEntry.test.tsx.source",
+      "gitBlob": "23727c1aaf10f276d7bb6a129c2539ca4dabbf3b",
+      "originalMode": "100644",
+      "sha256": "f1df4b2fdd83fae62d8a9b60b59a73362cc42e889f623b4557a9d25dcd5e59d4",
+      "bytes": 1721
+    },
+    {
+      "originalPath": "src/features/email/connections/MailboxManagementEntry.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/connections/MailboxManagementEntry.tsx.source",
+      "gitBlob": "56697ad3f833935d97dec73a85a89cba95db0811",
+      "originalMode": "100644",
+      "sha256": "f4d7b35078cb7b0782d3f66745ae8ff48a8dbecb16221e2d63ecf3d84adcdb07",
+      "bytes": 769
+    },
+    {
+      "originalPath": "src/features/email/connections/messages/mailConnections.de.json",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/connections/messages/mailConnections.de.json.source",
+      "gitBlob": "577c605f7728ea90b9b551ad381ab696daa8c83a",
+      "originalMode": "100644",
+      "sha256": "e62cbff2399da6c2417a31434df5688d38e66b28c4666b87501169ebaeaeeb9c",
+      "bytes": 9056
+    },
+    {
+      "originalPath": "src/features/email/connections/messages/mailConnections.en.json",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/connections/messages/mailConnections.en.json.source",
+      "gitBlob": "f8a69aedbec06fe0bc9ab5d5249249f1387f285f",
+      "originalMode": "100644",
+      "sha256": "59bd326ee4693f4353042192668f806bc1488cd60d0607a8cc52dc83a0b573b6",
+      "bytes": 7954
+    },
+    {
+      "originalPath": "src/features/email/connections/messages/mailConnections.fa.json",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/connections/messages/mailConnections.fa.json.source",
+      "gitBlob": "84f19333f2ec948b7f5a1ceca33aeeb42f73d4ba",
+      "originalMode": "100644",
+      "sha256": "7b9da15c2f2d01555b341b5abeb6884e5cd5681f9ecca1cff4212cccd1564317",
+      "bytes": 11672
+    },
+    {
+      "originalPath": "src/features/email/emailReads.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/emailReads.ts.source",
+      "gitBlob": "ed1c74810620478dbc62e29b69cdd22a3fad43f6",
+      "originalMode": "100644",
+      "sha256": "a268de8c12c8535cdeaccf54f8ecff17733c23a47f738355f0de07b4e633b0f0",
+      "bytes": 10361
+    },
+    {
+      "originalPath": "src/features/email/imapThreadOperations.actions.integration.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/imapThreadOperations.actions.integration.test.ts.source",
+      "gitBlob": "696260b0a1af3eb38aa83bda2e6ee909547fc258",
+      "originalMode": "100644",
+      "sha256": "9440f46dd51e4814ad2d43816ded5a769cea28c997ee2bc6543e19777d1954e3",
+      "bytes": 8415
+    },
+    {
+      "originalPath": "src/features/email/imapThreadOperations.test-helpers.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/imapThreadOperations.test-helpers.ts.source",
+      "gitBlob": "06ebdf8a3afbcdabc05842aee0cd59994e5eabcc",
+      "originalMode": "100644",
+      "sha256": "497335f525f2295049cdd31802e6bb39d3324118bcaddcdda39c6193de5b01ae",
+      "bytes": 1495
+    },
+    {
+      "originalPath": "src/features/email/imapThreadOperations.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/imapThreadOperations.ts.source",
+      "gitBlob": "669fcb36d890e9b42a9ebdf4b3358a13224fe604",
+      "originalMode": "100644",
+      "sha256": "a34559efe0f1bdb7d04b7131c481f25bd366ee36af03e7b8462d1782d959b856",
+      "bytes": 6442
+    },
+    {
+      "originalPath": "src/features/email/imapThreadOperationsTypes.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/imapThreadOperationsTypes.ts.source",
+      "gitBlob": "c8d5a7918466f76348694f51acb7c18961e4383f",
+      "originalMode": "100644",
+      "sha256": "86252ac8ea07dcbc249759c52fe7f81774e28dc3dfa65adf3430e3134a9a27e0",
+      "bytes": 1540
+    },
+    {
+      "originalPath": "src/features/email/mailProtocolIdentity.integration.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/mailProtocolIdentity.integration.test.ts.source",
+      "gitBlob": "33ecba9465f13ea493d14fb872b48509c1e0f955",
+      "originalMode": "100644",
+      "sha256": "16670e38460249af5133254962e6fcdf3d93737c1189ed2d6e21e27a92eff674",
+      "bytes": 6462
+    },
+    {
+      "originalPath": "src/features/email/messages/deliveryReports.de.json",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/messages/deliveryReports.de.json.source",
+      "gitBlob": "7c9c19dada63a434b91000264cf9f76ec2665f0c",
+      "originalMode": "100644",
+      "sha256": "9d31749d41fe4d8e3726feb2ae05be6b1c3a0e35366f210db3d287ed3988cade",
+      "bytes": 2500
+    },
+    {
+      "originalPath": "src/features/email/messages/deliveryReports.en.json",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/messages/deliveryReports.en.json.source",
+      "gitBlob": "2c7c2038234aa6d56c19b8c3b74ff7340bd0db41",
+      "originalMode": "100644",
+      "sha256": "581b8a91aa0a31cef5c9d9dd459faf734e28192b951b06b0b8d3c518622630dd",
+      "bytes": 2132
+    },
+    {
+      "originalPath": "src/features/email/messages/deliveryReports.fa.json",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/messages/deliveryReports.fa.json.source",
+      "gitBlob": "6cafebb37ee130185d83737a7473a7a8f21801b9",
+      "originalMode": "100644",
+      "sha256": "f74fa51a6d7e90cce849ff4ddf995a324beba4894d42b4c1c0c59696ae35e904",
+      "bytes": 3342
+    },
+    {
+      "originalPath": "src/features/email/messages/email.de.json",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/messages/email.de.json.source",
+      "gitBlob": "1c540dc20ad110a240c46046b67d4507cf482d36",
+      "originalMode": "100644",
+      "sha256": "8f2c1e34831da177cd47b01b465cc11f989dd1aab2129a563a439491e0b639f9",
+      "bytes": 18659
+    },
+    {
+      "originalPath": "src/features/email/messages/email.en.json",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/messages/email.en.json.source",
+      "gitBlob": "1720ea0b2d00c25f70001f8b4f2e2754a12eda1b",
+      "originalMode": "100644",
+      "sha256": "9e85047736436f8e5176097a389ba5211d4824e4f00ad7c779cfd48e75075e9c",
+      "bytes": 15748
+    },
+    {
+      "originalPath": "src/features/email/messages/email.fa.json",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/messages/email.fa.json.source",
+      "gitBlob": "09e3dd81e0489064e4f54c4adb75474ce0177cfe",
+      "originalMode": "100644",
+      "sha256": "30696778d214ec44629ea84a2a14a9b0cbd4b86743270f58dd4b30f3d3d3a2f0",
+      "bytes": 23211
+    },
+    {
+      "originalPath": "src/features/email/privateIntakeLocalRead.cancel.integration.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/privateIntakeLocalRead.cancel.integration.test.ts.source",
+      "gitBlob": "e0a0bee67f5a01c943d569175bb1f5c60c90f625",
+      "originalMode": "100644",
+      "sha256": "2bf9788f90643f3b9dd1c76ed76c2cb8c294ac1c459ccbb454aa8aa6a945fc83",
+      "bytes": 12297
+    },
+    {
+      "originalPath": "src/features/email/privateIntakeLocalRead.checkout.integration.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/privateIntakeLocalRead.checkout.integration.test.ts.source",
+      "gitBlob": "fce34df1aad2c6abe6b7a5294279f26beb7ba095",
+      "originalMode": "100644",
+      "sha256": "057bf2a47889a55a12e7b39f5557d981658b3444b99c5bd0864e80c3414dc077",
+      "bytes": 7355
+    },
+    {
+      "originalPath": "src/features/email/privateIntakeLocalRead.commit.integration.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/privateIntakeLocalRead.commit.integration.test.ts.source",
+      "gitBlob": "b30166185565e80f9429dcb420a8f0bf049f0d59",
+      "originalMode": "100644",
+      "sha256": "6769024d88e0703bf3c407527dc2b0af9c1eb356d95337744acacade852c4ce8",
+      "bytes": 8999
+    },
+    {
+      "originalPath": "src/features/email/privateIntakeLocalRead.commit.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/privateIntakeLocalRead.commit.test.ts.source",
+      "gitBlob": "9731dcebf7a8ed6c154d0b4d47046116f376f047",
+      "originalMode": "100644",
+      "sha256": "e0ca07495a1205c669bff2d4831a431d4d542ceda71d92c9c3be30c5f887b253",
+      "bytes": 6860
+    },
+    {
+      "originalPath": "src/features/email/privateIntakeLocalRead.integration.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/privateIntakeLocalRead.integration.test.ts.source",
+      "gitBlob": "147d7b6a74e2b6f72fad4b497c00b2b2681a29e5",
+      "originalMode": "100644",
+      "sha256": "e68f31a16e2fb1457b2baaa728ffb552249727b2ffc8ee8ae43a920b1f5dfe4f",
+      "bytes": 12213
+    },
+    {
+      "originalPath": "src/features/email/privateIntakeLocalRead.race.integration.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/privateIntakeLocalRead.race.integration.test.ts.source",
+      "gitBlob": "16dd4a310a21388441ed4edbcb7c256b44626db8",
+      "originalMode": "100644",
+      "sha256": "a6f9e1e84bfff219470eba0b7d37c4ec573d54f87522c3376dcc2207ed278cf7",
+      "bytes": 11722
+    },
+    {
+      "originalPath": "src/features/email/privateIntakeLocalRead.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/privateIntakeLocalRead.ts.source",
+      "gitBlob": "a4510a56a036e9bb337f4b40d71c4a1b521cbc09",
+      "originalMode": "100644",
+      "sha256": "4ced21fc6cc631832d1dfc92c61743deacf86850cc54e9aaff8b3f4527914738",
+      "bytes": 3033
+    },
+    {
+      "originalPath": "src/features/email/privateIntakeLocalReadConnection.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/privateIntakeLocalReadConnection.ts.source",
+      "gitBlob": "86097cfef5672f763c286dcefd032ae69a0f6722",
+      "originalMode": "100644",
+      "sha256": "16290a32530c31b2ec10f640f9c0a5a1371422021e587aece843126a2f029e74",
+      "bytes": 9033
+    },
+    {
+      "originalPath": "src/features/email/privateIntakeLocalReadLifecycle.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/privateIntakeLocalReadLifecycle.ts.source",
+      "gitBlob": "8052c26468d4cf1993a163c1c095ac831eaada41",
+      "originalMode": "100644",
+      "sha256": "ee26b85cd451e9ad4873ed0f90a521f4b519f1e1740d3dc1f955b3004daff6bb",
+      "bytes": 3089
+    },
+    {
+      "originalPath": "src/features/email/privateIntakeLocalReadLock.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/privateIntakeLocalReadLock.ts.source",
+      "gitBlob": "7db6ce23c142d81cfb412582bb3ece6bc2c7efc2",
+      "originalMode": "100644",
+      "sha256": "7667124ee16bec544e5541a76a0689592343a112a4c5c7844a546c9efb56b8cc",
+      "bytes": 1798
+    },
+    {
+      "originalPath": "src/features/email/privateIntakeLocalReadTransaction.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/privateIntakeLocalReadTransaction.ts.source",
+      "gitBlob": "0eed474dc80b4d21321134bfe2b7c2edc49f7197",
+      "originalMode": "100644",
+      "sha256": "b7966a19b5fc9be3fb5de99bba0085e0a0b0d934fb0e58374f719b08dfea3c92",
+      "bytes": 7856
+    },
+    {
+      "originalPath": "src/features/email/readActions.boundary.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/readActions.boundary.test.ts.source",
+      "gitBlob": "c9e4c641f389cfb36f62d1e1923541b66a20c09a",
+      "originalMode": "100644",
+      "sha256": "05b24815cd2ea46a24541ff97215ee45b57d53dc6c2b9f74073afeef70768f43",
+      "bytes": 4592
+    },
+    {
+      "originalPath": "src/features/email/readActions.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/readActions.test.ts.source",
+      "gitBlob": "87ee30fbf1c6214d75740afea5cdd679fd527a22",
+      "originalMode": "100644",
+      "sha256": "34ed26354ee7647ab6023fecda3dd86c27afeb54c269cb6ec9a796cadb16bc50",
+      "bytes": 8639
+    },
+    {
+      "originalPath": "src/features/email/readActions.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/readActions.ts.source",
+      "gitBlob": "86c4c90f5109e0afed9882fc8110adf2e327efe4",
+      "originalMode": "100644",
+      "sha256": "22458e706b6464f1394d151bdb9068b4bc81e69c3a41daf3e1f1e95349796372",
+      "bytes": 2279
+    },
+    {
+      "originalPath": "src/features/email/readIntentActionContext.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/readIntentActionContext.ts.source",
+      "gitBlob": "4a3701dadebcac4f18498fd4270b3f8f9add4491",
+      "originalMode": "100644",
+      "sha256": "d7e8ad79be5192e643dff325aa7f66559ccc5a7ba795b6ad5d0c877991056c2c",
+      "bytes": 871
+    },
+    {
+      "originalPath": "src/features/email/readIntentActions.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/readIntentActions.ts.source",
+      "gitBlob": "ffe2fcfcb7a0e229ace0b6c5dc72fae6029a3aea",
+      "originalMode": "100644",
+      "sha256": "3510e81ab8e5cba552b4bb7c1df095b36fc8c1a6d52f9f4d121b83d3158e3513",
+      "bytes": 2227
+    },
+    {
+      "originalPath": "src/features/email/readIntentExecution.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/readIntentExecution.ts.source",
+      "gitBlob": "38481d4a1eaca9d1cc400a4fe072fc479e84b261",
+      "originalMode": "100644",
+      "sha256": "afdb3f51cd9f7371a4522138a33d79a0947296e1b968775b83d70b79457e9965",
+      "bytes": 5977
+    },
+    {
+      "originalPath": "src/features/email/readIntentLifecycle.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/readIntentLifecycle.ts.source",
+      "gitBlob": "e7728e034c5db91656ae594a5d556ae0aec338f1",
+      "originalMode": "100644",
+      "sha256": "86ef691fcece7accf78d484aa1bc0bb4583809a53f8dcf3194dc7f66b2467c9e",
+      "bytes": 3398
+    },
+    {
+      "originalPath": "src/features/email/readIntentLocalMarker.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/readIntentLocalMarker.ts.source",
+      "gitBlob": "cb4c8cf7f2ab3ad5ffd4b2c9d392c46b6055e132",
+      "originalMode": "100644",
+      "sha256": "cab33d8940cb7ab4ec84816e9cde91d90ed59f004c19b6efab21557917188899",
+      "bytes": 2931
+    },
+    {
+      "originalPath": "src/features/email/readIntentRemoteFailure.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/readIntentRemoteFailure.ts.source",
+      "gitBlob": "836b9a6313873515a3549266e17e4f37ee9057b3",
+      "originalMode": "100644",
+      "sha256": "5552569411574defe18e5b6ec48afd9f43fd593c59fb809ee93930f43622081d",
+      "bytes": 2320
+    },
+    {
+      "originalPath": "src/features/email/readIntentRemoteReceipt.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/readIntentRemoteReceipt.ts.source",
+      "gitBlob": "91be675ce2886acdfe558a82581249af2bab9d44",
+      "originalMode": "100644",
+      "sha256": "cd87c2e6294a7bcc6a82b3d56edfaf9942f29876b8da81f46957fb894db919b4",
+      "bytes": 3859
+    },
+    {
+      "originalPath": "src/features/email/readIntentRemoteResult.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/readIntentRemoteResult.test.ts.source",
+      "gitBlob": "229a5b81c08c7535e7b95689775058952acf8446",
+      "originalMode": "100644",
+      "sha256": "5157df684792f4df6ec54f227fe50da62be128daa7285f49099f98a807b1de9c",
+      "bytes": 2236
+    },
+    {
+      "originalPath": "src/features/email/readIntentRemoteResult.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/readIntentRemoteResult.ts.source",
+      "gitBlob": "f17e8eb39b241bf83c9aaaf82a285f69ab134eee",
+      "originalMode": "100644",
+      "sha256": "bb79438ea7ede56cf701d3b6bf646999ce90af8703452842d36fee82d5bdc69a",
+      "bytes": 1155
+    },
+    {
+      "originalPath": "src/features/email/readIntentRemoteSession.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/readIntentRemoteSession.ts.source",
+      "gitBlob": "c685b6957eb455fefbe3b5ddc76243e359758231",
+      "originalMode": "100644",
+      "sha256": "d35bf6e464b2ca03f3256bb6566f35b077b878b7d9355b86812f7d3f051c8420",
+      "bytes": 2052
+    },
+    {
+      "originalPath": "src/features/email/readIntentRows.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/readIntentRows.test.ts.source",
+      "gitBlob": "ba4528afbc4aa295ce7cc589bba84cd939496d9c",
+      "originalMode": "100644",
+      "sha256": "f88114441f9473469017608ffe79ded69f02a99c1f4982e92193be46c45bcbf0",
+      "bytes": 3236
+    },
+    {
+      "originalPath": "src/features/email/readIntentRows.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/readIntentRows.ts.source",
+      "gitBlob": "74e90621e9521a63cabc435a0c19140f0e40692f",
+      "originalMode": "100644",
+      "sha256": "d3f9f27d957e7a3556dda7dcf89ba2c4e8b19bec0008450a78be48c8b531870a",
+      "bytes": 2371
+    },
+    {
+      "originalPath": "src/features/email/readIntentScope.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/readIntentScope.ts.source",
+      "gitBlob": "1166b9500f80cce93db8490ced0d60b37b07dbce",
+      "originalMode": "100644",
+      "sha256": "ee043a1006103cd90c3266ac7635559a77a55c7110c5be5f63d9d2fa0f5ee337",
+      "bytes": 3615
+    },
+    {
+      "originalPath": "src/features/email/readIntentStore.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/readIntentStore.ts.source",
+      "gitBlob": "04ed054a3bd751195bab708f0282238ea3f69297",
+      "originalMode": "100644",
+      "sha256": "620e0bc7e2b1084d1376fa3b6713a23a97e987eef193b9a2ef91094d11828988",
+      "bytes": 3631
+    },
+    {
+      "originalPath": "src/features/email/readIntentTransitions.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/readIntentTransitions.ts.source",
+      "gitBlob": "24bb9e13405d6aaefdc1dc1a1b07bbcae7ed73ef",
+      "originalMode": "100644",
+      "sha256": "dc63463d8a38cb53b0a8d15a2eabb14bf36eb04e50450d228753486a8c265484",
+      "bytes": 3377
+    },
+    {
+      "originalPath": "src/features/email/readIntentTypes.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/readIntentTypes.ts.source",
+      "gitBlob": "f94cd9dbe53f18b599cb4ed988d15fd694c35a46",
+      "originalMode": "100644",
+      "sha256": "49e56c6116abed56439b98e67198dba7eabf8d554c8a4ef4725dd66f83c38f53",
+      "bytes": 1144
+    },
+    {
+      "originalPath": "src/features/email/readIntents.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/readIntents.ts.source",
+      "gitBlob": "a1564711e3787d2d0ac23cc8d5f44f3178fc94fb",
+      "originalMode": "100644",
+      "sha256": "6e25355218968284fab42b3f8fbea0bdfadf7ca6123a5872b41897b6745452b7",
+      "bytes": 1505
+    },
+    {
+      "originalPath": "src/features/email/threadReadIntent.client.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/threadReadIntent.client.ts.source",
+      "gitBlob": "4cd595e7b28814c700c5c0160b7ad302f2c68148",
+      "originalMode": "100644",
+      "sha256": "99535bb9834f90e19ab1753f48be23b1f77992a3cef9e8210bd2ad141fb446ab",
+      "bytes": 5064
+    },
+    {
+      "originalPath": "src/features/email/threadReadObservation.integration.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/threadReadObservation.integration.test.ts.source",
+      "gitBlob": "2f852286cf921cac0a0e84515c13d4e36ecfdf98",
+      "originalMode": "100644",
+      "sha256": "a5c9be6dc3848bd4c9985fec94c1bbe45d330fb604a3a64510a77ff9abd33e54",
+      "bytes": 3951
+    },
+    {
+      "originalPath": "src/features/email/useBulkThreadReadState.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/useBulkThreadReadState.ts.source",
+      "gitBlob": "f491e1c8958abe514bfd931f076a286403e1acf4",
+      "originalMode": "100644",
+      "sha256": "74b2e303867c825958c6079d3c018fb21914e4027f23db9475cd736fafd282d2",
+      "bytes": 7659
+    },
+    {
+      "originalPath": "src/features/email/useThreadReadState.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/email/useThreadReadState.ts.source",
+      "gitBlob": "76698c3b359a332de0b8fabc82bca225ad303fb6",
+      "originalMode": "100644",
+      "sha256": "296dfdac59c71479bc475d18e1739daed57a4c6acfc02e8ebc496a3247aa9275",
+      "bytes": 7179
+    },
+    {
+      "originalPath": "src/features/integrations/IntegrationHub.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/mail/source/src/features/integrations/IntegrationHub.tsx.source",
+      "gitBlob": "af3216ea3d0d7bfb82a826c85d00d12a1436ac06",
+      "originalMode": "100644",
+      "sha256": "ec83e31a93d78e25dd6e18ad1f93a558e3a484ce11fa02f295c659b5e4a626a3",
+      "bytes": 7764
+    }
+  ],
+  "meaning": "Dated inert preservation, not active implementation/qualification. Exact original history is retained by the consolidation merge parents. Only the explicit qualified adoption manifest determines active code.",
+  "originalFileExtensionSuffix": ".source",
+  "activeCodeExecution": false
+}

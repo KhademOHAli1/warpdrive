@@ -1,0 +1,113 @@
+import { sql } from "drizzle-orm";
+import {
+  boolean,
+  check,
+  foreignKey,
+  index,
+  integer,
+  pgTable,
+  primaryKey,
+  text,
+  timestamp,
+  uniqueIndex,
+  uuid,
+} from "drizzle-orm/pg-core";
+import { emailAccounts, emailThreads } from "@/db/schema/email";
+import { users } from "@/db/schema/identity";
+
+// PRIVATE, unadopted metadata proposal for the reserved0102 SQL draft.
+// Immutable bindings/claims, transition fencing and TRUNCATE guards remain SQL-only.
+export const emailReadIntents = pgTable(
+  "email_read_intents",
+  {
+    actorId: uuid("actor_id").notNull(),
+    operationId: uuid("operation_id").notNull().defaultRandom(),
+    accountId: uuid("account_id").notNull(),
+    threadId: uuid("thread_id").notNull(),
+    mailboxOwnerId: uuid("mailbox_owner_id").notNull(),
+    accountProvider: text("account_provider")
+      .$type<"gmail" | "imap_smtp" | "microsoft">()
+      .notNull(),
+    connectionGeneration: integer("connection_generation").notNull(),
+    privateCopy: boolean("private_copy").notNull(),
+    desiredRead: boolean("desired_read").notNull(),
+    readMode: text("read_mode").$type<"local" | "imap">().notNull(),
+    state: text("state")
+      .$type<"prepared" | "admitted" | "applied" | "denied" | "cancelled" | "unknown">()
+      .notNull()
+      .default("prepared"),
+    // No timestamp defaults: the repository supplies the authoritative DB clock.
+    // String mode retains PostgreSQL microseconds instead of creating a JS Date.
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "string" }).notNull(),
+    admitBefore: timestamp("admit_before", { withTimezone: true, mode: "string" }).notNull(),
+    admittedAt: timestamp("admitted_at", { withTimezone: true, mode: "string" }),
+    terminalAt: timestamp("terminal_at", { withTimezone: true, mode: "string" }),
+    dispatchClaim: uuid("dispatch_claim"),
+    errorId: text("error_id"),
+  },
+  (t) => [
+    primaryKey({ name: "email_read_intents_pkey", columns: [t.actorId, t.operationId] }),
+    foreignKey({
+      name: "email_read_intents_actor_id_fkey",
+      columns: [t.actorId],
+      foreignColumns: [users.id],
+    }).onDelete("restrict"),
+    foreignKey({
+      name: "email_read_intents_account_id_fkey",
+      columns: [t.accountId],
+      foreignColumns: [emailAccounts.id],
+    }).onDelete("restrict"),
+    foreignKey({
+      name: "email_read_intents_thread_id_account_id_fkey",
+      columns: [t.threadId, t.accountId],
+      foreignColumns: [emailThreads.id, emailThreads.accountId],
+    }).onDelete("restrict"),
+    check(
+      "email_read_intents_account_provider_check",
+      sql`${t.accountProvider} IN ('gmail','imap_smtp','microsoft')`,
+    ),
+    check("email_read_intents_connection_generation_check", sql`${t.connectionGeneration} > 0`),
+    check("email_read_intents_read_mode_check", sql`${t.readMode} IN ('local','imap')`),
+    check(
+      "email_read_intents_state_check",
+      sql`${t.state} IN ('prepared','admitted','applied','denied','cancelled','unknown')`,
+    ),
+    check("email_read_intents_check", sql`${t.admitBefore} > ${t.createdAt}`),
+    check("email_read_intents_check1", sql`NOT ${t.privateCopy} OR ${t.readMode}='local'`),
+    check(
+      "email_read_intents_check2",
+      sql`${t.readMode}<>'imap' OR
+        (${t.accountProvider}='imap_smtp' AND ${t.mailboxOwnerId}=${t.actorId})`,
+    ),
+    check(
+      "email_read_intents_check3",
+      sql`(${t.dispatchClaim} IS NULL) = (${t.admittedAt} IS NULL)`,
+    ),
+    check(
+      "email_read_intents_check4",
+      sql`${t.state} NOT IN ('admitted','applied','unknown') OR ${t.dispatchClaim} IS NOT NULL`,
+    ),
+    check(
+      "email_read_intents_check5",
+      sql`${t.state} NOT IN ('prepared','cancelled') OR ${t.dispatchClaim} IS NULL`,
+    ),
+    check(
+      "email_read_intents_check6",
+      sql`(${t.terminalAt} IS NOT NULL) = (${t.state} IN ('applied','denied','cancelled'))`,
+    ),
+    check(
+      "email_read_intents_check7",
+      sql`(${t.errorId} IS NOT NULL) = (${t.state} IN ('denied','unknown'))`,
+    ),
+    uniqueIndex("email_read_intents_unresolved_actor_thread")
+      .on(t.actorId, t.threadId)
+      .where(sql`${t.state} IN ('prepared','admitted','unknown')`),
+    index("email_read_intents_expired_preparations")
+      .on(t.admitBefore)
+      .where(sql`${t.state}='prepared'`),
+    index("email_read_intents_account").on(t.accountId),
+  ],
+);
+
+export type EmailReadIntentRow = typeof emailReadIntents.$inferSelect;
+export type NewEmailReadIntentRow = typeof emailReadIntents.$inferInsert;

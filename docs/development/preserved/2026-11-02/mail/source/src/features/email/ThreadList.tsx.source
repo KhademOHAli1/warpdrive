@@ -1,0 +1,297 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { BulkActionBar } from "@/components/data-table/BulkActionBar";
+import { useRowSelection } from "@/components/data-table/useRowSelection";
+import { ThreadRowsSkeleton } from "@/components/shell/skeletons";
+import { Checkbox } from "@/components/ui/Checkbox";
+import { Skeleton } from "@/components/ui/Skeleton";
+import { useEmailMessages } from "@/features/email/useEmailMessages";
+import { trpc } from "@/lib/trpc-client";
+import type { ActionResult } from "@/types/actionResult";
+import { readCsrfToken } from "@/utils/csrfCookie";
+import type { InboxFilter, InboxThread } from "./emailReads";
+import { archiveThreadAction, unarchiveThreadAction } from "./folderActions";
+import { MailOperationHint } from "./MailOperationHint";
+import { canApplySelectedMailAction } from "./privateIntakePolicy";
+import { ThreadListToolbar } from "./ThreadListToolbar";
+import { canArchiveInFolder, canSelectInFolder, type ThreadFolder, ThreadRow } from "./ThreadRow";
+import { filterByAttributes, NO_ATTRIBUTE_FILTER } from "./threadAttributeFilter";
+import { runBulk } from "./threadBulkActions";
+import { useBulkThreadReadState } from "./useBulkThreadReadState";
+import { useThreadFeed } from "./useThreadFeed";
+
+interface ThreadListProps {
+  // Which backed read feeds the list: Inbox (email.inbox.list), Sent, Archive, or "linked"
+  // (caller supplies `threads`; no internal query).
+  folder: ThreadFolder;
+  activeThreadId?: string;
+  // Where selecting a thread navigates. Defaults to the standalone thread route;
+  // the two-pane inbox passes a `?thread=` href so the reader stays alongside.
+  selectHref?: (threadId: string) => string;
+  // When provided, selecting a thread calls this instead of navigating (used by the deal Email tab
+  // to read a thread inline, A2, rather than leaving the deal for /inbox).
+  onSelect?: (threadId: string) => void;
+  // When provided, render exactly these threads instead of fetching (used by "linked" views).
+  threads?: InboxThread[];
+  // Set by callers that supply `threads` from their own query: true while that query is still
+  // pending, so an empty array is painted as loading rather than as an empty mailbox.
+  threadsPending?: boolean;
+  // The active quick-filter (all/unmatched/needs_linking + the U5 quick-filters). Lifted to the
+  // caller (InboxListClient) so an active in-mail search can narrow by the SAME filter (codex
+  // review); it feeds both the inbox feed and the filter toolbar. Optional: callers that only render
+  // "linked" views leave it uncontrolled and ThreadList keeps its own local state.
+  quickFilter?: InboxFilter;
+  onQuickFilterChange?: (next: InboxFilter) => void;
+}
+
+export function ThreadList({
+  folder,
+  activeThreadId,
+  // Carry the folder into the reader URL so its prev/next nav walks the same folder (P3). "linked"
+  // views use onSelect (inline), never this href, so the folder is always a navigable one here.
+  selectHref = (id) => `/inbox/${id}?folder=${folder}`,
+  onSelect,
+  threads: providedThreads,
+  threadsPending = false,
+  quickFilter,
+  onQuickFilterChange,
+}: ThreadListProps): React.ReactNode {
+  const E = useEmailMessages();
+
+  const router = useRouter();
+  const utils = trpc.useUtils();
+  // Controlled when the caller lifts the quick-filter (InboxListClient), uncontrolled otherwise.
+  const [localFilter, setLocalFilter] = useState<InboxFilter>("all");
+  const filter = quickFilter ?? localFilter;
+  const setFilter = onQuickFilterChange ?? setLocalFilter;
+  const [attrFilter, setAttrFilter] = useState(NO_ATTRIBUTE_FILTER);
+  const [bulkError, setBulkError] = useState<string | null>(null);
+  const [bulkBusy, setBulkBusy] = useState(false);
+  const feed = useThreadFeed(folder, filter);
+  // Follow-up-status + label + quick-filters (IB1, P2) narrow the rendered list client-side over
+  // the attributes each thread already carries. They apply ONLY on the inbox: that is the only
+  // folder that shows the filter row and whose feed projects hasAttachment/unread. Applying a
+  // retained filter to Sent/Archive (whose rows default those fields to false) would wrongly hide
+  // every row after a folder switch (codex review).
+  const sourceThreads = providedThreads ?? feed.threads;
+  const threads =
+    folder === "inbox" ? filterByAttributes(sourceThreads, attrFilter) : sourceThreads;
+  const selection = useRowSelection();
+  const canBulkRead = canApplySelectedMailAction(sourceThreads, selection.selected, "markRead");
+  const canBulkArchive = canApplySelectedMailAction(sourceThreads, selection.selected, "archive");
+  const readState = useBulkThreadReadState({
+    frameKey: JSON.stringify([folder, filter, attrFilter, activeThreadId ?? null, canBulkRead]),
+    selected: selection.selected,
+    replaceSelection: (ids) => {
+      selection.clear();
+      ids.forEach(selection.toggle);
+    },
+    readFresh: (threadId, signal) =>
+      utils.client.email.thread.get.query({ threadId, allowRemote: false }, { signal }),
+    cacheFresh: (threadId, data) =>
+      utils.email.thread.get.setData({ threadId, allowRemote: false }, data),
+    onConfirmed: afterReadChange,
+  });
+  // A pending feed has made no claim about the mailbox yet, so neither the "no threads" copy nor a
+  // conversation count may be painted until it resolves.
+  const pending = providedThreads !== undefined ? threadsPending : feed.pending;
+  const showSkeleton = pending && threads.length === 0;
+
+  function afterArchive(): void {
+    void utils.email.inbox.list.invalidate();
+    void utils.email.folders.archive.invalidate();
+  }
+
+  function afterReadChange(): void {
+    void utils.email.inbox.unreadCount.invalidate();
+    void utils.email.inbox.list.invalidate();
+    void utils.email.search.invalidate();
+    void utils.email.folders.sent.invalidate();
+    void utils.email.folders.archive.invalidate();
+  }
+
+  // Manual Refresh (A1, Pipedrive parity): re-pull the current folder's feed without a full
+  // navigation. Realtime already nudges these, but a user-driven refetch matches PD and covers the
+  // gap between poll cycles. Folder-aware so Sent/Archive refetch their own read (D2), not the inbox.
+  function refreshFolder(): void {
+    void readState.refresh();
+    // In-mail search overrides whichever folder tab is active (InboxListClient feeds email.search
+    // results to this list), so refresh must invalidate search regardless of the folder or the
+    // displayed results never update (codex P2). A no-op when no search query is mounted.
+    void utils.email.search.invalidate();
+    if (folder === "sent") {
+      void utils.email.folders.sent.invalidate();
+      return;
+    }
+    if (folder === "archive") {
+      void utils.email.folders.archive.invalidate();
+      return;
+    }
+    void utils.email.inbox.list.invalidate();
+    void utils.email.inbox.unreadCount.invalidate();
+  }
+
+  // Owner flipped a thread's visibility: refresh whichever feed is showing so the lock and the
+  // projected visibility reflect the write (and a now-private thread stops appearing to others).
+  // Search is included because the list can be rendering email.search results (providedThreads),
+  // whose cache would otherwise keep the stale lock until the query re-runs (codex review).
+  function afterVisibilityChange(): void {
+    void utils.email.inbox.list.invalidate();
+    void utils.email.folders.sent.invalidate();
+    void utils.email.folders.archive.invalidate();
+    void utils.email.search.invalidate();
+  }
+
+  async function applyBulk(
+    action: (threadId: string) => Promise<ActionResult<{ threadId: string }>>,
+    onSettled: () => void,
+  ): Promise<void> {
+    const ids = [...selection.selected];
+    if (ids.length === 0) return;
+    setBulkBusy(true);
+    try {
+      const failed = await runBulk(ids, action);
+      selection.clear();
+      for (const id of failed) selection.toggle(id);
+      setBulkError(failed.length > 0 ? E._extra.bulkActionError : null);
+      onSettled();
+    } finally {
+      setBulkBusy(false);
+    }
+  }
+
+  function bulkArchive(): void {
+    if (!canBulkArchive || bulkBusy || readState.locked) return;
+    const op = folder === "archive" ? unarchiveThreadAction : archiveThreadAction;
+    void applyBulk((threadId) => op(readCsrfToken(), { threadId }), afterArchive);
+  }
+
+  function bulkMarkRead(): void {
+    if (!canBulkRead || bulkBusy || readState.locked) return;
+    setBulkError(null);
+    void readState.run(true);
+  }
+
+  function bulkMarkUnread(): void {
+    if (!canBulkRead || bulkBusy || readState.locked) return;
+    setBulkError(null);
+    void readState.run(false);
+  }
+
+  const visibleIds = threads.map((t) => t.id);
+
+  return (
+    <div className="flex flex-col h-full">
+      <ThreadListToolbar
+        folder={folder}
+        filter={filter}
+        onFilterChange={setFilter}
+        attrFilter={attrFilter}
+        onAttrFilterChange={setAttrFilter}
+        onRefresh={refreshFolder}
+      />
+
+      <div className="flex items-center justify-between border-b px-3 py-1.5 text-xs text-muted-foreground">
+        <div className="flex items-center gap-2">
+          {canSelectInFolder(folder) && (
+            <Checkbox
+              label={E._extra.select_all_threads}
+              checked={selection.allSelected(visibleIds)}
+              onCheckedChange={() => selection.toggleAll(visibleIds)}
+            />
+          )}
+          {showSkeleton ? (
+            <Skeleton className="h-3 w-24" />
+          ) : (
+            <span className="tabular-nums">{E._extra.conversationCount(threads.length)}</span>
+          )}
+        </div>
+      </div>
+
+      {canSelectInFolder(folder) && selection.count > 0 && (
+        <div className="border-b px-3 py-2">
+          <BulkActionBar count={selection.count} onClear={selection.clear}>
+            <div role="toolbar" aria-label={E._extra.bulk_actions} className="flex flex-wrap gap-2">
+              {canArchiveInFolder(folder) && (
+                <button
+                  type="button"
+                  disabled={bulkBusy || readState.locked || !canBulkArchive}
+                  onClick={bulkArchive}
+                  className="rounded-md border px-3 py-1 text-sm transition-transform hover:bg-accent active:scale-[0.96] disabled:opacity-50"
+                >
+                  {folder === "archive" ? E._extra.unarchive : E._extra.archive}
+                </button>
+              )}
+              <MailOperationHint enabled={canBulkRead}>
+                <button
+                  type="button"
+                  disabled={bulkBusy || readState.locked || !canBulkRead}
+                  onClick={bulkMarkRead}
+                  className="rounded-md border px-3 py-1 text-sm transition-transform hover:bg-accent active:scale-[0.96] disabled:opacity-50"
+                >
+                  {E._extra.mark_read}
+                </button>
+              </MailOperationHint>
+              <MailOperationHint enabled={canBulkRead}>
+                <button
+                  type="button"
+                  disabled={bulkBusy || readState.locked || !canBulkRead}
+                  onClick={bulkMarkUnread}
+                  className="rounded-md border px-3 py-1 text-sm transition-transform hover:bg-accent active:scale-[0.96] disabled:opacity-50"
+                >
+                  {E._extra.mark_unread}
+                </button>
+              </MailOperationHint>
+            </div>
+          </BulkActionBar>
+        </div>
+      )}
+
+      {(readState.uncertain || readState.failed || bulkError !== null) && (
+        <p role="alert" className="border-b px-3 py-1.5 text-xs text-destructive">
+          {readState.uncertain
+            ? E.remoteActions.bulkReadUnconfirmed
+            : readState.failed
+              ? E.remoteActions.readStatusFailed
+              : bulkError}
+        </p>
+      )}
+
+      <ul className="flex-1 divide-y overflow-y-auto">
+        {showSkeleton && <ThreadRowsSkeleton />}
+        {!pending && threads.length === 0 && (
+          <li className="p-4 text-sm text-muted-foreground">{E.noThreads}</li>
+        )}
+        {threads.map((thread) => (
+          <ThreadRow
+            key={thread.id}
+            thread={thread}
+            folder={folder}
+            active={activeThreadId === thread.id}
+            selected={selection.isSelected(thread.id)}
+            onToggleSelected={selection.toggle}
+            onOpen={(id) => (onSelect !== undefined ? onSelect(id) : router.push(selectHref(id)))}
+            onArchiveDone={afterArchive}
+            onVisibilityChanged={afterVisibilityChange}
+          />
+        ))}
+        {feed.hasMore && (
+          // Paging is per-page, not per-mailbox: the select-all checkbox above covers the rows
+          // currently loaded, matching the People and Orgs lists.
+          <li className="p-2">
+            <button
+              type="button"
+              onClick={feed.loadMore}
+              disabled={feed.loadingMore}
+              className="w-full rounded-md border px-3 py-1.5 text-sm font-medium text-muted-foreground transition-[background-color,opacity,scale] duration-150 ease-out hover:bg-accent active:not-disabled:scale-[0.96] disabled:opacity-60 motion-reduce:transition-[background-color,opacity]"
+            >
+              {feed.loadingMore ? E.loadingMore : E.loadMore}
+            </button>
+          </li>
+        )}
+      </ul>
+    </div>
+  );
+}

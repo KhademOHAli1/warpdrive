@@ -1,0 +1,89 @@
+// PRIVATE_OVERLAY. Helpers only; this file registers no test cases.
+import { createHash, randomUUID } from "node:crypto";
+import { readFile } from "node:fs/promises";
+import { resolve } from "node:path";
+import { sql } from "drizzle-orm";
+import { expect } from "vitest";
+import { withTestDb } from "@/db/testing";
+import { seedUser } from "@/db/testing/factories";
+
+type TestDb = Parameters<Parameters<typeof withTestDb>[0]>[0];
+type Executor = Pick<TestDb, "execute">;
+interface Scope { actorId: string; accountId: string; threadId: string }
+const overlayPath = resolve(process.cwd(), ".runtime/handoffs/mail-read-intent-0102-20261102/0102_mail_read_intents.sql");
+const overlaySha = "390fdee27409509e046352ab1f575a2a9a74a7a1170a197ff0beed7a8b8ad124";
+
+export async function applyPrivateReadIntentOverlay(db: Executor): Promise<void> {
+  const overlay = await readFile(overlayPath, "utf8");
+  expect(createHash("sha256").update(overlay).digest("hex")).toBe(overlaySha);
+  await db.execute(sql.raw(overlay));
+}
+
+export async function withIntentDb(check: (db: TestDb, scope: Scope) => Promise<void>) {
+  await withTestDb(async (db) => {
+    await applyPrivateReadIntentOverlay(db);
+    const actor = await seedUser(db);
+    const account = (await db.execute(sql`INSERT INTO email_accounts (user_id,email_address,status)
+      VALUES (${actor.id},${`${actor.id}@example.test`},'connected') RETURNING id`)).rows[0];
+    if (typeof account?.id !== "string") throw new Error("account fixture missing");
+    const thread = (await db.execute(sql`INSERT INTO email_threads
+      (account_id,gmail_thread_id,subject,last_message_at,visibility)
+      VALUES (${account.id},'read-intent-constraint','Read intent constraint',now(),'private')
+      RETURNING id`)).rows[0];
+    if (typeof thread?.id !== "string") throw new Error("thread fixture missing");
+    await check(db, { actorId: actor.id, accountId: account.id, threadId: thread.id });
+  });
+}
+
+export async function prepare(db: Executor, f: Scope, options: {
+  operationId?: string; expired?: boolean; generation?: number; accountId?: string;
+} = {}) {
+  const id = options.operationId ?? randomUUID();
+  const result = await db.execute(sql`INSERT INTO email_read_intents
+    (actor_id,operation_id,account_id,thread_id,mailbox_owner_id,account_provider,
+      connection_generation,private_copy,desired_read,read_mode,created_at,admit_before)
+    VALUES (${f.actorId},${id},${options.accountId ?? f.accountId},${f.threadId},${f.actorId},'gmail',
+      ${options.generation ?? 1},true,true,'local',clock_timestamp()-interval '2 minutes',
+      CASE WHEN ${options.expired ?? false} THEN clock_timestamp()-interval '1 minute'
+        ELSE clock_timestamp()+interval '1 minute' END)
+    ON CONFLICT DO NOTHING RETURNING operation_id`);
+  return { id, rows: result.rows };
+}
+
+export async function intent(db: Executor, f: Scope, id: string) {
+  const row = (await db.execute(sql`SELECT state,dispatch_claim,admitted_at,terminal_at,error_id,
+    desired_read,connection_generation FROM email_read_intents
+    WHERE actor_id=${f.actorId} AND operation_id=${id}`)).rows[0];
+  if (row === undefined) throw new Error("intent fixture missing");
+  return row;
+}
+
+export async function admit(db: Executor, f: Scope, id: string) {
+  const claim = randomUUID();
+  await db.execute(sql`UPDATE email_read_intents SET state='admitted',
+    dispatch_claim=${claim},admitted_at=clock_timestamp()
+    WHERE actor_id=${f.actorId} AND operation_id=${id}`);
+  return claim;
+}
+
+export async function unknown(db: Executor, f: Scope, id: string) {
+  const claim = await admit(db, f, id);
+  await db.execute(sql`UPDATE email_read_intents SET state='unknown',error_id='E_DB_003'
+    WHERE actor_id=${f.actorId} AND operation_id=${id}`);
+  return claim;
+}
+
+export async function rejected(work: Promise<unknown>, message: string, code = "23514") {
+  let failure: unknown;
+  try { await work; } catch (error) { failure = error; }
+  for (let depth = 0; depth < 8; depth += 1) {
+    if (typeof failure !== "object" || failure === null) break;
+    if ("code" in failure && typeof failure.code === "string") {
+      expect(failure.code).toBe(code);
+      expect("message" in failure ? failure.message : undefined).toEqual(expect.stringContaining(message));
+      return;
+    }
+    failure = "cause" in failure ? failure.cause : undefined;
+  }
+  expect.fail("Expected the real PostgreSQL constraint rejection");
+}

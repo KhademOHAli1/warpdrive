@@ -1,0 +1,108 @@
+// PRIVATE_OVERLAY. Native26 r1 observed three intended RED; amended SQL awaits rerun.
+import { sql } from "drizzle-orm";
+import { expect, it } from "vitest";
+import { admit, intent, prepare, rejected, unknown, withIntentDb } from "./readIntentConstraints.test-fixtures";
+
+it("rejects direct TRUNCATE with an unknown intent and preserves its unresolved barrier", async () => {
+  await withIntentDb(async (db, f) => {
+    const { id } = await prepare(db, f);
+    await unknown(db, f, id);
+    const before = await intent(db, f, id);
+    await rejected(db.execute(sql`TRUNCATE TABLE email_read_intents`), "unresolved mail read intent");
+    expect(await intent(db, f, id)).toEqual(before);
+    expect((await prepare(db, f)).rows).toHaveLength(0);
+  });
+});
+
+it("rejects parent TRUNCATE CASCADE with an unknown intent and preserves its unresolved barrier", async () => {
+  await withIntentDb(async (db, f) => {
+    const { id } = await prepare(db, f);
+    await unknown(db, f, id);
+    const before = await intent(db, f, id);
+    await rejected(db.execute(sql`TRUNCATE TABLE email_accounts CASCADE`), "unresolved mail read intent");
+    expect(await intent(db, f, id)).toEqual(before);
+    expect((await prepare(db, f)).rows).toHaveLength(0);
+    expect((await db.execute(sql`SELECT id FROM email_accounts WHERE id=${f.accountId}`)).rows)
+      .toEqual([{ id: f.accountId }]);
+  });
+});
+
+it("allows direct TRUNCATE when the intent table is empty", async () => {
+  await withIntentDb(async (db, f) => {
+    await db.execute(sql`TRUNCATE TABLE email_read_intents`);
+    expect((await db.execute(sql`SELECT operation_id FROM email_read_intents`)).rows).toHaveLength(0);
+    expect((await prepare(db, f)).rows).toHaveLength(1);
+  });
+});
+
+it("allows direct TRUNCATE when only an applied terminal receipt remains", async () => {
+  await withIntentDb(async (db, f) => {
+    const { id } = await prepare(db, f);
+    await admit(db, f, id);
+    await db.execute(sql`UPDATE email_read_intents SET state='applied',terminal_at=clock_timestamp()
+      WHERE actor_id=${f.actorId} AND operation_id=${id}`);
+    expect(await intent(db, f, id)).toMatchObject({ state: "applied" });
+    await db.execute(sql`TRUNCATE TABLE email_read_intents`);
+    expect((await db.execute(sql`SELECT operation_id FROM email_read_intents`)).rows).toHaveLength(0);
+    expect((await prepare(db, f)).rows).toHaveLength(1);
+  });
+});
+
+it("rejects TRUNCATE from an old repeatable-read snapshot after an independent unknown intent commits", async () => {
+  await withIntentDb(async (db, f) => {
+    const committed = await db.transaction(async (snapshot) => {
+      await snapshot.execute(sql`SET LOCAL statement_timeout='5s'`);
+      await snapshot.execute(sql`SET LOCAL idle_in_transaction_session_timeout='10s'`);
+      expect((await snapshot.execute(sql`SELECT operation_id FROM email_read_intents`)).rows)
+        .toHaveLength(0);
+      const readerPid = (await snapshot.execute(sql`SELECT pg_backend_pid() AS pid`)).rows[0]?.pid;
+      expect(readerPid).toEqual(expect.any(Number));
+
+      // Use the outer database, not snapshot.transaction: this writer must commit independently.
+      const written = await db.transaction(async (writer) => {
+        await writer.execute(sql`SET LOCAL statement_timeout='5s'`);
+        await writer.execute(sql`SET LOCAL idle_in_transaction_session_timeout='10s'`);
+        const writerPid = (await writer.execute(sql`SELECT pg_backend_pid() AS pid`)).rows[0]?.pid;
+        expect(writerPid).toEqual(expect.any(Number));
+        expect(writerPid).not.toBe(readerPid);
+        const { id } = await prepare(writer, f);
+        await unknown(writer, f, id);
+        return { id, before: await intent(writer, f, id) };
+      });
+      expect(await intent(db, f, written.id)).toEqual(written.before);
+      expect(written.before).toMatchObject({ state: "unknown" });
+      expect((await snapshot.execute(sql`SELECT operation_id FROM email_read_intents`)).rows)
+        .toHaveLength(0);
+
+      expect((await snapshot.execute(sql`SELECT
+        pg_relation_size('email_read_intents')>0 AS has_physical_heap`)).rows)
+        .toEqual([{ has_physical_heap: true }]);
+
+      // The savepoint retains the original RR snapshot and drains the expected SQL error.
+      await rejected(snapshot.transaction(async (savepoint) => {
+        await savepoint.execute(sql`TRUNCATE TABLE email_read_intents`);
+      }), "unresolved mail read intent");
+      return written;
+    }, { isolationLevel: "repeatable read" });
+    expect(await intent(db, f, committed.id)).toEqual(committed.before);
+    expect((await prepare(db, f)).rows).toHaveLength(0);
+  });
+});
+
+it("allows repeatable-read TRUNCATE when the physical intent heap has never contained a row", async () => {
+  await withIntentDb(async (db, f) => {
+    await db.transaction(async (snapshot) => {
+      await snapshot.execute(sql`SET LOCAL statement_timeout='5s'`);
+      await snapshot.execute(sql`SET LOCAL idle_in_transaction_session_timeout='10s'`);
+      expect((await snapshot.execute(sql`SELECT
+        pg_relation_size('email_read_intents')=0 AS empty_physical_heap`)).rows)
+        .toEqual([{ empty_physical_heap: true }]);
+      expect((await snapshot.execute(sql`SELECT operation_id FROM email_read_intents`)).rows)
+        .toHaveLength(0);
+      await snapshot.execute(sql`TRUNCATE TABLE email_read_intents`);
+      expect((await snapshot.execute(sql`SELECT operation_id FROM email_read_intents`)).rows)
+        .toHaveLength(0);
+    }, { isolationLevel: "repeatable read" });
+    expect((await prepare(db, f)).rows).toHaveLength(1);
+  });
+});

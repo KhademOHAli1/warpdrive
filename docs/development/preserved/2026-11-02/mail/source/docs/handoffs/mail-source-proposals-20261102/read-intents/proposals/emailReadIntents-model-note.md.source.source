@@ -1,0 +1,39 @@
+# Private Drizzle model proposal
+
+`emailReadIntents.ts` is a concrete, unadopted schema proposal for the adjacent
+`0102_mail_read_intents.sql` draft, identified in `../prepared/PREPARED-TESTS.md`
+as SHA-256 `390fdee27409509e046352ab1f575a2a9a74a7a1170a197ff0beed7a8b8ad124`.
+It was prepared by reading that SQL and the installed repository/Drizzle DSL.
+It has not been compiled, generated, introspected or executed.
+
+The proposal reproduces all 17 columns, nullability, the UUID and prepared-state
+defaults, the actor/operation primary key, both parent foreign keys and the
+thread/account composite foreign key. All three foreign keys use `ON DELETE
+RESTRICT`; their update action stays the SQL default `NO ACTION`. The SQL adds
+no separate mailbox-owner foreign key and no globally unique operation UUID,
+so the model adds neither. Its 12 checks and three indexes match the SQL
+predicates, including the unique prepared/admitted/unknown actor/thread barrier.
+Explicit constraint names follow PostgreSQL's default names for this draft's
+inline checks and ordered unnamed table checks. Main must reconcile those names
+with the canonical snapshot at landing.
+
+All four timestamps use `timestamp(..., { withTimezone: true, mode: "string" })`
+with PostgreSQL's default precision and no application/default clock. This keeps
+database microseconds in the inferred row metadata. `StoredReadIntent` already
+accepts `string | Date` timestamps (nullable for admission/terminal timestamps),
+so string rows fit its timestamp contract without conversion. Only the public
+receipt serializer converts `admitBefore` to ISO milliseconds. Admission expiry,
+marker watermarks and every authority comparison must remain in SQL. The model
+imports concrete parent schema modules and no email-domain modules or schema
+barrel, avoiding a new schema/domain runtime import cycle.
+
+The mutation trigger and statement-level TRUNCATE trigger are SQL-only. The
+model does not claim to enforce prepared-only insertion, immutable fingerprints
+or claims, allowed transitions, terminal/unknown disposition, database-clock
+admission cutoff, unresolved deletion protection, or TRUNCATE/MVCC fencing.
+Those behaviors require the reviewed forward SQL and real qualification.
+
+Main owns canonical schema/index export, migration lineage and snapshot
+reconciliation, plus the unresolved privacy/erasure handling implied by RESTRICT.
+This ignored proposal changes none of those and is not an installed model or
+migration qualification result.
