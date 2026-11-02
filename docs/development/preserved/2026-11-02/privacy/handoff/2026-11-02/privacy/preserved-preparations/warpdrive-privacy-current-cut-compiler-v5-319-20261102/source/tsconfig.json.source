@@ -1,0 +1,35 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["dom", "dom.iterable", "ES2022"],
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": false,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "allowJs": false,
+    "noEmit": true,
+    "incremental": true,
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "resolveJsonModule": true,
+    "allowArbitraryExtensions": true,
+    "plugins": [{ "name": "next" }],
+    "paths": { "@/*": ["./src/*"] }
+  },
+  "include": [
+    "next-env.d.ts",
+    ".typecheck/env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    // Wildcards skip dot-directories, so app routes under one need naming outright or they fall
+    // out of the program in a clean checkout and typed linting cannot resolve them.
+    "src/app/.well-known/**/*.ts",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts"
+  ],
+  "exclude": ["node_modules", "site", "docs-site", ".runtime"]
+}

@@ -1,0 +1,614 @@
+[
+  {
+    "status": " M",
+    "path": "src/features/privacy/disclosureFields.ts"
+  },
+  {
+    "status": " M",
+    "path": "src/features/privacy/identitySelf.ts"
+  },
+  {
+    "status": " M",
+    "path": "src/features/privacy/identityTransaction.ts"
+  },
+  {
+    "status": " M",
+    "path": "src/features/privacy/jobStatus.ts"
+  },
+  {
+    "status": " M",
+    "path": "src/features/privacy/jobStatusBoundaries.integration.test.ts"
+  },
+  {
+    "status": " M",
+    "path": "src/features/privacy/messages/privacyRequest.de.json"
+  },
+  {
+    "status": " M",
+    "path": "src/features/privacy/messages/privacyRequest.en.json"
+  },
+  {
+    "status": " M",
+    "path": "src/features/privacy/messages/privacyRequest.fa.json"
+  },
+  {
+    "status": " M",
+    "path": "src/features/privacy/permissions.ts"
+  },
+  {
+    "status": " M",
+    "path": "src/features/privacy/registryEntries.ts"
+  },
+  {
+    "status": " M",
+    "path": "src/features/privacy/registryIdsPersonalRequests1.ts"
+  },
+  {
+    "status": " M",
+    "path": "src/features/privacy/registryIdsPrivacy1.ts"
+  },
+  {
+    "status": " M",
+    "path": "src/features/privacy/registryIdsRequestServices1.ts"
+  },
+  {
+    "status": " M",
+    "path": "src/features/privacy/selfService.ts"
+  },
+  {
+    "status": " M",
+    "path": "src/features/privacy/ui/OwnPrivacyCaseStatus.tsx"
+  },
+  {
+    "status": " M",
+    "path": "src/features/privacy/ui/PersonalPrivacyWorkspace.tsx"
+  },
+  {
+    "status": " M",
+    "path": "src/features/privacy/ui/ownCaseStatusModel.ts"
+  },
+  {
+    "status": " M",
+    "path": "src/features/privacy/ui/useOwnPrivacyCaseStatus.ts"
+  },
+  {
+    "status": " M",
+    "path": "src/features/privacy/ui/useOwnPrivacyRequestForm.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/__fixtures__/CaseTransitionActionsTestKit.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/__fixtures__/ReviewerActionsTestKit.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/__fixtures__/ReviewerCaseCardTestKit.tsx"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/__fixtures__/ReviewerCaseReferenceEntryTestKit.tsx"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/__fixtures__/reviewerCaseActionsTestKit.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/authorityCompletionExpiry.integration.test.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/authorityCompletionExpiry.test-helpers.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/caseTransitionActions.fencing.test.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/caseTransitionActions.test.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/disclosureFields.limits.test.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/exportArchiveStage.test.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/exportArchiveStage.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/exportArchiveStageTypes.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/exportObjectStore.integration.test.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/exportObjectStore.test-helpers.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/exportObjectStore.test.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/exportObjectStore.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/exportObjectStoreCancellation.integration.test.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/exportObjectStoreCompletion.test.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/exportObjectStoreDiagnostic.integration.test.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/exportObjectStoreDiagnostics.test-helpers.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/exportObjectStoreFailures.integration.test.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/exportObjectStoreObjects.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/exportObjectStoreParts.test.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/exportObjectStoreParts.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/exportObjectStoreProxy.test-helpers.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/exportObjectStoreReadiness.test-helpers.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/exportObjectStoreReadiness.test.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/exportObjectStoreReadinessProtocol.test.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/exportObjectStoreRefs.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/exportObjectStoreTransport.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/exportObjectStoreTypes.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/jobStatusCancellation.test-helpers.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/jobStatusReaderConnection.integration.test.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/jobStatusReaderConnection.test-helpers.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/jobStatusSessionExpiry.integration.test.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/jobStatusSessionExpiry.test-helpers.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/messages/privacyNativeSubjectReview.de.json"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/messages/privacyNativeSubjectReview.en.json"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/messages/privacyNativeSubjectReview.fa.json"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/messages/privacyReviewer.de.json"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/messages/privacyReviewer.en.json"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/messages/privacyReviewer.fa.json"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/messages/privacyReviewerCase.de.json"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/messages/privacyReviewerCase.en.json"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/messages/privacyReviewerCase.fa.json"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/messages/privacyReviewerVerification.de.json"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/messages/privacyReviewerVerification.en.json"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/messages/privacyReviewerVerification.fa.json"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/nativeSubjectProjection.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/nativeSubjectReview.barrier.test-helpers.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/nativeSubjectReview.barriers.integration.test.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/nativeSubjectReview.boundaries.integration.test.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/nativeSubjectReview.integration.test.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/nativeSubjectReview.test-helpers.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/nativeSubjectReview.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/nativeSubjectReview.values.integration.test.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/nativeSubjectReviewActions.contract.test.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/nativeSubjectReviewActions.fencing.test.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/nativeSubjectReviewActions.test.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/nativeSubjectReviewActionsTestKit.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/nativeSubjectReviewTypes.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/privacyNativeSubjectReviewMessages.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/privacyObservationCancellation.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/privacyObservationConnection.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/privacyObservationPoolErrors.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/privacyReviewerCaseMessages.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/privacyReviewerMessages.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/privacyReviewerVerificationMessages.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/registryClassificationsExportStorage.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/registryIdsExportStorage1.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/retentionPreview.test.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/retentionPreview.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/retentionPreviewSchemas.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/reviewerActions.fencing.test.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/reviewerActions.test.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/reviewerActions.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/reviewerCase.barrier.test-helpers.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/reviewerCase.barriers.integration.test.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/reviewerCase.boundaries.integration.test.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/reviewerCase.integration.test.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/reviewerCase.test-helpers.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/reviewerCase.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/reviewerCaseActions.fencing.test.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/reviewerCaseActions.test.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/reviewerCaseTypes.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/rollbackAckAbort.integration.test.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/rollbackAckAbort.test-helpers.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/ui/ExistingPrivacyEmailVerification.reviewer.test.tsx"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/ui/ExistingPrivacyEmailVerification.test.tsx"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/ui/ExistingPrivacyMfaBoundary.reviewer.test.tsx"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/ui/NativeSubjectReviewCard.lifecycle.test.tsx"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/ui/NativeSubjectReviewCard.test.tsx"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/ui/NativeSubjectReviewCard.tsx"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/ui/NativeSubjectReviewCard.values.test.tsx"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/ui/NativeSubjectReviewCardTestKit.tsx"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/ui/NativeSubjectReviewDetails.tsx"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/ui/NativeSubjectReviewField.icu.test.tsx"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/ui/NativeSubjectReviewField.tsx"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/ui/PersonalPrivacyWorkspace.reviewer.test.tsx"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/ui/PersonalPrivacyWorkspace.sourceReview.test.tsx"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/ui/ReviewerCaseCard.lifecycle.test.tsx"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/ui/ReviewerCaseCard.test.tsx"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/ui/ReviewerCaseCard.tsx"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/ui/ReviewerCaseCardDetails.tsx"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/ui/ReviewerCaseCardModel.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/ui/ReviewerCaseCardOriginal.tsx"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/ui/ReviewerCaseReferenceEntry.lifecycle.test.tsx"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/ui/ReviewerCaseReferenceEntry.test.tsx"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/ui/ReviewerCaseReferenceEntry.tsx"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/ui/ReviewerIntakeCard.boundaries.test.tsx"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/ui/ReviewerIntakeCard.lifecycle.test.tsx"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/ui/ReviewerIntakeCard.test.tsx"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/ui/ReviewerIntakeCard.tsx"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/ui/ReviewerIntakeTestKit.tsx"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/ui/ReviewerVerificationStart.denialRecovery.test.tsx"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/ui/ReviewerVerificationStart.lifecycle.test.tsx"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/ui/ReviewerVerificationStart.presentation.test.tsx"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/ui/ReviewerVerificationStart.test.tsx"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/ui/ReviewerVerificationStart.tsx"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/ui/__fixtures__/ExistingPrivacyEmailVerificationTestKit.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/ui/__fixtures__/NativeSubjectReviewFieldIcuTestKit.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/ui/__fixtures__/ReviewerVerificationStartTestKit.tsx"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/ui/nativeSubjectReviewCardModel.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/ui/reviewerIntakeModel.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/ui/reviewerVerificationStartModel.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/ui/useNativeSubjectReview.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/ui/useReviewerCaseCard.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/ui/useReviewerIntake.ts"
+  },
+  {
+    "status": "??",
+    "path": "src/features/privacy/ui/useReviewerVerificationStart.ts"
+  },
+  {
+    "status": " M",
+    "path": "docs/privacy-implementation-status.md"
+  },
+  {
+    "status": "??",
+    "path": "docs/privacy-export-stage.md"
+  },
+  {
+    "status": "??",
+    "path": "docs/privacy-export-storage.md"
+  },
+  {
+    "status": "??",
+    "path": "docs/privacy-reviewer-intake.md"
+  }
+]

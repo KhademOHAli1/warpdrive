@@ -1,0 +1,41 @@
+{
+  "exitCode": 1,
+  "stop": null,
+  "elapsed": 0.7548177499556914,
+  "samples": [
+    {
+      "metrics": {
+        "level": 1,
+        "q": 53,
+        "disk": 14833123328
+      },
+      "rssKiB": 8592
+    },
+    {
+      "metrics": {
+        "level": 1,
+        "q": 53,
+        "disk": 14833123328
+      },
+      "rssKiB": 146656
+    },
+    {
+      "metrics": {
+        "level": 1,
+        "q": 53,
+        "disk": 14833086464
+      },
+      "rssKiB": 158976
+    },
+    {
+      "metrics": {
+        "level": 1,
+        "q": 53,
+        "disk": 14833037312
+      },
+      "rssKiB": 179680
+    }
+  ],
+  "scope": "Configured sonarjs/cognitive-complexity15 rule ONLY, AST2files project:false/projectService:false; NOTwholeconfigured/typeawareESLint/fullstatic/nativeproof",
+  "priorProbeCorrection": "complexity-only.log used corecyclomaticrule, not configuredcognitiverule; findingsnotactionable/usedforchange"
+}

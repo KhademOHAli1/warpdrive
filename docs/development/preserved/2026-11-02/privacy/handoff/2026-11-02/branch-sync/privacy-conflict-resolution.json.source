@@ -1,0 +1,191 @@
+{
+  "atUtc": "2026-11-02T08:36:02.374402+00:00",
+  "scope": "Privacy merge conflicts only; no source/ref/push/test/service mutation outside candidate",
+  "oldHead": "05c99625341f85928b10e73df9e7fda0ae6955af",
+  "main": "09288d518fd574fd069fb6a1dc670596f71a8831",
+  "candidate": "/private/tmp/warpdrive-branch-sync-20261102-__96l2qz/privacy/repo",
+  "paths": [
+    {
+      "path": "docs/privacy-implementation-status.md",
+      "beforeMergeMarkerBlobSha256": "80f688814eed83927d14c2a38d3f68c39947b8be9470f9962545d65bb65b5719",
+      "afterSha256": "78a768a1f8c980d2dd24c991c682e53900af1550580f7f342055e737ea1e11d9"
+    },
+    {
+      "path": "src/constants/errorIds.ts",
+      "beforeMergeMarkerBlobSha256": "5f423b616ac09cf115bb55537d855af218e0c0da85394af1815f61e2718519e7",
+      "afterSha256": "d578ad0f39a4ed573e72094e572efd99f9d1fcf2e482d8d6f109037dfa7d7d6c"
+    },
+    {
+      "path": "src/features/privacy/authorityCompletionExpiry.test-helpers.ts",
+      "beforeMergeMarkerBlobSha256": "e43a4fd2be8f90571fb1ff66a4371cdbc96e56f3bb1c32f1cb08d89c68c7c10d",
+      "afterSha256": "4f5de9d62502d890a6381a1cfe7bb0431ed735721239f4cc3673c96dba3b1bee"
+    },
+    {
+      "path": "src/features/privacy/registryIdsPersonalRequests1.ts",
+      "beforeMergeMarkerBlobSha256": "df08eddde92fb794f8e2723b70fe0b7db76ff32839f5dbadc16524f74f113553",
+      "afterSha256": "1789cbe26d711ef94f5fb5b771924b2588c967d35dc8ac6b978fe950c6c9d814"
+    },
+    {
+      "path": "src/features/privacy/reviewerActions.ts",
+      "beforeMergeMarkerBlobSha256": "bb2b77d3da1dc042d103ccaf61d295e5495d5d798e42097d69190b82eb0e2f7b",
+      "afterSha256": "47e7bfc0d81161ad4b699bd4b2ad3d962203c5592f79020f867bda09261251ed"
+    },
+    {
+      "path": "src/features/privacy/ui/ReviewerIntakeCard.tsx",
+      "beforeMergeMarkerBlobSha256": "08379526155964c8e655c05b896d1852a9f1ae85acad96d3d939030c3f566633",
+      "afterSha256": "e3e1fcfde63833e69cf502f0fc031c6e61fc36559536e5169ca47478932ebd74"
+    },
+    {
+      "path": "src/features/privacy/ui/useReviewerIntake.ts",
+      "beforeMergeMarkerBlobSha256": "ad58755dd7babf384fc20e8f7e07e799750cabf7f5c9b2ee233900eaaf620ed2",
+      "afterSha256": "1152edc1e7284d1ee1e2ca683dccc3ecd4afbba33adbb7b61d456e3df638a492"
+    },
+    {
+      "path": "src/features/privacy/registryIdsRequestServices1.ts",
+      "beforeMergeMarkerBlobSha256": "26b6e24d6ceca16fb44f64daef2758795150e58c52f854f48240e59e750fdec6",
+      "afterSha256": "ec5eef4e2cd906d8debb7637d9e3fc03227e941def0173d650e7a406385e0955"
+    }
+  ],
+  "resolutions": [
+    {
+      "path": "src/features/privacy/reviewerActions.ts",
+      "resolution": "Retain private additive APIs/verification UI. Main common runtime guards and functions are identical; no main-only implementation removed.",
+      "selected": "reviewed branch additive superset"
+    },
+    {
+      "path": "src/features/privacy/ui/ReviewerIntakeCard.tsx",
+      "resolution": "Retain private additive APIs/verification UI. Main common runtime guards and functions are identical; no main-only implementation removed.",
+      "selected": "reviewed branch additive superset"
+    },
+    {
+      "path": "src/features/privacy/ui/useReviewerIntake.ts",
+      "resolution": "Retain private additive APIs/verification UI. Main common runtime guards and functions are identical; no main-only implementation removed.",
+      "selected": "reviewed branch additive superset"
+    },
+    {
+      "path": "src/features/privacy/authorityCompletionExpiry.test-helpers.ts",
+      "resolution": "Keep public self-contained native snapshot; same SQL/guards, no dependency on private status reader.",
+      "selected": "reviewed main superset"
+    },
+    {
+      "path": "src/constants/errorIds.ts",
+      "resolution": "Main is a strict key/value superset of the old registry; keeps every private privacy ID and all newer integration/mail/workflow/preferences IDs.",
+      "selected": "reviewed main superset"
+    },
+    {
+      "path": "docs/privacy-implementation-status.md",
+      "resolution": "Main retains dated private history and adds GitHub execution authority, historical heading and updated source dispositions.",
+      "selected": "reviewed main superset"
+    },
+    {
+      "path": "src/features/privacy/registryIdsPersonalRequests1.ts",
+      "resolution": "Retain main identifier roster and all newer recovery/guard digests. Rebind only the two directly merged private reviewer UI sources.",
+      "digestUpdates": [
+        {
+          "path": "src/features/privacy/ui/ReviewerIntakeCard.tsx",
+          "previousMainDigest": "989b01a46a83e6985f84be4a1803d64635d203d7822892d150fa2a96f3f5a2ac",
+          "newDigest": "e3e1fcfde63833e69cf502f0fc031c6e61fc36559536e5169ca47478932ebd74"
+        },
+        {
+          "path": "src/features/privacy/ui/useReviewerIntake.ts",
+          "previousMainDigest": "dfb0772afb8d0507bd4e4a6abb0594f5d08d3a19a861feb6621e024b846bfc71",
+          "newDigest": "1152edc1e7284d1ee1e2ca683dccc3ecd4afbba33adbb7b61d456e3df638a492"
+        }
+      ]
+    },
+    {
+      "path": "src/features/privacy/registryIdsRequestServices1.ts",
+      "resolution": "Direct companion digest-only rebinding for reviewed private additive action exports; other records unchanged.",
+      "digestUpdates": [
+        {
+          "path": "src/features/privacy/reviewerActions.ts",
+          "previousDigest": "882c04ef35792a161cdaa2d113ca964169b9771dd2b8f2aeb2905d8c3ca3bb04",
+          "newDigest": "47e7bfc0d81161ad4b699bd4b2ad3d962203c5592f79020f867bda09261251ed"
+        }
+      ]
+    }
+  ],
+  "checks": {
+    "sevenConflictPathsResolved": true,
+    "mainReviewerActionGuardBodyByteIdentical": true,
+    "allOldErrorIdsPreservedWithMainSuperset": true,
+    "all33PersonalRequestsSourceDigestsMatchCandidate": true,
+    "otherManualDigestsNotRefreshed": true,
+    "nativeTestsRun": 0,
+    "compilersRun": 0,
+    "servicesStarted": 0,
+    "mainOrRefChanged": false,
+    "scopedDiffCheckPass": true,
+    "typescriptParserOnlyFiles": 7,
+    "typescriptParseDiagnostics": 0,
+    "configuredTypecheckRun": false,
+    "diffCheckScratch": "/private/tmp/privacy-merge-scope-check-7rri5067",
+    "mainExpiryGuardFourAndRecoverySevenByteExact": [
+      {
+        "path": "src/features/privacy/permissions.ts",
+        "sha256": "90f8f0bece98c9034ccbf824c3a729385d6eb77ba9857ce589257a647a12295a"
+      },
+      {
+        "path": "src/features/privacy/identityTransaction.ts",
+        "sha256": "04f4e3c02dd5371f52447940609b29d17474c784a8d50b195f8d39a6760fa042"
+      },
+      {
+        "path": "src/features/privacy/selfService.ts",
+        "sha256": "2cfa96c971211fa36f8ab6581487538d74540901388749f25ea06854cff80b9e"
+      },
+      {
+        "path": "src/features/privacy/identitySelf.ts",
+        "sha256": "7821b4ea5b20997e30a8720eba98330851db210b525c8e51506e478460beb5b5"
+      },
+      {
+        "path": "src/features/privacy/ui/PersonalPrivacyWorkspace.tsx",
+        "sha256": "0f3fb5128d27f7fe30acc1ecf60f338cb17c88ba12f79f313525b9d7e5886fcc"
+      },
+      {
+        "path": "src/features/privacy/ui/OwnPrivacyCaseStatus.tsx",
+        "sha256": "4ff6f22ce72cbcbf7bf43a2b3cdcbb0dce097cb586b8d351e6780a26ee1dde86"
+      },
+      {
+        "path": "src/features/privacy/ui/OwnPrivacyRequestForm.tsx",
+        "sha256": "85240e297107ed50bf0f160dc6e4ff7f9c20e8ea296ea10585f6620e4f041c7b"
+      },
+      {
+        "path": "src/features/privacy/ui/ownCaseStatusModel.ts",
+        "sha256": "700003f883f0c6732331f32929f775c82353a1262be90934e616b945df3374a3"
+      },
+      {
+        "path": "src/features/privacy/ui/ownRequestFormModel.ts",
+        "sha256": "ffd6af978c3601d71aa6d54a20b8bb39968f1189cfdbc1a7a9757d4b71e30019"
+      },
+      {
+        "path": "src/features/privacy/ui/useOwnPrivacyCaseStatus.ts",
+        "sha256": "e6e2c3473b3af1308ba470dd907ae7ce3d136995e3ebe036ce79bcb695317f2a"
+      },
+      {
+        "path": "src/features/privacy/ui/useOwnPrivacyRequestForm.ts",
+        "sha256": "7a6a760828368bf2e14a19439990e4f9fe17235a3be191ebd39b306108b83a7c"
+      }
+    ]
+  },
+  "validationStillRequired": [
+    "Relevant focused action/fencing and intake/verification component checks on the merged candidate",
+    "Configured current-cut types/typed lint/inventory before feature acceptance; not supplied by this branch sync",
+    "No unchanged public native10 rerun requested solely for synchronization; future activation/admission must qualify its actual changed cut"
+  ],
+  "deferredSource": [],
+  "suggestedFocusedFiles": [
+    "src/features/privacy/reviewerActions.test.ts",
+    "src/features/privacy/reviewerActions.fencing.test.ts",
+    "src/features/privacy/nativeSubjectReviewActions.contract.test.ts",
+    "src/features/privacy/nativeSubjectReviewActions.fencing.test.ts",
+    "src/features/privacy/caseTransitionActions.test.ts",
+    "src/features/privacy/caseTransitionActions.fencing.test.ts",
+    "src/features/privacy/ui/ReviewerIntakeCard.test.tsx",
+    "src/features/privacy/ui/ReviewerIntakeCard.boundaries.test.tsx",
+    "src/features/privacy/ui/ReviewerIntakeCard.lifecycle.test.tsx",
+    "src/features/privacy/ui/ReviewerVerificationStart.test.tsx",
+    "src/features/privacy/ui/ReviewerVerificationStart.lifecycle.test.tsx",
+    "src/features/privacy/ui/ReviewerVerificationStart.denialRecovery.test.tsx",
+    "src/features/privacy/ui/ReviewerVerificationStart.presentation.test.tsx"
+  ]
+}

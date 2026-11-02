@@ -1,5 +1,8 @@
 // Reviewed identifiers. New or changed boundaries require inventory review, never automatic acceptance.
 export const privacyIds1: string[] = [
+  // Supplied-metadata validation only; the preview remains unmounted and executable:false.
+  "derived:src/features/privacy/retentionPreviewSchemas.ts",
+  "sourceReview:src/features/privacy/retentionPreviewSchemas.ts#87a2b23d11feae22f999e82d28cf4a25fd4fd5db080ead6fa1aff6f9e43887ab",
   "derived:src/features/privacy/authorityManagement.ts",
   "derived:src/features/privacy/capabilities.ts",
   "derived:src/features/privacy/permissions.ts",
