@@ -1,8 +1,22 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render as rawRender, screen, waitFor } from "@testing-library/react";
+import type { ReactNode } from "react";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+import { NativeActorProvider } from "@/features/identity/NativeActorProvider";
+import { clearRetainedCreation, readRetainedCreation } from "./retainedCreation";
+
+const ACTOR = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+function render(ui: ReactNode) {
+  return rawRender(ui, {
+    wrapper: ({ children }) => (
+      <NativeActorProvider key={ACTOR} actorId={ACTOR}>
+        {children}
+      </NativeActorProvider>
+    ),
+  });
+}
 
 beforeAll(() => {
   Element.prototype.scrollIntoView = vi.fn();
@@ -12,11 +26,25 @@ beforeAll(() => {
 
 afterEach(() => {
   cleanup();
+  const pending = readRetainedCreation(ACTOR);
+  if (pending !== null) clearRetainedCreation(ACTOR, pending.id);
   vi.clearAllMocks();
 });
 
 vi.mock("@/lib/trpc-client", () => ({
   trpc: {
+    useUtils: () => ({
+      client: {
+        deal: {
+          board: {
+            query: () =>
+              Promise.resolve({
+                cards: [{ id: "d1", writeVersion: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb" }],
+              }),
+          },
+        },
+      },
+    }),
     contacts: {
       personOptions: { useQuery: () => ({ data: [] }) },
       orgOptions: { useQuery: () => ({ data: [] }) },
@@ -33,7 +61,14 @@ vi.mock("@/lib/trpc-client", () => ({
 const { createDealAction } = vi.hoisted(() => ({
   createDealAction: vi.fn(() => Promise.resolve({ ok: true as const, deal: null })),
 }));
-vi.mock("./createDealAction", () => ({ createDealAction }));
+vi.mock("./nativeCreateAction", () => ({
+  createNativeDealAction: createDealAction,
+  readNativeDealCreationAction: vi.fn(),
+}));
+vi.mock("./nativeContactActions", () => ({
+  createDealOrgAction: vi.fn(),
+  createDealPersonAction: vi.fn(),
+}));
 vi.mock("@/features/contacts/actions", () => ({
   createPersonAction: vi.fn(),
   createOrgAction: vi.fn(),
@@ -48,8 +83,8 @@ import {
 } from "@/features/identity/InterfacePrefsProvider";
 import { AddDealModal } from "./AddDealModal";
 
-const PIPE = "11111111-1111-1111-1111-111111111111";
-const STAGE_A = "22222222-2222-2222-2222-222222222222";
+const PIPE = "11111111-1111-4111-8111-111111111111";
+const STAGE_A = "22222222-2222-4222-8222-222222222222";
 
 describe("AddDealModal when the created deal is hidden from its creator", () => {
   it("tells the creator the deal was created but is hidden from them, and closes on OK", async () => {

@@ -71,6 +71,8 @@ export const ERROR_IDS = {
   DEAL_BULK_INPUT_INVALID: "E_DEAL_015",
   DEAL_BULK_ARCHIVE_PARTIAL: "E_DEAL_016",
   DEAL_BULK_STAGE_PARTIAL: "E_DEAL_017",
+  DEAL_CREATE_INPUT_INVALID: "E_DEAL_018", // unsupported or malformed immutable native creation protocol
+  DEAL_CREATE_OPERATION_CONFLICT: "E_DEAL_019", // operation already bound to another intent
   // LEAD
   LEAD_NOT_FOUND: "E_LEAD_001", // lead not found or not visible (404-on-invisible)
   LEAD_ARCHIVE_FORBIDDEN: "E_LEAD_002", // archive denied: lead not visible/owned by actor

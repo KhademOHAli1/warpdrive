@@ -16,6 +16,8 @@ export interface EntityCreateModalShellProps {
   error: string | null;
   pending: boolean;
   submitDisabled?: boolean;
+  fieldsDisabled?: boolean;
+  submitLabel?: string;
   onSubmit: () => void;
   onClose: () => void;
 }
@@ -35,6 +37,8 @@ export function EntityCreateModalShell(props: EntityCreateModalShellProps): Reac
     error,
     pending,
     submitDisabled,
+    fieldsDisabled,
+    submitLabel,
     onSubmit,
     onClose,
   } = props;
@@ -46,12 +50,15 @@ export function EntityCreateModalShell(props: EntityCreateModalShellProps): Reac
       error={error}
       pending={pending}
       submitDisabled={submitDisabled}
+      submitLabel={submitLabel}
       onSubmit={onSubmit}
       onClose={onClose}
     >
       {/* min-w-0 lets both fr tracks shrink to the dialog instead of overflowing it. */}
-      <div className="min-w-0">{leftColumn}</div>
-      <div className="min-w-0">
+      <fieldset disabled={fieldsDisabled} className="min-w-0">
+        {leftColumn}
+      </fieldset>
+      <fieldset disabled={fieldsDisabled} className="min-w-0">
         <AddDealPersonColumn
           disabled={personMode !== "new"}
           phones={phones}
@@ -60,7 +67,7 @@ export function EntityCreateModalShell(props: EntityCreateModalShellProps): Reac
           onEmails={onEmails}
         />
         {personMode === "new" ? personCustomFields : null}
-      </div>
+      </fieldset>
     </EntityCreateDialogShell>
   );
 }

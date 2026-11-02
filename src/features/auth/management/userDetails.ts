@@ -1,7 +1,9 @@
 import { and, count, eq, gt, isNull } from "drizzle-orm";
 import type { Db } from "@/db/client";
 import { authAccounts, authPasskeys, authUsers, sessions, users } from "@/db/schema";
+import { withCurrentAuthority } from "@/features/auth/currentAuthority";
 import type { PermSetUser } from "@/features/permissions/effective";
+import { hydrateActor } from "@/server/hydrateActor";
 import { err, ok, type Result } from "@/types/result";
 import { recordSecurityEvent } from "./audit";
 import type { ManagedUserDetails } from "./contracts";
@@ -67,34 +69,47 @@ export async function readManagedUserDetails(
 }
 
 export async function revokeManagedSession(
-  db: Db,
-  actor: PermSetUser,
+  sourceDb: Db,
+  requestActor: PermSetUser,
   userId: string,
   sessionId: string,
   signal: AbortSignal,
 ): Promise<Result<true, "forbidden" | "not_found">> {
-  if (!actor.isActive || actor.type !== "admin") return err("forbidden");
-  signal.throwIfAborted();
-  return db.transaction(async (tx) => {
-    const [revoked] = await tx
-      .update(sessions)
-      .set({ revokedAt: new Date() })
-      .where(
-        and(eq(sessions.id, sessionId), eq(sessions.userId, userId), isNull(sessions.revokedAt)),
-      )
-      .returning({ id: sessions.id });
-    if (revoked === undefined) return err("not_found");
-    await recordSecurityEvent(
-      tx,
-      {
-        actorId: actor.id,
-        targetUserId: userId,
-        action: "session.admin_revoke",
-        outcome: "success",
-      },
-      signal,
-    );
-    await enqueueUserSecurityNotice(tx, userId, "admin_sessions", signal);
-    return ok(true);
-  });
+  return withCurrentAuthority(
+    sourceDb,
+    "write",
+    signal,
+    async (db): Promise<Result<true, "forbidden" | "not_found">> => {
+      const actor = await hydrateActor(db, requestActor.id, signal);
+      if (actor === null) return err("forbidden");
+      if (!actor.isActive || actor.type !== "admin") return err("forbidden");
+      signal.throwIfAborted();
+      return db.transaction(async (tx) => {
+        const [revoked] = await tx
+          .update(sessions)
+          .set({ revokedAt: new Date() })
+          .where(
+            and(
+              eq(sessions.id, sessionId),
+              eq(sessions.userId, userId),
+              isNull(sessions.revokedAt),
+            ),
+          )
+          .returning({ id: sessions.id });
+        if (revoked === undefined) return err("not_found");
+        await recordSecurityEvent(
+          tx,
+          {
+            actorId: actor.id,
+            targetUserId: userId,
+            action: "session.admin_revoke",
+            outcome: "success",
+          },
+          signal,
+        );
+        await enqueueUserSecurityNotice(tx, userId, "admin_sessions", signal);
+        return ok(true);
+      });
+    },
+  );
 }

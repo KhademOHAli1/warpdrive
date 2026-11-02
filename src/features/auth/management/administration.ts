@@ -3,9 +3,11 @@ import type { Db } from "@/db/client";
 import { activities, deals, leads, organizations, persons, users } from "@/db/schema";
 import { authRecoveryRequests } from "@/db/schema/authManagement";
 import { lockAuthAccount } from "@/features/auth/better/accountLock";
+import { withCurrentAuthority } from "@/features/auth/currentAuthority";
 import type { Locale } from "@/features/i18n/registry";
 import { setUserActive } from "@/features/identity/users.service";
 import type { PermSetUser } from "@/features/permissions/effective";
+import { hydrateActor } from "@/server/hydrateActor";
 import { err, ok, type Result } from "@/types/result";
 import { recordSecurityEvent } from "./audit";
 import { enqueueAuthMail } from "./mail";
@@ -67,79 +69,103 @@ export async function createRecoveryRequest(
 
 // Reviewing a case is not a factor reset. The operator must follow the ownership-verification runbook.
 export async function reviewRecoveryRequest(
-  db: Db,
-  actor: PermSetUser,
+  sourceDb: Db,
+  requestActor: PermSetUser,
   id: string,
   status: "approved" | "rejected" | "resolved",
   signal: AbortSignal,
 ): Promise<Result<true, string>> {
-  if (!actor.isActive || actor.type !== "admin") return err("forbidden");
-  signal.throwIfAborted();
-  return db.transaction(async (tx) => {
-    const [request] = await tx
-      .select()
-      .from(authRecoveryRequests)
-      .where(eq(authRecoveryRequests.id, id))
-      .for("update");
-    if (request === undefined || request.status === "resolved" || request.status === "rejected")
-      return err("not_found");
-    if (request.kind === "factor_recovery" && request.userId === actor.id) return err("forbidden");
-    if (status === "resolved") {
-      if (request.kind !== "account_closure" || request.status !== "approved")
-        return err("forbidden");
-      const suspended = await setUserActive(
-        tx,
-        actor,
-        { userId: request.userId, isActive: false },
-        signal,
-      );
-      if (!suspended.ok) return suspended;
-    }
-    await tx
-      .update(authRecoveryRequests)
-      .set({ status, reviewedBy: actor.id, reviewedAt: new Date() })
-      .where(eq(authRecoveryRequests.id, id));
-    await recordSecurityEvent(
-      tx,
-      {
-        actorId: actor.id,
-        targetUserId: request.userId,
-        action: "recovery.review",
-        outcome: "success",
-        metadata: { operation: status },
-      },
-      signal,
-    );
-    return ok(true);
-  });
+  return withCurrentAuthority(
+    sourceDb,
+    "write",
+    signal,
+    async (db): Promise<Result<true, string>> => {
+      const actor = await hydrateActor(db, requestActor.id, signal);
+      if (actor === null) return err("forbidden");
+      if (!actor.isActive || actor.type !== "admin") return err("forbidden");
+      signal.throwIfAborted();
+      return db.transaction(async (tx) => {
+        const [request] = await tx
+          .select()
+          .from(authRecoveryRequests)
+          .where(eq(authRecoveryRequests.id, id))
+          .for("update");
+        if (request === undefined || request.status === "resolved" || request.status === "rejected")
+          return err("not_found");
+        if (request.kind === "factor_recovery" && request.userId === actor.id)
+          return err("forbidden");
+        if (status === "resolved") {
+          if (request.kind !== "account_closure" || request.status !== "approved")
+            return err("forbidden");
+          const suspended = await setUserActive(
+            tx,
+            actor,
+            { userId: request.userId, isActive: false },
+            signal,
+          );
+          if (!suspended.ok) return suspended;
+        }
+        await tx
+          .update(authRecoveryRequests)
+          .set({ status, reviewedBy: actor.id, reviewedAt: new Date() })
+          .where(eq(authRecoveryRequests.id, id));
+        await recordSecurityEvent(
+          tx,
+          {
+            actorId: actor.id,
+            targetUserId: request.userId,
+            action: "recovery.review",
+            outcome: "success",
+            metadata: { operation: status },
+          },
+          signal,
+        );
+        return ok(true);
+      });
+    },
+  );
 }
 
 export async function revokeManagedUserAccess(
-  db: Db,
-  actor: PermSetUser,
+  sourceDb: Db,
+  requestActor: PermSetUser,
   userId: string,
   signal: AbortSignal,
 ): Promise<Result<true, "forbidden" | "not_found">> {
-  if (!actor.isActive || actor.type !== "admin") return err("forbidden");
-  signal.throwIfAborted();
-  return db.transaction(async (tx) => {
-    await lockAuthAccount(tx, userId, signal);
-    await lockMcpGrants(tx, signal);
-    const [user] = await tx
-      .select({ id: users.id })
-      .from(users)
-      .where(eq(users.id, userId))
-      .for("update");
-    if (user === undefined) return err("not_found");
-    await revokeUserAccess(tx, userId, signal);
-    await recordSecurityEvent(
-      tx,
-      { actorId: actor.id, targetUserId: userId, action: "user.revoke_access", outcome: "success" },
-      signal,
-    );
-    await enqueueUserSecurityNotice(tx, userId, "admin_sessions", signal);
-    return ok(true);
-  });
+  return withCurrentAuthority(
+    sourceDb,
+    "write",
+    signal,
+    async (db): Promise<Result<true, "forbidden" | "not_found">> => {
+      const actor = await hydrateActor(db, requestActor.id, signal);
+      if (actor === null) return err("forbidden");
+      if (!actor.isActive || actor.type !== "admin") return err("forbidden");
+      signal.throwIfAborted();
+      return db.transaction(async (tx) => {
+        await lockAuthAccount(tx, userId, signal);
+        await lockMcpGrants(tx, signal);
+        const [user] = await tx
+          .select({ id: users.id })
+          .from(users)
+          .where(eq(users.id, userId))
+          .for("update");
+        if (user === undefined) return err("not_found");
+        await revokeUserAccess(tx, userId, signal);
+        await recordSecurityEvent(
+          tx,
+          {
+            actorId: actor.id,
+            targetUserId: userId,
+            action: "user.revoke_access",
+            outcome: "success",
+          },
+          signal,
+        );
+        await enqueueUserSecurityNotice(tx, userId, "admin_sessions", signal);
+        return ok(true);
+      });
+    },
+  );
 }
 
 export async function transferUserOwnership(

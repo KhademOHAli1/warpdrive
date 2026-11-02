@@ -1,8 +1,23 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render as rawRender, screen, waitFor } from "@testing-library/react";
+import type { ReactNode } from "react";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+import { NativeActorProvider } from "@/features/identity/NativeActorProvider";
+import type { NativeDealCreateResult } from "./nativeCreateTypes";
+import { clearRetainedCreation, readRetainedCreation } from "./retainedCreation";
+
+const ACTOR = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+function render(ui: ReactNode) {
+  return rawRender(ui, {
+    wrapper: ({ children }) => (
+      <NativeActorProvider key={ACTOR} actorId={ACTOR}>
+        {children}
+      </NativeActorProvider>
+    ),
+  });
+}
 
 beforeAll(() => {
   Element.prototype.scrollIntoView = vi.fn();
@@ -12,10 +27,32 @@ beforeAll(() => {
 
 afterEach(() => {
   cleanup();
+  const pending = readRetainedCreation(ACTOR);
+  if (pending !== null) clearRetainedCreation(ACTOR, pending.id);
   vi.clearAllMocks();
   customFieldDefs.splice(0);
 });
 
+const { readBoard } = vi.hoisted(() => ({
+  readBoard: vi.fn(() =>
+    Promise.resolve({
+      cards: [{ id: "d1", writeVersion: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb" }],
+    }),
+  ),
+}));
+const { readCreation } = vi.hoisted(() => ({
+  readCreation: vi.fn<(...args: unknown[]) => Promise<NativeDealCreateResult>>(() =>
+    Promise.resolve({
+      ok: true,
+      replayed: true,
+      deal: {
+        id: "d1",
+        updatedAt: "2026-11-02T00:00:00.000Z",
+        writeVersion: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+      },
+    }),
+  ),
+}));
 const { customFieldDefs } = vi.hoisted(() => ({
   customFieldDefs: [] as Array<Record<string, unknown>>,
 }));
@@ -24,9 +61,26 @@ const { customFieldDefs } = vi.hoisted(() => ({
 // fields stay hidden (the 403 path).
 vi.mock("@/lib/trpc-client", () => ({
   trpc: {
+    useUtils: () => ({
+      client: {
+        deal: {
+          board: {
+            query: readBoard,
+          },
+        },
+      },
+    }),
     contacts: {
-      personOptions: { useQuery: () => ({ data: [{ id: "pe1", name: "Jane Roe" }] }) },
-      orgOptions: { useQuery: () => ({ data: [{ id: "or1", name: "Acme Inc" }] }) },
+      personOptions: {
+        useQuery: () => ({
+          data: [{ id: "11111111-1111-4111-8111-111111111111", name: "Jane Roe" }],
+        }),
+      },
+      orgOptions: {
+        useQuery: () => ({
+          data: [{ id: "22222222-2222-4222-8222-222222222222", name: "Acme Inc" }],
+        }),
+      },
     },
     labels: { listByTarget: { useQuery: () => ({ data: [] }) } },
     identity: {
@@ -44,15 +98,38 @@ vi.mock("@/lib/trpc-client", () => ({
 }));
 
 const { createDealAction } = vi.hoisted(() => ({
-  createDealAction: vi.fn(() =>
-    Promise.resolve({ ok: true as const, deal: { id: "d1", updatedAt: "x" } }),
+  createDealAction: vi.fn<(raw: unknown, csrf: string | null) => Promise<NativeDealCreateResult>>(
+    () =>
+      Promise.resolve({
+        ok: true as const,
+        deal: {
+          id: "d1",
+          updatedAt: "2026-11-02T00:00:00.000Z",
+          writeVersion: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+        },
+        replayed: false,
+      }),
   ),
 }));
 const { createPersonAction, createOrgAction } = vi.hoisted(() => ({
-  createPersonAction: vi.fn(() => Promise.resolve({ ok: true as const, value: { id: "pnew" } })),
-  createOrgAction: vi.fn(() => Promise.resolve({ ok: true as const, value: { id: "onew" } })),
+  createPersonAction: vi.fn<(...args: unknown[]) => Promise<{ ok: true; value: { id: string } }>>(
+    () =>
+      Promise.resolve({ ok: true as const, value: { id: "33333333-3333-4333-8333-333333333333" } }),
+  ),
+  createOrgAction: vi.fn<(...args: unknown[]) => Promise<{ ok: true; value: { id: string } }>>(() =>
+    Promise.resolve({ ok: true as const, value: { id: "44444444-4444-4444-8444-444444444444" } }),
+  ),
 }));
-vi.mock("./createDealAction", () => ({ createDealAction }));
+vi.mock("./nativeCreateAction", () => ({
+  createNativeDealAction: createDealAction,
+  readNativeDealCreationAction: readCreation,
+}));
+vi.mock("./nativeContactActions", () => ({
+  createDealOrgAction: (_actor: string, input: unknown, csrf: string | null) =>
+    createOrgAction(input, csrf),
+  createDealPersonAction: (_actor: string, input: unknown, csrf: string | null) =>
+    createPersonAction(input, csrf),
+}));
 vi.mock("@/features/contacts/actions", () => ({ createPersonAction, createOrgAction }));
 vi.mock("@/utils/csrfCookie", () => ({ readCsrfToken: () => "csrf" }));
 const { routerPush } = vi.hoisted(() => ({ routerPush: vi.fn() }));
@@ -69,13 +146,13 @@ import {
 } from "@/features/identity/InterfacePrefsProvider";
 import { AddDealModal } from "./AddDealModal";
 
-const PIPE = "11111111-1111-1111-1111-111111111111";
-const STAGE_A = "22222222-2222-2222-2222-222222222222";
-const STAGE_B = "33333333-3333-3333-3333-333333333333";
+const PIPE = "11111111-1111-4111-8111-111111111111";
+const STAGE_A = "22222222-2222-4222-8222-222222222222";
+const STAGE_B = "33333333-3333-4333-8333-333333333333";
 
 function renderModal(onCreated = vi.fn(), onClose = vi.fn(), autoPrefixLeadDealTitles = false) {
   const qc = new QueryClient();
-  render(
+  const mounted = render(
     <InterfacePrefsProvider value={{ ...INTERFACE_PREFS_DEFAULT, autoPrefixLeadDealTitles }}>
       <QueryClientProvider client={qc}>
         <AddDealModal
@@ -96,7 +173,7 @@ function renderModal(onCreated = vi.fn(), onClose = vi.fn(), autoPrefixLeadDealT
       </QueryClientProvider>
     </InterfacePrefsProvider>,
   );
-  return { onCreated, onClose };
+  return { onCreated, onClose, ...mounted };
 }
 
 describe("AddDealModal", () => {
@@ -141,7 +218,12 @@ describe("AddDealModal", () => {
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
     await waitFor(() =>
       expect(createDealAction).toHaveBeenCalledWith(
-        expect.objectContaining({ title: "Big deal", pipelineId: PIPE, stageId: STAGE_A }),
+        expect.objectContaining({
+          protocolVersion: 1,
+          expectedActorId: ACTOR,
+          creationOperationId: expect.any(String),
+          deal: expect.objectContaining({ title: "Big deal", pipelineId: PIPE, stageId: STAGE_A }),
+        }),
         expect.anything(),
       ),
     );
@@ -150,7 +232,7 @@ describe("AddDealModal", () => {
 
   it("renders deal fields in the add form and requires Important before create", async () => {
     customFieldDefs.push({
-      id: "11111111-1111-1111-1111-111111111111",
+      id: "11111111-1111-4111-8111-111111111111",
       targetEntity: "deal",
       type: "text",
       name: "Account tier",
@@ -172,7 +254,12 @@ describe("AddDealModal", () => {
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
     await waitFor(() =>
       expect(createDealAction).toHaveBeenCalledWith(
-        expect.objectContaining({ customFields: { account_tier: "Enterprise" } }),
+        expect.objectContaining({
+          protocolVersion: 1,
+          expectedActorId: ACTOR,
+          creationOperationId: expect.any(String),
+          deal: expect.objectContaining({ customFields: { account_tier: "Enterprise" } }),
+        }),
         expect.anything(),
       ),
     );
@@ -236,7 +323,12 @@ describe("AddDealModal", () => {
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
     await waitFor(() =>
       expect(createDealAction).toHaveBeenCalledWith(
-        expect.objectContaining({ expectedCloseDate: expect.stringMatching(/-15$/) }),
+        expect.objectContaining({
+          protocolVersion: 1,
+          expectedActorId: ACTOR,
+          creationOperationId: expect.any(String),
+          deal: expect.objectContaining({ expectedCloseDate: expect.stringMatching(/-15$/) }),
+        }),
         expect.anything(),
       ),
     );
@@ -266,7 +358,7 @@ describe("AddDealModal", () => {
 
   it("validates populated optional custom numbers before creating inline contacts", async () => {
     customFieldDefs.push({
-      id: "11111111-1111-1111-1111-111111111111",
+      id: "11111111-1111-4111-8111-111111111111",
       targetEntity: "deal",
       type: "numeric",
       name: "Score",
@@ -317,9 +409,9 @@ describe("AddDealModal", () => {
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
     await waitFor(() => expect(createPersonAction).toHaveBeenCalledTimes(1));
-    // The created org's id ("onew") must be threaded into the person create so they are linked.
+    // The created org's id ("44444444-4444-4444-8444-444444444444") must be threaded into the person create so they are linked.
     expect(createPersonAction).toHaveBeenCalledWith(
-      expect.objectContaining({ name: "Test User", orgId: "onew" }),
+      expect.objectContaining({ name: "Test User", orgId: "44444444-4444-4444-8444-444444444444" }),
       "csrf",
     );
   });
@@ -361,9 +453,65 @@ it.each<{ from: Locale; to: Locale; raw: string; expected: number }>([
     fireEvent.click(screen.getByRole("button", { name: messagesForLocale(to).entityCreate.save }));
     await waitFor(() =>
       expect(createDealAction).toHaveBeenCalledWith(
-        expect.objectContaining({ value: expected }),
+        expect.objectContaining({
+          protocolVersion: 1,
+          expectedActorId: ACTOR,
+          creationOperationId: expect.any(String),
+          deal: expect.objectContaining({
+            value: typeof expected === "number" ? expected.toFixed(4) : expected,
+          }),
+        }),
         expect.anything(),
       ),
     );
   },
 );
+
+it("preserves the immutable native request after transport uncertainty and retries the same operation", async () => {
+  createDealAction.mockRejectedValueOnce(new TypeError("synthetic lost acknowledgement"));
+  const { onCreated } = renderModal();
+  fireEvent.change(screen.getByLabelText("Deal title"), { target: { value: "One original deal" } });
+  fireEvent.change(screen.getByLabelText("Deal value"), { target: { value: "1500.25" } });
+  fireEvent.click(screen.getByRole("button", { name: "Save" }));
+  const retry = await screen.findByRole("button", { name: "Retry saved request" });
+  expect(screen.getByRole("alert")).toHaveTextContent("could not confirm");
+  expect(screen.getByLabelText("Deal title")).toBeDisabled();
+  const original = createDealAction.mock.calls[0]?.[0];
+  fireEvent.click(retry);
+  await waitFor(() => expect(onCreated).toHaveBeenCalled());
+  expect(createDealAction).toHaveBeenCalledTimes(2);
+  expect(createDealAction.mock.calls[1]?.[0]).toEqual(original);
+  expect(createPersonAction).not.toHaveBeenCalled();
+  expect(createOrgAction).not.toHaveBeenCalled();
+});
+
+it("retains unknown deal input through modal dismissal and reopening", async () => {
+  createDealAction.mockRejectedValueOnce(new TypeError("synthetic lost acknowledgement"));
+  const first = renderModal();
+  fireEvent.change(screen.getByLabelText("Deal title"), {
+    target: { value: "Preserved across reopen" },
+  });
+  fireEvent.click(screen.getByRole("button", { name: "Save" }));
+  await screen.findByRole("button", { name: "Retry saved request" });
+  const original = createDealAction.mock.calls[0]?.[0];
+  first.unmount();
+  const next = renderModal();
+  expect(screen.getByLabelText("Deal title")).toHaveValue("Preserved across reopen");
+  fireEvent.click(screen.getByRole("button", { name: "Retry saved request" }));
+  await waitFor(() => expect(next.onCreated).toHaveBeenCalled());
+  expect(createDealAction.mock.calls[1]?.[0]).toEqual(original);
+});
+
+it("retries only the read after known creation and failed authoritative refresh", async () => {
+  readCreation.mockRejectedValueOnce(new TypeError("synthetic read failure"));
+  const { onCreated, onClose } = renderModal();
+  fireEvent.change(screen.getByLabelText("Deal title"), { target: { value: "Already saved" } });
+  fireEvent.click(screen.getByRole("button", { name: "Save" }));
+  const retry = await screen.findByRole("button", { name: "Refresh saved deal" });
+  expect(screen.getByRole("alert")).toHaveTextContent("deal was saved");
+  expect(onClose).not.toHaveBeenCalled();
+  fireEvent.click(retry);
+  await waitFor(() => expect(onCreated).toHaveBeenCalled());
+  expect(createDealAction).toHaveBeenCalledTimes(1);
+  expect(readCreation).toHaveBeenCalledTimes(2);
+});

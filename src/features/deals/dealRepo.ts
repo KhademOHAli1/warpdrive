@@ -93,6 +93,8 @@ export interface BoardCard {
   // without a UTC off-by-one. Optional so hand-built fixtures need not set it.
   expectedCloseDate?: string | null;
   stageEnteredAt: Date;
+  // Present on authoritative reads; optional for existing hand-built fixture cards.
+  writeVersion?: string;
   // deal's updated_at: used as the compare-and-swap precondition for optimistic updates.
   updatedAt: Date;
 }
@@ -145,7 +147,8 @@ export async function getBoardColumns(
       d.last_activity_at   AS "lastActivityAt",
       d.expected_close_date AS "expectedCloseDate",
       d.stage_entered_at   AS "stageEnteredAt",
-      d.updated_at         AS "updatedAt"
+      d.updated_at         AS "updatedAt",
+      d.write_version      AS "writeVersion"
     FROM deals d
     JOIN pipelines p ON p.id = d.pipeline_id
     LEFT JOIN stages s ON s.id = d.stage_id
@@ -292,6 +295,7 @@ export async function listDeals(
         d.expected_close_date AS "expectedCloseDate",
         d.stage_entered_at   AS "stageEnteredAt",
         d.updated_at         AS "updatedAt",
+      d.write_version      AS "writeVersion",
         d.custom_fields       AS "customFields"
       ${base}
       ORDER BY d.updated_at DESC

@@ -1,0 +1,112 @@
+{
+  "schemaVersion": 1,
+  "status": "locally_qualified_unpublished_candidate",
+  "recordedDate": "2026-11-02",
+  "trackingIssues": [906, 82, 589],
+  "candidateCommit": null,
+  "publication": null,
+  "scope": "Native deal-create receipt/retry and selected participating authority. Separate overlapping runs; no combined test total.",
+  "source": {
+    "baseCommit": "7c82ba4ac626c86bd271f7a307d2cd16675555a5",
+    "staticManifestSha256": "f1e133ab0e3243c26ff38738c7a98bcf3ab5aa2f966d9de308e87b0e81795367",
+    "nativeManifestSha256": "9345e0a6fb6a3a2da25a3ac4bb052f78535b15394488babc2b057a0a806041a3",
+    "sales40OverlayManifestSha256": "dd99b4efe69861e8a6557f6b8f40cf74b5e724a6086840c1bcb88cf3d690b12e",
+    "auth24OverlayManifestSha256": "0aaa9986acd84a910762bc6c1de34315eaff3246fb49e630b6515a7cc919908a",
+    "afterStaticAmendment": {
+      "path": "src/features/deals/nativeCreateReplay.integration.test.ts",
+      "sha256": "c9bac7d75dd89fb49e9a05e3eed975f756bbd347e1d179b5558f958dd0546ca2",
+      "reason": "Observe currentlockmanager NOTgranted wait blocked by exactobserverPID; priorpg_stat_activity is transaction-cached. Same1500ms/domainassertions, addsblockingPIDassert. No production/Auth/DDL change."
+    },
+    "documentationBoundary": "This documentation and record were written after qualification. No executable source changes accompanied them; a later candidate commit/build/CI is not asserted."
+  },
+  "runs": {
+    "static3": {
+      "allocation": "ROOT-GOAL-SALES-AUTH-STATIC-20261102-3",
+      "result": "PASS",
+      "fullConfiguredTypecheck": true,
+      "focusedUnits": {
+        "passed": 43,
+        "failed": 0
+      },
+      "affectedTypedLintAndBiomeFiles": 7,
+      "seconds": 34.80997250007931,
+      "receipt": ".runtime/goal-sales-auth-static-7c82-3/qualification/receipt.json",
+      "receiptSha256": "242a44eab0c78f4fac0f9a35482027f9fb70c4f7bef299f7ad4c8286616157fc",
+      "sourceHashesAndModesHeld": true,
+      "allGroupsGone": true
+    },
+    "native2": {
+      "allocation": "ROOT-GOAL-SALES-CREATE-NATIVE-20261102-2",
+      "result": "PASS",
+      "tests": {
+        "passed": 34,
+        "failed": 0,
+        "newNativeCreateCases": 31,
+        "earlierPopulatedUpgradeCases": 3
+      },
+      "affectedTypedLintAndBiomeFiles": 1,
+      "seconds": 23.28105091699399,
+      "nativeSeconds": 12.131405874970369,
+      "receipt": ".runtime/goal-sales-create-native-0101-2/qualification/native.receipt.json",
+      "receiptSha256": "4c6ae6c92f50adee305ef13584327076d0cf0bf90060189205f625a60c423ef5",
+      "reportSha256": "363c23c755f42c4b1f244f3aabde70fdd15061fc514744f792539fc8ea57fc8c",
+      "sourceHashesAndModesHeld": true,
+      "canonicalDDLHeld": true,
+      "allGroupsGone": true,
+      "ownedPostgresGone": true,
+      "foreignResourceStatesAndSetsExact": true,
+      "foreignListenersRetained": true,
+      "privateCredentialsDeleted": true
+    },
+    "authNative1": {
+      "allocation": "ROOT-GOAL-CREATE-AUTHORITY-NATIVE-20261102-1",
+      "result": "PASS",
+      "tests": {
+        "passed": 86,
+        "failed": 0,
+        "newAuthorityCases": 16
+      },
+      "seconds": 21.636079292045906,
+      "receipt": ".runtime/goal-sales-create-native-0101-1/qualification/auth86-receipt.reference.json",
+      "receiptSha256": "b0456f7a8bf46107eea4fa8d41ae9c50103d1f0674c4e6976e13d5ec7e2074a4",
+      "scope": "Separate selected authority qualification; not extra native-create/browser acceptance."
+    }
+  },
+  "generatedCanonical0101": {
+    "entries": 102,
+    "populatedPredecessorEntries": 101,
+    "files": {
+      "drizzle/0101_deal_create_operations.sql": "bdf2880045dbe791de7c37dc766131d361df763c2ef8c5f4802d75ae30a1f0f5",
+      "drizzle/meta/0101_snapshot.json": "2ba68fde94e6387d2653b85a4b2b6d5c5cda6483e9d7ad1fc783037031a84c37",
+      "drizzle/meta/_journal.json": "c94de4e939592435446448b6a06473521147d66a1fbc3b337c1a4f0b874478d2"
+    },
+    "populatedUpgrade": "PASS in native2; original deal rows/revisions, unrelated rows and predecessor ledger retained, empty new receipt store, then real native create/replay. Existing0098/0099/0100 populated-upgrade cases also passed.",
+    "installedUpgrade": false
+  },
+  "privacyBoundary": {
+    "store": "deal_create_operations",
+    "discoveryStatus": "unsupported",
+    "discoveryScope": "candidate_links_only",
+    "actorDeletion": "RESTRICT until separately reviewed receipt retention/erasure lifecycle",
+    "completeSubjectDisclosureOrErasure": false
+  },
+  "retainedFailures": {
+    "predecessorHttpLostResponse": "Coordinator retains actual-red-2: one committed deal before downstream response abort, then two deals after unchanged-form retry. No modified-browser GREEN is inferred.",
+    "native1": {
+      "passed": 30,
+      "failed": 4,
+      "receipt": ".runtime/goal-sales-create-native-0101-1/qualification/native.receipt.json",
+      "receiptSha256": "959f93447f6fbb89538bc78e1d6831fbd2818cdcf313a4b6b225c2cc9a2d7dc3",
+      "boundary": "Four waiter-observation failures before result assertions; transaction-cached pg_stat_activity replaced with live lock-manager/exact-blocker witness. Original deadline and domain assertions retained."
+    }
+  },
+  "remaining": [
+    "Candidate production build and actual modified HTTP/browser lost-response journey",
+    "Exact feature-candidate CI and publication",
+    "Installed database upgrade qualification",
+    "External-provider and full inline-contact recovery acceptance",
+    "Complete subject disclosure/erasure lifecycle",
+    "Human journey/release acceptance; broad issues906/82/589 remain open"
+  ],
+  "evidenceAvailability": "Runtime artifact paths are relative to the integration validation workspace. Exact local evidence is retained by the coordinator; it is not embedded in this source document."
+}

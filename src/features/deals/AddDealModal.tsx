@@ -1,5 +1,4 @@
 "use client";
-import { useRouter } from "next/navigation";
 import type React from "react";
 import { useMemo, useState } from "react";
 import { HiddenRecordNotice } from "@/components/HiddenRecordNotice";
@@ -21,9 +20,12 @@ import { readCsrfToken } from "@/utils/csrfCookie";
 import { AddDealLeftColumn } from "./AddDealLeftColumn";
 import { type AddDealState, initialAddDealState } from "./addDealState";
 import { addDealCustomFieldError } from "./addDealValidation";
-import { createDealAction } from "./createDealAction";
 import { deriveEntityTitle } from "./dealTitleAutofill";
+import { createDealOrgAction, createDealPersonAction } from "./nativeContactActions";
+import { nativeDealCreateEnvelopeV1 } from "./nativeCreateIntentV1";
 import { parseNewDeal } from "./newDealForm";
+import { clearRetainedCreation, retainCreation } from "./retainedCreation";
+import { type PreparedDealCreation, useNativeDealCreation } from "./useNativeDealCreation";
 
 interface Option {
   id: string;
@@ -31,6 +33,9 @@ interface Option {
 }
 interface PipelineOption extends Option {
   stages: Option[];
+}
+function contactFailure(value: string | null | { error: string }): value is { error: string } {
+  return value !== null && typeof value === "object";
 }
 
 export interface AddDealModalProps {
@@ -46,22 +51,13 @@ export interface AddDealModalProps {
   // display it without a second fetch (inbox sidebar, compose-time link sidebar); existing
   // callers that pass a zero-arg refresh handler stay assignable (a function may ignore
   // trailing parameters).
-  onCreated: (id: string, title: string) => void;
+  onCreated: (id: string, title: string) => void | Promise<void>;
   // Skip the "jump to /deals/:id after create" navigation even when the user's
   // openDetailsAfterCreate.leadDeal preference is on. Defaults to false so every existing
   // caller keeps navigating. Set true by callers whose surface would be abandoned by a
   // full-page nav away, e.g. the inbox compose link sidebar (ComposeLinkSidebar): the deal
   // link is only local state there until the email is sent, so navigating away loses it.
   suppressDetailNav?: boolean;
-}
-
-function dealDetailsPath(
-  deal: { id: string } | null,
-  openAfterCreate: boolean,
-  suppressDetailNav: boolean,
-): string | null {
-  if (deal === null || !openAfterCreate || suppressDetailNav) return null;
-  return `/deals/${deal.id}`;
 }
 
 export function AddDealModal(props: AddDealModalProps): React.ReactNode {
@@ -71,19 +67,31 @@ export function AddDealModal(props: AddDealModalProps): React.ReactNode {
   const companyCurrency = useCompanyCurrency();
   const { pipelineId, pipelines, baseCurrency = companyCurrency, stageId, prefillTitle } = props;
   const { onClose, onCreated, suppressDetailNav = false } = props;
-  const [currency, setCurrency] = useState(baseCurrency);
-  const router = useRouter();
+  const [currencyDraft, setCurrency] = useState(baseCurrency);
   const { autoPrefixLeadDealTitles, openDetailsAfterCreate } = useInterfacePrefs();
   const firstStage = pipelines.find((p) => p.id === pipelineId)?.stages[0]?.id ?? "";
   const hasPrefillTitle = prefillTitle !== undefined && prefillTitle.trim() !== "";
-  const [state, setState] = useState<AddDealState>(() => {
+  const [stateDraft, setState] = useState<AddDealState>(() => {
     const base = initialAddDealState(pipelineId, stageId ?? firstStage);
     return hasPrefillTitle ? { ...base, title: prefillTitle } : base;
   });
-  const [valueLocale, setValueLocale] = useState(locale);
-  const [error, setError] = useState<string | null>(null);
-  const [pending, setPending] = useState(false);
-  const [hiddenTitle, setHiddenTitle] = useState<string | null>(null);
+  const [valueLocaleDraft, setValueLocale] = useState(locale);
+  const creation = useNativeDealCreation({
+    onCreated,
+    onClose,
+    openDetails: openDetailsAfterCreate.leadDeal,
+    suppressDetailNav,
+    restoreForm: (form, savedCurrency, savedLocale) => {
+      setState(form);
+      setCurrency(savedCurrency);
+      setValueLocale(savedLocale);
+      setTitleEdited(true);
+    },
+  });
+  const { operation, pending, error, setError, hiddenTitle } = creation;
+  const state = operation?.form ?? stateDraft;
+  const currency = operation?.currency ?? currencyDraft;
+  const valueLocale = operation?.valueLocale ?? valueLocaleDraft;
 
   const peopleQ = trpc.contacts.personOptions.useQuery();
   const orgsQ = trpc.contacts.orgOptions.useQuery();
@@ -95,6 +103,7 @@ export function AddDealModal(props: AddDealModalProps): React.ReactNode {
   const orgFieldsQ = trpc.customFields.listDefs.useQuery({ target: "organization" });
 
   const set = (patch: Partial<AddDealState>): void => {
+    if (operation !== null || creation.actorId === null) return;
     // An unfinished amount keeps its input convention when the interface language changes.
     if (patch.value !== undefined && state.value.trim() === "") setValueLocale(locale);
     setState((s) => ({ ...s, ...patch }));
@@ -116,7 +125,7 @@ export function AddDealModal(props: AddDealModalProps): React.ReactNode {
     (name) => translateSales("computed.defaultDealTitle", { name }),
   );
   // Derived during render: an effect would paint the stale title for a frame, then correct it.
-  if (!titleEdited && state.title !== derivedTitle) {
+  if (operation === null && !titleEdited && state.title !== derivedTitle) {
     setState((s) => (s.title === derivedTitle ? s : { ...s, title: derivedTitle }));
   }
 
@@ -125,95 +134,131 @@ export function AddDealModal(props: AddDealModalProps): React.ReactNode {
     [pipelines, state.pipelineId],
   );
 
-  function finishCreate(deal: { id: string } | null, title: string): void {
-    if (deal === null) {
-      router.refresh();
-      setHiddenTitle(title);
-      return;
+  async function prepare(id: string): Promise<PreparedDealCreation | null> {
+    const expectedActorId = creation.actorId;
+    if (expectedActorId === null) return null;
+    const csrf = readCsrfToken();
+    // Validate the deal fields BEFORE creating any inline org/person, so an invalid deal (e.g.
+    // blank title) can never leave an orphaned org/person behind or duplicate one on retry.
+    const parsed = parseNewDeal(
+      {
+        title: state.title,
+        stageId: state.stageId,
+        value: state.value,
+        personId: null,
+        orgId: null,
+        labels: state.labels,
+        sourceChannel: state.sourceChannel,
+        sourceChannelId: state.sourceChannelId,
+        expectedCloseDate: state.expectedCloseDate,
+        ownerId: state.ownerId,
+      },
+      state.pipelineId,
+      locale,
+      valueLocale,
+    );
+    if (!parsed.ok) {
+      setError(parsed.error);
+      return null;
     }
-    onCreated(deal.id, title);
-    onClose();
-    const detailsPath = dealDetailsPath(deal, openDetailsAfterCreate.leadDeal, suppressDetailNav);
-    if (detailsPath !== null) router.push(detailsPath);
-  }
-
-  async function submit(): Promise<void> {
-    setError(null);
-    setPending(true);
+    const dealFields = dealFieldsQ.data ?? [];
+    const personFields = personFieldsQ.data ?? [];
+    const orgFields = orgFieldsQ.data ?? [];
+    const invalidCustomField = addDealCustomFieldError(
+      state,
+      { dealFields, personFields, orgFields },
+      locale,
+      (name) => translateSales("computed.requiredField", { name }),
+    );
+    if (invalidCustomField !== null) {
+      setError(invalidCustomField);
+      return null;
+    }
+    let submitState: AddDealState = {
+      ...state,
+      dealCustomFields: customFieldCreatePayload(dealFields, state.dealCustomFields),
+      personCustomFields: customFieldCreatePayload(personFields, state.personCustomFields),
+      orgCustomFields: customFieldCreatePayload(orgFields, state.orgCustomFields),
+    };
+    const rememberContacts = (next: AddDealState) => {
+      submitState = next;
+      if (creation.isCurrent()) setState(next);
+    };
+    let contact: "org" | "person" = "org";
+    const hold = (phase: "contact_pending" | "contact_unknown" | "contact_rejected") => {
+      if (creation.actorId !== null)
+        retainCreation({
+          id,
+          actorId: creation.actorId,
+          form: submitState,
+          currency,
+          valueLocale,
+          contact,
+          phase,
+        });
+    };
+    let orgId: string | null;
+    let personId: string | null;
     try {
-      const csrf = readCsrfToken();
-      // Validate the deal fields BEFORE creating any inline org/person, so an invalid deal (e.g.
-      // blank title) can never leave an orphaned org/person behind or duplicate one on retry.
-      const parsed = parseNewDeal(
-        {
-          title: state.title,
-          stageId: state.stageId,
-          value: state.value,
-          personId: null,
-          orgId: null,
-          labels: state.labels,
-          sourceChannel: state.sourceChannel,
-          sourceChannelId: state.sourceChannelId,
-          expectedCloseDate: state.expectedCloseDate,
-          ownerId: state.ownerId,
-        },
-        state.pipelineId,
-        locale,
-        valueLocale,
+      if (submitState.orgMode === "new") hold("contact_pending");
+      const org = await resolveNewOrgId(submitState, csrf, locale, (input, token) =>
+        createDealOrgAction(expectedActorId, input, token ?? null),
       );
-      if (!parsed.ok) {
-        setError(parsed.error);
-        return;
+      if (contactFailure(org)) {
+        hold("contact_rejected");
+        if (creation.isCurrent()) setError(org.error);
+        return null;
       }
-      const dealFields = dealFieldsQ.data ?? [];
-      const personFields = personFieldsQ.data ?? [];
-      const orgFields = orgFieldsQ.data ?? [];
-      const invalidCustomField = addDealCustomFieldError(
-        state,
-        { dealFields, personFields, orgFields },
-        locale,
-        (name) => translateSales("computed.requiredField", { name }),
+      orgId = org;
+      rememberContacts({ ...submitState, orgMode: "existing", orgId: orgId ?? "", newOrgName: "" });
+      contact = "person";
+      if (submitState.personMode === "new") hold("contact_pending");
+      const person = await resolveNewPersonId(submitState, orgId, csrf, locale, (input, token) =>
+        createDealPersonAction(expectedActorId, input, token ?? null),
       );
-      if (invalidCustomField !== null) {
-        setError(invalidCustomField);
-        return;
+      if (contactFailure(person)) {
+        hold("contact_rejected");
+        if (creation.isCurrent()) setError(person.error);
+        return null;
       }
-      const submitState = {
-        ...state,
-        dealCustomFields: customFieldCreatePayload(dealFields, state.dealCustomFields),
-        personCustomFields: customFieldCreatePayload(personFields, state.personCustomFields),
-        orgCustomFields: customFieldCreatePayload(orgFields, state.orgCustomFields),
-      };
-      const orgId = await resolveNewOrgId(submitState, csrf, locale);
-      if (orgId !== null && typeof orgId === "object") {
-        setError(orgId.error);
-        return;
-      }
-      const personId = await resolveNewPersonId(submitState, orgId, csrf, locale);
-      if (personId !== null && typeof personId === "object") {
-        setError(personId.error);
-        return;
-      }
-      const resolved = {
-        ...parsed.input,
-        currency,
-        personId,
-        orgId,
-        customFields: submitState.dealCustomFields,
-      };
-      const input =
-        state.visibilityGroupId === ""
-          ? resolved
-          : { ...resolved, visibilityGroupId: state.visibilityGroupId };
-      const result = await createDealAction(input, csrf);
-      if (!result.ok) {
-        setError(translateSales("computed.createDealFailed", { id: result.error.id }));
-        return;
-      }
-      finishCreate(result.deal, parsed.input.title);
-    } finally {
-      setPending(false);
+      personId = person;
+      rememberContacts({
+        ...submitState,
+        personMode: "existing",
+        personId: personId ?? "",
+        newPersonName: "",
+      });
+    } catch {
+      hold("contact_unknown");
+      return null;
     }
+    if (!creation.isCurrent()) {
+      hold("contact_rejected");
+      return null;
+    }
+    const resolved = {
+      ...parsed.input,
+      currency,
+      personId,
+      orgId,
+      customFields: submitState.dealCustomFields,
+    };
+    const input =
+      state.visibilityGroupId === ""
+        ? resolved
+        : { ...resolved, visibilityGroupId: state.visibilityGroupId };
+    const normalized = nativeDealCreateEnvelopeV1.safeParse({
+      protocolVersion: 1,
+      expectedActorId: creation.actorId,
+      creationOperationId: id,
+      deal: input,
+    });
+    if (!normalized.success) {
+      clearRetainedCreation(expectedActorId, id);
+      setError(translateSales("nativeCreate.invalid"));
+      return null;
+    }
+    return { form: submitState, currency, valueLocale, deal: normalized.data.deal };
   }
 
   if (hiddenTitle !== null) {
@@ -240,9 +285,18 @@ export function AddDealModal(props: AddDealModalProps): React.ReactNode {
         />
       }
       error={error}
-      pending={pending}
-      submitDisabled={dealFieldsQ.isLoading || personFieldsQ.isLoading || orgFieldsQ.isLoading}
-      onSubmit={() => void submit()}
+      pending={
+        pending || operation?.phase === "contact_pending" || operation?.phase === "submitting"
+      }
+      fieldsDisabled={operation !== null || pending || creation.actorId === null}
+      submitLabel={creation.submitLabel}
+      submitDisabled={
+        creation.actorId === null ||
+        dealFieldsQ.isLoading ||
+        personFieldsQ.isLoading ||
+        orgFieldsQ.isLoading
+      }
+      onSubmit={() => void creation.submit(prepare)}
       onClose={onClose}
       leftColumn={
         <AddDealLeftColumn
@@ -260,7 +314,9 @@ export function AddDealModal(props: AddDealModalProps): React.ReactNode {
           groups={optionsOrNull(groupsQ.data)}
           baseCurrency={baseCurrency}
           currency={currency}
-          onCurrencyChange={setCurrency}
+          onCurrencyChange={(value) => {
+            if (operation === null) setCurrency(value);
+          }}
           organizationCustomFields={
             <CustomFieldCreateFields
               title={translateSales("organization_fields_805c7")}

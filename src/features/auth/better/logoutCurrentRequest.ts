@@ -4,6 +4,7 @@ import { env } from "@/config/env";
 import type { Db } from "@/db/client";
 import { sessions } from "@/db/schema";
 import { CSRF_COOKIE, validateCsrf } from "@/features/auth/csrf";
+import { withCurrentAuthority } from "@/features/auth/currentAuthority";
 import {
   AUTH_SESSION_COOKIE,
   hashSessionCredential,
@@ -82,10 +83,12 @@ export async function logoutCurrentRequest(
   const raw = cookie === null ? null : sessionTokenFromCookie(cookie);
   if (raw !== null) {
     signal.throwIfAborted();
-    await db
-      .update(sessions)
-      .set({ revokedAt: new Date() })
-      .where(and(eq(sessions.tokenHash, hashSessionCredential(raw)), isNull(sessions.revokedAt)));
+    await withCurrentAuthority(db, "write", signal, async (tx) => {
+      await tx
+        .update(sessions)
+        .set({ revokedAt: new Date() })
+        .where(and(eq(sessions.tokenHash, hashSessionCredential(raw)), isNull(sessions.revokedAt)));
+    });
     signal.throwIfAborted();
   }
   return clearedLogoutResponse(request);

@@ -3,9 +3,11 @@ import type { PermissionFlagKey } from "@/constants/permissionFlags";
 import type { Db } from "@/db/client";
 import { permissionSets, users } from "@/db/schema";
 import { lockAuthAccount } from "@/features/auth/better/accountLock";
+import { withCurrentAuthority } from "@/features/auth/currentAuthority";
 import { lockMcpGrants, revokeMcpGrants } from "@/features/auth/management/mcpGrants";
 import { revokeUserAccess } from "@/features/auth/management/offboarding";
 import type { PermSetUser } from "@/features/permissions/effective";
+import { hydrateActor } from "@/server/hydrateActor";
 import { err, ok, type Result } from "@/types/result";
 import { recordAudit } from "./audit";
 import {
@@ -37,119 +39,144 @@ export function listAssignableUsers(
 }
 
 export async function assignPermissionSet(
-  db: Db,
-  actor: PermSetUser,
+  sourceDb: Db,
+  requestActor: PermSetUser,
   input: { userId: string; setId: string },
   signal: AbortSignal,
 ): Promise<Result<true, string>> {
-  signal.throwIfAborted();
-  const [target] = await db
-    .select({ isAdmin: users.isAdmin })
-    .from(users)
-    .where(eq(users.id, input.userId))
-    .limit(1);
-  if (target === undefined) return err("not_found");
-  const gate = canAssignPermissionSet(actor, {
-    targetUserId: input.userId,
-    targetIsAdmin: target.isAdmin,
-  });
-  if (gate.ok === false) return gate;
-
-  // Escalation gate (F11): assigning a set that CARRIES high-risk flags is admin-only, the
-  // same policy as granting them via create/update. Without this a non-admin manager could
-  // hand another account permissions.manage / pipeline.manage / data.export by assignment.
-  if (actor.type !== "admin") {
-    const [set] = await db
-      .select({ flags: permissionSets.flags })
-      .from(permissionSets)
-      .where(eq(permissionSets.id, input.setId))
-      .limit(1);
-    if (set === undefined) return err("permission set not found");
-    const enabled = Object.entries(set.flags)
-      .filter(([, v]) => v === true)
-      .map(([k]) => k as PermissionFlagKey);
-    const grantGate = canGrantFlags(actor, enabled);
-    if (grantGate.ok === false) return grantGate;
-  }
-
-  signal.throwIfAborted();
-  await db.transaction(async (tx) => {
-    await tx.update(users).set({ permissionSetId: input.setId }).where(eq(users.id, input.userId));
-    await recordAudit(
-      tx,
-      {
-        actorId: actor.id,
-        targetType: "user",
-        targetId: input.userId,
-        action: "user.assign_permission_set",
-        after: { setId: input.setId },
-      },
-      signal,
-    );
-  });
-  return ok(true);
-}
-
-export async function setUserAdmin(
-  db: Db,
-  actor: PermSetUser,
-  input: { userId: string; isAdmin: boolean },
-  signal: AbortSignal,
-): Promise<Result<true, string>> {
-  const gate = canToggleAdminRole(actor);
-  if (gate.ok === false) return gate;
-  if (input.userId === actor.id && input.isAdmin === true) return err("cannot self-promote");
-
-  // Demotion (last-admin lockout guard, F6): the count read and the update must be atomic
-  // wrt other admin-state changes, or two concurrent demotions each see count > 1 and both
-  // proceed, zeroing out admins. Serialize by locking every active-admin row FOR UPDATE
-  // inside one transaction; a concurrent demotion blocks, then re-reads the reduced count.
-  if (input.isAdmin === false) {
-    signal.throwIfAborted();
-    const result = await db.transaction(async (tx): Promise<Result<true, string>> => {
-      // Match promotion/deactivation lock order before scanning mutable administrator rows.
-      await lockAuthAccount(tx, input.userId, signal);
-      await lockMcpGrants(tx, signal);
-      const locked = await tx.execute(
-        sql`SELECT id FROM users WHERE is_admin = true AND is_active = true AND invited_at IS NULL FOR UPDATE`,
-      );
-      const [target] = await tx
-        .select({ isAdmin: users.isAdmin, isActive: users.isActive, invitedAt: users.invitedAt })
+  return withCurrentAuthority(
+    sourceDb,
+    "write",
+    signal,
+    async (db): Promise<Result<true, string>> => {
+      const actor = await hydrateActor(db, requestActor.id, signal);
+      if (actor === null) return err("forbidden");
+      signal.throwIfAborted();
+      const [target] = await db
+        .select({ isAdmin: users.isAdmin })
         .from(users)
         .where(eq(users.id, input.userId))
         .limit(1);
       if (target === undefined) return err("not_found");
-      const demoteGate = canDemoteAdmin({
-        targetIsAdmin: target.isAdmin && target.isActive && target.invitedAt === null,
-        isDemotion: true,
-        activeAdminCount: locked.rows.length,
+      const gate = canAssignPermissionSet(actor, {
+        targetUserId: input.userId,
+        targetIsAdmin: target.isAdmin,
       });
-      if (demoteGate.ok === false) return demoteGate;
-      await tx.update(users).set({ isAdmin: false }).where(eq(users.id, input.userId));
-      await recordAdminChange(tx, actor.id, input.userId, false, signal);
-      return ok(true);
-    });
-    if (result.ok === false) return result;
-    return ok(true);
-  }
+      if (gate.ok === false) return gate;
 
-  signal.throwIfAborted();
-  const promoted = await db.transaction(async (tx) => {
-    await lockAuthAccount(tx, input.userId, signal);
-    await lockMcpGrants(tx, signal);
-    const [target] = await tx
-      .select({ isAdmin: users.isAdmin })
-      .from(users)
-      .where(eq(users.id, input.userId))
-      .for("update");
-    if (target === undefined) return err("not_found");
-    await tx.update(users).set({ isAdmin: true }).where(eq(users.id, input.userId));
-    if (!target.isAdmin) await revokeMcpGrants(tx, input.userId, signal);
-    await recordAdminChange(tx, actor.id, input.userId, true, signal);
-    return ok(true);
-  });
-  if (!promoted.ok) return promoted;
-  return ok(true);
+      // Escalation gate (F11): assigning a set that CARRIES high-risk flags is admin-only, the
+      // same policy as granting them via create/update. Without this a non-admin manager could
+      // hand another account permissions.manage / pipeline.manage / data.export by assignment.
+      if (actor.type !== "admin") {
+        const [set] = await db
+          .select({ flags: permissionSets.flags })
+          .from(permissionSets)
+          .where(eq(permissionSets.id, input.setId))
+          .limit(1);
+        if (set === undefined) return err("permission set not found");
+        const enabled = Object.entries(set.flags)
+          .filter(([, v]) => v === true)
+          .map(([k]) => k as PermissionFlagKey);
+        const grantGate = canGrantFlags(actor, enabled);
+        if (grantGate.ok === false) return grantGate;
+      }
+
+      signal.throwIfAborted();
+      await db.transaction(async (tx) => {
+        await tx
+          .update(users)
+          .set({ permissionSetId: input.setId })
+          .where(eq(users.id, input.userId));
+        await recordAudit(
+          tx,
+          {
+            actorId: actor.id,
+            targetType: "user",
+            targetId: input.userId,
+            action: "user.assign_permission_set",
+            after: { setId: input.setId },
+          },
+          signal,
+        );
+      });
+      return ok(true);
+    },
+  );
+}
+
+export async function setUserAdmin(
+  sourceDb: Db,
+  requestActor: PermSetUser,
+  input: { userId: string; isAdmin: boolean },
+  signal: AbortSignal,
+): Promise<Result<true, string>> {
+  return withCurrentAuthority(
+    sourceDb,
+    "write",
+    signal,
+    async (db): Promise<Result<true, string>> => {
+      const actor = await hydrateActor(db, requestActor.id, signal);
+      if (actor === null) return err("forbidden");
+      const gate = canToggleAdminRole(actor);
+      if (gate.ok === false) return gate;
+      if (input.userId === actor.id && input.isAdmin === true) return err("cannot self-promote");
+
+      // Demotion (last-admin lockout guard, F6): the count read and the update must be atomic
+      // wrt other admin-state changes, or two concurrent demotions each see count > 1 and both
+      // proceed, zeroing out admins. Serialize by locking every active-admin row FOR UPDATE
+      // inside one transaction; a concurrent demotion blocks, then re-reads the reduced count.
+      if (input.isAdmin === false) {
+        signal.throwIfAborted();
+        const result = await db.transaction(async (tx): Promise<Result<true, string>> => {
+          // Match promotion/deactivation lock order before scanning mutable administrator rows.
+          await lockAuthAccount(tx, input.userId, signal);
+          await lockMcpGrants(tx, signal);
+          const locked = await tx.execute(
+            sql`SELECT id FROM users WHERE is_admin = true AND is_active = true AND invited_at IS NULL FOR UPDATE`,
+          );
+          const [target] = await tx
+            .select({
+              isAdmin: users.isAdmin,
+              isActive: users.isActive,
+              invitedAt: users.invitedAt,
+            })
+            .from(users)
+            .where(eq(users.id, input.userId))
+            .limit(1);
+          if (target === undefined) return err("not_found");
+          const demoteGate = canDemoteAdmin({
+            targetIsAdmin: target.isAdmin && target.isActive && target.invitedAt === null,
+            isDemotion: true,
+            activeAdminCount: locked.rows.length,
+          });
+          if (demoteGate.ok === false) return demoteGate;
+          await tx.update(users).set({ isAdmin: false }).where(eq(users.id, input.userId));
+          await recordAdminChange(tx, actor.id, input.userId, false, signal);
+          return ok(true);
+        });
+        if (result.ok === false) return result;
+        return ok(true);
+      }
+
+      signal.throwIfAborted();
+      const promoted = await db.transaction(async (tx) => {
+        await lockAuthAccount(tx, input.userId, signal);
+        await lockMcpGrants(tx, signal);
+        const [target] = await tx
+          .select({ isAdmin: users.isAdmin })
+          .from(users)
+          .where(eq(users.id, input.userId))
+          .for("update");
+        if (target === undefined) return err("not_found");
+        await tx.update(users).set({ isAdmin: true }).where(eq(users.id, input.userId));
+        if (!target.isAdmin) await revokeMcpGrants(tx, input.userId, signal);
+        await recordAdminChange(tx, actor.id, input.userId, true, signal);
+        return ok(true);
+      });
+      if (!promoted.ok) return promoted;
+      return ok(true);
+    },
+  );
 }
 
 function recordAdminChange(
@@ -173,60 +200,78 @@ function recordAdminChange(
 }
 
 export async function setUserActive(
-  db: Db,
-  actor: PermSetUser,
+  sourceDb: Db,
+  requestActor: PermSetUser,
   input: { userId: string; isActive: boolean },
   signal: AbortSignal,
 ): Promise<Result<true, string>> {
-  // Deactivation: same last-admin lockout race as demotion (F6). Lock active-admin rows
-  // FOR UPDATE, re-check the count, then flip is_active and revoke sessions, all atomic.
-  if (input.isActive === false) {
-    signal.throwIfAborted();
-    const result = await db.transaction(async (tx): Promise<Result<true, string>> => {
-      await lockAuthAccount(tx, input.userId, signal);
-      await lockMcpGrants(tx, signal);
-      const locked = await tx.execute(
-        sql`SELECT id FROM users WHERE is_admin = true AND is_active = true AND invited_at IS NULL FOR UPDATE`,
-      );
-      const [target] = await tx
-        .select({ isAdmin: users.isAdmin, isActive: users.isActive, invitedAt: users.invitedAt })
-        .from(users)
-        .where(eq(users.id, input.userId))
-        .limit(1);
-      if (target === undefined) return err("not_found");
-      const gate = canDeactivateUser(actor, {
-        targetUserId: input.userId,
-        targetIsAdmin: target.isAdmin && target.isActive && target.invitedAt === null,
-        activeAdminCount: locked.rows.length,
-      });
-      if (gate.ok === false) return gate;
-      await tx.update(users).set({ isActive: false }).where(eq(users.id, input.userId));
-      await revokeUserAccess(tx, input.userId, signal);
-      await recordAudit(
-        tx,
-        {
-          actorId: actor.id,
-          targetType: "user",
-          targetId: input.userId,
-          action: "user.deactivate",
-        },
-        signal,
-      );
-      return ok(true);
-    });
-    if (result.ok === false) return result;
-    return ok(true);
-  }
+  return withCurrentAuthority(
+    sourceDb,
+    "write",
+    signal,
+    async (db): Promise<Result<true, string>> => {
+      const actor = await hydrateActor(db, requestActor.id, signal);
+      if (actor === null) return err("forbidden");
+      // Deactivation: same last-admin lockout race as demotion (F6). Lock active-admin rows
+      // FOR UPDATE, re-check the count, then flip is_active and revoke sessions, all atomic.
+      if (input.isActive === false) {
+        signal.throwIfAborted();
+        const result = await db.transaction(async (tx): Promise<Result<true, string>> => {
+          await lockAuthAccount(tx, input.userId, signal);
+          await lockMcpGrants(tx, signal);
+          const locked = await tx.execute(
+            sql`SELECT id FROM users WHERE is_admin = true AND is_active = true AND invited_at IS NULL FOR UPDATE`,
+          );
+          const [target] = await tx
+            .select({
+              isAdmin: users.isAdmin,
+              isActive: users.isActive,
+              invitedAt: users.invitedAt,
+            })
+            .from(users)
+            .where(eq(users.id, input.userId))
+            .limit(1);
+          if (target === undefined) return err("not_found");
+          const gate = canDeactivateUser(actor, {
+            targetUserId: input.userId,
+            targetIsAdmin: target.isAdmin && target.isActive && target.invitedAt === null,
+            activeAdminCount: locked.rows.length,
+          });
+          if (gate.ok === false) return gate;
+          await tx.update(users).set({ isActive: false }).where(eq(users.id, input.userId));
+          await revokeUserAccess(tx, input.userId, signal);
+          await recordAudit(
+            tx,
+            {
+              actorId: actor.id,
+              targetType: "user",
+              targetId: input.userId,
+              action: "user.deactivate",
+            },
+            signal,
+          );
+          return ok(true);
+        });
+        if (result.ok === false) return result;
+        return ok(true);
+      }
 
-  if (actor.type !== "admin") return err("admin required to reactivate users");
-  signal.throwIfAborted();
-  await db.transaction(async (tx) => {
-    await tx.update(users).set({ isActive: true }).where(eq(users.id, input.userId));
-    await recordAudit(
-      tx,
-      { actorId: actor.id, targetType: "user", targetId: input.userId, action: "user.activate" },
-      signal,
-    );
-  });
-  return ok(true);
+      if (actor.type !== "admin") return err("admin required to reactivate users");
+      signal.throwIfAborted();
+      await db.transaction(async (tx) => {
+        await tx.update(users).set({ isActive: true }).where(eq(users.id, input.userId));
+        await recordAudit(
+          tx,
+          {
+            actorId: actor.id,
+            targetType: "user",
+            targetId: input.userId,
+            action: "user.activate",
+          },
+          signal,
+        );
+      });
+      return ok(true);
+    },
+  );
 }

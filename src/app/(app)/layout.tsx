@@ -14,6 +14,7 @@ import { CSRF_COOKIE } from "@/features/auth/csrf";
 import { CurrencyProvider } from "@/features/currencies/CurrencyProvider";
 import { InterfacePrefsProvider } from "@/features/identity/InterfacePrefsProvider";
 import { interfacePrefsFromUi } from "@/features/identity/interfacePrefs";
+import { NativeActorProvider } from "@/features/identity/NativeActorProvider";
 import { getPreferencesForActor } from "@/features/identity/preferencesForActor";
 import { IdentifyUser } from "@/features/observability/IdentifyUser";
 import { PRIVACY_CASE_PATH_HEADER, privacyCaseReturnPath } from "@/features/privacy/requestPath";
@@ -49,48 +50,50 @@ export default async function AppLayout({ children }: { children: ReactNode }): 
     readBaseCurrency(db, AbortSignal.timeout(5000)),
   ]);
   return (
-    <CurrencyProvider currency={baseCurrency}>
-      <ActionErrorProvider>
-        <IdentifyUser
-          user={{
-            id: ctx.actor.id,
-            name: ctx.actor.name,
-            email: ctx.actor.email,
-            role: ctx.actor.type,
-          }}
-        />
-        {/* Reconciles this device's theme cookie with the account's stored choice, inline and ahead
+    <NativeActorProvider key={ctx.actor.id} actorId={ctx.actor.id}>
+      <CurrencyProvider currency={baseCurrency}>
+        <ActionErrorProvider>
+          <IdentifyUser
+            user={{
+              id: ctx.actor.id,
+              name: ctx.actor.name,
+              email: ctx.actor.email,
+              role: ctx.actor.type,
+            }}
+          />
+          {/* Reconciles this device's theme cookie with the account's stored choice, inline and ahead
           of the shell, so a cold browser never paints a frame of the wrong theme. */}
-        <script
-          // biome-ignore lint/security/noDangerouslySetInnerHtml: three known literals; must be inline to beat first paint
-          dangerouslySetInnerHTML={{
-            __html: appearanceSeedScript(parseAppearance(prefs.ui.appearance)),
-          }}
-        />
-        <InterfacePrefsProvider value={interfacePrefsFromUi(prefs.ui)}>
-          <FollowUpPromptProvider>
-            <div data-density={prefs.density} className="flex h-screen flex-col">
-              <CsrfRefresher hasCsrf={hasCsrf} />
-              {ctx.actor.type === "admin" && <VersionBanner />}
-              <ReconnectBanner />
-              <div className="flex min-h-0 flex-1">
-                <LeftNav initialExpanded={navExpanded} />
-                <div className="flex min-w-0 flex-1 flex-col">
-                  <TopBar
-                    userId={ctx.actor.id}
-                    userName={ctx.actor.name}
-                    avatarUrl={ctx.actor.avatarUrl}
-                    appearance={parseAppearance(prefs.ui.appearance)}
-                  />
-                  <main className="min-w-0 flex-1 overflow-auto bg-muted/70 p-6">{children}</main>
+          <script
+            // biome-ignore lint/security/noDangerouslySetInnerHtml: three known literals; must be inline to beat first paint
+            dangerouslySetInnerHTML={{
+              __html: appearanceSeedScript(parseAppearance(prefs.ui.appearance)),
+            }}
+          />
+          <InterfacePrefsProvider value={interfacePrefsFromUi(prefs.ui)}>
+            <FollowUpPromptProvider>
+              <div data-density={prefs.density} className="flex h-screen flex-col">
+                <CsrfRefresher hasCsrf={hasCsrf} />
+                {ctx.actor.type === "admin" && <VersionBanner />}
+                <ReconnectBanner />
+                <div className="flex min-h-0 flex-1">
+                  <LeftNav initialExpanded={navExpanded} />
+                  <div className="flex min-w-0 flex-1 flex-col">
+                    <TopBar
+                      userId={ctx.actor.id}
+                      userName={ctx.actor.name}
+                      avatarUrl={ctx.actor.avatarUrl}
+                      appearance={parseAppearance(prefs.ui.appearance)}
+                    />
+                    <main className="min-w-0 flex-1 overflow-auto bg-muted/70 p-6">{children}</main>
+                  </div>
                 </div>
+                <CommandPalette />
+                <GlobalShortcuts />
               </div>
-              <CommandPalette />
-              <GlobalShortcuts />
-            </div>
-          </FollowUpPromptProvider>
-        </InterfacePrefsProvider>
-      </ActionErrorProvider>
-    </CurrencyProvider>
+            </FollowUpPromptProvider>
+          </InterfacePrefsProvider>
+        </ActionErrorProvider>
+      </CurrencyProvider>
+    </NativeActorProvider>
   );
 }

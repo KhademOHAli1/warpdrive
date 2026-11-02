@@ -1,4 +1,5 @@
 import { classifications, classifyInventory } from "./registryClassification";
+import { nativeCreationIds1 } from "./registryIdsNativeCreation1";
 import {
   salesDesignIds1,
   salesDiagnosticsIds1,
@@ -7,6 +8,26 @@ import {
 } from "./registryIdsSales1";
 
 export const salesInventoryEntries = [
+  classifyInventory(nativeCreationIds1, {
+    ...classifications.crm,
+    owner: "native deal creation and recovery receipts",
+    categories: [
+      "actor and deal identifiers",
+      "opaque creation operations and intent fingerprints",
+      "transient form, dispatch and reconciliation state",
+    ],
+    subjectRelation:
+      "The creating workforce actor differs from the subjects described by CRM rows. An intent fingerprint remains account-linked personal data; it is not anonymous and establishes no subject-case authority.",
+    purpose:
+      "Bind one native deal-create operation to its original actor and immutable versioned intent; atomically retain completed receipts, deduplicate uncertain retries and reconcile the currently visible result without recreating it.",
+    disclosure:
+      "The protected action returns only the current authorized deal acknowledgement or current board projection. Receipts contain no raw form, contact payload, session reference or credential. Hidden/deleted results and conflicting intents expose no foreign row. No receipt or fingerprint disclosure adapter is introduced.",
+    retention:
+      "Completed receipts retain actor, opaque operation, version, fingerprint, nullable deal link and timestamp. Deal deletion leaves a tombstone and cannot permit operation reuse; actor deletion is restricted pending a coordinated lifecycle. Client intentions and per-actor attempt gates exist only in document memory, survive uncertain outcomes and are isolated from account-switch callbacks. Map/Set deletion boundaries are transient bookkeeping, not database erasure. No purge, expiry or retention period is activated.",
+    externalEffects:
+      "PostgreSQL creates the deal, labels and channel together with its completed receipt and existing transaction notification. Current authority, row and catalog locks fence participating writers. The explicit reconciliation reader performs no create fallback. Inline contact proxies retain their existing independent creation behavior; the deal receipt does not make contact creation idempotent. No mail, provider, storage or subject-erasure action is introduced.",
+    erasureTask: "DPL-16",
+  }),
   classifyInventory(salesIntegrationIds1, {
     ...classifications.infrastructure,
     owner: "connected applications",

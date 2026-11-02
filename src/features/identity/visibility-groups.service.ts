@@ -1,7 +1,9 @@
 import { and, eq } from "drizzle-orm";
 import type { Db } from "@/db/client";
 import { pipelines, users, visibilityGroupMembers, visibilityGroups } from "@/db/schema";
+import { withCurrentAuthority } from "@/features/auth/currentAuthority";
 import type { PermSetUser } from "@/features/permissions/effective";
+import { hydrateActor } from "@/server/hydrateActor";
 import { err, ok, type Result } from "@/types/result";
 import { recordAudit } from "./audit";
 import { canManageGroupMembership } from "./guards";
@@ -83,77 +85,95 @@ async function groupGatesRestrictedPipeline(db: Db, groupId: string): Promise<bo
 }
 
 export async function addGroupMember(
-  db: Db,
-  actor: PermSetUser,
+  sourceDb: Db,
+  requestActor: PermSetUser,
   input: { groupId: string; userId: string },
   signal: AbortSignal,
 ): Promise<Result<true, string>> {
-  const isMember =
-    actor.type === "admin" ? false : await actorIsMember(db, input.groupId, actor.id);
-  const gatesRestricted =
-    actor.type === "admin" ? false : await groupGatesRestrictedPipeline(db, input.groupId);
-  const gate = canManageGroupMembership(actor, {
-    groupId: input.groupId,
-    targetUserId: input.userId,
-    groupGatesRestrictedPipeline: gatesRestricted,
-    actorIsMemberOfGroup: isMember,
-  });
-  if (gate.ok === false) return gate;
-  signal.throwIfAborted();
-  await db
-    .insert(visibilityGroupMembers)
-    .values({ groupId: input.groupId, userId: input.userId })
-    .onConflictDoNothing();
-  await recordAudit(
-    db,
-    {
-      actorId: actor.id,
-      targetType: "visibility_group",
-      targetId: input.groupId,
-      action: "visibility_group.member_added",
-      after: { userId: input.userId },
-    },
+  return withCurrentAuthority(
+    sourceDb,
+    "write",
     signal,
+    async (db): Promise<Result<true, string>> => {
+      const actor = await hydrateActor(db, requestActor.id, signal);
+      if (actor === null) return err("forbidden");
+      const isMember =
+        actor.type === "admin" ? false : await actorIsMember(db, input.groupId, actor.id);
+      const gatesRestricted =
+        actor.type === "admin" ? false : await groupGatesRestrictedPipeline(db, input.groupId);
+      const gate = canManageGroupMembership(actor, {
+        groupId: input.groupId,
+        targetUserId: input.userId,
+        groupGatesRestrictedPipeline: gatesRestricted,
+        actorIsMemberOfGroup: isMember,
+      });
+      if (gate.ok === false) return gate;
+      signal.throwIfAborted();
+      await db
+        .insert(visibilityGroupMembers)
+        .values({ groupId: input.groupId, userId: input.userId })
+        .onConflictDoNothing();
+      await recordAudit(
+        db,
+        {
+          actorId: actor.id,
+          targetType: "visibility_group",
+          targetId: input.groupId,
+          action: "visibility_group.member_added",
+          after: { userId: input.userId },
+        },
+        signal,
+      );
+      return ok(true);
+    },
   );
-  return ok(true);
 }
 
 export async function removeGroupMember(
-  db: Db,
-  actor: PermSetUser,
+  sourceDb: Db,
+  requestActor: PermSetUser,
   input: { groupId: string; userId: string },
   signal: AbortSignal,
 ): Promise<Result<true, string>> {
-  const isMember =
-    actor.type === "admin" ? false : await actorIsMember(db, input.groupId, actor.id);
-  const gatesRestricted =
-    actor.type === "admin" ? false : await groupGatesRestrictedPipeline(db, input.groupId);
-  const gate = canManageGroupMembership(actor, {
-    groupId: input.groupId,
-    targetUserId: input.userId,
-    groupGatesRestrictedPipeline: gatesRestricted,
-    actorIsMemberOfGroup: isMember,
-  });
-  if (gate.ok === false) return gate;
-  signal.throwIfAborted();
-  await db
-    .delete(visibilityGroupMembers)
-    .where(
-      and(
-        eq(visibilityGroupMembers.groupId, input.groupId),
-        eq(visibilityGroupMembers.userId, input.userId),
-      ),
-    );
-  await recordAudit(
-    db,
-    {
-      actorId: actor.id,
-      targetType: "visibility_group",
-      targetId: input.groupId,
-      action: "visibility_group.member_removed",
-      before: { userId: input.userId },
-    },
+  return withCurrentAuthority(
+    sourceDb,
+    "write",
     signal,
+    async (db): Promise<Result<true, string>> => {
+      const actor = await hydrateActor(db, requestActor.id, signal);
+      if (actor === null) return err("forbidden");
+      const isMember =
+        actor.type === "admin" ? false : await actorIsMember(db, input.groupId, actor.id);
+      const gatesRestricted =
+        actor.type === "admin" ? false : await groupGatesRestrictedPipeline(db, input.groupId);
+      const gate = canManageGroupMembership(actor, {
+        groupId: input.groupId,
+        targetUserId: input.userId,
+        groupGatesRestrictedPipeline: gatesRestricted,
+        actorIsMemberOfGroup: isMember,
+      });
+      if (gate.ok === false) return gate;
+      signal.throwIfAborted();
+      await db
+        .delete(visibilityGroupMembers)
+        .where(
+          and(
+            eq(visibilityGroupMembers.groupId, input.groupId),
+            eq(visibilityGroupMembers.userId, input.userId),
+          ),
+        );
+      await recordAudit(
+        db,
+        {
+          actorId: actor.id,
+          targetType: "visibility_group",
+          targetId: input.groupId,
+          action: "visibility_group.member_removed",
+          before: { userId: input.userId },
+        },
+        signal,
+      );
+      return ok(true);
+    },
   );
-  return ok(true);
 }

@@ -584,5 +584,18 @@
     "event": "Veranstaltung / Konferenz",
     "advertising": "Werbung",
     "other": "Sonstiges"
+  },
+  "nativeCreate": {
+    "unknown": "Das Speichern konnte nicht bestätigt werden. Dein ursprünglicher Deal bleibt erhalten. Wiederhole die Anfrage, um das Ergebnis ohne einen zweiten Deal zu prüfen.",
+    "denied": "Der Speichervorgang konnte nicht abgeschlossen werden ({id}). Die ursprüngliche Anfrage bleibt erhalten, bis ihr Ergebnis feststeht.",
+    "invalid": "Prüfe die Deal-Daten vor dem Speichern.",
+    "refreshFailed": "Der Deal wurde gespeichert. Die aktuelle Ansicht konnte nicht geladen werden. Wiederhole das Laden; dabei wird kein weiterer Deal erstellt.",
+    "refresh": "Gespeicherten Deal laden",
+    "retry": "Gespeicherte Anfrage wiederholen",
+    "contactUnknown": "Die Kontakterstellung konnte nicht bestätigt werden. Wähle den bestehenden Kontakt aus. Wir erstellen ihn nicht automatisch erneut.",
+    "contactRejected": "Der Kontakt konnte nicht erstellt werden. Prüfe die Kontaktauswahl.",
+    "chooseExisting": "Kontaktauswahl prüfen",
+    "selectExisting": "Wähle einen bestehenden Kontakt aus oder fahre ausdrücklich ohne Kontakt fort.",
+    "rejected": "Der Speichervorgang wurde abgelehnt ({id}). Deine Deal-Daten bleiben zur Prüfung erhalten."
   }
 }

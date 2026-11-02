@@ -46,7 +46,12 @@ export function StageAddButton(props: StageAddButtonProps): React.ReactNode {
           baseCurrency={baseCurrency}
           stageId={stageId}
           onClose={() => setOpen(false)}
-          onCreated={() => void qc.invalidateQueries({ queryKey: BOARD_QUERY_KEY(pipelineId) })}
+          onCreated={async () => {
+            await qc.invalidateQueries(
+              { queryKey: BOARD_QUERY_KEY(pipelineId) },
+              { throwOnError: true },
+            );
+          }}
         />
       )}
     </>

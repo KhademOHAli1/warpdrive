@@ -584,5 +584,18 @@
     "event": "Event / conference",
     "advertising": "Advertising",
     "other": "Other"
+  },
+  "nativeCreate": {
+    "unknown": "We could not confirm the save. Your original deal is preserved. Retry it to check the result without creating a second deal.",
+    "denied": "The save could not be completed ({id}). Your original request is preserved until its outcome is known.",
+    "invalid": "Check the deal details before saving.",
+    "refreshFailed": "The deal was saved. We could not refresh its current view. Retry the refresh; this will not create another deal.",
+    "refresh": "Refresh saved deal",
+    "retry": "Retry saved request",
+    "contactUnknown": "We could not confirm the contact creation. Select the existing contact before continuing; we will not create it again automatically.",
+    "contactRejected": "The contact could not be created. Review the contact selection before continuing.",
+    "chooseExisting": "Review contact selection",
+    "selectExisting": "Select an existing contact, or explicitly continue without one.",
+    "rejected": "The save was rejected ({id}). Your deal details are still here for review."
   }
 }

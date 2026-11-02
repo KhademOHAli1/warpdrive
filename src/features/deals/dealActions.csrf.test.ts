@@ -4,6 +4,7 @@
 // so guardCsrf runs exactly as it does inside a server action.
 import { beforeEach, describe, expect, test, vi } from "vitest";
 import { CSRF_COOKIE } from "@/features/auth/csrf";
+import { createContext } from "@/server/trpc/context";
 
 const headerStore = new Map<string, string>();
 const cookieStore = new Map<string, string>();
@@ -131,4 +132,27 @@ describe("deal mutation actions: CSRF rejection before any write", () => {
     // CSRF passed; rejected at actor check instead.
     expect(r.ok === false && r.error.id).toBe("E_AUTH_003");
   });
+});
+
+test("retired unkeyed create rejects valid-CSRF legacy input before resolving context or effects", async () => {
+  cookieStore.set(CSRF_COOKIE, VALID_TOKEN);
+  setSameOrigin();
+  vi.mocked(createContext).mockClear();
+  const result = await createDealAction(
+    {
+      title: "Legacy unkeyed",
+      value: null,
+      pipelineId: "11111111-1111-4111-8111-111111111111",
+      stageId: "22222222-2222-4222-8222-222222222222",
+      personId: null,
+      orgId: null,
+      expectedCloseDate: null,
+      labels: [],
+      sourceChannel: null,
+      sourceChannelId: null,
+    },
+    VALID_TOKEN,
+  );
+  expect(result).toEqual({ ok: false, error: { id: "E_DEAL_018" } });
+  expect(createContext).not.toHaveBeenCalled();
 });

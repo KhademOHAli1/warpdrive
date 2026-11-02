@@ -2,6 +2,7 @@ import { createHash, randomBytes } from "node:crypto";
 import { and, eq, gt, isNull, type SQL, sql } from "drizzle-orm";
 import type { Db } from "@/db/client";
 import { authUsers, sessions, users } from "@/db/schema";
+import { withCurrentAuthority } from "@/features/auth/currentAuthority";
 import { err, ok, type Result } from "@/types/result";
 import { evaluateSessionAccess } from "./better/accessPolicy";
 import { sessionTokenFromCookie } from "./better/sessionToken";
@@ -130,11 +131,13 @@ export function loadLiveSessionById(
 }
 
 export async function revokeAllSessions(
-  db: Db,
+  sourceDb: Db,
   userId: string,
   signal: AbortSignal,
 ): Promise<void> {
-  signal.throwIfAborted();
-  await db.update(sessions).set({ revokedAt: new Date() }).where(eq(sessions.userId, userId));
-  signal.throwIfAborted();
+  return withCurrentAuthority(sourceDb, "write", signal, async (db): Promise<void> => {
+    signal.throwIfAborted();
+    await db.update(sessions).set({ revokedAt: new Date() }).where(eq(sessions.userId, userId));
+    signal.throwIfAborted();
+  });
 }

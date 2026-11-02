@@ -41,10 +41,11 @@ export async function resolveNewOrgId(
   state: OrgFields,
   csrf: string | null,
   locale: Locale = "en",
+  create: typeof createOrgAction = createOrgAction,
 ): Promise<string | null | { error: string }> {
   if (state.orgMode === "existing") return state.orgId === "" ? null : state.orgId;
   if (state.newOrgName.trim() === "") return null;
-  const r = await createOrgAction(
+  const r = await create(
     { name: state.newOrgName.trim(), address: null, customFields: state.orgCustomFields },
     csrf,
   );
@@ -63,10 +64,11 @@ export async function resolveNewPersonId(
   orgId: string | null,
   csrf: string | null,
   locale: Locale = "en",
+  create: typeof createPersonAction = createPersonAction,
 ): Promise<string | null | { error: string }> {
   if (state.personMode === "existing") return state.personId === "" ? null : state.personId;
   if (state.newPersonName.trim() === "") return null;
-  const r = await createPersonAction(
+  const r = await create(
     {
       name: state.newPersonName.trim(),
       phones: cleanPoints(state.phones, true),

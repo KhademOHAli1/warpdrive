@@ -10,6 +10,7 @@ export * from "./changeLogs";
 export * from "./comments";
 export * from "./contactFollowers";
 export * from "./customFieldDefs";
+export * from "./dealCreateOperations";
 export * from "./dealFollowers";
 export * from "./dealParticipants";
 export * from "./deals";

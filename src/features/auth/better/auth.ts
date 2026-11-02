@@ -5,6 +5,7 @@ import { APIError, createAuthMiddleware } from "better-auth/api";
 import { betterAuth } from "better-auth/minimal";
 import { genericOAuth, twoFactor } from "better-auth/plugins";
 import { type Env, env } from "@/config/env";
+import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import {
   authAccounts,
@@ -33,7 +34,12 @@ import { recordNativeSecurityChange, securityChangePlugin } from "./securityChan
 import { invitationStoragePlugin } from "./storagePlugin";
 import { totpReplayPlugin } from "./totpReplay";
 
-export function createBetterAuth(db: Db, config: Env = env) {
+// Private instance provenance: never serialize or log the configured secrets.
+const instanceConfigs = new WeakMap<object, Env>();
+
+export function createBetterAuth(db: Db, configuration: Env = env) {
+  // Each instance and its later transaction bindings retain the same private configuration.
+  const config = structuredClone(configuration);
   const secure = new URL(config.BASE_URL).protocol === "https:";
   const send = async (
     user: { id: string; email: string },
@@ -59,7 +65,7 @@ export function createBetterAuth(db: Db, config: Env = env) {
       );
     else await enqueueAuthMail(db, input, signal);
   };
-  return betterAuth({
+  const instance = betterAuth({
     appName: "Warpdrive",
     baseURL: config.BASE_URL,
     basePath: "/api/auth",
@@ -255,4 +261,14 @@ export function createBetterAuth(db: Db, config: Env = env) {
     logger: { disabled: true },
     onAPIError: { errorURL: `${config.BASE_URL}/login?error=auth_failed` },
   });
+  instanceConfigs.set(instance, config);
+  return instance;
+}
+
+/** Bind adapter, middleware and hooks to the caller's transaction with identical configuration. */
+export function rebindBetterAuth(auth: ReturnType<typeof createBetterAuth>, db: Db) {
+  const config = instanceConfigs.get(auth);
+  if (config === undefined)
+    throw new AppError(ERROR_IDS.DB_INVARIANT, "unknown native authentication instance", {});
+  return createBetterAuth(db, config);
 }

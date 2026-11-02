@@ -15,6 +15,7 @@ export interface EntityCreateDialogShellProps {
   error: string | null;
   pending: boolean;
   submitDisabled?: boolean;
+  submitLabel?: string;
   onSubmit: () => void;
   onClose: () => void;
 }
@@ -29,6 +30,7 @@ export function EntityCreateDialogShell({
   error,
   pending,
   submitDisabled = false,
+  submitLabel,
   onSubmit,
   onClose,
 }: EntityCreateDialogShellProps): React.ReactNode {
@@ -75,7 +77,7 @@ export function EntityCreateDialogShell({
               if (reportTimePickerValidity(fieldsRef.current)) onSubmit();
             }}
           >
-            {pending ? tEntityCreate("saving") : tEntityCreate("save")}
+            {pending ? tEntityCreate("saving") : (submitLabel ?? tEntityCreate("save"))}
           </Button>
         </div>
       </DialogContent>

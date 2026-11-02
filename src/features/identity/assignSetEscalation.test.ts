@@ -1,6 +1,6 @@
 import { eq, sql } from "drizzle-orm";
 import { afterAll, beforeAll, beforeEach, expect, test } from "vitest";
-import { users } from "@/db/schema";
+import { permissionSets, users } from "@/db/schema";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { makeTestDb, type TestDb } from "@/test/db";
 import { createPermissionSet } from "./permission-sets.service";
@@ -37,9 +37,23 @@ afterAll(async () => {
 });
 beforeEach(async () => {
   await h.db.execute(sql`TRUNCATE users, permission_sets, audit_events RESTART IDENTITY CASCADE`);
+  // The delegated actor must carry the same grant in persisted authority, not only its JS snapshot.
+  const [managerSet] = await h.db
+    .insert(permissionSets)
+    .values({
+      name: "Delegated manager fixture",
+      flags: { "permissions.manage": true },
+    })
+    .returning();
   await h.db.insert(users).values([
     { id: admin.id, email: "admin@example.com", name: "Admin", googleSub: "g-a", isAdmin: true },
-    { id: manager.id, email: "mgr@example.com", name: "Mgr", googleSub: "g-m" },
+    {
+      id: manager.id,
+      email: "mgr@example.com",
+      name: "Mgr",
+      googleSub: "g-m",
+      permissionSetId: managerSet!.id,
+    },
   ]);
 });
 

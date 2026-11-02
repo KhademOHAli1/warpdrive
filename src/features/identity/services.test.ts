@@ -1,6 +1,6 @@
 import { sql } from "drizzle-orm";
 import { afterAll, beforeAll, beforeEach, describe, expect, test } from "vitest";
-import { auditEvents, sessions, users } from "@/db/schema";
+import { auditEvents, permissionSets, sessions, users } from "@/db/schema";
 import { sessionFixture } from "@/features/auth/session.test-helpers";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { makeTestDb, type TestDb } from "@/test/db";
@@ -35,9 +35,23 @@ beforeEach(async () => {
     sql`TRUNCATE visibility_group_members, visibility_groups, team_members, teams, sessions, users, permission_sets, audit_events, settings RESTART IDENTITY CASCADE`,
   );
   // Actors must exist as users for FK on audit + deactivation flows.
+  // The delegated actor must carry the same grant in persisted authority, not only its JS snapshot.
+  const [managerSet] = await h.db
+    .insert(permissionSets)
+    .values({
+      name: "Delegated manager fixture",
+      flags: { "permissions.manage": true },
+    })
+    .returning();
   await h.db.insert(users).values([
     { id: admin.id, email: "admin@example.com", name: "Admin", googleSub: "g-a", isAdmin: true },
-    { id: manager.id, email: "mgr@example.com", name: "Mgr", googleSub: "g-m" },
+    {
+      id: manager.id,
+      email: "mgr@example.com",
+      name: "Mgr",
+      googleSub: "g-m",
+      permissionSetId: managerSet!.id,
+    },
   ]);
 });
 

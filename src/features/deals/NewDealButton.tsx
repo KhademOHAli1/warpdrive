@@ -49,7 +49,12 @@ export function NewDealButton({
           pipelines={pipelines}
           baseCurrency={baseCurrency}
           onClose={() => setOpen(false)}
-          onCreated={() => void qc.invalidateQueries({ queryKey: BOARD_QUERY_KEY(pipelineId) })}
+          onCreated={async () => {
+            await qc.invalidateQueries(
+              { queryKey: BOARD_QUERY_KEY(pipelineId) },
+              { throwOnError: true },
+            );
+          }}
         />
       )}
     </>

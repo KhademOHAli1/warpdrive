@@ -2,10 +2,11 @@ import { and, eq, isNull, ne, sql } from "drizzle-orm";
 import { z } from "zod";
 import type { Db } from "@/db/client";
 import { authAccounts, authPasskeys, authRecoveryRequests, sessions } from "@/db/schema";
+import { withCurrentAuthority } from "@/features/auth/currentAuthority";
 import { recordSecurityEvent } from "@/features/auth/management/audit";
 import { enqueueAuthMail } from "@/features/auth/management/mail";
 import { encryptToken } from "@/features/email/crypto";
-import type { createBetterAuth } from "./auth";
+import { type createBetterAuth, rebindBetterAuth } from "./auth";
 import type { WorkflowResponse } from "./contracts";
 import { authMailLocale } from "./mailLocale";
 import { resolveWorkflowSession } from "./sessionPolicy";
@@ -127,8 +128,8 @@ async function revokeSessions(
 }
 
 export async function runSecurityAction(
-  db: Db,
-  auth: ReturnType<typeof createBetterAuth>,
+  sourceDb: Db,
+  sourceAuth: ReturnType<typeof createBetterAuth>,
   headers: Headers,
   raw: unknown,
   signal: AbortSignal,
@@ -136,73 +137,81 @@ export async function runSecurityAction(
   const parsed = commandSchema.safeParse(raw);
   if (!parsed.success) return { ok: false, error: "INVALID_INPUT" };
   const command = parsed.data;
-  const current = await resolveWorkflowSession(db, headers, signal, {
-    allowPending: command.action === "reauthenticate",
-    requireFresh: command.action !== "reauthenticate",
-  });
-  if (current === null) return { ok: false, error: "FRESH_AUTH_REQUIRED" };
-  const userId = current.user.id;
-  if (command.action === "reauthenticate") {
-    try {
-      await auth.api.verifyPassword({ body: { password: command.password }, headers });
-    } catch {
-      return { ok: false, error: "INVALID_CREDENTIALS" };
-    }
-    await db
-      .update(sessions)
-      .set({ freshAuthenticatedAt: new Date() })
-      .where(and(eq(sessions.id, current.session.id), isNull(sessions.revokedAt)));
-    await recordSecurityEvent(
-      db,
-      {
-        actorId: userId,
-        targetUserId: userId,
-        action: "authentication.reauthenticate",
-        outcome: "success",
-      },
-      signal,
-    );
-    return { ok: true, data: {} };
-  }
-  if (command.action === "unlinkAccount") {
-    const changed = await unlinkAccount(
-      db,
-      auth,
-      userId,
-      current.session.id,
-      command.providerId,
-      command.accountId,
-      signal,
-    );
-    if (!changed) return { ok: false, error: "LAST_AUTH_METHOD" };
-  } else if (command.action === "requestClosure") {
-    await requestClosure(db, userId, command.reason, signal);
-    // The free-form reason stays out of authentication audit logs and notification payloads.
-  } else {
-    if (!(await revokeSessions(db, userId, current.session.id, command, signal)))
-      return { ok: false, error: "NOT_FOUND" };
-  }
-  await recordSecurityEvent(
-    db,
-    {
-      actorId: userId,
-      targetUserId: userId,
-      action: `account.${command.action}`,
-      outcome: "success",
-    },
+  return withCurrentAuthority(
+    sourceDb,
+    "write",
     signal,
-  );
-  await enqueueAuthMail(
-    db,
-    {
-      userId,
-      recipient: current.user.email,
-      locale: await authMailLocale(db, userId),
-      kind: "security_change",
-      detail: command.action === "unlinkAccount" ? "provider" : "sessions",
+    async (db): Promise<WorkflowResponse<Record<string, never>>> => {
+      const auth = rebindBetterAuth(sourceAuth, db);
+      const current = await resolveWorkflowSession(db, headers, signal, {
+        allowPending: command.action === "reauthenticate",
+        requireFresh: command.action !== "reauthenticate",
+      });
+      if (current === null) return { ok: false, error: "FRESH_AUTH_REQUIRED" };
+      const userId = current.user.id;
+      if (command.action === "reauthenticate") {
+        try {
+          await auth.api.verifyPassword({ body: { password: command.password }, headers });
+        } catch {
+          return { ok: false, error: "INVALID_CREDENTIALS" };
+        }
+        await db
+          .update(sessions)
+          .set({ freshAuthenticatedAt: new Date() })
+          .where(and(eq(sessions.id, current.session.id), isNull(sessions.revokedAt)));
+        await recordSecurityEvent(
+          db,
+          {
+            actorId: userId,
+            targetUserId: userId,
+            action: "authentication.reauthenticate",
+            outcome: "success",
+          },
+          signal,
+        );
+        return { ok: true, data: {} };
+      }
+      if (command.action === "unlinkAccount") {
+        const changed = await unlinkAccount(
+          db,
+          auth,
+          userId,
+          current.session.id,
+          command.providerId,
+          command.accountId,
+          signal,
+        );
+        if (!changed) return { ok: false, error: "LAST_AUTH_METHOD" };
+      } else if (command.action === "requestClosure") {
+        await requestClosure(db, userId, command.reason, signal);
+        // The free-form reason stays out of authentication audit logs and notification payloads.
+      } else {
+        if (!(await revokeSessions(db, userId, current.session.id, command, signal)))
+          return { ok: false, error: "NOT_FOUND" };
+      }
+      await recordSecurityEvent(
+        db,
+        {
+          actorId: userId,
+          targetUserId: userId,
+          action: `account.${command.action}`,
+          outcome: "success",
+        },
+        signal,
+      );
+      await enqueueAuthMail(
+        db,
+        {
+          userId,
+          recipient: current.user.email,
+          locale: await authMailLocale(db, userId),
+          kind: "security_change",
+          detail: command.action === "unlinkAccount" ? "provider" : "sessions",
+        },
+        signal,
+      );
+      signal.throwIfAborted();
+      return { ok: true, data: {} };
     },
-    signal,
   );
-  signal.throwIfAborted();
-  return { ok: true, data: {} };
 }

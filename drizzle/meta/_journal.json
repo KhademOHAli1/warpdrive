@@ -708,6 +708,13 @@
       "when": 1793638279185,
       "tag": "0100_workflow_failed_step_retry",
       "breakpoints": true
+    },
+    {
+      "idx": 101,
+      "version": "7",
+      "when": 1793646279910,
+      "tag": "0101_deal_create_operations",
+      "breakpoints": true
     }
   ]
 }

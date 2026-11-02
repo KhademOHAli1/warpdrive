@@ -14,6 +14,11 @@ function group(stores: readonly string[], status: Status, reason: string): Disco
 // Literal reviewed declarations deliberately do not learn new tables from the catalog.
 export const DISCOVERY_COVERAGE: readonly DiscoveryCoverage[] = [
   ...group(
+    ["deal_create_operations"],
+    "unsupported",
+    "Actor-linked native deal creation receipts and intent fingerprints require a dedicated provenance and retention adapter. Deal visibility, a deleted-deal tombstone and account administration do not establish subject disclosure or erasure authority. Actor deletion remains restricted until a coordinated lifecycle is reviewed.",
+  ),
+  ...group(
     DISCOVERY_ADAPTER_TABLES,
     "supported",
     "Version-bound candidate IDs and explicit relationships only; content and exact approved scope require further review.",

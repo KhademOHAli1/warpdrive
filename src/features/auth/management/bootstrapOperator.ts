@@ -6,6 +6,7 @@ import type { Db } from "@/db/client";
 import { settings, userPreferences, users, visibilityGroupMembers } from "@/db/schema";
 import { authMailOutbox } from "@/db/schema/authManagement";
 import { createBetterAuth } from "@/features/auth/better/auth";
+import { withCurrentAuthority } from "@/features/auth/currentAuthority";
 import { ensureSeedData } from "@/features/auth/seed";
 import { resolveLocalePreferences } from "@/features/i18n/preferences";
 import type { PermSetUser } from "@/features/permissions/effective";
@@ -118,41 +119,46 @@ export async function recoverAccountAsOperator(
 ) {
   signal.throwIfAborted();
   if (input.operatorConfirmed !== true) return err("confirmation_required");
-  return db.transaction(async (tx) => {
-    if (input.emergencyLastAdministrator === true) {
-      const reviewed = await reviewEmergencyRecovery(tx, input, signal);
-      if (!reviewed.ok) return reviewed;
-    }
-    const recovered = await completeApprovedRecovery(tx, input, signal);
-    if (!recovered.ok) {
-      if (input.emergencyLastAdministrator === true)
-        throw new AppError(ERROR_IDS.AUTH_POLICY_DENIED, "Emergency review could not be completed");
-      return recovered;
-    }
-    await createBetterAuth(tx).api.requestPasswordReset({
-      body: {
-        email: recovered.value.email,
-        redirectTo: new URL("/auth/reset-password", env.BASE_URL).toString(),
-      },
-      headers: new Headers({ origin: new URL(env.BASE_URL).origin }),
-    });
-    // Native reset deliberately suppresses delivery callback errors. Recovery cancelled every
-    // earlier pending message, so a new pending row is required before committing this grant.
-    const [queued] = await tx
-      .select({ id: authMailOutbox.id })
-      .from(authMailOutbox)
-      .where(
-        and(
-          eq(authMailOutbox.userId, recovered.value.userId),
-          eq(authMailOutbox.recipient, recovered.value.email),
-          eq(authMailOutbox.kind, "password_reset"),
-          eq(authMailOutbox.status, "pending"),
-        ),
-      )
-      .limit(1);
-    if (queued === undefined)
-      throw new AppError(ERROR_IDS.AUTH_POLICY_DENIED, "Recovery reset message was not queued");
-    signal.throwIfAborted();
-    return ok({});
-  });
+  return withCurrentAuthority(db, "write", signal, async (authorityTx) =>
+    authorityTx.transaction(async (tx) => {
+      if (input.emergencyLastAdministrator === true) {
+        const reviewed = await reviewEmergencyRecovery(tx, input, signal);
+        if (!reviewed.ok) return reviewed;
+      }
+      const recovered = await completeApprovedRecovery(tx, input, signal);
+      if (!recovered.ok) {
+        if (input.emergencyLastAdministrator === true)
+          throw new AppError(
+            ERROR_IDS.AUTH_POLICY_DENIED,
+            "Emergency review could not be completed",
+          );
+        return recovered;
+      }
+      await createBetterAuth(tx).api.requestPasswordReset({
+        body: {
+          email: recovered.value.email,
+          redirectTo: new URL("/auth/reset-password", env.BASE_URL).toString(),
+        },
+        headers: new Headers({ origin: new URL(env.BASE_URL).origin }),
+      });
+      // Native reset deliberately suppresses delivery callback errors. Recovery cancelled every
+      // earlier pending message, so a new pending row is required before committing this grant.
+      const [queued] = await tx
+        .select({ id: authMailOutbox.id })
+        .from(authMailOutbox)
+        .where(
+          and(
+            eq(authMailOutbox.userId, recovered.value.userId),
+            eq(authMailOutbox.recipient, recovered.value.email),
+            eq(authMailOutbox.kind, "password_reset"),
+            eq(authMailOutbox.status, "pending"),
+          ),
+        )
+        .limit(1);
+      if (queued === undefined)
+        throw new AppError(ERROR_IDS.AUTH_POLICY_DENIED, "Recovery reset message was not queued");
+      signal.throwIfAborted();
+      return ok({});
+    }),
+  );
 }

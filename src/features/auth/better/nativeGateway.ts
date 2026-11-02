@@ -2,8 +2,10 @@ import { and, eq, gt, TransactionRollbackError } from "drizzle-orm";
 import { type Env, env } from "@/config/env";
 import type { Db } from "@/db/client";
 import { authPasskeys, authVerifications } from "@/db/schema";
+import { withCurrentAuthority } from "@/features/auth/currentAuthority";
 import { lockAuthAccount } from "./accountLock";
 import { createBetterAuth } from "./auth";
+import { prepareNativeAuthRequest } from "./prepareNativeAuthRequest";
 import { resolveWorkflowSession } from "./sessionPolicy";
 import { hashSessionCredential, readCookie, sessionTokenFromCookie } from "./sessionToken";
 
@@ -61,32 +63,48 @@ async function proofOwner(db: Db, request: Request, signal: AbortSignal): Promis
 
 export async function nativeAuthGateway(
   db: Db,
-  request: Request,
+  incoming: Request,
   config: Env = env,
 ): Promise<Response> {
   const signal = AbortSignal.timeout(20_000);
-  const current = await resolveWorkflowSession(db, request.headers, signal, { allowPending: true });
-  const owner = await proofOwner(db, request, signal);
-  const owners = [
-    ...new Set(
-      [current?.user.id, owner].filter((id): id is string => id !== undefined && id !== null),
-    ),
-  ].sort();
+  const prepared = await prepareNativeAuthRequest(incoming, signal);
+  if (!prepared.ok)
+    return Response.json(
+      { error: "AUTH_BODY_REJECTED" },
+      {
+        status: prepared.error,
+        headers: { "Cache-Control": "no-store" },
+      },
+    );
+  const request = prepared.value;
   // Anonymous resets/callbacks also need this transaction: before-hook grant locks must span
   // the native mutation and after-hook outbox writes. Account locks keep their sorted order.
   let failedResponse: Response | undefined;
   try {
-    return await db.transaction(async (tx) => {
-      for (const userId of owners) await lockAuthAccount(tx, userId, signal);
-      const response = await createBetterAuth(tx, config).handler(request);
-      // Native handlers translate hook failures into responses. Abort partial mutations on
-      // operational failure; retain 4xx writes such as rate limits, lockouts and replay denial.
-      if (response.status >= 500) {
-        failedResponse = response;
-        tx.rollback();
-      }
-      return response;
-    });
+    // Every handler route participates, including GET callbacks/session refresh. This fence
+    // can span existing provider exchanges; SQL timeouts do not cancel that network I/O.
+    return await withCurrentAuthority(db, "write", signal, async (authorityTx) =>
+      authorityTx.transaction(async (tx) => {
+        const current = await resolveWorkflowSession(tx, request.headers, signal, {
+          allowPending: true,
+        });
+        const owner = await proofOwner(tx, request, signal);
+        const owners = [
+          ...new Set(
+            [current?.user.id, owner].filter((id): id is string => id !== undefined && id !== null),
+          ),
+        ].sort();
+        for (const userId of owners) await lockAuthAccount(tx, userId, signal);
+        const response = await createBetterAuth(tx, config).handler(request);
+        // Native handlers translate hook failures into responses. Abort partial mutations on
+        // operational failure; retain 4xx writes such as rate limits, lockouts and replay denial.
+        if (response.status >= 500) {
+          failedResponse = response;
+          tx.rollback();
+        }
+        return response;
+      }),
+    );
   } catch (error) {
     if (failedResponse !== undefined && error instanceof TransactionRollbackError)
       return failedResponse;
