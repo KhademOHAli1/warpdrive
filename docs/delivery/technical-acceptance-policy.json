@@ -1,0 +1,200 @@
+{
+  "schema_version": 1,
+  "repository": "KhademOHAli1/warpdrive",
+  "mode": "delegated_agent_technical_only",
+  "authorization": "User decision on 2 November 2026: clearly identified agent acceptance for bounded technical issues after independent agent review and green exact-main CI; human user journeys and releases remain separate.",
+  "provenance_limit": "GitHub authenticates the delegated posting principal only. Actual Codex session/task identities and independently retained process review are explicit declarations, not independently authenticated GitHub identities.",
+  "delegated_actors": [
+    {
+      "id": 118572997,
+      "login": "KhademOHAli1"
+    }
+  ],
+  "human_only_ids": [
+    "ops/journey-deal-stages",
+    "ops/journey-calendar-reminders",
+    "ops/journey-mailbox-recovery",
+    "ops/journey-durable-follow-up",
+    "calendar/upgrade-acceptance",
+    "privacy/DPL-36"
+  ],
+  "required_workflows": {
+    "403980173": ["Analyze (javascript-typescript)", "Analyze (actions)", "Analyze (python)"]
+  },
+  "items": {
+    "integration/CONN-001": {
+      "classification": "bounded_technical",
+      "acceptance_sha256": "a8e2adac29269ff0f2b9eda21d4525ad6ed141b1d37c4133fa72add5ac645d97",
+      "rationale": "Source inventory and incremental extraction plan only; no runtime provider or journey acceptance.",
+      "required_source_paths": [
+        "docs/integration-execution/provider-seams.md",
+        "src/features/integrations/catalog.ts",
+        "src/features/integrations/service.ts",
+        "src/features/integrations/actions.ts",
+        "src/features/integrations/slack.ts",
+        "src/app/api/integrations/slack/callback/route.ts"
+      ]
+    },
+    "integration/CONN-002": {
+      "classification": "bounded_technical",
+      "acceptance_sha256": "2f323c034cb2929a2b7d25f773a407f059552933381361cb678dadf3ff7b6060",
+      "rationale": "Typed provider contract and deterministic local conformance; actual provider support remains separate.",
+      "required_source_paths": [
+        "docs/integration-execution/provider-contract-qualification.md",
+        "src/features/integrations/providers/conformance.test.ts",
+        "src/features/integrations/providers/contract.ts",
+        "src/features/integrations/providers/inputSchemas.ts",
+        "src/features/integrations/providers/invoke.test.ts",
+        "src/features/integrations/providers/invoke.ts",
+        "src/features/integrations/providers/invokeAbortReason.test.ts",
+        "src/features/integrations/providers/models.ts",
+        "src/features/integrations/providers/outputSchemas.ts",
+        "src/features/integrations/providers/safety.test.ts"
+      ]
+    },
+    "integration/CONN-014": {
+      "classification": "bounded_technical",
+      "acceptance_sha256": "62c01a269bea8173e6ee03a7a23a9e0f8aad3f5169d444ce122e000a1d054e2f",
+      "rationale": "Bounded provider failure classification, including existing Slack compatibility boundaries.",
+      "required_source_paths": [
+        "src/features/integrations/slack.ts",
+        "src/features/integrations/slackRead.ts",
+        "src/features/integrations/slackReadFailure.ts",
+        "src/features/integrations/slackOperationFailure.ts",
+        "src/features/integrations/slackReadFailures.test.ts",
+        "src/features/integrations/slackOperationFailures.test.ts"
+      ]
+    },
+    "integration/AISEC-001": {
+      "classification": "bounded_technical",
+      "acceptance_sha256": "86ad032e6fe1f98a285952cf2c7137178f21f261a433b77bc94a4f87e96b6f13",
+      "rationale": "Source operation classification and exact tool inventory, without live invocation or provider qualification.",
+      "required_source_paths": [
+        "docs/integration-execution/mcp-operation-inventory.md",
+        "docs/integration-execution/mcp-operation-inventory.csv",
+        "src/features/mcp/server.ts",
+        "src/features/mcp/tools/types.ts",
+        "src/features/mcp/tools/reads.ts",
+        "src/features/mcp/tools/reads-email.ts",
+        "src/features/mcp/tools/writes-deals.ts",
+        "src/features/mcp/tools/writes-contacts.ts",
+        "src/features/mcp/tools/writes-activities.ts",
+        "src/features/mcp/tools/writes-email.ts"
+      ]
+    },
+    "integration/AISEC-009": {
+      "classification": "bounded_technical",
+      "acceptance_sha256": "0a57758f9c8a97bb148811a7a1a900d7dba5e0640b7ee3fca83acc3dbcb53a53",
+      "rationale": "Bounded resource, issuer and audience binding across authorization, exchange and verification.",
+      "required_source_paths": [
+        "src/features/oauth/resource.ts",
+        "src/features/oauth/requestIngress.ts",
+        "src/features/oauth/requestSchemas.ts",
+        "src/features/oauth/authorizationHttp.ts",
+        "src/features/oauth/tokenHttp.ts",
+        "src/features/oauth/exchange.ts",
+        "src/features/oauth/tokens.ts",
+        "src/features/mcp/auth.ts",
+        "src/features/mcp/http.ts"
+      ]
+    },
+    "integration/AISEC-010": {
+      "classification": "bounded_technical",
+      "acceptance_sha256": "ab4e6865d3755a70d3d80b44772c814c6af397d35f006547640e2731aa9f93d1",
+      "rationale": "Pinned specification and discovery/metadata contract; real client/provider compatibility remains separate.",
+      "required_source_paths": [
+        "package.json",
+        "bun.lock",
+        "src/features/oauth/metadata.ts",
+        "src/features/oauth/resource.ts",
+        "src/features/oauth/mcpEndpoint.ts",
+        "src/features/oauth/resourceDiscovery.test.ts",
+        "src/features/oauth/issuerMetadata.test.ts"
+      ]
+    },
+    "integration/AISEC-014": {
+      "classification": "bounded_technical",
+      "acceptance_sha256": "35e5f15d37c39ed3253be68f3d49291bb7525eb2ef54ad3943b0990b25c4fb62",
+      "rationale": "Bounded refresh rotation, affected-family reuse containment and integrity; no broad grant or journey acceptance.",
+      "required_source_paths": [
+        "src/features/oauth/exchange.ts",
+        "src/features/oauth/tokens.ts",
+        "src/features/oauth/refreshFamily.integration.test.ts",
+        "src/features/oauth/refreshFamilyIntegrity.integration.test.ts",
+        "src/features/oauth/refreshFamilySafety.integration.test.ts"
+      ]
+    },
+    "ops/code-scanning-2026-11-02": {
+      "classification": "bounded_technical",
+      "acceptance_sha256": "4f2832d14dd77b650b617e41f5e5a9775d783a26178a0180bc72c677dc4decf3",
+      "rationale": "Only the dated alert batch, source fixes and alert-specific explanations; no global security or deployment claim.",
+      "required_source_paths": [
+        "src/features/integrations/slack.ts",
+        "src/features/email/mailConnectionProofContext.ts",
+        "src/features/email/oauthState.ts",
+        "src/test/mailProtocolImap.ts"
+      ]
+    },
+    "ops/security-regressions-2026-11-02": {
+      "classification": "bounded_technical",
+      "acceptance_sha256": "36bf58e78b1463618d40cc7efeb5db8a577346440c01edbbcd56f4de775b0358",
+      "rationale": "Exactly the bounded public PR 913 paths and original three acceptance clauses; MinIO installation and wider security remain separate.",
+      "required_source_paths": [
+        ".env.example",
+        "Caddyfile",
+        "Caddyfile.test.ts",
+        "docker-compose.dev.yml",
+        "docker-compose.security.test.ts",
+        "docker-compose.yml",
+        "docs-site/docs/setup.md",
+        "docs/deploy.md",
+        "src/app/(app)/leads/[leadId]/LeadDetailView.tsx",
+        "src/features/auth/better/rateLimit.integration.test.ts",
+        "src/features/contacts/visibilitySql.ts",
+        "src/features/deal-workspace/summaryRepo.ts",
+        "src/features/deals/dealRepo.ts",
+        "src/features/deals/linkedContactVisibility.integration.test.ts",
+        "src/features/email/attachmentSend.helpers.ts",
+        "src/features/email/emailAttachmentLimits.integration.test.ts",
+        "src/features/email/emailAttachmentLimits.test.ts",
+        "src/features/email/emailAttachmentLimits.ts",
+        "src/features/email/outbox.ts",
+        "src/features/email/send.ts",
+        "src/features/email/sendHelpers.ts",
+        "src/features/files/actions.test.ts",
+        "src/features/files/actions.ts",
+        "src/features/files/storage.ts",
+        "src/features/files/storageFake.ts",
+        "src/features/identity/avatar/avatarService.test.ts",
+        "src/features/identity/avatar/avatarService.ts",
+        "src/features/import/pipeline.integration.test.ts",
+        "src/features/import/prepareJob.test.ts",
+        "src/features/import/upload.test.ts",
+        "src/features/leads/leadActions.test.ts",
+        "src/features/leads/leadActions.ts",
+        "src/features/leads/leadBulk.test.ts",
+        "src/features/leads/leadBulk.ts",
+        "src/features/leads/leadBulkConvert.test.ts",
+        "src/features/leads/leadConvert.test-helpers.ts",
+        "src/features/leads/leadConvert.ts",
+        "src/features/leads/leadConvertPipeline.test.ts",
+        "src/features/leads/leadMutationSecurity.integration.test.ts",
+        "src/features/leads/leadRelations.test.ts",
+        "src/features/leads/leadRepo.ts",
+        "src/features/leads/leadUpdate.test.ts",
+        "src/features/leads/leadUpdate.ts",
+        "src/features/leads/leadWriteAuth.test.ts",
+        "src/features/leads/leadWriteAuth.ts",
+        "src/features/mcp/tools/writes-activities.ts",
+        "src/features/mcp/tools/writes-contacts.ts",
+        "src/features/mcp/tools/writes.createPermissions.test.ts",
+        "src/features/privacy/registryIdsAuthentication1.ts",
+        "src/features/privacy/registryIdsCrm2.ts",
+        "src/features/privacy/registryIdsEmail1.ts",
+        "src/features/privacy/registryIdsFiles1.ts",
+        "src/features/privacy/registryIdsMail1.ts"
+      ]
+    }
+  },
+  "codeql_workflow_id": "403980173"
+}

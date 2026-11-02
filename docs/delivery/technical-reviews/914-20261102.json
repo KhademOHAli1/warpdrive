@@ -1,0 +1,287 @@
+{
+  "schema_version": 1,
+  "review_type": "independent_source_review",
+  "result": "accepted",
+  "canonical_id": "ops/security-regressions-2026-11-02",
+  "acceptance_sha256": "36bf58e78b1463618d40cc7efeb5db8a577346440c01edbbcd56f4de775b0358",
+  "reviewed_revision": "cc6268266885f215e357d440523e9f9dec9cb0a1",
+  "reviewer_agent": {
+    "runtime": "codex",
+    "session_id": "01a19251-a472-7cd1-86cd-8dc245dd5b84",
+    "task_id": "/root/deal_core_next_slice"
+  },
+  "summary": "Reviewed the three original criteria against the bounded public PR913 record, its original independent scope review and current exact source pins. The53 public paths are preserved:52 match the reviewed PR source byte-for-byte and the sole Auth1 companion delta adds the actual OAuth-token inventory edge/digest without dropping security IDs or broadening capability. Existing adversarial regression files and configuration protections remain at the reviewed source. The canonical merge-to-914 mapping is retained. Dated exact-cc62682 source CI and post-merge alert observation support the original scope; final acceptance still requires the new candidate CI and fresh alert observation.",
+  "limitations": "Only the53 public PR913 paths and original three criteria are reviewed. The PR author reported Caddy/Compose validation and a disposable S3-compatible conditional-copy check at the original cut; unchanged configuration bytes preserve that evidence without re-execution here. Exact MinIO-server verification remains external and pending. Detailed private findings are not copied. No global security, dedicated export, production/deployment, browser, installed-provider, human-journey or release acceptance is claimed. The zero-open-alert observation belongs to cc62682 and its recorded read, not a future source head; Root must recheck actual current alert state and final exact-main CI before closure.",
+  "criteria": [
+    {
+      "id": "AC1",
+      "result": "passed",
+      "evidence": [
+        "https://github.com/KhademOHAli1/warpdrive/pull/913",
+        "https://github.com/KhademOHAli1/warpdrive/commit/a7df229f33e6e47216e4e2ba3b132d9ffcfa6846",
+        "https://github.com/KhademOHAli1/warpdrive/blob/cc6268266885f215e357d440523e9f9dec9cb0a1/docs/delivery/roadmap.json"
+      ],
+      "assessment": "The merged public53-path set, adversarial regression coverage and preserved companion metadata match the original scope. All53 current source pins match the prior independent source review; no broader security completion is inferred."
+    },
+    {
+      "id": "AC2",
+      "result": "passed",
+      "evidence": [
+        "https://github.com/KhademOHAli1/warpdrive/actions/runs/41431140380",
+        "https://github.com/KhademOHAli1/warpdrive/actions/runs/41431139984",
+        "https://github.com/KhademOHAli1/warpdrive/pull/913"
+      ],
+      "assessment": "At reviewed sourcecc62682, retained hosted results record9028 unit passes/3 skips and3152 PostgreSQL passes; type/lint/app/workers/sites and three CodeQL analyses succeeded. Configuration files/tests/docs are byte-exact to the owner-validated PR cut. This preserves dated executed evidence; the later accepting gate must independently require every configured job at its new candidate revision."
+    },
+    {
+      "id": "AC3",
+      "result": "passed",
+      "evidence": [
+        "https://github.com/KhademOHAli1/warpdrive/blob/cc6268266885f215e357d440523e9f9dec9cb0a1/docs/delivery/commit-links.json",
+        "https://github.com/KhademOHAli1/warpdrive/actions/runs/41431140404",
+        "https://github.com/KhademOHAli1/warpdrive/security/code-scanning"
+      ],
+      "assessment": "The public mergea7df229 canonical mapping names914, delivery traceability passed atcc62682 and the retained authenticated post-merge observation returned zero open default-branch alerts. Alert-specific dismissal wording is a separate910 scope; final actual alert-state observation is required at attestation time."
+    }
+  ],
+  "source_pins": [
+    {
+      "path": ".env.example",
+      "sha256": "cceefa11c77a76f7019934c92758cf965611fa9eef8526e10dcfd934c9c6d457"
+    },
+    {
+      "path": "Caddyfile",
+      "sha256": "68d975d743893baaf3ead178f91f300b9fd3b58711e81438a735bb5e73982b7e"
+    },
+    {
+      "path": "Caddyfile.test.ts",
+      "sha256": "92474c8271994b8210eff09df4a4a10d5557591ee09553cb6c395d55c4992c40"
+    },
+    {
+      "path": "docker-compose.dev.yml",
+      "sha256": "85b7c5959b7be6b86ce0b60f7a57d8d07c3e50c759980da25d6dec9175b8fad6"
+    },
+    {
+      "path": "docker-compose.security.test.ts",
+      "sha256": "e9e4d37e8b7ccc42311be7868a43595dc5c97feef62f6edfd1fcb2e08b6fdb58"
+    },
+    {
+      "path": "docker-compose.yml",
+      "sha256": "0beed9fa6f0297e0edd891f7d9cbbbde29af95be2ef06fdde894b9c2d31df1cf"
+    },
+    {
+      "path": "docs-site/docs/setup.md",
+      "sha256": "e729450ac5d458718c9ea69f853935471c5f2e8f4199a2f23cff4560b9868e19"
+    },
+    {
+      "path": "docs/delivery/commit-links.json",
+      "sha256": "3a2cf69010c0925f9dec8a78fcf23d17293352b8a250d0696ffaf3b95c22b38f"
+    },
+    {
+      "path": "docs/deploy.md",
+      "sha256": "b2a1c05f1ca8aebf2256028f3cb55e9c508bb31d4092381750c3a2487aeb6cc7"
+    },
+    {
+      "path": "src/app/(app)/leads/[leadId]/LeadDetailView.tsx",
+      "sha256": "8305f7eb784c6c494826f1e1931f2c2b07952c01745d0021c3a988126a7129cf"
+    },
+    {
+      "path": "src/features/auth/better/rateLimit.integration.test.ts",
+      "sha256": "84acd95e4a2e386ac04c7eb7d3b5e03b0f8495a0c52a77e8de2f8b181885524b"
+    },
+    {
+      "path": "src/features/contacts/visibilitySql.ts",
+      "sha256": "c499d3388ea6c7ecb37d961f55bee2fc3bc51804c163c94d7f5510195945fe72"
+    },
+    {
+      "path": "src/features/deal-workspace/summaryRepo.ts",
+      "sha256": "bae1944046f59c529c471f5cd44d6da4a5890ca7103db13609f919e9e6e332b1"
+    },
+    {
+      "path": "src/features/deals/dealRepo.ts",
+      "sha256": "53badd14062f49e35b6d7dc1ef874e5bd4b0ef133bf64adafcb30cca7794959e"
+    },
+    {
+      "path": "src/features/deals/linkedContactVisibility.integration.test.ts",
+      "sha256": "a3a8af244515d3352f4fc5925b3ed37176591bcf04d5439b27af922f5f5d816d"
+    },
+    {
+      "path": "src/features/email/attachmentSend.helpers.ts",
+      "sha256": "28cd59560978c4852213a6b88608baffb41b53c85994165fdf1451fa3a9d7a19"
+    },
+    {
+      "path": "src/features/email/emailAttachmentLimits.integration.test.ts",
+      "sha256": "6c01b9f318fee8379a45283472666a677237936f7f3f61f9b27826fba1582e98"
+    },
+    {
+      "path": "src/features/email/emailAttachmentLimits.test.ts",
+      "sha256": "a84037f05ec27294106afe5d054d421ae0456c5958f1b2f57f22569ab9933ebd"
+    },
+    {
+      "path": "src/features/email/emailAttachmentLimits.ts",
+      "sha256": "35e59898e0d00b71d914e3f5b2f38de8fbe70de831c967d929734ea264c6b635"
+    },
+    {
+      "path": "src/features/email/outbox.ts",
+      "sha256": "3bec293b267098f9e0f5ebc8e87e6c3f87c2716823d4012275fadb62bb80e79a"
+    },
+    {
+      "path": "src/features/email/send.ts",
+      "sha256": "2b0c035c74a64c1ebc356a2b6fc422efc396d71d9609f8383bd746bd0cbebfbd"
+    },
+    {
+      "path": "src/features/email/sendHelpers.ts",
+      "sha256": "8df38e499d55613d4140913ea5ff36ec417437fe5ed5f142ebe6cb0e685855d4"
+    },
+    {
+      "path": "src/features/files/actions.test.ts",
+      "sha256": "c180afd98c2edabfc7b3219942639c3d56198ee72e49cd3db6ce410e6ba87a49"
+    },
+    {
+      "path": "src/features/files/actions.ts",
+      "sha256": "311ec926b432b76e456b302ea1c16f5da6a9d63e14034d0f2faaf1244b06fcd0"
+    },
+    {
+      "path": "src/features/files/storage.ts",
+      "sha256": "401b3fe72bf16937d98cc261ce4076b42f6813bf6df7fca49ae9f635bf56e786"
+    },
+    {
+      "path": "src/features/files/storageFake.ts",
+      "sha256": "ca2ec48f8c3e2a0cb1fd6a964c2ad7db9f5f91f913b627e6571b1b009ffd1db4"
+    },
+    {
+      "path": "src/features/identity/avatar/avatarService.test.ts",
+      "sha256": "c80a3324a75a62af3990c4db1a1f065f96a4205c995095fd382f6f516321ae72"
+    },
+    {
+      "path": "src/features/identity/avatar/avatarService.ts",
+      "sha256": "829ce18d0365be40cf80f01f211e7fa13147854c9e4155dec01cbdba3a881af5"
+    },
+    {
+      "path": "src/features/import/pipeline.integration.test.ts",
+      "sha256": "888cc67ea48fcd0a4d2a088a0b9e725268a47951d7025bb807ae10337c73ce57"
+    },
+    {
+      "path": "src/features/import/prepareJob.test.ts",
+      "sha256": "443ff895539ca776931a6589d297f6f1f82d8c88b27400377096d9569b358d24"
+    },
+    {
+      "path": "src/features/import/upload.test.ts",
+      "sha256": "704fcc590b95d2d37a99e6af430fea9fd8dbdbc612d12ac217120502873e4e4f"
+    },
+    {
+      "path": "src/features/leads/leadActions.test.ts",
+      "sha256": "197a8277e289cb18db78b00ac2f2cf07ad9a70dbccf99e13ca2d0df010f2724a"
+    },
+    {
+      "path": "src/features/leads/leadActions.ts",
+      "sha256": "5353cc777f4c00411b7842077ad21c2e3db0ba9d7e7a3e0ad47f3392009ffc64"
+    },
+    {
+      "path": "src/features/leads/leadBulk.test.ts",
+      "sha256": "ec0775a6e25d6c20817f576d77f228ec5160c923fe17d16d07de39cecb677b2a"
+    },
+    {
+      "path": "src/features/leads/leadBulk.ts",
+      "sha256": "f9fe74cbf09b01b26f364183f0a9a2e6b94c8c3eee43ae630f6161404e65ad22"
+    },
+    {
+      "path": "src/features/leads/leadBulkConvert.test.ts",
+      "sha256": "8f1942d61d81da8a2d36584dc9c7af645eb2fdef0056cc593dae4af16000c1e7"
+    },
+    {
+      "path": "src/features/leads/leadConvert.test-helpers.ts",
+      "sha256": "16e278591711725dca8d29caa95b34f98c94e9f982cfa88ebcf13258a7521d56"
+    },
+    {
+      "path": "src/features/leads/leadConvert.ts",
+      "sha256": "79b4b8c525780ad1c28863453444e51b791b71930b57c7778fb80bf892e891aa"
+    },
+    {
+      "path": "src/features/leads/leadConvertPipeline.test.ts",
+      "sha256": "9d5e804bfabc3ee1208c213683d8d6c4165bef1fb5f74e0e4f2d7ad35c09705b"
+    },
+    {
+      "path": "src/features/leads/leadMutationSecurity.integration.test.ts",
+      "sha256": "f597f6276d9abcc8e98cc62e51a3385ad4644b02ee84b278b02894bb57a1a89a"
+    },
+    {
+      "path": "src/features/leads/leadRelations.test.ts",
+      "sha256": "f22e771afd50b0adffa9cd1fc26ba4902a9ff99fafe99c369ca4b11fb9c843a2"
+    },
+    {
+      "path": "src/features/leads/leadRepo.ts",
+      "sha256": "aacaa4534ffb25f5214c0b5ea0438e584f1cfc5dc7891bed3141deb119c3defa"
+    },
+    {
+      "path": "src/features/leads/leadUpdate.test.ts",
+      "sha256": "de8b9067eef3ac5dd1d50c00f61e758ce5c676ee37d4b32951a581876fe3ca6c"
+    },
+    {
+      "path": "src/features/leads/leadUpdate.ts",
+      "sha256": "aa7a0cac7039860c5c18f7d9cab64d4d3fbea66920d9e7afb911e164d5b6376e"
+    },
+    {
+      "path": "src/features/leads/leadWriteAuth.test.ts",
+      "sha256": "a015fb320c3a3607a45ffe743b9ef951f01722846ed96bb514cedf0e1d8df6aa"
+    },
+    {
+      "path": "src/features/leads/leadWriteAuth.ts",
+      "sha256": "192972ed8e3c6a2587d5648c65e6eaf0ac50bca1dc7c928b5cde740d3e62ee0d"
+    },
+    {
+      "path": "src/features/mcp/tools/writes-activities.ts",
+      "sha256": "71d1b8cf4d64e5e5f3df46f31e5f55001ffb26ab75bb468a0a605d2937d5bfb9"
+    },
+    {
+      "path": "src/features/mcp/tools/writes-contacts.ts",
+      "sha256": "52f4affaddce027ebf8cec857e2451db6a088510741b00a838f1fb48d2b76c3b"
+    },
+    {
+      "path": "src/features/mcp/tools/writes.createPermissions.test.ts",
+      "sha256": "14accb99a81cfc56c6ba58ec39d99a6b0525a0ae78b96544984eb2c0e3bc95c8"
+    },
+    {
+      "path": "src/features/privacy/registryIdsAuthentication1.ts",
+      "sha256": "e78770cb16f976796b64d0eb95dfcca5ba65f72061ec50db450be9857171fc4c"
+    },
+    {
+      "path": "src/features/privacy/registryIdsCrm2.ts",
+      "sha256": "678ec6a240b6dc31c1ef4361c8df7b625d62793a42321575a3af6d50163c376c"
+    },
+    {
+      "path": "src/features/privacy/registryIdsEmail1.ts",
+      "sha256": "4214943547f13571d0811ff5325c767a15fd08c34684476fa96199f65eb624de"
+    },
+    {
+      "path": "src/features/privacy/registryIdsFiles1.ts",
+      "sha256": "0a8594a495db3e5ca49c4efa00bf9ada8e24cae41e11d205a2fc05df7f9e771d"
+    },
+    {
+      "path": "src/features/privacy/registryIdsMail1.ts",
+      "sha256": "0a6bb99a03f8e5af422d366acd548ac425f67903f78c38cdff6044126b74424a"
+    }
+  ],
+  "issue": 914,
+  "recorded_at_utc": "2026-11-02T13:43:50.830142+00:00",
+  "review_method": "Independent Codex sub-agent source/evidence review in the user-authorized single chat. Historical executed checks retain their original cut; this reviewer ran no tests, builds, services or provider calls.",
+  "provenance_limit": "GitHub authenticates the later delegated posting account only; this Codex session/task identity declares the actual independent process reviewer and is not a separately authenticated GitHub reviewer.",
+  "completion_boundary": "This is the retained independent source/process review. It is not a human approval, issue-state mutation or release authorization. The accepting integrator must later bind it by byte digest, recheck required exact-main candidate CI, current scope and all native dependencies, and record the actual observations in a separate delegated-agent attestation.",
+  "historical_qualification": {
+    "revision": "cc6268266885f215e357d440523e9f9dec9cb0a1",
+    "unit_passed": 9028,
+    "unit_skipped": 3,
+    "postgresql_passed": 3152,
+    "runs": {
+      "public_bun": 41431140380,
+      "delivery": 41431140404,
+      "codeql": 41431139984
+    },
+    "postmerge_alerts": {
+      "observed_at_utc": "2026-11-02T12:51:40.435409+00:00",
+      "open_default_branch_alert_count": 0,
+      "scope": "Retained authenticated observation atcc62682; not re-aged to any later head."
+    },
+    "original_pr_validation": "Public PR913 author-reported historical qualification remains distinct from the hosted current-source checks."
+  }
+}

@@ -1,0 +1,116 @@
+{
+  "schema_version": 1,
+  "review_type": "independent_source_review",
+  "result": "accepted",
+  "canonical_id": "integration/CONN-001",
+  "acceptance_sha256": "a8e2adac29269ff0f2b9eda21d4525ad6ed141b1d37c4133fa72add5ac645d97",
+  "reviewed_revision": "2469028a110ca47c276d2da29b4422bad829967f",
+  "reviewer_agent": {
+    "runtime": "codex",
+    "session_id": "01a19251-a472-7cd1-86cd-8dc245dd5b84",
+    "task_id": "/root/deal_core_next_slice"
+  },
+  "summary": "Independently reviewed the refreshed provider-seam inventory against current catalog, schema, management action/callback, Slack/service and typed-contract source, retaining its historical baseline/extraction order. It identifies the same21 stable provider IDs/local-planned metadata, global provider/account identity and same-owner reconnect custody, encrypted credential access, Slack resource/settings shape, native fresh-auth/CSRF/admin gates, error/cancellation and deny-first removal seams, and the incremental adaptation/migration sequence. The initially overbroad confirmed-revocation claim was corrected: terminal token_revoked/token_expired/account_inactive compatibility replies resolve and permit local credential clearing, while other thrown/outage/malformed responses retain retry material.",
+  "limitations": "Source inventory/design review only. A typed contract/helper is not complete production Slack extraction, a provider grant, end-to-end cancellation, durable revoke recovery or live provider/installation acceptance. Historical31October peer/dirty-tree migration observations remain dated; canonical migrations are contiguous through0098 at this review, and private reservation labels are not canonical migration ordinals. No frozen task/status ledger is changed and no downstream CONN scope, user journey, browser, deployment, human approval or release is accepted. The accepting integrator must later verify actual exact-main candidate CI.",
+  "criteria": [
+    {
+      "id": "AC1",
+      "result": "passed",
+      "evidence": [
+        "https://github.com/KhademOHAli1/warpdrive/blob/2469028a110ca47c276d2da29b4422bad829967f/docs/integration-execution/provider-seams.md",
+        "https://github.com/KhademOHAli1/warpdrive/blob/2469028a110ca47c276d2da29b4422bad829967f/src/features/integrations/service.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/2469028a110ca47c276d2da29b4422bad829967f/src/db/schema/integrations.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/2469028a110ca47c276d2da29b4422bad829967f/src/features/integrations/actions.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/2469028a110ca47c276d2da29b4422bad829967f/src/app/api/integrations/slack/callback/route.ts"
+      ],
+      "assessment": "The full original criterion is source identification and incremental extraction planning. All named catalog/schema/action/callback/transport/authority/custody/error/removal seams are covered with current-source corrections; later runtime extraction and target qualification remain explicitly separate."
+    }
+  ],
+  "source_pins": [
+    {
+      "path": "docs/integration-execution/provider-seams.md",
+      "sha256": "d43c91d627714ea58ad396220fb20488113c165c33d79cd15800a19873361a66"
+    },
+    {
+      "path": "drizzle/meta/_journal.json",
+      "sha256": "0f61d0561c4c8973c06deb550381d9dc3da2990780d41894860ba7ce67a9b3ca"
+    },
+    {
+      "path": "src/app/api/integrations/slack/callback/route.ts",
+      "sha256": "6ba294968ed8e4d6574f05b88b4384f97cc2675ce12e18b73496dde504d2c2e6"
+    },
+    {
+      "path": "src/db/schema/integrations.ts",
+      "sha256": "195d6ff5e836745f8c71b5e728c8389777d4e554e27a78644b37a81dd7608d35"
+    },
+    {
+      "path": "src/features/integrations/IntegrationCard.tsx",
+      "sha256": "574633d4dc02c617a41ddca15bec9d8ed77aaa2d2f061ae6f924678bc5605f1e"
+    },
+    {
+      "path": "src/features/integrations/IntegrationDetails.tsx",
+      "sha256": "ff31fcb147718f4ae21fc76ac45dc222b73a87a2c9048df60d5dae2559215786"
+    },
+    {
+      "path": "src/features/integrations/IntegrationMark.tsx",
+      "sha256": "3766660f12257c40283d8bfbead8a4097a0c1beb6bf6bdcef58e67625aef5ba7"
+    },
+    {
+      "path": "src/features/integrations/actions.ts",
+      "sha256": "adfdca8ec760f29260cf78c120b7c783d0647f29dfdbb58ee7a825006b507256"
+    },
+    {
+      "path": "src/features/integrations/catalog.ts",
+      "sha256": "52607ccf930eae85eab37ec9127d5b9869ab30c59aa2c28bb6aa5c6774b08f17"
+    },
+    {
+      "path": "src/features/integrations/connectionState.ts",
+      "sha256": "a7a123bd104992581a6d438bcbfa3f29905c0c976f7f46f1dfd3ebb0acb6d62d"
+    },
+    {
+      "path": "src/features/integrations/providers/contract.ts",
+      "sha256": "1a10b6c5176ff3313cdfdda1797e36f16ac53c2ea6b17f1c2667f4ba62c73f08"
+    },
+    {
+      "path": "src/features/integrations/providers/inputSchemas.ts",
+      "sha256": "ec812ffdc15099de8161b75428f14ad5823bd02e6bfc554a52be3df750831205"
+    },
+    {
+      "path": "src/features/integrations/providers/invoke.ts",
+      "sha256": "03cbca4c055bc3d71586e3213ed5d87e63cf476646ad22a05c3669edde073233"
+    },
+    {
+      "path": "src/features/integrations/providers/models.ts",
+      "sha256": "c7de6bb18c77769d41af719f9037873ba65d49997d34b89c5fc7abaec1c960d0"
+    },
+    {
+      "path": "src/features/integrations/providers/outputSchemas.ts",
+      "sha256": "0caed9be7331297aa7e0c33e9efae686632f97946fae93a7fc09bb90b6eb2da7"
+    },
+    {
+      "path": "src/features/integrations/service.ts",
+      "sha256": "9b8374acfc0cbcbff6e0feed36a541de0c1fbe334f91873d585d4b44534ed228"
+    },
+    {
+      "path": "src/features/integrations/slack.ts",
+      "sha256": "8585d466afbbfd91cff7b64306de14e7a13383e1f17d794a6c7ed669dc43e1e3"
+    },
+    {
+      "path": "src/features/integrations/slackOperationFailure.ts",
+      "sha256": "2b95cc61fd8ca47be7d32e4d6ec4fb6b37fbeefee34b3b4c79600cba6a3920fc"
+    },
+    {
+      "path": "src/features/integrations/slackRead.ts",
+      "sha256": "83aabc1dfcfeb076684951ca6da6a378091ff3db18a7aab0940f189f212ca36a"
+    },
+    {
+      "path": "src/features/integrations/slackReadFailure.ts",
+      "sha256": "fdf59462107754c7a767bb98e7261086dbb823e05a8454b1bdb2a276cae02ff4"
+    }
+  ],
+  "issue": 124,
+  "recorded_at_utc": "2026-11-02T13:43:50.955065+00:00",
+  "review_method": "Independent Codex sub-agent source/evidence review in the user-authorized single chat. Historical executed checks retain their original cut; this reviewer ran no tests, builds, services or provider calls.",
+  "provenance_limit": "GitHub authenticates the later delegated posting account only; this Codex session/task identity declares the actual independent process reviewer and is not a separately authenticated GitHub reviewer.",
+  "completion_boundary": "This is the retained independent source/process review. It is not a human approval, issue-state mutation or release authorization. The accepting integrator must later bind it by byte digest, recheck required exact-main candidate CI, current scope and all native dependencies, and record the actual observations in a separate delegated-agent attestation."
+}

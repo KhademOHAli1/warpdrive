@@ -1,0 +1,269 @@
+{
+  "schema_version": 1,
+  "review_type": "independent_source_review",
+  "result": "accepted",
+  "canonical_id": "integration/AISEC-001",
+  "acceptance_sha256": "86ad032e6fe1f98a285952cf2c7137178f21f261a433b77bc94a4f87e96b6f13",
+  "reviewed_revision": "2469028a110ca47c276d2da29b4422bad829967f",
+  "reviewer_agent": {
+    "runtime": "codex",
+    "session_id": "01a19251-a472-7cd1-86cd-8dc245dd5b84",
+    "task_id": "/root/deal_core_next_slice"
+  },
+  "summary": "Independently reviewed all19 changed operation classifications against their current handlers and authority/effect paths, while trusting the retained prior full inventory review for unchanged classifications and the worker mechanical name reconciliation. The matrix preserves58 unique surface/operation identities and35 literal application tools,17read/18write, including the distinction between tools, protocol/control, absent method markers, HTTP exports and adjacent OAuth routes. It classifies domain/read-write/outbound/ownership/visibility and indirect credential/effect seams. Changed claims correctly cover explicit create permissions, lead edit/ownership predicates, independent contact projection visibility, transaction-fresh draft links/local mailbox limits, durable conditional Gmail/SMTP notification delivery, configured resource/issuer/single-resource ingress and bounded refresh-family containment. Pipeline preflight/locked admission and current OAuth source anchors were corrected before this accepted review.",
+  "limitations": "Classification/source matrix only, not an all35-operation invocation/authorization campaign, cryptographic internal-agent identity, granular CRM consent, universal per-effect actor/grant revalidation, hard cancellation, live provider/client compatibility, browser journey, installed environment, human approval or release acceptance. Unchanged CSV rows keep the immutable643738 historical cut and source pointers; old review/test results are not re-aged. Current actor snapshots, postcommit activity enqueue uncertainty and per-child conversion history/mail policy limits remain explicit. Package pins tie dependency source references; no installed SDK execution is claimed. Final exact-main candidate CI is a later required gate.",
+  "criteria": [
+    {
+      "id": "AC1",
+      "result": "passed",
+      "evidence": [
+        "https://github.com/KhademOHAli1/warpdrive/blob/2469028a110ca47c276d2da29b4422bad829967f/docs/integration-execution/mcp-operation-inventory.md",
+        "https://github.com/KhademOHAli1/warpdrive/blob/2469028a110ca47c276d2da29b4422bad829967f/docs/integration-execution/mcp-operation-inventory.csv",
+        "https://github.com/KhademOHAli1/warpdrive/blob/2469028a110ca47c276d2da29b4422bad829967f/src/features/mcp/server.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/643738bdba1e7aba8b414a98dc0b6cdc9c17a361/docs/integration-execution/mcp-operation-inventory.md"
+      ],
+      "assessment": "All original classification dimensions are present per operation. The retained full-review baseline plus current changed-claim source review and exact-name reconciliation cover the existing surface without promoting a text inventory into executed provider or security acceptance."
+    }
+  ],
+  "source_pins": [
+    {
+      "path": "bun.lock",
+      "sha256": "5f609b438462d5f1a06bfeae500c5a7e266f664dc4b19b0ca6cd91c5ee56ca2b"
+    },
+    {
+      "path": "docs/integration-execution/mcp-operation-inventory.csv",
+      "sha256": "20e3c1450b5c6a83f7b0c0d54752c1e9eceb41346ebaec3e2fc6a9cc16130d68"
+    },
+    {
+      "path": "docs/integration-execution/mcp-operation-inventory.md",
+      "sha256": "da214b1a816a7ffad26319a9d58b0d9f8ee6d01c4218b3cda8f486ecaa027bb0"
+    },
+    {
+      "path": "package.json",
+      "sha256": "33e0ea11342a92b351845f2f5760f67d3463a6ce359bc6747df6a30bc1c14f04"
+    },
+    {
+      "path": "src/app/.well-known/oauth-authorization-server/route.ts",
+      "sha256": "5509574914473a505cf72d81e0ed313f27a0cab06b3e62d2ef099b1cc572ef15"
+    },
+    {
+      "path": "src/app/api/mcp/route.ts",
+      "sha256": "622b1cbffbea9513c6ba13d556622f4a769fb8b7cd0e287464ee06a4332cb5e4"
+    },
+    {
+      "path": "src/app/oauth/authorize/route.ts",
+      "sha256": "4b373d00bb9f112ee186574a7216f8ec19b97267b5eb4c1af328fbea482fec68"
+    },
+    {
+      "path": "src/app/oauth/token/route.ts",
+      "sha256": "5afe4fbbc7a3d151dfb0726a2bfa4b5f4ed8bd93d16cc6c1e483cffb6b1feec5"
+    },
+    {
+      "path": "src/features/activities/reminders.ts",
+      "sha256": "490f33bf195e7b532289ef031a555ad81cf23436528e725682fda3c114135a70"
+    },
+    {
+      "path": "src/features/activities/repo.ts",
+      "sha256": "ca2826ab2fa920998fee9d28df2cd8f9ebf7a39e2844bba38e7b2c1e8dc69400"
+    },
+    {
+      "path": "src/features/contacts/orgsRepo.ts",
+      "sha256": "f39f9d3a602bbedd456e873d2559d4848012d95729fa7b91b65279aab37fadf9"
+    },
+    {
+      "path": "src/features/contacts/personsRepo.ts",
+      "sha256": "7a8ba718b5c720ca8d5a9085209518ee24c884fb986933dd4deb705ac13052c1"
+    },
+    {
+      "path": "src/features/contacts/visibility.ts",
+      "sha256": "a68141da3aff5041a45d799dc0e75370071054faace6db9508ed28cc006d65b8"
+    },
+    {
+      "path": "src/features/contacts/visibilitySql.ts",
+      "sha256": "c499d3388ea6c7ecb37d961f55bee2fc3bc51804c163c94d7f5510195945fe72"
+    },
+    {
+      "path": "src/features/custom-fields/refLabels.ts",
+      "sha256": "542940a26b9603b15ae97104c90943c517367317b21689b3d9cfd30f99fc39b6"
+    },
+    {
+      "path": "src/features/deal-workspace/summaryRepo.ts",
+      "sha256": "bae1944046f59c529c471f5cd44d6da4a5890ca7103db13609f919e9e6e332b1"
+    },
+    {
+      "path": "src/features/deals/dealRepo.ts",
+      "sha256": "53badd14062f49e35b6d7dc1ef874e5bd4b0ef133bf64adafcb30cca7794959e"
+    },
+    {
+      "path": "src/features/deals/dealRouter.ts",
+      "sha256": "2201cc2215ea1408a2cd1d71ba44c56fbc15cc8c8fef5287f0715824815860ad"
+    },
+    {
+      "path": "src/features/email/deliveryObservationMessageRefs.ts",
+      "sha256": "46b94bf683e5412e8adf3a87a78dca3ddf6a2a8a9ae18489742220f4aca3f4c2"
+    },
+    {
+      "path": "src/features/email/draftLinks.ts",
+      "sha256": "ce6702c6b00e14141697b7c592f33475fa8b16fc2d1dd4d5ce09155953cf485b"
+    },
+    {
+      "path": "src/features/email/draftRepo.ts",
+      "sha256": "88aaec13f6093bc642171900dd26b0ca3bb87f73d714c147e7eff9aa09fb9fd2"
+    },
+    {
+      "path": "src/features/email/mailboxOwnership.ts",
+      "sha256": "5d2a09d1d3041c444c9efb86697d36c9456abed3ebc3be866c8fa136284492c6"
+    },
+    {
+      "path": "src/features/email/messageReads.ts",
+      "sha256": "76ba0c4faef75745ae3ba6d0ebfe056af296de9e4c4d103bda199b9d20db79fc"
+    },
+    {
+      "path": "src/features/email/privateIntakeProjection.ts",
+      "sha256": "ca1db199cc9ec25be2a21c29c72c327e9b8795c91248734d7e23752bf217f86e"
+    },
+    {
+      "path": "src/features/email/worker.ts",
+      "sha256": "d3454288f27d797211cfc9c1541f74913a476a37e5b47ed21b32eaaad82ccbed"
+    },
+    {
+      "path": "src/features/leads/convertCarryOver.ts",
+      "sha256": "e6d3927774a2b9d20e9e8f844b0ff854d75683deaeb28d2c502e0ceb37f6b555"
+    },
+    {
+      "path": "src/features/leads/convertReferences.ts",
+      "sha256": "7e70becb679367c237bdf69a2bc75051a1bbfb73a95f24408cf2a82b304ad4f8"
+    },
+    {
+      "path": "src/features/leads/leadActions.ts",
+      "sha256": "5353cc777f4c00411b7842077ad21c2e3db0ba9d7e7a3e0ad47f3392009ffc64"
+    },
+    {
+      "path": "src/features/leads/leadConvert.ts",
+      "sha256": "79b4b8c525780ad1c28863453444e51b791b71930b57c7778fb80bf892e891aa"
+    },
+    {
+      "path": "src/features/leads/leadRepo.ts",
+      "sha256": "aacaa4534ffb25f5214c0b5ea0438e584f1cfc5dc7891bed3141deb119c3defa"
+    },
+    {
+      "path": "src/features/leads/leadRouter.ts",
+      "sha256": "6e8edac7abce8d8ee9354b84984da3ac2067ae6bea2aa282d089dcdbd4bc60e4"
+    },
+    {
+      "path": "src/features/leads/leadUpdate.ts",
+      "sha256": "aa7a0cac7039860c5c18f7d9cab64d4d3fbea66920d9e7afb911e164d5b6376e"
+    },
+    {
+      "path": "src/features/leads/leadWriteAuth.ts",
+      "sha256": "192972ed8e3c6a2587d5648c65e6eaf0ac50bca1dc7c928b5cde740d3e62ee0d"
+    },
+    {
+      "path": "src/features/mcp/auth.ts",
+      "sha256": "0d263ca89d3c9ebcdcbe2a06ed38579bf9c18defaf7b1aa079624f824996e42f"
+    },
+    {
+      "path": "src/features/mcp/http.ts",
+      "sha256": "6271ea875e43fcde24eeb2d1a2496f2ef89cbc707c1c3d2b6a8d2674f44f5e9a"
+    },
+    {
+      "path": "src/features/mcp/server.ts",
+      "sha256": "64921eb7cc4f4be4fa3380cc86cc852707640dae4611a9eecbf0f5995482386d"
+    },
+    {
+      "path": "src/features/mcp/tools/reads-email.ts",
+      "sha256": "6f6c86a16dee66a25bf03def5fe6bd24d2df037f3959c34834898c03d1e955b0"
+    },
+    {
+      "path": "src/features/mcp/tools/reads.ts",
+      "sha256": "07dc3c7eed628820b97071fe2bb7089a4d0287df91fa3afecbf062aa5ed8d04f"
+    },
+    {
+      "path": "src/features/mcp/tools/types.ts",
+      "sha256": "e9cdd84595d2f86bcf610ae310e1bb8bac979b6349b596a4e5574b22cd469f72"
+    },
+    {
+      "path": "src/features/mcp/tools/writes-activities.ts",
+      "sha256": "71d1b8cf4d64e5e5f3df46f31e5f55001ffb26ab75bb468a0a605d2937d5bfb9"
+    },
+    {
+      "path": "src/features/mcp/tools/writes-contacts.ts",
+      "sha256": "52f4affaddce027ebf8cec857e2451db6a088510741b00a838f1fb48d2b76c3b"
+    },
+    {
+      "path": "src/features/mcp/tools/writes-deals.ts",
+      "sha256": "1c8581e9d8aadbe38f1356c9962e53a3aecd32369bd8ed47f04c3a0124e704f6"
+    },
+    {
+      "path": "src/features/mcp/tools/writes-email.ts",
+      "sha256": "8c5763a695fb2e598eb7c7ee5ea64d2f02539dcff4780b4cb21b2efeabdc727f"
+    },
+    {
+      "path": "src/features/notifications/email/notificationBinding.ts",
+      "sha256": "d175caabed509c86a48c37c66fe3b223a4b74a4515b43e0441127ed3808ae7d8"
+    },
+    {
+      "path": "src/features/notifications/email/notificationBindingRows.ts",
+      "sha256": "e775699ba6c16ed95b84816131b641ff8a50d0344776178a03d2c39be74fe0a1"
+    },
+    {
+      "path": "src/features/notifications/email/notificationDispatch.ts",
+      "sha256": "24daf7cbb3b6cde003ba1ea4a948c2c059c6ff30cac0b8cbca4df0e89c0c2134"
+    },
+    {
+      "path": "src/features/oauth/authorizationHttp.ts",
+      "sha256": "5ffbe4282c70ffea11cd4267ab6fb470278ab4b524734d90684c17c1993b99e5"
+    },
+    {
+      "path": "src/features/oauth/exchange.ts",
+      "sha256": "3018cac74f7a590288d5ba365fa0dcda9c5ba71b0a22cc4cc1c60295ef997ca3"
+    },
+    {
+      "path": "src/features/oauth/metadata.ts",
+      "sha256": "5bcea7fdb6086975412a7a93c7f739cf94bda572fb3052de495a80aad87f8b19"
+    },
+    {
+      "path": "src/features/oauth/requestIngress.ts",
+      "sha256": "711a57a9d1f6c43f89346c3860467f1404a5c7031ad828f809502b156177d9ea"
+    },
+    {
+      "path": "src/features/oauth/requestSchemas.ts",
+      "sha256": "53b9f70f6ebee0799068a533cc22ca86a0840f7c3d4e3108e56d7680e08cda2f"
+    },
+    {
+      "path": "src/features/oauth/resource.ts",
+      "sha256": "b8020b551a1a868f9a04633256336f77081859b016bcf765cb67fe949d1157f0"
+    },
+    {
+      "path": "src/features/oauth/tokenHttp.ts",
+      "sha256": "494fea3658970f9088ebe809dd72cffdd0f3b326ca68138852ede263f2062627"
+    },
+    {
+      "path": "src/features/oauth/tokens.ts",
+      "sha256": "9a79e82208a2cc9d387040afab6d8d6b60dfa33bfaf8d5b2050fd5ae116cc9e3"
+    },
+    {
+      "path": "src/features/pipelines/admitPipelineWrite.ts",
+      "sha256": "2aa366a70450c8340ff7a6e5153f04d0a9779a0c4626d8dd20f1bb526d636319"
+    }
+  ],
+  "issue": 206,
+  "recorded_at_utc": "2026-11-02T13:43:51.298167+00:00",
+  "review_method": "Independent Codex sub-agent source/evidence review in the user-authorized single chat. Historical executed checks retain their original cut; this reviewer ran no tests, builds, services or provider calls.",
+  "provenance_limit": "GitHub authenticates the later delegated posting account only; this Codex session/task identity declares the actual independent process reviewer and is not a separately authenticated GitHub reviewer.",
+  "completion_boundary": "This is the retained independent source/process review. It is not a human approval, issue-state mutation or release authorization. The accepting integrator must later bind it by byte digest, recheck required exact-main candidate CI, current scope and all native dependencies, and record the actual observations in a separate delegated-agent attestation.",
+  "mechanical_source_evidence": {
+    "rows": 58,
+    "tool_names": 35,
+    "reads": 17,
+    "writes": 18,
+    "changed_rows": 19,
+    "all_surface_operation_identities_preserved": true,
+    "missing_or_extra_tool_names": [],
+    "server_test_expected_names_match": true,
+    "current_cut_anchor_count": 77,
+    "current_referenced_source_pin_count": 51,
+    "mechanical_counts": "Trusted worker mechanical source/text checks; this reviewer inspected changed semantics rather than rerunning tests.",
+    "historical_baseline": "643738bdba1e7aba8b414a98dc0b6cdc9c17a361"
+  }
+}

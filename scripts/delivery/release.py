@@ -169,7 +169,7 @@ def audit_closed(api, number, policy):
         for revision in dict.fromkeys(reversed(candidates)):
             try:
                 run("git", "merge-base", "--is-ancestor", revision, "origin/main")
-                verify_issue(api, repo, number, revision, items, allow_parent=True)
+                verify_issue(api, repo, number, revision, items, allow_parent=True, allow_agent=True)
                 verify_ci(api, repo, revision, policy)
                 return f"Issue #{number} retains completed status with verified acceptance at {revision}"
             except GateError as failure:
@@ -178,7 +178,7 @@ def audit_closed(api, number, policy):
     except GateError as error:
         api.request(f"repos/{repo}/issues/{number}", "PATCH", {"state": "open"})
         marker = "<!-- warpdrive:delivery-gate-reopen -->"
-        message = f"{marker}\nCompletion requires exact-main CI and authenticated maintainer acceptance covering the full canonical scope. Reopened: {error}. Follow docs/delivery/release-operations.md."
+        message = f"{marker}\nCompletion requires exact-main CI and full canonical-scope acceptance: human by default, or explicitly opted-in bounded technical agent evidence. Reopened: {error}. Follow docs/delivery/release-operations.md."
         comments = api.pages(f"repos/{repo}/issues/{number}/comments")
         prior = next((c for c in comments if marker in c.get("body", "") and c.get("user", {}).get("type") == "Bot"), None)
         if prior:

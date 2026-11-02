@@ -22,7 +22,7 @@ A bounded accepted delivery may contribute to an unfinished broad roadmap issue.
 
 Every original canonical message reference and added `commit_issues` reference must be accounted for by those two disjoint lists. Every shipped commit needs at least one bounded `delivery_issues` issue accepted in the selected release milestone. All identities must be registered canonical issues. `contributes_to` references are retained in notes/artifacts, stay unfinished, and receive no completion or publication update. This mapping must be reviewed on main and is not an acceptance bypass. Without an explicit scope mapping, all canonical references are treated as shipped delivery scope.
 
-Keep issues open while their original scope remains unfinished. Add evidence of implemented source and exact-revision CI to the issue, then have a human with repository write authority review the entire canonical acceptance scope. Calculate its acceptance identity:
+Keep issues open while their original scope remains unfinished. Human acceptance remains the default; the narrowly opted-in technical completion path below records agent provenance explicitly. Add evidence of implemented source and exact-revision CI to the issue, then have the applicable reviewer examine its entire canonical acceptance scope. Calculate its acceptance identity:
 
 ```sh
 python3 scripts/delivery/release.py scope ops/journey-calendar-reminders
@@ -52,6 +52,85 @@ That human posts a comment on the canonical issue containing this structure, wit
 ````
 
 Completion requires the latest successful main run at that exact revision for every required workflow/job in `release-policy.json`, full-scope attestation, and authenticated completed blocking dependencies. The live native blocker set must cover every canonical prerequisite; a deleted/partially imported edge or a manually closed blocker without full-scope evidence fails closed. The completion workflow audits a completed canonical issue and reopens it when those gates are missing. Cancelled/not-planned historical records remain distinct from accepted delivery. Labels alone never provide acceptance. Programme/work-package completion recursively verifies every registered descendant, its full-scope acceptance, and exact native child coverage, plus the parent attestation; release selection uses bounded deliverables.
+
+## Delegated agent acceptance for bounded technical issues
+
+The user's 2 November 2026 decision permits clearly identified agent acceptance after independent agent review and green CI for bounded technical work. `technical-acceptance-policy.json` is an explicit canonical-ID and scope-digest allowlist, not a list of completed work. Each entry explains its technical boundary and lists source paths the independent review must pin. There is no opt-in by label, title, module, historical status or a comment's own assertion. Changing acceptance clauses or original source-task bindings invalidates eligibility until the new scope is reviewed and its policy digest updated. Do not edit the approved scope to obtain eligibility.
+
+Human acceptance remains required for unlisted work, the protected journey/installation IDs, parents and their recursive completion traversal, and **every issue used in a release check**. Agent technical completion does not qualify a release, a user journey, deployment or real provider/installation behavior. A later release needs the applicable actual human acceptance at its selected revision even if a technical issue was previously completed through the agent path.
+
+The current delegated transport is the explicitly listed `KhademOHAli1` GitHub account, numeric User ID `118572997`, with current write/maintain/admin authority. The gate compares the actual issue-comment author with both this policy and the comment's `transport_actor`. GitHub authenticates that posting principal. It does **not** independently authenticate internal Codex runtime identities or prove that separate agents performed the work. The declared session/task identities and separately retained independent report are auditable process evidence under the user's delegation; they are not two GitHub reviewers or cryptographic signatures. Never describe a delegated agent comment as human acceptance.
+
+Use this procedure without inventing evidence:
+
+1. Check the issue's unchanged canonical scope and native prerequisites. The implementation coordinator integrates the reviewed implementation and documentation first.
+2. A separate reviewing agent records its actual Codex session ID and task path, reviews every original acceptance clause, and creates `docs/delivery/technical-reviews/ISSUE-DATE.json`. The accepting and reviewing agents must be distinct. Preserve the actual independent findings and limitations; an integrator-written replacement claiming that someone reviewed is not the independent report.
+3. The review record uses the schema below. Pin every path required by the policy, plus any additional source needed for the full scope. Use SHA-256 of the exact Git blob bytes. Its `reviewed_revision` is the real reviewed ancestral source commit. All pinned bytes must match both that commit and the later acceptance revision. A source change requires a refreshed review. Evidence-only follow-up commits can retain unchanged source proof.
+4. The coordinator commits the review record. It cannot contain its own enclosing commit SHA; the later issue comment names the full resulting main revision and SHA-256 of the committed review-file bytes instead. Candidate technical and release policies must equal the committed policies of the trusted main checkout; older policy decisions cannot be replayed against a changed current allowlist.
+5. Wait for the latest successful main runs at that exact revision. The agent gate independently reads the required release-policy jobs **and** the technical policy's CodeQL workflow `403980173`, including all three Analyze jobs. A failed, running, cancelled, wrong-revision or non-main run does not pass. Evidence links in the comment do not replace these API checks.
+6. Post the explicit schema-2 agent acceptance comment, then complete and audit the issue. Keep dependency order: every canonical blocker must itself have valid scope-specific acceptance, not merely a closed state. The audit uses the agent path only for eligible bounded technical leaves; the release engine never opts in.
+
+A review record contains these fields. Replace the illustrative values with the independently produced report and the **complete** source-pin and clause sets. `criteria` must cover `AC1` through `ACn` exactly once, with passed results and real HTTPS evidence; partial or changes-requested review cannot grant acceptance.
+
+```json
+{
+  "schema_version": 1,
+  "review_type": "independent_source_review",
+  "result": "accepted",
+  "canonical_id": "integration/CONN-001",
+  "acceptance_sha256": "ACTUAL_FULL_SCOPE_SHA256",
+  "reviewed_revision": "ACTUAL_FULL_REVIEWED_SOURCE_SHA",
+  "reviewer_agent": {
+    "runtime": "codex",
+    "session_id": "ACTUAL_CODEX_SESSION_UUID",
+    "task_id": "/root/actual_review_task"
+  },
+  "summary": "Actual independent whole-scope review and findings",
+  "limitations": "Actual remaining user-journey, provider, installation and release boundaries",
+  "criteria": [
+    {
+      "id": "AC1",
+      "result": "passed",
+      "evidence": ["https://github.com/OWNER/REPO/blob/FULL_SHA/PATH"]
+    }
+  ],
+  "source_pins": [
+    { "path": "docs/integration-execution/provider-seams.md", "sha256": "ACTUAL_BLOB_SHA256" }
+  ]
+}
+```
+
+The accepting agent posts the following separate comment. `scope_summary` describes technical acceptance; it must not invent an exercised user journey. The review digest binds the retained independent file, while its source pins and the live CI checks bind the accepted source.
+
+````text
+```warpdrive-acceptance
+{
+  "schema_version": 2,
+  "acceptance_mode": "delegated_agent",
+  "verdict": "accepted",
+  "revision": "ACTUAL_FULL_CI_PASSED_MAIN_SHA",
+  "canonical_id": "integration/CONN-001",
+  "acceptance_sha256": "ACTUAL_FULL_SCOPE_SHA256",
+  "transport_actor": { "id": 118572997, "login": "KhademOHAli1" },
+  "accepting_agent": {
+    "runtime": "codex",
+    "session_id": "ACTUAL_CODEX_SESSION_UUID",
+    "task_id": "/root"
+  },
+  "independent_review": {
+    "path": "docs/delivery/technical-reviews/ISSUE-DATE.json",
+    "sha256": "ACTUAL_COMMITTED_REVIEW_FILE_SHA256"
+  },
+  "checks": [
+    { "name": "Actual whole-scope technical check", "result": "passed", "url": "https://github.com/OWNER/REPO/actions/runs/ACTUAL_RUN" }
+  ],
+  "scope_summary": "Actual accepted bounded technical outcome",
+  "limitations": "No human journey, release, deployment or provider/installation acceptance inferred"
+}
+```
+````
+
+Schema 2 never falls back to human schema 1. The existing human format remains valid and does not depend on the technical allowlist. Policy opt-in, retained review, source qualification, exact-main CI, issue completion and release approval remain separate records.
 
 ## Select scope and version
 
