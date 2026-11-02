@@ -37,9 +37,9 @@ export const DISCOVERY_COVERAGE: readonly DiscoveryCoverage[] = [
     "Workspace credentials, OAuth attempt security material and connection event provenance require dedicated subject-aware adapters. Workspace ownership or current administration does not establish disclosure or remote-erasure authority.",
   ),
   ...group(
-    ["workflows", "workflow_versions", "workflow_runs", "workflow_steps"],
+    ["workflows", "workflow_versions", "workflow_runs", "workflow_steps", "workflow_run_failures"],
     "unsupported",
-    "Workflow definitions, workforce provenance, trigger links and copied execution outputs need a dedicated subject/provenance adapter. Workflow ownership and history access do not establish subject identity or approved disclosure scope.",
+    "Workflow definitions, workforce provenance, failure/retry receipt history, trigger links and copied execution outputs need a dedicated subject/provenance adapter. Workflow ownership and history access do not establish subject identity or approved disclosure scope.",
   ),
   ...group(
     [
