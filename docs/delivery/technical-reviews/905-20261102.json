@@ -1,0 +1,213 @@
+{
+  "schema_version": 1,
+  "review_type": "independent_source_review",
+  "result": "accepted",
+  "canonical_id": "delivery/mcp-resource-policy-fc5fae8",
+  "acceptance_sha256": "14556debd8d8961a53038251e945c9f4dffab79777e8ac9e9a611da4901ae486",
+  "reviewed_revision": "50981b645975100db1e788fd7b6a7741ccb8aa4f",
+  "reviewer_agent": {
+    "runtime": "codex",
+    "session_id": "01a19251-a472-7cd1-86cd-8dc245dd5b84",
+    "task_id": "/root/deal_core_next_slice"
+  },
+  "summary": "Independently reviewed all three original bounded criteria, the exact fc5fae8 source/qualification record and current50981b6 ingress, resource/profile, grant-entry, token-verification and discovery paths. Query/form ingress requires exactly one explicit nonempty resource; the JSON scanner counts decoded root member names before ordinary JSON parsing, including Unicode-escaped duplicates. The shared validated resource/profile boundary runs before authorization/client/session/grant effects, including code and refresh exchange, and actual native regressions use a PostgreSQL role without OAuth table access. Documented issuer/audience/discovery, native consent/CSRF and broad per-client grant limits remain explicit. Current scope differs fromfc5 in these relevant sources only by the independently reviewed issuer-response line and later refresh-family containment; ingress/profile/native regression bytes remain preserved. Canonical delivery_scope mapsfc5 to bounded issue905 and retains214 as unfinished contribution. Main50981b6 has all eight required hosted checks green. This retained report supplies independent technical process review under the user\u2019s delegation; it does not post acceptance or expand policy eligibility.",
+  "limitations": "Source-bound bounded technical review only. The original52 native resource regressions and fc5 hosted qualification retain their actual source cuts; the detailed cc62682 log again records HTTP31/services21, and current50981b6 hosted CRM check runs the configured full lanes. Nested focused/private counts are not summed into a fabricated all-pass run. No granular client scopes/read-only grants, opaque-grant configuration migration, complete AISEC-009 parent acceptance, external MCP client/provider compatibility, browser, installation, human approval or release is inferred. Current technical policy does not yet opt in this canonical child: completion remains open until Root separately decides and reviews applicable eligibility, posts permitted exact-candidate evidence and verifies native prerequisites. Parent214 has native children and retains its own human-only traversal boundary.",
+  "criteria": [
+    {
+      "id": "AC1",
+      "result": "passed",
+      "evidence": [
+        "https://github.com/KhademOHAli1/warpdrive/blob/50981b645975100db1e788fd7b6a7741ccb8aa4f/src/features/oauth/requestIngress.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/50981b645975100db1e788fd7b6a7741ccb8aa4f/src/features/oauth/jsonResourceIngress.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/50981b645975100db1e788fd7b6a7741ccb8aa4f/src/features/oauth/requestSchemas.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/50981b645975100db1e788fd7b6a7741ccb8aa4f/src/features/oauth/resourceHttp.integration.test.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/50981b645975100db1e788fd7b6a7741ccb8aa4f/src/features/oauth/resourceServices.integration.test.ts",
+        "https://github.com/KhademOHAli1/warpdrive/actions/runs/41363129846"
+      ],
+      "assessment": "Exact-one/nonempty/ambiguous/foreign validation covers authorization GET/POST and code/refresh token JSON/form ingress. Decoded duplicate resource keys, including Unicode-escaped aliases and identical values, fail before grant access/mutation. Real native no-access-role controls and unchanged-store snapshots support this boundary."
+    },
+    {
+      "id": "AC2",
+      "result": "passed",
+      "evidence": [
+        "https://github.com/KhademOHAli1/warpdrive/blob/50981b645975100db1e788fd7b6a7741ccb8aa4f/docs/mcp-server.md#resource-and-issuer-profile",
+        "https://github.com/KhademOHAli1/warpdrive/blob/50981b645975100db1e788fd7b6a7741ccb8aa4f/src/features/oauth/resource.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/50981b645975100db1e788fd7b6a7741ccb8aa4f/src/features/oauth/tokens.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/50981b645975100db1e788fd7b6a7741ccb8aa4f/src/features/oauth/consent.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/50981b645975100db1e788fd7b6a7741ccb8aa4f/src/features/oauth/metadata.ts"
+      ],
+      "assessment": "ResourceR and literal configured issuerI remain consistent across discovery, request validation and JWT audience/issuer. Native fresh consent/session/CSRF and revocation remain in their existing protocols; current empty scopes and broad grants are not relabelled read-only. Later issuer-response and refresh-lineage increments are separately preserved."
+    },
+    {
+      "id": "AC3",
+      "result": "passed",
+      "evidence": [
+        "https://github.com/KhademOHAli1/warpdrive/commit/fc5fae837b4b8e532a8bfd89ff303e941bcf1439",
+        "https://github.com/KhademOHAli1/warpdrive/blob/50981b645975100db1e788fd7b6a7741ccb8aa4f/docs/delivery/commit-links.json",
+        "https://github.com/KhademOHAli1/warpdrive/actions/runs/41457313060",
+        "https://github.com/KhademOHAli1/warpdrive/actions/runs/41457312959",
+        "https://github.com/KhademOHAli1/warpdrive/actions/runs/41457310984"
+      ],
+      "assessment": "The bounded source is tied tofc5fae8 with historical actual qualification and a canonical delivery905/contribution214 scope mapping. Current50981b6 required CRM/sites/CodeQL/traceability/tooling checks passed. This independently authored whole-bounded-scope report is technical process review under the user\u2019s authorized delegation; actual account-authorized acceptance and policy eligibility are separate later records. The criterion says maintainer review, not human-only review, so an explicitly delegated maintainer-account attestation can satisfy that process if Root separately authorizes its exact policy entry; this report is not such an attestation."
+    }
+  ],
+  "source_pins": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "0d28ae0fb0ee2504f67842e31a21fc16a5b244d807fe32990e27ead98e2716a0"
+    },
+    {
+      "path": "bun.lock",
+      "sha256": "5f609b438462d5f1a06bfeae500c5a7e266f664dc4b19b0ca6cd91c5ee56ca2b"
+    },
+    {
+      "path": "docs/delivery/commit-links.json",
+      "sha256": "3a2cf69010c0925f9dec8a78fcf23d17293352b8a250d0696ffaf3b95c22b38f"
+    },
+    {
+      "path": "docs/integration-execution/mcp-discovery-acceptance-20261102.md",
+      "sha256": "421a7a16282d8407608301621641f88df06adb6b51828c36ef8baea93b6ebce2"
+    },
+    {
+      "path": "docs/mcp-server.md",
+      "sha256": "262cac55304437d691a78fb8c91350f761e0c21a33fef27d8080915ea93876b5"
+    },
+    {
+      "path": "package.json",
+      "sha256": "33e0ea11342a92b351845f2f5760f67d3463a6ce359bc6747df6a30bc1c14f04"
+    },
+    {
+      "path": "src/app/.well-known/oauth-authorization-server/route.ts",
+      "sha256": "5509574914473a505cf72d81e0ed313f27a0cab06b3e62d2ef099b1cc572ef15"
+    },
+    {
+      "path": "src/app/.well-known/oauth-protected-resource/route.ts",
+      "sha256": "6dcefd5e0bc280ec797731fb307beafe142e97c5ff1dc8e29a1f2cfb2960cacf"
+    },
+    {
+      "path": "src/app/oauth/authorize/route.ts",
+      "sha256": "4b373d00bb9f112ee186574a7216f8ec19b97267b5eb4c1af328fbea482fec68"
+    },
+    {
+      "path": "src/app/oauth/register/route.ts",
+      "sha256": "6478812fc8ac09ab8915e473d18d25726b60e082758d4616b47efb9dcb5e93d3"
+    },
+    {
+      "path": "src/app/oauth/token/route.ts",
+      "sha256": "5afe4fbbc7a3d151dfb0726a2bfa4b5f4ed8bd93d16cc6c1e483cffb6b1feec5"
+    },
+    {
+      "path": "src/db/schema/oauth.ts",
+      "sha256": "5b394d938a054fbc91652a67614bbcc33c6abf125f84942c1fd1a66f635f663a"
+    },
+    {
+      "path": "src/features/mcp/auth.ts",
+      "sha256": "0d263ca89d3c9ebcdcbe2a06ed38579bf9c18defaf7b1aa079624f824996e42f"
+    },
+    {
+      "path": "src/features/mcp/http.ts",
+      "sha256": "6271ea875e43fcde24eeb2d1a2496f2ef89cbc707c1c3d2b6a8d2674f44f5e9a"
+    },
+    {
+      "path": "src/features/oauth/authorizationHttp.ts",
+      "sha256": "5ffbe4282c70ffea11cd4267ab6fb470278ab4b524734d90684c17c1993b99e5"
+    },
+    {
+      "path": "src/features/oauth/authorize.ts",
+      "sha256": "8c912d297b1c7950dea8780e8f8f25e66d4dab292ba99963cd232c483620432f"
+    },
+    {
+      "path": "src/features/oauth/consent.ts",
+      "sha256": "0dffa6a9f18560041a27278da04952b070101c7575aad0ea5747e754d46b4be5"
+    },
+    {
+      "path": "src/features/oauth/exchange.ts",
+      "sha256": "3018cac74f7a590288d5ba365fa0dcda9c5ba71b0a22cc4cc1c60295ef997ca3"
+    },
+    {
+      "path": "src/features/oauth/jsonResourceIngress.ts",
+      "sha256": "4c2b98d8c51597de68c548ea38419f8c43a03d8291d9ea3d7cf48179a3421794"
+    },
+    {
+      "path": "src/features/oauth/metadata.ts",
+      "sha256": "5bcea7fdb6086975412a7a93c7f739cf94bda572fb3052de495a80aad87f8b19"
+    },
+    {
+      "path": "src/features/oauth/requestIngress.test.ts",
+      "sha256": "08480fdb4e8ac1edddea1f4af3193966c223c0684b99861d8b70b975a85382eb"
+    },
+    {
+      "path": "src/features/oauth/requestIngress.ts",
+      "sha256": "711a57a9d1f6c43f89346c3860467f1404a5c7031ad828f809502b156177d9ea"
+    },
+    {
+      "path": "src/features/oauth/requestSchemas.ts",
+      "sha256": "53b9f70f6ebee0799068a533cc22ca86a0840f7c3d4e3108e56d7680e08cda2f"
+    },
+    {
+      "path": "src/features/oauth/resource.test.ts",
+      "sha256": "2719bf9abf89b24ca13ee402b7120d5e3ff2feae825e6704731a18b14cd143ba"
+    },
+    {
+      "path": "src/features/oauth/resource.ts",
+      "sha256": "b8020b551a1a868f9a04633256336f77081859b016bcf765cb67fe949d1157f0"
+    },
+    {
+      "path": "src/features/oauth/resourceDiscovery.test.ts",
+      "sha256": "58be8e8cc356240c66427ebf6ee0221433d1d059cc60933d1935f612eec62637"
+    },
+    {
+      "path": "src/features/oauth/resourceHttp.integration.test.ts",
+      "sha256": "2e413bd74da5ed3828514fbb8c318f80826f854f00081fb62138c3ccfe4b2f39"
+    },
+    {
+      "path": "src/features/oauth/resourcePolicy.test.ts",
+      "sha256": "6f5510cf353b0cca4147b297a1267b51408ab4528309094fc21b4c46c9433aa8"
+    },
+    {
+      "path": "src/features/oauth/resourceServices.integration.test.ts",
+      "sha256": "eca1d114713837f6bd35692bc1df245f97796ebef8ab95178827d78e439916ca"
+    },
+    {
+      "path": "src/features/oauth/tokenHttp.ts",
+      "sha256": "494fea3658970f9088ebe809dd72cffdd0f3b326ca68138852ede263f2062627"
+    },
+    {
+      "path": "src/features/oauth/tokens.ts",
+      "sha256": "9a79e82208a2cc9d387040afab6d8d6b60dfa33bfaf8d5b2050fd5ae116cc9e3"
+    },
+    {
+      "path": "src/test/mcpResourceFixtures.ts",
+      "sha256": "28079b1dd08f6a8af6ca3c83ed96fa5b6a2381184b62446ca70440ca48afb83d"
+    },
+    {
+      "path": "vitest.config.ts",
+      "sha256": "dfd48deb5886d895c579cfb5be4d0060b246c0a1add433e1467d3a999e701005"
+    }
+  ],
+  "issue": 905,
+  "recorded_at_utc": "2026-11-02T14:45:34.146428+00:00",
+  "historical_qualification": {
+    "source_revision": "fc5fae837b4b8e532a8bfd89ff303e941bcf1439",
+    "hosted_run": 41363129846,
+    "native_resource_http": 31,
+    "native_resource_services": 21,
+    "hosted_unit_passed": 8657,
+    "hosted_unit_skipped": 3,
+    "hosted_postgresql_passed": 3066,
+    "limits": "Focused52/174/nested subsets are retained at their actual runs and are not added to hosted totals; original private RED and registry repair remain distinct."
+  },
+  "current_hosted_evidence": {
+    "revision": "50981b645975100db1e788fd7b6a7741ccb8aa4f",
+    "observed_at_utc": "2026-11-02T14:23:21.240802+00:00",
+    "required_jobs_passed": 8,
+    "runs": {
+      "public_bun": 41457313060,
+      "delivery": 41457312959,
+      "codeql": 41457310984
+    },
+    "scope": "Root retained authenticated exact-head watcher; reviewer made no API calls or test invocations."
+  },
+  "provenance_limit": "GitHub authenticates the later delegated posting account only. This actual Codex session/task is retained independent process provenance, not a separately authenticated GitHub reviewer.",
+  "completion_boundary": "Independent source/process review accepted; no issue comment, state change, technical policy opt-in, parent acceptance or human review is manufactured."
+}

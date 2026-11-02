@@ -16,7 +16,8 @@
     "ops/journey-mailbox-recovery",
     "ops/journey-durable-follow-up",
     "calendar/upgrade-acceptance",
-    "privacy/DPL-36"
+    "privacy/DPL-36",
+    "delivery/mcp-issuer-response-20261102"
   ],
   "required_workflows": {
     "403980173": ["Analyze (javascript-typescript)", "Analyze (actions)", "Analyze (python)"]
@@ -193,6 +194,46 @@
         "src/features/privacy/registryIdsEmail1.ts",
         "src/features/privacy/registryIdsFiles1.ts",
         "src/features/privacy/registryIdsMail1.ts"
+      ]
+    },
+    "delivery/mcp-resource-policy-fc5fae8": {
+      "classification": "bounded_technical",
+      "acceptance_sha256": "14556debd8d8961a53038251e945c9f4dffab79777e8ac9e9a611da4901ae486",
+      "rationale": "One explicit MCP resource admission before OAuth grant mutation, with the original supported-profile and client/installation limits. Maintainer technical review uses the user-approved delegated process; parent acceptance remains separate.",
+      "required_source_paths": [
+        ".github/workflows/ci.yml",
+        "bun.lock",
+        "docs/delivery/commit-links.json",
+        "docs/integration-execution/mcp-discovery-acceptance-20261102.md",
+        "docs/mcp-server.md",
+        "package.json",
+        "src/app/.well-known/oauth-authorization-server/route.ts",
+        "src/app/.well-known/oauth-protected-resource/route.ts",
+        "src/app/oauth/authorize/route.ts",
+        "src/app/oauth/register/route.ts",
+        "src/app/oauth/token/route.ts",
+        "src/db/schema/oauth.ts",
+        "src/features/mcp/auth.ts",
+        "src/features/mcp/http.ts",
+        "src/features/oauth/authorizationHttp.ts",
+        "src/features/oauth/authorize.ts",
+        "src/features/oauth/consent.ts",
+        "src/features/oauth/exchange.ts",
+        "src/features/oauth/jsonResourceIngress.ts",
+        "src/features/oauth/metadata.ts",
+        "src/features/oauth/requestIngress.test.ts",
+        "src/features/oauth/requestIngress.ts",
+        "src/features/oauth/requestSchemas.ts",
+        "src/features/oauth/resource.test.ts",
+        "src/features/oauth/resource.ts",
+        "src/features/oauth/resourceDiscovery.test.ts",
+        "src/features/oauth/resourceHttp.integration.test.ts",
+        "src/features/oauth/resourcePolicy.test.ts",
+        "src/features/oauth/resourceServices.integration.test.ts",
+        "src/features/oauth/tokenHttp.ts",
+        "src/features/oauth/tokens.ts",
+        "src/test/mcpResourceFixtures.ts",
+        "vitest.config.ts"
       ]
     }
   },
