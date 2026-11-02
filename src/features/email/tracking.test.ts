@@ -99,29 +99,41 @@ describe("mintTokensForSend", () => {
     });
   });
 
-  it("does not store a javascript: or data: link as a redirect target (open-redirect guard)", async () => {
+  it("stores only parsed http(s) URLs as redirect targets", async () => {
     await withTestDb(async (db) => {
       const { attemptId } = await seedAttempt(db);
+      const allowed = ["http://plain.example/x", "https://ok.com/y"];
       const out = await mintTokensForSend(db, {
         sendAttemptId: attemptId,
         recipient: "you@y.com",
-
-        links: ["javascript:alert(1)", "data:text/html,<script>", "https://ok.com/y"],
+        links: [
+          "javascript:alert(1)",
+          "JaVaScRiPt:alert(1)",
+          " \tjavascript:alert(1)",
+          "data:text/html,<script>",
+          "vbscript:msgbox(1)",
+          "blob:https://ok.com/id",
+          "file:///tmp/note",
+          "ftp://files.example/x",
+          "mailto:you@example.com",
+          "tel:+1234567",
+          "httpsx://ok.com/y",
+          "//ok.com/y",
+          "/local/path",
+          "http://",
+          ...allowed,
+        ],
         trackOpens: true,
         trackLinks: true,
         signal: newSignal(),
       });
-      // Only the http(s) link is tokenized; the dangerous schemes are skipped.
-      expect(out.linkTokens.map((l) => l.original)).toEqual(["https://ok.com/y"]);
+      expect(out.linkTokens.map((l) => l.original)).toEqual(allowed);
       const targets = (
         await db.execute(
           sql`SELECT target_url FROM email_tracking_tokens WHERE send_attempt_id=${attemptId} AND kind='click'`,
         )
       ).rows as { target_url: string | null }[];
-      const stored = targets.map((t) => t.target_url);
-      expect(stored).toContain("https://ok.com/y");
-      expect(stored.some((u) => u?.startsWith("javascript:") === true)).toBe(false);
-      expect(stored.some((u) => u?.startsWith("data:") === true)).toBe(false);
+      expect(targets.map((t) => t.target_url).sort()).toEqual([...allowed].sort());
     });
   });
 });
