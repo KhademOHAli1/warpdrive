@@ -2,7 +2,7 @@ import { render } from "@testing-library/react";
 import { expect } from "vitest";
 import { LocaleProvider } from "@/features/i18n/LocaleProvider";
 import type { LocalePreferences } from "@/features/i18n/preferences";
-import { ReviewDecisionHistory } from "./ReviewDecisionHistory";
+import { ReviewDecisionHistory, type ReviewDecisionHistoryProps } from "./ReviewDecisionHistory";
 import { applyReviewCommand } from "./reviewDecisions";
 import {
   clientContactId,
@@ -24,6 +24,7 @@ export const clientLabels = {
 };
 export const occurredAt = "2026-11-01T09:10:00+03:30";
 export const recordedAt = nativeRecorder.recordedAt;
+export const historyContextKey = "accepted-staff-session:agency-workspace";
 
 export function transition(review: ReviewSnapshot, command: ReviewCommand): ReviewSnapshot {
   const result = applyReviewCommand(review, command);
@@ -65,10 +66,17 @@ export function historyView(
     userLabels: Readonly<Record<string, string>>;
     clientLabels: Readonly<Record<string, string>>;
   } = { userLabels, clientLabels },
+  overrides: Partial<ReviewDecisionHistoryProps> = {},
 ) {
   return (
     <LocaleProvider {...preferences}>
-      <ReviewDecisionHistory review={review} {...labels} />
+      <ReviewDecisionHistory
+        contextKey={historyContextKey}
+        target={{ projectId: review.projectId, deliverableId: review.deliverableId }}
+        canRead={true}
+        data={{ contextKey: historyContextKey, review, ...labels }}
+        {...overrides}
+      />
     </LocaleProvider>
   );
 }

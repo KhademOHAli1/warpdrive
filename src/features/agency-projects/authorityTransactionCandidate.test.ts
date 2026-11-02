@@ -48,7 +48,9 @@ describe("isolated real-PG authority transaction candidate", () => {
       const id = randomUUID();
       const failure = err({ code: "business_denied", correlation: id });
       const result = await runAuthorityTransactionCandidate(
-        h.pool, candidateSpec("exclusive"), new AbortController().signal,
+        h.pool,
+        candidateSpec("exclusive"),
+        new AbortController().signal,
         async (tx) => {
           await tx.insert(users).values(userValues(id));
           return failure;
@@ -80,12 +82,15 @@ describe("isolated real-PG authority transaction candidate", () => {
     const handles: ReturnType<typeof heldTransaction>[] = [];
     try {
       const spec = candidateSpec("shared");
-      const first = heldTransaction(h, spec); handles.push(first);
+      const first = heldTransaction(h, spec);
+      handles.push(first);
       expect(await waitForEntry(first)).toEqual({ kind: "entered" });
-      const second = heldTransaction(h, spec); handles.push(second);
+      const second = heldTransaction(h, spec);
+      handles.push(second);
       expect(await waitForEntry(second)).toEqual({ kind: "entered" });
-      expect((await advisoryLocks(h, spec)).filter((lock) => lock.granted && lock.mode === "ShareLock"))
-        .toHaveLength(2);
+      expect(
+        (await advisoryLocks(h, spec)).filter((lock) => lock.granted && lock.mode === "ShareLock"),
+      ).toHaveLength(2);
       first.release.open();
       second.release.open();
       expect(await Promise.all([first.run, second.run])).toEqual([ok("held"), ok("held")]);
@@ -94,54 +99,72 @@ describe("isolated real-PG authority transaction candidate", () => {
     }
   });
 
-  it.each(["shared", "exclusive"] as const)("keeps %s work behind an exclusive holder", async (mode) => {
-    const h = await makeTestDb();
-    const handles: ReturnType<typeof heldTransaction>[] = [];
-    try {
-      const holder = heldTransaction(h, candidateSpec("exclusive")); handles.push(holder);
-      expect(await waitForEntry(holder)).toEqual({ kind: "entered" });
-      const spec = candidateSpec(mode);
-      const waiter = heldTransaction(h, spec); handles.push(waiter);
-      expect(await waitForWaiter(h, spec, waiter)).toEqual({ kind: "waiting" });
-      expect(waiter.entered.isOpen()).toBe(false);
-      holder.release.open();
-      expect(await holder.run).toEqual(ok("held"));
-      expect(await waitForEntry(waiter)).toEqual({ kind: "entered" });
-      waiter.release.open();
-      expect(await waiter.run).toEqual(ok("held"));
-    } finally {
-      await closeHeldFixture(h, handles);
-    }
-  });
+  it.each(["shared", "exclusive"] as const)(
+    "keeps %s work behind an exclusive holder",
+    async (mode) => {
+      const h = await makeTestDb();
+      const handles: ReturnType<typeof heldTransaction>[] = [];
+      try {
+        const holder = heldTransaction(h, candidateSpec("exclusive"));
+        handles.push(holder);
+        expect(await waitForEntry(holder)).toEqual({ kind: "entered" });
+        const spec = candidateSpec(mode);
+        const waiter = heldTransaction(h, spec);
+        handles.push(waiter);
+        expect(await waitForWaiter(h, spec, waiter)).toEqual({ kind: "waiting" });
+        expect(waiter.entered.isOpen()).toBe(false);
+        holder.release.open();
+        expect(await holder.run).toEqual(ok("held"));
+        expect(await waitForEntry(waiter)).toEqual({ kind: "entered" });
+        waiter.release.open();
+        expect(await waiter.run).toEqual(ok("held"));
+      } finally {
+        await closeHeldFixture(h, handles);
+      }
+    },
+  );
 
   it("reads revoked actor state after waiting behind the exclusive revoker", async () => {
     const h = await makeTestDb();
     const handles: ReturnType<typeof heldTransaction>[] = [];
     try {
       const id = await seedActor(h);
-      const cached = await h.db.select({ active: users.isActive }).from(users).where(eq(users.id, id));
+      const cached = await h.db
+        .select({ active: users.isActive })
+        .from(users)
+        .where(eq(users.id, id));
       expect(cached).toEqual([{ active: true }]);
       const revoker = heldTransaction(h, candidateSpec("exclusive"), async (tx) => {
         await tx.update(users).set({ isActive: false }).where(eq(users.id, id));
         return ok(true);
-      }); handles.push(revoker);
+      });
+      handles.push(revoker);
       expect(await waitForEntry(revoker)).toEqual({ kind: "entered" });
       const spec = candidateSpec("shared");
       const request = heldTransaction(h, spec, async (tx) => {
-        const [current] = await tx.select({ active: users.isActive }).from(users).where(eq(users.id, id));
+        const [current] = await tx
+          .select({ active: users.isActive })
+          .from(users)
+          .where(eq(users.id, id));
         if (current?.active !== true) return err("actor_inactive");
         await tx.update(users).set({ name: "incorrectly_admitted" }).where(eq(users.id, id));
         return ok(true);
-      }); handles.push(request);
+      });
+      handles.push(request);
       expect(await waitForWaiter(h, spec, request)).toEqual({ kind: "waiting" });
       revoker.release.open();
       expect(await revoker.run).toEqual(ok("held"));
       expect(await waitForEntry(request)).toEqual({
-        kind: "finished", value: err("actor_inactive"),
+        kind: "finished",
+        value: err("actor_inactive"),
       });
       expect(request.entered.isOpen()).toBe(false);
-      expect(await h.db.select({ name: users.name, active: users.isActive }).from(users).where(eq(users.id, id)))
-        .toEqual([{ name: "before", active: false }]);
+      expect(
+        await h.db
+          .select({ name: users.name, active: users.isActive })
+          .from(users)
+          .where(eq(users.id, id)),
+      ).toEqual([{ name: "before", active: false }]);
     } finally {
       await closeHeldFixture(h, handles);
     }
@@ -153,11 +176,15 @@ describe("isolated real-PG authority transaction candidate", () => {
     try {
       const id = await seedActor(h);
       const request = heldTransaction(h, candidateSpec("shared"), async (tx) => {
-        const [current] = await tx.select({ active: users.isActive }).from(users).where(eq(users.id, id));
+        const [current] = await tx
+          .select({ active: users.isActive })
+          .from(users)
+          .where(eq(users.id, id));
         if (current?.active !== true) return err("actor_inactive");
         await tx.update(users).set({ name: "admitted_before_revoke" }).where(eq(users.id, id));
         return ok(true);
-      }); handles.push(request);
+      });
+      handles.push(request);
       expect(await waitForEntry(request)).toEqual({ kind: "entered" });
       let postWaitName: string | undefined;
       const spec = candidateSpec("exclusive");
@@ -166,7 +193,8 @@ describe("isolated real-PG authority transaction candidate", () => {
         postWaitName = current?.name;
         await tx.update(users).set({ isActive: false }).where(eq(users.id, id));
         return ok(true);
-      }); handles.push(revoker);
+      });
+      handles.push(revoker);
       expect(await waitForWaiter(h, spec, revoker)).toEqual({ kind: "waiting" });
       request.release.open();
       expect(await request.run).toEqual(ok("held"));
@@ -174,8 +202,12 @@ describe("isolated real-PG authority transaction candidate", () => {
       expect(postWaitName).toBe("admitted_before_revoke");
       revoker.release.open();
       expect(await revoker.run).toEqual(ok("held"));
-      expect(await h.db.select({ name: users.name, active: users.isActive }).from(users).where(eq(users.id, id)))
-        .toEqual([{ name: "admitted_before_revoke", active: false }]);
+      expect(
+        await h.db
+          .select({ name: users.name, active: users.isActive })
+          .from(users)
+          .where(eq(users.id, id)),
+      ).toEqual([{ name: "admitted_before_revoke", active: false }]);
     } finally {
       await closeHeldFixture(h, handles);
     }
@@ -185,11 +217,13 @@ describe("isolated real-PG authority transaction candidate", () => {
     const h = await makeTestDb();
     const handles: ReturnType<typeof heldTransaction>[] = [];
     try {
-      const holder = heldTransaction(h, candidateSpec("exclusive")); handles.push(holder);
+      const holder = heldTransaction(h, candidateSpec("exclusive"));
+      handles.push(holder);
       expect(await waitForEntry(holder)).toEqual({ kind: "entered" });
       const base = candidateSpec("shared");
       const spec = { ...base, sqlTimeouts: { ...base.sqlTimeouts, lockMs: 750 } };
-      const waiter = heldTransaction(h, spec); handles.push(waiter);
+      const waiter = heldTransaction(h, spec);
+      handles.push(waiter);
       expect(await waitForWaiter(h, spec, waiter, 500)).toEqual({ kind: "waiting" });
       expect(await waitForSettlement(waiter)).toEqual({ kind: "finished", value: unavailable });
       expect(waiter.entered.isOpen()).toBe(false);
@@ -205,12 +239,15 @@ describe("isolated real-PG authority transaction candidate", () => {
   it("propagates a pre-aborted signal without invoking business work", async () => {
     const h = await makeTestDb();
     try {
-      const controller = new AbortController(); controller.abort();
+      const controller = new AbortController();
+      controller.abort();
       let called = false;
-      await expect(runAuthorityTransactionCandidate(h.pool, candidateSpec("shared"), controller.signal, async () => {
-        called = true;
-        return ok("unexpected");
-      })).rejects.toMatchObject({ name: "AbortError" });
+      await expect(
+        runAuthorityTransactionCandidate(h.pool, candidateSpec("shared"), controller.signal, () => {
+          called = true;
+          return Promise.resolve(ok("unexpected"));
+        }),
+      ).rejects.toMatchObject({ name: "AbortError" });
       expect(called).toBe(false);
       expect(await advisoryLocks(h, candidateSpec("shared"))).toEqual([]);
     } finally {
@@ -223,11 +260,18 @@ describe("isolated real-PG authority transaction candidate", () => {
     try {
       const id = randomUUID();
       const controller = new AbortController();
-      await expect(runAuthorityTransactionCandidate(h.pool, candidateSpec("exclusive"), controller.signal, async (tx) => {
-        await tx.insert(users).values(userValues(id));
-        controller.abort();
-        return ok("must_not_commit");
-      })).rejects.toMatchObject({ name: "AbortError" });
+      await expect(
+        runAuthorityTransactionCandidate(
+          h.pool,
+          candidateSpec("exclusive"),
+          controller.signal,
+          async (tx) => {
+            await tx.insert(users).values(userValues(id));
+            controller.abort();
+            return ok("must_not_commit");
+          },
+        ),
+      ).rejects.toMatchObject({ name: "AbortError" });
       expect(await h.db.select({ id: users.id }).from(users).where(eq(users.id, id))).toEqual([]);
       expect(await advisoryLocks(h, candidateSpec("exclusive"))).toEqual([]);
     } finally {
@@ -242,10 +286,15 @@ describe("isolated real-PG authority transaction candidate", () => {
         expect(tx).toBeInstanceOf(PgTransaction);
         const before = await tx.execute(sql.raw(settingsQuery));
         let called = false;
-        const result = await runAuthorityTransactionCandidate(tx as unknown as Pool, candidateSpec("exclusive"), new AbortController().signal, async () => {
-          called = true;
-          return ok("nested");
-        });
+        const result = await runAuthorityTransactionCandidate(
+          tx as unknown as Pool,
+          candidateSpec("exclusive"),
+          new AbortController().signal,
+          () => {
+            called = true;
+            return Promise.resolve(ok("nested"));
+          },
+        );
         expect(result).toEqual(unavailable);
         expect(called).toBe(false);
         expect((await tx.execute(sql.raw(settingsQuery))).rows).toEqual(before.rows);

@@ -1,0 +1,161 @@
+{
+  "schemaVersion": 1,
+  "templateId": "campaign_content",
+  "version": 1,
+  "label": {
+    "fa": "تولید محتوای کمپین",
+    "de": "Kampagneninhalte",
+    "en": "Campaign content production"
+  },
+  "description": {
+    "fa": "الگویی برای هماهنگی طراحی گرافیک و تدوین ویدیوی کمپین. پیش از استفاده، دامنه کار، افراد مسئول و تاریخ‌ها را بررسی کنید. فاصله روزها پیشنهادی و قابل ویرایش است؛ زمان تحویل را جداگانه توافق کنید.",
+    "de": "Vorlage für die Koordination von Kampagnengestaltung und Videoschnitt. Vor der Verwendung Leistungsumfang, Rollenbesetzung und Termine prüfen. Die Tagesabstände sind editierbare Annahmen; Liefertermine separat abstimmen.",
+    "en": "Coordinate campaign design and video editing. Review scope, role mapping and dates before use. Use day offsets as editable planning assumptions and agree delivery dates separately."
+  },
+  "roles": [
+    {
+      "id": "producer",
+      "kind": "internal-producer",
+      "label": {
+        "fa": "مسئول داخلی پروژه",
+        "de": "Interne Projektverantwortung",
+        "en": "Internal project owner"
+      }
+    },
+    {
+      "id": "designer",
+      "kind": "freelancer-contact",
+      "label": { "fa": "طراح همکار", "de": "Externe Gestaltung", "en": "Freelance designer" }
+    },
+    {
+      "id": "editor",
+      "kind": "freelancer-contact",
+      "label": {
+        "fa": "تدوین‌گر همکار",
+        "de": "Externer Videoschnitt",
+        "en": "Freelance video editor"
+      }
+    }
+  ],
+  "stages": [
+    {
+      "id": "briefing",
+      "label": { "fa": "شرح کار و نقش‌ها", "de": "Briefing und Rollen", "en": "Brief and roles" },
+      "dependsOn": []
+    },
+    {
+      "id": "production",
+      "label": {
+        "fa": "طراحی و تدوین",
+        "de": "Gestaltung und Schnitt",
+        "en": "Design and editing"
+      },
+      "dependsOn": ["briefing"]
+    },
+    {
+      "id": "internal_review",
+      "label": { "fa": "بازبینی داخلی", "de": "Interne Prüfung", "en": "Internal review" },
+      "dependsOn": ["production"]
+    }
+  ],
+  "deliverables": [
+    {
+      "id": "campaign_design",
+      "label": { "fa": "طرح گرافیکی کمپین", "de": "Kampagnengestaltung", "en": "Campaign design" },
+      "stageId": "production",
+      "responsibleRoleId": "producer"
+    },
+    {
+      "id": "campaign_cut",
+      "label": { "fa": "نسخه ویدیوی کمپین", "de": "Kampagnenvideo", "en": "Campaign video cut" },
+      "stageId": "production",
+      "responsibleRoleId": "producer"
+    }
+  ],
+  "intents": [
+    {
+      "id": "brief_followup",
+      "kind": "follow-up",
+      "label": {
+        "fa": "تکمیل شرح کار و هماهنگی طراحی و تدوین",
+        "de": "Design- und Schnittumfang klären",
+        "en": "Clarify design and editing scope"
+      },
+      "stageId": "briefing",
+      "assigneeRoleId": "producer",
+      "dependsOn": [],
+      "dueOffset": { "basis": "calendar-days", "anchor": "project-start", "days": 0 }
+    },
+    {
+      "id": "design_assignment",
+      "kind": "assignment",
+      "label": {
+        "fa": "هماهنگی طراحی محتوای کمپین",
+        "de": "Kampagnengestaltung koordinieren",
+        "en": "Coordinate campaign design"
+      },
+      "stageId": "production",
+      "deliverableId": "campaign_design",
+      "internalProducerRoleId": "producer",
+      "freelancerRoleId": "designer",
+      "dependsOn": ["brief_followup"],
+      "dueOffset": { "basis": "calendar-days", "anchor": "project-start", "days": 4 }
+    },
+    {
+      "id": "video_assignment",
+      "kind": "assignment",
+      "label": {
+        "fa": "هماهنگی تدوین ویدیوی کمپین",
+        "de": "Kampagnenvideo koordinieren",
+        "en": "Coordinate campaign video editing"
+      },
+      "stageId": "production",
+      "deliverableId": "campaign_cut",
+      "internalProducerRoleId": "producer",
+      "freelancerRoleId": "editor",
+      "dependsOn": ["brief_followup"],
+      "dueOffset": { "basis": "calendar-days", "anchor": "project-start", "days": 5 }
+    },
+    {
+      "id": "client_update_followup",
+      "kind": "follow-up",
+      "label": {
+        "fa": "پیگیری گزارش پیشرفت برای مشتری",
+        "de": "Kundenupdate intern nachhalten",
+        "en": "Follow up internally on client update"
+      },
+      "stageId": "production",
+      "assigneeRoleId": "producer",
+      "dependsOn": ["brief_followup"],
+      "dueOffset": { "basis": "calendar-days", "anchor": "project-start", "days": 3 }
+    },
+    {
+      "id": "design_review",
+      "kind": "review",
+      "label": {
+        "fa": "بازبینی داخلی طرح گرافیکی",
+        "de": "Kampagnengestaltung intern prüfen",
+        "en": "Review campaign design internally"
+      },
+      "stageId": "internal_review",
+      "deliverableId": "campaign_design",
+      "assigneeRoleId": "producer",
+      "dependsOn": ["design_assignment"],
+      "dueOffset": { "basis": "calendar-days", "anchor": "project-start", "days": 6 }
+    },
+    {
+      "id": "video_review",
+      "kind": "review",
+      "label": {
+        "fa": "بازبینی داخلی ویدیوی کمپین",
+        "de": "Kampagnenvideo intern prüfen",
+        "en": "Review campaign video internally"
+      },
+      "stageId": "internal_review",
+      "deliverableId": "campaign_cut",
+      "assigneeRoleId": "producer",
+      "dependsOn": ["video_assignment"],
+      "dueOffset": { "basis": "calendar-days", "anchor": "project-start", "days": 6 }
+    }
+  ]
+}

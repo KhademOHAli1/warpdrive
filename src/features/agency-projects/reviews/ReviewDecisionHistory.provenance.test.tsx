@@ -3,9 +3,10 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
 import {
+  clientLabels,
   clientName,
   clientReview,
-  clientLabels,
+  historyContextKey,
   historyView,
   occurredAt,
   recordedAt,
@@ -19,6 +20,84 @@ import { changeVersion, newerVersion, version } from "./reviewDecisions.test-sup
 
 vi.mock("@/features/i18n/actions", () => ({ saveLocalePreferencesAction: vi.fn() }));
 afterEach(cleanup);
+
+function expectPrivateHistoryHidden() {
+  expect(screen.queryByRole("region")).not.toBeInTheDocument();
+  for (const privateText of [
+    staffName,
+    clientName,
+    version,
+    "client-note/2026-11-01",
+    "Recording employee unavailable",
+    "Client contact unavailable",
+  ]) {
+    expect(document.body).not.toHaveTextContent(privateText);
+  }
+  expect(screen.getByRole("alert")).toHaveTextContent("Review history is unavailable.");
+  expect(screen.getByRole("alert")).toHaveClass("ph-block-email", "ph-no-capture");
+}
+
+it("does not render private rows or identity fallbacks without current read permission", () => {
+  render(historyView(clientReview(), undefined, undefined, { canRead: false }));
+  expectPrivateHistoryHidden();
+});
+
+it("removes already visible history on read loss and does not retain it while a new read is absent", () => {
+  const review = clientReview();
+  const view = render(historyView(review));
+  expect(screen.getByText(clientName)).toBeInTheDocument();
+  view.rerender(historyView(review, undefined, undefined, { canRead: false }));
+  expectPrivateHistoryHidden();
+  view.rerender(historyView(review, undefined, undefined, { data: null }));
+  expectPrivateHistoryHidden();
+  view.unmount();
+  expect(document.body).not.toHaveTextContent(clientName);
+});
+
+it("hides an old authorized read after the current session or workspace context changes", () => {
+  const review = clientReview();
+  const view = render(historyView(review));
+  view.rerender(
+    historyView(review, undefined, undefined, {
+      contextKey: `${historyContextKey}:replacement`,
+    }),
+  );
+  expectPrivateHistoryHidden();
+});
+
+it.each(["projectId", "deliverableId"] as const)(
+  "hides old private history when the selected %s differs from the read target",
+  (field) => {
+    const review = clientReview();
+    const view = render(historyView(review));
+    view.rerender(
+      historyView(review, undefined, undefined, {
+        target: {
+          projectId: review.projectId,
+          deliverableId: review.deliverableId,
+          [field]: "11111111-1111-4111-8111-111111111111",
+        },
+      }),
+    );
+    expectPrivateHistoryHidden();
+  },
+);
+
+it.each(["", "   "])("requires a nonblank current context (%j)", (contextKey) => {
+  const review = clientReview();
+  render(
+    historyView(review, undefined, undefined, {
+      contextKey,
+      data: { contextKey, review, userLabels, clientLabels },
+    }),
+  );
+  expectPrivateHistoryHidden();
+});
+
+it("hides private history when there is no selected review target", () => {
+  render(historyView(clientReview(), undefined, undefined, { target: null }));
+  expectPrivateHistoryHidden();
+});
 
 it("keeps historical and current approvals tied to each row's own recorder and timestamps", () => {
   const first = clientReview();
@@ -35,10 +114,12 @@ it("keeps historical and current approvals tied to each row's own recorder and t
     method: "phone",
     evidenceReference: "client-note/second-version",
   });
-  render(historyView(current, undefined, {
-    userLabels: { ...userLabels, [secondStaffId]: secondStaffName },
-    clientLabels,
-  }));
+  render(
+    historyView(current, undefined, {
+      userLabels: { ...userLabels, [secondStaffId]: secondStaffName },
+      clientLabels,
+    }),
+  );
 
   const region = screen.getByRole("region", { name: "Review decision history" });
   expect(region.querySelectorAll("li")).toHaveLength(2);
@@ -59,8 +140,11 @@ it("keeps historical and current approvals tied to each row's own recorder and t
   expect(fresh).toHaveTextContent("Phone");
   expect(fresh).toHaveTextContent(newerVersion);
   expect(fresh).toHaveTextContent("client-note/second-version");
-  expect(Array.from(historical?.querySelectorAll("time") ?? []).map((time) => time.dateTime))
-    .toEqual([occurredAt, recordedAt]);
-  expect(Array.from(fresh?.querySelectorAll("time") ?? []).map((time) => time.dateTime))
-    .toEqual([secondOccurredAt, secondRecordedAt]);
+  expect(
+    Array.from(historical?.querySelectorAll("time") ?? []).map((time) => time.dateTime),
+  ).toEqual([occurredAt, recordedAt]);
+  expect(Array.from(fresh?.querySelectorAll("time") ?? []).map((time) => time.dateTime)).toEqual([
+    secondOccurredAt,
+    secondRecordedAt,
+  ]);
 });

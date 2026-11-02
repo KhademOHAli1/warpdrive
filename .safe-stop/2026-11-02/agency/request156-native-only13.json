@@ -1,0 +1,806 @@
+{
+  "workspace": "/Users/ali/Developer/warpdrive-agency-projects",
+  "sourceHead": "ec63a5bea531849c96202c859e8055845908895d",
+  "moduleFiles": {
+    "src/features/agency-projects/ProjectCreationForm.test-support.tsx": {
+      "sha256": "67009c9781bdafc87ae752bfeb910f8516921c04bf18543922abcd553f03d419",
+      "bytes": 2461
+    },
+    "src/features/agency-projects/ProjectCreationForm.test.tsx": {
+      "sha256": "6836891adb3c20e551db6cd9d8b8b8de2449a6dd5d0b44b0d12f5262f5d1c112",
+      "bytes": 8122
+    },
+    "src/features/agency-projects/ProjectCreationForm.tsx": {
+      "sha256": "7a77ba5dce40795f34b408cb1ff9e41df147bd7ad14b0453b3414b2d8926fd60",
+      "bytes": 5200
+    },
+    "src/features/agency-projects/ProjectCreationRecovery.test.tsx": {
+      "sha256": "1bf76a261e32bacebd5f03878b051a5d2fdfddedda215ea80b3038fe82336ebd",
+      "bytes": 5168
+    },
+    "src/features/agency-projects/ProjectCreationSubmission.test.tsx": {
+      "sha256": "109f7bc4f60af1d71ac2b61ed3e05be44907747284db558a7c37542a6e6d3ea9",
+      "bytes": 7151
+    },
+    "src/features/agency-projects/ProjectListView.lifecycle.test.tsx": {
+      "sha256": "41ab4216c74425fcfeac0a5b113eb6c3afa10c045d05629d721a2db8c7cfdad2",
+      "bytes": 4803
+    },
+    "src/features/agency-projects/ProjectListView.test-support.tsx": {
+      "sha256": "28b06c1b7e0bd017c47b2d54d81e3b18ada4a1fcf43f1509b8c378243c2bde75",
+      "bytes": 2187
+    },
+    "src/features/agency-projects/ProjectListView.test.tsx": {
+      "sha256": "eb691503c218067428bcb11e9485b69e19aaacc505248c4af9ef37d39394d1cd",
+      "bytes": 7165
+    },
+    "src/features/agency-projects/ProjectListView.tsx": {
+      "sha256": "3e1fa04a164dcac93d2d26bd74c4b6a87d624bc4645335584e71574564dd39e7",
+      "bytes": 4974
+    },
+    "src/features/agency-projects/ProjectWorkspaceSummary.test-support.tsx": {
+      "sha256": "0ea14e910a55f11833a5392ab91f336ec4c42a23ab397a955e3e7f68ee0228d1",
+      "bytes": 1989
+    },
+    "src/features/agency-projects/ProjectWorkspaceSummary.test.tsx": {
+      "sha256": "e7cde67e3c89b04125bddf74863d72527f6059ef2a64453ae4d4faa02e28db74",
+      "bytes": 11721
+    },
+    "src/features/agency-projects/ProjectWorkspaceSummary.tsx": {
+      "sha256": "007d78449e213ef0c7b57dcf46f4849644f3831ff9b113aea89aa26a51f57bf4",
+      "bytes": 4632
+    },
+    "src/features/agency-projects/agencyProjectsMessages.ts": {
+      "sha256": "9ba1f0e017d5a818c9ecfea9e1d16257622bf019ca58c16e5bad2562166ee2fd",
+      "bytes": 796
+    },
+    "src/features/agency-projects/assignmentBoundaryJourney.test.ts": {
+      "sha256": "beb2b35fc4929c993511df0be34e3102e909b3a302197117b7a76ad143381fd1",
+      "bytes": 2662
+    },
+    "src/features/agency-projects/assignmentFixtures.ts": {
+      "sha256": "62d2b9fa6ec66206e021dde3cd465fbcdf8986a14d052c3fdad08c731912b25c",
+      "bytes": 1626
+    },
+    "src/features/agency-projects/assignmentLifecycle.test.ts": {
+      "sha256": "9b6c5d3c176d84c83cd5522df8df81ac9ca8193627076fec5d3b914bafefc483",
+      "bytes": 7470
+    },
+    "src/features/agency-projects/assignmentLifecycle.ts": {
+      "sha256": "f73b067b083bc9b801f32788b88fdd27dd69ba0f9420488b5fbefbcac2445988",
+      "bytes": 6462
+    },
+    "src/features/agency-projects/assignmentSchemas.test.ts": {
+      "sha256": "5be393aa2f56883a4cd27efff2976cbbe5b202a69a4cadb3a4e719d7b1b990cf",
+      "bytes": 7722
+    },
+    "src/features/agency-projects/assignmentSchemas.ts": {
+      "sha256": "6d90de3799b035f0d607c5d62335bb72bc2e0860102629fd6ba86a0325bfd187",
+      "bytes": 4061
+    },
+    "src/features/agency-projects/assignmentVersion.test.ts": {
+      "sha256": "a35c16e479aeccff57ac0f0d05e12b464941092413c46699a484f1312165adff",
+      "bytes": 2404
+    },
+    "src/features/agency-projects/authorityConnectionBoundary.test-support.ts": {
+      "sha256": "3fffcc6fa305c03948b28ca8422414ef7a51556e8a111c60375f73c68bfde5da",
+      "bytes": 3505
+    },
+    "src/features/agency-projects/authorityConnectionBoundary.test.ts": {
+      "sha256": "88aecb8f48a8e04673fbbdb44439e1fa18a3df238536084f8ea7a413d1b05e7b",
+      "bytes": 4942
+    },
+    "src/features/agency-projects/authorityTransactionCandidate.test-support.ts": {
+      "sha256": "52110a17bf2a56fc8e75b0dd1c8d2fadf9acba02cff296a1337a0bec60e16334",
+      "bytes": 6760
+    },
+    "src/features/agency-projects/authorityTransactionCandidate.test.ts": {
+      "sha256": "6035d01adcf78486739374ce31f9e21c5e60dacd3c1b1abb8e10c75215e3be54",
+      "bytes": 11909
+    },
+    "src/features/agency-projects/authorityTransactionCandidate.ts": {
+      "sha256": "450fc04a32eb7a45b04f27abcf810b63a5e2a968876e70950b2bebe703ef4110",
+      "bytes": 851
+    },
+    "src/features/agency-projects/authorityTransactionSpec.test.ts": {
+      "sha256": "5f8db288fc041291a46e6662bd2d2ecff9d3417fc15f4855524cb9c0baf00271",
+      "bytes": 5924
+    },
+    "src/features/agency-projects/authorityTransactionSpec.ts": {
+      "sha256": "2c4048f55c768440751bceefe7bf9865a522ad9a90975ff1795c8360bf171611",
+      "bytes": 955
+    },
+    "src/features/agency-projects/communication/communicationPreferenceSchemas.ts": {
+      "sha256": "fea77f1c1a0710450cb86a656dcf700566ca441f095be8445ec1df0a09807109",
+      "bytes": 858
+    },
+    "src/features/agency-projects/communication/communicationPreferenceTypes.ts": {
+      "sha256": "6a6aec4a0f4341d28661123d8ded5ff0eaf264f5534f9b56146292d72ac9d7e4",
+      "bytes": 88
+    },
+    "src/features/agency-projects/communication/communicationPreferences.test.ts": {
+      "sha256": "af6a93554eae215271096b96aab19571cb52eee96245886f3e30921fd60c95ee",
+      "bytes": 9880
+    },
+    "src/features/agency-projects/communication/communicationPreferences.ts": {
+      "sha256": "fc1ce2e76dbe7db768cffb16e87b717117af0aec7a7097687594858457fd6def",
+      "bytes": 636
+    },
+    "src/features/agency-projects/communication/communicationValueSchemas.ts": {
+      "sha256": "0d4a6966305c5b759413c8e0dc1b769843c14a228f0b78e99ca73481fd461fcb",
+      "bytes": 676
+    },
+    "src/features/agency-projects/communication/manualCommunication.test-support.ts": {
+      "sha256": "20e0ca43f71a8bcc2da5e37e2028823062712540fff110dbfededc3e270c21b8",
+      "bytes": 4254
+    },
+    "src/features/agency-projects/communication/manualCommunication.test.ts": {
+      "sha256": "17868eb7612149f95c26a27df60d72b5d19e2a57b20cee2c5ed129a69dc142b4",
+      "bytes": 9460
+    },
+    "src/features/agency-projects/communication/manualCommunication.ts": {
+      "sha256": "e94e2e987cbdbd06828bb886706abb701d1519c8181f77e7ebe1e1ef78a24f28",
+      "bytes": 1137
+    },
+    "src/features/agency-projects/communication/manualCommunicationContext.ts": {
+      "sha256": "9f2bb64653231ff3dc8074c0fb6795bd3a119fe7feb8d11e64eec43ad7c83a11",
+      "bytes": 2330
+    },
+    "src/features/agency-projects/communication/manualCommunicationEquality.ts": {
+      "sha256": "43209ad66e0e94ebc07b6d68d463edb7a5e3a4153bfa1b3f432dec989d744b7a",
+      "bytes": 1102
+    },
+    "src/features/agency-projects/communication/manualCommunicationPolicy.test.ts": {
+      "sha256": "e3212fd4a1910de37301dca1bd730a26f46a00dea6ef7eebdda4cb001488e613",
+      "bytes": 10654
+    },
+    "src/features/agency-projects/communication/manualCommunicationPolicy.ts": {
+      "sha256": "e717de2da830526fce19b30c92e48a5b2533e00088465e1a396bf7287e85769c",
+      "bytes": 3579
+    },
+    "src/features/agency-projects/communication/manualCommunicationSchemas.ts": {
+      "sha256": "ea97a3eb3bed9ff00e9ea90fd0b244a606b72fe6c6405c4e5dac6b8e8216b809",
+      "bytes": 3489
+    },
+    "src/features/agency-projects/communication/manualCommunicationTypes.ts": {
+      "sha256": "531b94a6d92b399ed42b5c56a34c647ee1c8fee3963fbbec475552aa5c80fa64",
+      "bytes": 1200
+    },
+    "src/features/agency-projects/feedbackRecord.test-support.ts": {
+      "sha256": "80a79d90fdf70cda5a05c8939f22315676b21b945f5edc6a1b9acf0a20bbeb29",
+      "bytes": 2856
+    },
+    "src/features/agency-projects/feedbackRecord.test.ts": {
+      "sha256": "1fcb9440aa3e5a9edfaed8d8767a8ff00eebac0ee46cc4177b532eb861bff9a9",
+      "bytes": 9847
+    },
+    "src/features/agency-projects/feedbackRecord.ts": {
+      "sha256": "383ebb9304f2860fff9fcbff4e1075a8b3be1807b07b4de7738842f6d8c5c10f",
+      "bytes": 2381
+    },
+    "src/features/agency-projects/instantSchema.ts": {
+      "sha256": "2835217e23c0be0e91a1093b66ce6e414e6be9ece590aa6b0c4faa7cd1af4df9",
+      "bytes": 465
+    },
+    "src/features/agency-projects/messages/agencyProjects.de.json": {
+      "sha256": "1e040fa9197d10fea7546f784f21f8cb83178bb38f5fda5fabb62ca4ab6f7f68",
+      "bytes": 5653
+    },
+    "src/features/agency-projects/messages/agencyProjects.en.json": {
+      "sha256": "c691c980d7ed6eb6595d451682b2624139f69620633136ed76e57c24119ebe20",
+      "bytes": 5020
+    },
+    "src/features/agency-projects/messages/agencyProjects.fa.json": {
+      "sha256": "81c55d90e1956b3651522e9fda9c8fb0ca76ac9b2009c91c3c4bcdad3b5d16d1",
+      "bytes": 6973
+    },
+    "src/features/agency-projects/persistence/0099_agency_projects.sql": {
+      "sha256": "7e1b309ffa088199e2e152d33688662146c8ee40a849fc494327f3b942380dfe",
+      "bytes": 8404
+    },
+    "src/features/agency-projects/persistence/agencyFixture0098.globalSetup.ts": {
+      "sha256": "579ac2c87fb03b48c54958c83cfcbea3f1a7a975fd643738c1284226753302dc",
+      "bytes": 666
+    },
+    "src/features/agency-projects/persistence/agencyFixture0098Admission.integration.test.ts": {
+      "sha256": "095946bc71f9d9f48ea0bac02621e6307613b100667818c2015d3f6fa8f35d9f",
+      "bytes": 1850
+    },
+    "src/features/agency-projects/persistence/agencyFixture0098Admission.vitest.config.ts": {
+      "sha256": "d05685bd18bef5eaeaaaf2a4040ba4b18f15ce0ad199e764861859406a3d76dd",
+      "bytes": 675
+    },
+    "src/features/agency-projects/persistence/agencyPersistence.fixtureManifest.ts": {
+      "sha256": "1a0d88631dc84333501fbcc3eedbc9e0c3f63e0b539633be8b150d62a4f92a1d",
+      "bytes": 4494
+    },
+    "src/features/agency-projects/persistence/agencyPersistence.globalSetup.ts": {
+      "sha256": "ba710a4b86cc57698e76f0bd4226cb0e096d58ae16f3ccb4d98de67a756aeb79",
+      "bytes": 7929
+    },
+    "src/features/agency-projects/persistence/agencyPersistence.vitest.config.ts": {
+      "sha256": "4f56a54eeb05fc53256fc029db7880dac62c31182e86acfedf86e682b0df0858",
+      "bytes": 947
+    },
+    "src/features/agency-projects/persistence/agencyPersistenceClosure.vitest.config.ts": {
+      "sha256": "5bf2f77993ee08db7e2c60b258fd49f4dde48a66806e2c3ed265ee1c1bc92827",
+      "bytes": 541
+    },
+    "src/features/agency-projects/persistence/agencyPersistenceCompatibility.vitest.config.ts": {
+      "sha256": "80490ed6fde6df9e103fbde934e22bf784e5daa887c2478ce88e9227d344865e",
+      "bytes": 578
+    },
+    "src/features/agency-projects/persistence/agencyPersistenceCompatibilityClosure.vitest.config.ts": {
+      "sha256": "8ad96e607018f7a987bffaee7b6d855cd2f469184da977cc9287ec7d5d7022da",
+      "bytes": 557
+    },
+    "src/features/agency-projects/persistence/agencyProjectJourney.vitest.config.ts": {
+      "sha256": "93a02067c468e61eaca3db3e8cfb3f51f61bbd71a849925c70ffe878dcf6c6bf",
+      "bytes": 619
+    },
+    "src/features/agency-projects/persistence/agencyProjectList.vitest.config.ts": {
+      "sha256": "d9e802a37541ac8403128bb6bdacc7e4db6db1b2216dfad66b2690c07afee296",
+      "bytes": 499
+    },
+    "src/features/agency-projects/persistence/agencyRepositoryQualification.vitest.config.ts": {
+      "sha256": "b78c07944a428ff63bd5a7a14323ae9acaca675419e2ee6597d8acc842e463e2",
+      "bytes": 555
+    },
+    "src/features/agency-projects/persistence/projectList.integration.test.ts": {
+      "sha256": "1f026e115f924a5233b79a47ff66d1b6d52cb792c33b6e58c23f292b1ebc771c",
+      "bytes": 10942
+    },
+    "src/features/agency-projects/persistence/projectList.test-support.ts": {
+      "sha256": "78d4e6dc700e6ea9c60766c450efa13b4228c5e91e700779487067847e9505cd",
+      "bytes": 6075
+    },
+    "src/features/agency-projects/persistence/projectListCursor.test.ts": {
+      "sha256": "271ff350674a39265293c6961c4f4a7ef9219b490cbb9b144a1137c722e87fb7",
+      "bytes": 10171
+    },
+    "src/features/agency-projects/persistence/projectListCursor.ts": {
+      "sha256": "8c15149b54ddedb3777e65b0286cb060f0ec59ee97ee5ff3d9524170c3d5bffc",
+      "bytes": 2103
+    },
+    "src/features/agency-projects/persistence/projectListInput.test.ts": {
+      "sha256": "34702b77d0877ff7914a7455f40dbb29e55c74ebcdc2a503bcd758b16ed11ad3",
+      "bytes": 5496
+    },
+    "src/features/agency-projects/persistence/projectListInput.ts": {
+      "sha256": "2fb1a48998ed44345ebdff1882c82313536b265899e0f27d85e7ba0354b2d7a3",
+      "bytes": 2100
+    },
+    "src/features/agency-projects/persistence/projectListPaging.integration.test.ts": {
+      "sha256": "082326d195eec8500d4b97384a35cc33df68357f8f054e5bd1d1893a4e448756",
+      "bytes": 10956
+    },
+    "src/features/agency-projects/persistence/projectListQuery.ts": {
+      "sha256": "f39ebf27d57196f483afd75161f3db82794500c08b9c8c48df0382d5ef4292d0",
+      "bytes": 3633
+    },
+    "src/features/agency-projects/persistence/projectListRepository.ts": {
+      "sha256": "456f23f3a0c2f51feab0c58ce00074f46b52cab7705e4f213ffbd7e7d7ce9aa0",
+      "bytes": 2885
+    },
+    "src/features/agency-projects/persistence/projectListTypes.ts": {
+      "sha256": "14c40f90b309d5e10662e358b7eb905c83c78f7c56858784e81fbd9ee06396b7",
+      "bytes": 2006
+    },
+    "src/features/agency-projects/persistence/projectListVisibility.ts": {
+      "sha256": "ad6a01616c6e0f1d9e15e8c914e943ee7db8484169895ad9cba8f96f9abbd406",
+      "bytes": 2200
+    },
+    "src/features/agency-projects/persistence/projectPersistence.integration.test.ts": {
+      "sha256": "edd27a7dcbe87ec046c8d20aa0fc5313d36d8465a90557a0b0fe63ec8dd88565",
+      "bytes": 5372
+    },
+    "src/features/agency-projects/persistence/projectPersistence.seeds.ts": {
+      "sha256": "054131615b687f46ef0bf99147db87600745f508899f122a02965f87223852db",
+      "bytes": 2256
+    },
+    "src/features/agency-projects/persistence/projectPersistence.test-support.ts": {
+      "sha256": "11e61916a88e1bbcdb11856fe88adf031426522b5eee40fdbc875751d77dc7ab",
+      "bytes": 411
+    },
+    "src/features/agency-projects/persistence/projectPersistenceCompatibility.integration.test.ts": {
+      "sha256": "5325355309afb73e55a0b8b3ff039757cf092c855b5c18a4a5bc00c4b3ebd3f7",
+      "bytes": 3816
+    },
+    "src/features/agency-projects/persistence/projectReceipts.integration.test.ts": {
+      "sha256": "be89f3ae8df509a2ff0f4d6ec13f2ea92feebb59e973e20a43d236e6a89a725b",
+      "bytes": 9144
+    },
+    "src/features/agency-projects/persistence/projectRepository.integration.test.ts": {
+      "sha256": "84c865e343ea5c956741052fa71ef901da7d3625ffc7e67e38439f6125665212",
+      "bytes": 9383
+    },
+    "src/features/agency-projects/persistence/projectRepository.test-support.ts": {
+      "sha256": "a23dd164c06fb732b9d7e23ad2827406d8b4c3d2fa03f0ffaac6ba4ff55e5729",
+      "bytes": 4585
+    },
+    "src/features/agency-projects/persistence/projectRepository.ts": {
+      "sha256": "d87204f7b1f94882cb52028d1bcbdf302de3ec1f16bdcb5d7974f24d9d9ef405",
+      "bytes": 3426
+    },
+    "src/features/agency-projects/persistence/projectRepositoryAccess.ts": {
+      "sha256": "6b1ad93ced0469a748add781f58f2050a1936ff7265b050b95444ffe9ca6a858",
+      "bytes": 1954
+    },
+    "src/features/agency-projects/persistence/projectRepositoryConcurrency.integration.test.ts": {
+      "sha256": "dacc00318fe601a256dadd57d4b3316de73aed4409bd6623b40a43e3a167638a",
+      "bytes": 9901
+    },
+    "src/features/agency-projects/persistence/projectRepositoryCreate.ts": {
+      "sha256": "a85bdc8e301e9daab362bd1c218af027ef9d68d1b84188363198d5ef20579c68",
+      "bytes": 2493
+    },
+    "src/features/agency-projects/persistence/projectRepositoryCrm.integration.test.ts": {
+      "sha256": "d85ee29c594ce5276355ff631abc8894ffea808c8089f4a92ec0ebf14b1bd5fb",
+      "bytes": 4527
+    },
+    "src/features/agency-projects/persistence/projectRepositoryHistory.ts": {
+      "sha256": "4dddf79ef6433e4e62e105b89e47967f9476d15e700e86284b4ef46bdda8f7c6",
+      "bytes": 1196
+    },
+    "src/features/agency-projects/persistence/projectRepositoryReplay.ts": {
+      "sha256": "9462228a91e0c0ee0f8e47725126846b05999cee909bb5005368cbe4d40fa4f4",
+      "bytes": 3924
+    },
+    "src/features/agency-projects/persistence/projectRepositoryStart.ts": {
+      "sha256": "0a2da32010c584a3a9ed208b146afb7010762041e5463da653ddebd3692d6c39",
+      "bytes": 2478
+    },
+    "src/features/agency-projects/persistence/projectRepositoryTables.ts": {
+      "sha256": "ceffb36ad4d58041142e1653f67f10dfa1867299770121a05f049f48407603fc",
+      "bytes": 3148
+    },
+    "src/features/agency-projects/persistence/projectRepositoryTypes.ts": {
+      "sha256": "f021cc4ddf8f5edcaf2a511acbfcca5ddf21de920d5ec44e15f6e673f453a8e0",
+      "bytes": 3776
+    },
+    "src/features/agency-projects/persistence/projectStartInput.ts": {
+      "sha256": "e4fd61d72dd58acaa81224573867cc1a98c792ebf7a9a080ebcedfa794e20cc2",
+      "bytes": 441
+    },
+    "src/features/agency-projects/projectCreationInput.test.ts": {
+      "sha256": "a6afae0a8cb3c09a191d4fc72398e7d98d4393d44146aae86c966bb4cdc544b5",
+      "bytes": 4322
+    },
+    "src/features/agency-projects/projectCreationInput.ts": {
+      "sha256": "1f6f04d59f6acc846c1cb21db08a9511c7b736967ec49b4c8cc9023caf41410f",
+      "bytes": 1006
+    },
+    "src/features/agency-projects/projectCreationPlan.test-support.ts": {
+      "sha256": "56a2f6622e10d678626a76b048fc7f634956de164337e5080cf0abba1e919352",
+      "bytes": 2922
+    },
+    "src/features/agency-projects/projectCreationPlan.test.ts": {
+      "sha256": "c7b9fb952ff0d633556115735855d5c5a12095a8d0d6d8e4bd7dd21d62dc1b4e",
+      "bytes": 4999
+    },
+    "src/features/agency-projects/projectCreationPlan.ts": {
+      "sha256": "126c8a5100c9cfd83c2a6913b3fccbe028bab0bf17390c26e6d133ea3dac46b7",
+      "bytes": 1661
+    },
+    "src/features/agency-projects/projectCreationUiTypes.ts": {
+      "sha256": "35f4e5140aef197f28385bed5683db01633c5d12ce324b0ee50b457be0d82421",
+      "bytes": 967
+    },
+    "src/features/agency-projects/projectLifecycle.test.ts": {
+      "sha256": "31cdb99269364d3d591982c7bf9d391943821642ee9d058b5caa2c194aca032d",
+      "bytes": 7171
+    },
+    "src/features/agency-projects/projectLifecycle.ts": {
+      "sha256": "e535c05920128b9e5b0bff1e4fe3dad566d42582f9a1c5c7afc22e4cc0f153d4",
+      "bytes": 2917
+    },
+    "src/features/agency-projects/projectListMessages.ts": {
+      "sha256": "ce95f9a35310883b36e2754061ae9a42cff77f6fad9ac93757760424c95634c4",
+      "bytes": 2420
+    },
+    "src/features/agency-projects/projectListUiTypes.ts": {
+      "sha256": "2752f728608ad1b4fc11359ba8cd2895a5735fa6352f355cc0d058d39befe750",
+      "bytes": 1712
+    },
+    "src/features/agency-projects/projectLocalAccess.test-support.ts": {
+      "sha256": "c7fda60e5667561d1db9ccd1d1f83b66d984e058f63c1224a6b3da7bae71dea8",
+      "bytes": 6008
+    },
+    "src/features/agency-projects/projectLocalAccess.test.ts": {
+      "sha256": "e8e04ec893210e226d186e3bf315b8bf66add7ebaaa22abaeeed041125eae20c",
+      "bytes": 10123
+    },
+    "src/features/agency-projects/projectLocalAccess.ts": {
+      "sha256": "2b554ee6c426db7cc9616b4a8bec5f75ac7e6263524885b153635ca791829b33",
+      "bytes": 3039
+    },
+    "src/features/agency-projects/projectSchemas.test.ts": {
+      "sha256": "4b8b031181cfbf16ecd025ae0f85a16e2c1c6780208dbe4f1dcad6f2d06722ac",
+      "bytes": 3479
+    },
+    "src/features/agency-projects/projectSchemas.ts": {
+      "sha256": "3009adc5370e735f0e8f8214f7435f112859f1d73e4bebecbd9bb4a8b23922c5",
+      "bytes": 905
+    },
+    "src/features/agency-projects/projectWorkspaceTypes.ts": {
+      "sha256": "ed0436d84c90e09b54b7f6bbedfd193848d1a68097fa4dcf8e8225230f732fcc",
+      "bytes": 1408
+    },
+    "src/features/agency-projects/reasonBoundary.test.ts": {
+      "sha256": "1d639dd710e07d40e07ecf611136684730ae6b9038e5b1c4e942df3c335be3ff",
+      "bytes": 3032
+    },
+    "src/features/agency-projects/reviews/ReviewDecisionHistory.provenance.test.tsx": {
+      "sha256": "8f504c2deb00fe34bd3abd4f03796c7c7a342a5bf6cba9f2c556d2491e399fe8",
+      "bytes": 5546
+    },
+    "src/features/agency-projects/reviews/ReviewDecisionHistory.test-support.tsx": {
+      "sha256": "7c223ceb11c895bff91af1128636e2cc083ef310f4d2412e10d7981a12d47411",
+      "bytes": 4079
+    },
+    "src/features/agency-projects/reviews/ReviewDecisionHistory.test.tsx": {
+      "sha256": "f6e56f5204461b7202dd2abda474f680d8d90e26196f6a5d66258bf6aee483e6",
+      "bytes": 8237
+    },
+    "src/features/agency-projects/reviews/ReviewDecisionHistory.tsx": {
+      "sha256": "1ebb226bb5d6b8747587eebe661583c7481164c1899f3d60af31101a98cb3746",
+      "bytes": 6198
+    },
+    "src/features/agency-projects/reviews/reviewBoundary.test.ts": {
+      "sha256": "7c3cf06e7ed8c3816fe654dd4c7053bd9ae44c4d98f1dc74da5bb65db283eee4",
+      "bytes": 6696
+    },
+    "src/features/agency-projects/reviews/reviewChronology.test.ts": {
+      "sha256": "a22e36dd6d6047f461eb86d06f8d26ed5fe83aa824b5946382ccc7ac53290794",
+      "bytes": 3513
+    },
+    "src/features/agency-projects/reviews/reviewDecisionEntry.ts": {
+      "sha256": "8947cb3f0b54343b60427eac122ec5d4faba6194fa2616b65301f48991e6b097",
+      "bytes": 994
+    },
+    "src/features/agency-projects/reviews/reviewDecisions.test-support.ts": {
+      "sha256": "b9ca3af776ce4188fb511df93f791ea82c7006e52d39c98db053f736f7d6eccc",
+      "bytes": 2108
+    },
+    "src/features/agency-projects/reviews/reviewDecisions.test.ts": {
+      "sha256": "47337b3caa6b2535697ef3092df75eb40e9e55e0d92c19579f9f9fd9233b8332",
+      "bytes": 6124
+    },
+    "src/features/agency-projects/reviews/reviewDecisions.ts": {
+      "sha256": "ae88ec8e43a66a44c7afe8423b764e6ed5a0cf27216ad189589d6dc4f5cf4284",
+      "bytes": 4879
+    },
+    "src/features/agency-projects/reviews/reviewEpoch.test.ts": {
+      "sha256": "277d44832afa36391033f791fa743f51ea5b9c4f29d3852bc424c17d580f0bf8",
+      "bytes": 8984
+    },
+    "src/features/agency-projects/reviews/reviewSchemas.ts": {
+      "sha256": "596f357de836bf2d9098ff54e5fb01aebdd24307125b986fd74f6b37169910ff",
+      "bytes": 2287
+    },
+    "src/features/agency-projects/reviews/reviewTypes.ts": {
+      "sha256": "d133f9e18027926f7fb8aa11788bd92350fccee28602a69ce5a10184f914515e",
+      "bytes": 2568
+    },
+    "src/features/agency-projects/reviews/revisionRoundScope.test-support.ts": {
+      "sha256": "c91cf46ce7771b7155e8c40a986650513f9c143f397decb181ee897893f42c7a",
+      "bytes": 990
+    },
+    "src/features/agency-projects/reviews/revisionRoundScope.test.ts": {
+      "sha256": "4db8eb8a99c714fd94e9d2c1edc96befcfa4f2302e8f2b8f03a9756510f81919",
+      "bytes": 7692
+    },
+    "src/features/agency-projects/reviews/revisionRoundScope.ts": {
+      "sha256": "705dad21a82ab8bfa0a68021729c3a716a0791c1e40d4e711a0dc8c9460b7efc",
+      "bytes": 2099
+    },
+    "src/features/agency-projects/reviews/revisionRoundScopePolicy.test.ts": {
+      "sha256": "95a637107c6deb6caed931e107888317ed2435adb9f4642d51a75a99d1cb789a",
+      "bytes": 4570
+    },
+    "src/features/agency-projects/reviews/revisionRoundScopeSchemas.ts": {
+      "sha256": "8d584f2fc4755c17d3e2a7d4b44bea59d0c9b210ca8776433d14a7ed9b1ed5f9",
+      "bytes": 1299
+    },
+    "src/features/agency-projects/schema/agencyProjectAudit.ts": {
+      "sha256": "d74718e2d95e703c10edbce4c47551024b52369ad44ae67cd19fa6300da0421d",
+      "bytes": 6097
+    },
+    "src/features/agency-projects/schema/agencyProjects.ts": {
+      "sha256": "38910b2c80b5bb93e06ce0c48dae6d129c8b73343e4702acbe111b39682f18cb",
+      "bytes": 3996
+    },
+    "src/features/agency-projects/templates/TemplateInstallPreview.dates.test.tsx": {
+      "sha256": "c45b5963ed4083f6fcc5d5d184e4a281c979353958c2d661441e8f01a0661510",
+      "bytes": 5843
+    },
+    "src/features/agency-projects/templates/TemplateInstallPreview.selection.test.tsx": {
+      "sha256": "44b4faa922875c6c0bfbe653ca072debb780f84f62decfd16831c9a7c4eddd83",
+      "bytes": 4377
+    },
+    "src/features/agency-projects/templates/TemplateInstallPreview.test-support.tsx": {
+      "sha256": "1420c70b93cb2c89b94a988d3659ee694aa17504f31228436f2218edac005b96",
+      "bytes": 5889
+    },
+    "src/features/agency-projects/templates/TemplateInstallPreview.test.tsx": {
+      "sha256": "d63f69a3795dc93c2bcadab8f47ade51de4d521c105f329a17e7ce4c2c14806d",
+      "bytes": 6788
+    },
+    "src/features/agency-projects/templates/TemplateInstallPreview.tsx": {
+      "sha256": "0e2e220501b88986fed58842595b758dc26691b648abe62acf6708153200badb",
+      "bytes": 4126
+    },
+    "src/features/agency-projects/templates/TemplatePreviewContents.tsx": {
+      "sha256": "f11960f4bc29b39f3c14bfea092b4893a4c8c8e7d316eac96ae04804bb8824b8",
+      "bytes": 7724
+    },
+    "src/features/agency-projects/templates/TemplatePreviewRoles.tsx": {
+      "sha256": "387b63e60b25bd03a5a00953a9853f00b332fc626d9ec6c5a005ba326d306479",
+      "bytes": 2869
+    },
+    "src/features/agency-projects/templates/starterTemplates.test.ts": {
+      "sha256": "c92f21bb8597b03026b42ebe2beae216c8882dea24836a15208c504080b6e36c",
+      "bytes": 6243
+    },
+    "src/features/agency-projects/templates/starterTemplates.ts": {
+      "sha256": "f1b8ecb1bb2ce7457968e2779e6f10f2797625caba60d039ca1683923a88fc2b",
+      "bytes": 1618
+    },
+    "src/features/agency-projects/templates/starters/campaign.v1.json": {
+      "sha256": "c7686bbd9f379a554b0d85526b0c0f3711141ae349222822196d09b1d2207461",
+      "bytes": 5754
+    },
+    "src/features/agency-projects/templates/starters/modeling.v1.json": {
+      "sha256": "973c6f85d1ae936a700dd64327514e649fc5908f984e4e06e6e854ddb28afc13",
+      "bytes": 4011
+    },
+    "src/features/agency-projects/templates/starters/short-video.v1.json": {
+      "sha256": "d12f0adf3e4e85fb0a968feadab7b97d6e399f10e4755484080d4bcca26f814b",
+      "bytes": 4126
+    },
+    "src/features/agency-projects/templates/templateDatePreview.boundary.test.ts": {
+      "sha256": "2f91edc0629128e4c3d6528cf661e8f2a0a3b5898cd3176c5b4a8c226c978939",
+      "bytes": 410
+    },
+    "src/features/agency-projects/templates/templateDatePreview.test-support.ts": {
+      "sha256": "6068068fa906f8d51af5e3459f1e634ac0758a2434f6cbc8996023a7fc03940d",
+      "bytes": 999
+    },
+    "src/features/agency-projects/templates/templateDatePreview.test.ts": {
+      "sha256": "341c94ecad8d0437fdf6268d62de864ad4f274a4c0af1a8da5066f1fefeb39f4",
+      "bytes": 6355
+    },
+    "src/features/agency-projects/templates/templateDatePreview.ts": {
+      "sha256": "a6895d5d71df6a481376ed07c93500c2716d696915ff0e1f5201f62b43afcdcf",
+      "bytes": 1838
+    },
+    "src/features/agency-projects/templates/templateInstallPreviewTypes.ts": {
+      "sha256": "a999220a960c1088bf0967dc38406bee3d63a2a60034020cf9642b156bbf284c",
+      "bytes": 950
+    },
+    "src/features/agency-projects/templates/templateManifest.test-support.ts": {
+      "sha256": "4eb43d26a7b6cf2b5593f7a8f768131d52c7e445da9b9c01b3f52ed2f2e389c4",
+      "bytes": 2003
+    },
+    "src/features/agency-projects/templates/templateManifest.test.ts": {
+      "sha256": "527e057c9a35d1f14dfc96a078be9df91a2748d5d7eb927677f184e10d8d95e0",
+      "bytes": 6782
+    },
+    "src/features/agency-projects/templates/templateManifest.ts": {
+      "sha256": "5d783a9f9c1944ee07b869cd4787c49ac257e3287097f8f2893761860bbf580c",
+      "bytes": 1191
+    },
+    "src/features/agency-projects/templates/templateManifestGraph.test.ts": {
+      "sha256": "3f45e0fa05ad2fe39749dc2380a8f5bdc12de7d27e72a53b3eca1a9141250391",
+      "bytes": 5067
+    },
+    "src/features/agency-projects/templates/templateManifestGraph.ts": {
+      "sha256": "cd9510b3a3bf4883db827da0f212953915ad154c238f007da7cfe9a888cb9113",
+      "bytes": 3318
+    },
+    "src/features/agency-projects/templates/templateManifestSchemas.ts": {
+      "sha256": "61f18441b4713fb68ea21c736f22d8cb960cf37d3ab2e105603dba8efb404673",
+      "bytes": 2222
+    },
+    "src/features/agency-projects/templates/templateRolePreview.test-support.ts": {
+      "sha256": "bcd4e674c86148577626c862f125a4a7c83ee3d680b4630eb9ab42b956913b9c",
+      "bytes": 6371
+    },
+    "src/features/agency-projects/templates/templateRolePreview.test.ts": {
+      "sha256": "917040f8ee8e674b00ac9d1950eeb876494f0b80cc0c992a6953bbb603e0ba07",
+      "bytes": 9456
+    },
+    "src/features/agency-projects/templates/templateRolePreview.ts": {
+      "sha256": "7b8ad7949adc561d8f2c783c57655badfd55ce575812efaf7f12329b836c0a47",
+      "bytes": 4616
+    },
+    "src/features/agency-projects/useProjectCreationSubmission.ts": {
+      "sha256": "127c25f1c5a7c2781f069070f2fbe496a4af18e6b53f43b2662ab355ae8da305",
+      "bytes": 5271
+    },
+    "src/features/agency-projects/useProjectStartSubmission.ts": {
+      "sha256": "cd17654d6484cf89047bbb7df1168d67e56c2f837b877bdcb1fb597ff956fc6b",
+      "bytes": 6874
+    },
+    "src/features/agency-projects/valueSchemas.ts": {
+      "sha256": "883b4f3ab4fe0eac9581e8fa1234087a7e5958df190251d9d2e9a0e4abd4d289",
+      "bytes": 1420
+    }
+  },
+  "configuration": {
+    "package.json": "1fc056ebcf03ce3a198d9060cdd489759bc3a8b9af34bc05b5acfcb84a4ef2f6",
+    "bun.lock": "529a9b6a87d9fc836c45a8e68f0da012ed8a111b0fc60b09a0e5c3c8bfbef0e4",
+    "tsconfig.json": "3e482742ee772ce6c49ed50d2d5fc83592588b9e43b6a3890c409ae834c77ccb",
+    "tsconfig.typecheck.json": "0f4a3ebc7013449817cf60aeb54124423e21bba58bcaf87f17d534d3c4611b0d",
+    "eslint.config.mjs": "06a95b81d1e159118cbbe4351eb7becf4ab70b32505819de40f77463ca57e26f",
+    "next.config.test.ts": "090a4365c3347c408660f9bcf85afdcca43cb06ece66081d383e8dc623fab0b0",
+    "next.config.ts": "a7ed1394d84ac9fbd95200e58be0ed2d4163a6e64b2b57f249b1097435d3c660"
+  },
+  "runtime": {
+    "bunVersion": "1.4.4",
+    "bunSha256": "0a2237cdcfa0d16ef501d9acca9f0026309ef348bea7393a64e8d1e3609565cc",
+    "BUN_OPTIONS": "--no-env-file",
+    "directFlags": true,
+    "NextEnv": "__NEXT_PROCESSED_ENV=1 plus actual absence of four test dotenv candidates",
+    "ViteEnvDir": false,
+    "DOCKER_HOST": "unix:///Users/ali/.colima/warpdrive/docker.sock",
+    "TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE": "/var/run/docker.sock",
+    "images": {
+      "postgres:16-alpine": {
+        "id": "sha256:0cefaabd882e42bcb2a2f3dc56d3ce4770560ba62fd7f197f1a2e008fd5731ab",
+        "repoTags": [
+          "postgres:16-alpine"
+        ],
+        "architecture": "arm64",
+        "os": "linux"
+      },
+      "testcontainers/ryuk:0.14.0": {
+        "id": "sha256:7c1a8a9a47c780ed0f983770a662f80deb115d95cce3e2daa3d12115b8cd28f0",
+        "repoTags": [
+          "testcontainers/ryuk:0.14.0"
+        ],
+        "architecture": "arm64",
+        "os": "linux"
+      }
+    },
+    "imagePolicy": "Existing source cached-image guards/private PG never-pull plus installed reaper cached-local return; no pull authority, revalidate exact identities before native start",
+    "nativeCacheDirs": [
+      ".runtime/agency-project-list-native-cache",
+      ".runtime/agency-fixture-0098-admission-cache"
+    ]
+  },
+  "nativeSelection": {
+    "legacyBusiness": {
+      "files": [
+        "src/features/agency-projects/persistence/projectList.integration.test.ts",
+        "src/features/agency-projects/persistence/projectListPaging.integration.test.ts"
+      ],
+      "definedCases": 12,
+      "config": "src/features/agency-projects/persistence/agencyProjectList.vitest.config.ts",
+      "base": "canonical0000..0097 frozen714eda0 +privateunjournaled0099",
+      "ceiling": "RealDB schema/query/paging with synthetic readadmissions; not nativeauthorization"
+    },
+    "currentFixtureAdmission": {
+      "files": [
+        "src/features/agency-projects/persistence/agencyFixture0098Admission.integration.test.ts"
+      ],
+      "definedCases": 1,
+      "config": "src/features/agency-projects/persistence/agencyFixture0098Admission.vitest.config.ts",
+      "base": "canonical0000..0098 pinnedbf386af +sameprivateunjournaled0099",
+      "ceiling": "99canonicalreceipts/latest0098hash+fourprivateheap tables; not Workflowbusiness/installed/nativeauth"
+    },
+    "definedCases": 13,
+    "filters": "None; actualcollectionauthoritative",
+    "noRepeat": [
+      "native17",
+      "old139fullstatic",
+      "unchanged101input/cursor",
+      "unchanged61UI",
+      "passed17sourceUI",
+      "allothernative/browser/provider/build/installtests"
+    ]
+  },
+  "foreignBaseline": "Fresh all-container IDs/images/state/PIDs plus network/volume identities at job/native admissions; preserve README/other resources, clean only explicit owned native resources",
+  "resources": "Current agreement normal1Q>=20 or warning2Q>=40; disk>=8GiB; stop owned work onQ<30/critical4/uncertainRSS or envelope; no heavy launch before freshSTART",
+  "goal": "All12packages/96originaltasksACTIVE;0accepted",
+  "preparedAtUtc": "2026-11-02T06:11:23.397223+00:00",
+  "state": "READY/UNSTARTED native-only13; freshmatchingSettingsID+STARTrequired; noautomaticretry",
+  "sourceInputs": 156,
+  "TSFiles": 149,
+  "commands": [
+    [
+      ".runtime/bin/bun",
+      "--no-env-file",
+      "--bun",
+      "node_modules/vitest/vitest.mjs",
+      "run",
+      "--config",
+      "src/features/agency-projects/persistence/agencyProjectList.vitest.config.ts",
+      "--maxWorkers",
+      "1",
+      "--no-file-parallelism"
+    ],
+    [
+      ".runtime/bin/bun",
+      "--no-env-file",
+      "--bun",
+      "node_modules/vitest/vitest.mjs",
+      "run",
+      "--config",
+      "src/features/agency-projects/persistence/agencyFixture0098Admission.vitest.config.ts",
+      "--maxWorkers",
+      "1",
+      "--no-file-parallelism"
+    ]
+  ],
+  "order": "legacy12 then current0098admission1 onlyfirstPASS/ownedPGterminal andfreshgates. Stopfirstfailure/budgetshort; noautomaticretry/IDreuse.",
+  "limitSecondsIncludingAdmissionExecutionCleanup": 180,
+  "nativePhaseCapSeconds": 100,
+  "native12CommandInnerSeconds": 50,
+  "native1CommandInnerSeconds": 30,
+  "killGraceSeconds": 5,
+  "cleanupReserveSeconds": 40,
+  "minimumRemainingAtNative12AdmissionSeconds": 145,
+  "minimumRemainingAtNative1AdmissionSeconds": 80,
+  "expectedSeconds": "20-100 allin; nativecommands expectedunder30 total",
+  "expectedOwnedRSSBelowBytes": 2147483648,
+  "staticEvidence": "actual-156-1/result.json: declaredtypegen/fullTSC4.14s PASS +configuredTL19 5.26s PASS, 0errors0warnings, source156/configsexact",
+  "sourceQualificationRetained": {
+    "fullTSC": "PASScurrent156",
+    "typedESLint19": "PASScurrent156",
+    "actualSourceUI17": "PASSatbyteidenticalcurrentcut",
+    "Biome11": "PASSatbyteidenticalcurrentcut"
+  },
+  "previousConsumedId": "AGENCY-LIST156-NATIVE13-20261102-1",
+  "previousNativeCasesExecuted": 0,
+  "previousFailure": "Admission minimumremaining145s had143.9387357; native13UNSTARTED, cleanup281.343831<300/allpreserved",
+  "noRepeat": [
+    "typegen/fullTSC",
+    "typedESLint19",
+    "old139",
+    "native17",
+    "input/cursor101",
+    "olderUI61",
+    "passedsourceUI17"
+  ],
+  "scopeExclusions": [
+    "No source/SQL/route/Rootcontract editsduringrun",
+    "No install/build/browser/provider/publication/scopeadd",
+    "No forcecleanupunowned/sharedRyuk",
+    "No oldIDreuse orautomaticretry"
+  ],
+  "fullProgramme": "12packages/96originaltasks,0accepted; notcompleted",
+  "preparedCommands": {
+    "path": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/agency-project-list-native-20261102/native13-launch-commands.json",
+    "sha256": "0028bfb18a25c99275b61209485ffffe751b3a71af49f685461ba2ce0866d23a",
+    "commands": {
+      "cmdLegacy12": {
+        "chars": 18060,
+        "pythonLines": 275,
+        "sha256": "06f131303ed827248b5164d5943d1953ff065f9744ddd886b6a21be1ceb1df94",
+        "astParse": "PASS"
+      },
+      "cmdUpgrade1": {
+        "chars": 20426,
+        "pythonLines": 296,
+        "sha256": "d29d65a1d20e0d22e7a90ab5e8c07f0ce86996b59128467b87bacf910a96ea68",
+        "astParse": "PASS"
+      },
+      "cmdFinalCensus": {
+        "chars": 21792,
+        "pythonLines": 324,
+        "sha256": "b5d7c46f39d8b7c7efcaa9135ed1fae2fff55c9eb1cba65def4c72d9c737e89e",
+        "astParse": "PASS"
+      }
+    },
+    "renderInputs": [
+      "__AUTH_ID__",
+      "__REQUEST_SHA__",
+      "__ACTUAL_DIR__",
+      "__PREVIOUS_EXIT__"
+    ],
+    "use": "Readmatchingcurrentboardimmediatelybeforelaunch; substituteonlystrictsafeASCII. LaunchnormalconfiguredBun/Vitestviaexec_command; noautomaticB orretry. UseactualToolterminalcodeforB/finalcensus. Finalcensusflagsaretestresultsonly; qualificationrequiresallseparategates/cleanup/time.",
+    "review": "Source review closed, AST parsePASS; no admission/guard/native execution."
+  },
+  "currentSourceCut": "CURRENT_SOURCE_CUT.md"
+}

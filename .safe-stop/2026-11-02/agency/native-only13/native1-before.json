@@ -1,0 +1,1354 @@
+{
+  "authorization": "AGENCY-LIST156-NATIVE13-ONLY-20261102-1",
+  "environment": {
+    "BUN_OPTIONS": "--no-env-file",
+    "cleanEnvironmentKeys": [
+      "BUN_OPTIONS",
+      "CI",
+      "DOCKER_HOST",
+      "HOME",
+      "LANG",
+      "LOGNAME",
+      "NEXT_TELEMETRY_DISABLED",
+      "NODE_ENV",
+      "NO_COLOR",
+      "PATH",
+      "TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE",
+      "TMPDIR",
+      "TZ",
+      "USER",
+      "__NEXT_PROCESSED_ENV"
+    ],
+    "dotenvAbsent": true,
+    "dotenvCandidates": {
+      ".env": true,
+      ".env.local": true,
+      ".env.test": true,
+      ".env.test.local": true
+    },
+    "privateCaches": [
+      ".runtime/agency-project-list-native-cache",
+      ".runtime/agency-fixture-0098-admission-cache"
+    ]
+  },
+  "foreignListeners": [
+    {
+      "comm": "rapportd",
+      "endpoint": "*:54121",
+      "pid": "1001"
+    },
+    {
+      "comm": "rapportd",
+      "endpoint": "*:54121",
+      "pid": "1001"
+    },
+    {
+      "comm": "rapportd",
+      "endpoint": "*:56303",
+      "pid": "1001"
+    },
+    {
+      "comm": "rapportd",
+      "endpoint": "*:56304",
+      "pid": "1001"
+    },
+    {
+      "comm": "ControlCenter",
+      "endpoint": "*:5000",
+      "pid": "1155"
+    },
+    {
+      "comm": "ControlCenter",
+      "endpoint": "*:5000",
+      "pid": "1155"
+    },
+    {
+      "comm": "ControlCenter",
+      "endpoint": "*:7000",
+      "pid": "1155"
+    },
+    {
+      "comm": "ControlCenter",
+      "endpoint": "*:7000",
+      "pid": "1155"
+    },
+    {
+      "comm": "redis-server",
+      "endpoint": "127.0.0.1:6379",
+      "pid": "2554"
+    },
+    {
+      "comm": "redis-server",
+      "endpoint": "[::1]:6379",
+      "pid": "2554"
+    },
+    {
+      "comm": "postgres",
+      "endpoint": "127.0.0.1:5432",
+      "pid": "2589"
+    },
+    {
+      "comm": "postgres",
+      "endpoint": "[::1]:5432",
+      "pid": "2589"
+    },
+    {
+      "comm": "Mountain Duck",
+      "endpoint": "127.0.0.1:49179",
+      "pid": "2619"
+    },
+    {
+      "comm": "AdobeResourceSynchronizer",
+      "endpoint": "127.0.0.1:19292",
+      "pid": "2669"
+    },
+    {
+      "comm": "Adobe Desktop Service",
+      "endpoint": "127.0.0.1:15292",
+      "pid": "3058"
+    },
+    {
+      "comm": "Adobe Desktop Service",
+      "endpoint": "127.0.0.1:15393",
+      "pid": "3058"
+    },
+    {
+      "comm": "Adobe Desktop Service",
+      "endpoint": "127.0.0.1:16494",
+      "pid": "3058"
+    },
+    {
+      "comm": "postgres",
+      "endpoint": "127.0.0.1:54673",
+      "pid": "15051"
+    },
+    {
+      "comm": "ChatGPT",
+      "endpoint": "127.0.0.1:64230",
+      "pid": "19823"
+    },
+    {
+      "comm": "postgres",
+      "endpoint": "127.0.0.1:55480",
+      "pid": "27878"
+    },
+    {
+      "comm": "bun",
+      "endpoint": "127.0.0.1:3104",
+      "pid": "42134"
+    },
+    {
+      "comm": "postgres",
+      "endpoint": "127.0.0.1:55436",
+      "pid": "47693"
+    },
+    {
+      "comm": "postgres",
+      "endpoint": "127.0.0.1:55435",
+      "pid": "48960"
+    },
+    {
+      "comm": "Code Helper",
+      "endpoint": "127.0.0.1:52697",
+      "pid": "62619"
+    },
+    {
+      "comm": "postgres",
+      "endpoint": "127.0.0.1:55432",
+      "pid": "75521"
+    },
+    {
+      "comm": "limactl",
+      "endpoint": "127.0.0.1:54491",
+      "pid": "79861"
+    },
+    {
+      "comm": "limactl",
+      "endpoint": "*:53",
+      "pid": "79895"
+    },
+    {
+      "comm": "ssh",
+      "endpoint": "127.0.0.1:13465",
+      "pid": "80001"
+    },
+    {
+      "comm": "ssh",
+      "endpoint": "127.0.0.1:13993",
+      "pid": "80001"
+    },
+    {
+      "comm": "ssh",
+      "endpoint": "127.0.0.1:9000",
+      "pid": "80001"
+    },
+    {
+      "comm": "ssh",
+      "endpoint": "127.0.0.1:9160",
+      "pid": "80001"
+    },
+    {
+      "comm": "bun",
+      "endpoint": "127.0.0.1:3105",
+      "pid": "82134"
+    }
+  ],
+  "freshDocker": {
+    "foreignContainers": {
+      "1b39c2e0cb523a1d36a2053a33cddd6391fbe26b84ca626121ee22da133bca59": {
+        "Id": "1b39c2e0cb523a1d36a2053a33cddd6391fbe26b84ca626121ee22da133bca59",
+        "Image": "sha256:309ba544ea482e5d4265d09921cdab07c8dad2cc4481d715c9b8ff5d3f0a149f",
+        "Name": "/warpdrive-mail-qualification-20261031",
+        "State": {
+          "Dead": false,
+          "ExitCode": 0,
+          "FinishedAt": "2026-10-31T13:44:34.589408784Z",
+          "Paused": false,
+          "Pid": 565248,
+          "Restarting": false,
+          "Running": true,
+          "StartedAt": "2026-10-31T13:44:34.764595795Z",
+          "Status": "running"
+        }
+      },
+      "958f91d8250e2bf9bce3819320a47fd30ecac7711ed8007de7dcabb60d6cddee": {
+        "Id": "958f91d8250e2bf9bce3819320a47fd30ecac7711ed8007de7dcabb60d6cddee",
+        "Image": "sha256:c2658820e763294a9e9de7b36c81e59b879e3459148351aee4e31a126ca64860",
+        "Name": "/warpdrive-integration-program-s3",
+        "State": {
+          "Dead": false,
+          "ExitCode": 0,
+          "FinishedAt": "2026-10-31T13:18:53.770140942Z",
+          "Paused": false,
+          "Pid": 527654,
+          "Restarting": false,
+          "Running": true,
+          "StartedAt": "2026-10-31T13:20:12.246148828Z",
+          "Status": "running"
+        }
+      },
+      "d31835d6d2bf86f9984408fb4b01bded8395915cefe64cac7230a3ebfb6a2e6e": {
+        "Id": "d31835d6d2bf86f9984408fb4b01bded8395915cefe64cac7230a3ebfb6a2e6e",
+        "Image": "sha256:c2658820e763294a9e9de7b36c81e59b879e3459148351aee4e31a126ca64860",
+        "Name": "/warpdrive-local-s3",
+        "State": {
+          "Dead": false,
+          "ExitCode": 0,
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Paused": false,
+          "Pid": 1868,
+          "Restarting": false,
+          "Running": true,
+          "StartedAt": "2026-10-29T16:16:15.810808097Z",
+          "Status": "running"
+        }
+      }
+    },
+    "foreignNetworks": {
+      "48cea036ee2d88be55172b37be54f8aed33f426ddb0f4459002d5b9d1b8b01b5": {
+        "Driver": "host",
+        "Id": "48cea036ee2d88be55172b37be54f8aed33f426ddb0f4459002d5b9d1b8b01b5",
+        "Name": "host",
+        "Scope": "local"
+      },
+      "c8fe6619dcd06043734949f3e0eb5fc0338e5c3d248e2dfc2a2114fecdf2c7e9": {
+        "Driver": "bridge",
+        "Id": "c8fe6619dcd06043734949f3e0eb5fc0338e5c3d248e2dfc2a2114fecdf2c7e9",
+        "Name": "bridge",
+        "Scope": "local"
+      },
+      "e3440ebc7f565e9cac351d7ddadbd09343bdee4a6a3dcbb57a06fe85824ddac6": {
+        "Driver": "null",
+        "Id": "e3440ebc7f565e9cac351d7ddadbd09343bdee4a6a3dcbb57a06fe85824ddac6",
+        "Name": "none",
+        "Scope": "local"
+      }
+    },
+    "foreignVolumes": {
+      "warpdrive-integration-program-s3": {
+        "CreatedAt": "2026-10-31T14:17:29+01:00",
+        "Driver": "local",
+        "Mountpoint": "/var/lib/docker/volumes/warpdrive-integration-program-s3/_data",
+        "Name": "warpdrive-integration-program-s3"
+      },
+      "warpdrive-seaweed-data": {
+        "CreatedAt": "2026-10-29T17:16:15+01:00",
+        "Driver": "local",
+        "Mountpoint": "/var/lib/docker/volumes/warpdrive-seaweed-data/_data",
+        "Name": "warpdrive-seaweed-data"
+      }
+    }
+  },
+  "gates": [
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.015959249925799668,
+      "gate": "own_process_group",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.016002707998268306,
+      "gate": "safe_authorization",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.01602016598917544,
+      "gate": "safe_request_sha",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.0160399159649387,
+      "gate": "safe_actual_path",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.016084957984276116,
+      "gate": "task_owned_actual_path",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.01612370798829943,
+      "gate": "actual_path_not_symlink",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.016127915936522186,
+      "gate": "existing_actual_directory",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.016432582982815802,
+      "gate": "safe_terminal_code",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.01643324992619455,
+      "gate": "terminal_code_range",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.01665674999821931,
+      "gate": "same_authorization_and_request",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.0166571659501642,
+      "gate": "previous_actual_tool_terminal_zero",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.016946749994531274,
+      "gate": "same_legacy_launch_authorization",
+      "passed": true
+    },
+    {
+      "details": {
+        "minimum": 80,
+        "remainingSeconds": 147.51082758407574
+      },
+      "entryElapsedSeconds": 0.016949249897152185,
+      "gate": "allin_remaining_before_second_admission",
+      "passed": true
+    },
+    {
+      "details": {
+        "minimum": 40,
+        "remainingSeconds": 67.85254954104312
+      },
+      "entryElapsedSeconds": 0.016949790995568037,
+      "gate": "native_phase_remaining_before_second_admission",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.016950582969002426,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.0170197079423815,
+      "gate": "current_request_sha",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.017121665994636714,
+      "gate": "one_use_new_authorization",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.01712516590487212,
+      "gate": "workspace",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.017127207946032286,
+      "gate": "exact_source_counts",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.01712824997957796,
+      "gate": "exact_native_commands",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.0171297499909997,
+      "gate": "exact_limits",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.017130999942310154,
+      "gate": "exact_runtime_flags",
+      "passed": true
+    },
+    {
+      "details": {
+        "caseSummary": [
+          "12",
+          "12"
+        ],
+        "containerProof": true,
+        "expectedSourceHead": "714eda0f3496f3faea1dd35da3324083335aa901",
+        "fixtureRecords": [
+          {
+            "containerId": "d8f1dff4d87f8b5084238fdb614dcf429f1b824d464a0c1c4993c6e0214cf073",
+            "fixture": "agency-persistence",
+            "phase": "created"
+          },
+          {
+            "agencySqlPresent": true,
+            "containerId": "d8f1dff4d87f8b5084238fdb614dcf429f1b824d464a0c1c4993c6e0214cf073",
+            "fixture": "agency-persistence",
+            "lastTag": "0097_private_mail_intake",
+            "sourceHead": "714eda0f3496f3faea1dd35da3324083335aa901"
+          },
+          {
+            "agencySqlApplied": true,
+            "containerId": "d8f1dff4d87f8b5084238fdb614dcf429f1b824d464a0c1c4993c6e0214cf073",
+            "fixture": "agency-persistence",
+            "phase": "template-ready",
+            "sourceHead": "714eda0f3496f3faea1dd35da3324083335aa901"
+          }
+        ],
+        "fullPass": true,
+        "logPresent": true,
+        "metadataPGIds": [
+          "d8f1dff4d87f8b5084238fdb614dcf429f1b824d464a0c1c4993c6e0214cf073"
+        ],
+        "ownedPGIds": [
+          "d8f1dff4d87f8b5084238fdb614dcf429f1b824d464a0c1c4993c6e0214cf073"
+        ],
+        "readyPGIds": [
+          "d8f1dff4d87f8b5084238fdb614dcf429f1b824d464a0c1c4993c6e0214cf073"
+        ],
+        "suiteSummary": [
+          "2",
+          "2"
+        ]
+      },
+      "entryElapsedSeconds": 0.01752458291593939,
+      "gate": "actual_legacy12_and2suites_PASS",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.017524999915622175,
+      "gate": "legacy_PG_CID_proven_from_logs",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.01752670796122402,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": {
+        "exitCode": 0,
+        "program": "/bin/ps"
+      },
+      "entryElapsedSeconds": 0.06266687496099621,
+      "gate": "probe_exit",
+      "passed": true
+    },
+    {
+      "details": [],
+      "entryElapsedSeconds": 0.06307812500745058,
+      "gate": "legacy_owned_group_gone",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.06308424996677786,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.06308699992951006,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": {
+        "exitCode": 0,
+        "program": "/usr/bin/curl"
+      },
+      "entryElapsedSeconds": 0.09808929089922458,
+      "gate": "probe_exit",
+      "passed": true
+    },
+    {
+      "details": {
+        "httpStatus": "200",
+        "path": "/containers/json?all=1"
+      },
+      "entryElapsedSeconds": 0.09811633289791644,
+      "gate": "docker_API_status",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.09820737491827458,
+      "gate": "all_container_IDs",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.09821204096078873,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.09821299999020994,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": {
+        "exitCode": 0,
+        "program": "/usr/bin/curl"
+      },
+      "entryElapsedSeconds": 0.10794170794542879,
+      "gate": "probe_exit",
+      "passed": true
+    },
+    {
+      "details": {
+        "httpStatus": "200",
+        "path": "/containers/1b39c2e0cb523a1d36a2053a33cddd6391fbe26b84ca626121ee22da133bca59/json"
+      },
+      "entryElapsedSeconds": 0.10795304097700864,
+      "gate": "docker_API_status",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.10802599997259676,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.10802699998021126,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": {
+        "exitCode": 0,
+        "program": "/usr/bin/curl"
+      },
+      "entryElapsedSeconds": 0.1167812499916181,
+      "gate": "probe_exit",
+      "passed": true
+    },
+    {
+      "details": {
+        "httpStatus": "200",
+        "path": "/containers/958f91d8250e2bf9bce3819320a47fd30ecac7711ed8007de7dcabb60d6cddee/json"
+      },
+      "entryElapsedSeconds": 0.11679120792541653,
+      "gate": "docker_API_status",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.11687399994116277,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.11687554093077779,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": {
+        "exitCode": 0,
+        "program": "/usr/bin/curl"
+      },
+      "entryElapsedSeconds": 0.12568112497683614,
+      "gate": "probe_exit",
+      "passed": true
+    },
+    {
+      "details": {
+        "httpStatus": "200",
+        "path": "/containers/d31835d6d2bf86f9984408fb4b01bded8395915cefe64cac7230a3ebfb6a2e6e/json"
+      },
+      "entryElapsedSeconds": 0.12569929100573063,
+      "gate": "docker_API_status",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.12579758290667087,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.12579874997027218,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": {
+        "exitCode": 0,
+        "program": "/usr/bin/curl"
+      },
+      "entryElapsedSeconds": 0.13507337495684624,
+      "gate": "probe_exit",
+      "passed": true
+    },
+    {
+      "details": {
+        "httpStatus": "200",
+        "path": "/networks"
+      },
+      "entryElapsedSeconds": 0.13508491590619087,
+      "gate": "docker_API_status",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.1351437499979511,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.13514462497550994,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": {
+        "exitCode": 0,
+        "program": "/usr/bin/curl"
+      },
+      "entryElapsedSeconds": 0.14310724998358637,
+      "gate": "probe_exit",
+      "passed": true
+    },
+    {
+      "details": {
+        "httpStatus": "200",
+        "path": "/volumes"
+      },
+      "entryElapsedSeconds": 0.14311737497337162,
+      "gate": "docker_API_status",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.14318124996498227,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": {
+        "exitCode": 0,
+        "program": "/opt/homebrew/bin/gtimeout"
+      },
+      "entryElapsedSeconds": 0.1881869159406051,
+      "gate": "probe_exit",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.18821758299600333,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.18822949996683747,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.18823058297857642,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.18823108298238367,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.18823162489570677,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.1882319999858737,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.18823229090776294,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.1882325829938054,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.188232957967557,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.18823341594543308,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.18823379091918468,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.1882341660093516,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.18823462491855025,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.18823504098691046,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.18823537498246878,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.18823566590435803,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.1882359579904005,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.18823645799420774,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.1882374999113381,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.18823787500150502,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.18823820794932544,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.18823858292307705,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.18823895789682865,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.1882394579006359,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.18823987490031868,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.1882402909686789,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.1882406249642372,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.1882410409161821,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.18824133300222456,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.1882416249718517,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.18824191589374095,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.1882422500057146,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": {
+        "foreignContainersExact": true,
+        "foreignListenersExact": true,
+        "foreignNetworksExact": true,
+        "foreignVolumesExact": true,
+        "ownedPGProof": {
+          "d8f1dff4d87f8b5084238fdb614dcf429f1b824d464a0c1c4993c6e0214cf073": {
+            "absentFromCompleteAllContainerCensus": true,
+            "state": null,
+            "terminal": true
+          }
+        },
+        "ownedPGTerminal": true,
+        "unexplainedCurrentContainerIds": []
+      },
+      "entryElapsedSeconds": 0.18828999996185303,
+      "gate": "foreignContainersExact",
+      "passed": true
+    },
+    {
+      "details": {
+        "foreignContainersExact": true,
+        "foreignListenersExact": true,
+        "foreignNetworksExact": true,
+        "foreignVolumesExact": true,
+        "ownedPGProof": {
+          "d8f1dff4d87f8b5084238fdb614dcf429f1b824d464a0c1c4993c6e0214cf073": {
+            "absentFromCompleteAllContainerCensus": true,
+            "state": null,
+            "terminal": true
+          }
+        },
+        "ownedPGTerminal": true,
+        "unexplainedCurrentContainerIds": []
+      },
+      "entryElapsedSeconds": 0.18829054094385356,
+      "gate": "foreignNetworksExact",
+      "passed": true
+    },
+    {
+      "details": {
+        "foreignContainersExact": true,
+        "foreignListenersExact": true,
+        "foreignNetworksExact": true,
+        "foreignVolumesExact": true,
+        "ownedPGProof": {
+          "d8f1dff4d87f8b5084238fdb614dcf429f1b824d464a0c1c4993c6e0214cf073": {
+            "absentFromCompleteAllContainerCensus": true,
+            "state": null,
+            "terminal": true
+          }
+        },
+        "ownedPGTerminal": true,
+        "unexplainedCurrentContainerIds": []
+      },
+      "entryElapsedSeconds": 0.18829087493941188,
+      "gate": "foreignVolumesExact",
+      "passed": true
+    },
+    {
+      "details": {
+        "foreignContainersExact": true,
+        "foreignListenersExact": true,
+        "foreignNetworksExact": true,
+        "foreignVolumesExact": true,
+        "ownedPGProof": {
+          "d8f1dff4d87f8b5084238fdb614dcf429f1b824d464a0c1c4993c6e0214cf073": {
+            "absentFromCompleteAllContainerCensus": true,
+            "state": null,
+            "terminal": true
+          }
+        },
+        "ownedPGTerminal": true,
+        "unexplainedCurrentContainerIds": []
+      },
+      "entryElapsedSeconds": 0.18829112499952316,
+      "gate": "foreignListenersExact",
+      "passed": true
+    },
+    {
+      "details": {
+        "foreignContainersExact": true,
+        "foreignListenersExact": true,
+        "foreignNetworksExact": true,
+        "foreignVolumesExact": true,
+        "ownedPGProof": {
+          "d8f1dff4d87f8b5084238fdb614dcf429f1b824d464a0c1c4993c6e0214cf073": {
+            "absentFromCompleteAllContainerCensus": true,
+            "state": null,
+            "terminal": true
+          }
+        },
+        "ownedPGTerminal": true,
+        "unexplainedCurrentContainerIds": []
+      },
+      "entryElapsedSeconds": 0.1882912910077721,
+      "gate": "ownedPGTerminal",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.1882930409628898,
+      "gate": "PG_not_foreign_baseline",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.1882957499474287,
+      "gate": "exact_image_names",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.1883284579962492,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.18833070795517415,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": {
+        "exitCode": 0,
+        "program": "/usr/bin/curl"
+      },
+      "entryElapsedSeconds": 0.2281786659732461,
+      "gate": "probe_exit",
+      "passed": true
+    },
+    {
+      "details": {
+        "httpStatus": "200",
+        "path": "/images/postgres%3A16-alpine/json"
+      },
+      "entryElapsedSeconds": 0.22818783298134804,
+      "gate": "docker_API_status",
+      "passed": true
+    },
+    {
+      "details": {
+        "actual": {
+          "architecture": "arm64",
+          "id": "sha256:0cefaabd882e42bcb2a2f3dc56d3ce4770560ba62fd7f197f1a2e008fd5731ab",
+          "os": "linux",
+          "repoTags": [
+            "postgres:16-alpine"
+          ]
+        },
+        "image": "postgres:16-alpine"
+      },
+      "entryElapsedSeconds": 0.22822879091836512,
+      "gate": "cached_image_exact",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.22826670797076076,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.22826775000430644,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": {
+        "exitCode": 0,
+        "program": "/usr/bin/curl"
+      },
+      "entryElapsedSeconds": 0.26200949994381517,
+      "gate": "probe_exit",
+      "passed": true
+    },
+    {
+      "details": {
+        "httpStatus": "200",
+        "path": "/images/testcontainers%2Fryuk%3A0.14.0/json"
+      },
+      "entryElapsedSeconds": 0.26202249992638826,
+      "gate": "docker_API_status",
+      "passed": true
+    },
+    {
+      "details": {
+        "actual": {
+          "architecture": "arm64",
+          "id": "sha256:7c1a8a9a47c780ed0f983770a662f80deb115d95cce3e2daa3d12115b8cd28f0",
+          "os": "linux",
+          "repoTags": [
+            "testcontainers/ryuk:0.14.0"
+          ]
+        },
+        "image": "testcontainers/ryuk:0.14.0"
+      },
+      "entryElapsedSeconds": 0.2620814999099821,
+      "gate": "cached_image_exact",
+      "passed": true
+    },
+    {
+      "details": [],
+      "entryElapsedSeconds": 0.2622267910046503,
+      "gate": "four_dotenv_absent",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.2622605829965323,
+      "gate": "bun_regular",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3068531659664586,
+      "gate": "bun_hash",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.30686195800080895,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": {
+        "exitCode": 0,
+        "program": "/Users/ali/Developer/warpdrive-agency-projects/.runtime/bin/bun"
+      },
+      "entryElapsedSeconds": 0.313115332974121,
+      "gate": "probe_exit",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3131328329909593,
+      "gate": "bun_version",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.313137499964796,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": {
+        "exitCode": 0,
+        "program": "/usr/bin/git"
+      },
+      "entryElapsedSeconds": 0.32858170790132135,
+      "gate": "probe_exit",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.32858699990902096,
+      "gate": "source_head",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3285891249543056,
+      "gate": "private_cache_exact_set",
+      "passed": true
+    },
+    {
+      "details": ".runtime/agency-project-list-native-cache",
+      "entryElapsedSeconds": 0.3286502909613773,
+      "gate": "private_cache_directory",
+      "passed": true
+    },
+    {
+      "details": ".runtime/agency-fixture-0098-admission-cache",
+      "entryElapsedSeconds": 0.32867604098282754,
+      "gate": "private_cache_directory",
+      "passed": true
+    },
+    {
+      "details": "src/features/agency-projects/persistence/agencyProjectList.vitest.config.ts",
+      "entryElapsedSeconds": 0.3288616659119725,
+      "gate": "envDir_false",
+      "passed": true
+    },
+    {
+      "details": "src/features/agency-projects/persistence/agencyProjectList.vitest.config.ts",
+      "entryElapsedSeconds": 0.32891024998389184,
+      "gate": "private_cache_config",
+      "passed": true
+    },
+    {
+      "details": "src/features/agency-projects/persistence/agencyFixture0098Admission.vitest.config.ts",
+      "entryElapsedSeconds": 0.3289528749883175,
+      "gate": "envDir_false",
+      "passed": true
+    },
+    {
+      "details": "src/features/agency-projects/persistence/agencyFixture0098Admission.vitest.config.ts",
+      "entryElapsedSeconds": 0.32898995792493224,
+      "gate": "private_cache_config",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3290006249444559,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": {
+        "exitCode": 0,
+        "program": "/usr/sbin/sysctl"
+      },
+      "entryElapsedSeconds": 0.3310732499230653,
+      "gate": "probe_exit",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.33107824996113777,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": {
+        "exitCode": 0,
+        "program": "/usr/bin/memory_pressure"
+      },
+      "entryElapsedSeconds": 0.33331029093824327,
+      "gate": "probe_exit",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.33340341597795486,
+      "gate": "memory_Q_parse",
+      "passed": true
+    },
+    {
+      "details": {
+        "Q": 53,
+        "pressure": 1
+      },
+      "entryElapsedSeconds": 0.33343649993184954,
+      "gate": "pressure_admission",
+      "passed": true
+    },
+    {
+      "details": {
+        "Q": 53
+      },
+      "entryElapsedSeconds": 0.33343691600020975,
+      "gate": "stop_floor_Q30",
+      "passed": true
+    },
+    {
+      "details": {
+        "freeDiskBytes": 13566709760
+      },
+      "entryElapsedSeconds": 0.3334379999432713,
+      "gate": "disk8GiB",
+      "passed": true
+    },
+    {
+      "details": {
+        "minimum": 40,
+        "remainingSeconds": 67.53605766606051
+      },
+      "entryElapsedSeconds": 0.333443290903233,
+      "gate": "native_phase_remaining_before_second_exec",
+      "passed": true
+    }
+  ],
+  "imageDetails": {
+    "postgres:16-alpine": {
+      "architecture": "arm64",
+      "id": "sha256:0cefaabd882e42bcb2a2f3dc56d3ce4770560ba62fd7f197f1a2e008fd5731ab",
+      "os": "linux",
+      "repoTags": [
+        "postgres:16-alpine"
+      ]
+    },
+    "testcontainers/ryuk:0.14.0": {
+      "architecture": "arm64",
+      "id": "sha256:7c1a8a9a47c780ed0f983770a662f80deb115d95cce3e2daa3d12115b8cd28f0",
+      "os": "linux",
+      "repoTags": [
+        "testcontainers/ryuk:0.14.0"
+      ]
+    }
+  },
+  "legacyActualToolTerminalCode": 0,
+  "legacyEvidence": {
+    "caseSummary": [
+      "12",
+      "12"
+    ],
+    "containerProof": true,
+    "expectedSourceHead": "714eda0f3496f3faea1dd35da3324083335aa901",
+    "fixtureRecords": [
+      {
+        "containerId": "d8f1dff4d87f8b5084238fdb614dcf429f1b824d464a0c1c4993c6e0214cf073",
+        "fixture": "agency-persistence",
+        "phase": "created"
+      },
+      {
+        "agencySqlPresent": true,
+        "containerId": "d8f1dff4d87f8b5084238fdb614dcf429f1b824d464a0c1c4993c6e0214cf073",
+        "fixture": "agency-persistence",
+        "lastTag": "0097_private_mail_intake",
+        "sourceHead": "714eda0f3496f3faea1dd35da3324083335aa901"
+      },
+      {
+        "agencySqlApplied": true,
+        "containerId": "d8f1dff4d87f8b5084238fdb614dcf429f1b824d464a0c1c4993c6e0214cf073",
+        "fixture": "agency-persistence",
+        "phase": "template-ready",
+        "sourceHead": "714eda0f3496f3faea1dd35da3324083335aa901"
+      }
+    ],
+    "fullPass": true,
+    "logPresent": true,
+    "metadataPGIds": [
+      "d8f1dff4d87f8b5084238fdb614dcf429f1b824d464a0c1c4993c6e0214cf073"
+    ],
+    "ownedPGIds": [
+      "d8f1dff4d87f8b5084238fdb614dcf429f1b824d464a0c1c4993c6e0214cf073"
+    ],
+    "readyPGIds": [
+      "d8f1dff4d87f8b5084238fdb614dcf429f1b824d464a0c1c4993c6e0214cf073"
+    ],
+    "suiteSummary": [
+      "2",
+      "2"
+    ]
+  },
+  "legacyGroupMembers": [],
+  "nativePhaseRemainingSeconds": 67.53605766606051,
+  "ownPgid": 135,
+  "preservation": {
+    "foreignContainersExact": true,
+    "foreignListenersExact": true,
+    "foreignNetworksExact": true,
+    "foreignVolumesExact": true,
+    "ownedPGProof": {
+      "d8f1dff4d87f8b5084238fdb614dcf429f1b824d464a0c1c4993c6e0214cf073": {
+        "absentFromCompleteAllContainerCensus": true,
+        "state": null,
+        "terminal": true
+      }
+    },
+    "ownedPGTerminal": true,
+    "unexplainedCurrentContainerIds": []
+  },
+  "requestSha256": "54a123c73311253b243ba4eebf72a7538f5490cac00cbd78199f62cdcd9f4e7e",
+  "resources": {
+    "Q": 53,
+    "freeDiskBytes": 13566709760,
+    "pressure": 1
+  }
+}
