@@ -1,0 +1,2 @@
+{"file":"src/features/privacy/privacyObservationConnection.ts","messages":[{"ruleId":"complexity","severity":2,"message":"Async function 'finishObservation' has a complexity of 17. Maximum allowed is 15.","line":141,"column":3,"messageId":"complex","endLine":141,"endColumn":35}]}
+{"file":"src/features/privacy/privacyObservationCancellation.ts","messages":[{"ruleId":"complexity","severity":2,"message":"Async function 'cancelPrivacyObservationBackend' has a complexity of 17. Maximum allowed is 15.","line":88,"column":8,"messageId":"complex","endLine":88,"endColumn":54}]}

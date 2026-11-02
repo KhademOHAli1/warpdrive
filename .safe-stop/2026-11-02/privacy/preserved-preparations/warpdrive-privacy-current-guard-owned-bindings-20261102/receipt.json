@@ -1,0 +1,25 @@
+{
+  "sourceGuardEvidence": "Private11GREENat314; same4guardpostimagesunchanged",
+  "changes": [
+    {
+      "path": "src/features/privacy/registryIdsPrivacy1.ts",
+      "preimageSha256": "2682884a53aaad793e6d2e04b39e4361eb7666e9b79e0eb59d6cb1e99f75b978",
+      "postimageSha256": "063542e85edeb162e355e46ff63053050d0db051c62694f47c1eaf67f46d41f3",
+      "onlySourceReviewValueChanged": true
+    },
+    {
+      "path": "src/features/privacy/registryIdsRequestServices1.ts",
+      "preimageSha256": "fa3ec17d72fc8a675ecb0c432cd138383624628795f653e3b874d661765a85e3",
+      "postimageSha256": "26b6e24d6ceca16fb44f64daef2758795150e58c52f854f48240e59e750fdec6",
+      "onlySourceReviewValueChanged": true
+    },
+    {
+      "path": "src/features/privacy/registryIdsPersonalRequests1.ts",
+      "preimageSha256": "4bafaea231324e0df9557d1c483c6a6c0b1f7a14ef15596420951430b0262945",
+      "postimageSha256": "707ea911bf07b240eb8e9d466ae089c28c9ae01702c72517c000725a38930db0",
+      "onlySourceReviewValueChanged": true
+    }
+  ],
+  "noCapabilityOrClassificationChange": true,
+  "inventoryRuntime": "NOT_RUN"
+}

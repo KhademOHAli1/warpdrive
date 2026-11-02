@@ -1,0 +1,157 @@
+--- a/src/features/privacy/privacyObservationConnection.ts
++++ b/src/features/privacy/privacyObservationConnection.ts
+@@ -25,17 +25,9 @@
+   stop: StopReason | undefined;
+ };
+ 
+-// Both dedicated Pools are explicitly supplied. The reader owns authorization and its transaction;
+-// its lease stays held during independent cancellation/reconciliation and is then discarded.
+-export async function withPrivacyObservationConnection<R extends Result<unknown, unknown>>(
+-  pool: Pool,
+-  controlPool: Pool,
+-  signal: AbortSignal,
+-  operation: (client: PoolClient, operationSignal: AbortSignal) => Promise<R>,
+-): Promise<R | { ok: false; error: "storage_unavailable" }> {
+-  signal.throwIfAborted();
++function privacyObservationPoolsValid(pool: Pool, controlPool: Pool): boolean {
+   const connectMs = pool.options.connectionTimeoutMillis;
+-  if (
++  return !(
+     pool.options.max !== 1 ||
+     pool.options.pipeline === true ||
+     typeof connectMs !== "number" ||
+@@ -46,8 +38,19 @@
+     pool.ended ||
+     pool === controlPool ||
+     !privacyObservationControlPoolValid(controlPool)
+-  )
+-    return err("storage_unavailable" as const);
++  );
++}
++
++// Both dedicated Pools are explicitly supplied. The reader owns authorization and its transaction;
++// its lease stays held during independent cancellation/reconciliation and is then discarded.
++export async function withPrivacyObservationConnection<R extends Result<unknown, unknown>>(
++  pool: Pool,
++  controlPool: Pool,
++  signal: AbortSignal,
++  operation: (client: PoolClient, operationSignal: AbortSignal) => Promise<R>,
++): Promise<R | { ok: false; error: "storage_unavailable" }> {
++  signal.throwIfAborted();
++  if (!privacyObservationPoolsValid(pool, controlPool)) return err("storage_unavailable" as const);
+ 
+   const state: OwnershipState = {
+     client: undefined,
+@@ -135,6 +138,39 @@
+   if (signal.aborted) onCallerAbort();
+   let outcome: Settled<R | StorageFailure> | Stopped | undefined;
+   let pending: Promise<Settled<R | StorageFailure>> | undefined;
++  async function reconcileBackend(deadlineAt: number) {
++    if (backend === undefined || pending === undefined) return;
++    const acknowledged = await cancelPrivacyObservationBackend(
++      controlPool,
++      backend,
++      pending,
++      deadlineAt,
++    );
++    if (!acknowledged) state.stop ??= { kind: "storage" };
++  }
++  async function finishObservation() {
++    clearTimeout(deadline);
++    const discard = state.stop !== undefined || outcome?.kind !== "value";
++    if (discard) {
++      cleanupDeadlineAt ??= performance.now() + CLEANUP_MS;
++      const reconciliationDeadline = cleanupDeadlineAt - LOCAL_CLOSE_RESERVE_MS;
++      await reconcileBackend(reconciliationDeadline);
++      if (pending !== undefined) {
++        const settled = await beforePrivacyObservationDeadline(pending, reconciliationDeadline);
++        if (settled.kind !== "value") state.stop ??= { kind: "storage" };
++      }
++    }
++    release(discard);
++    if (state.release === "discarded" && !state.closed) {
++      const observed = await beforePrivacyObservationDeadline(
++        localClose,
++        cleanupDeadlineAt ?? performance.now(),
++      );
++      if (observed.kind !== "value") state.stop ??= { kind: "storage" };
++      // The critical end/error owners remain attached after this deadline until actual local close.
++    }
++    signal.removeEventListener("abort", onCallerAbort);
++  }
+   try {
+     // Both handlers are attached immediately, including when a checkout settles after the race.
+     const acquiring: Promise<Settled<PoolClient>> = Promise.resolve()
+@@ -177,40 +213,12 @@
+       outcome = { kind: "stopped" };
+     }
+   } finally {
+-    clearTimeout(deadline);
+-    const discard = state.stop !== undefined || outcome?.kind !== "value";
+-    if (discard) {
+-      cleanupDeadlineAt ??= performance.now() + CLEANUP_MS;
+-      const reconciliationDeadline = cleanupDeadlineAt - LOCAL_CLOSE_RESERVE_MS;
+-      if (backend !== undefined && pending !== undefined) {
+-        const acknowledged = await cancelPrivacyObservationBackend(
+-          controlPool,
+-          backend,
+-          pending,
+-          reconciliationDeadline,
+-        );
+-        if (!acknowledged) state.stop ??= { kind: "storage" };
+-      }
+-      if (pending !== undefined) {
+-        const settled = await beforePrivacyObservationDeadline(pending, reconciliationDeadline);
+-        if (settled.kind !== "value") state.stop ??= { kind: "storage" };
+-      }
+-    }
+-    release(discard);
+-    if (state.release === "discarded" && !state.closed) {
+-      const observed = await beforePrivacyObservationDeadline(
+-        localClose,
+-        cleanupDeadlineAt ?? performance.now(),
+-      );
+-      if (observed.kind !== "value") state.stop ??= { kind: "storage" };
+-      // The critical end/error owners remain attached after this deadline until actual local close.
+-    }
+-    signal.removeEventListener("abort", onCallerAbort);
++    await finishObservation();
+   }
+   if (signal.aborted) onCallerAbort();
+   if (state.stop?.kind === "caller") throw state.stop.reason;
+-  if (state.stop !== undefined || outcome?.kind !== "value") {
+-    if (state.stop === undefined && outcome?.kind === "failed") throw outcome.cause;
++  if (state.stop !== undefined || outcome.kind !== "value") {
++    if (state.stop === undefined && outcome.kind === "failed") throw outcome.cause;
+     return err("storage_unavailable" as const);
+   }
+   // Native ACK is measured independently; local end/remove only releases transport ownership.
+--- a/src/features/privacy/privacyObservationCancellation.ts
++++ b/src/features/privacy/privacyObservationCancellation.ts
+@@ -104,6 +104,8 @@
+   let client: PoolClient | undefined;
+   let held = false;
+   let uncertain = false;
++  // Callback/adoption state can change while a control query or checkout is awaited.
++  const isUncertain = () => uncertain;
+   let queryPending = false;
+   let detached = false;
+   let detach: () => void = () => undefined;
+@@ -177,7 +179,7 @@
+         },
+       );
+     const result = await beforePrivacyObservationDeadline(pending, deadlineAt);
+-    if (result.kind !== "value" || result.value === undefined || uncertain) {
++    if (result.kind !== "value" || result.value === undefined || isUncertain()) {
+       uncertain = true;
+       return null;
+     }
+@@ -217,7 +219,7 @@
+         return undefined;
+       });
+     const acquired = await beforePrivacyObservationDeadline(acquisition, deadlineAt);
+-    if (acquired.kind !== "value" || acquired.value === undefined || uncertain) return false;
++    if (acquired.kind !== "value" || acquired.value === undefined || isUncertain()) return false;
+     let cancelSent = false;
+     while (performance.now() < deadlineAt) {
+       // A pre-completion idle sample cannot retire work already queued on the reader socket.

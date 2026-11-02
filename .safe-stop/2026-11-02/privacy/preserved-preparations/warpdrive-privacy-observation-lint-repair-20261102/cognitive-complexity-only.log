@@ -1,0 +1,2 @@
+{"file":"src/features/privacy/privacyObservationConnection.ts","messages":[{"ruleId":"sonarjs/cognitive-complexity","severity":2,"message":"Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.","line":141,"column":18,"messageId":"refactorFunction","endLine":141,"endColumn":35}]}
+{"file":"src/features/privacy/privacyObservationCancellation.ts","messages":[]}

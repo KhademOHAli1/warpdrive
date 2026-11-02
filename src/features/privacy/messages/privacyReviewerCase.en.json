@@ -1,0 +1,73 @@
+{
+  "title": "Request context for reviewers",
+  "description": "Read the current request record and the original submitted details. Loading this context does not approve an action.",
+  "load": "Load request context",
+  "refresh": "Refresh request context",
+  "loading": "Checking access and loading request context…",
+  "reference": "Request reference",
+  "original": "Original request",
+  "originalNotice": "These are the original submitted details. Later identity review does not replace them.",
+  "currentKind": "Current request type",
+  "currentStatus": "Current status",
+  "revision": "Request revision",
+  "originalKind": "Original request type",
+  "originalLocale": "Original request language",
+  "summary": "Original summary",
+  "subject": "Original subject",
+  "recipient": "Original recipient",
+  "subjectReference": "Original subject reference",
+  "subjectDetails": "Original subject details",
+  "recipientReference": "Original recipient reference",
+  "recipientDetails": "Original recipient details",
+  "casePolicy": "Case policy version",
+  "activePolicy": "Active policy version",
+  "identity": "Identity review",
+  "current": "Identity binding is current",
+  "reviewRequired": "Identity review is required",
+  "identityHelp": "Identity status and recorded policy versions do not authorize disclosure or any action.",
+  "received": "Received",
+  "due": "Response due",
+  "unconfigured": "Not configured",
+  "unavailable": "The request context is unavailable. Load it again.",
+  "fresh": "Confirm your identity before loading request details.",
+  "verifyEmail": "Verify your email address before reviewing request data.",
+  "account": "Your signed-in account changed. Reload privacy settings to continue.",
+  "signedOut": "Sign in again, then reload privacy settings to continue.",
+  "kinds": {
+    "access": "Access request",
+    "portability": "Data portability",
+    "correction": "Correction",
+    "restriction": "Processing restriction",
+    "objection": "Objection",
+    "closure": "Account closure",
+    "erasure": "Personal-data erasure"
+  },
+  "states": {
+    "received": "Received",
+    "verification_needed": "Verification needed",
+    "under_review": "Under review",
+    "action_approved": "Action approved",
+    "running": "Running",
+    "needs_attention": "Needs attention",
+    "refused": "Refused",
+    "response_ready": "Response ready",
+    "responded": "Responded",
+    "closed": "Closed",
+    "cancelled": "Cancelled"
+  },
+  "languages": {
+    "en": "English",
+    "de": "German",
+    "fa": "Persian"
+  },
+  "subjectKinds": {
+    "external": "External subject",
+    "contact": "Contact",
+    "user": "User"
+  },
+  "recipientKinds": {
+    "email": "Email",
+    "in_app": "In-app recipient",
+    "operator_assisted": "Operator-assisted recipient"
+  }
+}

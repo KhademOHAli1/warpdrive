@@ -1,0 +1,28 @@
+[
+  [
+    "env",
+    "-i",
+    "PATH=/Users/ali/Developer/warpdrive/.runtime/bin:/usr/bin:/bin",
+    "BUN_OPTIONS=--no-env-file",
+    "NODE_ENV=test",
+    "NEXT_TELEMETRY_DISABLED=1",
+    "/Users/ali/Developer/warpdrive/.runtime/bin/bun",
+    "--no-env-file",
+    "run",
+    "typecheck"
+  ],
+  [
+    "env",
+    "-i",
+    "PATH=/Users/ali/Developer/warpdrive/.runtime/bin:/usr/bin:/bin",
+    "BUN_OPTIONS=--no-env-file",
+    "NODE_ENV=test",
+    "NEXT_TELEMETRY_DISABLED=1",
+    "/Users/ali/Developer/warpdrive/.runtime/bin/bun",
+    "--no-env-file",
+    "--bun",
+    "node_modules/eslint/bin/eslint.js",
+    "--no-warn-ignored",
+    "src/features/privacy"
+  ]
+]

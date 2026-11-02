@@ -1,0 +1,107 @@
+{
+  "phases": [
+    {
+      "phase": "format",
+      "command": [
+        "env",
+        "-i",
+        "PATH=/Users/ali/Developer/warpdrive/.runtime/bin:/usr/bin:/bin",
+        "BUN_OPTIONS=--no-env-file",
+        "NODE_ENV=test",
+        ".runtime/bin/bun",
+        "--no-env-file",
+        "--bun",
+        "node_modules/@biomejs/biome/bin/biome",
+        "check",
+        "--write",
+        "src/features/privacy/rollbackAckAbort.integration.test.ts",
+        "src/features/privacy/rollbackAckAbort.test-helpers.ts",
+        "src/features/privacy/registryIdsPrivacy1.ts",
+        "src/features/privacy/registryIdsRequestServices1.ts",
+        "src/features/privacy/registryIdsPersonalRequests1.ts"
+      ],
+      "exitCode": 0,
+      "group": []
+    },
+    {
+      "phase": "cognitiveRuleOnly",
+      "command": [
+        "env",
+        "-i",
+        "PATH=/Users/ali/Developer/warpdrive/.runtime/bin:/usr/bin:/bin",
+        "BUN_OPTIONS=--no-env-file",
+        "NODE_ENV=test",
+        ".runtime/bin/bun",
+        "--no-env-file",
+        "--bun",
+        "-e",
+        "import{Linter}from\"eslint\";import parser from\"@typescript-eslint/parser\";import sonarjs from\"eslint-plugin-sonarjs\";import{readFileSync}from\"node:fs\";const l=new Linter();for(const f of [\"src/features/privacy/rollbackAckAbort.integration.test.ts\", \"src/features/privacy/rollbackAckAbort.test-helpers.ts\"]){const messages=l.verify(readFileSync(f,\"utf8\"),[{files:[\"**/*.ts\"],languageOptions:{parser,parserOptions:{project:false,projectService:false,ecmaVersion:2022,sourceType:\"module\"}},plugins:{sonarjs},rules:{\"sonarjs/cognitive-complexity\":[\"error\",15]}}],{filename:f});console.log(JSON.stringify({file:f,messages}));if(messages.length)process.exitCode=1;}"
+      ],
+      "exitCode": 0,
+      "group": []
+    }
+  ],
+  "elapsed": 1.0067084579495713,
+  "stop": null,
+  "samples": [
+    {
+      "phase": "format",
+      "elapsed": 0.033816290902905166,
+      "metrics": {
+        "level": 1,
+        "q": 54,
+        "disk": 14397751296
+      },
+      "rssKiB": 5072
+    },
+    {
+      "phase": "cognitiveRuleOnly",
+      "elapsed": 0.25411787489429116,
+      "metrics": {
+        "level": 1,
+        "q": 54,
+        "disk": 14397743104
+      },
+      "rssKiB": 7824
+    },
+    {
+      "phase": "cognitiveRuleOnly",
+      "elapsed": 0.44106499990448356,
+      "metrics": {
+        "level": 1,
+        "q": 54,
+        "disk": 14397739008
+      },
+      "rssKiB": 144112
+    },
+    {
+      "phase": "cognitiveRuleOnly",
+      "elapsed": 0.6299535409780219,
+      "metrics": {
+        "level": 1,
+        "q": 54,
+        "disk": 14397739008
+      },
+      "rssKiB": 159888
+    },
+    {
+      "phase": "cognitiveRuleOnly",
+      "elapsed": 0.8239304159069434,
+      "metrics": {
+        "level": 1,
+        "q": 54,
+        "disk": 14397739008
+      },
+      "rssKiB": 182160
+    }
+  ],
+  "postimages": {
+    "src/features/privacy/rollbackAckAbort.integration.test.ts": "5c9a93be833fc65d8a7c9cb5c87b7dec247d4d78f13f03f87765b004f42291c6",
+    "src/features/privacy/rollbackAckAbort.test-helpers.ts": "ea118090dc54d1deae705e65b524e794725ee6e874d9ae0cd466ed26ee1a59a4",
+    "src/features/privacy/registryIdsPrivacy1.ts": "063542e85edeb162e355e46ff63053050d0db051c62694f47c1eaf67f46d41f3",
+    "src/features/privacy/registryIdsRequestServices1.ts": "26b6e24d6ceca16fb44f64daef2758795150e58c52f854f48240e59e750fdec6",
+    "src/features/privacy/registryIdsPersonalRequests1.ts": "707ea911bf07b240eb8e9d466ae089c28c9ae01702c72517c000725a38930db0"
+  },
+  "nativeCases": "SOURCE2_DEFINED_ACTUAL_COLLECTION_NOT_RUN",
+  "ceiling": "Biome5/ASTcognitive2only; no typeprogram/nativecollection/runtime/DB/abortproof"
+}

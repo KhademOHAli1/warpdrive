@@ -22,6 +22,7 @@
     "erasure": "Personenbezogene Daten löschen"
   },
   "errors": {
+    "email_verification_required": "Bestätigen Sie Ihre E-Mail-Adresse, bevor Sie fortfahren.",
     "csrf_rejected": "Die Sicherheitsprüfung ist fehlgeschlagen. Senden Sie dieselbe Anfrage erneut. Falls das Problem weiterhin besteht, wenden Sie sich an den Workspace-Verantwortlichen.",
     "fresh_auth_required": "Bestätigen Sie Ihre Identität und senden Sie dann dieselbe Anfrage ausdrücklich erneut. Ihr Entwurf bleibt erhalten.",
     "request_failed": "Der Eingang ist nicht bestätigt. Senden Sie dieselbe Anfrage erneut, statt eine weitere anzulegen.",

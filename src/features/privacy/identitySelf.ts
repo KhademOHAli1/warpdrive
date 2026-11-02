@@ -1,10 +1,8 @@
 import { and, eq } from "drizzle-orm";
 import type { Db } from "@/db/client";
 import { privacyCases, privacyCaseVerifications } from "@/db/schema";
-import { lockAuthAccount } from "@/features/auth/better/accountLock";
-import { lockMcpGrants } from "@/features/auth/management/mcpGrants";
 import { err, ok } from "@/types/result";
-import { currentPrivacySession, type PrivacyActor } from "./authoritySession";
+import type { PrivacyActor } from "./authoritySession";
 import { privacyStorageOperation } from "./casePersistence";
 import { privacyIntakeSchema } from "./caseSchemas";
 import { decodeIdentity, readIdentityCommand, readIdentityIntake } from "./identityPersistence";
@@ -22,10 +20,7 @@ export async function verifyOwnPrivacyIdentity(
   if (!parsed.success) return err("invalid_input" as const);
   const command = parsed.data;
   return privacyStorageOperation(signal, () =>
-    identityTransaction(db, signal, async (tx) => {
-      await lockAuthAccount(tx, actor.userId, signal);
-      await lockMcpGrants(tx, signal);
-      if (!(await currentPrivacySession(tx, actor, signal))) return err("forbidden" as const);
+    identityTransaction(db, actor, signal, async (tx) => {
       // Lock only an owned request before a version, status or receipt can reveal its existence.
       const [owned] = await tx
         .select({ id: privacyCases.id })

@@ -1,0 +1,32 @@
+{
+  "exitCode": 0,
+  "stop": null,
+  "elapsed": 0.5706401250790805,
+  "samples": [
+    {
+      "metrics": {
+        "level": 1,
+        "q": 53,
+        "disk": 14826672128
+      },
+      "rssKiB": 5952
+    },
+    {
+      "metrics": {
+        "level": 1,
+        "q": 53,
+        "disk": 14826561536
+      },
+      "rssKiB": 134096
+    },
+    {
+      "metrics": {
+        "level": 1,
+        "q": 53,
+        "disk": 14826229760
+      },
+      "rssKiB": 155136
+    }
+  ],
+  "scope": "AST-only complexity rule on2files, project:false/projectService:false; NOTconfigured/type-awareESLint/fullstatic/nativeproof"
+}

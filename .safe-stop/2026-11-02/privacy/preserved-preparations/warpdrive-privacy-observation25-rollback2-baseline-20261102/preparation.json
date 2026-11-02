@@ -1,0 +1,91 @@
+{
+  "state": "SOURCE_READY_UNALLOCATED_POSTSTATIC_NATIVE27_BASELINE_NOT_RUN",
+  "preparedEpoch": 1793602695.6958249,
+  "workspace": "/Users/ali/Developer/warpdrive",
+  "sourceCountCases": 27,
+  "actualCollection": "NOT_RUN",
+  "selection": [
+    "src/features/privacy/jobStatus.integration.test.ts",
+    "src/features/privacy/jobStatusBoundaries.integration.test.ts",
+    "src/features/privacy/jobStatusReaderConnection.integration.test.ts",
+    "src/features/privacy/jobStatusSessionExpiry.integration.test.ts",
+    "src/features/privacy/rollbackAckAbort.integration.test.ts"
+  ],
+  "scope": "Changedobservationhelper15status cases + originalreaderconnection9 firstqualification + originalC03expiry1 underchangedhelper + newnativeRollbackACK2 actualbaseline; fivewholefiles/no filters. Historical15notreplayedunchanged:2runtimehelpersnowrefactored. No mutationcompletion3/identity5/atomicity2 repeats.",
+  "expected": "25 preservation/control cases intendedGREEN +2 rollbackACK exactreason cases mayBEHAVIOR_RED; actualcollection/outcomes/setupcontrols NOTOBSERVED",
+  "commandSha256": "0c53feb4314a9c8655bcc553ec9af5a78acc617553d2ced43926d7b95fb72672",
+  "sourcePins": [
+    {
+      "path": "src/features/privacy/jobStatus.integration.test.ts",
+      "sha256": "58b91aed51c9baf3aa141afa899e9eb3168c98766a4eefdb7f44acf0ecd0b77a"
+    },
+    {
+      "path": "src/features/privacy/jobStatusBoundaries.integration.test.ts",
+      "sha256": "342acb8a26266afd72a05f1daaa7f8ebd42f0cbf996808a556a69d3f2cc79feb"
+    },
+    {
+      "path": "src/features/privacy/jobStatusReaderConnection.integration.test.ts",
+      "sha256": "f4e3c334d827f5e780ec95dee5fde9ab2468a421c524696a313199f81ebfe2ae"
+    },
+    {
+      "path": "src/features/privacy/jobStatusSessionExpiry.integration.test.ts",
+      "sha256": "87726fbd7e4d07db2258915ad4beb0b90a8546802bac7d454cc3a451dedc8b7f"
+    },
+    {
+      "path": "src/features/privacy/rollbackAckAbort.integration.test.ts",
+      "sha256": "5c9a93be833fc65d8a7c9cb5c87b7dec247d4d78f13f03f87765b004f42291c6"
+    },
+    {
+      "path": "src/features/privacy/jobStatusCancellation.test-helpers.ts",
+      "sha256": "ab5db826df3373926dd5ab611a6c2eee6ea2b098a6fff434a18c67a9aff90d9b"
+    },
+    {
+      "path": "src/features/privacy/jobStatusSessionExpiry.test-helpers.ts",
+      "sha256": "532b9ff8ffa3fdaf33665e4dd4815d315b6d30a2ecd262c6b196c045087f64fc"
+    },
+    {
+      "path": "src/features/privacy/rollbackAckAbort.test-helpers.ts",
+      "sha256": "b0015a099db33770ab7253322486ad0b61faaabd8425d1369841a799846b8703"
+    },
+    {
+      "path": "src/features/privacy/jobStatus.ts",
+      "sha256": "da34ba37f3ac315e73d4cc7c647c5b423e852e51b6da4b2d2147812bb6c3f338"
+    },
+    {
+      "path": "src/features/privacy/privacyObservationConnection.ts",
+      "sha256": "4c0c1cda5a1dea591a595c7a28c9f535bbcba6f9ae46d15c00be3cc74959803c"
+    },
+    {
+      "path": "src/features/privacy/privacyObservationCancellation.ts",
+      "sha256": "eecb0318805ebcbc9866ef29a6e785404b5a7157dbdc954d925b36cd647b1e99"
+    },
+    {
+      "path": "src/features/privacy/privacyObservationPoolErrors.ts",
+      "sha256": "46d7e4256658228425c76c74488070c1723a029d679725e49db359a32364ffb8"
+    },
+    {
+      "path": "src/features/privacy/permissions.ts",
+      "sha256": "90f8f0bece98c9034ccbf824c3a729385d6eb77ba9857ce589257a647a12295a"
+    },
+    {
+      "path": "src/features/privacy/identityTransaction.ts",
+      "sha256": "04f4e3c02dd5371f52447940609b29d17474c784a8d50b195f8d39a6760fa042"
+    },
+    {
+      "path": "src/features/privacy/authoritySession.ts",
+      "sha256": "a1bf7d774d48ac263b7c39459312c2f729dd4ee2cd0e3549ba20f5f5a53d0db7"
+    },
+    {
+      "path": "src/features/privacy/authority.test-helpers.ts",
+      "sha256": "d76433ff11e768d47323d06b1ed5e9b38641fcbdfe4b018acea12c9ae398ccf2"
+    }
+  ],
+  "fullSourceReference": "/private/tmp/warpdrive-privacy-observation25-rollback2-baseline-20261102/context.json",
+  "staticPrerequisite": "/private/tmp/warpdrive-privacy-current-cut-compiler-v5-319-20261102/preparation.json",
+  "compilerState": "CURRENT319_NOT_RUN; no nativeallocationaskeduntilstaticresult",
+  "resources": "<=180s allin/onecachedPG16+Ryuk/oneworker/expectedRSS<2GiB/exactBun1.4.4+cleanenvBUN_OPTIONS/noenv/envDirfalse/privatecache/source319+config8/fileset/deps/fullforeignDocker-network-volume-listener/group/dotenv preservation;normal1Q>=20orallocatedwarn2Q>=40/disk8GiB/stopQ<30criticaluncertainty",
+  "required": "FreshdirectoneuseSTART+matchingboard afterfreshstatic/sourcegate; no sourceedits/compiler/nativeproducer73/reviewer37/mutationcompletion3/identity5/atomicity2/browser/build/install/provider/publication/retry/scopeaddition",
+  "ceilings": "No oldnative15 re-aging/byte-equivalence, noheldROLLBACK/COMMITACK/productioncomposition/installedproof. New2observerlistenersneverpatchquery/emit/throw; targetrealcommandCompleteROLLBACK+ReadyForQueryI ACK-to-catch boundaryonly.",
+  "installedGatesOpen": 12,
+  "staging": "none yet"
+}
