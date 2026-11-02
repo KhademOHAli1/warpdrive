@@ -474,6 +474,7 @@
     "permissionTitle": "Keine Berechtigung",
     "permissionBody": "Sie haben keine Berechtigung für diese Änderung. Bitten Sie die Administration, Ihre Zugriffsrechte zu prüfen.",
     "staleTitle": "Diese Verkaufschance wurde an anderer Stelle geändert",
+    "staleDraftBody": "Dieser Deal wurde geändert. Ihr Entwurf bleibt erhalten. Prüfen Sie den aktuellen Stand, brechen Sie die Bearbeitung ab und beginnen Sie erneut.",
     "staleBody": "Diese Verkaufschance wurde während Ihrer Bearbeitung geändert und neu geladen. Bitte nehmen Sie Ihre Änderung erneut vor.",
     "unavailableTitle": "Verkaufschance nicht verfügbar",
     "unavailableBody": "Diese Verkaufschance ist für Sie nicht mehr verfügbar. Sie wurde möglicherweise gelöscht oder ihre Sichtbarkeit wurde geändert.",

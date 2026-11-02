@@ -77,7 +77,9 @@ it("fails and keeps the source mapping when the target is soft-deleted while the
       {
         targetDealId: target.id,
         sourceDealId: source.id,
+        expectedTargetWriteVersion: target.writeVersion,
         expectedTargetUpdatedAt: target.updatedAt.toISOString(),
+        expectedSourceWriteVersion: source.writeVersion,
         expectedSourceUpdatedAt: source.updatedAt.toISOString(),
       },
       new AbortController().signal,

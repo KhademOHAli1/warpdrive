@@ -5,6 +5,7 @@ import { CHANGE_FIELD_STATUS } from "@/constants/changeLogFields";
 import { deals, lostReasons } from "@/db/schema";
 import { seedPipelineWithStages, seedUser } from "@/db/testing/factories";
 import { listChangeLog } from "@/features/collaboration/changeLog";
+import { observeDealVersion } from "@/features/deals/dealVersion.test-helpers";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { makeTestDb } from "@/test/db";
 import { formatChangeLabel } from "./changeLabel";
@@ -57,7 +58,11 @@ it("markLost logs the resolved reason name and the free-text comment", async () 
     h.db,
     actor,
     dealId,
-    { lostReasonId: reason.id, lostReason: "my bad, this was old" },
+    {
+      expectedWriteVersion: await observeDealVersion(h.db, dealId),
+      lostReasonId: reason.id,
+      lostReason: "my bad, this was old",
+    },
     new AbortController().signal,
   );
   expect(r.ok).toBe(true);
@@ -80,7 +85,11 @@ it("markLost logs a free-text-only reason", async () => {
     h.db,
     actor,
     dealId,
-    { lostReasonId: null, lostReason: "Budget cut" },
+    {
+      expectedWriteVersion: await observeDealVersion(h.db, dealId),
+      lostReasonId: null,
+      lostReason: "Budget cut",
+    },
     new AbortController().signal,
   );
   expect(r.ok).toBe(true);
@@ -96,7 +105,11 @@ it("markLost with no reason logs the plain status string", async () => {
     h.db,
     actor,
     dealId,
-    { lostReasonId: null, lostReason: null },
+    {
+      expectedWriteVersion: await observeDealVersion(h.db, dealId),
+      lostReasonId: null,
+      lostReason: null,
+    },
     new AbortController().signal,
   );
   expect(r.ok).toBe(true);
@@ -109,7 +122,12 @@ it("markLost with no reason logs the plain status string", async () => {
 it("markWon logs the plain status string", async () => {
   const { dealId, actor } = await seedDeal("Won");
 
-  const r = await markWon(h.db, actor, dealId, new AbortController().signal);
+  const r = await markWon(
+    h.db,
+    actor,
+    { dealId: dealId, expectedWriteVersion: await observeDealVersion(h.db, dealId) },
+    new AbortController().signal,
+  );
   expect(r.ok).toBe(true);
 
   const entry = await statusEntry(dealId);

@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { dealClientFixture } from "@/features/deals/dealClientFixture";
 import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -11,7 +12,10 @@ import type { DealWorkspace } from "./summaryRepo";
 // DealSidebar.test.tsx (LabelRow/OrgBlock/PersonBlock all reach these on render).
 const updateDealAction = vi.hoisted(() =>
   vi.fn(() =>
-    Promise.resolve({ ok: true, deal: { id: "d1", updatedAt: "2026-01-03T00:00:00.000Z" } }),
+    Promise.resolve({
+      ok: true,
+      deal: dealClientFixture({ id: "d1", updatedAt: "2026-01-03T00:00:00.000Z" }),
+    }),
   ),
 );
 vi.mock("@/features/deals/updateAction", () => ({ updateDealAction }));
@@ -39,6 +43,31 @@ vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
 
 afterEach(cleanup);
 
+it("offers field creation on the deal even without an organization, only to metadata managers", () => {
+  const workspace = makeWorkspace([], {});
+  workspace.org = null;
+  const view = render(
+    <DealSidebar
+      workspace={workspace}
+      now={new Date()}
+      isHidden={() => false}
+      baseCurrency="USD"
+      canManageFields
+    />,
+  );
+  expect(screen.getByRole("button", { name: "Add field" })).toBeInTheDocument();
+  view.rerender(
+    <DealSidebar
+      workspace={workspace}
+      now={new Date()}
+      isHidden={() => false}
+      baseCurrency="USD"
+      canManageFields={false}
+    />,
+  );
+  expect(screen.queryByRole("button", { name: "Add field" })).not.toBeInTheDocument();
+});
+
 const def = (over: Partial<CustomFieldDef>): CustomFieldDef => ({
   id: "d",
   targetEntity: "deal",
@@ -57,6 +86,7 @@ const def = (over: Partial<CustomFieldDef>): CustomFieldDef => ({
 function makeWorkspace(customFieldDefs: CustomFieldDef[], customFields: Record<string, unknown>) {
   return {
     deal: {
+      writeVersion: "00000000-0000-4000-8000-000000000001",
       id: "d1",
       title: "Acme",
       value: "1000.00",
@@ -99,7 +129,7 @@ it("inline-edits a text custom field through the deal update action (customField
     expect(updateDealAction).toHaveBeenCalledWith(
       {
         dealId: "d1",
-        expectedUpdatedAt: "2026-01-02T00:00:00.000Z",
+        expectedWriteVersion: "00000000-0000-4000-8000-000000000001",
         customFields: { notes: "world" },
       },
       "csrf",
@@ -137,6 +167,7 @@ it("titles the deal custom fields Details, with the deal fields menu, when the d
   render(
     <DealSidebar
       workspace={makeWorkspace([def({ id: "d1", key: "notes", name: "Notes" })], { notes: "x" })}
+      canManageFields
       now={new Date()}
       isHidden={showAll}
       baseCurrency="USD"

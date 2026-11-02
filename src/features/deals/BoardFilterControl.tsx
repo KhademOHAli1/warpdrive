@@ -1,7 +1,9 @@
 "use client";
+
 import type React from "react";
 import { useEffect, useState } from "react";
 import { useActionError } from "@/components/shell/ActionErrorProvider";
+import { dealClientResult } from "@/features/deals/dealClientResult";
 import type { FilterDefinition } from "@/features/saved-filters/schemas";
 import {
   removeSavedFilterAction,
@@ -81,14 +83,14 @@ export function BoardFilterControl(props: BoardFilterControlProps): React.ReactN
   }, [rowsFresh, appliedFilter, selectedFilter, onSelectFilter]);
 
   async function toggleFav(id: string): Promise<void> {
-    const r = await toggleFavoriteAction(id, readCsrfToken());
+    const r = await dealClientResult(() => toggleFavoriteAction(id, readCsrfToken()));
     if (!r.ok) reportError(r.error.id);
     // Invalidate either way: on failure the refetch reverts the star to its persisted state.
     await utils.deal.savedFilters.invalidate();
   }
 
   async function removeFilter(id: string): Promise<void> {
-    const r = await removeSavedFilterAction(id, readCsrfToken());
+    const r = await dealClientResult(() => removeSavedFilterAction(id, readCsrfToken()));
     if (!r.ok) {
       reportError(r.error.id);
       return;

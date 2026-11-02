@@ -19,6 +19,7 @@ describe("updateDeal: field updates", () => {
         adminSession(u.id),
         {
           dealId: deal.id,
+          expectedWriteVersion: deal.writeVersion,
           expectedUpdatedAt: deal.updatedAt.toISOString(),
           title: "Updated Title",
           value: 5000,
@@ -50,6 +51,7 @@ describe("updateDeal: field updates", () => {
         adminSession(u.id),
         {
           dealId: deal.id,
+          expectedWriteVersion: deal.writeVersion,
           expectedUpdatedAt: deal.updatedAt.toISOString(),
           customFields: { [key]: 4200 },
         },
@@ -65,6 +67,7 @@ describe("updateDeal: field updates", () => {
         adminSession(u.id),
         {
           dealId: deal.id,
+          expectedWriteVersion: okRes.value.writeVersion,
           expectedUpdatedAt: okRes.value.updatedAt.toISOString(),
           customFields: { not_a_field: "x" },
         },
@@ -80,6 +83,7 @@ describe("updateDeal: field updates", () => {
         adminSession(u.id),
         {
           dealId: deal.id,
+          expectedWriteVersion: okRes.value.writeVersion,
           expectedUpdatedAt: okRes.value.updatedAt.toISOString(),
           customFields: { [key]: "not a number" },
         },
@@ -110,6 +114,7 @@ describe("updateDeal: field updates", () => {
         adminSession(u.id),
         {
           dealId: deal.id,
+          expectedWriteVersion: deal.writeVersion,
           expectedUpdatedAt: deal.updatedAt.toISOString(),
           orgId: org.id,
         },
@@ -124,6 +129,7 @@ describe("updateDeal: field updates", () => {
         adminSession(u.id),
         {
           dealId: deal.id,
+          expectedWriteVersion: linked.value.writeVersion,
           expectedUpdatedAt: linked.value.updatedAt.toISOString(),
           orgId: null,
         },
@@ -145,6 +151,7 @@ describe("updateDeal: won/lost transitions", () => {
         adminSession(u.id),
         {
           dealId: deal.id,
+          expectedWriteVersion: deal.writeVersion,
           expectedUpdatedAt: deal.updatedAt.toISOString(),
           status: "won",
         },
@@ -167,6 +174,7 @@ describe("updateDeal: won/lost transitions", () => {
         adminSession(u.id),
         {
           dealId: deal.id,
+          expectedWriteVersion: deal.writeVersion,
           expectedUpdatedAt: deal.updatedAt.toISOString(),
           status: "lost",
           // no lostReason: board drag-to-Lost supplies none, must still succeed.
@@ -189,6 +197,7 @@ describe("updateDeal: won/lost transitions", () => {
         adminSession(u.id),
         {
           dealId: deal.id,
+          expectedWriteVersion: deal.writeVersion,
           expectedUpdatedAt: deal.updatedAt.toISOString(),
           status: "lost",
           lostReason: "   ",
@@ -211,6 +220,7 @@ describe("updateDeal: won/lost transitions", () => {
         adminSession(u.id),
         {
           dealId: deal.id,
+          expectedWriteVersion: deal.writeVersion,
           expectedUpdatedAt: deal.updatedAt.toISOString(),
           status: "lost",
           lostReason: "No budget",
@@ -234,6 +244,7 @@ describe("updateDeal: won/lost transitions", () => {
         adminSession(u.id),
         {
           dealId: deal.id,
+          expectedWriteVersion: deal.writeVersion,
           expectedUpdatedAt: deal.updatedAt.toISOString(),
           status: "won",
         },
@@ -247,6 +258,7 @@ describe("updateDeal: won/lost transitions", () => {
         adminSession(u.id),
         {
           dealId: won.value.id,
+          expectedWriteVersion: won.value.writeVersion,
           expectedUpdatedAt: won.value.updatedAt.toISOString(),
           status: "open",
         },
@@ -269,6 +281,7 @@ describe("updateDeal: won/lost transitions", () => {
         regularSession(u.id),
         {
           dealId: deal.id,
+          expectedWriteVersion: deal.writeVersion,
           expectedUpdatedAt: deal.updatedAt.toISOString(),
           title: "My Update",
         },

@@ -1,17 +1,20 @@
 "use client";
+
 import { useRouter } from "next/navigation";
 import type React from "react";
+import { ERROR_IDS } from "@/constants/errorIds";
+import { DealEditableHeading } from "@/features/deal-workspace/DealEditableHeading";
+import { dealClientResult } from "@/features/deals/dealClientResult";
 import { updateDealAction } from "@/features/deals/updateAction";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
-import { EditableHeading } from "@/features/inline-edit/EditableHeading";
 import type { InlineSaveResult } from "@/features/inline-edit/useInlineEditField";
 import { readCsrfToken } from "@/utils/csrfCookie";
 
 interface EditableTitleProps {
   dealId: string;
   title: string;
-  // CAS precondition: the deal's updatedAt ISO string.
-  expectedUpdatedAt: string;
+  // Opaque version of the displayed deal snapshot.
+  expectedWriteVersion: string;
 }
 
 // Deal-title variant of the shared inline field. Only calls the action when the value changed and
@@ -19,19 +22,26 @@ interface EditableTitleProps {
 export function EditableTitle({
   dealId,
   title,
-  expectedUpdatedAt,
+  expectedWriteVersion,
 }: EditableTitleProps): React.ReactNode {
   const translateSales = useAppTranslations("sales");
 
   const router = useRouter();
 
-  async function commit(next: string): Promise<InlineSaveResult> {
-    const r = await updateDealAction({ dealId, expectedUpdatedAt, title: next }, readCsrfToken());
-    router.refresh(); // stale CAS or error: re-sync from the server (reverts the input)
+  async function commit(next: string, version: string): Promise<InlineSaveResult> {
+    const r = await dealClientResult(() =>
+      updateDealAction({ dealId, expectedWriteVersion: version, title: next }, readCsrfToken()),
+    );
+    if (r.ok || r.error.id === ERROR_IDS.DEAL_PRECONDITION) router.refresh();
     return r.ok ? { ok: true, value: undefined } : { ok: false, error: r.error.id };
   }
 
   return (
-    <EditableHeading title={title} label={translateSales("deal_title_890fc")} onCommit={commit} />
+    <DealEditableHeading
+      writeVersion={expectedWriteVersion}
+      title={title}
+      label={translateSales("deal_title_890fc")}
+      onCommit={commit}
+    />
   );
 }

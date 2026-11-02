@@ -1,4 +1,5 @@
 "use client";
+
 import { keepPreviousData } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import type React from "react";
@@ -15,6 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { useDealActionError } from "@/features/deal-workspace/DealActionErrorProvider";
 import { mergeDealsAction } from "@/features/deal-workspace/mergeDealsAction";
+import { dealClientResult } from "@/features/deals/dealClientResult";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import type { FilterDefinition } from "@/features/saved-filters/schemas";
 import { trpc } from "@/lib/trpc-client";
@@ -26,10 +28,7 @@ interface MergeCandidate {
   id: string;
   title: string;
   updatedAt: string | Date;
-}
-
-function isNewer(candidate: MergeCandidate, than: MergeCandidate): boolean {
-  return new Date(candidate.updatedAt).getTime() > new Date(than.updatedAt).getTime();
+  writeVersion: string;
 }
 
 function titleSearch(query: string): FilterDefinition | undefined {
@@ -41,13 +40,13 @@ function titleSearch(query: string): FilterDefinition | undefined {
 export function MergeDealDialog({
   dealId,
   pipelineId,
-  expectedUpdatedAt,
+  expectedWriteVersion,
   open,
   onOpenChange,
 }: {
   dealId: string;
   pipelineId: string;
-  expectedUpdatedAt: string;
+  expectedWriteVersion: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }): React.ReactNode {
@@ -56,6 +55,7 @@ export function MergeDealDialog({
   const router = useRouter();
   const reportError = useDealActionError();
   const [picked, setPicked] = useState<MergeCandidate | null>(null);
+  const [sourceVersion] = useState(expectedWriteVersion);
   const [query, setQuery] = useState("");
   const [debounced, setDebounced] = useState("");
   const [pending, setPending] = useState(false);
@@ -70,10 +70,10 @@ export function MergeDealDialog({
     { enabled: open, retry: false, placeholderData: keepPreviousData },
   );
   const rows = listQ.data?.rows;
-  const fresh = picked === null ? undefined : rows?.find((d) => d.id === picked.id);
-  if (picked !== null && fresh !== undefined && isNewer(fresh, picked)) setPicked(fresh);
   const candidates = useMemo<MergeCandidate[]>(() => {
-    const visible = (rows ?? []).filter((d) => d.id !== dealId);
+    const visible = (rows ?? [])
+      .filter((d) => d.id !== dealId)
+      .map((d) => (picked !== null && d.id === picked.id ? picked : d));
     if (picked === null || visible.some((d) => d.id === picked.id)) return visible;
     return [picked, ...visible];
   }, [rows, dealId, picked]);
@@ -89,14 +89,16 @@ export function MergeDealDialog({
   async function confirm(): Promise<void> {
     if (picked === null) return;
     setPending(true);
-    const r = await mergeDealsAction(
-      {
-        targetDealId: picked.id,
-        sourceDealId: dealId,
-        expectedTargetUpdatedAt: new Date(picked.updatedAt).toISOString(),
-        expectedSourceUpdatedAt: expectedUpdatedAt,
-      },
-      readCsrfToken(),
+    const r = await dealClientResult(() =>
+      mergeDealsAction(
+        {
+          targetDealId: picked.id,
+          sourceDealId: dealId,
+          expectedTargetWriteVersion: picked.writeVersion,
+          expectedSourceWriteVersion: sourceVersion,
+        },
+        readCsrfToken(),
+      ),
     );
     setPending(false);
     if (r.ok) {

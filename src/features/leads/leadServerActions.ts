@@ -3,6 +3,8 @@
 import { eq } from "drizzle-orm";
 import { db } from "@/db/client";
 import { users } from "@/db/schema";
+import { isDealVisibleToSession } from "@/features/deals/createdVisibility";
+import { type DealActionSnapshot, dealActionSnapshot } from "@/features/deals/dealVersion";
 import { guardCsrf } from "@/features/identity/actions/shared";
 import { SIG } from "@/features/identity/actions/sig";
 import { createContext } from "@/server/trpc/context";
@@ -85,12 +87,16 @@ export async function archiveLeadAction(
 export async function convertLeadAction(
   input: ConvertLeadInput,
   csrfToken: string | null = null,
-): Promise<LeadActionResult<{ dealId: string }>> {
+): Promise<LeadActionResult<{ dealId: string; deal: DealActionSnapshot | null }>> {
   const auth = await authorize(csrfToken);
   if (!auth.ok) return auth;
   const r = await convertLead(db, auth.session, input, SIG());
   if (!r.ok) return { ok: false, error: { id: r.error.id } };
-  return { ok: true, value: r.value };
+  const visible = await isDealVisibleToSession(db, auth.session, r.value.dealId, SIG());
+  return {
+    ok: true,
+    value: { dealId: r.value.dealId, deal: visible ? dealActionSnapshot(r.value.deal) : null },
+  };
 }
 
 export async function bulkUpdateLeadsAction(

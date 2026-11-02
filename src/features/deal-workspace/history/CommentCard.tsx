@@ -1,4 +1,5 @@
 "use client";
+
 import { Ellipsis } from "lucide-react";
 import type React from "react";
 import { useCallback, useState } from "react";
@@ -13,6 +14,7 @@ import {
 import { Textarea } from "@/components/ui/Textarea";
 import { deleteCommentAction, updateCommentAction } from "@/features/collaboration/commentActions";
 import { LinkifiedText } from "@/features/collaboration/LinkifiedText";
+import { dealClientResult } from "@/features/deals/dealClientResult";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { AttributionLine } from "./AttributionLine";
@@ -52,7 +54,9 @@ export function CommentCard({
     const trimmed = draft.trim();
     if (trimmed === "" || busy) return;
     setBusy(true);
-    const res = await updateCommentAction({ commentId: id, body: trimmed }, readCsrfToken());
+    const res = await dealClientResult(() =>
+      updateCommentAction({ commentId: id, body: trimmed }, readCsrfToken()),
+    );
     setBusy(false);
     if (res.ok) {
       setEditing(false);
@@ -65,7 +69,9 @@ export function CommentCard({
   const remove = useCallback(async () => {
     if (busy) return;
     setBusy(true);
-    const res = await deleteCommentAction({ commentId: id }, readCsrfToken());
+    const res = await dealClientResult(() =>
+      deleteCommentAction({ commentId: id }, readCsrfToken()),
+    );
     setBusy(false);
     if (res.ok) {
       setConfirmOpen(false);

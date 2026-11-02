@@ -3,7 +3,7 @@ import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { BOARD_EVENT, dealMovedChannel } from "@/constants/boardChannels";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type * as schema from "@/db/schema";
-import { deals } from "@/db/schema/deals";
+import { type Deal, deals } from "@/db/schema/deals";
 import { leads } from "@/db/schema/leads";
 import { pipelines } from "@/db/schema/pipelines";
 import { stages } from "@/db/schema/stages";
@@ -12,6 +12,7 @@ import { recordChange } from "@/features/collaboration/changeLog";
 import { listDefs } from "@/features/custom-fields/defsRepo";
 import { midpoint } from "@/features/deals/boardPosition";
 import { validateDealCustomFieldsForCreate } from "@/features/deals/dealCustomFieldsValidation";
+import { readFinalDeal } from "@/features/deals/dealVersion";
 import { syncEntityLabelNames } from "@/features/labels/labelsRepo.entities";
 import { resolveVisibilityGroup } from "@/features/permissions/entityCreate";
 import { publishBoardEvent } from "@/server/realtime/events";
@@ -112,7 +113,7 @@ export async function convertLead(
   session: LeadSession,
   raw: ConvertLeadInput,
   signal: AbortSignal,
-): Promise<Result<{ dealId: string }, AppError>> {
+): Promise<Result<{ dealId: string; deal: Deal }, AppError>> {
   const input = convertLeadInput.parse(raw);
   signal.throwIfAborted();
 
@@ -266,7 +267,7 @@ export async function convertLead(
         signal,
       );
 
-      return ok({ dealId: deal.id });
+      return ok({ dealId: deal.id, deal: await readFinalDeal(tx, deal.id, signal) });
     });
   } catch (e) {
     if (e instanceof ConvertConflict) {

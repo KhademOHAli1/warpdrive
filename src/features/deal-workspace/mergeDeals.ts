@@ -3,15 +3,20 @@
 // notes); S contributes only its child rows, which are re-parented onto T (activities, notes,
 // email threads, files, participants, followers, followers/participants deduped). S is then
 // soft-deleted and the merge is logged on T. Both deals must be visible+editable by the actor, and
-// each is CAS-locked on its updatedAt so a stale header cannot merge a concurrently-modified deal.
-import { and, eq, isNull, sql } from "drizzle-orm";
+// each is CAS-locked on its writeVersion so a stale header cannot merge a concurrently-modified deal.
+import { and, eq, isNull } from "drizzle-orm";
 import { z } from "zod";
 import { BOARD_EVENT, dealChannel, dealMovedChannel } from "@/constants/boardChannels";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
-import { deals } from "@/db/schema/deals";
+import { type Deal, deals } from "@/db/schema/deals";
 import { recordChange } from "@/features/collaboration/changeLog";
 import { loadEditableDeal } from "@/features/deals/dealAuth";
+import {
+  lockDealWriteVersion,
+  missingDealVersion,
+  readFinalDeal,
+} from "@/features/deals/dealVersion";
 import { lockImportMutation } from "@/features/import/importLock";
 import { repointMappings } from "@/features/import/repointMappings";
 import type { PermSetUser } from "@/features/permissions/effective";
@@ -22,8 +27,10 @@ import { repointDealChildren } from "./mergeReparent";
 export const mergeDealsInput = z.object({
   targetDealId: z.string().uuid(),
   sourceDealId: z.string().uuid(),
-  expectedTargetUpdatedAt: z.string().datetime(), // CAS precondition on T
-  expectedSourceUpdatedAt: z.string().datetime(), // CAS precondition on S
+  expectedTargetWriteVersion: z.string().uuid(),
+  expectedSourceWriteVersion: z.string().uuid(),
+  expectedTargetUpdatedAt: z.string().datetime().optional(), // metadata only
+  expectedSourceUpdatedAt: z.string().datetime().optional(), // metadata only
 });
 
 // Thrown inside the transaction to roll the whole merge back when either CAS lock loses.
@@ -38,13 +45,7 @@ async function casTouch(
   const [row] = await tx
     .update(deals)
     .set({ updatedAt: now })
-    .where(
-      and(
-        eq(deals.id, id),
-        isNull(deals.deletedAt),
-        sql`date_trunc('milliseconds', ${deals.updatedAt}) = ${expected}::timestamptz`,
-      ),
-    )
+    .where(and(eq(deals.id, id), isNull(deals.deletedAt), eq(deals.writeVersion, expected)))
     .returning({ id: deals.id });
   if (row === undefined) throw new MergeConflict();
 }
@@ -54,11 +55,21 @@ export async function mergeDeals(
   actor: PermSetUser,
   raw: unknown,
   signal: AbortSignal,
-): Promise<Result<{ targetId: string }, AppError>> {
-  const input = mergeDealsInput.parse(raw);
+): Promise<Result<{ targetId: string; deal: Deal }, AppError>> {
+  const versionError = missingDealVersion(raw, [
+    "expectedTargetWriteVersion",
+    "expectedSourceWriteVersion",
+  ]);
+  if (versionError !== null) return err(versionError);
+  const parsedInput = mergeDealsInput.parse(raw);
+  const input = {
+    ...parsedInput,
+    targetDealId: parsedInput.targetDealId.toLowerCase(),
+    sourceDealId: parsedInput.sourceDealId.toLowerCase(),
+  };
   signal.throwIfAborted();
 
-  if (input.targetDealId === input.sourceDealId) {
+  if (input.targetDealId.toLowerCase() === input.sourceDealId.toLowerCase()) {
     return err(
       new AppError(ERROR_IDS.DEAL_MERGE_SAME, "Cannot merge a deal into itself", {
         dealId: input.targetDealId,
@@ -76,7 +87,15 @@ export async function mergeDeals(
   try {
     return await db.transaction(async (tx) => {
       await lockImportMutation(tx, signal);
-      await casTouch(tx, input.targetDealId, input.expectedTargetUpdatedAt);
+      // Acquire both rows in UUID order before changing either, so reverse merges cannot deadlock.
+      for (const item of [
+        { id: input.targetDealId, version: input.expectedTargetWriteVersion },
+        { id: input.sourceDealId, version: input.expectedSourceWriteVersion },
+      ].sort((a, b) => a.id.toLowerCase().localeCompare(b.id.toLowerCase()))) {
+        const locked = await lockDealWriteVersion(tx, item.id, item.version, signal);
+        if (!locked.ok) throw new MergeConflict();
+      }
+      await casTouch(tx, input.targetDealId, input.expectedTargetWriteVersion);
       const now = new Date();
       const [deleted] = await tx
         .update(deals)
@@ -85,7 +104,7 @@ export async function mergeDeals(
           and(
             eq(deals.id, input.sourceDealId),
             isNull(deals.deletedAt),
-            sql`date_trunc('milliseconds', ${deals.updatedAt}) = ${input.expectedSourceUpdatedAt}::timestamptz`,
+            eq(deals.writeVersion, input.expectedSourceWriteVersion),
           ),
         )
         .returning({ id: deals.id });
@@ -140,7 +159,23 @@ export async function mergeDeals(
         signal,
       );
 
-      return ok({ targetId: input.targetDealId });
+      if (target.value.deal.pipelineId !== source.value.deal.pipelineId) {
+        await publishBoardEvent(
+          tx,
+          {
+            channel: dealMovedChannel(target.value.deal.pipelineId),
+            type: BOARD_EVENT.dealUpdated,
+            actorId: actor.id,
+            data: { dealId: input.targetDealId, pipelineId: target.value.deal.pipelineId },
+          },
+          signal,
+        );
+      }
+
+      return ok({
+        targetId: input.targetDealId,
+        deal: await readFinalDeal(tx, input.targetDealId, signal),
+      });
     });
   } catch (e) {
     if (e instanceof MergeConflict) {

@@ -33,6 +33,7 @@ function makeRow(i: number): DealListRow {
     nextActivityAt: null,
     lastActivityAt: null,
     stageEnteredAt: new Date("2026-06-24T00:00:00Z"),
+    writeVersion: "00000000-0000-4000-8000-000000000001",
     updatedAt: "2026-06-24T00:00:00Z",
     customFields: {},
   };
@@ -112,26 +113,47 @@ describe("DealList bulk archive", () => {
     fireEvent.click(screen.getByRole("button", { name: "Archive" }));
     fireEvent.click(screen.getByRole("button", { name: "Archive deals" }));
 
-    await vi.waitFor(() => expect(onBulkArchive).toHaveBeenCalledWith(["d1", "d2", "d3"]));
+    await vi.waitFor(() =>
+      expect(onBulkArchive).toHaveBeenCalledWith(
+        ["d1", "d2", "d3"],
+        Object.fromEntries(rows.map((row) => [row.id, row.writeVersion])),
+      ),
+    );
     await vi.waitFor(() =>
       expect(screen.queryByRole("toolbar", { name: "Bulk actions" })).not.toBeInTheDocument(),
     );
   });
 
-  it("drops rows that left the view from the selection before archiving", async () => {
+  it("drops rows that left the view while retaining the selected snapshots before archiving", async () => {
     const onBulkArchive = vi.fn(() => Promise.resolve(true));
     const props = baseProps(onBulkArchive);
     const { rerender } = render(<DealList {...props} />);
 
     selectAll();
-    rerender(<DealList {...props} rows={rows.slice(0, 2)} total={2} />);
+    rerender(
+      <DealList
+        {...props}
+        rows={rows.slice(0, 2).map((row) => ({
+          ...row,
+          writeVersion: "00000000-0000-4000-8000-000000000002",
+        }))}
+        total={2}
+      />,
+    );
 
     expect(screen.getByText("2 selected")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Archive" }));
     fireEvent.click(screen.getByRole("button", { name: "Archive deals" }));
 
-    await vi.waitFor(() => expect(onBulkArchive).toHaveBeenCalledWith(["d1", "d2"]));
+    await vi.waitFor(() =>
+      expect(onBulkArchive).toHaveBeenCalledWith(
+        ["d1", "d2"],
+        Object.fromEntries(
+          rows.filter((row) => row.id !== "d3").map((row) => [row.id, row.writeVersion]),
+        ),
+      ),
+    );
   });
 
   it("does not archive twice when the Archive control is clicked again while pending", async () => {
@@ -167,7 +189,12 @@ describe("DealList bulk archive", () => {
     fireEvent.click(screen.getByRole("button", { name: "Archive" }));
     fireEvent.click(screen.getByRole("button", { name: "Archive deals" }));
 
-    await vi.waitFor(() => expect(onBulkArchive).toHaveBeenCalledWith(["d1", "d2", "d3"]));
+    await vi.waitFor(() =>
+      expect(onBulkArchive).toHaveBeenCalledWith(
+        ["d1", "d2", "d3"],
+        Object.fromEntries(rows.map((row) => [row.id, row.writeVersion])),
+      ),
+    );
     expect(screen.getByRole("toolbar", { name: "Bulk actions" })).toBeInTheDocument();
     expect(screen.getByText("3 selected")).toBeInTheDocument();
   });

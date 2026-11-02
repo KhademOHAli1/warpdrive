@@ -6,6 +6,7 @@ import { makeTestDb } from "@/test/db";
 import { archiveDeal } from "./archiveDeal";
 import { getBoardColumns, listDeals } from "./dealRepo";
 import { actorToSession } from "./dealRouter";
+import { observeDealVersion } from "./dealVersion.test-helpers";
 
 let h: Awaited<ReturnType<typeof makeTestDb>>;
 const sig = () => new AbortController().signal;
@@ -36,7 +37,12 @@ it("archived deal leaves the board and default list, appears in archived list", 
   if (d === undefined) throw new Error("deal insert returned undefined");
   const session = actorToSession(actor(u.id));
 
-  await archiveDeal(h.db, actor(u.id), { dealId: d.id, archived: true }, sig());
+  await archiveDeal(
+    h.db,
+    actor(u.id),
+    { dealId: d.id, expectedWriteVersion: await observeDealVersion(h.db, d.id), archived: true },
+    sig(),
+  );
 
   const board = await getBoardColumns(h.db, session, pipeline.id, sig());
   expect(board.cards.some((c) => c.id === d.id)).toBe(false);
@@ -75,7 +81,12 @@ it("an archived won deal still appears in the archived list (status filter dropp
   if (d === undefined) throw new Error("deal insert returned undefined");
   const session = actorToSession(actor(u.id));
 
-  await archiveDeal(h.db, actor(u.id), { dealId: d.id, archived: true }, sig());
+  await archiveDeal(
+    h.db,
+    actor(u.id),
+    { dealId: d.id, expectedWriteVersion: await observeDealVersion(h.db, d.id), archived: true },
+    sig(),
+  );
 
   const archived = await listDeals(
     h.db,

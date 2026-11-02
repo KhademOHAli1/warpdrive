@@ -20,6 +20,7 @@ const baseCard = {
   nextActivityAt: null,
   lastActivityAt: null,
   stageEnteredAt: new Date("2026-06-01T00:00:00Z"),
+  writeVersion: "00000000-0000-4000-8000-000000000001",
   updatedAt: new Date("2026-06-01T00:00:00Z"),
 };
 

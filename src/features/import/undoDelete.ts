@@ -5,7 +5,7 @@ import { deleteActivity } from "@/features/activities/activityDelete";
 import { softDeleteNote } from "@/features/collaboration/notesRepo";
 import { deleteOrg } from "@/features/contacts/deleteOrg";
 import { deletePerson } from "@/features/contacts/deletePerson";
-import { deleteDeal } from "@/features/deals/deleteDeal";
+import { deleteDealForImportUndo } from "@/features/deals/deleteDeal";
 import { bulkUpdateLeads } from "@/features/leads/leadBulk";
 import { assertNever } from "@/types/result";
 import type { ImportActor } from "./commit";
@@ -117,7 +117,7 @@ async function deleteOne(
     case "activity":
       return (await deleteActivity(db, actor, id, signal)).ok;
     case "deal":
-      return (await deleteDeal(db, actor, id, signal)).ok;
+      return (await deleteDealForImportUndo(db, actor, id, signal)).ok;
     case "lead": {
       const r = await bulkUpdateLeads(
         db,

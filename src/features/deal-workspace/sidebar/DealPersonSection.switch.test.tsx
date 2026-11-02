@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { dealClientFixture } from "@/features/deals/dealClientFixture";
 import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -17,11 +18,14 @@ beforeAll(() => {
 });
 
 type UpdateResultLike =
-  | { ok: true; deal: { id: string; updatedAt: string } }
+  | { ok: true; deal: ReturnType<typeof dealClientFixture> }
   | { ok: false; error: { id: string } };
 const updateDealAction = vi.fn((...args: unknown[]): Promise<UpdateResultLike> => {
   void args;
-  return Promise.resolve({ ok: true, deal: { id: "d1", updatedAt: "2026-01-03T00:00:00.000Z" } });
+  return Promise.resolve({
+    ok: true,
+    deal: dealClientFixture({ id: "d1", updatedAt: "2026-01-03T00:00:00.000Z" }),
+  });
 });
 vi.mock("@/features/deals/updateAction", () => ({
   updateDealAction: (...args: unknown[]) => updateDealAction(...args),
@@ -103,7 +107,7 @@ function renderSection() {
     <DealPersonSection
       person={PETER}
       dealId="d1"
-      expectedUpdatedAt="2026-01-02T00:00:00.000Z"
+      expectedWriteVersion="00000000-0000-4000-8000-000000000001"
       personOptions={[]}
       menuItems={[{ label: "Customize fields", onSelect: vi.fn() }]}
       bulkEditing={false}
@@ -130,7 +134,11 @@ it("unlinks the person through updateDealAction", async () => {
   await userEvent.click(await screen.findByRole("menuitem", { name: /unlink this person/i }));
   await waitFor(() =>
     expect(updateDealAction).toHaveBeenCalledWith(
-      { dealId: "d1", expectedUpdatedAt: "2026-01-02T00:00:00.000Z", personId: null },
+      {
+        dealId: "d1",
+        expectedWriteVersion: "00000000-0000-4000-8000-000000000001",
+        personId: null,
+      },
       "csrf",
     ),
   );
@@ -179,7 +187,11 @@ it("switches to another person from the dialog and refreshes the participants re
 
   await waitFor(() =>
     expect(updateDealAction).toHaveBeenCalledWith(
-      { dealId: "d1", expectedUpdatedAt: "2026-01-02T00:00:00.000Z", personId: "p2" },
+      {
+        dealId: "d1",
+        expectedWriteVersion: "00000000-0000-4000-8000-000000000001",
+        personId: "p2",
+      },
       "csrf",
     ),
   );

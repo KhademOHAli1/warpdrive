@@ -1,18 +1,23 @@
 // convertDealToLead: turn a deal back into a Leads-Inbox lead (mirror of the leads feature's
 // lead -> deal convert direction). Creates a lead carrying the deal's core fields, then CLOSES the
 // deal by archiving it (deals have no pipeline-less "converted" state, so archive is the close),
-// all in one transaction. CAS-locked on the deal's updatedAt so a stale header cannot convert a
+// all in one transaction. CAS-locked on the deal's writeVersion so a stale header cannot convert a
 // concurrently-modified deal. Logs the conversion on both entities.
-import { and, eq, isNull, sql } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { z } from "zod";
 import { BOARD_EVENT, dealChannel, dealMovedChannel } from "@/constants/boardChannels";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
-import { deals } from "@/db/schema/deals";
+import { type Deal, deals } from "@/db/schema/deals";
 import { leads } from "@/db/schema/leads";
 import { recordChange } from "@/features/collaboration/changeLog";
 import { listDefs } from "@/features/custom-fields/defsRepo";
 import { loadEditableDeal } from "@/features/deals/dealAuth";
+import {
+  lockDealWriteVersion,
+  missingDealVersion,
+  readFinalDeal,
+} from "@/features/deals/dealVersion";
 import { syncEntityLabelNames } from "@/features/labels/labelsRepo.entities";
 import { carryCustomFields } from "@/features/leads/convertCustomFields";
 import type { PermSetUser } from "@/features/permissions/effective";
@@ -21,7 +26,8 @@ import { err, ok, type Result } from "@/types/result";
 
 export const convertDealToLeadInput = z.object({
   dealId: z.string().uuid(),
-  expectedUpdatedAt: z.string().datetime(), // ISO; compare-and-swap precondition on the deal
+  expectedWriteVersion: z.string().uuid(),
+  expectedUpdatedAt: z.string().datetime().optional(), // metadata only
 });
 
 // Thrown inside the transaction to roll back the lead insert when the deal's CAS lock loses.
@@ -32,7 +38,9 @@ export async function convertDealToLead(
   actor: PermSetUser,
   raw: unknown,
   signal: AbortSignal,
-): Promise<Result<{ leadId: string }, AppError>> {
+): Promise<Result<{ leadId: string; deal: Deal }, AppError>> {
+  const versionError = missingDealVersion(raw);
+  if (versionError !== null) return err(versionError);
   const input = convertDealToLeadInput.parse(raw);
   signal.throwIfAborted();
 
@@ -73,6 +81,14 @@ export async function convertDealToLead(
 
   try {
     return await db.transaction(async (tx) => {
+      const locked = await lockDealWriteVersion(
+        tx,
+        input.dealId,
+        input.expectedWriteVersion,
+        signal,
+      );
+      if (!locked.ok) throw new ConvertConflict();
+      const deal = locked.value;
       const [lead] = await tx
         .insert(leads)
         .values({
@@ -101,7 +117,7 @@ export async function convertDealToLead(
       // it does not already hold (mirrors convertLead in the other direction).
       await syncEntityLabelNames(tx, "lead", lead.id, deal.labels, signal);
 
-      // CAS-close the deal: archive it under the updatedAt precondition.
+      // CAS-close the deal using its opaque row-version precondition.
       const now = new Date();
       const [closed] = await tx
         .update(deals)
@@ -110,7 +126,7 @@ export async function convertDealToLead(
           and(
             eq(deals.id, deal.id),
             isNull(deals.archivedAt), // lose the race to a concurrent archive/convert
-            sql`date_trunc('milliseconds', ${deals.updatedAt}) = ${input.expectedUpdatedAt}::timestamptz`,
+            eq(deals.writeVersion, input.expectedWriteVersion),
           ),
         )
         .returning({ id: deals.id });
@@ -164,7 +180,7 @@ export async function convertDealToLead(
         signal,
       );
 
-      return ok({ leadId: lead.id });
+      return ok({ leadId: lead.id, deal: await readFinalDeal(tx, deal.id, signal) });
     });
   } catch (e) {
     if (e instanceof ConvertConflict) {

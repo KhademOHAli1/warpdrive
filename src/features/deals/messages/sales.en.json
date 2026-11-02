@@ -474,6 +474,7 @@
     "permissionTitle": "You don't have permission",
     "permissionBody": "You don't have permission to make this change. Ask an admin to review your access.",
     "staleTitle": "This deal changed elsewhere",
+    "staleDraftBody": "This deal changed. Your draft is kept. Review the current deal, then cancel this edit and start again.",
     "staleBody": "This deal changed while you were editing. We've reloaded it, please try your change again.",
     "unavailableTitle": "Deal not available",
     "unavailableBody": "This deal is no longer available to you. It may have been deleted or its visibility changed.",

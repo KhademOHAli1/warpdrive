@@ -1,7 +1,9 @@
 // @vitest-environment jsdom
+
 import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeAll, expect, it, vi } from "vitest";
+import { dealClientFixture } from "@/features/deals/dealClientFixture";
 
 beforeAll(() => {
   Element.prototype.scrollIntoView = vi.fn();
@@ -10,7 +12,9 @@ beforeAll(() => {
 });
 
 const deleteDealAction = vi.hoisted(() =>
-  vi.fn(() => Promise.resolve({ ok: true as const, deal: { id: "d1", updatedAt: "x" } })),
+  vi.fn(() =>
+    Promise.resolve({ ok: true as const, deal: dealClientFixture({ id: "d1", updatedAt: "x" }) }),
+  ),
 );
 const archiveDealAction = vi.hoisted(() => vi.fn(() => Promise.resolve({ ok: true as const })));
 const duplicateDealAction = vi.hoisted(() =>
@@ -64,7 +68,7 @@ afterEach(() => {
 const props = {
   dealId: "d1",
   pipelineId: "p1",
-  expectedUpdatedAt: "2026-07-02T00:00:00.000Z",
+  expectedWriteVersion: "00000000-0000-4000-8000-000000000001",
   canDelete: true,
 };
 
@@ -105,7 +109,12 @@ it("Duplicate calls duplicateDealAction and navigates to the new deal", async ()
   render(<DealActionsMenu {...props} />);
   await user.click(screen.getByRole("button", { name: "Deal actions" }));
   await user.click(screen.getByRole("menuitem", { name: "Duplicate" }));
-  await waitFor(() => expect(duplicateDealAction).toHaveBeenCalledWith({ dealId: "d1" }, "csrf"));
+  await waitFor(() =>
+    expect(duplicateDealAction).toHaveBeenCalledWith(
+      { dealId: "d1", expectedWriteVersion: props.expectedWriteVersion },
+      "csrf",
+    ),
+  );
   await waitFor(() => expect(push).toHaveBeenCalledWith("/deals/d2"));
 });
 
@@ -150,7 +159,7 @@ it("confirming the dialog calls deleteDealAction and returns to the pipeline", a
   await user.click(within(dialog).getByRole("button", { name: "Delete" }));
   await waitFor(() =>
     expect(deleteDealAction).toHaveBeenCalledWith(
-      { dealId: "d1", expectedUpdatedAt: props.expectedUpdatedAt },
+      { dealId: "d1", expectedWriteVersion: props.expectedWriteVersion },
       "csrf",
     ),
   );

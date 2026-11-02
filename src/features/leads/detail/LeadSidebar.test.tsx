@@ -249,7 +249,11 @@ it("saves an inline lead custom field through updateLeadAction", async () => {
   fireEvent.click(screen.getByRole("button", { name: "Save" }));
   await vi.waitFor(() =>
     expect(updateLeadAction).toHaveBeenCalledWith(
-      expect.objectContaining({ leadId: baseLead.id, customFields: { grade: "B" } }),
+      {
+        leadId: baseLead.id,
+        expectedUpdatedAt: baseLead.updatedAt.toISOString(),
+        customFields: { grade: "B" },
+      },
       "csrf",
     ),
   );

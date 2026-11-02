@@ -1,7 +1,7 @@
-import { eq, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { z } from "zod";
 import { BOARD_EVENT, dealChannel, dealMovedChannel } from "@/constants/boardChannels";
-import { AppError, ERROR_IDS } from "@/constants/errorIds";
+import type { AppError } from "@/constants/errorIds";
 import { deals } from "@/db/schema";
 import type { Deal } from "@/db/schema/deals";
 import { recordChange } from "@/features/collaboration/changeLog";
@@ -9,10 +9,13 @@ import { loadEditableDeal } from "@/features/deals/dealAuth";
 import type { PermSetUser } from "@/features/permissions/effective";
 import type { DbOrTx } from "@/server/realtime/channelVersions";
 import { publishBoardEvent } from "@/server/realtime/events";
-import { ok, type Result } from "@/types/result";
+import { err, ok, type Result } from "@/types/result";
+
+import { dealVersionConflict, missingDealVersion, readFinalDeal } from "./dealVersion";
 
 export const dealArchiveInput = z.object({
   dealId: z.string().uuid(),
+  expectedWriteVersion: z.string().uuid(),
   archived: z.boolean().default(true), // false unarchives
 });
 export type DealArchiveInput = z.infer<typeof dealArchiveInput>;
@@ -20,9 +23,11 @@ export type DealArchiveInput = z.infer<typeof dealArchiveInput>;
 export async function archiveDeal(
   db: DbOrTx,
   actor: PermSetUser,
-  raw: DealArchiveInput,
+  raw: unknown,
   signal: AbortSignal,
 ): Promise<Result<Deal, AppError>> {
+  const versionError = missingDealVersion(raw);
+  if (versionError !== null) return err(versionError);
   const input = dealArchiveInput.parse(raw);
   return db.transaction(async (tx) => {
     // Same choke point as move/won/lost: 404-on-invisible, else edit-permission check.
@@ -34,15 +39,9 @@ export async function archiveDeal(
     const [row] = await tx
       .update(deals)
       .set({ archivedAt: input.archived ? sql`now()` : null })
-      .where(eq(deals.id, input.dealId))
+      .where(and(eq(deals.id, input.dealId), eq(deals.writeVersion, input.expectedWriteVersion)))
       .returning();
-    if (row === undefined) {
-      throw new AppError(
-        ERROR_IDS.DB_INVARIANT,
-        "archiveDeal: UPDATE RETURNING produced undefined",
-        { dealId: input.dealId },
-      );
-    }
+    if (row === undefined) return err(dealVersionConflict(input.dealId));
 
     // Log the transition so the deal history timeline shows archive/unarchive events,
     // consistent with how won/lost/moves are recorded.
@@ -83,6 +82,6 @@ export async function archiveDeal(
       },
       signal,
     );
-    return ok(row);
+    return ok(await readFinalDeal(tx, row.id, signal));
   });
 }

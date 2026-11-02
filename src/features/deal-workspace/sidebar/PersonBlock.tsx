@@ -1,9 +1,11 @@
 "use client";
+
 import { useRouter } from "next/navigation";
 import type React from "react";
 import type { Person } from "@/db/schema";
 import { updatePersonAction } from "@/features/contacts/actions";
 import { ContactCustomFieldRows } from "@/features/custom-fields/ContactCustomFieldRows";
+import { dealClientResult } from "@/features/deals/dealClientResult";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import type { ContactPoint } from "@/types/contactPoint";
 import type { CustomFieldDef } from "@/types/customFields";
@@ -62,7 +64,9 @@ export function PersonBlock({
   const router = useRouter();
 
   async function save(change: PersonFieldChange): Promise<{ ok: boolean; errorId?: string }> {
-    const r = await updatePersonAction({ id: person.id, ...change }, readCsrfToken());
+    const r = await dealClientResult(() =>
+      updatePersonAction({ id: person.id, ...change }, readCsrfToken()),
+    );
     if (!r.ok) return { ok: false, errorId: r.error.id };
     // Refresh only after a committed write, and never let a refresh failure mask that success.
     refreshQuietly(router);

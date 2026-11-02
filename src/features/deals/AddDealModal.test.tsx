@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { dealClientFixture } from "@/features/deals/dealClientFixture";
 import "@testing-library/jest-dom/vitest";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
@@ -45,7 +46,7 @@ vi.mock("@/lib/trpc-client", () => ({
 
 const { createDealAction } = vi.hoisted(() => ({
   createDealAction: vi.fn(() =>
-    Promise.resolve({ ok: true as const, deal: { id: "d1", updatedAt: "x" } }),
+    Promise.resolve({ ok: true as const, deal: dealClientFixture({ id: "d1", updatedAt: "x" }) }),
   ),
 }));
 const { createPersonAction, createOrgAction } = vi.hoisted(() => ({

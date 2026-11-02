@@ -19,9 +19,28 @@ vi.mock("next/navigation", () => ({ useRouter: () => ({ replace }) }));
 vi.mock("@/utils/csrfCookie", () => ({ readCsrfToken: () => "csrf" }));
 const listInputs = vi.hoisted<unknown[]>(() => []);
 let searchRefreshesPick = false;
-const firstPage = [{ id: "d2", title: "Beta deal", updatedAt: "2026-07-01T00:00:00.000Z" }];
-const searchHits = [{ id: "d3", title: "Arkansas deal", updatedAt: "2026-07-03T00:00:00.000Z" }];
-const refreshedPick = { id: "d2", title: "Beta deal", updatedAt: "2026-07-09T00:00:00.000Z" };
+const firstPage = [
+  {
+    id: "d2",
+    title: "Beta deal",
+    writeVersion: "00000000-0000-4000-8000-000000000001",
+    updatedAt: "2026-07-01T00:00:00.000Z",
+  },
+];
+const searchHits = [
+  {
+    id: "d3",
+    title: "Arkansas deal",
+    writeVersion: "00000000-0000-4000-8000-000000000003",
+    updatedAt: "2026-07-03T00:00:00.000Z",
+  },
+];
+const refreshedPick = {
+  id: "d2",
+  title: "Beta deal",
+  writeVersion: "00000000-0000-4000-8000-000000000002",
+  updatedAt: "2026-07-09T00:00:00.000Z",
+};
 vi.mock("@/lib/trpc-client", () => ({
   trpc: {
     deal: {
@@ -85,7 +104,7 @@ afterEach(() => {
 const props = {
   dealId: "d1",
   pipelineId: "p1",
-  expectedUpdatedAt: "2026-07-02T00:00:00.000Z",
+  expectedWriteVersion: "00000000-0000-4000-8000-000000000001",
   open: true,
   onOpenChange: vi.fn(),
 };
@@ -101,8 +120,8 @@ it("confirming merges this deal into the picked one and replaces the deleted dea
       {
         targetDealId: "d2",
         sourceDealId: "d1",
-        expectedTargetUpdatedAt: "2026-07-01T00:00:00.000Z",
-        expectedSourceUpdatedAt: "2026-07-02T00:00:00.000Z",
+        expectedTargetWriteVersion: "00000000-0000-4000-8000-000000000001",
+        expectedSourceWriteVersion: "00000000-0000-4000-8000-000000000001",
       },
       "csrf",
     ),
@@ -156,26 +175,30 @@ it("keeps the picked deal when a later search no longer returns it", async () =>
   );
 });
 
-it("merges into the picked deal's freshest updatedAt when a later search returns it again", async () => {
+it("keeps both chosen versions when a later search and source props refresh", async () => {
   searchRefreshesPick = true;
   const user = userEvent.setup();
-  render(<MergeDealDialog {...props} />);
+  const { rerender } = render(<MergeDealDialog {...props} />);
   await user.click(screen.getByRole("button", { name: "pick-source" }));
   await user.click(screen.getByRole("button", { name: "type-ark" }));
   expect(await screen.findByText("Arkansas deal")).toBeInTheDocument();
+  rerender(
+    <MergeDealDialog {...props} expectedWriteVersion="00000000-0000-4000-8000-000000000002" />,
+  );
   await user.click(screen.getByRole("button", { name: "Merge" }));
   await waitFor(() =>
     expect(mergeDealsAction).toHaveBeenCalledWith(
       expect.objectContaining({
         targetDealId: "d2",
-        expectedTargetUpdatedAt: "2026-07-09T00:00:00.000Z",
+        expectedSourceWriteVersion: props.expectedWriteVersion,
+        expectedTargetWriteVersion: "00000000-0000-4000-8000-000000000001",
       }),
       "csrf",
     ),
   );
 });
 
-it("keeps the refreshed updatedAt after a later search drops the picked deal again", async () => {
+it("keeps the chosen version after a later search drops the picked deal again", async () => {
   searchRefreshesPick = true;
   const user = userEvent.setup();
   render(<MergeDealDialog {...props} />);
@@ -190,14 +213,14 @@ it("keeps the refreshed updatedAt after a later search drops the picked deal aga
     expect(mergeDealsAction).toHaveBeenCalledWith(
       expect.objectContaining({
         targetDealId: "d2",
-        expectedTargetUpdatedAt: "2026-07-09T00:00:00.000Z",
+        expectedTargetWriteVersion: "00000000-0000-4000-8000-000000000001",
       }),
       "csrf",
     ),
   );
 });
 
-it("does not roll the pick back to an older row when an earlier page shows again", async () => {
+it("keeps the same chosen snapshot when an earlier search page shows again", async () => {
   searchRefreshesPick = true;
   const user = userEvent.setup();
   render(<MergeDealDialog {...props} />);
@@ -211,7 +234,7 @@ it("does not roll the pick back to an older row when an earlier page shows again
     expect(mergeDealsAction).toHaveBeenCalledWith(
       expect.objectContaining({
         targetDealId: "d2",
-        expectedTargetUpdatedAt: "2026-07-09T00:00:00.000Z",
+        expectedTargetWriteVersion: "00000000-0000-4000-8000-000000000001",
       }),
       "csrf",
     ),

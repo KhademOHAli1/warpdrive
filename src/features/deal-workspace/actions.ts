@@ -3,8 +3,18 @@
 import { after } from "next/server";
 import { ERROR_IDS } from "@/constants/errorIds";
 import { db } from "@/db/client";
+import {
+  type DealActionSnapshot,
+  dealActionSnapshot,
+  missingDealVersion,
+} from "@/features/deals/dealVersion";
 import { notifyOnDealUpdate } from "@/features/deals/notifyHelpers";
-import type { ChangeOwnerInput, ChangeStageInput, DeleteDealInput } from "@/features/deals/schemas";
+import type {
+  ChangeOwnerInput,
+  ChangeStageInput,
+  DeleteDealInput,
+  VersionedDealInput,
+} from "@/features/deals/schemas";
 import { guardCsrf } from "@/features/identity/actions/shared";
 import { SIG } from "@/features/identity/actions/sig";
 import { createContext } from "@/server/trpc/context";
@@ -16,16 +26,16 @@ import { followDeal, unfollowDeal } from "./followers";
 import { addParticipant, removeParticipant } from "./participants";
 import { markLost, markWon, reopenDeal } from "./wonLost";
 
-type IdResult = { ok: true; value: { id: string } } | { ok: false; error: { id: string } };
+type IdResult =
+  | { ok: true; value: { id: string }; deal: DealActionSnapshot }
+  | { ok: false; error: { id: string } };
 
 type VoidResult = { ok: true } | { ok: false; error: { id: string } };
 
-type DealResult =
-  | { ok: true; deal: { id: string; updatedAt: string } }
-  | { ok: false; error: { id: string } };
+type DealResult = { ok: true; deal: DealActionSnapshot } | { ok: false; error: { id: string } };
 
 export async function markWonAction(
-  input: { dealId: string },
+  input: VersionedDealInput,
   csrfToken: string | null = null,
 ): Promise<IdResult> {
   const csrfOk = await guardCsrf(csrfToken);
@@ -35,7 +45,7 @@ export async function markWonAction(
   if (actor === null) return { ok: false, error: { id: ERROR_IDS.AUTH_SESSION_DEAD } };
 
   // Record-scoped: loadEditableDeal inside markWon gates edit permission.
-  const result = await markWon(db, actor, input.dealId, SIG());
+  const result = await markWon(db, actor, input, SIG());
   if (!result.ok) return { ok: false, error: { id: result.error.id } };
 
   // Fan out deal_won to followers UNION owner minus actor (spec-0 notify gap fix). Runs outside
@@ -55,11 +65,11 @@ export async function markWonAction(
     }
   });
 
-  return { ok: true, value: { id: result.value.id } };
+  return { ok: true, value: { id: result.value.id }, deal: dealActionSnapshot(result.value) };
 }
 
 export async function reopenDealAction(
-  input: { dealId: string },
+  input: VersionedDealInput,
   csrfToken: string | null = null,
 ): Promise<IdResult> {
   const csrfOk = await guardCsrf(csrfToken);
@@ -69,7 +79,7 @@ export async function reopenDealAction(
   if (actor === null) return { ok: false, error: { id: ERROR_IDS.AUTH_SESSION_DEAD } };
 
   // Record-scoped: loadEditableDeal inside reopenDeal gates edit permission.
-  const result = await reopenDeal(db, actor, input.dealId, SIG());
+  const result = await reopenDeal(db, actor, input, SIG());
   if (!result.ok) return { ok: false, error: { id: result.error.id } };
 
   // Notify followers of the status change, like markWon/markLost and the generic update path.
@@ -89,16 +99,23 @@ export async function reopenDealAction(
     }
   });
 
-  return { ok: true, value: { id: result.value.id } };
+  return { ok: true, value: { id: result.value.id }, deal: dealActionSnapshot(result.value) };
 }
 
 export async function markLostAction(
-  input: { dealId: string; lostReasonId?: string | null; lostReason?: string | null },
+  input: {
+    dealId: string;
+    expectedWriteVersion: string;
+    lostReasonId?: string | null;
+    lostReason?: string | null;
+  },
   csrfToken: string | null = null,
 ): Promise<IdResult> {
   const csrfOk = await guardCsrf(csrfToken);
   if (!csrfOk.ok) return { ok: false, error: { id: "E_AUTH_CSRF" } };
 
+  const versionError = missingDealVersion(input);
+  if (versionError !== null) return { ok: false, error: { id: versionError.id } };
   const parsed = markLostInput.safeParse(input);
   if (!parsed.success) return { ok: false, error: { id: ERROR_IDS.DEAL_LOST_INPUT_INVALID } };
 
@@ -109,7 +126,11 @@ export async function markLostAction(
     db,
     actor,
     parsed.data.dealId,
-    { lostReasonId: parsed.data.lostReasonId, lostReason: parsed.data.lostReason },
+    {
+      lostReasonId: parsed.data.lostReasonId,
+      lostReason: parsed.data.lostReason,
+      expectedWriteVersion: parsed.data.expectedWriteVersion,
+    },
     SIG(),
   );
   if (!result.ok) return { ok: false, error: { id: result.error.id } };
@@ -122,7 +143,7 @@ export async function markLostAction(
     signal: SIG(),
   });
 
-  return { ok: true, value: { id: result.value.id } };
+  return { ok: true, value: { id: result.value.id }, deal: dealActionSnapshot(result.value) };
 }
 
 export async function changeStageAction(
@@ -139,7 +160,7 @@ export async function changeStageAction(
   if (!result.ok) return { ok: false, error: { id: result.error.id } };
   return {
     ok: true,
-    deal: { id: result.value.id, updatedAt: result.value.updatedAt.toISOString() },
+    deal: dealActionSnapshot(result.value),
   };
 }
 
@@ -157,7 +178,7 @@ export async function changeOwnerAction(
   if (!result.ok) return { ok: false, error: { id: result.error.id } };
   return {
     ok: true,
-    deal: { id: result.value.id, updatedAt: result.value.updatedAt.toISOString() },
+    deal: dealActionSnapshot(result.value),
   };
 }
 
@@ -175,7 +196,7 @@ export async function deleteDealAction(
   if (!result.ok) return { ok: false, error: { id: result.error.id } };
   return {
     ok: true,
-    deal: { id: result.value.id, updatedAt: result.value.updatedAt.toISOString() },
+    deal: dealActionSnapshot(result.value),
   };
 }
 

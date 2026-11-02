@@ -1,7 +1,8 @@
 // Integration tests for changeStage. Real Postgres via Testcontainers, no DB mocking.
 import { and, eq } from "drizzle-orm";
 import { afterAll, beforeAll, expect, it } from "vitest";
-import { changeLogs, deals } from "@/db/schema";
+import { dealMovedChannel } from "@/constants/boardChannels";
+import { changeLogs, channelVersions, deals } from "@/db/schema";
 import { seedPipelineWithStages, seedUser } from "@/db/testing/factories";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { makeTestDb } from "@/test/db";
@@ -30,6 +31,20 @@ async function seedDeal(pipelineId: string, stageId: string, ownerId: string, bo
   return deal;
 }
 
+async function stageMutationSnapshot(dealId: string, pipelineId: string) {
+  const [row] = await h.db.select().from(deals).where(eq(deals.id, dealId));
+  const audit = await h.db
+    .select()
+    .from(changeLogs)
+    .where(eq(changeLogs.entityId, dealId))
+    .orderBy(changeLogs.id);
+  const channel = await h.db
+    .select()
+    .from(channelVersions)
+    .where(eq(channelVersions.channel, dealMovedChannel(pipelineId)));
+  return { row, audit, channel };
+}
+
 it("appends the deal to the bottom of a stage that already holds two deals", async () => {
   const u = await seedUser(h.db);
   const p = await seedPipelineWithStages(h.db, ["A", "B"]);
@@ -42,7 +57,12 @@ it("appends the deal to the bottom of a stage that already holds two deals", asy
   const r = await changeStage(
     h.db,
     makeActor(u.id),
-    { dealId: deal.id, toStageId: s1.id, expectedUpdatedAt: deal.updatedAt.toISOString() },
+    {
+      dealId: deal.id,
+      toStageId: s1.id,
+      expectedWriteVersion: deal.writeVersion,
+      expectedUpdatedAt: deal.updatedAt.toISOString(),
+    },
     new AbortController().signal,
   );
 
@@ -63,7 +83,12 @@ it("writes a stageId changelog row on a stage change", async () => {
   const r = await changeStage(
     h.db,
     makeActor(u.id),
-    { dealId: deal.id, toStageId: s1.id, expectedUpdatedAt: deal.updatedAt.toISOString() },
+    {
+      dealId: deal.id,
+      toStageId: s1.id,
+      expectedWriteVersion: deal.writeVersion,
+      expectedUpdatedAt: deal.updatedAt.toISOString(),
+    },
     new AbortController().signal,
   );
   expect(r.ok).toBe(true);
@@ -89,6 +114,7 @@ it("rejects a stage from a different pipeline with E_DEAL_003", async () => {
     {
       dealId: deal.id,
       toStageId: pB.stages[0]!.id,
+      expectedWriteVersion: deal.writeVersion,
       expectedUpdatedAt: deal.updatedAt.toISOString(),
     },
     new AbortController().signal,
@@ -99,7 +125,7 @@ it("rejects a stage from a different pipeline with E_DEAL_003", async () => {
   expect(r.error.id).toBe("E_DEAL_003");
 });
 
-it("returns E_DEAL_002 and leaves the deal unchanged when expectedUpdatedAt is stale", async () => {
+it("returns E_DEAL_002 and leaves the deal unchanged when expectedWriteVersion is stale", async () => {
   const u = await seedUser(h.db);
   const p = await seedPipelineWithStages(h.db, ["A", "B"]);
   const [s0, s1] = [p.stages[0]!, p.stages[1]!];
@@ -108,7 +134,12 @@ it("returns E_DEAL_002 and leaves the deal unchanged when expectedUpdatedAt is s
   const r = await changeStage(
     h.db,
     makeActor(u.id),
-    { dealId: deal.id, toStageId: s1.id, expectedUpdatedAt: "2000-01-01T00:00:00.000Z" },
+    {
+      dealId: deal.id,
+      toStageId: s1.id,
+      expectedWriteVersion: "00000000-0000-4000-8000-000000000001",
+      expectedUpdatedAt: "2000-01-01T00:00:00.000Z",
+    },
     new AbortController().signal,
   );
 
@@ -118,4 +149,49 @@ it("returns E_DEAL_002 and leaves the deal unchanged when expectedUpdatedAt is s
 
   const [row] = await h.db.select().from(deals).where(eq(deals.id, deal.id));
   expect(row?.stageId).toBe(s0.id);
+});
+
+it("acknowledges a fresh current-stage selection without reordering or any mutation", async () => {
+  const u = await seedUser(h.db);
+  const p = await seedPipelineWithStages(h.db, ["A"]);
+  const stage = p.stages[0]!;
+  const deal = await seedDeal(p.pipeline.id, stage.id, u.id, "2");
+  await seedDeal(p.pipeline.id, stage.id, u.id, "10");
+  const before = await stageMutationSnapshot(deal.id, p.pipeline.id);
+
+  const result = await changeStage(
+    h.db,
+    makeActor(u.id),
+    { dealId: deal.id, toStageId: stage.id, expectedWriteVersion: deal.writeVersion },
+    AbortSignal.timeout(5000),
+  );
+
+  expect(result.ok).toBe(true);
+  if (!result.ok) throw result.error;
+  expect(result.value).toEqual(before.row);
+  expect(result.value.boardPosition).toBe("2");
+  expect(result.value.writeVersion).toBe(deal.writeVersion);
+  expect(await stageMutationSnapshot(deal.id, p.pipeline.id)).toEqual(before);
+});
+
+it("rejects a stale current-stage selection without acknowledging or changing the winner", async () => {
+  const u = await seedUser(h.db);
+  const p = await seedPipelineWithStages(h.db, ["A"]);
+  const stage = p.stages[0]!;
+  const deal = await seedDeal(p.pipeline.id, stage.id, u.id, "2");
+  await h.db.update(deals).set({ title: "Concurrent winner" }).where(eq(deals.id, deal.id));
+  const winner = await stageMutationSnapshot(deal.id, p.pipeline.id);
+  expect(winner.row?.writeVersion).not.toBe(deal.writeVersion);
+
+  const result = await changeStage(
+    h.db,
+    makeActor(u.id),
+    { dealId: deal.id, toStageId: stage.id, expectedWriteVersion: deal.writeVersion },
+    AbortSignal.timeout(5000),
+  );
+
+  expect(result.ok).toBe(false);
+  if (result.ok) throw new Error("stale current-stage selection was acknowledged");
+  expect(result.error.id).toBe("E_DEAL_002");
+  expect(await stageMutationSnapshot(deal.id, p.pipeline.id)).toEqual(winner);
 });

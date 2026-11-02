@@ -1,4 +1,5 @@
 "use client";
+
 import { DndContext, type DragEndEvent, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import {
   arrayMove,
@@ -25,6 +26,7 @@ import type {
 } from "@/constants/dealSidebarSections";
 import { sectionName } from "@/constants/dealSidebarSections";
 import { useDealActionError } from "@/features/deal-workspace/DealActionErrorProvider";
+import { dealClientResult } from "@/features/deals/dealClientResult";
 import { useSalesStrings } from "@/features/deals/useSalesStrings";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { setSidebarSectionsAction } from "@/features/identity/preferencesActions";
@@ -154,7 +156,9 @@ export function ManageSectionsDialog({
   }
 
   async function save(): Promise<void> {
-    const result = await setSidebarSectionsAction({ sections: draft }, readCsrfToken());
+    const result = await dealClientResult(() =>
+      setSidebarSectionsAction({ sections: draft }, readCsrfToken()),
+    );
     if (result.ok) {
       onSaved(draft);
       onOpenChange(false);

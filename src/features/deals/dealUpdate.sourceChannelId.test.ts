@@ -15,6 +15,7 @@ describe("updateDeal: source_channel_id", () => {
         adminSession(u.id),
         {
           dealId: deal.id,
+          expectedWriteVersion: deal.writeVersion,
           expectedUpdatedAt: deal.updatedAt.toISOString(),
           sourceChannelId: "EXT-42",
         },
@@ -29,6 +30,7 @@ describe("updateDeal: source_channel_id", () => {
         adminSession(u.id),
         {
           dealId: deal.id,
+          expectedWriteVersion: set.value.writeVersion,
           expectedUpdatedAt: set.value.updatedAt.toISOString(),
           sourceChannelId: null,
         },

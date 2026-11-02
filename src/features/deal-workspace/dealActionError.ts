@@ -1,3 +1,4 @@
+import { actionErrorContent } from "@/components/shell/actionError";
 import { ERROR_IDS } from "@/constants/errorIds";
 import { createAppTranslator } from "@/features/i18n/catalog";
 import type { Locale } from "@/features/i18n/registry";
@@ -12,6 +13,14 @@ export function dealActionErrorContent(
   const t = createAppTranslator(locale, "sales");
   const generic = { title: t("computed.changeFailedTitle"), body: t("computed.changeFailedBody") };
   const content: Record<string, DealActionErrorContent> = {
+    [ERROR_IDS.DEAL_BULK_STAGE_PARTIAL]: actionErrorContent(
+      ERROR_IDS.DEAL_BULK_STAGE_PARTIAL,
+      locale,
+    ),
+    [ERROR_IDS.DEAL_BULK_ARCHIVE_PARTIAL]: actionErrorContent(
+      ERROR_IDS.DEAL_BULK_ARCHIVE_PARTIAL,
+      locale,
+    ),
     [ERROR_IDS.PERM_DENIED]: {
       title: t("computed.permissionTitle"),
       body: t("computed.permissionBody"),

@@ -1,4 +1,5 @@
 "use client";
+
 import type React from "react";
 import { useId, useMemo, useRef, useState } from "react";
 import { reportTimePickerValidity } from "@/components/ui/timePickerValidity";
@@ -12,6 +13,7 @@ import {
   customFieldCreatePayload,
   firstMissingImportantField,
 } from "@/features/custom-fields/CustomFieldCreateFields";
+import { dealClientResult } from "@/features/deals/dealClientResult";
 import { updateDealAction } from "@/features/deals/updateAction";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import type { CustomFieldDef } from "@/types/customFields";
@@ -45,7 +47,7 @@ function fullName(d: Draft): string {
 // creating one only when the user did not take a suggestion.
 export function PersonLinkEditor({
   dealId,
-  expectedUpdatedAt,
+  expectedWriteVersion,
   personOptions,
   hidden,
   customFieldDefs,
@@ -53,7 +55,7 @@ export function PersonLinkEditor({
   onError,
 }: {
   dealId: string;
-  expectedUpdatedAt: string;
+  expectedWriteVersion: string;
   personOptions: PersonMatchCandidate[];
   hidden: ReadonlySet<string>;
   customFieldDefs: CustomFieldDef[];
@@ -64,6 +66,7 @@ export function PersonLinkEditor({
   const fieldsRef = useRef<HTMLDivElement>(null);
 
   const [draft, setDraft] = useState<Draft>(EMPTY);
+  const [editVersion] = useState(expectedWriteVersion);
   const [values, setValues] = useState<CustomFieldValues>({});
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -91,7 +94,9 @@ export function PersonLinkEditor({
   }
 
   async function linkDeal(personId: string): Promise<boolean> {
-    const r = await updateDealAction({ dealId, expectedUpdatedAt, personId }, readCsrfToken());
+    const r = await dealClientResult(() =>
+      updateDealAction({ dealId, expectedWriteVersion: editVersion, personId }, readCsrfToken()),
+    );
     if (r.ok) return true;
     onError(r.error.id);
     return false;
@@ -126,30 +131,32 @@ export function PersonLinkEditor({
       if (relinked) onDone();
       return;
     }
-    const created = await createPersonAction(
-      {
-        name,
-        firstName: draft.firstName.trim() === "" ? null : draft.firstName.trim(),
-        lastName: draft.lastName.trim() === "" ? null : draft.lastName.trim(),
-        emails:
-          draft.email.trim() === ""
-            ? []
-            : [{ label: "work", value: draft.email.trim(), primary: true }],
-        phones:
-          draft.phone.trim() === ""
-            ? []
-            : [
-                {
-                  label: "work",
-                  value: draft.phone,
-                  primary: true,
-                  ...(draft.phoneCountry === undefined ? {} : { country: draft.phoneCountry }),
-                },
-              ],
-        orgId: null,
-        customFields: customFieldCreatePayload(customFieldDefs, values),
-      },
-      readCsrfToken(),
+    const created = await dealClientResult(() =>
+      createPersonAction(
+        {
+          name,
+          firstName: draft.firstName.trim() === "" ? null : draft.firstName.trim(),
+          lastName: draft.lastName.trim() === "" ? null : draft.lastName.trim(),
+          emails:
+            draft.email.trim() === ""
+              ? []
+              : [{ label: "work", value: draft.email.trim(), primary: true }],
+          phones:
+            draft.phone.trim() === ""
+              ? []
+              : [
+                  {
+                    label: "work",
+                    value: draft.phone,
+                    primary: true,
+                    ...(draft.phoneCountry === undefined ? {} : { country: draft.phoneCountry }),
+                  },
+                ],
+          orgId: null,
+          customFields: customFieldCreatePayload(customFieldDefs, values),
+        },
+        readCsrfToken(),
+      ),
     );
     if (!created.ok) {
       setPending(false);

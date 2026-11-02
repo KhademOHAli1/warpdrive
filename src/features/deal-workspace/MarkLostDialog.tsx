@@ -1,4 +1,5 @@
 "use client";
+
 import { GraduationCap } from "lucide-react";
 import type React from "react";
 import { useState } from "react";
@@ -12,6 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/Textarea";
 import { useDealActionError } from "@/features/deal-workspace/DealActionErrorProvider";
+import { dealClientResult } from "@/features/deals/dealClientResult";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { markLostAction } from "./actions";
@@ -20,6 +22,7 @@ const COMMENT_ID = "mark-lost-comment";
 
 export interface MarkLostDialogProps {
   dealId: string;
+  expectedWriteVersion: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   lostReasonOptions: Array<{ id: string; name: string }>;
@@ -33,6 +36,7 @@ export interface MarkLostDialogProps {
 // A missing reason is allowed (marking lost never blocks). Errors surface via useDealActionError.
 export function MarkLostDialog({
   dealId,
+  expectedWriteVersion,
   open,
   onOpenChange,
   lostReasonOptions,
@@ -57,13 +61,16 @@ export function MarkLostDialog({
 
   async function submit(): Promise<void> {
     setPending(true);
-    const r = await markLostAction(
-      {
-        dealId,
-        lostReasonId: reasonId === "" ? null : reasonId,
-        lostReason: comment.trim() === "" ? null : comment.trim(),
-      },
-      readCsrfToken(),
+    const r = await dealClientResult(() =>
+      markLostAction(
+        {
+          dealId,
+          expectedWriteVersion,
+          lostReasonId: reasonId === "" ? null : reasonId,
+          lostReason: comment.trim() === "" ? null : comment.trim(),
+        },
+        readCsrfToken(),
+      ),
     );
     setPending(false);
     if (r.ok) {

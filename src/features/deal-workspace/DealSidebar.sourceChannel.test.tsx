@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { dealClientFixture } from "@/features/deals/dealClientFixture";
 import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeAll, expect, it, vi } from "vitest";
@@ -11,7 +12,7 @@ const updateDealAction = vi.hoisted(() =>
     void csrfToken;
     return Promise.resolve({
       ok: true,
-      deal: { id: "d1", updatedAt: "2026-01-03T00:00:00.000Z" },
+      deal: dealClientFixture({ id: "d1", updatedAt: "2026-01-03T00:00:00.000Z" }),
     });
   }),
 );
@@ -68,6 +69,7 @@ function makeWorkspace(): DealWorkspace {
       customFields: {},
       createdAt: new Date("2026-01-01T00:00:00Z"),
       lastActivityAt: null,
+      writeVersion: "00000000-0000-4000-8000-000000000001",
       updatedAt: new Date("2026-01-02T00:00:00Z"),
     },
     ownerName: "Owner One",
@@ -87,6 +89,7 @@ it("inline-edits the Source Channel row through the deal update action", async (
     />,
   );
 
+  fireEvent.click(screen.getByRole("button", { name: "Source" }));
   fireEvent.click(screen.getByRole("button", { name: "Edit Channel" }));
   fireEvent.click(screen.getByLabelText("Channel"));
   fireEvent.click(screen.getByText("Inbound"));
@@ -96,7 +99,7 @@ it("inline-edits the Source Channel row through the deal update action", async (
     expect(updateDealAction).toHaveBeenCalledWith(
       {
         dealId: "d1",
-        expectedUpdatedAt: "2026-01-02T00:00:00.000Z",
+        expectedWriteVersion: "00000000-0000-4000-8000-000000000001",
         sourceChannel: "inbound",
       },
       "csrf",
@@ -117,13 +120,18 @@ it("inline-edits the Channel ID row through the deal update action", async () =>
     />,
   );
 
+  fireEvent.click(screen.getByRole("button", { name: "Source" }));
   fireEvent.click(screen.getByRole("button", { name: "Edit Channel ID" }));
   fireEvent.change(screen.getByLabelText("Channel ID"), { target: { value: "EXT-2" } });
   fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
   await vi.waitFor(() =>
     expect(updateDealAction).toHaveBeenCalledWith(
-      { dealId: "d1", expectedUpdatedAt: "2026-01-02T00:00:00.000Z", sourceChannelId: "EXT-2" },
+      {
+        dealId: "d1",
+        expectedWriteVersion: "00000000-0000-4000-8000-000000000001",
+        sourceChannelId: "EXT-2",
+      },
       "csrf",
     ),
   );

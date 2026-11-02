@@ -1,8 +1,10 @@
 "use client";
+
 import Link from "next/link";
 import type React from "react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { createOrgAction } from "@/features/contacts/actions";
+import { dealClientResult } from "@/features/deals/dealClientResult";
 import { updateDealAction } from "@/features/deals/updateAction";
 import { EntityCombobox } from "@/features/entity-create/EntityCombobox";
 import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
@@ -30,13 +32,13 @@ type Draft =
 // searches existing organizations OR creates a new one, committed through the Cancel/Save footer.
 export function InlineOrgField({
   dealId,
-  expectedUpdatedAt,
+  expectedWriteVersion,
   org,
   orgOptions,
   onSaved,
 }: {
   dealId: string;
-  expectedUpdatedAt: string;
+  expectedWriteVersion: string;
   org: OrgRef | null;
   orgOptions: OrgRef[];
   onSaved: () => void;
@@ -48,8 +50,11 @@ export function InlineOrgField({
   const [draft, setDraft] = useState<Draft>({ kind: "unchanged" });
   const [pending, setPending] = useState(false);
   const [errorId, setErrorId] = useState<string | null>(null);
+  const editVersion = useRef(expectedWriteVersion);
+  const created = useRef<{ name: string; id: string } | null>(null);
 
   function start(): void {
+    editVersion.current = expectedWriteVersion;
     setDraft({ kind: "unchanged" });
     setErrorId(null);
     setEditing(true);
@@ -68,11 +73,14 @@ export function InlineOrgField({
     if (draft.kind === "existing") return draft.id;
     if (draft.kind === "clear") return null;
     if (draft.kind === "new") {
-      const r = await createOrgAction(
-        { name: draft.name.trim(), address: null, customFields: {} },
-        readCsrfToken(),
+      const name = draft.name.trim();
+      if (created.current?.name === name) return created.current.id;
+      const r = await dealClientResult(() =>
+        createOrgAction({ name, address: null, customFields: {} }, readCsrfToken()),
       );
-      return r.ok ? r.value.id : { errorId: r.error.id };
+      if (!r.ok) return { errorId: r.error.id };
+      created.current = { name, id: r.value.id };
+      return r.value.id;
     }
     return org?.id ?? null; // unchanged: unreachable while dirty-gated, kept total.
   }
@@ -87,9 +95,11 @@ export function InlineOrgField({
       setPending(false);
       return;
     }
-    const r = await updateDealAction(
-      { dealId, expectedUpdatedAt, orgId: resolved },
-      readCsrfToken(),
+    const r = await dealClientResult(() =>
+      updateDealAction(
+        { dealId, expectedWriteVersion: editVersion.current, orgId: resolved },
+        readCsrfToken(),
+      ),
     );
     setPending(false);
     if (r.ok) {

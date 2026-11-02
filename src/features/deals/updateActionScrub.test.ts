@@ -39,7 +39,7 @@ async function seedGroupDeal(
   db: Db,
   ownerId: string,
   groupId: string,
-): Promise<{ id: string; updatedAt: string }> {
+): Promise<{ id: string; updatedAt: string; writeVersion: string }> {
   const { pipeline, stages } = await seedPipelineWithStages(db, ["Open"]);
   const stage = stages[0];
   if (stage === undefined) throw new Error("seedGroupDeal: no stage returned");
@@ -47,11 +47,15 @@ async function seedGroupDeal(
     await db.execute(sql`
       INSERT INTO deals (title, pipeline_id, stage_id, owner_id, visibility_level, visibility_group_id)
       VALUES ('Group Deal', ${pipeline.id}, ${stage.id}, ${ownerId}, 'group', ${groupId}::uuid)
-      RETURNING id, updated_at
+      RETURNING id, updated_at, write_version
     `)
-  ).rows[0] as { id: string; updated_at: string } | undefined;
+  ).rows[0] as { id: string; updated_at: string; write_version: string } | undefined;
   if (row === undefined) throw new Error("seedGroupDeal: insert returned no rows");
-  return { id: row.id, updatedAt: new Date(row.updated_at).toISOString() };
+  return {
+    id: row.id,
+    updatedAt: new Date(row.updated_at).toISOString(),
+    writeVersion: row.write_version,
+  };
 }
 
 async function seedNotification(db: Db, userId: string, dealId: string): Promise<void> {
@@ -103,6 +107,7 @@ describe("updateDeal + scrubInaccessible: visibility group change removes stale 
         session,
         {
           dealId: deal.id,
+          expectedWriteVersion: deal.writeVersion,
           expectedUpdatedAt: deal.updatedAt,
           visibilityGroupId: groupH,
         },
@@ -158,6 +163,7 @@ describe("updateDeal + scrubInaccessible: visibility group change removes stale 
         session,
         {
           dealId: deal.id,
+          expectedWriteVersion: deal.writeVersion,
           expectedUpdatedAt: deal.updatedAt,
           visibilityGroupId: groupH,
         },
@@ -217,6 +223,7 @@ describe("updateDeal + scrubInaccessible: visibility group change removes stale 
         session,
         {
           dealId: deal.id,
+          expectedWriteVersion: deal.writeVersion,
           expectedUpdatedAt: deal.updatedAt,
           visibilityGroupId: groupForbidden,
         },

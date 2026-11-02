@@ -53,6 +53,7 @@ describe("deal mutation actions: CSRF rejection before any write", () => {
         toStageId: "00000000-0000-0000-0000-000000000002",
         beforePosition: null,
         afterPosition: null,
+        expectedWriteVersion: "00000000-0000-4000-8000-000000000001",
         expectedUpdatedAt: "2026-06-29T00:00:00.000Z",
       },
       null,
@@ -67,6 +68,7 @@ describe("deal mutation actions: CSRF rejection before any write", () => {
     const r = await updateDealAction(
       {
         dealId: "00000000-0000-0000-0000-000000000001",
+        expectedWriteVersion: "00000000-0000-4000-8000-000000000001",
         expectedUpdatedAt: "2026-06-29T00:00:00.000Z",
         title: "Hacked",
       },
@@ -103,6 +105,7 @@ describe("deal mutation actions: CSRF rejection before any write", () => {
     setSameOrigin();
     const r = await bulkStageAction(
       {
+        expectedWriteVersions: {},
         dealIds: ["00000000-0000-0000-0000-000000000001"],
         toStageId: "00000000-0000-0000-0000-000000000002",
       },
@@ -123,6 +126,7 @@ describe("deal mutation actions: CSRF rejection before any write", () => {
         toStageId: "00000000-0000-0000-0000-000000000002",
         beforePosition: null,
         afterPosition: null,
+        expectedWriteVersion: "00000000-0000-4000-8000-000000000001",
         expectedUpdatedAt: "2026-06-29T00:00:00.000Z",
       },
       VALID_TOKEN,

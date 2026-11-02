@@ -1,4 +1,4 @@
-import { eq, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { BOARD_EVENT, dealChannel, dealMovedChannel } from "@/constants/boardChannels";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import { deals } from "@/db/schema";
@@ -10,6 +10,9 @@ import type { DbOrTx } from "@/server/realtime/channelVersions";
 import { publishBoardEvent } from "@/server/realtime/events";
 import { err, ok, type Result } from "@/types/result";
 
+import { dealVersionConflict, missingDealVersion, readFinalDeal } from "./dealVersion";
+import { versionedDealInput } from "./schemas";
+
 // Soft-delete a deal. loadEditableDeal 404s on invisible/already-deleted and enforces
 // deal.edit; deal.delete is a distinct withheld flag, so it is checked on top (mirrors how
 // deletePerson layers contact.delete over visibility). Backfills the delete path that the
@@ -17,9 +20,13 @@ import { err, ok, type Result } from "@/types/result";
 export async function deleteDeal(
   db: DbOrTx,
   actor: PermSetUser,
-  dealId: string,
+  raw: unknown,
   signal: AbortSignal,
-): Promise<Result<{ id: string }, AppError>> {
+): Promise<Result<typeof deals.$inferSelect, AppError>> {
+  const versionError = missingDealVersion(raw);
+  if (versionError !== null) return err(versionError);
+  const input = versionedDealInput.parse(raw);
+  const dealId = input.dealId;
   return db.transaction(async (tx) => {
     const editable = await loadEditableDeal(tx, actor, dealId, signal);
     if (editable.ok === false) return editable;
@@ -31,17 +38,9 @@ export async function deleteDeal(
     const [row] = await tx
       .update(deals)
       .set({ deletedAt: sql`now()` })
-      .where(eq(deals.id, dealId))
-      .returning({ id: deals.id });
-    if (row === undefined) {
-      throw new AppError(
-        ERROR_IDS.DB_INVARIANT,
-        "deleteDeal: UPDATE RETURNING produced undefined",
-        {
-          dealId,
-        },
-      );
-    }
+      .where(and(eq(deals.id, dealId), eq(deals.writeVersion, input.expectedWriteVersion)))
+      .returning();
+    if (row === undefined) return err(dealVersionConflict(dealId));
 
     await recordChange(
       tx,
@@ -75,6 +74,24 @@ export async function deleteDeal(
       },
       signal,
     );
-    return ok(row);
+    return ok(await readFinalDeal(tx, row.id, signal));
   });
+}
+
+// Server-only import undo targets IDs proven to belong to its recorded import rows.
+// It still enforces ordinary visibility/delete authority and an atomic current-version CAS.
+export async function deleteDealForImportUndo(
+  db: DbOrTx,
+  actor: PermSetUser,
+  dealId: string,
+  signal: AbortSignal,
+): Promise<Result<typeof deals.$inferSelect, AppError>> {
+  signal.throwIfAborted();
+  const [current] = await db
+    .select({ writeVersion: deals.writeVersion })
+    .from(deals)
+    .where(eq(deals.id, dealId));
+  signal.throwIfAborted();
+  if (current === undefined) return err(new AppError(ERROR_IDS.DEAL_NOT_FOUND, "Deal not found"));
+  return deleteDeal(db, actor, { dealId, expectedWriteVersion: current.writeVersion }, signal);
 }

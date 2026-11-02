@@ -77,6 +77,9 @@ export const deals = pgTable(
       .notNull()
       .generatedAlwaysAs(sql`to_tsvector('simple', coalesce(title, ''))`),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    // Opaque database-owned CAS token; the INSERT/UPDATE trigger always replaces it.
+    // This is independent of updatedAt and is compared only for equality.
+    writeVersion: uuid("write_version").notNull().defaultRandom(),
     updatedAt: timestamp("updated_at", { withTimezone: true })
       .notNull()
       .defaultNow()

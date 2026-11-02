@@ -8,10 +8,11 @@ import { SIG } from "@/features/identity/actions/sig";
 import { createContext } from "@/server/trpc/context";
 import { isDealVisibleToSession } from "./createdVisibility";
 import { createDeal } from "./dealActions";
+import { type DealActionSnapshot, dealActionSnapshot } from "./dealVersion";
 import type { DealCreateInput } from "./schemas";
 
 export type CreateDealResult =
-  | { ok: true; deal: { id: string; updatedAt: string } | null }
+  | { ok: true; deal: DealActionSnapshot | null }
   | { ok: false; error: { id: string } };
 
 // CSRF-guarded deal create action.
@@ -62,6 +63,6 @@ export async function createDealAction(
 
   return {
     ok: true,
-    deal: { id: result.value.id, updatedAt: result.value.updatedAt.toISOString() },
+    deal: dealActionSnapshot(result.value),
   };
 }

@@ -1,10 +1,14 @@
 // @vitest-environment jsdom
+
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, expect, it, vi } from "vitest";
+import { dealClientFixture } from "@/features/deals/dealClientFixture";
 
 const changeOwnerAction = vi.hoisted(() =>
-  vi.fn(() => Promise.resolve({ ok: true as const, deal: { id: "d1", updatedAt: "x" } })),
+  vi.fn(() =>
+    Promise.resolve({ ok: true as const, deal: dealClientFixture({ id: "d1", updatedAt: "x" }) }),
+  ),
 );
 vi.mock("@/features/deal-workspace/actions", () => ({ changeOwnerAction }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: () => {} }) }));
@@ -25,7 +29,7 @@ afterEach(() => {
 const owner = { id: "u1", name: "Ada Lovelace", avatarUrl: null };
 const props = {
   dealId: "d1",
-  expectedUpdatedAt: "2026-07-02T00:00:00.000Z",
+  expectedWriteVersion: "00000000-0000-4000-8000-000000000001",
   owner,
   canChangeOwner: true,
   assignableUsers: [
@@ -65,7 +69,7 @@ it("selecting a different user calls changeOwnerAction", async () => {
   await user.click(screen.getByRole("button", { name: "Change owner" }));
   await user.click(screen.getByRole("menuitem", { name: "Alan Turing" }));
   expect(changeOwnerAction).toHaveBeenCalledWith(
-    { dealId: "d1", ownerId: "u2", expectedUpdatedAt: props.expectedUpdatedAt },
+    { dealId: "d1", ownerId: "u2", expectedWriteVersion: props.expectedWriteVersion },
     "csrf",
   );
 });

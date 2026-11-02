@@ -6,12 +6,12 @@ import { sourceChannelLabel } from "@/constants/sourceChannelLabels";
 import { isSourceChannelKey } from "@/constants/sourceChannels";
 import type { Organization, Person } from "@/db/schema";
 import { CollapsibleSection } from "@/features/deal-workspace/CollapsibleSection";
-import type { CustomFieldsSave } from "@/features/deal-workspace/sidebar/customFieldsSave";
 import { FieldRow } from "@/features/deal-workspace/sidebar/FieldRow";
 import { PersonSection } from "@/features/deal-workspace/sidebar/PersonSection";
 import { RecordOrganizationSection } from "@/features/deal-workspace/sidebar/RecordOrganizationSection";
 import { sectionHeaderActions } from "@/features/deal-workspace/sidebar/sectionActions";
 import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
+import type { InlineSaveFn } from "@/features/inline-edit/useInlineEditField";
 import { sourceOriginLabel } from "@/features/leads/sourceLabels";
 import { useFormatters } from "@/lib/useFormatters";
 import type { CustomFieldDef } from "@/types/customFields";
@@ -74,7 +74,7 @@ export function LeadSidebar({
     },
   ];
 
-  const saveLeadCustomFields: CustomFieldsSave = async (patch) => {
+  const saveLeadCustomFields: InlineSaveFn<Record<string, unknown>> = async (patch) => {
     const r = await updateLeadAction(
       {
         leadId: lead.id,
@@ -151,6 +151,7 @@ export function LeadSidebar({
         currency={baseCurrency}
         customFields={lead.customFields as Record<string, unknown>}
         customFieldDefs={leadCustomFieldDefs}
+        customFieldsMode="alternate"
         onSaveCustomFields={saveLeadCustomFields}
         detailsTitle={tLeads("details")}
         detailsMenuItems={fieldsItem("lead")}

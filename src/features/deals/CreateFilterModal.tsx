@@ -1,9 +1,11 @@
 "use client";
+
 import type React from "react";
 import { useState } from "react";
 import { type ConditionRow, ConditionRows } from "@/components/filters/ConditionRows";
 import { type ActionErrorContent, actionErrorContent } from "@/components/shell/actionError";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { dealClientResult } from "@/features/deals/dealClientResult";
 import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
 import { mergeLabelOptions } from "@/features/labels/mergeLabelOptions";
 import type { FilterDefinition } from "@/features/saved-filters/schemas";
@@ -117,10 +119,12 @@ export function CreateFilterModal({
         ? translateSales("computed.untitledFilter")
         : effectiveName.trim();
     if (mode === "update" && savedFilter !== undefined) {
-      const res = await updateSavedFilterAction(
-        savedFilter.id,
-        { name: filterName, definition, isShared },
-        readCsrfToken(),
+      const res = await dealClientResult(() =>
+        updateSavedFilterAction(
+          savedFilter.id,
+          { name: filterName, definition, isShared },
+          readCsrfToken(),
+        ),
       );
       if (!res.ok) {
         setSaveError(actionErrorContent(res.error.id));
@@ -129,9 +133,11 @@ export function CreateFilterModal({
       onSave({ id: savedFilter.id, name: filterName, isShared, definition });
       return;
     }
-    const res = await createSavedFilterAction(
-      { name: filterName, targetEntity: "deal", definition, isShared },
-      readCsrfToken(),
+    const res = await dealClientResult(() =>
+      createSavedFilterAction(
+        { name: filterName, targetEntity: "deal", definition, isShared },
+        readCsrfToken(),
+      ),
     );
     if (!res.ok) {
       setSaveError(actionErrorContent(res.error.id));

@@ -95,6 +95,7 @@ afterEach(() => {
 
 const props = {
   dealId: "d1",
+  expectedWriteVersion: "00000000-0000-4000-8000-000000000001",
   status: "open" as const,
   lostReasonOptions: [{ id: "r1", name: "Budget" }],
   scheduleFollowUpAfterWon: false,
@@ -124,6 +125,7 @@ it("shows the status pill when the deal is already closed", () => {
 it("opens a centered Mark as Lost dialog and submits a free-text comment when no presets exist", async () => {
   render(
     <DealCloseActions
+      expectedWriteVersion="00000000-0000-4000-8000-000000000001"
       dealId="d1"
       status="open"
       lostReasonOptions={[]}
@@ -143,6 +145,7 @@ it("opens a centered Mark as Lost dialog and submits a free-text comment when no
   await waitFor(() => expect(markLostAction).toHaveBeenCalledTimes(1));
   expect(markLostAction.mock.calls[0]?.[0]).toMatchObject({
     dealId: "d1",
+    expectedWriteVersion: props.expectedWriteVersion,
     lostReasonId: null,
     lostReason: "Went with a competitor",
   });
@@ -151,6 +154,7 @@ it("opens a centered Mark as Lost dialog and submits a free-text comment when no
 it("sends the preset reason and the comment together (they coexist, Pipedrive parity)", async () => {
   render(
     <DealCloseActions
+      expectedWriteVersion="00000000-0000-4000-8000-000000000001"
       dealId="d1"
       status="open"
       lostReasonOptions={[{ id: "r1", name: "Too expensive" }]}
@@ -168,6 +172,7 @@ it("sends the preset reason and the comment together (they coexist, Pipedrive pa
   await waitFor(() => expect(markLostAction).toHaveBeenCalledTimes(1));
   expect(markLostAction.mock.calls[0]?.[0]).toEqual({
     dealId: "d1",
+    expectedWriteVersion: props.expectedWriteVersion,
     lostReasonId: "r1",
     lostReason: "Budget cut mid-quarter",
   });
@@ -176,6 +181,7 @@ it("sends the preset reason and the comment together (they coexist, Pipedrive pa
 it("submits a no-reason Lost when both the preset and comment are left empty", async () => {
   render(
     <DealCloseActions
+      expectedWriteVersion="00000000-0000-4000-8000-000000000001"
       dealId="d1"
       status="open"
       lostReasonOptions={[{ id: "r1", name: "Too expensive" }]}
@@ -187,6 +193,7 @@ it("submits a no-reason Lost when both the preset and comment are left empty", a
   await waitFor(() => expect(markLostAction).toHaveBeenCalledTimes(1));
   expect(markLostAction.mock.calls[0]?.[0]).toEqual({
     dealId: "d1",
+    expectedWriteVersion: props.expectedWriteVersion,
     lostReasonId: null,
     lostReason: null,
   });
@@ -238,7 +245,10 @@ it("clicking Reopen calls reopenDealAction and refreshes", async () => {
   render(<DealCloseActions {...props} status="lost" />);
   fireEvent.click(screen.getByRole("button", { name: "Reopen" }));
   await waitFor(() => expect(reopenDealAction).toHaveBeenCalledTimes(1));
-  expect(reopenDealAction).toHaveBeenCalledWith({ dealId: "d1" }, "csrf");
+  expect(reopenDealAction).toHaveBeenCalledWith(
+    { dealId: "d1", expectedWriteVersion: props.expectedWriteVersion },
+    "csrf",
+  );
   await waitFor(() => expect(routerRefresh).toHaveBeenCalledTimes(1));
 });
 

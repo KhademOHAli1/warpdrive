@@ -1,4 +1,5 @@
 "use client";
+
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { useState } from "react";
@@ -6,6 +7,7 @@ import { Tip } from "@/components/ui/tooltip";
 import { changeStageAction } from "@/features/deal-workspace/actions";
 import { useDealActionError } from "@/features/deal-workspace/DealActionErrorProvider";
 import { funnelClip, stageSegmentStyle } from "@/features/deals/boardStageHeader";
+import { dealClientResult } from "@/features/deals/dealClientResult";
 import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
 import { readCsrfToken } from "@/utils/csrfCookie";
 
@@ -21,9 +23,10 @@ interface StageChipView {
 
 interface StageSelectorProps {
   dealId: string;
-  // CAS precondition: the deal's updatedAt ISO string.
-  expectedUpdatedAt: string;
+  // Opaque version of the displayed deal snapshot.
+  expectedWriteVersion: string;
   chips: StageChipView[];
+  quiet?: boolean;
 }
 
 // Chevron shape reused from StageChevrons: flat left edge, pointed right, with a matching left
@@ -43,8 +46,9 @@ function segmentState(chip: StageChipView): "current" | "passed" | "future" {
 // the target column, server-side). The current stage is a no-op; all options disable while pending.
 export function StageSelector({
   dealId,
-  expectedUpdatedAt,
+  expectedWriteVersion,
   chips,
+  quiet = false,
 }: StageSelectorProps): React.ReactNode {
   const translateSales = useAppTranslations("sales");
   const locale = useLocale();
@@ -57,9 +61,8 @@ export function StageSelector({
   async function select(chip: StageChipView): Promise<void> {
     if (chip.current || pending) return;
     setPending(true);
-    const r = await changeStageAction(
-      { dealId, toStageId: chip.id, expectedUpdatedAt },
-      readCsrfToken(),
+    const r = await dealClientResult(() =>
+      changeStageAction({ dealId, toStageId: chip.id, expectedWriteVersion }, readCsrfToken()),
     );
     setPending(false);
     // Never swallow the failure: a permission denial (E_PERM_001) or a stale CAS gets a modal explaining
@@ -88,16 +91,21 @@ export function StageSelector({
               onClick={() => void select(chip)}
               className={[
                 "relative flex min-w-0 flex-col items-start truncate px-4 py-1 text-xs leading-tight text-foreground transition-transform hover:opacity-90 disabled:cursor-default disabled:opacity-70",
+                quiet ? "shrink-0" : "",
                 idx > 0 ? "-ms-2 ps-6" : "",
                 // The current stage pops out of the row: slightly enlarged and raised above the
                 // interlocking neighbours (which use z-0 so the scaled segment overlaps them).
-                chip.current ? "z-10 scale-[1.08] drop-shadow-sm" : "z-0",
+                chip.current && !quiet ? "z-10 scale-[1.08] drop-shadow-sm" : "z-0",
               ]
                 .join(" ")
                 .trim()}
               style={{
                 clipPath: funnelClip(idx === 0, direction),
-                backgroundColor: fill.backgroundColor,
+                backgroundColor: quiet
+                  ? chip.current
+                    ? "hsl(var(--primary) / 0.12)"
+                    : "hsl(var(--muted) / 0.6)"
+                  : fill.backgroundColor,
                 fontWeight: fill.fontWeight,
               }}
             >
@@ -106,9 +114,11 @@ export function StageSelector({
               </span>
               {/* C3 (Pipedrive parity): day-count at 12px (PD shows day-counts only; warpdrive keeps
                 the stage name above it as an extra affordance). */}
-              <span className="text-xs tabular-nums opacity-80">
-                {translateSales("computed.dayCount", { count: chip.days })}
-              </span>
+              {(!quiet || chip.current || chip.passed) && (
+                <span className="text-xs tabular-nums opacity-80">
+                  {translateSales("computed.dayCount", { count: chip.days })}
+                </span>
+              )}
             </button>
           </Tip>
         );

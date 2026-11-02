@@ -175,6 +175,7 @@ describe("convertLead carries the lead's history onto the deal", () => {
       if (!r.ok) return;
 
       const [deal] = await db.select().from(deals).where(eq(deals.id, r.value.dealId));
+      expect(r.value.deal).toEqual(deal);
       expect(deal?.nextActivityAt?.toISOString()).toBe("2030-01-01T10:00:00.000Z");
       expect(deal?.lastActivityAt?.toISOString()).toBe("2026-08-01T10:00:00.000Z");
     });

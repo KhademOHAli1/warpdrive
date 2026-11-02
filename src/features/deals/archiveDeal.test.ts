@@ -6,6 +6,7 @@ import { seedPipelineWithStages, seedUser } from "@/db/testing/factories";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { makeTestDb } from "@/test/db";
 import { archiveDeal } from "./archiveDeal";
+import { observeDealVersion } from "./dealVersion.test-helpers";
 
 let h: Awaited<ReturnType<typeof makeTestDb>>;
 const sig = () => new AbortController().signal;
@@ -45,7 +46,12 @@ async function readDeal(dealId: string) {
 it("archiving keeps status and sets archived_at", async () => {
   const u = await seedUser(h.db);
   const d = await seedDeal(u.id);
-  const r = await archiveDeal(h.db, actor(u.id), { dealId: d.id, archived: true }, sig());
+  const r = await archiveDeal(
+    h.db,
+    actor(u.id),
+    { dealId: d.id, expectedWriteVersion: await observeDealVersion(h.db, d.id), archived: true },
+    sig(),
+  );
   expect(r.ok).toBe(true);
   const row = await readDeal(d.id);
   expect(row.status).toBe("open");
@@ -55,8 +61,18 @@ it("archiving keeps status and sets archived_at", async () => {
 it("unarchiving clears archived_at", async () => {
   const u = await seedUser(h.db);
   const d = await seedDeal(u.id);
-  await archiveDeal(h.db, actor(u.id), { dealId: d.id, archived: true }, sig());
-  await archiveDeal(h.db, actor(u.id), { dealId: d.id, archived: false }, sig());
+  await archiveDeal(
+    h.db,
+    actor(u.id),
+    { dealId: d.id, expectedWriteVersion: await observeDealVersion(h.db, d.id), archived: true },
+    sig(),
+  );
+  await archiveDeal(
+    h.db,
+    actor(u.id),
+    { dealId: d.id, expectedWriteVersion: await observeDealVersion(h.db, d.id), archived: false },
+    sig(),
+  );
   const row = await readDeal(d.id);
   expect(row.archivedAt).toBeNull();
 });
@@ -64,7 +80,12 @@ it("unarchiving clears archived_at", async () => {
 it("records an 'archived' changelog entry with actor and old/new values", async () => {
   const u = await seedUser(h.db);
   const d = await seedDeal(u.id);
-  await archiveDeal(h.db, actor(u.id), { dealId: d.id, archived: true }, sig());
+  await archiveDeal(
+    h.db,
+    actor(u.id),
+    { dealId: d.id, expectedWriteVersion: await observeDealVersion(h.db, d.id), archived: true },
+    sig(),
+  );
   const [log] = await h.db
     .select()
     .from(changeLogs)
@@ -78,7 +99,12 @@ it("records an 'archived' changelog entry with actor and old/new values", async 
 it("publishes a board event on the pipeline channel on archive", async () => {
   const u = await seedUser(h.db);
   const d = await seedDeal(u.id);
-  const r = await archiveDeal(h.db, actor(u.id), { dealId: d.id, archived: true }, sig());
+  const r = await archiveDeal(
+    h.db,
+    actor(u.id),
+    { dealId: d.id, expectedWriteVersion: await observeDealVersion(h.db, d.id), archived: true },
+    sig(),
+  );
   expect(r.ok).toBe(true);
 
   const rows = await h.db

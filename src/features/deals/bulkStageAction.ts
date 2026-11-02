@@ -7,10 +7,11 @@ import { SIG } from "@/features/identity/actions/sig";
 import { createContext } from "@/server/trpc/context";
 import type { BulkRowResult } from "./bulkActions";
 import { bulkUpdateStage } from "./bulkActions";
+import { type DealActionSnapshot, dealActionSnapshot, missingDealVersion } from "./dealVersion";
 import { type BulkStageInput, bulkStageInput } from "./schemas";
 
 export type BulkStageResult =
-  | { ok: true; rows: BulkRowResult[] }
+  | { ok: true; rows: Array<Omit<BulkRowResult, "deal"> & { deal?: DealActionSnapshot }> }
   | { ok: false; error: { id: string } };
 
 // CSRF-guarded bulk stage action.
@@ -26,11 +27,19 @@ export async function bulkStageAction(
   const { actor } = await createContext();
   if (actor === null) return { ok: false, error: { id: "E_AUTH_003" } };
 
+  const versionError = missingDealVersion(input, ["expectedWriteVersions"]);
+  if (versionError !== null) return { ok: false, error: { id: versionError.id } };
   const parsed = bulkStageInput.safeParse(input);
   if (!parsed.success) return { ok: false, error: { id: ERROR_IDS.DEAL_BULK_INPUT_INVALID } };
 
   const result = await bulkUpdateStage(db, actor, parsed.data, SIG());
   if (!result.ok) return { ok: false, error: { id: result.error.id } };
 
-  return { ok: true, rows: result.value };
+  return {
+    ok: true,
+    rows: result.value.map(({ deal, ...row }) => ({
+      ...row,
+      ...(deal === undefined ? {} : { deal: dealActionSnapshot(deal) }),
+    })),
+  };
 }

@@ -33,7 +33,7 @@ afterEach(() => {
 
 const props = {
   dealId: "d1",
-  expectedUpdatedAt: "2026-07-02T00:00:00.000Z",
+  expectedWriteVersion: "00000000-0000-4000-8000-000000000001",
   open: true,
   onOpenChange: vi.fn(),
 };
@@ -44,7 +44,7 @@ it("confirming converts the deal and navigates to the new lead", async () => {
   await user.click(screen.getByRole("button", { name: "Convert" }));
   await waitFor(() =>
     expect(convertToLeadAction).toHaveBeenCalledWith(
-      { dealId: "d1", expectedUpdatedAt: props.expectedUpdatedAt },
+      { dealId: "d1", expectedWriteVersion: props.expectedWriteVersion },
       "csrf",
     ),
   );

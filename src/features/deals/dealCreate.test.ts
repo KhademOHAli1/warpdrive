@@ -54,6 +54,8 @@ describe("createDeal", () => {
       );
       expect(r.ok).toBe(true);
       if (r.ok === false) return;
+      const [finalSnapshot] = await db.select().from(deals).where(eq(deals.id, r.value.id));
+      expect(r.value).toEqual(finalSnapshot);
       expect(r.value.status).toBe("open");
       expect(r.value.wonTime).toBeNull();
       expect(r.value.lostTime).toBeNull();

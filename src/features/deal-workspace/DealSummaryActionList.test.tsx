@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { dealClientFixture } from "@/features/deals/dealClientFixture";
 import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -24,7 +25,10 @@ afterEach(() => {
 const { updateDealAction, addParticipantAction, removeParticipantAction, createPersonAction } =
   vi.hoisted(() => ({
     updateDealAction: vi.fn(() =>
-      Promise.resolve({ ok: true, deal: { id: "d1", updatedAt: "2026-01-03T00:00:00.000Z" } }),
+      Promise.resolve({
+        ok: true,
+        deal: dealClientFixture({ id: "d1", updatedAt: "2026-01-03T00:00:00.000Z" }),
+      }),
     ),
     addParticipantAction: vi.fn(() => Promise.resolve({ ok: true })),
     removeParticipantAction: vi.fn(() => Promise.resolve({ ok: true })),
@@ -98,6 +102,7 @@ vi.mock("@/lib/trpc-client", () => ({
 import { DealSummaryActionList } from "./DealSummaryActionList";
 
 const baseDeal = {
+  writeVersion: "00000000-0000-4000-8000-000000000001",
   id: "d1",
   updatedAt: "2026-01-02T00:00:00.000Z",
   value: 58000,

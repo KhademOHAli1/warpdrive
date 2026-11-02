@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { dealClientFixture } from "@/features/deals/dealClientFixture";
 import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeAll, expect, it, vi } from "vitest";
@@ -15,7 +16,10 @@ beforeAll(() => {
 const { refresh, updateDealAction, updateOrgAction, updatePersonAction } = vi.hoisted(() => ({
   refresh: vi.fn(),
   updateDealAction: vi.fn(() =>
-    Promise.resolve({ ok: true, deal: { id: "d1", updatedAt: "2026-01-03T00:00:00.000Z" } }),
+    Promise.resolve({
+      ok: true,
+      deal: dealClientFixture({ id: "d1", updatedAt: "2026-01-03T00:00:00.000Z" }),
+    }),
   ),
   updateOrgAction: vi.fn(() => Promise.resolve({ ok: true, value: { id: "o1" } })),
   updatePersonAction: vi.fn(() => Promise.resolve({ ok: true, value: { id: "p1" } })),
@@ -72,6 +76,7 @@ function makeWorkspace(): DealWorkspace {
       customFields: { industry: "Media" },
       createdAt: new Date("2026-01-01T00:00:00Z"),
       lastActivityAt: null,
+      writeVersion: "00000000-0000-4000-8000-000000000001",
       updatedAt: new Date("2026-01-02T00:00:00Z"),
     },
     ownerName: "Owner One",
@@ -154,7 +159,7 @@ it("the Organization section pencil bulk-edits firmographics in one action call"
   );
 });
 
-it("inline-edits deal custom fields from inside the Organization section", async () => {
+it("inline-edits deal custom fields from the dedicated Details section", async () => {
   render(
     <DealSidebar
       workspace={makeWorkspace()}
@@ -164,8 +169,8 @@ it("inline-edits deal custom fields from inside the Organization section", async
     />,
   );
 
-  const organization = within(screen.getByRole("region", { name: "Organization" }));
-  expect(screen.queryByRole("region", { name: "Details" })).not.toBeInTheDocument();
+  const organization = within(screen.getByRole("region", { name: "Details" }));
+  expect(screen.getByRole("region", { name: "Details" })).toBeInTheDocument();
   fireEvent.click(organization.getAllByRole("button", { name: "Edit Industry" }).at(-1)!);
   fireEvent.change(organization.getByLabelText("Industry"), { target: { value: "Finance" } });
   fireEvent.click(organization.getByRole("button", { name: "Save" }));
@@ -174,7 +179,7 @@ it("inline-edits deal custom fields from inside the Organization section", async
   expect(updateDealAction).toHaveBeenCalledWith(
     {
       dealId: "d1",
-      expectedUpdatedAt: "2026-01-02T00:00:00.000Z",
+      expectedWriteVersion: "00000000-0000-4000-8000-000000000001",
       customFields: { industry: "Finance" },
     },
     "csrf",
@@ -199,7 +204,11 @@ it("the Source section pencil bulk-edits channel + channel id in one action call
 
   await vi.waitFor(() => expect(updateDealAction).toHaveBeenCalledTimes(1));
   expect(updateDealAction).toHaveBeenCalledWith(
-    { dealId: "d1", expectedUpdatedAt: "2026-01-02T00:00:00.000Z", sourceChannelId: "EXT-9" },
+    {
+      dealId: "d1",
+      expectedWriteVersion: "00000000-0000-4000-8000-000000000001",
+      sourceChannelId: "EXT-9",
+    },
     "csrf",
   );
 });

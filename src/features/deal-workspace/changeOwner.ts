@@ -2,7 +2,7 @@
 // loadEditableDeal enforces edit access; a SECOND gate (deal.changeOwner) is required
 // because reassigning ownership is a stronger capability than editing fields. Mirrors the
 // create path's owner-override gate (resolveOwnerId) so ownership can never be spoofed.
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import type { Deal } from "@/db/schema/deals";
@@ -10,6 +10,7 @@ import { deals } from "@/db/schema/deals";
 import { users } from "@/db/schema/identity";
 import { recordChange } from "@/features/collaboration/changeLog";
 import { loadEditableDeal, toVisibleDeal } from "@/features/deals/dealAuth";
+import { missingDealVersion, readFinalDeal } from "@/features/deals/dealVersion";
 import { changeOwnerInput } from "@/features/deals/schemas";
 import { can } from "@/features/permissions/can";
 import type { PermSetUser } from "@/features/permissions/effective";
@@ -21,6 +22,8 @@ export async function changeOwner(
   raw: unknown,
   signal: AbortSignal,
 ): Promise<Result<Deal, AppError>> {
+  const versionError = missingDealVersion(raw);
+  if (versionError !== null) return err(versionError);
   const input = changeOwnerInput.parse(raw);
   signal.throwIfAborted();
 
@@ -53,18 +56,11 @@ export async function changeOwner(
   }
   signal.throwIfAborted();
 
-  const expectedIso = input.expectedUpdatedAt;
-
   return db.transaction(async (tx) => {
     const updated = await tx
       .update(deals)
       .set({ ownerId: input.ownerId, updatedAt: new Date() })
-      .where(
-        and(
-          eq(deals.id, input.dealId),
-          sql`date_trunc('milliseconds', ${deals.updatedAt}) = ${expectedIso}::timestamptz`,
-        ),
-      )
+      .where(and(eq(deals.id, input.dealId), eq(deals.writeVersion, input.expectedWriteVersion)))
       .returning();
 
     if (updated.length === 0) {
@@ -96,6 +92,6 @@ export async function changeOwner(
       signal,
     );
 
-    return ok(row);
+    return ok(await readFinalDeal(tx, row.id, signal));
   });
 }

@@ -1,20 +1,23 @@
 "use client";
+
 import { Building2, Flag, Tag, User, Wallet } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type React from "react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { DatePicker } from "@/components/ui/DatePicker";
+import { ERROR_IDS } from "@/constants/errorIds";
 import { CurrencySelect } from "@/features/currencies/CurrencySelect";
+import { dealClientResult } from "@/features/deals/dealClientResult";
 import { updateDealAction } from "@/features/deals/updateAction";
 import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
 import { InlineEditFooter } from "@/features/inline-edit/InlineEditFooter";
 import { InlineFieldShell } from "@/features/inline-edit/InlineFieldShell";
-import { saveErrorMessage } from "@/features/inline-edit/saveError";
 import { canonicalMoney } from "@/lib/canonicalMoney";
 import { useFormatters } from "@/lib/useFormatters";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { parseMoneyValue } from "@/utils/entityFormFields";
+import { dealEditErrorMessage as saveErrorMessage } from "./dealEditErrorMessage";
 import { LabelRow } from "./LabelRow";
 import { ParticipantsControl } from "./ParticipantsControl";
 import { InlineOrgField } from "./sidebar/InlineOrgField";
@@ -22,6 +25,7 @@ import { InlineOrgField } from "./sidebar/InlineOrgField";
 interface SummaryDeal {
   id: string;
   updatedAt: string | Date;
+  writeVersion: string;
   value: number | string | null;
   currency?: string;
   expectedCloseDate: string | null;
@@ -72,7 +76,7 @@ export function DealSummaryActionList({
   const router = useRouter();
   const locale = useLocale();
   const format = useFormatters();
-  const expectedUpdatedAt = new Date(deal.updatedAt).toISOString();
+  const expectedWriteVersion = deal.writeVersion;
   const [editingValue, setEditingValue] = useState(false);
   const [draft, setDraft] = useState("");
   const [draftLocale, setDraftLocale] = useState(locale);
@@ -80,18 +84,40 @@ export function DealSummaryActionList({
   const [editingDate, setEditingDate] = useState(false);
   const [dateDraft, setDateDraft] = useState<string | null>(deal.expectedCloseDate);
   const [errorId, setErrorId] = useState<string | null>(null);
+  const valueVersion = useRef<string | null>(null);
+  const dateVersion = useRef<string | null>(null);
+  const [pending, setPending] = useState(false);
 
-  async function save(change: {
-    value?: number | string | null;
-    currency?: string;
-    expectedCloseDate?: string | null;
-  }): Promise<void> {
-    const r = await updateDealAction(
-      { dealId: deal.id, expectedUpdatedAt, ...change },
-      readCsrfToken(),
-    );
-    setErrorId(r.ok ? null : r.error.id);
-    router.refresh();
+  async function save(
+    change: {
+      value?: number | string | null;
+      currency?: string;
+      expectedCloseDate?: string | null;
+    },
+    version: string | null,
+  ): Promise<boolean> {
+    if (pending) return false;
+    if (version === null) {
+      setErrorId(ERROR_IDS.DEAL_PRECONDITION);
+      return false;
+    }
+    setPending(true);
+    try {
+      const r = await dealClientResult(() =>
+        updateDealAction(
+          { dealId: deal.id, expectedWriteVersion: version, ...change },
+          readCsrfToken(),
+        ),
+      );
+      setErrorId(r.ok ? null : r.error.id);
+      if (r.ok || r.error.id === ERROR_IDS.DEAL_PRECONDITION) router.refresh();
+      return r.ok;
+    } catch {
+      setErrorId("");
+      return false;
+    } finally {
+      setPending(false);
+    }
   }
 
   // Dirty + parseable gating for the value editor's Save (PD disables Save until the
@@ -107,8 +133,9 @@ export function DealSummaryActionList({
 
   function commitValue(): void {
     if (!valueDirty) return;
-    setEditingValue(false);
-    void save({ value: parsedValue, currency });
+    void save({ value: parsedValue, currency }, valueVersion.current).then((saved) => {
+      if (saved) setEditingValue(false);
+    });
   }
 
   return (
@@ -118,6 +145,7 @@ export function DealSummaryActionList({
           label={translateSales("value_8e379")}
           editing={editingValue}
           onStartEdit={() => {
+            valueVersion.current = expectedWriteVersion;
             setDraft(
               deal.value !== null
                 ? format.number(deal.value, { useGrouping: false, maximumFractionDigits: 20 })
@@ -136,17 +164,24 @@ export function DealSummaryActionList({
               autoFocus
               inputMode="decimal"
               value={draft}
+              disabled={pending}
               onChange={(e) => setDraft(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === "Enter") commitValue();
               }}
               className="h-8 w-full rounded border border-field-border bg-card px-2 text-start text-sm"
             />
-            <CurrencySelect value={currency} onChange={setCurrency} />
+            <CurrencySelect
+              value={currency}
+              onChange={(next) => {
+                if (!pending) setCurrency(next);
+              }}
+            />
             <InlineEditFooter
               onCancel={() => setEditingValue(false)}
               onSave={commitValue}
               saveDisabled={!valueDirty}
+              pending={pending}
             />
           </div>
         </InlineFieldShell>
@@ -158,7 +193,7 @@ export function DealSummaryActionList({
       <ActionRow icon={<Building2 aria-hidden="true" className={ICON} />}>
         <InlineOrgField
           dealId={deal.id}
-          expectedUpdatedAt={expectedUpdatedAt}
+          expectedWriteVersion={expectedWriteVersion}
           org={org}
           orgOptions={orgOptions}
           onSaved={() => router.refresh()}
@@ -186,7 +221,11 @@ export function DealSummaryActionList({
       )}
 
       <ActionRow icon={<Tag aria-hidden="true" className={ICON} />}>
-        <LabelRow dealId={deal.id} expectedUpdatedAt={expectedUpdatedAt} labels={deal.labels} />
+        <LabelRow
+          dealId={deal.id}
+          expectedWriteVersion={expectedWriteVersion}
+          labels={deal.labels}
+        />
       </ActionRow>
 
       <ActionRow icon={<Flag aria-hidden="true" className={ICON} />}>
@@ -194,6 +233,7 @@ export function DealSummaryActionList({
           label={translateSales("expected_close_date_af65c")}
           editing={editingDate}
           onStartEdit={() => {
+            dateVersion.current = expectedWriteVersion;
             setDateDraft(deal.expectedCloseDate);
             setEditingDate(true);
           }}
@@ -208,16 +248,20 @@ export function DealSummaryActionList({
               defaultOpen
               triggerClassName="flex h-8 w-full items-center rounded border border-field-border bg-card px-2 text-start text-sm"
               formatLabel={format.dateOnly}
-              onChange={setDateDraft}
+              onChange={(next) => {
+                if (!pending) setDateDraft(next);
+              }}
             />
             <InlineEditFooter
               onCancel={() => setEditingDate(false)}
               onSave={() => {
                 if (dateDraft === deal.expectedCloseDate) return;
-                setEditingDate(false);
-                void save({ expectedCloseDate: dateDraft });
+                void save({ expectedCloseDate: dateDraft }, dateVersion.current).then((saved) => {
+                  if (saved) setEditingDate(false);
+                });
               }}
               saveDisabled={dateDraft === deal.expectedCloseDate}
+              pending={pending}
             />
           </div>
         </InlineFieldShell>

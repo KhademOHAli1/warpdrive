@@ -51,7 +51,12 @@ it("reassigns the owner and writes an ownerId changelog row for an admin actor",
   const r = await changeOwner(
     h.db,
     adminActor(owner.id),
-    { dealId: deal.id, ownerId: newOwner.id, expectedUpdatedAt: deal.updatedAt.toISOString() },
+    {
+      dealId: deal.id,
+      ownerId: newOwner.id,
+      expectedWriteVersion: deal.writeVersion,
+      expectedUpdatedAt: deal.updatedAt.toISOString(),
+    },
     new AbortController().signal,
   );
 
@@ -78,7 +83,12 @@ it("returns E_PERM_001 and leaves the owner unchanged without deal.changeOwner",
   const r = await changeOwner(
     h.db,
     editOnlyActor(actor.id),
-    { dealId: deal.id, ownerId: newOwner.id, expectedUpdatedAt: deal.updatedAt.toISOString() },
+    {
+      dealId: deal.id,
+      ownerId: newOwner.id,
+      expectedWriteVersion: deal.writeVersion,
+      expectedUpdatedAt: deal.updatedAt.toISOString(),
+    },
     new AbortController().signal,
   );
 
@@ -99,11 +109,38 @@ it("returns E_DEAL_002 on a stale CAS precondition", async () => {
   const r = await changeOwner(
     h.db,
     adminActor(owner.id),
-    { dealId: deal.id, ownerId: newOwner.id, expectedUpdatedAt: "2000-01-01T00:00:00.000Z" },
+    {
+      dealId: deal.id,
+      ownerId: newOwner.id,
+      expectedWriteVersion: "00000000-0000-4000-8000-000000000001",
+      expectedUpdatedAt: "2000-01-01T00:00:00.000Z",
+    },
     new AbortController().signal,
   );
 
   expect(r.ok).toBe(false);
   if (r.ok === true) return;
   expect(r.error.id).toBe("E_DEAL_002");
+});
+
+it("rejects an unchanged-owner command from a stale snapshot", async () => {
+  const owner = await seedUser(h.db);
+  const p = await seedPipelineWithStages(h.db, ["A"]);
+  const deal = await seedDeal(p.pipeline.id, p.stages[0]!.id, owner.id);
+  const [winner] = await h.db
+    .update(deals)
+    .set({ title: "Winner" })
+    .where(eq(deals.id, deal.id))
+    .returning();
+  const result = await changeOwner(
+    h.db,
+    adminActor(owner.id),
+    { dealId: deal.id, ownerId: owner.id, expectedWriteVersion: deal.writeVersion },
+    AbortSignal.timeout(5000),
+  );
+  expect(result.ok).toBe(false);
+  if (result.ok) throw new Error("stale no-op accepted");
+  expect(result.error.id).toBe("E_DEAL_002");
+  const [after] = await h.db.select().from(deals).where(eq(deals.id, deal.id));
+  expect(after).toEqual(winner);
 });

@@ -15,6 +15,7 @@ function card(id: string, pos: string): BoardCard {
     nextActivityAt: null,
     lastActivityAt: null,
     stageEnteredAt: new Date(),
+    writeVersion: "00000000-0000-4000-8000-000000000001",
     updatedAt: new Date(),
   };
 }

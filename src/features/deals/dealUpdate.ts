@@ -1,6 +1,6 @@
 // updateDeal: compare-and-swap field update with won/lost transition rules and realtime event.
 // Split from dealActions.ts to keep both files under 200 lines.
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { BOARD_EVENT, dealChannel } from "@/constants/boardChannels";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import { deals } from "@/db/schema/deals";
@@ -15,6 +15,7 @@ import type { DealVisibilitySession } from "@/types/session";
 import { loadEditableDeal } from "./dealAuth";
 import { validateDealCustomFieldsPartial } from "./dealCustomFieldsValidation";
 import { logDealUpdateChanges } from "./dealUpdateChangeLog";
+import { missingDealVersion, readFinalDeal } from "./dealVersion";
 import { type DealUpdateInput, dealUpdateInput } from "./schemas";
 import { applyStatusTransition, type DealPatch } from "./statusTransition";
 
@@ -88,6 +89,8 @@ export async function updateDeal(
   raw: unknown,
   signal: AbortSignal,
 ): Promise<Result<typeof deals.$inferSelect, AppError>> {
+  const versionError = missingDealVersion(raw);
+  if (versionError !== null) return err(versionError);
   const input = dealUpdateInput.parse(raw);
   signal.throwIfAborted();
 
@@ -133,17 +136,12 @@ export async function updateDeal(
     const targetsVisible = await assertContactTargetsVisible(tx, currentActor, input, signal);
     if (targetsVisible.ok === false) return targetsVisible;
 
-    // Atomic CAS: single UPDATE WHERE id=:d AND date_trunc('milliseconds', updated_at)=:expected.
+    // Atomic CAS uses the database-owned opaque row version.
     // 0 rows means a concurrent write won; we write nothing.
     const updated = await tx
       .update(deals)
       .set(patch)
-      .where(
-        and(
-          eq(deals.id, input.dealId),
-          sql`date_trunc('milliseconds', ${deals.updatedAt}) = ${input.expectedUpdatedAt}::timestamptz`,
-        ),
-      )
+      .where(and(eq(deals.id, input.dealId), eq(deals.writeVersion, input.expectedWriteVersion)))
       .returning();
 
     if (updated.length === 0) {
@@ -182,6 +180,6 @@ export async function updateDeal(
       signal,
     );
 
-    return ok(row);
+    return ok(await readFinalDeal(tx, row.id, signal));
   });
 }

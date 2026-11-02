@@ -12,6 +12,7 @@ import {
   CustomFieldRefLabelsProvider,
 } from "@/features/custom-fields/refLabelsContext";
 import type { CustomFieldSortKey } from "@/features/custom-fields/sortKey";
+import { DealActionErrorProvider } from "@/features/deal-workspace/DealActionErrorProvider";
 import {
   useAppTranslations,
   useLocalePreferencePending,
@@ -87,7 +88,15 @@ export function resolveDealListFooter(args: {
     : { total: args.serverTotal, totalValue: args.serverTotalValue, filtered: false };
 }
 
-export function DealListClient({
+export function DealListClient(props: DealListClientProps): React.ReactNode {
+  return (
+    <DealActionErrorProvider>
+      <DealListClientContent {...props} />
+    </DealActionErrorProvider>
+  );
+}
+
+function DealListClientContent({
   initial,
   variant = "list",
 }: DealListClientProps): React.ReactNode {

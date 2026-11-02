@@ -73,6 +73,7 @@ test("a captured native editor with unchanged permissions updates, audits and pu
     actor,
     {
       dealId: f.deals.visible.id,
+      expectedWriteVersion: f.deals.visible.writeVersion,
       expectedUpdatedAt: f.deals.visible.updatedAt.toISOString(),
       title,
     },
@@ -130,6 +131,7 @@ test("removing edit permission invalidates a captured native actor before mutati
     actor,
     {
       dealId: f.deals.visible.id,
+      expectedWriteVersion: f.deals.visible.writeVersion,
       expectedUpdatedAt: f.deals.visible.updatedAt.toISOString(),
       title: "Denied stale native actor update",
     },

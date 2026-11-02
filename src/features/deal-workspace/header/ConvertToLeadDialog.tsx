@@ -1,4 +1,5 @@
 "use client";
+
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { useState } from "react";
@@ -13,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { convertToLeadAction } from "@/features/deal-workspace/convertToLeadAction";
 import { useDealActionError } from "@/features/deal-workspace/DealActionErrorProvider";
+import { dealClientResult } from "@/features/deals/dealClientResult";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { readCsrfToken } from "@/utils/csrfCookie";
 
@@ -20,12 +22,12 @@ import { readCsrfToken } from "@/utils/csrfCookie";
 // lead, so it is confirmed (not one-click) via the shadcn Dialog primitive (never window.confirm).
 export function ConvertToLeadDialog({
   dealId,
-  expectedUpdatedAt,
+  expectedWriteVersion,
   open,
   onOpenChange,
 }: {
   dealId: string;
-  expectedUpdatedAt: string;
+  expectedWriteVersion: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }): React.ReactNode {
@@ -34,10 +36,13 @@ export function ConvertToLeadDialog({
   const router = useRouter();
   const reportError = useDealActionError();
   const [pending, setPending] = useState(false);
+  const [sourceVersion] = useState(expectedWriteVersion);
 
   async function confirm(): Promise<void> {
     setPending(true);
-    const r = await convertToLeadAction({ dealId, expectedUpdatedAt }, readCsrfToken());
+    const r = await dealClientResult(() =>
+      convertToLeadAction({ dealId, expectedWriteVersion: sourceVersion }, readCsrfToken()),
+    );
     setPending(false);
     if (r.ok) {
       onOpenChange(false);

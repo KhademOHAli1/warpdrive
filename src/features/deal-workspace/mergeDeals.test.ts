@@ -2,12 +2,15 @@
 
 import { randomUUID } from "node:crypto";
 import { and, eq } from "drizzle-orm";
+import { drizzle } from "drizzle-orm/node-postgres";
 import { afterAll, beforeAll, expect, it } from "vitest";
 import type { PermissionFlagKey } from "@/constants/permissionFlags";
+import * as schema from "@/db/schema";
 import {
   activities,
   activityTypes,
   changeLogs,
+  channelVersions,
   dealFollowers,
   dealParticipants,
   deals,
@@ -103,7 +106,9 @@ it("re-parents S's children to T, dedups followers, soft-deletes S, and logs the
     {
       targetDealId: target.id,
       sourceDealId: source.id,
+      expectedTargetWriteVersion: target.writeVersion,
       expectedTargetUpdatedAt: target.updatedAt.toISOString(),
+      expectedSourceWriteVersion: source.writeVersion,
       expectedSourceUpdatedAt: source.updatedAt.toISOString(),
     },
     new AbortController().signal,
@@ -117,6 +122,8 @@ it("re-parents S's children to T, dedups followers, soft-deletes S, and logs the
   expect(movedAct?.dealId).toBe(target.id);
   const [targetAfter] = await h.db.select().from(deals).where(eq(deals.id, target.id));
   expect(targetAfter?.nextActivityAt?.toISOString()).toBe("2030-01-01T10:00:00.000Z");
+  expect(r.value.deal).toEqual(targetAfter);
+  expect(r.value.deal.writeVersion).not.toBe(target.writeVersion);
   const [movedNote] = await h.db.select().from(notes).where(eq(notes.id, note!.id));
   expect(movedNote?.entityId).toBe(target.id);
   const [movedThread] = await h.db
@@ -174,7 +181,9 @@ it("rejects merging a deal into itself (E_DEAL_010)", async () => {
     {
       targetDealId: d.id,
       sourceDealId: d.id,
+      expectedTargetWriteVersion: d.writeVersion,
       expectedTargetUpdatedAt: d.updatedAt.toISOString(),
+      expectedSourceWriteVersion: d.writeVersion,
       expectedSourceUpdatedAt: d.updatedAt.toISOString(),
     },
     new AbortController().signal,
@@ -199,7 +208,9 @@ it("denies when the actor cannot edit one of the deals (E_PERM_001)", async () =
     {
       targetDealId: target.id,
       sourceDealId: source.id,
+      expectedTargetWriteVersion: target.writeVersion,
       expectedTargetUpdatedAt: target.updatedAt.toISOString(),
+      expectedSourceWriteVersion: source.writeVersion,
       expectedSourceUpdatedAt: source.updatedAt.toISOString(),
     },
     new AbortController().signal,
@@ -225,7 +236,9 @@ it("returns E_DEAL_002 on a stale CAS and leaves both deals intact", async () =>
     {
       targetDealId: target.id,
       sourceDealId: source.id,
+      expectedTargetWriteVersion: target.writeVersion,
       expectedTargetUpdatedAt: target.updatedAt.toISOString(),
+      expectedSourceWriteVersion: "00000000-0000-4000-8000-000000000001",
       expectedSourceUpdatedAt: new Date(Date.now() - 60_000).toISOString(),
     },
     new AbortController().signal,
@@ -236,5 +249,113 @@ it("returns E_DEAL_002 on a stale CAS and leaves both deals intact", async () =>
   expect(r.error.id).toBe("E_DEAL_002");
 
   const [s] = await h.db.select().from(deals).where(eq(deals.id, source.id));
-  expect(s?.deletedAt).toBeNull();
+  const [t] = await h.db.select().from(deals).where(eq(deals.id, target.id));
+  expect(s).toEqual(source);
+  expect(t).toEqual(target);
+});
+
+it("rejects a stale target revision without reparenting source children or touching either row", async () => {
+  const u = await seedUser(h.db);
+  const p = await seedPipelineWithStages(h.db, ["A"]);
+  const target = await seedDeal(p.pipeline.id, p.stages[0]!.id, u.id, "Target snapshot");
+  const source = await seedDeal(p.pipeline.id, p.stages[0]!.id, u.id, "Source snapshot");
+  const [note] = await h.db
+    .insert(notes)
+    .values({ entityType: "deal", entityId: source.id, body: "keep source child", authorId: u.id })
+    .returning();
+  const [winner] = await h.db
+    .update(deals)
+    .set({ title: "Target winner" })
+    .where(eq(deals.id, target.id))
+    .returning();
+  const result = await mergeDeals(
+    h.db,
+    actor(u.id, ["deal.edit_own"]),
+    {
+      targetDealId: target.id,
+      sourceDealId: source.id,
+      expectedTargetWriteVersion: target.writeVersion,
+      expectedSourceWriteVersion: source.writeVersion,
+    },
+    AbortSignal.timeout(5000),
+  );
+  expect(result.ok).toBe(false);
+  if (result.ok) throw new Error("stale target merged");
+  expect(result.error.id).toBe("E_DEAL_002");
+  const [afterTarget] = await h.db.select().from(deals).where(eq(deals.id, target.id));
+  const [afterSource] = await h.db.select().from(deals).where(eq(deals.id, source.id));
+  expect(afterTarget).toEqual(winner);
+  expect(afterSource).toEqual(source);
+  const [afterNote] = await h.db.select().from(notes).where(eq(notes.id, note!.id));
+  expect(afterNote?.entityId).toBe(source.id);
+});
+
+it("takes both deal locks in UUID order even when the survivor is the later ID", async () => {
+  const u = await seedUser(h.db);
+  const p = await seedPipelineWithStages(h.db, ["A"]);
+  const a = await seedDeal(p.pipeline.id, p.stages[0]!.id, u.id, "First");
+  const b = await seedDeal(p.pipeline.id, p.stages[0]!.id, u.id, "Second");
+  const ordered = [a, b].sort((left, right) => left.id.localeCompare(right.id));
+  const source = ordered[0];
+  const target = ordered[1];
+  if (source === undefined || target === undefined) throw new Error("missing merge fixtures");
+  const locks: string[] = [];
+  const observed = drizzle(h.pool, {
+    schema,
+    logger: {
+      logQuery(query, parameters) {
+        if (/from "deals"/.test(query) && /for update/.test(query)) {
+          const id = parameters[0];
+          if (typeof id === "string") locks.push(id.toLowerCase());
+        }
+      },
+    },
+  });
+  const result = await mergeDeals(
+    observed,
+    actor(u.id, ["deal.edit_own"]),
+    {
+      targetDealId: target.id.toUpperCase(),
+      sourceDealId: source.id,
+      expectedTargetWriteVersion: target.writeVersion.toUpperCase(),
+      expectedSourceWriteVersion: source.writeVersion,
+    },
+    AbortSignal.timeout(5000),
+  );
+  expect(result.ok).toBe(true);
+  if (!result.ok) throw result.error;
+  expect(locks.slice(0, 2)).toEqual([source.id, target.id]);
+  const [final] = await h.db.select().from(deals).where(eq(deals.id, target.id));
+  expect(result.value.deal).toEqual(final);
+});
+
+it("invalidates both pipeline snapshots when a merge crosses pipelines", async () => {
+  const u = await seedUser(h.db);
+  const first = await seedPipelineWithStages(h.db, ["A"]);
+  const second = await seedPipelineWithStages(h.db, ["B"]);
+  const target = await seedDeal(first.pipeline.id, first.stages[0]!.id, u.id, "Target");
+  const source = await seedDeal(second.pipeline.id, second.stages[0]!.id, u.id, "Source");
+  const result = await mergeDeals(
+    h.db,
+    actor(u.id, ["deal.edit_own"]),
+    {
+      targetDealId: target.id,
+      sourceDealId: source.id,
+      expectedTargetWriteVersion: target.writeVersion,
+      expectedSourceWriteVersion: source.writeVersion,
+    },
+    AbortSignal.timeout(5000),
+  );
+  expect(result.ok).toBe(true);
+  if (!result.ok) throw result.error;
+  const [targetChannel] = await h.db
+    .select()
+    .from(channelVersions)
+    .where(eq(channelVersions.channel, `pipeline:${first.pipeline.id}`));
+  const [sourceChannel] = await h.db
+    .select()
+    .from(channelVersions)
+    .where(eq(channelVersions.channel, `pipeline:${second.pipeline.id}`));
+  expect(Number(targetChannel?.version)).toBeGreaterThan(0);
+  expect(Number(sourceChannel?.version)).toBeGreaterThan(0);
 });

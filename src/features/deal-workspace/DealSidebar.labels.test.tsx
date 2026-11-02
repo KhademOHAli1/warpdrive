@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { dealClientFixture } from "@/features/deals/dealClientFixture";
 import "@testing-library/jest-dom/vitest";
 import { cleanup, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -22,11 +23,19 @@ beforeAll(() => {
 });
 
 type UpdateResultLike =
-  | { ok: true; deal: { id: string; updatedAt: string } }
+  | { ok: true; deal: ReturnType<typeof dealClientFixture> }
   | { ok: false; error: { id: string } };
 const updateDealAction = vi.fn((...args: unknown[]): Promise<UpdateResultLike> => {
-  void args;
-  return Promise.resolve({ ok: true, deal: { id: "d1", updatedAt: "2026-01-03T00:00:00.000Z" } });
+  const input = (args[0] ?? {}) as { labels?: string[] };
+  return Promise.resolve({
+    ok: true,
+    deal: dealClientFixture({
+      id: "d1",
+      labels: input.labels ?? [],
+      writeVersion: "00000000-0000-4000-8000-000000000002",
+      updatedAt: "2026-01-03T00:00:00.000Z",
+    }),
+  });
 });
 vi.mock("@/features/deals/updateAction", () => ({
   updateDealAction: (...args: unknown[]) => updateDealAction(...args),
@@ -100,8 +109,8 @@ it("edits labels via the catalog dropdown and calls updateDealAction with the CA
   expect(csrf).toBe("csrf");
   expect(input).toMatchObject({
     dealId: "d1",
-    // makeWorkspace().deal.updatedAt (2026-01-02T00:00:00Z) serializes to this ISO string.
-    expectedUpdatedAt: "2026-01-02T00:00:00.000Z",
+    // The version belongs to the displayed deal snapshot.
+    expectedWriteVersion: "00000000-0000-4000-8000-000000000001",
   });
   expect((input as { labels: string[] }).labels).toHaveLength(1);
   await vi.waitFor(() => expect(refresh).toHaveBeenCalled());

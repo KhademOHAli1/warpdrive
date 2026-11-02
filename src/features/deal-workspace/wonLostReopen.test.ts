@@ -5,6 +5,7 @@ import { afterAll, beforeAll, expect, it } from "vitest";
 import { wsChannel } from "@/constants/wsChannels";
 import { channelVersions, dealFollowers, deals, notifications } from "@/db/schema";
 import { seedPipelineWithStages, seedUser } from "@/db/testing/factories";
+import { observeDealVersion } from "@/features/deals/dealVersion.test-helpers";
 import { notifyOnDealUpdate } from "@/features/deals/notifyHelpers";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { makeTestDb } from "@/test/db";
@@ -42,7 +43,12 @@ it("reopenDeal: returns a won deal to open and clears wonTime", async () => {
     .returning();
   if (deal === undefined) throw new Error("deal insert returned undefined");
 
-  const r = await reopenDeal(h.db, makeActor(user.id), deal.id, new AbortController().signal);
+  const r = await reopenDeal(
+    h.db,
+    makeActor(user.id),
+    { dealId: deal.id, expectedWriteVersion: await observeDealVersion(h.db, deal.id) },
+    new AbortController().signal,
+  );
   expect(r.ok).toBe(true);
   if (r.ok === true) {
     expect(r.value.status).toBe("open");
@@ -78,7 +84,12 @@ it("reopenDeal: a non-owner follower receives a deal_followed_update notificatio
   const actor = makeActor(owner.id);
   const signal = new AbortController().signal;
 
-  const reopened = await reopenDeal(h.db, actor, deal.id, signal);
+  const reopened = await reopenDeal(
+    h.db,
+    actor,
+    { dealId: deal.id, expectedWriteVersion: await observeDealVersion(h.db, deal.id) },
+    signal,
+  );
   expect(reopened.ok).toBe(true);
   if (reopened.ok === false) return;
 
@@ -119,7 +130,12 @@ it("reopenDeal: publishes on the pipeline channel so an open board refetches", a
     .returning();
   if (deal === undefined) throw new Error("deal insert returned undefined");
 
-  const r = await reopenDeal(h.db, makeActor(user.id), deal.id, new AbortController().signal);
+  const r = await reopenDeal(
+    h.db,
+    makeActor(user.id),
+    { dealId: deal.id, expectedWriteVersion: await observeDealVersion(h.db, deal.id) },
+    new AbortController().signal,
+  );
   expect(r.ok).toBe(true);
 
   const channel = wsChannel.pipeline(pipe.pipeline.id);

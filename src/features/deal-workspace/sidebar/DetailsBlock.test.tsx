@@ -44,6 +44,7 @@ function def(): CustomFieldDef {
 }
 
 const base = {
+  writeVersion: "00000000-0000-4000-8000-000000000001",
   onSave: () => Promise.resolve({ ok: true as const, value: {} }),
   customFields: {},
   currency: "USD",

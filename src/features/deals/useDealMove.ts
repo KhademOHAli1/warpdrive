@@ -1,54 +1,94 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useDealActionError } from "@/features/deal-workspace/DealActionErrorProvider";
 import { readCsrfToken } from "@/utils/csrfCookie";
-import { applyMove, type BoardData } from "./boardCache";
+import { applyBoardAck } from "./boardAck";
+import { applyMove, type BoardData, upsertCard } from "./boardCache";
 import { midpoint } from "./boardPosition";
+import type { BoardCard } from "./dealRepo";
 import { moveDealAction } from "./moveAction";
 import type { DealMoveInput } from "./schemas";
 
-// Named constant so every consumer uses the same key shape.
 export const BOARD_QUERY_KEY = (pipelineId: string) => ["board", pipelineId] as const;
+
+type MoveContext = {
+  previousRow: BoardCard | undefined;
+  optimisticRow: BoardCard | undefined;
+};
 
 export function useDealMove(pipelineId: string) {
   const client = useQueryClient();
+  const reportError = useDealActionError();
   const key = BOARD_QUERY_KEY(pipelineId);
+
+  function restoreOwned(input: DealMoveInput, context: MoveContext | undefined): void {
+    if (context?.previousRow === undefined || context.optimisticRow === undefined) return;
+    const { previousRow, optimisticRow } = context;
+    client.setQueryData<BoardData>(key, (data) => {
+      const current = data?.cards.find((row) => row.id === input.dealId);
+      if (
+        data === undefined ||
+        current === undefined ||
+        current !== optimisticRow ||
+        current.writeVersion !== input.expectedWriteVersion
+      )
+        return data;
+      return upsertCard(data, previousRow);
+    });
+  }
 
   const mutation = useMutation({
     mutationFn: (input: DealMoveInput) => moveDealAction(input, readCsrfToken()),
-
-    onMutate: async (input: DealMoveInput) => {
+    onMutate: async (input: DealMoveInput): Promise<MoveContext> => {
       await client.cancelQueries({ queryKey: key });
-      const previous = client.getQueryData<BoardData>(key);
-      if (previous !== undefined) {
-        const position = midpoint(input.beforePosition, input.afterPosition);
-        client.setQueryData<BoardData>(
-          key,
-          applyMove(previous, {
-            dealId: input.dealId,
-            toStageId: input.toStageId,
-            boardPosition: position,
-          }),
-        );
-      }
-      return { previous };
+      const data = client.getQueryData<BoardData>(key);
+      const previousRow = data?.cards.find((row) => row.id === input.dealId);
+      if (
+        typeof input.expectedWriteVersion !== "string" ||
+        input.expectedWriteVersion === "" ||
+        data === undefined ||
+        previousRow?.writeVersion !== input.expectedWriteVersion
+      )
+        return { previousRow: undefined, optimisticRow: undefined };
+      client.setQueryData<BoardData>(
+        key,
+        applyMove(data, {
+          dealId: input.dealId,
+          toStageId: input.toStageId,
+          boardPosition: midpoint(input.beforePosition, input.afterPosition),
+        }),
+      );
+      return {
+        previousRow,
+        optimisticRow: client
+          .getQueryData<BoardData>(key)
+          ?.cards.find((row) => row.id === input.dealId),
+      };
     },
-
-    onError: (_err, _input, ctx) => {
-      if (ctx?.previous !== undefined) {
-        client.setQueryData(key, ctx.previous);
-      }
+    onError: (_error, input, context) => {
+      restoreOwned(input, context);
+      reportError();
     },
-
-    onSettled: (result, _err, _input, ctx) => {
-      // E_DEAL_002 (stale precondition) is a non-throwing ok:false result, not
-      // an exception, so it arrives here via onSettled rather than onError.
-      // Roll back the optimistic patch so the card snaps to its prior position,
-      // then invalidate so the next fetch reconciles with the server.
-      if (result !== undefined && result.ok === false && ctx?.previous !== undefined) {
-        client.setQueryData(key, ctx.previous);
+    onSuccess: (result, input, context) => {
+      if (!result.ok || context.optimisticRow === undefined) return;
+      client.setQueryData<BoardData>(key, (data) => {
+        const current = data?.cards.find((row) => row.id === input.dealId);
+        if (
+          data === undefined ||
+          current === undefined ||
+          current !== context.optimisticRow ||
+          current.writeVersion !== input.expectedWriteVersion
+        )
+          return data;
+        return applyBoardAck(data, result.deal);
+      });
+    },
+    onSettled: async (result, _error, input, context) => {
+      if (result !== undefined && !result.ok) {
+        restoreOwned(input, context);
+        reportError(result.error.id);
       }
-      void client.invalidateQueries({ queryKey: key });
+      await client.invalidateQueries({ queryKey: key });
     },
   });
-
   return { move: (input: DealMoveInput) => mutation.mutate(input) };
 }

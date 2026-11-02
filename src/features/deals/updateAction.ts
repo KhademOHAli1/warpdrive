@@ -7,11 +7,12 @@ import { SIG } from "@/features/identity/actions/sig";
 import { scrubInaccessible } from "@/features/notifications/scrub";
 import { createContext } from "@/server/trpc/context";
 import { updateDeal } from "./dealActions";
+import { type DealActionSnapshot, dealActionSnapshot } from "./dealVersion";
 import { notifyOnDealUpdate } from "./notifyHelpers";
 import type { DealUpdateInput } from "./schemas";
 
 export type UpdateResult =
-  | { ok: true; deal: { id: string; updatedAt: string } }
+  | { ok: true; deal: DealActionSnapshot }
   | { ok: false; error: { id: string } };
 
 // CSRF-guarded deal update action.
@@ -62,6 +63,6 @@ export async function updateDealAction(
 
   return {
     ok: true,
-    deal: { id: result.value.id, updatedAt: result.value.updatedAt.toISOString() },
+    deal: dealActionSnapshot(result.value),
   };
 }

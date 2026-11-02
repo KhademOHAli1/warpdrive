@@ -17,6 +17,7 @@ function card(id: string, stageId: string): BoardCard {
     lastActivityAt: null,
     stageEnteredAt: new Date(),
     updatedAt: new Date(),
+    writeVersion: "00000000-0000-4000-8000-000000000001",
   };
 }
 
@@ -31,14 +32,22 @@ const movedEvent = {
 };
 
 describe("reduceRealtime", () => {
-  it("patches an in-order event from another actor", () => {
+  it("refetches the complete write-precondition snapshot after a remote move", () => {
+    const lastReadAt = new Date("2001-02-02T10:00:00.000Z");
+    const snapshot: BoardData = {
+      cards: [{ ...card("a", "s1"), updatedAt: lastReadAt }],
+    };
     const out = reduceRealtime(
-      { lastSeq: 4, data },
+      { lastSeq: 4, data: snapshot },
       { kind: "event", event: movedEvent, seq: 5, selfActorId: "me" },
     );
-    expect(out.effect).toBe("patch");
-    expect(out.data?.cards[0]?.stageId).toBe("s2");
-    expect(out.lastSeq).toBe(5);
+    // The event has stage/order only, so it cannot establish a current write precondition.
+    expect(out).toEqual({ lastSeq: 5, effect: "invalidate" });
+    expect(snapshot.cards[0]).toMatchObject({
+      stageId: "s1",
+      boardPosition: "1",
+      updatedAt: lastReadAt,
+    });
   });
 
   it("invalidates on a seq gap", () => {
@@ -94,17 +103,15 @@ describe("reduceRealtime", () => {
   });
 
   describe("first-event off-by-one (lastSeq init -1)", () => {
-    it("applies the first event (seq=0) from lastSeq=-1", () => {
+    it("invalidates for the first event (seq=0) from lastSeq=-1", () => {
       const out = reduceRealtime(
         { lastSeq: -1, data },
         { kind: "event", event: movedEvent, seq: 0, selfActorId: "me" },
       );
-      expect(out.effect).toBe("patch");
-      expect(out.lastSeq).toBe(0);
-      expect(out.data?.cards[0]?.stageId).toBe("s2");
+      expect(out).toEqual({ lastSeq: 0, effect: "invalidate" });
     });
 
-    it("applies the second event (seq=1) after the first (lastSeq=0)", () => {
+    it("invalidates for the second event (seq=1) after the first (lastSeq=0)", () => {
       const data2: BoardData = { cards: [card("a", "s2")] };
       const event2 = {
         ...movedEvent,
@@ -114,8 +121,7 @@ describe("reduceRealtime", () => {
         { lastSeq: 0, data: data2 },
         { kind: "event", event: event2, seq: 1, selfActorId: "me" },
       );
-      expect(out.effect).toBe("patch");
-      expect(out.lastSeq).toBe(1);
+      expect(out).toEqual({ lastSeq: 1, effect: "invalidate" });
     });
 
     it("ignores a repeated seq=0 after it was already applied (lastSeq=0)", () => {

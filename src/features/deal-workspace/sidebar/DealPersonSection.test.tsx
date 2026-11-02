@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { dealClientFixture } from "@/features/deals/dealClientFixture";
 import "@testing-library/jest-dom/vitest";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -22,7 +23,7 @@ const updateDealAction = vi.fn((...args: unknown[]) => {
   void args;
   return Promise.resolve({
     ok: true as const,
-    deal: { id: "d1", updatedAt: "2026-01-03T00:00:00.000Z" },
+    deal: dealClientFixture({ id: "d1", updatedAt: "2026-01-03T00:00:00.000Z" }),
   });
 });
 vi.mock("@/features/deals/updateAction", () => ({
@@ -71,7 +72,7 @@ function renderSection(
     <DealPersonSection
       person={over.person ?? null}
       dealId="d1"
-      expectedUpdatedAt="2026-01-02T00:00:00.000Z"
+      expectedWriteVersion="00000000-0000-4000-8000-000000000001"
       personOptions={OPTIONS}
       menuItems={[]}
       bulkEditing={over.bulkEditing ?? false}
@@ -130,7 +131,7 @@ describe("DealPersonSection with no linked person", () => {
       expect(updateDealAction).toHaveBeenCalledWith(
         {
           dealId: "d1",
-          expectedUpdatedAt: "2026-01-02T00:00:00.000Z",
+          expectedWriteVersion: "00000000-0000-4000-8000-000000000001",
           personId: "p-steve",
         },
         "csrf",

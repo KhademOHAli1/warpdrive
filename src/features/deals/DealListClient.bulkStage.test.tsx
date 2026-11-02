@@ -25,8 +25,9 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ refresh }),
   usePathname: () => "/pipeline/p/list",
 }));
-vi.mock("@/components/shell/ActionErrorProvider", () => ({
-  useActionError: () => reportError,
+vi.mock("@/features/deal-workspace/DealActionErrorProvider", () => ({
+  useDealActionError: () => reportError,
+  DealActionErrorProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 vi.mock("@/lib/trpc-client", () => ({
   trpc: {
@@ -63,6 +64,11 @@ import type { DealListProps } from "./DealList";
 import { DealListClient } from "./DealListClient";
 import { DEAL_LIST_QUERY_ROOT } from "./dealListQueryKey";
 
+const expectedWriteVersions = {
+  d1: "00000000-0000-4000-8000-000000000001",
+  d2: "00000000-0000-4000-8000-000000000002",
+};
+
 const row = {
   id: "d1",
   title: "Acme renewal",
@@ -77,6 +83,7 @@ const row = {
   nextActivityAt: null,
   lastActivityAt: null,
   stageEnteredAt: new Date("2026-06-24T00:00:00Z"),
+  writeVersion: "00000000-0000-4000-8000-000000000001",
   updatedAt: "2026-06-24T00:00:00Z",
   customFields: {},
 };
@@ -98,10 +105,10 @@ describe("DealListClient bulk stage wiring", () => {
     bulkStageAction.mockResolvedValue({ ok: true, rows: [] });
     render(<DealListClient initial={initial} />);
 
-    const applied = await listProps?.onBulkStage(["d1", "d2"], "s2");
+    const applied = await listProps?.onBulkStage(["d1", "d2"], "s2", expectedWriteVersions);
 
     expect(bulkStageAction).toHaveBeenCalledWith(
-      { dealIds: ["d1", "d2"], toStageId: "s2" },
+      { dealIds: ["d1", "d2"], toStageId: "s2", expectedWriteVersions },
       "csrf",
     );
     expect(applied).toBe(true);
@@ -119,9 +126,9 @@ describe("DealListClient bulk stage wiring", () => {
     });
     render(<DealListClient initial={initial} />);
 
-    const applied = await listProps?.onBulkStage(["d1", "d2"], "s2");
+    const applied = await listProps?.onBulkStage(["d1", "d2"], "s2", expectedWriteVersions);
 
-    expect(applied).toBe(true);
+    expect(applied).toEqual({ appliedDealIds: ["d1"] });
     expect(reportError).toHaveBeenCalledWith(ERROR_IDS.DEAL_BULK_STAGE_PARTIAL);
     expect(refresh).toHaveBeenCalled();
   });
@@ -130,7 +137,7 @@ describe("DealListClient bulk stage wiring", () => {
     bulkStageAction.mockResolvedValue({ ok: false, error: { id: "E_PERM_001" } });
     render(<DealListClient initial={initial} />);
 
-    const applied = await listProps?.onBulkStage(["d1", "d2"], "s2");
+    const applied = await listProps?.onBulkStage(["d1", "d2"], "s2", expectedWriteVersions);
 
     expect(applied).toBe(false);
     expect(reportError).toHaveBeenCalledWith("E_PERM_001");

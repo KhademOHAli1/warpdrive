@@ -29,12 +29,22 @@ it("soft-deletes a deal for an admin and 404s an already-deleted id", async () =
       .returning();
     if (deal === undefined) throw new Error("deal insert returned undefined");
 
-    const r1 = await deleteDeal(db, actor, deal.id, AbortSignal.timeout(5000));
+    const r1 = await deleteDeal(
+      db,
+      actor,
+      { dealId: deal.id, expectedWriteVersion: deal.writeVersion },
+      AbortSignal.timeout(5000),
+    );
     expect(r1.ok).toBe(true);
     const [row] = await db.select().from(deals).where(eq(deals.id, deal.id));
     expect(row?.deletedAt).not.toBeNull();
 
-    const r2 = await deleteDeal(db, actor, deal.id, AbortSignal.timeout(5000));
+    const r2 = await deleteDeal(
+      db,
+      actor,
+      { dealId: deal.id, expectedWriteVersion: deal.writeVersion },
+      AbortSignal.timeout(5000),
+    );
     expect(r2.ok).toBe(false);
   });
 });

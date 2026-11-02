@@ -15,19 +15,23 @@ import { InlineCustomField } from "./InlineCustomField";
 
 interface DetailsBlockProps {
   onSave: CustomFieldsSave;
+  writeVersion: string;
   customFieldDefs: CustomFieldDef[];
   customFields: Record<string, unknown>;
   currency: string;
   bulkEditing?: boolean;
+  editingFieldId?: string;
   onExitBulk?: () => void;
 }
 
 export function DetailsBlock({
   onSave,
+  writeVersion,
   customFieldDefs,
   customFields,
   currency,
   bulkEditing = false,
+  editingFieldId,
   onExitBulk,
 }: DetailsBlockProps): React.ReactNode {
   const STRINGS = useSalesStrings();
@@ -41,6 +45,7 @@ export function DetailsBlock({
     return (
       <DetailsBulkEditor
         onSave={onSave}
+        writeVersion={writeVersion}
         customFieldDefs={customFieldDefs}
         customFields={customFields}
         currency={currency}
@@ -54,7 +59,14 @@ export function DetailsBlock({
         const value = customFields[def.key];
         return (
           <FieldRow key={def.id} label={def.name} empty={isCustomFieldValueEmpty(value)}>
-            <InlineCustomField onSave={onSave} def={def} value={value} currency={currency} />
+            <InlineCustomField
+              initiallyEditing={def.id === editingFieldId}
+              writeVersion={writeVersion}
+              onSave={onSave}
+              def={def}
+              value={value}
+              currency={currency}
+            />
           </FieldRow>
         );
       })}
@@ -64,17 +76,20 @@ export function DetailsBlock({
 
 function DetailsBulkEditor({
   onSave,
+  writeVersion,
   customFieldDefs,
   customFields,
   currency,
   onExit,
 }: {
   onSave: CustomFieldsSave;
+  writeVersion: string;
   customFieldDefs: CustomFieldDef[];
   customFields: Record<string, unknown>;
   currency: string;
   onExit: () => void;
 }): React.ReactNode {
+  const [expectedWriteVersion] = useState(writeVersion);
   const locale = useLocale();
   const router = useRouter();
   const fieldsRef = useRef<HTMLDivElement>(null);
@@ -100,13 +115,9 @@ function DetailsBulkEditor({
   function commit(): void {
     if (!reportTimePickerValidity(fieldsRef.current)) return;
     const patch = changedKeys();
-    if (Object.keys(patch).length === 0) {
-      onExit();
-      return;
-    }
     setPending(true);
     setError(null);
-    onSave(patch)
+    onSave(patch, expectedWriteVersion)
       .then((r) => {
         setPending(false);
         if (r.ok) {

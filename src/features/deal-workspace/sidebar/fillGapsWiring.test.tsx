@@ -48,6 +48,7 @@ const personProps = {
 };
 const orgProps = { ...personProps, org };
 const recordOrgProps = {
+  writeVersion: "00000000-0000-4000-8000-000000000001",
   hidden: false,
   org,
   orgMenuItems: [],
@@ -66,7 +67,7 @@ const recordOrgProps = {
 const dealPersonProps = {
   ...personProps,
   dealId: "d1",
-  expectedUpdatedAt: "2026-08-24T09:00:00.000Z",
+  expectedWriteVersion: "00000000-0000-4000-8000-000000000001",
   personOptions: [],
 };
 

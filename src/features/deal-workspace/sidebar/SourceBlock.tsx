@@ -16,7 +16,7 @@ import { SourceChannelIdField } from "./SourceChannelIdField";
 
 interface SourceBlockProps {
   dealId: string;
-  updatedAt: string | Date;
+  writeVersion: string;
   sourceChannel: string | null;
   sourceChannelId: string | null;
   bulkEditing?: boolean;
@@ -28,7 +28,7 @@ interface SourceBlockProps {
 // just the changed fields under the deal CAS precondition.
 export function SourceBlock({
   dealId,
-  updatedAt,
+  writeVersion,
   sourceChannel,
   sourceChannelId,
   bulkEditing = false,
@@ -38,7 +38,7 @@ export function SourceBlock({
     return (
       <SourceBulkEditor
         dealId={dealId}
-        updatedAt={updatedAt}
+        writeVersion={writeVersion}
         sourceChannel={sourceChannel}
         sourceChannelId={sourceChannelId}
         onExit={onExitBulk ?? (() => {})}
@@ -47,10 +47,14 @@ export function SourceBlock({
   }
   return (
     <>
-      <SourceChannelField dealId={dealId} updatedAt={updatedAt} sourceChannel={sourceChannel} />
+      <SourceChannelField
+        dealId={dealId}
+        writeVersion={writeVersion}
+        sourceChannel={sourceChannel}
+      />
       <SourceChannelIdField
         dealId={dealId}
-        updatedAt={updatedAt}
+        writeVersion={writeVersion}
         sourceChannelId={sourceChannelId}
       />
     </>
@@ -59,13 +63,13 @@ export function SourceBlock({
 
 function SourceBulkEditor({
   dealId,
-  updatedAt,
+  writeVersion,
   sourceChannel,
   sourceChannelId,
   onExit,
 }: {
   dealId: string;
-  updatedAt: string | Date;
+  writeVersion: string;
   sourceChannel: string | null;
   sourceChannelId: string | null;
   onExit: () => void;
@@ -74,7 +78,7 @@ function SourceBulkEditor({
   const locale = useLocale();
 
   const router = useRouter();
-  const expectedUpdatedAt = new Date(updatedAt).toISOString();
+  const [expectedWriteVersion] = useState(writeVersion);
   const initialChannel =
     sourceChannel !== null && isSourceChannelKey(sourceChannel) ? sourceChannel : "";
   const [channel, setChannel] = useState<string>(initialChannel);
@@ -85,19 +89,17 @@ function SourceBulkEditor({
   function onSave(): void {
     const patch: {
       dealId: string;
-      expectedUpdatedAt: string;
+      expectedWriteVersion: string;
       sourceChannel?: SourceChannelKey | null;
       sourceChannelId?: string | null;
-    } = { dealId, expectedUpdatedAt };
+    } = { dealId, expectedWriteVersion };
     if (channel !== initialChannel)
       patch.sourceChannel = channel === "" ? null : (channel as SourceChannelKey);
     if (channelId.trim() !== (sourceChannelId ?? "")) {
       patch.sourceChannelId = channelId.trim() === "" ? null : channelId.trim();
     }
-    if (patch.sourceChannel === undefined && patch.sourceChannelId === undefined) {
-      onExit();
-      return;
-    }
+    if (patch.sourceChannel === undefined && patch.sourceChannelId === undefined)
+      patch.sourceChannel = channel === "" ? null : (channel as SourceChannelKey);
     setPending(true);
     setError(null);
     updateDealAction(patch, readCsrfToken())

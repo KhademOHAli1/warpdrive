@@ -1,8 +1,10 @@
 "use client";
+
 import { useRouter } from "next/navigation";
 import { ERROR_IDS } from "@/constants/errorIds";
 import { createPersonAction } from "@/features/contacts/actions";
 import type { DealParticipant } from "@/features/deal-workspace/participantsList";
+import { dealClientResult } from "@/features/deals/dealClientResult";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { trpc } from "@/lib/trpc-client";
 import { readCsrfToken } from "@/utils/csrfCookie";
@@ -41,7 +43,9 @@ export function useParticipants(
   }
 
   async function link(personId: string): Promise<string | null> {
-    const r = await addParticipantAction({ dealId, personId, role: null }, readCsrfToken());
+    const r = await dealClientResult(() =>
+      addParticipantAction({ dealId, personId, role: null }, readCsrfToken()),
+    );
     if (!r.ok) return r.error.id;
     await refresh();
     return null;
@@ -55,16 +59,20 @@ export function useParticipants(
   }
 
   async function remove(personId: string): Promise<string | null> {
-    const r = await removeParticipantAction({ dealId, personId }, readCsrfToken());
+    const r = await dealClientResult(() =>
+      removeParticipantAction({ dealId, personId }, readCsrfToken()),
+    );
     if (!r.ok) return translateSales("computed.removeParticipantFailed", { id: r.error.id });
     await refresh();
     return null;
   }
 
   async function createAndAdd(name: string): Promise<string | null> {
-    const r = await createPersonAction(
-      { name, orgId, emails: [], phones: [], customFields: {} },
-      readCsrfToken(),
+    const r = await dealClientResult(() =>
+      createPersonAction(
+        { name, orgId, emails: [], phones: [], customFields: {} },
+        readCsrfToken(),
+      ),
     );
     if (!r.ok) return createFailureMessage(r.error.id, translateSales);
     await Promise.all([

@@ -22,12 +22,16 @@ vi.mock("@/features/identity/actions/shared", () => ({
 vi.mock("@/server/trpc/context", () => ({
   createContext: vi.fn().mockResolvedValue({
     actor: { id: "actor-1", type: "regular", isActive: true, groupIds: new Set<string>() },
-    session: null,
+    session: { userId: "actor-1", sessionId: "synthetic-native-notification-session" },
     db: {},
   }),
 }));
 
-const deal = { id: "deal-1", updatedAt: new Date("2026-01-01T00:00:00Z") };
+const deal = {
+  id: "deal-1",
+  writeVersion: "00000000-0000-4000-8000-000000000001",
+  updatedAt: new Date("2026-01-01T00:00:00Z"),
+};
 
 const { updateDeal, moveDeal } = vi.hoisted(() => ({
   updateDeal: vi.fn(),
@@ -59,6 +63,7 @@ describe("updateDealAction defers its notification fan-out", () => {
     const r = await updateDealAction({ dealId: "deal-1" } as never, "csrf");
 
     expect(r.ok).toBe(true);
+    if (r.ok) expect(r.deal.writeVersion).toBe(deal.writeVersion);
     // Deferred: the response is ready and the fan-out has not run yet.
     expect(notifyOnDealUpdate).not.toHaveBeenCalled();
     expect(afterCallbacks).toHaveLength(1);
@@ -83,6 +88,7 @@ describe("moveDealAction defers its notification fan-out", () => {
     const r = await moveDealAction({ dealId: "deal-1" } as never, "csrf");
 
     expect(r.ok).toBe(true);
+    if (r.ok) expect(r.deal.writeVersion).toBe(deal.writeVersion);
     expect(notifyOnDealMove).not.toHaveBeenCalled();
     expect(afterCallbacks).toHaveLength(1);
 

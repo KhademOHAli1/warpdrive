@@ -1,9 +1,11 @@
 "use client";
+
 import { useState } from "react";
 import { createActivityAction, editActivityAction } from "@/features/activities/actions";
 import { localizeActivityTypes } from "@/features/activities/activityTypeLabels";
 import type { EditableActivity } from "@/features/activities/getForEdit";
 import { useInvalidateActivityLists } from "@/features/activities/useInvalidateActivityLists";
+import { dealClientResult } from "@/features/deals/dealClientResult";
 import { useAppTranslations, useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import { trpc } from "@/lib/trpc-client";
 import { readCsrfToken } from "@/utils/csrfCookie";
@@ -217,8 +219,8 @@ export function useActivityComposer(props: ActivityComposerProps) {
     }
     const r =
       input.kind === "edit"
-        ? await editActivityAction(input.value, csrf)
-        : await createActivityAction(input.value, csrf);
+        ? await dealClientResult(() => editActivityAction(input.value, csrf))
+        : await dealClientResult(() => createActivityAction(input.value, csrf));
     if (!r.ok) {
       setPending(false);
       setError(

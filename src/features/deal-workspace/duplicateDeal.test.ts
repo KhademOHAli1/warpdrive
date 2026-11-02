@@ -59,7 +59,7 @@ it("clones fields into a new open deal owned by the actor, dropping won/archived
   const r = await duplicateDeal(
     h.db,
     regularActor(actor.id, ["deal.create"]),
-    { dealId: source.id },
+    { dealId: source.id, expectedWriteVersion: source.writeVersion },
     new AbortController().signal,
   );
 
@@ -69,6 +69,8 @@ it("clones fields into a new open deal owned by the actor, dropping won/archived
 
   const [clone] = await h.db.select().from(deals).where(eq(deals.id, r.value.id));
   expect(clone).toBeDefined();
+  expect(r.value).toEqual(clone);
+  expect(r.value.writeVersion).not.toBe(source.writeVersion);
   if (clone === undefined) return;
   // Copied core fields.
   expect(clone.title).toBe("Acme expansion (copy)");
@@ -129,7 +131,7 @@ it("clones under the group visibility default using the actor's primary visibili
   const r = await duplicateDeal(
     h.db,
     actorPerm,
-    { dealId: source.id },
+    { dealId: source.id, expectedWriteVersion: source.writeVersion },
     new AbortController().signal,
   );
 
@@ -154,7 +156,7 @@ it("denies an actor without deal.create and inserts nothing", async () => {
   const r = await duplicateDeal(
     h.db,
     regularActor(actor.id, []),
-    { dealId: source.id },
+    { dealId: source.id, expectedWriteVersion: source.writeVersion },
     new AbortController().signal,
   );
 
@@ -186,7 +188,7 @@ it("404s (E_DEAL_001) when the source is not visible to the actor", async () => 
   const r = await duplicateDeal(
     h.db,
     regularActor(actor.id, ["deal.create"]),
-    { dealId: source.id },
+    { dealId: source.id, expectedWriteVersion: source.writeVersion },
     new AbortController().signal,
   );
 
@@ -215,7 +217,7 @@ it("rejects a duplicate when its source is missing an active Important deal fiel
     const r = await duplicateDeal(
       h.db,
       regularActor(actor.id, ["deal.create"]),
-      { dealId: source.id },
+      { dealId: source.id, expectedWriteVersion: source.writeVersion },
       new AbortController().signal,
     );
     expect(r.ok).toBe(false);
@@ -224,4 +226,28 @@ it("rejects a duplicate when its source is missing an active Important deal fiel
   } finally {
     if (def !== undefined) await h.db.delete(customFieldDefs).where(eq(customFieldDefs.id, def.id));
   }
+});
+
+it("does not create a clone from a stale source snapshot", async () => {
+  const owner = await seedUser(h.db);
+  const p = await seedPipelineWithStages(h.db, ["A"]);
+  const source = await seedSource(p.pipeline.id, p.stages[0]!.id, owner.id);
+  const [winner] = await h.db
+    .update(deals)
+    .set({ title: "Concurrent winner" })
+    .where(eq(deals.id, source.id))
+    .returning();
+  const before = await h.db.select({ id: deals.id }).from(deals);
+  const result = await duplicateDeal(
+    h.db,
+    regularActor(owner.id, ["deal.create"]),
+    { dealId: source.id, expectedWriteVersion: source.writeVersion },
+    AbortSignal.timeout(5000),
+  );
+  expect(result.ok).toBe(false);
+  if (result.ok) throw new Error("stale source duplicated");
+  expect(result.error.id).toBe("E_DEAL_002");
+  expect(await h.db.select({ id: deals.id }).from(deals)).toHaveLength(before.length);
+  const [after] = await h.db.select().from(deals).where(eq(deals.id, source.id));
+  expect(after).toEqual(winner);
 });

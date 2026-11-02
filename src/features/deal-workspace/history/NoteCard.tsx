@@ -1,4 +1,5 @@
 "use client";
+
 import { Ellipsis, Pin } from "lucide-react";
 import type React from "react";
 import { useCallback, useState } from "react";
@@ -25,6 +26,7 @@ import {
 } from "@/features/collaboration/actions";
 import { LinkifiedText } from "@/features/collaboration/LinkifiedText";
 import { useDealActionError } from "@/features/deal-workspace/DealActionErrorProvider";
+import { dealClientResult } from "@/features/deals/dealClientResult";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { AttributionLine } from "./AttributionLine";
@@ -67,7 +69,9 @@ export function NoteCard({
     const next = !isPinned;
     setBusy(true);
     setPinned(next); // optimistic
-    const res = await togglePinAction({ noteId: id, pinned: next }, readCsrfToken());
+    const res = await dealClientResult(() =>
+      togglePinAction({ noteId: id, pinned: next }, readCsrfToken()),
+    );
     if (res.ok) onChanged?.();
     else {
       setPinned(!next); // roll back the optimistic pin
@@ -80,7 +84,9 @@ export function NoteCard({
     const trimmed = draft.trim();
     if (trimmed === "" || busy) return;
     setBusy(true);
-    const res = await updateNoteAction({ noteId: id, body: trimmed }, readCsrfToken());
+    const res = await dealClientResult(() =>
+      updateNoteAction({ noteId: id, body: trimmed }, readCsrfToken()),
+    );
     setBusy(false);
     if (res.ok) {
       setEditing(false);
@@ -93,7 +99,7 @@ export function NoteCard({
   const confirmDelete = useCallback(async () => {
     if (busy) return;
     setBusy(true);
-    const res = await deleteNoteAction({ noteId: id }, readCsrfToken());
+    const res = await dealClientResult(() => deleteNoteAction({ noteId: id }, readCsrfToken()));
     setBusy(false);
     if (res.ok) {
       setConfirmOpen(false);

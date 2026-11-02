@@ -22,6 +22,7 @@ async function seedDealWithFollower(db: Db): Promise<{
   followerId: string;
   actorId: string;
   updatedAt: string;
+  writeVersion: string;
 }> {
   await seedSettings(db);
   const owner = await seedUser(db);
@@ -44,19 +45,22 @@ async function seedDealWithFollower(db: Db): Promise<{
     followerId: follower.id,
     actorId: actor.id,
     updatedAt: created.value.updatedAt.toISOString(),
+    writeVersion: created.value.writeVersion,
   };
 }
 
 describe("notifyOnDealUpdate: deal_won", () => {
   it("fires a deal_won notification to the follower after status transition to won", async () => {
     await withTestDb(async (db) => {
-      const { dealId, followerId, actorId, updatedAt } = await seedDealWithFollower(db);
+      const { dealId, followerId, actorId, updatedAt, writeVersion } =
+        await seedDealWithFollower(db);
 
       const r = await updateDeal(
         db,
         adminSession(actorId),
         {
           dealId,
+          expectedWriteVersion: writeVersion,
           expectedUpdatedAt: updatedAt,
           status: "won",
         },
@@ -86,13 +90,15 @@ describe("notifyOnDealUpdate: deal_won", () => {
 describe("notifyOnDealUpdate: deal_followed_update", () => {
   it("fires a deal_followed_update notification after a non-status field change", async () => {
     await withTestDb(async (db) => {
-      const { dealId, followerId, actorId, updatedAt } = await seedDealWithFollower(db);
+      const { dealId, followerId, actorId, updatedAt, writeVersion } =
+        await seedDealWithFollower(db);
 
       const r = await updateDeal(
         db,
         adminSession(actorId),
         {
           dealId,
+          expectedWriteVersion: writeVersion,
           expectedUpdatedAt: updatedAt,
           title: "New Title",
         },
@@ -121,7 +127,8 @@ describe("notifyOnDealUpdate: deal_followed_update", () => {
 describe("notifyOnDealMove: deal_followed_update on stage move", () => {
   it("fires a deal_followed_update notification to the follower after a stage move", async () => {
     await withTestDb(async (db) => {
-      const { dealId, followerId, actorId, updatedAt } = await seedDealWithFollower(db);
+      const { dealId, followerId, actorId, updatedAt, writeVersion } =
+        await seedDealWithFollower(db);
 
       const pipelineRow = (
         await db.execute(sql`SELECT pipeline_id FROM deals WHERE id = ${dealId}`)
@@ -142,6 +149,7 @@ describe("notifyOnDealMove: deal_followed_update on stage move", () => {
           toStageId: toStage.id,
           beforePosition: null,
           afterPosition: null,
+          expectedWriteVersion: writeVersion,
           expectedUpdatedAt: updatedAt,
         },
         new AbortController().signal,

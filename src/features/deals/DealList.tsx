@@ -4,14 +4,17 @@ import { useState } from "react";
 import type { ColumnDef } from "@/components/data-table/columnModel";
 import { RENDER_WINDOW_STEP, useRenderWindow } from "@/components/data-table/useRenderWindow";
 import { Checkbox } from "@/components/ui/Checkbox";
+import { ERROR_IDS } from "@/constants/errorIds";
 import { MoneyTotals } from "@/features/currencies/MoneyTotals";
 import type { CurrencyTotal } from "@/features/currencies/money";
+import { useDealActionError } from "@/features/deal-workspace/DealActionErrorProvider";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { useFormatters } from "@/lib/useFormatters";
 import { DealListBulkBar } from "./DealListBulkBar";
 import { DealListTableBody } from "./DealListTableBody";
 import { MAX_TITLE_LEN } from "./DealTitleCell";
 import type { DealListRow, DealListStage } from "./dealListTypes";
+import type { BulkClientResult } from "./useDealListActions";
 import { useInlineEdit } from "./useInlineEdit";
 
 export type { DealListRow, DealListStage } from "./dealListTypes";
@@ -26,15 +29,22 @@ export interface DealListProps {
   // Resolves true when the move actually landed, false when it failed. DealList clears the row
   // selection only on true, so a failed move keeps the selection instead of falsely signalling
   // success (the selection vanishing was read as "it worked" even when the server rejected it).
-  onBulkStage: (dealIds: string[], toStageId: string) => Promise<boolean>;
-  onBulkArchive?: (dealIds: string[]) => Promise<boolean>;
+  onBulkStage: (
+    dealIds: string[],
+    toStageId: string,
+    expectedWriteVersions: Record<string, string>,
+  ) => Promise<BulkClientResult>;
+  onBulkArchive?: (
+    dealIds: string[],
+    expectedWriteVersions: Record<string, string>,
+  ) => Promise<BulkClientResult>;
   // Ordered visible columns (from useColumns/DEAL_LIST_COLUMNS). Title is always first (pinned).
   visibleColumns: readonly ColumnDef[];
   // The Customize-columns cog, rendered by the stateful client above the table.
   columnsMenu?: React.ReactNode;
   // Present only on the Archive view: renders a per-row Unarchive control. When set the table
   // grows a trailing actions column; the normal list passes nothing and stays unchanged.
-  onUnarchive?: (dealId: string) => void;
+  onUnarchive?: (dealId: string, expectedWriteVersion: string) => void;
   // What to show in place of the rows when there are none. With nothing filtered the table goes
   // with them: a header, a select-all, a gear and a "0 deals" footer over zero rows is machinery.
   empty?: React.ReactNode;
@@ -52,21 +62,37 @@ export function DealList(props: DealListProps) {
   const { onBulkStage, onBulkArchive, onUnarchive } = props;
   const { visibleColumns, columnsMenu, empty, filtered = false } = props;
   const { editCell } = useInlineEdit(pipelineId);
+  const reportError = useDealActionError();
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [selectedVersions, setSelectedVersions] = useState<Record<string, string>>({});
   // Which row's title is in inline-edit mode. Pipedrive opens the deal on title
   // click, so edit is behind an explicit control rather than the cell itself.
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingSnapshot, setEditingSnapshot] = useState<DealListRow | null>(null);
   // Cap how many rows are painted to the DOM. Filtering, sorting, selection, and the footer
   // totals all operate over the full `rows`/`total` above, so this bounds render cost only: a
   // pipeline with hundreds of deals no longer mounts every <tr> up front.
   const rowWindow = useRenderWindow(rows, RENDER_WINDOW_STEP);
 
-  function saveTitle(row: DealListRow, value: string) {
-    setEditingId(null);
+  async function saveTitle(row: DealListRow, value: string) {
+    const snapshot = editingSnapshot?.id === row.id ? editingSnapshot : row;
     const next = value.trim();
     // Reject empty/whitespace (would blank the deal name) and over-long (server caps title at 255).
-    if (next === "" || next === row.title || next.length > MAX_TITLE_LEN) return;
-    editCell({ dealId: row.id, field: "title", value: next, expectedUpdatedAt: row.updatedAt });
+    if (next === "" || next === snapshot.title || next.length > MAX_TITLE_LEN) return;
+    try {
+      const result = await editCell({
+        dealId: row.id,
+        field: "title",
+        value: next,
+        expectedWriteVersion: snapshot.writeVersion,
+      });
+      if (result.ok) {
+        setEditingId(null);
+        setEditingSnapshot(null);
+      }
+    } catch {
+      // Keep the input and its original snapshot when transport fails.
+    }
   }
 
   // Map stage id -> human name so the table shows the stage, not a raw uuid.
@@ -78,6 +104,9 @@ export function DealList(props: DealListProps) {
   const someSelected = selectedIds.length > 0 && !allSelected;
 
   function toggleOne(id: string) {
+    const row = rows.find((candidate) => candidate.id === id);
+    if (row === undefined) return;
+    setSelectedVersions((previous) => ({ ...previous, [id]: row.writeVersion }));
     setSelected((prev) => {
       const next = new Set(prev);
       if (next.has(id)) {
@@ -90,6 +119,9 @@ export function DealList(props: DealListProps) {
   }
 
   function toggleAll() {
+    setSelectedVersions(
+      allSelected ? {} : Object.fromEntries(rows.map((row) => [row.id, row.writeVersion])),
+    );
     setSelected(allSelected ? new Set() : new Set(allIds));
   }
 
@@ -98,15 +130,43 @@ export function DealList(props: DealListProps) {
     return someSelected ? "indeterminate" : false;
   }
 
+  function selectedWriteVersions(): Record<string, string> | undefined {
+    const versions: Record<string, string> = {};
+    for (const id of selectedIds) {
+      const version = selectedVersions[id];
+      if (version === undefined) return undefined;
+      versions[id] = version;
+    }
+    return versions;
+  }
+
   async function confirmBulkStage(toStageId: string): Promise<void> {
-    const applied = await onBulkStage(selectedIds, toStageId);
-    if (applied) setSelected(new Set());
+    const expectedWriteVersions = selectedWriteVersions();
+    if (expectedWriteVersions === undefined) {
+      reportError(ERROR_IDS.DEAL_PRECONDITION);
+      return;
+    }
+    const applied = await onBulkStage(selectedIds, toStageId, expectedWriteVersions);
+    if (applied === true) setSelected(new Set());
+    else if (typeof applied === "object")
+      setSelected(
+        (previous) => new Set([...previous].filter((id) => !applied.appliedDealIds.includes(id))),
+      );
   }
 
   async function confirmBulkArchive(): Promise<void> {
     if (onBulkArchive === undefined) return;
-    const applied = await onBulkArchive(selectedIds);
-    if (applied) setSelected(new Set());
+    const expectedWriteVersions = selectedWriteVersions();
+    if (expectedWriteVersions === undefined) {
+      reportError(ERROR_IDS.DEAL_PRECONDITION);
+      return;
+    }
+    const applied = await onBulkArchive(selectedIds, expectedWriteVersions);
+    if (applied === true) setSelected(new Set());
+    else if (typeof applied === "object")
+      setSelected(
+        (previous) => new Set([...previous].filter((id) => !applied.appliedDealIds.includes(id))),
+      );
   }
 
   const bodyColSpan = 1 + visibleColumns.length + (onUnarchive ? 1 : 0);
@@ -162,9 +222,17 @@ export function DealList(props: DealListProps) {
             onToggleRow={toggleOne}
             stageNameById={stageNameById}
             editingId={editingId}
-            onStartEdit={setEditingId}
-            onCancelEdit={() => setEditingId(null)}
-            onCommitTitle={saveTitle}
+            onStartEdit={(id) => {
+              setEditingSnapshot(rows.find((row) => row.id === id) ?? null);
+              setEditingId(id);
+            }}
+            onCancelEdit={() => {
+              setEditingId(null);
+              setEditingSnapshot(null);
+            }}
+            onCommitTitle={(row, value) => {
+              void saveTitle(row, value);
+            }}
             onUnarchive={onUnarchive}
             empty={empty}
             currency={currency}

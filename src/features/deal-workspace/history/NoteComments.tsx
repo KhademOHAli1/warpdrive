@@ -1,4 +1,5 @@
 "use client";
+
 import { MessageSquare } from "lucide-react";
 import type React from "react";
 import { useCallback, useState } from "react";
@@ -6,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { Textarea } from "@/components/ui/Textarea";
 import type { CommentableEntityType } from "@/constants/comments";
 import { createCommentAction } from "@/features/collaboration/commentActions";
+import { dealClientResult } from "@/features/deals/dealClientResult";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { trpc } from "@/lib/trpc-client";
 import { readCsrfToken } from "@/utils/csrfCookie";
@@ -35,7 +37,9 @@ export function NoteComments({ noteId, entityType, entityId, onError }: Props): 
     const trimmed = draft.trim();
     if (trimmed === "" || busy) return;
     setBusy(true);
-    const res = await createCommentAction({ noteId, body: trimmed }, readCsrfToken());
+    const res = await dealClientResult(() =>
+      createCommentAction({ noteId, body: trimmed }, readCsrfToken()),
+    );
     setBusy(false);
     if (res.ok) {
       setDraft("");

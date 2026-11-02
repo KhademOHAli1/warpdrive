@@ -6,7 +6,7 @@ import { z } from "zod";
 import { BOARD_EVENT, dealMovedChannel } from "@/constants/boardChannels";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
-import { deals } from "@/db/schema/deals";
+import { type Deal, deals } from "@/db/schema/deals";
 import { users } from "@/db/schema/identity";
 import { pipelines } from "@/db/schema/pipelines";
 import { settings } from "@/db/schema/system";
@@ -14,13 +14,21 @@ import { recordChange } from "@/features/collaboration/changeLog";
 import { midpoint } from "@/features/deals/boardPosition";
 import { toVisibleDeal } from "@/features/deals/dealAuth";
 import { validateDealCustomFieldsForCreate } from "@/features/deals/dealCustomFieldsValidation";
+import {
+  lockDealWriteVersion,
+  missingDealVersion,
+  readFinalDeal,
+} from "@/features/deals/dealVersion";
 import { canSee } from "@/features/permissions/canSee";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { resolveVisibilityGroup } from "@/features/permissions/entityCreate";
 import { publishBoardEvent } from "@/server/realtime/events";
 import { err, ok, type Result } from "@/types/result";
 
-export const duplicateDealInput = z.object({ dealId: z.string().uuid() });
+export const duplicateDealInput = z.object({
+  dealId: z.string().uuid(),
+  expectedWriteVersion: z.string().uuid(),
+});
 
 // Suffix appended to the cloned title (Pipedrive parity: "Deal (copy)").
 const COPY_SUFFIX = " (copy)";
@@ -30,7 +38,9 @@ export async function duplicateDeal(
   actor: PermSetUser,
   raw: unknown,
   signal: AbortSignal,
-): Promise<Result<{ id: string; updatedAt: Date }, AppError>> {
+): Promise<Result<Deal, AppError>> {
+  const versionError = missingDealVersion(raw);
+  if (versionError !== null) return err(versionError);
   const input = duplicateDealInput.parse(raw);
   signal.throwIfAborted();
 
@@ -111,6 +121,9 @@ export async function duplicateDeal(
   signal.throwIfAborted();
 
   return db.transaction(async (tx) => {
+    const locked = await lockDealWriteVersion(tx, input.dealId, input.expectedWriteVersion, signal);
+    if (!locked.ok) return locked;
+    const source = locked.value;
     const [bottom] = await tx
       .select({ pos: deals.boardPosition })
       .from(deals)
@@ -141,12 +154,7 @@ export async function duplicateDeal(
         visibilityLevel: level,
         visibilityGroupId,
       })
-      .returning({
-        id: deals.id,
-        stageId: deals.stageId,
-        boardPosition: deals.boardPosition,
-        updatedAt: deals.updatedAt,
-      });
+      .returning();
     if (clone === undefined) {
       throw new AppError(ERROR_IDS.DB_INSERT_FAILED, "duplicateDeal: insert returned no rows");
     }
@@ -175,6 +183,6 @@ export async function duplicateDeal(
       signal,
     );
 
-    return ok({ id: clone.id, updatedAt: clone.updatedAt });
+    return ok(await readFinalDeal(tx, clone.id, signal));
   });
 }

@@ -1,4 +1,5 @@
 "use client";
+
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { useState } from "react";
@@ -8,6 +9,7 @@ import { AddActivityModal } from "@/features/activities/AddActivityModal";
 import { useDealActionError } from "@/features/deal-workspace/DealActionErrorProvider";
 import { DealStatusBadge } from "@/features/deal-workspace/DealStatusBadge";
 import { MarkLostDialog } from "@/features/deal-workspace/MarkLostDialog";
+import { dealClientResult } from "@/features/deals/dealClientResult";
 import { playWinChime } from "@/features/deals/winChime";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { useInterfacePrefs } from "@/features/identity/InterfacePrefsProvider";
@@ -16,7 +18,9 @@ import { markWonAction, reopenDealAction } from "./actions";
 
 export interface DealCloseActionsProps {
   dealId: string;
+  expectedWriteVersion: string;
   status: DealStatus;
+  quiet?: boolean;
   lostReasonOptions: Array<{ id: string; name: string }>;
   // Read-back for a closed lost deal: the preset reason name (from lostReasonId) and the free-text
   // comment (lostReason). Both may be set (Pipedrive parity); null when unset. Written on close but
@@ -36,7 +40,9 @@ export interface DealCloseActionsProps {
 // in which case Won opens an Add Activity prompt first and the refresh is deferred until it closes.
 export function DealCloseActions({
   dealId,
+  expectedWriteVersion,
   status,
+  quiet = false,
   lostReasonOptions,
   lostReasonName = null,
   lostReasonText = null,
@@ -48,6 +54,7 @@ export function DealCloseActions({
   const reportError = useDealActionError();
   const { winSound } = useInterfacePrefs();
   const [picking, setPicking] = useState(false);
+  const [lostVersion, setLostVersion] = useState(expectedWriteVersion);
   const [pending, setPending] = useState(false);
   const [showFollowUp, setShowFollowUp] = useState(false);
 
@@ -56,7 +63,9 @@ export function DealCloseActions({
   // transition. Same edit-permission gate as Won/Lost (enforced server-side).
   async function reopen(): Promise<void> {
     setPending(true);
-    const r = await reopenDealAction({ dealId }, readCsrfToken());
+    const r = await dealClientResult(() =>
+      reopenDealAction({ dealId, expectedWriteVersion }, readCsrfToken()),
+    );
     setPending(false);
     if (r.ok) router.refresh();
     else reportError(r.error.id);
@@ -85,13 +94,32 @@ export function DealCloseActions({
         >
           {translateSales("reopen_a886d")}
         </button>
+        <MarkLostDialog
+          key="mark-lost"
+          dealId={dealId}
+          expectedWriteVersion={lostVersion}
+          open={picking}
+          onOpenChange={setPicking}
+          lostReasonOptions={lostReasonOptions}
+          onSuccess={() => router.refresh()}
+        />
+        {showFollowUp && (
+          <AddActivityModal
+            key="follow-up"
+            dealId={dealId}
+            onCreated={closeFollowUp}
+            onClose={closeFollowUp}
+          />
+        )}
       </div>
     );
   }
 
   async function won(): Promise<void> {
     setPending(true);
-    const r = await markWonAction({ dealId }, readCsrfToken());
+    const r = await dealClientResult(() =>
+      markWonAction({ dealId, expectedWriteVersion }, readCsrfToken()),
+    );
     setPending(false);
     if (!r.ok) {
       reportError(r.error.id);
@@ -122,27 +150,45 @@ export function DealCloseActions({
         type="button"
         disabled={pending}
         onClick={() => void won()}
-        className="rounded-md bg-success px-3 py-1.5 text-sm font-medium text-success-foreground transition-[opacity,scale] duration-150 ease-out hover:opacity-90 active:not-disabled:scale-[0.96] disabled:opacity-50"
+        className={
+          quiet
+            ? "rounded-md border px-3 py-1.5 text-sm font-medium text-foreground hover:bg-accent disabled:opacity-50"
+            : "rounded-md bg-success px-3 py-1.5 text-sm font-medium text-success-foreground transition-[opacity,scale] duration-150 ease-out hover:opacity-90 active:not-disabled:scale-[0.96] disabled:opacity-50"
+        }
       >
         {translateSales("won_acdf2")}
       </button>
       <button
         type="button"
         disabled={pending}
-        onClick={() => setPicking(true)}
-        className="rounded-md bg-destructive px-3 py-1.5 text-sm font-medium text-destructive-foreground transition-[opacity,scale] duration-150 ease-out hover:opacity-90 active:not-disabled:scale-[0.96] disabled:opacity-50"
+        onClick={() => {
+          setLostVersion(expectedWriteVersion);
+          setPicking(true);
+        }}
+        className={
+          quiet
+            ? "rounded-md border px-3 py-1.5 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-destructive disabled:opacity-50"
+            : "rounded-md bg-destructive px-3 py-1.5 text-sm font-medium text-destructive-foreground transition-[opacity,scale] duration-150 ease-out hover:opacity-90 active:not-disabled:scale-[0.96] disabled:opacity-50"
+        }
       >
         {translateSales("lost_51e13")}
       </button>
       <MarkLostDialog
+        key="mark-lost"
         dealId={dealId}
+        expectedWriteVersion={lostVersion}
         open={picking}
         onOpenChange={setPicking}
         lostReasonOptions={lostReasonOptions}
         onSuccess={() => router.refresh()}
       />
       {showFollowUp && (
-        <AddActivityModal dealId={dealId} onCreated={closeFollowUp} onClose={closeFollowUp} />
+        <AddActivityModal
+          key="follow-up"
+          dealId={dealId}
+          onCreated={closeFollowUp}
+          onClose={closeFollowUp}
+        />
       )}
     </div>
   );

@@ -53,7 +53,11 @@ describe("bulkStageAction validation boundary", () => {
   test("rejects a non-uuid deal id without calling bulkUpdateStage", async () => {
     setSameOrigin();
     const r = await bulkStageAction(
-      { dealIds: ["not-a-uuid"], toStageId: VALID_STAGE_ID },
+      {
+        expectedWriteVersions: { [VALID_DEAL_ID]: "00000000-0000-4000-8000-000000000001" },
+        dealIds: ["not-a-uuid"],
+        toStageId: VALID_STAGE_ID,
+      },
       VALID_TOKEN,
     );
     expect(r.ok).toBe(false);
@@ -64,7 +68,11 @@ describe("bulkStageAction validation boundary", () => {
   test("rejects a non-array dealIds without calling bulkUpdateStage", async () => {
     setSameOrigin();
     const r = await bulkStageAction(
-      { dealIds: VALID_DEAL_ID, toStageId: VALID_STAGE_ID } as unknown as BulkStageInput,
+      {
+        expectedWriteVersions: { [VALID_DEAL_ID]: "00000000-0000-4000-8000-000000000001" },
+        dealIds: VALID_DEAL_ID,
+        toStageId: VALID_STAGE_ID,
+      } as unknown as BulkStageInput,
       VALID_TOKEN,
     );
     expect(r.ok).toBe(false);
@@ -74,7 +82,14 @@ describe("bulkStageAction validation boundary", () => {
 
   test("rejects an empty dealIds array without calling bulkUpdateStage", async () => {
     setSameOrigin();
-    const r = await bulkStageAction({ dealIds: [], toStageId: VALID_STAGE_ID }, VALID_TOKEN);
+    const r = await bulkStageAction(
+      {
+        expectedWriteVersions: { [VALID_DEAL_ID]: "00000000-0000-4000-8000-000000000001" },
+        dealIds: [],
+        toStageId: VALID_STAGE_ID,
+      },
+      VALID_TOKEN,
+    );
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.error.id).toBe("E_DEAL_015");
     expect(bulkUpdateStage).not.toHaveBeenCalled();
@@ -83,7 +98,11 @@ describe("bulkStageAction validation boundary", () => {
   test("rejects 501 deal ids without calling bulkUpdateStage", async () => {
     setSameOrigin();
     const r = await bulkStageAction(
-      { dealIds: Array.from({ length: 501 }, () => VALID_DEAL_ID), toStageId: VALID_STAGE_ID },
+      {
+        expectedWriteVersions: { [VALID_DEAL_ID]: "00000000-0000-4000-8000-000000000001" },
+        dealIds: Array.from({ length: 501 }, () => VALID_DEAL_ID),
+        toStageId: VALID_STAGE_ID,
+      },
       VALID_TOKEN,
     );
     expect(r.ok).toBe(false);
@@ -94,7 +113,11 @@ describe("bulkStageAction validation boundary", () => {
   test("passes valid input through to bulkUpdateStage", async () => {
     setSameOrigin();
     const r = await bulkStageAction(
-      { dealIds: [VALID_DEAL_ID], toStageId: VALID_STAGE_ID },
+      {
+        expectedWriteVersions: { [VALID_DEAL_ID]: "00000000-0000-4000-8000-000000000001" },
+        dealIds: [VALID_DEAL_ID],
+        toStageId: VALID_STAGE_ID,
+      },
       VALID_TOKEN,
     );
     expect(r.ok).toBe(true);

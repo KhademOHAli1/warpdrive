@@ -6,16 +6,17 @@ import { guardCsrf } from "@/features/identity/actions/shared";
 import { SIG } from "@/features/identity/actions/sig";
 import { createContext } from "@/server/trpc/context";
 import { moveDeal } from "./dealActions";
+import { type DealActionSnapshot, dealActionSnapshot } from "./dealVersion";
 import { notifyOnDealMove } from "./notifyHelpers";
 import type { DealMoveInput } from "./schemas";
 
 export type MoveResult =
-  | { ok: true; deal: { id: string; updatedAt: string } }
+  | { ok: true; deal: DealActionSnapshot }
   | { ok: false; error: { id: string } };
 
 // CSRF-guarded deal move action.
 // guardCsrf is called FIRST: no DB work happens before CSRF is verified.
-// The actor is loaded from the live session; client identity is never trusted.
+// Native session identity stays server-private; client identity is never trusted.
 export async function moveDealAction(
   input: DealMoveInput,
   csrfToken: string | null = null,
@@ -23,10 +24,11 @@ export async function moveDealAction(
   const csrfOk = await guardCsrf(csrfToken);
   if (!csrfOk.ok) return { ok: false, error: { id: "E_AUTH_CSRF" } };
 
-  const { actor } = await createContext();
-  if (actor === null) return { ok: false, error: { id: "E_AUTH_003" } };
+  const { actor, session } = await createContext();
+  if (actor === null || session === null || actor.id !== session.userId)
+    return { ok: false, error: { id: "E_AUTH_003" } };
 
-  const result = await moveDeal(db, actor, input, SIG());
+  const result = await moveDeal(db, actor, input, SIG(), session);
   if (!result.ok) return { ok: false, error: { id: result.error.id } };
 
   // Deferred past the response: the fan-out is outside the deal transaction and invisible to the
@@ -42,6 +44,6 @@ export async function moveDealAction(
 
   return {
     ok: true,
-    deal: { id: result.value.id, updatedAt: result.value.updatedAt.toISOString() },
+    deal: dealActionSnapshot(result.value),
   };
 }

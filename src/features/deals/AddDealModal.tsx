@@ -1,4 +1,5 @@
 "use client";
+
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { useMemo, useState } from "react";
@@ -8,6 +9,7 @@ import {
   CustomFieldCreateFields,
   customFieldCreatePayload,
 } from "@/features/custom-fields/CustomFieldCreateFields";
+import { dealClientResult } from "@/features/deals/dealClientResult";
 import { EntityCreateModalShell } from "@/features/entity-create/EntityCreateModalShell";
 import {
   optionsOrNull,
@@ -205,7 +207,7 @@ export function AddDealModal(props: AddDealModalProps): React.ReactNode {
         state.visibilityGroupId === ""
           ? resolved
           : { ...resolved, visibilityGroupId: state.visibilityGroupId };
-      const result = await createDealAction(input, csrf);
+      const result = await dealClientResult(() => createDealAction(input, csrf));
       if (!result.ok) {
         setError(translateSales("computed.createDealFailed", { id: result.error.id }));
         return;

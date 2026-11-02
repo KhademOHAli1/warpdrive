@@ -24,6 +24,7 @@ describe("loadEditableDeal hides deleted / archived-pipeline deals", () => {
         adminSession(u.id),
         {
           dealId: deal.id,
+          expectedWriteVersion: deal.writeVersion,
           expectedUpdatedAt: deal.updatedAt.toISOString(),
           title: "should not apply",
         },
@@ -44,6 +45,7 @@ describe("loadEditableDeal hides deleted / archived-pipeline deals", () => {
         adminSession(u.id),
         {
           dealId: deal.id,
+          expectedWriteVersion: deal.writeVersion,
           expectedUpdatedAt: deal.updatedAt.toISOString(),
           title: "should not apply",
         },
@@ -65,6 +67,7 @@ describe("loadEditableDeal hides deleted / archived-pipeline deals", () => {
         {
           dealId: deal.id,
           toStageId: p.stages[0]!.id,
+          expectedWriteVersion: deal.writeVersion,
           expectedUpdatedAt: deal.updatedAt.toISOString(),
         },
         new AbortController().signal,

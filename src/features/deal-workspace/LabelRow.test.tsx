@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { dealClientFixture } from "@/features/deals/dealClientFixture";
 import "@testing-library/jest-dom/vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -25,11 +26,12 @@ vi.mock("@/lib/trpc-client", () => ({
 }));
 
 type UpdateResult =
-  | { ok: true; deal: { id: string; updatedAt: string } }
+  | { ok: true; deal: ReturnType<typeof dealClientFixture> }
   | { ok: false; error: { id: string } };
 const updateDealAction = vi.hoisted(() =>
   vi.fn(
-    (): Promise<UpdateResult> => Promise.resolve({ ok: true, deal: { id: "d1", updatedAt: "x" } }),
+    (): Promise<UpdateResult> =>
+      Promise.resolve({ ok: true, deal: dealClientFixture({ id: "d1", updatedAt: "x" }) }),
   ),
 );
 vi.mock("@/features/deals/updateAction", () => ({ updateDealAction }));
@@ -44,7 +46,11 @@ afterEach(() => {
   updateDealAction.mockClear();
 });
 
-const props = { dealId: "d1", expectedUpdatedAt: "2026-07-02T00:00:00.000Z", labels: [] };
+const props = {
+  dealId: "d1",
+  expectedWriteVersion: "00000000-0000-4000-8000-000000000001",
+  labels: [],
+};
 
 it("surfaces the shared error dialog when a label edit is denied (no silent revert)", async () => {
   const user = userEvent.setup();

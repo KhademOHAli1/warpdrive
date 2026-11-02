@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { dealClientFixture } from "@/features/deals/dealClientFixture";
 import "@testing-library/jest-dom/vitest";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -19,11 +20,14 @@ beforeAll(() => {
 });
 
 type UpdateResultLike =
-  | { ok: true; deal: { id: string; updatedAt: string } }
+  | { ok: true; deal: ReturnType<typeof dealClientFixture> }
   | { ok: false; error: { id: string } };
 const updateDealAction = vi.fn((...args: unknown[]): Promise<UpdateResultLike> => {
   void args;
-  return Promise.resolve({ ok: true, deal: { id: "d1", updatedAt: "2026-01-03T00:00:00.000Z" } });
+  return Promise.resolve({
+    ok: true,
+    deal: dealClientFixture({ id: "d1", updatedAt: "2026-01-03T00:00:00.000Z" }),
+  });
 });
 vi.mock("@/features/deals/updateAction", () => ({
   updateDealAction: (...args: unknown[]) => updateDealAction(...args),
@@ -76,6 +80,7 @@ function makeWorkspace(): DealWorkspace {
       customFields: {},
       createdAt: new Date("2026-01-01T00:00:00Z"),
       lastActivityAt: null,
+      writeVersion: "00000000-0000-4000-8000-000000000001",
       updatedAt: new Date("2026-01-02T00:00:00Z"),
     },
     ownerName: "Owner One",

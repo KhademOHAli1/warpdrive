@@ -1,7 +1,8 @@
 // changeStage: deal-header stage selector. Moves a deal to an explicit target stage,
 // appending it to the bottom of that stage's column. Mirrors moveDeal's CAS + changelog
 // + board-event shape; the difference is the board position is computed server-side
-// (append) rather than from client-supplied neighbors.
+// (append) rather than from client-supplied neighbors. Selecting the current stage
+// validates its revision and returns without a write.
 import { and, desc, eq, sql } from "drizzle-orm";
 import { BOARD_EVENT, dealMovedChannel } from "@/constants/boardChannels";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
@@ -12,6 +13,11 @@ import { stages } from "@/db/schema/stages";
 import { recordChange } from "@/features/collaboration/changeLog";
 import { midpoint } from "@/features/deals/boardPosition";
 import { loadEditableDeal } from "@/features/deals/dealAuth";
+import {
+  lockDealWriteVersion,
+  missingDealVersion,
+  readFinalDeal,
+} from "@/features/deals/dealVersion";
 import { changeStageInput } from "@/features/deals/schemas";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { publishBoardEvent } from "@/server/realtime/events";
@@ -23,6 +29,8 @@ export async function changeStage(
   raw: unknown,
   signal: AbortSignal,
 ): Promise<Result<Deal, AppError>> {
+  const versionError = missingDealVersion(raw);
+  if (versionError !== null) return err(versionError);
   const input = changeStageInput.parse(raw);
   signal.throwIfAborted();
 
@@ -46,9 +54,17 @@ export async function changeStage(
   }
   signal.throwIfAborted();
 
-  const expectedIso = input.expectedUpdatedAt;
-
   return db.transaction(async (tx) => {
+    const locked = await lockDealWriteVersion(tx, input.dealId, input.expectedWriteVersion, signal);
+    if (!locked.ok) return locked;
+    const deal = locked.value;
+
+    // Selecting the current stage is a logical no-op, but it is still bound to
+    // the submitted snapshot. A stale request must not acknowledge a fresh row.
+    if (deal.stageId === input.toStageId) {
+      return ok(await readFinalDeal(tx, deal.id, signal));
+    }
+
     // Append: bottom of the target column (max existing position + 1, or "1" when empty).
     const [bottom] = await tx
       .select({ pos: deals.boardPosition })
@@ -68,12 +84,7 @@ export async function changeStage(
         stageEnteredAt: new Date(),
         updatedAt: new Date(),
       })
-      .where(
-        and(
-          eq(deals.id, input.dealId),
-          sql`date_trunc('milliseconds', ${deals.updatedAt}) = ${expectedIso}::timestamptz`,
-        ),
-      )
+      .where(and(eq(deals.id, input.dealId), eq(deals.writeVersion, input.expectedWriteVersion)))
       .returning();
 
     if (updated.length === 0) {
@@ -121,6 +132,6 @@ export async function changeStage(
       signal,
     );
 
-    return ok(row);
+    return ok(await readFinalDeal(tx, row.id, signal));
   });
 }

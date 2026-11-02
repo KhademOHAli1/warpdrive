@@ -53,7 +53,7 @@ function renderEditor(locale: Locale, customFieldDefs: CustomFieldDef[] = []) {
     <LocaleProvider locale={locale}>
       <PersonLinkEditor
         dealId="deal-1"
-        expectedUpdatedAt="2027-03-21T00:00:00Z"
+        expectedWriteVersion="00000000-0000-4000-8000-000000000001"
         personOptions={[candidate]}
         hidden={new Set()}
         customFieldDefs={customFieldDefs}
@@ -98,7 +98,11 @@ it.each<{ locale: Locale; reason: PersonMatchReason; hint: string }>([
     fireEvent.click(screen.getByRole("button", { name: locale === "fa" ? "مرتبط کردن" : "Link" }));
     await waitFor(() => expect(onDone).toHaveBeenCalledOnce());
     expect(updateDeal).toHaveBeenCalledWith(
-      { dealId: "deal-1", expectedUpdatedAt: "2027-03-21T00:00:00Z", personId: candidate.id },
+      {
+        dealId: "deal-1",
+        expectedWriteVersion: "00000000-0000-4000-8000-000000000001",
+        personId: candidate.id,
+      },
       "csrf",
     );
     expect(createPerson).not.toHaveBeenCalled();

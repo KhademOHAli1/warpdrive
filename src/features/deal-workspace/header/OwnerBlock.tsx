@@ -1,4 +1,5 @@
 "use client";
+
 import { ChevronDown } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type React from "react";
@@ -12,14 +13,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { changeOwnerAction } from "@/features/deal-workspace/actions";
 import { useDealActionError } from "@/features/deal-workspace/DealActionErrorProvider";
+import { dealClientResult } from "@/features/deals/dealClientResult";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { formatUserName } from "@/features/identity/formatUserName";
 import { readCsrfToken } from "@/utils/csrfCookie";
 
 interface OwnerBlockProps {
   dealId: string;
-  // CAS precondition: the deal's updatedAt ISO string.
-  expectedUpdatedAt: string;
+  // Opaque version of the displayed deal snapshot.
+  expectedWriteVersion: string;
   owner: { id: string; name: string; avatarUrl: string | null } | null;
   // Only actors holding deal.changeOwner see the reassignment trigger (gated server-side too).
   canChangeOwner: boolean;
@@ -31,7 +33,7 @@ interface OwnerBlockProps {
 // users; selecting one reassigns via changeOwnerAction and refreshes.
 export function OwnerBlock({
   dealId,
-  expectedUpdatedAt,
+  expectedWriteVersion,
   owner,
   canChangeOwner,
   assignableUsers,
@@ -41,17 +43,20 @@ export function OwnerBlock({
   const router = useRouter();
   const reportError = useDealActionError();
   const [pending, setPending] = useState(false);
+  const [menuVersion, setMenuVersion] = useState(expectedWriteVersion);
 
   // Humanize the owner name (an email-shaped name renders as a display name) and map
   // an empty/absent name to "Unassigned", mirroring OwnerBadge. Never leak a raw email.
   const name = formatUserName(owner?.name ?? "");
 
   async function reassign(userId: string): Promise<void> {
-    if (userId === owner?.id || pending) return;
+    if (pending) return;
     setPending(true);
-    const r = await changeOwnerAction(
-      { dealId, ownerId: userId, expectedUpdatedAt },
-      readCsrfToken(),
+    const r = await dealClientResult(() =>
+      changeOwnerAction(
+        { dealId, ownerId: userId, expectedWriteVersion: menuVersion },
+        readCsrfToken(),
+      ),
     );
     setPending(false);
     if (r.ok) router.refresh();
@@ -68,7 +73,11 @@ export function OwnerBlock({
         <p className="text-xs text-muted-foreground">{translateSales("owner_4b1b8")}</p>
       </div>
       {canChangeOwner && (
-        <DropdownMenu>
+        <DropdownMenu
+          onOpenChange={(open) => {
+            if (open) setMenuVersion(expectedWriteVersion);
+          }}
+        >
           <DropdownMenuTrigger
             aria-label={translateSales("change_owner_2877d")}
             disabled={pending}

@@ -6,7 +6,7 @@
 // 4. Return per-row BulkRowResult so one failure never aborts the rest.
 import { and, eq, isNull, sql } from "drizzle-orm";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
-import { deals } from "@/db/schema/deals";
+import { type Deal, deals } from "@/db/schema/deals";
 import { stages } from "@/db/schema/stages";
 import { can } from "@/features/permissions/can";
 import type { PermSetUser } from "@/features/permissions/effective";
@@ -14,14 +14,16 @@ import type { DbOrTx } from "@/server/realtime/channelVersions";
 import { err, ok, type Result } from "@/types/result";
 import type { DealVisibilitySession } from "@/types/session";
 import { toVisibleDeal } from "./dealAuth";
-import type { BulkStageInput } from "./schemas";
+import { dealSelectionVersions, missingDealVersion } from "./dealVersion";
+import { type BulkStageInput, bulkStageInput } from "./schemas";
 import { dealVisibilityClause } from "./visibility";
 
 // A row may also be reported pipeline_mismatch when toStageId belongs to a
 // different pipeline than the deal (cross-pipeline move is never applied).
 export interface BulkRowResult {
   dealId: string;
-  outcome: "applied" | "skipped" | "not_found" | "errored" | "pipeline_mismatch";
+  outcome: "applied" | "skipped" | "not_found" | "errored" | "pipeline_mismatch" | "conflict";
+  deal?: Deal;
 }
 
 // Build a parameterized ARRAY[id::uuid, ...] literal for use in ANY().
@@ -59,10 +61,33 @@ interface Stage1Row {
   pipelineVisibilityGroupId: string | null;
 }
 
+function stageSelectionFailure(
+  session: PermSetUser,
+  row: Stage1Row | undefined,
+  targetPipelineId: string,
+): "not_found" | "pipeline_mismatch" | "skipped" | null {
+  // Stage 1 miss: missing / invisible / closed / deleted -> not_found.
+  if (row === undefined) return "not_found";
+  // A deal must only move into a stage of its OWN pipeline.
+  if (row.pipelineId !== targetPipelineId) return "pipeline_mismatch";
+
+  // Stage 2 uses the same canonical deal-edit authority as individual move/update.
+  const visibleDeal = toVisibleDeal(
+    {
+      ownerId: row.ownerId,
+      visibilityLevel: row.visibilityLevel,
+      visibilityGroupId: row.visibilityGroupId,
+      visibleToUserIds: row.visibleToUserIds,
+    },
+    row.pipelineVisibilityGroupId,
+  );
+  return can(session, "deal.edit", visibleDeal) ? null : "skipped";
+}
+
 export async function bulkUpdateStage(
   db: DbOrTx,
   session: PermSetUser,
-  input: BulkStageInput,
+  raw: BulkStageInput,
   signal: AbortSignal,
 ): Promise<Result<BulkRowResult[], AppError>> {
   // Stage 0: gate the entire operation on bulk.edit once (before touching any row).
@@ -75,9 +100,15 @@ export async function bulkUpdateStage(
   }
   signal.throwIfAborted();
 
-  if (input.dealIds.length === 0) {
+  if (raw.dealIds.length === 0) {
     return ok([]);
   }
+
+  const versionError = missingDealVersion(raw, ["expectedWriteVersions"]);
+  if (versionError !== null) return err(versionError);
+  const input = bulkStageInput.parse(raw);
+  const dealIds = [...new Set(input.dealIds.map((id) => id.toLowerCase()))];
+  const versions = dealSelectionVersions(input.expectedWriteVersions);
 
   // Resolve the target stage's pipeline once; every survivor must belong to it.
   const [targetStage] = await db
@@ -96,7 +127,7 @@ export async function bulkUpdateStage(
   // Stage 1: load requested ids THROUGH the visibility predicate. status='open'
   // and deleted_at IS NULL keep closed/deleted deals out of scope (they collapse
   // to the same not_found as missing/invisible). Missing AND invisible -> no row.
-  const idArraySql = uuidArraySql(input.dealIds);
+  const idArraySql = uuidArraySql(dealIds);
   const visClause = dealVisibilityClause(toVisibilitySession(session));
   const visRes = await db.execute(sql`
     SELECT
@@ -122,34 +153,16 @@ export async function bulkUpdateStage(
 
   const results: BulkRowResult[] = [];
 
-  for (const dealId of input.dealIds) {
-    const row = visibleMap.get(dealId);
-    if (row === undefined) {
-      // Stage 1 miss: missing / invisible / closed / deleted -> not_found.
-      results.push({ dealId, outcome: "not_found" });
+  for (const dealId of dealIds) {
+    const outcome = stageSelectionFailure(session, visibleMap.get(dealId), targetStage.pipelineId);
+    if (outcome !== null) {
+      results.push({ dealId, outcome });
       continue;
     }
 
-    // A deal must only move into a stage of its OWN pipeline.
-    if (row.pipelineId !== targetStage.pipelineId) {
-      results.push({ dealId, outcome: "pipeline_mismatch" });
-      continue;
-    }
-
-    // Stage 2: authorize the visible survivor with the CANONICAL deal-edit authority
-    // (same can() move/update use), so the rule cannot drift across actions.
-    const visibleDeal = toVisibleDeal(
-      {
-        ownerId: row.ownerId,
-        visibilityLevel: row.visibilityLevel,
-        visibilityGroupId: row.visibilityGroupId,
-        visibleToUserIds: row.visibleToUserIds,
-      },
-      row.pipelineVisibilityGroupId,
-    );
-    if (!can(session, "deal.edit", visibleDeal)) {
-      // Visible but cannot edit -> skipped (§6.5: visible-but-unauthorized may be reported).
-      results.push({ dealId, outcome: "skipped" });
+    const expectedWriteVersion = versions.get(dealId);
+    if (expectedWriteVersion === undefined || expectedWriteVersion === null) {
+      results.push({ dealId, outcome: "conflict" });
       continue;
     }
 
@@ -158,17 +171,27 @@ export async function bulkUpdateStage(
     try {
       const updated = await db
         .update(deals)
-        .set({ stageId: input.toStageId, stageEnteredAt: new Date(), updatedAt: new Date() })
+        .set({
+          stageId: input.toStageId,
+          stageEnteredAt: sql`CASE WHEN ${deals.stageId} = ${input.toStageId} THEN ${deals.stageEnteredAt} ELSE ${new Date().toISOString()}::timestamptz END`,
+          updatedAt: new Date(),
+        })
         .where(
           and(
             eq(deals.id, dealId),
+            eq(deals.writeVersion, expectedWriteVersion),
             isNull(deals.deletedAt),
             eq(deals.pipelineId, targetStage.pipelineId),
           ),
         )
-        .returning({ id: deals.id });
+        .returning();
 
-      results.push({ dealId, outcome: updated.length === 0 ? "errored" : "applied" });
+      const changed = updated[0];
+      results.push(
+        changed === undefined
+          ? { dealId, outcome: "conflict" }
+          : { dealId, outcome: "applied", deal: changed },
+      );
     } catch {
       results.push({ dealId, outcome: "errored" });
     }

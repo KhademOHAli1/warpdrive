@@ -69,7 +69,11 @@ it("stamps deletedAt, writes a changelog row, and hides the deal from getWorkspa
   const r = await deleteDeal(
     h.db,
     adminActor(u.id),
-    { dealId: deal.id, expectedUpdatedAt: deal.updatedAt.toISOString() },
+    {
+      dealId: deal.id,
+      expectedWriteVersion: deal.writeVersion,
+      expectedUpdatedAt: deal.updatedAt.toISOString(),
+    },
     signal,
   );
 
@@ -100,7 +104,11 @@ it("returns a perm error and leaves the deal intact for a non-editor", async () 
   const r = await deleteDeal(
     h.db,
     actor,
-    { dealId: deal.id, expectedUpdatedAt: deal.updatedAt.toISOString() },
+    {
+      dealId: deal.id,
+      expectedWriteVersion: deal.writeVersion,
+      expectedUpdatedAt: deal.updatedAt.toISOString(),
+    },
     new AbortController().signal,
   );
 
@@ -123,7 +131,11 @@ it("denies a default regular user deleting a deal they own (edit_own is not dele
   const r = await deleteDeal(
     h.db,
     regularActor(u.id, regularDefaultFlagSet()),
-    { dealId: deal.id, expectedUpdatedAt: deal.updatedAt.toISOString() },
+    {
+      dealId: deal.id,
+      expectedWriteVersion: deal.writeVersion,
+      expectedUpdatedAt: deal.updatedAt.toISOString(),
+    },
     new AbortController().signal,
   );
 
@@ -143,7 +155,11 @@ it("allows an owner who holds deal.delete_own to delete their own deal", async (
   const r = await deleteDeal(
     h.db,
     regularActor(u.id, ["deal.edit_own", "deal.delete_own"]),
-    { dealId: deal.id, expectedUpdatedAt: deal.updatedAt.toISOString() },
+    {
+      dealId: deal.id,
+      expectedWriteVersion: deal.writeVersion,
+      expectedUpdatedAt: deal.updatedAt.toISOString(),
+    },
     new AbortController().signal,
   );
 
@@ -163,7 +179,11 @@ it("denies a non-owner with edit_any + delete_own (needs delete_any) and leaves 
   const r = await deleteDeal(
     h.db,
     regularActor(manager.id, ["deal.edit_any", "deal.delete_own"]),
-    { dealId: deal.id, expectedUpdatedAt: deal.updatedAt.toISOString() },
+    {
+      dealId: deal.id,
+      expectedWriteVersion: deal.writeVersion,
+      expectedUpdatedAt: deal.updatedAt.toISOString(),
+    },
     new AbortController().signal,
   );
 
@@ -184,7 +204,11 @@ it("publishes a board event on the pipeline channel so the board refetches", asy
   const r = await deleteDeal(
     h.db,
     adminActor(u.id),
-    { dealId: deal.id, expectedUpdatedAt: deal.updatedAt.toISOString() },
+    {
+      dealId: deal.id,
+      expectedWriteVersion: deal.writeVersion,
+      expectedUpdatedAt: deal.updatedAt.toISOString(),
+    },
     signal,
   );
   expect(r.ok).toBe(true);

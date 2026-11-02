@@ -60,7 +60,11 @@ it("refuses to convert an already-archived deal and creates no second lead", asy
   const r = await convertDealToLead(
     h.db,
     regularActor(u.id, ["deal.create", "deal.edit_own"]),
-    { dealId: deal.id, expectedUpdatedAt: archived.updatedAt.toISOString() },
+    {
+      dealId: deal.id,
+      expectedWriteVersion: archived.writeVersion,
+      expectedUpdatedAt: archived.updatedAt.toISOString(),
+    },
     new AbortController().signal,
   );
 
@@ -77,7 +81,11 @@ it("creates a lead carrying the deal's title/value/labels, archives the deal, lo
   const r = await convertDealToLead(
     h.db,
     regularActor(u.id, ["deal.create", "deal.edit_own"]),
-    { dealId: deal.id, expectedUpdatedAt: deal.updatedAt.toISOString() },
+    {
+      dealId: deal.id,
+      expectedWriteVersion: deal.writeVersion,
+      expectedUpdatedAt: deal.updatedAt.toISOString(),
+    },
     new AbortController().signal,
   );
 
@@ -133,7 +141,11 @@ it("carries deal custom fields onto the lead where a lead def matches key and ty
   const r = await convertDealToLead(
     h.db,
     regularActor(u.id, ["deal.create", "deal.edit_own"]),
-    { dealId: deal.id, expectedUpdatedAt: deal.updatedAt.toISOString() },
+    {
+      dealId: deal.id,
+      expectedWriteVersion: deal.writeVersion,
+      expectedUpdatedAt: deal.updatedAt.toISOString(),
+    },
     new AbortController().signal,
   );
   expect(r.ok).toBe(true);
@@ -153,7 +165,11 @@ it("denies an editor without deal.create and creates no lead / leaves the deal a
   const r = await convertDealToLead(
     h.db,
     regularActor(u.id, ["deal.edit_own"]),
-    { dealId: deal.id, expectedUpdatedAt: deal.updatedAt.toISOString() },
+    {
+      dealId: deal.id,
+      expectedWriteVersion: deal.writeVersion,
+      expectedUpdatedAt: deal.updatedAt.toISOString(),
+    },
     new AbortController().signal,
   );
 
@@ -176,7 +192,11 @@ it("returns E_DEAL_002 on a stale CAS and does not convert", async () => {
   const r = await convertDealToLead(
     h.db,
     regularActor(u.id, ["deal.create", "deal.edit_own"]),
-    { dealId: deal.id, expectedUpdatedAt: new Date(Date.now() - 60_000).toISOString() },
+    {
+      dealId: deal.id,
+      expectedWriteVersion: "00000000-0000-4000-8000-000000000001",
+      expectedUpdatedAt: new Date(Date.now() - 60_000).toISOString(),
+    },
     new AbortController().signal,
   );
 

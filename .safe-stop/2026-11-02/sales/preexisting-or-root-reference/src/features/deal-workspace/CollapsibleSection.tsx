@@ -1,0 +1,100 @@
+"use client";
+import { ChevronDown, Filter } from "lucide-react";
+import type React from "react";
+import { useState } from "react";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
+import { cn } from "@/lib/utils";
+import { useSidebarPresentation } from "./sidebar/SidebarPresentation";
+import { HideEmptyContext } from "./sidebar/sectionFilter";
+
+// A titled, collapsible sidebar section (Pipedrive's deal detail groups Summary/Details/Source/
+// etc. as collapsible cards). Defaults open; the header toggles visibility. The funnel button
+// hides value-less FieldRows via HideEmptyContext (pixel-parity fix 2).
+export function CollapsibleSection({
+  title,
+  defaultOpen = true,
+  headerActions,
+  showFilter = true,
+  defaultHideEmpty,
+  children,
+}: {
+  title: string;
+  defaultOpen?: boolean;
+  headerActions?: (ctx: { hideEmpty: boolean; showEmptyFields: () => void }) => React.ReactNode;
+  // PD's Summary header carries only the kebab (no hide-empty funnel: its action-list rows are
+  // never empty), so that section opts out of the filter toggle.
+  showFilter?: boolean;
+  defaultHideEmpty?: boolean;
+  children: React.ReactNode;
+}): React.ReactNode {
+  const translateSales = useAppTranslations("sales");
+
+  const presentation = useSidebarPresentation();
+  const [open, setOpen] = useState(defaultOpen);
+  const [hideEmpty, setHideEmpty] = useState(defaultHideEmpty ?? presentation.hideEmpty);
+  return (
+    <section
+      aria-label={title}
+      className={cn(
+        "overflow-hidden bg-card",
+        presentation.compact ? "border-b last:border-b-0" : "rounded-md border",
+      )}
+    >
+      <div className="flex items-center gap-1 pe-2">
+        <button
+          type="button"
+          aria-expanded={open}
+          onClick={() => setOpen((v) => !v)}
+          className="flex flex-1 items-center gap-2 px-3 py-2 text-start text-base font-semibold text-foreground hover:bg-accent/50"
+        >
+          <ChevronDown
+            aria-hidden="true"
+            data-disclosure-chevron
+            data-state={open ? "open" : "closed"}
+            data-rtl-mirror="false"
+            className="h-3.5 w-3.5 shrink-0 text-muted-foreground"
+          />
+          <bdi dir="auto">{title}</bdi>
+        </button>
+        {showFilter && (
+          <button
+            type="button"
+            aria-label={translateSales("hide_empty_fields_d8d9e")}
+            aria-pressed={hideEmpty}
+            onClick={() => setHideEmpty((v) => !v)}
+            className={
+              hideEmpty
+                ? "rounded p-1 text-primary hover:bg-accent"
+                : "rounded p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
+            }
+          >
+            <Filter aria-hidden="true" className="h-3.5 w-3.5" />
+          </button>
+        )}
+        {headerActions?.({
+          hideEmpty,
+          showEmptyFields: () => {
+            setHideEmpty(false);
+            setOpen(true);
+          },
+        })}
+      </div>
+      <div
+        aria-hidden={!open}
+        // Keep content mounted so the Tailwind grid transition can reverse smoothly. `inert`
+        // removes closed controls from focus/navigation while preserving their layout subtree.
+        inert={!open}
+        className={cn(
+          "grid transition-[grid-template-rows,opacity] duration-200 ease-out motion-reduce:transition-opacity",
+          open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0",
+        )}
+      >
+        <div className="min-h-0 overflow-hidden">
+          <div className="border-t px-3 py-2">
+            <HideEmptyContext.Provider value={hideEmpty}>{children}</HideEmptyContext.Provider>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}

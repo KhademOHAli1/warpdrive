@@ -1,10 +1,12 @@
 "use client";
+
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { useState } from "react";
 import type { Person } from "@/db/schema";
 import type { PersonMatchCandidate } from "@/features/contacts/personOptionsRepo";
 import { useDealActionError } from "@/features/deal-workspace/DealActionErrorProvider";
+import { dealClientResult } from "@/features/deals/dealClientResult";
 import { updateDealAction } from "@/features/deals/updateAction";
 import { useSalesStrings } from "@/features/deals/useSalesStrings";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
@@ -40,7 +42,7 @@ function emptyRows(hidden: ReadonlySet<string>): string[] {
 export function DealPersonSection({
   person,
   dealId,
-  expectedUpdatedAt,
+  expectedWriteVersion,
   personOptions,
   menuItems,
   bulkEditing,
@@ -52,7 +54,7 @@ export function DealPersonSection({
 }: {
   person: Person | null;
   dealId: string;
-  expectedUpdatedAt: string;
+  expectedWriteVersion: string;
   personOptions: PersonMatchCandidate[];
   menuItems: SectionHeaderMenuItem[];
   bulkEditing: boolean;
@@ -70,10 +72,16 @@ export function DealPersonSection({
   const reportError = useDealActionError();
   const utils = trpc.useUtils();
   const [switchOpen, setSwitchOpen] = useState(false);
+  const [switchVersion, setSwitchVersion] = useState(expectedWriteVersion);
   const menu = STRINGS.dealSidebar.menu;
 
-  async function savePersonLink(personId: string | null): Promise<void> {
-    const r = await updateDealAction({ dealId, expectedUpdatedAt, personId }, readCsrfToken());
+  async function savePersonLink(
+    personId: string | null,
+    version = expectedWriteVersion,
+  ): Promise<void> {
+    const r = await dealClientResult(() =>
+      updateDealAction({ dealId, expectedWriteVersion: version, personId }, readCsrfToken()),
+    );
     if (!r.ok) {
       reportError(r.error.id);
       return;
@@ -97,7 +105,13 @@ export function DealPersonSection({
         <PersonSection
           person={person}
           menuItems={[
-            { label: menu.switchPerson, onSelect: () => setSwitchOpen(true) },
+            {
+              label: menu.switchPerson,
+              onSelect: () => {
+                setSwitchVersion(expectedWriteVersion);
+                setSwitchOpen(true);
+              },
+            },
             {
               label: menu.unlinkPerson,
               onSelect: () => void savePersonLink(null),
@@ -119,7 +133,7 @@ export function DealPersonSection({
             open
             currentPersonId={person.id}
             onOpenChange={setSwitchOpen}
-            onSave={savePersonLink}
+            onSave={(id) => savePersonLink(id, switchVersion)}
           />
         )}
       </>
@@ -140,7 +154,7 @@ export function DealPersonSection({
       {bulkEditing ? (
         <PersonLinkEditor
           dealId={dealId}
-          expectedUpdatedAt={expectedUpdatedAt}
+          expectedWriteVersion={expectedWriteVersion}
           personOptions={personOptions}
           hidden={hidden}
           customFieldDefs={customFieldDefs}

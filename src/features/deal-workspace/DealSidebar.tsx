@@ -1,7 +1,8 @@
 "use client";
+
 import { useRouter } from "next/navigation";
 import type React from "react";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import type { DealBlockId } from "@/constants/dealBlocks";
 import {
   type DealSidebarSectionId,
@@ -10,6 +11,7 @@ import {
 } from "@/constants/dealSidebarSections";
 import type { PersonMatchCandidate } from "@/features/contacts/personOptionsRepo";
 import { useDealActionError } from "@/features/deal-workspace/DealActionErrorProvider";
+import { dealClientResult } from "@/features/deals/dealClientResult";
 import { updateDealAction } from "@/features/deals/updateAction";
 import { useSalesStrings } from "@/features/deals/useSalesStrings";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
@@ -20,6 +22,7 @@ import { CollapsibleSection } from "./CollapsibleSection";
 import { DealSummaryActionList } from "./DealSummaryActionList";
 import { dealOverview } from "./dealOverview";
 import type { CustomFieldsSave } from "./sidebar/customFieldsSave";
+import { DealCustomFields } from "./sidebar/DealCustomFields";
 import { DealPersonSection } from "./sidebar/DealPersonSection";
 import { FieldRow } from "./sidebar/FieldRow";
 import { ManageSectionsDialog } from "./sidebar/ManageSectionsDialogLazy";
@@ -27,6 +30,7 @@ import { OrgSwitchDialog } from "./sidebar/OrgSwitchDialog";
 import { ParticipantsSection } from "./sidebar/ParticipantsSection";
 import { RecordOrganizationSection } from "./sidebar/RecordOrganizationSection";
 import { SectionHeaderMenu, type SectionHeaderMenuItem } from "./sidebar/SectionHeaderMenu";
+import { SidebarPresentation } from "./sidebar/SidebarPresentation";
 import { SourceBlock } from "./sidebar/SourceBlock";
 import type { DealWorkspace } from "./summaryRepo";
 
@@ -51,6 +55,7 @@ export function DealSidebar({
   onSidebarSectionsChange,
   hiddenOrgFields = NONE,
   hiddenPersonFields = NONE,
+  canManageFields = false,
 }: {
   workspace: DealWorkspace;
   now: Date;
@@ -66,6 +71,7 @@ export function DealSidebar({
   // sidebar sections drop the same rows the standalone detail pages do.
   hiddenOrgFields?: ReadonlySet<string>;
   hiddenPersonFields?: ReadonlySet<string>;
+  canManageFields?: boolean;
 }): React.ReactNode {
   const STRINGS = useSalesStrings();
 
@@ -83,21 +89,21 @@ export function DealSidebar({
   const router = useRouter();
   const reportError = useDealActionError();
   const [orgDialogOpen, setOrgDialogOpen] = useState(false);
+  const [orgVersion, setOrgVersion] = useState(deal.writeVersion);
   const [manageSectionsOpen, setManageSectionsOpen] = useState(false);
   // Which section (if any) is in bulk-edit mode: the header pencil opens every field in that
   // section at once behind a single Save, rather than the old reveal-empties no-op.
   const [bulkSection, setBulkSection] = useState<DealSidebarSectionId | null>(null);
   const exitBulk = (): void => setBulkSection(null);
-  const expectedUpdatedAt = new Date(deal.updatedAt).toISOString();
+  const expectedWriteVersion = deal.writeVersion;
   const overview = dealOverview(deal.createdAt, deal.lastActivityAt, now);
   const sectionPrefs = normalizeDealSidebarSections(sidebarSections);
   const sections = STRINGS.dealSidebar.sections;
   const menu = STRINGS.dealSidebar.menu;
 
-  async function saveOrgLink(orgId: string | null): Promise<void> {
-    const r = await updateDealAction(
-      { dealId: deal.id, expectedUpdatedAt, orgId },
-      readCsrfToken(),
+  async function saveOrgLink(orgId: string | null, version = expectedWriteVersion): Promise<void> {
+    const r = await dealClientResult(() =>
+      updateDealAction({ dealId: deal.id, expectedWriteVersion: version, orgId }, readCsrfToken()),
     );
     // On failure keep the switch dialog open and surface why, rather than closing/refreshing as
     // if the link changed (a permission/CAS denial otherwise looked like a silent success).
@@ -109,10 +115,12 @@ export function DealSidebar({
     }
   }
 
-  const saveDealCustomFields: CustomFieldsSave = async (patch) => {
-    const r = await updateDealAction(
-      { dealId: deal.id, expectedUpdatedAt, customFields: patch },
-      readCsrfToken(),
+  const saveDealCustomFields: CustomFieldsSave = async (patch, version) => {
+    const r = await dealClientResult(() =>
+      updateDealAction(
+        { dealId: deal.id, expectedWriteVersion: version, customFields: patch },
+        readCsrfToken(),
+      ),
     );
     return r.ok ? ok(r.deal) : err(r.error.id);
   };
@@ -131,7 +139,10 @@ export function DealSidebar({
           opts.noEdit === true
             ? undefined
             : opts.bulkSectionId !== undefined
-              ? () => setBulkSection(opts.bulkSectionId ?? null)
+              ? () => {
+                  showEmptyFields();
+                  setBulkSection(opts.bulkSectionId ?? null);
+                }
               : showEmptyFields
         }
         menuItems={menuItems}
@@ -147,7 +158,10 @@ export function DealSidebar({
     {
       label: menu.switchOrganization,
       disabled: orgOptions.length === 0,
-      onSelect: () => setOrgDialogOpen(true),
+      onSelect: () => {
+        setOrgVersion(expectedWriteVersion);
+        setOrgDialogOpen(true);
+      },
     },
     { label: menu.unlinkOrganization, onSelect: () => void saveOrgLink(null), destructive: true },
     { label: menu.customizeFields, onSelect: () => router.push(fieldsPath("organization")) },
@@ -175,6 +189,7 @@ export function DealSidebar({
           deal={{
             id: deal.id,
             updatedAt: deal.updatedAt,
+            writeVersion: deal.writeVersion,
             value: deal.value,
             currency: deal.currency,
             expectedCloseDate: deal.expectedCloseDate,
@@ -191,6 +206,7 @@ export function DealSidebar({
     source: (
       <CollapsibleSection
         key="source"
+        defaultOpen={false}
         title={sections.source}
         headerActions={sectionActions(sections.source, [dealFieldsItem], {
           bulkSectionId: "source",
@@ -198,7 +214,7 @@ export function DealSidebar({
       >
         <SourceBlock
           dealId={deal.id}
-          updatedAt={deal.updatedAt}
+          writeVersion={deal.writeVersion}
           sourceChannel={deal.sourceChannel}
           sourceChannelId={deal.sourceChannelId}
           bulkEditing={bulkSection === "source"}
@@ -212,7 +228,7 @@ export function DealSidebar({
         key="person"
         person={person}
         dealId={deal.id}
-        expectedUpdatedAt={expectedUpdatedAt}
+        expectedWriteVersion={expectedWriteVersion}
         personOptions={personOptions}
         menuItems={[
           { label: menu.customizeFields, onSelect: () => router.push(fieldsPath("person")) },
@@ -239,6 +255,7 @@ export function DealSidebar({
     organization: (
       <RecordOrganizationSection
         key="organization"
+        initiallyCollapsed
         hidden={isHidden("organization")}
         org={org}
         orgMenuItems={orgMenuItems}
@@ -249,8 +266,9 @@ export function DealSidebar({
         organizationCustomFieldDefs={organizationCustomFieldDefs}
         currency={baseCurrency}
         customFields={deal.customFields as Record<string, unknown>}
-        customFieldDefs={customFieldDefs}
+        customFieldDefs={[]}
         onSaveCustomFields={saveDealCustomFields}
+        writeVersion={deal.writeVersion}
         detailsTitle={sections.details}
         detailsMenuItems={[dealFieldsItem]}
       />
@@ -259,6 +277,7 @@ export function DealSidebar({
     overview: (
       <CollapsibleSection
         key="overview"
+        defaultOpen={false}
         title={sections.overview}
         headerActions={sectionActions(sections.overview, [dealFieldsItem])}
       >
@@ -282,21 +301,37 @@ export function DealSidebar({
   };
 
   return (
-    <aside className="min-w-0 space-y-2">
-      <ManageSectionsDialog
-        open={manageSectionsOpen}
-        sections={sectionPrefs}
-        onOpenChange={setManageSectionsOpen}
-        onSaved={(next) => onSidebarSectionsChange?.(next)}
-      />
-      <OrgSwitchDialog
-        open={orgDialogOpen}
-        currentOrgId={org?.id ?? null}
-        options={orgOptions}
-        onOpenChange={setOrgDialogOpen}
-        onSave={saveOrgLink}
-      />
-      {sectionPrefs.map((section) => (section.visible ? renderedSections[section.id] : null))}
-    </aside>
+    <SidebarPresentation value={{ compact: true, hideEmpty: true }}>
+      <aside className="min-w-0 self-start overflow-hidden rounded-lg border bg-card">
+        <ManageSectionsDialog
+          open={manageSectionsOpen}
+          sections={sectionPrefs}
+          onOpenChange={setManageSectionsOpen}
+          onSaved={(next) => onSidebarSectionsChange?.(next)}
+        />
+        <OrgSwitchDialog
+          open={orgDialogOpen}
+          currentOrgId={org?.id ?? null}
+          options={orgOptions}
+          onOpenChange={setOrgDialogOpen}
+          onSave={(id) => saveOrgLink(id, orgVersion)}
+        />
+        {sectionPrefs.map((section) => (
+          <Fragment key={section.id}>
+            {section.visible ? renderedSections[section.id] : null}
+            {section.id === "summary" && (
+              <DealCustomFields
+                defs={customFieldDefs}
+                values={deal.customFields as Record<string, unknown>}
+                currency={baseCurrency}
+                canManage={canManageFields}
+                writeVersion={deal.writeVersion}
+                onSave={saveDealCustomFields}
+              />
+            )}
+          </Fragment>
+        ))}
+      </aside>
+    </SidebarPresentation>
   );
 }

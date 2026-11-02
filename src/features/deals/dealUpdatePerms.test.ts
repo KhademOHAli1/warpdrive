@@ -11,7 +11,7 @@ import { adminSession, noEditSession, regularSession } from "./dealMove.test-hel
 import { seedDealOwnerEditor, setupDeal } from "./dealUpdate.test-helpers";
 
 describe("updateDeal: CAS precondition", () => {
-  it("returns E_DEAL_002 on stale expectedUpdatedAt and leaves row unchanged", async () => {
+  it("returns E_DEAL_002 on stale expectedWriteVersion and leaves row unchanged", async () => {
     await withTestDb(async (db) => {
       const { u, deal } = await setupDeal(db);
       const r = await updateDeal(
@@ -19,6 +19,7 @@ describe("updateDeal: CAS precondition", () => {
         adminSession(u.id),
         {
           dealId: deal.id,
+          expectedWriteVersion: "00000000-0000-4000-8000-000000000001",
           expectedUpdatedAt: "2000-01-01T00:00:00.000Z",
           title: "Should Not Change",
         },
@@ -45,6 +46,7 @@ describe("updateDeal: permissions", () => {
         noEditSession(other.id),
         {
           dealId: deal.id,
+          expectedWriteVersion: deal.writeVersion,
           expectedUpdatedAt: deal.updatedAt.toISOString(),
           title: "Hijack",
         },
@@ -65,6 +67,7 @@ describe("updateDeal: permissions", () => {
         regularSession(other.id),
         {
           dealId: deal.id,
+          expectedWriteVersion: deal.writeVersion,
           expectedUpdatedAt: deal.updatedAt.toISOString(),
           title: "Hijack",
         },
@@ -94,6 +97,7 @@ describe("updateDeal: realtime event", () => {
         adminSession(u.id),
         {
           dealId: deal.id,
+          expectedWriteVersion: deal.writeVersion,
           expectedUpdatedAt: deal.updatedAt.toISOString(),
           title: "Event Test",
         },

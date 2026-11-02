@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { deals } from "@/db/schema/deals";
 import { pipelines } from "@/db/schema/pipelines";
@@ -39,7 +39,8 @@ describe("bulkUpdateStage", () => {
         db,
         adminActor(u.id),
         {
-          dealIds: [created.value.id, "99999999-9999-9999-9999-999999999999"],
+          expectedWriteVersions: { [created.value.id]: created.value.writeVersion },
+          dealIds: [created.value.id, "99999999-9999-4999-8999-999999999999"],
           toStageId: stageB.id,
         },
         new AbortController().signal,
@@ -48,7 +49,7 @@ describe("bulkUpdateStage", () => {
       if (r.ok === false) return;
       const byId = Object.fromEntries(r.value.map((x) => [x.dealId, x.outcome]));
       expect(byId[created.value.id]).toBe("applied");
-      expect(byId["99999999-9999-9999-9999-999999999999"]).toBe("not_found");
+      expect(byId["99999999-9999-4999-8999-999999999999"]).toBe("not_found");
     });
   });
 
@@ -79,7 +80,11 @@ describe("bulkUpdateStage", () => {
       const r = await bulkUpdateStage(
         db,
         adminActor(u.id),
-        { dealIds: [created.value.id], toStageId: stageB.id },
+        {
+          expectedWriteVersions: { [created.value.id]: created.value.writeVersion },
+          dealIds: [created.value.id],
+          toStageId: stageB.id,
+        },
         new AbortController().signal,
       );
       expect(r.ok).toBe(true);
@@ -115,7 +120,11 @@ describe("bulkUpdateStage", () => {
       const r = await bulkUpdateStage(
         db,
         noBulk(u.id),
-        { dealIds: [created.value.id], toStageId: stageB.id },
+        {
+          expectedWriteVersions: { [created.value.id]: created.value.writeVersion },
+          dealIds: [created.value.id],
+          toStageId: stageB.id,
+        },
         new AbortController().signal,
       );
       expect(r.ok).toBe(false);
@@ -145,7 +154,11 @@ describe("bulkUpdateStage", () => {
       const r = await bulkUpdateStage(
         db,
         bulkEditorAny(attacker.id),
-        { dealIds: [created.value.id], toStageId: stageB.id },
+        {
+          expectedWriteVersions: { [created.value.id]: created.value.writeVersion },
+          dealIds: [created.value.id],
+          toStageId: stageB.id,
+        },
         new AbortController().signal,
       );
       expect(r.ok).toBe(true);
@@ -178,7 +191,11 @@ describe("bulkUpdateStage", () => {
       const r = await bulkUpdateStage(
         db,
         bulkEditorNoEdit(nonEditor.id),
-        { dealIds: [created.value.id], toStageId: stageB.id },
+        {
+          expectedWriteVersions: { [created.value.id]: created.value.writeVersion },
+          dealIds: [created.value.id],
+          toStageId: stageB.id,
+        },
         new AbortController().signal,
       );
       expect(r.ok).toBe(true);
@@ -213,7 +230,11 @@ describe("bulkUpdateStage", () => {
       const r = await bulkUpdateStage(
         db,
         adminActor(u.id),
-        { dealIds: [created.value.id], toStageId: stageB.id },
+        {
+          expectedWriteVersions: { [created.value.id]: created.value.writeVersion },
+          dealIds: [created.value.id],
+          toStageId: stageB.id,
+        },
         new AbortController().signal,
       );
       expect(r.ok).toBe(true);
@@ -248,7 +269,11 @@ describe("bulkUpdateStage", () => {
       const r = await bulkUpdateStage(
         db,
         adminActor(u.id),
-        { dealIds: [created.value.id], toStageId: p2StageY.id },
+        {
+          expectedWriteVersions: { [created.value.id]: created.value.writeVersion },
+          dealIds: [created.value.id],
+          toStageId: p2StageY.id,
+        },
         new AbortController().signal,
       );
       expect(r.ok).toBe(true);
@@ -259,5 +284,58 @@ describe("bulkUpdateStage", () => {
       expect(after?.stageId).toBe(p1StageA.id);
       expect(after?.pipelineId).toBe(p1.pipeline.id);
     });
+  });
+});
+
+it("bulk stage preserves a stale winner while applying a duplicate current selection only once", async () => {
+  await withTestDb(async (db) => {
+    await seedAllVisible(db);
+    const u = await seedUser(db, { isAdmin: true });
+    const p = await seedPipelineWithStages(db, ["A", "B"]);
+    const first = p.stages[0];
+    const second = p.stages[1];
+    if (first === undefined || second === undefined) throw new Error("missing stages");
+    const make = async (title: string) => {
+      const result = await createDeal(
+        db,
+        admin(u.id),
+        { title, pipelineId: p.pipeline.id, stageId: first.id },
+        AbortSignal.timeout(5000),
+      );
+      if (!result.ok) throw result.error;
+      return result.value;
+    };
+    const stale = await make("Stale");
+    const current = await make("Current");
+    const [winner] = await db
+      .update(deals)
+      .set({ title: "Winner", updatedAt: sql`${deals.updatedAt}` })
+      .where(eq(deals.id, stale.id))
+      .returning();
+    const result = await bulkUpdateStage(
+      db,
+      adminActor(u.id),
+      {
+        dealIds: [stale.id, current.id, current.id.toUpperCase()],
+        toStageId: second.id,
+        expectedWriteVersions: {
+          [stale.id]: stale.writeVersion,
+          [current.id]: current.writeVersion,
+        },
+      },
+      AbortSignal.timeout(5000),
+    );
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw result.error;
+    expect(result.value.map(({ dealId, outcome }) => ({ dealId, outcome }))).toEqual([
+      { dealId: stale.id, outcome: "conflict" },
+      { dealId: current.id, outcome: "applied" },
+    ]);
+    const [staleAfter] = await db.select().from(deals).where(eq(deals.id, stale.id));
+    const [currentAfter] = await db.select().from(deals).where(eq(deals.id, current.id));
+    expect(staleAfter).toEqual(winner);
+    expect(result.value[1]?.deal).toEqual(currentAfter);
+    expect(currentAfter?.stageId).toBe(second.id);
+    expect(currentAfter?.writeVersion).not.toBe(current.writeVersion);
   });
 });

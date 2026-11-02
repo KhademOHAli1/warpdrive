@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { dealClientFixture } from "@/features/deals/dealClientFixture";
 import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
@@ -6,12 +7,12 @@ import { ERROR_IDS } from "@/constants/errorIds";
 import { DealActionErrorProvider } from "../DealActionErrorProvider";
 
 type ChangeStageResult =
-  | { ok: true; deal: { id: string; updatedAt: string } }
+  | { ok: true; deal: ReturnType<typeof dealClientFixture> }
   | { ok: false; error: { id: string } };
 const changeStageAction = vi.hoisted(() =>
   vi.fn(
     (): Promise<ChangeStageResult> =>
-      Promise.resolve({ ok: true, deal: { id: "d1", updatedAt: "x" } }),
+      Promise.resolve({ ok: true, deal: dealClientFixture({ id: "d1", updatedAt: "x" }) }),
   ),
 );
 vi.mock("@/features/deal-workspace/actions", () => ({ changeStageAction }));
@@ -40,13 +41,13 @@ const chips = [
   { id: "s2", name: "Proposal", current: true, passed: false, days: 3 },
   { id: "s3", name: "Won", current: false, passed: false, days: 0 },
 ];
-const props = { dealId: "d1", expectedUpdatedAt: "2026-07-02T00:00:00.000Z", chips };
+const props = { dealId: "d1", expectedWriteVersion: "00000000-0000-4000-8000-000000000001", chips };
 
 it("moving to a non-current stage calls changeStageAction with that stage id + updatedAt", () => {
   render(<StageSelector {...props} />);
   fireEvent.click(screen.getByRole("option", { name: /Won/ }));
   expect(changeStageAction).toHaveBeenCalledWith(
-    { dealId: "d1", toStageId: "s3", expectedUpdatedAt: props.expectedUpdatedAt },
+    { dealId: "d1", toStageId: "s3", expectedWriteVersion: props.expectedWriteVersion },
     "csrf",
   );
 });

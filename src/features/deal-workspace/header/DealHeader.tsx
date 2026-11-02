@@ -7,6 +7,7 @@ import type { DealWorkspace } from "@/features/deal-workspace/summaryRepo";
 import { PresenceBar } from "@/features/presence/ui/PresenceBar";
 import { BlockVisibilityButton } from "./BlockVisibilityButton";
 import { DealActionsMenu } from "./DealActionsMenu";
+import { DealKeyFacts } from "./DealKeyFacts";
 import { EditableTitle } from "./EditableTitle";
 import { FollowersButton } from "./FollowersButton";
 import { OwnerBlock } from "./OwnerBlock";
@@ -52,24 +53,25 @@ export function DealHeader({
     isFollowedBySelf,
     pipelineName,
   } = workspace;
-  // Deal.updatedAt may arrive as a Date (RSC) or string; normalize to the ISO CAS precondition.
-  const expectedUpdatedAt = new Date(deal.updatedAt).toISOString();
+  // Preserve the opaque version from this displayed server snapshot.
+  const expectedWriteVersion = deal.writeVersion;
   const currentStageName = stageProgress.chips.find((c) => c.current)?.name ?? null;
 
   return (
-    <div className="mb-4">
-      <div className="mb-3 flex items-start justify-between gap-4">
+    <div className="mb-6 border-b pb-5">
+      <div className="mb-5 flex flex-wrap items-start justify-between gap-x-5 gap-y-3">
         <div className="min-w-0">
           <EditableTitle
             dealId={deal.id}
             title={deal.title}
-            expectedUpdatedAt={expectedUpdatedAt}
+            expectedWriteVersion={expectedWriteVersion}
           />
+          <DealKeyFacts workspace={workspace} />
         </div>
-        <div className="flex shrink-0 items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2">
           <OwnerBlock
             dealId={deal.id}
-            expectedUpdatedAt={expectedUpdatedAt}
+            expectedWriteVersion={expectedWriteVersion}
             owner={owner}
             canChangeOwner={canChangeOwner}
             assignableUsers={assignableUsers}
@@ -81,7 +83,9 @@ export function DealHeader({
           />
           <PresenceBar channel={wsChannel.deal(deal.id)} selfId={selfActorId} />
           <DealCloseActions
+            quiet
             dealId={deal.id}
+            expectedWriteVersion={expectedWriteVersion}
             status={deal.status}
             lostReasonOptions={lostReasonOptions}
             lostReasonName={lostReasonName}
@@ -92,17 +96,18 @@ export function DealHeader({
           <DealActionsMenu
             dealId={deal.id}
             pipelineId={deal.pipelineId}
-            expectedUpdatedAt={expectedUpdatedAt}
+            expectedWriteVersion={expectedWriteVersion}
             canDelete={canDelete}
           />
         </div>
       </div>
-      <div className="flex items-center justify-between gap-3">
-        <div className="min-w-0 flex-1">
+      <div className="flex flex-col items-start gap-3 xl:flex-row xl:items-center xl:justify-between">
+        <div className="w-full min-w-0 overflow-x-auto xl:w-auto xl:flex-1">
           <StageSelector
             dealId={deal.id}
-            expectedUpdatedAt={expectedUpdatedAt}
+            expectedWriteVersion={expectedWriteVersion}
             chips={stageProgress.chips}
+            quiet
           />
         </div>
         <PipelineBreadcrumb

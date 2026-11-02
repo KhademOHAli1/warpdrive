@@ -26,8 +26,9 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ refresh }),
   usePathname: () => "/pipeline/p/list",
 }));
-vi.mock("@/components/shell/ActionErrorProvider", () => ({
-  useActionError: () => reportError,
+vi.mock("@/features/deal-workspace/DealActionErrorProvider", () => ({
+  useDealActionError: () => reportError,
+  DealActionErrorProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 vi.mock("@/lib/trpc-client", () => ({
   trpc: {
@@ -68,6 +69,11 @@ import type { DealListProps } from "./DealList";
 import { DealListClient } from "./DealListClient";
 import { DEAL_LIST_QUERY_ROOT } from "./dealListQueryKey";
 
+const expectedWriteVersions = {
+  d1: "00000000-0000-4000-8000-000000000001",
+  d2: "00000000-0000-4000-8000-000000000002",
+};
+
 const row = {
   id: "d1",
   title: "Acme renewal",
@@ -82,6 +88,7 @@ const row = {
   nextActivityAt: null,
   lastActivityAt: null,
   stageEnteredAt: new Date("2026-06-24T00:00:00Z"),
+  writeVersion: "00000000-0000-4000-8000-000000000001",
   updatedAt: "2026-06-24T00:00:00Z",
   customFields: {},
 };
@@ -97,12 +104,22 @@ const initial = {
 
 describe("DealListClient bulk archive wiring", () => {
   it("calls archiveDealsAction with the selected ids, the archived flag, and the CSRF token", async () => {
-    archiveDealsAction.mockResolvedValue({ ok: true, count: 2 });
+    archiveDealsAction.mockResolvedValue({
+      ok: true,
+      count: 2,
+      rows: [
+        { dealId: "d1", outcome: "applied" },
+        { dealId: "d2", outcome: "applied" },
+      ],
+    });
     render(<DealListClient initial={initial} />);
 
-    const applied = await listProps?.onBulkArchive?.(["d1", "d2"]);
+    const applied = await listProps?.onBulkArchive?.(["d1", "d2"], expectedWriteVersions);
 
-    expect(archiveDealsAction).toHaveBeenCalledWith(["d1", "d2"], true, "csrf");
+    expect(archiveDealsAction).toHaveBeenCalledWith(
+      { dealIds: ["d1", "d2"], archived: true, expectedWriteVersions },
+      "csrf",
+    );
     expect(applied).toBe(true);
     expect(refresh).toHaveBeenCalled();
     expect(reportError).not.toHaveBeenCalled();
@@ -112,7 +129,7 @@ describe("DealListClient bulk archive wiring", () => {
     archiveDealsAction.mockResolvedValue({ ok: false, error: { id: "E_PERM_001" } });
     render(<DealListClient initial={initial} />);
 
-    const applied = await listProps?.onBulkArchive?.(["d1", "d2"]);
+    const applied = await listProps?.onBulkArchive?.(["d1", "d2"], expectedWriteVersions);
 
     expect(applied).toBe(false);
     expect(reportError).toHaveBeenCalledWith("E_PERM_001");
@@ -120,21 +137,35 @@ describe("DealListClient bulk archive wiring", () => {
   });
 
   it("reports a partial outcome when fewer deals were archived than were selected", async () => {
-    archiveDealsAction.mockResolvedValue({ ok: true, count: 1 });
+    archiveDealsAction.mockResolvedValue({
+      ok: true,
+      count: 1,
+      rows: [
+        { dealId: "d1", outcome: "applied" },
+        { dealId: "d2", outcome: "conflict" },
+      ],
+    });
     render(<DealListClient initial={initial} />);
 
-    const applied = await listProps?.onBulkArchive?.(["d1", "d2"]);
+    const applied = await listProps?.onBulkArchive?.(["d1", "d2"], expectedWriteVersions);
 
-    expect(applied).toBe(true);
+    expect(applied).toEqual({ appliedDealIds: ["d1"] });
     expect(reportError).toHaveBeenCalledWith(ERROR_IDS.DEAL_BULK_ARCHIVE_PARTIAL);
     expect(refresh).toHaveBeenCalled();
   });
 
   it("invalidates the deal-list read so the archived rows leave the table", async () => {
-    archiveDealsAction.mockResolvedValue({ ok: true, count: 2 });
+    archiveDealsAction.mockResolvedValue({
+      ok: true,
+      count: 2,
+      rows: [
+        { dealId: "d1", outcome: "applied" },
+        { dealId: "d2", outcome: "applied" },
+      ],
+    });
     render(<DealListClient initial={initial} />);
 
-    await listProps?.onBulkArchive?.(["d1", "d2"]);
+    await listProps?.onBulkArchive?.(["d1", "d2"], expectedWriteVersions);
 
     expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: [DEAL_LIST_QUERY_ROOT] });
   });
@@ -143,7 +174,7 @@ describe("DealListClient bulk archive wiring", () => {
     archiveDealsAction.mockResolvedValue({ ok: false, error: { id: "E_PERM_001" } });
     render(<DealListClient initial={initial} />);
 
-    await listProps?.onBulkArchive?.(["d1", "d2"]);
+    await listProps?.onBulkArchive?.(["d1", "d2"], expectedWriteVersions);
 
     expect(invalidateQueries).not.toHaveBeenCalled();
   });

@@ -17,11 +17,13 @@ vi.mock("./useInlineEdit", () => ({
 }));
 
 import { DealList, type DealListRow } from "./DealList";
+import { dealClientFixture } from "./dealClientFixture";
 import { DEAL_LIST_COLUMNS } from "./dealListColumns";
 
 afterEach(() => {
   cleanup();
   editCell.mockReset();
+  editCell.mockResolvedValue({ ok: true, deal: dealClientFixture() });
 });
 
 const row: DealListRow = {
@@ -38,6 +40,7 @@ const row: DealListRow = {
   nextActivityAt: null,
   lastActivityAt: null,
   stageEnteredAt: new Date("2026-06-24T00:00:00Z"),
+  writeVersion: "00000000-0000-4000-8000-000000000001",
   updatedAt: "2026-06-24T00:00:00Z",
   customFields: {},
 };
@@ -158,7 +161,9 @@ describe("DealList", () => {
     render(<DealList {...props} onBulkStage={onBulkStage} />);
     selectRowAndMove("Proposal");
 
-    await vi.waitFor(() => expect(onBulkStage).toHaveBeenCalledWith(["d1"], "s2"));
+    await vi.waitFor(() =>
+      expect(onBulkStage).toHaveBeenCalledWith(["d1"], "s2", { d1: row.writeVersion }),
+    );
     // Success: the selection bar (only shown when rows are selected) disappears.
     await vi.waitFor(() =>
       expect(screen.queryByRole("toolbar", { name: "Bulk actions" })).not.toBeInTheDocument(),
@@ -218,7 +223,9 @@ describe("DealList", () => {
     render(<DealList {...props} onBulkStage={onBulkStage} />);
     selectRowAndMove("Proposal");
 
-    await vi.waitFor(() => expect(onBulkStage).toHaveBeenCalledWith(["d1"], "s2"));
+    await vi.waitFor(() =>
+      expect(onBulkStage).toHaveBeenCalledWith(["d1"], "s2", { d1: row.writeVersion }),
+    );
     // Failure: selection is retained so the user can see it didn't apply and retry.
     expect(screen.getByRole("toolbar", { name: "Bulk actions" })).toBeInTheDocument();
     expect(screen.getByText("1 selected")).toBeInTheDocument();

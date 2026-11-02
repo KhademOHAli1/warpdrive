@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { dealClientFixture } from "@/features/deals/dealClientFixture";
 import "@testing-library/jest-dom/vitest";
 import { cleanup, render, screen, within } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
@@ -8,7 +9,10 @@ import type { DealWorkspace } from "./summaryRepo";
 
 vi.mock("@/features/deals/updateAction", () => ({
   updateDealAction: vi.fn(() =>
-    Promise.resolve({ ok: true, deal: { id: "d1", updatedAt: "2026-01-03T00:00:00.000Z" } }),
+    Promise.resolve({
+      ok: true,
+      deal: dealClientFixture({ id: "d1", updatedAt: "2026-01-03T00:00:00.000Z" }),
+    }),
   ),
 }));
 vi.mock("@/features/contacts/actions", () => ({
@@ -63,6 +67,7 @@ function makeWorkspace(): DealWorkspace {
       customFields: { deal_segment: "Manufacturing" },
       createdAt: new Date("2026-01-01T00:00:00Z"),
       lastActivityAt: null,
+      writeVersion: "00000000-0000-4000-8000-000000000001",
       updatedAt: new Date("2026-01-02T00:00:00Z"),
     },
     ownerName: "Owner One",
@@ -135,7 +140,7 @@ it("renders Summary as PD's action list (no field-label column), other section l
   expect(summary.getByText("$1,000 USD")).toBeInTheDocument();
   expect(summary.queryAllByTestId("field-row")).toHaveLength(0);
   // Every other section keeps the right-aligned label default.
-  expectLabelAlign("Organization", "Deal segment", "right");
+  expectLabelAlign("Details", "Deal segment", "right");
   expectLabelAlign("Person", "Name", "right");
 });
 
@@ -149,7 +154,7 @@ it("renders representative sidebar values through the shared start-aligned Field
     />,
   );
 
-  expectSharedLeftValue("Organization", "Deal segment");
+  expectSharedLeftValue("Details", "Deal segment");
   expectSharedLeftValue("Organization", "Name");
   expectSharedLeftValue("Person", "Name");
   expectSharedLeftValue("Source", "Channel");

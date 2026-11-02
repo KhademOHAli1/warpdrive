@@ -47,7 +47,11 @@ export const dealCreateInput = z.object({
 export const dealUpdateInput = z
   .object({
     dealId: z.string().uuid(),
-    expectedUpdatedAt: z.string().datetime(), // ISO datetime; compare-and-swap precondition
+    expectedWriteVersion: z
+      .string()
+      .uuid()
+      .describe("Version from the read snapshot; refresh the record after a conflict"),
+    expectedUpdatedAt: z.string().datetime().optional(), // display metadata only; never a precondition
     title: z.string().min(1).max(255).optional(),
     value: moneyAmount.nullable().optional(),
     currency: currencyCode.optional(),
@@ -88,11 +92,16 @@ export const dealMoveInput = z.object({
   toStageId: z.string().uuid(),
   beforePosition: z.string().nullable().default(null),
   afterPosition: z.string().nullable().default(null),
-  expectedUpdatedAt: z.string().datetime(), // ISO datetime; compare-and-swap precondition
+  expectedWriteVersion: z
+    .string()
+    .uuid()
+    .describe("Version from the read snapshot; refresh the record after a conflict"),
+  expectedUpdatedAt: z.string().datetime().optional(), // display metadata only; never a precondition
 });
 
 export const bulkStageInput = z.object({
   dealIds: z.array(z.string().uuid()).min(1).max(500),
+  expectedWriteVersions: z.record(z.string().uuid(), z.string().uuid()),
   toStageId: z.string().uuid(),
 });
 
@@ -102,21 +111,42 @@ export const bulkStageInput = z.object({
 export const changeStageInput = z.object({
   dealId: z.string().uuid(),
   toStageId: z.string().uuid(),
-  expectedUpdatedAt: z.string().datetime(), // ISO datetime; compare-and-swap precondition
+  expectedWriteVersion: z
+    .string()
+    .uuid()
+    .describe("Version from the read snapshot; refresh the record after a conflict"),
+  expectedUpdatedAt: z.string().datetime().optional(), // display metadata only; never a precondition
 });
 
 // Deal-header owner reassignment. Permission-gated by deal.changeOwner server-side.
 export const changeOwnerInput = z.object({
   dealId: z.string().uuid(),
   ownerId: z.string().uuid(),
-  expectedUpdatedAt: z.string().datetime(), // ISO datetime; compare-and-swap precondition
+  expectedWriteVersion: z
+    .string()
+    .uuid()
+    .describe("Version from the read snapshot; refresh the record after a conflict"),
+  expectedUpdatedAt: z.string().datetime().optional(), // display metadata only; never a precondition
 });
 
 // Deal-header soft delete: stamps deleted_at under a CAS precondition.
 export const deleteDealInput = z.object({
   dealId: z.string().uuid(),
-  expectedUpdatedAt: z.string().datetime(), // ISO datetime; compare-and-swap precondition
+  expectedWriteVersion: z
+    .string()
+    .uuid()
+    .describe("Version from the read snapshot; refresh the record after a conflict"),
+  expectedUpdatedAt: z.string().datetime().optional(), // display metadata only; never a precondition
 });
+
+export const versionedDealInput = z.object({
+  dealId: z.string().uuid(),
+  expectedWriteVersion: z
+    .string()
+    .uuid()
+    .describe("Version from the read snapshot; refresh the record after a conflict"),
+});
+export type VersionedDealInput = z.infer<typeof versionedDealInput>;
 
 export type DealCreateInput = z.infer<typeof dealCreateInput>;
 export type DealUpdateInput = z.infer<typeof dealUpdateInput>;

@@ -1,7 +1,9 @@
 "use client";
+
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { updateOrgAction } from "@/features/contacts/actions";
+import { dealClientResult } from "@/features/deals/dealClientResult";
 import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
 import { InlineEditFooter } from "@/features/inline-edit/InlineEditFooter";
 import { InlineFieldShell } from "@/features/inline-edit/InlineFieldShell";
@@ -70,9 +72,8 @@ export function OrgAddressField({
   const dirty = ADDRESS_PARTS.some(({ key }) => f.draft[key] !== initial[key]);
 
   async function onSave(draft: AddressDraft): Promise<InlineSaveResult> {
-    const r = await updateOrgAction(
-      { id: orgId, address: draftToAddress(draft, address) },
-      readCsrfToken(),
+    const r = await dealClientResult(() =>
+      updateOrgAction({ id: orgId, address: draftToAddress(draft, address) }, readCsrfToken()),
     );
     if (!r.ok) return err(r.error.id);
     // Refresh only after a committed write; never let a refresh failure mask the success.

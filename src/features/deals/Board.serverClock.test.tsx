@@ -51,6 +51,7 @@ function rottenCard(): BoardCard {
     lastActivityAt: null,
     // 37 days in stage against a 14-day threshold, so it is well past rotting.
     stageEnteredAt: new Date("2026-07-19T12:00:00Z"),
+    writeVersion: "00000000-0000-4000-8000-000000000001",
     updatedAt: new Date("2026-07-19T12:00:00Z"),
   };
 }

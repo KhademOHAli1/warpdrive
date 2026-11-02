@@ -5,6 +5,7 @@ import { afterAll, beforeAll, expect, it } from "vitest";
 import { ERROR_IDS } from "@/constants/errorIds";
 import { dealFollowers, deals, lostReasons, notifications } from "@/db/schema";
 import { seedPipelineWithStages, seedUser } from "@/db/testing/factories";
+import { observeDealVersion } from "@/features/deals/dealVersion.test-helpers";
 import { notifyOnDealUpdate } from "@/features/deals/notifyHelpers";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { makeTestDb } from "@/test/db";
@@ -51,7 +52,12 @@ it("markWon: sets status=won and stamps wonTime", async () => {
   const actor = makeActor(user.id);
   const signal = new AbortController().signal;
 
-  const r = await markWon(h.db, actor, deal.id, signal);
+  const r = await markWon(
+    h.db,
+    actor,
+    { dealId: deal.id, expectedWriteVersion: await observeDealVersion(h.db, deal.id) },
+    signal,
+  );
 
   expect(r.ok).toBe(true);
   if (r.ok === true) {
@@ -84,7 +90,11 @@ it("markLost: rejects an invalid/nonexistent lostReasonId with E_DEAL_005", asyn
     h.db,
     actor,
     deal.id,
-    { lostReasonId: crypto.randomUUID(), lostReason: null },
+    {
+      expectedWriteVersion: await observeDealVersion(h.db, deal.id),
+      lostReasonId: crypto.randomUUID(),
+      lostReason: null,
+    },
     signal,
   );
 
@@ -121,7 +131,11 @@ it("markLost: sets status=lost, lostTime, and lostReasonId for a valid reason", 
     h.db,
     actor,
     deal.id,
-    { lostReasonId: reason.id, lostReason: null },
+    {
+      expectedWriteVersion: await observeDealVersion(h.db, deal.id),
+      lostReasonId: reason.id,
+      lostReason: null,
+    },
     signal,
   );
 
@@ -156,7 +170,11 @@ it("markLost accepts a free-text reason when no predefined reason is given", asy
     h.db,
     actor,
     deal.id,
-    { lostReasonId: null, lostReason: "Budget cut" },
+    {
+      expectedWriteVersion: await observeDealVersion(h.db, deal.id),
+      lostReasonId: null,
+      lostReason: "Budget cut",
+    },
     signal,
   );
   expect(r.ok).toBe(true);
@@ -184,7 +202,17 @@ it("markLost succeeds with no reason at all", async () => {
   const actor = makeActor(user.id);
   const signal = new AbortController().signal;
 
-  const r = await markLost(h.db, actor, deal.id, { lostReasonId: null, lostReason: null }, signal);
+  const r = await markLost(
+    h.db,
+    actor,
+    deal.id,
+    {
+      expectedWriteVersion: await observeDealVersion(h.db, deal.id),
+      lostReasonId: null,
+      lostReason: null,
+    },
+    signal,
+  );
   expect(r.ok).toBe(true);
   if (!r.ok) return;
   expect(r.value.status).toBe("lost");
@@ -215,7 +243,12 @@ it("markWon: a non-owner follower receives a deal_won notification", async () =>
   const actor = makeActor(owner.id);
   const signal = new AbortController().signal;
 
-  const won = await markWon(h.db, actor, deal.id, signal);
+  const won = await markWon(
+    h.db,
+    actor,
+    { dealId: deal.id, expectedWriteVersion: await observeDealVersion(h.db, deal.id) },
+    signal,
+  );
   expect(won.ok).toBe(true);
   if (won.ok === false) return;
 

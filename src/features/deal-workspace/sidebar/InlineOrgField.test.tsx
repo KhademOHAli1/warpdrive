@@ -1,10 +1,13 @@
 // @vitest-environment jsdom
+import { dealClientFixture } from "@/features/deals/dealClientFixture";
 import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 const { updateDealAction, createOrgAction } = vi.hoisted(() => ({
-  updateDealAction: vi.fn(() => Promise.resolve({ ok: true, deal: { id: "d1", updatedAt: "x" } })),
+  updateDealAction: vi.fn(() =>
+    Promise.resolve({ ok: true, deal: dealClientFixture({ id: "d1", updatedAt: "x" }) }),
+  ),
   createOrgAction: vi.fn(() => Promise.resolve({ ok: true, value: { id: "new-org" } })),
 }));
 vi.mock("@/features/deals/updateAction", () => ({ updateDealAction }));
@@ -24,7 +27,7 @@ const options = [
 ];
 const baseProps = {
   dealId: "d1",
-  expectedUpdatedAt: "2026-07-02T00:00:00.000Z",
+  expectedWriteVersion: "00000000-0000-4000-8000-000000000001",
   orgOptions: options,
   onSaved: vi.fn(),
 };

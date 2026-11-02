@@ -30,7 +30,7 @@ interface DealListTableBodyProps {
   onStartEdit: (id: string) => void;
   onCancelEdit: () => void;
   onCommitTitle: (row: DealListRow, value: string) => void;
-  onUnarchive?: (dealId: string) => void;
+  onUnarchive?: (dealId: string, expectedWriteVersion: string) => void;
   empty?: React.ReactNode;
   currency: string;
 }
@@ -141,7 +141,7 @@ export function DealListTableBody(props: DealListTableBodyProps): React.ReactNod
             <td className="px-3 py-2">
               <button
                 type="button"
-                onClick={() => onUnarchive(row.id)}
+                onClick={() => onUnarchive(row.id, row.writeVersion)}
                 className="rounded border px-2 py-1 text-xs font-medium text-foreground hover:bg-muted"
               >
                 {translateSales("unarchive_f5653")}

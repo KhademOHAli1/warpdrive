@@ -43,6 +43,7 @@ describe("updateDeal: custom-field audit logs", () => {
         adminSession(u.id),
         {
           dealId: deal.id,
+          expectedWriteVersion: seeded.writeVersion,
           expectedUpdatedAt: seeded.updatedAt.toISOString(),
           // region changes EMEA -> APAC; tier is re-submitted unchanged.
           customFields: { region: "APAC", tier: "gold" },

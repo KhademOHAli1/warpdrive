@@ -2,9 +2,11 @@
 // CAS + stage-validation tests live in dealMove.test.ts.
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
+import { permissionSets } from "@/db/schema/identity";
 import { channelVersions } from "@/db/schema/realtime";
 import { withTestDb } from "@/db/testing";
 import { seedPipelineWithStages, seedUser } from "@/db/testing/factories";
+import { hydrateActor } from "@/server/hydrateActor";
 import { createDeal, moveDeal } from "./dealActions";
 import {
   adminSession,
@@ -13,13 +15,37 @@ import {
   regularSession,
   seedSettings,
 } from "./dealMove.test-helpers";
+import { seedDealOwnerEditor } from "./dealUpdate.test-helpers";
+
+async function seedOwnEditor(db: Parameters<typeof seedDealOwnerEditor>[0]) {
+  const signal = new AbortController().signal;
+  const user = await seedDealOwnerEditor(db, signal);
+  if (user.permissionSetId === null) throw new Error("setup: missing own-editor permission set");
+  const [stored] = await db
+    .select({ flags: permissionSets.flags })
+    .from(permissionSets)
+    .where(eq(permissionSets.id, user.permissionSetId));
+  expect(user.isAdmin).toBe(false);
+  expect(stored?.flags["deal.edit_own"]).toBe(true);
+  expect(stored?.flags["deal.edit_any"]).not.toBe(true);
+  const actor = await hydrateActor(db, user.id, signal);
+  expect(actor?.type).toBe("regular");
+  expect(actor?.flags.has("deal.edit_own")).toBe(true);
+  expect(actor?.flags.has("deal.edit_any")).toBe(false);
+  return user;
+}
 
 describe("moveDeal: permissions", () => {
   it("denies a regular user who has no deal.edit flag", async () => {
     await withTestDb(async (db) => {
       await seedSettings(db);
       const owner = await seedUser(db);
-      const other = await seedUser(db);
+      const other = await seedUser(db, { isAdmin: false, permissionSetId: null });
+      const currentActor = await hydrateActor(db, other.id, new AbortController().signal);
+      expect(other.permissionSetId).toBeNull();
+      expect(currentActor?.type).toBe("regular");
+      expect(currentActor?.flags.has("deal.edit_own")).toBe(false);
+      expect(currentActor?.flags.has("deal.edit_any")).toBe(false);
       const p = await seedPipelineWithStages(db, ["A", "B"]);
       const stage0 = p.stages[0];
       const stage1 = p.stages[1];
@@ -42,6 +68,7 @@ describe("moveDeal: permissions", () => {
           toStageId: stage1.id,
           beforePosition: null,
           afterPosition: null,
+          expectedWriteVersion: created.value.writeVersion,
           expectedUpdatedAt: created.value.updatedAt.toISOString(),
         },
         new AbortController().signal,
@@ -58,7 +85,7 @@ describe("moveDeal: permissions", () => {
     await withTestDb(async (db) => {
       await seedSettings(db);
       const owner = await seedUser(db);
-      const other = await seedUser(db);
+      const other = await seedOwnEditor(db);
       const p = await seedPipelineWithStages(db, ["A", "B"]);
       const stage0 = p.stages[0];
       const stage1 = p.stages[1];
@@ -72,6 +99,11 @@ describe("moveDeal: permissions", () => {
       );
       if (created.ok === false) throw new Error(`createDeal failed: ${created.error.message}`);
 
+      expect(created.value.ownerId).toBe(owner.id);
+      expect(created.value.ownerId).not.toBe(other.id);
+      expect(created.value.visibilityLevel).toBe("all");
+      expect(p.pipeline.visibilityGroupId).toBeNull();
+
       // other has deal.edit_own but is not the owner
       const r = await moveDeal(
         db,
@@ -81,6 +113,7 @@ describe("moveDeal: permissions", () => {
           toStageId: stage1.id,
           beforePosition: null,
           afterPosition: null,
+          expectedWriteVersion: created.value.writeVersion,
           expectedUpdatedAt: created.value.updatedAt.toISOString(),
         },
         new AbortController().signal,
@@ -95,7 +128,7 @@ describe("moveDeal: permissions", () => {
   it("allows a user with deal.edit_own to move their own deal", async () => {
     await withTestDb(async (db) => {
       await seedSettings(db);
-      const owner = await seedUser(db);
+      const owner = await seedOwnEditor(db);
       const p = await seedPipelineWithStages(db, ["A", "B"]);
       const stage0 = p.stages[0];
       const stage1 = p.stages[1];
@@ -109,6 +142,8 @@ describe("moveDeal: permissions", () => {
       );
       if (created.ok === false) throw new Error(`createDeal failed: ${created.error.message}`);
 
+      expect(created.value.ownerId).toBe(owner.id);
+
       // owner has deal.edit_own and IS the owner
       const r = await moveDeal(
         db,
@@ -118,6 +153,7 @@ describe("moveDeal: permissions", () => {
           toStageId: stage1.id,
           beforePosition: null,
           afterPosition: null,
+          expectedWriteVersion: created.value.writeVersion,
           expectedUpdatedAt: created.value.updatedAt.toISOString(),
         },
         new AbortController().signal,
@@ -134,7 +170,7 @@ describe("moveDeal: permissions", () => {
       // owner-level default: only owner can see the deal
       await seedSettings(db, "owner");
       const owner = await seedUser(db);
-      const stranger = await seedUser(db);
+      const stranger = await seedOwnEditor(db);
       const p = await seedPipelineWithStages(db, ["A", "B"]);
       const stage0 = p.stages[0];
       const stage1 = p.stages[1];
@@ -148,6 +184,11 @@ describe("moveDeal: permissions", () => {
       );
       if (created.ok === false) throw new Error(`createDeal failed: ${created.error.message}`);
 
+      expect(created.value.ownerId).toBe(owner.id);
+      expect(created.value.ownerId).not.toBe(stranger.id);
+      expect(created.value.visibilityLevel).toBe("owner");
+      expect(created.value.visibleToUserIds).not.toContain(stranger.id);
+
       // stranger with edit_own cannot see this deal (visibility: owner, ownerId: owner)
       const r = await moveDeal(
         db,
@@ -157,6 +198,7 @@ describe("moveDeal: permissions", () => {
           toStageId: stage1.id,
           beforePosition: null,
           afterPosition: null,
+          expectedWriteVersion: created.value.writeVersion,
           expectedUpdatedAt: created.value.updatedAt.toISOString(),
         },
         new AbortController().signal,
@@ -174,7 +216,7 @@ describe("moveDeal: realtime event", () => {
   it("emits deal_moved event (channel_versions bump) in the same transaction", async () => {
     await withTestDb(async (db) => {
       await seedSettings(db);
-      const u = await seedUser(db);
+      const u = await seedUser(db, { isAdmin: true });
       const p = await seedPipelineWithStages(db, ["A", "B"]);
       const stage0 = p.stages[0];
       const stage1 = p.stages[1];
@@ -203,6 +245,7 @@ describe("moveDeal: realtime event", () => {
           toStageId: stage1.id,
           beforePosition: null,
           afterPosition: null,
+          expectedWriteVersion: created.value.writeVersion,
           expectedUpdatedAt: created.value.updatedAt.toISOString(),
         },
         new AbortController().signal,

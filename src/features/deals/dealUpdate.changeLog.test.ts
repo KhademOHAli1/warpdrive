@@ -20,6 +20,7 @@ describe("updateDeal: audit change logs", () => {
         adminSession(u.id),
         {
           dealId: deal.id,
+          expectedWriteVersion: deal.writeVersion,
           expectedUpdatedAt: deal.updatedAt.toISOString(),
           labels: ["hot"],
         },
@@ -42,7 +43,12 @@ describe("updateDeal: audit change logs", () => {
       await updateDeal(
         db,
         adminSession(u.id),
-        { dealId: deal.id, expectedUpdatedAt: deal.updatedAt.toISOString(), title: "X" },
+        {
+          dealId: deal.id,
+          expectedWriteVersion: deal.writeVersion,
+          expectedUpdatedAt: deal.updatedAt.toISOString(),
+          title: "X",
+        },
         new AbortController().signal,
       );
       const log = await listChangeLog(db, "deal", deal.id, new AbortController().signal);
@@ -56,7 +62,12 @@ describe("updateDeal: audit change logs", () => {
       await updateDeal(
         db,
         adminSession(u.id),
-        { dealId: deal.id, expectedUpdatedAt: deal.updatedAt.toISOString(), labels: [] },
+        {
+          dealId: deal.id,
+          expectedWriteVersion: deal.writeVersion,
+          expectedUpdatedAt: deal.updatedAt.toISOString(),
+          labels: [],
+        },
         new AbortController().signal,
       );
       const log = await listChangeLog(db, "deal", deal.id, new AbortController().signal);
@@ -72,6 +83,7 @@ describe("updateDeal: audit change logs", () => {
         adminSession(u.id),
         {
           dealId: deal.id,
+          expectedWriteVersion: deal.writeVersion,
           expectedUpdatedAt: deal.updatedAt.toISOString(),
           sourceChannel: "outbound",
         },
@@ -95,6 +107,7 @@ describe("updateDeal: audit change logs", () => {
         adminSession(u.id),
         {
           dealId: deal.id,
+          expectedWriteVersion: deal.writeVersion,
           expectedUpdatedAt: deal.updatedAt.toISOString(),
           title: "Renamed Deal",
           value: 2000,
@@ -130,6 +143,7 @@ describe("updateDeal: audit change logs", () => {
         adminSession(u.id),
         {
           dealId: deal.id,
+          expectedWriteVersion: deal.writeVersion,
           expectedUpdatedAt: deal.updatedAt.toISOString(),
           title: deal.title,
         },
@@ -156,7 +170,12 @@ describe("updateDeal: audit change logs", () => {
       const linked = await updateDeal(
         db,
         adminSession(u.id),
-        { dealId: deal.id, expectedUpdatedAt: deal.updatedAt.toISOString(), personId: person.id },
+        {
+          dealId: deal.id,
+          expectedWriteVersion: deal.writeVersion,
+          expectedUpdatedAt: deal.updatedAt.toISOString(),
+          personId: person.id,
+        },
         new AbortController().signal,
       );
       expect(linked.ok).toBe(true);
@@ -169,6 +188,7 @@ describe("updateDeal: audit change logs", () => {
         adminSession(u.id),
         {
           dealId: deal.id,
+          expectedWriteVersion: linked.value.writeVersion,
           expectedUpdatedAt: linked.value.updatedAt.toISOString(),
           personId: null,
         },
@@ -201,7 +221,12 @@ describe("updateDeal: audit change logs", () => {
       const linked = await updateDeal(
         db,
         adminSession(u.id),
-        { dealId: deal.id, expectedUpdatedAt: deal.updatedAt.toISOString(), orgId: org.id },
+        {
+          dealId: deal.id,
+          expectedWriteVersion: deal.writeVersion,
+          expectedUpdatedAt: deal.updatedAt.toISOString(),
+          orgId: org.id,
+        },
         new AbortController().signal,
       );
       expect(linked.ok).toBe(true);
@@ -213,6 +238,7 @@ describe("updateDeal: audit change logs", () => {
         adminSession(u.id),
         {
           dealId: deal.id,
+          expectedWriteVersion: linked.value.writeVersion,
           expectedUpdatedAt: linked.value.updatedAt.toISOString(),
           orgId: org.id,
         },
@@ -245,7 +271,12 @@ describe("updateDeal: audit change logs", () => {
         // Regular owner-editor of the deal (passes the deal-edit gate) who nonetheless cannot
         // SEE the stranger-owned owner-visibility person, so the relink must be rejected.
         regularSession(u.id),
-        { dealId: deal.id, expectedUpdatedAt: deal.updatedAt.toISOString(), personId: hidden.id },
+        {
+          dealId: deal.id,
+          expectedWriteVersion: deal.writeVersion,
+          expectedUpdatedAt: deal.updatedAt.toISOString(),
+          personId: hidden.id,
+        },
         new AbortController().signal,
       );
       expect(r.ok).toBe(false);

@@ -1,4 +1,5 @@
 "use client";
+
 import Link from "next/link";
 import type React from "react";
 import { useCallback, useMemo, useState } from "react";
@@ -9,6 +10,7 @@ import { followUpLinksOf, useFollowUpAfterDone } from "@/features/activities/fol
 import { ActivityTypeIcon } from "@/features/activities/typeIcons";
 import { useInvalidateActivityLists } from "@/features/activities/useInvalidateActivityLists";
 import { linkifyHtml } from "@/features/collaboration/linkify";
+import { dealClientResult } from "@/features/deals/dealClientResult";
 import { useAppTranslations, useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import { formatUserName } from "@/features/identity/formatUserName";
 import { useInterfacePrefs } from "@/features/identity/InterfacePrefsProvider";
@@ -34,11 +36,13 @@ type EntityKey = { entityType: "deal" | "person" | "organization"; entityId: str
 // the user complete an open activity or reopen a completed one.
 export function ActivityCard({
   activity,
+  compact = false,
   at,
   onChanged,
   onEdit,
 }: {
   activity: CalendarActivity;
+  compact?: boolean;
   at: Date;
   onChanged?: () => void;
   // Opens this activity in the inline composer for editing (deal workspace). The subject line and
@@ -102,7 +106,9 @@ export function ActivityCard({
           : old.map((a) => (a.id === activity.id ? { ...a, done: next, doneAt } : a)),
       );
     }
-    const res = await completeActivityAction({ id: activity.id, done: next }, readCsrfToken());
+    const res = await dealClientResult(() =>
+      completeActivityAction({ id: activity.id, done: next }, readCsrfToken()),
+    );
     if (res.ok) {
       await invalidateActivityLists();
       onChanged?.(); // reconcile with server truth (real doneAt, ordering)
@@ -132,7 +138,9 @@ export function ActivityCard({
   const remove = useCallback(async () => {
     if (busy) return;
     setBusy(true);
-    const res = await deleteActivityAction({ id: activity.id }, readCsrfToken());
+    const res = await dealClientResult(() =>
+      deleteActivityAction({ id: activity.id }, readCsrfToken()),
+    );
     if (res.ok) {
       for (const key of entityKeys) {
         utils.activities.listForEntity.setData(key, (old) =>
@@ -148,7 +156,13 @@ export function ActivityCard({
   }, [busy, activity.id, entityKeys, utils, invalidateActivityLists, onChanged, reportError]);
 
   return (
-    <div className="overflow-hidden rounded-md border bg-card transition-colors hover:border-ring/40">
+    <div
+      className={
+        compact
+          ? "py-1"
+          : "overflow-hidden rounded-md border bg-card transition-colors hover:border-ring/40"
+      }
+    >
       <div className="flex items-start gap-2.5 px-3 py-2">
         <Checkbox
           checked={done}
@@ -197,7 +211,7 @@ export function ActivityCard({
             {activity.ownerName != null ? (
               <span>· {formatUserName(activity.ownerName)}</span>
             ) : null}
-            {activity.personId !== null ? (
+            {!compact && activity.personId !== null ? (
               <Link
                 href={`/contacts/people/${activity.personId}`}
                 className="text-primary hover:underline"
@@ -206,7 +220,7 @@ export function ActivityCard({
                 · {activity.personName ?? translateSales("person_6007d")}
               </Link>
             ) : null}
-            {activity.orgId !== null ? (
+            {!compact && activity.orgId !== null ? (
               <Link
                 href={`/contacts/orgs/${activity.orgId}`}
                 className="text-primary hover:underline"

@@ -21,6 +21,7 @@ import { publishBoardEvent } from "@/server/realtime/events";
 import { err, ok, type Result } from "@/types/result";
 import { midpoint } from "./boardPosition";
 import { validateDealCustomFieldsForCreate } from "./dealCustomFieldsValidation";
+import { readFinalDeal } from "./dealVersion";
 import { dealCreateInput } from "./schemas";
 
 // Deals and leads share the same creation trust boundary (owner override, group defaulting).
@@ -191,6 +192,6 @@ export async function createDeal(
       signal,
     );
 
-    return ok(row);
+    return ok(await readFinalDeal(tx, row.id, signal));
   });
 }

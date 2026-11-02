@@ -1,42 +1,51 @@
 "use client";
+
 import { useRouter } from "next/navigation";
+import { ERROR_IDS } from "@/constants/errorIds";
 import { sourceChannelOptions } from "@/constants/sourceChannelLabels";
 import { isSourceChannelKey, type SourceChannelKey } from "@/constants/sourceChannels";
+import { DealInlineSelectField } from "@/features/deal-workspace/DealInlineSelectField";
+import { dealClientResult } from "@/features/deals/dealClientResult";
 import { updateDealAction } from "@/features/deals/updateAction";
 import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
-import { InlineSelectField } from "@/features/inline-edit/InlineSelectField";
 import { err, ok, type Result } from "@/types/result";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { FieldRow } from "./FieldRow";
 
 interface SourceChannelFieldProps {
   dealId: string;
-  updatedAt: string | Date;
+  writeVersion: string;
   sourceChannel: string | null;
 }
 
-export function SourceChannelField({ dealId, updatedAt, sourceChannel }: SourceChannelFieldProps) {
+export function SourceChannelField({
+  dealId,
+  writeVersion,
+  sourceChannel,
+}: SourceChannelFieldProps) {
   const translateSales = useAppTranslations("sales");
   const locale = useLocale();
 
   const router = useRouter();
-  const expectedUpdatedAt = new Date(updatedAt).toISOString();
   const channelValue =
     sourceChannel !== null && isSourceChannelKey(sourceChannel) ? sourceChannel : "";
 
-  async function save(value: string): Promise<Result<unknown, string>> {
+  async function save(
+    value: string,
+    expectedWriteVersion: string,
+  ): Promise<Result<unknown, string>> {
     const next = value === "" ? null : (value as SourceChannelKey);
-    const r = await updateDealAction(
-      { dealId, expectedUpdatedAt, sourceChannel: next },
-      readCsrfToken(),
+    const r = await dealClientResult(() =>
+      updateDealAction({ dealId, expectedWriteVersion, sourceChannel: next }, readCsrfToken()),
     );
-    router.refresh();
+    if (r.ok || r.error.id === ERROR_IDS.DEAL_PRECONDITION) router.refresh();
     return r.ok ? ok(r.deal) : err(r.error.id);
   }
 
   return (
     <FieldRow label={translateSales("channel_ce468")}>
-      <InlineSelectField
+      <DealInlineSelectField
+        writeVersion={writeVersion}
         label={translateSales("channel_ce468")}
         value={channelValue}
         options={[

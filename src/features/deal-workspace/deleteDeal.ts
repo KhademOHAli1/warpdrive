@@ -2,7 +2,7 @@
 // so a stale header cannot delete a concurrently-modified deal. A soft-deleted deal is
 // hidden from every read path (loadEditableDeal + getWorkspace filter deletedAt), so this
 // is the single write that removes a deal from the product. Mirrors moveDeal's CAS shape.
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { BOARD_EVENT, dealChannel, dealMovedChannel } from "@/constants/boardChannels";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
@@ -10,6 +10,7 @@ import type { Deal } from "@/db/schema/deals";
 import { deals } from "@/db/schema/deals";
 import { recordChange } from "@/features/collaboration/changeLog";
 import { loadEditableDeal, toVisibleDeal } from "@/features/deals/dealAuth";
+import { missingDealVersion, readFinalDeal } from "@/features/deals/dealVersion";
 import { deleteDealInput } from "@/features/deals/schemas";
 import { can } from "@/features/permissions/can";
 import type { PermSetUser } from "@/features/permissions/effective";
@@ -22,6 +23,8 @@ export async function deleteDeal(
   raw: unknown,
   signal: AbortSignal,
 ): Promise<Result<Deal, AppError>> {
+  const versionError = missingDealVersion(raw);
+  if (versionError !== null) return err(versionError);
   const input = deleteDealInput.parse(raw);
   signal.throwIfAborted();
 
@@ -42,19 +45,12 @@ export async function deleteDeal(
     );
   }
 
-  const expectedIso = input.expectedUpdatedAt;
-
   return db.transaction(async (tx) => {
     const deletedAt = new Date();
     const updated = await tx
       .update(deals)
       .set({ deletedAt, updatedAt: deletedAt })
-      .where(
-        and(
-          eq(deals.id, input.dealId),
-          sql`date_trunc('milliseconds', ${deals.updatedAt}) = ${expectedIso}::timestamptz`,
-        ),
-      )
+      .where(and(eq(deals.id, input.dealId), eq(deals.writeVersion, input.expectedWriteVersion)))
       .returning();
 
     if (updated.length === 0) {
@@ -109,6 +105,6 @@ export async function deleteDeal(
       signal,
     );
 
-    return ok(row);
+    return ok(await readFinalDeal(tx, row.id, signal));
   });
 }

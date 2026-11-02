@@ -42,7 +42,7 @@ export function DealActionErrorProvider({
   const report: ReportDealActionError = withActionTelemetry((id) => {
     setErrorId(id ?? "");
     // A stale compare-and-swap is the one failure a reload fixes, and the dialog tells the user we
-    // already reloaded. Without this the header keeps the same expectedUpdatedAt and every retry
+    // already reloaded. Without this the header keeps the same expectedWriteVersion and every retry
     // fails identically until the page is reloaded by hand.
     if (id === ERROR_IDS.DEAL_PRECONDITION) router.refresh();
   }, "deal");

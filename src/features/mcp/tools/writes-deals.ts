@@ -1,4 +1,5 @@
 import type { McpServer } from "@modelcontextprotocol/server";
+import { z } from "zod";
 import type { Db } from "@/db/client";
 import { isDealVisibleToSession } from "@/features/deals/createdVisibility";
 import { createDeal, moveDeal, updateDeal } from "@/features/deals/dealActions";
@@ -24,6 +25,18 @@ import {
   toolResult,
 } from "./types";
 
+// Transport accepts only the missing legacy field so the domain can return the
+// refresh/conflict result. A successful write still requires the UUID; malformed
+// present values stay input-invalid and never become timestamp fallbacks.
+const updateDealToolInput = z.object({
+  ...dealUpdateInput.shape,
+  expectedWriteVersion: dealUpdateInput.shape.expectedWriteVersion.optional(),
+});
+const moveDealToolInput = z.object({
+  ...dealMoveInput.shape,
+  expectedWriteVersion: dealMoveInput.shape.expectedWriteVersion.optional(),
+});
+
 export function registerDealWriteTools(
   server: McpServer,
   registry: ToolRegistry,
@@ -48,8 +61,9 @@ export function registerDealWriteTools(
   });
   registerTool(server, registry, {
     name: "update_deal",
-    description: "Update a deal",
-    inputSchema: dealUpdateInput,
+    description:
+      "Update a deal using expectedWriteVersion from the displayed get_deal/list_deals snapshot; refresh after a conflict",
+    inputSchema: updateDealToolInput,
     run: async (input, signal) => {
       const actor = getToolActor(getCtx);
       if (!actor.ok) return toolError(actor.error);
@@ -58,8 +72,9 @@ export function registerDealWriteTools(
   });
   registerTool(server, registry, {
     name: "move_deal_stage",
-    description: "Move a deal to another stage",
-    inputSchema: dealMoveInput,
+    description:
+      "Move a deal using expectedWriteVersion from the displayed get_deal/list_deals snapshot; refresh after a conflict",
+    inputSchema: moveDealToolInput,
     run: async (input, signal) => {
       const actor = getToolActor(getCtx);
       if (!actor.ok) return toolError(actor.error);
@@ -101,7 +116,12 @@ export function registerDealWriteTools(
       const actor = getToolActor(getCtx);
       if (!actor.ok) return toolError(actor.error);
       const session = await buildEntityCreateSession(db, actor.value, signal);
-      return resultToTool(await convertLead(db, session, input, signal));
+      const converted = await convertLead(db, session, input, signal);
+      if (!converted.ok) return resultToTool(converted);
+      if (!(await isDealVisibleToSession(db, session, converted.value.dealId, signal))) {
+        return toolResult({ dealId: converted.value.dealId });
+      }
+      return resultToTool(converted);
     },
   });
   registerTool(server, registry, {

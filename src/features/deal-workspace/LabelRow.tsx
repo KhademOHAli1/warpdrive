@@ -1,8 +1,10 @@
 "use client";
+
 import { useRouter } from "next/navigation";
 import type React from "react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { ERROR_IDS } from "@/constants/errorIds";
+import { dealClientResult } from "@/features/deals/dealClientResult";
 import { updateDealAction } from "@/features/deals/updateAction";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { CatalogLabelPicker } from "@/features/labels/CatalogLabelPicker";
@@ -13,17 +15,15 @@ import { readCsrfToken } from "@/utils/csrfCookie";
 import { useDealActionError } from "./DealActionErrorProvider";
 
 // Inline label editor for the deal-sidebar Summary section. Wraps the shared LabelToggle and
-// commits each change through updateDealAction under the CAS precondition (expectedUpdatedAt).
-// Holds optimistic local state for the labels and the expected timestamp so a quick second edit
-// uses the freshly-advanced updatedAt (from the success response) rather than the stale prop,
-// which would otherwise CAS-fail against its own prior write.
+// commits each change through updateDealAction under the CAS precondition (expectedWriteVersion).
+// Advance labels and their token together from the successful final server snapshot.
 export function LabelRow({
   dealId,
-  expectedUpdatedAt,
+  expectedWriteVersion,
   labels,
 }: {
   dealId: string;
-  expectedUpdatedAt: string;
+  expectedWriteVersion: string;
   labels: string[];
 }): React.ReactNode {
   const translateSales = useAppTranslations("sales");
@@ -31,8 +31,13 @@ export function LabelRow({
   const router = useRouter();
   const reportError = useDealActionError();
   // Both re-seed from the server once a router.refresh() delivers new props.
-  const [current, setCurrent] = useSyncedState<string[]>(labels);
-  const [expected, setExpected] = useSyncedState<string>(expectedUpdatedAt);
+  const incoming = useMemo(
+    () => ({ labels, version: expectedWriteVersion }),
+    [labels, expectedWriteVersion],
+  );
+  const [snapshot, setSnapshot] = useSyncedState(incoming);
+  const current = snapshot.labels;
+  const expected = snapshot.version;
   const [pending, setPending] = useState(false);
   const [stale, setStale] = useState(false);
   const catalog = trpc.labels.listByTarget.useQuery({ target: "deal" }).data ?? [];
@@ -40,21 +45,21 @@ export function LabelRow({
   async function onChange(next: string[]): Promise<void> {
     if (pending) return;
     setPending(true);
-    setCurrent(next); // optimistic: reflect the toggle immediately
-    const r = await updateDealAction(
-      { dealId, expectedUpdatedAt: expected, labels: next },
-      readCsrfToken(),
+    const previous = snapshot;
+    setSnapshot({ labels: next, version: expected }); // optimistic until the final acknowledgment
+    const r = await dealClientResult(() =>
+      updateDealAction({ dealId, expectedWriteVersion: expected, labels: next }, readCsrfToken()),
     );
     setPending(false);
     if (r.ok) {
       setStale(false);
-      setExpected(new Date(r.deal.updatedAt).toISOString()); // advance so back-to-back edits pass CAS
+      setSnapshot({ labels: r.deal.labels, version: r.deal.writeVersion });
       router.refresh();
       return;
     }
-    setCurrent(labels); // revert the optimistic change on failure
+    setSnapshot(previous); // restore the complete prior snapshot, including its token
     // CAS-fail (E_DEAL_002 = DEAL_PRECONDITION): the deal moved under us. Surface a stale hint and
-    // refresh so the row reloads the server-true labels and expectedUpdatedAt on the next render.
+    // refresh so the row reloads the server-true labels and expectedWriteVersion on the next render.
     if (r.error.id === ERROR_IDS.DEAL_PRECONDITION) {
       setStale(true);
       router.refresh();

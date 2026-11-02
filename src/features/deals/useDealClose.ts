@@ -1,52 +1,72 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useDealActionError } from "@/features/deal-workspace/DealActionErrorProvider";
 import { readCsrfToken } from "@/utils/csrfCookie";
-import { type BoardData, removeCard } from "./boardCache";
+import { type BoardData, removeCard, upsertCard } from "./boardCache";
+import type { BoardCard } from "./dealRepo";
 import { updateDealAction } from "./updateAction";
 import { BOARD_QUERY_KEY } from "./useDealMove";
 
 export interface DealCloseInput {
   dealId: string;
   status: "won" | "lost";
-  // updated_at compare-and-swap precondition, same guard the move path uses.
-  expectedUpdatedAt: string;
+  expectedWriteVersion: string;
 }
+type CloseContext = { previousRow: BoardCard | undefined; optimisticData: BoardData | undefined };
 
-// Closing a deal (Won/Lost) from a bottom drop zone. Our board returns only open deals, so a
-// closed deal must leave the board immediately: we optimistically remove the card, call the
-// CSRF-guarded update action, and reconcile on settle. Mirrors useDealMove's optimistic shape.
 export function useDealClose(pipelineId: string) {
   const client = useQueryClient();
+  const reportError = useDealActionError();
   const key = BOARD_QUERY_KEY(pipelineId);
+
+  function restoreOwned(input: DealCloseInput, context: CloseContext | undefined): void {
+    if (context?.previousRow === undefined || context.optimisticData === undefined) return;
+    const previousRow = context.previousRow;
+    client.setQueryData<BoardData>(key, (data) => {
+      if (
+        data === undefined ||
+        data !== context.optimisticData ||
+        data.cards.some((row) => row.id === input.dealId)
+      )
+        return data;
+      return upsertCard(data, previousRow);
+    });
+  }
 
   const mutation = useMutation({
     mutationFn: (input: DealCloseInput) =>
       updateDealAction(
-        { dealId: input.dealId, status: input.status, expectedUpdatedAt: input.expectedUpdatedAt },
+        {
+          dealId: input.dealId,
+          status: input.status,
+          expectedWriteVersion: input.expectedWriteVersion,
+        },
         readCsrfToken(),
       ),
-
-    onMutate: async (input: DealCloseInput) => {
+    onMutate: async (input: DealCloseInput): Promise<CloseContext> => {
       await client.cancelQueries({ queryKey: key });
-      const previous = client.getQueryData<BoardData>(key);
-      if (previous !== undefined) {
-        client.setQueryData<BoardData>(key, removeCard(previous, input.dealId));
-      }
-      return { previous };
+      const data = client.getQueryData<BoardData>(key);
+      const previousRow = data?.cards.find((row) => row.id === input.dealId);
+      if (
+        typeof input.expectedWriteVersion !== "string" ||
+        input.expectedWriteVersion === "" ||
+        data === undefined ||
+        previousRow?.writeVersion !== input.expectedWriteVersion
+      )
+        return { previousRow: undefined, optimisticData: undefined };
+      client.setQueryData<BoardData>(key, removeCard(data, input.dealId));
+      return { previousRow, optimisticData: client.getQueryData<BoardData>(key) };
     },
-
-    onError: (_err, _input, ctx) => {
-      if (ctx?.previous !== undefined) client.setQueryData(key, ctx.previous);
+    onError: (_error, input, context) => {
+      restoreOwned(input, context);
+      reportError();
     },
-
-    onSettled: (result, _err, _input, ctx) => {
-      // A non-throwing ok:false (e.g. stale precondition, permission) arrives here; roll the
-      // card back so it reappears, then invalidate so the next fetch reconciles.
-      if (result !== undefined && result.ok === false && ctx?.previous !== undefined) {
-        client.setQueryData(key, ctx.previous);
+    onSettled: async (result, _error, input, context) => {
+      if (result !== undefined && !result.ok) {
+        restoreOwned(input, context);
+        reportError(result.error.id);
       }
-      void client.invalidateQueries({ queryKey: key });
+      await client.invalidateQueries({ queryKey: key });
     },
   });
-
   return { close: (input: DealCloseInput) => mutation.mutate(input) };
 }

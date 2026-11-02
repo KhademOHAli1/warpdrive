@@ -1,6 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/server";
 import { eq } from "drizzle-orm";
 import { expect, test } from "vitest";
+import { z } from "zod";
 import { ERROR_IDS } from "@/constants/errorIds";
 import { deals, leads } from "@/db/schema";
 import { withTestDb } from "@/db/testing";
@@ -106,5 +107,63 @@ test("archive_lead returns not-found for a lead the actor cannot see", async () 
     if (result.content[0]?.type === "text") {
       expect(result.content[0].text).toContain(ERROR_IDS.LEAD_NOT_FOUND);
     }
+  });
+});
+
+test("MCP deal writes require the read revision and return the matching final snapshot", async () => {
+  await withTestDb(async (db) => {
+    const user = await seedUser(db, { isAdmin: true });
+    const seeded = await seedPipelineWithStages(db, ["Open"]);
+    const actor = await hydrateActor(db, user.id, AbortSignal.timeout(5000));
+    if (actor === null) throw new Error("missing actor");
+    const [snapshot] = await db
+      .insert(deals)
+      .values({
+        title: "Observed",
+        pipelineId: seeded.pipeline.id,
+        stageId: seeded.stages[0]!.id,
+        ownerId: user.id,
+        visibilityLevel: "all",
+      })
+      .returning();
+    if (snapshot === undefined) throw new Error("missing deal");
+    const server = new McpServer({ name: "revision-write-test", version: "1.0.0" });
+    const tools = registerWriteTools(server, () => buildAppContext(db, actor), db);
+    const legacy = await tools.invoke("update_deal", {
+      dealId: snapshot.id,
+      expectedUpdatedAt: snapshot.updatedAt.toISOString(),
+      title: "Legacy overwrite",
+    });
+    expect(legacy.isError).toBe(true);
+    if (legacy.content[0]?.type === "text")
+      expect(legacy.content[0].text).toContain(ERROR_IDS.DEAL_PRECONDITION);
+    const [unchanged] = await db.select().from(deals).where(eq(deals.id, snapshot.id));
+    expect(unchanged).toEqual(snapshot);
+    const updated = await tools.invoke("update_deal", {
+      dealId: snapshot.id,
+      expectedWriteVersion: snapshot.writeVersion,
+      title: "Current",
+    });
+    expect(updated.isError).not.toBe(true);
+    const [current] = await db.select().from(deals).where(eq(deals.id, snapshot.id));
+    if (current === undefined) throw new Error("updated deal is missing");
+    const ack = z
+      .object({
+        data: z.object({ writeVersion: z.uuid(), title: z.string() }).passthrough(),
+      })
+      .parse(updated.structuredContent).data;
+    const serializedCurrent: unknown = JSON.parse(JSON.stringify(current));
+    expect(ack).toEqual(serializedCurrent);
+    expect(ack.writeVersion).toBe(current.writeVersion);
+    expect(ack.title).toBe("Current");
+    expect(current.writeVersion).not.toBe(snapshot.writeVersion);
+    const stale = await tools.invoke("update_deal", {
+      dealId: snapshot.id,
+      expectedWriteVersion: snapshot.writeVersion,
+      title: "Stale overwrite",
+    });
+    expect(stale.isError).toBe(true);
+    const [after] = await db.select().from(deals).where(eq(deals.id, snapshot.id));
+    expect(after).toEqual(current);
   });
 });

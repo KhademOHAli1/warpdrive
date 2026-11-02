@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
 import type { DealWorkspace } from "@/features/deal-workspace/summaryRepo";
@@ -30,6 +31,7 @@ const workspace = {
     title: "Acme renewal",
     pipelineId: "p1",
     status: "open",
+    writeVersion: "00000000-0000-4000-8000-000000000001",
     updatedAt: new Date("2026-07-02T00:00:00.000Z"),
   },
   pipelineName: "Sales pipeline",

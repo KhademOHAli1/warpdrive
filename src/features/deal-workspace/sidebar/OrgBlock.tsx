@@ -1,10 +1,12 @@
 "use client";
+
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { ERROR_IDS } from "@/constants/errorIds";
 import type { Organization } from "@/db/schema";
 import { updateOrgAction } from "@/features/contacts/actions";
 import { ContactCustomFieldRows } from "@/features/custom-fields/ContactCustomFieldRows";
+import { dealClientResult } from "@/features/deals/dealClientResult";
 import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
 import { useFormatters } from "@/lib/useFormatters";
 import type { CustomFieldDef } from "@/types/customFields";
@@ -85,7 +87,9 @@ export function OrgBlock({
   const address = formatAddress(org.address);
 
   async function save(change: OrgFieldChange): Promise<{ ok: boolean; errorId?: string }> {
-    const r = await updateOrgAction({ id: org.id, ...change }, readCsrfToken());
+    const r = await dealClientResult(() =>
+      updateOrgAction({ id: org.id, ...change }, readCsrfToken()),
+    );
     if (!r.ok) return { ok: false, errorId: r.error.id };
     // Refresh only after a committed write, and never let a refresh failure mask that success.
     refreshQuietly(router);

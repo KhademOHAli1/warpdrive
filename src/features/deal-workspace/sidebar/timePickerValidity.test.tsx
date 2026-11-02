@@ -47,6 +47,7 @@ it("does not bulk-save a stale canonical field while an invalid raw time is show
   const onExit = vi.fn();
   render(
     <DetailsBlock
+      writeVersion="00000000-0000-4000-8000-000000000001"
       customFieldDefs={[timeField]}
       customFields={{ time: "08:00" }}
       currency="USD"
@@ -65,7 +66,7 @@ it("does not create and link a person while an invalid raw time is shown", () =>
   render(
     <PersonLinkEditor
       dealId="deal"
-      expectedUpdatedAt="2027-03-21T00:00:00Z"
+      expectedWriteVersion="00000000-0000-4000-8000-000000000001"
       personOptions={[]}
       hidden={new Set()}
       customFieldDefs={[{ ...timeField, targetEntity: "person" }]}

@@ -1,4 +1,5 @@
 "use client";
+
 import { EllipsisVertical } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type React from "react";
@@ -15,6 +16,7 @@ import { deleteDealAction } from "@/features/deal-workspace/actions";
 import { useDealActionError } from "@/features/deal-workspace/DealActionErrorProvider";
 import { duplicateDealAction } from "@/features/deal-workspace/duplicateDealAction";
 import { archiveDealAction } from "@/features/deals/archiveActions";
+import { dealClientResult } from "@/features/deals/dealClientResult";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { useDetailDrawerClose } from "@/features/navigation/detailDrawerClose";
 import { readCsrfToken } from "@/utils/csrfCookie";
@@ -28,8 +30,8 @@ interface DealActionsMenuProps {
   dealId: string;
   // The deal's pipeline: scopes the merge picker to same-pipeline candidates.
   pipelineId: string;
-  // CAS precondition for delete: the deal's updatedAt ISO string.
-  expectedUpdatedAt: string;
+  // Opaque version of the displayed deal snapshot.
+  expectedWriteVersion: string;
   // Whether the actor holds deal.delete (own/any) for this deal. Server-enforced in deleteDeal;
   // this only hides the item so a user without the capability is not offered an action that 403s.
   canDelete: boolean;
@@ -41,7 +43,7 @@ interface DealActionsMenuProps {
 export function DealActionsMenu({
   dealId,
   pipelineId,
-  expectedUpdatedAt,
+  expectedWriteVersion,
   canDelete,
 }: DealActionsMenuProps): React.ReactNode {
   const translateSales = useAppTranslations("sales");
@@ -51,6 +53,12 @@ export function DealActionsMenu({
   const closeDrawer = useDetailDrawerClose();
   const [pending, setPending] = useState(false);
   const [flow, setFlow] = useState<Flow>(null);
+  const [menuVersion, setMenuVersion] = useState(expectedWriteVersion);
+  const [flowVersion, setFlowVersion] = useState(expectedWriteVersion);
+  const openFlow = (next: Flow): void => {
+    setFlowVersion(menuVersion);
+    setFlow(next);
+  };
 
   async function copyLink(): Promise<void> {
     await navigator.clipboard.writeText(`${location.origin}/deals/${dealId}`);
@@ -58,7 +66,9 @@ export function DealActionsMenu({
 
   async function duplicate(): Promise<void> {
     setPending(true);
-    const r = await duplicateDealAction({ dealId }, readCsrfToken());
+    const r = await dealClientResult(() =>
+      duplicateDealAction({ dealId, expectedWriteVersion: menuVersion }, readCsrfToken()),
+    );
     setPending(false);
     if (r.ok) router.push(`/deals/${r.deal.id}`);
     else reportError(r.error.id);
@@ -66,7 +76,12 @@ export function DealActionsMenu({
 
   async function archive(): Promise<void> {
     setPending(true);
-    const r = await archiveDealAction({ dealId, archived: true }, readCsrfToken());
+    const r = await dealClientResult(() =>
+      archiveDealAction(
+        { dealId, archived: true, expectedWriteVersion: menuVersion },
+        readCsrfToken(),
+      ),
+    );
     setPending(false);
     if (r.ok) router.refresh();
     else reportError(r.error.id);
@@ -74,7 +89,9 @@ export function DealActionsMenu({
 
   async function remove(): Promise<void> {
     setPending(true);
-    const r = await deleteDealAction({ dealId, expectedUpdatedAt }, readCsrfToken());
+    const r = await dealClientResult(() =>
+      deleteDealAction({ dealId, expectedWriteVersion: flowVersion }, readCsrfToken()),
+    );
     setPending(false);
     if (!r.ok) {
       reportError(r.error.id);
@@ -87,7 +104,11 @@ export function DealActionsMenu({
   }
 
   return (
-    <DropdownMenu>
+    <DropdownMenu
+      onOpenChange={(open) => {
+        if (open) setMenuVersion(expectedWriteVersion);
+      }}
+    >
       <DropdownMenuTrigger
         aria-label={translateSales("deal_actions_d9823")}
         disabled={pending}
@@ -102,17 +123,17 @@ export function DealActionsMenu({
         <DropdownMenuItem onSelect={() => void duplicate()}>
           {translateSales("duplicate_02cda")}
         </DropdownMenuItem>
-        <DropdownMenuItem onSelect={() => setFlow("convert")}>
+        <DropdownMenuItem onSelect={() => openFlow("convert")}>
           {translateSales("convert_to_a_lead_5cff3")}
         </DropdownMenuItem>
-        <DropdownMenuItem onSelect={() => setFlow("merge")}>
+        <DropdownMenuItem onSelect={() => openFlow("merge")}>
           {translateSales("merge_8851a")}
         </DropdownMenuItem>
         <DropdownMenuItem onSelect={() => void archive()}>
           {translateSales("archive_66f48")}
         </DropdownMenuItem>
         {canDelete && (
-          <DropdownMenuItem onSelect={() => setFlow("delete")} className="text-destructive">
+          <DropdownMenuItem onSelect={() => openFlow("delete")} className="text-destructive">
             {translateSales("delete_deal_0e193")}
           </DropdownMenuItem>
         )}
@@ -123,7 +144,7 @@ export function DealActionsMenu({
       {flow === "convert" && (
         <ConvertToLeadDialog
           dealId={dealId}
-          expectedUpdatedAt={expectedUpdatedAt}
+          expectedWriteVersion={flowVersion}
           open
           onOpenChange={(o) => {
             if (!o) setFlow(null);
@@ -134,7 +155,7 @@ export function DealActionsMenu({
         <MergeDealDialog
           dealId={dealId}
           pipelineId={pipelineId}
-          expectedUpdatedAt={expectedUpdatedAt}
+          expectedWriteVersion={flowVersion}
           open
           onOpenChange={(o) => {
             if (!o) setFlow(null);

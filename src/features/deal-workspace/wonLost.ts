@@ -11,18 +11,28 @@ import { deals, lostReasons } from "@/db/schema";
 import type { Deal } from "@/db/schema/deals";
 import { recordChange } from "@/features/collaboration/changeLog";
 import { loadEditableDeal } from "@/features/deals/dealAuth";
+import {
+  dealVersionConflict,
+  missingDealVersion,
+  readFinalDeal,
+} from "@/features/deals/dealVersion";
+import { versionedDealInput } from "@/features/deals/schemas";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { publishBoardEvent } from "@/server/realtime/events";
 import { err, ok, type Result } from "@/types/result";
-import type { markLostInput } from "./dealCloseSchemas";
+import { markLostInput } from "./dealCloseSchemas";
 import { lostStatusValue } from "./lostStatusValue";
 
 export async function markWon(
   db: Db,
   actor: PermSetUser,
-  dealId: string,
+  raw: unknown,
   signal: AbortSignal,
 ): Promise<Result<Deal, AppError>> {
+  const versionError = missingDealVersion(raw);
+  if (versionError !== null) return err(versionError);
+  const input = versionedDealInput.parse(raw);
+  const dealId = input.dealId;
   return db.transaction(async (tx) => {
     const editable = await loadEditableDeal(tx, actor, dealId, signal);
     if (editable.ok === false) return editable;
@@ -38,14 +48,10 @@ export async function markWon(
         lostReason: null,
         lostReasonId: null,
       })
-      .where(eq(deals.id, dealId))
+      .where(and(eq(deals.id, dealId), eq(deals.writeVersion, input.expectedWriteVersion)))
       .returning();
 
-    if (row === undefined) {
-      throw new AppError(ERROR_IDS.DB_INVARIANT, "markWon: UPDATE RETURNING produced undefined", {
-        dealId,
-      });
-    }
+    if (row === undefined) return err(dealVersionConflict(dealId));
 
     await recordChange(
       tx,
@@ -71,7 +77,7 @@ export async function markWon(
       signal,
     );
 
-    return ok(row);
+    return ok(await readFinalDeal(tx, row.id, signal));
   });
 }
 
@@ -81,9 +87,13 @@ export async function markWon(
 export async function reopenDeal(
   db: Db,
   actor: PermSetUser,
-  dealId: string,
+  raw: unknown,
   signal: AbortSignal,
 ): Promise<Result<Deal, AppError>> {
+  const versionError = missingDealVersion(raw);
+  if (versionError !== null) return err(versionError);
+  const input = versionedDealInput.parse(raw);
+  const dealId = input.dealId;
   return db.transaction(async (tx) => {
     const editable = await loadEditableDeal(tx, actor, dealId, signal);
     if (editable.ok === false) return editable;
@@ -93,18 +103,10 @@ export async function reopenDeal(
     const [row] = await tx
       .update(deals)
       .set({ status: "open", wonTime: null, lostTime: null, lostReason: null, lostReasonId: null })
-      .where(eq(deals.id, dealId))
+      .where(and(eq(deals.id, dealId), eq(deals.writeVersion, input.expectedWriteVersion)))
       .returning();
 
-    if (row === undefined) {
-      throw new AppError(
-        ERROR_IDS.DB_INVARIANT,
-        "reopenDeal: UPDATE RETURNING produced undefined",
-        {
-          dealId,
-        },
-      );
-    }
+    if (row === undefined) return err(dealVersionConflict(dealId));
 
     await recordChange(
       tx,
@@ -144,7 +146,7 @@ export async function reopenDeal(
       signal,
     );
 
-    return ok(row);
+    return ok(await readFinalDeal(tx, row.id, signal));
   });
 }
 
@@ -154,9 +156,12 @@ export async function markLost(
   db: Db,
   actor: PermSetUser,
   dealId: string,
-  input: MarkLostReasonInput,
+  raw: MarkLostReasonInput,
   signal: AbortSignal,
 ): Promise<Result<Deal, AppError>> {
+  const versionError = missingDealVersion(raw);
+  if (versionError !== null) return err(versionError);
+  const input = markLostInput.parse({ dealId, ...raw });
   return db.transaction(async (tx) => {
     const editable = await loadEditableDeal(tx, actor, dealId, signal);
     if (editable.ok === false) return editable;
@@ -193,14 +198,10 @@ export async function markLost(
         lostReasonId: input.lostReasonId,
         lostReason: input.lostReason,
       })
-      .where(eq(deals.id, dealId))
+      .where(and(eq(deals.id, dealId), eq(deals.writeVersion, input.expectedWriteVersion)))
       .returning();
 
-    if (row === undefined) {
-      throw new AppError(ERROR_IDS.DB_INVARIANT, "markLost: UPDATE RETURNING produced undefined", {
-        dealId,
-      });
-    }
+    if (row === undefined) return err(dealVersionConflict(dealId));
 
     await recordChange(
       tx,
@@ -228,6 +229,6 @@ export async function markLost(
       signal,
     );
 
-    return ok(row);
+    return ok(await readFinalDeal(tx, row.id, signal));
   });
 }

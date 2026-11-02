@@ -2,7 +2,7 @@
 // No I/O, no sockets. Tested in isolation; useBoardRealtime wires it into the cache.
 import { BOARD_EVENT } from "@/constants/boardChannels";
 import type { BoardEvent } from "@/server/realtime/events";
-import { applyMove, type BoardData } from "./boardCache";
+import type { BoardData } from "./boardCache";
 
 export type RealtimeAction =
   | { kind: "event"; event: BoardEvent; seq: number; selfActorId: string }
@@ -22,7 +22,7 @@ export interface RealtimeResult {
 // Gap detection per ops A4: a seq jump or resync forces a full invalidate so the
 // client re-fetches current server state. An echo of the client's own optimistic
 // action is suppressed (no double-apply) but still advances lastSeq. Everything
-// else patches the cache in place and advances lastSeq.
+// else invalidates the cache for a complete server snapshot and advances lastSeq.
 export function reduceRealtime(state: RealtimeState, action: RealtimeAction): RealtimeResult {
   if (action.kind === "resync") {
     return { lastSeq: state.lastSeq, effect: "invalidate" };
@@ -54,21 +54,7 @@ export function reduceRealtime(state: RealtimeState, action: RealtimeAction): Re
     return { lastSeq: seq, effect: "ignore" };
   }
 
-  // seq === lastSeq + 1 and not self: apply the event.
-  if (
-    event.type === BOARD_EVENT.dealMoved &&
-    event.data.toStageId !== undefined &&
-    event.data.boardPosition !== undefined
-  ) {
-    const patched = applyMove(state.data, {
-      dealId: event.data.dealId,
-      toStageId: event.data.toStageId,
-      boardPosition: event.data.boardPosition,
-    });
-    return { lastSeq: seq, effect: "patch", data: patched };
-  }
-
-  // deal_created / deal_updated: payload carries IDs only (no full card), so a
-  // full refetch is the correct and safe choice.
+  // Remote events carry partial card data, including deal_moved. Refetch the full
+  // snapshot so visible fields and the next write precondition come from one read.
   return { lastSeq: seq, effect: "invalidate" };
 }

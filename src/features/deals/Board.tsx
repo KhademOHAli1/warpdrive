@@ -11,6 +11,11 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { ERROR_IDS } from "@/constants/errorIds";
+import {
+  DealActionErrorProvider,
+  useDealActionError,
+} from "@/features/deal-workspace/DealActionErrorProvider";
 import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import { useLabelColorResolver } from "@/features/labels/useLabelColorResolver";
 import { capture, currentRoute } from "@/features/observability/capture";
@@ -27,6 +32,7 @@ import type { BoardProps } from "./boardTypes";
 import { isBoardFiltered } from "./boardView";
 import { DealCard } from "./DealCard";
 import { DragDropZones, zoneTransition } from "./DragDropZones";
+import type { BoardCard } from "./dealRepo";
 import { resolveNeighbors } from "./dragNeighbors";
 import { MoveDealDialog } from "./MoveDealDialog";
 import { NewDealButton } from "./NewDealButton";
@@ -40,10 +46,19 @@ import { useDealMove } from "./useDealMove";
 export type { BoardProps } from "./boardTypes";
 
 export function Board(props: BoardProps): React.ReactNode {
+  return (
+    <DealActionErrorProvider>
+      <BoardContent {...props} />
+    </DealActionErrorProvider>
+  );
+}
+
+function BoardContent(props: BoardProps): React.ReactNode {
   const { locale } = useLocalePreferences();
   const { pipelineId, selfActorId, stages, cards, pipelines, density, baseCurrency } = props;
   const { serverNow } = props;
   const { move } = useDealMove(pipelineId);
+  const reportError = useDealActionError();
   const { close } = useDealClose(pipelineId);
   useBoardRealtime(pipelineId, selfActorId);
   const resolveLabels = useLabelColorResolver("deal");
@@ -59,8 +74,8 @@ export function Board(props: BoardProps): React.ReactNode {
   const [previewDefinition, setPreviewDefinition] = useState<FilterDefinition | null>(null);
   // Reveals the bottom action bar (Delete/Lost/Won/Move) only while a deal is being dragged.
   const [dragActive, setDragActive] = useState(false);
-  // Id of the card currently under the pointer, rendered lifted in the DragOverlay.
-  const [activeId, setActiveId] = useState<string | null>(null);
+  // The drag-start card rendered lifted in the DragOverlay, retained across remote refreshes.
+  const [activeCard, setActiveCard] = useState<BoardCard | undefined>(undefined);
   // Deal id awaiting a Move stage pick (set when a card is dropped on the Move zone).
   const [moveDealId, setMoveDealId] = useState<string | null>(null);
 
@@ -96,10 +111,9 @@ export function Board(props: BoardProps): React.ReactNode {
 
   const cardTitleById = useMemo(() => new Map(liveCards.map((c) => [c.id, c.title])), [liveCards]);
   const stageNameById = useMemo(() => new Map(stages.map((s) => [s.id, s.name])), [stages]);
-  const cardUpdatedAt = useMemo(
-    () => Object.fromEntries(liveCards.map((c) => [c.id, c.updatedAt.toISOString()])),
-    [liveCards],
-  );
+  // Event-only mirror keeps a drop bound to drag start even before React renders the overlay.
+  const dragSnapshot = useRef<BoardCard | null>(null);
+  const [moveVersion, setMoveVersion] = useState<string | undefined>(undefined);
   // One add-deal control, shared by the toolbar and the empty-pipeline state.
   const addDeal = (
     <NewDealButton pipelineId={pipelineId} pipelines={pipelines} baseCurrency={baseCurrency} />
@@ -125,29 +139,34 @@ export function Board(props: BoardProps): React.ReactNode {
 
   function onDragStart(e: DragStartEvent): void {
     const dealId = String(e.active.id);
-    const stageFrom = liveCards.find((card) => card.id === dealId)?.stageId ?? "";
+    const snapshot = liveCards.find((card) => card.id === dealId);
+    dragSnapshot.current = snapshot ?? null;
+    setActiveCard(snapshot);
+    const stageFrom = snapshot?.stageId ?? "";
     capture(EVENTS.boardDragStarted, { route: currentRoute(), stageFrom });
     setDragActive(true);
-    setActiveId(dealId);
   }
 
-  const activeCard = activeId !== null ? liveCards.find((c) => c.id === activeId) : undefined;
-
   // Move a deal to the end of a stage column via the CAS move mutation.
-  function moveToStage(dealId: string, toStageId: string): void {
+  function moveToStage(dealId: string, toStageId: string, version: string | undefined): void {
     const destCards = liveCards.filter((c) => c.stageId === toStageId && c.id !== dealId);
     const { beforePosition, afterPosition } = resolveNeighbors(destCards, destCards.length);
-    const expectedUpdatedAt = cardUpdatedAt[dealId];
-    if (expectedUpdatedAt === undefined) return;
-    move({ dealId, toStageId, beforePosition, afterPosition, expectedUpdatedAt });
+    const expectedWriteVersion = version;
+    if (expectedWriteVersion === undefined) {
+      reportError(ERROR_IDS.DEAL_PRECONDITION);
+      return;
+    }
+    move({ dealId, toStageId, beforePosition, afterPosition, expectedWriteVersion });
   }
 
   function onDragEnd(e: DragEndEvent): void {
     setDragActive(false);
-    setActiveId(null);
+    setActiveCard(undefined);
+    const snapshot = dragSnapshot.current;
+    dragSnapshot.current = null;
     const dealId = String(e.active.id);
     const toStageId = e.over !== null ? String(e.over.id) : null;
-    const stageFrom = liveCards.find((card) => card.id === dealId)?.stageId ?? "";
+    const stageFrom = snapshot?.stageId ?? "";
     const stageTo = toStageId ?? "";
     capture(EVENTS.boardDragEnded, { route: currentRoute(), stageFrom, stageTo });
     if (toStageId === null) return;
@@ -155,21 +174,19 @@ export function Board(props: BoardProps): React.ReactNode {
     // stage picker; Delete is not a drag target (deletion is a confirmed menu action).
     if (toStageId.startsWith("deal-zone-")) {
       if (toStageId === "deal-zone-move") {
+        setMoveVersion(snapshot?.writeVersion);
         setMoveDealId(dealId);
         return;
       }
-      const status = zoneTransition(
-        toStageId,
-        liveCards.find((card) => card.id === dealId)?.status,
-      );
-      const zoneUpdatedAt = cardUpdatedAt[dealId];
-      if (status !== null && zoneUpdatedAt !== undefined) {
-        close({ dealId, status, expectedUpdatedAt: zoneUpdatedAt });
+      const status = zoneTransition(toStageId, snapshot?.status);
+      const zoneWriteVersion = snapshot?.writeVersion;
+      if (status !== null && zoneWriteVersion !== undefined) {
+        close({ dealId, status, expectedWriteVersion: zoneWriteVersion });
       }
       return;
     }
 
-    moveToStage(dealId, toStageId);
+    moveToStage(dealId, toStageId, snapshot?.writeVersion);
   }
 
   return (
@@ -223,7 +240,8 @@ export function Board(props: BoardProps): React.ReactNode {
           onDragCancel={() => {
             capture(EVENTS.boardDragCancelled, { route: currentRoute() });
             setDragActive(false);
-            setActiveId(null);
+            setActiveCard(undefined);
+            dragSnapshot.current = null;
           }}
           onDragEnd={onDragEnd}
           accessibility={{
@@ -276,7 +294,7 @@ export function Board(props: BoardProps): React.ReactNode {
         <MoveDealDialog
           stages={stages.map((s) => ({ id: s.id, name: s.name }))}
           onPick={(stageId) => {
-            moveToStage(moveDealId, stageId);
+            moveToStage(moveDealId, stageId, moveVersion);
             setMoveDealId(null);
           }}
           onClose={() => setMoveDealId(null)}
