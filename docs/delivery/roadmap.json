@@ -79712,6 +79712,32 @@
       ]
     },
     {
+      "id": "ops/security-regressions-2026-11-02",
+      "title": "Harden selected security boundaries and add adversarial regressions",
+      "module": "operations",
+      "kind": "maintenance",
+      "parent": "ops/maintenance-intake",
+      "source_tasks": [],
+      "acceptance": [
+        "The bounded security hardening in PR #913 is merged with adversarial regression coverage.",
+        "Unit, integration, typecheck, lint, CodeQL, and relevant configuration checks pass at the reviewed source revision.",
+        "The merged main commit has a canonical delivery link and the post-merge open alert state is reviewed."
+      ],
+      "dependencies": [],
+      "evidence": [],
+      "owner": "KhademOHAli1",
+      "owner_role": "security maintenance",
+      "observed_status": "in-progress",
+      "observed_stage": "source merged; post-merge validation",
+      "priority": "P1",
+      "release": "next",
+      "milestone": "Next usable release: Core CRM journeys",
+      "notes": "This bounded source-hardening batch covers selected access, storage, ingress and resource boundaries in merged PR #913. The manual security review had partial source coverage; detailed findings remain in the private review report. Source merge and CI do not establish deployment or installation qualification.",
+      "remaining_gates": [
+        "Record post-merge main CI and open-alert results; check exact MinIO server behavior and deployment separately before claiming those outcomes."
+      ]
+    },
+    {
       "id": "delivery/mcp-issuer-response-20261102",
       "title": "Identify the literal MCP OAuth issuer in validated authorization responses",
       "module": "integrations",
