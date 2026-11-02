@@ -41,14 +41,9 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-warpdrive}
-      # Overridable, with the historical value as the fallback so existing boxes keep booting.
-      # Postgres only applies this at initdb, so setting it against an EXISTING pgdata volume
-      # does NOT rotate the password; it just makes DATABASE_URL wrong. Choose it on a fresh
-      # deploy, and keep it identical to the password inside DATABASE_URL.
-      # Not reachable from outside the box today (this service publishes no host port and Caddy
-      # is the only public listener), so the weak default is a defense-in-depth gap rather than a
-      # live hole. It becomes a live hole the moment anyone adds a `ports:` mapping here.
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-warpdrive}
+      # Required for new deployments. Existing pgdata volumes keep their current database
+      # password until the operator rotates it in Postgres; see docs/deploy.md.
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
       POSTGRES_DB: ${POSTGRES_DB:-warpdrive}
     volumes: [pgdata:/var/lib/postgresql/data]
     healthcheck:
@@ -104,6 +99,10 @@ services:
     restart: unless-stopped
     command: ["bun", "--bun", "next", "start"]
     env_file: .env
+    environment:
+      # Caddy overwrites X-Real-IP with the actual peer. Never trust this header when
+      # exposing the app port directly; the dev override resets the setting to none.
+      AUTH_TRUSTED_PROXY_HEADER: x-real-ip
     healthcheck:
       test:
         [

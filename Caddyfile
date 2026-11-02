@@ -32,7 +32,11 @@
 	reverse_proxy @ws ws:8080
 
 	# Everything else is the Next.js app.
-	reverse_proxy app:3000
+	# Replace any client-supplied X-Real-IP with the actual TCP peer. The app's native-auth
+	# limiter trusts this header only in the production Compose deployment.
+	reverse_proxy app:3000 {
+		header_up X-Real-IP {remote_host}
+	}
 }
 
 # Object storage on its own subdomain. The browser POSTs presigned uploads (CSV import, avatars,

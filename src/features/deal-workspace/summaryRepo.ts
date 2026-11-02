@@ -159,14 +159,41 @@ export async function getWorkspace(
   const isFollowedBySelf = followers.some((f) => f.id === actor.id);
   signal.throwIfAborted();
 
+  const visiblePerson =
+    person !== undefined &&
+    canSee(actor, {
+      kind: "person",
+      ownerId: person.ownerId,
+      visibilityLevel: person.visibilityLevel,
+      visibilityGroupId: person.visibilityGroupId,
+      visibleToUserIds: person.visibleToUserIds,
+    })
+      ? person
+      : null;
+  const visibleOrg =
+    org !== undefined &&
+    canSee(actor, {
+      kind: "organization",
+      ownerId: org.ownerId,
+      visibilityLevel: org.visibilityLevel,
+      visibilityGroupId: org.visibilityGroupId,
+      visibleToUserIds: org.visibleToUserIds,
+    })
+      ? org
+      : null;
+
   return ok({
-    deal,
+    deal: {
+      ...deal,
+      personId: visiblePerson?.id ?? null,
+      orgId: visibleOrg?.id ?? null,
+    },
     pipelineName: pipe.name,
     pipelineVisibilityGroupId: pipe.vg,
     ownerName: owner?.name ?? null,
     owner: owner ?? null,
-    person: person ?? null,
-    org: org ?? null,
+    person: visiblePerson,
+    org: visibleOrg,
     stageProgress: buildStageProgress(deal, stageRows),
     followers,
     isFollowedBySelf,

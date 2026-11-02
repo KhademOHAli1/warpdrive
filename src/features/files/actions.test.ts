@@ -6,6 +6,7 @@ import { withTestDb } from "@/db/testing";
 import { seedUser } from "@/db/testing/factories";
 import { confirmUpload, requestDownload, requestUpload } from "./actions";
 import { actorFor, seedOwnerDeal, signal } from "./actions.test-helpers";
+import { confirmedObjectKey } from "./keys";
 import { FakeStorageClient } from "./storageFake";
 
 describe("file actions", () => {
@@ -86,6 +87,113 @@ describe("file actions", () => {
 
       const [after] = await db.select().from(files).where(eq(files.id, up.value.fileId));
       expect(after?.status).toBe("ready");
+    });
+  });
+
+  it("refuses to confirm when the upload object changes between HEAD and copy", async () => {
+    await withTestDb(async (db) => {
+      const owner = await seedUser(db);
+      const dealId = await seedOwnerDeal(db, owner.id);
+      const storage = new FakeStorageClient();
+      const up = await requestUpload(
+        db,
+        {
+          actor: actorFor(owner.id),
+          storage,
+          input: {
+            entityType: "deal",
+            entityId: dealId,
+            filename: "a.pdf",
+            contentType: "application/pdf",
+            size: 100,
+          },
+        },
+        signal,
+      );
+      expect(up.ok).toBe(true);
+      if (!up.ok) return;
+      const [row] = await db.select().from(files).where(eq(files.id, up.value.fileId));
+      if (row === undefined) throw new Error("file row missing");
+      storage.objectsByKey.set(row.s3Key, {
+        size: 100,
+        contentType: "application/pdf",
+        etag: "original",
+      });
+
+      const copyObject = storage.copyObject.bind(storage);
+      storage.copyObject = (source, destination, copySignal, expectedSourceEtag) => {
+        storage.objectsByKey.set(source, {
+          size: 101,
+          contentType: "application/pdf",
+          etag: "replacement",
+        });
+        return copyObject(source, destination, copySignal, expectedSourceEtag);
+      };
+
+      const result = await confirmUpload(
+        db,
+        { actor: actorFor(owner.id), storage, fileId: up.value.fileId },
+        signal,
+      );
+      expect(result.ok).toBe(false);
+      if (!result.ok) expect(result.error.id).toBe(ERROR_IDS.FILE_METADATA_MISMATCH);
+      expect(
+        storage.calls.find((call) => call.method === "copyObject")?.args.expectedSourceEtag,
+      ).toBe("original");
+      const [after] = await db.select().from(files).where(eq(files.id, up.value.fileId));
+      expect(after?.status).toBe("uploading");
+      expect(storage.objectsByKey.has(confirmedObjectKey(row.s3Key))).toBe(false);
+    });
+  });
+
+  it("rejects a copied object whose metadata no longer matches the file row", async () => {
+    await withTestDb(async (db) => {
+      const owner = await seedUser(db);
+      const dealId = await seedOwnerDeal(db, owner.id);
+      const storage = new FakeStorageClient();
+      const up = await requestUpload(
+        db,
+        {
+          actor: actorFor(owner.id),
+          storage,
+          input: {
+            entityType: "deal",
+            entityId: dealId,
+            filename: "a.pdf",
+            contentType: "application/pdf",
+            size: 100,
+          },
+        },
+        signal,
+      );
+      expect(up.ok).toBe(true);
+      if (!up.ok) return;
+      const [row] = await db.select().from(files).where(eq(files.id, up.value.fileId));
+      if (row === undefined) throw new Error("file row missing");
+      storage.objectsByKey.set(row.s3Key, { size: 100, contentType: "application/pdf" });
+      const copyObject = storage.copyObject.bind(storage);
+      storage.copyObject = async (source, destination, copySignal, expectedSourceEtag) => {
+        const copied = await copyObject(source, destination, copySignal, expectedSourceEtag);
+        if (copied.ok) {
+          storage.objectsByKey.set(destination, {
+            size: 101,
+            contentType: "application/pdf",
+            etag: "bad-copy",
+          });
+        }
+        return copied;
+      };
+
+      const result = await confirmUpload(
+        db,
+        { actor: actorFor(owner.id), storage, fileId: up.value.fileId },
+        signal,
+      );
+      expect(result.ok).toBe(false);
+      if (!result.ok) expect(result.error.id).toBe(ERROR_IDS.FILE_METADATA_MISMATCH);
+      const [after] = await db.select().from(files).where(eq(files.id, up.value.fileId));
+      expect(after?.status).toBe("uploading");
+      expect(storage.deletedKeys).toContain(confirmedObjectKey(row.s3Key));
     });
   });
 

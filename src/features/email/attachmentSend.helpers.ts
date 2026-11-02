@@ -41,6 +41,11 @@ export async function seedReadyFile(
   });
 
   opts.storage.objectBytes.set(s3Key, opts.content);
+  opts.storage.setMetadata(s3Key, {
+    size: opts.content.length,
+    etag: `fixture-${fileId}`,
+    contentType: opts.contentType,
+  });
   return { fileId, s3Key };
 }
 

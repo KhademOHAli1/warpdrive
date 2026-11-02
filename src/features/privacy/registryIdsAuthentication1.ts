@@ -81,7 +81,7 @@ export const authenticationIds1: string[] = [
   "sourceReview:src/features/auth/session.ts#41e27b3e72269a0eb473a6092d9b283ce2d06ab556194d461dec21d4a934ec84",
   "sourceReview:src/features/auth/ui/workflowRequest.ts#43b3a0a158c4a268077341db072151f718490716c27338e998e8de768a3db9f4",
   "sourceReview:src/features/identity/audit.ts#a5323d76d2b9cb5c32f87e90fe849675c8739b7a4e936ab954cd0bbdd0bb1e24",
-  "sourceReview:src/features/identity/avatar/avatarService.ts#90dee86651b460ff005725c7cfdbf7b2d77dbf1e57ecf029beead15ffce11c67",
+  "sourceReview:src/features/identity/avatar/avatarService.ts#829ce18d0365be40cf80f01f211e7fa13147854c9e4155dec01cbdba3a881af5",
   "sourceReview:src/features/identity/avatar/avatarStorage.ts#dc6253fdadd976bc559464f10eed006dd7de7f24a9b067a3ca91594f7c592cd7",
   "sourceReview:src/features/identity/avatar/AvatarUpload.tsx#913dc3c4b437a838df8bccf2b2c78dff9d3142d9ad56506e5cc9250b86b29a5c",
   "sourceReview:src/features/identity/guards.ts#fcbdac62eda4db3305a9986aee0093248ae5808c3079f7c924eb0e0888d0a034",

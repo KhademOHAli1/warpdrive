@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import { err, ok, type Result } from "@/types/result";
 import type { ObjectMetadata, PresignedPost, StorageClient } from "./storage";
@@ -9,6 +10,7 @@ export interface RecordedCall {
     | "presignGet"
     | "deleteObject"
     | "copyObject"
+    | "putObjectBytes"
     | "getObjectBytes";
   args: Record<string, unknown>;
 }
@@ -104,13 +106,19 @@ export class FakeStorageClient implements StorageClient {
     sourceKey: string,
     destKey: string,
     signal: AbortSignal,
+    expectedSourceEtag?: string,
   ): Promise<Result<void, AppError>> {
     signal.throwIfAborted();
-    this.calls.push({ method: "copyObject", args: { sourceKey, destKey } });
+    this.calls.push({ method: "copyObject", args: { sourceKey, destKey, expectedSourceEtag } });
     const obj = this.objectsByKey.get(sourceKey);
     if (obj === undefined) {
       return Promise.resolve(
         err(new AppError(ERROR_IDS.FILE_METADATA_MISMATCH, "copy source missing", { sourceKey })),
+      );
+    }
+    if (expectedSourceEtag !== undefined && (obj.etag ?? "fake-etag") !== expectedSourceEtag) {
+      return Promise.resolve(
+        err(new AppError(ERROR_IDS.FILE_METADATA_MISMATCH, "copy source changed", { sourceKey })),
       );
     }
     // A server-side copy yields an independent object at destKey. It gets its own
@@ -120,6 +128,23 @@ export class FakeStorageClient implements StorageClient {
     // (e.g. confirm's image-magic validation) sees the same content.
     const bytes = this.objectBytes.get(sourceKey);
     if (bytes !== undefined) this.objectBytes.set(destKey, bytes);
+    return Promise.resolve(ok(undefined));
+  }
+
+  putObjectBytes(
+    key: string,
+    bytes: Buffer,
+    contentType: string,
+    signal: AbortSignal,
+  ): Promise<Result<void, AppError>> {
+    signal.throwIfAborted();
+    this.calls.push({ method: "putObjectBytes", args: { key, size: bytes.length, contentType } });
+    this.objectsByKey.set(key, {
+      size: bytes.length,
+      contentType,
+      etag: `server-${createHash("sha256").update(bytes).digest("hex")}`,
+    });
+    this.objectBytes.set(key, Buffer.from(bytes));
     return Promise.resolve(ok(undefined));
   }
 
@@ -133,6 +158,7 @@ export class FakeStorageClient implements StorageClient {
     }
     this.metadata.delete(key);
     this.objectsByKey.delete(key);
+    this.objectBytes.delete(key);
     this.deletedKeys.push(key);
     return Promise.resolve(ok(undefined));
   }

@@ -28,6 +28,10 @@ describe("Caddyfile app vhost", () => {
     // for legitimate traffic and this only stops the absurd case.
     expect(app).toMatch(/max_size\s+80MB/);
   });
+
+  test("overwrites client-supplied authentication IP with the socket peer", () => {
+    expect(app).toMatch(/reverse_proxy app:3000\s*\{\s*header_up X-Real-IP \{remote_host\}\s*\}/);
+  });
 });
 
 describe("Caddyfile storage vhost", () => {

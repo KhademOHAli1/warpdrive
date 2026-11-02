@@ -2,8 +2,9 @@
 // All queries JOIN pipelines (alias p) so dealVisibilityClause can reference
 // p.visibility_group_id; none leak hidden deals into counts or totals.
 
-import { sql } from "drizzle-orm";
+import { type SQL, sql } from "drizzle-orm";
 import type { DealStatus } from "@/constants/dealStatus";
+import { contactVisibilityClause } from "@/features/contacts/visibilitySql";
 import { type FilterCompileOptions, filterToSql } from "@/features/saved-filters/filterAst";
 import { hasStatusCondition } from "@/features/saved-filters/filterFields";
 import type { FilterDefinition } from "@/features/saved-filters/schemas";
@@ -11,6 +12,23 @@ import { canonicalMoney } from "@/lib/canonicalMoney";
 import type { DbOrTx } from "@/server/realtime/channelVersions";
 import type { DealVisibilitySession } from "@/types/session";
 import { dealVisibilityClause } from "./visibility";
+
+function linkedContactVisibility(session: DealVisibilitySession): { person: SQL; org: SQL } {
+  return {
+    person: contactVisibilityClause(session, {
+      ownerId: sql`pe.owner_id`,
+      visibilityLevel: sql`pe.visibility_level`,
+      visibilityGroupId: sql`pe.visibility_group_id`,
+      visibleToUserIds: sql`pe.visible_to_user_ids`,
+    }),
+    org: contactVisibilityClause(session, {
+      ownerId: sql`o.owner_id`,
+      visibilityLevel: sql`o.visibility_level`,
+      visibilityGroupId: sql`o.visibility_group_id`,
+      visibleToUserIds: sql`o.visible_to_user_ids`,
+    }),
+  };
+}
 
 // Raw pg returns timestamptz columns as strings; the SELECT aliases below map to
 // this shape before coercion. Card type promises Date, so normalize once here.
@@ -94,6 +112,7 @@ export async function getBoardColumns(
 ): Promise<{ cards: BoardCard[] }> {
   signal.throwIfAborted();
   const visClause = dealVisibilityClause(session);
+  const contacts = linkedContactVisibility(session);
   const filterClause =
     filter !== undefined
       ? filterToSql(
@@ -115,8 +134,8 @@ export async function getBoardColumns(
       d.stage_id        AS "stageId",
       d.board_position  AS "boardPosition",
       d.owner_id        AS "ownerId",
-      d.person_id       AS "personId",
-      d.org_id          AS "orgId",
+      pe.id             AS "personId",
+      o.id              AS "orgId",
       u.name            AS "ownerName",
       u.avatar_url      AS "ownerAvatarUrl",
       pe.name           AS "personName",
@@ -131,8 +150,8 @@ export async function getBoardColumns(
     JOIN pipelines p ON p.id = d.pipeline_id
     LEFT JOIN stages s ON s.id = d.stage_id
     LEFT JOIN users u ON u.id = d.owner_id
-    LEFT JOIN persons pe ON pe.id = d.person_id
-    LEFT JOIN organizations o ON o.id = d.org_id
+    LEFT JOIN persons pe ON pe.id = d.person_id AND pe.deleted_at IS NULL AND ${contacts.person}
+    LEFT JOIN organizations o ON o.id = d.org_id AND o.deleted_at IS NULL AND ${contacts.org}
     -- Soonest OPEN, DATED activity's subject: the same predicate recomputeNextActivity uses, so the
     -- title always pairs with next_activity_at. LATERAL keeps it one row per deal (no fan-out).
     LEFT JOIN LATERAL (
@@ -225,6 +244,7 @@ export async function listDeals(
   const statusGate =
     opts.archived === true || hasStatusCondition(opts.filter) ? sql`` : sql`AND d.status = 'open'`;
   const visClause = dealVisibilityClause(session);
+  const contacts = linkedContactVisibility(session);
   const filterClause =
     opts.filter !== undefined
       ? filterToSql(opts.filter, opts.dateContext ?? { timeZone: opts.timeZone })
@@ -234,8 +254,8 @@ export async function listDeals(
     JOIN pipelines p ON p.id = d.pipeline_id
     LEFT JOIN stages s ON s.id = d.stage_id
     LEFT JOIN users u ON u.id = d.owner_id
-    LEFT JOIN persons pe ON pe.id = d.person_id
-    LEFT JOIN organizations o ON o.id = d.org_id
+    LEFT JOIN persons pe ON pe.id = d.person_id AND pe.deleted_at IS NULL AND ${contacts.person}
+    LEFT JOIN organizations o ON o.id = d.org_id AND o.deleted_at IS NULL AND ${contacts.org}
     WHERE d.deleted_at IS NULL
       ${statusGate}
       AND ${archiveGate}
@@ -261,8 +281,8 @@ export async function listDeals(
         d.stage_id        AS "stageId",
         d.board_position  AS "boardPosition",
         d.owner_id        AS "ownerId",
-        d.person_id       AS "personId",
-        d.org_id          AS "orgId",
+        pe.id             AS "personId",
+        o.id              AS "orgId",
         u.name            AS "ownerName",
         u.avatar_url      AS "ownerAvatarUrl",
         pe.name           AS "personName",

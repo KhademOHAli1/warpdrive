@@ -19,7 +19,7 @@ function session(userId: string, extra: Partial<LeadSession> = {}): LeadSession 
     visibilityGroupIds: [],
     managedUserIds: [] as string[],
     primaryVisibilityGroupId: null,
-    flags: { "deal.create": true },
+    flags: { "deal.create": true, "deal.edit_own": true },
     ...extra,
   };
 }
@@ -186,7 +186,7 @@ describe("updateLead: field updates", () => {
 
       const r = await updateLead(
         db,
-        await hydratedSession(db, { "deal.changeOwner_any": true }),
+        await hydratedSession(db, { "deal.changeOwner_any": true, "deal.edit_any": true }),
         { leadId: lead.id, expectedUpdatedAt: lead.updatedAt.toISOString(), ownerId: b.id },
         sig(),
       );
@@ -205,7 +205,7 @@ describe("updateLead: field updates", () => {
 
       const r = await updateLead(
         db,
-        session(a.id), // only deal.create, not deal.changeOwner
+        session(a.id), // can edit own lead, but cannot change its owner
         { leadId: lead.id, expectedUpdatedAt: lead.updatedAt.toISOString(), ownerId: b.id },
         sig(),
       );
@@ -301,27 +301,30 @@ describe("updateLead: scoped changeOwner flags", () => {
   }
 
   it("lets deal.changeOwner_any reassign a lead owned by someone else", async () => {
-    expect(await attempt({ "deal.changeOwner_any": true }, false)).toEqual({
+    expect(await attempt({ "deal.changeOwner_any": true, "deal.edit_any": true }, false)).toEqual({
       ok: true,
       reassigned: true,
     });
   });
 
   it("lets deal.changeOwner_own reassign a lead the actor owns", async () => {
-    expect(await attempt({ "deal.changeOwner_own": true }, true)).toEqual({
+    expect(await attempt({ "deal.changeOwner_own": true, "deal.edit_own": true }, true)).toEqual({
       ok: true,
       reassigned: true,
     });
   });
 
   it("refuses deal.changeOwner_own on a lead owned by someone else", async () => {
-    expect(await attempt({ "deal.changeOwner_own": true }, false)).toEqual({
+    expect(await attempt({ "deal.changeOwner_own": true, "deal.edit_any": true }, false)).toEqual({
       ok: false,
       reassigned: false,
     });
   });
 
   it("refuses a set with neither changeOwner flag", async () => {
-    expect(await attempt({ "deal.create": true }, true)).toEqual({ ok: false, reassigned: false });
+    expect(await attempt({ "deal.create": true, "deal.edit_own": true }, true)).toEqual({
+      ok: false,
+      reassigned: false,
+    });
   });
 });
