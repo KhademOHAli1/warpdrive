@@ -79916,6 +79916,58 @@
       "remaining_gates": [
         "Review post-merge main CI and record any remaining target-specific validation."
       ]
+    },
+    {
+      "id": "ops/build-memory-2026-11-02",
+      "title": "Complete the production build within the 8 GiB memory budget",
+      "module": "operations",
+      "kind": "maintenance",
+      "parent": "ops/maintenance-intake",
+      "source_tasks": [],
+      "acceptance": [
+        "Preserve bun@1.4.4, package.json/bun.lock, configuration and security checks, and normal production TypeScript checking. Do not use ignoreBuildErrors or skip required checks to obtain a successful build.",
+        "Complete the actual local webpack production build within a declared, enforced 8 GiB aggregate owned-process RSS budget. Retain exact revision/input hashes, measurement cadence and limits, successful exit/output, and complete owned-resource cleanup evidence.",
+        "Existing configuration regressions and required CI pass for the exact integrated main revision. Retain both failed attempts and successful candidate qualification separately; no application runtime, provider/installation, release, or deployment acceptance is inferred."
+      ],
+      "dependencies": [],
+      "evidence": [
+        {
+          "path": "outputs/goal-core-journeys-20261102/workflow-follow-up/production-13f7a20464/build.public.json",
+          "level": "retained operator-workspace failed local build; not a published repository artifact",
+          "revision": "13f7a20464118ab45a0a3bfbabebd0e99f19eeea",
+          "max_sampled_rss_bytes": 8612446208,
+          "elapsed_seconds": 60.054559333017096,
+          "owned_group_gone": true,
+          "inputs_unchanged": true
+        },
+        {
+          "path": "outputs/goal-core-journeys-20261102/workflow-follow-up/production-13f7a20464/build-smol.public.json",
+          "level": "retained operator-workspace failed Bun --smol build with normal checks; not a published repository artifact",
+          "revision": "13f7a20464118ab45a0a3bfbabebd0e99f19eeea",
+          "max_sampled_rss_bytes": 8814018560,
+          "elapsed_seconds": 34.32468920806423,
+          "owned_group_gone": true,
+          "inputs_unchanged": true
+        },
+        {
+          "url": "https://nextjs.org/docs/app/guides/memory-usage#webpack-build-worker",
+          "level": "official guidance; installed Next.js 16.4.3 memory-usage.md also reviewed; not qualification"
+        }
+      ],
+      "owner": "KhademOHAli1",
+      "owner_role": "operations/build reliability",
+      "module_owner_chat": "01a19251-a472-7cd1-86cd-8dc245dd5b84",
+      "observed_status": "in-progress",
+      "observed_stage": "two failed local builds; worker-separation fix requires qualification",
+      "priority": "P1",
+      "labels": [
+        "maintenance",
+        "type:maintenance"
+      ],
+      "notes": "Intake #916 records the reproduced production-build memory failure at immutable main 13f7a20464118ab45a0a3bfbabebd0e99f19eeea. Both attempts completed webpack compilation then exceeded 8 GiB during normal TypeScript checking; neither completed the build. The existing custom webpack hook is development-only. Explicit experimental.webpackBuildWorker is a documented candidate, subject to compatibility and actual build qualification. Sampled RSS does not establish a continuous peak. No historical source-task reference or completion count is added.",
+      "remaining_gates": [
+        "Qualify the configuration fix with a complete bounded production build, configuration regressions and exact-main CI."
+      ]
     }
   ],
   "aliases": {

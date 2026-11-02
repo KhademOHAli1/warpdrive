@@ -87,6 +87,9 @@ const nextConfig: NextConfig = {
   // Top-level, not experimental: Next 16 promoted the key.
   reactCompiler: true,
   experimental: {
+    // Our development-only webpack hook disables Next's default build worker.
+    // Release the compilation heap before full TypeScript checking starts.
+    webpackBuildWorker: true,
     // TypeScript 6 provides the compiler API. Keep build-time checking in process:
     // the CLI path has intermittently returned truncated --showConfig JSON under Bun.
     useTypeScriptCli: false,
