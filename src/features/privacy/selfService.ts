@@ -3,10 +3,8 @@ import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import type { Db } from "@/db/client";
 import { privacyCaseEvents, privacyCases } from "@/db/schema";
-import { lockAuthAccount } from "@/features/auth/better/accountLock";
-import { lockMcpGrants } from "@/features/auth/management/mcpGrants";
 import { err, ok, type Result } from "@/types/result";
-import { currentPrivacySession, type PrivacyActor } from "./authoritySession";
+import type { PrivacyActor } from "./authoritySession";
 import { privacyCaseSummary, privacyStorageOperation } from "./casePersistence";
 import { privacyIntakeSchema } from "./caseSchemas";
 import { encryptPrivacy, fingerprintPrivacy } from "./crypto";
@@ -28,14 +26,7 @@ async function withOwnSession<R extends Result<unknown, unknown>>(
   signal: AbortSignal,
   effect: (tx: Db) => Promise<R>,
 ) {
-  return privacyStorageOperation(signal, () =>
-    identityTransaction(db, signal, async (tx) => {
-      await lockAuthAccount(tx, actor.userId, signal);
-      await lockMcpGrants(tx, signal);
-      if (!(await currentPrivacySession(tx, actor, signal))) return err("forbidden" as const);
-      return effect(tx);
-    }),
-  );
+  return privacyStorageOperation(signal, () => identityTransaction(db, actor, signal, effect));
 }
 
 export async function createOwnPrivacyCase(

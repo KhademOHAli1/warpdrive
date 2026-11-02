@@ -30,7 +30,7 @@ export const personalRequestsIds1: string[] = [
   "sourceReview:src/features/auth/ui/SecuritySettings.tsx#ecc4794f3c9aa55ecbb5a34829c1fc1493979f764714a9cfcf3dc112ef0ac1eb",
   "sourceReview:src/features/auth/ui/SecuritySurface.tsx#bce06edd0407c223b90eaa77db6b70102ad4009369940c505a3f630b62ab240b",
   "sourceReview:src/features/i18n/catalog.ts#6b809aafaf98f674555768e17359930df2b19016331579dace4678dea6d90079",
-  "sourceReview:src/features/privacy/identitySelf.ts#77a6e2172a45d0a4ebe2b9f51d27648fac34880d1cea90050a1427aa2203f3f9",
+  "sourceReview:src/features/privacy/identitySelf.ts#7821b4ea5b20997e30a8720eba98330851db210b525c8e51506e478460beb5b5",
   "sourceReview:src/features/privacy/messages/privacyRequest.de.json#589563dfbf44bc0d80f712abee6f36969e3ddcddbca7c6619d962886f6b89e1b",
   "sourceReview:src/features/privacy/messages/privacyRequest.en.json#c4f72dc4ac3bbd4b9b6b4b3fa0add31c6384152e057c417c3b18bba3a3a8e9d7",
   "sourceReview:src/features/privacy/messages/privacyRequest.fa.json#3a5612fb68dbcaa3f02f4e5be8e568c74b7409e4c72996c0ea479591825fd660",
