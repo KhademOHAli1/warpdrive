@@ -20,12 +20,20 @@ import type { PermSetUser } from "@/features/permissions/effective";
 import type { VisiblePersonOrOrg } from "@/features/permissions/types";
 import { activityAccountPreferences } from "./accountTimeZone";
 import type { CalendarActivity } from "./calendar";
+import { calendarActivityAccess } from "./calendarAccess";
 import { isActivityOverdue } from "./overdue";
 import { linkedParentVisible } from "./parentLinkVisibility";
 import { resolveActivityVisibility } from "./visibility";
 
 interface ActivityRow {
   id: string;
+  version: number;
+  eventTimeZone: string | null;
+  calendarId: string | null;
+  eventVisibility: "default" | "private";
+  availability: "busy" | "free";
+  reminderEngine: Activity["reminderEngine"];
+  reminderAutomationEnabled: boolean;
   subject: string;
   dueAt: Date | null;
   allDay: boolean;
@@ -77,6 +85,14 @@ interface ActivityRow {
 function toActivity(row: ActivityRow): Activity {
   return {
     id: row.id,
+    version: row.version,
+    eventTimeZone: row.eventTimeZone,
+    calendarId: row.calendarId,
+    eventVisibility: row.eventVisibility,
+    availability: row.availability,
+    reminderEngine: row.reminderEngine,
+    reminderAutomationEnabled: row.reminderAutomationEnabled,
+    reminderAuthoredAt: new Date(0),
     typeId: row.typeId,
     subject: row.subject,
     priority: null,
@@ -198,6 +214,13 @@ export async function listActivitiesForEntity(
   const rows: ActivityRow[] = await db
     .select({
       id: activities.id,
+      version: activities.version,
+      eventTimeZone: activities.eventTimeZone,
+      calendarId: activities.calendarId,
+      eventVisibility: activities.eventVisibility,
+      availability: activities.availability,
+      reminderEngine: activities.reminderEngine,
+      reminderAutomationEnabled: activities.reminderAutomationEnabled,
       subject: activities.subject,
       dueAt: activities.dueAt,
       allDay: activities.allDay,
@@ -254,7 +277,8 @@ export async function listActivitiesForEntity(
   for (const row of rows) {
     signal.throwIfAborted();
     const vis = await resolveActivityVisibility(db, toActivity(row), signal);
-    if (vis === null || !canSee(actor, vis)) continue;
+    const access = await calendarActivityAccess(db, actor, toActivity(row), signal);
+    if (vis === null || !canSee(actor, vis) || access?.read === false) continue;
     const personRec = linkedRecord(
       "person",
       row.personVisibleId,

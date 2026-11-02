@@ -29,14 +29,24 @@ export function calendarEmptyState({
   if (hasFilter && hasUnfilteredActivities) {
     return {
       kind: "filtered",
-      title: view === "week" ? messages.emptyFilteredWeekTitle : messages.emptyFilteredMonthTitle,
+      title:
+        view === "day"
+          ? messages.emptyFilteredDayTitle
+          : view === "week"
+            ? messages.emptyFilteredWeekTitle
+            : messages.emptyFilteredMonthTitle,
       body: messages.emptyFilteredBody,
       action: messages.emptyFilteredAction,
     };
   }
   return {
     kind: "none",
-    title: view === "week" ? messages.emptyWeekTitle : messages.emptyMonthTitle,
+    title:
+      view === "day"
+        ? messages.emptyDayTitle
+        : view === "week"
+          ? messages.emptyWeekTitle
+          : messages.emptyMonthTitle,
     body: messages.emptyBody,
     action: messages.emptyAction,
   };

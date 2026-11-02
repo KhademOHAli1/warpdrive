@@ -1,0 +1,150 @@
+{
+  "scope": "Root may copy this exact packet to a preservation-only repository path; no raw runtime/dependencies/env/profile/database inputs",
+  "suggestedRelativeTarget": ".codex-preservation/calendar-2026-11-02/",
+  "files": [
+    {
+      "absolutePath": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-calendar-continuation/outputs/SAFE_STOP_2026-11-02/EVIDENCE_PATHS.txt",
+      "relativeToPacket": "EVIDENCE_PATHS.txt",
+      "sha256": "0ccad80373bc59a2b3060bfe0a208055cb63ea4169a3ad81d14e74a6b7ed2164",
+      "bytes": 1846
+    },
+    {
+      "absolutePath": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-calendar-continuation/outputs/SAFE_STOP_2026-11-02/FREEZE.json",
+      "relativeToPacket": "FREEZE.json",
+      "sha256": "e0f1937dad61373f34ab9cb18e38bfff8d175fe48af74c9811f201d1d38445b6",
+      "bytes": 856
+    },
+    {
+      "absolutePath": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-calendar-continuation/outputs/SAFE_STOP_2026-11-02/OWNED_ALLOWLIST.json",
+      "relativeToPacket": "OWNED_ALLOWLIST.json",
+      "sha256": "96969408b3380968e87c49d5be4fe7ec141d0f12369067c8f0170bc520ec0cc7",
+      "bytes": 82742
+    },
+    {
+      "absolutePath": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-calendar-continuation/outputs/SAFE_STOP_2026-11-02/OWNED_ALLOWLIST.tsv",
+      "relativeToPacket": "OWNED_ALLOWLIST.tsv",
+      "sha256": "6cebb4340c163b607019d08ca93bf6e691923fe98457469edb519a8a6422bc6e",
+      "bytes": 45738
+    },
+    {
+      "absolutePath": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-calendar-continuation/outputs/SAFE_STOP_2026-11-02/OWNED_ALLOWLIST.txt",
+      "relativeToPacket": "OWNED_ALLOWLIST.txt",
+      "sha256": "2c5483c1ee4c5503cf1cfe0c0bcc5def83f68fd762747145970d0ed09840098b",
+      "bytes": 16433
+    },
+    {
+      "absolutePath": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-calendar-continuation/outputs/SAFE_STOP_2026-11-02/SAFE_STOP.md",
+      "relativeToPacket": "SAFE_STOP.md",
+      "sha256": "766bb973d5bea513be3daaab6a015d06c3b4b6f72ca5da5f503734b932df3bbc",
+      "bytes": 6534
+    },
+    {
+      "absolutePath": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-calendar-continuation/outputs/SAFE_STOP_2026-11-02/STATIC_FIXTURE_SOURCE.json",
+      "relativeToPacket": "STATIC_FIXTURE_SOURCE.json",
+      "sha256": "49d89ccb7f975cad8e0de93dd3069436068831fcb8a6e1de87d3784be92ed9a4",
+      "bytes": 79541
+    },
+    {
+      "absolutePath": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-calendar-continuation/outputs/SAFE_STOP_2026-11-02/archives.json",
+      "relativeToPacket": "archives.json",
+      "sha256": "a2d9588c540be601f34a5de1aaddb205611a9ed0fbf4dd1861e7610da9bad707",
+      "bytes": 425
+    },
+    {
+      "absolutePath": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-calendar-continuation/outputs/SAFE_STOP_2026-11-02/git-status.json",
+      "relativeToPacket": "git-status.json",
+      "sha256": "4e9f15a952442461cdb148f51c2ffa1116999d7061856a9531ba5e5506da1116",
+      "bytes": 31949
+    },
+    {
+      "absolutePath": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-calendar-continuation/outputs/SAFE_STOP_2026-11-02/git-status.porcelain.z",
+      "relativeToPacket": "git-status.porcelain.z",
+      "sha256": "114c337985a2bcf27424d1fe1e900751fe413104d96b1ea87a9d8b3a512a85a1",
+      "bytes": 17330
+    },
+    {
+      "absolutePath": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-calendar-continuation/outputs/SAFE_STOP_2026-11-02/owned-cleanup.json",
+      "relativeToPacket": "owned-cleanup.json",
+      "sha256": "34dabd15cdc69d68c47951bc3b7abadc30d8f255e48a31aeeebbdfaf11975c07",
+      "bytes": 1213
+    },
+    {
+      "absolutePath": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-calendar-continuation/outputs/SAFE_STOP_2026-11-02/owned-dirty-source.tar.gz",
+      "relativeToPacket": "owned-dirty-source.tar.gz",
+      "sha256": "8556413c4144a32609459b7369e3b1ec255f8ec937c3a3e01b2d13880e8b905d",
+      "bytes": 755310
+    },
+    {
+      "absolutePath": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-calendar-continuation/outputs/SAFE_STOP_2026-11-02/owned-static-fixture-source.tar.gz",
+      "relativeToPacket": "owned-static-fixture-source.tar.gz",
+      "sha256": "b2e790319ac4135fd2d9ea502579bff8280263928a74756c5b8f439cef7fb2f5",
+      "bytes": 547551
+    },
+    {
+      "absolutePath": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-calendar-continuation/outputs/SAFE_STOP_2026-11-02/receipts/Calendar_Canonical_Upgrade_GREEN1_2026-11-02/native-test-candidate.sql",
+      "relativeToPacket": "receipts/Calendar_Canonical_Upgrade_GREEN1_2026-11-02/native-test-candidate.sql",
+      "sha256": "dd1a8209c521d35798f2c9916a7f6d151c5cc7c075761f5daa5df3cb96604bb4",
+      "bytes": 15408
+    },
+    {
+      "absolutePath": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-calendar-continuation/outputs/SAFE_STOP_2026-11-02/receipts/Calendar_Canonical_Upgrade_GREEN1_2026-11-02/native.log",
+      "relativeToPacket": "receipts/Calendar_Canonical_Upgrade_GREEN1_2026-11-02/native.log",
+      "sha256": "c3904e68e921a2baf491dd5a927dededef53a44b6dc4d80ed4b7258fe8b0a77d",
+      "bytes": 2712
+    },
+    {
+      "absolutePath": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-calendar-continuation/outputs/SAFE_STOP_2026-11-02/receipts/Calendar_Canonical_Upgrade_GREEN1_2026-11-02/result.json",
+      "relativeToPacket": "receipts/Calendar_Canonical_Upgrade_GREEN1_2026-11-02/result.json",
+      "sha256": "c0e53189bd15bd6a2a42d5d32e27c74967abe6b9c22c84def5e8d36c826dcc19",
+      "bytes": 3019
+    },
+    {
+      "absolutePath": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-calendar-continuation/outputs/SAFE_STOP_2026-11-02/receipts/Calendar_Canonical_Upgrade_RED1_2026-11-02/result.json",
+      "relativeToPacket": "receipts/Calendar_Canonical_Upgrade_RED1_2026-11-02/result.json",
+      "sha256": "05e50f47d1171d4391f98a0de775e9317c2128f6481d2806b3611b175a3004b3",
+      "bytes": 2427
+    },
+    {
+      "absolutePath": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-calendar-continuation/outputs/SAFE_STOP_2026-11-02/receipts/Calendar_Canonical_Upgrade_RED1_2026-11-02/timing-observation.json",
+      "relativeToPacket": "receipts/Calendar_Canonical_Upgrade_RED1_2026-11-02/timing-observation.json",
+      "sha256": "19c2010416f15dc00eb13bd80f31fedad61388dc81634e5c5a2fda86da7d4dd0",
+      "bytes": 694
+    },
+    {
+      "absolutePath": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-calendar-continuation/outputs/SAFE_STOP_2026-11-02/receipts/Calendar_History_Receipt_GREEN22_2026-11-02/result.json",
+      "relativeToPacket": "receipts/Calendar_History_Receipt_GREEN22_2026-11-02/result.json",
+      "sha256": "45b31154713c39569c092072595fd98c8846d1408bdf5ed611efca8561d637bf",
+      "bytes": 2553
+    },
+    {
+      "absolutePath": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-calendar-continuation/outputs/SAFE_STOP_2026-11-02/receipts/Calendar_Legacy_Fence_Preparation_2026-11-02/legacy-receipt-transfer-decision.md",
+      "relativeToPacket": "receipts/Calendar_Legacy_Fence_Preparation_2026-11-02/legacy-receipt-transfer-decision.md",
+      "sha256": "a553440ba4bbab88f7d715c350f3c64db06422ec9c79c8985f8f73366196ec27",
+      "bytes": 10040
+    },
+    {
+      "absolutePath": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-calendar-continuation/outputs/SAFE_STOP_2026-11-02/receipts/Calendar_Ownership_Boundary_RED5_Preparation_2026-11-02/combined-source-review.json",
+      "relativeToPacket": "receipts/Calendar_Ownership_Boundary_RED5_Preparation_2026-11-02/combined-source-review.json",
+      "sha256": "3508fdfbc2c1483f85804953a5b85cc6e3827395690f1be3584180f9d1cf5b77",
+      "bytes": 159
+    },
+    {
+      "absolutePath": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-calendar-continuation/outputs/SAFE_STOP_2026-11-02/receipts/Calendar_Ownership_Boundary_RED5_Preparation_2026-11-02/prepared.json",
+      "relativeToPacket": "receipts/Calendar_Ownership_Boundary_RED5_Preparation_2026-11-02/prepared.json",
+      "sha256": "558b2562f91a12dba9f13da17dd04fad9775277a312d938515e4251490a07ef9",
+      "bytes": 11492
+    },
+    {
+      "absolutePath": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-calendar-continuation/outputs/SAFE_STOP_2026-11-02/receipts/Calendar_Ownership_Boundary_RED5_Preparation_2026-11-02/selection.json",
+      "relativeToPacket": "receipts/Calendar_Ownership_Boundary_RED5_Preparation_2026-11-02/selection.json",
+      "sha256": "5c6db2d07f555f715d51ed7ca28a9b74e81388d93f125afe954b015cd14ac962",
+      "bytes": 1090
+    },
+    {
+      "absolutePath": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-calendar-continuation/outputs/SAFE_STOP_2026-11-02/tracked-diff.patch",
+      "relativeToPacket": "tracked-diff.patch",
+      "sha256": "2420c02c4c6714cebe03785b6315d86f73d66a085beaa95dbc3f0a4b84869de9",
+      "bytes": 209197
+    }
+  ]
+}

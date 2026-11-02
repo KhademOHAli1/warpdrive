@@ -1,8 +1,11 @@
 "use client";
 import { memo, useCallback, useRef, useState } from "react";
+import { formatTimeInput } from "@/components/ui/timeFormat";
 import { layoutTimed, splitAllDay } from "@/features/activities/agendaLayout";
 import { DEFAULT_START_HOUR } from "@/features/activities/agendaScroll";
 import type { CalendarActivity } from "@/features/activities/calendar";
+import { minuteClock } from "@/features/activities/calendarSelection";
+import { useCalendarSelection } from "@/features/activities/useCalendarSelection";
 import { HOUR_HEIGHT_PX, HOURS } from "@/features/activities/weekAgenda";
 import { useAppTranslations, useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import { cn } from "@/lib/utils";
@@ -27,6 +30,7 @@ interface AgendaDayColumnProps {
   items: CalendarActivity[];
   onOpenActivity: (activity: CalendarActivity) => void;
   onOpenSlot: (iso: string, hour: number) => void;
+  onOpenInterval?: (iso: string, start: number, end: number) => void;
 }
 
 // One day's hour grid: 24 click-to-create lanes with the day's timed activities positioned over
@@ -38,12 +42,17 @@ export const AgendaDayColumn = memo(function AgendaDayColumn({
   items,
   onOpenActivity,
   onOpenSlot,
+  onOpenInterval,
 }: AgendaDayColumnProps): React.ReactNode {
   const preferences = useLocalePreferences();
   const t = useAppTranslations("calendar");
   const { timed } = splitAllDay(items);
   const { placements, overflows } = layoutTimed(timed, preferences.timeZone);
   const ref = useRef<HTMLDivElement>(null);
+  const selection = useCalendarSelection(ref, (start, end) => {
+    if (onOpenInterval !== undefined) onOpenInterval(iso, start, end);
+    else onOpenSlot(iso, Math.floor(start / 60));
+  });
   // Roving tabindex: one lane per column is in the tab order and the arrows walk the rest, so a
   // week costs 7 tab stops instead of 168 before the keyboard reaches anything.
   const [focusHour, setFocusHour] = useState(DEFAULT_START_HOUR);
@@ -101,6 +110,32 @@ export const AgendaDayColumn = memo(function AgendaDayColumn({
           <MoreActivitiesChip activities={activities} onOpen={onOpenActivity} />
         </div>
       ))}
+      {selection.preview !== null && (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 z-20 rounded-sm border border-primary/50 bg-primary/15"
+          style={{
+            top: (selection.preview.start / 60) * HOUR_HEIGHT_PX,
+            height: ((selection.preview.end - selection.preview.start) / 60) * HOUR_HEIGHT_PX,
+          }}
+        />
+      )}
+      {selection.preview !== null && (
+        <span role="status" className="sr-only">
+          {t("selection", {
+            start: formatTimeInput(
+              minuteClock(selection.preview.start),
+              preferences.locale,
+              preferences.numberingSystem,
+            ),
+            end: formatTimeInput(
+              minuteClock(selection.preview.end),
+              preferences.locale,
+              preferences.numberingSystem,
+            ),
+          })}
+        </span>
+      )}
       {HOURS.map((hour) => (
         <button
           key={hour}
@@ -114,7 +149,13 @@ export const AgendaDayColumn = memo(function AgendaDayColumn({
                 : calendarDayLabel(iso, preferences),
             time: calendarHourLabel(hour, preferences),
           })}
-          onClick={() => onOpenSlot(iso, hour)}
+          onClick={(event) => {
+            if (!selection.consumeClick(event.detail)) onOpenSlot(iso, hour);
+          }}
+          onPointerDown={selection.onPointerDown}
+          onPointerMove={selection.onPointerMove}
+          onPointerUp={selection.onPointerUp}
+          onPointerCancel={selection.onPointerCancel}
           onKeyDown={(e) => onKeyDown(e, hour)}
           className="absolute inset-x-0 border-t border-border/60 hover:bg-accent/30"
           style={{ top: hour * HOUR_HEIGHT_PX, height: HOUR_HEIGHT_PX }}

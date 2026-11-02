@@ -9,7 +9,7 @@ import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { MASK_CLASS } from "@/features/observability/replayMasking";
 import { useActivitiesMessages } from "./useActivitiesMessages";
 
-function safeMeetingLink(value: string): URL | null {
+export function safeMeetingLink(value: string): URL | null {
   try {
     const url = new URL(value);
     return url.protocol === "https:" && url.username === "" && url.password === "" ? url : null;

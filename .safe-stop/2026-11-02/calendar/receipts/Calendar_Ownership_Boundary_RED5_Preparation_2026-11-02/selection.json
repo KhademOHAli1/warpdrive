@@ -1,0 +1,30 @@
+{
+  "state": "SOURCE_METADATA_ONLY",
+  "files": [
+    {
+      "path": ".runtime/calendar-legacy-fence-candidate/legacyQueueBoundary.integration.test.ts",
+      "titles": [
+        "dispatches intent jobs outside the legacy activity-only queue while preserving old work"
+      ]
+    },
+    {
+      "path": ".runtime/calendar-legacy-adoption-candidate/ownerAdoption.integration.test.ts",
+      "titles": [
+        "adopts a legacy event only when its authorized owner explicitly saves personal reminder rules",
+        "keeps an ordinary authorized legacy event edit outside native reminder adoption",
+        "does not let a calendar reader adopt or mutate a legacy event through the owner edit path"
+      ]
+    },
+    {
+      "path": ".runtime/calendar-engine-admission-candidate/engineAdmission.integration.test.ts",
+      "titles": [
+        "denies native intent admission for a legacy-owned activity in both channels after native and current-access controls"
+      ]
+    }
+  ],
+  "defined": 5,
+  "expectedPass": 2,
+  "expectedBehaviorRed": 3,
+  "noNameFilters": true,
+  "workers": 1
+}

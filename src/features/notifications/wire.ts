@@ -50,8 +50,8 @@ async function followerIds(
 // The visibility gate is the activity's DOMINANT PARENT (deal > person > org),
 // passed as entityType/entityId so the producer suppresses a notification whose
 // parent the assignee cannot see (F26). A parentless activity (all null) needs no
-// gate: its only viewers are the assignee/participants, and the recipient IS the
-// assignee.
+// gate for legacy activities. Native calendar events also require current calendar
+// detail access, checked by the producer through the activity id in the payload.
 export async function notifyActivityAssigned(
   db: Db,
   args: {

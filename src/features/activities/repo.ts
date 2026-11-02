@@ -11,18 +11,19 @@ import {
 import { listDefs } from "@/features/custom-fields/defsRepo";
 import { buildCustomFieldsSchema } from "@/features/custom-fields/validate";
 import { sanitizeAuthorHtml } from "@/features/email/sanitizeHtml";
-import { can } from "@/features/permissions/can";
-import { canSee } from "@/features/permissions/canSee";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { assertReferenceVisible } from "@/features/permissions/referenceCheck";
 import type { DbOrTx } from "@/server/realtime/channelVersions";
 import { err, ok, type Result } from "@/types/result";
 import { activityAccountPreferences } from "./accountTimeZone";
+import { guardActivityMutation } from "./activityAccessGuard";
+import { applyActivityReminders } from "./activityReminderWrite";
 import { canonicalCreateDates, civilEndBeforeStart } from "./activityTemporalWrite";
+import { activityTransaction } from "./activityTransaction";
+import { assertCalendarWritable } from "./calendars";
 import { recomputeDealActivityDates } from "./nextActivity";
-import { scheduleReminder } from "./reminders";
+import { reconcileReminderIntent } from "./reminderIntent";
 import { type ActivityCreateInput, activityCreateInput } from "./schemas";
-import { resolveActivityVisibility } from "./visibility";
 
 // Pipedrive parity: block linking a new activity to an archived deal. Extracted so
 // createActivity stays under the cognitive-complexity budget. No-op when dealId is null.
@@ -147,14 +148,16 @@ export async function createActivity(
   if (!orderCheck.ok) return orderCheck;
 
   const preferences = await activityAccountPreferences(db, actor.id);
-  const civilDates = canonicalCreateDates(input, preferences.timeZone);
+  const civilDates = canonicalCreateDates(input, input.eventTimeZone ?? preferences.timeZone);
   if (civilEndBeforeStart(civilDates))
     return err(
       new AppError(ERROR_IDS.ACTIVITY_END_BEFORE_START, "activity end is before its start", {}),
     );
   const refActor = toVisibilitySession(actor);
 
-  const result = await db.transaction(async (tx) => {
+  const result = await activityTransaction(db, async (tx) => {
+    const calendarAccess = await assertCalendarWritable(tx, actor, input.calendarId, signal);
+    if (!calendarAccess.ok) return calendarAccess;
     // Validate all referenced entities are visible to the actor. A lead reference is gated
     // here too, so an actor cannot attach an activity to a lead they cannot see.
     const refs = collectReferences(input);
@@ -171,7 +174,14 @@ export async function createActivity(
       .insert(activities)
       .values({
         typeId: input.typeId,
+        reminderEngine: "intent",
+        reminderAutomationEnabled: options.scheduleReminder !== false,
         subject: input.subject,
+        eventTimeZone:
+          input.eventTimeZone ?? (input.calendarId !== null ? preferences.timeZone : null),
+        calendarId: input.calendarId,
+        eventVisibility: input.eventVisibility,
+        availability: input.availability,
         priority: input.priority,
         dueAt: input.dueAt === null ? null : new Date(input.dueAt),
         // A null dueAt cannot be all-day: there is no day.
@@ -213,12 +223,18 @@ export async function createActivity(
       await recomputeDealActivityDates(tx, row.dealId, signal);
     }
 
+    const reminders = await applyActivityReminders(
+      tx,
+      actor,
+      row,
+      input.personalReminders,
+      signal,
+      options.scheduleReminder !== false,
+    );
+    if (!reminders.ok) return reminders;
     return ok(row);
   });
 
-  if (result.ok === true && options.scheduleReminder !== false) {
-    await scheduleReminder(result.value.id, result.value.dueAt, signal);
-  }
   return result;
 }
 
@@ -228,28 +244,30 @@ export async function completeActivity(
   id: string,
   done: boolean,
   signal: AbortSignal,
+  expectedVersion?: number,
 ): Promise<Result<Activity, AppError>> {
-  return db.transaction(async (tx) => {
+  return activityTransaction(db, async (tx) => {
     const [current] = await tx
       .select()
       .from(activities)
-      .where(and(eq(activities.id, id), isNull(activities.deletedAt)));
+      .where(and(eq(activities.id, id), isNull(activities.deletedAt)))
+      .for("no key update");
 
     if (current === undefined) {
       return err(new AppError(ERROR_IDS.ACTIVITY_NOT_FOUND, "activity not found", { id }));
     }
 
-    const vis = await resolveActivityVisibility(tx, current, signal);
-
-    if (vis === null || !canSee(actor, vis)) {
-      // Invisible: return 404-on-invisible, not 403.
-      return err(new AppError(ERROR_IDS.ACTIVITY_NOT_FOUND, "activity not found", { id }));
-    }
-
-    if (!can(actor, "activity.complete", vis)) {
-      return err(new AppError(ERROR_IDS.ACTIVITY_FORBIDDEN, "forbidden", { id }));
-    }
-
+    const allowed = await guardActivityMutation(
+      tx,
+      actor,
+      current,
+      "activity.complete",
+      signal,
+      current.done === done ? undefined : expectedVersion,
+    );
+    if (!allowed.ok) return allowed;
+    // A same-state retry retains the locked row and performs no reminder or CRM writes.
+    if (current.done === done) return ok(current);
     const [row] = await tx
       .update(activities)
       .set({ done, doneAt: done ? new Date() : null })
@@ -264,6 +282,7 @@ export async function completeActivity(
       await recomputeDealActivityDates(tx, row.dealId, signal);
     }
 
+    await reconcileReminderIntent(tx, row, signal);
     return ok(row);
   });
 }

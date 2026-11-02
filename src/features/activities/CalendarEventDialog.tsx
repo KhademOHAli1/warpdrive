@@ -1,32 +1,42 @@
 "use client";
-import { CalendarDays, CheckCircle2, Clock3, Maximize2, Minimize2 } from "lucide-react";
+import { CalendarDays, CheckCircle2, Clock3 } from "lucide-react";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/Button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/Input";
 import { Tip } from "@/components/ui/tooltip";
-import { cn } from "@/lib/utils";
 import { ActivityTimeZoneHint } from "./ActivityTimeZoneHint";
 import { CalendarEventActions } from "./CalendarEventActions";
-import { CalendarEventCrmDetails } from "./CalendarEventCrmDetails";
+import { CalendarEventCrmDisclosure } from "./CalendarEventCrmDisclosure";
 import { CalendarEventDetails } from "./CalendarEventDetails";
+import { CalendarEventOwnership } from "./CalendarEventOwnership";
 import { CalendarEventSchedule } from "./CalendarEventSchedule";
+import { CalendarEventTimeZone } from "./CalendarEventTimeZone";
+import { CalendarEventViewer } from "./CalendarEventViewer";
+import { CalendarReminderEditor } from "./CalendarReminderEditor";
 import { type CalendarEventDialogProps, useCalendarEventEditor } from "./useCalendarEventEditor";
 
-// Layout changes keep the same mounted form and draft. The sidebar contains actual CRM
-// fields; provider provisioning and invitation delivery retain their separate contracts.
+// Secondary controls reveal inline without widening the form or replacing its draft.
 export function CalendarEventDialog(props: CalendarEventDialogProps): React.ReactNode {
+  if (props.editing?.canEdit === false)
+    return <CalendarEventViewer event={props.editing} onClose={props.onClose} />;
+  return <CalendarEventEditor {...props} />;
+}
+
+function CalendarEventEditor(props: CalendarEventDialogProps): React.ReactNode {
   const {
     preferences,
+    calendar,
+    personal,
     zone,
+    setZone,
     t,
     S,
     attachFields,
-    canClose,
+    guard,
     types,
     draft,
     value,
-    details,
-    setDetails,
     pending,
     doneNow,
     error,
@@ -40,16 +50,13 @@ export function CalendarEventDialog(props: CalendarEventDialogProps): React.Reac
     <Dialog
       open
       onOpenChange={(open) => {
-        if (!open && canClose()) props.onClose();
+        if (!open) guard.requestClose();
       }}
     >
       <DialogContent
         aria-describedby={undefined}
         dir={preferences.locale === "fa" ? "rtl" : "ltr"}
-        className={cn(
-          "flex max-h-[90dvh] w-[calc(100%-2rem)] flex-col gap-0 overflow-hidden border-border/80 bg-card p-0",
-          details ? "sm:max-w-5xl" : "sm:max-w-2xl",
-        )}
+        className="flex max-h-[90dvh] w-[calc(100%-2rem)] flex-col gap-0 overflow-hidden border-border/80 bg-card p-0 sm:max-w-2xl"
       >
         <DialogHeader className="relative shrink-0 border-b border-border/70 px-6 py-4 pe-24">
           <DialogTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
@@ -106,37 +113,41 @@ export function CalendarEventDialog(props: CalendarEventDialogProps): React.Reac
               inert={pending}
               className="min-w-0 disabled:opacity-70"
             >
-              <div className={cn(details && "md:grid md:grid-cols-[minmax(0,1fr)_17rem]")}>
-                <section
-                  aria-label={t("editor.eventDetails")}
-                  className="min-w-0 space-y-6 px-6 py-6 sm:px-8"
-                >
-                  <Input
-                    autoFocus
-                    dir={
-                      draft.subject === "" ? (preferences.locale === "fa" ? "rtl" : "ltr") : "auto"
-                    }
-                    aria-label={t("editor.eventTitle")}
-                    value={draft.subject}
-                    maxLength={255}
-                    onChange={(event) => change({ subject: event.target.value })}
-                    placeholder={t("editor.titlePlaceholder")}
-                    className="-ms-1 h-auto rounded-md border-transparent bg-transparent px-1 py-1.5 text-2xl font-semibold shadow-none hover:border-transparent focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-primary/25 md:text-2xl"
-                  />
-                  <section aria-label={t("editor.dateAndTime")} className="space-y-3">
-                    <h3 className="flex items-center gap-3 text-sm font-medium">
-                      <Clock3 className="size-4 text-muted-foreground" aria-hidden />
-                      {t("editor.dateAndTime")}
-                    </h3>
+              <section
+                aria-label={t("editor.eventDetails")}
+                className="min-w-0 space-y-4 px-4 py-4 sm:px-6"
+              >
+                <Input
+                  autoFocus
+                  dir={
+                    draft.subject === "" ? (preferences.locale === "fa" ? "rtl" : "ltr") : "auto"
+                  }
+                  aria-label={t("editor.eventTitle")}
+                  value={draft.subject}
+                  maxLength={255}
+                  onChange={(event) => change({ subject: event.target.value })}
+                  placeholder={t("editor.titlePlaceholder")}
+                  className="-ms-1 h-auto rounded-md border-transparent bg-transparent px-1 py-1.5 text-2xl font-semibold shadow-none hover:border-transparent focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-primary/25 md:text-2xl"
+                />
+                <section aria-label={t("editor.dateAndTime")} className="flex gap-3">
+                  <Clock3 className="mt-6 size-4 shrink-0 text-muted-foreground" aria-hidden />
+                  <div className="min-w-0 flex-1 space-y-1">
                     <CalendarEventSchedule
                       draft={draft}
                       onStart={moveStart}
                       onEnd={({ date, time }) => change({ endDate: date, endTime: time })}
                       onAllDay={allDay}
                     />
+                    <CalendarEventTimeZone
+                      value={zone}
+                      onChange={setZone}
+                      compact
+                      reveal={error === t("editor.invalidWallTime")}
+                    />
                     {(draft.startTime !== "" ||
                       (props.editing?.allDay === true && props.editing.dueDate == null)) && (
                       <ActivityTimeZoneHint
+                        hideSummary
                         timeZone={zone}
                         date={draft.startDate}
                         time={draft.startTime}
@@ -144,51 +155,55 @@ export function CalendarEventDialog(props: CalendarEventDialogProps): React.Reac
                         legacy={props.editing?.allDay === true && props.editing.dueDate == null}
                       />
                     )}
-                  </section>
-                  <div className="border-t border-border/70 pt-4">
-                    <CalendarEventDetails draft={draft} expanded={details} onChange={change} />
                   </div>
-                  {error !== null && (
-                    <p
-                      role="alert"
-                      className="rounded-md border border-destructive/25 bg-destructive/5 px-3 py-2 text-sm leading-relaxed text-destructive"
-                    >
-                      {error}
-                    </p>
-                  )}
                 </section>
-                {details && (
-                  <CalendarEventCrmDetails
-                    draft={value}
-                    types={types}
-                    editing={props.editing}
-                    onChange={change}
-                  />
+                <CalendarEventDetails draft={draft} expanded={false} onChange={change} />
+                <CalendarEventOwnership
+                  settings={calendar.settings}
+                  calendars={calendar.calendars}
+                  legacy={props.editing !== undefined && props.editing.calendarId == null}
+                  reveal={error === t("settings.unavailable")}
+                  onChange={(patch) => {
+                    calendar.change(patch);
+                    if (props.editing === undefined && patch.calendarId !== undefined) {
+                      const source = calendar.calendars.find((c) => c.id === patch.calendarId);
+                      if (source !== undefined) setZone(source.timeZone);
+                    }
+                  }}
+                />
+                <CalendarReminderEditor
+                  value={personal.selection}
+                  defaults={personal.defaults}
+                  allDay={draft.startTime === ""}
+                  timeZone={zone}
+                  emailCapability={personal.emailCapability}
+                  onChange={personal.setSelection}
+                  onRawChange={personal.setRawChanged}
+                  onValidityChange={personal.setValid}
+                  reveal={personal.reveal}
+                  error={personal.reveal ? t("reminders.needsReview") : null}
+                />
+                <CalendarEventCrmDisclosure
+                  draft={value}
+                  types={types}
+                  editing={props.editing}
+                  onChange={change}
+                  reveal={error === t("editor.typeUnavailable")}
+                />
+                {error !== null && (
+                  <p
+                    role="alert"
+                    className="rounded-md border border-destructive/25 bg-destructive/5 px-3 py-2 text-sm leading-relaxed text-destructive"
+                  >
+                    {error}
+                  </p>
                 )}
-              </div>
+              </section>
             </fieldset>
           </div>
-          <footer className="flex shrink-0 items-center justify-between gap-2 border-t border-border/70 bg-card px-4 py-3 sm:px-6">
-            <Button
-              variant="ghost"
-              size="sm"
-              aria-label={t(details ? "editor.fewerOptions" : "editor.moreOptions")}
-              aria-expanded={details}
-              disabled={pending}
-              onClick={() => setDetails(!details)}
-              className="text-muted-foreground"
-            >
-              {details ? (
-                <Minimize2 className="size-3.5" aria-hidden />
-              ) : (
-                <Maximize2 className="size-3.5" aria-hidden />
-              )}
-              <span className="hidden sm:inline">
-                {t(details ? "editor.fewerOptions" : "editor.moreOptions")}
-              </span>
-            </Button>
+          <footer className="flex shrink-0 items-center justify-end gap-2 border-t border-border/70 bg-card px-4 py-3 sm:px-6">
             <div className="flex shrink-0 items-center gap-2">
-              <Button variant="ghost" disabled={pending} onClick={props.onClose}>
+              <Button variant="ghost" disabled={pending} onClick={guard.requestClose}>
                 {S.cancel}
               </Button>
               <Tip label={t("editor.saveShortcut")}>
@@ -200,6 +215,16 @@ export function CalendarEventDialog(props: CalendarEventDialogProps): React.Reac
           </footer>
         </form>
       </DialogContent>
+      <ConfirmDialog
+        open={guard.open}
+        onOpenChange={guard.setOpen}
+        title={t("editor.discardTitle")}
+        description={t("editor.discardBody")}
+        confirmLabel={t("editor.discard")}
+        cancelLabel={t("editor.keepEditing")}
+        destructive
+        onConfirm={guard.discard}
+      />
     </Dialog>
   );
 }

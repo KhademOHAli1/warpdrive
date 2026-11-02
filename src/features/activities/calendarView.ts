@@ -13,7 +13,7 @@ import {
 } from "./calendarSystem";
 import { addDaysUtc } from "./monthGrid";
 
-export type CalendarViewName = "week" | "month";
+export type CalendarViewName = "day" | "week" | "month";
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -34,7 +34,8 @@ export function parseCalendarParams(
   today: Date = new Date(),
   timeZone = "UTC",
 ): { view: CalendarViewName; anchorIso: string } {
-  const view: CalendarViewName = raw.view === "month" ? "month" : "week";
+  const view: CalendarViewName =
+    raw.view === "month" ? "month" : raw.view === "day" ? "day" : "week";
   const anchorIso =
     raw.d !== undefined && isValidIsoDate(raw.d) ? raw.d : instantCivilDate(today, timeZone);
   return { view, anchorIso };
@@ -46,6 +47,11 @@ export function selectWindow(
   options: CalendarOptions & { timeZone?: string } = {},
 ): { days: Date[]; range: { from: Date; to: Date } } {
   const anchor = anchorDate(anchorIso);
+  if (view === "day")
+    return {
+      days: [anchor],
+      range: civilDateRange(anchorIso, addCivilDays(anchorIso, 1), options.timeZone),
+    };
   if (view === "month") {
     const start = startOfCalendarWeek(startOfCalendarMonth(anchor, options), options);
     const days = Array.from({ length: 42 }, (_, i) => addDaysUtc(start, i));
@@ -79,7 +85,9 @@ export function stepAnchorIso(
 ): string {
   const anchor = anchorDate(anchorIso);
   const next =
-    view === "month" ? addCalendarMonths(anchor, dir, options) : addDaysUtc(anchor, 7 * dir);
+    view === "month"
+      ? addCalendarMonths(anchor, dir, options)
+      : addDaysUtc(anchor, (view === "day" ? 1 : 7) * dir);
   return next.toISOString().slice(0, 10);
 }
 

@@ -20,7 +20,7 @@ export function CalendarEventDetails({
   const t = useAppTranslations("calendar");
   const [locationOpen, setLocationOpen] = useState(false);
   return (
-    <div className="space-y-4">
+    <div className="space-y-2">
       {expanded || locationOpen || draft.location !== "" ? (
         <div className="flex items-center gap-3">
           <MapPin className="size-4 shrink-0 text-muted-foreground" aria-hidden />

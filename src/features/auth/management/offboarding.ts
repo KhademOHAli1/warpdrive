@@ -6,11 +6,13 @@ import {
   authInvitations,
   authMailOutbox,
 } from "@/db/schema/authManagement";
+import { revokeCalendarProviderAccountsForUser } from "@/features/activities/providers/google/accounts";
 import { revokeMcpGrants } from "./mcpGrants";
 
 export async function revokeUserAccess(db: Db, userId: string, signal: AbortSignal): Promise<void> {
   signal.throwIfAborted();
   const now = new Date();
+  await revokeCalendarProviderAccountsForUser(db, userId, signal);
   await db
     .update(sessions)
     .set({ revokedAt: now })

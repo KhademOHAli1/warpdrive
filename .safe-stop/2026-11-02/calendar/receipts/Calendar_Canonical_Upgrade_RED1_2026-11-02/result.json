@@ -1,0 +1,73 @@
+{
+  "id": "CALENDAR-CANONICAL-UPGRADE-REMAINING-20261102-2",
+  "state": "ACTUAL_INTENDED_ACTIVATION_RED_WITH_CLEANUP",
+  "recordedAt": "2026-11-02T02:07:49.911925+00:00",
+  "compiler": {
+    "exitCode": 0,
+    "secondsByShellClock": 6,
+    "scopedFixtureTypes": "PASS",
+    "changedHelperTypedLint": "PASS zero errors/warnings",
+    "unchangedOtherEightLintResults": "prior PASS retained"
+  },
+  "native": {
+    "exitCode": 1,
+    "casesReached": 1,
+    "intendedBehaviorRed": 1,
+    "setupFailures": 0,
+    "runnerSeconds": 4.02,
+    "secondsByShellClock": 5,
+    "assertion": "populatedUpgrade.integration.test.ts:105; old rows must have empty native work",
+    "observed": {
+      "settings": 0,
+      "intents": 1,
+      "rebuilds": 1,
+      "intentState": "pending",
+      "legacyEngine": true,
+      "inApp": true,
+      "email": true,
+      "settingsId": null,
+      "settingsVersion": 0,
+      "defaultsVersion": 0,
+      "eventSignature": ""
+    },
+    "controlsBeforeRed": [
+      "actual canonical98 setup and ledger",
+      "populated upgrade succeeded and actual99 ledger verified",
+      "all old Activity and notification columns preserved",
+      "CRM deal/person/organization snapshots preserved",
+      "two old rows retain legacy engine, automationtrue, nullcalendar, version1, authoredAt=createdAt"
+    ],
+    "postRedNativeCreateControl": "not reached, retained for later GREEN"
+  },
+  "cleanup": {
+    "ownedContainerId": "75826eed5ec795c026d19133bd1643c76bdf4a8a1d05f9f0422d81d3116cba96",
+    "runId": "c188b5c5-f86a-40d7-9805-83f55e413188",
+    "containerAbsent": true,
+    "exactRunLabelsAbsent": true,
+    "ownedProcessGroupsGone": [
+      85775,
+      86762
+    ],
+    "foreignBaselineCount": 3,
+    "foreignBaselineRetained": true,
+    "postContainerCount": 3,
+    "newTemporaryMigrationRootsAbsent": true,
+    "source29PinsUnchanged": true
+  },
+  "allocationSecondsIncludingCleanupObservation": 163.39282941818237,
+  "launchResources": {
+    "level": 1,
+    "availablePercent": 54
+  },
+  "postResources": {
+    "level": 1,
+    "availablePercent": 55
+  },
+  "peakAggregateRss": "unmeasured; samples after phases terminated",
+  "limits": [
+    "Logical private copied historical test SQL only",
+    "No canonical/historical SQL edited",
+    "No upgrade GREEN/native-create control/installed/queue/fence/takeover/final-MAIL/liveworker/browser/provider qualification",
+    "No old suite repeats"
+  ]
+}

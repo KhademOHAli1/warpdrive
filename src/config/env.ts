@@ -6,6 +6,7 @@ import { authEnvShape } from "./authEnv";
 // Secret vars may be supplied as <VAR>_FILE pointing at a Docker secret file.
 const SECRET_FILE_VARS = [
   "GOOGLE_OAUTH_CLIENT_SECRET",
+  "GOOGLE_CALENDAR_OAUTH_CLIENT_SECRET",
   "WS_TICKET_SECRET",
   "TOKEN_ENCRYPTION_KEY",
   "MINIO_SECRET_KEY",
@@ -35,6 +36,10 @@ const base = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   GOOGLE_OAUTH_CLIENT_ID: z.string().default(""),
   GOOGLE_OAUTH_CLIENT_SECRET: z.string().default(""),
+  // Calendar consent is a separate optional app, never a fallback to Gmail or login.
+  GOOGLE_CALENDAR_OAUTH_CLIENT_ID: z.string().trim().max(1024).default(""),
+  GOOGLE_CALENDAR_OAUTH_CLIENT_SECRET: z.string().trim().max(4096).default(""),
+  GOOGLE_CALENDAR_ACCESS: z.enum(["readOnly", "readWrite"]).default("readWrite"),
   GOOGLE_WORKSPACE_DOMAIN: z.string().default(""),
   BASE_URL: z.string().url(),
   DATABASE_URL: z.string().min(1),
@@ -84,6 +89,16 @@ const base = z.object({
 
 // Production guardrails for the first-run bootstrap (ops spec E6).
 const schema = base.superRefine((v, ctx) => {
+  if (
+    (v.GOOGLE_CALENDAR_OAUTH_CLIENT_ID === "") !==
+    (v.GOOGLE_CALENDAR_OAUTH_CLIENT_SECRET === "")
+  ) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["GOOGLE_CALENDAR_OAUTH_CLIENT_ID"],
+      message: "Calendar OAuth client ID and secret must both be configured or both unset",
+    });
+  }
   if (v.MCP_ENABLED && Buffer.from(v.OAUTH_SIGNING_KEY, "base64").length !== 32) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,

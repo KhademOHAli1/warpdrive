@@ -7,10 +7,10 @@ import { CalendarEventDialog } from "@/features/activities/CalendarEventDialog";
 import { CalendarEventEditDialog } from "@/features/activities/CalendarEventEditDialog";
 import type { CalendarActivity } from "@/features/activities/calendar";
 import { calendarActivityTarget } from "@/features/activities/calendarActivityTarget";
+import { calendarSelection } from "@/features/activities/calendarSelection";
 import { followUpLinksOf, useFollowUpAfterDone } from "@/features/activities/followUpAfterDone";
 import { useLocalNow } from "@/features/activities/useLocalNow";
 import {
-  AGENDA_GRID_COLS,
   groupByLocalDay,
   HOUR_HEIGHT_PX,
   localDayIso,
@@ -29,6 +29,8 @@ import { TimeGutter } from "./TimeGutter";
 interface CreateSlot {
   date: string;
   time: string;
+  endDate?: string;
+  endTime?: string;
 }
 
 // Stable identity so a day with nothing on it does not defeat AgendaDayColumn's memo.
@@ -49,6 +51,7 @@ export function WeekAgendaGrid({
   const router = useRouter();
   const preferences = useLocalePreferences();
   const t = useAppTranslations("calendar");
+  const gridColumns = `3.25rem repeat(${dayIsos.length}, minmax(0, 1fr))`;
 
   const setPreview = useRecordPreview((s) => s.setPreview);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -70,7 +73,7 @@ export function WeekAgendaGrid({
   const selected = activities.find((a) => a.id === selectedId) ?? null;
   // One lane height for the whole week: a lane sized per column would push only some days' hour
   // grids down, and the same hour would sit at a different height in each column.
-  const allDayRows = useMemo(() => allDayRowCount(grouped.values()), [grouped]);
+  const allDayRows = useMemo(() => Math.max(1, allDayRowCount(grouped.values())), [grouped]);
   const todayIso = now === null ? null : localDayIso(now, preferences.timeZone);
   const showNowLine = todayIso !== null && dayIsos.includes(todayIso);
 
@@ -131,7 +134,7 @@ export function WeekAgendaGrid({
           <div className="sticky top-0 z-30 bg-card">
             <div
               className="grid border-b border-border"
-              style={{ gridTemplateColumns: AGENDA_GRID_COLS }}
+              style={{ gridTemplateColumns: gridColumns }}
             >
               <div className="bg-muted/40" />
               {dayIsos.map((iso) => (
@@ -139,10 +142,10 @@ export function WeekAgendaGrid({
               ))}
             </div>
 
-            {allDayRows > 0 && (
+            {
               <div
                 className="grid border-b border-border"
-                style={{ gridTemplateColumns: AGENDA_GRID_COLS }}
+                style={{ gridTemplateColumns: gridColumns }}
               >
                 <div className="bg-muted/40 px-1.5 py-1 text-end text-[10px] text-muted-foreground">
                   {t("allDay")}
@@ -154,16 +157,17 @@ export function WeekAgendaGrid({
                     items={grouped.get(iso) ?? NO_ITEMS}
                     rows={allDayRows}
                     onOpenActivity={openActivity}
+                    onCreate={() => setCreateSlot({ date: iso, time: "" })}
                   />
                 ))}
               </div>
-            )}
+            }
           </div>
 
           <div
             ref={hoursRef}
             className="relative grid"
-            style={{ gridTemplateColumns: AGENDA_GRID_COLS }}
+            style={{ gridTemplateColumns: gridColumns }}
           >
             <TimeGutter />
             {dayIsos.map((iso) => (
@@ -174,6 +178,9 @@ export function WeekAgendaGrid({
                 items={grouped.get(iso) ?? NO_ITEMS}
                 onOpenActivity={openActivity}
                 onOpenSlot={openSlot}
+                onOpenInterval={(date, start, end) =>
+                  setCreateSlot(calendarSelection(date, start, end))
+                }
               />
             ))}
             {showNowLine && now !== null && <NowLine now={now} timeZone={preferences.timeZone} />}
@@ -187,6 +194,8 @@ export function WeekAgendaGrid({
           onSaved={refresh}
           defaultDate={createSlot.date}
           defaultTime={createSlot.time}
+          defaultEndDate={createSlot.endDate}
+          defaultEndTime={createSlot.endTime}
         />
       )}
 

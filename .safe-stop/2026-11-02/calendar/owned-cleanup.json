@@ -1,0 +1,35 @@
+{
+  "recordedAt": "2026-11-02T07:20:40.900395+00:00",
+  "latestOwnedRuns": [
+    {
+      "name": "history22",
+      "run": "c06ed9fd-61c5-4e23-91cb-48bf992347b0",
+      "cid": "3310c3452ff2e2d6570d26d0040037410a21ded3a5633193b12f589c356282b5",
+      "exactRunLabelIds": [],
+      "cidAbsent": true
+    },
+    {
+      "name": "upgradeRED1",
+      "run": "c188b5c5-f86a-40d7-9805-83f55e413188",
+      "cid": "75826eed5ec795c026d19133bd1643c76bdf4a8a1d05f9f0422d81d3116cba96",
+      "exactRunLabelIds": [],
+      "cidAbsent": true
+    },
+    {
+      "name": "upgradeGREEN1",
+      "run": "e41560d6-07b1-405a-8387-a3f4671d8476",
+      "cid": "505a69abea6f01912dea22ff9072797478110f723c41545b1d0c2d3c8913823c",
+      "exactRunLabelIds": [],
+      "cidAbsent": true
+    }
+  ],
+  "latestKnownProcessGroupRows": [],
+  "trackedJobHandles": "all compiler/native handles already terminal; no live owned handle",
+  "foreignBaselineRetained": true,
+  "foreignBaselineCount": 3,
+  "currentContainerCount": 3,
+  "signalsSent": 0,
+  "containersRemovedDuringStop": 0,
+  "servicesChanged": 0,
+  "note": "No owned live activity found. Protected services/ports, unrelated tools and excluded workspace/processes were not targeted."
+}

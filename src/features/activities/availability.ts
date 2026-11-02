@@ -1,6 +1,6 @@
 import { and, eq, isNotNull, isNull, sql } from "drizzle-orm";
 import type { Db } from "@/db/client";
-import { activities } from "@/db/schema";
+import { activities, calendars } from "@/db/schema";
 
 export interface BusyWindow {
   start: Date;
@@ -18,7 +18,8 @@ interface AvailabilityQuery {
 // given user is already booked by another activity assigned to them. NOT a scheduling engine, and
 // deliberately coarse: it exposes only busy spans, never activity details. An activity's end is
 // its explicit end_at, else due_at + durationMinutes, else due_at itself. Scoped to the user's own
-// assignments (deletedAt null); finer per-record visibility is intentionally not applied because
+// open, non-deleted assignments on active calendars (or legacy activities without a calendar).
+// Finer per-record visibility is intentionally not applied because
 // only busy/free (no content) is returned. Overlap uses half-open bounds (start < to, end > from).
 export async function getBusyWindows(
   db: Db,
@@ -39,10 +40,14 @@ export async function getBusyWindows(
   const rows = await db
     .select({ start: activityStart, end: activityEnd })
     .from(activities)
+    .leftJoin(calendars, eq(activities.calendarId, calendars.id))
     .where(
       and(
         eq(activities.assigneeId, query.userId),
+        eq(activities.done, false),
+        eq(activities.availability, "busy"),
         isNull(activities.deletedAt),
+        isNull(calendars.deletedAt),
         isNotNull(activities.dueAt),
         sql`${activityStart} < ${query.to.toISOString()}`,
         sql`${activityEnd} > ${query.from.toISOString()}`,

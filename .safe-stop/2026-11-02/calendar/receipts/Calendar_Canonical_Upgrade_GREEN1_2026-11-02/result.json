@@ -1,0 +1,64 @@
+{
+  "id": "CALENDAR-CANONICAL-NO-ACTIVATION-GREEN1-20261102-1",
+  "state": "PASS_WITH_ACTUAL_TERMINAL_CLEANUP",
+  "recordedAt": "2026-11-02T02:37:45.152466+00:00",
+  "compiler": {
+    "exitCode": 0,
+    "scopedFixtureTsc": "PASS",
+    "changedHelperTypedLint": "PASS zero errors/warnings",
+    "otherEightLintAndApp": "unchanged previous PASS retained",
+    "secondsByShellClock": 5
+  },
+  "native": {
+    "exitCode": 0,
+    "casesPassed": 1,
+    "casesFailed": 0,
+    "setupFailures": 0,
+    "runnerSeconds": 3.77,
+    "secondsByShellClock": 4,
+    "summary": "Test Files  1 passed (1)\n      Tests  1 passed (1)\n   Start at  02:37:08\n   Duration  3.77s (tests 43%, import 42%, transform 14%)\n\n{\"event\":\"private_fixture_cleanup_owned\",\"module\":\"calendar-existing-edit-atomicity\",\"runId\":\"e41560d6-07b1-405a-8387-a3f4671d8476\",\"imageId\":\"sha256:0cefaabd882e42bcb2a2f3dc56d3ce4770560ba62fd7f197f1a2e008fd5731ab\",\"containerId\":\"505a69abea6f01912dea22ff9072797478110f723c41545b1d0c2d3c8913823c\"}\n{\"event\":\"private_fixture_removed\",\"module\":\"calendar-existing-edit-atomicity\",\"runId\":\"e41560d6-07b1-405a-8387-a3f4671d8476\",\"imageId\":\"sha256:0cefaabd882e42bcb2a2f3dc56d3ce4770560ba62fd7f197f1a2e008fd5731ab\",\"containerId\":\"505a69abea6f01912dea22ff9072797478110f723c41545b1d0c2d3c8913823c\"}",
+    "coverageIfPassed": [
+      "exact canonical98 setup and ledger",
+      "actual corrected new private migration and99-entry ledger",
+      "all preexisting Activity/notification/CRM snapshots preserved",
+      "old legacy/default/version/authorship retained",
+      "old settings/intents/rebuilds all empty",
+      "actual native createCalendar/createActivity",
+      "new intent ownership, version1 and CRM links retained",
+      "exactly one pending inApp-only intent",
+      "old Activity snapshots remain exact after new create"
+    ]
+  },
+  "cleanup": {
+    "ownedContainerId": "505a69abea6f01912dea22ff9072797478110f723c41545b1d0c2d3c8913823c",
+    "runId": "e41560d6-07b1-405a-8387-a3f4671d8476",
+    "containerAbsent": true,
+    "exactRunLabelsAbsent": true,
+    "ownedProcessGroupsGone": [
+      9561,
+      9832
+    ],
+    "foreignBaselineCount": 3,
+    "foreignBaselineRetained": true,
+    "postContainerCount": 3,
+    "ownedTemporaryMigrationRootsAbsent": true,
+    "source32PinsUnchanged": true
+  },
+  "allocationSecondsIncludingCleanupObservation": 65.32840394973755,
+  "independentCleanupVerificationDelayAfterNativeEndSeconds": 33.139528036117554,
+  "launchResources": {
+    "level": 1,
+    "availablePercent": 51
+  },
+  "postResources": {
+    "level": 1,
+    "availablePercent": 53
+  },
+  "peakAggregateRss": "unmeasured; samples were terminal",
+  "limits": [
+    "Logical private new migration candidate, not admitted canonical0098 or installed data",
+    "Original historical private fragments/manifest/RED unchanged",
+    "No queue/ownership5/takeover/receipt-transfer/final-MAIL/liveworker/browser/provider acceptance",
+    "No unchanged old suite repeat"
+  ]
+}

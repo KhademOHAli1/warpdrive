@@ -1,0 +1,6 @@
+{
+  "state": "PASS",
+  "scope": "combined metadata only; case bodies independently reviewed in source packets",
+  "findings": [],
+  "actualExecution": false
+}

@@ -3,6 +3,7 @@ import { Plug } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
+import { CalendarConnectionCard } from "@/features/activities/providers/google/CalendarConnectionCard";
 import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import { revokeConnectionAction } from "@/features/oauth/revokeAction";
 import { useFormatters } from "@/lib/useFormatters";
@@ -52,50 +53,53 @@ export function ConnectionsClient({
   }
 
   return (
-    <SettingsCard>
-      <SettingsCardHeader
-        icon={<Plug className="size-4" aria-hidden="true" />}
-        title={S.connectedAppsList}
-        description={S.connectedAppsListDescription}
-      />
-      <SettingsCardBody className="p-0">
-        {connections.length === 0 ? (
-          <p className="p-5 text-sm text-muted-foreground">{S.connectedAppsEmpty}</p>
-        ) : (
-          <ul className="divide-y">
-            {connections.map((connection) => (
-              <li key={connection.clientId} className="flex items-center gap-4 px-5 py-4">
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium">{connection.clientName}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {S.connectedAppsConnected(formatDate(connection.connectedAtIso))}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {connection.lastUsedAtIso === null
-                      ? S.connectedAppsNeverUsed
-                      : S.connectedAppsLastUsed(formatDate(connection.lastUsedAtIso))}
-                  </p>
-                </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={pendingId !== null}
-                  onClick={() => void revoke(connection.clientId)}
-                >
-                  {pendingId === connection.clientId
-                    ? S.connectedAppsRevoking
-                    : S.connectedAppsRevoke}
-                </Button>
-              </li>
-            ))}
-          </ul>
-        )}
-        {error !== null ? (
-          <p className="border-t px-5 py-3 text-sm text-red-600" aria-live="polite">
-            {error}
-          </p>
-        ) : null}
-      </SettingsCardBody>
-    </SettingsCard>
+    <>
+      <CalendarConnectionCard />
+      <SettingsCard>
+        <SettingsCardHeader
+          icon={<Plug className="size-4" aria-hidden="true" />}
+          title={S.connectedAppsList}
+          description={S.connectedAppsListDescription}
+        />
+        <SettingsCardBody className="p-0">
+          {connections.length === 0 ? (
+            <p className="p-5 text-sm text-muted-foreground">{S.connectedAppsEmpty}</p>
+          ) : (
+            <ul className="divide-y">
+              {connections.map((connection) => (
+                <li key={connection.clientId} className="flex items-center gap-4 px-5 py-4">
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium">{connection.clientName}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {S.connectedAppsConnected(formatDate(connection.connectedAtIso))}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {connection.lastUsedAtIso === null
+                        ? S.connectedAppsNeverUsed
+                        : S.connectedAppsLastUsed(formatDate(connection.lastUsedAtIso))}
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={pendingId !== null}
+                    onClick={() => void revoke(connection.clientId)}
+                  >
+                    {pendingId === connection.clientId
+                      ? S.connectedAppsRevoking
+                      : S.connectedAppsRevoke}
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          )}
+          {error !== null ? (
+            <p className="border-t px-5 py-3 text-sm text-red-600" aria-live="polite">
+              {error}
+            </p>
+          ) : null}
+        </SettingsCardBody>
+      </SettingsCard>
+    </>
   );
 }

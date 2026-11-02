@@ -1,0 +1,1805 @@
+{
+  "scope": "Curated static source only, not raw runtime state. Not in Git commit allowlist. Runtime environment/dependencies/logs/profiles/data remain in place; evidence receipts already live in outputs.",
+  "entries": [
+    {
+      "path": ".runtime/calendar-acceptance-inspect.mts",
+      "sha256": "1726fa4ad3ff1a2e569f95c741a1524a401bc515ccd180a35ce3ebed78ef8a01",
+      "bytes": 1198
+    },
+    {
+      "path": ".runtime/calendar-browser-catalog-cleanup.mts",
+      "sha256": "7598ebbbed11d971d65079378a2020102b81c8431a56b5ef0ac745c23bb27281",
+      "bytes": 10184
+    },
+    {
+      "path": ".runtime/calendar-browser-catalog-fixture-plan.md",
+      "sha256": "fc01985e941a0b71c293b0980f86080f03c2286c0f75245f3ba42177f1d4ab28",
+      "bytes": 4318
+    },
+    {
+      "path": ".runtime/calendar-browser-catalog-observe.mts",
+      "sha256": "5b1db31a32a686a7dfc3591ab1b0c80cc902b1346c3136592badcb24905989c5",
+      "bytes": 1995
+    },
+    {
+      "path": ".runtime/calendar-browser-catalog-record-prefs.mts",
+      "sha256": "5fe0d34baf370c5a097c49726e04f4c825f98ddddbdd536bacbd189d9971b4f5",
+      "bytes": 1360
+    },
+    {
+      "path": ".runtime/calendar-browser-catalog-seed.mts",
+      "sha256": "84cf25d82a3b6b54c263227fc8b1aadd951fb4c5971d5cee1fa22243e7c6ee6b",
+      "bytes": 15856
+    },
+    {
+      "path": ".runtime/calendar-browser-migrate-activation.mts",
+      "sha256": "c863fbd20bd2da511eee5bf77d0832bef7c212a6e239c369212e699d515e6622",
+      "bytes": 2343
+    },
+    {
+      "path": ".runtime/calendar-browser-migrate-catalog.mts",
+      "sha256": "3d2ccd09f18cdba5f08db6d22b49a26661fafac8e69a1c2464e226c97ec8411d",
+      "bytes": 5534
+    },
+    {
+      "path": ".runtime/calendar-browser-migrate-existing.mts",
+      "sha256": "f274df819dabb658553a45596d33239ebcc630cb7c185c29100da5ee0200da88",
+      "bytes": 804
+    },
+    {
+      "path": ".runtime/calendar-browser-migrate-generation.mts",
+      "sha256": "424575ab41204351cb9be8b5d6488b001586a2ac2d7d1a39eaa4fc45aee5c09d",
+      "bytes": 4773
+    },
+    {
+      "path": ".runtime/calendar-browser.roles.mts",
+      "sha256": "b3c2fbd58de7957b2a724d322c125b1fd87ab90a87abad8dc20ed942ffb65c58",
+      "bytes": 1048
+    },
+    {
+      "path": ".runtime/calendar-browser.setup.mts",
+      "sha256": "d7ef2c6c619b4e75801aa92221e537f8b7c14949c9b05bec3935e840d858fe4e",
+      "bytes": 3084
+    },
+    {
+      "path": ".runtime/calendar-canonical-upgrade-candidate/populatedUpgrade.integration.test.ts",
+      "sha256": "e8b7959fef6b64270fff51f38c1f66bc7755dd757e08341791fb1a9c5c58fd94",
+      "bytes": 4529
+    },
+    {
+      "path": ".runtime/calendar-canonical-upgrade-candidate/upgrade.eslint.config.mjs",
+      "sha256": "83641b200e5b31193bacc9660cb73ad787ce8d986d7ebc9da1a6b169d9759797",
+      "bytes": 926
+    },
+    {
+      "path": ".runtime/calendar-canonical-upgrade-candidate/nativeCreateControl.ts",
+      "sha256": "d955027b769ddcbf6cef5a539f72fa05e027ee315f258fea00ac8d3e0177753d",
+      "bytes": 2388
+    },
+    {
+      "path": ".runtime/calendar-canonical-upgrade-candidate/upgrade.tsconfig.json",
+      "sha256": "8abb45d82def77d5f5029fa9e8d9a5bbcfb04d63b2bdb340ce726de2cc9a1a17",
+      "bytes": 271
+    },
+    {
+      "path": ".runtime/calendar-canonical-upgrade-candidate/legacySeed.ts",
+      "sha256": "004a4ba3f1302a064ff5f9ee2fba5bbf0e0ac567e5e28608c8bec79ab7355702",
+      "bytes": 4101
+    },
+    {
+      "path": ".runtime/calendar-canonical-upgrade-candidate/rowSnapshots.ts",
+      "sha256": "a314071ec34badd47c5b9b875ad052cbcf6f7f1ba9e09247cb7ea5a012b09a77",
+      "bytes": 1174
+    },
+    {
+      "path": ".runtime/calendar-canonical-upgrade-candidate/canonical-source-manifest.json",
+      "sha256": "4e44b5ca6ef66d01c57e390324827bcf9ca90b927b7aaedecb9c6dfcc70e9046",
+      "bytes": 17899
+    },
+    {
+      "path": ".runtime/calendar-canonical-upgrade-candidate/migrationFolders.ts",
+      "sha256": "bc8e3a6e50bae97ef8fd71f79d772328289ff93ac62b90df1f90823e3a5482e6",
+      "bytes": 4746
+    },
+    {
+      "path": ".runtime/calendar-canonical-upgrade-candidate/README.md",
+      "sha256": "d097cb394ed85cd6919555b8397c883ac889b5b8e2385cbf82aea943191d159f",
+      "bytes": 3050
+    },
+    {
+      "path": ".runtime/calendar-canonical-upgrade-candidate/native-baseline-manifest.json",
+      "sha256": "ed1e0ccdab8edb27231080133a5c75afbdba395584d24937a82a09794693a281",
+      "bytes": 5490
+    },
+    {
+      "path": ".runtime/calendar-canonical-upgrade-candidate/native-corrected-baseline-manifest.json",
+      "sha256": "8a54092745a52b47dd7c02b839edb7c5d66235b210d8766e1f4b606e3b49be69",
+      "bytes": 7516
+    },
+    {
+      "path": ".runtime/calendar-canonical-upgrade-candidate/upgrade.biome.json",
+      "sha256": "89d888f8f7b3177aef7d5adb688ec8d0ca3d4c659fc9ee6dd34d664a0169b999",
+      "bytes": 655
+    },
+    {
+      "path": ".runtime/calendar-canonical-upgrade-candidate/canonicalUpgrade.globalSetup.ts",
+      "sha256": "b7a19c71b41bbd64286f41e0c6c15ccde6320e1590b9be71f7a9e38025bb4101",
+      "bytes": 4272
+    },
+    {
+      "path": ".runtime/calendar-canonical-upgrade-candidate/canonicalSource.ts",
+      "sha256": "7ab8117121be8009e2f6577716297938d23b8c93676358f4924acc16903090ef",
+      "bytes": 3363
+    },
+    {
+      "path": ".runtime/calendar-canonical-upgrade-candidate/upgrade.vitest.config.mts",
+      "sha256": "174624dac2807aa2bf28bf5e590156ea1a7658cebfe3a6fc887574bb16dafe31",
+      "bytes": 1289
+    },
+    {
+      "path": ".runtime/calendar-canonical-upgrade-candidate/migrationLedger.ts",
+      "sha256": "5d4069d57aa4cb7d41fa16c61ea909ae74b89cb259c6c17d8914bb8ba185bd7a",
+      "bytes": 895
+    },
+    {
+      "path": ".runtime/calendar-canonical-upgrade-candidate/baseline/0087_calendar_reminder_rebuilds_001_052_no_dirty_seed.sql",
+      "sha256": "79788554d7cf985499f63219ad86ae8023e5766150d54a6bcfff5b9118690f37",
+      "bytes": 2799
+    },
+    {
+      "path": ".runtime/calendar-canonical-upgrade-candidate/baseline/0092_calendar_provider_catalog_057_057.sql",
+      "sha256": "3367ceae59ff6181d3b0319714d7cbdb76e7a8710fe7c82504baf865a66c564a",
+      "bytes": 100
+    },
+    {
+      "path": ".runtime/calendar-canonical-upgrade-candidate/baseline/0086_calendar_reminders_and_google_grants_053_075.sql",
+      "sha256": "b90ac738a4bceaf1c2bead09d534bba776068d7a9d5e2d6879832e650c785521",
+      "bytes": 2029
+    },
+    {
+      "path": ".runtime/calendar-canonical-upgrade-candidate/baseline/0083_calendar_event_revision_001_012.sql",
+      "sha256": "e808b67306e4dbef50dcb6599bb5869041325d51705ada0db3085c381dbc44f3",
+      "bytes": 488
+    },
+    {
+      "path": ".runtime/calendar-canonical-upgrade-candidate/baseline/0085_activity_reminder_intents_001_024.sql",
+      "sha256": "d14601facebcf3e573fb422ce0d8f758bf746fc4f0fd1ff6b15bad64fec443e7",
+      "bytes": 1805
+    },
+    {
+      "path": ".runtime/calendar-canonical-upgrade-candidate/baseline/0086_calendar_reminders_and_google_grants_079_082.sql",
+      "sha256": "f9056542150ea63f13a3859e1eee342f1ea052a87600c50bfebaf0a682dee34f",
+      "bytes": 847
+    },
+    {
+      "path": ".runtime/calendar-canonical-upgrade-candidate/baseline/qualified_test_engine_column.sql",
+      "sha256": "fe8b31f360fca709e4b4e4fe6501def65a980da5cbe9c924d1cffcc334056ef6",
+      "bytes": 129
+    },
+    {
+      "path": ".runtime/calendar-canonical-upgrade-candidate/baseline/0086_calendar_reminders_and_google_grants_085_085.sql",
+      "sha256": "0cf8d5a266863a1c34f0920e934ac7c8f05b267c2c9179a321f8b189c6c7c1c7",
+      "bytes": 249
+    },
+    {
+      "path": ".runtime/calendar-canonical-upgrade-candidate/baseline/0090_calendar_reminder_activation_001_027.sql",
+      "sha256": "edb6a3d15b4e2b3e3cac51373e8185e7f4a433aca24dfc4bcdd75c9a5b8220af",
+      "bytes": 1489
+    },
+    {
+      "path": ".runtime/calendar-canonical-upgrade-candidate/baseline/0087_calendar_reminder_rebuilds_001_055.sql",
+      "sha256": "acfeede51b1cc17d2e23b3449eeeb59b13ddfdedc9b7c0124ce8271e9cd18a4a",
+      "bytes": 2968
+    },
+    {
+      "path": ".runtime/calendar-canonical-upgrade-candidate/baseline/0086_calendar_reminders_and_google_grants_001_013.sql",
+      "sha256": "2fa2c367ff42478de77b4c85c2b7cd66001db412bb7487eb1f491c796e119b58",
+      "bytes": 776
+    },
+    {
+      "path": ".runtime/calendar-canonical-upgrade-candidate/baseline/0092_calendar_provider_catalog_063_063.sql",
+      "sha256": "21b015e70406ec5f57d3816873ae396dec9b8aceec447e144a9428cf7f7309f0",
+      "bytes": 136
+    },
+    {
+      "path": ".runtime/calendar-canonical-upgrade-candidate/baseline/0085_activity_reminder_intents_001_021_no_activation.sql",
+      "sha256": "170473b7daaa133a851b9b0514cc5093f387a13074fba6aaefb7eeaef81c9e21",
+      "bytes": 1582
+    },
+    {
+      "path": ".runtime/calendar-canonical-upgrade-candidate/baseline/0088_calendar_reminder_acl_rebuilds_001_049.sql",
+      "sha256": "bb4ab2f8c3d34d9b6a6e4cc21c8704dbc0a90108ff65ff85c8133afbd11ad705",
+      "bytes": 2159
+    },
+    {
+      "path": ".runtime/calendar-canonical-upgrade-candidate/baseline/0089_calendar_reminder_receipt_index_001_001.sql",
+      "sha256": "99761a3d1eeaf9568bd1a8713474343af1cc3fd3068a1894dab7a4556fc5cec4",
+      "bytes": 113
+    },
+    {
+      "path": ".runtime/calendar-canonical-upgrade-candidate/baseline/0084_calendar_ownership_001_029.sql",
+      "sha256": "778f61c6cb514f65d7a380dd518a1cd4fab54299e3c8e789e589a6d19cbab543",
+      "bytes": 2349
+    },
+    {
+      "path": ".runtime/calendar-catalog-DESIGN.md",
+      "sha256": "cd446e3bb2cdc51df41e9b2d82bb65cb933420c88af194092ecd39d64bfa80b5",
+      "bytes": 5205
+    },
+    {
+      "path": ".runtime/calendar-catalog-shutdown-note.md",
+      "sha256": "4ee3952f5f122ca59bb65a7decf9ec0377fd0619d1c3b420fcedae744afa1c33",
+      "bytes": 1415
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase10-browser/source-manifest.json",
+      "sha256": "82eba48cbe2fd60a0d44007e7cab2e341eefbabc9b7eb1abb883c4fecddc5400",
+      "bytes": 46579
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase10-browser/evidence/calendar-browser-migrate-catalog.mts",
+      "sha256": "3d2ccd09f18cdba5f08db6d22b49a26661fafac8e69a1c2464e226c97ec8411d",
+      "bytes": 5534
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase10-browser/evidence/calendar-google-event-sync-cursors-candidate-unit.config.mts",
+      "sha256": "df66f59950f2219abf228c4f60acd85809cff144fada83f999ffc4e2d844e592",
+      "bytes": 460
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase10-browser/evidence/calendar-google-catalog-clock-affected-pg.config.mts",
+      "sha256": "b7370dafcf20b477bde88432c71f1a8c6a50de2184c4bc19466c6bff7a06f023",
+      "bytes": 397
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase10-browser/evidence/calendar-google-catalog-red-pg.config.mts",
+      "sha256": "dd5537a82f59880beee126ea6fc0b7d9e683748b26abb8023b9eeb7aa8b42583",
+      "bytes": 895
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase10-browser/evidence/calendar-google-catalog-candidate-pg.config.mts",
+      "sha256": "a768fda3707a853087e3bf0d84ad0d6ca7cf02d8c76d41ad032069a5f5ebfa09",
+      "bytes": 404
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase10-browser/evidence/calendar-catalog-shutdown-note.md",
+      "sha256": "4ee3952f5f122ca59bb65a7decf9ec0377fd0619d1c3b420fcedae744afa1c33",
+      "bytes": 1415
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase10-browser/evidence/calendar-browser-catalog-fixture-plan.md",
+      "sha256": "fc01985e941a0b71c293b0980f86080f03c2286c0f75245f3ba42177f1d4ab28",
+      "bytes": 4318
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase10-browser/evidence/calendar-catalog-DESIGN.md",
+      "sha256": "cd446e3bb2cdc51df41e9b2d82bb65cb933420c88af194092ecd39d64bfa80b5",
+      "bytes": 5205
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase10-browser/evidence/calendar-event-mirror-DESIGN.md",
+      "sha256": "920130e8c165060fa081a9f14f94fae28e9f64d0a37b9014ab07ff1428097114",
+      "bytes": 5707
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase10-browser/evidence/calendar-browser-catalog-cleanup.mts",
+      "sha256": "7598ebbbed11d971d65079378a2020102b81c8431a56b5ef0ac745c23bb27281",
+      "bytes": 10184
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase10-browser/evidence/calendar-google-authorization-expiry-lock-pg.config.mts",
+      "sha256": "b93776895400fde220fd97f5885be048d9e88c89baa6c504aae848fdc6f4d7fd",
+      "bytes": 335
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase10-browser/evidence/calendar-browser-catalog-seed.mts",
+      "sha256": "84cf25d82a3b6b54c263227fc8b1aadd951fb4c5971d5cee1fa22243e7c6ee6b",
+      "bytes": 15856
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase10-browser/evidence/calendar-google-catalog-affected-pg.config.mts",
+      "sha256": "f7d2ef108c2af0605ecc7d5b3dd3937629a566e802a8c5a462c4e9cea8525f31",
+      "bytes": 809
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase10-browser/evidence/google-event-sync-bounds-draft/eventSyncBoundsFixture.ts",
+      "sha256": "6d285f688b1f6cc0521ef26c7e4f6e99906238a62c535209efebc077767c32b5",
+      "bytes": 3732
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase10-browser/evidence/google-event-sync-bounds-draft/eventSyncBounds.test.ts",
+      "sha256": "1d32807841238e897149b9e432e4b9e5edd329f5fef82c2d4b99e5ac9b84505c",
+      "bytes": 9674
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase10-browser/evidence/google-event-sync-bounds-draft/eventStorage.ts",
+      "sha256": "12f5ec49c0a8c4f0ddb926bd71c7a90d8511260b87bfbcd4fc5702b4a50f0717",
+      "bytes": 1543
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase10-browser/evidence/google-event-sync-bounds-draft/CONTRACT.md",
+      "sha256": "3e614bf3d6d54abdf6dd55f16dcc5958e8a0b3f1966be484ad8926387f1ca65a",
+      "bytes": 5309
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase10-browser/evidence/google-event-sync-bounds-draft/eventSyncCursorBounds.test.ts",
+      "sha256": "928e205568762b5c26385b184d7b336ed234645c09de3498d081e65518068480",
+      "bytes": 3827
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase10-browser/evidence/google-event-sync-bounds-draft/sync.ts",
+      "sha256": "518c275557efea4d0ce1d797c02159db69e833763b66f33b59278986c00f97b9",
+      "bytes": 2406
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase11-event-bounds/source-manifest.json",
+      "sha256": "60772df3365b313ae25696980afabacb6786ba1b08a0916c5f69c52d27b80454",
+      "bytes": 47471
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase11-event-bounds/evidence/calendar-browser-migrate-catalog.mts",
+      "sha256": "3d2ccd09f18cdba5f08db6d22b49a26661fafac8e69a1c2464e226c97ec8411d",
+      "bytes": 5534
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase11-event-bounds/evidence/calendar-google-event-sync-cursors-red-manifest.json",
+      "sha256": "649a304a70bf6eb5d7cae8e3065ad70fb0296c92b4766b0b2f2d48ca24d61d07",
+      "bytes": 1453
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase11-event-bounds/evidence/calendar-google-event-sync-cursors-candidate-unit.config.mts",
+      "sha256": "df66f59950f2219abf228c4f60acd85809cff144fada83f999ffc4e2d844e592",
+      "bytes": 460
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase11-event-bounds/evidence/calendar-google-event-sync-cursors-green-manifest.json",
+      "sha256": "8e15654fb3b1f6674d9a9dcaa0c3930c5384f046b82702f681de4c5e741c1485",
+      "bytes": 1496
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase11-event-bounds/evidence/calendar-google-catalog-clock-affected-pg.config.mts",
+      "sha256": "b7370dafcf20b477bde88432c71f1a8c6a50de2184c4bc19466c6bff7a06f023",
+      "bytes": 397
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase11-event-bounds/evidence/calendar-google-catalog-red-pg.config.mts",
+      "sha256": "dd5537a82f59880beee126ea6fc0b7d9e683748b26abb8023b9eeb7aa8b42583",
+      "bytes": 895
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase11-event-bounds/evidence/calendar-google-catalog-candidate-pg.config.mts",
+      "sha256": "a768fda3707a853087e3bf0d84ad0d6ca7cf02d8c76d41ad032069a5f5ebfa09",
+      "bytes": 404
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase11-event-bounds/evidence/calendar-catalog-shutdown-note.md",
+      "sha256": "4ee3952f5f122ca59bb65a7decf9ec0377fd0619d1c3b420fcedae744afa1c33",
+      "bytes": 1415
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase11-event-bounds/evidence/calendar-browser-catalog-fixture-plan.md",
+      "sha256": "fc01985e941a0b71c293b0980f86080f03c2286c0f75245f3ba42177f1d4ab28",
+      "bytes": 4318
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase11-event-bounds/evidence/calendar-catalog-DESIGN.md",
+      "sha256": "cd446e3bb2cdc51df41e9b2d82bb65cb933420c88af194092ecd39d64bfa80b5",
+      "bytes": 5205
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase11-event-bounds/evidence/calendar-google-event-sync-affected-unit.config.mts",
+      "sha256": "994d26a050da4e361c52f72df951588881382923956966a4b5d05769321dc1a8",
+      "bytes": 819
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase11-event-bounds/evidence/calendar-google-oauth-retention-red-pg.config.mts",
+      "sha256": "76bbab219130dcd93d8685cd9bce21876412f9db60292c54e54096ff506e1c79",
+      "bytes": 740
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase11-event-bounds/evidence/calendar-event-mirror-DESIGN.md",
+      "sha256": "56c92a73d51ccd892476211d09413b9a9ba439b8ea1688d2a60b03a02373cc06",
+      "bytes": 6185
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase11-event-bounds/evidence/calendar-browser-catalog-cleanup.mts",
+      "sha256": "7598ebbbed11d971d65079378a2020102b81c8431a56b5ef0ac745c23bb27281",
+      "bytes": 10184
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase11-event-bounds/evidence/calendar-google-authorization-expiry-lock-pg.config.mts",
+      "sha256": "b93776895400fde220fd97f5885be048d9e88c89baa6c504aae848fdc6f4d7fd",
+      "bytes": 335
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase11-event-bounds/evidence/calendar-browser-catalog-seed.mts",
+      "sha256": "84cf25d82a3b6b54c263227fc8b1aadd951fb4c5971d5cee1fa22243e7c6ee6b",
+      "bytes": 15856
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase11-event-bounds/evidence/calendar-google-catalog-affected-pg.config.mts",
+      "sha256": "f7d2ef108c2af0605ecc7d5b3dd3937629a566e802a8c5a462c4e9cea8525f31",
+      "bytes": 809
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase11-event-bounds/evidence/calendar-event-sync-pages-draft/eventSyncPages.test.ts",
+      "sha256": "3a0840a1d073698bd06f09bcb58e7149ca54d248d64c611c83b2262306c14049",
+      "bytes": 10621
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase11-event-bounds/evidence/calendar-event-sync-pages-draft/CONTRACT.md",
+      "sha256": "a2860e3dc2861e570155e6383d5f39f9e1b744becb31c99c99e80c42ef2437bb",
+      "bytes": 5819
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase11-event-bounds/evidence/calendar-event-sync-pages-draft/eventSyncPagesFixture.ts",
+      "sha256": "b10ba181ae5b54961a99412fb428da90414e83c3ca7cebc3d9c8e526b4512134",
+      "bytes": 6306
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase11-event-bounds/evidence/calendar-oauth-retention-draft/authorizationCleanup.ts",
+      "sha256": "12506f49b88c1174f6f1b62147d113adcebd912d27b34bda1bd396fb693c3167",
+      "bytes": 425
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase11-event-bounds/evidence/calendar-oauth-retention-draft/authorizationRetentionFixture.ts",
+      "sha256": "4050321e381614bc95c865621073ba3e8be0cbc79712d36647ad060c7f653170",
+      "bytes": 6515
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase11-event-bounds/evidence/calendar-oauth-retention-draft/CONTRACT.md",
+      "sha256": "687badb3e51afc1a275369240fa0e60c08185c00a12a9ccf2c11eeb6488fffa5",
+      "bytes": 5685
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase11-event-bounds/evidence/calendar-oauth-retention-draft/authorizationRetention.integration.test.ts",
+      "sha256": "105aa9a95dfffe4e7baab49556e75acfa8bb3639a54e25fd1a88ec49e2bfe510",
+      "bytes": 10024
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase11-event-bounds/evidence/google-event-sync-bounds-draft/eventSyncBoundsFixture.ts",
+      "sha256": "6d285f688b1f6cc0521ef26c7e4f6e99906238a62c535209efebc077767c32b5",
+      "bytes": 3732
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase11-event-bounds/evidence/google-event-sync-bounds-draft/eventSyncBounds.test.ts",
+      "sha256": "1d32807841238e897149b9e432e4b9e5edd329f5fef82c2d4b99e5ac9b84505c",
+      "bytes": 9674
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase11-event-bounds/evidence/google-event-sync-bounds-draft/eventStorage.ts",
+      "sha256": "377c5283808de4700dcdd544c73f4c5fb9a8e28ff69b0c902315259823b318c6",
+      "bytes": 1859
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase11-event-bounds/evidence/google-event-sync-bounds-draft/CONTRACT.md",
+      "sha256": "90de2132d23bfce180fa782bcc270e1f85693880fa8f2595636e58e96291a7c0",
+      "bytes": 6636
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase11-event-bounds/evidence/google-event-sync-bounds-draft/eventSyncCursorBounds.test.ts",
+      "sha256": "8af59e34483f2db030846159a929a545e44ca0d84a9d1f777e3a67d3df7b332c",
+      "bytes": 3879
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase11-event-bounds/evidence/google-event-sync-bounds-draft/sync.ts",
+      "sha256": "4187a5f404163ab3d61fce74353f00c6df5a6e5f6e017a35f9bc82a3f9c325cb",
+      "bytes": 2894
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase12-event-bounds-qualified/source-manifest.json",
+      "sha256": "b7e769ecf4f46d1cfae0ce330015c3439aa6bdd781c2ef6e7f0b4ff97efb1a8e",
+      "bytes": 47472
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase12-event-bounds-qualified/evidence/calendar-google-event-sync-pages-red-unit.config.mts",
+      "sha256": "ab18b30967f10fc4f1f99bb3b8bfa2524ad18d02bc213b7381410d7c55980866",
+      "bytes": 985
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase12-event-bounds-qualified/evidence/calendar-browser-migrate-catalog.mts",
+      "sha256": "3d2ccd09f18cdba5f08db6d22b49a26661fafac8e69a1c2464e226c97ec8411d",
+      "bytes": 5534
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase12-event-bounds-qualified/evidence/calendar-google-event-sync-cursors-red-manifest.json",
+      "sha256": "649a304a70bf6eb5d7cae8e3065ad70fb0296c92b4766b0b2f2d48ca24d61d07",
+      "bytes": 1453
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase12-event-bounds-qualified/evidence/calendar-google-event-sync-cursors-candidate-unit.config.mts",
+      "sha256": "df66f59950f2219abf228c4f60acd85809cff144fada83f999ffc4e2d844e592",
+      "bytes": 460
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase12-event-bounds-qualified/evidence/calendar-google-event-sync-cursors-green-manifest.json",
+      "sha256": "8e15654fb3b1f6674d9a9dcaa0c3930c5384f046b82702f681de4c5e741c1485",
+      "bytes": 1496
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase12-event-bounds-qualified/evidence/calendar-google-catalog-clock-affected-pg.config.mts",
+      "sha256": "b7370dafcf20b477bde88432c71f1a8c6a50de2184c4bc19466c6bff7a06f023",
+      "bytes": 397
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase12-event-bounds-qualified/evidence/calendar-google-catalog-red-pg.config.mts",
+      "sha256": "dd5537a82f59880beee126ea6fc0b7d9e683748b26abb8023b9eeb7aa8b42583",
+      "bytes": 895
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase12-event-bounds-qualified/evidence/calendar-google-catalog-candidate-pg.config.mts",
+      "sha256": "a768fda3707a853087e3bf0d84ad0d6ca7cf02d8c76d41ad032069a5f5ebfa09",
+      "bytes": 404
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase12-event-bounds-qualified/evidence/calendar-catalog-shutdown-note.md",
+      "sha256": "4ee3952f5f122ca59bb65a7decf9ec0377fd0619d1c3b420fcedae744afa1c33",
+      "bytes": 1415
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase12-event-bounds-qualified/evidence/calendar-browser-catalog-fixture-plan.md",
+      "sha256": "fc01985e941a0b71c293b0980f86080f03c2286c0f75245f3ba42177f1d4ab28",
+      "bytes": 4318
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase12-event-bounds-qualified/evidence/calendar-catalog-DESIGN.md",
+      "sha256": "cd446e3bb2cdc51df41e9b2d82bb65cb933420c88af194092ecd39d64bfa80b5",
+      "bytes": 5205
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase12-event-bounds-qualified/evidence/calendar-google-event-sync-affected-unit.config.mts",
+      "sha256": "994d26a050da4e361c52f72df951588881382923956966a4b5d05769321dc1a8",
+      "bytes": 819
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase12-event-bounds-qualified/evidence/agency-civil-date-contract.md",
+      "sha256": "1dba2dcf71e386f8ccd8e1227b3be594a8b5ed95fbc668bb8003045e35876ecd",
+      "bytes": 2942
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase12-event-bounds-qualified/evidence/calendar-google-oauth-retention-red-pg.config.mts",
+      "sha256": "6b5efed8e7c717730e15caccd0e1380510e2a7b69b9b97a24aa8e7066b6c9640",
+      "bytes": 850
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase12-event-bounds-qualified/evidence/calendar-event-mirror-DESIGN.md",
+      "sha256": "8278861ea0320c6abfc49730089ee66f06c98c459dbb5e775b660c96fa4974b1",
+      "bytes": 8400
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase12-event-bounds-qualified/evidence/calendar-browser-catalog-cleanup.mts",
+      "sha256": "7598ebbbed11d971d65079378a2020102b81c8431a56b5ef0ac745c23bb27281",
+      "bytes": 10184
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase12-event-bounds-qualified/evidence/calendar-google-authorization-expiry-lock-pg.config.mts",
+      "sha256": "b93776895400fde220fd97f5885be048d9e88c89baa6c504aae848fdc6f4d7fd",
+      "bytes": 335
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase12-event-bounds-qualified/evidence/calendar-browser-catalog-seed.mts",
+      "sha256": "84cf25d82a3b6b54c263227fc8b1aadd951fb4c5971d5cee1fa22243e7c6ee6b",
+      "bytes": 15856
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase12-event-bounds-qualified/evidence/calendar-google-catalog-affected-pg.config.mts",
+      "sha256": "f7d2ef108c2af0605ecc7d5b3dd3937629a566e802a8c5a462c4e9cea8525f31",
+      "bytes": 809
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase12-event-bounds-qualified/evidence/calendar-event-sync-pages-draft/eventSyncPages.test.ts",
+      "sha256": "911d4960341e72cffedc2e50a98c42f70a480dac301255beab8e8013784efd08",
+      "bytes": 4808
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase12-event-bounds-qualified/evidence/calendar-event-sync-pages-draft/CONTRACT.md",
+      "sha256": "9a93ce5c54735ae7cc819474f621fa82e88b742a0b2ac16e4236b1a9821e41b6",
+      "bytes": 6824
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase12-event-bounds-qualified/evidence/calendar-event-sync-pages-draft/eventSyncPagesFixture.ts",
+      "sha256": "0fe97bedaaf938b6fd13acbb145727f3c953a7baa82437b56da1925a0a32f945",
+      "bytes": 6328
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase12-event-bounds-qualified/evidence/calendar-event-sync-pages-draft/eventSyncPayloadPages.test.ts",
+      "sha256": "c041819444b4a80c114b819b734493b7bca4737ec66d2a6b88e071a3a0b1c645",
+      "bytes": 3146
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase12-event-bounds-qualified/evidence/calendar-event-sync-pages-draft/eventSyncStaging.test.ts",
+      "sha256": "0e01fae0147932a076b708622505d880317852977f9f2ea4f3bec4c019a1e500",
+      "bytes": 3847
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase12-event-bounds-qualified/evidence/calendar-event-sync-pages-draft/eventSyncPages.ts",
+      "sha256": "baeb018ee67803c7e4b2c894132680c47dfcb39a223f4aac0ee01ef0194e4e91",
+      "bytes": 1400
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase12-event-bounds-qualified/evidence/calendar-oauth-retention-draft/authorizationCleanup.ts",
+      "sha256": "12506f49b88c1174f6f1b62147d113adcebd912d27b34bda1bd396fb693c3167",
+      "bytes": 425
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase12-event-bounds-qualified/evidence/calendar-oauth-retention-draft/authorizationRetentionFixture.ts",
+      "sha256": "4050321e381614bc95c865621073ba3e8be0cbc79712d36647ad060c7f653170",
+      "bytes": 6515
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase12-event-bounds-qualified/evidence/calendar-oauth-retention-draft/CONTRACT.md",
+      "sha256": "eafd0a55089b6e62db6d624a2c07b452aaa6d8dbcd15611c484e8b07eedc20e4",
+      "bytes": 6206
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase12-event-bounds-qualified/evidence/calendar-oauth-retention-draft/authorizationRetention.integration.test.ts",
+      "sha256": "105aa9a95dfffe4e7baab49556e75acfa8bb3639a54e25fd1a88ec49e2bfe510",
+      "bytes": 10024
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase12-event-bounds-qualified/evidence/calendar-oauth-retention-draft/authorizationRetentionIndex.integration.test.ts",
+      "sha256": "635f285ea8ab91d192a26e038ed2e7fc6e1c96d49dd6569f4505660ef9a985bc",
+      "bytes": 1674
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase12-event-bounds-qualified/evidence/google-event-sync-bounds-draft/eventSyncBoundsFixture.ts",
+      "sha256": "6d285f688b1f6cc0521ef26c7e4f6e99906238a62c535209efebc077767c32b5",
+      "bytes": 3732
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase12-event-bounds-qualified/evidence/google-event-sync-bounds-draft/eventSyncBounds.test.ts",
+      "sha256": "1d32807841238e897149b9e432e4b9e5edd329f5fef82c2d4b99e5ac9b84505c",
+      "bytes": 9674
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase12-event-bounds-qualified/evidence/google-event-sync-bounds-draft/eventStorage.ts",
+      "sha256": "377c5283808de4700dcdd544c73f4c5fb9a8e28ff69b0c902315259823b318c6",
+      "bytes": 1859
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase12-event-bounds-qualified/evidence/google-event-sync-bounds-draft/CONTRACT.md",
+      "sha256": "90de2132d23bfce180fa782bcc270e1f85693880fa8f2595636e58e96291a7c0",
+      "bytes": 6636
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase12-event-bounds-qualified/evidence/google-event-sync-bounds-draft/eventSyncCursorBounds.test.ts",
+      "sha256": "8af59e34483f2db030846159a929a545e44ca0d84a9d1f777e3a67d3df7b332c",
+      "bytes": 3879
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase12-event-bounds-qualified/evidence/google-event-sync-bounds-draft/sync.ts",
+      "sha256": "4187a5f404163ab3d61fce74353f00c6df5a6e5f6e017a35f9bc82a3f9c325cb",
+      "bytes": 2894
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase13-consolidation-freeze/source-manifest.json",
+      "sha256": "3bfe9027b30da891ef36e611db73a924fe070fddb01fd0b80e583c6b6fcb05d0",
+      "bytes": 47472
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase13-consolidation-freeze/evidence/calendar-google-event-sync-pages-red-unit.config.mts",
+      "sha256": "ab18b30967f10fc4f1f99bb3b8bfa2524ad18d02bc213b7381410d7c55980866",
+      "bytes": 985
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase13-consolidation-freeze/evidence/calendar-browser-migrate-catalog.mts",
+      "sha256": "3d2ccd09f18cdba5f08db6d22b49a26661fafac8e69a1c2464e226c97ec8411d",
+      "bytes": 5534
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase13-consolidation-freeze/evidence/calendar-google-event-sync-cursors-red-manifest.json",
+      "sha256": "649a304a70bf6eb5d7cae8e3065ad70fb0296c92b4766b0b2f2d48ca24d61d07",
+      "bytes": 1453
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase13-consolidation-freeze/evidence/calendar-google-event-sync-cursors-candidate-unit.config.mts",
+      "sha256": "df66f59950f2219abf228c4f60acd85809cff144fada83f999ffc4e2d844e592",
+      "bytes": 460
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase13-consolidation-freeze/evidence/calendar-google-event-sync-cursors-green-manifest.json",
+      "sha256": "8e15654fb3b1f6674d9a9dcaa0c3930c5384f046b82702f681de4c5e741c1485",
+      "bytes": 1496
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase13-consolidation-freeze/evidence/calendar-google-catalog-clock-affected-pg.config.mts",
+      "sha256": "b7370dafcf20b477bde88432c71f1a8c6a50de2184c4bc19466c6bff7a06f023",
+      "bytes": 397
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase13-consolidation-freeze/evidence/calendar-google-catalog-red-pg.config.mts",
+      "sha256": "dd5537a82f59880beee126ea6fc0b7d9e683748b26abb8023b9eeb7aa8b42583",
+      "bytes": 895
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase13-consolidation-freeze/evidence/calendar-google-catalog-candidate-pg.config.mts",
+      "sha256": "a768fda3707a853087e3bf0d84ad0d6ca7cf02d8c76d41ad032069a5f5ebfa09",
+      "bytes": 404
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase13-consolidation-freeze/evidence/calendar-catalog-shutdown-note.md",
+      "sha256": "4ee3952f5f122ca59bb65a7decf9ec0377fd0619d1c3b420fcedae744afa1c33",
+      "bytes": 1415
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase13-consolidation-freeze/evidence/calendar-browser-catalog-fixture-plan.md",
+      "sha256": "fc01985e941a0b71c293b0980f86080f03c2286c0f75245f3ba42177f1d4ab28",
+      "bytes": 4318
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase13-consolidation-freeze/evidence/calendar-catalog-DESIGN.md",
+      "sha256": "cd446e3bb2cdc51df41e9b2d82bb65cb933420c88af194092ecd39d64bfa80b5",
+      "bytes": 5205
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase13-consolidation-freeze/evidence/calendar-google-event-sync-affected-unit.config.mts",
+      "sha256": "994d26a050da4e361c52f72df951588881382923956966a4b5d05769321dc1a8",
+      "bytes": 819
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase13-consolidation-freeze/evidence/agency-civil-date-contract.md",
+      "sha256": "1dba2dcf71e386f8ccd8e1227b3be594a8b5ed95fbc668bb8003045e35876ecd",
+      "bytes": 2942
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase13-consolidation-freeze/evidence/calendar-google-oauth-retention-red-pg.config.mts",
+      "sha256": "6b5efed8e7c717730e15caccd0e1380510e2a7b69b9b97a24aa8e7066b6c9640",
+      "bytes": 850
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase13-consolidation-freeze/evidence/calendar-event-mirror-DESIGN.md",
+      "sha256": "8278861ea0320c6abfc49730089ee66f06c98c459dbb5e775b660c96fa4974b1",
+      "bytes": 8400
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase13-consolidation-freeze/evidence/calendar-browser-catalog-cleanup.mts",
+      "sha256": "7598ebbbed11d971d65079378a2020102b81c8431a56b5ef0ac745c23bb27281",
+      "bytes": 10184
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase13-consolidation-freeze/evidence/calendar-google-authorization-expiry-lock-pg.config.mts",
+      "sha256": "b93776895400fde220fd97f5885be048d9e88c89baa6c504aae848fdc6f4d7fd",
+      "bytes": 335
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase13-consolidation-freeze/evidence/calendar-browser-catalog-seed.mts",
+      "sha256": "84cf25d82a3b6b54c263227fc8b1aadd951fb4c5971d5cee1fa22243e7c6ee6b",
+      "bytes": 15856
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase13-consolidation-freeze/evidence/calendar-google-catalog-affected-pg.config.mts",
+      "sha256": "f7d2ef108c2af0605ecc7d5b3dd3937629a566e802a8c5a462c4e9cea8525f31",
+      "bytes": 809
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase13-consolidation-freeze/evidence/calendar-event-sync-pages-draft/eventSyncPages.test.ts",
+      "sha256": "911d4960341e72cffedc2e50a98c42f70a480dac301255beab8e8013784efd08",
+      "bytes": 4808
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase13-consolidation-freeze/evidence/calendar-event-sync-pages-draft/CONTRACT.md",
+      "sha256": "9a93ce5c54735ae7cc819474f621fa82e88b742a0b2ac16e4236b1a9821e41b6",
+      "bytes": 6824
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase13-consolidation-freeze/evidence/calendar-event-sync-pages-draft/eventSyncPagesFixture.ts",
+      "sha256": "0fe97bedaaf938b6fd13acbb145727f3c953a7baa82437b56da1925a0a32f945",
+      "bytes": 6328
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase13-consolidation-freeze/evidence/calendar-event-sync-pages-draft/eventSyncPayloadPages.test.ts",
+      "sha256": "c041819444b4a80c114b819b734493b7bca4737ec66d2a6b88e071a3a0b1c645",
+      "bytes": 3146
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase13-consolidation-freeze/evidence/calendar-event-sync-pages-draft/eventSyncStaging.test.ts",
+      "sha256": "0e01fae0147932a076b708622505d880317852977f9f2ea4f3bec4c019a1e500",
+      "bytes": 3847
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase13-consolidation-freeze/evidence/calendar-event-sync-pages-draft/eventSyncPages.ts",
+      "sha256": "baeb018ee67803c7e4b2c894132680c47dfcb39a223f4aac0ee01ef0194e4e91",
+      "bytes": 1400
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase13-consolidation-freeze/evidence/calendar-oauth-retention-draft/authorizationCleanup.ts",
+      "sha256": "12506f49b88c1174f6f1b62147d113adcebd912d27b34bda1bd396fb693c3167",
+      "bytes": 425
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase13-consolidation-freeze/evidence/calendar-oauth-retention-draft/authorizationRetentionFixture.ts",
+      "sha256": "4050321e381614bc95c865621073ba3e8be0cbc79712d36647ad060c7f653170",
+      "bytes": 6515
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase13-consolidation-freeze/evidence/calendar-oauth-retention-draft/CONTRACT.md",
+      "sha256": "eafd0a55089b6e62db6d624a2c07b452aaa6d8dbcd15611c484e8b07eedc20e4",
+      "bytes": 6206
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase13-consolidation-freeze/evidence/calendar-oauth-retention-draft/authorizationRetention.integration.test.ts",
+      "sha256": "105aa9a95dfffe4e7baab49556e75acfa8bb3639a54e25fd1a88ec49e2bfe510",
+      "bytes": 10024
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase13-consolidation-freeze/evidence/calendar-oauth-retention-draft/authorizationRetentionIndex.integration.test.ts",
+      "sha256": "635f285ea8ab91d192a26e038ed2e7fc6e1c96d49dd6569f4505660ef9a985bc",
+      "bytes": 1674
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase13-consolidation-freeze/evidence/google-event-sync-bounds-draft/eventSyncBoundsFixture.ts",
+      "sha256": "6d285f688b1f6cc0521ef26c7e4f6e99906238a62c535209efebc077767c32b5",
+      "bytes": 3732
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase13-consolidation-freeze/evidence/google-event-sync-bounds-draft/eventSyncBounds.test.ts",
+      "sha256": "1d32807841238e897149b9e432e4b9e5edd329f5fef82c2d4b99e5ac9b84505c",
+      "bytes": 9674
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase13-consolidation-freeze/evidence/google-event-sync-bounds-draft/eventStorage.ts",
+      "sha256": "377c5283808de4700dcdd544c73f4c5fb9a8e28ff69b0c902315259823b318c6",
+      "bytes": 1859
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase13-consolidation-freeze/evidence/google-event-sync-bounds-draft/CONTRACT.md",
+      "sha256": "90de2132d23bfce180fa782bcc270e1f85693880fa8f2595636e58e96291a7c0",
+      "bytes": 6636
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase13-consolidation-freeze/evidence/google-event-sync-bounds-draft/eventSyncCursorBounds.test.ts",
+      "sha256": "8af59e34483f2db030846159a929a545e44ca0d84a9d1f777e3a67d3df7b332c",
+      "bytes": 3879
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase13-consolidation-freeze/evidence/google-event-sync-bounds-draft/sync.ts",
+      "sha256": "4187a5f404163ab3d61fce74353f00c6df5a6e5f6e017a35f9bc82a3f9c325cb",
+      "bytes": 2894
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase5/source-manifest.json",
+      "sha256": "65a6f9e9e19553a279d54d751e782677ecec2f31c049f809f91d1eb66a54044a",
+      "bytes": 30178
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase5/evidence/calendar-google-generation-migration-pg.config.mts",
+      "sha256": "8fb667ab17ce31dd60b98ddaab12a7ec0aaabb60261387ed5a5cc7432f27cd71",
+      "bytes": 308
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase5/evidence/calendar-browser-migrate-generation.mts",
+      "sha256": "424575ab41204351cb9be8b5d6488b001586a2ac2d7d1a39eaa4fc45aee5c09d",
+      "bytes": 4773
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase5/evidence/calendar-google-generation-all-pg.config.mts",
+      "sha256": "0103712f739881cf7a7578734e1d2543b66e813db11bbe2498d87a3a6c1a01c3",
+      "bytes": 964
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase6/source-manifest.json",
+      "sha256": "c11cc289246fad819d3acd39469b619730d8c537d521a7d2fc1e17439314463c",
+      "bytes": 30654
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase6/evidence/calendar-google-browser-flows-pg.config.mts",
+      "sha256": "1baee4c5205ca510e691f487c67a4c4ee9d88dfc5b279e316c449959e9eb1a32",
+      "bytes": 445
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase6/evidence/calendar-google-generation-migration-pg.config.mts",
+      "sha256": "8fb667ab17ce31dd60b98ddaab12a7ec0aaabb60261387ed5a5cc7432f27cd71",
+      "bytes": 308
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase6/evidence/calendar-browser-migrate-generation.mts",
+      "sha256": "424575ab41204351cb9be8b5d6488b001586a2ac2d7d1a39eaa4fc45aee5c09d",
+      "bytes": 4773
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase6/evidence/calendar-google-generation-all-pg.config.mts",
+      "sha256": "0103712f739881cf7a7578734e1d2543b66e813db11bbe2498d87a3a6c1a01c3",
+      "bytes": 964
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase6/evidence/calendar-google-browser-flows-all-pg.config.mts",
+      "sha256": "73787b7cfbbb1c5ea9f9aa89e94e71fef74db14256c83ccdffea9edfa66627c5",
+      "bytes": 507
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase7-pre-catalog/source-manifest.json",
+      "sha256": "cab8d52c973f959ba59725ff0bea532a7ba165f2f605fbf287366468bc7125f8",
+      "bytes": 32903
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase7-pre-catalog/evidence/calendar-google-catalog-red-pg.config.mts",
+      "sha256": "dd5537a82f59880beee126ea6fc0b7d9e683748b26abb8023b9eeb7aa8b42583",
+      "bytes": 895
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase7-pre-catalog/evidence/calendar-catalog-DESIGN.md",
+      "sha256": "d54154e2f19731f1f8c5885a15e674b3638b1b018c4b09e86c49276ded968d5a",
+      "bytes": 4610
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase8-local/source-manifest.json",
+      "sha256": "d9f06b596753fbf59ae216d49341e97c7a8b2be1d34e0e741f58967e0986955d",
+      "bytes": 46579
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase8-local/evidence/calendar-browser-migrate-catalog.mts",
+      "sha256": "3d2ccd09f18cdba5f08db6d22b49a26661fafac8e69a1c2464e226c97ec8411d",
+      "bytes": 5534
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase8-local/evidence/calendar-google-catalog-red-pg.config.mts",
+      "sha256": "dd5537a82f59880beee126ea6fc0b7d9e683748b26abb8023b9eeb7aa8b42583",
+      "bytes": 895
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase8-local/evidence/calendar-google-catalog-candidate-pg.config.mts",
+      "sha256": "a768fda3707a853087e3bf0d84ad0d6ca7cf02d8c76d41ad032069a5f5ebfa09",
+      "bytes": 404
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase8-local/evidence/calendar-browser-catalog-fixture-plan.md",
+      "sha256": "8a38f272099e7fd8cb3dc81c570d00fda423b873d55cb013fead4bf06bbaa461",
+      "bytes": 3991
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase8-local/evidence/calendar-catalog-DESIGN.md",
+      "sha256": "cd446e3bb2cdc51df41e9b2d82bb65cb933420c88af194092ecd39d64bfa80b5",
+      "bytes": 5205
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase8-local/evidence/calendar-browser-catalog-cleanup.mts",
+      "sha256": "850d8e6dda6341174be7213c4dcf1d816c0c33f08b13bf3f9c670bcef9f214a7",
+      "bytes": 10004
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase8-local/evidence/calendar-google-authorization-expiry-lock-pg.config.mts",
+      "sha256": "b93776895400fde220fd97f5885be048d9e88c89baa6c504aae848fdc6f4d7fd",
+      "bytes": 335
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase8-local/evidence/calendar-browser-catalog-seed.mts",
+      "sha256": "cf075f8cfb5102603bcf23c692110724ec0f5c86a670f66adf5151a8be880723",
+      "bytes": 15546
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase8-local/evidence/calendar-google-catalog-affected-pg.config.mts",
+      "sha256": "f7d2ef108c2af0605ecc7d5b3dd3937629a566e802a8c5a462c4e9cea8525f31",
+      "bytes": 809
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase9-local/source-manifest.json",
+      "sha256": "4d3e802b89ab61489d6ca889dd00617b4b7e2b7602d24c16a607ee3d05376f81",
+      "bytes": 46579
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase9-local/evidence/calendar-browser-migrate-catalog.mts",
+      "sha256": "3d2ccd09f18cdba5f08db6d22b49a26661fafac8e69a1c2464e226c97ec8411d",
+      "bytes": 5534
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase9-local/evidence/calendar-google-catalog-clock-affected-pg.config.mts",
+      "sha256": "b7370dafcf20b477bde88432c71f1a8c6a50de2184c4bc19466c6bff7a06f023",
+      "bytes": 397
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase9-local/evidence/calendar-google-catalog-red-pg.config.mts",
+      "sha256": "dd5537a82f59880beee126ea6fc0b7d9e683748b26abb8023b9eeb7aa8b42583",
+      "bytes": 895
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase9-local/evidence/calendar-google-catalog-candidate-pg.config.mts",
+      "sha256": "a768fda3707a853087e3bf0d84ad0d6ca7cf02d8c76d41ad032069a5f5ebfa09",
+      "bytes": 404
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase9-local/evidence/calendar-browser-catalog-fixture-plan.md",
+      "sha256": "8a38f272099e7fd8cb3dc81c570d00fda423b873d55cb013fead4bf06bbaa461",
+      "bytes": 3991
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase9-local/evidence/calendar-catalog-DESIGN.md",
+      "sha256": "cd446e3bb2cdc51df41e9b2d82bb65cb933420c88af194092ecd39d64bfa80b5",
+      "bytes": 5205
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase9-local/evidence/calendar-event-mirror-DESIGN.md",
+      "sha256": "905c0c7312314b4e60d9b825c082d44757e655a8441749e6415a5dd2b690e485",
+      "bytes": 3696
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase9-local/evidence/calendar-browser-catalog-cleanup.mts",
+      "sha256": "850d8e6dda6341174be7213c4dcf1d816c0c33f08b13bf3f9c670bcef9f214a7",
+      "bytes": 10004
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase9-local/evidence/calendar-google-authorization-expiry-lock-pg.config.mts",
+      "sha256": "b93776895400fde220fd97f5885be048d9e88c89baa6c504aae848fdc6f4d7fd",
+      "bytes": 335
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase9-local/evidence/calendar-browser-catalog-seed.mts",
+      "sha256": "cf075f8cfb5102603bcf23c692110724ec0f5c86a670f66adf5151a8be880723",
+      "bytes": 15546
+    },
+    {
+      "path": ".runtime/calendar-checkpoint-20261101-phase9-local/evidence/calendar-google-catalog-affected-pg.config.mts",
+      "sha256": "f7d2ef108c2af0605ecc7d5b3dd3937629a566e802a8c5a462c4e9cea8525f31",
+      "bytes": 809
+    },
+    {
+      "path": ".runtime/calendar-complete-pg.config.mts",
+      "sha256": "144ea9ef4508c9e224a045b80a555ffa4a0f5262c09efaf641778c924c7393ca",
+      "bytes": 485
+    },
+    {
+      "path": ".runtime/calendar-completion-contract-unit.config.mts",
+      "sha256": "a8d19e816d4d6376ca7b4da0ed4b5dd47c87aaac521b45cdcb1015b5e81dba3c",
+      "bytes": 887
+    },
+    {
+      "path": ".runtime/calendar-completion-ui-unit.config.mts",
+      "sha256": "04d85b92d5980ace57152befe38569377ed50e8d112295677afca2eea9b5f782",
+      "bytes": 961
+    },
+    {
+      "path": ".runtime/calendar-connections-browser-proof.mts",
+      "sha256": "aa22429dba7ecd0ff7129a9d1b2199354311834b59d847fdedb8b3c598a202fe",
+      "bytes": 2681
+    },
+    {
+      "path": ".runtime/calendar-engine-admission-candidate/engineAdmission.vitest.config.mts",
+      "sha256": "defee4bdc771a70c275042272d7f03841984bc7147b6b48ed10e5968db0ca6b8",
+      "bytes": 1244
+    },
+    {
+      "path": ".runtime/calendar-engine-admission-candidate/engineAdmissionFixture.ts",
+      "sha256": "742b42d75e8eaad912d68993c9ac79b518a792a8719c92b8d65bc5c82ee81b15",
+      "bytes": 4669
+    },
+    {
+      "path": ".runtime/calendar-engine-admission-candidate/README.md",
+      "sha256": "f8f17909b3e8cbc3564c95116420ee8091c6f174fbcc50afbd5bc5a10188214f",
+      "bytes": 2398
+    },
+    {
+      "path": ".runtime/calendar-engine-admission-candidate/engineAdmission.eslint.config.mjs",
+      "sha256": "27964ba1dfa9a2bd046dfcea26c8a84a380d100c8774dc9af4acb79da3ab6886",
+      "bytes": 933
+    },
+    {
+      "path": ".runtime/calendar-engine-admission-candidate/engineAdmission.tsconfig.json",
+      "sha256": "8abb45d82def77d5f5029fa9e8d9a5bbcfb04d63b2bdb340ce726de2cc9a1a17",
+      "bytes": 271
+    },
+    {
+      "path": ".runtime/calendar-engine-admission-candidate/engineAdmission.biome.json",
+      "sha256": "6de3ff7dcdebc23e84ac661928258a8addbd4308df6bd3d56f6de654aac1c2c1",
+      "bytes": 778
+    },
+    {
+      "path": ".runtime/calendar-engine-admission-candidate/engineAdmission.integration.test.ts",
+      "sha256": "d186b183fcf4940f70e989c7971557aef7cb7fa80a46c03ca32afa32a06f1460",
+      "bytes": 3428
+    },
+    {
+      "path": ".runtime/calendar-event-mirror-DESIGN.md",
+      "sha256": "8278861ea0320c6abfc49730089ee66f06c98c459dbb5e775b660c96fa4974b1",
+      "bytes": 8400
+    },
+    {
+      "path": ".runtime/calendar-event-sync-pages-candidate/SOURCE-MANIFEST.json",
+      "sha256": "03972b8144ab9ec7af3a8c9f64d555acf0b233b1e5bf2a7672f08065ab8b5677",
+      "bytes": 6953
+    },
+    {
+      "path": ".runtime/calendar-event-sync-pages-candidate/eventSyncBoundsFixture.ts",
+      "sha256": "23140887589e8ef27fd4f05edbeb2a0584896c8d631cb37f83c142e31ad19681",
+      "bytes": 3700
+    },
+    {
+      "path": ".runtime/calendar-event-sync-pages-candidate/path.ts",
+      "sha256": "703d34c8cf091231564673459d0e8db6beecf6609df360a721b878d2eab24fee",
+      "bytes": 683
+    },
+    {
+      "path": ".runtime/calendar-event-sync-pages-candidate/eventSyncBounds.test.ts",
+      "sha256": "8e6a574fe97a555aad127a9ff4b87c096c8aad8257ce58dce952426909ee9647",
+      "bytes": 6854
+    },
+    {
+      "path": ".runtime/calendar-event-sync-pages-candidate/errors.ts",
+      "sha256": "04a8d74a6b71b3778855d31b60a356c7c03ec5e85fbe3e5b41f8b39cf0f17ece",
+      "bytes": 2254
+    },
+    {
+      "path": ".runtime/calendar-event-sync-pages-candidate/eventStorage.ts",
+      "sha256": "7fb567251b9d5c386180ba41b8fe8d010f11e503510e65bd67a97792b4cf51e4",
+      "bytes": 1850
+    },
+    {
+      "path": ".runtime/calendar-event-sync-pages-candidate/contracts.ts",
+      "sha256": "6b6e004472c7c6f86945f107858318e7f9c6a1ab50f1e247f0f313ef5b5f315b",
+      "bytes": 2002
+    },
+    {
+      "path": ".runtime/calendar-event-sync-pages-candidate/schemas.ts",
+      "sha256": "db6b5d77f2908af792c0a91d12c583ad6717bb0572f641f5a6a076556b33d86e",
+      "bytes": 3565
+    },
+    {
+      "path": ".runtime/calendar-event-sync-pages-candidate/eventSyncPages.test.ts",
+      "sha256": "faf22a2e8ec220a62747cdfe84544cc81291ccf93a69bf3351a7e0b24a110ad9",
+      "bytes": 5070
+    },
+    {
+      "path": ".runtime/calendar-event-sync-pages-candidate/eventSyncPagesFixture.ts",
+      "sha256": "91f4d6f6ffb239d56bc79dc4d94c9c685fea4e5de3e285000a95f8465b0d7dac",
+      "bytes": 6382
+    },
+    {
+      "path": ".runtime/calendar-event-sync-pages-candidate/eventSyncCursorBounds.test.ts",
+      "sha256": "1d766a6f0e8b1377a57815da88f6c5e1bd5ece8725d7be002641e0034fe1a665",
+      "bytes": 3957
+    },
+    {
+      "path": ".runtime/calendar-event-sync-pages-candidate/writes.ts",
+      "sha256": "a00a9716c35fcbc753a77b1e55cc2116c40ba0ccf3e5dd4c203ce16c2ec1cc53",
+      "bytes": 4894
+    },
+    {
+      "path": ".runtime/calendar-event-sync-pages-candidate/eventSyncPayloadPages.test.ts",
+      "sha256": "0c3fb5e47009a0c17d1351d4929fe2570b33d24e9431deb9f6d46f7313a6592f",
+      "bytes": 3311
+    },
+    {
+      "path": ".runtime/calendar-event-sync-pages-candidate/eventSyncBudget.ts",
+      "sha256": "b087a8ed8423fb5b388c2e2cb010eaaed948c0ae1b8c601015a543724e524c3f",
+      "bytes": 2745
+    },
+    {
+      "path": ".runtime/calendar-event-sync-pages-candidate/client.ts",
+      "sha256": "fcb5f10a22ff7a9da5781d73d0bf4f9bb8353641aeb1ad17e484937145e96818",
+      "bytes": 2819
+    },
+    {
+      "path": ".runtime/calendar-event-sync-pages-candidate/eventSyncPayloadBounds.test.ts",
+      "sha256": "24fe866cd7ce955d9a9c86edb0efcf128e73aec17f7b2b510ab330e2aca52e0f",
+      "bytes": 4000
+    },
+    {
+      "path": ".runtime/calendar-event-sync-pages-candidate/transport.test.ts",
+      "sha256": "2e94c6efc234647f4f21e6b118f005c8b0b4c786c9c00f9f67815ca5bc1d1441",
+      "bytes": 3957
+    },
+    {
+      "path": ".runtime/calendar-event-sync-pages-candidate/transport.ts",
+      "sha256": "adf164e6a318404b7ebcd43e62e555ece3e329dd655fec6aa324c60177f641e3",
+      "bytes": 2185
+    },
+    {
+      "path": ".runtime/calendar-event-sync-pages-candidate/client.test.ts",
+      "sha256": "c3acf2248fc77a8a72ddacf3450d4b97383926c0e92a712d51e5c36012ed08e2",
+      "bytes": 5846
+    },
+    {
+      "path": ".runtime/calendar-event-sync-pages-candidate/errorReasons.test.ts",
+      "sha256": "4cca1cfabefb13d71fdd6aa249082fbbf9d28e4dd20e98ca208c45a8e92bf76d",
+      "bytes": 2609
+    },
+    {
+      "path": ".runtime/calendar-event-sync-pages-candidate/catalogStorage.ts",
+      "sha256": "3b4760ba1100c33aa93e264b7a1f428483ace54227ad22b965a3b8e92686282c",
+      "bytes": 1532
+    },
+    {
+      "path": ".runtime/calendar-event-sync-pages-candidate/eventSyncStaging.test.ts",
+      "sha256": "856cbc1e82c9d14351d30a53f23dca626f867080b7fdb9934a7ab647bac9441e",
+      "bytes": 4026
+    },
+    {
+      "path": ".runtime/calendar-event-sync-pages-candidate/pathSafety.test.ts",
+      "sha256": "bb4ac0be57128bf506970c895d9b129827489773bd7aa1cce770e515ec9aa3c6",
+      "bytes": 3189
+    },
+    {
+      "path": ".runtime/calendar-event-sync-pages-candidate/eventSyncPages.ts",
+      "sha256": "b5f9181d06e4cfb24df58001757e86cb59f61307e23992d7094620166d65a9f3",
+      "bytes": 2555
+    },
+    {
+      "path": ".runtime/calendar-event-sync-pages-candidate/sync.ts",
+      "sha256": "78785831d44b17d676ada5c6291f47688669aab85293289e91e5228b8ddde904",
+      "bytes": 1382
+    },
+    {
+      "path": ".runtime/calendar-event-sync-pages-candidate-biome.json",
+      "sha256": "81486718a5fafaa8d2fb4a634d3a78f21b044ffccab4e0a7a24986c65dee0e79",
+      "bytes": 794
+    },
+    {
+      "path": ".runtime/calendar-event-sync-pages-candidate-eslint.config.mjs",
+      "sha256": "70202972a1aeae88bd2ba4b4b37f8ce1bbd9859824b5fb96e5d3a6f593ce4423",
+      "bytes": 1064
+    },
+    {
+      "path": ".runtime/calendar-event-sync-pages-candidate-tsconfig.json",
+      "sha256": "d8a54271d4cdf57265da2cd252658f900cc422e7cce0cab998a1b04f704b7bbd",
+      "bytes": 255
+    },
+    {
+      "path": ".runtime/calendar-event-sync-pages-candidate-unit.config.mts",
+      "sha256": "119d35d31bb988c61f66f833df034fc66ecb69c515c1a751f3e6ff86295765eb",
+      "bytes": 1399
+    },
+    {
+      "path": ".runtime/calendar-event-sync-pages-draft/eventSyncPages.test.ts",
+      "sha256": "911d4960341e72cffedc2e50a98c42f70a480dac301255beab8e8013784efd08",
+      "bytes": 4808
+    },
+    {
+      "path": ".runtime/calendar-event-sync-pages-draft/CONTRACT.md",
+      "sha256": "9a93ce5c54735ae7cc819474f621fa82e88b742a0b2ac16e4236b1a9821e41b6",
+      "bytes": 6824
+    },
+    {
+      "path": ".runtime/calendar-event-sync-pages-draft/eventSyncPagesFixture.ts",
+      "sha256": "0fe97bedaaf938b6fd13acbb145727f3c953a7baa82437b56da1925a0a32f945",
+      "bytes": 6328
+    },
+    {
+      "path": ".runtime/calendar-event-sync-pages-draft/eventSyncPayloadPages.test.ts",
+      "sha256": "c041819444b4a80c114b819b734493b7bca4737ec66d2a6b88e071a3a0b1c645",
+      "bytes": 3146
+    },
+    {
+      "path": ".runtime/calendar-event-sync-pages-draft/eventSyncStaging.test.ts",
+      "sha256": "0e01fae0147932a076b708622505d880317852977f9f2ea4f3bec4c019a1e500",
+      "bytes": 3847
+    },
+    {
+      "path": ".runtime/calendar-event-sync-pages-draft/eventSyncPages.ts",
+      "sha256": "baeb018ee67803c7e4b2c894132680c47dfcb39a223f4aac0ee01ef0194e4e91",
+      "bytes": 1400
+    },
+    {
+      "path": ".runtime/calendar-existing-edit-atomicity-biome.json",
+      "sha256": "72d4168b65089abcdc53a41bd06f9322def2b4074ae9b5844faa4cdf3f35492a",
+      "bytes": 823
+    },
+    {
+      "path": ".runtime/calendar-existing-edit-atomicity-draft/existingEditAtomicityWitness.ts",
+      "sha256": "5d769083cf1345124cd94d2f5b2087ce88c2804424ddff51b36bfc35efba5e19",
+      "bytes": 3688
+    },
+    {
+      "path": ".runtime/calendar-existing-edit-atomicity-draft/existingEditAtomicityContainer.ts",
+      "sha256": "d0b08079fd7e84333d41d518b38f90d2b7e1efec9c347e133d18fb3ccf359950",
+      "bytes": 6273
+    },
+    {
+      "path": ".runtime/calendar-existing-edit-atomicity-draft/existingEditAtomicityFixture.ts",
+      "sha256": "00367fb3db18d5a4903e11b85473d27e705d58d03451033ec14926e5b140a7ad",
+      "bytes": 6312
+    },
+    {
+      "path": ".runtime/calendar-existing-edit-atomicity-draft/existingEditAtomicity.globalSetup.ts",
+      "sha256": "a7caff67305c3e51c621f45438f12cb29fb57912c519a23af0432ee3903bb073",
+      "bytes": 3849
+    },
+    {
+      "path": ".runtime/calendar-existing-edit-atomicity-draft/CONTRACT.md",
+      "sha256": "2c1562905c23d11fa03a8c8e286d916cb8cde02da115525b02cc0afb51955f15",
+      "bytes": 13267
+    },
+    {
+      "path": ".runtime/calendar-existing-edit-atomicity-draft/existingEditAtomicity.setup.ts",
+      "sha256": "8375dad1473c86b849081fb4ad661c83afaee30d4ce13fcf948381e6d42aa13d",
+      "bytes": 329
+    },
+    {
+      "path": ".runtime/calendar-existing-edit-atomicity-draft/existingEditAtomicity.integration.test.ts",
+      "sha256": "b62424101bb478241265552a9624f3a91228b824a54e0c9449abbbce29ec38e1",
+      "bytes": 9522
+    },
+    {
+      "path": ".runtime/calendar-existing-edit-atomicity-draft/existingEditAtomicitySnapshot.ts",
+      "sha256": "94b2f83842812d2ecf5aa7c737bef8a349adfeea0404dbbd0f922dc072729dcf",
+      "bytes": 1808
+    },
+    {
+      "path": ".runtime/calendar-existing-edit-atomicity-eslint.config.mjs",
+      "sha256": "22f9e3f78a1b0d9909721c2ff3b14e016389af9b7e8f456e2a9669b884ea0144",
+      "bytes": 1028
+    },
+    {
+      "path": ".runtime/calendar-existing-edit-atomicity-pg.config.mts",
+      "sha256": "79af8af16b5881508e98ff79e93b8b1d4deb37604db6888c838778e7955f8472",
+      "bytes": 984
+    },
+    {
+      "path": ".runtime/calendar-existing-edit-atomicity-testcontainers.config.mts",
+      "sha256": "9f4259262990c9a78ba99b71240d533442ce81f1b6b2f96793e646b64c016ed2",
+      "bytes": 1517
+    },
+    {
+      "path": ".runtime/calendar-existing-edit-atomicity-tsconfig.json",
+      "sha256": "eb1e04d2ca68a7f8520c2060d6d78bc703ddacd145dda7e22fe98ad92d45ba53",
+      "bytes": 432
+    },
+    {
+      "path": ".runtime/calendar-extra-pg.config.mts",
+      "sha256": "a67ff1a31380433f7ff983dfc03dab818fed0be8d45732fc3d2386e0dabd49b8",
+      "bytes": 301
+    },
+    {
+      "path": ".runtime/calendar-google-account-import.config.mts",
+      "sha256": "6c08002fa38ef00abc2dfe03dcf4ab59e8860fdcf56daddb64374dc8bab5c99f",
+      "bytes": 386
+    },
+    {
+      "path": ".runtime/calendar-google-accounts-pg.config.mts",
+      "sha256": "bba47ac1dcdc3fd468ba0cfca5342fa71d51ff58703768b0a7c30ba50fca03e4",
+      "bytes": 357
+    },
+    {
+      "path": ".runtime/calendar-google-authorization-expiry-lock-pg.config.mts",
+      "sha256": "b93776895400fde220fd97f5885be048d9e88c89baa6c504aae848fdc6f4d7fd",
+      "bytes": 335
+    },
+    {
+      "path": ".runtime/calendar-google-browser-flows-all-pg.config.mts",
+      "sha256": "73787b7cfbbb1c5ea9f9aa89e94e71fef74db14256c83ccdffea9edfa66627c5",
+      "bytes": 507
+    },
+    {
+      "path": ".runtime/calendar-google-browser-flows-pg.config.mts",
+      "sha256": "1baee4c5205ca510e691f487c67a4c4ee9d88dfc5b279e316c449959e9eb1a32",
+      "bytes": 445
+    },
+    {
+      "path": ".runtime/calendar-google-catalog-affected-pg.config.mts",
+      "sha256": "f7d2ef108c2af0605ecc7d5b3dd3937629a566e802a8c5a462c4e9cea8525f31",
+      "bytes": 809
+    },
+    {
+      "path": ".runtime/calendar-google-catalog-candidate-pg.config.mts",
+      "sha256": "a768fda3707a853087e3bf0d84ad0d6ca7cf02d8c76d41ad032069a5f5ebfa09",
+      "bytes": 404
+    },
+    {
+      "path": ".runtime/calendar-google-catalog-clock-affected-pg.config.mts",
+      "sha256": "b7370dafcf20b477bde88432c71f1a8c6a50de2184c4bc19466c6bff7a06f023",
+      "bytes": 397
+    },
+    {
+      "path": ".runtime/calendar-google-catalog-red-pg.config.mts",
+      "sha256": "dd5537a82f59880beee126ea6fc0b7d9e683748b26abb8023b9eeb7aa8b42583",
+      "bytes": 895
+    },
+    {
+      "path": ".runtime/calendar-google-connection-generation-pg.config.mts",
+      "sha256": "b407d542b6997aa10f505e0ad434e4888477a67b052984d177a556c0bceea43d",
+      "bytes": 310
+    },
+    {
+      "path": ".runtime/calendar-google-connection-lifetime-pg.config.mts",
+      "sha256": "850d6277e7e5defd25a104b8a586faab526af17afde1ad1e90bd20ceacfe575f",
+      "bytes": 401
+    },
+    {
+      "path": ".runtime/calendar-google-event-sync-affected-unit.config.mts",
+      "sha256": "994d26a050da4e361c52f72df951588881382923956966a4b5d05769321dc1a8",
+      "bytes": 819
+    },
+    {
+      "path": ".runtime/calendar-google-event-sync-bounds-candidate-unit.config.mts",
+      "sha256": "ab24fc04a0301df7ccdbd45fc1e3a751cf59d35a1b7b6359039ad483e0395fc0",
+      "bytes": 533
+    },
+    {
+      "path": ".runtime/calendar-google-event-sync-bounds-unit.config.mts",
+      "sha256": "c27b3a8b09b424bfbf0c20be44c168db7661bcd90fdaf420a089a28212df67cd",
+      "bytes": 386
+    },
+    {
+      "path": ".runtime/calendar-google-event-sync-cursors-candidate-unit.config.mts",
+      "sha256": "df66f59950f2219abf228c4f60acd85809cff144fada83f999ffc4e2d844e592",
+      "bytes": 460
+    },
+    {
+      "path": ".runtime/calendar-google-event-sync-cursors-green-manifest.json",
+      "sha256": "8e15654fb3b1f6674d9a9dcaa0c3930c5384f046b82702f681de4c5e741c1485",
+      "bytes": 1496
+    },
+    {
+      "path": ".runtime/calendar-google-event-sync-cursors-red-manifest.json",
+      "sha256": "649a304a70bf6eb5d7cae8e3065ad70fb0296c92b4766b0b2f2d48ca24d61d07",
+      "bytes": 1453
+    },
+    {
+      "path": ".runtime/calendar-google-event-sync-pages-red-unit.config.mts",
+      "sha256": "ab18b30967f10fc4f1f99bb3b8bfa2524ad18d02bc213b7381410d7c55980866",
+      "bytes": 985
+    },
+    {
+      "path": ".runtime/calendar-google-event-sync-pages-source-unit.config.mts",
+      "sha256": "05ca37cd7541cd1b4347d881f151138fd7cf88fae3aa6c716acc3c4d8c192da4",
+      "bytes": 1250
+    },
+    {
+      "path": ".runtime/calendar-google-generation-all-pg.config.mts",
+      "sha256": "0103712f739881cf7a7578734e1d2543b66e813db11bbe2498d87a3a6c1a01c3",
+      "bytes": 964
+    },
+    {
+      "path": ".runtime/calendar-google-generation-migration-pg.config.mts",
+      "sha256": "8fb667ab17ce31dd60b98ddaab12a7ec0aaabb60261387ed5a5cc7432f27cd71",
+      "bytes": 308
+    },
+    {
+      "path": ".runtime/calendar-google-oauth-retention-red-pg.config.mts",
+      "sha256": "6b5efed8e7c717730e15caccd0e1380510e2a7b69b9b97a24aa8e7066b6c9640",
+      "bytes": 850
+    },
+    {
+      "path": ".runtime/calendar-google-routes-pg.config.mts",
+      "sha256": "e0df23ff01d7dd28e017a0149ab4dc08946f7eb3c473d40cbec4f5b2274d8a27",
+      "bytes": 422
+    },
+    {
+      "path": ".runtime/calendar-google-tsconfig.json",
+      "sha256": "598de26740113b2b967351e8d08fe4aa7ada52420ba5b574762ad2d76b81bead",
+      "bytes": 197
+    },
+    {
+      "path": ".runtime/calendar-handoff-20261031/manifest.json",
+      "sha256": "a6cf56c750343fefc0ac90e659e5466dfad68cecacd9a0dc0616552b23cc5d9f",
+      "bytes": 2853
+    },
+    {
+      "path": ".runtime/calendar-legacy-adoption-candidate/legacyAdoption.tsconfig.json",
+      "sha256": "454c5ac210b4d0e71f7652b7bac2e746feb965e9612deca56cbcc39dd9ff9a9a",
+      "bytes": 261
+    },
+    {
+      "path": ".runtime/calendar-legacy-adoption-candidate/ownerAdoption.integration.test.ts",
+      "sha256": "5cbdf9947986d947f7e7ee1c0ed93baa7e7014f42de04016fe8707a99461e825",
+      "bytes": 7522
+    },
+    {
+      "path": ".runtime/calendar-legacy-adoption-candidate/legacyAdoption.vitest.config.mts",
+      "sha256": "739a9b641ddb55a4a54bf4adc3a39e4964466eac52dc758543cb6eadabeed52c",
+      "bytes": 1291
+    },
+    {
+      "path": ".runtime/calendar-legacy-adoption-candidate/README.md",
+      "sha256": "cffc734ff80fa30b02091c89ae102b908b57919ad2de733f9dba6234d1ee5f07",
+      "bytes": 2874
+    },
+    {
+      "path": ".runtime/calendar-legacy-adoption-candidate/legacyAdoption.biome.json",
+      "sha256": "f894cfeef37a620cac3531b83d59ebe091750ed6edb95ceb038ae30720696667",
+      "bytes": 775
+    },
+    {
+      "path": ".runtime/calendar-legacy-adoption-candidate/legacyAdoption.eslint.config.mjs",
+      "sha256": "64bdc6fa453cccc16baf3ccfdf0c6f93b42b48c05ed71a78d742f879f0818835",
+      "bytes": 918
+    },
+    {
+      "path": ".runtime/calendar-legacy-adoption-candidate/fixture.ts",
+      "sha256": "f4645ac6ae283ef2822a4bcb1570f131b69f4f1900393140b1865949235e785e",
+      "bytes": 7083
+    },
+    {
+      "path": ".runtime/calendar-legacy-fence-candidate/legacyQueue.tsconfig.json",
+      "sha256": "8abb45d82def77d5f5029fa9e8d9a5bbcfb04d63b2bdb340ce726de2cc9a1a17",
+      "bytes": 271
+    },
+    {
+      "path": ".runtime/calendar-legacy-fence-candidate/legacyQueue.biome.json",
+      "sha256": "f9d351a6d73a7a3df40de71ee3e6d124114aba420af3c810dd583e2e28b4776a",
+      "bytes": 766
+    },
+    {
+      "path": ".runtime/calendar-legacy-fence-candidate/queueFixture.ts",
+      "sha256": "f0a0f6b31ab3e5d78fee54e1b9256284c701053155add93aa8babbb07b0ad1db",
+      "bytes": 2279
+    },
+    {
+      "path": ".runtime/calendar-legacy-fence-candidate/legacyQueueBoundary.integration.test.ts",
+      "sha256": "e1e0eaab3e7e6ed02d416c3d4bb52ae3ba5ab6c5e022a5854ec03e7de0bcd119",
+      "bytes": 3337
+    },
+    {
+      "path": ".runtime/calendar-legacy-fence-candidate/legacyQueue.eslint.config.mjs",
+      "sha256": "4fd62de358a7acd4ff490f81f252b6ff248ae48da60bb6bc73007048ecafee12",
+      "bytes": 921
+    },
+    {
+      "path": ".runtime/calendar-legacy-fence-candidate/README.md",
+      "sha256": "b9e7f0a762ed774a2d758ac7143831c3e38f27df2cc352569e2061dcc0e35883",
+      "bytes": 2184
+    },
+    {
+      "path": ".runtime/calendar-legacy-fence-candidate/legacyQueue.vitest.config.mts",
+      "sha256": "a05abee2901531aa30bcd4f3b2c1029a5e67aa13c2fdbb28e780aeb39a2d4037",
+      "bytes": 1244
+    },
+    {
+      "path": ".runtime/calendar-legacy-transition-candidate/legacyReceiptVisibility.integration.test.ts",
+      "sha256": "06948420b3b82f547cd98cb3e8db37c22cf16a8c9f1fa8ef398446a2bf3c8d69",
+      "bytes": 5149
+    },
+    {
+      "path": ".runtime/calendar-legacy-transition-candidate/legacyReceiptFixture.ts",
+      "sha256": "d660a659ce7cd4bf7d3dbc25fed3aa4b4c63b7694451c945fd3b6bf1fbafe88d",
+      "bytes": 3901
+    },
+    {
+      "path": ".runtime/calendar-legacy-transition-candidate/historyReceiptClosure.vitest.config.mts",
+      "sha256": "6da3b6e26d9e0b22d141d16405a609a6ec36ae29dfded6ce219981ec759cd2e8",
+      "bytes": 3155
+    },
+    {
+      "path": ".runtime/calendar-legacy-transition-candidate/legacyReceipt.tsconfig.json",
+      "sha256": "8abb45d82def77d5f5029fa9e8d9a5bbcfb04d63b2bdb340ce726de2cc9a1a17",
+      "bytes": 271
+    },
+    {
+      "path": ".runtime/calendar-legacy-transition-candidate/legacyReceipt.vitest.config.mts",
+      "sha256": "515242573a71a70119b26fd48d89fb9f1928fd6806160d5c8f9831a6127026cb",
+      "bytes": 1253
+    },
+    {
+      "path": ".runtime/calendar-legacy-transition-candidate/legacyReceipt.eslint.config.mjs",
+      "sha256": "01c8bc23a1880714e8386d0b43ab19639c0c9417fedaabad9122081d826602e6",
+      "bytes": 933
+    },
+    {
+      "path": ".runtime/calendar-legacy-transition-candidate/legacyReceipt.biome.json",
+      "sha256": "3e7a03722bb0270c1740a151e46bdb87ae16120e2eb605f47317826e2809d9ca",
+      "bytes": 894
+    },
+    {
+      "path": ".runtime/calendar-live-engine-fixtures-eslint.config.mjs",
+      "sha256": "902ed50f4fe99583290c036451dcaf59e08ec64f4e47a76c893d967c4b3f9b94",
+      "bytes": 1191
+    },
+    {
+      "path": ".runtime/calendar-live-engine-fixtures-tsconfig.json",
+      "sha256": "c17b37993cf02e5461e8379b6d088ac4321272cb7a15ca58149f21052572c854",
+      "bytes": 559
+    },
+    {
+      "path": ".runtime/calendar-live-engine-fixtures.biome.json",
+      "sha256": "27d14df070070704d31597bd95d3be07fe6f1a050d22b2d00c3b9b9cae4093db",
+      "bytes": 1232
+    },
+    {
+      "path": ".runtime/calendar-notifications-pg.config.mts",
+      "sha256": "2997dadcc287ac61825d7a1b9ad086bbc842b3a5ebab2bdc84f7c5ee2606fb31",
+      "bytes": 779
+    },
+    {
+      "path": ".runtime/calendar-nov1-browser-inspect.mts",
+      "sha256": "dad2fe09973045a720d44feb083835a1a163fb053c6b8e798fa0a37104f5eaa1",
+      "bytes": 1334
+    },
+    {
+      "path": ".runtime/calendar-oauth-retention-draft/authorizationCleanup.ts",
+      "sha256": "12506f49b88c1174f6f1b62147d113adcebd912d27b34bda1bd396fb693c3167",
+      "bytes": 425
+    },
+    {
+      "path": ".runtime/calendar-oauth-retention-draft/authorizationRetentionFixture.ts",
+      "sha256": "4050321e381614bc95c865621073ba3e8be0cbc79712d36647ad060c7f653170",
+      "bytes": 6515
+    },
+    {
+      "path": ".runtime/calendar-oauth-retention-draft/CONTRACT.md",
+      "sha256": "eafd0a55089b6e62db6d624a2c07b452aaa6d8dbcd15611c484e8b07eedc20e4",
+      "bytes": 6206
+    },
+    {
+      "path": ".runtime/calendar-oauth-retention-draft/authorizationRetention.integration.test.ts",
+      "sha256": "105aa9a95dfffe4e7baab49556e75acfa8bb3639a54e25fd1a88ec49e2bfe510",
+      "bytes": 10024
+    },
+    {
+      "path": ".runtime/calendar-oauth-retention-draft/authorizationRetentionIndex.integration.test.ts",
+      "sha256": "635f285ea8ab91d192a26e038ed2e7fc6e1c96d49dd6569f4505660ef9a985bc",
+      "bytes": 1674
+    },
+    {
+      "path": ".runtime/calendar-ownership-boundary-red5/boundary.vitest.config.mts",
+      "sha256": "00fa09b0712ccbc408fa1a424eb49718bf84ef8da5b98ca8312f480b46b69d63",
+      "bytes": 1482
+    },
+    {
+      "path": ".runtime/calendar-ownership-boundary-red5/boundary.tsconfig.json",
+      "sha256": "a017c4888d485b27de19ac9a55e6f584604a3f34fae90404f59dd5dd128e7052",
+      "bytes": 572
+    },
+    {
+      "path": ".runtime/calendar-ownership-boundary-red5/selection.json",
+      "sha256": "5c6db2d07f555f715d51ed7ca28a9b74e81388d93f125afe954b015cd14ac962",
+      "bytes": 1090
+    },
+    {
+      "path": ".runtime/calendar-ownership-boundary-red5/boundary.biome.json",
+      "sha256": "badac1a32a4bd2baa68fbe7f9e07cb29319bab6adf93a8f01aea909ff7466010",
+      "bytes": 775
+    },
+    {
+      "path": ".runtime/calendar-ownership-boundary-red5/boundary.eslint.config.mjs",
+      "sha256": "09d4ad52ea241f62964f055adbd9cdfae69f88862dbad2c1aa1ccecc123ab8be",
+      "bytes": 1226
+    },
+    {
+      "path": ".runtime/calendar-personal-acceptance-inspect.mts",
+      "sha256": "6371be671fab05ff3beebfd7dc4d810a3ac65029aeb3369a9fea211fd48a5e1e",
+      "bytes": 1166
+    },
+    {
+      "path": ".runtime/calendar-personal-all-pg.config.mts",
+      "sha256": "0761bffc6775a36a80b578a909407fd4cb295f357805f29ba37e6b3551e6f4e2",
+      "bytes": 1165
+    },
+    {
+      "path": ".runtime/calendar-pg.config.mts",
+      "sha256": "dd8eefdfd355e81798f83476b0838bc275f82a5154d772b26fdf16969f15d436",
+      "bytes": 1092
+    },
+    {
+      "path": ".runtime/calendar-pg.setup.mts",
+      "sha256": "ad7eb6a184e1b62e59c842f7f6b90cf117a8eba2b857243315b3d5f7cee15fbd",
+      "bytes": 1786
+    },
+    {
+      "path": ".runtime/calendar-portal-main-amendment.config.mts",
+      "sha256": "cfc06ab30b351f8062cbea6ab1805a55b916c557272ee1d6ba4288239a336ccd",
+      "bytes": 6921
+    },
+    {
+      "path": ".runtime/calendar-portal-main-candidate.config.mts",
+      "sha256": "ea0d6b1edca872bef72e5355904a4ac791b91b178b9f51ec4b40813051299834",
+      "bytes": 6782
+    },
+    {
+      "path": ".runtime/calendar-portal-shortcut-unit.config.mts",
+      "sha256": "a961d5ed1e0c9ed5f5d510b74970f7377c015b52718dc6e6e660fa5e7dbcc338",
+      "bytes": 964
+    },
+    {
+      "path": ".runtime/calendar-preview/mocks.ts",
+      "sha256": "42b36674a050eb68eede8a210ed2af261a04d24079c8a1adfac98362f9c73582",
+      "bytes": 671
+    },
+    {
+      "path": ".runtime/calendar-preview/main.tsx",
+      "sha256": "b47fda4848316eda98655a3c901cb5d7a6454017334f0c2d5021962835293bfb",
+      "bytes": 2067
+    },
+    {
+      "path": ".runtime/calendar-preview/vite.config.mts",
+      "sha256": "1ba5e37bc8e58313544726fd68a253dc1b31391855c0f7eb4b62fa6292948e14",
+      "bytes": 736
+    },
+    {
+      "path": ".runtime/calendar-reminder-activation-final-pg.config.mts",
+      "sha256": "0979638c9fefddc369a537d2a021eefb27b1ba3a4d934a26323cee72342a6f7b",
+      "bytes": 377
+    },
+    {
+      "path": ".runtime/calendar-reminder-activation-regression-pg.config.mts",
+      "sha256": "ef748a6092b35806d2ffa0f24dec6e6c120e03b2dfb9781c47505fd10faeac19",
+      "bytes": 1121
+    },
+    {
+      "path": ".runtime/calendar-reminder-catalog-pg.config.mts",
+      "sha256": "869e7783eea285f1ba60de449ef279b0d6e1dc2a031c011a8fcae53627862197",
+      "bytes": 242
+    },
+    {
+      "path": ".runtime/calendar-reminder-channels-pg.config.mts",
+      "sha256": "86790118955612f5869e0708992fa2c3d29e92ae8ce808176c6da1678ef83bd0",
+      "bytes": 401
+    },
+    {
+      "path": ".runtime/calendar-reminder-defaults-concurrency-pg.config.mts",
+      "sha256": "478fe0298e0a82478be7021452e1c22e8922ab009551544c9ead9f20022cb21f",
+      "bytes": 390
+    },
+    {
+      "path": ".runtime/calendar-reminder-defaults-implicit-pg.config.mts",
+      "sha256": "251ceaf66a4bf20a43b19150fa6766466eae1f836f0bc218c55605aa2935fb57",
+      "bytes": 291
+    },
+    {
+      "path": ".runtime/calendar-reminder-defaults-past-pg.config.mts",
+      "sha256": "a5f34ad93e0e30682b8343876f6745f5414bd0c3fb91235420bb2f3e3b6a65ec",
+      "bytes": 510
+    },
+    {
+      "path": ".runtime/calendar-reminder-engine-candidate/engineOwnership.integration.test.ts",
+      "sha256": "855a3edd0be32ed8e60ab56d040c7efa280b8d5b59889662b1f61de44c959481",
+      "bytes": 5624
+    },
+    {
+      "path": ".runtime/calendar-reminder-engine-candidate/CONTRACT.md",
+      "sha256": "7668c2240afa0d26ac9521ca558f4de758dbc6722d7a8f28a3809907d698622c",
+      "bytes": 4864
+    },
+    {
+      "path": ".runtime/calendar-reminder-engine-candidate/fixture.ts",
+      "sha256": "915df2ea91f34e031026ffb1467a7e59cd9e5dded52cd1cddb963fa11b4359af",
+      "bytes": 3031
+    },
+    {
+      "path": ".runtime/calendar-reminder-engine-regression-testcontainers.config.mts",
+      "sha256": "f80671e957cc692e9ec88b523c013f537af53697a60cff1c59391678a397b79b",
+      "bytes": 2509
+    },
+    {
+      "path": ".runtime/calendar-reminder-engine-testcontainers.config.mts",
+      "sha256": "bcd66f0749898ae3f151b1ed748ea191b46fc4d6b3b2f69a14463ac0f64b10a8",
+      "bytes": 1333
+    },
+    {
+      "path": ".runtime/calendar-reminder-insert-failure-testcontainers.config.mts",
+      "sha256": "faa36436803e1aebcbe74dabbaf80a813a953e90c5bcb117c95485a096674e5c",
+      "bytes": 1302
+    },
+    {
+      "path": ".runtime/calendar-reminder-legacy-pg.config.mts",
+      "sha256": "b857f8671c38fdebb68fb865dfb30e8c56f18054a61ec9f6d01365b50d252323",
+      "bytes": 469
+    },
+    {
+      "path": ".runtime/calendar-reminder-live-acceptance/wsWorker.ts",
+      "sha256": "9257e7291015355e676cfe5311e310a257b27dea3d0f7c053bd34fbde9185f8d",
+      "bytes": 3228
+    },
+    {
+      "path": ".runtime/calendar-reminder-live-acceptance/seed.ts",
+      "sha256": "9b6a23dc52b58c2828faf5b49d5a79ea69ebbc094d3e983ed06b875e030f52fa",
+      "bytes": 7581
+    },
+    {
+      "path": ".runtime/calendar-reminder-live-acceptance/README.md",
+      "sha256": "6dfb5f4f3ff77ba77f817fce8f7774dd7257da2cd9a6c901f55d1215fbc38474",
+      "bytes": 7074
+    },
+    {
+      "path": ".runtime/calendar-reminder-live-acceptance/reminderWorker.ts",
+      "sha256": "144087e7d2e444ce3a97365a565f278a9adc17a1492b1a4fb66ec3a66feb43b6",
+      "bytes": 2235
+    },
+    {
+      "path": ".runtime/calendar-reminder-rebuild-pg.config.mts",
+      "sha256": "d832289343b92dbcc2a0550703e58d74f12dd2de1e52c4692880325844694980",
+      "bytes": 438
+    },
+    {
+      "path": ".runtime/calendar-reminder-settings-pg.config.mts",
+      "sha256": "b9c5c8c3100b4f5d150d4d35f3cc6c30cd81515aac3d0088c03c06eb783d59b8",
+      "bytes": 438
+    },
+    {
+      "path": ".runtime/calendar-reminder-triggers.sql",
+      "sha256": "acfeede51b1cc17d2e23b3449eeeb59b13ddfdedc9b7c0124ce8271e9cd18a4a",
+      "bytes": 2968
+    },
+    {
+      "path": ".runtime/calendar-reminder-worker.mts",
+      "sha256": "d6ff83765b62220bcbf55d3d611276f3619e64481e6dc155f2973a431fcb296a",
+      "bytes": 794
+    }
+  ]
+}

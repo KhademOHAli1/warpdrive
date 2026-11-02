@@ -1,0 +1,21 @@
+{
+  "frozenAt": "2026-11-02T08:23:51.089470+01:00",
+  "workspace": "/Users/ali/Developer/warpdrive-calendar",
+  "head": "2803183809c646a063f78fe954c110adbb2f453f",
+  "branch": "DETACHED",
+  "gitCommonDir": "/Users/ali/Developer/warpdrive/.git",
+  "dirtyAllowlist": 299,
+  "modifiedTracked": 60,
+  "untracked": 239,
+  "stagedPaths": 0,
+  "fixtureSourceArchiveFiles": 360,
+  "archiveRoundtrip": "all members/hashes/unique paths PASS",
+  "gitStatusUnchangedSinceInventory": true,
+  "sourceBytesUnchangedSinceInventory": true,
+  "preservationCommitOrPushByCalendar": false,
+  "branchOrRefMutationByCalendar": false,
+  "featureTestsOrHeavyJobsAfterStop": false,
+  "evidencePathsRecorded": 14,
+  "missingOptionalEvidencePointers": [],
+  "directive": "Frozen. Root Settings alone handles sequential branch/commit/push preservation. Do not restart module work."
+}

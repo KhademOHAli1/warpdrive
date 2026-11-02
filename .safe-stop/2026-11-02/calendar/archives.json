@@ -1,0 +1,14 @@
+{
+  "owned-dirty-source.tar.gz": {
+    "sha256": "8556413c4144a32609459b7369e3b1ec255f8ec937c3a3e01b2d13880e8b905d",
+    "bytes": 755310
+  },
+  "owned-static-fixture-source.tar.gz": {
+    "sha256": "b2e790319ac4135fd2d9ea502579bff8280263928a74756c5b8f439cef7fb2f5",
+    "bytes": 547551
+  },
+  "tracked-diff.patch": {
+    "sha256": "2420c02c4c6714cebe03785b6315d86f73d66a085beaa95dbc3f0a4b84869de9",
+    "bytes": 209197
+  }
+}

@@ -19,8 +19,8 @@ export function CalendarEventSchedule({
   const t = useAppTranslations("calendar");
   const allDay = draft.startTime === "";
   return (
-    <div className="space-y-3">
-      <div className="grid gap-3 sm:grid-cols-2">
+    <div className="space-y-2">
+      <div className="grid gap-2 sm:grid-cols-2">
         <div className="space-y-1.5">
           <span className="text-xs font-medium text-muted-foreground">{t("editor.start")}</span>
           <div className="flex items-center gap-2">
