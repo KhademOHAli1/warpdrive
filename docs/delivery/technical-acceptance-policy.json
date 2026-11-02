@@ -20,7 +20,11 @@
     "delivery/mcp-issuer-response-20261102"
   ],
   "required_workflows": {
-    "403980173": ["Analyze (javascript-typescript)", "Analyze (actions)", "Analyze (python)"]
+    "403980173": [
+      "Analyze (javascript-typescript)",
+      "Analyze (actions)",
+      "Analyze (python)"
+    ]
   },
   "items": {
     "integration/CONN-001": {
@@ -234,6 +238,23 @@
         "src/features/oauth/tokens.ts",
         "src/test/mcpResourceFixtures.ts",
         "vitest.config.ts"
+      ]
+    },
+    "ops/build-memory-2026-11-02": {
+      "classification": "bounded_technical",
+      "acceptance_sha256": "0c800bed30186d743ec3925ccdd4b880f4a0909fdb3528fe651cad666cdf67eb",
+      "rationale": "Exactly the original three-clause #916 production-build memory maintenance scope: preserve pinned tools/package/lockfiles and full normal/security/config checks; retain actual declared8GiB sampled-build/provenance/cleanup evidence and original failures; require exact integrated CI. No runtime, user-journey, provider/installation, release, deployment or human-only gate acceptance.",
+      "required_source_paths": [
+        ".github/workflows/ci.yml",
+        "bun.lock",
+        "docs/development/build-memory-qualification-2026-11-02.json",
+        "docs/development/build-memory-qualification-2026-11-02.md",
+        "next.config.test.ts",
+        "next.config.ts",
+        "package.json",
+        "src/config/developmentCache.test.ts",
+        "src/config/developmentCache.ts",
+        "tsconfig.json"
       ]
     }
   },

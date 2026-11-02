@@ -1,0 +1,461 @@
+{
+  "schema_version": 1,
+  "review_type": "independent_source_review",
+  "result": "accepted",
+  "canonical_id": "ops/build-memory-2026-11-02",
+  "issue": 916,
+  "acceptance_sha256": "0c800bed30186d743ec3925ccdd4b880f4a0909fdb3528fe651cad666cdf67eb",
+  "reviewed_revision": "7c82ba4ac626c86bd271f7a307d2cd16675555a5",
+  "reviewer_agent": {
+    "runtime": "codex",
+    "session_id": "01a19251-a472-7cd1-86cd-8dc245dd5b84",
+    "task_id": "/root/live_issue_checkpoints"
+  },
+  "recorded_at_utc": "2026-11-02T18:56:18.069516+00:00",
+  "summary": "Independently reviewed all three unchanged #916 criteria at exact immutable public7c82ba4. Config/toolchain/existing regression/typecheck/CI source pins match both actually qualified e0 and8926 local build cuts. Those full normal builds retain declared8GiB sampled guards, frozen input and owned-group cleanup evidence plus original strictFAILs and separate exact-input/client-compilation provenance addenda. The retained Root authenticated observer receipt now verifies all eight required7c82ba4 checks completed successfully, including actual normal CRM type/lint/unit/PostgreSQL/build/worker stages and managedCodeQL. Independent technical source/process review is complete for this bounded scope. This output-only commit candidate does not activate policy eligibility or post account-authorized acceptance; any resulting publication head must satisfy current exact-candidate gates before attestation/closure.",
+  "limitations": "Build RSS is the recorded process-group sum sampled after synchronous probes plus0.5s sleep, not fixed500ms sampling, continuous peak, escaped-group accounting or a guarantee against an unsampled excursion. The e0 receipt originally failed strict export/dependency-only provenance; exact regular ancestor package.json admission is a separate artifact. The8926 receipt originally failed an incorrect separate client-manifest boundary requirement; its later nested browser-layer compiler-chain addendum is separate. Neither FAIL was rewritten. The committed qualification summary covers the e0 local build;8926 supplemental build/provenance/readback remains local with cryptographic pins, not an invented hosted artifact URL. No application runtime, complete journey, installed packaging/provider support, human acceptance, release or deployment is inferred from these build records. The live scope readback is retained at its actual timestamps; final acceptance must reread live scope/prerequisites/current authority rather than treating that snapshot as current permission. This finalization read the retained authenticated exact-head CI receipt and made no new GitHub query, local test/build/service or browser invocation. Its all-eight result is bound to7c82ba4 at the recorded observation; final publication/attestation must reverify actual selected-head latest CI and current transport authority. The original e0 qualification summary was authored by this same review task, so it is not treated as independent raw proof; raw receipts and separately authored source/metadata review plus child sanity were rechecked.",
+  "criteria": [
+    {
+      "id": "AC1",
+      "result": "passed",
+      "evidence": [
+        "https://github.com/KhademOHAli1/warpdrive/blob/7c82ba4ac626c86bd271f7a307d2cd16675555a5/next.config.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/7c82ba4ac626c86bd271f7a307d2cd16675555a5/package.json",
+        "https://github.com/KhademOHAli1/warpdrive/blob/7c82ba4ac626c86bd271f7a307d2cd16675555a5/bun.lock",
+        "https://github.com/KhademOHAli1/warpdrive/blob/7c82ba4ac626c86bd271f7a307d2cd16675555a5/src/config/developmentCache.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/7c82ba4ac626c86bd271f7a307d2cd16675555a5/tsconfig.json",
+        "https://github.com/KhademOHAli1/warpdrive/blob/7c82ba4ac626c86bd271f7a307d2cd16675555a5/.github/workflows/ci.yml"
+      ],
+      "assessment": "One explicit webpackBuildWorker boolean plus comments separates compilation lifetime. Pinned Bun1.4.4, package/lockfiles, normal webpack/full TypeScript API checking, next-intl development cache behavior, security/body/logging configuration and existing check commands are retained. Config/package/lock/cache/test/tsconfig/CI blobs are identical to both actual qualified local cuts; no ignoreBuildErrors, dependency install, source overlay or skipped normal production check was used."
+    },
+    {
+      "id": "AC2",
+      "result": "passed",
+      "evidence": [
+        "https://github.com/KhademOHAli1/warpdrive/blob/7c82ba4ac626c86bd271f7a307d2cd16675555a5/docs/development/build-memory-qualification-2026-11-02.md",
+        "https://github.com/KhademOHAli1/warpdrive/blob/7c82ba4ac626c86bd271f7a307d2cd16675555a5/docs/development/build-memory-qualification-2026-11-02.json"
+      ],
+      "assessment": "Actual e0 complete normal build exited0,87.81696275004651s/max sampled6923714560bytes with7596frozen pins conserved and owned group gone. Actual public8926 build also exited0,98.80300987500232s/max sampled6983663616bytes with7617frozen pins conserved, metadata/controller pins unchanged and group gone. Both used an enforced8GiB sampled group guard. e0 metadata and8926 nested-client provenance admissions remain separate from their original strictFAIL receipts. Source/input hashes, caps/cadence/cleanup and limitations are retained; raw supplemental reports remain local and hashed."
+    },
+    {
+      "id": "AC3",
+      "result": "passed",
+      "evidence": [
+        "https://github.com/KhademOHAli1/warpdrive/blob/7c82ba4ac626c86bd271f7a307d2cd16675555a5/next.config.test.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/7c82ba4ac626c86bd271f7a307d2cd16675555a5/src/config/developmentCache.test.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/7c82ba4ac626c86bd271f7a307d2cd16675555a5/.github/workflows/ci.yml",
+        "https://github.com/KhademOHAli1/warpdrive/actions/runs/41500673240/job/125467023274",
+        "https://github.com/KhademOHAli1/warpdrive/actions/runs/41500673240/job/125467023111",
+        "https://github.com/KhademOHAli1/warpdrive/actions/runs/41500673240/job/125467022737",
+        "https://github.com/KhademOHAli1/warpdrive/actions/runs/41500674185/job/125467019373",
+        "https://github.com/KhademOHAli1/warpdrive/actions/runs/41500674185/job/125467018934",
+        "https://github.com/KhademOHAli1/warpdrive/actions/runs/41500673848/job/125467018635",
+        "https://github.com/KhademOHAli1/warpdrive/actions/runs/41500674185/job/125467018544",
+        "https://github.com/KhademOHAli1/warpdrive/actions/runs/41500673848/job/125467018130"
+      ],
+      "assessment": "The18existing configuration regressions passed at frozene0 and their test/config bytes are unchanged at reviewed7c82ba4. Retained exact-head CI receipt observed2026-11-02T18:46:28.419123+00:00 reports all eight required checks completed successfully: CRM, marketing, documentation, delivery tooling/traceability and all three managedCodeQL analyses. CRM job metadata separately binds7c82ba4/main and successful normal types/lint/unit/PostgreSQL/productionbuild/server-entrypoint stages. Both13f7 resource stops, e0 strict tracingFAIL and8926 strict client-boundaryFAIL remain separate immutable receipts with later narrow admissions. The previous8926 privacy and21c migration-fixture CI failures are preserved as earlier runs, not relabelled. This completes technical review of originalAC3 at this actual head; future publication heads require their own exact CI."
+    }
+  ],
+  "source_pins": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "0d28ae0fb0ee2504f67842e31a21fc16a5b244d807fe32990e27ead98e2716a0"
+    },
+    {
+      "path": "bun.lock",
+      "sha256": "5f609b438462d5f1a06bfeae500c5a7e266f664dc4b19b0ca6cd91c5ee56ca2b"
+    },
+    {
+      "path": "docs/development/build-memory-qualification-2026-11-02.json",
+      "sha256": "13ee5c3c51bad5dff5e3bf833e6b0c92a1d134a5575f439d949d161c77b8df54"
+    },
+    {
+      "path": "docs/development/build-memory-qualification-2026-11-02.md",
+      "sha256": "3fdcbf96d4c29289804b9cd5a3fe0c1ea102d160034a683ea017348719ec8cfc"
+    },
+    {
+      "path": "next.config.test.ts",
+      "sha256": "090a4365c3347c408660f9bcf85afdcca43cb06ece66081d383e8dc623fab0b0"
+    },
+    {
+      "path": "next.config.ts",
+      "sha256": "e84ae8a6a38e0e6438c527a1c053e9fad2b4c148ca83fa59ee9bd5ea9e397337"
+    },
+    {
+      "path": "package.json",
+      "sha256": "33e0ea11342a92b351845f2f5760f67d3463a6ce359bc6747df6a30bc1c14f04"
+    },
+    {
+      "path": "src/config/developmentCache.test.ts",
+      "sha256": "28f471cee4a6524856348d659afa2904bdd9a64b086635f78e237f4f7c1501ff"
+    },
+    {
+      "path": "src/config/developmentCache.ts",
+      "sha256": "a568b3224411d19865ae771d72d13c67cf4d87509789806b46e33992f2472697"
+    },
+    {
+      "path": "tsconfig.json",
+      "sha256": "3e482742ee772ce6c49ed50d2d5fc83592588b9e43b6a3890c409ae834c77ccb"
+    }
+  ],
+  "source_equivalence_to_qualified_local_cuts": [
+    {
+      "revision": "e0eba73266ce7a15bba2f3893a720710fee4ca17",
+      "paths": [
+        {
+          "path": ".github/workflows/ci.yml",
+          "equal_reviewed_revision": true
+        },
+        {
+          "path": "bun.lock",
+          "equal_reviewed_revision": true
+        },
+        {
+          "path": "next.config.test.ts",
+          "equal_reviewed_revision": true
+        },
+        {
+          "path": "next.config.ts",
+          "equal_reviewed_revision": true
+        },
+        {
+          "path": "package.json",
+          "equal_reviewed_revision": true
+        },
+        {
+          "path": "src/config/developmentCache.test.ts",
+          "equal_reviewed_revision": true
+        },
+        {
+          "path": "src/config/developmentCache.ts",
+          "equal_reviewed_revision": true
+        },
+        {
+          "path": "tsconfig.json",
+          "equal_reviewed_revision": true
+        }
+      ]
+    },
+    {
+      "revision": "89262d516da029a51aee9f9cfa28dd22c47735cb",
+      "paths": [
+        {
+          "path": ".github/workflows/ci.yml",
+          "equal_reviewed_revision": true
+        },
+        {
+          "path": "bun.lock",
+          "equal_reviewed_revision": true
+        },
+        {
+          "path": "next.config.test.ts",
+          "equal_reviewed_revision": true
+        },
+        {
+          "path": "next.config.ts",
+          "equal_reviewed_revision": true
+        },
+        {
+          "path": "package.json",
+          "equal_reviewed_revision": true
+        },
+        {
+          "path": "src/config/developmentCache.test.ts",
+          "equal_reviewed_revision": true
+        },
+        {
+          "path": "src/config/developmentCache.ts",
+          "equal_reviewed_revision": true
+        },
+        {
+          "path": "tsconfig.json",
+          "equal_reviewed_revision": true
+        }
+      ]
+    }
+  ],
+  "current_hosted_evidence": {
+    "revision": "7c82ba4ac626c86bd271f7a307d2cd16675555a5",
+    "observed_at_utc": "2026-11-02T18:46:28.419123+00:00",
+    "status": "PASS",
+    "required_jobs_passed": 8,
+    "runs": {
+      "public_bun": 41500674185,
+      "delivery": 41500673848,
+      "codeql": 41500673240
+    },
+    "checks": [
+      {
+        "name": "Analyze (python)",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/41500673240/job/125467023274"
+      },
+      {
+        "name": "Analyze (actions)",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/41500673240/job/125467023111"
+      },
+      {
+        "name": "Analyze (javascript-typescript)",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/41500673240/job/125467022737"
+      },
+      {
+        "name": "Documentation site checks",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/41500674185/job/125467019373"
+      },
+      {
+        "name": "Marketing site checks",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/41500674185/job/125467018934"
+      },
+      {
+        "name": "Delivery traceability",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/41500673848/job/125467018635"
+      },
+      {
+        "name": "CRM checks",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/41500674185/job/125467018544"
+      },
+      {
+        "name": "Delivery tooling",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/41500673848/job/125467018130"
+      }
+    ],
+    "receipt": {
+      "path": "outputs/goal-core-journeys-20261102/migration-prefix-forward/hosted-ci-final.json",
+      "sha256": "96852e623f28d59582c8af32f38ecd0f0fc66c0e5b96398d64bedb6575d128c5"
+    },
+    "reviewer_verification": "Read/validated retained Root authenticated exact-head watcher receipt, all required names/statuses/URLs and raw CRM/site/doc job head metadata; no new API query or new run. Final gate still verifies latest exact accepted-head runs/event/workflow identity live."
+  },
+  "historical_local_qualification": {
+    "e0": {
+      "revision": "e0eba73266ce7a15bba2f3893a720710fee4ca17",
+      "exit": 0,
+      "seconds": 87.81696275004651,
+      "max_sampled_rss_bytes": 6923714560,
+      "original_receipt_state": "FAIL",
+      "later_admission_state": "PASS",
+      "tracked_files": 7596
+    },
+    "8926": {
+      "revision": "89262d516da029a51aee9f9cfa28dd22c47735cb",
+      "exit": 0,
+      "seconds": 98.80300987500232,
+      "max_sampled_rss_bytes": 6983663616,
+      "original_receipt_state": "FAIL",
+      "later_admission_state": "PASS",
+      "tracked_files": 7617,
+      "independent_child_readback_state": "SANITY_CHECK_PASS_SOURCE_METADATA_ONLY"
+    },
+    "configuration_passed": 18,
+    "limits": "The18cases and two build runs remain separate witnesses; they are not a new combined campaign or exact7c local build."
+  },
+  "operator_evidence_base": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-settings-ux/outputs/goal-core-journeys-20261102",
+  "operator_evidence": [
+    {
+      "path": "workflow-follow-up/production-13f7a20464/build.public.json",
+      "sha256": "52ccb2e7ac469a998350ce03505b1ee9be2308d90994840b41d47279ed1fa1e3",
+      "matches_prior_committed_pin": true
+    },
+    {
+      "path": "workflow-follow-up/production-13f7a20464/build-smol.public.json",
+      "sha256": "33cf9f489da337f156111a3c41cca37c055fbd04a2f8813eb95d35788370fabd",
+      "matches_prior_committed_pin": true
+    },
+    {
+      "path": "workflow-follow-up/production-13f7a20464/build.public.log",
+      "sha256": "8cfd714299ccba873bb7eafc180d470bc8582ca72a543ec280a68f82ce6e52d9",
+      "matches_prior_committed_pin": true
+    },
+    {
+      "path": "workflow-follow-up/production-13f7a20464/build-smol.public.log",
+      "sha256": "346ba6b8687084489467cf725fab7193086f3a86b73e6a03b5b6638782cc2a4a",
+      "matches_prior_committed_pin": true
+    },
+    {
+      "path": "workflow-follow-up/production-e0eba73266/focused-config.public.json",
+      "sha256": "1b4c0680f44c2841739f7876fc70cb620e8e30ebec5e8389e7b43cef4df48ca9",
+      "matches_prior_committed_pin": true
+    },
+    {
+      "path": "workflow-follow-up/production-e0eba73266/focused-config.public.log",
+      "sha256": "787721b342d69c1fe77d4c63d16c3489b3824f1f4e82d753c2845523744eaa08",
+      "matches_prior_committed_pin": true
+    },
+    {
+      "path": "workflow-follow-up/production-e0eba73266/build-worker.public.json",
+      "sha256": "6f66cd3b34b0efd7539a2251ba4958b801482226559a9a1b5b9d68bcb94db0d1",
+      "matches_prior_committed_pin": true
+    },
+    {
+      "path": "workflow-follow-up/production-e0eba73266/build-worker.public.log",
+      "sha256": "0acd36305484f24bb9f65f4fd72d634edf9613632067e72cbdbc1496866e893b",
+      "matches_prior_committed_pin": true
+    },
+    {
+      "path": "workflow-follow-up/production-e0eba73266/build3-outcome.public.json",
+      "sha256": "265c67189069199f9df99e5c047e7665c6d198bc076967d099d920316322a19e",
+      "matches_prior_committed_pin": true
+    },
+    {
+      "path": "workflow-follow-up/production-e0eba73266/foundation.public.json",
+      "sha256": "20cd52af52c53674125f300a0aeeeb80063cc1998ad784e44ee7ebe278a5cc25",
+      "matches_prior_committed_pin": true
+    },
+    {
+      "path": "workflow-follow-up/production-e0eba73266/tracked-source-manifest.public.json",
+      "sha256": "893065cc9809f40b612f5e864cefdf2c45b463ba42a3f12521c9692e3352fdf4",
+      "matches_prior_committed_pin": true
+    },
+    {
+      "path": "workflow-follow-up/production-e0eba73266/tracing.public.json",
+      "sha256": "e056c3b7fdce370c2385127fd5f58bfc39de48518d0e279a448d3c423eef7384",
+      "matches_prior_committed_pin": true
+    },
+    {
+      "path": "workflow-follow-up/production-e0eba73266/tracing-closure.public.json",
+      "sha256": "90e567aae99305e800b19fcfbf8c1f8b0948885ecfbecbc4aef1d4ab27b422e2",
+      "matches_prior_committed_pin": true
+    },
+    {
+      "path": "workflow-follow-up/production-e0eba73266/metadata-admission-addendum.public.json",
+      "sha256": "8f633c05aaa02e0cd81585192ee3e63f360601e16878b86c95161cbfd2206e53",
+      "matches_prior_committed_pin": true
+    },
+    {
+      "path": "workflow-follow-up/production-e0eba73266/metadata-tracing-closure.public.json",
+      "sha256": "f5a1ab353fc2c90e23291f8becc5bce999cc79a401a49bd99762f972e44f07a7",
+      "matches_prior_committed_pin": true
+    },
+    {
+      "path": "workflow-follow-up/production-e0eba73266/admitted-build.public.json",
+      "sha256": "aef3f50ca14d094e90108ee1808854c509f6c6dc42b2a958aaa23a4fb0103fc8",
+      "matches_prior_committed_pin": true
+    },
+    {
+      "path": "closure-readiness/build-916-independent-source-review.json",
+      "sha256": "3e23b816b5721096773433ffc42eb6c4d786b50e520434a08dfdd6b15488360c",
+      "matches_prior_committed_pin": true
+    },
+    {
+      "path": "closure-readiness/build3-metadata-independent-review.json",
+      "sha256": "40176de3b2dbbba22c1402f54929c8c847cba645fd496e2154de51c270cbe6dc",
+      "matches_prior_committed_pin": true
+    },
+    {
+      "path": "workflow-follow-up/build-production.py",
+      "sha256": "03aa5289f12f0d8d19a7c5b8ecf3110ab45bad0b6568286a2f34bc7c5ef03df7",
+      "matches_prior_committed_pin": true
+    },
+    {
+      "path": "workflow-follow-up/build-production-smol.py",
+      "sha256": "86a3cfe0e933e7ba52415b48e60f272b15d7fac525e3216f5425770bdde2fa41",
+      "matches_prior_committed_pin": true
+    },
+    {
+      "path": "workflow-follow-up/build-production-worker.py",
+      "sha256": "aa2a5029f749f01988ff1b02c39202b74f82477e6e6001fdfc089f02350a63de",
+      "matches_prior_committed_pin": true
+    },
+    {
+      "path": "workflow-follow-up/focused-production-config.py",
+      "sha256": "3bf0c73b2ce9ec29850df38b313f8baea24a299e1cc2467d5306d2561568a3f6",
+      "matches_prior_committed_pin": true
+    },
+    {
+      "path": "workflow-follow-up/audit-production-tracing.py",
+      "sha256": "5c3b8eb06e19090b95f30f693cde04066c9032014659fea5fe01b2229522f15d",
+      "matches_prior_committed_pin": true
+    },
+    {
+      "path": "workflow-follow-up/audit-build3-metadata-addendum.py",
+      "sha256": "583045cb8f91797e0fd7784c257d64f083ecfdb492d707734753ff356967023c",
+      "matches_prior_committed_pin": true
+    },
+    {
+      "path": "closure-readiness/build-916-connected-readback.json",
+      "sha256": "4d05b2816faaff51c99e22cc558f299eff12c821d0f3d18ab3ede33c36d9b6a9"
+    },
+    {
+      "path": "workflow-follow-up/production-89262d516d/build-request.public.json",
+      "sha256": "7044d0984ccf79ed25db5c3dfd2c9605ff7db48f62cb36819162a33c99c565a1"
+    },
+    {
+      "path": "workflow-follow-up/production-89262d516d/build-retry.public.json",
+      "sha256": "fccdcffd050ab2336207428929a4f3d6ad21ecc81a6a9267d01e82e4d5e2d7f2"
+    },
+    {
+      "path": "workflow-follow-up/production-89262d516d/build-retry.public.log",
+      "sha256": "f8ee678c92f467b9aad13c0c9400043c0cdc62273e99175b93f346c8068fe001"
+    },
+    {
+      "path": "workflow-follow-up/production-89262d516d/client-provenance-addendum.public.json",
+      "sha256": "cff456341622151732ddce26abdf7ef1545c78587b0ef5675ab2e0455d3d9da1"
+    },
+    {
+      "path": "workflow-follow-up/production-89262d516d/admitted-build.public.json",
+      "sha256": "943454337902f4ee89b7a3099148dc34e3f8d5066582588d83a27761988c7f48"
+    },
+    {
+      "path": "workflow-follow-up/production-89262d516d/child-build-admission-sanity.public.json",
+      "sha256": "a16f9a66879dd727638ed88fe886f9582a6af78519d538a7a9fb415749ae5008"
+    },
+    {
+      "path": "workflow-follow-up/production-89262d516d/foundation.public.json",
+      "sha256": "41caee26b5198688b8b805cc2a56af8882c58b082dc195695a833a877ba41978"
+    },
+    {
+      "path": "workflow-follow-up/production-89262d516d/tracked-source-manifest.public.json",
+      "sha256": "02a5871f1df5103b196a7fba97d3e11942d92c956422a0a1c0d42bcafb45b4b6"
+    },
+    {
+      "path": "workflow-follow-up/production-89262d516d/tracing-retry.public.json",
+      "sha256": "312e4b1d6f524547542c369c5ef3f8b3ed54b18fea25460fd2e53b89fc8b2428"
+    },
+    {
+      "path": "workflow-follow-up/production-89262d516d/tracing-retry-closure.public.json",
+      "sha256": "ad3a723f4f777e463aca860e32563c79164a657353188d8f515e20020a8d84ab"
+    },
+    {
+      "path": "workflow-follow-up/production-89262d516d/retained-admitted-build-trace.jsonl",
+      "sha256": "46e8734d39549b056861c681aebd23f29c90c6e76e7f526f7673232f4a013467"
+    },
+    {
+      "path": "workflow-follow-up/build-production-retry.py",
+      "sha256": "2357df980426b1b57756f9dd234c49c5a24b0cf21893914a9326001e888b1152"
+    },
+    {
+      "path": "workflow-follow-up/audit-production-retry-tracing.py",
+      "sha256": "4c5b8f9026ce4b61eadf118a158f6a6a7a6c31dab1c0aacf56df4c6bfc7c9e76"
+    },
+    {
+      "path": "live-checkpoints/publication-7c82ba4/916-after.json",
+      "sha256": "0a481d65fafd37847f5d44dd160d6e11b9e0f8011e7db2a29194d7d269e0d1cb",
+      "observed_live_updated_at": "2026-11-02T18:34:39Z"
+    }
+  ],
+  "scope_readbacks": {
+    "original_connected_readback_utc": "2026-11-02T15:49:10.822Z",
+    "native_parent": 81,
+    "latest_checkpoint_readback_updated_at": "2026-11-02T18:34:39Z",
+    "latest_checkpoint_state": "open",
+    "three_criteria_exact_match": true,
+    "limit": "These retained GET/readback snapshots do not grant current write authority or replace final live reread."
+  },
+  "provenance_limit": "GitHub authenticates a later delegated posting account only. The named Codex runtime/session/task is explicit process provenance, not a separate authenticated GitHub reviewer or human. This task originally authored the e0 summary; that self-authored summary is not treated as independent raw proof. Source/code was authored by Root, and source/metadata reviews from /root/deal_core_next_slice plus raw operator reports and /root/workflow_browser_prepare child sanity provide separately retained evidence.",
+  "completion_boundary": "Independent full-scope technical source/process review completed at7c82ba4; output-only commit candidate. No technical-policy opt-in, issue comment, transport attestation, issue state change, parent/human acceptance, release or deployment was performed.",
+  "previous_pending_proposal_sha256": "3a1c3611deb1dae4bab36bf7a0083362ceea3d4adf2dcbd3b5c258ff7642dd54"
+}
