@@ -1,0 +1,87 @@
+--- a/docs-site/docs/features/automations.md
++++ b/docs-site/docs/features/automations.md
+@@ -21,4 +21,12 @@
+ connects the chosen step in one edit.
+ 
++To insert a step into an existing path, select the node immediately before it, open
++**Connections**, and choose **Insert a step here**. The picker offers **Read deal**,
++**Create task**, and **Wait** for this connection. Choosing a step retains the downstream path
++and its existing mappings. Existing steps keep their positions; the inserted step is placed in
++a clear space and opens selected in **Configure**, with **Step name** focused. Closing the
++picker leaves the graph unchanged. To add a **Condition**, use a free output's add control or
++**Add node**, then explicitly connect both condition outcomes.
++
+ ## Connect the process
+ 
+--- a/docs/workflows/status.md
++++ b/docs/workflows/status.md
+@@ -1,4 +1,33 @@
+ # Visual workflow implementation status
+ 
++## Current editor insertion checkpoint, 2 November 2026
++
++The private checkout now includes a 12-file editor insertion increment. Selecting a predecessor's
++occupied output can insert a linear Read deal, Create task or Wait while retaining the downstream
++path, existing nodes, bindings and positions. New steps use a clear available cell and open selected
++in the inspector. Conditions remain available on free outputs and from the toolbar, with explicit
++branch wiring. This increment is not delivered in Main or deployed; the separate Main delivery
++notice for the keyboard-focus increment below remains unchanged.
++
++Actual test-first evidence began with five intended RED cases and three passing controls. The first
++fix returned seven PASS and one position RED. Three additional clearance cases then returned RED
++while two bounds controls passed. The final focused run passed 34 cases across nine files in 4.78
++seconds, with full cleanup observed at 5.000395 seconds. Biome checked 12 files in 0.11 seconds,
++formatted one file and reported zero diagnostics. Two independent source reviews and the artifact
++application check also passed. These are focused source/component results, not rendered geometry,
++browser or assistive-technology acceptance.
++
++The new 335-pin full-checkout static request covers 12 TypeScript files and three catalogs, including
++the current editor increment and three browser-fixture tooling files. It is UNSTARTED and awaits a
++fresh Main START. The old static3 request was withdrawn; static11 was superseded without starting.
++The earlier qualified duration-wait core's 18.51-second static result, GUI31 and Native10 remain
++evidence for their own cuts, not full-checkout qualification of these new editor/fixture files.
++The immutable 51-file core packet and 94-file local evidence mirror are preserved.
++
++Whole WF017, the order strip, rendered geometry, browser/AT acceptance, Main exact-head CI and the
++full WF-001 through WF-042 goal remain open. Main's canonical 0098 work is tool generation only;
++this update records no accepted canonical upgrade. All earlier notices and history below are
++preserved; their older current-state language is scoped to its dated cut.
++
+ ## Current duration-wait checkpoint, 2 November 2026
+ 
+--- a/docs/workflows/CONTINUATION.md
++++ b/docs/workflows/CONTINUATION.md
+@@ -1,4 +1,33 @@
+ # Autonomous workflow-builder continuation
+ 
++## Current editor insertion checkpoint, 2 November 2026
++
++The private checkout now includes a 12-file editor insertion increment. Selecting a predecessor's
++occupied output can insert a linear Read deal, Create task or Wait while retaining the downstream
++path, existing nodes, bindings and positions. New steps use a clear available cell and open selected
++in the inspector. Conditions remain available on free outputs and from the toolbar, with explicit
++branch wiring. This increment is not delivered in Main or deployed; the separate Main delivery
++notice for the keyboard-focus increment below remains unchanged.
++
++Actual test-first evidence began with five intended RED cases and three passing controls. The first
++fix returned seven PASS and one position RED. Three additional clearance cases then returned RED
++while two bounds controls passed. The final focused run passed 34 cases across nine files in 4.78
++seconds, with full cleanup observed at 5.000395 seconds. Biome checked 12 files in 0.11 seconds,
++formatted one file and reported zero diagnostics. Two independent source reviews and the artifact
++application check also passed. These are focused source/component results, not rendered geometry,
++browser or assistive-technology acceptance.
++
++The new 335-pin full-checkout static request covers 12 TypeScript files and three catalogs, including
++the current editor increment and three browser-fixture tooling files. It is UNSTARTED and awaits a
++fresh Main START. The old static3 request was withdrawn; static11 was superseded without starting.
++The earlier qualified duration-wait core's 18.51-second static result, GUI31 and Native10 remain
++evidence for their own cuts, not full-checkout qualification of these new editor/fixture files.
++The immutable 51-file core packet and 94-file local evidence mirror are preserved.
++
++Whole WF017, the order strip, rendered geometry, browser/AT acceptance, Main exact-head CI and the
++full WF-001 through WF-042 goal remain open. Main's canonical 0098 work is tool generation only;
++this update records no accepted canonical upgrade. All earlier notices and history below are
++preserved; their older current-state language is scoped to its dated cut.
++
+ ## Current duration-wait checkpoint, 2 November 2026
+ 

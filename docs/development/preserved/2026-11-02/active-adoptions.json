@@ -1,0 +1,461 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-02",
+  "baseMain": "09288d518fd574fd069fb6a1dc670596f71a8831",
+  "activeAdoptions": {
+    "workflow": [
+      {
+        "path": "docs-site/docs/features/automations.md",
+        "sha256": "41d3ad6dd16b05dfee09bc6b43619265efdbe57c47a8c3b7638c6ec87f6602f3",
+        "mode": "0o644"
+      },
+      {
+        "path": "docs/workflows/CONTINUATION.md",
+        "sha256": "4dbaf3532b43c8134bf2bf5e901aaa871c8bc3565b9617c57481a3491d80857b",
+        "mode": "0o644"
+      },
+      {
+        "path": "docs/workflows/status.md",
+        "sha256": "498776bc1dc50432692d82d39fbb997dc22c63f108531b16373ab8dce66aa97d",
+        "mode": "0o644"
+      },
+      {
+        "path": "src/features/workflows/connectionGestures.test.ts",
+        "sha256": "829c29dbc0fcceed901dbd8d5e3accc7f25d8658a9eeb5f97da2510a51cb3e19",
+        "mode": "0o644"
+      },
+      {
+        "path": "src/features/workflows/connectionGestures.ts",
+        "sha256": "f151f3c795c425eec2ea1eb47c407d0a943cee0f3801ccf5a30beb7ee4185251",
+        "mode": "0o644"
+      },
+      {
+        "path": "src/features/workflows/connectionInsertion.test.ts",
+        "sha256": "445efe59dd5e487200e8f6fbce096a768bef1938fdd7a15f08107bbaca17d70c",
+        "mode": "0o644"
+      },
+      {
+        "path": "src/features/workflows/messages/workflows.de.json",
+        "sha256": "598caa957b5a885d975854c6cc3b7adfa6b25ef09c02bb1f0e036592c0ed482b",
+        "mode": "0o644"
+      },
+      {
+        "path": "src/features/workflows/messages/workflows.en.json",
+        "sha256": "18e59537ea3d2f8d5868790f6b5db4e2fe3ac6111dba7e47851eaff42b7f65cc",
+        "mode": "0o644"
+      },
+      {
+        "path": "src/features/workflows/messages/workflows.fa.json",
+        "sha256": "5e00117f7aaba912058fb72b32fcb2430e047480d24d144a0b0ee1cb027ba8b3",
+        "mode": "0o644"
+      },
+      {
+        "path": "src/features/workflows/nodeLayout.ts",
+        "sha256": "7966955c38bff47fb36867a63230ea3339e3fc68bfdc0074930a7099b11c054d",
+        "mode": "0o644"
+      },
+      {
+        "path": "src/features/workflows/nodeOrder.test.ts",
+        "sha256": "fd23c041638c98e845ec0646dd7b8603e67da0491fd6e4e55852cf64b0c1e666",
+        "mode": "0o644"
+      },
+      {
+        "path": "src/features/workflows/nodeOrder.ts",
+        "sha256": "9f1334d3128f1ef785979438985410fca79bf19ce414b666ffd8fa42b053fcf7",
+        "mode": "0o644"
+      },
+      {
+        "path": "src/features/workflows/nodePlacement.test.ts",
+        "sha256": "995f6901ad9f64f646b696202aa68e8136b593934e983ae1bae17dc3f560eb21",
+        "mode": "0o644"
+      },
+      {
+        "path": "src/features/workflows/ui/BindingField.tsx",
+        "sha256": "84b60e2f256fe0bceefe359e20268c7893d8070cc3db51b5d78167e7bc027901",
+        "mode": "0o644"
+      },
+      {
+        "path": "src/features/workflows/ui/BuilderWorkspace.tsx",
+        "sha256": "446596405640d73895234fe5acb23a1456995523a683e377ecc660677586d059",
+        "mode": "0o644"
+      },
+      {
+        "path": "src/features/workflows/ui/ConnectionEditor.tsx",
+        "sha256": "34c64daa2c3083c7aa523c933cb3ac10d097f18fa7b2bf143b434246a8e25d2c",
+        "mode": "0o644"
+      },
+      {
+        "path": "src/features/workflows/ui/ConnectionInsertion.test.tsx",
+        "sha256": "84a7aac98c150b3dafcdb37f3b46361cc150693f8f080e40e076b90e60732d09",
+        "mode": "0o644"
+      },
+      {
+        "path": "src/features/workflows/ui/EdgeInspector.tsx",
+        "sha256": "7b1ac58dbe9c1268aa3a51688c7169c5ede174ed388efcbfd08ef46d1891b7c9",
+        "mode": "0o644"
+      },
+      {
+        "path": "src/features/workflows/ui/NodeOrdinals.test.tsx",
+        "sha256": "ae0433f8eff0a5523ecc494a229a882ce23256e980202d70716fd5ee09996b27",
+        "mode": "0o644"
+      },
+      {
+        "path": "src/features/workflows/ui/NodePalette.tsx",
+        "sha256": "421324b005a73f559b332f6abde063402f5c61403851bf48f757d063fa70b423",
+        "mode": "0o644"
+      },
+      {
+        "path": "src/features/workflows/ui/RunTrace.selection.test.tsx",
+        "sha256": "d55e5596c0c0164c8d04d299efb35274d7e3ce9cdaa900af625efa29caf50496",
+        "mode": "0o644"
+      },
+      {
+        "path": "src/features/workflows/ui/RunTrace.tsx",
+        "sha256": "6a0a2200609a034388839a32e7851a525e37984a12e0f1fcdd9d0f330fa1aad1",
+        "mode": "0o644"
+      },
+      {
+        "path": "src/features/workflows/ui/WorkflowCanvas.test.tsx",
+        "sha256": "c64edeb937ba8a23c110151b4fff6522d1596d31a151c3ea90d36d93afe1cd58",
+        "mode": "0o644"
+      },
+      {
+        "path": "src/features/workflows/ui/WorkflowCanvas.tsx",
+        "sha256": "dc58379da396d23d0baf61dd242a2fffcf5741099801f01be6531fc8b7e2c05e",
+        "mode": "0o644"
+      },
+      {
+        "path": "src/features/privacy/registryIdsWorkflows1.ts",
+        "sha256": "3489a4517430eba92df5bd52f31bcbec9ab3a2c805b6d7a2afcee1bb00dbc306",
+        "mode": "0o644"
+      }
+    ],
+    "settings": [
+      {
+        "path": "src/components/shell/LeftNav.mobile.test.tsx",
+        "sha256": "0d0c2e58d4d672f07ebe6b6b982fff85a46da90006bc8c16d952e3c9725e2acb",
+        "mode": "0o644"
+      },
+      {
+        "path": "src/components/shell/LeftNav.module.css",
+        "sha256": "81b21669b1e569789105ae4281d3ada7e3b30cb079c61267f028de57e4928199",
+        "mode": "0o644"
+      },
+      {
+        "path": "src/components/shell/LeftNav.test.tsx",
+        "sha256": "d69c5c60a927b95253db332e7e7cd0acc5cc40240d4b2e61bc6a7973ba6a4e55",
+        "mode": "0o644"
+      },
+      {
+        "path": "src/components/shell/LeftNav.tsx",
+        "sha256": "350311d6139058d990ec105ceec661f0c77b296ff28293be612c109c05f9e649",
+        "mode": "0o644"
+      },
+      {
+        "path": "src/components/shell/NavIcons.module.css",
+        "sha256": "301f94427b45c25bd448bd8775aa83183cb9305f44f523af67166b9b42a326ff",
+        "mode": "0o644"
+      },
+      {
+        "path": "src/components/shell/NavIcons.test.tsx",
+        "sha256": "a7c8838e9966ad50f25d6f4336c0bc31a5852610944b28cf424c642987457735",
+        "mode": "0o644"
+      },
+      {
+        "path": "src/components/shell/NavIcons.tsx",
+        "sha256": "0af1772c9034cb593eda9bdc197c1ae52276c6ad24588f110dfc4605041bf7c3",
+        "mode": "0o644"
+      },
+      {
+        "path": "src/components/shell/SidebarChrome.tsx",
+        "sha256": "c1da3f4f70a023275e75c53fd631fe90116374e2a4d278496a51016dc9010857",
+        "mode": "0o644"
+      },
+      {
+        "path": "src/components/shell/SidebarMenu.tsx",
+        "sha256": "6865239a9c9d91855967fb5ef46c41541b5368a1abdd98c31fa452a5847094e6",
+        "mode": "0o644"
+      },
+      {
+        "path": "src/components/shell/SidebarMenuItem.tsx",
+        "sha256": "ebc976a742ce68f1dd01230d65fe6af77515121141c86b02eba03e6297025e31",
+        "mode": "0o644"
+      },
+      {
+        "path": "src/components/shell/SidebarToggle.tsx",
+        "sha256": "93def58005c3694c3cf332ee1827f5772e7debb9fbc14224321a81ee30cbb5fb",
+        "mode": "0o644"
+      },
+      {
+        "path": "src/components/shell/financeNavGlyphs.ts",
+        "sha256": "a67f338f40e37fd0db600fb45f2fe04146549aea0fea55eb494ade5893884678",
+        "mode": "0o644"
+      },
+      {
+        "path": "src/constants/nav.ts",
+        "sha256": "2ae978a6b2103140e0ac37670ae444bdd5cda995be4be837d6c283cf79c7ae6f",
+        "mode": "0o644"
+      },
+      {
+        "path": "src/features/i18n/messages/de.json",
+        "sha256": "c87768925833caa3903fef9c49782a429e65a505b93a169c6bf5e080d2c88025",
+        "mode": "0o644"
+      },
+      {
+        "path": "src/features/i18n/messages/en.json",
+        "sha256": "182eeaf97cd9c20df205c858e152dd48ea2909786562f1b4220281a5fdbaf919",
+        "mode": "0o644"
+      },
+      {
+        "path": "src/features/i18n/messages/fa.json",
+        "sha256": "5513b0f5fc262459bb715422817075d9729f28a98d718dc0084469ebed339da6",
+        "mode": "0o644"
+      },
+      {
+        "path": "src/features/shortcuts/GlobalShortcuts.test.tsx",
+        "sha256": "aa37e1afd4ac4243ec74ca31906e518fd9a4d963c29389cfad698cf00f54dc67",
+        "mode": "0o644"
+      },
+      {
+        "path": "src/features/shortcuts/GlobalShortcuts.tsx",
+        "sha256": "bc4b5820f25fa52e6fd5b73ddffa79dd898044876cc0cdac1e068a7e084bd1ae",
+        "mode": "0o644"
+      }
+    ],
+    "integration": [
+      {
+        "path": "docs/mcp-security-operations.de.md",
+        "sha256": "fc2ed8e6452659e634cd1e112616b24f408470fe840da4dffce07e01af8d6c64",
+        "mode": "0o644"
+      },
+      {
+        "path": "docs/mcp-security-operations.fa.md",
+        "sha256": "2d7bb00b7ccf5dd767fd672bc7f888320161f81d7c5d6a282b9f7d8594c91540",
+        "mode": "0o644"
+      },
+      {
+        "path": "docs/mcp-security-operations.md",
+        "sha256": "4cf6cb8ef4ba5ffdbeaa4a4209a5f01db8a0224ace410336f166cbbde38c309b",
+        "mode": "0o644"
+      },
+      {
+        "path": "src/features/integrations/providers/invoke.ts",
+        "sha256": "03cbca4c055bc3d71586e3213ed5d87e63cf476646ad22a05c3669edde073233",
+        "mode": "0o644"
+      },
+      {
+        "path": "src/features/integrations/providers/invokeAbortReason.test.ts",
+        "sha256": "3ed29f2f4618dca64754bbed3a44ece6706c7d1da0ba81b183fcf897570d5e89",
+        "mode": "0o644"
+      },
+      {
+        "path": "src/features/integrations/slack.ts",
+        "sha256": "8585d466afbbfd91cff7b64306de14e7a13383e1f17d794a6c7ed669dc43e1e3",
+        "mode": "0o644"
+      },
+      {
+        "path": "src/features/integrations/slackOperationFailure.ts",
+        "sha256": "2b95cc61fd8ca47be7d32e4d6ec4fb6b37fbeefee34b3b4c79600cba6a3920fc",
+        "mode": "0o644"
+      },
+      {
+        "path": "src/features/integrations/slackOperationFailures.test.ts",
+        "sha256": "6a9b5586582d18de78ff77599d93462d9928277388ff069cdd64ddf99bd94178",
+        "mode": "0o644"
+      },
+      {
+        "path": "src/features/integrations/slackReadFailures.test.ts",
+        "sha256": "3d2ed3d7f648321d55c29d694555104604acaf00ef138f5252a97798663e3e4e",
+        "mode": "0o644"
+      },
+      {
+        "path": "src/features/integrations/slackRevocation.integration.test.ts",
+        "sha256": "790c380056521344e121113a35310ec15293c9effdac5c0eb2b90b6330859950",
+        "mode": "0o644"
+      },
+      {
+        "path": "src/features/integrations/slackRevocation.test.ts",
+        "sha256": "491e6dec299c57cd0891441192ac8eec6fa439520979295c628564a20e9d76e3",
+        "mode": "0o644"
+      },
+      {
+        "path": "src/features/oauth/refreshFamily.integration.test.ts",
+        "sha256": "9bff863fe8dd9451cfcd43a1f79c977adbe1f812b038ebb470d8e55403055adc",
+        "mode": "0o644"
+      },
+      {
+        "path": "src/features/oauth/refreshFamilyIntegrity.integration.test.ts",
+        "sha256": "e121f612c3aebf22847920dfd714c48ad60cf61b3cecbb33084127f13136afa6",
+        "mode": "0o644"
+      },
+      {
+        "path": "src/features/oauth/refreshFamilySafety.integration.test.ts",
+        "sha256": "36bd6100ac276df075ce37a1c0f0ed9eb0adbfd4afd8c5c5c8ce8f9b0e058b06",
+        "mode": "0o644"
+      },
+      {
+        "path": "src/features/oauth/tokens.ts",
+        "sha256": "9a79e82208a2cc9d387040afab6d8d6b60dfa33bfaf8d5b2050fd5ae116cc9e3",
+        "mode": "0o644"
+      },
+      {
+        "path": "src/features/privacy/registryIdsAuthentication1.ts",
+        "sha256": "e78770cb16f976796b64d0eb95dfcca5ba65f72061ec50db450be9857171fc4c",
+        "mode": "0o644"
+      },
+      {
+        "path": "src/features/privacy/registryIdsSales1.ts",
+        "sha256": "750f3c0d76a040f89141f3ca9cd7f8f68849829f01b914e8981c8ed572dc8f91",
+        "mode": "0o644"
+      }
+    ],
+    "agency": [
+      {
+        "path": "src/lib/iranianMoney.ts",
+        "sha256": "76b955d01ac18fe84d279eca8133da93b4641369029bf101e897fef9a8cf663a",
+        "mode": "0o644"
+      },
+      {
+        "path": "src/lib/iranianMoneyExponent.test.ts",
+        "sha256": "7095bba9937208c56df2e627851f8052d70227f5843c9db627f93a4f3e3d2cd7",
+        "mode": "0o644"
+      },
+      {
+        "path": "src/features/custom-fields/render.widgets.tsx",
+        "sha256": "4e5887df66a8283f92f344fe2afb74e768d9f118ced4c0765f08f598aa20904d",
+        "mode": "0o644"
+      },
+      {
+        "path": "src/features/custom-fields/monetaryDescriptionIdentity.test.tsx",
+        "sha256": "e80532cc78fc1c336db731262d13707e26daa06885adf0bc047bbab4b1030dee",
+        "mode": "0o644"
+      },
+      {
+        "path": "src/features/deal-workspace/sidebar/monetaryBulkCurrency.test.tsx",
+        "sha256": "f19a350ea580c6e4459efe9da11c1de24aaeb76dd339052439bb4313035b7b94",
+        "mode": "0o644"
+      }
+    ],
+    "privacy": [
+      {
+        "path": "src/features/privacy/retentionPreview.ts",
+        "sha256": "7a5b1ba3fca633e15e39043f719e08d732b6af2660fe5ee764e14a6d27eab8bb",
+        "mode": "0o644"
+      },
+      {
+        "path": "src/features/privacy/retentionPreviewSchemas.ts",
+        "sha256": "87a2b23d11feae22f999e82d28cf4a25fd4fd5db080ead6fa1aff6f9e43887ab",
+        "mode": "0o644"
+      },
+      {
+        "path": "src/features/privacy/retentionPreview.test.ts",
+        "sha256": "7c92211fd01584dda7e9a4053de07055aa357e8074cda5821b1b4a6b6b2c5df5",
+        "mode": "0o644"
+      },
+      {
+        "path": "src/features/privacy/disclosureFields.ts",
+        "sha256": "6e19e38aa6599ce6f34ce03ed88a3e70f7f9693d460a11d45b9362db711fe1b0",
+        "mode": "0o644"
+      },
+      {
+        "path": "src/features/privacy/disclosureFields.limits.test.ts",
+        "sha256": "63f7b348cbf868f5e0b44ec5742d489aebf17ad0dee5bd103d654d2c007be84e",
+        "mode": "0o644"
+      },
+      {
+        "path": "src/features/privacy/registryIdsPrivacy1.ts",
+        "sha256": "83483cd8ef86310509c09c13ba7ba6b31a30b77435226ff57c8ec0c3fede5f39",
+        "mode": "0o644"
+      }
+    ]
+  },
+  "sourceInventory": {
+    "path": "docs/privacy-inventory-report.json",
+    "sha256": "e662204929cafbb8acd626be91244b242cc34321f7071fd2216d21bcaa707601"
+  },
+  "localQualification": {
+    "configuredTypegenTSC": "PASS",
+    "typedLintBiomeI18n": "PASS",
+    "focusedUnitTests": 345,
+    "registryUnitTests": 30,
+    "currentMcpSlackPostgreSqlTests": 21,
+    "twoEqualActualInventories": true,
+    "coverage": {
+      "ok": true,
+      "missing": [],
+      "invalid": []
+    },
+    "ownedProcessAndServiceCleanup": "confirmed"
+  },
+  "archives": [
+    {
+      "owner": "agency",
+      "head": "6b54329ce42189d7f901232dce82961e6276b23d",
+      "archiveManifest": "docs/development/preserved/2026-11-02/agency/manifest.json",
+      "files": 811,
+      "bytes": 6620777
+    },
+    {
+      "owner": "calendar",
+      "head": "dce675d4dd57e42a07064de25e1d6886ff187eff",
+      "archiveManifest": "docs/development/preserved/2026-11-02/calendar/manifest.json",
+      "files": 326,
+      "bytes": 6184721
+    },
+    {
+      "owner": "integration",
+      "head": "80e53189f26885a6a02b0c2e9197bd2052478d92",
+      "archiveManifest": "docs/development/preserved/2026-11-02/integration/manifest.json",
+      "files": 137,
+      "bytes": 953547
+    },
+    {
+      "owner": "mail",
+      "head": "c950ed70a88d9b69ba6394dfc9a72f7f7218b043",
+      "archiveManifest": "docs/development/preserved/2026-11-02/mail/manifest.json",
+      "files": 118,
+      "bytes": 811840
+    },
+    {
+      "owner": "privacy",
+      "head": "d935f22e0d1e82b73264db1e1603066c5d8be3d8",
+      "archiveManifest": "docs/development/preserved/2026-11-02/privacy/manifest.json",
+      "files": 470,
+      "bytes": 3047880
+    },
+    {
+      "owner": "sales",
+      "head": "f4cda0ddf5d46a2220334b5942a9106d31b92649",
+      "archiveManifest": "docs/development/preserved/2026-11-02/sales/manifest.json",
+      "files": 230,
+      "bytes": 1455336
+    },
+    {
+      "owner": "settings",
+      "head": "cd4eda0cb01db0ab1c5166d00baa229292c6716e",
+      "archiveManifest": "docs/development/preserved/2026-11-02/settings/manifest.json",
+      "files": 79,
+      "bytes": 2522157
+    },
+    {
+      "owner": "workflow",
+      "head": "9ab13d225e98c7bbe88042505c03dd0bbec01324",
+      "archiveManifest": "docs/development/preserved/2026-11-02/workflow/manifest.json",
+      "files": 111,
+      "bytes": 998657
+    }
+  ],
+  "archiveAudit": {
+    "result": "PASS",
+    "netDiffPaths": 2282,
+    "includingSafeStopPaths": 920,
+    "payloadFormat": ".source",
+    "originalHistory": "retained as merge parents"
+  },
+  "limits": [
+    "Full final hosted CI is recorded separately on issue80 before branch deletion.",
+    "Inactive source archives are not active implementation or acceptance.",
+    "No migration/dependency/workflow/provider/deployment activation.",
+    "Original source workspaces and excluded premium work are preserved."
+  ]
+}

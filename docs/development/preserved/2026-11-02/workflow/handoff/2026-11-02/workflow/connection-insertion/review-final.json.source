@@ -1,0 +1,80 @@
+{
+  "at": "2026-11-02T03:55:53.879783+00:00",
+  "reviewer": "/root/roadmap_audit",
+  "status": "PASS_FINAL_PLACEMENT_DELTA_SOURCE_REVIEW",
+  "blocking_findings": [],
+  "note": {
+    "path": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/review-final.md",
+    "sha256": "37c65df35ea60a987432a8c0a1842e01b4214656911091122b9aaf50dd784ac6"
+  },
+  "scope": "Only nodeLayout.ts and new nodePlacement.test.ts delta; prior11-file/UI review not repeated. No tests/services or cold Documents/Main/excluded source read.",
+  "source_hashes": {
+    "src/features/workflows/nodeLayout.ts": "7966955c38bff47fb36867a63230ea3339e3fc68bfdc0074930a7099b11c054d",
+    "src/features/workflows/nodePlacement.test.ts": "995f6901ad9f64f646b696202aa68e8136b593934e983ae1bae17dc3f560eb21"
+  },
+  "proof": {
+    "precondition": "Occupied-edge default insertion on an existing valid WorkflowDefinition: at most100nodes, finite positions within±100000; midpoint of bounded endpoints.",
+    "cell": "Block iff abs(dx)<360 and abs(dy)<260, using existing column/row spacing.",
+    "termination": "Each node blocks at most2 lattice candidates; first2N+1 includes a free position. N<=100: at most201examined positions,200increments,72000displacement.",
+    "range": "Fixed direction chosen from initial midpoint: x>0 moves left, x<=0 moves right. Positive starts cannot finish below-72000; nonpositive starts cannot finish above72000; original outer bound stays±100000. Y remains its bounded midpoint.",
+    "immutability": "currentLayout/old positions only read; only fresh candidate.x mutates.",
+    "API": "Existing named spacing values remain360/260; exported signatures/currentLayout and arrangeGraph semantics unchanged. Explicit-position bypass and free/toolbar offsets unchanged."
+  },
+  "independent_subreview": {
+    "agent": "/root/roadmap_audit/placement_math_review",
+    "status": "NO_CONCRETE_DEFECT",
+    "qualification": "Source reasoning only, no check execution."
+  },
+  "observed_evidence": {
+    "clearance_red": {
+      "path": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/clearance-red5-observed.json",
+      "sha256": "bf5216bec3f248643cb195404903a86a362f736af409863532a0d4887de005cc",
+      "tests": 5,
+      "intended_failures": 3,
+      "bounds_controls": 2,
+      "setup_failures": 0,
+      "command_seconds": 0.83,
+      "cleanup_seconds": 1.135796
+    },
+    "final_preflight": {
+      "path": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/affected34-preflight.json",
+      "sha256": "25f164145be4a9ae5924c03b04d1bf355b90a56457cf016c2439d2fb968b6eb1",
+      "pins_recorded": 25,
+      "reviewed_two_current_pins_match": true
+    },
+    "final_cleanup": {
+      "path": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/affected34-cleanup.json",
+      "sha256": "6c3e6604efe8d174bb3e9deb4a0f9b2d5df76052631404dec6cfcf943e9b16d5",
+      "tests": 34,
+      "files": 9,
+      "command_seconds": 4.78,
+      "admission_through_cleanup_seconds": 5.000395,
+      "source_hashes_conserved_owner_receipt": true,
+      "four_dotenv_absent": true,
+      "owned_cwd_after": [],
+      "pressure": 1,
+      "Q_pre": 56,
+      "Q_post": 55,
+      "log_hash_matched": true
+    },
+    "formatter": "Owner/cleanup evidence: Biome12 PASS0.11s,1formatted,0diagnostics. Not rerun."
+  },
+  "limits": [
+    "Clearance/range claim applies only occupied-edge default path, not new global layout validation.",
+    "Layout-cell math does not establish actual rendered rectangle nonoverlap.",
+    "Real canvas/drop, ordered strip/node-array ordering, wholeWF017 and browser/AT remain open.",
+    "Configuredstatic, separatefixture/browser and Main integration/exact-headCI pending.",
+    "No continuous aggregate resource peak inferred."
+  ],
+  "prior_review": {
+    "path": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/review.json",
+    "sha256": "3db2ec8ace9adbe182851926107c5b2e2d5936479cbfc851c1e3e7e2caae3d09",
+    "preserved_unchanged": true,
+    "source_cut": "Older midpoint/29case cut; not retroactively rewritten."
+  },
+  "only_writes": [
+    "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/review-final.md",
+    "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/review-final.json"
+  ],
+  "checks_run_by_reviewer": []
+}

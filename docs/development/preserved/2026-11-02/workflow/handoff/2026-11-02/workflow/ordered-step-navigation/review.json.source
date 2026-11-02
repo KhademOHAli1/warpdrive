@@ -1,0 +1,156 @@
+{
+  "reviewed_at": "2026-11-02T06:03:20.585375+00:00",
+  "status": "PASS_BOUNDED_SOURCE_REVIEW_NO_ACTIONABLE_DEFECT",
+  "scope": "New orderedWorkflowNodes helper, six UI diffs against red-surfaces-source, eight pure boundary cases and four UI test files. No managed edits or check execution.",
+  "actionable_findings": [],
+  "production_review": [
+    {
+      "file": "src/features/workflows/nodeOrder.ts",
+      "lines": "3–36",
+      "finding": "No defect",
+      "evidence": "Local indegree/outgoing maps, creation-priority eligible-node choice, duplicate-ID original-array fallback and unresolved original-order tail retain every node object without graph writes."
+    },
+    {
+      "file": "src/features/workflows/ui/BuilderWorkspace.tsx",
+      "lines": "176–193",
+      "finding": "No defect",
+      "evidence": "Only the step-strip projection changes. Selection continues to use item.id; source definition nodes are not replaced."
+    },
+    {
+      "file": "src/features/workflows/ui/RunTrace.tsx",
+      "lines": "87–110",
+      "finding": "No defect",
+      "evidence": "Historical rows use display order; completion lookup and selection/reveal remain keyed by nodeId, not the new ordinal."
+    },
+    {
+      "file": "src/features/workflows/ui/BindingField.tsx",
+      "lines": "41–58,70–75",
+      "finding": "No defect",
+      "evidence": "Only reference labels receive reordered numbers. mappingOptions eligibility, choice keys and persisted bindings remain unchanged."
+    },
+    {
+      "file": "src/features/workflows/ui/ConnectionEditor.tsx",
+      "lines": "32,48–77",
+      "finding": "No defect",
+      "evidence": "Options use display order and ordinals while values remain target IDs and connect/disconnect validation remains unchanged."
+    },
+    {
+      "file": "src/features/workflows/ui/EdgeInspector.tsx",
+      "lines": "30–44,51–97",
+      "finding": "No defect",
+      "evidence": "Source/target labels share the display numbering; port rules, ID lookup and connectNodes behavior are unchanged."
+    },
+    {
+      "file": "src/features/workflows/ui/WorkflowCanvas.tsx",
+      "lines": "85–105",
+      "finding": "No defect",
+      "evidence": "ID-to-display-index projection changes only data.index. Canvas node array, original node references, positions, measurements and selected IDs remain intact. Duplicate IDs use original index fallback."
+    }
+  ],
+  "test_review": [
+    {
+      "file": "src/features/workflows/nodeOrder.test.ts",
+      "lines": "37–113",
+      "cases": 8,
+      "coverage": "Count/object identity/no graph mutation; inserted path; branch creation priority with both edge orders; dangling/disconnected nodes; cyclic tail; self-loop; duplicate IDs; already ordered input."
+    },
+    {
+      "file": "src/features/workflows/ui/ConnectionInsertion.test.tsx",
+      "lines": "250–271",
+      "coverage": "Actual insertion and builder navigation titles/numeric bdi order. Existing insertion cases retain one-commit, node/config identity, bindings, positions and keyboard/focus assertions."
+    },
+    {
+      "file": "src/features/workflows/ui/WorkflowCanvas.test.tsx",
+      "lines": "118–169",
+      "coverage": "ReactFlow adapter receives unchanged creation/z-order with path-based numeric indices. Real ReactFlow rendering is mocked."
+    },
+    {
+      "file": "src/features/workflows/ui/RunTrace.selection.test.tsx",
+      "lines": "17–51,53–105",
+      "coverage": "Historical row accessible names/numbers use connected path; existing keyboard-selected aria-pressed behavior remains covered."
+    },
+    {
+      "file": "src/features/workflows/ui/NodeOrdinals.test.tsx",
+      "lines": "15–61,70–144",
+      "coverage": "Real insertion fixture preserves original graph; binding, next-step and edge source/target selectors expose consistent ordinals with no render-time callbacks."
+    }
+  ],
+  "preservation": "The reviewed delta contains display-order/label projections only. It does not write node/config/binding/edge/layout data; Canvas retains its original nodes array mapping/z-order and position derivation. Existing graph mutation callbacks and validation are unchanged.",
+  "draft_fallbacks": "Missing endpoints are ignored for ordering; disconnected nodes remain included. Cycles and nodes blocked by cycles stay visible in original unresolved-tail order. Duplicate IDs return the original nodes array and Canvas uses original indices. These fallbacks preserve repairability; they do not make an invalid draft valid.",
+  "branch_contract": "Creation priority breaks ties among eligible branch nodes. This is deterministic display ordering, not actual branch selection, chronological execution order or a newly implied runtime path. No runtime/SQL files were part of this review.",
+  "observed_prior_checks": {
+    "source": "Existing raw logs/receipts, not rerun by reviewer.",
+    "ui_red_r2": {
+      "failed": 6,
+      "passed_controls": 9,
+      "setup_or_selector_failures": 0,
+      "wall_seconds": 2.65
+    },
+    "pure_red": {
+      "failed": 6,
+      "passed_controls": 2,
+      "wall_seconds": 0.39
+    },
+    "green_affected": {
+      "files": 9,
+      "passed": 37,
+      "vitest_seconds": 5.21,
+      "wall_seconds": 5.55
+    },
+    "biome": "Root reports 12 files passed, 2 informational diagnostics and 2 formatted; not a zero-diagnostics claim.",
+    "configured_whole_types_and_typed_lint": "Pending at this review; not inferred from focused green."
+  },
+  "current_pins": {
+    "src/features/workflows/nodeOrder.ts": "9f1334d3128f1ef785979438985410fca79bf19ce414b666ffd8fa42b053fcf7",
+    "src/features/workflows/nodeOrder.test.ts": "fec6d6a94513847d3cfa9b7e92b2968eebacba5efd7dbe15f870cd1487451a41",
+    "src/features/workflows/ui/BuilderWorkspace.tsx": "446596405640d73895234fe5acb23a1456995523a683e377ecc660677586d059",
+    "src/features/workflows/ui/WorkflowCanvas.tsx": "dc58379da396d23d0baf61dd242a2fffcf5741099801f01be6531fc8b7e2c05e",
+    "src/features/workflows/ui/RunTrace.tsx": "6a0a2200609a034388839a32e7851a525e37984a12e0f1fcdd9d0f330fa1aad1",
+    "src/features/workflows/ui/BindingField.tsx": "84b60e2f256fe0bceefe359e20268c7893d8070cc3db51b5d78167e7bc027901",
+    "src/features/workflows/ui/ConnectionEditor.tsx": "34c64daa2c3083c7aa523c933cb3ac10d097f18fa7b2bf143b434246a8e25d2c",
+    "src/features/workflows/ui/EdgeInspector.tsx": "7b1ac58dbe9c1268aa3a51688c7169c5ede174ed388efcbfd08ef46d1891b7c9",
+    "src/features/workflows/ui/ConnectionInsertion.test.tsx": "84a7aac98c150b3dafcdb37f3b46361cc150693f8f080e40e076b90e60732d09",
+    "src/features/workflows/ui/WorkflowCanvas.test.tsx": "c64edeb937ba8a23c110151b4fff6522d1596d31a151c3ea90d36d93afe1cd58",
+    "src/features/workflows/ui/RunTrace.selection.test.tsx": "d55e5596c0c0164c8d04d299efb35274d7e3ce9cdaa900af625efa29caf50496",
+    "src/features/workflows/ui/NodeOrdinals.test.tsx": "ae0433f8eff0a5523ecc494a229a882ce23256e980202d70716fd5ee09996b27"
+  },
+  "green_preflight_pin_mismatches": [],
+  "baseline_diff_source": "red-surfaces-source/src/features/workflows/ui/{BuilderWorkspace,RunTrace,BindingField,ConnectionEditor,EdgeInspector,WorkflowCanvas}.tsx",
+  "evidence": {
+    "pure-red.log": {
+      "sha256": "60efcb431dc1f19a06b63770d0eed4eb4eb4d568ed52d48fcd17acfdd4b1a839"
+    },
+    "pure-red-observed.json": {
+      "sha256": "f45cd76b012107b89d08054afe99d514aedc10b180498b6b3d13208ebfc0df85"
+    },
+    "red-surfaces-r2.log": {
+      "sha256": "e912d5c6d6acec9c7c17f57245972e263d0ee092be375d40ea96a309f97a3928"
+    },
+    "red-surfaces-r2-observed.json": {
+      "sha256": "6a2f6034288af1c68600b5e9f2afb96fc5abaa449f76a186a7560bd8fe1821cb"
+    },
+    "green-affected.log": {
+      "sha256": "3fd90b9db375aa0619985d4dd73a48f653b2747b7b9c2b74a60da2e419a85afb"
+    },
+    "green-affected-preflight.json": {
+      "sha256": "6342583174ef035a7f542d04cee4f93b4f6e72efdd5e3c637d28816b7a81e21b"
+    }
+  },
+  "independent_helper_subreview": {
+    "agent": "/root/roadmap_audit/ordered_helper_review",
+    "result": "No actionable helper defect; source/tests reviewed read-only; no writes/runners."
+  },
+  "limits": [
+    "Source review and existing focused component/unit evidence do not establish rendered geometry, narrow scrolling, browser focus or AT behavior.",
+    "The ReactFlow adapter test inspects props, not real ReactFlow rendering.",
+    "No actual branch/runtime scheduling, provider or SQL change/qualification is claimed.",
+    "Main integration/CI and configured whole-project static checks remain separate.",
+    "Whole WF017 remains open."
+  ],
+  "reviewer_checks_executed": 0,
+  "reviewer_browser_figma_db_actions": 0,
+  "owned_outputs": [
+    "review.json",
+    "review.md"
+  ]
+}

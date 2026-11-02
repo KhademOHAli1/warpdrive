@@ -1,0 +1,105 @@
+{
+  "schema_version": 1,
+  "updated_at": "2026-11-02T04:06:48.136Z",
+  "status": "THREE_MARKDOWN_DOCS_UPDATED_NO_CHECKS_OR_RESOURCES",
+  "provenance": "Current increment outcomes and queue status supplied in root task; no historical cold outputs or runtime receipts reopened.",
+  "scope": "Additive editor insertion product instruction and dated internal checkpoint; preserve all existing content.",
+  "files": [
+    {
+      "path": "docs-site/docs/features/automations.md",
+      "absolute_path": "/Users/ali/.codex/worktrees/workflow-roadmap-owned/warpdrive-builder-ux-20261031/docs-site/docs/features/automations.md",
+      "backup": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/docs-before/docs-site/docs/features/automations.md",
+      "line": 23,
+      "before_sha256": "83e5d475bfefe3f0f057b041a814bc1c6a8abe4da7d208665957b18dacaa95c7",
+      "after_sha256": "84f307d19ea52b6b61edef14437e55fe851e48997a9983795f33e600e1d831e6",
+      "before_bytes": 9495,
+      "after_bytes": 10103,
+      "preservation": "Removing exactly the inserted text reconstructs the complete original byte-for-byte.",
+      "inserted_lines": 8
+    },
+    {
+      "path": "docs/workflows/status.md",
+      "absolute_path": "/Users/ali/.codex/worktrees/workflow-roadmap-owned/warpdrive-builder-ux-20261031/docs/workflows/status.md",
+      "backup": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/docs-before/docs/workflows/status.md",
+      "line": 3,
+      "before_sha256": "a55a8e715a7c5a5c83360db1476b3402eae33c5a7ae171dc113e4da2adaf5683",
+      "after_sha256": "cb83eb21d11d4c1ffe5a1557910783f582505afcee903407a546ee298a09fe75",
+      "before_bytes": 35321,
+      "after_bytes": 37508,
+      "preservation": "Removing exactly the inserted text reconstructs the complete original byte-for-byte.",
+      "inserted_lines": 29
+    },
+    {
+      "path": "docs/workflows/CONTINUATION.md",
+      "absolute_path": "/Users/ali/.codex/worktrees/workflow-roadmap-owned/warpdrive-builder-ux-20261031/docs/workflows/CONTINUATION.md",
+      "backup": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/docs-before/docs/workflows/CONTINUATION.md",
+      "line": 3,
+      "before_sha256": "81ff9aa58029dec755f2ec938a8f68744ef7ef662959f22a9666e1071473cf58",
+      "after_sha256": "994a6d5c85e5c84fdaab6e4f85a73ce908d0846936443e3ccf73bf6988a8fbaf",
+      "before_bytes": 28567,
+      "after_bytes": 30754,
+      "preservation": "Removing exactly the inserted text reconstructs the complete original byte-for-byte.",
+      "inserted_lines": 29
+    }
+  ],
+  "patch": {
+    "path": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/docs-update.patch",
+    "sha256": "35b53e0ea6cd0c125eb0d07c5b9387c3aa0253456ac250e7c78f8d04f3c5cc9e"
+  },
+  "current_evidence": {
+    "insertion_files": 12,
+    "tdd_initial": {
+      "intended_red": 5,
+      "controls_pass": 3
+    },
+    "first_fix": {
+      "pass": 7,
+      "position_red": 1
+    },
+    "clearance": {
+      "intended_red": 3,
+      "bounds_controls_pass": 2
+    },
+    "final_focused": {
+      "pass": 34,
+      "files": 9,
+      "seconds": 4.78,
+      "full_cleanup_seconds": 5.000395
+    },
+    "biome": {
+      "files": 12,
+      "seconds": 0.11,
+      "formatted": 1,
+      "diagnostics": 0
+    },
+    "independent_source_reviews": 2,
+    "artifact_application_check": "PASS",
+    "full_static": {
+      "pins": 335,
+      "typescript_files": 12,
+      "catalogs": 3,
+      "state": "UNSTARTED_AWAITING_FRESH_MAIN_START",
+      "prior_static3": "WITHDRAWN_UNSTARTED",
+      "prior_static11": "SUPERSEDED_UNSTARTED"
+    }
+  },
+  "preservation": {
+    "all_original_document_bytes_preserved": true,
+    "landing_notice_preserved": true,
+    "old_history_preserved": true,
+    "core51_packet": "NOT_TOUCHED",
+    "local94_mirror": "NOT_TOUCHED",
+    "managed_writes": [
+      "docs-site/docs/features/automations.md",
+      "docs/workflows/status.md",
+      "docs/workflows/CONTINUATION.md"
+    ]
+  },
+  "limits": [
+    "No code, tests, configuration, schema, refs, plans or public notices were rewritten.",
+    "No check, formatter, service, DB, browser, Main or excluded source action was performed.",
+    "Old 18.51-second static, GUI31 and Native10 evidence remains scoped to its own qualified core cut.",
+    "WF017, order strip, rendered geometry, browser/AT, Main CI and all 42 tasks remain open.",
+    "Canonical 0098 tool generation is not accepted upgrade evidence."
+  ]
+}

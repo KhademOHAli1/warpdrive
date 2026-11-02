@@ -20,6 +20,14 @@ on a node or **Add a new connected step** in its Connections panel. Conditions o
 independent add control for each outcome. The searchable picker identifies the source and
 connects the chosen step in one edit.
 
+To insert a step into an existing path, select the node immediately before it, open
+**Connections**, and choose **Insert a step here**. The picker offers **Read deal**,
+**Create task**, and **Wait** for this connection. Choosing a step retains the downstream path
+and existing step settings and mappings. Existing steps keep their positions; the inserted step is placed in
+a clear space and opens selected in **Configure**, with **Step name** focused. Closing the
+picker leaves the graph unchanged. To add a **Condition**, use a free output's add control or
+**Add node**, then explicitly connect both condition outcomes.
+
 ## Connect the process
 
 Drag an output dot to another node's input dot, or release it on the destination card.
@@ -158,3 +166,8 @@ or based on earlier values, notifications, controlled email, operational limits,
 and full accessibility qualification remain.
 Calendar-aware recurrence and provider connections follow in R2; approvals, loops, and
 sub-workflows follow in R3.
+
+
+### Step numbers after inserting a step
+
+After inserting a step into an existing connection, the step list, canvas, run trace, connection selectors and variable references use matching step numbers. A step follows its upstream dependencies. Existing positions and configuration remain intact. At a condition, the run follows the selected branch.

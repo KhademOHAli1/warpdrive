@@ -1,0 +1,32 @@
+{
+  "at": "2026-11-02T04:59:07.206724+00:00",
+  "pid": 63848,
+  "pgid": 63848,
+  "id": "WORKFLOW-INSERTION-STATIC12-20261102-1",
+  "command": [
+    "/usr/bin/env",
+    "-i",
+    "PATH=/tmp/warpdrive-bun144/bin:/Users/ali/.nvm/versions/node/v26.9.0/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin",
+    "HOME=/Users/ali",
+    "USER=ali",
+    "LOGNAME=ali",
+    "TMPDIR=/var/folders/fk/y73j5fhd2jbgrpw1vkxch3p40000gn/T/",
+    "LANG=C.UTF-8",
+    "LC_ALL=C.UTF-8",
+    "NODE_ENV=test",
+    "CI=1",
+    "NEXT_TELEMETRY_DISABLED=1",
+    "BUN_OPTIONS=--no-env-file",
+    "/usr/bin/time",
+    "-l",
+    "/opt/homebrew/bin/gtimeout",
+    "--signal=INT",
+    "--kill-after=12s",
+    "140s",
+    "/bin/zsh",
+    "-f",
+    "-c",
+    "/tmp/warpdrive-bun144/bin/bun --no-env-file run typecheck && /tmp/warpdrive-bun144/bin/bun --no-env-file --bun node_modules/eslint/bin/eslint.js src/features/workflows/connectionGestures.ts src/features/workflows/connectionGestures.test.ts src/features/workflows/connectionInsertion.test.ts src/features/workflows/nodeLayout.ts src/features/workflows/ui/ConnectionEditor.tsx src/features/workflows/ui/BuilderWorkspace.tsx src/features/workflows/ui/NodePalette.tsx src/features/workflows/ui/ConnectionInsertion.test.tsx src/features/workflows/nodePlacement.test.ts src/features/workflows/browserFixture.test-helpers.ts scripts/workflow-browser-seed.ts src/entrypoints/workflowBrowserWorker.ts && /tmp/warpdrive-bun144/bin/bun --no-env-file --bun node_modules/@biomejs/biome/bin/biome check src/features/workflows/connectionGestures.ts src/features/workflows/connectionGestures.test.ts src/features/workflows/connectionInsertion.test.ts src/features/workflows/nodeLayout.ts src/features/workflows/ui/ConnectionEditor.tsx src/features/workflows/ui/BuilderWorkspace.tsx src/features/workflows/ui/NodePalette.tsx src/features/workflows/ui/ConnectionInsertion.test.tsx src/features/workflows/nodePlacement.test.ts src/features/workflows/browserFixture.test-helpers.ts scripts/workflow-browser-seed.ts src/entrypoints/workflowBrowserWorker.ts src/features/workflows/messages/workflows.en.json src/features/workflows/messages/workflows.fa.json src/features/workflows/messages/workflows.de.json"
+  ],
+  "log": "/tmp/warpdrive-workflow-insertion-fixture-static12-20261102-01.log"
+}

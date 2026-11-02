@@ -8,6 +8,7 @@ import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
 import type { RouterOutputs } from "@/lib/trpc-client";
 import { useFormatters } from "@/lib/useFormatters";
 import { displayNodeName } from "../nodeNames";
+import { orderedWorkflowNodes } from "../nodeOrder";
 import { NodeSummary } from "./NodeSummary";
 import type { RevealNode } from "./ResponsiveViewport";
 import { WaitTimestamp } from "./WaitTimestamp";
@@ -83,7 +84,7 @@ export function RunTrace({ detail }: { detail: RunDetail }) {
             <p className="mt-2 text-xs leading-5 text-muted-foreground">{t("traceHint")}</p>
           </div>
           <ol className="space-y-2" aria-label={t("steps")}>
-            {detail.definition.nodes.map((item, index) => {
+            {orderedWorkflowNodes(detail.definition).map((item, index) => {
               const step = detail.steps.find((entry) => entry.nodeId === item.id);
               const Icon = step === undefined ? Circle : Check;
               return (

@@ -1,0 +1,1104 @@
+{
+  "owner": "Workflow",
+  "state": "UNFINISHED PRESERVATION - NOT FOR DEPLOYMENT",
+  "originalHead": "43a5fb4d2a6be7bbbd260855a6a8e1ce55fbf3c1",
+  "branch": "codex/preserve-workflow-20261102",
+  "sourceFiles": [
+    {
+      "status": " M",
+      "path": "docs-site/docs/features/automations.md",
+      "mode": "0o644",
+      "bytes": 10465,
+      "symlink": false,
+      "sha256": "41d3ad6dd16b05dfee09bc6b43619265efdbe57c47a8c3b7638c6ec87f6602f3",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "docs/workflows/CONTINUATION.md",
+      "mode": "0o644",
+      "bytes": 33534,
+      "symlink": false,
+      "sha256": "97a781df7ff9fa4f330786570cd78bd546fb2c2b6742851bf95f441f7da5fdd2",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "docs/workflows/status.md",
+      "mode": "0o644",
+      "bytes": 47623,
+      "symlink": false,
+      "sha256": "5f8eb603e2c1ef28d4022f15f8940ae9763af1643c910629864869cf2f6d234b",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "docs/workflows/ux-design-reference.md",
+      "mode": "0o644",
+      "bytes": 30948,
+      "symlink": false,
+      "sha256": "121888ca46143e7e34f8fbb743fd62529e50c9abe10685eb135cc76ff1230352",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "drizzle/meta/_journal.json",
+      "mode": "0o644",
+      "bytes": 14521,
+      "symlink": false,
+      "sha256": "0f61d0561c4c8973c06deb550381d9dc3da2990780d41894860ba7ce67a9b3ca",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/db/schema/workflowExecutions.ts",
+      "mode": "0o644",
+      "bytes": 2991,
+      "symlink": false,
+      "sha256": "2739e061068d58fc6854a25d7f5c626b9483efd207378fd9d27e6966553fa066",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/features/workflows/connectionGestures.test.ts",
+      "mode": "0o644",
+      "bytes": 2470,
+      "symlink": false,
+      "sha256": "829c29dbc0fcceed901dbd8d5e3accc7f25d8658a9eeb5f97da2510a51cb3e19",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/features/workflows/connectionGestures.ts",
+      "mode": "0o644",
+      "bytes": 1425,
+      "symlink": false,
+      "sha256": "f151f3c795c425eec2ea1eb47c407d0a943cee0f3801ccf5a30beb7ee4185251",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/features/workflows/execution.ts",
+      "mode": "0o644",
+      "bytes": 3959,
+      "symlink": false,
+      "sha256": "c72161a7b12054f6112280d5416274e9bc2b96bf25b59919403de5c96c22ad7e",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/features/workflows/messages/workflows.de.json",
+      "mode": "0o644",
+      "bytes": 12596,
+      "symlink": false,
+      "sha256": "598caa957b5a885d975854c6cc3b7adfa6b25ef09c02bb1f0e036592c0ed482b",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/features/workflows/messages/workflows.en.json",
+      "mode": "0o644",
+      "bytes": 10551,
+      "symlink": false,
+      "sha256": "18e59537ea3d2f8d5868790f6b5db4e2fe3ac6111dba7e47851eaff42b7f65cc",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/features/workflows/messages/workflows.fa.json",
+      "mode": "0o644",
+      "bytes": 16251,
+      "symlink": false,
+      "sha256": "5e00117f7aaba912058fb72b32fcb2430e047480d24d144a0b0ee1cb027ba8b3",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/features/workflows/nodeFactory.ts",
+      "mode": "0o644",
+      "bytes": 1768,
+      "symlink": false,
+      "sha256": "b24b728b40f3e2de87cd1dac6c8acb8ec4358bee29f350b429637bcbf3b8c376",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/features/workflows/nodeLayout.ts",
+      "mode": "0o644",
+      "bytes": 3540,
+      "symlink": false,
+      "sha256": "7966955c38bff47fb36867a63230ea3339e3fc68bfdc0074930a7099b11c054d",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/features/workflows/queries.ts",
+      "mode": "0o644",
+      "bytes": 3750,
+      "symlink": false,
+      "sha256": "26af9a2a5fc3cf3729eadc81a42c9962bb735b5464a8e7cc03092e94c21e5e85",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/features/workflows/readiness.ts",
+      "mode": "0o644",
+      "bytes": 1533,
+      "symlink": false,
+      "sha256": "17fe18d43c4563d5aea6a16a14ca6482c2050a8589a936414f654b26744d6f1e",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/features/workflows/registry.ts",
+      "mode": "0o644",
+      "bytes": 2724,
+      "symlink": false,
+      "sha256": "593c8b7e8013d9f1da1c99f138980c55b2e65dc614bd448a4ce110c35a867396",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/features/workflows/runControl.ts",
+      "mode": "0o644",
+      "bytes": 1927,
+      "symlink": false,
+      "sha256": "f148af993e57bc4f2b95bced9b56ea3d9529ae647d34ab94d7367752ae245057",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/features/workflows/runDetail.ts",
+      "mode": "0o644",
+      "bytes": 2370,
+      "symlink": false,
+      "sha256": "5737293c50a9e42ffb057673c192161e70ddd9db789578ed55126f31012e7aff",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/features/workflows/ui/BindingField.tsx",
+      "mode": "0o644",
+      "bytes": 3497,
+      "symlink": false,
+      "sha256": "84b60e2f256fe0bceefe359e20268c7893d8070cc3db51b5d78167e7bc027901",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/features/workflows/ui/BuilderWorkspace.tsx",
+      "mode": "0o644",
+      "bytes": 11534,
+      "symlink": false,
+      "sha256": "446596405640d73895234fe5acb23a1456995523a683e377ecc660677586d059",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/features/workflows/ui/ConnectionEditor.tsx",
+      "mode": "0o644",
+      "bytes": 3588,
+      "symlink": false,
+      "sha256": "34c64daa2c3083c7aa523c933cb3ac10d097f18fa7b2bf143b434246a8e25d2c",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/features/workflows/ui/EdgeInspector.tsx",
+      "mode": "0o644",
+      "bytes": 3813,
+      "symlink": false,
+      "sha256": "7b1ac58dbe9c1268aa3a51688c7169c5ede174ed388efcbfd08ef46d1891b7c9",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/features/workflows/ui/NodeInspector.tsx",
+      "mode": "0o644",
+      "bytes": 4930,
+      "symlink": false,
+      "sha256": "01404b7cccd407574c181e9a8b4c17dfb25e688623a434f13a217843ff9b9ab2",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/features/workflows/ui/NodePalette.tsx",
+      "mode": "0o644",
+      "bytes": 4598,
+      "symlink": false,
+      "sha256": "421324b005a73f559b332f6abde063402f5c61403851bf48f757d063fa70b423",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/features/workflows/ui/NodeSummary.test.tsx",
+      "mode": "0o644",
+      "bytes": 2832,
+      "symlink": false,
+      "sha256": "6471ad823719f3ba1e390b85b7f366677b1587d31b39a4d0c3c2fe05f37c0e35",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/features/workflows/ui/NodeSummary.tsx",
+      "mode": "0o644",
+      "bytes": 3117,
+      "symlink": false,
+      "sha256": "553d1cc6da747d84e90f066b448e70f9df042f8ae52cde7de291a0d0b98885c0",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/features/workflows/ui/RunDetailDialog.tsx",
+      "mode": "0o644",
+      "bytes": 1829,
+      "symlink": false,
+      "sha256": "c0e3b8ff87d09b35828a07d7dd5326ea568b90350c8cea0725f71e37c81c56ca",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/features/workflows/ui/RunDialog.tsx",
+      "mode": "0o644",
+      "bytes": 4467,
+      "symlink": false,
+      "sha256": "98b2cc7a4fc32359e461b48e3d4ebafef82e5f70a4a65f62e9042ac40e32c31f",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/features/workflows/ui/RunHistory.tsx",
+      "mode": "0o644",
+      "bytes": 5892,
+      "symlink": false,
+      "sha256": "0d26853acc70e7e7be7dbef2521aea006febf00fc5375b6469abd1bbac6f736c",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/features/workflows/ui/RunTrace.test.tsx",
+      "mode": "0o644",
+      "bytes": 1538,
+      "symlink": false,
+      "sha256": "351ab0823dbfdea98a8275efe80c5a1b35807eedfe179870a133647f3ca82ad4",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/features/workflows/ui/RunTrace.tsx",
+      "mode": "0o644",
+      "bytes": 6819,
+      "symlink": false,
+      "sha256": "6a0a2200609a034388839a32e7851a525e37984a12e0f1fcdd9d0f330fa1aad1",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/features/workflows/ui/WorkflowCanvas.test.tsx",
+      "mode": "0o644",
+      "bytes": 5721,
+      "symlink": false,
+      "sha256": "c64edeb937ba8a23c110151b4fff6522d1596d31a151c3ea90d36d93afe1cd58",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/features/workflows/ui/WorkflowCanvas.tsx",
+      "mode": "0o644",
+      "bytes": 8717,
+      "symlink": false,
+      "sha256": "dc58379da396d23d0baf61dd242a2fffcf5741099801f01be6531fc8b7e2c05e",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/features/workflows/ui/WorkflowEditor.tsx",
+      "mode": "0o644",
+      "bytes": 7516,
+      "symlink": false,
+      "sha256": "bd3649b42bb565915a47af2e4dece8a0b7b307b4feecc7d0ad4fa3fde6bb4032",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/features/workflows/ui/WorkflowLibrary.tsx",
+      "mode": "0o644",
+      "bytes": 7765,
+      "symlink": false,
+      "sha256": "8a2f1a8d81dcaac12a3d0a0d2b5f9b594c3a44d4a8732e3d48b7733baa028148",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/features/workflows/ui/WorkflowNodeCard.tsx",
+      "mode": "0o644",
+      "bytes": 4954,
+      "symlink": false,
+      "sha256": "fce5c4ea99c23ae22daca7df7ea2c54e0cde93c195c4a6151036b17cc74b7748",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/features/workflows/worker.ts",
+      "mode": "0o644",
+      "bytes": 3502,
+      "symlink": false,
+      "sha256": "b6957f7910a8c36050d1942edad79ebc497f875304b70689237824ae3297d1c0",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "vitest.config.ts",
+      "mode": "0o644",
+      "bytes": 1429,
+      "symlink": false,
+      "sha256": "dfd48deb5886d895c579cfb5be4d0060b246c0a1add433e1467d3a999e701005",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "docs/workflows/lifecycle-contract.md",
+      "mode": "0o644",
+      "bytes": 22623,
+      "symlink": false,
+      "sha256": "ae5096330793111e20dbfea9b1cee8a093202dbd18cdd61dfe7a05363607d31a",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "drizzle/0098_workflow_duration_wait.sql",
+      "mode": "0o644",
+      "bytes": 689,
+      "symlink": false,
+      "sha256": "ba65deaf21f4f5c38cd7414afd851f91a14b5c2aed3e758bb75b36b56b3a63ef",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "drizzle/meta/0098_snapshot.json",
+      "mode": "0o644",
+      "bytes": 356265,
+      "symlink": false,
+      "sha256": "8aa7cd440a3c143b06db9aec895f13d789e8595e537614f1b0a6567dd6865d9b",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "scripts/workflow-browser-seed.ts",
+      "mode": "0o644",
+      "bytes": 1534,
+      "symlink": false,
+      "sha256": "6e9047fbeb71d04830ba68b8fc03f1f469be05b886bc34b9bb37ed53d3fd200f",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/entrypoints/workflowBrowserWorker.ts",
+      "mode": "0o644",
+      "bytes": 2347,
+      "symlink": false,
+      "sha256": "6a58ffd726a9d39fcada1f6ed1a9bd30edc4d0a419298b289af0fb89368a2888",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/workflows/browserFixture.test-helpers.ts",
+      "mode": "0o644",
+      "bytes": 9120,
+      "symlink": false,
+      "sha256": "f36b0e2ac55f26ea20d2d2f68ab425c5ff031f558ce281a2c00ba577a50a8894",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/workflows/connectionInsertion.test.ts",
+      "mode": "0o644",
+      "bytes": 6460,
+      "symlink": false,
+      "sha256": "445efe59dd5e487200e8f6fbce096a768bef1938fdd7a15f08107bbaca17d70c",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/workflows/delay.integration.test.ts",
+      "mode": "0o644",
+      "bytes": 6098,
+      "symlink": false,
+      "sha256": "86192c8cba0ed258e589576046251cc9123634a68b2434d244e09df402f467b4",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/workflows/delay.test-helpers.ts",
+      "mode": "0o644",
+      "bytes": 2444,
+      "symlink": false,
+      "sha256": "64e74c430603c53de615cb612bc2b704272c312b90fd685d25feb36b423034e4",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/workflows/delay.test.ts",
+      "mode": "0o644",
+      "bytes": 3140,
+      "symlink": false,
+      "sha256": "806a956b77e82c0b1ae9b406973ac7e7f12dd98fbc6b9a9cb5495ff87adada1e",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/workflows/delay.ts",
+      "mode": "0o644",
+      "bytes": 730,
+      "symlink": false,
+      "sha256": "96979424469010ede1fa0e5b311de6f2f6bb6fee0de1b5033c9c0ec5b07f3062",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/workflows/delayRecovery.integration.test.ts",
+      "mode": "0o644",
+      "bytes": 10546,
+      "symlink": false,
+      "sha256": "2800c4924a0c7781e87ed06bdf3e55e5391b2cd1230877d6f426f8d3fa05a443",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/workflows/durationPublicAdmission.integration.test.ts",
+      "mode": "0o644",
+      "bytes": 9084,
+      "symlink": false,
+      "sha256": "e627fe2672fac003899f4204ae8321206715dc0adfa37c15e2307090819f3e92",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/workflows/durationPublicAdmission.test-helpers.ts",
+      "mode": "0o644",
+      "bytes": 6477,
+      "symlink": false,
+      "sha256": "474ce96dc770708f629e1b23e201708909766053fa1a6c32b96436e88edad3f7",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/workflows/durationReadiness.test.ts",
+      "mode": "0o644",
+      "bytes": 1954,
+      "symlink": false,
+      "sha256": "02f7a361f63677e48c55bdb2e6b92deacc44fc0f8052b697aee2779191e8ed01",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/workflows/durationWaitMigration.integration.test.ts",
+      "mode": "0o644",
+      "bytes": 7933,
+      "symlink": false,
+      "sha256": "e526041e9a364e07ef9ad2b5b30d50787a4365465edf6dd08dce830dc65d5f93",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/workflows/durationWaitMigration.test-helpers.ts",
+      "mode": "0o644",
+      "bytes": 11911,
+      "symlink": false,
+      "sha256": "5c4a91e08aee797a2431b0b758029f0f7388d7e80b245620fa408db004845bc4",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/workflows/nodeOrder.test.ts",
+      "mode": "0o644",
+      "bytes": 3611,
+      "symlink": false,
+      "sha256": "fec6d6a94513847d3cfa9b7e92b2968eebacba5efd7dbe15f870cd1487451a41",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/workflows/nodeOrder.ts",
+      "mode": "0o644",
+      "bytes": 1532,
+      "symlink": false,
+      "sha256": "9f1334d3128f1ef785979438985410fca79bf19ce414b666ffd8fa42b053fcf7",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/workflows/nodePlacement.test.ts",
+      "mode": "0o644",
+      "bytes": 2828,
+      "symlink": false,
+      "sha256": "995f6901ad9f64f646b696202aa68e8136b593934e983ae1bae17dc3f560eb21",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/workflows/readinessVersions.integration.test.ts",
+      "mode": "0o644",
+      "bytes": 6728,
+      "symlink": false,
+      "sha256": "aa4bedbff0e97f69e91689f9e41f6cd948a415bd63fbbd947e07ee7e4ffc086e",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/workflows/runStep.ts",
+      "mode": "0o644",
+      "bytes": 1956,
+      "symlink": false,
+      "sha256": "02413024451583b1414f5516e76597eb3b2a449707d7425658bc46b63abb245a",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/workflows/runtimeVersions.integration.test.ts",
+      "mode": "0o644",
+      "bytes": 3705,
+      "symlink": false,
+      "sha256": "7f636432af0e0efa608ddc15e773159c4134dc6eec9f1a98da3d1abf0a247870",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/workflows/runtimeVersions.test-helpers.ts",
+      "mode": "0o644",
+      "bytes": 7906,
+      "symlink": false,
+      "sha256": "08171559f2a1146265c00e3159cc897620b3766e7fa14aa45ffc230dbef78a8d",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/workflows/ui/ConnectionInsertion.test.tsx",
+      "mode": "0o644",
+      "bytes": 10795,
+      "symlink": false,
+      "sha256": "84a7aac98c150b3dafcdb37f3b46361cc150693f8f080e40e076b90e60732d09",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/workflows/ui/DelayFields.numbering.test.tsx",
+      "mode": "0o644",
+      "bytes": 2807,
+      "symlink": false,
+      "sha256": "0d37d0deefb7e6e7094d22c9b10b05a36fa71a6d1749eee926a726d84dbc2620",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/workflows/ui/DelayFields.test.tsx",
+      "mode": "0o644",
+      "bytes": 5486,
+      "symlink": false,
+      "sha256": "61226e6f0b081a82a82ec530f13b8133179ff6201c4f63de2e3710fe83143fea",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/workflows/ui/DelayFields.tsx",
+      "mode": "0o644",
+      "bytes": 2281,
+      "symlink": false,
+      "sha256": "c6e48c3c58a37f120f28fc324804d2ec881c3f3974ae47016f9b030e567b2522",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/workflows/ui/DurationWaitAuthoring.test.tsx",
+      "mode": "0o644",
+      "bytes": 5269,
+      "symlink": false,
+      "sha256": "c28fb9b33dc4b6ec275bea80c3fce2957f0b5987ffb83fde86b92b483893187c",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/workflows/ui/NodeOrdinals.test.tsx",
+      "mode": "0o644",
+      "bytes": 4718,
+      "symlink": false,
+      "sha256": "ae0433f8eff0a5523ecc494a229a882ce23256e980202d70716fd5ee09996b27",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/workflows/ui/NodePalette.numbering.test.tsx",
+      "mode": "0o644",
+      "bytes": 2358,
+      "symlink": false,
+      "sha256": "914ad0bfb7b8858089ec13caa0b15a2fabd89c83fccade593b91a37a4270486b",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/workflows/ui/RunTrace.selection.test.tsx",
+      "mode": "0o644",
+      "bytes": 3824,
+      "symlink": false,
+      "sha256": "d55e5596c0c0164c8d04d299efb35274d7e3ce9cdaa900af625efa29caf50496",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/workflows/ui/WaitTimestamp.tsx",
+      "mode": "0o644",
+      "bytes": 766,
+      "symlink": false,
+      "sha256": "f3a4f9fcd77fa9a1ab4c8e5a1ef96668b21d692bd41e68db30c782df250d923d",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/workflows/ui/WaitingRun.test.tsx",
+      "mode": "0o644",
+      "bytes": 7595,
+      "symlink": false,
+      "sha256": "f70a0eb596db52657bea001b9b2aa113470946f682f639e80560a96f4cb99648",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/workflows/ui/WorkflowDialogs.focus.test.tsx",
+      "mode": "0o644",
+      "bytes": 14894,
+      "symlink": false,
+      "sha256": "78d1fb877fa63fbae48e247b7eeb717162acac649190691d7923385a110c98b3",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/workflows/ui/WorkflowFocusFallback.test.tsx",
+      "mode": "0o644",
+      "bytes": 3941,
+      "symlink": false,
+      "sha256": "de506d97c4646da9ea0849212c4e8a2527473713c3a92947c68933ea48d84173",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/workflows/ui/useDialogFocus.ts",
+      "mode": "0o644",
+      "bytes": 766,
+      "symlink": false,
+      "sha256": "b3329e2a57e2be04c9311b55362964b2525899df9c8552e7ec9f5b6bdbe88529",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    }
+  ],
+  "extraFiles": [
+    {
+      "source": "/Users/ali/.codex/worktrees/workflow-roadmap-owned/warpdrive-builder-ux-20261031/.workflow-red.vitest.config.ts",
+      "target": "preexisting/.workflow-red.vitest.config.ts",
+      "sha256": "3f209d02e5b373bf143755394bcd9402a575e389e7e34d09237a6795ca1d85eb"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/safe-stop/local-evidence-inventory.json",
+      "target": "workflow/safe-stop/local-evidence-inventory.json",
+      "sha256": "dad2d3af37e7419a1f212e183ae2e922dab7eff291220547dcdeafe0aa3e21df"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/safe-stop/source.sha256",
+      "target": "workflow/safe-stop/source.sha256",
+      "sha256": "37f38bee1764b385849d00d8ff8a3a0aeeae9639ac4944f158e202bcdc9e5fdf"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/safe-stop/owned-allowlist.txt",
+      "target": "workflow/safe-stop/owned-allowlist.txt",
+      "sha256": "9bf355d8a768f4cb76880f62205162bbd71d50ac8c79cc848b30ddd047c7a85d"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/safe-stop/SAFE-STOP.md",
+      "target": "workflow/safe-stop/SAFE-STOP.md",
+      "sha256": "f7d7b64d22c6f775f4c6306e432d7e452a21c9d6a103260593c689a6e064d989"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/safe-stop/manifest.json",
+      "target": "workflow/safe-stop/manifest.json",
+      "sha256": "bccd1db7887a69d799e2ed660d4b4cd03ed375416f8cfcc37be89936c7c81a16"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/safe-stop/owned-dirty-untracked-allowlist.txt",
+      "target": "workflow/safe-stop/owned-dirty-untracked-allowlist.txt",
+      "sha256": "9dcb862108730fca88b512e4ca478a4eb1f3c1f5f7d7a5c2d3bb8b157e140c0f"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/safe-stop/owned-git-status.json",
+      "target": "workflow/safe-stop/owned-git-status.json",
+      "sha256": "daa512d53b6afe20e7b83f19d941ae290a5a2b31711f6b957f7555fe73c5c491"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/ordered-step-navigation/pure-red-preflight.json",
+      "target": "workflow/ordered-step-navigation/pure-red-preflight.json",
+      "sha256": "5897b15321163a944b0269408a69b454b0b73def23ca9087ef111bb9d0fbc8f1"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/ordered-step-navigation/CURRENT-HANDOFF.md",
+      "target": "workflow/ordered-step-navigation/CURRENT-HANDOFF.md",
+      "sha256": "365719f650c715ea5d55d81f43c5e57eb421d0aad8d511e41a062d7deaa72220"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/ordered-step-navigation/red-surfaces-r2-preflight.json",
+      "target": "workflow/ordered-step-navigation/red-surfaces-r2-preflight.json",
+      "sha256": "fb7efd1bd8469e675710a23373ff907849f87719f1c4e8d0687e1292a41dfb86"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/ordered-step-navigation/pure-red-observed.json",
+      "target": "workflow/ordered-step-navigation/pure-red-observed.json",
+      "sha256": "f45cd76b012107b89d08054afe99d514aedc10b180498b6b3d13208ebfc0df85"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/ordered-step-navigation/current-workflow-continuation-checkpoint.json",
+      "target": "workflow/ordered-step-navigation/current-workflow-continuation-checkpoint.json",
+      "sha256": "15718a0992be2226409f21491eb14eac0981244a7fda426bbbe256a3bd16f3cf"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/ordered-step-navigation/ready-summary.json",
+      "target": "workflow/ordered-step-navigation/ready-summary.json",
+      "sha256": "7c237b45fbb97842dd7495c25d81d62e5f1808eb95e063e72aa2d8854e4324ad"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/ordered-step-navigation/static14-readiness-current.json",
+      "target": "workflow/ordered-step-navigation/static14-readiness-current.json",
+      "sha256": "01e5a5c06cace1a5d769bcadc3c40ecec28e96351c3316e651b23849b983a4b9"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/ordered-step-navigation/red7-observed.json",
+      "target": "workflow/ordered-step-navigation/red7-observed.json",
+      "sha256": "589d3982f45af6a114482e0ce2c30baffb34a23a238ecefe5baccb2b4fe2cc10"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/ordered-step-navigation/current-workflow-duration-wait-current-source.json",
+      "target": "workflow/ordered-step-navigation/current-workflow-duration-wait-current-source.json",
+      "sha256": "42b3fc5a10d7c3f8f003f6233f97100120bb41cd93b9ace50d866263073a8446"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/ordered-step-navigation/docs-append-observed.json",
+      "target": "workflow/ordered-step-navigation/docs-append-observed.json",
+      "sha256": "65098988dd55dc95b1f2b399c73ee2d5b3d87292c5ab86637b7213fd5200b8cb"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/ordered-step-navigation/green-affected-observed.json",
+      "target": "workflow/ordered-step-navigation/green-affected-observed.json",
+      "sha256": "690e0465318cea9963f4a898a1604cbd76033c240e89d1b0d8dfac06f8046156"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/ordered-step-navigation/red-surfaces-r2-observed.json",
+      "target": "workflow/ordered-step-navigation/red-surfaces-r2-observed.json",
+      "sha256": "6a2f6034288af1c68600b5e9f2afb96fc5abaa449f76a186a7560bd8fe1821cb"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/ordered-step-navigation/green-affected-preflight.json",
+      "target": "workflow/ordered-step-navigation/green-affected-preflight.json",
+      "sha256": "6342583174ef035a7f542d04cee4f93b4f6e72efdd5e3c637d28816b7a81e21b"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/ordered-step-navigation/biome12-raw.json",
+      "target": "workflow/ordered-step-navigation/biome12-raw.json",
+      "sha256": "f7ccd489ceb0ff637821daffcf2958437fdb28763e53b5a54b9485e50412c446"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/ordered-step-navigation/red-surfaces-preflight.json",
+      "target": "workflow/ordered-step-navigation/red-surfaces-preflight.json",
+      "sha256": "85454bb246f2151fd74c702746a3be61091782dbe40806834b42ea3314124f17"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/ordered-step-navigation/test-first-plan.json",
+      "target": "workflow/ordered-step-navigation/test-first-plan.json",
+      "sha256": "1932b6c514f92751205749c281e5dc19199effec78fa1248687180ec62fb7bf9"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/ordered-step-navigation/review.md",
+      "target": "workflow/ordered-step-navigation/review.md",
+      "sha256": "16327a8f22b3522f759ef3f6fd93f20f2476711a6231da57f9d83c0dc47cf237"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/ordered-step-navigation/review.json",
+      "target": "workflow/ordered-step-navigation/review.json",
+      "sha256": "776aef60171c836d56f9c6abc36e6b5894372828e7a5710c5bce3e221d7295ff"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/ordered-step-navigation/static14-plan.json",
+      "target": "workflow/ordered-step-navigation/static14-plan.json",
+      "sha256": "78d7bf89f3288ec8fe71ec510cc047bbaffda65881613dcd4e755bf9c0364bc4"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/ordered-step-navigation/handoff-availability.json",
+      "target": "workflow/ordered-step-navigation/handoff-availability.json",
+      "sha256": "2f57bce436481ffce566a297c2a6eb79da0f84a7c3138cbb4beb7c52529a7ad0"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/ordered-step-navigation/red-surfaces-observed.json",
+      "target": "workflow/ordered-step-navigation/red-surfaces-observed.json",
+      "sha256": "7df44e5611c81f2d8edbb56e262024c587fa4f982317e4cf574be4e4ff719a00"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/ordered-step-navigation/red7-preflight.json",
+      "target": "workflow/ordered-step-navigation/red7-preflight.json",
+      "sha256": "7bc1eaef7aba211760134a842f9eb874689a647643033828a47dba570978fe40"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/red8-r2-observed.json",
+      "target": "workflow/connection-insertion/red8-r2-observed.json",
+      "sha256": "e22bdad5cb6f3ff4bb63ff9011808f212a3c5f19801f9f3220c9032e222f38ef"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/QUALIFICATION.md",
+      "target": "workflow/connection-insertion/QUALIFICATION.md",
+      "sha256": "c232d5d44339154ba697a58ba7a1c3b2b5812570d8c46b145b86376e53f2f470"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/static12-launch.json",
+      "target": "workflow/connection-insertion/static12-launch.json",
+      "sha256": "f16169d670322d08309c1b6f6554e6f5eedf5a328600733e1a20d0ea7ba54de2"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/static12-command-terminal.json",
+      "target": "workflow/connection-insertion/static12-command-terminal.json",
+      "sha256": "999f76a3bc2080d67d006542ce705f23447e24622398c4eb8578a0ffc4f5090a"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/qualification.json",
+      "target": "workflow/connection-insertion/qualification.json",
+      "sha256": "50c4be61a79d5fdf38ae2e66b06eaa4a4836a1613291c471426b16c60fbffeab"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/placement-red8-observed.json",
+      "target": "workflow/connection-insertion/placement-red8-observed.json",
+      "sha256": "f99b8633c3c3b43b136cba3aee60b6b0c74e4ce471ce06fc25b39439b741fe20"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/final-format12-admission.json",
+      "target": "workflow/connection-insertion/final-format12-admission.json",
+      "sha256": "29e4945ba7f38d6a883e39000ec0d6336030c20acbb072a82557d19ef91049e0"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/static11-plan.json",
+      "target": "workflow/connection-insertion/static11-plan.json",
+      "sha256": "96822b01554721966d24c91e1edf08aa344f10195841ed6c58eca6be64e6ca28"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/review-final.md",
+      "target": "workflow/connection-insertion/review-final.md",
+      "sha256": "37c65df35ea60a987432a8c0a1842e01b4214656911091122b9aaf50dd784ac6"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/static12-observed.json",
+      "target": "workflow/connection-insertion/static12-observed.json",
+      "sha256": "21162dc9c76a619bf08dfcdb668439414b56fd0ba2c740cb844a0d7ad8d74eee"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/affected34-observed.json",
+      "target": "workflow/connection-insertion/affected34-observed.json",
+      "sha256": "be69f44100b8853629d5c19dda0055c1313050a3896d44f756e3bb90927fc55f"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/placement-red8-cleanup.json",
+      "target": "workflow/connection-insertion/placement-red8-cleanup.json",
+      "sha256": "7b183b05cc01b1e05b2f197bc163fcc8edb5e41754a591637c58eb58eabbc691"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/static12-readiness-refresh.json",
+      "target": "workflow/connection-insertion/static12-readiness-refresh.json",
+      "sha256": "c0cb8deb48f7771cff3e8e3c49ce531e7dfb54122ed816c0b893440e265e9899"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/docs-update.sha256",
+      "target": "workflow/connection-insertion/docs-update.sha256",
+      "sha256": "112f2b75fe52b26dcc0a97611423d342c5bb4908b1222b821c3fc500feadf8ab"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/placement-red8-preflight.json",
+      "target": "workflow/connection-insertion/placement-red8-preflight.json",
+      "sha256": "623f51aa32edac712d3c54be31a4491c8ac22a5d018fa59c50cc04868ed4d127"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/ready-summary.json",
+      "target": "workflow/connection-insertion/ready-summary.json",
+      "sha256": "72fa0aaf3ebc592864d389b723751341548c8d754ec3519be4cb5923115d86ce"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/nodeLayout-before-placement-fix.json",
+      "target": "workflow/connection-insertion/nodeLayout-before-placement-fix.json",
+      "sha256": "56d5591be80498ce76504b4c0def3cbd996d8f3e69940bc597f36a45e4150d31"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/affected29-observed.json",
+      "target": "workflow/connection-insertion/affected29-observed.json",
+      "sha256": "bedcdaa8eb12ef8567959f2e92a6d35a1b6a966c17028d6fb14a40bb36ea4dab"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/clearance-red5-cleanup.json",
+      "target": "workflow/connection-insertion/clearance-red5-cleanup.json",
+      "sha256": "da3066cf77bc62910c8416280f6c7ed233d07eff55439ce34939e161845a46fd"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/static12-preflight.json",
+      "target": "workflow/connection-insertion/static12-preflight.json",
+      "sha256": "dd2f73cb5c3edf9de28cb7487928085bfd8f668b18ed9ba05c9a3391be33efde"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/docs-update.patch",
+      "target": "workflow/connection-insertion/docs-update.patch",
+      "sha256": "35b53e0ea6cd0c125eb0d07c5b9387c3aa0253456ac250e7c78f8d04f3c5cc9e"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/affected34-preflight.json",
+      "target": "workflow/connection-insertion/affected34-preflight.json",
+      "sha256": "25f164145be4a9ae5924c03b04d1bf355b90a56457cf016c2439d2fb968b6eb1"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/red8-r2-cleanup.json",
+      "target": "workflow/connection-insertion/red8-r2-cleanup.json",
+      "sha256": "6e1331942f7f0fe6d021946c52956edcf4b4f965972bee59bb328159e5e6a904"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/clearance-red5-preflight.json",
+      "target": "workflow/connection-insertion/clearance-red5-preflight.json",
+      "sha256": "40c105416cd09e8fcb8b6602fd69d482101d1db8a16a8b11bff8899d7abe4dc5"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/clearance-red5-observed.json",
+      "target": "workflow/connection-insertion/clearance-red5-observed.json",
+      "sha256": "bf5216bec3f248643cb195404903a86a362f736af409863532a0d4887de005cc"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/affected-green-preflight.json",
+      "target": "workflow/connection-insertion/affected-green-preflight.json",
+      "sha256": "448f1fee1e92c244f92f4fbdf4a375203478e8450ae887bed13e6533da8c51bf"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/affected-green-cleanup.json",
+      "target": "workflow/connection-insertion/affected-green-cleanup.json",
+      "sha256": "8ddb4e681c68c95ac8232402acb8272538499eb03b34d6e134c97011573b6149"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/red8-r2-preflight.json",
+      "target": "workflow/connection-insertion/red8-r2-preflight.json",
+      "sha256": "8b4309d0873f2b4207fd99765adc557bb055a223d2bed2cdfb4c8412bd900e99"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/red8-cleanup.json",
+      "target": "workflow/connection-insertion/red8-cleanup.json",
+      "sha256": "2442072c5249b1403b64b2171c75ba7fe4eeb393f5ee9b68fd6fd01e0e2f473a"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/review.md",
+      "target": "workflow/connection-insertion/review.md",
+      "sha256": "cd5a7d039116c287d127dc16166b108ad47cef2311905ffa2c0e5e98293010a0"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/review.json",
+      "target": "workflow/connection-insertion/review.json",
+      "sha256": "3db2ec8ace9adbe182851926107c5b2e2d5936479cbfc851c1e3e7e2caae3d09"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/docs-update.json",
+      "target": "workflow/connection-insertion/docs-update.json",
+      "sha256": "1334836b4608da7d99d1cf6a68fe31af3122c84ac3242db7a5bbcd12ecf66919"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/red8-live-sample.json",
+      "target": "workflow/connection-insertion/red8-live-sample.json",
+      "sha256": "c1d6dfc6e149f11b6d319a22fe1ccf9ace88be92521f859e9abd34e3f7d8e371"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/docs-final-observed.json",
+      "target": "workflow/connection-insertion/docs-final-observed.json",
+      "sha256": "f3d5fa267e566ae9dcca5a650ca252a6d0af6fee0636bd16ce54e6a55a11460a"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/static12-cleanup.json",
+      "target": "workflow/connection-insertion/static12-cleanup.json",
+      "sha256": "a6920394ab7369dd5ea83d1515a708dba41e0d0d2322cfcb6693aef861ea182e"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/static12-request-sent.json",
+      "target": "workflow/connection-insertion/static12-request-sent.json",
+      "sha256": "dd118117c08e47269ecc06d17a5c21b8ed610fb20d8687f09d8e8a17ef77f802"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/red8-preflight.json",
+      "target": "workflow/connection-insertion/red8-preflight.json",
+      "sha256": "e567b8f8ef570ad50cc075a91c84e7fd1a89e75c8d021db79c6f5730d1d4261e"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/review-final.json",
+      "target": "workflow/connection-insertion/review-final.json",
+      "sha256": "9b0adfde5a4bcb66d33121fe04869adb3cf8e5402669201413fe66588211d309"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/affected34-cleanup.json",
+      "target": "workflow/connection-insertion/affected34-cleanup.json",
+      "sha256": "6c3e6604efe8d174bb3e9deb4a0f9b2d5df76052631404dec6cfcf943e9b16d5"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/red8-observed.json",
+      "target": "workflow/connection-insertion/red8-observed.json",
+      "sha256": "d423aa3d1a718c6c6d2105e5422a630a686b50955e1d60fb94967936dab08a70"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/static12-plan.json",
+      "target": "workflow/connection-insertion/static12-plan.json",
+      "sha256": "ad57a1afe4f0b28b9330b58e0c75bd4f1f609721df464889d26458b198dfa4fe"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/prototype-visual2/source-freeze-readback.json",
+      "target": "workflow/prototype-visual2/source-freeze-readback.json",
+      "sha256": "7c22650ace56810182de60ac8b863f94f079494eb53262a622882943b541777e"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/prototype-visual2/grant-receipt-proof.json",
+      "target": "workflow/prototype-visual2/grant-receipt-proof.json",
+      "sha256": "edc583cd178bbe9a350a3b347b4382b04b1c320c975a461ef96572b3dd7d28c5"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/prototype-visual2/owned-tab-cleanup.json",
+      "target": "workflow/prototype-visual2/owned-tab-cleanup.json",
+      "sha256": "8a63dca288b99166d6864092f6127d72986d065220cb14567b29e7b1d7bf1f89"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/prototype-visual2/terminal-resource.json",
+      "target": "workflow/prototype-visual2/terminal-resource.json",
+      "sha256": "d2f0a14fcffd5b99cd16973ecf724fa199436f5825a4193810ea951ac104948d"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/prototype-visual2/grant-receipt-log-match.json",
+      "target": "workflow/prototype-visual2/grant-receipt-log-match.json",
+      "sha256": "7af943a998a27717efdec04dfeda9538b6aa59b19bde6c3a4e3f2a9ff33b3e23"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/prototype-visual2/review.md",
+      "target": "workflow/prototype-visual2/review.md",
+      "sha256": "f4de2936a16949f88f802f51cd094567498284ed3906ded71034cd4369dff6e6"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/prototype-visual2/review.json",
+      "target": "workflow/prototype-visual2/review.json",
+      "sha256": "fc61c55ce75a560fb369f66ca2170667b50dfc42e4796dec9a76f61cdec93c12"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/prototype-visual2/observed.json",
+      "target": "workflow/prototype-visual2/observed.json",
+      "sha256": "0e7839c285a87f6181d88a87113cbd6b929b3144d78178c26df7c2a0a9749865"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/prototype-visual2/exact-timing-addendum.json",
+      "target": "workflow/prototype-visual2/exact-timing-addendum.json",
+      "sha256": "bfdf8b3b3b09f8eb907a74a899a324c9e4e24f187b3687ac2dd725badfbc4f31"
+    },
+    {
+      "source": "/Users/ali/.codex/workflow-evidence/20261102/prototype-visual2/admission.json",
+      "target": "workflow/prototype-visual2/admission.json",
+      "sha256": "a006a2f6e9b79a63cdd057e2bc80c7071911b03d587f3f362e8094f24ef3894c"
+    }
+  ],
+  "qualification": "Main duration0098/focus delivered separately. Private editor insertion evidence and ordered-step37 affected passes/Figma2 retained at recorded cuts. Current static14 and actual app/AT journey unstarted.",
+  "limitations": "UNFINISHED preservation cut at older workspace HEAD. Do not merge wholesale onto main or deploy. Reconcile current main, private migration labels, metadata and real journey acceptance separately. Runtime/dependencies/secrets/raw unreviewed artifacts excluded; exact local evidence remains preserved. One pre-existing standalone test config is archival-only, not claimed Workflow-owned.",
+  "authorization": "Human safe-stop instruction verified in Integration chat on 2026-11-02; Root sole closer.",
+  "workspace": "/Users/ali/.codex/worktrees/workflow-roadmap-owned/warpdrive-builder-ux-20261031",
+  "createdAt": "2026-11-02T07:26:11.522796+00:00"
+}

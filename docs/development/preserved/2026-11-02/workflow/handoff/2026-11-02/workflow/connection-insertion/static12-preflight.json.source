@@ -1,0 +1,21 @@
+{
+  "at": "2026-11-02T04:58:33.873100+00:00",
+  "id": "WORKFLOW-INSERTION-STATIC12-20261102-1",
+  "plan_sha256": "ad57a1afe4f0b28b9330b58e0c75bd4f1f609721df464889d26458b198dfa4fe",
+  "memory_pressure_level": "1",
+  "memory_available": "The system has 38654705664 (2359296 pages with a page size of 16384).\nSystem-wide memory free percentage: 55%",
+  "disk_free_bytes": 13815439360,
+  "dotenv_present": [],
+  "pins_changed": [],
+  "dataless": [],
+  "pin_count": 335,
+  "dependencies_link": {
+    "link": "/Users/ali/.codex/worktrees/workflow-roadmap-owned/warpdrive-builder-ux-20261031/node_modules",
+    "target": "/Users/ali/.codex/worktrees/workflow-roadmap-owned/warpdrive-focus-deps-main43-20261101/node_modules"
+  },
+  "foreign_tcp_listeners": "p1001\ncrapportd\nf13\nn*:54121\nf15\nn*:54121\nf20\nn*:56303\nf23\nn*:56304\np1155\ncControlCenter\nf10\nn*:7000\nf11\nn*:7000\nf12\nn*:5000\nf13\nn*:5000\np2554\ncredis-server\nf6\nn127.0.0.1:6379\nf7\nn[::1]:6379\np2589\ncpostgres\nf7\nn[::1]:5432\nf8\nn127.0.0.1:5432\np2619\ncMountain Duck\nf375\nn127.0.0.1:49179\np2669\ncAdobeResourceSynchronizer\nf10\nn127.0.0.1:19292\np3058\ncAdobe Desktop Service\nf31\nn127.0.0.1:15292\nf40\nn127.0.0.1:15393\nf41\nn127.0.0.1:16494\np15051\ncpostgres\nf5\nn127.0.0.1:54673\np19823\ncChatGPT\nf150\nn127.0.0.1:64230\np27878\ncpostgres\nf5\nn127.0.0.1:55480\np42134\ncbun\nf7\nn127.0.0.1:3104\np47693\ncpostgres\nf5\nn127.0.0.1:55436\np48960\ncpostgres\nf5\nn127.0.0.1:55435\np62619\ncCode Helper\nf35\nn127.0.0.1:52697\np75521\ncpostgres\nf5\nn127.0.0.1:55432\np79861\nclimactl\nf14\nn127.0.0.1:54491\np79895\nclimactl\nf9\nn*:53\np80001\ncssh\nf9\nn127.0.0.1:9000\nf10\nn127.0.0.1:13993\nf11\nn127.0.0.1:9160\nf12\nn127.0.0.1:13465\np82134\ncbun\nf5\nn127.0.0.1:3105\n",
+  "source_gitfile": "gitdir: /private/tmp/warpdrive-workflows-20261031/.git/worktrees/warpdrive-builder-ux-202610311\n",
+  "git_HEAD": "43a5fb4d2a6be7bbbd260855a6a8e1ce55fbf3c1\n",
+  "git_index_sha256": "7af9afb59fae229f424ebae99961e48fd5348421787bf8f1ae533db306e3b4ab",
+  "admitted": true
+}

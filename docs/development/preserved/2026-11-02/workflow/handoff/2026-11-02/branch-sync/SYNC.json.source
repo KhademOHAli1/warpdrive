@@ -1,0 +1,79 @@
+{
+  "atUtc": "2026-11-02T08:50:48.999831+00:00",
+  "operation": "Merge main INTO existing branch; never publish branch work to main",
+  "branch": "codex/preserve-workflow-20261102",
+  "preSyncSnapshot": "4e0280e973aa04fe2fb1946c86b3509dbea8289b",
+  "mainMerged": "09288d518fd574fd069fb6a1dc670596f71a8831",
+  "behindBefore": 31,
+  "resolvedConflictPaths": [
+    "docs/workflows/CONTINUATION.md",
+    "docs/workflows/lifecycle-contract.md",
+    "docs/workflows/status.md",
+    "docs/workflows/ux-design-reference.md",
+    "src/features/workflows/ui/BuilderWorkspace.tsx",
+    "src/features/workflows/ui/NodePalette.tsx",
+    "src/features/workflows/ui/RunTrace.selection.test.tsx"
+  ],
+  "sourceResolutions": [
+    {
+      "path": "docs/workflows/CONTINUATION.md",
+      "mode": "100644",
+      "oid": "2bbc613e455a6f1d879f04634a8bf9040f9c4573",
+      "sha256": "4dbaf3532b43c8134bf2bf5e901aaa871c8bc3565b9617c57481a3491d80857b"
+    },
+    {
+      "path": "docs/workflows/lifecycle-contract.md",
+      "mode": "100644",
+      "oid": "179bcd1fa34c5bf74dd2e0ea21f1636875301e2e",
+      "sha256": "b6931fbb4ffc0a1d58bd7bdaf608d1a8856e68ea7dff69d07cf6eca60f5fc121"
+    },
+    {
+      "path": "docs/workflows/status.md",
+      "mode": "100644",
+      "oid": "494de853d9f76f32247cbe2012fd40e1338b0c2b",
+      "sha256": "498776bc1dc50432692d82d39fbb997dc22c63f108531b16373ab8dce66aa97d"
+    },
+    {
+      "path": "docs/workflows/ux-design-reference.md",
+      "mode": "100644",
+      "oid": "9eb09716d64c426bdb262154ae56dad928b75fc1",
+      "sha256": "29b0267d47a1dd04e707bbb6c94ecceb399a291f4af4dfaf18c9132f7dcab808"
+    },
+    {
+      "path": "src/features/workflows/ui/BuilderWorkspace.tsx",
+      "mode": "100644",
+      "oid": "75f316ce034b054ebb3882641d86b95c4afa4d36",
+      "sha256": "446596405640d73895234fe5acb23a1456995523a683e377ecc660677586d059"
+    },
+    {
+      "path": "src/features/workflows/ui/NodePalette.tsx",
+      "mode": "100644",
+      "oid": "2729150848873900ed403214b6d50b13f550202f",
+      "sha256": "421324b005a73f559b332f6abde063402f5c61403851bf48f757d063fa70b423"
+    },
+    {
+      "path": "src/features/workflows/ui/RunTrace.selection.test.tsx",
+      "mode": "100644",
+      "oid": "5568ca93f9ae3e35e248d247cf36c3b9734607ba",
+      "sha256": "d55e5596c0c0164c8d04d299efb35274d7e3ce9cdaa900af625efa29caf50496"
+    }
+  ],
+  "canonicalDrizzleTree": "1a496c5a05b7a3d78257149d639645b4eb2c30cf",
+  "canonicalMigrationFiles": 195,
+  "preSyncMigrationSnapshots": [],
+  "validation": {
+    "passed": 11,
+    "failed": 0,
+    "pending": 0,
+    "allRequestedFilesObserved": true,
+    "candidateBytesUnchanged": true,
+    "ownedGroupGone": true,
+    "seconds": 2.6615195410558954
+  },
+  "limitations": [
+    "This synchronization preserves unfinished work; it is not branch-wide type/native/CI, user-journey or deployment acceptance.",
+    "Original snapshot commits remain ancestors; archived migration proposals are inert and have not been renumbered/admitted.",
+    "Existing status/CI/inventory receipts qualify their named historical cuts and are not re-aged to this merged tree.",
+    "Paused dirty source workspaces remain byte-exact and detached at their original source heads; existing branch references advance separately."
+  ]
+}

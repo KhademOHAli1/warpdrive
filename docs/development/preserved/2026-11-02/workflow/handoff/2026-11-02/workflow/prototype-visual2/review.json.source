@@ -1,0 +1,348 @@
+{
+  "reviewed_at": "2026-11-02T05:49:33.213125+00:00",
+  "status": "PASS_BOUNDED_CAPTURED_PROTOTYPE_VISUAL_PLAYBACK",
+  "scope": {
+    "cases": 2,
+    "target_states": 5,
+    "prototype_clicks_recorded": 3,
+    "scroll_gestures_recorded": 2,
+    "images_visually_inspected": 7,
+    "reviewer_live_browser_or_figma_calls": 0,
+    "unchanged_r2_exports_re_reviewed": 0,
+    "diagnostic_initial_png_reviewed": false
+  },
+  "conclusion": "Captured pixels and document URL changes support the intended DE history-to-waiting and FA ordered-to-inspector-to-variable-search transitions, with down/up narrow scrolling. No actionable visual defect was identified within the visible reviewed areas.",
+  "images": [
+    {
+      "file": "de-history.png",
+      "sha256": "3a5163c422f462c3cfc29bb4c633a04ec304f0f6566eb329c74b57e1d72c4829",
+      "bytes": 74595,
+      "dimensions": [
+        65536,
+        4292542531
+      ],
+      "visually_inspected": true,
+      "ax_file": "de-history-ax.txt",
+      "ax_sha256": "9c051a6023240b150f40eae06a606f3c9c8cdc47398e04157de40137ac4585ca",
+      "actual_node_id": "19:4960",
+      "actual_document_url": "https://www.figma.com/proto/lo6eJ7kZQykfj0HduMaoGN/Warpdrive-Workflow-Acceptance-Prototypes?node-id=19-4960&t=RWSkmmW0K0X9Qy9Z-0&scaling=min-zoom&content-scaling=fixed&page-id=0%3A1&starting-point-node-id=21%3A5176&show-proto-sidebar=1",
+      "observation": "History list visibly shows waiting, failed and successful rows. DE Actual 100% viewer with Flows sidebar crops the prototype at the screenshot right edge; this is not a full-width design qualification.",
+      "approximate_regions_xyxy": [
+        [
+          240,
+          60,
+          1511,
+          771
+        ]
+      ]
+    },
+    {
+      "file": "de-waiting.png",
+      "sha256": "f2f05aa77e262549ff3c4197095a2c4709964c93c4497e82ab859f2a3e502cc9",
+      "bytes": 86294,
+      "dimensions": [
+        65536,
+        4292542531
+      ],
+      "visually_inspected": true,
+      "ax_file": "de-waiting-ax.txt",
+      "ax_sha256": "042cd654bb31c783ae34f3bb439efbc49315b46b5b9314f380781cf8cee10cf7",
+      "actual_node_id": "29:5400",
+      "actual_document_url": "https://www.figma.com/proto/lo6eJ7kZQykfj0HduMaoGN/Warpdrive-Workflow-Acceptance-Prototypes?node-id=29-5400&t=RWSkmmW0K0X9Qy9Z-0&scaling=min-zoom&content-scaling=fixed&page-id=0%3A1&starting-point-node-id=21%3A5176&show-proto-sidebar=1",
+      "observation": "Waiting detail visibly replaces history: version 2, two completed steps, waiting step 3 and downstream steps not started. Same right-edge viewer crop remains.",
+      "approximate_regions_xyxy": [
+        [
+          240,
+          60,
+          1511,
+          771
+        ]
+      ]
+    },
+    {
+      "file": "fa-ordered-fit.png",
+      "sha256": "c1b6677e1c8b929303db55ad17ec79ac5b9d44e6a05c4c7dc285a751d6437bfd",
+      "bytes": 38159,
+      "dimensions": [
+        65536,
+        4292542531
+      ],
+      "visually_inspected": true,
+      "ax_file": "fa-ordered-fit-ax.txt",
+      "ax_sha256": "c34a23042c2012edd6ae3f582e7c4f7e3dcddabb821a2df7e55d63f54142c5e0",
+      "actual_node_id": "16:6660",
+      "actual_document_url": "https://www.figma.com/proto/lo6eJ7kZQykfj0HduMaoGN/Warpdrive-Workflow-Acceptance-Prototypes?node-id=16-6660&t=iNqCwjt2RaluCwW6-0&scaling=scale-down&content-scaling=fixed&page-id=0%3A1&starting-point-node-id=21%3A5176",
+      "observation": "Five ordered steps and selected fourth task card are visible. Step 5 identifies a local email draft. Proper scale-down baseline shows the complete narrow frame width; bottom controls extend below its initial viewport.",
+      "approximate_regions_xyxy": [
+        [
+          605,
+          60,
+          905,
+          710
+        ]
+      ]
+    },
+    {
+      "file": "fa-ordered-scroll-down.png",
+      "sha256": "5503b032b2b12f20e3893451e28ffa92125e044ff2497f806a2412b27778cae8",
+      "bytes": 37145,
+      "dimensions": [
+        65536,
+        4292542531
+      ],
+      "visually_inspected": true,
+      "ax_file": "fa-ordered-scroll-down-ax.txt",
+      "ax_sha256": "d4da0cbe38e87f17d78cbe70869ea5bbbe0045dfcd91e6eb5363d6d85d954e97",
+      "actual_node_id": "16:6660",
+      "actual_document_url": "https://www.figma.com/proto/lo6eJ7kZQykfj0HduMaoGN/Warpdrive-Workflow-Acceptance-Prototypes?node-id=16-6660&t=iNqCwjt2RaluCwW6-0&scaling=scale-down&content-scaling=fixed&page-id=0%3A1&starting-point-node-id=21%3A5176",
+      "observation": "Content moves upward and lower history/provider-status controls are revealed. Header stays at the same screen position; selected task styling persists. No horizontal clipping is apparent in the displayed content.",
+      "approximate_regions_xyxy": [
+        [
+          605,
+          60,
+          905,
+          710
+        ]
+      ]
+    },
+    {
+      "file": "fa-ordered-scroll-up.png",
+      "sha256": "6ac111a3f3d072a3f5d82b947a2c08a0028abd8a8bab8139a45ee847ed05d8e4",
+      "bytes": 29079,
+      "dimensions": [
+        65536,
+        4292542531
+      ],
+      "visually_inspected": true,
+      "ax_file": "fa-ordered-scroll-up-ax.txt",
+      "ax_sha256": "4755cd1e5140fc379faa8eb150f5691027f9525d6ca1b9c5fcb28e6039687c16",
+      "actual_node_id": "16:6660",
+      "actual_document_url": "https://www.figma.com/proto/lo6eJ7kZQykfj0HduMaoGN/Warpdrive-Workflow-Acceptance-Prototypes?node-id=16-6660&t=iNqCwjt2RaluCwW6-0&scaling=scale-down&content-scaling=fixed&page-id=0%3A1&starting-point-node-id=21%3A5176",
+      "observation": "Upper workflow heading and ordered content return after upward scrolling. Header remains at the same screen position; the lower controls again continue beyond the viewport.",
+      "approximate_regions_xyxy": [
+        [
+          605,
+          60,
+          905,
+          710
+        ]
+      ]
+    },
+    {
+      "file": "fa-inspector.png",
+      "sha256": "200061377d45d3fb58b567409894b0dd8cbcde796975c85dd4b646075c8a3176",
+      "bytes": 22816,
+      "dimensions": [
+        65536,
+        4292542531
+      ],
+      "visually_inspected": true,
+      "ax_file": "fa-inspector-ax.txt",
+      "ax_sha256": "4f9115fd3251a6ee28be5c73e3c888f43b18c087bee98bbd969ff36dee7901ff",
+      "actual_node_id": "16:6730",
+      "actual_document_url": "https://www.figma.com/proto/lo6eJ7kZQykfj0HduMaoGN/Warpdrive-Workflow-Acceptance-Prototypes?node-id=16-6730&t=iNqCwjt2RaluCwW6-0&scaling=scale-down&content-scaling=fixed&page-id=0%3A1&starting-point-node-id=21%3A5176",
+      "observation": "Task inspector visibly replaces the ordered view. Empty task-title field has a red outline and nearby required/fallback error, with the variable-selection and return controls visible. No horizontal clipping is apparent.",
+      "approximate_regions_xyxy": [
+        [
+          614,
+          177,
+          896,
+          535
+        ]
+      ]
+    },
+    {
+      "file": "fa-variable-search.png",
+      "sha256": "0642853e13214cea5e27145b9e9b4454ee3a9fe28500cda33367b1c024b3e539",
+      "bytes": 26244,
+      "dimensions": [
+        65536,
+        4292542531
+      ],
+      "visually_inspected": true,
+      "ax_file": "fa-variable-search-ax.txt",
+      "ax_sha256": "3ab8a681fa24386b8fa918ee219b9b2bf35090f44862c30916d9f612f7c2053e",
+      "actual_node_id": "45:7118",
+      "actual_document_url": "https://www.figma.com/proto/lo6eJ7kZQykfj0HduMaoGN/Warpdrive-Workflow-Acceptance-Prototypes?node-id=45-7118&t=iNqCwjt2RaluCwW6-0&scaling=scale-down&content-scaling=fixed&page-id=0%3A1&starting-point-node-id=21%3A5176",
+      "observation": "Variable-search view shows the visible label, title query عنوان, purple halo, title result and LTR steps.deal-read.output.title path. Fallback field and full green Apply control fit inside the narrow panel.",
+      "approximate_regions_xyxy": [
+        [
+          625,
+          190,
+          887,
+          239
+        ],
+        [
+          627,
+          521,
+          884,
+          550
+        ]
+      ]
+    }
+  ],
+  "specific_findings": {
+    "de_transition": {
+      "from": "19:4960",
+      "to": "29:5400",
+      "pixels_and_url_agree": true,
+      "right_edge_full_width_qualification": false
+    },
+    "fa_transition": {
+      "nodes": [
+        "16:6660",
+        "16:6730",
+        "45:7118"
+      ],
+      "pixels_and_url_agree": true
+    },
+    "fa_scroll": {
+      "node": "16:6660",
+      "lower_controls_revealed": true,
+      "upper_content_returns": true,
+      "shell_header_stable_across_scroll_captures": true,
+      "horizontal_clipping_observed": false
+    },
+    "fa_search": {
+      "query": "عنوان",
+      "visible_label": "جست‌وجوی متغیر",
+      "halo_visible": true,
+      "title_result_visible": true,
+      "path": "steps.deal-read.output.title",
+      "apply_label": "ثبت متغیر و مقدار جایگزین",
+      "apply_fully_visible": true,
+      "dom_input_focus_proven": false,
+      "query_filter_execution_proven": false
+    },
+    "actionable_visual_defects": []
+  },
+  "viewer_conditions": {
+    "de": "Run owner reports Actual 100%; saved image shows Flows sidebar and the prototype extending beyond the right capture edge. Rightmost DE content is unreviewed.",
+    "fa": "Run owner reports Options Fit width/height selection before proper baseline. Initial AX URL uses scaling=min-zoom; reviewed proper baseline and subsequent captures use scaling=scale-down. This is viewer setup, not a prototype edit.",
+    "initial_ax_sha256": "aaba35348e444bbcc4d67eb17c13b693e6d8f31051adae451cfc2c50fb181644",
+    "viewport_override_used_as_recorded": false
+  },
+  "ax_limit": "AX identifies the Figma document and node URL. Captured FA AX states screenreader support is disabled and focuses AXWebArea; it does not expose or prove prototype input DOM focus, tab order, focus return, accessible names or AT operation. The halo is visible prototype styling only.",
+  "timing": {
+    "admission_at": "2026-11-02T05:35:54.852853+00:00",
+    "cleanup_at": "2026-11-02T05:40:46.127Z",
+    "admission_to_cleanup_seconds": 291.274147,
+    "browser_start_to_cleanup_seconds": 277.689,
+    "case2_seconds_as_recorded": 135.192,
+    "pregrant_clock": "2026-11-02T05:33:33.755929+00:00",
+    "conservative_pregrant_to_cleanup_upper_bound_seconds": 432.371071,
+    "whole_limit_seconds": 600,
+    "whole_conservative_bound_within_limit": true,
+    "case1_admission_to_waiting_seconds": 91.072147,
+    "exact_grant_receipt_clock_captured": false,
+    "limit": "91.072147 seconds starts at admission, not the grant clock. No exact grant-relative case timing or continuous resource/peak claim."
+  },
+  "cleanup_as_recorded": {
+    "owned_ids": [
+      "351774861",
+      "351774864",
+      "351774868"
+    ],
+    "remaining_owned_ids": [],
+    "foreign_baseline_ids": [
+      "351774610",
+      "351774788"
+    ],
+    "missing_foreign_ids": [],
+    "changed_foreign_url_ids": [],
+    "global_browser_kill": false,
+    "prototype_writes": 0,
+    "app_actions": 0,
+    "db_actions": 0,
+    "reviewer_live_cleanup_verification": false
+  },
+  "resource_endpoints_as_recorded": {
+    "admission_pressure": "1",
+    "admission_q": 52,
+    "admission_disk_free_bytes": 12185120768,
+    "terminal_pressure": "1",
+    "terminal_q": 54,
+    "continuous_or_peak_measurement": false
+  },
+  "source_freeze_evidence": "Separate owner readback records 336 pins, no mismatches and the expected pre-job ConnectionInsertion.test.tsx delta. This reviewer did not read or hash managed application source.",
+  "remaining_acceptance": [
+    "Full WF005 remains open.",
+    "No complete author/test/publish/run journey or all-theme/all-locale playback qualification.",
+    "No actual DOM keyboard focus, Tab/Escape/focus-return or assistive-technology qualification.",
+    "No app, database, worker, elapsed-minute wait or provider runtime proof.",
+    "DE rightmost content is outside the saved viewport."
+  ],
+  "source_metadata": {
+    "admission.json": {
+      "sha256": "a006a2f6e9b79a63cdd057e2bc80c7071911b03d587f3f362e8094f24ef3894c",
+      "data": {
+        "id": "WORKFLOW-FIGMA-VISUAL2-20261102-1",
+        "admission_at": "2026-11-02T05:35:54.852853+00:00",
+        "pressure": "1",
+        "q": 52,
+        "disk_free_bytes": 12185120768,
+        "plan_sha256": "dc739c753d27e946a781aa7726fdb0ff07ecb6777beefa387921a8e437613aba",
+        "scope": "2cases5frames3clicks2scrolls;600allin120cleanup;noapp/DB/sourcewrites"
+      }
+    },
+    "owned-tab-cleanup.json": {
+      "sha256": "8a63dca288b99166d6864092f6127d72986d065220cb14567b29e7b1d7bf1f89",
+      "data": {
+        "id": "WORKFLOW-FIGMA-VISUAL2-20261102-1",
+        "browserStartedAt": "2026-11-02T05:36:08.438Z",
+        "interactionEndedAt": "2026-11-02T05:40:45.735Z",
+        "cleanedAt": "2026-11-02T05:40:46.127Z",
+        "browserStartToInteractionSeconds": 277.297,
+        "browserStartToCleanupSeconds": 277.689,
+        "case2Seconds": 135.192,
+        "ownedIds": [
+          "351774861",
+          "351774864",
+          "351774868"
+        ],
+        "remainingOwnedIds": [],
+        "foreignBaselineIds": [
+          "351774610",
+          "351774788"
+        ],
+        "missingForeignIds": [],
+        "changedForeignUrlIds": [],
+        "viewportOverrideUsed": false,
+        "globalBrowserKill": false,
+        "prototypeWrites": 0,
+        "appActions": 0,
+        "dbActions": 0
+      }
+    },
+    "source-freeze-readback.json": {
+      "sha256": "7c22650ace56810182de60ac8b863f94f079494eb53262a622882943b541777e",
+      "data": {
+        "at": "2026-11-02T05:43:23.556400+00:00",
+        "count": 336,
+        "expected_prejob_test_delta": "/Users/ali/.codex/worktrees/workflow-roadmap-owned/warpdrive-builder-ux-20261031/src/features/workflows/ui/ConnectionInsertion.test.tsx",
+        "mismatches": [],
+        "source_unchanged_through_visual_job": true,
+        "worker_ack": "No writes in flight; both ownedtestfiles remainedunchanged."
+      }
+    },
+    "terminal-resource.json": {
+      "sha256": "d2f0a14fcffd5b99cd16973ecf724fa199436f5825a4193810ea951ac104948d",
+      "data": {
+        "at": "2026-11-02T05:42:13.480163+00:00",
+        "pressure": "1",
+        "q": 54,
+        "admission_to_cleanup_s": 291.274147,
+        "case1_admission_to_waiting_s": 91.072147,
+        "last_pregrant_clock": "2026-11-02T05:33:33.755929+00:00",
+        "conservative_allocation_to_cleanup_upper_bound_s": 432.371071,
+        "limit": "Exact grant-receipt clock not separately captured. Case1 admission91.073s is not exact grantclock; whole600 upperbound conservative from pregrantREDreceipt. Resource endpoints only, no continuous/peakclaim."
+      }
+    }
+  },
+  "reviewer_actions": [
+    "Viewed seven local saved PNGs with view_image.",
+    "Read bounded local AX and JSON evidence.",
+    "Computed SHA256 of reviewed local artifacts.",
+    "Created only review.md and review.json."
+  ]
+}

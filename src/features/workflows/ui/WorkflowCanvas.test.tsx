@@ -3,7 +3,9 @@ import { act, cleanup, render } from "@testing-library/react";
 import type { NodeChange, ReactFlowProps } from "@xyflow/react";
 import { afterEach, expect, it, vi } from "vitest";
 import { LocaleProvider } from "@/features/i18n/LocaleProvider";
+import { appendConnectedNode } from "../connectionGestures";
 import { initialDefinition } from "../editorModel";
+import { makeNode } from "../nodeFactory";
 import { WorkflowCanvas } from "./WorkflowCanvas";
 import type { CanvasNode } from "./WorkflowNodeCard";
 
@@ -111,4 +113,57 @@ it("previews the same connection rules used on drop and commits one edit per dra
     flow.change?.([{ id: "task", type: "position", position: { x: 40, y: 440 }, dragging: false }]),
   );
   expect(onChange).toHaveBeenCalledTimes(1);
+});
+
+it("numbers inserted linear steps by connected path without reordering canvas nodes", () => {
+  const initial = initialDefinition({
+    start: "Manual start",
+    read: "Read deal",
+    task: "Create task",
+    subject: "Call",
+  });
+  const inserted = appendConnectedNode(
+    initial,
+    makeNode(initial, "delay", "wait", "Wait", "Call", "start"),
+    { x: 0, y: 130 },
+    { from: "start", port: "next" },
+  );
+  if (!inserted.ok) throw new Error(`Wait insertion failed: ${inserted.error}`);
+  const definition = inserted.value;
+  const creationOrder = ["start", "read", "task", "wait"];
+  expect(definition.nodes.map((node) => node.id)).toEqual(creationOrder);
+  expect(definition.edges).toHaveLength(3);
+  expect(definition.edges).toEqual(
+    expect.arrayContaining([
+      { from: "start", to: "wait", port: "next" },
+      { from: "wait", to: "read", port: "next" },
+      { from: "read", to: "task", port: "next" },
+    ]),
+  );
+  render(
+    <LocaleProvider locale="en">
+      <WorkflowCanvas
+        definition={definition}
+        selected="wait"
+        selectedEdge={null}
+        onSelect={vi.fn()}
+        onSelectEdge={vi.fn()}
+        onChange={vi.fn()}
+        onProblem={vi.fn()}
+        editable
+        invalidNodes={new Set()}
+        layoutRevision={0}
+      />
+    </LocaleProvider>,
+  );
+
+  // ReactFlow's creation/z-order stays intact; only the displayed numeric indices follow the path.
+  expect(flow.nodes.map((node) => node.id)).toEqual(creationOrder);
+  expect(Object.fromEntries(flow.nodes.map((node) => [node.id, node.data.index]))).toEqual({
+    start: 0,
+    wait: 1,
+    read: 2,
+    task: 3,
+  });
+  expect(definition.nodes.map((node) => node.id)).toEqual(creationOrder);
 });

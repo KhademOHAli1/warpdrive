@@ -1,0 +1,19 @@
+{
+  "at": "2026-11-02T05:47:57.663848+00:00",
+  "grant_receipt_at": "2026-11-02T05:35:39.177Z",
+  "evidence": "Exact incoming START text in ownchat rolloutresponse_item function_call_output; duplicateevent_msg is not secondgrant.",
+  "case1_end_at": "2026-11-02T05:38:30.543000+00:00",
+  "case1_grant_to_waiting_observation_s": 106.748,
+  "case1_grant_to_end_s": 171.366,
+  "case2_s": 135.192,
+  "grant_to_interaction_end_s": 306.558,
+  "grant_to_cleanup_s": 306.95,
+  "cleanup_s": 0.392,
+  "limits": {
+    "case1_max180": true,
+    "case2_max300": true,
+    "interaction_by480": true,
+    "cleanup_by600": true
+  },
+  "supersedes": "Previouslynotseparatelycapturedgranttime nowrecoveredauthoritatively. Originalterminal-resource/upperboundreceipts retainedunchanged."
+}

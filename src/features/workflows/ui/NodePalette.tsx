@@ -31,12 +31,14 @@ export function NodePalette({
   onAdd,
   context,
   onCloseAutoFocus,
+  allowedTypes,
 }: {
   open: boolean;
   onClose: () => void;
   onAdd: (type: CreatableNodeType) => void;
   context?: string;
   onCloseAutoFocus?: (event: Event) => void;
+  allowedTypes?: readonly CreatableNodeType[];
 }) {
   const t = useAppTranslations("workflows");
   const fmt = useFormatters();
@@ -53,7 +55,11 @@ export function NodePalette({
     },
   ] as const;
   const query = search.trim().toLocaleLowerCase().replaceAll("ي", "ی").replaceAll("ك", "ک");
-  const matches = choices.filter((choice) =>
+  const available =
+    allowedTypes === undefined
+      ? choices
+      : choices.filter((choice) => allowedTypes.includes(choice.type));
+  const matches = available.filter((choice) =>
     `${choice.label} ${choice.hint}`.toLocaleLowerCase().includes(query),
   );
   return (

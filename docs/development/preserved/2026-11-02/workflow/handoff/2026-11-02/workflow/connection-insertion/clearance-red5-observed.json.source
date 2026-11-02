@@ -1,0 +1,42 @@
+{
+  "status": "TERMINAL_ACTUAL_CLEARANCE_RED3_BOUNDS_CONTROLS2",
+  "command_exit": 1,
+  "tests": 5,
+  "intended_behavior_failures": 3,
+  "bounds_controls_passed": 2,
+  "setup_failures": 0,
+  "command_seconds": 0.83,
+  "vitest_seconds": 0.076,
+  "admission_to_cleanup_seconds": 1.135796,
+  "time_l_maxrss_bytes": 213876736,
+  "cleanup": {
+    "at": "2026-11-02T03:49:59.278532+00:00",
+    "owned_cwd_after": [],
+    "source_hashes_unchanged": true,
+    "all_four_dotenv_absent": true,
+    "pressure": "1",
+    "available": "The system has 38654705664 (2359296 pages with a page size of 16384).\nSystem-wide memory free percentage: 56%",
+    "log_sha256": "8c0dc3d0e19c92fe959e984ba5d7392d9fccd45f27366647a49f3d8e3e49ed94",
+    "summary_lines": [
+      "   \u00d7 leaves space for existing cards when inserting into the standard connected layout 4ms",
+      "   \u00d7 avoids an occupied neighboring column without moving any existing node 0ms",
+      "   \u00d7 keeps repeated insertion clear instead of halving the remaining vertical space 0ms",
+      "   \u2713 keeps default insertion positions within graph bounds near x=-100000 0ms",
+      "   \u2713 keeps default insertion positions within graph bounds near x=100000 0ms",
+      " FAIL  |unit| src/features/workflows/nodePlacement.test.ts > leaves space for existing cards when inserting into the standard connected layout",
+      "AssertionError: New position must leave the existing start card clear: expected false to be true // Object.is equality",
+      " FAIL  |unit| src/features/workflows/nodePlacement.test.ts > avoids an occupied neighboring column without moving any existing node",
+      "AssertionError: New position must leave the existing start card clear: expected false to be true // Object.is equality",
+      " FAIL  |unit| src/features/workflows/nodePlacement.test.ts > keeps repeated insertion clear instead of halving the remaining vertical space",
+      "AssertionError: New position must leave the existing start card clear: expected false to be true // Object.is equality",
+      " Test Files  1 failed (1)",
+      "      Tests  3 failed | 2 passed (5)",
+      "   Duration  76ms (transform 59%, tests 15%, import 11%, setup 9%, worker 5%, environment 1%)",
+      "        0.83 real         0.37 user         0.17 sys",
+      "           213876736  maximum resident set size"
+    ]
+  },
+  "source_snapshot": "clearance-red-source/manifest.json",
+  "log": "/tmp/warpdrive-workflow-connection-insertion-clearance-red5-20261102-01.log",
+  "scope": "Existing360x260layoutcell clearance in normal/dense/repeated insertion. Layoutmath evidence only; no actual rendered geometry claim."
+}

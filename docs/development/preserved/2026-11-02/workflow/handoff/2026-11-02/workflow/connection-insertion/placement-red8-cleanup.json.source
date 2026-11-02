@@ -1,0 +1,23 @@
+{
+  "at": "2026-11-02T03:31:36.888779+00:00",
+  "owned_cwd_after": [],
+  "source_hashes_unchanged": true,
+  "all_four_dotenv_absent": true,
+  "pressure": "1",
+  "available": "The system has 38654705664 (2359296 pages with a page size of 16384).\nSystem-wide memory free percentage: 54%",
+  "log_sha256": "d25fc4c1fdbebc1ad7a7b759decb72e76927f93c4b97ab35188f310f7ec906e0",
+  "summary_lines": [
+    "   \u2713 opens an occupied output palette without committing and restores its opener on Escape 124ms",
+    "   \u00d7 commits one occupied-output Wait insertion, preserves bindings and positions, and focuses its step name 71ms",
+    "   \u2713 keeps Condition available when adding to a free output 53ms",
+    "   \u2713 keeps Condition available from the toolbar without replacing existing connections 63ms",
+    " \u2713 |unit| src/features/workflows/connectionInsertion.test.ts (4 tests) 8ms",
+    " FAIL  |unit| src/features/workflows/ui/ConnectionInsertion.test.tsx > commits one occupied-output Wait insertion, preserves bindings and positions, and focuses its step name",
+    "AssertionError: expected { x: +0, y: 260 } to not deeply equal { x: +0, y: 260 }",
+    " Test Files  1 failed | 1 passed (2)",
+    "      Tests  1 failed | 7 passed (8)",
+    "   Duration  1.31s (environment 31%, tests 26%, import 22%, transform 14%, setup 6%)",
+    "        1.94 real         1.62 user         0.46 sys",
+    "           355254272  maximum resident set size"
+  ]
+}

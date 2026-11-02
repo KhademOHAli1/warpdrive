@@ -1,0 +1,17 @@
+{
+  "at": "2026-11-02T06:17:56.168657+00:00",
+  "status": "READY_UNSTARTED",
+  "plan_sha256": "78d7bf89f3288ec8fe71ec510cc047bbaffda65881613dcd4e755bf9c0364bc4",
+  "pins_checked": 346,
+  "mismatches": [],
+  "code_manifest_sha256": "0ac5da516d33194bd1125828193c9731c4eee1b80c1c3343788c6527bdab6bb9",
+  "code_patch_sha256": "28d0aae04151177931b49ad7fcd57d512d1852c83cb951654a6f1d3648015051",
+  "docs_manifest_sha256": "9022a15b3fa0fc997f405551c5c9461195d513e14d7aa29f4794b0a2dd205e7c",
+  "docs_patch_sha256": "3965771665b0819dec3fa6e137d66e31390d80ef4fae9a6c14a3a621b5b30cc2",
+  "docs_check": "ConfiguredBiome target3: checked2/0fix15ms/exit0; docsiteconfiguredexcluded. ArtifactgitapplycheckPASS.",
+  "source_review": "/Users/ali/.codex/workflow-evidence/20261102/ordered-step-navigation/review.json",
+  "actual_units": "/Users/ali/.codex/workflow-evidence/20261102/ordered-step-navigation/green-affected-observed.json",
+  "compiler_started": false,
+  "live_owned_job": false,
+  "code_patch": "/Users/ali/.codex/workflow-evidence/20261102/ordered-step-navigation/packet/ordered-step-navigation.patch"
+}

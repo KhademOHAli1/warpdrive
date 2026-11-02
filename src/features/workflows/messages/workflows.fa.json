@@ -183,6 +183,7 @@
   "paletteContext": "{name} · {port}",
   "addAfter": "افزودن گام پس از {name}: {port}",
   "addConnectedStep": "افزودن و اتصال گام جدید",
+  "insertConnectedStep": "درج مرحله در اینجا",
   "undo": "واگرد",
   "redo": "انجام دوباره",
   "undoHint": "واگرد تغییر نمودار (⌘/Ctrl+Z)",

@@ -7,6 +7,7 @@ import { useAppTranslations, useLocale, useMessages } from "@/features/i18n/Loca
 import { useFormatters } from "@/lib/useFormatters";
 import { type MappingKind, mappingOptions } from "../mappingOptions";
 import { displayNodeName } from "../nodeNames";
+import { orderedWorkflowNodes } from "../nodeOrder";
 import { type Binding, bindingSchema, type WorkflowDefinition } from "../schemas";
 
 export function BindingField({
@@ -38,6 +39,7 @@ export function BindingField({
   const parsed = bindingSchema.safeParse(value);
   const binding = parsed.success ? parsed.data : undefined;
   const choices = mappingOptions(definition, nodeId, kind);
+  const orderedNodes = orderedWorkflowNodes(definition);
   const selected =
     binding?.kind === "reference" ? binding.nodeId + "." + binding.path.join(".") : "__literal__";
   const missing =
@@ -51,7 +53,7 @@ export function BindingField({
         " · " +
         displayNodeName(choice.node, locale) +
         " " +
-        fmt.number(definition.nodes.findIndex((node) => node.id === choice.node.id) + 1),
+        fmt.number(orderedNodes.findIndex((node) => node.id === choice.node.id) + 1),
       group: t("connectedValues"),
     })),
     ...(missing ? [{ value: selected, label: t("unavailableValue") }] : []),

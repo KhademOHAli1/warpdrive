@@ -1,0 +1,46 @@
+{
+  "at": "2026-11-02T03:31:34.721414+00:00",
+  "status": "ADMITTED_FIRST_SPLICE_FIX_PLACEMENT_NOT_CHANGED",
+  "authorization": "Standingfocusedlane operatingagreement, not a MainheavyID",
+  "cwd": "/Users/ali/.codex/worktrees/workflow-roadmap-owned/warpdrive-builder-ux-20261031",
+  "source_hashes": {
+    "src/features/workflows/connectionGestures.ts": "f151f3c795c425eec2ea1eb47c407d0a943cee0f3801ccf5a30beb7ee4185251",
+    "src/features/workflows/connectionGestures.test.ts": "829c29dbc0fcceed901dbd8d5e3accc7f25d8658a9eeb5f97da2510a51cb3e19",
+    "src/features/workflows/ui/ConnectionEditor.tsx": "09c250c751a53f00ea143f167e4778079d2cd5fdd43bcf6f68d4ebdd2a5842b6",
+    "src/features/workflows/ui/BuilderWorkspace.tsx": "5b3feb129249d79de4f7edb9c42d945e0aef97ef46683a4c7cacc9ea25b725f9",
+    "src/features/workflows/ui/NodePalette.tsx": "421324b005a73f559b332f6abde063402f5c61403851bf48f757d063fa70b423",
+    "src/features/workflows/messages/workflows.en.json": "18e59537ea3d2f8d5868790f6b5db4e2fe3ac6111dba7e47851eaff42b7f65cc",
+    "src/features/workflows/messages/workflows.fa.json": "5e00117f7aaba912058fb72b32fcb2430e047480d24d144a0b0ee1cb027ba8b3",
+    "src/features/workflows/messages/workflows.de.json": "598caa957b5a885d975854c6cc3b7adfa6b25ef09c02bb1f0e036592c0ed482b",
+    "src/features/workflows/connectionInsertion.test.ts": "d42e98190070e03cc667e40ef372e9265eeef92f0ca62b2ae183cc0f12abdba7",
+    "src/features/workflows/ui/ConnectionInsertion.test.tsx": "0179b120a41d9442d31f0d1000f6c6df1ce85f87a79b76367ec1de5e18460242"
+  },
+  "expected_unobserved": {
+    "cases": 8,
+    "passed": 7,
+    "placement_RED": 1
+  },
+  "resources": {
+    "pressure": 1,
+    "available_percent": 54,
+    "free_bytes": 17640001536
+  },
+  "all_four_dotenv_absent": true,
+  "dotenv_absence": {
+    ".env": true,
+    ".env.local": true,
+    ".env.test": true,
+    ".env.test.local": true
+  },
+  "BUN_OPTIONS": "--no-env-file",
+  "vite_env_dir": false,
+  "limit_seconds_including_cleanup": 60,
+  "runtime_scope": "unit-only,1worker; no DB/browser/build/install/service",
+  "log": "/tmp/warpdrive-workflow-connection-insertion-placement-red8-20261102-01.log",
+  "test_only_delta": [
+    "src/features/workflows/ui/ConnectionInsertion.test.tsx"
+  ],
+  "prior_actual": "red8-observed.json, 5intendedbehaviorRED+2selectorfail+1control, no setup",
+  "bun_sha256": "0a2237cdcfa0d16ef501d9acca9f0026309ef348bea7393a64e8d1e3609565cc",
+  "actual_prior_RED": "red8-r2-observed.json"
+}

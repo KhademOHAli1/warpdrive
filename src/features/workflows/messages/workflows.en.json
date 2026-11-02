@@ -183,6 +183,7 @@
   "paletteContext": "{name} · {port}",
   "addAfter": "Add a step after {name}: {port}",
   "addConnectedStep": "Add a new connected step",
+  "insertConnectedStep": "Insert a step here",
   "undo": "Undo",
   "redo": "Redo",
   "undoHint": "Undo graph edit (⌘/Ctrl+Z)",

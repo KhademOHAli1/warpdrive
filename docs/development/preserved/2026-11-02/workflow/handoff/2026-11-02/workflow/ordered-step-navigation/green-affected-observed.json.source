@@ -1,0 +1,41 @@
+{
+  "at": "2026-11-02T06:05:24.667507+00:00",
+  "status": "AFFECTED37_9FILES_PASS_BIOME12_PASS_REVIEW_PASS",
+  "tests": 37,
+  "files": 9,
+  "failed": 0,
+  "setup_failures": 0,
+  "command_exit": 0,
+  "wall_s": 5.55,
+  "vitest_s": 5.21,
+  "max_individual_rss_bytes": 458883072,
+  "resource_endpoints": {
+    "before": {
+      "pressure": "1",
+      "q": 54
+    },
+    "later_after": {
+      "pressure": "1",
+      "q": 53
+    }
+  },
+  "pins12_unchanged": true,
+  "changed_pins": [],
+  "four_dotenv_absent": true,
+  "head_unchanged": true,
+  "index_unchanged": true,
+  "dependencies_unchanged": true,
+  "raw_log_sha256": "3fd90b9db375aa0619985d4dd73a48f653b2747b7b9c2b74a60da2e419a85afb",
+  "biome": "PASSexit0/12files/2formatted/2informationaluseTemplate suggestionspreserved",
+  "review": {
+    "path": "/Users/ali/.codex/workflow-evidence/20261102/ordered-step-navigation/review.json",
+    "sha256": "776aef60171c836d56f9c6abc36e6b5894372828e7a5710c5bce3e221d7295ff"
+  },
+  "terminal": "Tool-ownedsession8730 explicitlyreturnedexit0; no retry. Later source/resource readback isnotanexactfullcleanup-timingorcontinuousaggregatepeakclaim.",
+  "limits": [
+    "Configuredfulltypegen/TSC/typedlintcurrentcut notrun",
+    "Browserprototype2 separate; actualapp/narrowpixels/AT/MainCI/wholeWF017 open",
+    "No DB/native/job/SQL/storage/provider behaviorchanged",
+    "Counts overlapold34 andothercuts; donotsum"
+  ]
+}

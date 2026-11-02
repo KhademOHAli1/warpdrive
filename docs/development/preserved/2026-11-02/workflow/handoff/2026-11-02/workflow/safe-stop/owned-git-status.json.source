@@ -1,0 +1,306 @@
+[
+  {
+    "xy": " M",
+    "path": "docs-site/docs/features/automations.md"
+  },
+  {
+    "xy": " M",
+    "path": "docs/workflows/CONTINUATION.md"
+  },
+  {
+    "xy": " M",
+    "path": "docs/workflows/status.md"
+  },
+  {
+    "xy": " M",
+    "path": "docs/workflows/ux-design-reference.md"
+  },
+  {
+    "xy": " M",
+    "path": "drizzle/meta/_journal.json"
+  },
+  {
+    "xy": " M",
+    "path": "src/db/schema/workflowExecutions.ts"
+  },
+  {
+    "xy": " M",
+    "path": "src/features/workflows/connectionGestures.test.ts"
+  },
+  {
+    "xy": " M",
+    "path": "src/features/workflows/connectionGestures.ts"
+  },
+  {
+    "xy": " M",
+    "path": "src/features/workflows/execution.ts"
+  },
+  {
+    "xy": " M",
+    "path": "src/features/workflows/messages/workflows.de.json"
+  },
+  {
+    "xy": " M",
+    "path": "src/features/workflows/messages/workflows.en.json"
+  },
+  {
+    "xy": " M",
+    "path": "src/features/workflows/messages/workflows.fa.json"
+  },
+  {
+    "xy": " M",
+    "path": "src/features/workflows/nodeFactory.ts"
+  },
+  {
+    "xy": " M",
+    "path": "src/features/workflows/nodeLayout.ts"
+  },
+  {
+    "xy": " M",
+    "path": "src/features/workflows/queries.ts"
+  },
+  {
+    "xy": " M",
+    "path": "src/features/workflows/readiness.ts"
+  },
+  {
+    "xy": " M",
+    "path": "src/features/workflows/registry.ts"
+  },
+  {
+    "xy": " M",
+    "path": "src/features/workflows/runControl.ts"
+  },
+  {
+    "xy": " M",
+    "path": "src/features/workflows/runDetail.ts"
+  },
+  {
+    "xy": " M",
+    "path": "src/features/workflows/ui/BindingField.tsx"
+  },
+  {
+    "xy": " M",
+    "path": "src/features/workflows/ui/BuilderWorkspace.tsx"
+  },
+  {
+    "xy": " M",
+    "path": "src/features/workflows/ui/ConnectionEditor.tsx"
+  },
+  {
+    "xy": " M",
+    "path": "src/features/workflows/ui/EdgeInspector.tsx"
+  },
+  {
+    "xy": " M",
+    "path": "src/features/workflows/ui/NodeInspector.tsx"
+  },
+  {
+    "xy": " M",
+    "path": "src/features/workflows/ui/NodePalette.tsx"
+  },
+  {
+    "xy": " M",
+    "path": "src/features/workflows/ui/NodeSummary.test.tsx"
+  },
+  {
+    "xy": " M",
+    "path": "src/features/workflows/ui/NodeSummary.tsx"
+  },
+  {
+    "xy": " M",
+    "path": "src/features/workflows/ui/RunDetailDialog.tsx"
+  },
+  {
+    "xy": " M",
+    "path": "src/features/workflows/ui/RunDialog.tsx"
+  },
+  {
+    "xy": " M",
+    "path": "src/features/workflows/ui/RunHistory.tsx"
+  },
+  {
+    "xy": " M",
+    "path": "src/features/workflows/ui/RunTrace.test.tsx"
+  },
+  {
+    "xy": " M",
+    "path": "src/features/workflows/ui/RunTrace.tsx"
+  },
+  {
+    "xy": " M",
+    "path": "src/features/workflows/ui/WorkflowCanvas.test.tsx"
+  },
+  {
+    "xy": " M",
+    "path": "src/features/workflows/ui/WorkflowCanvas.tsx"
+  },
+  {
+    "xy": " M",
+    "path": "src/features/workflows/ui/WorkflowEditor.tsx"
+  },
+  {
+    "xy": " M",
+    "path": "src/features/workflows/ui/WorkflowLibrary.tsx"
+  },
+  {
+    "xy": " M",
+    "path": "src/features/workflows/ui/WorkflowNodeCard.tsx"
+  },
+  {
+    "xy": " M",
+    "path": "src/features/workflows/worker.ts"
+  },
+  {
+    "xy": " M",
+    "path": "vitest.config.ts"
+  },
+  {
+    "xy": "??",
+    "path": "docs/workflows/lifecycle-contract.md"
+  },
+  {
+    "xy": "??",
+    "path": "drizzle/0098_workflow_duration_wait.sql"
+  },
+  {
+    "xy": "??",
+    "path": "drizzle/meta/0098_snapshot.json"
+  },
+  {
+    "xy": "??",
+    "path": "scripts/workflow-browser-seed.ts"
+  },
+  {
+    "xy": "??",
+    "path": "src/entrypoints/workflowBrowserWorker.ts"
+  },
+  {
+    "xy": "??",
+    "path": "src/features/workflows/browserFixture.test-helpers.ts"
+  },
+  {
+    "xy": "??",
+    "path": "src/features/workflows/connectionInsertion.test.ts"
+  },
+  {
+    "xy": "??",
+    "path": "src/features/workflows/delay.integration.test.ts"
+  },
+  {
+    "xy": "??",
+    "path": "src/features/workflows/delay.test-helpers.ts"
+  },
+  {
+    "xy": "??",
+    "path": "src/features/workflows/delay.test.ts"
+  },
+  {
+    "xy": "??",
+    "path": "src/features/workflows/delay.ts"
+  },
+  {
+    "xy": "??",
+    "path": "src/features/workflows/delayRecovery.integration.test.ts"
+  },
+  {
+    "xy": "??",
+    "path": "src/features/workflows/durationPublicAdmission.integration.test.ts"
+  },
+  {
+    "xy": "??",
+    "path": "src/features/workflows/durationPublicAdmission.test-helpers.ts"
+  },
+  {
+    "xy": "??",
+    "path": "src/features/workflows/durationReadiness.test.ts"
+  },
+  {
+    "xy": "??",
+    "path": "src/features/workflows/durationWaitMigration.integration.test.ts"
+  },
+  {
+    "xy": "??",
+    "path": "src/features/workflows/durationWaitMigration.test-helpers.ts"
+  },
+  {
+    "xy": "??",
+    "path": "src/features/workflows/nodeOrder.test.ts"
+  },
+  {
+    "xy": "??",
+    "path": "src/features/workflows/nodeOrder.ts"
+  },
+  {
+    "xy": "??",
+    "path": "src/features/workflows/nodePlacement.test.ts"
+  },
+  {
+    "xy": "??",
+    "path": "src/features/workflows/readinessVersions.integration.test.ts"
+  },
+  {
+    "xy": "??",
+    "path": "src/features/workflows/runStep.ts"
+  },
+  {
+    "xy": "??",
+    "path": "src/features/workflows/runtimeVersions.integration.test.ts"
+  },
+  {
+    "xy": "??",
+    "path": "src/features/workflows/runtimeVersions.test-helpers.ts"
+  },
+  {
+    "xy": "??",
+    "path": "src/features/workflows/ui/ConnectionInsertion.test.tsx"
+  },
+  {
+    "xy": "??",
+    "path": "src/features/workflows/ui/DelayFields.numbering.test.tsx"
+  },
+  {
+    "xy": "??",
+    "path": "src/features/workflows/ui/DelayFields.test.tsx"
+  },
+  {
+    "xy": "??",
+    "path": "src/features/workflows/ui/DelayFields.tsx"
+  },
+  {
+    "xy": "??",
+    "path": "src/features/workflows/ui/DurationWaitAuthoring.test.tsx"
+  },
+  {
+    "xy": "??",
+    "path": "src/features/workflows/ui/NodeOrdinals.test.tsx"
+  },
+  {
+    "xy": "??",
+    "path": "src/features/workflows/ui/NodePalette.numbering.test.tsx"
+  },
+  {
+    "xy": "??",
+    "path": "src/features/workflows/ui/RunTrace.selection.test.tsx"
+  },
+  {
+    "xy": "??",
+    "path": "src/features/workflows/ui/WaitTimestamp.tsx"
+  },
+  {
+    "xy": "??",
+    "path": "src/features/workflows/ui/WaitingRun.test.tsx"
+  },
+  {
+    "xy": "??",
+    "path": "src/features/workflows/ui/WorkflowDialogs.focus.test.tsx"
+  },
+  {
+    "xy": "??",
+    "path": "src/features/workflows/ui/WorkflowFocusFallback.test.tsx"
+  },
+  {
+    "xy": "??",
+    "path": "src/features/workflows/ui/useDialogFocus.ts"
+  }
+]

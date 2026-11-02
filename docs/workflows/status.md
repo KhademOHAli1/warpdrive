@@ -1,10 +1,177 @@
 # Visual workflow implementation status
 
+> Branch synchronization, 2 November 2026: this branch now includes main `09288d5`, including canonical0098 and its green populated-upgrade/compatibility checks. The private insertion/ordered-step follow-up remains unfinished; older “current”, unstarted and publication-pending paragraphs below are retained as dated observations. Latest static14 was withdrawn unstarted at the safe stop. Live next work is tracked in [#674](https://github.com/KhademOHAli1/warpdrive/issues/674), with the shared [restart index #80](https://github.com/KhademOHAli1/warpdrive/issues/80).
+
 > GitHub migration notice, 2 November 2026: live execution, assignments, blockers and release status are maintained in [the workflow issues](https://github.com/KhademOHAli1/warpdrive/issues?q=is%3Aissue+label%3Amodule%3Aworkflow) and [the central Warpdrive Project](https://github.com/users/KhademOHAli1/projects/3). Use [the roadmap index](https://github.com/KhademOHAli1/warpdrive/blob/main/ROADMAP.md) and [tracking guide](https://github.com/KhademOHAli1/warpdrive/blob/main/docs/delivery/tracking.md) to find the canonical issue and preserved original task ID.
 >
 > This document and its linked execution CSV/JSON records retain dated observations. Earlier references to a live register, current status or source of truth in these historical records are superseded by GitHub. Approved scope, technical decisions, acceptance criteria, dependencies, receipts and unfinished gates remain preserved; historical branch or ownership notes do not authorize current publication.
 >
 > Keep the original task rows and machine-readable schemas intact. Generate new execution snapshots from GitHub with `python3 scripts/delivery/tracking.py snapshot`; record new live progress on the canonical issue instead of maintaining another manual ledger. Source implementation, green integrated CI, user-journey acceptance, release, deployment and real provider/installation acceptance remain separate gates.
+
+## Current editor insertion checkpoint, 2 November 2026
+
+The private checkout now includes a 12-file editor insertion increment. Selecting a predecessor's
+occupied output can insert a linear Read deal, Create task or Wait while retaining the downstream
+path, existing nodes, bindings and positions. New steps use a clear available cell and open selected
+in the inspector. Conditions remain available on free outputs and from the toolbar, with explicit
+branch wiring. This increment is not delivered in Main or deployed; the separate Main delivery
+notice for the keyboard-focus increment below remains unchanged.
+
+Actual test-first evidence began with five intended RED cases and three passing controls. The first
+fix returned seven PASS and one position RED. Three additional clearance cases then returned RED
+while two bounds controls passed. The final focused run passed 34 cases across nine files in 4.78
+seconds, with full cleanup observed at 5.000395 seconds. Biome checked 12 files in 0.11 seconds,
+formatted one file and reported zero diagnostics. Two independent source reviews and the artifact
+application check also passed. These are focused source/component results, not rendered geometry,
+browser or assistive-technology acceptance.
+
+The new 335-input request runs declared Next typegen/full TSC, then configured type-aware ESLint
+on 12 changed TypeScript files and Biome on those files plus three catalogs. This includes the
+current editor increment and three browser-fixture tooling files. It is UNSTARTED and awaits a
+fresh Main START. The old static3 request was withdrawn; static11 was superseded without starting.
+The earlier qualified duration-wait core's 18.51-second static result, GUI31 and Native10 remain
+evidence for their own cuts, not full-checkout qualification of these new editor/fixture files.
+The immutable 51-file core packet and 94-file local evidence mirror are preserved.
+
+Whole WF017, the order strip, rendered geometry, browser/AT acceptance, Main exact-head CI and the
+full WF-001 through WF-042 goal remain open. Main's canonical 0098 work is tool generation only;
+this update records no accepted canonical upgrade. All earlier notices and history below are
+preserved; their older current-state language is scoped to its dated cut.
+
+## Current duration-wait checkpoint, 2 November 2026
+
+The full WF-001 through WF-042 goal remains active and incomplete. The private checkout is detached
+at 43a5fb4. The separate 13-file keyboard-focus increment is Delivered in Main at af10dc2 with
+exact-head CI 41352755179 passing 8,322 unit and 2,947 PostgreSQL tests plus required types, lint
+and builds. Application/browser/AT acceptance remains separate. The current duration-wait increment
+is not delivered in Main or deployed.
+
+The private wait contract accepts a literal integer from 1 through 525600 elapsed minutes. It does
+not coerce values or execute mapped durations. Reference syntax remains authorable. A live wait
+stores one deadline from the database clock after locking the run. Early wakeups preserve it; due
+progression checks current authority and archive state, then rereads the current deal before
+creating a linked task assigned to the initiator. Cancellation shares the run lock and clears its
+active deadline. Simulation records a projected instant and rolls the task back. Absolute dates,
+rescheduling, civil-calendar waits, automatic events and complete R1 templates remain open.
+
+WORKFLOW-PUBLIC-RUNTIME17-R2-20261102-2 passed the declared Next typegen/full TSC pipeline and
+factory typed lint/Biome in 11.68 seconds. Native17 returned 13 PASS and four intended runtime RED
+cases, with zero setup failures or unselected cases, in 6.87 seconds. All seven strict
+stored-version admission tests, five public save/publish/admit journeys and the supported v1 runtime
+control passed. The public tests cover live wait/read/task, immediate simulation/rollback, N versus
+N+1 pinning, pause/new-admission denial and the intentional archive fixture fence. Deadline and
+archive changes are explicit fixture controls, so this is not elapsed-timer or public archive-API
+proof.
+
+The runtime failures were concrete: queued schema 2, queued delay-node 2 and an early schema string
+"1" returned waiting; a due delay-node string "1" returned running instead of failed. Later negative
+post-state assertions were unreached. Final cleanup was observed after 77.506 seconds for native and
+129.307 seconds overall. All 268 then-pins and the three foreign containers were preserved, with no
+owned process left. A transient extra container disappeared naturally. Pressure was warning level 2
+with Q50-52 snapshots; local samples do not establish a continuous aggregate or PostgreSQL peak.
+
+After that RED, execution.ts validates the pinned stored definition with the existing structural
+schema before accessing nodes or edges, after current actor/owner/archive and missing-version
+checks. Fresh Native10 now passes all five runtime cases, including exact WORKFLOW_INVALID rejection
+of four unsupported versions, cleared deadlines, retained version/actor/workflow IDs,
+trigger/outputs/prior steps, no CRM effects and terminal stale delivery. Cursor retention is
+source-inspected in failRun; Native10 has no separate post-failure nextNodeId equality assertion.
+The supported numeric-v1 control still creates its linked assigned task. Missing-node denial and
+existing failure/abort behavior are preserved. This adds no current graph/reference validation or
+public-readiness dependency.
+
+The fixed ASCII bounds hint first produced two intended RED cases and two Latin controls. Its new
+ICU template then exposed a missing-argument palette consumer, reproduced by four more targeted RED
+cases. Both consumers now format the existing schema bounds using account preferences, with EN/FA/DE
+min/max placeholders. Input normalization, raw ASCII editing, stored numbers,
+invalid/reference/readonly behavior and domain limits are unchanged. All 31 affected GUI cases
+across five files now pass, including eight numbering cases and three locale authoring paths. Biome
+checked 11 files without fixes; command time was 4.61 seconds and cleanup 9.651 seconds, at normal
+pressure with Q52-53 snapshots. These counts overlap earlier cuts and must not be added together.
+This is JSDOM/component evidence, not native app, pixel, mobile-keyboard or AT proof.
+
+Jobs now use job-local BUN_OPTIONS=--no-env-file plus direct flags, Vite envDir:false, and actual
+absence of .env, .env.local, .env.test and .env.test.local before and after execution. The current
+compiler and Native10, both numbering runs and GUI31 record fresh absence. A bounded historical
+review found no contemporaneous four-file proof in earlier reviewed r2/focus records. Current
+absence is not retroactive proof; original functional results remain as observed, without blanket
+invalidation or reruns.
+
+Main accepted only the narrow archive-fence reconciliation in lifecycle-contract.md. Archive retains
+the draft, immutable versions, history and completed effects, blocks new admission, and preserves
+the later-advance fence and eligible explicit cancellation. It does not promise a global abort or
+prohibit every commit by an already-running transaction. The original draft and approved WF010 plan
+are preserved. Lifecycle commands, unarchive, locking and races remain proposed. All six Privacy
+lifecycle capabilities remain Unsupported for all four Workflow stores. Clearing the active deadline
+is not erasure; prior step and cumulative outputs remain. Main owns reviewed privacy bindings and
+inventory reconciliation at landing.
+
+Current qualification is complete for this private cut: full declared Next typegen/TSC, typed
+ESLint8 and Biome11 passed in 18.51 seconds with actual compiler cleanup at 35.351 seconds. Fresh
+WORKFLOW-RUNTIME10-NATIVE-20261102-2 then passed exactly runtime5/public5, ten cases across two
+files with no name filters, failures, skips or setup errors. Command time was 4.81 seconds; full
+cleanup including admission was observed in 18.222 seconds within its 180-second allocation. All 289
+inputs, three foreign containers, three networks, two volumes and both cached image identities were
+preserved. No owned process remained. Normal-pressure snapshots were Q54-55; local samples do not
+establish a continuous aggregate/PG peak. Main explicitly accepted the frozen SDK local-cache path
+with fresh identities; no pull, removal, prune or source policy change was performed.
+
+The earlier combined allocation passed its compiler phase but did not launch Native10: source
+inspection consumed the remaining window, native admission failed at 230.578 seconds and final
+return was observed at 370.614 seconds. No combined 300-second conformance is claimed. The compiler
+cleanup had actually completed at 35.351 seconds, and Main retained that valid static result for the
+separate fresh native-only allocation. No ID was retried or reused. The populated SQL-body upgrade
+and earlier fairness/cancellation evidence remain tied to their actual cuts; canonical
+migration/journal/snapshot and installed acceptance remain open. The older native9 cleanup
+observation also exceeded its 120-second sublimit by 21.990 seconds, with an unmeasured actual
+cleanup instant. Both caveats remain preserved.
+
+Figma R2 playback remains partial and failed its timing envelope: 309.197 seconds versus 300. Only
+DE Light library/editor interaction was verified. The static 112 frames and 20 corrected viewport
+reviews do not close full playback or WF005. Farsi, narrow/theme/scroll/keyboard/AT,
+application/provider and current Main-CI acceptance remain separate. All broader R1/R2/R3
+requirements remain active.
+
+Next: freeze the qualified increment for Main review, reconcile the canonical migration and reviewed
+privacy source bindings/inventory, then run integration checks and exact-head CI. Prepare a fresh
+synthetic app/worker/browser journey for actual elapsed-minute, native authentication, language,
+keyboard and accessibility acceptance. No old preview or closed Figma handle is reusable. Current
+receipts are workflow-runtime-version-green-compiler-observed.json,
+workflow-runtime-version-green-native10-observed.json,
+workflow-runtime-numbering-unit-green-observed.json and workflow-duration-wait-current-source.json
+in the continuation outputs. Historical cuts and failed/unstarted attempts remain in their original
+manifests.
+
+## Earlier correction, 1 November 2026 (19:35 UTC), preserved
+
+The WF-001–WF-042 roadmap remains active and incomplete. The existing managed checkout is now detached at admitted main `43a5fb4d2a6be7bbbd260855a6a8e1ce55fbf3c1`; `codex/workflow-roadmap-managed`/`92a9432` below describe an earlier continuation. Canonical local HEAD was observed at `9fb734e0129f6dcc5be69963e2aafddd0b7836ea`; current remote/CI and landing of this dirty focus increment are not established here. No fallback-checkout approval is needed. Private Bun1.4.4 dependency R3 passed and the managed dependency link now targets the task-owned `warpdrive-focus-deps-main43-20261101/node_modules`; the original shared target and preview source are preserved.
+
+Actual RED4R2 produced3intended BODY-focus failures+1control pass (6unselected skipped;6.932s,exit1,groupgone). The minimum WorkflowLibrary fix then passed final GREEN13:13tests/3files/no skips (Vitest3.21s/supervisor3.823s). Final BiomeR2 passed with zero diagnostics (0.434s), scoped ESLint13R2 passed with no diagnostics (8.929s), and the declared Next typegen→tsc typecheck pipeline passed (5.061s). All final owned groups were absent; no owned job remains. Receipts/logs are in the continuation outputs: `workflow-focus-creation-red4-r2-*`, `workflow-focus-green13-final-supervisor-receipt.json`, `workflow-focus-typecheck-final-supervisor-receipt.json`, `workflow-focus-eslint13-r2-supervisor-receipt.json`, `workflow-focus-format13-r2-supervisor-receipt.json`. Earlier initial ESLint failures/style diagnostics and resource-sampling gaps remain in the checkpoint history; these final results qualify only this working candidate, not canonical9fb or broader WF-040 application/browser/AT acceptance.
+
+The native R2 package has112primary frames and an independent pixel review of all20corrected exports closing the four captured-state/copy findings. Actual Figma playback remains terminal **partial/failed timing** at309.197s (9.197s over300s): only DE Light library→editor was verified, with remaining journeys/narrow scroll/keyboard/AT/app/provider behavior unqualified. See continuation `outputs/workflow-prototype-playback-r2-20261101/terminal.json` and `timing-and-scope-addendum.json`; WF-005 remains incomplete. No browser retry is claimed.
+
+The effective1November [operating agreement](/Users/ali/Documents/Codex/2026-10-31/warpdrive-settings-ux/WARPDRIVE-OPERATING-AGREEMENT.md) grants standing Workflow module ownership and self-serve finite focused/static checks. One owned invocation/chat: focused format/lint/unit/component<=120s/1worker; declared typegen/typecheck+scopedlint<=180s, subject to normal-pressure/>=20%memory/>=8GiBdisk preflight and<8GiB owned aggregateRSS. Heavy install/DB/browser/build/service work uses the sole integrator queue; canonical stage/commit/push remains integrator-owned. Old fresh-MAIL/per-file/hash/exact012 freeze requirements below are historical. Original preview3117/ownedworker are stopped, shared services and peer work preserved. Next: integrator landing of the13-file focus increment, then planned WF-010 lifecycle and remaining roadmap acceptance; no main integration or full roadmap completion is claimed.
+
+## Historical status and baseline evidence (preserved)
+
+The sections below retain the earlier branch/source/verification state. Their baseline evidence remains valid only for the exact old source cuts; older “current”, pending-install and source-freeze statements are superseded by the dated correction above.
+
+Updated: 1 November 2026. The managed continuation is on
+`codex/workflow-roadmap-managed`, recovered from `92a94324601a7335f4a9a42e38e53355909c93c3`
+into `/Users/ali/.codex/worktrees/workflow-roadmap-owned/warpdrive-builder-ux-20261031`.
+The attached managed checkout is available; no fallback-checkout approval is needed.
+
+The inherited `codex/workflow-builder-ux` baseline includes `d0c83e8` and fork main
+`a1a8f6d`, including the sign-in/help/recovery interface. Current fork main is `a0490c1`,
+which adds the privacy work. Integrating that main, reconciling competing local migration
+numbers and updating privacy inventory coverage remain pending. Do not overwrite peer
+calendar, settings, authentication or privacy work. No workflow changes have been merged
+into main by this work.
+
+The source preview checkout `/private/tmp/warpdrive-builder-ux-20261031` and its synthetic
+fixture are preserved. Its owned preview/consumer are stopped under the coordinated
+resource hold; the shared PostgreSQL cluster is not stopped. Further tests, builds and
+browser requalification use finite coordinated slots.
 
 ## Current duration-wait checkpoint, 2 November 2026
 
@@ -319,3 +486,13 @@ and library controls, the transactional CRM event outbox and automatic admission
 conditions and durable waits in dependency order. Expand configuration/mapping alongside
 qualified handlers, and complete all three R1 templates and release gates before claiming
 R1 production readiness. R2/R3 follow their approved prerequisites.
+
+
+## Continuation evidence, 2 November 2026: prototype tranche and step numbers
+
+This is a private follow-up candidate awaiting configured static qualification and Main integration. It does not mark a complete user journey or roadmap item delivered.
+
+- Prototype playback: DE history to waiting details and FA Dark narrow ordered steps to inspector to variable search were observed in the real Figma viewer. Five target frames, three prototype navigation clicks and two internal scroll gestures passed. The FA frame is 390 × 844; scrolling reveals lower controls while its header remains stable. The query `عنوان`, depicted focus halo, label and Apply action are visible. Actual allocation through owned-tab cleanup was 306.950 seconds; all case limits passed.
+- The viewer's AX tree proves document identity, not canvas semantics. DE's right edge was cropped at actual-size viewer scaling. FA was fitted through the visible viewer menu. This is neither actual CRM, DOM focus, keyboard nor assistive-technology acceptance. Other author/test/correction/publication and return routes remain unplayed; WF-005 stays open.
+- A step inserted into an occupied connection was appended to the stored node array. Six UI surfaces incorrectly reused that array's indexes for display. A shared dependency order now keeps the step list, canvas numbering, trace and reference/connection labels consistent without changing graph data or canvas positions/z-order. Among currently eligible nodes it retains creation priority. Draft cycles and duplicate identities remain visible for correction; runtime branch selection and publication validation are unchanged.
+- Actual test-first evidence: six UI behavior failures and six pure ordering failures were observed before the semantic fix, with controls and two earlier selector mistakes retained separately. Final affected 37 cases across 9 files passed. Biome on 12 files exited with 0 with two informational template-literal suggestions. These counts overlap prior cuts and must not be added. Current configured whole-project type generation/typecheck and typed lint, actual narrow CRM/browser/AT, Main/CI and full WF-017 acceptance remain separate gates.

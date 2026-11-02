@@ -6,6 +6,7 @@ import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
 import { useFormatters } from "@/lib/useFormatters";
 import { type ConnectionProblem, connectNodes, disconnectNodes, portsFor } from "../graphEditor";
 import { displayNodeName } from "../nodeNames";
+import { orderedWorkflowNodes } from "../nodeOrder";
 import type { WorkflowDefinition, WorkflowEdge } from "../schemas";
 
 export function EdgeInspector({
@@ -37,7 +38,7 @@ export function EdgeInspector({
     onProblem(null);
     onClose();
   }
-  const options = definition.nodes.map((node, index) => ({
+  const options = orderedWorkflowNodes(definition).map((node, index) => ({
     value: node.id,
     label: displayNodeName(node, locale) + " · " + fmt.number(index + 1),
   }));

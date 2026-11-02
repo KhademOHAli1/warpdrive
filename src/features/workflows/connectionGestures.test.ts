@@ -33,7 +33,7 @@ it("does not steal another output when reconnecting the source endpoint", () => 
     drawConnection(graph, { from: "start", to: "task", port: "next" }, graph.edges[1]),
   ).toEqual({ ok: false, error: "occupiedOutput" });
 });
-it("creates a connected step in one edit and refuses an occupied branch without orphaning it", () => {
+it("creates a connected step in one edit and preserves the downstream step when inserting", () => {
   const graph = sample();
   const node = { ...graph.nodes[2]!, id: "extra" };
   const added = appendConnectedNode(graph, node, { x: 0, y: 600 }, { from: "task", port: "next" });
@@ -42,8 +42,20 @@ it("creates a connected step in one edit and refuses an occupied branch without 
     expect(added.value.nodes).toHaveLength(4);
     expect(added.value.edges).toContainEqual({ from: "task", to: "extra", port: "next" });
   }
-  expect(
-    appendConnectedNode(graph, node, { x: 0, y: 600 }, { from: "read", port: "next" }),
-  ).toEqual({ ok: false, error: "occupiedOutput" });
+  const inserted = appendConnectedNode(
+    graph,
+    node,
+    { x: 360, y: 600 },
+    { from: "read", port: "next" },
+  );
+  expect(inserted.ok).toBe(true);
+  if (inserted.ok) {
+    expect(inserted.value.edges).toEqual([
+      graph.edges[0],
+      { from: "read", to: "extra", port: "next" },
+      { from: "extra", to: "task", port: "next" },
+    ]);
+    expect(inserted.value.nodes).toHaveLength(4);
+  }
   expect(graph.nodes).toHaveLength(3);
 });

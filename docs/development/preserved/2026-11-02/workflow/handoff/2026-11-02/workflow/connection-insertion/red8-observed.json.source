@@ -1,0 +1,27 @@
+{
+  "status": "TERMINAL_MIXED_RED5_PLUS_SELECTOR_FAILURES2",
+  "session_id": 35070,
+  "command_exit": 1,
+  "tests": 8,
+  "intended_behavior_failures": 5,
+  "test_selector_failures": 2,
+  "controls_passed": 1,
+  "setup_failures": 0,
+  "command_seconds": 2.49,
+  "vitest_seconds": 1.63,
+  "admission_to_cleanup_seconds": 2.717344,
+  "time_l_maxrss_bytes": 346177536,
+  "early_sample_rss_kib": 338288,
+  "continuous_aggregate_peak_measured": false,
+  "cleanup": {
+    "at": "2026-11-02T03:27:03.654940+00:00",
+    "owned_cwd_after": [],
+    "source_hashes_unchanged": true,
+    "all_four_dotenv_absent": true,
+    "pressure": "1",
+    "available": "The system has 38654705664 (2359296 pages with a page size of 16384).\nSystem-wide memory free percentage: 53%",
+    "log_sha256": "6d8ce531c9230948e18486e6c47d2b5ab6878b20347fde732717549caa2507dd"
+  },
+  "log": "/tmp/warpdrive-workflow-connection-insertion-red8-20261102-01.log",
+  "narrative": "Three real helper insertion/atomicity failures and two real missing occupied-output UI control failures observed before any production change. Two existing Condition controls failed only because label and hint concatenate in accessible name, defeating a word-boundary regex. Correct selectors and rerun actual baseline before production edit. Preserve this raw result/source."
+}

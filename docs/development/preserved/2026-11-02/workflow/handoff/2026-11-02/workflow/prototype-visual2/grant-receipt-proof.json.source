@@ -1,0 +1,11 @@
+{
+  "timestamp": "2026-11-02T05:35:39.177Z",
+  "type": "response_item",
+  "payload_type": "function_call_output",
+  "call_id": null,
+  "record_sha256": "7c117ea7b06e4a31013b9e4ab9a6a1338e709e6cf0e7314f148ef8289e58369b",
+  "main_source_id_present": true,
+  "exact_start_prefix": "START WORKFLOW-FIGMA-VISUAL2-20261102-1. The queue is written",
+  "source_log": "/Users/ali/.codex/sessions/2026/10/31/rollout-2026-10-31T16-38-59-01a1929d-3672-79f1-9590-279dfca4aef9.jsonl",
+  "scope": "Ownchat exactincominggrantreceipt only, boundedrecenttail."
+}

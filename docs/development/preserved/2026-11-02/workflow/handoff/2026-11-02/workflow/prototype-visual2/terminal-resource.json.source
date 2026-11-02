@@ -1,0 +1,10 @@
+{
+  "at": "2026-11-02T05:42:13.480163+00:00",
+  "pressure": "1",
+  "q": 54,
+  "admission_to_cleanup_s": 291.274147,
+  "case1_admission_to_waiting_s": 91.072147,
+  "last_pregrant_clock": "2026-11-02T05:33:33.755929+00:00",
+  "conservative_allocation_to_cleanup_upper_bound_s": 432.371071,
+  "limit": "Exact grant-receipt clock not separately captured. Case1 admission91.073s is not exact grantclock; whole600 upperbound conservative from pregrantREDreceipt. Resource endpoints only, no continuous/peakclaim."
+}

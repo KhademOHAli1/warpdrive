@@ -1,0 +1,2337 @@
+{
+  "root": "/Users/ali/.codex/workflow-evidence/20261102",
+  "files": [
+    {
+      "path": "mirror-receipt.json",
+      "bytes": 16253,
+      "sha256": "337317541f41a0998ef28da1cdc66c251a404b788fa997840ede9552107b539b"
+    },
+    {
+      "path": "prototype-playback-next.md",
+      "bytes": 8826,
+      "sha256": "dc739c753d27e946a781aa7726fdb0ff07ecb6777beefa387921a8e437613aba"
+    },
+    {
+      "path": "connection-insertion/red8-r2-observed.json",
+      "bytes": 3765,
+      "sha256": "e22bdad5cb6f3ff4bb63ff9011808f212a3c5f19801f9f3220c9032e222f38ef"
+    },
+    {
+      "path": "connection-insertion/QUALIFICATION.md",
+      "bytes": 1063,
+      "sha256": "c232d5d44339154ba697a58ba7a1c3b2b5812570d8c46b145b86376e53f2f470"
+    },
+    {
+      "path": "connection-insertion/static12-launch.json",
+      "bytes": 2299,
+      "sha256": "f16169d670322d08309c1b6f6554e6f5eedf5a328600733e1a20d0ea7ba54de2"
+    },
+    {
+      "path": "connection-insertion/static12-command-terminal.json",
+      "bytes": 4266,
+      "sha256": "999f76a3bc2080d67d006542ce705f23447e24622398c4eb8578a0ffc4f5090a"
+    },
+    {
+      "path": "connection-insertion/qualification.json",
+      "bytes": 1321,
+      "sha256": "50c4be61a79d5fdf38ae2e66b06eaa4a4836a1613291c471426b16c60fbffeab"
+    },
+    {
+      "path": "connection-insertion/placement-red8-observed.json",
+      "bytes": 2192,
+      "sha256": "f99b8633c3c3b43b136cba3aee60b6b0c74e4ce471ce06fc25b39439b741fe20"
+    },
+    {
+      "path": "connection-insertion/final-format12-admission.json",
+      "bytes": 214,
+      "sha256": "29e4945ba7f38d6a883e39000ec0d6336030c20acbb072a82557d19ef91049e0"
+    },
+    {
+      "path": "connection-insertion/static11-plan.json",
+      "bytes": 74713,
+      "sha256": "96822b01554721966d24c91e1edf08aa344f10195841ed6c58eca6be64e6ca28"
+    },
+    {
+      "path": "connection-insertion/review-final.md",
+      "bytes": 2868,
+      "sha256": "37c65df35ea60a987432a8c0a1842e01b4214656911091122b9aaf50dd784ac6"
+    },
+    {
+      "path": "connection-insertion/static12-observed.json",
+      "bytes": 1444,
+      "sha256": "21162dc9c76a619bf08dfcdb668439414b56fd0ba2c740cb844a0d7ad8d74eee"
+    },
+    {
+      "path": "connection-insertion/affected34-observed.json",
+      "bytes": 6163,
+      "sha256": "be69f44100b8853629d5c19dda0055c1313050a3896d44f756e3bb90927fc55f"
+    },
+    {
+      "path": "connection-insertion/placement-red8-cleanup.json",
+      "bytes": 1466,
+      "sha256": "7b183b05cc01b1e05b2f197bc163fcc8edb5e41754a591637c58eb58eabbc691"
+    },
+    {
+      "path": "connection-insertion/static12-readiness-refresh.json",
+      "bytes": 382,
+      "sha256": "c0cb8deb48f7771cff3e8e3c49ce531e7dfb54122ed816c0b893440e265e9899"
+    },
+    {
+      "path": "connection-insertion/docs-update.sha256",
+      "bytes": 835,
+      "sha256": "112f2b75fe52b26dcc0a97611423d342c5bb4908b1222b821c3fc500feadf8ab"
+    },
+    {
+      "path": "connection-insertion/placement-red8-preflight.json",
+      "bytes": 2467,
+      "sha256": "623f51aa32edac712d3c54be31a4491c8ac22a5d018fa59c50cc04868ed4d127"
+    },
+    {
+      "path": "connection-insertion/ready-summary.json",
+      "bytes": 1920,
+      "sha256": "72fa0aaf3ebc592864d389b723751341548c8d754ec3519be4cb5923115d86ce"
+    },
+    {
+      "path": "connection-insertion/nodeLayout-before-placement-fix.json",
+      "bytes": 456,
+      "sha256": "56d5591be80498ce76504b4c0def3cbd996d8f3e69940bc597f36a45e4150d31"
+    },
+    {
+      "path": "connection-insertion/affected29-observed.json",
+      "bytes": 4991,
+      "sha256": "bedcdaa8eb12ef8567959f2e92a6d35a1b6a966c17028d6fb14a40bb36ea4dab"
+    },
+    {
+      "path": "connection-insertion/nodeLayout.before-placement-fix.ts",
+      "bytes": 2045,
+      "sha256": "5c1db496e8f97d40e49df768ac5e4c07981c89283dc59cc2d71fd95ea89aac9f"
+    },
+    {
+      "path": "connection-insertion/clearance-red5-cleanup.json",
+      "bytes": 1979,
+      "sha256": "da3066cf77bc62910c8416280f6c7ed233d07eff55439ce34939e161845a46fd"
+    },
+    {
+      "path": "connection-insertion/static12-preflight.json",
+      "bytes": 2059,
+      "sha256": "dd2f73cb5c3edf9de28cb7487928085bfd8f668b18ed9ba05c9a3391be33efde"
+    },
+    {
+      "path": "connection-insertion/docs-update.patch",
+      "bytes": 5595,
+      "sha256": "35b53e0ea6cd0c125eb0d07c5b9387c3aa0253456ac250e7c78f8d04f3c5cc9e"
+    },
+    {
+      "path": "connection-insertion/affected34-preflight.json",
+      "bytes": 4299,
+      "sha256": "25f164145be4a9ae5924c03b04d1bf355b90a56457cf016c2439d2fb968b6eb1"
+    },
+    {
+      "path": "connection-insertion/red8-r2-cleanup.json",
+      "bytes": 2903,
+      "sha256": "6e1331942f7f0fe6d021946c52956edcf4b4f965972bee59bb328159e5e6a904"
+    },
+    {
+      "path": "connection-insertion/clearance-red5-preflight.json",
+      "bytes": 1535,
+      "sha256": "40c105416cd09e8fcb8b6602fd69d482101d1db8a16a8b11bff8899d7abe4dc5"
+    },
+    {
+      "path": "connection-insertion/clearance-red5-observed.json",
+      "bytes": 2663,
+      "sha256": "bf5216bec3f248643cb195404903a86a362f736af409863532a0d4887de005cc"
+    },
+    {
+      "path": "connection-insertion/affected-green-preflight.json",
+      "bytes": 4127,
+      "sha256": "448f1fee1e92c244f92f4fbdf4a375203478e8450ae887bed13e6533da8c51bf"
+    },
+    {
+      "path": "connection-insertion/affected-green-cleanup.json",
+      "bytes": 1384,
+      "sha256": "8ddb4e681c68c95ac8232402acb8272538499eb03b34d6e134c97011573b6149"
+    },
+    {
+      "path": "connection-insertion/red8-r2-preflight.json",
+      "bytes": 2345,
+      "sha256": "8b4309d0873f2b4207fd99765adc557bb055a223d2bed2cdfb4c8412bd900e99"
+    },
+    {
+      "path": "connection-insertion/red8-cleanup.json",
+      "bytes": 373,
+      "sha256": "2442072c5249b1403b64b2171c75ba7fe4eeb393f5ee9b68fd6fd01e0e2f473a"
+    },
+    {
+      "path": "connection-insertion/review.md",
+      "bytes": 3704,
+      "sha256": "cd5a7d039116c287d127dc16166b108ad47cef2311905ffa2c0e5e98293010a0"
+    },
+    {
+      "path": "connection-insertion/review.json",
+      "bytes": 5816,
+      "sha256": "3db2ec8ace9adbe182851926107c5b2e2d5936479cbfc851c1e3e7e2caae3d09"
+    },
+    {
+      "path": "connection-insertion/docs-update.json",
+      "bytes": 4475,
+      "sha256": "1334836b4608da7d99d1cf6a68fe31af3122c84ac3242db7a5bbcd12ecf66919"
+    },
+    {
+      "path": "connection-insertion/red8-live-sample.json",
+      "bytes": 1022,
+      "sha256": "c1d6dfc6e149f11b6d319a22fe1ccf9ace88be92521f859e9abd34e3f7d8e371"
+    },
+    {
+      "path": "connection-insertion/docs-final-observed.json",
+      "bytes": 301,
+      "sha256": "f3d5fa267e566ae9dcca5a650ca252a6d0af6fee0636bd16ce54e6a55a11460a"
+    },
+    {
+      "path": "connection-insertion/static12-cleanup.json",
+      "bytes": 1853,
+      "sha256": "a6920394ab7369dd5ea83d1515a708dba41e0d0d2322cfcb6693aef861ea182e"
+    },
+    {
+      "path": "connection-insertion/static12-request-sent.json",
+      "bytes": 413,
+      "sha256": "dd118117c08e47269ecc06d17a5c21b8ed610fb20d8687f09d8e8a17ef77f802"
+    },
+    {
+      "path": "connection-insertion/static12.log",
+      "bytes": 4924,
+      "sha256": "af6b9faeef7131041a003b541a0dc35f621d41b86b0dbd9df504d46e7b772a62"
+    },
+    {
+      "path": "connection-insertion/red8-preflight.json",
+      "bytes": 2146,
+      "sha256": "e567b8f8ef570ad50cc075a91c84e7fd1a89e75c8d021db79c6f5730d1d4261e"
+    },
+    {
+      "path": "connection-insertion/review-final.json",
+      "bytes": 4339,
+      "sha256": "9b0adfde5a4bcb66d33121fe04869adb3cf8e5402669201413fe66588211d309"
+    },
+    {
+      "path": "connection-insertion/affected34-cleanup.json",
+      "bytes": 2433,
+      "sha256": "6c3e6604efe8d174bb3e9deb4a0f9b2d5df76052631404dec6cfcf943e9b16d5"
+    },
+    {
+      "path": "connection-insertion/red8-observed.json",
+      "bytes": 1322,
+      "sha256": "d423aa3d1a718c6c6d2105e5422a630a686b50955e1d60fb94967936dab08a70"
+    },
+    {
+      "path": "connection-insertion/static12-plan.json",
+      "bytes": 75358,
+      "sha256": "ad57a1afe4f0b28b9330b58e0c75bd4f1f609721df464889d26458b198dfa4fe"
+    },
+    {
+      "path": "prototype-live-links/native12-read-code.js",
+      "bytes": 3259,
+      "sha256": "b8544197db796f4cd7ea7adb110ace7c3a31f3db5e9a82a4ca473fad5083d2a9"
+    },
+    {
+      "path": "prototype-live-links/input-text-read.json",
+      "bytes": 623,
+      "sha256": "5f5fdfd7b2f85b512e5b61956a0382af94c76024f352bd34bceee1d30df9b83d"
+    },
+    {
+      "path": "prototype-live-links/native12-read.json",
+      "bytes": 8943,
+      "sha256": "8589988d17faf0359a8214bab0a02b8f13265affe885fcd19ea3cafb6a2342e9"
+    },
+    {
+      "path": "prototype-live-links/README.md",
+      "bytes": 1847,
+      "sha256": "f5430fb47cd28bd4e2b9d21df0eddf6d69335132e530f66167d643932d5d456b"
+    },
+    {
+      "path": "prototype-live-links/observed.json",
+      "bytes": 1863,
+      "sha256": "4be9cf083c0357c8027f6b921c8956224e9fb3b84ec86e6d8537c95c7901fec2"
+    },
+    {
+      "path": "prototype-live-links/admission.json",
+      "bytes": 563,
+      "sha256": "89d643173deb06693fd7ece2f8515e8b84997beeb087323b521131d04ac6f4d8"
+    },
+    {
+      "path": "ordered-step-navigation/pure-red-preflight.json",
+      "bytes": 337,
+      "sha256": "5897b15321163a944b0269408a69b454b0b73def23ca9087ef111bb9d0fbc8f1"
+    },
+    {
+      "path": "ordered-step-navigation/CURRENT-HANDOFF.md",
+      "bytes": 1678,
+      "sha256": "365719f650c715ea5d55d81f43c5e57eb421d0aad8d511e41a062d7deaa72220"
+    },
+    {
+      "path": "ordered-step-navigation/green-affected.log",
+      "bytes": 3099,
+      "sha256": "3fd90b9db375aa0619985d4dd73a48f653b2747b7b9c2b74a60da2e419a85afb"
+    },
+    {
+      "path": "ordered-step-navigation/red-surfaces-r2-preflight.json",
+      "bytes": 505,
+      "sha256": "fb7efd1bd8469e675710a23373ff907849f87719f1c4e8d0687e1292a41dfb86"
+    },
+    {
+      "path": "ordered-step-navigation/pure-red-observed.json",
+      "bytes": 552,
+      "sha256": "f45cd76b012107b89d08054afe99d514aedc10b180498b6b3d13208ebfc0df85"
+    },
+    {
+      "path": "ordered-step-navigation/current-workflow-continuation-checkpoint.json",
+      "bytes": 112818,
+      "sha256": "15718a0992be2226409f21491eb14eac0981244a7fda426bbbe256a3bd16f3cf"
+    },
+    {
+      "path": "ordered-step-navigation/ready-summary.json",
+      "bytes": 1102,
+      "sha256": "7c237b45fbb97842dd7495c25d81d62e5f1808eb95e063e72aa2d8854e4324ad"
+    },
+    {
+      "path": "ordered-step-navigation/static14-readiness-current.json",
+      "bytes": 276,
+      "sha256": "01e5a5c06cace1a5d769bcadc3c40ecec28e96351c3316e651b23849b983a4b9"
+    },
+    {
+      "path": "ordered-step-navigation/red7-observed.json",
+      "bytes": 689,
+      "sha256": "589d3982f45af6a114482e0ce2c30baffb34a23a238ecefe5baccb2b4fe2cc10"
+    },
+    {
+      "path": "ordered-step-navigation/current-workflow-duration-wait-current-source.json",
+      "bytes": 62568,
+      "sha256": "42b3fc5a10d7c3f8f003f6233f97100120bb41cd93b9ace50d866263073a8446"
+    },
+    {
+      "path": "ordered-step-navigation/docs-append-observed.json",
+      "bytes": 984,
+      "sha256": "65098988dd55dc95b1f2b399c73ee2d5b3d87292c5ab86637b7213fd5200b8cb"
+    },
+    {
+      "path": "ordered-step-navigation/red-surfaces-r2.log",
+      "bytes": 10910,
+      "sha256": "e912d5c6d6acec9c7c17f57245972e263d0ee092be375d40ea96a309f97a3928"
+    },
+    {
+      "path": "ordered-step-navigation/green-affected-observed.json",
+      "bytes": 1413,
+      "sha256": "690e0465318cea9963f4a898a1604cbd76033c240e89d1b0d8dfac06f8046156"
+    },
+    {
+      "path": "ordered-step-navigation/red-surfaces.log",
+      "bytes": 28833,
+      "sha256": "a3f5ae0392e2be0ef8967dbd82c1f1b67abe09374228a06d6694641016c812f0"
+    },
+    {
+      "path": "ordered-step-navigation/red-surfaces-r2-observed.json",
+      "bytes": 565,
+      "sha256": "6a2f6034288af1c68600b5e9f2afb96fc5abaa449f76a186a7560bd8fe1821cb"
+    },
+    {
+      "path": "ordered-step-navigation/green-affected-preflight.json",
+      "bytes": 1590,
+      "sha256": "6342583174ef035a7f542d04cee4f93b4f6e72efdd5e3c637d28816b7a81e21b"
+    },
+    {
+      "path": "ordered-step-navigation/biome12-raw.json",
+      "bytes": 2838,
+      "sha256": "f7ccd489ceb0ff637821daffcf2958437fdb28763e53b5a54b9485e50412c446"
+    },
+    {
+      "path": "ordered-step-navigation/red7.log",
+      "bytes": 4066,
+      "sha256": "7cd154a286e4ade63a815934168418b1ff5f5a5220e0c19228ebd2a1ddf66c87"
+    },
+    {
+      "path": "ordered-step-navigation/red-surfaces-preflight.json",
+      "bytes": 1699,
+      "sha256": "85454bb246f2151fd74c702746a3be61091782dbe40806834b42ea3314124f17"
+    },
+    {
+      "path": "ordered-step-navigation/test-first-plan.json",
+      "bytes": 877,
+      "sha256": "1932b6c514f92751205749c281e5dc19199effec78fa1248687180ec62fb7bf9"
+    },
+    {
+      "path": "ordered-step-navigation/review.md",
+      "bytes": 3465,
+      "sha256": "16327a8f22b3522f759ef3f6fd93f20f2476711a6231da57f9d83c0dc47cf237"
+    },
+    {
+      "path": "ordered-step-navigation/review.json",
+      "bytes": 8698,
+      "sha256": "776aef60171c836d56f9c6abc36e6b5894372828e7a5710c5bce3e221d7295ff"
+    },
+    {
+      "path": "ordered-step-navigation/static14-plan.json",
+      "bytes": 77331,
+      "sha256": "78d7bf89f3288ec8fe71ec510cc047bbaffda65881613dcd4e755bf9c0364bc4"
+    },
+    {
+      "path": "ordered-step-navigation/pure-red.log",
+      "bytes": 9187,
+      "sha256": "60efcb431dc1f19a06b63770d0eed4eb4eb4d568ed52d48fcd17acfdd4b1a839"
+    },
+    {
+      "path": "ordered-step-navigation/handoff-availability.json",
+      "bytes": 1342,
+      "sha256": "2f57bce436481ffce566a297c2a6eb79da0f84a7c3138cbb4beb7c52529a7ad0"
+    },
+    {
+      "path": "ordered-step-navigation/red-surfaces-observed.json",
+      "bytes": 868,
+      "sha256": "7df44e5611c81f2d8edbb56e262024c587fa4f982317e4cf574be4e4ff719a00"
+    },
+    {
+      "path": "ordered-step-navigation/red7-preflight.json",
+      "bytes": 583,
+      "sha256": "7bc1eaef7aba211760134a842f9eb874689a647643033828a47dba570978fe40"
+    },
+    {
+      "path": "browser-canonical-basis/browser-canonical-basis.patch",
+      "bytes": 370111,
+      "sha256": "1c0ef9995def97f4c28731db35fc0c919eddccabf3b1bcb8fe3c36e98de3f5a9"
+    },
+    {
+      "path": "browser-canonical-basis/prefix-comparison.json",
+      "bytes": 42130,
+      "sha256": "8de1f2336b56b5c2db61f60fcb680807cb398a3c724dda90c7e4fc7070fcef31"
+    },
+    {
+      "path": "browser-canonical-basis/independent-review.json",
+      "bytes": 7241,
+      "sha256": "f3454dba9a57286b0da659001e5c20b5a3c263ccb0185e7ff5776a24f1938e28"
+    },
+    {
+      "path": "browser-canonical-basis/independent-review.md",
+      "bytes": 5291,
+      "sha256": "89014a22b887c91c6191ab5422a849fb3169eb2995e6f2b01cdeb6d3e47a3073"
+    },
+    {
+      "path": "browser-canonical-basis/loader-after-raw-tool.json",
+      "bytes": 992,
+      "sha256": "c3728ad20dd99752b8821bba328b4c80ccccbce83632d6d7b8bba970c7302984"
+    },
+    {
+      "path": "browser-canonical-basis/loader-before-observed.json",
+      "bytes": 780,
+      "sha256": "4ee9f47e187601bf353e42c0129f17385c5b1198922776fe32c4e9fe1136b12e"
+    },
+    {
+      "path": "browser-canonical-basis/loader-after-observed.json",
+      "bytes": 864,
+      "sha256": "1e71532417e34a07ee807bec8f36e66d8c273c5ac4c2dd23f80f70b4cd0ebe34"
+    },
+    {
+      "path": "browser-canonical-basis/read-normal-source.ts",
+      "bytes": 469,
+      "sha256": "253e8de77997008791716465c8fda5f77d344f692339d8339770cdb4d4422395"
+    },
+    {
+      "path": "browser-canonical-basis/loader-before-preflight.json",
+      "bytes": 288,
+      "sha256": "ed66f0c8f9d44e5afee5ddc9848e98427d6ea3df669b120904bebe5f2ee84089"
+    },
+    {
+      "path": "browser-canonical-basis/README.md",
+      "bytes": 5399,
+      "sha256": "c68e36a57bfacf391660e5a3edf6781c9f1ef9beb324e36fca6eb9c1066c5d0c"
+    },
+    {
+      "path": "browser-canonical-basis/manifest.json",
+      "bytes": 7271,
+      "sha256": "d08dd462b7841b1f799e65cb64c87eecd37f897fab61f1e1257d989c17f8f881"
+    },
+    {
+      "path": "browser-canonical-basis/metadata-comparison.json",
+      "bytes": 2301,
+      "sha256": "c53006f701d64ad8ce428da80018d0e382fbe87566ba18e5d3b9b2a0029e896f"
+    },
+    {
+      "path": "browser-canonical-basis/adoption-review.md",
+      "bytes": 4379,
+      "sha256": "edaa78919ed57ab982831bfd802dab4e07c4a0fee673359ff4ed8e8c2111933c"
+    },
+    {
+      "path": "browser-canonical-basis/adoption-review.json",
+      "bytes": 5997,
+      "sha256": "3cf44b82a41e69bb6e466d6d3f0fbe7426969b7fdfb84e33ec2c6547c019cc8e"
+    },
+    {
+      "path": "prototype-return-preflight/README.md",
+      "bytes": 2526,
+      "sha256": "23031951344303330e3403d3a95721994a8048c1840d292ea9f08268fdb19bb5"
+    },
+    {
+      "path": "prototype-return-preflight/next-physical-steps.json",
+      "bytes": 685,
+      "sha256": "23952d536a3c13595cbef65ec97aecbbfe5755a0ce5213a0b837a4c235b2dac6"
+    },
+    {
+      "path": "prototype-return-preflight/playback-next.md",
+      "bytes": 4493,
+      "sha256": "515a226c9bb84b3ab810842059ad39357a462d3ec9318af0c2695b77dd882269"
+    },
+    {
+      "path": "prototype-return-preflight/native-read-code.js",
+      "bytes": 5507,
+      "sha256": "83cfe618634d05011aaff695cbb0689e2dd1154cef8034a4e4198837454fa97f"
+    },
+    {
+      "path": "prototype-return-preflight/manifest.json",
+      "bytes": 6436,
+      "sha256": "01e3a8f17064af6dfb14e6fae0f98f0f3c457707f50a6ea93fbb4ea13a566fca"
+    },
+    {
+      "path": "prototype-return-preflight/tool-result.json",
+      "bytes": 13333,
+      "sha256": "bfcc536a226af952ea2a0cd0a85d43e3026ec884b05dcf32739d6c1049a66e72"
+    },
+    {
+      "path": "prototype-return-preflight/native-read.json",
+      "bytes": 20760,
+      "sha256": "0449309e976720f5631233ae8bd295ffcfaaa31d893f81b8a91c9ef7b1b9a00a"
+    },
+    {
+      "path": "duration-upgrade-lint-fix/duration-upgrade-lint-fix.patch",
+      "bytes": 1745,
+      "sha256": "adc1f3674b8414a900e69532ffe53b57842d1c92910e3b179763fcf2c30840c2"
+    },
+    {
+      "path": "duration-upgrade-lint-fix/README.md",
+      "bytes": 1654,
+      "sha256": "a27b13ebeee7320f161d44af5339371d149d968826b3a1327d7c58fc58f37db4"
+    },
+    {
+      "path": "duration-upgrade-lint-fix/manifest.json",
+      "bytes": 3577,
+      "sha256": "bf13edc05a7bca2e2fe1d2ac532c5f7792a057f9d80d8a9ba573dab9a47740c2"
+    },
+    {
+      "path": "duration-upgrade-lint-fix/original-durationWaitMigration.test-helpers.ts",
+      "bytes": 10860,
+      "sha256": "a61a604884b9577accedbb3e06643603cf2b952274a7e3f24bc2fba6589e0a1e"
+    },
+    {
+      "path": "duration-upgrade-lint-fix/root-review.json",
+      "bytes": 795,
+      "sha256": "aba7abfe7158e2f3255a1527d6f65444f042f77b9f890442da34c2a6e5d4a87d"
+    },
+    {
+      "path": "duration-wait-qualified/main-handoff-sent.json",
+      "bytes": 564,
+      "sha256": "2754428b1c873d2f5f9cd8f9fe62d51e3e319a1909dad3ca539ee6e2f28f5630"
+    },
+    {
+      "path": "duration-wait-qualified/README.md",
+      "bytes": 6580,
+      "sha256": "85479fe9a9a65cb6597cbb50b05fc33275d6b35471d7711001f6035a9a766b24"
+    },
+    {
+      "path": "duration-wait-qualified/review-observed.json",
+      "bytes": 1666,
+      "sha256": "e5524355d0b875fe9240bdcce4036d83409335909c28dab12cdb20d2ae6a02cb"
+    },
+    {
+      "path": "duration-wait-qualified/duration-wait.patch",
+      "bytes": 241415,
+      "sha256": "cfc049520dec221d80a8f2015eae1dd281170fba90eefe65ec19f513aa8ddae2"
+    },
+    {
+      "path": "duration-wait-qualified/manifest.json",
+      "bytes": 77205,
+      "sha256": "c901bc85335a8a938704fc38d74a00e3a4c5d4dd4a3523e98225e6bf0412ceb1"
+    },
+    {
+      "path": "first-app-journey/plan.json",
+      "bytes": 6910,
+      "sha256": "023fd8567a4b1567997901566a324c6061cf0c9663f2641dfbade29fd3c8900e"
+    },
+    {
+      "path": "first-app-journey/RUNBOOK.md",
+      "bytes": 16478,
+      "sha256": "b369984b14842e9b836c5f88f10134c64836658db34bd68f82699afaeca80b3d"
+    },
+    {
+      "path": "first-app-journey/provision-pg.mjs",
+      "bytes": 4282,
+      "sha256": "024c1e7d0ac7e16869be49aabcc34d889a3131d98ce45314406c3c0daa8ca1bf"
+    },
+    {
+      "path": "first-app-journey/SDK-SOURCE.md",
+      "bytes": 4827,
+      "sha256": "0ceb8dd72fe3d075db0cf49adbe97e414cbd0094360d58ca08a0f9ef7074f1a0"
+    },
+    {
+      "path": "first-app-journey/ADDENDUM.md",
+      "bytes": 4101,
+      "sha256": "fc8b6e5607ca77bfcf1babe6ba0cb5e9a3da734401bfd5e0efbed34370e4de22"
+    },
+    {
+      "path": "first-app-journey/manifest.json",
+      "bytes": 7677,
+      "sha256": "aafaed02acf1ed2b64065811ace18c8e19ba5c721c33586971750b8dcae006c4"
+    },
+    {
+      "path": "first-app-journey/command-templates.zsh",
+      "bytes": 6695,
+      "sha256": "cb1360529db632a48f4c36488cf6d47012f51655066f16109131434305869e5c"
+    },
+    {
+      "path": "first-app-journey/addendum-manifest.json",
+      "bytes": 1270,
+      "sha256": "708ede5e946de819f37a6c7543bb8219dc55e50c68f4e3be83ed0370ebde87c0"
+    },
+    {
+      "path": "prototype-visual2/fa-ordered-scroll-down-ax.txt",
+      "bytes": 641,
+      "sha256": "d4da0cbe38e87f17d78cbe70869ea5bbbe0045dfcd91e6eb5363d6d85d954e97"
+    },
+    {
+      "path": "prototype-visual2/source-freeze-readback.json",
+      "bytes": 380,
+      "sha256": "7c22650ace56810182de60ac8b863f94f079494eb53262a622882943b541777e"
+    },
+    {
+      "path": "prototype-visual2/grant-receipt-proof.json",
+      "bytes": 545,
+      "sha256": "edc583cd178bbe9a350a3b347b4382b04b1c320c975a461ef96572b3dd7d28c5"
+    },
+    {
+      "path": "prototype-visual2/fa-inspector.png",
+      "bytes": 22816,
+      "sha256": "200061377d45d3fb58b567409894b0dd8cbcde796975c85dd4b646075c8a3176"
+    },
+    {
+      "path": "prototype-visual2/fa-ordered-fit.png",
+      "bytes": 38159,
+      "sha256": "c1b6677e1c8b929303db55ad17ec79ac5b9d44e6a05c4c7dc285a751d6437bfd"
+    },
+    {
+      "path": "prototype-visual2/fa-ordered-scroll-up.png",
+      "bytes": 29079,
+      "sha256": "6ac111a3f3d072a3f5d82b947a2c08a0028abd8a8bab8139a45ee847ed05d8e4"
+    },
+    {
+      "path": "prototype-visual2/fa-design-loaded-ax.txt",
+      "bytes": 22883,
+      "sha256": "1dfeff889aa9c9d684a7a1f2c64244996c7cffb665ca15e4d18382f06fe7c8b4"
+    },
+    {
+      "path": "prototype-visual2/fa-ordered-initial.png",
+      "bytes": 41252,
+      "sha256": "87e80ad3220a5aa4141503d8ec089516efb3805a8bd901b4378835c13d67ef50"
+    },
+    {
+      "path": "prototype-visual2/owned-tab-cleanup.json",
+      "bytes": 653,
+      "sha256": "8a63dca288b99166d6864092f6127d72986d065220cb14567b29e7b1d7bf1f89"
+    },
+    {
+      "path": "prototype-visual2/fa-variable-search.png",
+      "bytes": 26244,
+      "sha256": "0642853e13214cea5e27145b9e9b4454ee3a9fe28500cda33367b1c024b3e539"
+    },
+    {
+      "path": "prototype-visual2/fa-ordered-scroll-down.png",
+      "bytes": 37145,
+      "sha256": "5503b032b2b12f20e3893451e28ffa92125e044ff2497f806a2412b27778cae8"
+    },
+    {
+      "path": "prototype-visual2/fa-inspector-ax.txt",
+      "bytes": 1263,
+      "sha256": "4f9115fd3251a6ee28be5c73e3c888f43b18c087bee98bbd969ff36dee7901ff"
+    },
+    {
+      "path": "prototype-visual2/de-history.png",
+      "bytes": 74595,
+      "sha256": "3a5163c422f462c3cfc29bb4c633a04ec304f0f6566eb329c74b57e1d72c4829"
+    },
+    {
+      "path": "prototype-visual2/fa-ordered-fit-ax.txt",
+      "bytes": 1973,
+      "sha256": "c34a23042c2012edd6ae3f582e7c4f7e3dcddabb821a2df7e55d63f54142c5e0"
+    },
+    {
+      "path": "prototype-visual2/terminal-resource.json",
+      "bytes": 510,
+      "sha256": "d2f0a14fcffd5b99cd16973ecf724fa199436f5825a4193810ea951ac104948d"
+    },
+    {
+      "path": "prototype-visual2/fa-ordered-scroll-up-ax.txt",
+      "bytes": 1274,
+      "sha256": "4755cd1e5140fc379faa8eb150f5691027f9525d6ca1b9c5fcb28e6039687c16"
+    },
+    {
+      "path": "prototype-visual2/fa-design-ax.txt",
+      "bytes": 795,
+      "sha256": "c0cd16365933e05ce8631a96f28ebbaa3418a08be51eb16cd14e82a3fa627ab0"
+    },
+    {
+      "path": "prototype-visual2/fa-variable-search-ax.txt",
+      "bytes": 1263,
+      "sha256": "3ab8a681fa24386b8fa918ee219b9b2bf35090f44862c30916d9f612f7c2053e"
+    },
+    {
+      "path": "prototype-visual2/fa-ordered-initial-ax.txt",
+      "bytes": 1730,
+      "sha256": "aaba35348e444bbcc4d67eb17c13b693e6d8f31051adae451cfc2c50fb181644"
+    },
+    {
+      "path": "prototype-visual2/de-waiting.png",
+      "bytes": 86294,
+      "sha256": "f2f05aa77e262549ff3c4197095a2c4709964c93c4497e82ab859f2a3e502cc9"
+    },
+    {
+      "path": "prototype-visual2/grant-receipt-log-match.json",
+      "bytes": 670,
+      "sha256": "7af943a998a27717efdec04dfeda9538b6aa59b19bde6c3a4e3f2a9ff33b3e23"
+    },
+    {
+      "path": "prototype-visual2/review.md",
+      "bytes": 4540,
+      "sha256": "f4de2936a16949f88f802f51cd094567498284ed3906ded71034cd4369dff6e6"
+    },
+    {
+      "path": "prototype-visual2/review.json",
+      "bytes": 14822,
+      "sha256": "fc61c55ce75a560fb369f66ca2170667b50dfc42e4796dec9a76f61cdec93c12"
+    },
+    {
+      "path": "prototype-visual2/observed.json",
+      "bytes": 4993,
+      "sha256": "0e7839c285a87f6181d88a87113cbd6b929b3144d78178c26df7c2a0a9749865"
+    },
+    {
+      "path": "prototype-visual2/de-waiting-ax.txt",
+      "bytes": 1117,
+      "sha256": "042cd654bb31c783ae34f3bb439efbc49315b46b5b9314f380781cf8cee10cf7"
+    },
+    {
+      "path": "prototype-visual2/exact-timing-addendum.json",
+      "bytes": 771,
+      "sha256": "bfdf8b3b3b09f8eb907a74a899a324c9e4e24f187b3687ac2dd725badfbc4f31"
+    },
+    {
+      "path": "prototype-visual2/admission.json",
+      "bytes": 335,
+      "sha256": "a006a2f6e9b79a63cdd057e2bc80c7071911b03d587f3f362e8094f24ef3894c"
+    },
+    {
+      "path": "prototype-visual2/de-history-ax.txt",
+      "bytes": 679,
+      "sha256": "9c051a6023240b150f40eae06a606f3c9c8cdc47398e04157de40137ac4585ca"
+    },
+    {
+      "path": "duration-wait-qualified/evidence/workflow-runtime-version-green-compiler-observed.json",
+      "bytes": 1034,
+      "sha256": "e209875f3c1c66f899883876e0693b4adf12786dbe463b10088db5297f6cf005"
+    },
+    {
+      "path": "duration-wait-qualified/evidence/workflow-public-runtime-native17-r2-observed.json",
+      "bytes": 2597,
+      "sha256": "25beee7c88a7d1a1161aa39909c03291b36da5e31af051f95624904a0f18806e"
+    },
+    {
+      "path": "duration-wait-qualified/evidence/workflow-dotenv-historical-proof-review-20261102.md",
+      "bytes": 14099,
+      "sha256": "d2527f8dc9b89c4d15650fafb42dcc9df0b99101f4da3f81741ec8dbf0c04606"
+    },
+    {
+      "path": "duration-wait-qualified/evidence/workflow-runtime-numbering-unit-green-observed.json",
+      "bytes": 2453,
+      "sha256": "0711c6ef83813374db0263ca43630889f9d608322198a3e9604c92b7c545ac9a"
+    },
+    {
+      "path": "duration-wait-qualified/evidence/workflow-wait-data-impact-20261101.json",
+      "bytes": 126155,
+      "sha256": "a69bde638daddb7ce098907068b2df65bc88bf36646b4f3ec2d05f15d5ba7ee1"
+    },
+    {
+      "path": "duration-wait-qualified/evidence/workflow-wait-data-impact-20261101.md",
+      "bytes": 48922,
+      "sha256": "4a082a87870e7fd5ef02ff7a78d9f7caca3e9155469027652743abe5efec256d"
+    },
+    {
+      "path": "duration-wait-qualified/evidence/workflow-clock-version-native9-observed.json",
+      "bytes": 1832,
+      "sha256": "d904dd1d5a164b9144fc10f61e7f0e601a469894544a80b473b6b3cd50125cf1"
+    },
+    {
+      "path": "duration-wait-qualified/evidence/workflow-runtime-version-green-native10-unstarted-release.json",
+      "bytes": 858,
+      "sha256": "e77ab071f6f907d0ba646d5507aad86e9b49466219fc0d375fb9c57d95c41c5f"
+    },
+    {
+      "path": "duration-wait-qualified/evidence/workflow-runtime-version-green-native10-observed.json",
+      "bytes": 3336,
+      "sha256": "3f9227144b3d31e290cd366bc8892e094299e1402f2f659c070dcc52663e8c84"
+    },
+    {
+      "path": "duration-wait-qualified/evidence/workflow-library-lifecycle-reconciliation-approval.json",
+      "bytes": 883,
+      "sha256": "46bded6b27af8a9ea6b366c28cebf99532c24642f21c0677c59e1308d41a7f53"
+    },
+    {
+      "path": "duration-wait-qualified/base-tree/vitest.config.ts",
+      "bytes": 1412,
+      "sha256": "eb300f409ce431f415b89619bb5c3150e63ff14b1c6864a52f66dfe56989e6f7"
+    },
+    {
+      "path": "duration-wait-qualified/payload/vitest.config.ts",
+      "bytes": 1429,
+      "sha256": "dfd48deb5886d895c579cfb5be4d0060b246c0a1add433e1467d3a999e701005"
+    },
+    {
+      "path": "duration-wait-qualified/payload/drizzle/0100_workflow_duration_wait.sql",
+      "bytes": 689,
+      "sha256": "ba65deaf21f4f5c38cd7414afd851f91a14b5c2aed3e758bb75b36b56b3a63ef"
+    },
+    {
+      "path": "duration-wait-qualified/payload/drizzle/meta/_journal.json",
+      "bytes": 14522,
+      "sha256": "e7aac31d2ff78fdf19920daa08c7a1ec9613bd60e1bce8e32d457f210dc5ae92"
+    },
+    {
+      "path": "duration-wait-qualified/payload/src/db/schema/workflowExecutions.ts",
+      "bytes": 2991,
+      "sha256": "2739e061068d58fc6854a25d7f5c626b9483efd207378fd9d27e6966553fa066"
+    },
+    {
+      "path": "duration-wait-qualified/payload/src/features/workflows/runStep.ts",
+      "bytes": 1956,
+      "sha256": "02413024451583b1414f5516e76597eb3b2a449707d7425658bc46b63abb245a"
+    },
+    {
+      "path": "duration-wait-qualified/payload/src/features/workflows/delay.test-helpers.ts",
+      "bytes": 2444,
+      "sha256": "64e74c430603c53de615cb612bc2b704272c312b90fd685d25feb36b423034e4"
+    },
+    {
+      "path": "duration-wait-qualified/payload/src/features/workflows/readiness.ts",
+      "bytes": 1533,
+      "sha256": "17fe18d43c4563d5aea6a16a14ca6482c2050a8589a936414f654b26744d6f1e"
+    },
+    {
+      "path": "duration-wait-qualified/payload/src/features/workflows/runtimeVersions.test-helpers.ts",
+      "bytes": 7906,
+      "sha256": "08171559f2a1146265c00e3159cc897620b3766e7fa14aa45ffc230dbef78a8d"
+    },
+    {
+      "path": "duration-wait-qualified/payload/src/features/workflows/queries.ts",
+      "bytes": 3750,
+      "sha256": "26af9a2a5fc3cf3729eadc81a42c9962bb735b5464a8e7cc03092e94c21e5e85"
+    },
+    {
+      "path": "duration-wait-qualified/payload/src/features/workflows/durationPublicAdmission.test-helpers.ts",
+      "bytes": 6477,
+      "sha256": "474ce96dc770708f629e1b23e201708909766053fa1a6c32b96436e88edad3f7"
+    },
+    {
+      "path": "duration-wait-qualified/payload/src/features/workflows/nodeFactory.ts",
+      "bytes": 1768,
+      "sha256": "b24b728b40f3e2de87cd1dac6c8acb8ec4358bee29f350b429637bcbf3b8c376"
+    },
+    {
+      "path": "duration-wait-qualified/payload/src/features/workflows/readinessVersions.integration.test.ts",
+      "bytes": 6728,
+      "sha256": "aa4bedbff0e97f69e91689f9e41f6cd948a415bd63fbbd947e07ee7e4ffc086e"
+    },
+    {
+      "path": "duration-wait-qualified/payload/src/features/workflows/delay.ts",
+      "bytes": 730,
+      "sha256": "96979424469010ede1fa0e5b311de6f2f6bb6fee0de1b5033c9c0ec5b07f3062"
+    },
+    {
+      "path": "duration-wait-qualified/payload/src/features/workflows/runtimeVersions.integration.test.ts",
+      "bytes": 3705,
+      "sha256": "7f636432af0e0efa608ddc15e773159c4134dc6eec9f1a98da3d1abf0a247870"
+    },
+    {
+      "path": "duration-wait-qualified/payload/src/features/workflows/delay.test.ts",
+      "bytes": 3140,
+      "sha256": "806a956b77e82c0b1ae9b406973ac7e7f12dd98fbc6b9a9cb5495ff87adada1e"
+    },
+    {
+      "path": "duration-wait-qualified/payload/src/features/workflows/durationPublicAdmission.integration.test.ts",
+      "bytes": 9084,
+      "sha256": "e627fe2672fac003899f4204ae8321206715dc0adfa37c15e2307090819f3e92"
+    },
+    {
+      "path": "duration-wait-qualified/payload/src/features/workflows/runControl.ts",
+      "bytes": 1927,
+      "sha256": "f148af993e57bc4f2b95bced9b56ea3d9529ae647d34ab94d7367752ae245057"
+    },
+    {
+      "path": "duration-wait-qualified/payload/src/features/workflows/delayRecovery.integration.test.ts",
+      "bytes": 10546,
+      "sha256": "2800c4924a0c7781e87ed06bdf3e55e5391b2cd1230877d6f426f8d3fa05a443"
+    },
+    {
+      "path": "duration-wait-qualified/payload/src/features/workflows/registry.ts",
+      "bytes": 2724,
+      "sha256": "593c8b7e8013d9f1da1c99f138980c55b2e65dc614bd448a4ce110c35a867396"
+    },
+    {
+      "path": "duration-wait-qualified/payload/src/features/workflows/durationReadiness.test.ts",
+      "bytes": 1954,
+      "sha256": "02f7a361f63677e48c55bdb2e6b92deacc44fc0f8052b697aee2779191e8ed01"
+    },
+    {
+      "path": "duration-wait-qualified/payload/src/features/workflows/runDetail.ts",
+      "bytes": 2370,
+      "sha256": "5737293c50a9e42ffb057673c192161e70ddd9db789578ed55126f31012e7aff"
+    },
+    {
+      "path": "duration-wait-qualified/payload/src/features/workflows/delay.integration.test.ts",
+      "bytes": 6098,
+      "sha256": "86192c8cba0ed258e589576046251cc9123634a68b2434d244e09df402f467b4"
+    },
+    {
+      "path": "duration-wait-qualified/payload/src/features/workflows/execution.ts",
+      "bytes": 3959,
+      "sha256": "c72161a7b12054f6112280d5416274e9bc2b96bf25b59919403de5c96c22ad7e"
+    },
+    {
+      "path": "duration-wait-qualified/payload/src/features/workflows/durationWaitMigration.test-helpers.ts",
+      "bytes": 10860,
+      "sha256": "a61a604884b9577accedbb3e06643603cf2b952274a7e3f24bc2fba6589e0a1e"
+    },
+    {
+      "path": "duration-wait-qualified/payload/src/features/workflows/worker.ts",
+      "bytes": 3502,
+      "sha256": "b6957f7910a8c36050d1942edad79ebc497f875304b70689237824ae3297d1c0"
+    },
+    {
+      "path": "duration-wait-qualified/payload/src/features/workflows/durationWaitMigration.integration.test.ts",
+      "bytes": 4849,
+      "sha256": "377a73a938d8dd7ec4cda7715cce835812334212528c8c1859ba24b9e7586b0f"
+    },
+    {
+      "path": "duration-wait-qualified/payload/src/features/workflows/ui/NodePalette.numbering.test.tsx",
+      "bytes": 2358,
+      "sha256": "914ad0bfb7b8858089ec13caa0b15a2fabd89c83fccade593b91a37a4270486b"
+    },
+    {
+      "path": "duration-wait-qualified/payload/src/features/workflows/ui/NodePalette.tsx",
+      "bytes": 4394,
+      "sha256": "b080356e9d05e34c14a1003f3af4feda47de9e54ae195c1aced24e9c8cd4b8bb"
+    },
+    {
+      "path": "duration-wait-qualified/payload/src/features/workflows/ui/RunTrace.tsx",
+      "bytes": 6750,
+      "sha256": "522daf1931aa062a1590cc179ef1c785da97f56218d59ec198d2d34f5700a75a"
+    },
+    {
+      "path": "duration-wait-qualified/payload/src/features/workflows/ui/WaitingRun.test.tsx",
+      "bytes": 7595,
+      "sha256": "f70a0eb596db52657bea001b9b2aa113470946f682f639e80560a96f4cb99648"
+    },
+    {
+      "path": "duration-wait-qualified/payload/src/features/workflows/ui/RunDetailDialog.tsx",
+      "bytes": 1829,
+      "sha256": "c0e3b8ff87d09b35828a07d7dd5326ea568b90350c8cea0725f71e37c81c56ca"
+    },
+    {
+      "path": "duration-wait-qualified/payload/src/features/workflows/ui/NodeSummary.test.tsx",
+      "bytes": 2832,
+      "sha256": "6471ad823719f3ba1e390b85b7f366677b1587d31b39a4d0c3c2fe05f37c0e35"
+    },
+    {
+      "path": "duration-wait-qualified/payload/src/features/workflows/ui/WorkflowNodeCard.tsx",
+      "bytes": 4954,
+      "sha256": "fce5c4ea99c23ae22daca7df7ea2c54e0cde93c195c4a6151036b17cc74b7748"
+    },
+    {
+      "path": "duration-wait-qualified/payload/src/features/workflows/ui/DelayFields.test.tsx",
+      "bytes": 5486,
+      "sha256": "61226e6f0b081a82a82ec530f13b8133179ff6201c4f63de2e3710fe83143fea"
+    },
+    {
+      "path": "duration-wait-qualified/payload/src/features/workflows/ui/RunTrace.test.tsx",
+      "bytes": 1538,
+      "sha256": "351ab0823dbfdea98a8275efe80c5a1b35807eedfe179870a133647f3ca82ad4"
+    },
+    {
+      "path": "duration-wait-qualified/payload/src/features/workflows/ui/WaitTimestamp.tsx",
+      "bytes": 766,
+      "sha256": "f3a4f9fcd77fa9a1ab4c8e5a1ef96668b21d692bd41e68db30c782df250d923d"
+    },
+    {
+      "path": "duration-wait-qualified/payload/src/features/workflows/ui/RunHistory.tsx",
+      "bytes": 5892,
+      "sha256": "0d26853acc70e7e7be7dbef2521aea006febf00fc5375b6469abd1bbac6f736c"
+    },
+    {
+      "path": "duration-wait-qualified/payload/src/features/workflows/ui/NodeInspector.tsx",
+      "bytes": 4930,
+      "sha256": "01404b7cccd407574c181e9a8b4c17dfb25e688623a434f13a217843ff9b9ab2"
+    },
+    {
+      "path": "duration-wait-qualified/payload/src/features/workflows/ui/NodeSummary.tsx",
+      "bytes": 3117,
+      "sha256": "553d1cc6da747d84e90f066b448e70f9df042f8ae52cde7de291a0d0b98885c0"
+    },
+    {
+      "path": "duration-wait-qualified/payload/src/features/workflows/ui/DurationWaitAuthoring.test.tsx",
+      "bytes": 5269,
+      "sha256": "c28fb9b33dc4b6ec275bea80c3fce2957f0b5987ffb83fde86b92b483893187c"
+    },
+    {
+      "path": "duration-wait-qualified/payload/src/features/workflows/ui/RunTrace.selection.test.tsx",
+      "bytes": 1832,
+      "sha256": "fafd9882d2d6b3ca5fdad21372bbfdb318857a197e4e813f8e3cd88d9a7f4b6b"
+    },
+    {
+      "path": "duration-wait-qualified/payload/src/features/workflows/ui/DelayFields.numbering.test.tsx",
+      "bytes": 2807,
+      "sha256": "0d37d0deefb7e6e7094d22c9b10b05a36fa71a6d1749eee926a726d84dbc2620"
+    },
+    {
+      "path": "duration-wait-qualified/payload/src/features/workflows/ui/DelayFields.tsx",
+      "bytes": 2281,
+      "sha256": "c6e48c3c58a37f120f28fc324804d2ec881c3f3974ae47016f9b030e567b2522"
+    },
+    {
+      "path": "duration-wait-qualified/payload/src/features/workflows/messages/workflows.en.json",
+      "bytes": 10504,
+      "sha256": "4fb9fd5b286d050d897cf8009fce5e9ff8b950d95df2ccbac01d871a544dce12"
+    },
+    {
+      "path": "duration-wait-qualified/payload/src/features/workflows/messages/workflows.de.json",
+      "bytes": 12545,
+      "sha256": "7473dbc37c2e3f87ea80c4b89ef96e1e44d93a7576472af70328f17c5b775029"
+    },
+    {
+      "path": "duration-wait-qualified/payload/src/features/workflows/messages/workflows.fa.json",
+      "bytes": 16189,
+      "sha256": "99d684e23e3390703bc8040895722c51f56cd7328bcdc056320f7848c351820d"
+    },
+    {
+      "path": "duration-wait-qualified/payload/docs/workflows/status.md",
+      "bytes": 35321,
+      "sha256": "a55a8e715a7c5a5c83360db1476b3402eae33c5a7ae171dc113e4da2adaf5683"
+    },
+    {
+      "path": "duration-wait-qualified/payload/docs/workflows/ux-design-reference.md",
+      "bytes": 30948,
+      "sha256": "121888ca46143e7e34f8fbb743fd62529e50c9abe10685eb135cc76ff1230352"
+    },
+    {
+      "path": "duration-wait-qualified/payload/docs/workflows/CONTINUATION.md",
+      "bytes": 28567,
+      "sha256": "81ff9aa58029dec755f2ec938a8f68744ef7ef662959f22a9666e1071473cf58"
+    },
+    {
+      "path": "duration-wait-qualified/payload/docs/workflows/lifecycle-contract.md",
+      "bytes": 22623,
+      "sha256": "ae5096330793111e20dbfea9b1cee8a093202dbd18cdd61dfe7a05363607d31a"
+    },
+    {
+      "path": "duration-wait-qualified/payload/docs-site/docs/features/automations.md",
+      "bytes": 9495,
+      "sha256": "83e5d475bfefe3f0f057b041a814bc1c6a8abe4da7d208665957b18dacaa95c7"
+    },
+    {
+      "path": "duration-wait-qualified/base-tree/drizzle/meta/_journal.json",
+      "bytes": 14370,
+      "sha256": "d1d8fbde03d5671d7bc5e21aaf1cbdd623039bc9c8894669c5b5a6d900d0d2ac"
+    },
+    {
+      "path": "duration-wait-qualified/base-tree/src/db/schema/workflowExecutions.ts",
+      "bytes": 2552,
+      "sha256": "7a90f6005f981b5f6198731edea02eb606a9a5102835f707bc925b87029177d5"
+    },
+    {
+      "path": "duration-wait-qualified/base-tree/src/features/workflows/readiness.ts",
+      "bytes": 885,
+      "sha256": "1e5dff2961e1a45c9091ba70182d8d7ef1e3169bf2e5e001ebd6882c865398bf"
+    },
+    {
+      "path": "duration-wait-qualified/base-tree/src/features/workflows/queries.ts",
+      "bytes": 3711,
+      "sha256": "bc4ddc45702056d2b3aaab65debfdf11c4da7dac1ebb875e9cf5ceb22f2b53c6"
+    },
+    {
+      "path": "duration-wait-qualified/base-tree/src/features/workflows/nodeFactory.ts",
+      "bytes": 1538,
+      "sha256": "19d5fdc6e606892edeeb4ec678503eac0515a63c371d4a62ca8ad1530ea7f9a4"
+    },
+    {
+      "path": "duration-wait-qualified/base-tree/src/features/workflows/runControl.ts",
+      "bytes": 1527,
+      "sha256": "c55af6948e665cb424d697025c9f407333976c2089f452e1e240d597ce4d63de"
+    },
+    {
+      "path": "duration-wait-qualified/base-tree/src/features/workflows/registry.ts",
+      "bytes": 2491,
+      "sha256": "21143d8872ff364c07420e74bfe0c29d9cda3f6123d7ca6796add952f03e2783"
+    },
+    {
+      "path": "duration-wait-qualified/base-tree/src/features/workflows/runDetail.ts",
+      "bytes": 1921,
+      "sha256": "a08d7d7dd30058bdcde0773e19fa4b5f6992b63e32d1eb1009adcc1768c4a297"
+    },
+    {
+      "path": "duration-wait-qualified/base-tree/src/features/workflows/execution.ts",
+      "bytes": 3149,
+      "sha256": "76fb10fcb30d082645727e39968fbe5cd0ada16a61a4a0285ba6174bce4f384a"
+    },
+    {
+      "path": "duration-wait-qualified/base-tree/src/features/workflows/worker.ts",
+      "bytes": 2703,
+      "sha256": "39cd93ae37b4788fc7e7cb0a83ac4d4f3b16e3be893c6b007d66da6bcbd1a1bf"
+    },
+    {
+      "path": "duration-wait-qualified/base-tree/src/features/workflows/ui/NodePalette.tsx",
+      "bytes": 3860,
+      "sha256": "e4f458f57d10ce01417640ea0748014d542e8318d218136336271fca525a9fb6"
+    },
+    {
+      "path": "duration-wait-qualified/base-tree/src/features/workflows/ui/RunTrace.tsx",
+      "bytes": 5433,
+      "sha256": "21164dbb28dfbe19cdc973cebde4834d1e2a2e21dfe7bd7ccaf2e143292b45cf"
+    },
+    {
+      "path": "duration-wait-qualified/base-tree/src/features/workflows/ui/RunDetailDialog.tsx",
+      "bytes": 1800,
+      "sha256": "621fafea183325530498d0779b47d46688f6bc94e30fbbc105b7b3476e185722"
+    },
+    {
+      "path": "duration-wait-qualified/base-tree/src/features/workflows/ui/NodeSummary.test.tsx",
+      "bytes": 1221,
+      "sha256": "10f4ad084928c7cc9e31fc4e47d9ac5b9f356620e182e93ae06090343d657971"
+    },
+    {
+      "path": "duration-wait-qualified/base-tree/src/features/workflows/ui/WorkflowNodeCard.tsx",
+      "bytes": 4876,
+      "sha256": "b59602143769dc5c09f5f7d2ff30d003950077d82f17ba8c94d3cf927fb4f469"
+    },
+    {
+      "path": "duration-wait-qualified/base-tree/src/features/workflows/ui/RunTrace.test.tsx",
+      "bytes": 1518,
+      "sha256": "3f1d4aa18f1aa316065d23add95de144c35fba2102a89bc8154acb89729c900d"
+    },
+    {
+      "path": "duration-wait-qualified/base-tree/src/features/workflows/ui/RunHistory.tsx",
+      "bytes": 5531,
+      "sha256": "ceb8644142e1df0cb0c645b82490c40fd7c8bee6b6bc403b36967db39535e7dc"
+    },
+    {
+      "path": "duration-wait-qualified/base-tree/src/features/workflows/ui/NodeInspector.tsx",
+      "bytes": 4635,
+      "sha256": "270b4589aaef47cb283265b01f5a37495815d06e190551cdde711e4069a2c249"
+    },
+    {
+      "path": "duration-wait-qualified/base-tree/src/features/workflows/ui/NodeSummary.tsx",
+      "bytes": 2450,
+      "sha256": "a3bb11998f1a727b6df83a2201be89fb420e13c19fee963eb43504d2c6ee22f7"
+    },
+    {
+      "path": "duration-wait-qualified/base-tree/src/features/workflows/ui/RunTrace.selection.test.tsx",
+      "bytes": 1812,
+      "sha256": "f4b9fb0217cd2d41603961a3827713a84b5c1f6de3258b0394aec473fccd9521"
+    },
+    {
+      "path": "duration-wait-qualified/base-tree/src/features/workflows/messages/workflows.en.json",
+      "bytes": 9584,
+      "sha256": "a6715b0bfdb4064617df327fbd70ec5347d79dbdb596e99210f82cae71865ad6"
+    },
+    {
+      "path": "duration-wait-qualified/base-tree/src/features/workflows/messages/workflows.de.json",
+      "bytes": 11419,
+      "sha256": "8b82f4059fdd7e7eb06f91f230d74095f649baee3bd107c1c19114b869e3d89e"
+    },
+    {
+      "path": "duration-wait-qualified/base-tree/src/features/workflows/messages/workflows.fa.json",
+      "bytes": 14630,
+      "sha256": "90195bfb4623b839514120d66c728e3645582e232d77563208d4966cdb6edeeb"
+    },
+    {
+      "path": "duration-wait-qualified/base-tree/docs/workflows/status.md",
+      "bytes": 14138,
+      "sha256": "45462cc07108bbb828f3b0b590442f3b65047a1c014bf1e517e261bfd577aba1"
+    },
+    {
+      "path": "duration-wait-qualified/base-tree/docs/workflows/ux-design-reference.md",
+      "bytes": 29019,
+      "sha256": "8262bc15f49c2e02cdc61878aacff9218db757aa536b3618f153a0851d95e644"
+    },
+    {
+      "path": "duration-wait-qualified/base-tree/docs/workflows/CONTINUATION.md",
+      "bytes": 14905,
+      "sha256": "fb482b487beaf178d5d66ff8ec14b815dec2e67cba40fcd771e0873eede4ea1d"
+    },
+    {
+      "path": "duration-wait-qualified/base-tree/docs-site/docs/features/automations.md",
+      "bytes": 8583,
+      "sha256": "6bfa170c7a88173df7992421deed554e2acfdba61470319aad8baab795fdda0f"
+    },
+    {
+      "path": "duration-upgrade-lint-fix/files/src/features/workflows/durationWaitMigration.test-helpers.ts",
+      "bytes": 11009,
+      "sha256": "764f100b09c48d00d188a8ccdf09b4f9954f909d06812b25d19beef2b59f3702"
+    },
+    {
+      "path": "browser-canonical-basis/coherent-v2/browser-canonical-basis-coherent-v2.patch",
+      "bytes": 371121,
+      "sha256": "b2a3c2d2f939805726a6a2af4e1b15a0303745be0128a9dc0a2050f5cc9db18f"
+    },
+    {
+      "path": "browser-canonical-basis/coherent-v2/README.md",
+      "bytes": 2888,
+      "sha256": "9d2ac0232fa6d48f7e14f472aeeb7acbe26f87dccf5e6fa1393e4b04a542f8fe"
+    },
+    {
+      "path": "browser-canonical-basis/coherent-v2/manifest.json",
+      "bytes": 8326,
+      "sha256": "1c2b95e2954248bf724d10303497724ab60e1c98f4984f5adaf6b9cf1e7a7e5e"
+    },
+    {
+      "path": "browser-canonical-basis/coherent-v2/metadata-comparison.json",
+      "bytes": 2301,
+      "sha256": "c53006f701d64ad8ce428da80018d0e382fbe87566ba18e5d3b9b2a0029e896f"
+    },
+    {
+      "path": "browser-canonical-basis/checkpoint-backup-20261102T052051Z/managed-workflow-progress.md",
+      "bytes": 49681,
+      "sha256": "461fc19f785197e1f9e541f6bfdc45ef2a10e43a2cb6f6f275800fc128702278"
+    },
+    {
+      "path": "browser-canonical-basis/checkpoint-backup-20261102T052051Z/workflow-duration-wait-current-source.json",
+      "bytes": 40027,
+      "sha256": "3d5d0af2f7bfb9fa155ec44101112ab183280b3add4529d93014203d93f49fb2"
+    },
+    {
+      "path": "browser-canonical-basis/checkpoint-backup-20261102T052051Z/workflow-continuation-checkpoint.json",
+      "bytes": 104852,
+      "sha256": "7d10fb3cbb5990a9406e2ccef73547bb7a6420eab6109efef7ace6a299cdb228"
+    },
+    {
+      "path": "browser-canonical-basis/checkpoint-backup-20261102T052051Z/HANDOFF.md",
+      "bytes": 48695,
+      "sha256": "83d5067aeb1ee33e59d97cbc7ce9b36eef9634ba72693a5c033928c5691cf311"
+    },
+    {
+      "path": "browser-canonical-basis/canonical-adoption/canonical-adoption.patch",
+      "bytes": 384463,
+      "sha256": "73e78efaec8fa3707856a5d563c8ed41ab9052b30f80ef2dc9166b66a37591f7"
+    },
+    {
+      "path": "browser-canonical-basis/canonical-adoption/adopted.json",
+      "bytes": 66530,
+      "sha256": "b00d8abbb4353b1d7c20c90138acdebd447da4a6804ac15c1453520e95888d4e"
+    },
+    {
+      "path": "browser-canonical-basis/canonical-adoption/README.md",
+      "bytes": 4192,
+      "sha256": "44f063746a25291d398e27c16ec0722e5ee029448c98006e148c6c7561c3aa0d"
+    },
+    {
+      "path": "browser-canonical-basis/canonical-adoption/current336-pins.json",
+      "bytes": 64764,
+      "sha256": "9e7e8d731a11f72e2d1ceed603a8ace2588775729b04f2ef78ee8f0881a4b2b0"
+    },
+    {
+      "path": "browser-canonical-basis/canonical-adoption/pre-adoption.json",
+      "bytes": 1070,
+      "sha256": "685ab2939088c2907cacd13f3bc3bc47a20d0c058b958a258cd83b3c2851af5c"
+    },
+    {
+      "path": "browser-canonical-basis/canonical-adoption/source-review.json",
+      "bytes": 4443,
+      "sha256": "3fc207127cace738e8974f3751d5b32fa88570bb183c9a52a4794d4b68378684"
+    },
+    {
+      "path": "browser-canonical-basis/canonical-adoption/manifest.json",
+      "bytes": 8460,
+      "sha256": "495f2922f59b392b71d7c578977cadd173b66f40321d3de3d48b7380eb685504"
+    },
+    {
+      "path": "browser-canonical-basis/canonical-adoption/metadata-comparison.json",
+      "bytes": 2301,
+      "sha256": "c53006f701d64ad8ce428da80018d0e382fbe87566ba18e5d3b9b2a0029e896f"
+    },
+    {
+      "path": "browser-canonical-basis/base/private/drizzle/0100_workflow_duration_wait.sql",
+      "bytes": 689,
+      "sha256": "ba65deaf21f4f5c38cd7414afd851f91a14b5c2aed3e758bb75b36b56b3a63ef"
+    },
+    {
+      "path": "browser-canonical-basis/base/private/drizzle/meta/0097_snapshot.json",
+      "bytes": 355047,
+      "sha256": "2a9b0d9d3fa15196445c49f70d31e3087e76b86b804569d99ff212fa337bf527"
+    },
+    {
+      "path": "browser-canonical-basis/base/private/drizzle/meta/_journal.json",
+      "bytes": 14522,
+      "sha256": "e7aac31d2ff78fdf19920daa08c7a1ec9613bd60e1bce8e32d457f210dc5ae92"
+    },
+    {
+      "path": "browser-canonical-basis/base/published-bf386af/drizzle/0098_workflow_duration_wait.sql",
+      "bytes": 689,
+      "sha256": "ba65deaf21f4f5c38cd7414afd851f91a14b5c2aed3e758bb75b36b56b3a63ef"
+    },
+    {
+      "path": "browser-canonical-basis/base/published-bf386af/drizzle/meta/0097_snapshot.json",
+      "bytes": 355047,
+      "sha256": "2a9b0d9d3fa15196445c49f70d31e3087e76b86b804569d99ff212fa337bf527"
+    },
+    {
+      "path": "browser-canonical-basis/base/published-bf386af/drizzle/meta/0098_snapshot.json",
+      "bytes": 356265,
+      "sha256": "8aa7cd440a3c143b06db9aec895f13d789e8595e537614f1b0a6567dd6865d9b"
+    },
+    {
+      "path": "browser-canonical-basis/base/published-bf386af/drizzle/meta/_journal.json",
+      "bytes": 14521,
+      "sha256": "0f61d0561c4c8973c06deb550381d9dc3da2990780d41894860ba7ce67a9b3ca"
+    },
+    {
+      "path": "browser-canonical-basis/admission-source/src/entrypoints/migrate.ts",
+      "bytes": 625,
+      "sha256": "debb29536a91fa5805ff5a26af1876b8bf8b178d858679c559fe9eaf1fd0c998"
+    },
+    {
+      "path": "browser-canonical-basis/admission-source/src/db/migrate.ts",
+      "bytes": 5233,
+      "sha256": "48ad4cbf5599585939cdf56658edf78e9d133295032304b882f35bf2ed5ddb56"
+    },
+    {
+      "path": "browser-canonical-basis/admission-source/src/db/migrationAdmissionSource.ts",
+      "bytes": 1244,
+      "sha256": "162cf2bc69f46b5e489e2138ec3dca5333af8a88f02faaced90f8786287c56c4"
+    },
+    {
+      "path": "browser-canonical-basis/admission-source/src/db/migrationAdmissionIntegrity.ts",
+      "bytes": 693,
+      "sha256": "7337b84067547794c698d8b09e40145d4ddcaec3b5ee96c7de8eb9dcc4ba8ecb"
+    },
+    {
+      "path": "browser-canonical-basis/admission-source/src/db/migrationAdmission.ts",
+      "bytes": 2175,
+      "sha256": "2504f8c06bd82dea271f2ab0114f7f3d9e5916fad53fd48e7abc18068b78adb1"
+    },
+    {
+      "path": "browser-canonical-basis/admission-source/src/db/migrationAdmissionDatabase.ts",
+      "bytes": 5795,
+      "sha256": "844a84b0d304f26b32092d4b6d7ae17b0a04e4c468a7529ba190d6c49a442f5e"
+    },
+    {
+      "path": "browser-canonical-basis/canonical-adoption/base/private/drizzle/0100_workflow_duration_wait.sql",
+      "bytes": 689,
+      "sha256": "ba65deaf21f4f5c38cd7414afd851f91a14b5c2aed3e758bb75b36b56b3a63ef"
+    },
+    {
+      "path": "browser-canonical-basis/canonical-adoption/base/private/drizzle/meta/0097_snapshot.json",
+      "bytes": 355047,
+      "sha256": "2a9b0d9d3fa15196445c49f70d31e3087e76b86b804569d99ff212fa337bf527"
+    },
+    {
+      "path": "browser-canonical-basis/canonical-adoption/base/private/drizzle/meta/_journal.json",
+      "bytes": 14522,
+      "sha256": "e7aac31d2ff78fdf19920daa08c7a1ec9613bd60e1bce8e32d457f210dc5ae92"
+    },
+    {
+      "path": "browser-canonical-basis/canonical-adoption/base/private/src/features/workflows/durationWaitMigration.test-helpers.ts",
+      "bytes": 10860,
+      "sha256": "a61a604884b9577accedbb3e06643603cf2b952274a7e3f24bc2fba6589e0a1e"
+    },
+    {
+      "path": "browser-canonical-basis/canonical-adoption/base/private/src/features/workflows/durationWaitMigration.integration.test.ts",
+      "bytes": 4849,
+      "sha256": "377a73a938d8dd7ec4cda7715cce835812334212528c8c1859ba24b9e7586b0f"
+    },
+    {
+      "path": "browser-canonical-basis/canonical-adoption/base/published-bf386af/drizzle/0098_workflow_duration_wait.sql",
+      "bytes": 689,
+      "sha256": "ba65deaf21f4f5c38cd7414afd851f91a14b5c2aed3e758bb75b36b56b3a63ef"
+    },
+    {
+      "path": "browser-canonical-basis/canonical-adoption/base/published-bf386af/drizzle/meta/0097_snapshot.json",
+      "bytes": 355047,
+      "sha256": "2a9b0d9d3fa15196445c49f70d31e3087e76b86b804569d99ff212fa337bf527"
+    },
+    {
+      "path": "browser-canonical-basis/canonical-adoption/base/published-bf386af/drizzle/meta/0098_snapshot.json",
+      "bytes": 356265,
+      "sha256": "8aa7cd440a3c143b06db9aec895f13d789e8595e537614f1b0a6567dd6865d9b"
+    },
+    {
+      "path": "browser-canonical-basis/canonical-adoption/base/published-bf386af/drizzle/meta/_journal.json",
+      "bytes": 14521,
+      "sha256": "0f61d0561c4c8973c06deb550381d9dc3da2990780d41894860ba7ce67a9b3ca"
+    },
+    {
+      "path": "browser-canonical-basis/canonical-adoption/base/published-bf386af/src/features/workflows/durationWaitMigration.test-helpers.ts",
+      "bytes": 11911,
+      "sha256": "5c4a91e08aee797a2431b0b758029f0f7388d7e80b245620fa408db004845bc4"
+    },
+    {
+      "path": "browser-canonical-basis/canonical-adoption/base/published-bf386af/src/features/workflows/durationWaitMigration.integration.test.ts",
+      "bytes": 7933,
+      "sha256": "e526041e9a364e07ef9ad2b5b30d50787a4365465edf6dd08dce830dc65d5f93"
+    },
+    {
+      "path": "browser-canonical-basis/canonical-adoption/admission-source/src/entrypoints/migrate.ts",
+      "bytes": 625,
+      "sha256": "debb29536a91fa5805ff5a26af1876b8bf8b178d858679c559fe9eaf1fd0c998"
+    },
+    {
+      "path": "browser-canonical-basis/canonical-adoption/admission-source/src/db/migrate.ts",
+      "bytes": 5233,
+      "sha256": "48ad4cbf5599585939cdf56658edf78e9d133295032304b882f35bf2ed5ddb56"
+    },
+    {
+      "path": "browser-canonical-basis/canonical-adoption/admission-source/src/db/migrationAdmissionSource.ts",
+      "bytes": 1244,
+      "sha256": "162cf2bc69f46b5e489e2138ec3dca5333af8a88f02faaced90f8786287c56c4"
+    },
+    {
+      "path": "browser-canonical-basis/canonical-adoption/admission-source/src/db/migrationAdmissionIntegrity.ts",
+      "bytes": 693,
+      "sha256": "7337b84067547794c698d8b09e40145d4ddcaec3b5ee96c7de8eb9dcc4ba8ecb"
+    },
+    {
+      "path": "browser-canonical-basis/canonical-adoption/admission-source/src/db/migrationAdmission.ts",
+      "bytes": 2175,
+      "sha256": "2504f8c06bd82dea271f2ab0114f7f3d9e5916fad53fd48e7abc18068b78adb1"
+    },
+    {
+      "path": "browser-canonical-basis/canonical-adoption/admission-source/src/db/migrationAdmissionDatabase.ts",
+      "bytes": 5795,
+      "sha256": "844a84b0d304f26b32092d4b6d7ae17b0a04e4c468a7529ba190d6c49a442f5e"
+    },
+    {
+      "path": "browser-canonical-basis/canonical-adoption/candidate/drizzle/0098_workflow_duration_wait.sql",
+      "bytes": 689,
+      "sha256": "ba65deaf21f4f5c38cd7414afd851f91a14b5c2aed3e758bb75b36b56b3a63ef"
+    },
+    {
+      "path": "browser-canonical-basis/canonical-adoption/candidate/drizzle/meta/0098_snapshot.json",
+      "bytes": 356265,
+      "sha256": "8aa7cd440a3c143b06db9aec895f13d789e8595e537614f1b0a6567dd6865d9b"
+    },
+    {
+      "path": "browser-canonical-basis/canonical-adoption/candidate/drizzle/meta/_journal.json",
+      "bytes": 14521,
+      "sha256": "0f61d0561c4c8973c06deb550381d9dc3da2990780d41894860ba7ce67a9b3ca"
+    },
+    {
+      "path": "browser-canonical-basis/canonical-adoption/candidate/src/features/workflows/durationWaitMigration.test-helpers.ts",
+      "bytes": 11911,
+      "sha256": "5c4a91e08aee797a2431b0b758029f0f7388d7e80b245620fa408db004845bc4"
+    },
+    {
+      "path": "browser-canonical-basis/canonical-adoption/candidate/src/features/workflows/durationWaitMigration.integration.test.ts",
+      "bytes": 7933,
+      "sha256": "e526041e9a364e07ef9ad2b5b30d50787a4365465edf6dd08dce830dc65d5f93"
+    },
+    {
+      "path": "browser-canonical-basis/coherent-v2/base/private/drizzle/0100_workflow_duration_wait.sql",
+      "bytes": 689,
+      "sha256": "ba65deaf21f4f5c38cd7414afd851f91a14b5c2aed3e758bb75b36b56b3a63ef"
+    },
+    {
+      "path": "browser-canonical-basis/coherent-v2/base/private/drizzle/meta/0097_snapshot.json",
+      "bytes": 355047,
+      "sha256": "2a9b0d9d3fa15196445c49f70d31e3087e76b86b804569d99ff212fa337bf527"
+    },
+    {
+      "path": "browser-canonical-basis/coherent-v2/base/private/drizzle/meta/_journal.json",
+      "bytes": 14522,
+      "sha256": "e7aac31d2ff78fdf19920daa08c7a1ec9613bd60e1bce8e32d457f210dc5ae92"
+    },
+    {
+      "path": "browser-canonical-basis/coherent-v2/base/private/src/features/workflows/durationWaitMigration.test-helpers.ts",
+      "bytes": 10860,
+      "sha256": "a61a604884b9577accedbb3e06643603cf2b952274a7e3f24bc2fba6589e0a1e"
+    },
+    {
+      "path": "browser-canonical-basis/coherent-v2/base/published-bf386af/drizzle/0098_workflow_duration_wait.sql",
+      "bytes": 689,
+      "sha256": "ba65deaf21f4f5c38cd7414afd851f91a14b5c2aed3e758bb75b36b56b3a63ef"
+    },
+    {
+      "path": "browser-canonical-basis/coherent-v2/base/published-bf386af/drizzle/meta/0097_snapshot.json",
+      "bytes": 355047,
+      "sha256": "2a9b0d9d3fa15196445c49f70d31e3087e76b86b804569d99ff212fa337bf527"
+    },
+    {
+      "path": "browser-canonical-basis/coherent-v2/base/published-bf386af/drizzle/meta/0098_snapshot.json",
+      "bytes": 356265,
+      "sha256": "8aa7cd440a3c143b06db9aec895f13d789e8595e537614f1b0a6567dd6865d9b"
+    },
+    {
+      "path": "browser-canonical-basis/coherent-v2/base/published-bf386af/drizzle/meta/_journal.json",
+      "bytes": 14521,
+      "sha256": "0f61d0561c4c8973c06deb550381d9dc3da2990780d41894860ba7ce67a9b3ca"
+    },
+    {
+      "path": "browser-canonical-basis/coherent-v2/admission-source/src/entrypoints/migrate.ts",
+      "bytes": 625,
+      "sha256": "debb29536a91fa5805ff5a26af1876b8bf8b178d858679c559fe9eaf1fd0c998"
+    },
+    {
+      "path": "browser-canonical-basis/coherent-v2/admission-source/src/db/migrate.ts",
+      "bytes": 5233,
+      "sha256": "48ad4cbf5599585939cdf56658edf78e9d133295032304b882f35bf2ed5ddb56"
+    },
+    {
+      "path": "browser-canonical-basis/coherent-v2/admission-source/src/db/migrationAdmissionSource.ts",
+      "bytes": 1244,
+      "sha256": "162cf2bc69f46b5e489e2138ec3dca5333af8a88f02faaced90f8786287c56c4"
+    },
+    {
+      "path": "browser-canonical-basis/coherent-v2/admission-source/src/db/migrationAdmissionIntegrity.ts",
+      "bytes": 693,
+      "sha256": "7337b84067547794c698d8b09e40145d4ddcaec3b5ee96c7de8eb9dcc4ba8ecb"
+    },
+    {
+      "path": "browser-canonical-basis/coherent-v2/admission-source/src/db/migrationAdmission.ts",
+      "bytes": 2175,
+      "sha256": "2504f8c06bd82dea271f2ab0114f7f3d9e5916fad53fd48e7abc18068b78adb1"
+    },
+    {
+      "path": "browser-canonical-basis/coherent-v2/admission-source/src/db/migrationAdmissionDatabase.ts",
+      "bytes": 5795,
+      "sha256": "844a84b0d304f26b32092d4b6d7ae17b0a04e4c468a7529ba190d6c49a442f5e"
+    },
+    {
+      "path": "browser-canonical-basis/coherent-v2/candidate/drizzle/0098_workflow_duration_wait.sql",
+      "bytes": 689,
+      "sha256": "ba65deaf21f4f5c38cd7414afd851f91a14b5c2aed3e758bb75b36b56b3a63ef"
+    },
+    {
+      "path": "browser-canonical-basis/coherent-v2/candidate/drizzle/meta/0098_snapshot.json",
+      "bytes": 356265,
+      "sha256": "8aa7cd440a3c143b06db9aec895f13d789e8595e537614f1b0a6567dd6865d9b"
+    },
+    {
+      "path": "browser-canonical-basis/coherent-v2/candidate/drizzle/meta/_journal.json",
+      "bytes": 14521,
+      "sha256": "0f61d0561c4c8973c06deb550381d9dc3da2990780d41894860ba7ce67a9b3ca"
+    },
+    {
+      "path": "browser-canonical-basis/coherent-v2/candidate/src/features/workflows/durationWaitMigration.test-helpers.ts",
+      "bytes": 10859,
+      "sha256": "bf2bba515fd4adaf7cc3f2c05ffce4545780b8bb1432567ea07df8f9fd6a2a39"
+    },
+    {
+      "path": "browser-canonical-basis/candidate/drizzle/0098_workflow_duration_wait.sql",
+      "bytes": 689,
+      "sha256": "ba65deaf21f4f5c38cd7414afd851f91a14b5c2aed3e758bb75b36b56b3a63ef"
+    },
+    {
+      "path": "browser-canonical-basis/candidate/drizzle/meta/0098_snapshot.json",
+      "bytes": 356265,
+      "sha256": "8aa7cd440a3c143b06db9aec895f13d789e8595e537614f1b0a6567dd6865d9b"
+    },
+    {
+      "path": "browser-canonical-basis/candidate/drizzle/meta/_journal.json",
+      "bytes": 14521,
+      "sha256": "0f61d0561c4c8973c06deb550381d9dc3da2990780d41894860ba7ce67a9b3ca"
+    },
+    {
+      "path": "ordered-step-navigation/documentation-packet/documentation.patch",
+      "bytes": 41168,
+      "sha256": "3965771665b0819dec3fa6e137d66e31390d80ef4fae9a6c14a3a621b5b30cc2"
+    },
+    {
+      "path": "ordered-step-navigation/documentation-packet/manifest.json",
+      "bytes": 1993,
+      "sha256": "9022a15b3fa0fc997f405551c5c9461195d513e14d7aa29f4794b0a2dd205e7c"
+    },
+    {
+      "path": "ordered-step-navigation/other-surfaces/test-manifest.json",
+      "bytes": 2937,
+      "sha256": "416a46a577e9802badabf70c36ae1151512d1b7bafa6d20d410fba52e6e7912e"
+    },
+    {
+      "path": "ordered-step-navigation/continuation-backup-20261102T062242Z/workflow-duration-wait-current-source.json",
+      "bytes": 50130,
+      "sha256": "36d2d6c5e0411326e89590ce7892ba3b74e47f09d47e20667d3c22cc674e7722"
+    },
+    {
+      "path": "ordered-step-navigation/continuation-backup-20261102T062242Z/workflow-continuation-checkpoint.json",
+      "bytes": 107630,
+      "sha256": "558684f1cf0bd3f18c2de9ceecb394362f5baf3f87a239761771c33788beb317"
+    },
+    {
+      "path": "ordered-step-navigation/reference-surfaces/NodeOrdinals.test.tsx.patch",
+      "bytes": 4943,
+      "sha256": "1dcdfa9e547ecd808897adabfaf6f6fa9e21d148e0c0c2961598283cb34d0d32"
+    },
+    {
+      "path": "ordered-step-navigation/reference-surfaces/README.md",
+      "bytes": 1826,
+      "sha256": "0339c451d18ae6d50dbf240ef73c330f44d15b515faa8f9a9934960bdc36ace2"
+    },
+    {
+      "path": "ordered-step-navigation/reference-surfaces/manifest.json",
+      "bytes": 1293,
+      "sha256": "2c76ef00216ef611ba1736bd948b563bf27dde54170b6b4074775981fb32dbe0"
+    },
+    {
+      "path": "ordered-step-navigation/reference-surfaces/NodeOrdinals.test.tsx",
+      "bytes": 4713,
+      "sha256": "c238ca692ea5651a70112ddf9edea057002412231fc4d6aac95a5bb6ad201774"
+    },
+    {
+      "path": "ordered-step-navigation/pure-red-source/nodeOrder.test.ts",
+      "bytes": 3415,
+      "sha256": "4840077864eae2e9d22354178f351adba20c82fbc405abe9aaee97aba8885f94"
+    },
+    {
+      "path": "ordered-step-navigation/pure-red-source/nodeOrder.ts",
+      "bytes": 184,
+      "sha256": "dd302ede1aa2db341927491689b4310abf42746225d170024fb2999400c30050"
+    },
+    {
+      "path": "ordered-step-navigation/packet/ordered-step-navigation.patch",
+      "bytes": 25272,
+      "sha256": "28d0aae04151177931b49ad7fcd57d512d1852c83cb951654a6f1d3648015051"
+    },
+    {
+      "path": "ordered-step-navigation/packet/apply-check-receipt.json",
+      "bytes": 1656,
+      "sha256": "bafa40419bfc6459b34bad44759b4d66154c6c586ebf142f0629dd5786466999"
+    },
+    {
+      "path": "ordered-step-navigation/packet/source-privacy-impact.md",
+      "bytes": 1560,
+      "sha256": "1b8634063dee9261bec7260bf4a970d64051c08b5e0a6752b8b62ac9379876e1"
+    },
+    {
+      "path": "ordered-step-navigation/packet/README.md",
+      "bytes": 2822,
+      "sha256": "3f1854097cdf63e9ceba5e50e1112e42479598bf10a28fd8426ef17453dca3dc"
+    },
+    {
+      "path": "ordered-step-navigation/packet/resource-preflight-initial.json",
+      "bytes": 999,
+      "sha256": "0d1729efa15cba8790b2131370b2519609a163adcbb23b736fded5e81cdbaba9"
+    },
+    {
+      "path": "ordered-step-navigation/packet/manifest.json",
+      "bytes": 9392,
+      "sha256": "0ac5da516d33194bd1125828193c9731c4eee1b80c1c3343788c6527bdab6bb9"
+    },
+    {
+      "path": "ordered-step-navigation/packet/SHA256SUMS",
+      "bytes": 3400,
+      "sha256": "14f45caffb495e062b5dc749a542dcefbb669aa1729c011e1f77cc2072608ee2"
+    },
+    {
+      "path": "ordered-step-navigation/packet/resource-preflight-final.json",
+      "bytes": 1281,
+      "sha256": "a6db25dde090a6b64969145c74cb45e50c1907f4817977420b32f09a38d48f07"
+    },
+    {
+      "path": "ordered-step-navigation/red-source/ConnectionInsertion.test.tsx",
+      "bytes": 10795,
+      "sha256": "84a7aac98c150b3dafcdb37f3b46361cc150693f8f080e40e076b90e60732d09"
+    },
+    {
+      "path": "ordered-step-navigation/base/src/features/workflows/ui/ConnectionInsertion.test.tsx",
+      "bytes": 9816,
+      "sha256": "1932665d15e3c2dcface80718e792c652e6284ff28c5cdeab24ad3160ae526e0"
+    },
+    {
+      "path": "ordered-step-navigation/packet/evidence/green-affected-observed.json",
+      "bytes": 1413,
+      "sha256": "690e0465318cea9963f4a898a1604cbd76033c240e89d1b0d8dfac06f8046156"
+    },
+    {
+      "path": "ordered-step-navigation/packet/evidence/green-affected-preflight.json",
+      "bytes": 1590,
+      "sha256": "6342583174ef035a7f542d04cee4f93b4f6e72efdd5e3c637d28816b7a81e21b"
+    },
+    {
+      "path": "ordered-step-navigation/packet/evidence/review.json",
+      "bytes": 8698,
+      "sha256": "776aef60171c836d56f9c6abc36e6b5894372828e7a5710c5bce3e221d7295ff"
+    },
+    {
+      "path": "ordered-step-navigation/packet/base/src/features/workflows/ui/ConnectionInsertion.test.tsx",
+      "bytes": 9816,
+      "sha256": "1932665d15e3c2dcface80718e792c652e6284ff28c5cdeab24ad3160ae526e0"
+    },
+    {
+      "path": "ordered-step-navigation/packet/base/src/features/workflows/ui/RunTrace.tsx",
+      "bytes": 6750,
+      "sha256": "522daf1931aa062a1590cc179ef1c785da97f56218d59ec198d2d34f5700a75a"
+    },
+    {
+      "path": "ordered-step-navigation/packet/base/src/features/workflows/ui/ConnectionEditor.tsx",
+      "bytes": 3486,
+      "sha256": "09c250c751a53f00ea143f167e4778079d2cd5fdd43bcf6f68d4ebdd2a5842b6"
+    },
+    {
+      "path": "ordered-step-navigation/packet/base/src/features/workflows/ui/EdgeInspector.tsx",
+      "bytes": 3744,
+      "sha256": "1f59ad7cd511d6b306637cc1076cb7cf73b06005a19e99ef8ffcc2f90b274258"
+    },
+    {
+      "path": "ordered-step-navigation/packet/base/src/features/workflows/ui/BindingField.tsx",
+      "bytes": 3391,
+      "sha256": "c533a336d5ff84505b3d74349efbac94abd4a084a6cce99e1b6608818bbcac25"
+    },
+    {
+      "path": "ordered-step-navigation/packet/base/src/features/workflows/ui/WorkflowCanvas.tsx",
+      "bytes": 8428,
+      "sha256": "13d19e186ae5bd4fd4cc73ca4d4a2d73a47e4b0838fb6364a2cebae1eba12821"
+    },
+    {
+      "path": "ordered-step-navigation/packet/base/src/features/workflows/ui/BuilderWorkspace.tsx",
+      "bytes": 11465,
+      "sha256": "4d74f6fcbe559f96e1b543cc4865e70d66e19cb00c5753dd89a192938f5c8333"
+    },
+    {
+      "path": "ordered-step-navigation/packet/base/src/features/workflows/ui/RunTrace.selection.test.tsx",
+      "bytes": 1832,
+      "sha256": "fafd9882d2d6b3ca5fdad21372bbfdb318857a197e4e813f8e3cd88d9a7f4b6b"
+    },
+    {
+      "path": "ordered-step-navigation/packet/base/src/features/workflows/ui/WorkflowCanvas.test.tsx",
+      "bytes": 3901,
+      "sha256": "e92ff9e14046accfc4104c6bd66953c985b289d4ef95a025ce7c0473cdd69b80"
+    },
+    {
+      "path": "ordered-step-navigation/packet/files/src/features/workflows/nodeOrder.test.ts",
+      "bytes": 3611,
+      "sha256": "fec6d6a94513847d3cfa9b7e92b2968eebacba5efd7dbe15f870cd1487451a41"
+    },
+    {
+      "path": "ordered-step-navigation/packet/files/src/features/workflows/nodeOrder.ts",
+      "bytes": 1532,
+      "sha256": "9f1334d3128f1ef785979438985410fca79bf19ce414b666ffd8fa42b053fcf7"
+    },
+    {
+      "path": "ordered-step-navigation/packet/files/src/features/workflows/ui/ConnectionInsertion.test.tsx",
+      "bytes": 10795,
+      "sha256": "84a7aac98c150b3dafcdb37f3b46361cc150693f8f080e40e076b90e60732d09"
+    },
+    {
+      "path": "ordered-step-navigation/packet/files/src/features/workflows/ui/RunTrace.tsx",
+      "bytes": 6819,
+      "sha256": "6a0a2200609a034388839a32e7851a525e37984a12e0f1fcdd9d0f330fa1aad1"
+    },
+    {
+      "path": "ordered-step-navigation/packet/files/src/features/workflows/ui/ConnectionEditor.tsx",
+      "bytes": 3588,
+      "sha256": "34c64daa2c3083c7aa523c933cb3ac10d097f18fa7b2bf143b434246a8e25d2c"
+    },
+    {
+      "path": "ordered-step-navigation/packet/files/src/features/workflows/ui/EdgeInspector.tsx",
+      "bytes": 3813,
+      "sha256": "7b1ac58dbe9c1268aa3a51688c7169c5ede174ed388efcbfd08ef46d1891b7c9"
+    },
+    {
+      "path": "ordered-step-navigation/packet/files/src/features/workflows/ui/BindingField.tsx",
+      "bytes": 3497,
+      "sha256": "84b60e2f256fe0bceefe359e20268c7893d8070cc3db51b5d78167e7bc027901"
+    },
+    {
+      "path": "ordered-step-navigation/packet/files/src/features/workflows/ui/WorkflowCanvas.tsx",
+      "bytes": 8717,
+      "sha256": "dc58379da396d23d0baf61dd242a2fffcf5741099801f01be6531fc8b7e2c05e"
+    },
+    {
+      "path": "ordered-step-navigation/packet/files/src/features/workflows/ui/BuilderWorkspace.tsx",
+      "bytes": 11534,
+      "sha256": "446596405640d73895234fe5acb23a1456995523a683e377ecc660677586d059"
+    },
+    {
+      "path": "ordered-step-navigation/packet/files/src/features/workflows/ui/RunTrace.selection.test.tsx",
+      "bytes": 3824,
+      "sha256": "d55e5596c0c0164c8d04d299efb35274d7e3ce9cdaa900af625efa29caf50496"
+    },
+    {
+      "path": "ordered-step-navigation/packet/files/src/features/workflows/ui/NodeOrdinals.test.tsx",
+      "bytes": 4718,
+      "sha256": "ae0433f8eff0a5523ecc494a229a882ce23256e980202d70716fd5ee09996b27"
+    },
+    {
+      "path": "ordered-step-navigation/packet/files/src/features/workflows/ui/WorkflowCanvas.test.tsx",
+      "bytes": 5721,
+      "sha256": "c64edeb937ba8a23c110151b4fff6522d1596d31a151c3ea90d36d93afe1cd58"
+    },
+    {
+      "path": "ordered-step-navigation/red-surfaces-source/src/features/workflows/ui/ConnectionInsertion.test.tsx",
+      "bytes": 10795,
+      "sha256": "84a7aac98c150b3dafcdb37f3b46361cc150693f8f080e40e076b90e60732d09"
+    },
+    {
+      "path": "ordered-step-navigation/red-surfaces-source/src/features/workflows/ui/RunTrace.tsx",
+      "bytes": 6750,
+      "sha256": "522daf1931aa062a1590cc179ef1c785da97f56218d59ec198d2d34f5700a75a"
+    },
+    {
+      "path": "ordered-step-navigation/red-surfaces-source/src/features/workflows/ui/ConnectionEditor.tsx",
+      "bytes": 3486,
+      "sha256": "09c250c751a53f00ea143f167e4778079d2cd5fdd43bcf6f68d4ebdd2a5842b6"
+    },
+    {
+      "path": "ordered-step-navigation/red-surfaces-source/src/features/workflows/ui/EdgeInspector.tsx",
+      "bytes": 3744,
+      "sha256": "1f59ad7cd511d6b306637cc1076cb7cf73b06005a19e99ef8ffcc2f90b274258"
+    },
+    {
+      "path": "ordered-step-navigation/red-surfaces-source/src/features/workflows/ui/BindingField.tsx",
+      "bytes": 3391,
+      "sha256": "c533a336d5ff84505b3d74349efbac94abd4a084a6cce99e1b6608818bbcac25"
+    },
+    {
+      "path": "ordered-step-navigation/red-surfaces-source/src/features/workflows/ui/WorkflowCanvas.tsx",
+      "bytes": 8428,
+      "sha256": "13d19e186ae5bd4fd4cc73ca4d4a2d73a47e4b0838fb6364a2cebae1eba12821"
+    },
+    {
+      "path": "ordered-step-navigation/red-surfaces-source/src/features/workflows/ui/BuilderWorkspace.tsx",
+      "bytes": 11465,
+      "sha256": "4d74f6fcbe559f96e1b543cc4865e70d66e19cb00c5753dd89a192938f5c8333"
+    },
+    {
+      "path": "ordered-step-navigation/red-surfaces-source/src/features/workflows/ui/RunTrace.selection.test.tsx",
+      "bytes": 3823,
+      "sha256": "cc805a3f5659f80206f446f1fd5134a25614bafe8b05fac1028f8ae0cc4aea0d"
+    },
+    {
+      "path": "ordered-step-navigation/red-surfaces-source/src/features/workflows/ui/NodeOrdinals.test.tsx",
+      "bytes": 4713,
+      "sha256": "c238ca692ea5651a70112ddf9edea057002412231fc4d6aac95a5bb6ad201774"
+    },
+    {
+      "path": "ordered-step-navigation/red-surfaces-source/src/features/workflows/ui/WorkflowCanvas.test.tsx",
+      "bytes": 5721,
+      "sha256": "c64edeb937ba8a23c110151b4fff6522d1596d31a151c3ea90d36d93afe1cd58"
+    },
+    {
+      "path": "ordered-step-navigation/red-surfaces-r2-source/src/features/workflows/ui/ConnectionInsertion.test.tsx",
+      "bytes": 10795,
+      "sha256": "84a7aac98c150b3dafcdb37f3b46361cc150693f8f080e40e076b90e60732d09"
+    },
+    {
+      "path": "ordered-step-navigation/red-surfaces-r2-source/src/features/workflows/ui/RunTrace.selection.test.tsx",
+      "bytes": 3815,
+      "sha256": "947da9e9cc3e8814ded6796794213621008f16e538131de1d00701998addfbc4"
+    },
+    {
+      "path": "ordered-step-navigation/red-surfaces-r2-source/src/features/workflows/ui/NodeOrdinals.test.tsx",
+      "bytes": 4718,
+      "sha256": "ae0433f8eff0a5523ecc494a229a882ce23256e980202d70716fd5ee09996b27"
+    },
+    {
+      "path": "ordered-step-navigation/red-surfaces-r2-source/src/features/workflows/ui/WorkflowCanvas.test.tsx",
+      "bytes": 5721,
+      "sha256": "c64edeb937ba8a23c110151b4fff6522d1596d31a151c3ea90d36d93afe1cd58"
+    },
+    {
+      "path": "ordered-step-navigation/docs-base/docs/workflows/status.md",
+      "bytes": 37594,
+      "sha256": "b0ecb15956d225f1aa46622563721147bb1f4a07c59b6fc8fe756019d5c17dd7"
+    },
+    {
+      "path": "ordered-step-navigation/docs-base/docs/workflows/CONTINUATION.md",
+      "bytes": 30840,
+      "sha256": "86f1a63461f9cdb6916c9df444892426ac66a65a84d053fd3ef46665edff3a1f"
+    },
+    {
+      "path": "ordered-step-navigation/docs-base/docs-site/docs/features/automations.md",
+      "bytes": 10117,
+      "sha256": "8a4ebedd74f494f66c8f6ccc7872cb3af82126db85335b22bccf6f7d76fdc232"
+    },
+    {
+      "path": "ordered-step-navigation/other-surfaces/after/src/features/workflows/ui/RunTrace.selection.test.tsx",
+      "bytes": 3823,
+      "sha256": "cc805a3f5659f80206f446f1fd5134a25614bafe8b05fac1028f8ae0cc4aea0d"
+    },
+    {
+      "path": "ordered-step-navigation/other-surfaces/after/src/features/workflows/ui/WorkflowCanvas.test.tsx",
+      "bytes": 5721,
+      "sha256": "c64edeb937ba8a23c110151b4fff6522d1596d31a151c3ea90d36d93afe1cd58"
+    },
+    {
+      "path": "ordered-step-navigation/other-surfaces/before/src/features/workflows/ui/RunTrace.selection.test.tsx",
+      "bytes": 1832,
+      "sha256": "fafd9882d2d6b3ca5fdad21372bbfdb318857a197e4e813f8e3cd88d9a7f4b6b"
+    },
+    {
+      "path": "ordered-step-navigation/other-surfaces/before/src/features/workflows/ui/WorkflowCanvas.test.tsx",
+      "bytes": 3901,
+      "sha256": "e92ff9e14046accfc4104c6bd66953c985b289d4ef95a025ce7c0473cdd69b80"
+    },
+    {
+      "path": "ordered-step-navigation/documentation-packet/base/docs/workflows/status.md",
+      "bytes": 37594,
+      "sha256": "b0ecb15956d225f1aa46622563721147bb1f4a07c59b6fc8fe756019d5c17dd7"
+    },
+    {
+      "path": "ordered-step-navigation/documentation-packet/base/docs/workflows/CONTINUATION.md",
+      "bytes": 30840,
+      "sha256": "86f1a63461f9cdb6916c9df444892426ac66a65a84d053fd3ef46665edff3a1f"
+    },
+    {
+      "path": "ordered-step-navigation/documentation-packet/base/docs-site/docs/features/automations.md",
+      "bytes": 10117,
+      "sha256": "8a4ebedd74f494f66c8f6ccc7872cb3af82126db85335b22bccf6f7d76fdc232"
+    },
+    {
+      "path": "ordered-step-navigation/documentation-packet/payload/docs/workflows/status.md",
+      "bytes": 47623,
+      "sha256": "5f8eb603e2c1ef28d4022f15f8940ae9763af1643c910629864869cf2f6d234b"
+    },
+    {
+      "path": "ordered-step-navigation/documentation-packet/payload/docs/workflows/CONTINUATION.md",
+      "bytes": 33534,
+      "sha256": "97a781df7ff9fa4f330786570cd78bd546fb2c2b6742851bf95f441f7da5fdd2"
+    },
+    {
+      "path": "ordered-step-navigation/documentation-packet/payload/docs-site/docs/features/automations.md",
+      "bytes": 10465,
+      "sha256": "41d3ad6dd16b05dfee09bc6b43619265efdbe57c47a8c3b7638c6ec87f6602f3"
+    },
+    {
+      "path": "connection-insertion/continuation-backup-20261102T050207Z/managed-workflow-progress.md",
+      "bytes": 48630,
+      "sha256": "4bcc8e3053911a8a5975ba4cf801865e1e2d6863fc85fbd87118f1182373544a"
+    },
+    {
+      "path": "connection-insertion/continuation-backup-20261102T050207Z/ready-summary.json",
+      "bytes": 1382,
+      "sha256": "f5324ae5c47bfb9ccbe80fc569f92a6cf2bb3d9369ce676afc187ee8bbf942ce"
+    },
+    {
+      "path": "connection-insertion/continuation-backup-20261102T050207Z/workflow-duration-wait-current-source.json",
+      "bytes": 38418,
+      "sha256": "eb860ec31f4f34be9ee3a5cc26cc48f343e295dacd0105314b7fb6a93f79139c"
+    },
+    {
+      "path": "connection-insertion/continuation-backup-20261102T050207Z/workflow-continuation-checkpoint.json",
+      "bytes": 101004,
+      "sha256": "0a001fbe082432d2a60dd2e36ab8cc5f795a552843bcd20376c0a824904d9873"
+    },
+    {
+      "path": "connection-insertion/continuation-backup-20261102T050207Z/HANDOFF.md",
+      "bytes": 47644,
+      "sha256": "f17804126e5d46f2ec6c1273b0732e1257bc8bb61dc8645d32595fb26d13759c"
+    },
+    {
+      "path": "connection-insertion/documentation-packet/documentation.patch",
+      "bytes": 6198,
+      "sha256": "3377267047b706e34c99d2734ef72aa3c6b2fc8e2709e0b423aaa15efccc0b7d"
+    },
+    {
+      "path": "connection-insertion/documentation-packet/manifest.json",
+      "bytes": 1925,
+      "sha256": "51c268114d7690f8b4317936b07373d4bd997e64226b0ad320e3c0dd8b9f1d1d"
+    },
+    {
+      "path": "connection-insertion/clearance-red-source/manifest.json",
+      "bytes": 785,
+      "sha256": "a85664d07b842099b3dfd3c34ced078fd34c5847968b696a3c4412ce4c7563f3"
+    },
+    {
+      "path": "connection-insertion/continuation-backup-20261102T035922Z/4-warpdrive-builder-ux-handoff-20261031.md",
+      "bytes": 52331,
+      "sha256": "65164ad7342a239728bc79479df068c4cd1123569fddc400904286e0139523a4"
+    },
+    {
+      "path": "connection-insertion/continuation-backup-20261102T035922Z/3-HANDOFF.md",
+      "bytes": 42479,
+      "sha256": "e0b67275b859b9edddb42f850dea53ed415a873d55794c9b6b3c2c9062535acd"
+    },
+    {
+      "path": "connection-insertion/continuation-backup-20261102T035922Z/2-managed-workflow-progress.md",
+      "bytes": 43465,
+      "sha256": "d43ca72638128f9f976cdd8975db5e29dc5c140264c767e1c089261d7bfdb50c"
+    },
+    {
+      "path": "connection-insertion/continuation-backup-20261102T035922Z/1-workflow-duration-wait-current-source.json",
+      "bytes": 26004,
+      "sha256": "abc67efd52ad0eb0cdeb1d6a87e8eabe8b29dd608b6ee7bdfc05dd85e9b69b05"
+    },
+    {
+      "path": "connection-insertion/continuation-backup-20261102T035922Z/0-workflow-continuation-checkpoint.json",
+      "bytes": 95320,
+      "sha256": "3d2da121ff24d0c1b020122a20431c48605f4e2ff21d2b5fd4e2da473b0faa1d"
+    },
+    {
+      "path": "connection-insertion/packet-pre-final-review-metadata/README.md",
+      "bytes": 3253,
+      "sha256": "a2efd16c351a5b8e46cfa1d3262b134b1ae508c12c5ce3a9eacd12835abc8c98"
+    },
+    {
+      "path": "connection-insertion/packet-pre-final-review-metadata/manifest.json",
+      "bytes": 3830,
+      "sha256": "0dca70bfff218192f08328ccdcdfe709568a4cdfdebf96591d11c15421d48664"
+    },
+    {
+      "path": "connection-insertion/red8-r2-source/manifest.json",
+      "bytes": 1309,
+      "sha256": "78a5f97c9f93ed3457a46527d9cfdf88b67814cb1db2ebebba94048f3df3085d"
+    },
+    {
+      "path": "connection-insertion/placement-red-source/manifest.json",
+      "bytes": 1309,
+      "sha256": "c63d2846f708cd6c94e6a5656a5cbab92826a1cd4fd7e8fa5e3646e8ee8f9328"
+    },
+    {
+      "path": "connection-insertion/packet/README.md",
+      "bytes": 3215,
+      "sha256": "391e9c5fef2fe292cdc82879760a171437f4617ded202ce7201aa01e257091e0"
+    },
+    {
+      "path": "connection-insertion/packet/insertion.patch",
+      "bytes": 32367,
+      "sha256": "2327c99478345ae1c133969eed24f0178d56acb4fbca4f5ba0fa3f7dec42b4b0"
+    },
+    {
+      "path": "connection-insertion/packet/manifest.json",
+      "bytes": 4252,
+      "sha256": "e665cb7af788f7c5bac003173d9ac6e598ed15e89688899bbd4ed0967196ba60"
+    },
+    {
+      "path": "connection-insertion/red-source/manifest.json",
+      "bytes": 1309,
+      "sha256": "d15fcc1ca84e002365ae259ab3b9f0bee6acfd71247424d1ac752566ac64796d"
+    },
+    {
+      "path": "connection-insertion/red-source/src/features/workflows/connectionGestures.test.ts",
+      "bytes": 2214,
+      "sha256": "b0131973823950b8f4437af2e7af51a4ef52fe19ee9017742377a5a3a9748921"
+    },
+    {
+      "path": "connection-insertion/red-source/src/features/workflows/connectionGestures.ts",
+      "bytes": 1137,
+      "sha256": "6913a56a1182e7bf012a747a9f49842d1d3df24abda1d096bf85647014eeab65"
+    },
+    {
+      "path": "connection-insertion/red-source/src/features/workflows/connectionInsertion.test.ts",
+      "bytes": 6410,
+      "sha256": "d42e98190070e03cc667e40ef372e9265eeef92f0ca62b2ae183cc0f12abdba7"
+    },
+    {
+      "path": "connection-insertion/red-source/src/features/workflows/ui/NodePalette.tsx",
+      "bytes": 4394,
+      "sha256": "b080356e9d05e34c14a1003f3af4feda47de9e54ae195c1aced24e9c8cd4b8bb"
+    },
+    {
+      "path": "connection-insertion/red-source/src/features/workflows/ui/ConnectionInsertion.test.tsx",
+      "bytes": 8712,
+      "sha256": "cad8c4366763958fbb792fa9a844d2ac0431bd822bb44377d51eae1a83f2cd31"
+    },
+    {
+      "path": "connection-insertion/red-source/src/features/workflows/ui/ConnectionEditor.tsx",
+      "bytes": 3463,
+      "sha256": "771f3a87c7eb10de60e6017e084ab15bc6dd58e35912c314c4a18b36f3a2a7c7"
+    },
+    {
+      "path": "connection-insertion/red-source/src/features/workflows/ui/BuilderWorkspace.tsx",
+      "bytes": 11284,
+      "sha256": "091ebc66b373ed6ee9da46765c90b19d44d308cf6c4c2b0cf1a973a91709f879"
+    },
+    {
+      "path": "connection-insertion/red-source/src/features/workflows/messages/workflows.en.json",
+      "bytes": 10504,
+      "sha256": "4fb9fd5b286d050d897cf8009fce5e9ff8b950d95df2ccbac01d871a544dce12"
+    },
+    {
+      "path": "connection-insertion/red-source/src/features/workflows/messages/workflows.de.json",
+      "bytes": 12545,
+      "sha256": "7473dbc37c2e3f87ea80c4b89ef96e1e44d93a7576472af70328f17c5b775029"
+    },
+    {
+      "path": "connection-insertion/red-source/src/features/workflows/messages/workflows.fa.json",
+      "bytes": 16189,
+      "sha256": "99d684e23e3390703bc8040895722c51f56cd7328bcdc056320f7848c351820d"
+    },
+    {
+      "path": "connection-insertion/packet/payload/src/features/workflows/nodePlacement.test.ts",
+      "bytes": 2828,
+      "sha256": "995f6901ad9f64f646b696202aa68e8136b593934e983ae1bae17dc3f560eb21"
+    },
+    {
+      "path": "connection-insertion/packet/payload/src/features/workflows/connectionGestures.test.ts",
+      "bytes": 2470,
+      "sha256": "829c29dbc0fcceed901dbd8d5e3accc7f25d8658a9eeb5f97da2510a51cb3e19"
+    },
+    {
+      "path": "connection-insertion/packet/payload/src/features/workflows/connectionGestures.ts",
+      "bytes": 1425,
+      "sha256": "f151f3c795c425eec2ea1eb47c407d0a943cee0f3801ccf5a30beb7ee4185251"
+    },
+    {
+      "path": "connection-insertion/packet/payload/src/features/workflows/nodeLayout.ts",
+      "bytes": 3540,
+      "sha256": "7966955c38bff47fb36867a63230ea3339e3fc68bfdc0074930a7099b11c054d"
+    },
+    {
+      "path": "connection-insertion/packet/payload/src/features/workflows/connectionInsertion.test.ts",
+      "bytes": 6460,
+      "sha256": "445efe59dd5e487200e8f6fbce096a768bef1938fdd7a15f08107bbaca17d70c"
+    },
+    {
+      "path": "connection-insertion/packet/payload/src/features/workflows/ui/NodePalette.tsx",
+      "bytes": 4598,
+      "sha256": "421324b005a73f559b332f6abde063402f5c61403851bf48f757d063fa70b423"
+    },
+    {
+      "path": "connection-insertion/packet/payload/src/features/workflows/ui/ConnectionInsertion.test.tsx",
+      "bytes": 9816,
+      "sha256": "1932665d15e3c2dcface80718e792c652e6284ff28c5cdeab24ad3160ae526e0"
+    },
+    {
+      "path": "connection-insertion/packet/payload/src/features/workflows/ui/ConnectionEditor.tsx",
+      "bytes": 3486,
+      "sha256": "09c250c751a53f00ea143f167e4778079d2cd5fdd43bcf6f68d4ebdd2a5842b6"
+    },
+    {
+      "path": "connection-insertion/packet/payload/src/features/workflows/ui/BuilderWorkspace.tsx",
+      "bytes": 11465,
+      "sha256": "4d74f6fcbe559f96e1b543cc4865e70d66e19cb00c5753dd89a192938f5c8333"
+    },
+    {
+      "path": "connection-insertion/packet/payload/src/features/workflows/messages/workflows.en.json",
+      "bytes": 10551,
+      "sha256": "18e59537ea3d2f8d5868790f6b5db4e2fe3ac6111dba7e47851eaff42b7f65cc"
+    },
+    {
+      "path": "connection-insertion/packet/payload/src/features/workflows/messages/workflows.de.json",
+      "bytes": 12596,
+      "sha256": "598caa957b5a885d975854c6cc3b7adfa6b25ef09c02bb1f0e036592c0ed482b"
+    },
+    {
+      "path": "connection-insertion/packet/payload/src/features/workflows/messages/workflows.fa.json",
+      "bytes": 16251,
+      "sha256": "5e00117f7aaba912058fb72b32fcb2430e047480d24d144a0b0ee1cb027ba8b3"
+    },
+    {
+      "path": "connection-insertion/packet/base-tree/src/features/workflows/connectionGestures.test.ts",
+      "bytes": 2214,
+      "sha256": "b0131973823950b8f4437af2e7af51a4ef52fe19ee9017742377a5a3a9748921"
+    },
+    {
+      "path": "connection-insertion/packet/base-tree/src/features/workflows/connectionGestures.ts",
+      "bytes": 1137,
+      "sha256": "6913a56a1182e7bf012a747a9f49842d1d3df24abda1d096bf85647014eeab65"
+    },
+    {
+      "path": "connection-insertion/packet/base-tree/src/features/workflows/nodeLayout.ts",
+      "bytes": 2045,
+      "sha256": "5c1db496e8f97d40e49df768ac5e4c07981c89283dc59cc2d71fd95ea89aac9f"
+    },
+    {
+      "path": "connection-insertion/packet/base-tree/src/features/workflows/ui/NodePalette.tsx",
+      "bytes": 4394,
+      "sha256": "b080356e9d05e34c14a1003f3af4feda47de9e54ae195c1aced24e9c8cd4b8bb"
+    },
+    {
+      "path": "connection-insertion/packet/base-tree/src/features/workflows/ui/ConnectionEditor.tsx",
+      "bytes": 3463,
+      "sha256": "771f3a87c7eb10de60e6017e084ab15bc6dd58e35912c314c4a18b36f3a2a7c7"
+    },
+    {
+      "path": "connection-insertion/packet/base-tree/src/features/workflows/ui/BuilderWorkspace.tsx",
+      "bytes": 11284,
+      "sha256": "091ebc66b373ed6ee9da46765c90b19d44d308cf6c4c2b0cf1a973a91709f879"
+    },
+    {
+      "path": "connection-insertion/packet/base-tree/src/features/workflows/messages/workflows.en.json",
+      "bytes": 10504,
+      "sha256": "4fb9fd5b286d050d897cf8009fce5e9ff8b950d95df2ccbac01d871a544dce12"
+    },
+    {
+      "path": "connection-insertion/packet/base-tree/src/features/workflows/messages/workflows.de.json",
+      "bytes": 12545,
+      "sha256": "7473dbc37c2e3f87ea80c4b89ef96e1e44d93a7576472af70328f17c5b775029"
+    },
+    {
+      "path": "connection-insertion/packet/base-tree/src/features/workflows/messages/workflows.fa.json",
+      "bytes": 16189,
+      "sha256": "99d684e23e3390703bc8040895722c51f56cd7328bcdc056320f7848c351820d"
+    },
+    {
+      "path": "connection-insertion/placement-red-source/src/features/workflows/connectionGestures.test.ts",
+      "bytes": 2470,
+      "sha256": "829c29dbc0fcceed901dbd8d5e3accc7f25d8658a9eeb5f97da2510a51cb3e19"
+    },
+    {
+      "path": "connection-insertion/placement-red-source/src/features/workflows/connectionGestures.ts",
+      "bytes": 1425,
+      "sha256": "f151f3c795c425eec2ea1eb47c407d0a943cee0f3801ccf5a30beb7ee4185251"
+    },
+    {
+      "path": "connection-insertion/placement-red-source/src/features/workflows/connectionInsertion.test.ts",
+      "bytes": 6410,
+      "sha256": "d42e98190070e03cc667e40ef372e9265eeef92f0ca62b2ae183cc0f12abdba7"
+    },
+    {
+      "path": "connection-insertion/placement-red-source/src/features/workflows/ui/NodePalette.tsx",
+      "bytes": 4598,
+      "sha256": "421324b005a73f559b332f6abde063402f5c61403851bf48f757d063fa70b423"
+    },
+    {
+      "path": "connection-insertion/placement-red-source/src/features/workflows/ui/ConnectionInsertion.test.tsx",
+      "bytes": 8698,
+      "sha256": "0179b120a41d9442d31f0d1000f6c6df1ce85f87a79b76367ec1de5e18460242"
+    },
+    {
+      "path": "connection-insertion/placement-red-source/src/features/workflows/ui/ConnectionEditor.tsx",
+      "bytes": 3486,
+      "sha256": "09c250c751a53f00ea143f167e4778079d2cd5fdd43bcf6f68d4ebdd2a5842b6"
+    },
+    {
+      "path": "connection-insertion/placement-red-source/src/features/workflows/ui/BuilderWorkspace.tsx",
+      "bytes": 11718,
+      "sha256": "5b3feb129249d79de4f7edb9c42d945e0aef97ef46683a4c7cacc9ea25b725f9"
+    },
+    {
+      "path": "connection-insertion/placement-red-source/src/features/workflows/messages/workflows.en.json",
+      "bytes": 10551,
+      "sha256": "18e59537ea3d2f8d5868790f6b5db4e2fe3ac6111dba7e47851eaff42b7f65cc"
+    },
+    {
+      "path": "connection-insertion/placement-red-source/src/features/workflows/messages/workflows.de.json",
+      "bytes": 12596,
+      "sha256": "598caa957b5a885d975854c6cc3b7adfa6b25ef09c02bb1f0e036592c0ed482b"
+    },
+    {
+      "path": "connection-insertion/placement-red-source/src/features/workflows/messages/workflows.fa.json",
+      "bytes": 16251,
+      "sha256": "5e00117f7aaba912058fb72b32fcb2430e047480d24d144a0b0ee1cb027ba8b3"
+    },
+    {
+      "path": "connection-insertion/red8-r2-source/src/features/workflows/connectionGestures.test.ts",
+      "bytes": 2214,
+      "sha256": "b0131973823950b8f4437af2e7af51a4ef52fe19ee9017742377a5a3a9748921"
+    },
+    {
+      "path": "connection-insertion/red8-r2-source/src/features/workflows/connectionGestures.ts",
+      "bytes": 1137,
+      "sha256": "6913a56a1182e7bf012a747a9f49842d1d3df24abda1d096bf85647014eeab65"
+    },
+    {
+      "path": "connection-insertion/red8-r2-source/src/features/workflows/connectionInsertion.test.ts",
+      "bytes": 6410,
+      "sha256": "d42e98190070e03cc667e40ef372e9265eeef92f0ca62b2ae183cc0f12abdba7"
+    },
+    {
+      "path": "connection-insertion/red8-r2-source/src/features/workflows/ui/NodePalette.tsx",
+      "bytes": 4394,
+      "sha256": "b080356e9d05e34c14a1003f3af4feda47de9e54ae195c1aced24e9c8cd4b8bb"
+    },
+    {
+      "path": "connection-insertion/red8-r2-source/src/features/workflows/ui/ConnectionInsertion.test.tsx",
+      "bytes": 8698,
+      "sha256": "0179b120a41d9442d31f0d1000f6c6df1ce85f87a79b76367ec1de5e18460242"
+    },
+    {
+      "path": "connection-insertion/red8-r2-source/src/features/workflows/ui/ConnectionEditor.tsx",
+      "bytes": 3463,
+      "sha256": "771f3a87c7eb10de60e6017e084ab15bc6dd58e35912c314c4a18b36f3a2a7c7"
+    },
+    {
+      "path": "connection-insertion/red8-r2-source/src/features/workflows/ui/BuilderWorkspace.tsx",
+      "bytes": 11284,
+      "sha256": "091ebc66b373ed6ee9da46765c90b19d44d308cf6c4c2b0cf1a973a91709f879"
+    },
+    {
+      "path": "connection-insertion/red8-r2-source/src/features/workflows/messages/workflows.en.json",
+      "bytes": 10504,
+      "sha256": "4fb9fd5b286d050d897cf8009fce5e9ff8b950d95df2ccbac01d871a544dce12"
+    },
+    {
+      "path": "connection-insertion/red8-r2-source/src/features/workflows/messages/workflows.de.json",
+      "bytes": 12545,
+      "sha256": "7473dbc37c2e3f87ea80c4b89ef96e1e44d93a7576472af70328f17c5b775029"
+    },
+    {
+      "path": "connection-insertion/red8-r2-source/src/features/workflows/messages/workflows.fa.json",
+      "bytes": 16189,
+      "sha256": "99d684e23e3390703bc8040895722c51f56cd7328bcdc056320f7848c351820d"
+    },
+    {
+      "path": "connection-insertion/docs-before/docs/workflows/status.md",
+      "bytes": 35321,
+      "sha256": "a55a8e715a7c5a5c83360db1476b3402eae33c5a7ae171dc113e4da2adaf5683"
+    },
+    {
+      "path": "connection-insertion/docs-before/docs/workflows/CONTINUATION.md",
+      "bytes": 28567,
+      "sha256": "81ff9aa58029dec755f2ec938a8f68744ef7ef662959f22a9666e1071473cf58"
+    },
+    {
+      "path": "connection-insertion/docs-before/docs-site/docs/features/automations.md",
+      "bytes": 9495,
+      "sha256": "83e5d475bfefe3f0f057b041a814bc1c6a8abe4da7d208665957b18dacaa95c7"
+    },
+    {
+      "path": "connection-insertion/clearance-red-source/src/features/workflows/nodePlacement.test.ts",
+      "bytes": 2778,
+      "sha256": "7a6f7253ac0d3f3d48995b36078775cb9be579889fb8a5fd651caf7c112bc57a"
+    },
+    {
+      "path": "connection-insertion/clearance-red-source/src/features/workflows/connectionGestures.ts",
+      "bytes": 1425,
+      "sha256": "f151f3c795c425eec2ea1eb47c407d0a943cee0f3801ccf5a30beb7ee4185251"
+    },
+    {
+      "path": "connection-insertion/clearance-red-source/src/features/workflows/nodeLayout.ts",
+      "bytes": 2763,
+      "sha256": "55a5a941d04b399453a9ac7ed0b5c5318257b058d852c2dbefa7dd893eba839a"
+    },
+    {
+      "path": "connection-insertion/clearance-red-source/src/features/workflows/ui/WorkflowNodeCard.tsx",
+      "bytes": 4954,
+      "sha256": "fce5c4ea99c23ae22daca7df7ea2c54e0cde93c195c4a6151036b17cc74b7748"
+    },
+    {
+      "path": "connection-insertion/clearance-red-source/src/features/workflows/ui/NodeSummary.tsx",
+      "bytes": 3117,
+      "sha256": "553d1cc6da747d84e90f066b448e70f9df042f8ae52cde7de291a0d0b98885c0"
+    },
+    {
+      "path": "connection-insertion/clearance-red-source/src/features/workflows/ui/BuilderWorkspace.tsx",
+      "bytes": 11465,
+      "sha256": "4d74f6fcbe559f96e1b543cc4865e70d66e19cb00c5753dd89a192938f5c8333"
+    },
+    {
+      "path": "connection-insertion/documentation-packet/payload/docs/workflows/status.md",
+      "bytes": 37594,
+      "sha256": "b0ecb15956d225f1aa46622563721147bb1f4a07c59b6fc8fe756019d5c17dd7"
+    },
+    {
+      "path": "connection-insertion/documentation-packet/payload/docs/workflows/CONTINUATION.md",
+      "bytes": 30840,
+      "sha256": "86f1a63461f9cdb6916c9df444892426ac66a65a84d053fd3ef46665edff3a1f"
+    },
+    {
+      "path": "connection-insertion/documentation-packet/payload/docs-site/docs/features/automations.md",
+      "bytes": 10117,
+      "sha256": "8a4ebedd74f494f66c8f6ccc7872cb3af82126db85335b22bccf6f7d76fdc232"
+    },
+    {
+      "path": "connection-insertion/documentation-packet/base-tree/docs/workflows/status.md",
+      "bytes": 35321,
+      "sha256": "a55a8e715a7c5a5c83360db1476b3402eae33c5a7ae171dc113e4da2adaf5683"
+    },
+    {
+      "path": "connection-insertion/documentation-packet/base-tree/docs/workflows/CONTINUATION.md",
+      "bytes": 28567,
+      "sha256": "81ff9aa58029dec755f2ec938a8f68744ef7ef662959f22a9666e1071473cf58"
+    },
+    {
+      "path": "connection-insertion/documentation-packet/base-tree/docs-site/docs/features/automations.md",
+      "bytes": 9495,
+      "sha256": "83e5d475bfefe3f0f057b041a814bc1c6a8abe4da7d208665957b18dacaa95c7"
+    }
+  ],
+  "cold_skipped": [],
+  "remote_policy": "Rawlocal evidence retained; do not bulk-stage private/runtime/env/log payloads. Main reviews safe evidence subset separately."
+}

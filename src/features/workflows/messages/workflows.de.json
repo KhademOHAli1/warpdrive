@@ -183,6 +183,7 @@
   "paletteContext": "{name} · {port}",
   "addAfter": "Schritt nach {name} hinzufügen: {port}",
   "addConnectedStep": "Neuen Schritt verbinden",
+  "insertConnectedStep": "Schritt hier einfügen",
   "undo": "Rückgängig",
   "redo": "Wiederholen",
   "undoHint": "Graphänderung rückgängig machen (⌘/Strg+Z)",

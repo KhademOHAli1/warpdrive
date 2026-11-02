@@ -1,0 +1,7 @@
+{
+  "at": "2026-11-02T03:34:07.620585+00:00",
+  "source": "/Users/ali/.codex/worktrees/workflow-roadmap-owned/warpdrive-builder-ux-20261031/src/features/workflows/nodeLayout.ts",
+  "sha256": "5c1db496e8f97d40e49df768ac5e4c07981c89283dc59cc2d71fd95ea89aac9f",
+  "captured_before_edit": true,
+  "scope": "Added baseline capture after actualplacementRED terminal, before extracting current defaultplacement into nodeLayout; no retroactive sourcepin claim."
+}

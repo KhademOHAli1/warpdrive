@@ -10,8 +10,9 @@ import { useFormatters } from "@/lib/useFormatters";
 import { appendConnectedNode, type OutputTarget } from "../connectionGestures";
 import { type ConnectionProblem, edgeId, insertNode, removeNode } from "../graphEditor";
 import { type CreatableNodeType, makeNode } from "../nodeFactory";
-import { arrangeGraph, positionFor } from "../nodeLayout";
+import { arrangeGraph, positionForNewNode } from "../nodeLayout";
 import { displayNodeName, nodeLabelKeys } from "../nodeNames";
+import { orderedWorkflowNodes } from "../nodeOrder";
 import type { DefinitionIssue, NodePosition, WorkflowDefinition } from "../schemas";
 import { BuilderFrame } from "./BuilderFrame";
 import { ConnectionEditor } from "./ConnectionEditor";
@@ -23,6 +24,8 @@ import { NodePalette } from "./NodePalette";
 import type { RevealNode } from "./ResponsiveViewport";
 import { focusAvailable, useDialogFocus } from "./useDialogFocus";
 import { WorkflowCanvas } from "./WorkflowCanvas";
+
+const linearNodeTypes: readonly CreatableNodeType[] = ["record.read", "activity.create", "delay"];
 
 export function BuilderWorkspace({
   definition,
@@ -60,6 +63,13 @@ export function BuilderWorkspace({
   const node = definition.nodes.find((item) => item.id === selected);
   const edge = definition.edges.find((item) => edgeId(item) === selectedEdge);
   const source = definition.nodes.find((item) => item.id === palette?.output?.from);
+  const pendingOutput = palette?.output;
+  const occupiedOutput =
+    pendingOutput === undefined
+      ? undefined
+      : definition.edges.find(
+          (item) => item.from === pendingOutput.from && item.port === pendingOutput.port,
+        );
   const invalidNodes = new Set(
     issues.flatMap((issue) => (issue.nodeId === undefined ? [] : [issue.nodeId])),
   );
@@ -84,19 +94,7 @@ export function BuilderWorkspace({
   function add(type: CreatableNodeType) {
     const id = `node_${crypto.randomUUID().slice(0, 8)}`;
     const output = palette?.output;
-    const origin = positionFor(definition, output?.from ?? selected);
-    const position = palette?.position ?? {
-      x:
-        origin.x +
-        (output === undefined
-          ? 360
-          : output.port === "true"
-            ? -200
-            : output.port === "false"
-              ? 200
-              : 0),
-      y: origin.y + 260,
-    };
+    const position = palette?.position ?? positionForNewNode(definition, selected, output);
     const next = makeNode(definition, type, id, t(nodeLabelKeys[type]), t("subject"), output?.from);
     if (output === undefined) onChange(insertNode(definition, next, position));
     else {
@@ -175,7 +173,7 @@ export function BuilderWorkspace({
               aria-label={t("steps")}
               className="flex shrink-0 gap-1 overflow-x-auto border-b p-2 [&>button]:shrink-0"
             >
-              {definition.nodes.map((item, index) => (
+              {orderedWorkflowNodes(definition).map((item, index) => (
                 <Button
                   key={item.id}
                   variant={selected === item.id && selectedEdge === null ? "outline" : "ghost"}
@@ -258,6 +256,7 @@ export function BuilderWorkspace({
             open
             onClose={() => setPalette(null)}
             onAdd={add}
+            allowedTypes={occupiedOutput === undefined ? undefined : linearNodeTypes}
             onCloseAutoFocus={(event) => {
               if (focusInsertedStep.current) {
                 event.preventDefault();

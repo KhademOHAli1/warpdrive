@@ -1,5 +1,37 @@
 # Autonomous workflow-builder continuation
 
+> Branch synchronization, 2 November 2026: this branch now includes main `09288d5`, including canonical0098 and its green populated-upgrade/compatibility checks. The private insertion/ordered-step follow-up remains unfinished; older “current”, unstarted and publication-pending paragraphs below are retained as dated observations. Latest static14 was withdrawn unstarted at the safe stop. Live next work is tracked in [#674](https://github.com/KhademOHAli1/warpdrive/issues/674), with the shared [restart index #80](https://github.com/KhademOHAli1/warpdrive/issues/80).
+
+## Current editor insertion checkpoint, 2 November 2026
+
+The private checkout now includes a 12-file editor insertion increment. Selecting a predecessor's
+occupied output can insert a linear Read deal, Create task or Wait while retaining the downstream
+path, existing nodes, bindings and positions. New steps use a clear available cell and open selected
+in the inspector. Conditions remain available on free outputs and from the toolbar, with explicit
+branch wiring. This increment is not delivered in Main or deployed; the separate Main delivery
+notice for the keyboard-focus increment below remains unchanged.
+
+Actual test-first evidence began with five intended RED cases and three passing controls. The first
+fix returned seven PASS and one position RED. Three additional clearance cases then returned RED
+while two bounds controls passed. The final focused run passed 34 cases across nine files in 4.78
+seconds, with full cleanup observed at 5.000395 seconds. Biome checked 12 files in 0.11 seconds,
+formatted one file and reported zero diagnostics. Two independent source reviews and the artifact
+application check also passed. These are focused source/component results, not rendered geometry,
+browser or assistive-technology acceptance.
+
+The new 335-input request runs declared Next typegen/full TSC, then configured type-aware ESLint
+on 12 changed TypeScript files and Biome on those files plus three catalogs. This includes the
+current editor increment and three browser-fixture tooling files. It is UNSTARTED and awaits a
+fresh Main START. The old static3 request was withdrawn; static11 was superseded without starting.
+The earlier qualified duration-wait core's 18.51-second static result, GUI31 and Native10 remain
+evidence for their own cuts, not full-checkout qualification of these new editor/fixture files.
+The immutable 51-file core packet and 94-file local evidence mirror are preserved.
+
+Whole WF017, the order strip, rendered geometry, browser/AT acceptance, Main exact-head CI and the
+full WF-001 through WF-042 goal remain open. Main's canonical 0098 work is tool generation only;
+this update records no accepted canonical upgrade. All earlier notices and history below are
+preserved; their older current-state language is scoped to its dated cut.
+
 ## Current duration-wait checkpoint, 2 November 2026
 
 The full WF-001 through WF-042 goal remains active and incomplete. The private checkout is detached
@@ -366,3 +398,14 @@ reusing/stopping anything; PIDs are deliberately not treated as permanent identi
 If `/tmp` paths or runtime resources no longer exist, recover the branch and this handoff
 from GitHub into a fresh owned checkout. Do not reconstruct private configuration from
 public placeholders or modify a peer checkout to make tests convenient.
+
+
+## Private continuation, 2 November 2026: ordered-step consistency
+
+The occupied-edge insertion follow-up now uses one display dependency order across BuilderWorkspace, WorkflowCanvas numeric indexes, RunTrace, BindingField, ConnectionEditor and EdgeInspector. The stored nodes, edges, configurations, bindings and layout are preserved. Canvas nodes retain their original array/z-order and positions. Eligible-node ties retain creation priority; this does not select a runtime condition branch. Missing-edge endpoints are ignored for display, unresolved draft cycles remain in their original tail order, and duplicate-id drafts retain their original array. Existing validation remains authoritative.
+
+The original six-surface component failures were observed before production changes. Two initial test selectors were corrected without removing order expectations. The corrected baseline had 6 intended failures and 9 controls. The direct helper baseline had 6 ordering failures and 2 controls. Final affected 37 cases across 9 files passed in 5.55 seconds; Biome on 12 files passed with 2 informational suggestions. Independent source review passed. Earlier 34-case component, 335-input static and 10-case native receipts remain tied to their original cuts and are not repeated or added. The current private cut still needs configured full generation/typecheck and typed lint before integration.
+
+The two-case Figma visual tranche separately passed the DE history/waiting route and FA 390 × 844 scroll/inspector/search route: five frames, three navigation clicks, two scrolls,306.950 seconds allocation through verified owned-tab cleanup. All three owned tabs were absent and two unrelated tabs/URLs were preserved. Exact grant time was recovered from the incoming chat receipt; earlier conservative timing receipts remain historical. Seven decisive captures passed independent review. AX was document-only, the halo was depicted, and DE right-edge viewer cropping remains explicit. No whole WF-005, CRM, native-auth, elapsed-minute, provider, keyboard or AT acceptance is claimed.
+
+The local canonical 0098 migration metadata and exact published upgrade fixture pair were adopted from the immutable Main duration increment. All 98 historical SQL bodies remain identical. The unchanged normal source loader now reads 99 entries after previously rejecting the private journal gap. This source-loader result is separate from normal database migration, private populated-upgrade execution and the first real UI author/publish/wait/task journey. Main owns sequential integration, current privacy source bindings/inventory and exact-head CI. WF-001 through WF-042 remains active and incomplete.

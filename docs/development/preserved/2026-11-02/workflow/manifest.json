@@ -1,0 +1,899 @@
+{
+  "module": "workflow",
+  "sourceBranch": "codex/preserve-workflow-20261102",
+  "originalHead": "9ab13d225e98c7bbe88042505c03dd0bbec01324",
+  "baseMain": "09288d518fd574fd069fb6a1dc670596f71a8831",
+  "files": [
+    {
+      "originalPath": ".safe-stop/2026-11-02/MANIFEST.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/MANIFEST.json.source",
+      "gitBlob": "fab13c639125afd0ecb89ba419887f0e1b4ef3b4",
+      "originalMode": "100644",
+      "sha256": "aea959f383c10030f800a5f38cf8a48e89f43f8232d2d6e1122689b6bb066c61",
+      "bytes": 51192
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/branch-sync/SYNC.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/branch-sync/SYNC.json.source",
+      "gitBlob": "b3390a38204ac541e538e5fa9f279326bbb133eb",
+      "originalMode": "100644",
+      "sha256": "8b1d54c496e9f60fddfb0066b7dfa6ad219c0ec7ab2b347b7c68971426a0e4c0",
+      "bytes": 3254
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/branch-sync/SYNC.md",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/branch-sync/SYNC.md.source",
+      "gitBlob": "58d7d95952158e098e5c735e17a8874f137e4654",
+      "originalMode": "100644",
+      "sha256": "be24c553b009f7af733d938ee300cd58297992ea8fa91dab7d15907730e83625",
+      "bytes": 1111
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/preexisting/.workflow-red.vitest.config.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/preexisting/.workflow-red.vitest.config.ts.source",
+      "gitBlob": "39baaee6c9e8e01f3190d97e9da4205679eca159",
+      "originalMode": "100644",
+      "sha256": "3f209d02e5b373bf143755394bcd9402a575e389e7e34d09237a6795ca1d85eb",
+      "bytes": 670
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/connection-insertion/QUALIFICATION.md",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/connection-insertion/QUALIFICATION.md.source",
+      "gitBlob": "cde1060051f9e0b5ec3395a1ab6bfa058909db11",
+      "originalMode": "100644",
+      "sha256": "c232d5d44339154ba697a58ba7a1c3b2b5812570d8c46b145b86376e53f2f470",
+      "bytes": 1063
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/connection-insertion/affected-green-cleanup.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/connection-insertion/affected-green-cleanup.json.source",
+      "gitBlob": "71c0a338d342f7ad202692d8eaf7e013e5cc1014",
+      "originalMode": "100644",
+      "sha256": "8ddb4e681c68c95ac8232402acb8272538499eb03b34d6e134c97011573b6149",
+      "bytes": 1384
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/connection-insertion/affected-green-preflight.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/connection-insertion/affected-green-preflight.json.source",
+      "gitBlob": "daf4fe9dee9c931736c3518318fef9c964238247",
+      "originalMode": "100644",
+      "sha256": "448f1fee1e92c244f92f4fbdf4a375203478e8450ae887bed13e6533da8c51bf",
+      "bytes": 4127
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/connection-insertion/affected29-observed.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/connection-insertion/affected29-observed.json.source",
+      "gitBlob": "73e479a6ec3d790ade1561c2993437bac5f7fca7",
+      "originalMode": "100644",
+      "sha256": "bedcdaa8eb12ef8567959f2e92a6d35a1b6a966c17028d6fb14a40bb36ea4dab",
+      "bytes": 4991
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/connection-insertion/affected34-cleanup.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/connection-insertion/affected34-cleanup.json.source",
+      "gitBlob": "7d40fb1d55bf8b8e5da9bac47edf60fc7bbe3418",
+      "originalMode": "100644",
+      "sha256": "6c3e6604efe8d174bb3e9deb4a0f9b2d5df76052631404dec6cfcf943e9b16d5",
+      "bytes": 2433
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/connection-insertion/affected34-observed.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/connection-insertion/affected34-observed.json.source",
+      "gitBlob": "4aad0df8a51bf1d38ee4e5cfc712a7e0df76f1b5",
+      "originalMode": "100644",
+      "sha256": "be69f44100b8853629d5c19dda0055c1313050a3896d44f756e3bb90927fc55f",
+      "bytes": 6163
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/connection-insertion/affected34-preflight.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/connection-insertion/affected34-preflight.json.source",
+      "gitBlob": "275acde45a9c24999b03612e93d6f986c0fcee26",
+      "originalMode": "100644",
+      "sha256": "25f164145be4a9ae5924c03b04d1bf355b90a56457cf016c2439d2fb968b6eb1",
+      "bytes": 4299
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/connection-insertion/clearance-red5-cleanup.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/connection-insertion/clearance-red5-cleanup.json.source",
+      "gitBlob": "732bfa7ebb549164c59bb48dd511e1bc7fb81f40",
+      "originalMode": "100644",
+      "sha256": "da3066cf77bc62910c8416280f6c7ed233d07eff55439ce34939e161845a46fd",
+      "bytes": 1979
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/connection-insertion/clearance-red5-observed.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/connection-insertion/clearance-red5-observed.json.source",
+      "gitBlob": "be8f63f30eb3a605f9c70a88e2f36d742af1efd1",
+      "originalMode": "100644",
+      "sha256": "bf5216bec3f248643cb195404903a86a362f736af409863532a0d4887de005cc",
+      "bytes": 2663
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/connection-insertion/clearance-red5-preflight.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/connection-insertion/clearance-red5-preflight.json.source",
+      "gitBlob": "a5e1b8f3a0cd1c3b9d321715ef3d50382e1990c7",
+      "originalMode": "100644",
+      "sha256": "40c105416cd09e8fcb8b6602fd69d482101d1db8a16a8b11bff8899d7abe4dc5",
+      "bytes": 1535
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/connection-insertion/docs-final-observed.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/connection-insertion/docs-final-observed.json.source",
+      "gitBlob": "9acfcb05a2386df1f407501a1850a5f68eb2925f",
+      "originalMode": "100644",
+      "sha256": "f3d5fa267e566ae9dcca5a650ca252a6d0af6fee0636bd16ce54e6a55a11460a",
+      "bytes": 301
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/connection-insertion/docs-update.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/connection-insertion/docs-update.json.source",
+      "gitBlob": "9446cf02b02295f125e96727099c8fc60b6a6ccf",
+      "originalMode": "100644",
+      "sha256": "1334836b4608da7d99d1cf6a68fe31af3122c84ac3242db7a5bbcd12ecf66919",
+      "bytes": 4475
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/connection-insertion/docs-update.patch",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/connection-insertion/docs-update.patch.source",
+      "gitBlob": "60585899dd2713e3e02453996cbdfee24e46060c",
+      "originalMode": "100644",
+      "sha256": "35b53e0ea6cd0c125eb0d07c5b9387c3aa0253456ac250e7c78f8d04f3c5cc9e",
+      "bytes": 5595
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/connection-insertion/docs-update.sha256",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/connection-insertion/docs-update.sha256.source",
+      "gitBlob": "da6e4d7b02290f6ee86f9b578b142b0de84f2389",
+      "originalMode": "100644",
+      "sha256": "112f2b75fe52b26dcc0a97611423d342c5bb4908b1222b821c3fc500feadf8ab",
+      "bytes": 835
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/connection-insertion/final-format12-admission.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/connection-insertion/final-format12-admission.json.source",
+      "gitBlob": "b4a751858531d071a1c5f7938376d427b4bb6479",
+      "originalMode": "100644",
+      "sha256": "29e4945ba7f38d6a883e39000ec0d6336030c20acbb072a82557d19ef91049e0",
+      "bytes": 214
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/connection-insertion/nodeLayout-before-placement-fix.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/connection-insertion/nodeLayout-before-placement-fix.json.source",
+      "gitBlob": "ad239f2d87c2d8c8b5bc8481a6447c7e4a7ff88e",
+      "originalMode": "100644",
+      "sha256": "56d5591be80498ce76504b4c0def3cbd996d8f3e69940bc597f36a45e4150d31",
+      "bytes": 456
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/connection-insertion/placement-red8-cleanup.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/connection-insertion/placement-red8-cleanup.json.source",
+      "gitBlob": "15547067f0702ac140e33e3258923581a435a93c",
+      "originalMode": "100644",
+      "sha256": "7b183b05cc01b1e05b2f197bc163fcc8edb5e41754a591637c58eb58eabbc691",
+      "bytes": 1466
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/connection-insertion/placement-red8-observed.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/connection-insertion/placement-red8-observed.json.source",
+      "gitBlob": "d17e1318a7781327aeabe8facbf7c45c440b5ee9",
+      "originalMode": "100644",
+      "sha256": "f99b8633c3c3b43b136cba3aee60b6b0c74e4ce471ce06fc25b39439b741fe20",
+      "bytes": 2192
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/connection-insertion/placement-red8-preflight.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/connection-insertion/placement-red8-preflight.json.source",
+      "gitBlob": "3f16cdb5c82aed935366e87f8108b9efd48cfbbd",
+      "originalMode": "100644",
+      "sha256": "623f51aa32edac712d3c54be31a4491c8ac22a5d018fa59c50cc04868ed4d127",
+      "bytes": 2467
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/connection-insertion/qualification.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/connection-insertion/qualification.json.source",
+      "gitBlob": "1ff69fd49f5663dc038cbb0139af586ec500e4b2",
+      "originalMode": "100644",
+      "sha256": "50c4be61a79d5fdf38ae2e66b06eaa4a4836a1613291c471426b16c60fbffeab",
+      "bytes": 1321
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/connection-insertion/ready-summary.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/connection-insertion/ready-summary.json.source",
+      "gitBlob": "49e75269d84a1198aebe0bc9f7d2217eb5478213",
+      "originalMode": "100644",
+      "sha256": "72fa0aaf3ebc592864d389b723751341548c8d754ec3519be4cb5923115d86ce",
+      "bytes": 1920
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/connection-insertion/red8-cleanup.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/connection-insertion/red8-cleanup.json.source",
+      "gitBlob": "ebefaff470166c48d1036afaa243e54ae074710f",
+      "originalMode": "100644",
+      "sha256": "2442072c5249b1403b64b2171c75ba7fe4eeb393f5ee9b68fd6fd01e0e2f473a",
+      "bytes": 373
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/connection-insertion/red8-live-sample.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/connection-insertion/red8-live-sample.json.source",
+      "gitBlob": "9780b2ca0e7ab59ff5246f3a6fbb8bf22befd929",
+      "originalMode": "100644",
+      "sha256": "c1d6dfc6e149f11b6d319a22fe1ccf9ace88be92521f859e9abd34e3f7d8e371",
+      "bytes": 1022
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/connection-insertion/red8-observed.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/connection-insertion/red8-observed.json.source",
+      "gitBlob": "e3f46f46e2fedc2ada7e0d16d23e12951985a559",
+      "originalMode": "100644",
+      "sha256": "d423aa3d1a718c6c6d2105e5422a630a686b50955e1d60fb94967936dab08a70",
+      "bytes": 1322
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/connection-insertion/red8-preflight.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/connection-insertion/red8-preflight.json.source",
+      "gitBlob": "fa2d070f2681d401a5660ab9cb09d7174ef6c902",
+      "originalMode": "100644",
+      "sha256": "e567b8f8ef570ad50cc075a91c84e7fd1a89e75c8d021db79c6f5730d1d4261e",
+      "bytes": 2146
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/connection-insertion/red8-r2-cleanup.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/connection-insertion/red8-r2-cleanup.json.source",
+      "gitBlob": "f0e0f91fe9572d8bd0f8e865a4f929d1c48881b0",
+      "originalMode": "100644",
+      "sha256": "6e1331942f7f0fe6d021946c52956edcf4b4f965972bee59bb328159e5e6a904",
+      "bytes": 2903
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/connection-insertion/red8-r2-observed.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/connection-insertion/red8-r2-observed.json.source",
+      "gitBlob": "bc430cbb9b59227a63cda215a430c832a01a1b14",
+      "originalMode": "100644",
+      "sha256": "e22bdad5cb6f3ff4bb63ff9011808f212a3c5f19801f9f3220c9032e222f38ef",
+      "bytes": 3765
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/connection-insertion/red8-r2-preflight.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/connection-insertion/red8-r2-preflight.json.source",
+      "gitBlob": "dbbdac775def3a144e7edefdd1553b3e02e39eb2",
+      "originalMode": "100644",
+      "sha256": "8b4309d0873f2b4207fd99765adc557bb055a223d2bed2cdfb4c8412bd900e99",
+      "bytes": 2345
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/connection-insertion/review-final.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/connection-insertion/review-final.json.source",
+      "gitBlob": "205196d1f2743d187c0bc5d433f128bdd065482a",
+      "originalMode": "100644",
+      "sha256": "9b0adfde5a4bcb66d33121fe04869adb3cf8e5402669201413fe66588211d309",
+      "bytes": 4339
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/connection-insertion/review-final.md",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/connection-insertion/review-final.md.source",
+      "gitBlob": "ad45bee2c0cf8783ec95231b3899eaba0d10dbea",
+      "originalMode": "100644",
+      "sha256": "37c65df35ea60a987432a8c0a1842e01b4214656911091122b9aaf50dd784ac6",
+      "bytes": 2868
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/connection-insertion/review.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/connection-insertion/review.json.source",
+      "gitBlob": "e8c17a90a7044e581ecd72834bbbf110ee918458",
+      "originalMode": "100644",
+      "sha256": "3db2ec8ace9adbe182851926107c5b2e2d5936479cbfc851c1e3e7e2caae3d09",
+      "bytes": 5816
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/connection-insertion/review.md",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/connection-insertion/review.md.source",
+      "gitBlob": "7fd0580b5082e7554a3ec3ff325a61c7bfcbd026",
+      "originalMode": "100644",
+      "sha256": "cd5a7d039116c287d127dc16166b108ad47cef2311905ffa2c0e5e98293010a0",
+      "bytes": 3704
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/connection-insertion/static11-plan.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/connection-insertion/static11-plan.json.source",
+      "gitBlob": "a8fc4e066cf84ac1cce87060c8bdd6dca148c3aa",
+      "originalMode": "100644",
+      "sha256": "96822b01554721966d24c91e1edf08aa344f10195841ed6c58eca6be64e6ca28",
+      "bytes": 74713
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/connection-insertion/static12-cleanup.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/connection-insertion/static12-cleanup.json.source",
+      "gitBlob": "ce589f3625ee3582bb399e9a88b8e1b03742af81",
+      "originalMode": "100644",
+      "sha256": "a6920394ab7369dd5ea83d1515a708dba41e0d0d2322cfcb6693aef861ea182e",
+      "bytes": 1853
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/connection-insertion/static12-command-terminal.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/connection-insertion/static12-command-terminal.json.source",
+      "gitBlob": "faf855915b0ca4b47804305f6e44bed9a8890643",
+      "originalMode": "100644",
+      "sha256": "999f76a3bc2080d67d006542ce705f23447e24622398c4eb8578a0ffc4f5090a",
+      "bytes": 4266
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/connection-insertion/static12-launch.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/connection-insertion/static12-launch.json.source",
+      "gitBlob": "1134115df8c208af569f05e8a7884c204a42c7ee",
+      "originalMode": "100644",
+      "sha256": "f16169d670322d08309c1b6f6554e6f5eedf5a328600733e1a20d0ea7ba54de2",
+      "bytes": 2299
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/connection-insertion/static12-observed.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/connection-insertion/static12-observed.json.source",
+      "gitBlob": "1570f972c3113fabfef10023fb33204b258a77bb",
+      "originalMode": "100644",
+      "sha256": "21162dc9c76a619bf08dfcdb668439414b56fd0ba2c740cb844a0d7ad8d74eee",
+      "bytes": 1444
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/connection-insertion/static12-plan.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/connection-insertion/static12-plan.json.source",
+      "gitBlob": "ca38dec1ae0076f28f5d4637af3a7ebaa7ebf26d",
+      "originalMode": "100644",
+      "sha256": "ad57a1afe4f0b28b9330b58e0c75bd4f1f609721df464889d26458b198dfa4fe",
+      "bytes": 75358
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/connection-insertion/static12-preflight.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/connection-insertion/static12-preflight.json.source",
+      "gitBlob": "76d42f8ccff251419ca3cfde96c8c17f0bd1a505",
+      "originalMode": "100644",
+      "sha256": "dd2f73cb5c3edf9de28cb7487928085bfd8f668b18ed9ba05c9a3391be33efde",
+      "bytes": 2059
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/connection-insertion/static12-readiness-refresh.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/connection-insertion/static12-readiness-refresh.json.source",
+      "gitBlob": "52d5cef86a66aba219e45319329ba4841072a7de",
+      "originalMode": "100644",
+      "sha256": "c0cb8deb48f7771cff3e8e3c49ce531e7dfb54122ed816c0b893440e265e9899",
+      "bytes": 382
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/connection-insertion/static12-request-sent.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/connection-insertion/static12-request-sent.json.source",
+      "gitBlob": "8e7d3330206b018c37aa86f60f1b5839c8a0f549",
+      "originalMode": "100644",
+      "sha256": "dd118117c08e47269ecc06d17a5c21b8ed610fb20d8687f09d8e8a17ef77f802",
+      "bytes": 413
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/ordered-step-navigation/CURRENT-HANDOFF.md",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/ordered-step-navigation/CURRENT-HANDOFF.md.source",
+      "gitBlob": "1f024a111a7ed9ac8d315c808d909a2cecd4b33d",
+      "originalMode": "100644",
+      "sha256": "365719f650c715ea5d55d81f43c5e57eb421d0aad8d511e41a062d7deaa72220",
+      "bytes": 1678
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/ordered-step-navigation/biome12-raw.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/ordered-step-navigation/biome12-raw.json.source",
+      "gitBlob": "e8966bf6c7503c8cada97b0bba56a151288418cf",
+      "originalMode": "100644",
+      "sha256": "f7ccd489ceb0ff637821daffcf2958437fdb28763e53b5a54b9485e50412c446",
+      "bytes": 2838
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/ordered-step-navigation/current-workflow-continuation-checkpoint.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/ordered-step-navigation/current-workflow-continuation-checkpoint.json.source",
+      "gitBlob": "530d805876729987047d60f4ea87190731cb9191",
+      "originalMode": "100644",
+      "sha256": "15718a0992be2226409f21491eb14eac0981244a7fda426bbbe256a3bd16f3cf",
+      "bytes": 112818
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/ordered-step-navigation/current-workflow-duration-wait-current-source.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/ordered-step-navigation/current-workflow-duration-wait-current-source.json.source",
+      "gitBlob": "69f38b59fba9083d2f5d6019693f1eeb30c5639b",
+      "originalMode": "100644",
+      "sha256": "42b3fc5a10d7c3f8f003f6233f97100120bb41cd93b9ace50d866263073a8446",
+      "bytes": 62568
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/ordered-step-navigation/docs-append-observed.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/ordered-step-navigation/docs-append-observed.json.source",
+      "gitBlob": "7d3423b2bac11b30bd35aa4b2b0394d393d907c5",
+      "originalMode": "100644",
+      "sha256": "65098988dd55dc95b1f2b399c73ee2d5b3d87292c5ab86637b7213fd5200b8cb",
+      "bytes": 984
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/ordered-step-navigation/green-affected-observed.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/ordered-step-navigation/green-affected-observed.json.source",
+      "gitBlob": "da6a01e54b044073402390ad2316f8a79712fdf9",
+      "originalMode": "100644",
+      "sha256": "690e0465318cea9963f4a898a1604cbd76033c240e89d1b0d8dfac06f8046156",
+      "bytes": 1413
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/ordered-step-navigation/green-affected-preflight.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/ordered-step-navigation/green-affected-preflight.json.source",
+      "gitBlob": "430f7ce100f9f2f932e15e786f6ddb0ea29dff3d",
+      "originalMode": "100644",
+      "sha256": "6342583174ef035a7f542d04cee4f93b4f6e72efdd5e3c637d28816b7a81e21b",
+      "bytes": 1590
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/ordered-step-navigation/handoff-availability.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/ordered-step-navigation/handoff-availability.json.source",
+      "gitBlob": "1545442242e4ae67b940e1260abdaa14a3795fd8",
+      "originalMode": "100644",
+      "sha256": "2f57bce436481ffce566a297c2a6eb79da0f84a7c3138cbb4beb7c52529a7ad0",
+      "bytes": 1342
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/ordered-step-navigation/pure-red-observed.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/ordered-step-navigation/pure-red-observed.json.source",
+      "gitBlob": "2ebb7b3d0695c22e49ee76235d2737688f86921a",
+      "originalMode": "100644",
+      "sha256": "f45cd76b012107b89d08054afe99d514aedc10b180498b6b3d13208ebfc0df85",
+      "bytes": 552
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/ordered-step-navigation/pure-red-preflight.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/ordered-step-navigation/pure-red-preflight.json.source",
+      "gitBlob": "8d87483f4f030d2c65e48d6a818e54e3e7d49c58",
+      "originalMode": "100644",
+      "sha256": "5897b15321163a944b0269408a69b454b0b73def23ca9087ef111bb9d0fbc8f1",
+      "bytes": 337
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/ordered-step-navigation/ready-summary.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/ordered-step-navigation/ready-summary.json.source",
+      "gitBlob": "aef80e6b720ab71e7d84d26f235ffc77358f0006",
+      "originalMode": "100644",
+      "sha256": "7c237b45fbb97842dd7495c25d81d62e5f1808eb95e063e72aa2d8854e4324ad",
+      "bytes": 1102
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/ordered-step-navigation/red-surfaces-observed.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/ordered-step-navigation/red-surfaces-observed.json.source",
+      "gitBlob": "56c52077ac3db1759c5892bce80d4d969193c02e",
+      "originalMode": "100644",
+      "sha256": "7df44e5611c81f2d8edbb56e262024c587fa4f982317e4cf574be4e4ff719a00",
+      "bytes": 868
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/ordered-step-navigation/red-surfaces-preflight.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/ordered-step-navigation/red-surfaces-preflight.json.source",
+      "gitBlob": "a49aa7b302d70a7cd0ec08aa9cb0e7743b972b69",
+      "originalMode": "100644",
+      "sha256": "85454bb246f2151fd74c702746a3be61091782dbe40806834b42ea3314124f17",
+      "bytes": 1699
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/ordered-step-navigation/red-surfaces-r2-observed.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/ordered-step-navigation/red-surfaces-r2-observed.json.source",
+      "gitBlob": "b8bbb5f03a94ecbcbfea03b00e291208b0122010",
+      "originalMode": "100644",
+      "sha256": "6a2f6034288af1c68600b5e9f2afb96fc5abaa449f76a186a7560bd8fe1821cb",
+      "bytes": 565
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/ordered-step-navigation/red-surfaces-r2-preflight.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/ordered-step-navigation/red-surfaces-r2-preflight.json.source",
+      "gitBlob": "b919e27c5d59bed49076390e987b36249d1ac82a",
+      "originalMode": "100644",
+      "sha256": "fb7efd1bd8469e675710a23373ff907849f87719f1c4e8d0687e1292a41dfb86",
+      "bytes": 505
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/ordered-step-navigation/red7-observed.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/ordered-step-navigation/red7-observed.json.source",
+      "gitBlob": "bc70ec9548166c523c9fd18d95c004ce2a653fe9",
+      "originalMode": "100644",
+      "sha256": "589d3982f45af6a114482e0ce2c30baffb34a23a238ecefe5baccb2b4fe2cc10",
+      "bytes": 689
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/ordered-step-navigation/red7-preflight.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/ordered-step-navigation/red7-preflight.json.source",
+      "gitBlob": "bff56d2627b5ab1f958de6bd2f85bd08068778dc",
+      "originalMode": "100644",
+      "sha256": "7bc1eaef7aba211760134a842f9eb874689a647643033828a47dba570978fe40",
+      "bytes": 583
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/ordered-step-navigation/review.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/ordered-step-navigation/review.json.source",
+      "gitBlob": "9f337e94ebf0e321b4754b9aed3f1c78c740f62e",
+      "originalMode": "100644",
+      "sha256": "776aef60171c836d56f9c6abc36e6b5894372828e7a5710c5bce3e221d7295ff",
+      "bytes": 8698
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/ordered-step-navigation/review.md",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/ordered-step-navigation/review.md.source",
+      "gitBlob": "9a35c0c52148fca0763c410e818853e59705b39e",
+      "originalMode": "100644",
+      "sha256": "16327a8f22b3522f759ef3f6fd93f20f2476711a6231da57f9d83c0dc47cf237",
+      "bytes": 3465
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/ordered-step-navigation/static14-plan.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/ordered-step-navigation/static14-plan.json.source",
+      "gitBlob": "e2ce9e716b7b46c1a0fe2309bf10bb169b53b2be",
+      "originalMode": "100644",
+      "sha256": "78d7bf89f3288ec8fe71ec510cc047bbaffda65881613dcd4e755bf9c0364bc4",
+      "bytes": 77331
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/ordered-step-navigation/static14-readiness-current.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/ordered-step-navigation/static14-readiness-current.json.source",
+      "gitBlob": "002915c58a080ec7b461fb864ce520aaa6e86dbf",
+      "originalMode": "100644",
+      "sha256": "01e5a5c06cace1a5d769bcadc3c40ecec28e96351c3316e651b23849b983a4b9",
+      "bytes": 276
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/ordered-step-navigation/test-first-plan.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/ordered-step-navigation/test-first-plan.json.source",
+      "gitBlob": "dd00eea3fd0c6800c73b0567237a40fd27f37c25",
+      "originalMode": "100644",
+      "sha256": "1932b6c514f92751205749c281e5dc19199effec78fa1248687180ec62fb7bf9",
+      "bytes": 877
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/prototype-visual2/admission.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/prototype-visual2/admission.json.source",
+      "gitBlob": "0a97b3b62590d98c4aa3dd0888400c54cf9e9a7d",
+      "originalMode": "100644",
+      "sha256": "a006a2f6e9b79a63cdd057e2bc80c7071911b03d587f3f362e8094f24ef3894c",
+      "bytes": 335
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/prototype-visual2/exact-timing-addendum.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/prototype-visual2/exact-timing-addendum.json.source",
+      "gitBlob": "7184271f9a6b14417532bc28371e36957ece2292",
+      "originalMode": "100644",
+      "sha256": "bfdf8b3b3b09f8eb907a74a899a324c9e4e24f187b3687ac2dd725badfbc4f31",
+      "bytes": 771
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/prototype-visual2/grant-receipt-log-match.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/prototype-visual2/grant-receipt-log-match.json.source",
+      "gitBlob": "74878398a1e8eba4094c55a3d424132bebdbf025",
+      "originalMode": "100644",
+      "sha256": "7af943a998a27717efdec04dfeda9538b6aa59b19bde6c3a4e3f2a9ff33b3e23",
+      "bytes": 670
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/prototype-visual2/grant-receipt-proof.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/prototype-visual2/grant-receipt-proof.json.source",
+      "gitBlob": "ec7a0b67f5e637c862fcbb131db44d9aaf9511eb",
+      "originalMode": "100644",
+      "sha256": "edc583cd178bbe9a350a3b347b4382b04b1c320c975a461ef96572b3dd7d28c5",
+      "bytes": 545
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/prototype-visual2/observed.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/prototype-visual2/observed.json.source",
+      "gitBlob": "c38c57cd59243be4d1c28ce3ad5c523e28f4f0eb",
+      "originalMode": "100644",
+      "sha256": "0e7839c285a87f6181d88a87113cbd6b929b3144d78178c26df7c2a0a9749865",
+      "bytes": 4993
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/prototype-visual2/owned-tab-cleanup.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/prototype-visual2/owned-tab-cleanup.json.source",
+      "gitBlob": "4cfc8513e8b932c6211765168717b3e7d099af05",
+      "originalMode": "100644",
+      "sha256": "8a63dca288b99166d6864092f6127d72986d065220cb14567b29e7b1d7bf1f89",
+      "bytes": 653
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/prototype-visual2/review.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/prototype-visual2/review.json.source",
+      "gitBlob": "71240704ae2f878d415f6196f466f97983101c9a",
+      "originalMode": "100644",
+      "sha256": "fc61c55ce75a560fb369f66ca2170667b50dfc42e4796dec9a76f61cdec93c12",
+      "bytes": 14822
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/prototype-visual2/review.md",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/prototype-visual2/review.md.source",
+      "gitBlob": "b7713c1f1fd01e3c114d8042b503b49bb2002251",
+      "originalMode": "100644",
+      "sha256": "f4de2936a16949f88f802f51cd094567498284ed3906ded71034cd4369dff6e6",
+      "bytes": 4540
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/prototype-visual2/source-freeze-readback.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/prototype-visual2/source-freeze-readback.json.source",
+      "gitBlob": "ec3f583a396efba0a3ca2b5b765475212110d46e",
+      "originalMode": "100644",
+      "sha256": "7c22650ace56810182de60ac8b863f94f079494eb53262a622882943b541777e",
+      "bytes": 380
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/prototype-visual2/terminal-resource.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/prototype-visual2/terminal-resource.json.source",
+      "gitBlob": "915614beda92eb22c09af1a86cb25fdc5dccb141",
+      "originalMode": "100644",
+      "sha256": "d2f0a14fcffd5b99cd16973ecf724fa199436f5825a4193810ea951ac104948d",
+      "bytes": 510
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/safe-stop/SAFE-STOP.md",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/safe-stop/SAFE-STOP.md.source",
+      "gitBlob": "b758965e60a32b7d00d5ba629c082e13003db250",
+      "originalMode": "100644",
+      "sha256": "f7d7b64d22c6f775f4c6306e432d7e452a21c9d6a103260593c689a6e064d989",
+      "bytes": 4207
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/safe-stop/local-evidence-inventory.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/safe-stop/local-evidence-inventory.json.source",
+      "gitBlob": "60aa7dd4b78db775899abeddc79d813fe3ec287d",
+      "originalMode": "100644",
+      "sha256": "dad2d3af37e7419a1f212e183ae2e922dab7eff291220547dcdeafe0aa3e21df",
+      "bytes": 94549
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/safe-stop/manifest.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/safe-stop/manifest.json.source",
+      "gitBlob": "17f8e5bee400a755c557358db46ce24ecda2a634",
+      "originalMode": "100644",
+      "sha256": "bccd1db7887a69d799e2ed660d4b4cd03ed375416f8cfcc37be89936c7c81a16",
+      "bytes": 17026
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/safe-stop/owned-allowlist.txt",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/safe-stop/owned-allowlist.txt.source",
+      "gitBlob": "aa0185fe91254dfb4a3a9126b746399ba676aed4",
+      "originalMode": "100644",
+      "sha256": "9bf355d8a768f4cb76880f62205162bbd71d50ac8c79cc848b30ddd047c7a85d",
+      "bytes": 3388
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/safe-stop/owned-dirty-untracked-allowlist.txt",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/safe-stop/owned-dirty-untracked-allowlist.txt.source",
+      "gitBlob": "3141fd89e727ae518c46b9d6984fc91c369f5c41",
+      "originalMode": "100644",
+      "sha256": "9dcb862108730fca88b512e4ca478a4eb1f3c1f5f7d7a5c2d3bb8b157e140c0f",
+      "bytes": 3388
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/safe-stop/owned-git-status.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/safe-stop/owned-git-status.json.source",
+      "gitBlob": "4b7e38d04b5ad6223684cbf9802141bfedb49877",
+      "originalMode": "100644",
+      "sha256": "daa512d53b6afe20e7b83f19d941ae290a5a2b31711f6b957f7555fe73c5c491",
+      "bytes": 6355
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/workflow/safe-stop/source.sha256",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/handoff/2026-11-02/workflow/safe-stop/source.sha256.source",
+      "gitBlob": "cb57aa55a56792b339515d5f8c7dc69719909b04",
+      "originalMode": "100644",
+      "sha256": "37f38bee1764b385849d00d8ff8a3a0aeeae9639ac4944f158e202bcdc9e5fdf",
+      "bytes": 8404
+    },
+    {
+      "originalPath": "docs-site/docs/features/automations.md",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/source/docs-site/docs/features/automations.md.source",
+      "gitBlob": "ca1285aad2593b06aa42b51901986f21008917e8",
+      "originalMode": "100644",
+      "sha256": "41d3ad6dd16b05dfee09bc6b43619265efdbe57c47a8c3b7638c6ec87f6602f3",
+      "bytes": 10465
+    },
+    {
+      "originalPath": "docs/workflows/CONTINUATION.md",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/source/docs/workflows/CONTINUATION.md.source",
+      "gitBlob": "2bbc613e455a6f1d879f04634a8bf9040f9c4573",
+      "originalMode": "100644",
+      "sha256": "4dbaf3532b43c8134bf2bf5e901aaa871c8bc3565b9617c57481a3491d80857b",
+      "bytes": 34109
+    },
+    {
+      "originalPath": "docs/workflows/status.md",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/source/docs/workflows/status.md.source",
+      "gitBlob": "494de853d9f76f32247cbe2012fd40e1338b0c2b",
+      "originalMode": "100644",
+      "sha256": "498776bc1dc50432692d82d39fbb997dc22c63f108531b16373ab8dce66aa97d",
+      "bytes": 62384
+    },
+    {
+      "originalPath": "scripts/workflow-browser-seed.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/source/scripts/workflow-browser-seed.ts.source",
+      "gitBlob": "e84b973fdbf58d60a864bd03230945e50f8c1896",
+      "originalMode": "100644",
+      "sha256": "6e9047fbeb71d04830ba68b8fc03f1f469be05b886bc34b9bb37ed53d3fd200f",
+      "bytes": 1534
+    },
+    {
+      "originalPath": "src/entrypoints/workflowBrowserWorker.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/source/src/entrypoints/workflowBrowserWorker.ts.source",
+      "gitBlob": "5643325b1bff02fd4705daae897cb79d3e46c033",
+      "originalMode": "100644",
+      "sha256": "6a58ffd726a9d39fcada1f6ed1a9bd30edc4d0a419298b289af0fb89368a2888",
+      "bytes": 2347
+    },
+    {
+      "originalPath": "src/features/workflows/browserFixture.test-helpers.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/source/src/features/workflows/browserFixture.test-helpers.ts.source",
+      "gitBlob": "351ce8cbf8145a74213fb12bfab12bf115bdcb5f",
+      "originalMode": "100644",
+      "sha256": "f36b0e2ac55f26ea20d2d2f68ab425c5ff031f558ce281a2c00ba577a50a8894",
+      "bytes": 9120
+    },
+    {
+      "originalPath": "src/features/workflows/connectionGestures.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/source/src/features/workflows/connectionGestures.test.ts.source",
+      "gitBlob": "ded07e5baf6c9ead225789cf91a14c0baa833a07",
+      "originalMode": "100644",
+      "sha256": "829c29dbc0fcceed901dbd8d5e3accc7f25d8658a9eeb5f97da2510a51cb3e19",
+      "bytes": 2470
+    },
+    {
+      "originalPath": "src/features/workflows/connectionGestures.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/source/src/features/workflows/connectionGestures.ts.source",
+      "gitBlob": "674024f696e9600ea7fde7d84152d819f3fb64ed",
+      "originalMode": "100644",
+      "sha256": "f151f3c795c425eec2ea1eb47c407d0a943cee0f3801ccf5a30beb7ee4185251",
+      "bytes": 1425
+    },
+    {
+      "originalPath": "src/features/workflows/connectionInsertion.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/source/src/features/workflows/connectionInsertion.test.ts.source",
+      "gitBlob": "4c9f5d30c12c6bed1a95eb5cfc22303b6c68c6e2",
+      "originalMode": "100644",
+      "sha256": "445efe59dd5e487200e8f6fbce096a768bef1938fdd7a15f08107bbaca17d70c",
+      "bytes": 6460
+    },
+    {
+      "originalPath": "src/features/workflows/messages/workflows.de.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/source/src/features/workflows/messages/workflows.de.json.source",
+      "gitBlob": "704568d31ae943548a7d58d4fb0a1851f434b905",
+      "originalMode": "100644",
+      "sha256": "598caa957b5a885d975854c6cc3b7adfa6b25ef09c02bb1f0e036592c0ed482b",
+      "bytes": 12596
+    },
+    {
+      "originalPath": "src/features/workflows/messages/workflows.en.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/source/src/features/workflows/messages/workflows.en.json.source",
+      "gitBlob": "045dba006e552729128b802a558f27d7753526da",
+      "originalMode": "100644",
+      "sha256": "18e59537ea3d2f8d5868790f6b5db4e2fe3ac6111dba7e47851eaff42b7f65cc",
+      "bytes": 10551
+    },
+    {
+      "originalPath": "src/features/workflows/messages/workflows.fa.json",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/source/src/features/workflows/messages/workflows.fa.json.source",
+      "gitBlob": "1416ed35884459c2a823366980329e8bc628ea84",
+      "originalMode": "100644",
+      "sha256": "5e00117f7aaba912058fb72b32fcb2430e047480d24d144a0b0ee1cb027ba8b3",
+      "bytes": 16251
+    },
+    {
+      "originalPath": "src/features/workflows/nodeLayout.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/source/src/features/workflows/nodeLayout.ts.source",
+      "gitBlob": "01d8a800b02acc56316f3d49b1d081927f8b9198",
+      "originalMode": "100644",
+      "sha256": "7966955c38bff47fb36867a63230ea3339e3fc68bfdc0074930a7099b11c054d",
+      "bytes": 3540
+    },
+    {
+      "originalPath": "src/features/workflows/nodeOrder.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/source/src/features/workflows/nodeOrder.test.ts.source",
+      "gitBlob": "f80ff61c979a10325c2a4f272013422a71915ea8",
+      "originalMode": "100644",
+      "sha256": "fec6d6a94513847d3cfa9b7e92b2968eebacba5efd7dbe15f870cd1487451a41",
+      "bytes": 3611
+    },
+    {
+      "originalPath": "src/features/workflows/nodeOrder.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/source/src/features/workflows/nodeOrder.ts.source",
+      "gitBlob": "dfe6f1badba3773ee7bf45f41d20699a0d043555",
+      "originalMode": "100644",
+      "sha256": "9f1334d3128f1ef785979438985410fca79bf19ce414b666ffd8fa42b053fcf7",
+      "bytes": 1532
+    },
+    {
+      "originalPath": "src/features/workflows/nodePlacement.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/source/src/features/workflows/nodePlacement.test.ts.source",
+      "gitBlob": "d981099335b1c831541c5dbe2eff7f93ebabb3ab",
+      "originalMode": "100644",
+      "sha256": "995f6901ad9f64f646b696202aa68e8136b593934e983ae1bae17dc3f560eb21",
+      "bytes": 2828
+    },
+    {
+      "originalPath": "src/features/workflows/ui/BindingField.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/source/src/features/workflows/ui/BindingField.tsx.source",
+      "gitBlob": "ad18013c33c6112b40aa157b3ac1cbc9dc6cef41",
+      "originalMode": "100644",
+      "sha256": "84b60e2f256fe0bceefe359e20268c7893d8070cc3db51b5d78167e7bc027901",
+      "bytes": 3497
+    },
+    {
+      "originalPath": "src/features/workflows/ui/BuilderWorkspace.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/source/src/features/workflows/ui/BuilderWorkspace.tsx.source",
+      "gitBlob": "75f316ce034b054ebb3882641d86b95c4afa4d36",
+      "originalMode": "100644",
+      "sha256": "446596405640d73895234fe5acb23a1456995523a683e377ecc660677586d059",
+      "bytes": 11534
+    },
+    {
+      "originalPath": "src/features/workflows/ui/ConnectionEditor.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/source/src/features/workflows/ui/ConnectionEditor.tsx.source",
+      "gitBlob": "dbf2777276cc21d8fdcef5044110b130d78d411e",
+      "originalMode": "100644",
+      "sha256": "34c64daa2c3083c7aa523c933cb3ac10d097f18fa7b2bf143b434246a8e25d2c",
+      "bytes": 3588
+    },
+    {
+      "originalPath": "src/features/workflows/ui/ConnectionInsertion.test.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/source/src/features/workflows/ui/ConnectionInsertion.test.tsx.source",
+      "gitBlob": "013326cad5f7a84312755476e5ec5440c3350c9e",
+      "originalMode": "100644",
+      "sha256": "84a7aac98c150b3dafcdb37f3b46361cc150693f8f080e40e076b90e60732d09",
+      "bytes": 10795
+    },
+    {
+      "originalPath": "src/features/workflows/ui/EdgeInspector.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/source/src/features/workflows/ui/EdgeInspector.tsx.source",
+      "gitBlob": "1ad5904b5f8279e55156d7dffcb6ca32a955d710",
+      "originalMode": "100644",
+      "sha256": "7b1ac58dbe9c1268aa3a51688c7169c5ede174ed388efcbfd08ef46d1891b7c9",
+      "bytes": 3813
+    },
+    {
+      "originalPath": "src/features/workflows/ui/NodeOrdinals.test.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/source/src/features/workflows/ui/NodeOrdinals.test.tsx.source",
+      "gitBlob": "031e08603252bc38b1b9d7c10efd1d3bebc1495b",
+      "originalMode": "100644",
+      "sha256": "ae0433f8eff0a5523ecc494a229a882ce23256e980202d70716fd5ee09996b27",
+      "bytes": 4718
+    },
+    {
+      "originalPath": "src/features/workflows/ui/NodePalette.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/source/src/features/workflows/ui/NodePalette.tsx.source",
+      "gitBlob": "2729150848873900ed403214b6d50b13f550202f",
+      "originalMode": "100644",
+      "sha256": "421324b005a73f559b332f6abde063402f5c61403851bf48f757d063fa70b423",
+      "bytes": 4598
+    },
+    {
+      "originalPath": "src/features/workflows/ui/RunTrace.selection.test.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/source/src/features/workflows/ui/RunTrace.selection.test.tsx.source",
+      "gitBlob": "5568ca93f9ae3e35e248d247cf36c3b9734607ba",
+      "originalMode": "100644",
+      "sha256": "d55e5596c0c0164c8d04d299efb35274d7e3ce9cdaa900af625efa29caf50496",
+      "bytes": 3824
+    },
+    {
+      "originalPath": "src/features/workflows/ui/RunTrace.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/source/src/features/workflows/ui/RunTrace.tsx.source",
+      "gitBlob": "207f03d138b684298b72fa2124d9f197032e2450",
+      "originalMode": "100644",
+      "sha256": "6a0a2200609a034388839a32e7851a525e37984a12e0f1fcdd9d0f330fa1aad1",
+      "bytes": 6819
+    },
+    {
+      "originalPath": "src/features/workflows/ui/WorkflowCanvas.test.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/source/src/features/workflows/ui/WorkflowCanvas.test.tsx.source",
+      "gitBlob": "2686814bd1e78db5ffecb113fa944b2d3f3bcf5a",
+      "originalMode": "100644",
+      "sha256": "c64edeb937ba8a23c110151b4fff6522d1596d31a151c3ea90d36d93afe1cd58",
+      "bytes": 5721
+    },
+    {
+      "originalPath": "src/features/workflows/ui/WorkflowCanvas.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/workflow/source/src/features/workflows/ui/WorkflowCanvas.tsx.source",
+      "gitBlob": "a20fe6ad70e57b9cdf9656e72f02f4e3ec8e99ed",
+      "originalMode": "100644",
+      "sha256": "dc58379da396d23d0baf61dd242a2fffcf5741099801f01be6531fc8b7e2c05e",
+      "bytes": 8717
+    }
+  ],
+  "meaning": "Dated inert preservation, not active implementation/qualification. Exact original history is retained by the consolidation merge parents. Only the explicit qualified adoption manifest determines active code.",
+  "originalFileExtensionSuffix": ".source",
+  "activeCodeExecution": false
+}

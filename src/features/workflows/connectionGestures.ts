@@ -24,7 +24,12 @@ export function appendConnectedNode(
   position: NodePosition,
   output: OutputTarget,
 ) {
+  const previous = graph.edges.find(
+    (edge) => edge.from === output.from && edge.port === output.port,
+  );
   const inserted = insertNode(graph, node, position);
   if (inserted === graph) return err("nodeLimit" as const);
-  return connectNodes(inserted, { ...output, to: node.id });
+  const connected = connectNodes(inserted, { ...output, to: node.id }, previous);
+  if (!connected.ok || previous === undefined) return connected;
+  return connectNodes(connected.value, { from: node.id, to: previous.to, port: "next" });
 }

@@ -1,0 +1,40 @@
+{
+  "at": "2026-11-02T03:27:00.937596+00:00",
+  "status": "ADMITTED_STANDING_FOCUSED_UNIT8_NO_PRODUCTION_EDIT",
+  "authorization": "Standingfocusedlane operatingagreement, not a MainheavyID",
+  "cwd": "/Users/ali/.codex/worktrees/workflow-roadmap-owned/warpdrive-builder-ux-20261031",
+  "source_hashes": {
+    "src/features/workflows/connectionGestures.ts": "6913a56a1182e7bf012a747a9f49842d1d3df24abda1d096bf85647014eeab65",
+    "src/features/workflows/connectionGestures.test.ts": "b0131973823950b8f4437af2e7af51a4ef52fe19ee9017742377a5a3a9748921",
+    "src/features/workflows/ui/ConnectionEditor.tsx": "771f3a87c7eb10de60e6017e084ab15bc6dd58e35912c314c4a18b36f3a2a7c7",
+    "src/features/workflows/ui/BuilderWorkspace.tsx": "091ebc66b373ed6ee9da46765c90b19d44d308cf6c4c2b0cf1a973a91709f879",
+    "src/features/workflows/ui/NodePalette.tsx": "b080356e9d05e34c14a1003f3af4feda47de9e54ae195c1aced24e9c8cd4b8bb",
+    "src/features/workflows/messages/workflows.en.json": "4fb9fd5b286d050d897cf8009fce5e9ff8b950d95df2ccbac01d871a544dce12",
+    "src/features/workflows/messages/workflows.fa.json": "99d684e23e3390703bc8040895722c51f56cd7328bcdc056320f7848c351820d",
+    "src/features/workflows/messages/workflows.de.json": "7473dbc37c2e3f87ea80c4b89ef96e1e44d93a7576472af70328f17c5b775029",
+    "src/features/workflows/connectionInsertion.test.ts": "d42e98190070e03cc667e40ef372e9265eeef92f0ca62b2ae183cc0f12abdba7",
+    "src/features/workflows/ui/ConnectionInsertion.test.tsx": "cad8c4366763958fbb792fa9a844d2ac0431bd822bb44377d51eae1a83f2cd31"
+  },
+  "expected_unobserved": {
+    "cases": 8,
+    "intended_RED": 5,
+    "controls": 3
+  },
+  "resources": {
+    "pressure": 1,
+    "available_percent": 53,
+    "free_bytes": 17952022528
+  },
+  "all_four_dotenv_absent": true,
+  "dotenv_absence": {
+    ".env": true,
+    ".env.local": true,
+    ".env.test": true,
+    ".env.test.local": true
+  },
+  "BUN_OPTIONS": "--no-env-file",
+  "vite_env_dir": false,
+  "limit_seconds_including_cleanup": 60,
+  "runtime_scope": "unit-only,1worker; no DB/browser/build/install/service",
+  "log": "/tmp/warpdrive-workflow-connection-insertion-red8-20261102-01.log"
+}
