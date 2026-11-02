@@ -1,0 +1,189 @@
+src/features/agency-projects/feedbackRecord.test-support.ts format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+    62 62 │       {
+    63 63 │         boundary: "channel",
+    64    │ - ······value:·{·...value,·source:·{·...value.source,·channel:·{·kind:·"email",·unexpected:·true·}·}·},
+       64 │ + ······value:·{
+       65 │ + ········...value,
+       66 │ + ········source:·{·...value.source,·channel:·{·kind:·"email",·unexpected:·true·}·},
+       67 │ + ······},
+    65 68 │       },
+    66 69 │       { boundary: "declaration", value: { ...value, unexpected: true } },
+  
+
+src/features/agency-projects/feedbackRecord.test.ts format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+     33  33 │       for (const field of ["projectId", "deliverableId"]) {
+     34  34 │         for (const value of [undefined, null, "same-title"]) {
+     35     │ - ········expect(parseFeedbackDeclaration({·...declaration(),·[field]:·value·})).toEqual(invalidDeclaration);
+         35 │ + ········expect(parseFeedbackDeclaration({·...declaration(),·[field]:·value·})).toEqual(
+         36 │ + ··········invalidDeclaration,
+         37 │ + ········);
+     36  38 │         }
+     37  39 │       }
+     38  40 │       for (const value of [undefined, "", " version/1", "javascript:alert(1)", "v".repeat(2049)]) {
+     39     │ - ······expect(parseFeedbackDeclaration({·...declaration(),·workVersionReference:·value·})).toEqual(invalidDeclaration);
+         41 │ + ······expect(parseFeedbackDeclaration({·...declaration(),·workVersionReference:·value·})).toEqual(
+         42 │ + ········invalidDeclaration,
+         43 │ + ······);
+     40  44 │       }
+     41  45 │     });
+     42  46 │   
+     43  47 │     it("keeps contact authors distinct from internal users and the native recorder", () => {
+     44     │ - ····const·input·=·{·...declaration(),·author:·{·kind:·"external-contact",·personId:·ids.personId.toUpperCase()·}·};
+         48 │ + ····const·input·=·{
+         49 │ + ······...declaration(),
+         50 │ + ······author:·{·kind:·"external-contact",·personId:·ids.personId.toUpperCase()·},
+         51 │ + ····};
+     45  52 │       expect(parseFeedbackDeclaration(input)).toEqual({
+     46  53 │         ok: true,
+    ······· │ 
+     54  61 │     it("requires an explicit source channel without inventing missing evidence", () => {
+     55  62 │       const source = { channel: { kind: "other", label: "  نظر فایل / Dateikommentar  " } };
+     56     │ - ····expect(parseFeedbackDeclaration({·...declaration(),·source·})).toEqual({·ok:·true,·value:·{·...declaration(),·source·}·});
+         63 │ + ····expect(parseFeedbackDeclaration({·...declaration(),·source·})).toEqual({
+         64 │ + ······ok:·true,
+         65 │ + ······value:·{·...declaration(),·source·},
+         66 │ + ····});
+     57  67 │       for (const source of invalidSources()) {
+     58  68 │         expect(parseFeedbackDeclaration({ ...declaration(), source })).toEqual(invalidDeclaration);
+    ······· │ 
+     66  76 │         expect(parseFeedbackCommand({ ...command(), declaration: input })).toEqual(invalidCommand);
+     67  77 │       }
+     68     │ - ····const·input·=·{·...declaration(),·source:·{·channel:·{·kind:·"other",·label:·"نظر\u200c·/·A\u034f"·}·}·};
+         78 │ + ····const·input·=·{
+         79 │ + ······...declaration(),
+         80 │ + ······source:·{·channel:·{·kind:·"other",·label:·"نظر\u200c·/·A\u034f"·}·},
+         81 │ + ····};
+     69  82 │       expect(parseFeedbackDeclaration(input)).toEqual({ ok: true, value: input });
+     70  83 │     });
+    ······· │ 
+     72  85 │     it("rejects unsafe or oversized evidence without rewriting accepted references", () => {
+     73  86 │       for (const evidenceReference of [
+     74     │ - ······"",·"javascript:alert(1)",·"https://user:pass@example.invalid/source",
+     75     │ - ······"https://source.example.invalid/<script>",·"source\u0085ref",·"r".repeat(2049),
+         87 │ + ······"",
+         88 │ + ······"javascript:alert(1)",
+         89 │ + ······"https://user:pass@example.invalid/source",
+         90 │ + ······"https://source.example.invalid/<script>",
+         91 │ + ······"source\u0085ref",
+         92 │ + ······"r".repeat(2049),
+     76  93 │       ]) {
+     77     │ - ······expect(parseFeedbackDeclaration({
+     78     │ - ········...declaration(),·source:·{·channel:·{·kind:·"email"·},·evidenceReference·},
+     79     │ - ······})).toEqual(invalidDeclaration);
+         94 │ + ······expect(
+         95 │ + ········parseFeedbackDeclaration({
+         96 │ + ··········...declaration(),
+         97 │ + ··········source:·{·channel:·{·kind:·"email"·},·evidenceReference·},
+         98 │ + ········}),
+         99 │ + ······).toEqual(invalidDeclaration);
+     80 100 │       }
+     81 101 │     });
+    ······· │ 
+     84 104 │       "requires substantive %s without removing embedded Persian joiners",
+     85 105 │       (field) => {
+     86     │ - ······const·withReference·=·(value:·string)·=>·field·===·"workVersionReference"
+     87     │ - ········?·{·...declaration(),·workVersionReference:·value·}
+     88     │ - ········:·{·...declaration(),·source:·{·...declaration().source,·evidenceReference:·value·}·};
+        106 │ + ······const·withReference·=·(value:·string)·=>
+        107 │ + ········field·===·"workVersionReference"
+        108 │ + ··········?·{·...declaration(),·workVersionReference:·value·}
+        109 │ + ··········:·{·...declaration(),·source:·{·...declaration().source,·evidenceReference:·value·}·};
+     89 110 │         for (const value of ["\u200c", "\u2066\u2069", " \u200c "]) {
+     90 111 │           expect(parseFeedbackDeclaration(withReference(value))).toEqual(invalidDeclaration);
+    ······· │ 
+     96 117 │   
+     97 118 │     it("requires substantive bounded text without stripping embedded Persian joiners", () => {
+     98     │ - ····for·(const·text·of·["",·"·\n\t",·"\u200c",·"\u2066\u2069",·"text\u0000",·"text\u0085",·"x".repeat(2001)])·{
+        119 │ + ····for·(const·text·of·[
+        120 │ + ······"",
+        121 │ + ······"·\n\t",
+        122 │ + ······"\u200c",
+        123 │ + ······"\u2066\u2069",
+        124 │ + ······"text\u0000",
+        125 │ + ······"text\u0085",
+        126 │ + ······"x".repeat(2001),
+        127 │ + ····])·{
+     99 128 │         expect(parseFeedbackDeclaration({ ...declaration(), text })).toEqual(invalidDeclaration);
+    100 129 │       }
+    ······· │ 
+    106 135 │       "rejects default-ignorable-only %s while preserving embedded characters",
+    107 136 │       (field) => {
+    108     │ - ······const·withValue·=·(value:·string)·=>·field·===·"evidenceReference"
+    109     │ - ········?·{·...declaration(),·source:·{·...declaration().source,·evidenceReference:·value·}·}
+    110     │ - ········:·{·...declaration(),·[field]:·value·};
+        137 │ + ······const·withValue·=·(value:·string)·=>
+        138 │ + ········field·===·"evidenceReference"
+        139 │ + ··········?·{·...declaration(),·source:·{·...declaration().source,·evidenceReference:·value·}·}
+        140 │ + ··········:·{·...declaration(),·[field]:·value·};
+    111 141 │         for (const value of ["\u034f", "\uFE0F", "\u115F", " \u034f\uFE0F "]) {
+    112 142 │           expect(parseFeedbackDeclaration(withValue(value))).toEqual(invalidDeclaration);
+    113     │ - ········expect(parseFeedbackCommand({·...command(),·declaration:·withValue(value)·})).toEqual(invalidCommand);
+        143 │ + ········expect(parseFeedbackCommand({·...command(),·declaration:·withValue(value)·})).toEqual(
+        144 │ + ··········invalidCommand,
+        145 │ + ········);
+    114 146 │         }
+    115 147 │         const input = withValue("review/A\u034f1\uFE0F");
+    ······· │ 
+    119 151 │   
+    120 152 │     it("keeps markup-looking text literal without claiming safe rendered output", () => {
+    121     │ - ····const·input·=·{·...declaration(),·text:·'<img·src=x·onerror="alert(1)">·&·<script>literal</script>'·};
+        153 │ + ····const·input·=·{
+        154 │ + ······...declaration(),
+        155 │ + ······text:·'<img·src=x·onerror="alert(1)">·&·<script>literal</script>',
+        156 │ + ····};
+    122 157 │       expect(parseFeedbackDeclaration(input)).toEqual({ ok: true, value: input });
+    123 158 │     });
+    ······· │ 
+    129 164 │     });
+    130 165 │   
+    131     │ - ··it.each(nestedExtraDeclarations())("rejects·extra·keys·at·$boundary·in·both·boundaries",·({·value·})·=>·{
+    132     │ - ····expect(parseFeedbackDeclaration(value)).toEqual(invalidDeclaration);
+    133     │ - ····expect(parseFeedbackCommand({·...command(),·declaration:·value·})).toEqual(invalidCommand);
+    134     │ - ··});
+        166 │ + ··it.each(nestedExtraDeclarations())(
+        167 │ + ····"rejects·extra·keys·at·$boundary·in·both·boundaries",
+        168 │ + ····({·value·})·=>·{
+        169 │ + ······expect(parseFeedbackDeclaration(value)).toEqual(invalidDeclaration);
+        170 │ + ······expect(parseFeedbackCommand({·...command(),·declaration:·value·})).toEqual(invalidCommand);
+        171 │ + ····},
+        172 │ + ··);
+    135 173 │   });
+    136 174 │   
+    ······· │ 
+    138 176 │     it("requires separate server-owned identity, label and exact recording time", () => {
+    139 177 │       expect(parseFeedbackCommand(command())).toEqual({ ok: true, value: command() });
+    140     │ - ····const·input·=·{·...command(),·feedbackId:·ids.feedbackId.toUpperCase(),·recordedByUserId:·ids.recorderId.toUpperCase()·};
+        178 │ + ····const·input·=·{
+        179 │ + ······...command(),
+        180 │ + ······feedbackId:·ids.feedbackId.toUpperCase(),
+        181 │ + ······recordedByUserId:·ids.recorderId.toUpperCase(),
+        182 │ + ····};
+    141 183 │       expect(parseFeedbackCommand(input)).toEqual({ ok: true, value: command() });
+    142     │ - ····for·(const·field·of·["feedbackId",·"recordedByUserId",·"recordedAt",·"provenance",·"declaration"])·{
+        184 │ + ····for·(const·field·of·[
+        185 │ + ······"feedbackId",
+        186 │ + ······"recordedByUserId",
+        187 │ + ······"recordedAt",
+        188 │ + ······"provenance",
+        189 │ + ······"declaration",
+        190 │ + ····])·{
+    143 191 │         const input = command();
+    144 192 │         Reflect.deleteProperty(input, field);
+    ······· │ 
+    150 198 │     it("rejects malformed native provenance without inferring an authenticated author", () => {
+  14 more lines truncated
+  
+
+Checked 3 files in 37ms. No fixes applied.
+Found 2 errors.
+check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Some errors were emitted while running checks.
+  
+

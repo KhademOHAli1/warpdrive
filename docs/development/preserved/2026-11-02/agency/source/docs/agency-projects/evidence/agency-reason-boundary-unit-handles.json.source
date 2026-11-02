@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "scope": "Mail recovery window permits routine small containerless selected units; no heavy campaign",
+  "runs": [
+    {
+      "phase": "red-behavior",
+      "pid": 89162,
+      "startedAt": "2026-11-01T10:07:12.954096+00:00",
+      "finishedAt": "2026-11-01T10:07:13.583777+00:00",
+      "terminal": true,
+      "exitCode": 1,
+      "stopReason": null,
+      "beforeFreeBytes": 12663853056,
+      "minimumFreeBytes": 12654899200,
+      "afterFreeBytes": 12654899200,
+      "floorBytes": 5368709120,
+      "timeoutSeconds": 30,
+      "executionCutoffSeconds": 29,
+      "log": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/agency-reason-boundary-red-behavior.log",
+      "command": [
+        "/Users/ali/Developer/warpdrive-agency-projects/.runtime/bin/bun",
+        "run",
+        "test:unit",
+        "src/features/agency-projects/reasonBoundary.test.ts",
+        "--maxWorkers=1"
+      ]
+    },
+    {
+      "phase": "green",
+      "pid": 89246,
+      "startedAt": "2026-11-01T10:07:25.736451+00:00",
+      "finishedAt": "2026-11-01T10:07:26.369962+00:00",
+      "terminal": true,
+      "exitCode": 0,
+      "stopReason": null,
+      "beforeFreeBytes": 12608638976,
+      "minimumFreeBytes": 12591931392,
+      "afterFreeBytes": 12591931392,
+      "floorBytes": 5368709120,
+      "timeoutSeconds": 30,
+      "executionCutoffSeconds": 29,
+      "log": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/agency-reason-boundary-green.log",
+      "command": [
+        "/Users/ali/Developer/warpdrive-agency-projects/.runtime/bin/bun",
+        "run",
+        "test:unit",
+        "src/features/agency-projects/reasonBoundary.test.ts",
+        "--maxWorkers=1"
+      ]
+    }
+  ]
+}

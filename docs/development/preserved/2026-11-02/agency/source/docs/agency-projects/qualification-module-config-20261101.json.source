@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-11-01T07:39:09.187280+00:00",
+  "base": "9198143ad6ea3dd716ff3d5f90c09789850b70c6",
+  "scope": "Central default-false startup boolean and existing operator documentation only; no server/reader/command/worker gate or grant.",
+  "sourceHashes": {
+    "src/config/env.ts": "812ac3d556554a9c931c664102aaa850deaa7726894b14803477e92fc1fff4fa",
+    "src/config/agencyModuleEnv.test.ts": "9661e86efb24e0ecbf7899f48d3e5b65a7bc8c0dfe3349305bad0da15026880c",
+    ".env.example": "1414c04074929bd1e4c4db9d0f1efd556fd5d11fabe0f489b51540cfc7f36dd6",
+    "docs/deploy.md": "d0f41d205e69441f0ced9911d2e99394115a610d7ec7191d3bcec4a0bfa00a2e",
+    "docs-site/docs/setup.md": "27da5dc8819040e5ce55c955b0cb0ef3a24e26f91d9b6289db348f8b75bc4741",
+    "docs-site/docs/operations/updating.md": "6873be01d5bceaa931d4d4022ac80bc731253c6676f1f858377d04615f078b62"
+  },
+  "checks": {
+    "behavioralRed": {
+      "failed": 15,
+      "passed": 0,
+      "log": "evidence/agency-module-env-red-behavior.log"
+    },
+    "selectedUnits": {
+      "passed": 15,
+      "files": 1,
+      "log": "evidence/agency-module-env-green.log"
+    },
+    "affectedUnits": {
+      "passed": 37,
+      "files": 5,
+      "durationMilliseconds": 328,
+      "log": "evidence/agency-module-env-affected-green.log"
+    },
+    "focusedStatic": {
+      "result": "passed",
+      "qualification": "qualification-numbering-module-source-20261101.json",
+      "scope": "2 module-env primary TS files within exact14 numbering/module-env type/Biome/typedESLint scope, no full repository/build proof"
+    }
+  },
+  "guard": {
+    "workers": 1,
+    "timeoutSeconds": 30,
+    "floorBytes": 5368709120,
+    "groupsEmptyVerified": [
+      27223,
+      27333,
+      28095
+    ],
+    "receipts": [
+      "evidence/agency-module-env-unit-handles.json",
+      "evidence/agency-module-env-affected-unit-handles.json"
+    ]
+  },
+  "limits": [
+    "Only parsing is implemented/qualified by these units; actual startup/import-time process/restart propagation is unverified.",
+    "Future disabled Agency reads/commands including history/count/request status must return unavailable and retain data; those endpoints do not exist yet.",
+    "A true operator value supplies no native identity/project/CRM/financial/Privacy authority and is not immediate dynamic revocation.",
+    "No app/worker/build/install/provider/DB/migration or task/release acceptance."
+  ]
+}

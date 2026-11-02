@@ -1,0 +1,187 @@
+src/features/agency-projects/communication/communicationPreferenceSchemas.ts format ━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+     3  3 │   
+     4  4 │   function plainText(limit: number, multiline: boolean) {
+     5    │ - ··return·z.string().min(1).max(limit)
+        5 │ + ··return·z
+        6 │ + ····.string()
+        7 │ + ····.min(1)
+        8 │ + ····.max(limit)
+     6  9 │       .refine((value) => value.replace(/\p{Cf}/gu, "").trim().length > 0)
+     7 10 │       .refine((value) => {
+  
+
+src/features/agency-projects/communication/communicationPreferences.test.ts format ━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+     22  22 │   
+     23  23 │   function expectInvalid(input: unknown) {
+     24     │ - ··expect(parseCommunicationPreferenceRequest(input))
+     25     │ - ····.toEqual({·ok:·false,·error:·"invalid_communication_preference"·});
+         24 │ + ··expect(parseCommunicationPreferenceRequest(input)).toEqual({
+         25 │ + ····ok:·false,
+         26 │ + ····error:·"invalid_communication_preference",
+         27 │ + ··});
+     26  28 │   }
+     27  29 │   
+     28  30 │   describe("proposed communication preference request boundary", () => {
+     29  31 │     it("requires a strict object envelope and one preference body", () => {
+     30     │ - ····for·(const·input·of·[null,·[],·{},·{·mutationIntentId·},·{·mutationIntentId,·preference:·null·}])·{
+         32 │ + ····for·(const·input·of·[
+         33 │ + ······null,
+         34 │ + ······[],
+         35 │ + ······{},
+         36 │ + ······{·mutationIntentId·},
+         37 │ + ······{·mutationIntentId,·preference:·null·},
+         38 │ + ····])·{
+     31  39 │         expectInvalid(input);
+     32  40 │       }
+    ······· │ 
+     40  48 │     it("canonicalizes project/person/intent UUIDs without changing authored text or references", () => {
+     41  49 │       const input = request();
+     42     │ - ····expect(parseCommunicationPreferenceRequest({
+     43     │ - ······...input,·mutationIntentId:·mutationIntentId.toUpperCase(),
+     44     │ - ······preference:·{·...input.preference,·projectId:·projectId.toUpperCase(),·personId:·personId.toUpperCase()·},
+     45     │ - ····})).toEqual({·ok:·true,·value:·input·});
+         50 │ + ····expect(
+         51 │ + ······parseCommunicationPreferenceRequest({
+         52 │ + ········...input,
+         53 │ + ········mutationIntentId:·mutationIntentId.toUpperCase(),
+         54 │ + ········preference:·{
+         55 │ + ··········...input.preference,
+         56 │ + ··········projectId:·projectId.toUpperCase(),
+         57 │ + ··········personId:·personId.toUpperCase(),
+         58 │ + ········},
+         59 │ + ······}),
+         60 │ + ····).toEqual({·ok:·true,·value:·input·});
+     46  61 │     });
+     47  62 │   
+    ······· │ 
+     50  65 │       Reflect.deleteProperty(missing, "mutationIntentId");
+     51  66 │       expectInvalid(missing);
+     52     │ - ····for·(const·invalid·of·["",·"intent-one",·null])·expectInvalid({·...request(),·mutationIntentId:·invalid·});
+         67 │ + ····for·(const·invalid·of·["",·"intent-one",·null])
+         68 │ + ······expectInvalid({·...request(),·mutationIntentId:·invalid·});
+     53  69 │     });
+     54  70 │   
+    ······· │ 
+     66  82 │         mutationIntentId: "abcdef12-7890-4cde-abcd-789012345abc",
+     67  83 │         preference: {
+     68     │ - ········...first.preference,·role:·"مسئول·تأیید·محتوا·/·Inhaltliche·Freigabe",
+         84 │ + ········...first.preference,
+         85 │ + ········role:·"مسئول·تأیید·محتوا·/·Inhaltliche·Freigabe",
+     69  86 │           channel: { kind: "whatsapp" },
+     70  87 │         },
+    ······· │ 
+     79  96 │     });
+     80  97 │   
+     81     │ - ··it.each(["email",·"phone",·"whatsapp",·"meeting"])("requires·the·explicitly·declared·%s·channel",·(kind)·=>·{
+     82     │ - ····const·input·=·{·...request(),·preference:·{·...request().preference,·channel:·{·kind·}·}·};
+     83     │ - ····expect(parseCommunicationPreferenceRequest(input)).toEqual({·ok:·true,·value:·input·});
+     84     │ - ··});
+         98 │ + ··it.each(["email",·"phone",·"whatsapp",·"meeting"])(
+         99 │ + ····"requires·the·explicitly·declared·%s·channel",
+        100 │ + ····(kind)·=>·{
+        101 │ + ······const·input·=·{·...request(),·preference:·{·...request().preference,·channel:·{·kind·}·}·};
+        102 │ + ······expect(parseCommunicationPreferenceRequest(input)).toEqual({·ok:·true,·value:·input·});
+        103 │ + ····},
+        104 │ + ··);
+     85 105 │   
+     86 106 │     it("supports a bounded other-channel label as unresolved plain data", () => {
+     87     │ - ····const·input·=·{·...request(),·preference:·{·...request().preference,·channel:·{·kind:·"other",·label:·"تلگرام·/·Telegram"·}·}·};
+        107 │ + ····const·input·=·{
+        108 │ + ······...request(),
+        109 │ + ······preference:·{
+        110 │ + ········...request().preference,
+        111 │ + ········channel:·{·kind:·"other",·label:·"تلگرام·/·Telegram"·},
+        112 │ + ······},
+        113 │ + ····};
+     88 114 │       expect(parseCommunicationPreferenceRequest(input)).toEqual({ ok: true, value: input });
+     89     │ - ····for·(const·channel·of·[{·kind:·"other"·},·{·kind:·"other",·label:·"·"·},·{·kind:·"other",·label:·"x".repeat(81)·},·{·kind:·"other",·label:·"نام\u0000"·},·{·kind:·"other",·label:·"Name\u0085"·}])·{
+        115 │ + ····for·(const·channel·of·[
+        116 │ + ······{·kind:·"other"·},
+        117 │ + ······{·kind:·"other",·label:·"·"·},
+        118 │ + ······{·kind:·"other",·label:·"x".repeat(81)·},
+        119 │ + ······{·kind:·"other",·label:·"نام\u0000"·},
+        120 │ + ······{·kind:·"other",·label:·"Name\u0085"·},
+        121 │ + ····])·{
+     90 122 │         expectInvalid({ ...request(), preference: { ...request().preference, channel } });
+     91 123 │       }
+    ······· │ 
+     96 128 │       Reflect.deleteProperty(input.preference, "channel");
+     97 129 │       expectInvalid(input);
+     98     │ - ····for·(const·channel·of·[null,·"email",·{·kind:·"automatic"·},·{·kind:·"whatsapp",·syncGroup:·true·}])·{
+        130 │ + ····for·(const·channel·of·[
+        131 │ + ······null,
+        132 │ + ······"email",
+        133 │ + ······{·kind:·"automatic"·},
+        134 │ + ······{·kind:·"whatsapp",·syncGroup:·true·},
+        135 │ + ····])·{
+     99 136 │         expectInvalid({ ...request(), preference: { ...request().preference, channel } });
+    100 137 │       }
+    ······· │ 
+    116 153 │       Reflect.deleteProperty(input.preference, "cadence");
+    117 154 │       expectInvalid(input);
+    118     │ - ····for·(const·cadence·of·[null,·"weekly",·{·kind:·"declared"·},·{·kind:·"none",·text:·"weekly"·},·{·kind:·"declared",·text:·"weekly",·cron:·"0·9·*·*·1"·}])·{
+        155 │ + ····for·(const·cadence·of·[
+        156 │ + ······null,
+        157 │ + ······"weekly",
+        158 │ + ······{·kind:·"declared"·},
+        159 │ + ······{·kind:·"none",·text:·"weekly"·},
+        160 │ + ······{·kind:·"declared",·text:·"weekly",·cron:·"0·9·*·*·1"·},
+        161 │ + ····])·{
+    119 162 │         expectInvalid({ ...request(), preference: { ...request().preference, cadence } });
+    120 163 │       }
+    ······· │ 
+    123 166 │     it("preserves authored plain role/cadence text, Persian digits and ordinary cadence newlines", () => {
+    124 167 │       const input = {
+    125     │ - ······...request(),·preference:·{
+        168 │ + ······...request(),
+        169 │ + ······preference:·{
+    126 170 │           ...request().preference,
+    127 171 │           role: "  هماهنگ�کننده <تیم> / Kontakt <Projekt>  ",
+    128     │ - ········cadence:·{·kind:·"declared",·text:·"··هر·۲·هفته،·پس·از·هماهنگی\nNach·Rücksprache·<intern>··"·},
+        172 │ + ········cadence:·{
+        173 │ + ··········kind:·"declared",
+        174 │ + ··········text:·"··هر·۲·هفته،·پس·از·هماهنگی\nNach·Rücksprache·<intern>··",
+        175 │ + ········},
+    129 176 │         },
+    130 177 │       };
+    ······· │ 
+    136 183 │       Reflect.deleteProperty(missingRole.preference, "role");
+    137 184 │       expectInvalid(missingRole);
+    138     │ - ····for·(const·role·of·["",·"·\t",·"x".repeat(161),·"Role\nOther",·"نقش\u0000",·"Rolle\u0085",·"Role\u2028Other"])·{
+        185 │ + ····for·(const·role·of·[
+        186 │ + ······"",
+        187 │ + ······"·\t",
+        188 │ + ······"x".repeat(161),
+        189 │ + ······"Role\nOther",
+        190 │ + ······"نقش\u0000",
+        191 │ + ······"Rolle\u0085",
+        192 │ + ······"Role\u2028Other",
+        193 │ + ····])·{
+    139 194 │         expectInvalid({ ...request(), preference: { ...request().preference, role } });
+    140 195 │       }
+    141     │ - ····for·(const·text·of·["",·"·\r\n",·"x".repeat(1001),·"زمان\u0000",·"Termin\u0085",·"Text\u2029Other"])·{
+    142     │ - ······expectInvalid({·...request(),·preference:·{·...request().preference,·cadence:·{·kind:·"declared",·text·}·}·});
+        196 │ + ····for·(const·text·of·[
+        197 │ + ······"",
+        198 │ + ······"·\r\n",
+        199 │ + ······"x".repeat(1001),
+        200 │ + ······"زمان\u0000",
+        201 │ + ······"Termin\u0085",
+        202 │ + ······"Text\u2029Other",
+        203 │ + ····])·{
+  93 more lines truncated
+  
+
+Checked 36 files in 43ms. No fixes applied.
+Found 2 errors.
+check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Some errors were emitted while running checks.
+  
+

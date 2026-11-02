@@ -1,0 +1,36 @@
+src/features/agency-projects/reviews/reviewBoundary.test.ts:5:3 lint/correctness/noUnusedImports  FIXABLE  ━━━━━━━━━━
+
+  ! Several of these imports are unused.
+  
+     3 │ import {
+     4 │   changeVersion,
+   > 5 │   clientContactId,
+       │   ^^^^^^^^^^^^^^^^
+   > 6 │   internalReview,
+   > 7 │   recordedClientApproval,
+   > 8 │   reopenReview,
+   > 9 │   version,
+       │   ^^^^^^^
+    10 │ } from "./reviewDecisions.test-support";
+    11 │ 
+  
+  i Unused imports might be the result of an incomplete refactoring.
+  
+  i Unsafe fix: Remove the unused imports.
+  
+      3   3 │   import {
+      4   4 │     changeVersion,
+      5     │ - ··clientContactId,
+      6   5 │     internalReview,
+      7   6 │     recordedClientApproval,
+      8   7 │     reopenReview,
+      9     │ - ··version,
+     10   8 │   } from "./reviewDecisions.test-support";
+     11   9 │   
+  
+
+Skipped 2 suggested fixes.
+If you wish to apply the suggested (unsafe) fixes, use the command biome check --write --unsafe
+
+Checked 32 files in 16ms. Fixed 5 files.
+Found 1 warning.

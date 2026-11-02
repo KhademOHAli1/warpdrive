@@ -1,0 +1,222 @@
+{
+  "atUtc": "2026-11-02T07:08:03.568026+00:00",
+  "elapsed": 127.39668841590174,
+  "baselineContainerStatesExact": true,
+  "baselineDiff": {},
+  "extraContainers": {},
+  "listenerExitCode": 0,
+  "missingBaselineListeners": [],
+  "extraListeners": [],
+  "currentContainers": {
+    "1b39c2e0cb523a1d36a2053a33cddd6391fbe26b84ca626121ee22da133bca59": {
+      "Id": "1b39c2e0cb523a1d36a2053a33cddd6391fbe26b84ca626121ee22da133bca59",
+      "Image": "sha256:309ba544ea482e5d4265d09921cdab07c8dad2cc4481d715c9b8ff5d3f0a149f",
+      "Name": "/warpdrive-mail-qualification-20261031",
+      "State": {
+        "Status": "running",
+        "Running": true,
+        "Paused": false,
+        "Restarting": false,
+        "Dead": false,
+        "Pid": 565248,
+        "StartedAt": "2026-10-31T13:44:34.764595795Z",
+        "FinishedAt": "2026-10-31T13:44:34.589408784Z",
+        "ExitCode": 0
+      }
+    },
+    "958f91d8250e2bf9bce3819320a47fd30ecac7711ed8007de7dcabb60d6cddee": {
+      "Id": "958f91d8250e2bf9bce3819320a47fd30ecac7711ed8007de7dcabb60d6cddee",
+      "Image": "sha256:c2658820e763294a9e9de7b36c81e59b879e3459148351aee4e31a126ca64860",
+      "Name": "/warpdrive-integration-program-s3",
+      "State": {
+        "Status": "running",
+        "Running": true,
+        "Paused": false,
+        "Restarting": false,
+        "Dead": false,
+        "Pid": 527654,
+        "StartedAt": "2026-10-31T13:20:12.246148828Z",
+        "FinishedAt": "2026-10-31T13:18:53.770140942Z",
+        "ExitCode": 0
+      }
+    },
+    "d31835d6d2bf86f9984408fb4b01bded8395915cefe64cac7230a3ebfb6a2e6e": {
+      "Id": "d31835d6d2bf86f9984408fb4b01bded8395915cefe64cac7230a3ebfb6a2e6e",
+      "Image": "sha256:c2658820e763294a9e9de7b36c81e59b879e3459148351aee4e31a126ca64860",
+      "Name": "/warpdrive-local-s3",
+      "State": {
+        "Status": "running",
+        "Running": true,
+        "Paused": false,
+        "Restarting": false,
+        "Dead": false,
+        "Pid": 1868,
+        "StartedAt": "2026-10-29T16:16:15.810808097Z",
+        "FinishedAt": "0001-01-01T00:00:00Z",
+        "ExitCode": 0
+      }
+    }
+  },
+  "currentListeners": [
+    {
+      "pid": "1001",
+      "comm": "rapportd",
+      "endpoint": "*:54121"
+    },
+    {
+      "pid": "1001",
+      "comm": "rapportd",
+      "endpoint": "*:54121"
+    },
+    {
+      "pid": "1001",
+      "comm": "rapportd",
+      "endpoint": "*:56303"
+    },
+    {
+      "pid": "1001",
+      "comm": "rapportd",
+      "endpoint": "*:56304"
+    },
+    {
+      "pid": "1155",
+      "comm": "ControlCenter",
+      "endpoint": "*:7000"
+    },
+    {
+      "pid": "1155",
+      "comm": "ControlCenter",
+      "endpoint": "*:7000"
+    },
+    {
+      "pid": "1155",
+      "comm": "ControlCenter",
+      "endpoint": "*:5000"
+    },
+    {
+      "pid": "1155",
+      "comm": "ControlCenter",
+      "endpoint": "*:5000"
+    },
+    {
+      "pid": "2554",
+      "comm": "redis-server",
+      "endpoint": "127.0.0.1:6379"
+    },
+    {
+      "pid": "2554",
+      "comm": "redis-server",
+      "endpoint": "[::1]:6379"
+    },
+    {
+      "pid": "2589",
+      "comm": "postgres",
+      "endpoint": "[::1]:5432"
+    },
+    {
+      "pid": "2589",
+      "comm": "postgres",
+      "endpoint": "127.0.0.1:5432"
+    },
+    {
+      "pid": "2619",
+      "comm": "Mountain Duck",
+      "endpoint": "127.0.0.1:49179"
+    },
+    {
+      "pid": "2669",
+      "comm": "AdobeResourceSynchronizer",
+      "endpoint": "127.0.0.1:19292"
+    },
+    {
+      "pid": "3058",
+      "comm": "Adobe Desktop Service",
+      "endpoint": "127.0.0.1:15292"
+    },
+    {
+      "pid": "3058",
+      "comm": "Adobe Desktop Service",
+      "endpoint": "127.0.0.1:15393"
+    },
+    {
+      "pid": "3058",
+      "comm": "Adobe Desktop Service",
+      "endpoint": "127.0.0.1:16494"
+    },
+    {
+      "pid": "15051",
+      "comm": "postgres",
+      "endpoint": "127.0.0.1:54673"
+    },
+    {
+      "pid": "19823",
+      "comm": "ChatGPT",
+      "endpoint": "127.0.0.1:64230"
+    },
+    {
+      "pid": "27878",
+      "comm": "postgres",
+      "endpoint": "127.0.0.1:55480"
+    },
+    {
+      "pid": "42134",
+      "comm": "bun",
+      "endpoint": "127.0.0.1:3104"
+    },
+    {
+      "pid": "47693",
+      "comm": "postgres",
+      "endpoint": "127.0.0.1:55436"
+    },
+    {
+      "pid": "48960",
+      "comm": "postgres",
+      "endpoint": "127.0.0.1:55435"
+    },
+    {
+      "pid": "62619",
+      "comm": "Code Helper",
+      "endpoint": "127.0.0.1:52697"
+    },
+    {
+      "pid": "75521",
+      "comm": "postgres",
+      "endpoint": "127.0.0.1:55432"
+    },
+    {
+      "pid": "79861",
+      "comm": "limactl",
+      "endpoint": "127.0.0.1:54491"
+    },
+    {
+      "pid": "79895",
+      "comm": "limactl",
+      "endpoint": "*:53"
+    },
+    {
+      "pid": "80001",
+      "comm": "ssh",
+      "endpoint": "127.0.0.1:9000"
+    },
+    {
+      "pid": "80001",
+      "comm": "ssh",
+      "endpoint": "127.0.0.1:13993"
+    },
+    {
+      "pid": "80001",
+      "comm": "ssh",
+      "endpoint": "127.0.0.1:9160"
+    },
+    {
+      "pid": "80001",
+      "comm": "ssh",
+      "endpoint": "127.0.0.1:13465"
+    },
+    {
+      "pid": "82134",
+      "comm": "bun",
+      "endpoint": "127.0.0.1:3105"
+    }
+  ]
+}

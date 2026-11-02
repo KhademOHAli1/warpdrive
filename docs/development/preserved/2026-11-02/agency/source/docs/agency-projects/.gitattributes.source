@@ -1,0 +1,17 @@
+# Preserve the original baseline CSV and raw command evidence byte-for-byte.
+baseline-plan/TASKS.csv -text whitespace=cr-at-eol
+evidence/*.log -text whitespace=-blank-at-eof
+# Formatter diagnostics contain intentional trailing spaces in their source excerpts.
+evidence/agency-source-biome-check-1.log -text whitespace=-blank-at-eof,-blank-at-eol
+evidence/agency-source-biome-write-2.log -text whitespace=-blank-at-eof,-blank-at-eol
+evidence/agency-preference-source-biome-check-1.log -text whitespace=-blank-at-eof,-blank-at-eol
+evidence/agency-manual-source-biome-check-1.log -text whitespace=-blank-at-eof,-blank-at-eol
+# Preserve required blank context prefixes in this review-only unified diff.
+owner-review/project-create-registration-review.patch -text whitespace=-blank-at-eol
+evidence/agency-round-source-biome-check-1.log -text whitespace=-blank-at-eof,-blank-at-eol
+evidence/project-create-source-biome-check-1.log -text whitespace=-blank-at-eof,-blank-at-eol
+evidence/project-create-pg-source-biome-check-1.log -text whitespace=-blank-at-eof,-blank-at-eol
+evidence/agency-feedback-source-biome-check-1.log -text whitespace=-blank-at-eof,-blank-at-eol
+evidence/agency-template-role-preview-source-biome-check-1.log -text whitespace=-blank-at-eof,-blank-at-eol
+evidence/agency-project-authority-source-biome-check-1.log -text whitespace=-blank-at-eof,-blank-at-eol
+evidence/agency-authority-spec-source-biome-check-1.log -text whitespace=-blank-at-eof,-blank-at-eol

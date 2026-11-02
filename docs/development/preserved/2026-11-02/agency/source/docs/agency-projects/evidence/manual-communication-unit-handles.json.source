@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "scope": "Mail recovery window permits routine small containerless selected units; no heavy campaign",
+  "runs": [
+    {
+      "phase": "red-missing",
+      "pid": 32299,
+      "startedAt": "2026-11-01T04:47:04.327917+00:00",
+      "finishedAt": "2026-11-01T04:47:04.944982+00:00",
+      "terminal": true,
+      "exitCode": 1,
+      "stopReason": null,
+      "beforeFreeBytes": 12395290624,
+      "minimumFreeBytes": 12395278336,
+      "afterFreeBytes": 12399083520,
+      "floorBytes": 5368709120,
+      "timeoutSeconds": 30,
+      "log": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/manual-communication-red-missing.log",
+      "command": [
+        "/Users/ali/Developer/warpdrive-agency-projects/.runtime/bin/bun",
+        "run",
+        "test:unit",
+        "src/features/agency-projects/communication/manualCommunication.test.ts",
+        "src/features/agency-projects/communication/manualCommunicationPolicy.test.ts",
+        "--maxWorkers=1"
+      ]
+    },
+    {
+      "phase": "red-behavior",
+      "pid": 34622,
+      "startedAt": "2026-11-01T04:51:20.889323+00:00",
+      "finishedAt": "2026-11-01T04:51:21.928331+00:00",
+      "terminal": true,
+      "exitCode": 1,
+      "stopReason": null,
+      "beforeFreeBytes": 12244815872,
+      "minimumFreeBytes": 12239077376,
+      "afterFreeBytes": 12240666624,
+      "floorBytes": 5368709120,
+      "timeoutSeconds": 30,
+      "log": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/manual-communication-red-behavior.log",
+      "command": [
+        "/Users/ali/Developer/warpdrive-agency-projects/.runtime/bin/bun",
+        "run",
+        "test:unit",
+        "src/features/agency-projects/communication/manualCommunication.test.ts",
+        "src/features/agency-projects/communication/manualCommunicationPolicy.test.ts",
+        "--maxWorkers=1"
+      ]
+    },
+    {
+      "phase": "green",
+      "pid": 41289,
+      "startedAt": "2026-11-01T05:01:00.865236+00:00",
+      "finishedAt": "2026-11-01T05:01:01.901634+00:00",
+      "terminal": true,
+      "exitCode": 0,
+      "stopReason": null,
+      "beforeFreeBytes": 11856748544,
+      "minimumFreeBytes": 11856732160,
+      "afterFreeBytes": 11856932864,
+      "floorBytes": 5368709120,
+      "timeoutSeconds": 30,
+      "log": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/manual-communication-green.log",
+      "command": [
+        "/Users/ali/Developer/warpdrive-agency-projects/.runtime/bin/bun",
+        "run",
+        "test:unit",
+        "src/features/agency-projects/communication/manualCommunication.test.ts",
+        "src/features/agency-projects/communication/manualCommunicationPolicy.test.ts",
+        "--maxWorkers=1"
+      ]
+    }
+  ],
+  "minimumFreeBytes": 11856732160,
+  "ownedRunGroupsEmptyVerified": [
+    32299,
+    34622,
+    41289
+  ]
+}

@@ -1,0 +1,20 @@
+diff --git a/src/features/privacy/discoveryCoverage.ts b/src/features/privacy/discoveryCoverage.ts
+--- a/src/features/privacy/discoveryCoverage.ts
++++ b/src/features/privacy/discoveryCoverage.ts
+@@ -17,6 +17,16 @@
+     DISCOVERY_ADAPTER_TABLES,
+     "supported",
+     "Version-bound candidate IDs and explicit relationships only; content and exact approved scope require further review.",
++  ),
++  ...group(
++    ["integration_connections", "integration_events", "integration_oauth_attempts"],
++    "unsupported",
++    "Integration-platform-owned connection metadata, credentials, OAuth/session bindings and event references need a reviewed subject-specific candidate adapter; this reader does not expose credential material, OAuth state/session identifiers or whole-connection payloads.",
++  ),
++  ...group(
++    ["workflow_runs", "workflow_steps", "workflow_versions", "workflows"],
++    "unsupported",
++    "Platform/workflow-owned definitions, triggers, outputs and actor references need reviewed subject relationships and safe candidate projections; workflow ownership does not authorize whole-run disclosure, and this reader returns no workflow content.",
+   ),
+   ...group(
+     [

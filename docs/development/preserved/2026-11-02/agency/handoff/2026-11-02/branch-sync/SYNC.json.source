@@ -1,0 +1,94 @@
+{
+  "atUtc": "2026-11-02T08:50:43.220714+00:00",
+  "operation": "Merge main INTO existing branch; never publish branch work to main",
+  "branch": "codex/preserve-agency-20261102",
+  "preSyncSnapshot": "e87e99174aa0d6b393d16b93f2650e652d19856c",
+  "mainMerged": "09288d518fd574fd069fb6a1dc670596f71a8831",
+  "behindBefore": 129,
+  "resolvedConflictPaths": [
+    ".env.example",
+    "src/app/(app)/settings/SettingsNav.test.tsx",
+    "src/config/env.ts",
+    "src/lib/iranianMoney.ts"
+  ],
+  "sourceResolutions": [
+    {
+      "path": ".env.example",
+      "mode": "100644",
+      "oid": "108303ffd64c66fae7d520b0b78b987b3f89fa95",
+      "sha256": "882f8952ca9ee12e9f22230b56292c05a49dd0b146a6578dd58320f088a218c5"
+    },
+    {
+      "path": "src/app/(app)/settings/SettingsNav.test.tsx",
+      "mode": "100644",
+      "oid": "007e81d0e635668c316c96a59c781fa6e381a706",
+      "sha256": "1e22438d1cdb37988f2bf1c6080248b4b335f0e312da4eb20d4ed097e3ae8156"
+    },
+    {
+      "path": "src/config/env.ts",
+      "mode": "100644",
+      "oid": "52906943780816147fa167ece96b662fa528daed",
+      "sha256": "0ef80ea49532e5e7c99050fadd3cd8cb9b35d4c533195d719c8d2a57f0fe9ce6"
+    },
+    {
+      "path": "src/lib/iranianMoney.ts",
+      "mode": "100644",
+      "oid": "2ac6c738f21b5c1a2874992e3519dccaae861e39",
+      "sha256": "76b955d01ac18fe84d279eca8133da93b4641369029bf101e897fef9a8cf663a"
+    }
+  ],
+  "canonicalDrizzleTree": "1a496c5a05b7a3d78257149d639645b4eb2c30cf",
+  "canonicalMigrationFiles": 195,
+  "preSyncMigrationSnapshots": [
+    {
+      "originalPath": "drizzle/0083_integration_connections.sql",
+      "archivePath": ".safe-stop/2026-11-02/branch-sync/private-migration-proposals/drizzle/0083_integration_connections.sql.source",
+      "sha256": "6ea7f6c7e1f1549e13a15e63a635c23ca97942278631e331daefd67211309acc",
+      "gitBlob": "a0f28f72f4d600a8d521e1d8c1ca432a811e23cc",
+      "mode": "100644"
+    },
+    {
+      "originalPath": "drizzle/0084_visual_workflows.sql",
+      "archivePath": ".safe-stop/2026-11-02/branch-sync/private-migration-proposals/drizzle/0084_visual_workflows.sql.source",
+      "sha256": "5b19873644fd336e925a94dd6666e4735556649967ca5aa086d76ab717860eb5",
+      "gitBlob": "8a45c733ddc905aea478f82c57165225b8cc66d6",
+      "mode": "100644"
+    },
+    {
+      "originalPath": "drizzle/meta/0083_snapshot.json",
+      "archivePath": ".safe-stop/2026-11-02/branch-sync/private-migration-proposals/drizzle/meta/0083_snapshot.json.source",
+      "sha256": "6321c6665ac57e072e1fdde13731947ea0333643ee419473178f6dfd35f1717f",
+      "gitBlob": "820277a0c6d538cf23e8f73d07e812a17cf8bc3d",
+      "mode": "100644"
+    },
+    {
+      "originalPath": "drizzle/meta/0084_snapshot.json",
+      "archivePath": ".safe-stop/2026-11-02/branch-sync/private-migration-proposals/drizzle/meta/0084_snapshot.json.source",
+      "sha256": "c81d1e7dc7b3101870890966b53ff2d92cb182b81c273e7add03303ba8e9d613",
+      "gitBlob": "ec56dfaf8bfe61a941915d6d2c3062b8b7168f48",
+      "mode": "100644"
+    },
+    {
+      "originalPath": "drizzle/meta/_journal.json",
+      "archivePath": ".safe-stop/2026-11-02/branch-sync/private-migration-proposals/drizzle/meta/_journal.json.source",
+      "sha256": "4d89be8c2d18d22a088ae592ae0345373b6067e5cefc7bb9da9a3fbb4feaa867",
+      "gitBlob": "5510aec398c4c114f16b6189e28a26645e44e19e",
+      "mode": "100644"
+    }
+  ],
+  "validation": {
+    "passed": 25,
+    "failed": 0,
+    "pending": 0,
+    "allRequestedFilesObserved": true,
+    "candidateBytesUnchanged": true,
+    "ownedGroupGone": true,
+    "seconds": 2.4484201250597835
+  },
+  "limitations": [
+    "This synchronization preserves unfinished work; it is not branch-wide type/native/CI, user-journey or deployment acceptance.",
+    "Original snapshot commits remain ancestors; archived migration proposals are inert and have not been renumbered/admitted.",
+    "Existing status/CI/inventory receipts qualify their named historical cuts and are not re-aged to this merged tree.",
+    "Paused dirty source workspaces remain byte-exact and detached at their original source heads; existing branch references advance separately."
+  ]
+}

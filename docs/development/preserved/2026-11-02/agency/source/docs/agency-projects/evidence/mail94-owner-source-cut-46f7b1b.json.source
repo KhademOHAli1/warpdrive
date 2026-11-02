@@ -1,0 +1,35 @@
+{
+  "commit": "46f7b1bb76e4bea2a082112eb11dfa801f4ffdd4",
+  "branch": "codex/mail-platform-candidate",
+  "repository": "https://github.com/KhademOHAli1/warpdrive",
+  "sourceOnly": true,
+  "installedAdmission": false,
+  "hashes": {
+    "drizzle/0094_private_mail_intake.sql": "402ed79e5dd1aa466620b07cf3715ebb70f8bc975f1b2b46e0bc570a7f573d93",
+    "drizzle/meta/0094_snapshot.json": "9c499cdb9ea553b2d2d5ca3cdfb85194cc73f952e9c78b26165fa13377b0d604",
+    "drizzle/meta/_journal.json": "b8e89bbef727dad82e8a6326bb79f6ca74743f386aa3e7fdd39245a338309109",
+    "src/db/migrate.ts": "fd76dfa2183c53b662c70a0099cf13593cb019c994a9f012659f0f5b90fd68b5",
+    "package.json": "b8084427261d4172eeca8743b501ac0ea5856c34f57ec1c3acc9b4fa67189d38"
+  },
+  "snapshotId": "6690fed9-e828-4c72-b50d-80c8616434cd",
+  "journalEntry94": {
+    "idx": 94,
+    "version": "7",
+    "when": 1793520048557,
+    "tag": "0094_private_mail_intake",
+    "breakpoints": true
+  },
+  "nativeEvidence": {
+    "cases": 399,
+    "files": 72,
+    "log": "/tmp/warpdrive-mail-qualified-regression-local-read-20261101-green-r2.log",
+    "runtime": "Bun 1.4.4",
+    "scope": "Synthetic native PostgreSQL/TLS, not installed profile admission"
+  },
+  "uiEvidence": {
+    "cases": 331,
+    "files": 31,
+    "scope": "Unit/localized component/schema, not browser acceptance"
+  },
+  "migrationCallers": "Both remain raw Drizzle; revised immutable94 proposal and implementation required"
+}

@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-11-01T10:20:43.693287+00:00",
+  "base": "6855645499b5f5878f7b2d2eb431dd6e6d4b7fbc",
+  "scope": "Selected pure reason-ingress unit RED/GREEN and exact-byte source/control capture only.",
+  "sourceHashesAtCapture": {
+    "src/features/agency-projects/valueSchemas.ts": "344486350601e1cd8bbd8c07978edf4e17f2136d6943ec7730ece8c4fa0523c3",
+    "src/features/agency-projects/reasonBoundary.test.ts": "27ec62a15f2bea901eeeff88b2fce75c5126f0c5ddb32b3f0cb917c345e0d1fc"
+  },
+  "checks": {
+    "behavioralRed": {
+      "failed": 6,
+      "passed": 10,
+      "files": 1,
+      "durationMilliseconds": 87,
+      "pid": 89162,
+      "exitCode": 1,
+      "log": "evidence/agency-reason-boundary-red-behavior.log",
+      "sourceBeforeCorrection": "evidence/agency-reason-boundary-valueSchemas-before-fix.ts.txt"
+    },
+    "selectedUnits": {
+      "passed": 16,
+      "files": 1,
+      "durationMilliseconds": 71,
+      "pid": 89246,
+      "exitCode": 0,
+      "log": "evidence/agency-reason-boundary-green.log"
+    },
+    "pendingFreshGrant": [
+      "focused source types",
+      "Biome",
+      "unchanged-rule typed ESLint",
+      "affected units"
+    ]
+  },
+  "guard": {
+    "observationAuthority": "Root supplied process-group absence observations; this worker only read, hashed and copied artifacts.",
+    "workers": 1,
+    "timeoutSeconds": 30,
+    "executionCutoffSeconds": 29,
+    "floorBytes": 5368709120,
+    "minimumFreeBytes": 12591931392,
+    "groupsEmptyVerifiedByRoot": [
+      89162,
+      89246
+    ],
+    "receipt": "evidence/agency-reason-boundary-unit-handles.json",
+    "grantScope": "Mail recovery window permits routine small containerless selected units; no heavy campaign"
+  },
+  "behavior": {
+    "visibilityCheck": "After existing outer trimming, a supplied nonempty reason must retain substantive content when Cf and Default_Ignorable_Code_Point characters are removed for the check only.",
+    "preservation": "Accepted authored data is not stripped or normalized beyond existing outer trimming: Persian joiners, German grapheme/combining sequences, English text, emoji variation sequences and internal tabs/line breaks are preserved.",
+    "optionalEmpty": "Existing optional semantics remain: whitespace-only reasons trim to empty; an omitted optional reason is not invented.",
+    "cases": {
+      "invisibleOnlyRejected": 6,
+      "authoredVisiblePreserved": 5,
+      "optionalTrimmedEmptyPreserved": 4,
+      "optionalOmissionPreserved": 1
+    }
+  },
+  "artifacts": {
+    "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/agency-reason-boundary-unit-handles.json": {
+      "copy": "evidence/agency-reason-boundary-unit-handles.json",
+      "sha256": "ff4d05bd40fd11c8bfc1052d156c3ecf818290e09538f2076f5dadb5a3ed420a",
+      "bytes": 1776
+    },
+    "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/agency-reason-boundary-red-behavior.log": {
+      "copy": "evidence/agency-reason-boundary-red-behavior.log",
+      "sha256": "737a187d55b4eb02bb76e301e76716f8f0332d4018df40174aeaff82d75c76f0",
+      "bytes": 3210
+    },
+    "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/agency-reason-boundary-green.log": {
+      "copy": "evidence/agency-reason-boundary-green.log",
+      "sha256": "0f229f1f827639aa86e61888e3bd7282f55ac33df1c8e25696fd57c9fc9b1bff",
+      "bytes": 847
+    },
+    "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/reason-valueSchemas-before-fix.ts.txt": {
+      "copy": "evidence/agency-reason-boundary-valueSchemas-before-fix.ts.txt",
+      "sha256": "774f3f9b11de910292f530cda96b629a4cb9dec27b199632e11f445a076e9fef",
+      "bytes": 1365
+    },
+    ".runtime/run-agency-reason-unit.py": {
+      "copy": "evidence/agency-reason-boundary-run-unit.py.txt",
+      "sha256": "04b3269ce90a6bfc16b4f3b87bb6539ee0f3d38ce767b2ff21dee27c1cccfa33",
+      "bytes": 2353
+    },
+    "src/features/agency-projects/valueSchemas.ts": {
+      "copy": "evidence/agency-reason-boundary-valueSchemas.ts.txt",
+      "sha256": "344486350601e1cd8bbd8c07978edf4e17f2136d6943ec7730ece8c4fa0523c3",
+      "bytes": 1399
+    },
+    "src/features/agency-projects/reasonBoundary.test.ts": {
+      "copy": "evidence/agency-reason-boundary-reasonBoundary.test.ts.txt",
+      "sha256": "27ec62a15f2bea901eeeff88b2fce75c5126f0c5ddb32b3f0cb917c345e0d1fc",
+      "bytes": 2995
+    }
+  },
+  "rawAndSourceCopiesByteVerified": 7,
+  "limits": [
+    "Captured source hashes describe the bytes read now; the raw unit logs do not independently attest historical source hashes at execution.",
+    "Focused source types, Biome, unchanged-rule typed ESLint and affected units are pending a fresh grant; no combined static or full-feature pass is claimed.",
+    "No native authority/session/CRM/Privacy/fence/writer-closure or persistence/DDL/migration qualification.",
+    "No app/worker/build/install/provider execution, feature enablement, task acceptance or release acceptance.",
+    "Prior qualification scopes remain separate; the selected 16 cases establish only this pure reason-ingress boundary."
+  ]
+}

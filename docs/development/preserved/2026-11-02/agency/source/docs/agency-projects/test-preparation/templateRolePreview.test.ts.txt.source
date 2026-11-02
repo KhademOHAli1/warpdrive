@@ -1,0 +1,212 @@
+import { describe, expect, it } from "vitest";
+import { readStarterTemplate } from "@/features/agency-projects/templates/starterTemplates";
+import { parseTemplateManifestJson } from "@/features/agency-projects/templates/templateManifest";
+import type { TemplateManifest } from "@/features/agency-projects/templates/templateManifestSchemas";
+import { previewTemplateRoleBindings } from "./templateRolePreview";
+
+const userId = "abcdefab-1234-4abc-8def-1234567890ab";
+const otherUserId = "bcdefabc-2345-4bcd-9efa-234567890abc";
+const personId = "cdefabcd-3456-4cde-abcd-345678901abc";
+const otherPersonId = "defabcde-4567-4def-bcde-456789012abc";
+const invalid = { ok: false, error: "invalid_template_bindings" };
+const offset = (days: number) => ({ basis: "calendar-days", anchor: "project-start", days });
+
+function withManifest(run: (manifest: TemplateManifest) => void) {
+  const starter = readStarterTemplate("campaign_content");
+  expect(starter.ok).toBe(true);
+  if (!starter.ok) return;
+  const source = starter.value;
+  source.templateId = "role_preview";
+  source.version = 7;
+  source.roles.push(
+    { id: "reviewer", kind: "internal-producer", label: { fa: "بازبین", de: "Prüfung", en: "Reviewer" } },
+    { id: "unused", kind: "internal-producer", label: { fa: "نقش آزاد", de: "Freie Rolle", en: "Unused role" } },
+  );
+  for (const intent of source.intents) {
+    if (intent.id === "brief_followup") intent.dueOffset.days = -1;
+    if (intent.kind === "review" && intent.id === "design_review") intent.assigneeRoleId = "reviewer";
+  }
+  const parsed = parseTemplateManifestJson(JSON.stringify(source));
+  expect(parsed.ok).toBe(true);
+  if (!parsed.ok) return;
+  run(parsed.value);
+}
+
+function mappings() {
+  return [
+    { roleId: "editor", kind: "external-contact", personId: otherPersonId },
+    { roleId: "reviewer", kind: "internal-user", userId: otherUserId },
+    { roleId: "designer", kind: "external-contact", personId: personId.toUpperCase() },
+    { roleId: "producer", kind: "internal-user", userId: userId.toUpperCase() },
+  ];
+}
+
+const expectedUses = {
+  producer: [
+    { kind: "deliverable", deliverableId: "campaign_design", stageId: "production", field: "responsibleRoleId" },
+    { kind: "deliverable", deliverableId: "campaign_cut", stageId: "production", field: "responsibleRoleId" },
+    { kind: "follow-up", intentId: "brief_followup", stageId: "briefing", field: "assigneeRoleId" },
+    { kind: "assignment", intentId: "design_assignment", stageId: "production", deliverableId: "campaign_design", field: "internalProducerRoleId" },
+    { kind: "assignment", intentId: "video_assignment", stageId: "production", deliverableId: "campaign_cut", field: "internalProducerRoleId" },
+    { kind: "follow-up", intentId: "client_update_followup", stageId: "production", field: "assigneeRoleId" },
+    { kind: "review", intentId: "video_review", stageId: "internal_review", deliverableId: "campaign_cut", field: "assigneeRoleId" },
+  ],
+  designer: [{ kind: "assignment", intentId: "design_assignment", stageId: "production", deliverableId: "campaign_design", field: "freelancerRoleId" }],
+  editor: [{ kind: "assignment", intentId: "video_assignment", stageId: "production", deliverableId: "campaign_cut", field: "freelancerRoleId" }],
+  reviewer: [{ kind: "review", intentId: "design_review", stageId: "internal_review", deliverableId: "campaign_design", field: "assigneeRoleId" }],
+  unused: [],
+};
+
+describe("proposed typed-manifest role-binding preview", () => {
+  it("returns all roles in manifest order with explicit unmapped values, including unused roles", () => withManifest((manifest) => {
+    const result = previewTemplateRoleBindings(manifest, []);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(Object.keys(result.value).sort()).toEqual(["offsetAssumptions", "roles", "templateId", "version"]);
+    expect(result.value.templateId).toBe("role_preview");
+    expect(result.value.version).toBe(7);
+    expect(result.value.roles.map(({ roleId, roleKind, binding }) => ({ roleId, roleKind, binding }))).toEqual([
+      { roleId: "producer", roleKind: "internal-producer", binding: null },
+      { roleId: "designer", roleKind: "freelancer-contact", binding: null },
+      { roleId: "editor", roleKind: "freelancer-contact", binding: null },
+      { roleId: "reviewer", roleKind: "internal-producer", binding: null },
+      { roleId: "unused", roleKind: "internal-producer", binding: null },
+    ]);
+    expect(result.value.roles.find((role) => role.roleId === "unused")?.uses).toEqual([]);
+  }));
+
+  it("canonicalizes selected UUIDs without taking role order from the input bindings", () => withManifest((manifest) => {
+    const input = mappings();
+    const before = structuredClone({ manifest, input });
+    const result = previewTemplateRoleBindings(manifest, input);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value.roles.map(({ roleId, binding }) => ({ roleId, binding }))).toEqual([
+      { roleId: "producer", binding: { kind: "internal-user", userId } },
+      { roleId: "designer", binding: { kind: "external-contact", personId } },
+      { roleId: "editor", binding: { kind: "external-contact", personId: otherPersonId } },
+      { roleId: "reviewer", binding: { kind: "internal-user", userId: otherUserId } },
+      { roleId: "unused", binding: null },
+    ]);
+    expect({ manifest, input }).toEqual(before);
+  }));
+
+  it("shows exact deliverable, follow-up, assignment and ancestor-deliverable review uses", () => withManifest((manifest) => {
+    const result = previewTemplateRoleBindings(manifest, []);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(Object.fromEntries(result.value.roles.map((role) => [role.roleId, role.uses])))
+      .toEqual(expectedUses);
+  }));
+
+  it("preserves every relative offset in intent order without dates or scheduling defaults", () => withManifest((manifest) => {
+    const result = previewTemplateRoleBindings(manifest, mappings());
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value.offsetAssumptions).toEqual([
+      { intentId: "brief_followup", dueOffset: offset(-1) },
+      { intentId: "design_assignment", dueOffset: offset(4) },
+      { intentId: "video_assignment", dueOffset: offset(5) },
+      { intentId: "client_update_followup", dueOffset: offset(3) },
+      { intentId: "design_review", dueOffset: offset(6) },
+      { intentId: "video_review", dueOffset: offset(6) },
+    ]);
+    expect(result.value).not.toHaveProperty("canInstall");
+    expect(result.value).not.toHaveProperty("installReceipt");
+    expect(result.value).not.toHaveProperty("dates");
+  }));
+
+  it("allows missing mappings and repeated target identities across different declared roles", () => withManifest((manifest) => {
+    const result = previewTemplateRoleBindings(manifest, [
+      { roleId: "producer", kind: "internal-user", userId },
+      { roleId: "reviewer", kind: "internal-user", userId },
+      { roleId: "designer", kind: "external-contact", personId },
+      { roleId: "editor", kind: "external-contact", personId },
+    ]);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value.roles.map((role) => role.binding)).toEqual([
+      { kind: "internal-user", userId },
+      { kind: "external-contact", personId },
+      { kind: "external-contact", personId },
+      { kind: "internal-user", userId },
+      null,
+    ]);
+  }));
+
+  it("keeps equal UUID bytes in different identity namespaces tagged and distinct", () => withManifest((manifest) => {
+    const result = previewTemplateRoleBindings(manifest, [
+      { roleId: "producer", kind: "internal-user", userId },
+      { roleId: "designer", kind: "external-contact", personId: userId },
+    ]);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value.roles.find((role) => role.roleId === "producer")?.binding)
+      .toEqual({ kind: "internal-user", userId });
+    expect(result.value.roles.find((role) => role.roleId === "designer")?.binding)
+      .toEqual({ kind: "external-contact", personId: userId });
+  }));
+
+  it("rejects duplicate, unknown, case-changed and wrong-kind role selections", () => withManifest((manifest) => {
+    const one = { roleId: "producer", kind: "internal-user", userId };
+    for (const input of [
+      [one, one], [one, { ...one, userId: otherUserId }],
+      [{ ...one, roleId: "missing" }], [{ ...one, roleId: "Producer" }],
+      [{ roleId: "producer", kind: "external-contact", personId }],
+      [{ roleId: "designer", kind: "internal-user", userId }],
+    ]) expect(previewTemplateRoleBindings(manifest, input)).toEqual(invalid);
+  }));
+
+  it("rejects malformed collections, UUIDs, tags and unknown authority/action fields", () => withManifest((manifest) => {
+    const one = { roleId: "producer", kind: "internal-user", userId };
+    for (const input of [
+      null, undefined, {}, "producer", { bindings: [] }, [null],
+      [{ ...one, userId: "same-name" }], [{ ...one, userId: undefined }],
+      [{ roleId: "designer", kind: "external-contact", personId: "shared@example.invalid" }],
+      [{ ...one, kind: "freelancer-contact" }], [{ ...one, personId }],
+      [{ ...one, authorized: true }], [{ ...one, canInstall: true }],
+      [{ ...one, action: "activate" }], [{ ...one, displayName: "Same name" }],
+    ]) expect(previewTemplateRoleBindings(manifest, input)).toEqual(invalid);
+  }));
+
+  it("does not let output edits alter inputs or later previews", () => withManifest((manifest) => {
+    const input = mappings();
+    const before = structuredClone({ manifest, input });
+    const first = previewTemplateRoleBindings(manifest, input);
+    expect(first.ok).toBe(true);
+    if (!first.ok) return;
+    const original = structuredClone(first.value);
+    const producer = first.value.roles.find((role) => role.roleId === "producer");
+    const assumption = first.value.offsetAssumptions[0];
+    expect(producer).toBeDefined();
+    expect(assumption).toBeDefined();
+    if (producer === undefined || assumption === undefined) return;
+    if (producer.binding !== null) Reflect.set(producer.binding, "userId", otherUserId);
+    Reflect.set(producer.uses, "0", { changed: true });
+    Reflect.set(assumption.dueOffset, "days", 100);
+    expect({ manifest, input }).toEqual(before);
+    expect(previewTemplateRoleBindings(manifest, input)).toEqual({ ok: true, value: original });
+  }));
+
+  it("does not alias or freeze caller-owned bindings or manifest offsets", () => withManifest((manifest) => {
+    const input = [{ roleId: "producer", kind: "internal-user", userId }];
+    const result = previewTemplateRoleBindings(manifest, input);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    const original = structuredClone(result.value);
+    const binding = input[0];
+    const intent = manifest.intents[0];
+    expect(binding).toBeDefined();
+    expect(intent).toBeDefined();
+    if (binding === undefined || intent === undefined) return;
+    expect(Reflect.set(binding, "userId", otherUserId)).toBe(true);
+    expect(Reflect.set(intent.dueOffset, "days", -2)).toBe(true);
+    expect(result.value).toEqual(original);
+    const next = previewTemplateRoleBindings(manifest, input);
+    expect(next.ok).toBe(true);
+    if (!next.ok) return;
+    expect(next.value.roles.find((role) => role.roleId === "producer")?.binding)
+      .toEqual({ kind: "internal-user", userId: otherUserId });
+    expect(next.value.offsetAssumptions[0]).toEqual({ intentId: "brief_followup", dueOffset: offset(-2) });
+  }));
+});

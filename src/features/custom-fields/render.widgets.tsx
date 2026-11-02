@@ -1,6 +1,7 @@
 "use client";
 // Custom-field widget dispatch: CustomFieldDetail (read-only) and
 // CustomFieldFormControl (editable). Controls use the shared shadcn-style UI primitives.
+import { useId } from "react";
 import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import { assertNever } from "@/types/result";
 import { useCustomFieldRefLabels } from "./refLabelsContext";
@@ -41,7 +42,8 @@ export function CustomFieldFormControl({
   currency,
   hideValidationMessage,
 }: ControlProps) {
-  const id = `cf-${def.key}`;
+  const instanceId = useId();
+  const id = `cf-${instanceId}`;
 
   switch (def.type) {
     case "text":

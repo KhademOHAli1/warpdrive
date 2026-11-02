@@ -1,0 +1,10 @@
+{
+  "runId": "a86fa9ad-8edd-4d4b-83ea-01689846ecee",
+  "label": "codex.agency.project-create-run",
+  "pid": 17499,
+  "daemonMarkerId": "a6f9d1b0c5fc70039491d657b90c1acd0a987db3de8da526479c2c629d6c35bb",
+  "daemonVerified": true,
+  "containerId": "294bf6506d73453fa456801bf5fd572d9f3e6db5bc2a2421b3f6e767c87d4cd6",
+  "state": "ready",
+  "observedAt": "2026-11-01T07:11:56.943Z"
+}

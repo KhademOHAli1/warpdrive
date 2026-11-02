@@ -1,0 +1,113 @@
+{
+  "schemaVersion": 1,
+  "status": "Proposed copy only; not a production catalog or implemented UI",
+  "namespaceProposal": "agencyReviewHistory",
+  "authoringOrder": ["fa", "de", "en"],
+  "humanNativeLanguageReview": {
+    "fa": "pending",
+    "de": "pending",
+    "en": "pending"
+  },
+  "sourceReferences": [
+    "docs/agency-projects/workspace-state-spec.md",
+    "src/features/agency-projects/reviews/reviewTypes.ts",
+    "src/features/agency-projects/reviews/ReviewDecisionHistory.test-support.tsx",
+    "src/features/agency-projects/reviews/ReviewDecisionHistory.test.tsx",
+    "src/features/agency-projects/reviews/ReviewDecisionHistory.provenance.test.tsx"
+  ],
+  "usageDecisions": [
+    "Client approval is explicitly staff-recorded. These labels assert no authenticated client action, signature, delivery or universal approval.",
+    "Current and historical describe each decision's exact version and review epoch. They do not declare project completion or grant authority.",
+    "Render the staff rich tag as bidi-isolated escaped text. The staffName parameter is an authorized display label, never a raw identity ID.",
+    "Use clientApprovalRecordedUnknown when the recorder label is unavailable. Do not interpolate the unavailable message as a person's name or infer deletion or inactivity.",
+    "Keep internal review time, reported client approval time and native recording time distinct. The visible display time zone comes from the chosen formatting preference, not an inferred client or business zone.",
+    "Render version, evidence, contact and identity labels as plain bidi-isolated text. Copy supplies no link, preview fetch, permission, workflow or financial behavior."
+  ],
+  "qualification": "Authored proposal only. No parity checker, test, type check, lint, build, rendered UI, native-language review or acceptance was executed for this file.",
+  "messages": {
+    "fa": {
+      "title": "سوابق بررسی و تأیید",
+      "currentVersion": "نسخهٔ فعلی",
+      "newReview": "این نسخه به بررسی تازه نیاز دارد.",
+      "empty": "هنوز تصمیمی ثبت نشده است.",
+      "current": "بررسی فعلی",
+      "historical": "بررسی پیشین",
+      "internalApproval": "تأیید داخلی",
+      "clientApprovalRecorded": "تأیید مشتری، ثبت‌شده توسط <staff>{staffName}</staff>",
+      "clientApprovalRecordedUnknown": "تأیید مشتری ثبت شده است. نام ثبت‌کننده در دسترس نیست.",
+      "recordedBy": "ثبت‌کننده",
+      "staffUnavailable": "نام ثبت‌کننده در دسترس نیست",
+      "clientContact": "مخاطب مشتری",
+      "clientUnavailable": "نام مخاطب مشتری در دسترس نیست",
+      "reviewedVersion": "نسخهٔ بررسی‌شده",
+      "evidence": "مرجع تأیید یا مکاتبه",
+      "internalOccurred": "زمان بررسی داخلی",
+      "clientOccurred": "زمان اعلام تأیید",
+      "recordedAt": "زمان ثبت",
+      "timeZone": "منطقهٔ زمانی نمایش",
+      "methods": {
+        "email": "ایمیل",
+        "phone": "تماس تلفنی",
+        "meeting": "جلسه",
+        "message": "پیام",
+        "internal-review": "بررسی داخلی"
+      }
+    },
+    "de": {
+      "title": "Verlauf der Freigaben",
+      "currentVersion": "Aktuelle Version",
+      "newReview": "Diese Version muss erneut geprüft werden.",
+      "empty": "Noch keine Entscheidung erfasst.",
+      "current": "Aktuelle Prüfung",
+      "historical": "Frühere Prüfung",
+      "internalApproval": "Interne Freigabe",
+      "clientApprovalRecorded": "Kundenfreigabe, erfasst von <staff>{staffName}</staff>",
+      "clientApprovalRecordedUnknown": "Kundenfreigabe erfasst. Name der erfassenden Person nicht verfügbar.",
+      "recordedBy": "Erfasst von",
+      "staffUnavailable": "Name der erfassenden Person nicht verfügbar",
+      "clientContact": "Kontaktperson beim Kunden",
+      "clientUnavailable": "Kontaktperson beim Kunden nicht verfügbar",
+      "reviewedVersion": "Geprüfte Version",
+      "evidence": "Referenz zum Nachweis oder zur Kommunikation",
+      "internalOccurred": "Zeitpunkt der internen Prüfung",
+      "clientOccurred": "Zeitpunkt der Mitteilung",
+      "recordedAt": "Erfasst am",
+      "timeZone": "Zeitzone der Anzeige",
+      "methods": {
+        "email": "E-Mail",
+        "phone": "Telefon",
+        "meeting": "Besprechung",
+        "message": "Nachricht",
+        "internal-review": "Interne Prüfung"
+      }
+    },
+    "en": {
+      "title": "Review decision history",
+      "currentVersion": "Current version",
+      "newReview": "This version needs a new review.",
+      "empty": "No decisions recorded yet.",
+      "current": "Current review",
+      "historical": "Historical review",
+      "internalApproval": "Internal approval",
+      "clientApprovalRecorded": "Client approval recorded by <staff>{staffName}</staff>",
+      "clientApprovalRecordedUnknown": "Client approval recorded. Recording employee unavailable.",
+      "recordedBy": "Recorded by",
+      "staffUnavailable": "Recording employee unavailable",
+      "clientContact": "Client contact",
+      "clientUnavailable": "Client contact unavailable",
+      "reviewedVersion": "Reviewed version",
+      "evidence": "Evidence or communication reference",
+      "internalOccurred": "Internal review occurred at",
+      "clientOccurred": "Approval reported at",
+      "recordedAt": "Recorded at",
+      "timeZone": "Display time zone",
+      "methods": {
+        "email": "Email",
+        "phone": "Phone",
+        "meeting": "Meeting",
+        "message": "Message",
+        "internal-review": "Internal review"
+      }
+    }
+  }
+}

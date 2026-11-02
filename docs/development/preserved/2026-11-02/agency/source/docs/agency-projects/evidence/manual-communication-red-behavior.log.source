@@ -1,0 +1,708 @@
+$ bun --bun vitest run --project unit src/features/agency-projects/communication/manualCommunication.test.ts src/features/agency-projects/communication/manualCommunicationPolicy.test.ts "--maxWorkers=1"
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+  - ESM syntax in a file loaded as CommonJS (vitest.classify.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.5 /Users/ali/Developer/warpdrive-agency-projects
+
+ ❯ |unit| src/features/agency-projects/communication/manualCommunication.test.ts (11 tests | 6 failed) 9ms
+   ❯ proposed manual communication boundaries (8)
+     × accepts explicit record/correct browser data without native identity or time 5ms
+     × requires server native recorder/time and server-created record UUID 1ms
+     × preserves declared protected plain note/evidence and explicit other-channel label 0ms
+     × uses exact offset-qualified instants and rejects future sub-millisecond occurrences 0ms
+     × allows a late-entered historical occurrence without importing the review-epoch rule 0ms
+   ❯ proposed bounded private context ingress (3)
+     × validates one current head and at most one scoped intent without loading growing history 0ms
+ ❯ |unit| src/features/agency-projects/communication/manualCommunicationPolicy.test.ts (11 tests | 10 failed) 9ms
+   ❯ proposed manual record/correct/replay policy (11)
+     × returns a staff-recorded head, private receipt and append descriptor for a fresh record 5ms
+     × corrects a bounded head with an original-facts/reason delta instead of overwriting history 1ms
+     × replays an old record intent after correction without reverting content or using retry metadata 0ms
+     × replays an older correction against the current head with its original receipt and no new append 0ms
+     × conflicts on changed semantic declaration using the same actor/action/intent 0ms
+     × never discloses a different actor/action/intent receipt supplied by a mismatched lookup 0ms
+     × checks fresh-write target/revision without pretending pure checks are database CAS 0ms
+     × explicitly corrects a misrecorded recipient while preserving old/new person facts and replay 0ms
+     × keeps recording chronology exact, allowing equality but no one-nanosecond rewind 0ms
+     × permits a genuine late-entered historical correction while fencing revision overflow 0ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 16 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| src/features/agency-projects/communication/manualCommunication.test.ts > proposed manual communication boundaries > accepts explicit record/correct browser data without native identity or time
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: true, value: { …(5) } }
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "action": "record",
+-     "declaration": {
+-       "channel": {
+-         "kind": "email",
+-       },
+-       "evidenceReference": "https://notes.example.invalid/Update/A%2Fb#Teil-1",
+-       "note": "گزارش پیشرفت ثبت شد / Fortschritt mitgeteilt",
+-       "occurredAt": "2026-11-01T05:40:00.000000001Z",
+-     },
+-     "mutationIntentId": "faabcdef-6789-4bcd-9efa-678901234abc",
+-     "personId": "bcdefabc-2345-4bcd-9efa-234567890abc",
+-     "projectId": "cdefabcd-3456-4cde-abcd-345678901abc",
+-   },
++   "error": "invalid_manual_action",
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/communication/manualCommunication.test.ts:15:53
+     13|   it("accepts explicit record/correct browser data without native iden…
+     14|     for (const input of [recordAction(), correctionAction()]) {
+     15|       expect(parseManualCommunicationAction(input)).toEqual({ ok: true…
+       |                                                     ^
+     16|       for (const extra of [{ recordedByUserId: ids.actorId }, { record…
+     17|         expect(parseManualCommunicationAction({ ...input, ...extra }))
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/16]⎯
+
+ FAIL  |unit| src/features/agency-projects/communication/manualCommunication.test.ts > proposed manual communication boundaries > requires server native recorder/time and server-created record UUID
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: true, value: { …(8) } }
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "action": "record",
+-     "declaration": {
+-       "channel": {
+-         "kind": "email",
+-       },
+-       "evidenceReference": "https://notes.example.invalid/Update/A%2Fb#Teil-1",
+-       "note": "گزارش پیشرفت ثبت شد / Fortschritt mitgeteilt",
+-       "occurredAt": "2026-11-01T05:40:00.000000001Z",
+-     },
+-     "logId": "defabcde-4567-4def-bcde-456789012abc",
+-     "mutationIntentId": "faabcdef-6789-4bcd-9efa-678901234abc",
+-     "personId": "bcdefabc-2345-4bcd-9efa-234567890abc",
+-     "projectId": "cdefabcd-3456-4cde-abcd-345678901abc",
+-     "recordedAt": "2026-11-01T06:00:00Z",
+-     "recordedByUserId": "abcdefab-1234-4abc-8def-1234567890ab",
+-   },
++   "error": "invalid_manual_command",
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/communication/manualCommunication.test.ts:36:9
+     34|       personId: input.personId.toUpperCase(), mutationIntentId: input.…
+     35|       recordedByUserId: input.recordedByUserId.toUpperCase(),
+     36|     })).toEqual({ ok: true, value: input });
+       |         ^
+     37|   });
+     38|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/16]⎯
+
+ FAIL  |unit| src/features/agency-projects/communication/manualCommunication.test.ts > proposed manual communication boundaries > preserves declared protected plain note/evidence and explicit other-channel label
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: true, value: { …(8) } }
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "action": "record",
+-     "declaration": {
+-       "channel": {
+-         "kind": "other",
+-         "label": "گفت‌وگو / Austausch",
+-       },
+-       "evidenceReference": "https://notes.example.invalid/Update/A%2Fb#Teil-1",
+-       "note": "  گزارش <داخلی>
+- Staff record <plain text>  ",
+-       "occurredAt": "2026-11-01T05:40:00.000000001Z",
+-     },
+-     "logId": "defabcde-4567-4def-bcde-456789012abc",
+-     "mutationIntentId": "faabcdef-6789-4bcd-9efa-678901234abc",
+-     "personId": "bcdefabc-2345-4bcd-9efa-234567890abc",
+-     "projectId": "cdefabcd-3456-4cde-abcd-345678901abc",
+-     "recordedAt": "2026-11-01T06:00:00Z",
+-     "recordedByUserId": "abcdefab-1234-4abc-8def-1234567890ab",
+-   },
++   "error": "invalid_manual_command",
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/communication/manualCommunication.test.ts:69:52
+     67|       },
+     68|     };
+     69|     expect(parseManualCommunicationCommand(input)).toEqual({ ok: true,…
+       |                                                    ^
+     70|     const withoutEvidence = recordCommand();
+     71|     Reflect.deleteProperty(withoutEvidence.declaration, "evidenceRefer…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/16]⎯
+
+ FAIL  |unit| src/features/agency-projects/communication/manualCommunication.test.ts > proposed manual communication boundaries > uses exact offset-qualified instants and rejects future sub-millisecond occurrences
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: true, value: { …(8) } }
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "action": "record",
+-     "declaration": {
+-       "channel": {
+-         "kind": "email",
+-       },
+-       "evidenceReference": "https://notes.example.invalid/Update/A%2Fb#Teil-1",
+-       "note": "گزارش پیشرفت ثبت شد / Fortschritt mitgeteilt",
+-       "occurredAt": "2026-11-01T09:30:00.000000001+03:30",
+-     },
+-     "logId": "defabcde-4567-4def-bcde-456789012abc",
+-     "mutationIntentId": "faabcdef-6789-4bcd-9efa-678901234abc",
+-     "personId": "bcdefabc-2345-4bcd-9efa-234567890abc",
+-     "projectId": "cdefabcd-3456-4cde-abcd-345678901abc",
+-     "recordedAt": "2026-11-01T06:00:00.000000001Z",
+-     "recordedByUserId": "abcdefab-1234-4abc-8def-1234567890ab",
+-   },
++   "error": "invalid_manual_command",
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/communication/manualCommunication.test.ts:102:52
+    100|     }
+    101|     const equal = { ...command, declaration: { ...command.declaration,…
+    102|     expect(parseManualCommunicationCommand(equal)).toEqual({ ok: true,…
+       |                                                    ^
+    103|     for (const recordedAt of ["not-a-time", "2026-11-01T06:00:00", "20…
+    104|       expect(parseManualCommunicationCommand({ ...command, recordedAt …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/16]⎯
+
+ FAIL  |unit| src/features/agency-projects/communication/manualCommunication.test.ts > proposed manual communication boundaries > allows a late-entered historical occurrence without importing the review-epoch rule
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: true, value: { …(8) } }
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "action": "record",
+-     "declaration": {
+-       "channel": {
+-         "kind": "email",
+-       },
+-       "evidenceReference": "https://notes.example.invalid/Update/A%2Fb#Teil-1",
+-       "note": "گزارش پیشرفت ثبت شد / Fortschritt mitgeteilt",
+-       "occurredAt": "2020-01-02T09:00:00+03:30",
+-     },
+-     "logId": "defabcde-4567-4def-bcde-456789012abc",
+-     "mutationIntentId": "faabcdef-6789-4bcd-9efa-678901234abc",
+-     "personId": "bcdefabc-2345-4bcd-9efa-234567890abc",
+-     "projectId": "cdefabcd-3456-4cde-abcd-345678901abc",
+-     "recordedAt": "2026-11-01T06:00:00Z",
+-     "recordedByUserId": "abcdefab-1234-4abc-8def-1234567890ab",
+-   },
++   "error": "invalid_manual_command",
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/communication/manualCommunication.test.ts:111:52
+    109|   it("allows a late-entered historical occurrence without importing th…
+    110|     const input = { ...recordCommand(), declaration: { ...recordComman…
+    111|     expect(parseManualCommunicationCommand(input)).toEqual({ ok: true,…
+       |                                                    ^
+    112|   });
+    113| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/16]⎯
+
+ FAIL  |unit| src/features/agency-projects/communication/manualCommunication.test.ts > proposed bounded private context ingress > validates one current head and at most one scoped intent without loading growing history
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: true, value: { …(2) } }
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "current": {
+-       "declaration": {
+-         "channel": {
+-           "kind": "email",
+-         },
+-         "evidenceReference": "https://notes.example.invalid/Update/A%2Fb#Teil-1",
+-         "note": "اصلاح زمان / Zeitangabe korrigiert",
+-         "occurredAt": "2026-11-01T05:45:00+00:00",
+-       },
+-       "lastRecordedAt": "2026-11-01T06:10:00Z",
+-       "logId": "defabcde-4567-4def-bcde-456789012abc",
+-       "personId": "bcdefabc-2345-4bcd-9efa-234567890abc",
+-       "projectId": "cdefabcd-3456-4cde-abcd-345678901abc",
+-       "provenance": "staff-recorded",
+-       "revision": 2,
+-     },
+-     "priorIntent": {
+-       "receipt": {
+-         "action": "record",
+-         "logId": "defabcde-4567-4def-bcde-456789012abc",
+-         "mutationIntentId": "faabcdef-6789-4bcd-9efa-678901234abc",
+-         "personId": "bcdefabc-2345-4bcd-9efa-234567890abc",
+-         "policyVersion": 1,
+-         "previousPersonId": null,
+-         "previousRevision": 0,
+-         "projectId": "cdefabcd-3456-4cde-abcd-345678901abc",
+-         "provenance": "staff-recorded",
+-         "reason": null,
+-         "recordedAt": "2026-11-01T06:00:00Z",
+-         "recordedByUserId": "abcdefab-1234-4abc-8def-1234567890ab",
+-         "revision": 1,
+-       },
+-       "request": {
+-         "action": "record",
+-         "declaration": {
+-           "channel": {
+-             "kind": "email",
+-           },
+-           "evidenceReference": "https://notes.example.invalid/Update/A%2Fb#Teil-1",
+-           "note": "گزارش پیشرفت ثبت شد / Fortschritt mitgeteilt",
+-           "occurredAt": "2026-11-01T05:40:00.000000001Z",
+-         },
+-         "mutationIntentId": "faabcdef-6789-4bcd-9efa-678901234abc",
+-         "personId": "bcdefabc-2345-4bcd-9efa-234567890abc",
+-         "projectId": "cdefabcd-3456-4cde-abcd-345678901abc",
+-       },
+-       "state": "applied",
+-     },
+-   },
++   "error": "invalid_manual_context",
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/communication/manualCommunication.test.ts:118:52
+    116|   it("validates one current head and at most one scoped intent without…
+    117|     const input = context();
+    118|     expect(parseManualCommunicationContext(input)).toEqual({ ok: true,…
+       |                                                    ^
+    119|     const deleted = { current: null, priorIntent: deletedRecordIntent(…
+    120|     expect(parseManualCommunicationContext(deleted)).toEqual({ ok: tru…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/16]⎯
+
+ FAIL  |unit| src/features/agency-projects/communication/manualCommunicationPolicy.test.ts > proposed manual record/correct/replay policy > returns a staff-recorded head, private receipt and append descriptor for a fresh record
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: true, value: { …(4) } }
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "appendEvent": {
+-       "after": {
+-         "declaration": {
+-           "channel": {
+-             "kind": "email",
+-           },
+-           "evidenceReference": "https://notes.example.invalid/Update/A%2Fb#Teil-1",
+-           "note": "گزارش پیشرفت ثبت شد / Fortschritt mitgeteilt",
+-           "occurredAt": "2026-11-01T05:40:00.000000001Z",
+-         },
+-         "personId": "bcdefabc-2345-4bcd-9efa-234567890abc",
+-       },
+-       "before": null,
+-       "receipt": {
+-         "action": "record",
+-         "logId": "defabcde-4567-4def-bcde-456789012abc",
+-         "mutationIntentId": "faabcdef-6789-4bcd-9efa-678901234abc",
+-         "personId": "bcdefabc-2345-4bcd-9efa-234567890abc",
+-         "policyVersion": 1,
+-         "previousPersonId": null,
+-         "previousRevision": 0,
+-         "projectId": "cdefabcd-3456-4cde-abcd-345678901abc",
+-         "provenance": "staff-recorded",
+-         "reason": null,
+-         "recordedAt": "2026-11-01T06:00:00Z",
+-         "recordedByUserId": "abcdefab-1234-4abc-8def-1234567890ab",
+-         "revision": 1,
+-       },
+-     },
+-     "receipt": {
+-       "action": "record",
+-       "logId": "defabcde-4567-4def-bcde-456789012abc",
+-       "mutationIntentId": "faabcdef-6789-4bcd-9efa-678901234abc",
+-       "personId": "bcdefabc-2345-4bcd-9efa-234567890abc",
+-       "policyVersion": 1,
+-       "previousPersonId": null,
+-       "previousRevision": 0,
+-       "projectId": "cdefabcd-3456-4cde-abcd-345678901abc",
+-       "provenance": "staff-recorded",
+-       "reason": null,
+-       "recordedAt": "2026-11-01T06:00:00Z",
+-       "recordedByUserId": "abcdefab-1234-4abc-8def-1234567890ab",
+-       "revision": 1,
+-     },
+-     "replayed": false,
+-     "snapshot": {
+-       "declaration": {
+-         "channel": {
+-           "kind": "email",
+-         },
+-         "evidenceReference": "https://notes.example.invalid/Update/A%2Fb#Teil-1",
+-         "note": "گزارش پیشرفت ثبت شد / Fortschritt mitgeteilt",
+-         "occurredAt": "2026-11-01T05:40:00.000000001Z",
+-       },
+-       "lastRecordedAt": "2026-11-01T06:00:00Z",
+-       "logId": "defabcde-4567-4def-bcde-456789012abc",
+-       "personId": "bcdefabc-2345-4bcd-9efa-234567890abc",
+-       "projectId": "cdefabcd-3456-4cde-abcd-345678901abc",
+-       "provenance": "staff-recorded",
+-       "revision": 1,
+-     },
+-   },
++   "error": "manual_intent_unavailable",
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/communication/manualCommunicationPolicy.test.ts:12:20
+     10|     const command = recordCommand();
+     11|     const result = applyManualCommunicationCommand({ current: null, pr…
+     12|     expect(result).toEqual({ ok: true, value: {
+       |                    ^
+     13|       replayed: false, receipt: recordReceipt(),
+     14|       snapshot: {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/16]⎯
+
+ FAIL  |unit| src/features/agency-projects/communication/manualCommunicationPolicy.test.ts > proposed manual record/correct/replay policy > corrects a bounded head with an original-facts/reason delta instead of overwriting history
+AssertionError: expected { ok: false, …(1) } to match object { ok: true, value: { …(4) } }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "appendEvent": {
+-       "after": {
+-         "declaration": {
+-           "channel": {
+-             "kind": "email",
+-           },
+-           "evidenceReference": "https://notes.example.invalid/Update/A%2Fb#Teil-1",
+-           "note": "یادداشت کامل‌تر / Ergänzte Aufzeichnung",
+-           "occurredAt": "2026-11-01T05:40:00.000000001Z",
+-         },
+-         "personId": "bcdefabc-2345-4bcd-9efa-234567890abc",
+-       },
+-       "before": {
+-         "declaration": {
+-           "channel": {
+-             "kind": "email",
+-           },
+-           "evidenceReference": "https://notes.example.invalid/Update/A%2Fb#Teil-1",
+-           "note": "اصلاح زمان / Zeitangabe korrigiert",
+-           "occurredAt": "2026-11-01T05:45:00+00:00",
+-         },
+-         "personId": "bcdefabc-2345-4bcd-9efa-234567890abc",
+-       },
+-     },
+-     "receipt": {
+-       "action": "correct",
+-       "previousRevision": 2,
+-       "provenance": "staff-recorded",
+-       "reason": "تکمیل یادداشت / Ergänzung",
+-       "revision": 3,
+-     },
+-     "replayed": false,
+-     "snapshot": {
+-       "declaration": {
+-         "channel": {
+-           "kind": "email",
+-         },
+-         "evidenceReference": "https://notes.example.invalid/Update/A%2Fb#Teil-1",
+-         "note": "یادداشت کامل‌تر / Ergänzte Aufzeichnung",
+-         "occurredAt": "2026-11-01T05:40:00.000000001Z",
+-       },
+-       "lastRecordedAt": "2026-11-01T06:20:00Z",
+-       "revision": 3,
+-     },
+-   },
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/communication/manualCommunicationPolicy.test.ts:28:20
+     26|     const command = laterCorrection();
+     27|     const result = applyManualCommunicationCommand(input, command);
+     28|     expect(result).toMatchObject({ ok: true, value: {
+       |                    ^
+     29|       replayed: false,
+     30|       snapshot: { revision: 3, declaration: command.declaration, lastR…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/16]⎯
+
+ FAIL  |unit| src/features/agency-projects/communication/manualCommunicationPolicy.test.ts > proposed manual record/correct/replay policy > replays an old record intent after correction without reverting content or using retry metadata
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: true, value: { …(4) } }
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "appendEvent": null,
+-     "receipt": {
+-       "action": "record",
+-       "logId": "defabcde-4567-4def-bcde-456789012abc",
+-       "mutationIntentId": "faabcdef-6789-4bcd-9efa-678901234abc",
+-       "personId": "bcdefabc-2345-4bcd-9efa-234567890abc",
+-       "policyVersion": 1,
+-       "previousPersonId": null,
+-       "previousRevision": 0,
+-       "projectId": "cdefabcd-3456-4cde-abcd-345678901abc",
+-       "provenance": "staff-recorded",
+-       "reason": null,
+-       "recordedAt": "2026-11-01T06:00:00Z",
+-       "recordedByUserId": "abcdefab-1234-4abc-8def-1234567890ab",
+-       "revision": 1,
+-     },
+-     "replayed": true,
+-     "snapshot": {
+-       "declaration": {
+-         "channel": {
+-           "kind": "email",
+-         },
+-         "evidenceReference": "https://notes.example.invalid/Update/A%2Fb#Teil-1",
+-         "note": "اصلاح زمان / Zeitangabe korrigiert",
+-         "occurredAt": "2026-11-01T05:45:00+00:00",
+-       },
+-       "lastRecordedAt": "2026-11-01T06:10:00Z",
+-       "logId": "defabcde-4567-4def-bcde-456789012abc",
+-       "personId": "bcdefabc-2345-4bcd-9efa-234567890abc",
+-       "projectId": "cdefabcd-3456-4cde-abcd-345678901abc",
+-       "provenance": "staff-recorded",
+-       "revision": 2,
+-     },
+-   },
++   "error": "manual_intent_unavailable",
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/communication/manualCommunicationPolicy.test.ts:45:9
+     43|     expect(applyManualCommunicationCommand(input, {
+     44|       ...recordCommand(), logId: ids.otherLogId, recordedAt: "2026-11-…
+     45|     })).toEqual({ ok: true, value: {
+       |         ^
+     46|       replayed: true, snapshot: input.current, receipt: input.priorInt…
+     47|     } });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/16]⎯
+
+ FAIL  |unit| src/features/agency-projects/communication/manualCommunicationPolicy.test.ts > proposed manual record/correct/replay policy > replays an older correction against the current head with its original receipt and no new append
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/features/agency-projects/communication/manualCommunicationPolicy.test.ts:53:24
+     51|   it("replays an older correction against the current head with its or…
+     52|     const initial = applyManualCommunicationCommand({ current: current…
+     53|     expect(initial.ok).toBe(true);
+       |                        ^
+     54|     if (!initial.ok) return;
+     55|     const priorIntent = appliedCorrectionIntent();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/16]⎯
+
+ FAIL  |unit| src/features/agency-projects/communication/manualCommunicationPolicy.test.ts > proposed manual record/correct/replay policy > conflicts on changed semantic declaration using the same actor/action/intent
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: false, …(1) }
+
+- Expected
++ Received
+
+  {
+-   "error": "manual_intent_conflict",
++   "error": "manual_intent_unavailable",
+    "ok": false,
+  }
+
+ ❯ src/features/agency-projects/communication/manualCommunicationPolicy.test.ts:71:8
+     69|       { ...command.declaration, evidenceReference: "another-protected-…
+     70|     ]) expect(applyManualCommunicationCommand(context(), { ...command,…
+     71|       .toEqual({ ok: false, error: "manual_intent_conflict" });
+       |        ^
+     72|     const input = { current: currentHead(), priorIntent: appliedCorrec…
+     73|     expect(applyManualCommunicationCommand(input, { ...correctionComma…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/16]⎯
+
+ FAIL  |unit| src/features/agency-projects/communication/manualCommunicationPolicy.test.ts > proposed manual record/correct/replay policy > never discloses a different actor/action/intent receipt supplied by a mismatched lookup
+AssertionError: expected { ok: false, …(1) } to match object { ok: true, value: { …(2) } }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "receipt": {
+-       "action": "correct",
+-       "revision": 3,
+-     },
+-     "replayed": false,
+-   },
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/communication/manualCommunicationPolicy.test.ts:90:8
+     88|     const distinctAction = { ...laterCorrection(), mutationIntentId: i…
+     89|     expect(applyManualCommunicationCommand({ current: currentHead(), p…
+     90|       .toMatchObject({ ok: true, value: { replayed: false, receipt: { …
+       |        ^
+     91|   });
+     92|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/16]⎯
+
+ FAIL  |unit| src/features/agency-projects/communication/manualCommunicationPolicy.test.ts > proposed manual record/correct/replay policy > checks fresh-write target/revision without pretending pure checks are database CAS
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: false, …(1) }
+
+- Expected
++ Received
+
+  {
+-   "error": "manual_log_exists",
++   "error": "manual_intent_unavailable",
+    "ok": false,
+  }
+
+ ❯ src/features/agency-projects/communication/manualCommunicationPolicy.test.ts:105:8
+    103|     const input = { current: currentHead(), priorIntent: null };
+    104|     expect(applyManualCommunicationCommand(input, recordCommand()))
+    105|       .toEqual({ ok: false, error: "manual_log_exists" });
+       |        ^
+    106|     expect(applyManualCommunicationCommand({ current: null, priorInten…
+    107|       .toEqual({ ok: false, error: "manual_log_missing" });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/16]⎯
+
+ FAIL  |unit| src/features/agency-projects/communication/manualCommunicationPolicy.test.ts > proposed manual record/correct/replay policy > explicitly corrects a misrecorded recipient while preserving old/new person facts and replay
+AssertionError: expected { ok: false, …(1) } to match object { ok: true, value: { …(3) } }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "appendEvent": {
+-       "after": {
+-         "declaration": {
+-           "channel": {
+-             "kind": "email",
+-           },
+-           "evidenceReference": "https://notes.example.invalid/Update/A%2Fb#Teil-1",
+-           "note": "اصلاح زمان / Zeitangabe korrigiert",
+-           "occurredAt": "2026-11-01T05:45:00+00:00",
+-         },
+-         "personId": "efabcdef-5678-4abc-8def-567890123abc",
+-       },
+-       "before": {
+-         "declaration": {
+-           "channel": {
+-             "kind": "email",
+-           },
+-           "evidenceReference": "https://notes.example.invalid/Update/A%2Fb#Teil-1",
+-           "note": "اصلاح زمان / Zeitangabe korrigiert",
+-           "occurredAt": "2026-11-01T05:45:00+00:00",
+-         },
+-         "personId": "bcdefabc-2345-4bcd-9efa-234567890abc",
+-       },
+-     },
+-     "receipt": {
+-       "personId": "efabcdef-5678-4abc-8def-567890123abc",
+-       "previousPersonId": "bcdefabc-2345-4bcd-9efa-234567890abc",
+-       "reason": "اصلاح مخاطب / Empfänger korrigiert",
+-     },
+-     "snapshot": {
+-       "logId": "defabcde-4567-4def-bcde-456789012abc",
+-       "personId": "efabcdef-5678-4abc-8def-567890123abc",
+-       "projectId": "cdefabcd-3456-4cde-abcd-345678901abc",
+-       "revision": 3,
+-     },
+-   },
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/communication/manualCommunicationPolicy.test.ts:124:23
+    122|     };
+    123|     const corrected = applyManualCommunicationCommand(input, command);
+    124|     expect(corrected).toMatchObject({ ok: true, value: {
+       |                       ^
+    125|       snapshot: { projectId: ids.projectId, logId: ids.logId, personId…
+    126|       receipt: { previousPersonId: ids.personId, personId: ids.correct…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/16]⎯
+
+ FAIL  |unit| src/features/agency-projects/communication/manualCommunicationPolicy.test.ts > proposed manual record/correct/replay policy > keeps recording chronology exact, allowing equality but no one-nanosecond rewind
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: false, …(1) }
+
+- Expected
++ Received
+
+  {
+-   "error": "manual_time_conflict",
++   "error": "manual_intent_unavailable",
+    "ok": false,
+  }
+
+ ❯ src/features/agency-projects/communication/manualCommunicationPolicy.test.ts:145:8
+    143|     const before = structuredClone(input);
+    144|     expect(applyManualCommunicationCommand(input, { ...laterCorrection…
+    145|       .toEqual({ ok: false, error: "manual_time_conflict" });
+       |        ^
+    146|     const recordedAt = "2026-11-01T09:40:00+03:30";
+    147|     expect(applyManualCommunicationCommand(input, { ...laterCorrection…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/16]⎯
+
+ FAIL  |unit| src/features/agency-projects/communication/manualCommunicationPolicy.test.ts > proposed manual record/correct/replay policy > permits a genuine late-entered historical correction while fencing revision overflow
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/features/agency-projects/communication/manualCommunicationPolicy.test.ts:156:12
+    154|     expect(applyManualCommunicationCommand(input, {
+    155|       ...laterCorrection(), declaration: { ...laterCorrection().declar…
+    156|     }).ok).toBe(true);
+       |            ^
+    157|     const exhausted = { current: { ...currentHead(), revision: Number.…
+    158|     expect(applyManualCommunicationCommand(exhausted, { ...laterCorrec…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/16]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  16 failed | 6 passed (22)
+   Start at  05:51:21
+   Duration  163ms (transform 44%, tests 29%, import 11%, setup 10%, worker 6%)
+
+error: "vitest" exited with code 1
+error: script "test:unit" exited with code 1

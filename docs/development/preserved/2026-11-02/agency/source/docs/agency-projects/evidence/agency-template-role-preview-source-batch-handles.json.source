@@ -1,0 +1,226 @@
+{
+  "schemaVersion": 1,
+  "scope": "Exact3-file template-role source-check window,30seconds total; separately coordinated",
+  "window": {
+    "grantSourceThreadId": "01a18868-3300-7dc2-b49d-c3bdb067fae7",
+    "budgetSeconds": 30,
+    "teardownReserveSeconds": 1,
+    "startedAt": "2026-11-01T08:18:22.551608+00:00",
+    "deadlineMonotonic": 564114.23925575
+  },
+  "runs": [
+    {
+      "phase": "types",
+      "attempt": "1",
+      "pid": 46124,
+      "startedAt": "2026-11-01T08:18:22.552453+00:00",
+      "finishedAt": "2026-11-01T08:18:23.086577+00:00",
+      "terminal": true,
+      "exitCode": 0,
+      "stopReason": null,
+      "beforeFreeBytes": 14567124992,
+      "minimumFreeBytes": 14552244224,
+      "afterFreeBytes": 14593241088,
+      "floorBytes": 5368709120,
+      "windowRemainingSecondsAtLaunch": 28.999571833992377,
+      "windowBudgetSeconds": 30,
+      "log": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/agency-template-role-preview-source-types-1.log",
+      "command": [
+        "/Users/ali/Developer/warpdrive-agency-projects/.runtime/bin/bun",
+        "--smol",
+        "node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "-p",
+        ".runtime/tsconfig.template-role-preview.json"
+      ]
+    },
+    {
+      "phase": "biome-check",
+      "attempt": "1",
+      "pid": 46140,
+      "startedAt": "2026-11-01T08:18:23.149765+00:00",
+      "finishedAt": "2026-11-01T08:18:23.372051+00:00",
+      "terminal": true,
+      "exitCode": 1,
+      "stopReason": null,
+      "beforeFreeBytes": 14592081920,
+      "minimumFreeBytes": 14592073728,
+      "afterFreeBytes": 14595489792,
+      "floorBytes": 5368709120,
+      "windowRemainingSecondsAtLaunch": 28.40222470893059,
+      "windowBudgetSeconds": 30,
+      "log": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/agency-template-role-preview-source-biome-check-1.log",
+      "command": [
+        "/Users/ali/Developer/warpdrive-agency-projects/.runtime/bin/bun",
+        "node_modules/@biomejs/biome/bin/biome",
+        "check",
+        "src/features/agency-projects/templates/templateRolePreview.ts",
+        "src/features/agency-projects/templates/templateRolePreview.test.ts",
+        "src/features/agency-projects/templates/templateRolePreview.test-support.ts"
+      ]
+    },
+    {
+      "phase": "biome-write",
+      "attempt": "1",
+      "pid": 46410,
+      "startedAt": "2026-11-01T08:18:34.593627+00:00",
+      "finishedAt": "2026-11-01T08:18:34.702134+00:00",
+      "terminal": true,
+      "exitCode": 0,
+      "stopReason": null,
+      "beforeFreeBytes": 14553198592,
+      "minimumFreeBytes": 14548922368,
+      "afterFreeBytes": 14548922368,
+      "floorBytes": 5368709120,
+      "windowRemainingSecondsAtLaunch": 16.958346416940913,
+      "windowBudgetSeconds": 30,
+      "log": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/agency-template-role-preview-source-biome-write-1.log",
+      "command": [
+        "/Users/ali/Developer/warpdrive-agency-projects/.runtime/bin/bun",
+        "node_modules/@biomejs/biome/bin/biome",
+        "check",
+        "--write",
+        "src/features/agency-projects/templates/templateRolePreview.ts",
+        "src/features/agency-projects/templates/templateRolePreview.test.ts",
+        "src/features/agency-projects/templates/templateRolePreview.test-support.ts"
+      ]
+    },
+    {
+      "phase": "eslint",
+      "attempt": "1",
+      "pid": 46422,
+      "startedAt": "2026-11-01T08:18:34.833489+00:00",
+      "finishedAt": "2026-11-01T08:18:37.054557+00:00",
+      "terminal": true,
+      "exitCode": 0,
+      "stopReason": null,
+      "beforeFreeBytes": 14545485824,
+      "minimumFreeBytes": 14545453056,
+      "afterFreeBytes": 14559465472,
+      "floorBytes": 5368709120,
+      "windowRemainingSecondsAtLaunch": 16.718495749984868,
+      "windowBudgetSeconds": 30,
+      "log": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/agency-template-role-preview-source-eslint-1.log",
+      "command": [
+        "/Users/ali/Developer/warpdrive-agency-projects/.runtime/bin/bun",
+        "--smol",
+        "node_modules/eslint/bin/eslint.js",
+        "--config",
+        ".runtime/template-role-eslint.mjs",
+        "src/features/agency-projects/templates/templateRolePreview.ts",
+        "src/features/agency-projects/templates/templateRolePreview.test.ts",
+        "src/features/agency-projects/templates/templateRolePreview.test-support.ts"
+      ]
+    },
+    {
+      "phase": "types",
+      "attempt": "2",
+      "pid": 46438,
+      "startedAt": "2026-11-01T08:18:37.117869+00:00",
+      "finishedAt": "2026-11-01T08:18:37.541907+00:00",
+      "terminal": true,
+      "exitCode": 0,
+      "stopReason": null,
+      "beforeFreeBytes": 14557372416,
+      "minimumFreeBytes": 14555037696,
+      "afterFreeBytes": 14571995136,
+      "floorBytes": 5368709120,
+      "windowRemainingSecondsAtLaunch": 14.434212459018454,
+      "windowBudgetSeconds": 30,
+      "log": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/agency-template-role-preview-source-types-2.log",
+      "command": [
+        "/Users/ali/Developer/warpdrive-agency-projects/.runtime/bin/bun",
+        "--smol",
+        "node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "-p",
+        ".runtime/tsconfig.template-role-preview.json"
+      ]
+    },
+    {
+      "phase": "biome-check",
+      "attempt": "2",
+      "pid": 46449,
+      "startedAt": "2026-11-01T08:18:37.600086+00:00",
+      "finishedAt": "2026-11-01T08:18:37.712242+00:00",
+      "terminal": true,
+      "exitCode": 0,
+      "stopReason": null,
+      "beforeFreeBytes": 14571278336,
+      "minimumFreeBytes": 14570246144,
+      "afterFreeBytes": 14570246144,
+      "floorBytes": 5368709120,
+      "windowRemainingSecondsAtLaunch": 13.95201599993743,
+      "windowBudgetSeconds": 30,
+      "log": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/agency-template-role-preview-source-biome-check-2.log",
+      "command": [
+        "/Users/ali/Developer/warpdrive-agency-projects/.runtime/bin/bun",
+        "node_modules/@biomejs/biome/bin/biome",
+        "check",
+        "src/features/agency-projects/templates/templateRolePreview.ts",
+        "src/features/agency-projects/templates/templateRolePreview.test.ts",
+        "src/features/agency-projects/templates/templateRolePreview.test-support.ts"
+      ]
+    },
+    {
+      "phase": "units",
+      "attempt": "1",
+      "pid": 46461,
+      "startedAt": "2026-11-01T08:18:37.775237+00:00",
+      "finishedAt": "2026-11-01T08:18:38.314033+00:00",
+      "terminal": true,
+      "exitCode": 0,
+      "stopReason": null,
+      "beforeFreeBytes": 14570213376,
+      "minimumFreeBytes": 14567563264,
+      "afterFreeBytes": 14567563264,
+      "floorBytes": 5368709120,
+      "windowRemainingSecondsAtLaunch": 13.776867958949879,
+      "windowBudgetSeconds": 30,
+      "log": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/agency-template-role-preview-source-units-1.log",
+      "command": [
+        "/Users/ali/Developer/warpdrive-agency-projects/.runtime/bin/bun",
+        "run",
+        "test:unit",
+        "src/features/agency-projects/templates/templateRolePreview.test.ts",
+        "--maxWorkers=1"
+      ]
+    }
+  ],
+  "terminalSummary": {
+    "groups": [
+      {
+        "pid": 46124,
+        "state": "empty"
+      },
+      {
+        "pid": 46140,
+        "state": "empty"
+      },
+      {
+        "pid": 46410,
+        "state": "empty"
+      },
+      {
+        "pid": 46422,
+        "state": "empty"
+      },
+      {
+        "pid": 46438,
+        "state": "empty"
+      },
+      {
+        "pid": 46449,
+        "state": "empty"
+      },
+      {
+        "pid": 46461,
+        "state": "empty"
+      }
+    ],
+    "serial": true,
+    "elapsedSeconds": 15.76158,
+    "minimumFreeBytes": 14545453056,
+    "released": true
+  }
+}

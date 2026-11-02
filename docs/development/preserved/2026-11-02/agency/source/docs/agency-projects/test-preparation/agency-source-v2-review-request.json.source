@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 2,
+  "capturedAt": "2026-11-01T10:42:58.961067+00:00",
+  "head": "912b1e9103224894a535dbed027fcbfd5c3faec0",
+  "guardSha256": "774ba523b590d785f3f009bdbff56d96166a73185446b22e9c114df9fa14e329",
+  "profiles": {
+    "reason": {
+      "primaryTS": 2,
+      "controlsInTypes": 0,
+      "budgetSeconds": 30,
+      "cleanupReserveSeconds": 4,
+      "phaseApi": "types|biome-check|biome-write|eslint|units",
+      "pins": {
+        "src/features/agency-projects/valueSchemas.ts": "344486350601e1cd8bbd8c07978edf4e17f2136d6943ec7730ece8c4fa0523c3",
+        "src/features/agency-projects/reasonBoundary.test.ts": "27ec62a15f2bea901eeeff88b2fce75c5126f0c5ddb32b3f0cb917c345e0d1fc",
+        ".runtime/run-agency-source-campaign-v2.py": "774ba523b590d785f3f009bdbff56d96166a73185446b22e9c114df9fa14e329",
+        ".runtime/reason-source-targets.json": "8e05e634a0d9dd5d329167f44ba0abde1473305e8ec0e7bab53d59a3759470e3",
+        ".runtime/tsconfig.reason-source.json": "2521077b91edcfe92140b7650a994a6a6c2f10544d5b4df623773fe08e65b67f",
+        ".runtime/reason-eslint.mjs": "545724c66e5450444878385be69b0b6bfdcfe507240c14999857f401b4a61d68"
+      },
+      "windowExists": false
+    },
+    "authority-candidate": {
+      "primaryTS": 7,
+      "controlsInTypes": 2,
+      "budgetSeconds": 60,
+      "cleanupReserveSeconds": 4,
+      "phaseApi": "types|biome-check|biome-write|eslint",
+      "pins": {
+        "src/features/agency-projects/authorityTransactionSpec.ts": "2c4048f55c768440751bceefe7bf9865a522ad9a90975ff1795c8360bf171611",
+        "src/features/agency-projects/authorityTransactionSpec.test.ts": "5f8db288fc041291a46e6662bd2d2ecff9d3417fc15f4855524cb9c0baf00271",
+        "src/features/agency-projects/authorityTransactionCandidate.ts": "3b98b871246f0af94b8d6b41efc40347a96efafdf15bcffcdadd700f8be5b9e7",
+        "src/features/agency-projects/authorityTransactionCandidate.test.ts": "ce8e7b0282a1826edd0fe422931ab9c06455592bb3408bd5fec42477ba541f12",
+        "src/features/agency-projects/authorityTransactionCandidate.test-support.ts": "52110a17bf2a56fc8e75b0dd1c8d2fadf9acba02cff296a1337a0bec60e16334",
+        "src/features/agency-projects/authorityConnectionBoundary.test.ts": "f1ce61146f8da044ae5a0e0a9f3119c6b9dff2ccd93b22981b27a4bae6dc4d7b",
+        "src/features/agency-projects/authorityConnectionBoundary.test-support.ts": "3fffcc6fa305c03948b28ca8422414ef7a51556e8a111c60375f73c68bfde5da",
+        ".runtime/authority-candidate-owned-global-setup.ts": "cedebc0bc05de2785dd6c868c94f6b3264db3d00b17cb1f107e61def12b47544",
+        ".runtime/vitest.authority-candidate-pg.config.ts": "3e47bdc8929529535bdb3e3b9763d27282881cf5842d7e08f99dfe037a3e07be",
+        ".runtime/run-agency-source-campaign-v2.py": "774ba523b590d785f3f009bdbff56d96166a73185446b22e9c114df9fa14e329",
+        ".runtime/authority-candidate-source-targets.json": "5d8a1d5c0b437365033faf66a0df46d4ac06021ae088227722a3f3d8ee92bb51",
+        ".runtime/tsconfig.authority-candidate-source.json": "c46437fb608fa416e71402884fe9a0486369470ef1160eb77351c71f703afba6",
+        ".runtime/authority-candidate-eslint.mjs": "492df84df43869aabed7503d9feb2582a394807925a8eb326fdcb3f61ccf3005"
+      },
+      "windowExists": false
+    }
+  },
+  "status": "NOTRUN; independent LIGHT review and fresh grant required",
+  "superseded": "Both v1 source guard requests withdrawn before execution; original files and pins retained.",
+  "review": "Final independent read-only review found all three prior findings addressed and no other concrete blocker; runtime remains unverified.",
+  "limits": "No hard real-time OS guarantee. Cleanup observation and post-publication completion are distinct."
+}

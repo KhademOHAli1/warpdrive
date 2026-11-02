@@ -1,0 +1,182 @@
+{
+  "schemaVersion": 1,
+  "scope": "Mail recovery window permits routine small containerless selected units; no heavy campaign",
+  "runs": [
+    {
+      "phase": "red-missing",
+      "pid": 32640,
+      "startedAt": "2026-11-01T07:46:51.831512+00:00",
+      "finishedAt": "2026-11-01T07:46:52.882140+00:00",
+      "terminal": true,
+      "exitCode": 1,
+      "stopReason": null,
+      "beforeFreeBytes": 13536350208,
+      "minimumFreeBytes": 13536333824,
+      "afterFreeBytes": 13549154304,
+      "floorBytes": 5368709120,
+      "timeoutSeconds": 30,
+      "log": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/agency-feedback-red-missing.log",
+      "command": [
+        "/Users/ali/Developer/warpdrive-agency-projects/.runtime/bin/bun",
+        "run",
+        "test:unit",
+        "src/features/agency-projects/feedbackRecord.test.ts",
+        "--maxWorkers=1"
+      ]
+    },
+    {
+      "phase": "red-behavior",
+      "pid": 32769,
+      "startedAt": "2026-11-01T07:47:01.031882+00:00",
+      "finishedAt": "2026-11-01T07:47:01.667167+00:00",
+      "terminal": true,
+      "exitCode": 1,
+      "stopReason": null,
+      "beforeFreeBytes": 13532196864,
+      "minimumFreeBytes": 13526552576,
+      "afterFreeBytes": 13526552576,
+      "floorBytes": 5368709120,
+      "timeoutSeconds": 30,
+      "log": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/agency-feedback-red-behavior.log",
+      "command": [
+        "/Users/ali/Developer/warpdrive-agency-projects/.runtime/bin/bun",
+        "run",
+        "test:unit",
+        "src/features/agency-projects/feedbackRecord.test.ts",
+        "--maxWorkers=1"
+      ]
+    },
+    {
+      "phase": "green",
+      "pid": 32841,
+      "startedAt": "2026-11-01T07:47:23.135831+00:00",
+      "finishedAt": "2026-11-01T07:47:23.770274+00:00",
+      "terminal": true,
+      "exitCode": 0,
+      "stopReason": null,
+      "beforeFreeBytes": 13515325440,
+      "minimumFreeBytes": 13515313152,
+      "afterFreeBytes": 13532016640,
+      "floorBytes": 5368709120,
+      "timeoutSeconds": 30,
+      "log": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/agency-feedback-green.log",
+      "command": [
+        "/Users/ali/Developer/warpdrive-agency-projects/.runtime/bin/bun",
+        "run",
+        "test:unit",
+        "src/features/agency-projects/feedbackRecord.test.ts",
+        "--maxWorkers=1"
+      ]
+    },
+    {
+      "phase": "red-ignorable",
+      "pid": 34807,
+      "startedAt": "2026-11-01T07:50:50.592705+00:00",
+      "finishedAt": "2026-11-01T07:50:51.641829+00:00",
+      "terminal": true,
+      "exitCode": 1,
+      "stopReason": null,
+      "beforeFreeBytes": 13395275776,
+      "minimumFreeBytes": 13366923264,
+      "afterFreeBytes": 13413232640,
+      "floorBytes": 5368709120,
+      "timeoutSeconds": 30,
+      "log": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/agency-feedback-red-ignorable.log",
+      "command": [
+        "/Users/ali/Developer/warpdrive-agency-projects/.runtime/bin/bun",
+        "run",
+        "test:unit",
+        "src/features/agency-projects/feedbackRecord.test.ts",
+        "--maxWorkers=1"
+      ]
+    },
+    {
+      "phase": "green-ignorable",
+      "pid": 35170,
+      "startedAt": "2026-11-01T07:51:01.414467+00:00",
+      "finishedAt": "2026-11-01T07:51:02.038937+00:00",
+      "terminal": true,
+      "exitCode": 0,
+      "stopReason": null,
+      "beforeFreeBytes": 13416009728,
+      "minimumFreeBytes": 13405495296,
+      "afterFreeBytes": 13405495296,
+      "floorBytes": 5368709120,
+      "timeoutSeconds": 30,
+      "log": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/agency-feedback-green-ignorable.log",
+      "command": [
+        "/Users/ali/Developer/warpdrive-agency-projects/.runtime/bin/bun",
+        "run",
+        "test:unit",
+        "src/features/agency-projects/feedbackRecord.test.ts",
+        "--maxWorkers=1"
+      ]
+    },
+    {
+      "phase": "red-channel",
+      "pid": 37178,
+      "startedAt": "2026-11-01T07:53:12.101951+00:00",
+      "finishedAt": "2026-11-01T07:53:12.728914+00:00",
+      "terminal": true,
+      "exitCode": 1,
+      "stopReason": null,
+      "beforeFreeBytes": 13309566976,
+      "minimumFreeBytes": 13289381888,
+      "afterFreeBytes": 13310636032,
+      "floorBytes": 5368709120,
+      "timeoutSeconds": 30,
+      "log": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/agency-feedback-red-channel.log",
+      "command": [
+        "/Users/ali/Developer/warpdrive-agency-projects/.runtime/bin/bun",
+        "run",
+        "test:unit",
+        "src/features/agency-projects/feedbackRecord.test.ts",
+        "--maxWorkers=1"
+      ]
+    },
+    {
+      "phase": "green-channel",
+      "pid": 37225,
+      "startedAt": "2026-11-01T07:53:20.029061+00:00",
+      "finishedAt": "2026-11-01T07:53:20.662384+00:00",
+      "terminal": true,
+      "exitCode": 0,
+      "stopReason": null,
+      "beforeFreeBytes": 13306544128,
+      "minimumFreeBytes": 13302128640,
+      "afterFreeBytes": 13302738944,
+      "floorBytes": 5368709120,
+      "timeoutSeconds": 30,
+      "log": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/agency-feedback-green-channel.log",
+      "command": [
+        "/Users/ali/Developer/warpdrive-agency-projects/.runtime/bin/bun",
+        "run",
+        "test:unit",
+        "src/features/agency-projects/feedbackRecord.test.ts",
+        "--maxWorkers=1"
+      ]
+    },
+    {
+      "phase": "green-postformat",
+      "pid": 41199,
+      "startedAt": "2026-11-01T08:00:06.184961+00:00",
+      "finishedAt": "2026-11-01T08:00:07.019875+00:00",
+      "terminal": true,
+      "exitCode": 0,
+      "stopReason": null,
+      "beforeFreeBytes": 13146980352,
+      "minimumFreeBytes": 13140295680,
+      "afterFreeBytes": 13140316160,
+      "floorBytes": 5368709120,
+      "timeoutSeconds": 30,
+      "log": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/agency-feedback-green-postformat.log",
+      "command": [
+        "/Users/ali/Developer/warpdrive-agency-projects/.runtime/bin/bun",
+        "run",
+        "test:unit",
+        "src/features/agency-projects/feedbackRecord.test.ts",
+        "--maxWorkers=1"
+      ]
+    }
+  ]
+}

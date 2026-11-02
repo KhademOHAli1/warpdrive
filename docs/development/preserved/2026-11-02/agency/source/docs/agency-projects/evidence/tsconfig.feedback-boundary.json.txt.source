@@ -1,0 +1,15 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "incremental": false,
+    "types": [
+      "node"
+    ]
+  },
+  "include": [
+    "../src/features/agency-projects/feedbackRecord.ts",
+    "../src/features/agency-projects/feedbackRecord.test.ts",
+    "../src/features/agency-projects/feedbackRecord.test-support.ts"
+  ],
+  "exclude": []
+}

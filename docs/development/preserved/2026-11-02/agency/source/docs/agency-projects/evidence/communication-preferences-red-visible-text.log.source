@@ -1,0 +1,60 @@
+$ bun --bun vitest run --project unit src/features/agency-projects/communication/communicationPreferences.test.ts "--maxWorkers=1"
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+  - ESM syntax in a file loaded as CommonJS (vitest.classify.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.5 /Users/ali/Developer/warpdrive-agency-projects
+
+ ❯ |unit| src/features/agency-projects/communication/communicationPreferences.test.ts (26 tests | 1 failed) 13ms
+   ❯ proposed communication preference request boundary (26)
+     × rejects format-only text without banning embedded Persian joiners or rewriting source strings 4ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| src/features/agency-projects/communication/communicationPreferences.test.ts > proposed communication preference request boundary > rejects format-only text without banning embedded Persian joiners or rewriting source strings
+AssertionError: expected { ok: true, value: { …(2) } } to deeply equal { ok: false, …(1) }
+
+- Expected
++ Received
+
+  {
+-   "error": "invalid_communication_preference",
+-   "ok": false,
++   "ok": true,
++   "value": {
++     "mutationIntentId": "faabcdef-6789-4bcd-9efa-678901234abc",
++     "preference": {
++       "cadence": {
++         "kind": "unspecified",
++       },
++       "channel": {
++         "kind": "email",
++       },
++       "conversationReference": "https://chat.example.invalid/Project/مدل?room=A%2Fb#Teil-1",
++       "personId": "bcdefabc-2345-4bcd-9efa-234567890abc",
++       "projectId": "cdefabcd-3456-4cde-abcd-345678901abc",
++       "role": "‌",
++     },
++   },
+  }
+
+ ❯ expectInvalid src/features/agency-projects/communication/communicationPreferences.test.ts:26:6
+     24| function expectInvalid(input: unknown) {
+     25|   expect(parseCommunicationPreferenceRequest(input))
+     26|     .toEqual({ ok: false, error: "invalid_communication_preference" });
+       |      ^
+     27| }
+     28|
+ ❯ src/features/agency-projects/communication/communicationPreferences.test.ts:149:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 25 passed (26)
+   Start at  05:15:10
+   Duration  106ms (transform 38%, import 31%, tests 22%, setup 6%, worker 3%)
+
+error: "vitest" exited with code 1
+error: script "test:unit" exited with code 1

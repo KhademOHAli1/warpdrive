@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-11-01T06:40:11.871916+00:00",
+  "base": "69ad3bc590b66b5d13128228ef08a773dfcc7c7e",
+  "status": "prepared, NOT RUN",
+  "declaredCasesFromSource": 8,
+  "sourceHashes": {
+    "src/features/identity/projectCreateGrantServices.test.ts": "dfbf50cb4ed1f652c61a3100f1d06289a11e2282f1bed0d6974216fd1f9526a7",
+    "src/features/identity/projectCreateGrantServices.test-support.ts": "e158ec0b0a9bd7d085bc3fd091383eef38c3a80b791c0bb173cdee6ebe0b14d2"
+  },
+  "controlHashes": {
+    ".runtime/run-project-create-pg.py": "a603afc20023681a42eecfe6b0fb7351719481dcedd5248f38c7abac4931d8bc",
+    ".runtime/project-create-owned-global-setup.ts": "4b9215064c426a20b9987b7f46ec3bc4d1532fc972b1db71130539778b06da40",
+    ".runtime/vitest.project-create-pg.config.ts": "a09277eca48f3d635c17a133e3e3c8eea8ba269cd9be62fac5546a84cb4ac323",
+    ".runtime/project-create-pg-run.json": "a1df97e3d1dc134bf3207c18b1c35148955fcce5d1af4b7357469d588d20078d"
+  },
+  "sourceReview": "Installed public API and canonical delegation reviewed; ownership, daemon-marker binding and budget/cleanup corrections incorporated. Runtime behavior unverified.",
+  "actualValidation": "Operational Python AST parsed only. No TypeScript/static/new integration/PG/Docker checks run.",
+  "runtimeRequestScope": {
+    "primarySuite": "src/features/identity/projectCreateGrantServices.test.ts",
+    "workers": 1,
+    "disposablePgContainers": 1,
+    "ownedMarkerNetworks": 1,
+    "totalBudgetSeconds": 90,
+    "nativeDeadlineSeconds": 65,
+    "liveFloorBytes": 5368709120,
+    "cachedImagesOnly": true,
+    "sharedRyukUntouched": true,
+    "repositoryJournal": "85 entries through0084_visual_workflows, distinct from unreconciled main"
+  },
+  "limits": [
+    "Trusted service-actor cases are not native session/freshness/through-commit proof.",
+    "No Agency schema/migration allocation or combined lineage/restore qualification.",
+    "No app/worker/build/install/provider action."
+  ]
+}

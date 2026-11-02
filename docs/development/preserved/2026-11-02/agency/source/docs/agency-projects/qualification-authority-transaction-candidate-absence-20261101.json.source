@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-11-01T10:08:49.313942+00:00",
+  "phase": "absence only, not behavioral qualification",
+  "headAtLaunch": "6855645499b5f5878f7b2d2eb431dd6e6d4b7fbc",
+  "nativeCasesDeclared": 11,
+  "nativeCasesExecuted": 0,
+  "failedSuites": 1,
+  "expectedError": "Cannot find module ./authorityTransactionCandidate",
+  "rawLog": "evidence/authority-candidate-pg-absence.log",
+  "receipt": "evidence/authority-candidate-pg-absence-handles.json",
+  "actualRunInput": "evidence/authority-candidate-pg-absence-actual-run-input.json",
+  "elapsedSeconds": 4.814493792015128,
+  "minimumFreeBytes": 12963053568,
+  "sourceUnchanged": true,
+  "ownedGroupPgMarkerGone": true,
+  "preexistingContainersStillPresent": 3,
+  "wrapperExit": 75,
+  "vitestExit": 1,
+  "wrapperMeaning": "Nonzero test result, no infrastructure/guard failure. Classification relies on raw Vitest log and clean receipt.",
+  "next": "Typed unavailable-only scaffold now placed; source checks and fresh11-case meaningful realPG behavioralRED pending grants. No real SQL implementation.",
+  "limits": [
+    "Isolated85-entry journal through0084, not accepted combined lineage or Agency schema.",
+    "No native auth/session/CRM/Privacy or actual shared fence/key/writer participation.",
+    "No successful lock/rollback/cancellation/commit outcome behavior proved by absence phase."
+  ]
+}

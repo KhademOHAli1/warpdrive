@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "status": "held-before-launch",
+  "startedAt": "2026-11-01T06:51:50.518185+00:00",
+  "runId": "2d2b5284-2234-4ad1-9983-bc47620f24a6",
+  "budgetSeconds": 90,
+  "nativeDeadlineSeconds": 65,
+  "floorBytes": 5368709120,
+  "log": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/project-create-pg.log",
+  "databaseScope": "owned candidate85-entry journal through0084; no Agency DDL or combined-lineage qualification",
+  "beforeFreeBytes": 17326227456,
+  "localDockerEndpoint": "unix:///var/run/docker.sock",
+  "cachedImages": {},
+  "noNativeProcessLaunched": true,
+  "minimumFreeBytes": 17326227456,
+  "terminal": true,
+  "stopReason": "preflight-or-run-failure",
+  "errors": [
+    "run:GateFailure:cached-image-required"
+  ],
+  "finishedAt": "2026-11-01T06:51:50.690805+00:00",
+  "elapsedSeconds": 0.17270883393939584,
+  "withinTotalBudget": true
+}

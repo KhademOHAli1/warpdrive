@@ -1,0 +1,441 @@
+$ bun --bun vitest run --project unit src/features/agency-projects/communication/communicationPreferences.test.ts "--maxWorkers=1"
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+  - ESM syntax in a file loaded as CommonJS (vitest.classify.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.5 /Users/ali/Developer/warpdrive-agency-projects
+
+ ❯ |unit| src/features/agency-projects/communication/communicationPreferences.test.ts (25 tests | 11 failed) 11ms
+   ❯ proposed communication preference request boundary (25)
+     × retains one contextual preference and exact external conversation reference 4ms
+     × canonicalizes project/person/intent UUIDs without changing authored text or references 0ms
+     × keeps independent people and role/channel contexts intact across separate declarations 0ms
+     × requires the explicitly declared email channel 0ms
+     × requires the explicitly declared phone channel 0ms
+     × requires the explicitly declared whatsapp channel 0ms
+     × requires the explicitly declared meeting channel 0ms
+     × supports a bounded other-channel label as unresolved plain data 0ms
+     × keeps unspecified, explicit none and a declared cadence distinct 0ms
+     × preserves authored plain role/cadence text, Persian digits and ordinary cadence newlines 0ms
+     × permits an omitted conversation reference without inventing one 0ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 11 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| src/features/agency-projects/communication/communicationPreferences.test.ts > proposed communication preference request boundary > retains one contextual preference and exact external conversation reference
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: true, value: { …(2) } }
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "mutationIntentId": "faabcdef-6789-4bcd-9efa-678901234abc",
+-     "preference": {
+-       "cadence": {
+-         "kind": "unspecified",
+-       },
+-       "channel": {
+-         "kind": "email",
+-       },
+-       "conversationReference": "https://chat.example.invalid/Project/مدل?room=A%2Fb#Teil-1",
+-       "personId": "bcdefabc-2345-4bcd-9efa-234567890abc",
+-       "projectId": "cdefabcd-3456-4cde-abcd-345678901abc",
+-       "role": "هماهنگ‌کننده پروژه / Projektkoordination",
+-     },
+-   },
++   "error": "invalid_communication_preference",
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/communication/communicationPreferences.test.ts:38:56
+     36|   it("retains one contextual preference and exact external conversatio…
+     37|     const input = request();
+     38|     expect(parseCommunicationPreferenceRequest(input)).toEqual({ ok: t…
+       |                                                        ^
+     39|   });
+     40|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/11]⎯
+
+ FAIL  |unit| src/features/agency-projects/communication/communicationPreferences.test.ts > proposed communication preference request boundary > canonicalizes project/person/intent UUIDs without changing authored text or references
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: true, value: { …(2) } }
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "mutationIntentId": "faabcdef-6789-4bcd-9efa-678901234abc",
+-     "preference": {
+-       "cadence": {
+-         "kind": "unspecified",
+-       },
+-       "channel": {
+-         "kind": "email",
+-       },
+-       "conversationReference": "https://chat.example.invalid/Project/مدل?room=A%2Fb#Teil-1",
+-       "personId": "bcdefabc-2345-4bcd-9efa-234567890abc",
+-       "projectId": "cdefabcd-3456-4cde-abcd-345678901abc",
+-       "role": "هماهنگ‌کننده پروژه / Projektkoordination",
+-     },
+-   },
++   "error": "invalid_communication_preference",
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/communication/communicationPreferences.test.ts:46:9
+     44|       ...input, mutationIntentId: mutationIntentId.toUpperCase(),
+     45|       preference: { ...input.preference, projectId: projectId.toUpperC…
+     46|     })).toEqual({ ok: true, value: input });
+       |         ^
+     47|   });
+     48|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/11]⎯
+
+ FAIL  |unit| src/features/agency-projects/communication/communicationPreferences.test.ts > proposed communication preference request boundary > keeps independent people and role/channel contexts intact across separate declarations
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: true, value: { …(2) } }
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "mutationIntentId": "faabcdef-6789-4bcd-9efa-678901234abc",
+-     "preference": {
+-       "cadence": {
+-         "kind": "unspecified",
+-       },
+-       "channel": {
+-         "kind": "email",
+-       },
+-       "conversationReference": "https://chat.example.invalid/Project/مدل?room=A%2Fb#Teil-1",
+-       "personId": "bcdefabc-2345-4bcd-9efa-234567890abc",
+-       "projectId": "cdefabcd-3456-4cde-abcd-345678901abc",
+-       "role": "هماهنگ‌کننده پروژه / Projektkoordination",
+-     },
+-   },
++   "error": "invalid_communication_preference",
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/communication/communicationPreferences.test.ts:78:58
+     76|     };
+     77|     for (const input of [first, samePersonOtherContext, differentPerso…
+     78|       expect(parseCommunicationPreferenceRequest(input)).toEqual({ ok:…
+       |                                                          ^
+     79|     }
+     80|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/11]⎯
+
+ FAIL  |unit| src/features/agency-projects/communication/communicationPreferences.test.ts > proposed communication preference request boundary > requires the explicitly declared email channel
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: true, value: { …(2) } }
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "mutationIntentId": "faabcdef-6789-4bcd-9efa-678901234abc",
+-     "preference": {
+-       "cadence": {
+-         "kind": "unspecified",
+-       },
+-       "channel": {
+-         "kind": "email",
+-       },
+-       "conversationReference": "https://chat.example.invalid/Project/مدل?room=A%2Fb#Teil-1",
+-       "personId": "bcdefabc-2345-4bcd-9efa-234567890abc",
+-       "projectId": "cdefabcd-3456-4cde-abcd-345678901abc",
+-       "role": "هماهنگ‌کننده پروژه / Projektkoordination",
+-     },
+-   },
++   "error": "invalid_communication_preference",
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/communication/communicationPreferences.test.ts:84:56
+     82|   it.each(["email", "phone", "whatsapp", "meeting"])("requires the exp…
+     83|     const input = { ...request(), preference: { ...request().preferenc…
+     84|     expect(parseCommunicationPreferenceRequest(input)).toEqual({ ok: t…
+       |                                                        ^
+     85|   });
+     86|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/11]⎯
+
+ FAIL  |unit| src/features/agency-projects/communication/communicationPreferences.test.ts > proposed communication preference request boundary > requires the explicitly declared phone channel
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: true, value: { …(2) } }
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "mutationIntentId": "faabcdef-6789-4bcd-9efa-678901234abc",
+-     "preference": {
+-       "cadence": {
+-         "kind": "unspecified",
+-       },
+-       "channel": {
+-         "kind": "phone",
+-       },
+-       "conversationReference": "https://chat.example.invalid/Project/مدل?room=A%2Fb#Teil-1",
+-       "personId": "bcdefabc-2345-4bcd-9efa-234567890abc",
+-       "projectId": "cdefabcd-3456-4cde-abcd-345678901abc",
+-       "role": "هماهنگ‌کننده پروژه / Projektkoordination",
+-     },
+-   },
++   "error": "invalid_communication_preference",
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/communication/communicationPreferences.test.ts:84:56
+     82|   it.each(["email", "phone", "whatsapp", "meeting"])("requires the exp…
+     83|     const input = { ...request(), preference: { ...request().preferenc…
+     84|     expect(parseCommunicationPreferenceRequest(input)).toEqual({ ok: t…
+       |                                                        ^
+     85|   });
+     86|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/11]⎯
+
+ FAIL  |unit| src/features/agency-projects/communication/communicationPreferences.test.ts > proposed communication preference request boundary > requires the explicitly declared whatsapp channel
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: true, value: { …(2) } }
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "mutationIntentId": "faabcdef-6789-4bcd-9efa-678901234abc",
+-     "preference": {
+-       "cadence": {
+-         "kind": "unspecified",
+-       },
+-       "channel": {
+-         "kind": "whatsapp",
+-       },
+-       "conversationReference": "https://chat.example.invalid/Project/مدل?room=A%2Fb#Teil-1",
+-       "personId": "bcdefabc-2345-4bcd-9efa-234567890abc",
+-       "projectId": "cdefabcd-3456-4cde-abcd-345678901abc",
+-       "role": "هماهنگ‌کننده پروژه / Projektkoordination",
+-     },
+-   },
++   "error": "invalid_communication_preference",
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/communication/communicationPreferences.test.ts:84:56
+     82|   it.each(["email", "phone", "whatsapp", "meeting"])("requires the exp…
+     83|     const input = { ...request(), preference: { ...request().preferenc…
+     84|     expect(parseCommunicationPreferenceRequest(input)).toEqual({ ok: t…
+       |                                                        ^
+     85|   });
+     86|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/11]⎯
+
+ FAIL  |unit| src/features/agency-projects/communication/communicationPreferences.test.ts > proposed communication preference request boundary > requires the explicitly declared meeting channel
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: true, value: { …(2) } }
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "mutationIntentId": "faabcdef-6789-4bcd-9efa-678901234abc",
+-     "preference": {
+-       "cadence": {
+-         "kind": "unspecified",
+-       },
+-       "channel": {
+-         "kind": "meeting",
+-       },
+-       "conversationReference": "https://chat.example.invalid/Project/مدل?room=A%2Fb#Teil-1",
+-       "personId": "bcdefabc-2345-4bcd-9efa-234567890abc",
+-       "projectId": "cdefabcd-3456-4cde-abcd-345678901abc",
+-       "role": "هماهنگ‌کننده پروژه / Projektkoordination",
+-     },
+-   },
++   "error": "invalid_communication_preference",
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/communication/communicationPreferences.test.ts:84:56
+     82|   it.each(["email", "phone", "whatsapp", "meeting"])("requires the exp…
+     83|     const input = { ...request(), preference: { ...request().preferenc…
+     84|     expect(parseCommunicationPreferenceRequest(input)).toEqual({ ok: t…
+       |                                                        ^
+     85|   });
+     86|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/11]⎯
+
+ FAIL  |unit| src/features/agency-projects/communication/communicationPreferences.test.ts > proposed communication preference request boundary > supports a bounded other-channel label as unresolved plain data
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: true, value: { …(2) } }
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "mutationIntentId": "faabcdef-6789-4bcd-9efa-678901234abc",
+-     "preference": {
+-       "cadence": {
+-         "kind": "unspecified",
+-       },
+-       "channel": {
+-         "kind": "other",
+-         "label": "تلگرام / Telegram",
+-       },
+-       "conversationReference": "https://chat.example.invalid/Project/مدل?room=A%2Fb#Teil-1",
+-       "personId": "bcdefabc-2345-4bcd-9efa-234567890abc",
+-       "projectId": "cdefabcd-3456-4cde-abcd-345678901abc",
+-       "role": "هماهنگ‌کننده پروژه / Projektkoordination",
+-     },
+-   },
++   "error": "invalid_communication_preference",
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/communication/communicationPreferences.test.ts:89:56
+     87|   it("supports a bounded other-channel label as unresolved plain data"…
+     88|     const input = { ...request(), preference: { ...request().preferenc…
+     89|     expect(parseCommunicationPreferenceRequest(input)).toEqual({ ok: t…
+       |                                                        ^
+     90|     for (const channel of [{ kind: "other" }, { kind: "other", label: …
+     91|       expectInvalid({ ...request(), preference: { ...request().prefere…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/11]⎯
+
+ FAIL  |unit| src/features/agency-projects/communication/communicationPreferences.test.ts > proposed communication preference request boundary > keeps unspecified, explicit none and a declared cadence distinct
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: true, value: { …(2) } }
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "mutationIntentId": "faabcdef-6789-4bcd-9efa-678901234abc",
+-     "preference": {
+-       "cadence": {
+-         "kind": "unspecified",
+-       },
+-       "channel": {
+-         "kind": "email",
+-       },
+-       "conversationReference": "https://chat.example.invalid/Project/مدل?room=A%2Fb#Teil-1",
+-       "personId": "bcdefabc-2345-4bcd-9efa-234567890abc",
+-       "projectId": "cdefabcd-3456-4cde-abcd-345678901abc",
+-       "role": "هماهنگ‌کننده پروژه / Projektkoordination",
+-     },
+-   },
++   "error": "invalid_communication_preference",
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/communication/communicationPreferences.test.ts:111:58
+    109|     ]) {
+    110|       const input = { ...request(), preference: { ...request().prefere…
+    111|       expect(parseCommunicationPreferenceRequest(input)).toEqual({ ok:…
+       |                                                          ^
+    112|     }
+    113|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/11]⎯
+
+ FAIL  |unit| src/features/agency-projects/communication/communicationPreferences.test.ts > proposed communication preference request boundary > preserves authored plain role/cadence text, Persian digits and ordinary cadence newlines
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: true, value: { …(2) } }
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "mutationIntentId": "faabcdef-6789-4bcd-9efa-678901234abc",
+-     "preference": {
+-       "cadence": {
+-         "kind": "declared",
+-         "text": "  هر ۲ هفته، پس از هماهنگی
+- Nach Rücksprache <intern>  ",
+-       },
+-       "channel": {
+-         "kind": "email",
+-       },
+-       "conversationReference": "https://chat.example.invalid/Project/مدل?room=A%2Fb#Teil-1",
+-       "personId": "bcdefabc-2345-4bcd-9efa-234567890abc",
+-       "projectId": "cdefabcd-3456-4cde-abcd-345678901abc",
+-       "role": "  هماهنگ‌کننده <تیم> / Kontakt <Projekt>  ",
+-     },
+-   },
++   "error": "invalid_communication_preference",
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/communication/communicationPreferences.test.ts:132:56
+    130|       },
+    131|     };
+    132|     expect(parseCommunicationPreferenceRequest(input)).toEqual({ ok: t…
+       |                                                        ^
+    133|   });
+    134|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/11]⎯
+
+ FAIL  |unit| src/features/agency-projects/communication/communicationPreferences.test.ts > proposed communication preference request boundary > permits an omitted conversation reference without inventing one
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: true, value: { …(2) } }
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "mutationIntentId": "faabcdef-6789-4bcd-9efa-678901234abc",
+-     "preference": {
+-       "cadence": {
+-         "kind": "unspecified",
+-       },
+-       "channel": {
+-         "kind": "email",
+-       },
+-       "personId": "bcdefabc-2345-4bcd-9efa-234567890abc",
+-       "projectId": "cdefabcd-3456-4cde-abcd-345678901abc",
+-       "role": "هماهنگ‌کننده پروژه / Projektkoordination",
+-     },
+-   },
++   "error": "invalid_communication_preference",
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/communication/communicationPreferences.test.ts:150:56
+    148|     const input = request();
+    149|     Reflect.deleteProperty(input.preference, "conversationReference");
+    150|     expect(parseCommunicationPreferenceRequest(input)).toEqual({ ok: t…
+       |                                                        ^
+    151|     expectInvalid({ ...request(), preference: { ...request().preferenc…
+    152|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/11]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  11 failed | 14 passed (25)
+   Start at  05:10:11
+   Duration  108ms (transform 52%, tests 25%, import 10%, setup 9%, worker 5%)
+
+error: "vitest" exited with code 1
+error: script "test:unit" exited with code 1

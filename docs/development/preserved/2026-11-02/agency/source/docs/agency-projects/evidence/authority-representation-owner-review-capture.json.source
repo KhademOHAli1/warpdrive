@@ -1,0 +1,25 @@
+{
+  "capturedAt": "2026-11-01T10:17:29.177137+00:00",
+  "reviewedHead": "6855645499b5f5878f7b2d2eb431dd6e6d4b7fbc",
+  "reviews": [
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/agency-authority-transaction-review-20261101/HANDOFF.md",
+      "artifact": "evidence/platform-owner-authority-transaction-review-HANDOFF.md",
+      "sha256": "13cdae727b75d3384ff5fb16b9e56dcd769f67dc47a3fce7feed95737648450e",
+      "bytes": 1311
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/agency-authority-transaction-review-20261101/independent-review.md",
+      "artifact": "evidence/platform-owner-authority-transaction-review.md",
+      "sha256": "f6274af93ae1f8916d5ca507c5ac5f242baabf904d656a07f275e47a5380217c",
+      "bytes": 12880
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-privacy-data-lifecycle/outputs/warpdrive-agency-lifecycle-representation-decision.md",
+      "artifact": "evidence/privacy-owner-lifecycle-representation-decision.md",
+      "sha256": "58b0053a3a9689832179258ad37d358d8d80c1b0cd5a9d48dee5e662eea083bb",
+      "bytes": 20257
+    }
+  ],
+  "scope": "Design/source review only, no accepted sharedAPI/key/crypto/storage/runtime. CurrentPoolrevision not partofoldpacket."
+}

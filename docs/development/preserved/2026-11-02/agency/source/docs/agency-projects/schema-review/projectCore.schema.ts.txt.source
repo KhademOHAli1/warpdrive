@@ -1,0 +1,197 @@
+NONEXECUTABLE STRUCTURAL REVIEW ONLY. UNACCEPTED. ALL CHECKS NOT RUN.
+This .txt file is not source, a migration, or an importable schema. Missing
+contracts below block implementation and allocation. See the decision annex.
+
+// Existing packages/canonical source exports, shown only as structural notation.
+import { sql } from "drizzle-orm";
+import {
+  bigint, boolean, check, foreignKey, index, integer, pgTable, primaryKey,
+  text, timestamp, unique, uuid,
+} from "drizzle-orm/pg-core";
+import { deals } from "@/db/schema/deals";
+import { users } from "@/db/schema/identity";
+import { organizations } from "@/db/schema/organizations";
+import { persons } from "@/db/schema/persons";
+
+// Proposed names only. No exports or source registration are introduced.
+// Every restrictive FK below remains subject to deletion-compatibility review.
+// UUID inputs reference canonical rows, never copied/generated CRM identities.
+const agencyProjects = pgTable(
+  "agency_projects",
+  {
+    id: uuid("id").primaryKey(),
+    // Historical proposal: <=255 UTF-16 units. SQL length constraint UNDECIDED.
+    title: text("title").notNull(),
+    ownerId: uuid("owner_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+    dealId: uuid("deal_id").references(() => deals.id, { onDelete: "restrict" }),
+    personId: uuid("person_id").references(() => persons.id, { onDelete: "restrict" }),
+    orgId: uuid("org_id").references(() => organizations.id, { onDelete: "restrict" }),
+    state: text("state").notNull(),
+    revision: bigint("revision", { mode: "number" }).notNull().default(0),
+    archivedFrom: text("archived_from"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    check("agency_projects_revision_ck", sql`${t.revision} BETWEEN 0 AND 9007199254740991`),
+    check("agency_projects_state_ck", sql`${t.state} IN
+      ('planned', 'active', 'on-hold', 'completed', 'canceled', 'archived')`),
+    check("agency_projects_archive_ck", sql`
+      (${t.state} = 'archived' AND ${t.archivedFrom} IS NOT NULL AND
+        ${t.archivedFrom} IN ('planned', 'active', 'on-hold', 'completed', 'canceled')) OR
+      (${t.state} <> 'archived' AND ${t.archivedFrom} IS NULL)`),
+    check("agency_projects_anchor_ck", sql`
+      ${t.dealId} IS NOT NULL OR ${t.personId} IS NOT NULL OR ${t.orgId} IS NOT NULL`),
+    index("agency_projects_owner_state_id_idx").on(t.ownerId, t.state, t.id),
+    index("agency_projects_deal_idx").on(t.dealId),
+    index("agency_projects_person_idx").on(t.personId),
+    index("agency_projects_org_idx").on(t.orgId),
+  ],
+);
+// No unique customer/deal constraint. A deliberate new project may reuse a CRM link.
+// No soft-delete column is invented. Archive/cancel are existing lifecycle states.
+
+const agencyProjectMembers = pgTable(
+  "agency_project_members",
+  {
+    projectId: uuid("project_id").notNull()
+      .references(() => agencyProjects.id, { onDelete: "restrict" }),
+    userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+    // Row existence means explicit read membership in the reviewed proposal.
+    projectEdit: boolean("project_edit").notNull().default(false),
+    assignmentCoordinate: boolean("assignment_coordinate").notNull().default(false),
+  },
+  (t) => [
+    primaryKey({ columns: [t.projectId, t.userId] }),
+    index("agency_project_members_user_project_idx").on(t.userId, t.projectId),
+  ],
+);
+// No external contacts, role-name grants, implicit membership or authority boolean.
+// Grant/revoke/edit provenance, owner transfer and revision participation UNDECIDED.
+
+const agencyProjectHistory = pgTable(
+  "agency_project_history",
+  {
+    id: uuid("id").primaryKey(),
+    projectId: uuid("project_id").notNull()
+      .references(() => agencyProjects.id, { onDelete: "restrict" }),
+    recordedByUserId: uuid("recorded_by_user_id").notNull()
+      .references(() => users.id, { onDelete: "restrict" }),
+    policyVersion: integer("policy_version").notNull(),
+    // Known: create + eight current lifecycle actions. Complete vocabulary OPEN.
+    action: text("action").notNull(),
+    previousRevision: bigint("previous_revision", { mode: "number" }),
+    newRevision: bigint("new_revision", { mode: "number" }).notNull(),
+    previousState: text("previous_state"),
+    newState: text("new_state").notNull(),
+    previousArchivedFrom: text("previous_archived_from"),
+    newArchivedFrom: text("new_archived_from"),
+    recordedAt: timestamp("recorded_at", { withTimezone: true }).notNull(),
+    correlationId: uuid("correlation_id").notNull(),
+    // UNRESOLVED FOUR-STORE PAYLOAD SLOT, intentionally not a fabricated column:
+    // protected bounded reason, payload/crypto metadata, disposition and its
+    // provenance require the owner-selected same-table or fifth-store design.
+    // No plaintext reason, raw input JSON or content copy in routine audit.
+  },
+  (t) => [
+    unique("agency_project_history_project_revision_uq").on(t.projectId, t.newRevision),
+    check("agency_project_history_new_revision_ck", sql`
+      ${t.newRevision} BETWEEN 0 AND 9007199254740991`),
+    check("agency_project_history_previous_revision_ck", sql`
+      ${t.previousRevision} IS NULL OR
+      ${t.previousRevision} BETWEEN 0 AND 9007199254740991`),
+    check("agency_project_history_revision_shape_ck", sql`
+      (${t.action} = 'create' AND ${t.newRevision} = 0 AND
+        ${t.newState} = 'planned' AND ${t.newArchivedFrom} IS NULL AND
+        ${t.previousRevision} IS NULL AND ${t.previousState} IS NULL AND
+        ${t.previousArchivedFrom} IS NULL) OR
+      (${t.action} <> 'create' AND ${t.previousRevision} IS NOT NULL AND
+        ${t.previousState} IS NOT NULL AND ${t.newRevision} = ${t.previousRevision} + 1)`),
+    check("agency_project_history_new_state_ck", sql`${t.newState} IN
+      ('planned', 'active', 'on-hold', 'completed', 'canceled', 'archived')`),
+    check("agency_project_history_previous_state_ck", sql`
+      ${t.previousState} IS NULL OR ${t.previousState} IN
+      ('planned', 'active', 'on-hold', 'completed', 'canceled', 'archived')`),
+    check("agency_project_history_new_archive_ck", sql`
+      (${t.newState} = 'archived' AND ${t.newArchivedFrom} IS NOT NULL AND
+        ${t.newArchivedFrom} IN ('planned', 'active', 'on-hold', 'completed', 'canceled')) OR
+      (${t.newState} <> 'archived' AND ${t.newArchivedFrom} IS NULL)`),
+    check("agency_project_history_previous_archive_ck", sql`
+      (${t.previousState} IS NULL AND ${t.previousArchivedFrom} IS NULL) OR
+      (${t.previousState} = 'archived' AND ${t.previousArchivedFrom} IS NOT NULL AND
+        ${t.previousArchivedFrom} IN ('planned', 'active', 'on-hold', 'completed', 'canceled')) OR
+      (${t.previousState} IN ('planned', 'active', 'on-hold', 'completed', 'canceled') AND
+        ${t.previousArchivedFrom} IS NULL)`),
+    index("agency_project_history_project_recorded_idx").on(t.projectId, t.recordedAt, t.id),
+    // Add this exact unique pair IF the fifth-store alternative is selected:
+    // unique("agency_project_history_id_project_uq").on(t.id, t.projectId),
+  ],
+);
+// Lifecycle receipts use policyVersion 1 and the existing transition graph.
+// Missing complete action/version constraints and edit/member fact shapes block DDL.
+// Unique revisions and local checks do not prove append-only access, contiguous
+// committed history, correct current head, CAS, or atomic writes.
+
+const agencyProjectRequests = pgTable(
+  "agency_project_requests",
+  {
+    id: uuid("id").primaryKey(),
+    actorUserId: uuid("actor_user_id").notNull()
+      .references(() => users.id, { onDelete: "restrict" }),
+    operation: text("operation").notNull(), // Finite complete vocabulary UNDECIDED.
+    intentId: uuid("intent_id").notNull(),
+    // UNRESOLVED PRIVATE REPLAY-COMPARISON SLOT, deliberately no column type:
+    // canonical declaration/format version, fingerprint bytes/encoding,
+    // purpose/domain/key reference and rotation policy need owner decisions.
+    // The historical raw SHA-256 suggestion is not selected here.
+    projectId: uuid("project_id").notNull()
+      .references(() => agencyProjects.id, { onDelete: "restrict" }),
+    resultingRevision: bigint("resulting_revision", { mode: "number" }).notNull(),
+    recordedAt: timestamp("recorded_at", { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    unique("agency_project_requests_actor_operation_intent_uq")
+      .on(t.actorUserId, t.operation, t.intentId),
+    check("agency_project_requests_revision_ck", sql`
+      ${t.resultingRevision} BETWEEN 0 AND 9007199254740991`),
+    // Receipt must reference a committed event from the SAME project.
+    foreignKey({
+      columns: [t.projectId, t.resultingRevision],
+      foreignColumns: [agencyProjectHistory.projectId, agencyProjectHistory.newRevision],
+      name: "agency_project_requests_result_same_project_fk",
+    }).onDelete("restrict"),
+    index("agency_project_requests_project_idx").on(t.projectId),
+  ],
+);
+// Replay comparison, current authorization, deleted-result/tombstone handling and
+// retention cannot be implemented from these references/uniqueness alone.
+
+OPTIONAL FIFTH STORE, ALTERNATIVE ONLY, NOT PART OF AN ACCEPTED FOUR-STORE SCHEMA
+
+// If selected, add the history (id, projectId) unique pair above. An FK to
+// historyId alone plus an independent project FK would allow cross-project data.
+const agencyProjectHistoryContent = pgTable(
+  "agency_project_history_content",
+  {
+    historyId: uuid("history_id").primaryKey(), // At most one payload per event.
+    projectId: uuid("project_id").notNull(),
+    // UNRESOLVED: payload-contract version, protected reason representation,
+    // encryption/key reference, present/redacted/expired disposition, and minimal
+    // disposition actor/time/correlation provenance. No guessed crypto API/type.
+  },
+  (t) => [
+    foreignKey({
+      columns: [t.historyId, t.projectId],
+      foreignColumns: [agencyProjectHistory.id, agencyProjectHistory.projectId],
+      name: "agency_project_history_content_same_project_fk",
+    }).onDelete("restrict"),
+    index("agency_project_history_content_project_idx").on(t.projectId),
+  ],
+);
+// Both columns are NOT NULL, so a null component cannot skip this composite FK.
+// Zero rows means no supplied protected reason only under the accepted payload-insertion
+// rule. Later disposition must remain distinct from that initial absence.
+// Reason-required actions must insert event + protected payload in the same tx.
+// Neither this FK nor row count enforces that requirement or authorizes disposal.
+
+END REVIEW-ONLY NOTATION. NO SQL/DDL GENERATED. NO TESTS OR STATIC CHECKS RUN.

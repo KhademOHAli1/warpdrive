@@ -1,0 +1,134 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-11-01T08:19:38.307097+00:00",
+  "base": "31dd9ef82a32306cb0c3db7edad945f4ee85081b",
+  "scope": "Pure typed-manifest role binding and source-use/offset projection; no native eligibility, dates, commands or installation.",
+  "sourceHashesAtSelectedGreen": {
+    "src/features/agency-projects/templates/templateRolePreview.ts": "7b8ad7949adc561d8f2c783c57655badfd55ce575812efaf7f12329b836c0a47",
+    "src/features/agency-projects/templates/templateRolePreview.test.ts": "917040f8ee8e674b00ac9d1950eeb876494f0b80cc0c992a6953bbb603e0ba07",
+    "src/features/agency-projects/templates/templateRolePreview.test-support.ts": "bcd4e674c86148577626c862f125a4a7c83ee3d680b4630eb9ab42b956913b9c"
+  },
+  "checks": {
+    "missingModuleRed": {
+      "failedSuites": 1,
+      "testsExecuted": 0,
+      "log": "evidence/agency-template-role-preview-red-missing.log"
+    },
+    "behavioralRed": {
+      "failed": 11,
+      "passed": 2,
+      "log": "evidence/agency-template-role-preview-red-behavior.log",
+      "scaffold": "evidence/template-role-rejection-scaffold.ts.txt"
+    },
+    "initialSelectedUnits": {
+      "passed": 13,
+      "files": 1,
+      "durationMilliseconds": 86,
+      "log": "evidence/agency-template-role-preview-green.log",
+      "productionSnapshot": "evidence/template-role-pre-refactor.ts.txt"
+    },
+    "selectedUnits": {
+      "passed": 13,
+      "files": 1,
+      "durationMilliseconds": 93,
+      "log": "evidence/agency-template-role-preview-source-units-1.log",
+      "phase": "post-format",
+      "pid": 46461
+    },
+    "focusedStatic": {
+      "result": "passed",
+      "primaryFiles": 3,
+      "types": {
+        "exitCode": 0,
+        "pid": 46438,
+        "log": "evidence/agency-template-role-preview-source-types-2.log"
+      },
+      "biome": {
+        "exitCode": 0,
+        "pid": 46449,
+        "log": "evidence/agency-template-role-preview-source-biome-check-2.log"
+      },
+      "typedEslint": {
+        "exitCode": 0,
+        "pid": 46422,
+        "unchangedRepositoryRules": true,
+        "log": "evidence/agency-template-role-preview-source-eslint-1.log"
+      },
+      "initialBiome": "Three formatter-only diagnostics; exact3 files formatted, then types/Biome/typedESLint and13unitcases passed.",
+      "receipt": "evidence/agency-template-role-preview-source-batch-handles.json"
+    },
+    "preFormatSelectedUnits": {
+      "passed": 13,
+      "files": 1,
+      "durationMilliseconds": 95,
+      "log": "evidence/agency-template-role-preview-green-refactor.log",
+      "phase": "after intent-projection refactor"
+    }
+  },
+  "guard": {
+    "workers": 1,
+    "timeoutSeconds": 30,
+    "executionCutoffSeconds": 29,
+    "floorBytes": 5368709120,
+    "groupsEmptyVerified": [
+      44323,
+      44380,
+      44659,
+      45056
+    ],
+    "minimumFreeBytes": 15032918016,
+    "receipt": "evidence/agency-template-role-preview-unit-handles.json",
+    "sourceWindow": {
+      "groups": [
+        {
+          "pid": 46124,
+          "state": "empty"
+        },
+        {
+          "pid": 46140,
+          "state": "empty"
+        },
+        {
+          "pid": 46410,
+          "state": "empty"
+        },
+        {
+          "pid": 46422,
+          "state": "empty"
+        },
+        {
+          "pid": 46438,
+          "state": "empty"
+        },
+        {
+          "pid": 46449,
+          "state": "empty"
+        },
+        {
+          "pid": 46461,
+          "state": "empty"
+        }
+      ],
+      "serial": true,
+      "elapsedSeconds": 15.76158,
+      "minimumFreeBytes": 14545453056,
+      "released": true,
+      "budgetSeconds": 30,
+      "floorBytes": 5368709120,
+      "existingDependenciesOnly": true
+    }
+  },
+  "limits": [
+    "The manifest must already have crossed actual structural/graph ingress. This function validates only new bindings and semantic role-kind membership; no native identity existence/currentness, capability or scope is proved.",
+    "Explicit null unmapped roles and syntactic complete mapping are preview data, not activation/install permission. No user/contact namespace merge or authentication claim.",
+    "Offsets remain exact calendar-day/project-start declarations, not calculated dates, workweeks, holidays, deadlines or canonical activity commands.",
+    "Detached objects are memory ownership only, not persisted version immutability, replay/rollback, Privacy or restore proof.",
+    "No full-feature/repository/build/native UI/DB/provider proof or task/release acceptance; prior source scopes remain separate."
+  ],
+  "headAtSourceCheck": "cdc702c0811db07d01ab470335ac06c0e8a0538a",
+  "sourceHashesAtPreFormatGreen": {
+    "src/features/agency-projects/templates/templateRolePreview.ts": "aff2c9bf41faa3126d72cbaaeac1f2c19d8e0a7fd8a371314821eb5291fd114c",
+    "src/features/agency-projects/templates/templateRolePreview.test.ts": "9f036d69c0ce64732d133b87708c366394dfabdcc009aac4704fae9f0d87fedc",
+    "src/features/agency-projects/templates/templateRolePreview.test-support.ts": "84e11ad1c8c956867eaf9945484f75ea3d47e320315132a9f7c30f6a7954fb76"
+  }
+}

@@ -1,0 +1,35 @@
+from pathlib import Path
+import os,signal,subprocess,sys,time,json,datetime,hashlib
+root=Path.cwd(); work=Path('/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work'); floor=5*1024**3
+phase=sys.argv[1]; attempt=sys.argv[2] if len(sys.argv)>2 else '1'
+if not attempt.isdigit():raise SystemExit('Invalid attempt')
+files=subprocess.check_output(['git','ls-files','--','src/features/agency-projects'],text=True).splitlines(); ts=[x for x in files if x.endswith('.ts')]; tests=[x for x in ts if x.endswith('.test.ts')]
+bun=str(root/'.runtime/bin/bun')
+commands={'types':[bun,'--smol','node_modules/typescript/bin/tsc','--noEmit','-p','.runtime/tsconfig.agency.json'],'biome-check':[bun,'node_modules/@biomejs/biome/bin/biome','check',*files],'biome-write':[bun,'node_modules/@biomejs/biome/bin/biome','check','--write',*files],'eslint':[bun,'--smol','node_modules/eslint/bin/eslint.js','--config','.runtime/agency-eslint.mjs',*ts],'units':[bun,'run','test:unit',*tests,'--maxWorkers=1']}
+if phase not in commands:raise SystemExit('Invalid phase')
+def free():
+ s=os.statvfs(root);return s.f_bavail*s.f_frsize
+before=free()
+if before<floor:
+ print(json.dumps({'phase':phase,'status':'held-before-launch','freeBytes':before,'floorBytes':floor}),flush=True);raise SystemExit(75)
+log=work/('agency-source-'+phase+'-'+attempt+'.log');env=os.environ.copy();env['PATH']=str(root/'.runtime/bin')+os.pathsep+env['PATH'];started=datetime.datetime.now(datetime.timezone.utc).isoformat();minimum=before
+with log.open('w') as output:
+ process=subprocess.Popen(commands[phase],cwd=root,env=env,stdout=output,stderr=subprocess.STDOUT,start_new_session=True)
+ print(json.dumps({'phase':phase,'attempt':attempt,'pid':process.pid,'timeoutSeconds':60,'beforeFreeBytes':before,'files':len(files),'testFiles':len(tests),'log':str(log)}),flush=True)
+ deadline=time.monotonic()+60;stop=None
+ while process.poll() is None:
+  minimum=min(minimum,free())
+  if minimum<floor:stop='below-5GiB'
+  elif time.monotonic()>deadline:stop='timeout'
+  if stop:
+   os.killpg(process.pid,signal.SIGTERM)
+   try:process.wait(timeout=3)
+   except subprocess.TimeoutExpired:os.killpg(process.pid,signal.SIGKILL);process.wait()
+   break
+  time.sleep(.2)
+ code=process.wait();after=free();minimum=min(minimum,after)
+ receipt={'phase':phase,'attempt':attempt,'pid':process.pid,'startedAt':started,'finishedAt':datetime.datetime.now(datetime.timezone.utc).isoformat(),'terminal':True,'exitCode':code,'stopReason':stop,'beforeFreeBytes':before,'minimumFreeBytes':minimum,'afterFreeBytes':after,'timeoutSeconds':60,'floorBytes':floor,'log':str(log),'command':commands[phase]}
+ path=work/'agency-source-batch-handles.json';data=json.loads(path.read_text()) if path.exists() else {'schemaVersion':1,'scope':'MAIL-authorized finite sequential feature source-check batch only','runs':[]}
+ data['runs'].append(receipt);path.write_text(json.dumps(data,indent=2)+'\n')
+ print(json.dumps({k:v for k,v in receipt.items() if k not in ['command']}),flush=True)
+raise SystemExit(code if stop is None else 75)

@@ -1,0 +1,381 @@
+src/features/agency-projects/reviews/reviewDecisionEntry.ts format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+     1  1 │   import type { ReviewCommand, ReviewDecision, ReviewSnapshot } from "./reviewTypes";
+     2  2 │   
+     3    │ - type·RecordCommand·=·Extract<ReviewCommand,·{·action:·"record-internal-review"·|·"record-client-approval"·}>;
+        3 │ + type·RecordCommand·=·Extract<
+        4 │ + ··ReviewCommand,
+        5 │ + ··{·action:·"record-internal-review"·|·"record-client-approval"·}
+        6 │ + >;
+     4  7 │   
+     5  8 │   export function reviewDecisionEntry(
+    ····· │ 
+    19 22 │     };
+    20 23 │     return command.action === "record-client-approval"
+    21    │ - ····?·{·...provenance,·kind:·"staff-recorded-client-approval",·clientContactId:·command.clientContactId,·method:·command.method·}
+       24 │ + ····?·{
+       25 │ + ········...provenance,
+       26 │ + ········kind:·"staff-recorded-client-approval",
+       27 │ + ········clientContactId:·command.clientContactId,
+       28 │ + ········method:·command.method,
+       29 │ + ······}
+    22 30 │       : { ...provenance, kind: "internal-review", method: command.method };
+    23 31 │   }
+  
+
+src/features/agency-projects/reviews/reviewDecisions.test.ts format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+     24  24 │   function snapshot(): ReviewSnapshot {
+     25  25 │     return {
+     26     │ - ····projectId:·scope.projectId,·deliverableId:·scope.deliverableId,
+     27     │ - ····revision:·4,·reviewEpoch:·1,·reviewOpenedAt:·"2026-11-01T05:00:00Z",·lastRecordedAt:·"2026-11-01T05:00:00Z",
+     28     │ - ····currentVersionReference:·version,·decisions:·[],
+         26 │ + ····projectId:·scope.projectId,
+         27 │ + ····deliverableId:·scope.deliverableId,
+         28 │ + ····revision:·4,
+         29 │ + ····reviewEpoch:·1,
+         30 │ + ····reviewOpenedAt:·"2026-11-01T05:00:00Z",
+         31 │ + ····lastRecordedAt:·"2026-11-01T05:00:00Z",
+         32 │ + ····currentVersionReference:·version,
+         33 │ + ····decisions:·[],
+     29  34 │     };
+     30  35 │   }
+    ······· │ 
+     32  37 │   function internalReview() {
+     33  38 │     return {
+     34     │ - ····...scope,·...nativeRecorder,
+         39 │ + ····...scope,
+         40 │ + ····...nativeRecorder,
+     35  41 │       action: "record-internal-review" as const,
+     36  42 │       outcome: "approved" as const,
+    ······· │ 
+     44  50 │   function recordedClientApproval() {
+     45  51 │     return {
+     46     │ - ····...scope,·...nativeRecorder,
+         52 │ + ····...scope,
+         53 │ + ····...nativeRecorder,
+     47  54 │       action: "record-client-approval" as const,
+     48  55 │       outcome: "approved" as const,
+    ······· │ 
+     57  64 │   function changeVersion(expectedRevision = 4) {
+     58  65 │     return {
+     59     │ - ····...scope,·...nativeRecorder,·expectedRevision,
+         66 │ + ····...scope,
+         67 │ + ····...nativeRecorder,
+         68 │ + ····expectedRevision,
+     60  69 │       action: "change-version" as const,
+     61  70 │       versionReference: newerVersion,
+    ······· │ 
+     66  75 │   function reopenReview(expectedRevision = 4) {
+     67  76 │     return {
+     68     │ - ····...scope,·...nativeRecorder,·expectedRevision,
+         77 │ + ····...scope,
+         78 │ + ····...nativeRecorder,
+         79 │ + ····expectedRevision,
+     69  80 │       action: "reopen-review" as const,
+     70  81 │       reason: "بررسی دوباره / Erneute Prüfung",
+    ······· │ 
+     74  85 │   describe("proposed version-specific review decision boundary", () => {
+     75  86 │     it("keeps the native recorder and server recording time out of every browser action", () => {
+     76     │ - ····for·(const·command·of·[internalReview(),·recordedClientApproval(),·changeVersion(),·reopenReview()])·{
+         87 │ + ····for·(const·command·of·[
+         88 │ + ······internalReview(),
+         89 │ + ······recordedClientApproval(),
+         90 │ + ······changeVersion(),
+         91 │ + ······reopenReview(),
+         92 │ + ····])·{
+     77  93 │         const { recordedByUserId, recordedAt, ...action } = command;
+     78  94 │         expect(parseReviewAction(action)).toEqual({ ok: true, value: action });
+     79     │ - ······expect(parseReviewAction({·...action,·recordedByUserId·}))
+     80     │ - ········.toEqual({·ok:·false,·error:·"invalid_review_action"·});
+     81     │ - ······expect(parseReviewAction({·...action,·recordedAt·}))
+     82     │ - ········.toEqual({·ok:·false,·error:·"invalid_review_action"·});
+     83     │ - ······expect(parseReviewAction({·...action,·reviewOpenedAt:·"2026-11-01T05:00:00Z"·}))
+     84     │ - ········.toEqual({·ok:·false,·error:·"invalid_review_action"·});
+     85     │ - ······expect(parseReviewAction({·...action,·lastRecordedAt:·"2026-11-01T05:00:00Z"·}))
+     86     │ - ········.toEqual({·ok:·false,·error:·"invalid_review_action"·});
+         95 │ + ······expect(parseReviewAction({·...action,·recordedByUserId·})).toEqual({
+         96 │ + ········ok:·false,
+         97 │ + ········error:·"invalid_review_action",
+         98 │ + ······});
+         99 │ + ······expect(parseReviewAction({·...action,·recordedAt·})).toEqual({
+        100 │ + ········ok:·false,
+        101 │ + ········error:·"invalid_review_action",
+        102 │ + ······});
+        103 │ + ······expect(parseReviewAction({·...action,·reviewOpenedAt:·"2026-11-01T05:00:00Z"·})).toEqual({
+        104 │ + ········ok:·false,
+        105 │ + ········error:·"invalid_review_action",
+        106 │ + ······});
+        107 │ + ······expect(parseReviewAction({·...action,·lastRecordedAt:·"2026-11-01T05:00:00Z"·})).toEqual({
+        108 │ + ········ok:·false,
+        109 │ + ········error:·"invalid_review_action",
+        110 │ + ······});
+     87 111 │       }
+     88 112 │     });
+     89 113 │   
+     90     │ - ··it.each(["recordedByUserId",·"recordedAt"])("requires·server-assembled·%s·provenance",·(field)·=>·{
+     91     │ - ····const·command·=·{·...recordedClientApproval()·};
+     92     │ - ····Reflect.deleteProperty(command,·field);
+     93     │ - ····expect(parseReviewCommand(command)).toEqual({·ok:·false,·error:·"invalid_review_command"·});
+     94     │ - ··});
+        114 │ + ··it.each(["recordedByUserId",·"recordedAt"])(
+        115 │ + ····"requires·server-assembled·%s·provenance",
+        116 │ + ····(field)·=>·{
+        117 │ + ······const·command·=·{·...recordedClientApproval()·};
+        118 │ + ······Reflect.deleteProperty(command,·field);
+        119 │ + ······expect(parseReviewCommand(command)).toEqual({·ok:·false,·error:·"invalid_review_command"·});
+        120 │ + ····},
+        121 │ + ··);
+     95 122 │   
+     96 123 │     it("canonicalizes native/contact UUIDs while preserving exact version, evidence and occurrence provenance", () => {
+     97 124 │       const command = recordedClientApproval();
+     98     │ - ····expect(parseReviewCommand({
+     99     │ - ······...command,
+    100     │ - ······recordedByUserId:·command.recordedByUserId.toUpperCase(),
+    101     │ - ······clientContactId:·command.clientContactId.toUpperCase(),
+    102     │ - ····})).toEqual({·ok:·true,·value:·command·});
+    103     │ - ····expect(parseReviewCommand({·...command,·lastRecordedAt:·"2026-11-01T05:00:00Z"·}))
+    104     │ - ······.toEqual({·ok:·false,·error:·"invalid_review_command"·});
+        125 │ + ····expect(
+        126 │ + ······parseReviewCommand({
+        127 │ + ········...command,
+        128 │ + ········recordedByUserId:·command.recordedByUserId.toUpperCase(),
+        129 │ + ········clientContactId:·command.clientContactId.toUpperCase(),
+        130 │ + ······}),
+        131 │ + ····).toEqual({·ok:·true,·value:·command·});
+        132 │ + ····expect(parseReviewCommand({·...command,·lastRecordedAt:·"2026-11-01T05:00:00Z"·})).toEqual({
+        133 │ + ······ok:·false,
+        134 │ + ······error:·"invalid_review_command",
+        135 │ + ····});
+    105 136 │     });
+    106 137 │   
+    ······· │ 
+    108 139 │       const command = recordedClientApproval();
+    109 140 │       for (const patch of [
+    110     │ - ······{·authenticatedClient:·true·},·{·signature:·"claimed"·},
+    111     │ - ······{·method:·"provider-verified"·},·{·clientContactId:·"client@example.invalid"·},
+    112     │ - ····])·expect(parseReviewCommand({·...command,·...patch·}))
+    113     │ - ······.toEqual({·ok:·false,·error:·"invalid_review_command"·});
+        141 │ + ······{·authenticatedClient:·true·},
+        142 │ + ······{·signature:·"claimed"·},
+        143 │ + ······{·method:·"provider-verified"·},
+        144 │ + ······{·clientContactId:·"client@example.invalid"·},
+        145 │ + ····])
+        146 │ + ······expect(parseReviewCommand({·...command,·...patch·})).toEqual({
+        147 │ + ········ok:·false,
+        148 │ + ········error:·"invalid_review_command",
+        149 │ + ······});
+    114 150 │     });
+    115 151 │   
+    116 152 │     it.each(["2026-11-01T09:10:00", "2026-02-30T09:10:00Z", "yesterday", null])(
+    117     │ - ····"requires·a·real·occurrence·instant·with·an·explicit·offset:·%s",·(occurredAt)·=>·{
+    118     │ - ······expect(parseReviewCommand({·...recordedClientApproval(),·occurredAt·}))
+    119     │ - ········.toEqual({·ok:·false,·error:·"invalid_review_command"·});
+        153 │ + ····"requires·a·real·occurrence·instant·with·an·explicit·offset:·%s",
+        154 │ + ····(occurredAt)·=>·{
+        155 │ + ······expect(parseReviewCommand({·...recordedClientApproval(),·occurredAt·})).toEqual({
+        156 │ + ········ok:·false,
+        157 │ + ········error:·"invalid_review_command",
+        158 │ + ······});
+    120 159 │       },
+    121 160 │     );
+    ······· │ 
+    125 164 │       Reflect.deleteProperty(command, "occurredAt");
+    126 165 │       expect(parseReviewCommand(command)).toEqual({ ok: false, error: "invalid_review_command" });
+  624 more lines truncated
+  
+
+src/features/agency-projects/reviews/reviewDecisions.ts format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+     20  20 │   }
+     21  21 │   
+     22     │ - export·function·parseReviewCommand(input:·unknown):·Result<ReviewCommand,·"invalid_review_command">·{
+         22 │ + export·function·parseReviewCommand(
+         23 │ + ··input:·unknown,
+         24 │ + ):·Result<ReviewCommand,·"invalid_review_command">·{
+     23  25 │     const parsed = reviewCommandSchema.safeParse(input);
+     24  26 │     return parsed.success ? ok(parsed.data) : err("invalid_review_command");
+    ······· │ 
+     34  36 │     }
+     35  37 │     if (command.action === "record-internal-review" || command.action === "record-client-approval") {
+     36     │ - ····if·(command.reviewedVersionReference·!==·current.currentVersionReference)·return·"review_version_conflict";
+         38 │ + ····if·(command.reviewedVersionReference·!==·current.currentVersionReference)
+         39 │ + ······return·"review_version_conflict";
+     37  40 │       return Temporal.Instant.compare(command.occurredAt, current.reviewOpenedAt) < 0
+     38     │ - ······?·"review_occurrence_before_epoch"·:·null;
+         41 │ + ······?·"review_occurrence_before_epoch"
+         42 │ + ······:·null;
+     39  43 │     }
+     40     │ - ··return·command.action·===·"change-version"·&&·command.versionReference·===·current.currentVersionReference
+     41     │ - ····?·"version_unchanged"·:·null;
+         44 │ + ··return·command.action·===·"change-version"·&&
+         45 │ + ····command.versionReference·===·current.currentVersionReference
+         46 │ + ····?·"version_unchanged"
+         47 │ + ····:·null;
+     42  48 │   }
+     43  49 │   
+    ······· │ 
+     48  54 │       case "record-internal-review":
+     49  55 │       case "record-client-approval":
+     50     │ - ······return·{·...next,·decisions:·[...current.decisions,·reviewDecisionEntry(current,·command,·revision)]·};
+         56 │ + ······return·{
+         57 │ + ········...next,
+         58 │ + ········decisions:·[...current.decisions,·reviewDecisionEntry(current,·command,·revision)],
+         59 │ + ······};
+     51  60 │       case "change-version":
+     52     │ - ······return·{·...next,·reviewEpoch:·current.reviewEpoch·+·1,·reviewOpenedAt:·command.recordedAt,·currentVersionReference:·command.versionReference·};
+         61 │ + ······return·{
+         62 │ + ········...next,
+         63 │ + ········reviewEpoch:·current.reviewEpoch·+·1,
+         64 │ + ········reviewOpenedAt:·command.recordedAt,
+         65 │ + ········currentVersionReference:·command.versionReference,
+         66 │ + ······};
+     53  67 │       case "reopen-review":
+     54  68 │         return { ...next, reviewEpoch: current.reviewEpoch + 1, reviewOpenedAt: command.recordedAt };
+    ······· │ 
+     65  79 │     if (current.revision >= Number.MAX_SAFE_INTEGER) return err("revision_exhausted");
+     66  80 │     const opensReview = command.action === "change-version" || command.action === "reopen-review";
+     67     │ - ··if·(opensReview·&&·current.reviewEpoch·>=·Number.MAX_SAFE_INTEGER)·return·err("review_epoch_exhausted");
+         81 │ + ··if·(opensReview·&&·current.reviewEpoch·>=·Number.MAX_SAFE_INTEGER)
+         82 │ + ····return·err("review_epoch_exhausted");
+     68  83 │     const snapshot = nextSnapshot(current, command);
+     69  84 │     return ok({
+    ······· │ 
+     85 100 │         recordedByUserId: command.recordedByUserId,
+     86 101 │         recordedAt: command.recordedAt,
+     87     │ - ······reason:·command.action·===·"change-version"·||·command.action·===·"reopen-review"·?·command.reason·:·null,
+        102 │ + ······reason:
+        103 │ + ········command.action·===·"change-version"·||·command.action·===·"reopen-review"
+        104 │ + ··········?·command.reason
+        105 │ + ··········:·null,
+     88 106 │       },
+     89 107 │     });
+    ······· │ 
+     94 112 │     const recordedClient: Extract<ReviewDecision, { kind: "staff-recorded-client-approval" }>[] = [];
+     95 113 │     for (const decision of snapshot.decisions) {
+     96     │ - ····if·(decision.reviewEpoch·!==·snapshot.reviewEpoch·||·decision.reviewedVersionReference·!==·snapshot.currentVersionReference)·continue;
+        114 │ + ····if·(
+        115 │ + ······decision.reviewEpoch·!==·snapshot.reviewEpoch·||
+        116 │ + ······decision.reviewedVersionReference·!==·snapshot.currentVersionReference
+        117 │ + ····)
+        118 │ + ······continue;
+     97 119 │       if (decision.kind === "internal-review") internal.push(decision);
+     98 120 │       else recordedClient.push(decision);
+  
+
+src/features/agency-projects/reviews/reviewSchemas.ts format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+    76 76 │   }
+    77 77 │   
+    78    │ - export·const·reviewCommandSchema·=·z.discriminatedUnion("action",·[
+    79    │ - ··internalReview.extend(nativeRecorder),
+    80    │ - ··clientApproval.extend(nativeRecorder),
+    81    │ - ··changeVersion.extend(nativeRecorder),
+    82    │ - ··reopenReview.extend(nativeRecorder),
+    83    │ - ]).refine(occurrenceNotAfterRecording,·{
+    84    │ - ··path:·["occurredAt"],
+    85    │ - ··message:·"Occurrence·must·not·follow·server·recording·time",
+    86    │ - })·satisfies·z.ZodType<ReviewCommand>;
+       78 │ + export·const·reviewCommandSchema·=·z
+       79 │ + ··.discriminatedUnion("action",·[
+       80 │ + ····internalReview.extend(nativeRecorder),
+       81 │ + ····clientApproval.extend(nativeRecorder),
+       82 │ + ····changeVersion.extend(nativeRecorder),
+       83 │ + ····reopenReview.extend(nativeRecorder),
+       84 │ + ··])
+       85 │ + ··.refine(occurrenceNotAfterRecording,·{
+       86 │ + ····path:·["occurredAt"],
+       87 │ + ····message:·"Occurrence·must·not·follow·server·recording·time",
+       88 │ + ··})·satisfies·z.ZodType<ReviewCommand>;
+    87 89 │   
+  
+
+src/features/agency-projects/reviews/reviewTypes.ts format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+    12 12 │   type ClientMethod = "email" | "phone" | "meeting" | "message";
+    13 13 │   
+    14    │ - export·type·ReviewAction·=·Target·&·(
+    15    │ - ··|·RecordedEvidence·&·Readonly<{·action:·"record-internal-review";·method:·"internal-review"·}>
+    16    │ - ··|·RecordedEvidence·&·Readonly<{
+    17    │ - ······action:·"record-client-approval";
+    18    │ - ······clientContactId:·string;
+    19    │ - ······method:·ClientMethod;
+    20    │ - ····}>
+    21    │ - ··|·Readonly<{·action:·"change-version";·versionReference:·string;·reason:·string·}>
+    22    │ - ··|·Readonly<{·action:·"reopen-review";·reason:·string·}>
+    23    │ - );
+    24    │ - export·type·ReviewCommand·=·ReviewAction·&·Readonly<{
+    25    │ - ··recordedByUserId:·string;
+    26    │ - ··recordedAt:·string;
+    27    │ - }>;
+    28    │ - type·DecisionProvenance·=·RecordedEvidence·&·Readonly<{
+    29    │ - ··recordedByUserId:·string;
+    30    │ - ··recordedAt:·string;
+    31    │ - ··reviewEpoch:·number;
+    32    │ - ··recordedAtRevision:·number;
+    33    │ - }>;
+    34    │ - type·InternalDecision·=·DecisionProvenance·&·Readonly<{
+    35    │ - ··kind:·"internal-review";
+    36    │ - ··method:·"internal-review";
+    37    │ - }>;
+    38    │ - type·RecordedClientDecision·=·DecisionProvenance·&·Readonly<{
+    39    │ - ··kind:·"staff-recorded-client-approval";
+    40    │ - ··clientContactId:·string;
+    41    │ - ··method:·ClientMethod;
+    42    │ - }>;
+       14 │ + export·type·ReviewAction·=·Target·&
+       15 │ + ··(
+       16 │ + ····|·(RecordedEvidence·&·Readonly<{·action:·"record-internal-review";·method:·"internal-review"·}>)
+       17 │ + ····|·(RecordedEvidence·&
+       18 │ + ········Readonly<{
+       19 │ + ··········action:·"record-client-approval";
+       20 │ + ··········clientContactId:·string;
+       21 │ + ··········method:·ClientMethod;
+       22 │ + ········}>)
+       23 │ + ····|·Readonly<{·action:·"change-version";·versionReference:·string;·reason:·string·}>
+       24 │ + ····|·Readonly<{·action:·"reopen-review";·reason:·string·}>
+       25 │ + ··);
+       26 │ + export·type·ReviewCommand·=·ReviewAction·&
+       27 │ + ··Readonly<{
+       28 │ + ····recordedByUserId:·string;
+       29 │ + ····recordedAt:·string;
+       30 │ + ··}>;
+       31 │ + type·DecisionProvenance·=·RecordedEvidence·&
+       32 │ + ··Readonly<{
+       33 │ + ····recordedByUserId:·string;
+       34 │ + ····recordedAt:·string;
+       35 │ + ····reviewEpoch:·number;
+       36 │ + ····recordedAtRevision:·number;
+       37 │ + ··}>;
+       38 │ + type·InternalDecision·=·DecisionProvenance·&
+       39 │ + ··Readonly<{
+       40 │ + ····kind:·"internal-review";
+       41 │ + ····method:·"internal-review";
+       42 │ + ··}>;
+       43 │ + type·RecordedClientDecision·=·DecisionProvenance·&
+       44 │ + ··Readonly<{
+       45 │ + ····kind:·"staff-recorded-client-approval";
+       46 │ + ····clientContactId:·string;
+       47 │ + ····method:·ClientMethod;
+       48 │ + ··}>;
+    43 49 │   export type ReviewDecision = InternalDecision | RecordedClientDecision;
+    44 50 │   export type ReviewSnapshot = Readonly<{
+  
+
+Checked 28 files in 71ms. No fixes applied.
+Found 5 errors.
+check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Some errors were emitted while running checks.
+  
+

@@ -1,0 +1,192 @@
+import { describe, expect, it } from "vitest";
+import { parseFeedbackCommand, parseFeedbackDeclaration } from "./feedbackRecord";
+
+const projectId = "cdefabcd-3456-4cde-abcd-345678901abc";
+const deliverableId = "defabcde-4567-4def-bcde-456789012abc";
+const authorUserId = "bcdefabc-2345-4bcd-9efa-234567890abc";
+const personId = "fabcdefa-6789-4bcd-9efa-678901234abc";
+const recorderId = "abcdefab-1234-4abc-8def-1234567890ab";
+const feedbackId = "aabcdefa-6789-4bcd-9efa-678901234abc";
+const workVersionReference = "https://work.example.invalid/مدل%2Fv1?variant=A%2Fb#Teil-1";
+const evidenceReference = "https://source.example.invalid/Feedback/A%2Fb?thread=1#Nachricht";
+const invalidDeclaration = { ok: false, error: "invalid_feedback_declaration" };
+const invalidCommand = { ok: false, error: "invalid_feedback_command" };
+
+function declaration() {
+  return {
+    projectId,
+    deliverableId,
+    workVersionReference,
+    author: { kind: "internal-user" as const, userId: authorUserId },
+    source: { channel: { kind: "email" as const }, evidenceReference },
+    text: "  رنگ\u200cها روشن بمانند.\nFarben bitte hell lassen.\t  ",
+  };
+}
+
+function command() {
+  return {
+    feedbackId,
+    provenance: "staff-recorded" as const,
+    declaration: declaration(),
+    recordedByUserId: recorderId,
+    recordedAt: "2026-11-01T09:30:00.000000001+03:30",
+  };
+}
+
+describe("proposed feedback declaration boundary", () => {
+  it.each([null, undefined, [], {}, "feedback"])("rejects malformed declarations: %s", (input) => {
+    expect(parseFeedbackDeclaration(input)).toEqual(invalidDeclaration);
+  });
+
+  it("preserves multilingual authored text, exact work version and source references", () => {
+    expect(parseFeedbackDeclaration(declaration()))
+      .toEqual({ ok: true, value: declaration() });
+    const input = {
+      ...declaration(),
+      projectId: projectId.toUpperCase(),
+      deliverableId: deliverableId.toUpperCase(),
+      author: { kind: "internal-user", userId: authorUserId.toUpperCase() },
+    };
+    expect(parseFeedbackDeclaration(input)).toEqual({ ok: true, value: declaration() });
+  });
+
+  it("requires canonical scope IDs and one exact identified work-version reference", () => {
+    for (const field of ["projectId", "deliverableId"]) {
+      for (const value of [undefined, null, "same-title"]) {
+        expect(parseFeedbackDeclaration({ ...declaration(), [field]: value }))
+          .toEqual(invalidDeclaration);
+      }
+    }
+    for (const value of [undefined, "", " version/1", "javascript:alert(1)", "v".repeat(2049)]) {
+      expect(parseFeedbackDeclaration({ ...declaration(), workVersionReference: value }))
+        .toEqual(invalidDeclaration);
+    }
+  });
+
+  it("keeps contact authors distinct from internal users and the native recorder", () => {
+    const input = {
+      ...declaration(),
+      author: { kind: "external-contact", personId: personId.toUpperCase() },
+    };
+    expect(parseFeedbackDeclaration(input)).toEqual({
+      ok: true,
+      value: { ...input, author: { kind: "external-contact", personId } },
+    });
+    for (const author of [
+      undefined,
+      { kind: "internal-user", userId: "same-name" },
+      { kind: "external-contact", personId: "shared@example.invalid" },
+      { kind: "external-contact", userId: authorUserId },
+      { kind: "internal-user", userId: authorUserId, personId },
+      { kind: "authenticated-client", personId },
+      { kind: "external-contact", personId, name: "Same name" },
+    ]) {
+      expect(parseFeedbackDeclaration({ ...declaration(), author })).toEqual(invalidDeclaration);
+    }
+  });
+
+  it("requires an explicit source channel without inventing missing evidence", () => {
+    const source = { channel: { kind: "other", label: "  نظر فایل / Dateikommentar  " } };
+    expect(parseFeedbackDeclaration({ ...declaration(), source })).toEqual({
+      ok: true,
+      value: { ...declaration(), source },
+    });
+    for (const source of [
+      undefined,
+      {},
+      { channel: { kind: "provider-delivered" } },
+      { channel: { kind: "other", label: "\u200c" } },
+      { channel: { kind: "other", label: "x".repeat(81) } },
+      { channel: { kind: "email" }, authenticated: true },
+    ]) {
+      expect(parseFeedbackDeclaration({ ...declaration(), source })).toEqual(invalidDeclaration);
+    }
+  });
+
+  it("rejects unsafe or oversized evidence references without rewriting accepted references", () => {
+    for (const evidenceReference of [
+      "",
+      "javascript:alert(1)",
+      "https://user:pass@example.invalid/source",
+      "https://source.example.invalid/<script>",
+      "source\u0085ref",
+      "r".repeat(2049),
+    ]) {
+      expect(parseFeedbackDeclaration({
+        ...declaration(), source: { channel: { kind: "email" }, evidenceReference },
+      })).toEqual(invalidDeclaration);
+    }
+  });
+
+  it("requires substantive bounded text without stripping embedded Persian joiners", () => {
+    for (const text of ["", " \n\t", "\u200c", "\u2066\u2069", "text\u0000", "text\u0085", "x".repeat(2001)]) {
+      expect(parseFeedbackDeclaration({ ...declaration(), text })).toEqual(invalidDeclaration);
+    }
+    const input = { ...declaration(), text: "x".repeat(2000) };
+    expect(parseFeedbackDeclaration(input)).toEqual({ ok: true, value: input });
+  });
+
+  it("keeps markup-looking text literal without claiming safe rendered output", () => {
+    const input = { ...declaration(), text: '<img src=x onerror="alert(1)"> & <script>literal</script>' };
+    expect(parseFeedbackDeclaration(input)).toEqual({ ok: true, value: input });
+  });
+
+  it("rejects native, approval, commercial and collection shortcuts", () => {
+    for (const extra of [
+      { feedbackId }, { recordedByUserId: recorderId }, { recordedAt: command().recordedAt },
+      { provenance: "staff-recorded" }, { authenticatedClient: true }, { signature: "claim" },
+      { approved: true }, { reviewEpoch: 1 }, { includedRounds: 2 }, { charge: true },
+      { history: [] }, { feedback: [] }, { authorized: true },
+    ]) {
+      expect(parseFeedbackDeclaration({ ...declaration(), ...extra })).toEqual(invalidDeclaration);
+    }
+  });
+});
+
+describe("proposed native feedback recording command boundary", () => {
+  it("requires separate server-owned identity, label and exact recording time", () => {
+    expect(parseFeedbackCommand(command())).toEqual({ ok: true, value: command() });
+    const input = { ...command(), feedbackId: feedbackId.toUpperCase(), recordedByUserId: recorderId.toUpperCase() };
+    expect(parseFeedbackCommand(input)).toEqual({ ok: true, value: command() });
+    for (const field of ["feedbackId", "recordedByUserId", "recordedAt", "provenance", "declaration"]) {
+      const input = command();
+      Reflect.deleteProperty(input, field);
+      expect(parseFeedbackCommand(input)).toEqual(invalidCommand);
+    }
+    expect(command().recordedByUserId).not.toBe(command().declaration.author.userId);
+  });
+
+  it("rejects malformed native provenance without inferring an authenticated author", () => {
+    for (const input of [
+      null,
+      undefined,
+      { ...command(), feedbackId: "record-1" },
+      { ...command(), recordedByUserId: "staff-name" },
+      { ...command(), recordedByUserId: personId, provenance: "client-signed" },
+      { ...command(), recordedAt: "2026-11-01T09:30:00" },
+      { ...command(), recordedAt: "2026-02-30T09:30:00Z" },
+      { ...command(), recordedAt: "2026-11-01T06:00:00.0000000001Z" },
+      { ...command(), deliveryStatus: "confirmed" },
+    ]) {
+      expect(parseFeedbackCommand(input)).toEqual(invalidCommand);
+    }
+  });
+
+  it("retains contradictory reviewers as separate declarations without merging or approval inference", () => {
+    const first = command();
+    const second = {
+      ...command(),
+      feedbackId: "babcdefa-6789-4bcd-9efa-678901234abc",
+      declaration: {
+        ...declaration(),
+        author: { kind: "external-contact", personId },
+        text: "Bitte dunkle Farben verwenden.",
+      },
+    };
+    expect(parseFeedbackCommand(first)).toEqual({ ok: true, value: first });
+    expect(parseFeedbackCommand(second)).toEqual({ ok: true, value: second });
+    expect(first.declaration.author).not.toEqual(second.declaration.author);
+    expect(first.declaration.workVersionReference).toBe(second.declaration.workVersionReference);
+    expect(first.declaration.text).not.toBe(second.declaration.text);
+  });
+});

@@ -1,0 +1,41 @@
+{
+  "recordedAtUtc": "2026-11-02T07:08:57.532321+00:00",
+  "authorization": "AGENCY-LIST156-NATIVE13-ONLY-20261102-1",
+  "requestSha256": "54a123c73311253b243ba4eebf72a7538f5490cac00cbd78199f62cdcd9f4e7e",
+  "legacyBusiness12": {
+    "exitCode": 0,
+    "passed": 12,
+    "files": 2,
+    "vitestSeconds": 3.25,
+    "base": "0000..0097/privateunjournaledAgencyoverlay",
+    "admission": "syntheticnativeauthority/Privacy"
+  },
+  "current0098Admission1": {
+    "exitCode": 0,
+    "passed": 1,
+    "files": 1,
+    "vitestSeconds": 2.27,
+    "scope": "99canonicalreceipts/latest0098hash/fourprivateAgencytables; notMainupgrade/nativeauth"
+  },
+  "ownPGContainersAbsent": true,
+  "ownedGroupsGone": true,
+  "ownedGroupMembers": [],
+  "source156And7ConfigsExact": true,
+  "foreignContainerStatesExact": true,
+  "foreignNetworksExact": true,
+  "foreignVolumesExact": true,
+  "foreignListenersExact": true,
+  "dotenvBeforeAfterAbsent": true,
+  "cleanupObservedElapsedSeconds": 181.36109570797998,
+  "lastDockerListenerCensusElapsedSeconds": 127.39668841590174,
+  "within180Seconds": false,
+  "nativePhaseTerminalUpperBoundSeconds": 43.420119208982214,
+  "withinNative100Seconds": true,
+  "intermediateHelper": "Initial44scensusretainedoneextraSDKcontainer/listener;127.397scompletecensusfoundbothgonewithoutremoval. Initialreceiptpreserved.",
+  "forcedCleanup": false,
+  "automaticRetry": false,
+  "oneUseConsumed": true,
+  "aggregateRSSPeakMeasured": false,
+  "goal": "All12packages/96tasks incomplete,0accepted",
+  "finalPreservationPass": false
+}

@@ -1,0 +1,126 @@
+from pathlib import Path
+import os,sys,time,json,subprocess,signal,hashlib,shutil,datetime,re
+root=Path.cwd();run=json.loads((root/'.runtime/authority-candidate-pg-run.json').read_text());work=Path('/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work');meta=Path(run.get('receiptFile',str(work/'authority-candidate-pg-handles.json')));log=Path(run.get('logFile',str(work/'authority-candidate-pg.log')));floor=5*1024**3;label='codex.agency.authority-candidate-run';budget=45 if run.get('phase')=='absence' else 90;native_budget=20 if run.get('phase')=='absence' else 65;begin=time.monotonic();total=begin+budget;native=begin+native_budget;process=None;launched=False;stop=None;cancel=None;peer_ids=set();env=None;endpoint=None;docker=shutil.which('docker');hashes={};errors=[];marker_attempted=False
+if meta.exists():
+ print(json.dumps({'status':'held-existing-receipt-preserved','receipt':str(meta)}),flush=True);raise SystemExit(75)
+receipt={'schemaVersion':1,'status':'preflight','startedAt':datetime.datetime.now(datetime.timezone.utc).isoformat(),'runId':run['runId'],'budgetSeconds':budget,'nativeDeadlineSeconds':native_budget,'floorBytes':floor,'log':str(log),'databaseScope':'owned candidate85-entry journal through0084; no Agency DDL or combined-lineage qualification'}
+def on_signal(signum,_frame):
+ global cancel
+ cancel=signum
+for number in [signal.SIGTERM,signal.SIGINT]:signal.signal(number,on_signal)
+def left(cap=3):
+ remaining=total-time.monotonic()
+ if remaining<=0:raise TimeoutError('total deadline')
+ return min(cap,remaining)
+def free():
+ s=os.statvfs(root);return s.f_bavail*s.f_frsize
+def save():
+ try:meta.write_text(json.dumps(receipt,indent=2)+'\n')
+ except Exception as e:errors.append('receipt:'+type(e).__name__)
+def call(args,cap=3,local=True):
+ command=[docker,'--host',endpoint,*args] if local else [docker,*args]
+ return subprocess.run(command,capture_output=True,text=True,timeout=left(cap),env=env)
+class GateFailure(Exception):pass
+def require(ok,reason):
+ if not ok:raise GateFailure(reason)
+def source_hash(path,cutoff=None):
+ digest=hashlib.sha256()
+ with (root/path).open('rb') as stream:
+  while chunk:=stream.read(1024*1024):
+   left();require(cutoff is None or time.monotonic()<cutoff,'preflight-hash-deadline');digest.update(chunk)
+ return digest.hexdigest()
+def group_exists():
+ if process is None:return False
+ try:os.killpg(process.pid,0);return True
+ except ProcessLookupError:return False
+ except PermissionError:return True
+def stop_group():
+ if process is None:return
+ for sig,wait in [(signal.SIGTERM,2),(signal.SIGKILL,1)]:
+  if not group_exists():break
+  try:os.killpg(process.pid,sig)
+  except ProcessLookupError:break
+  until=min(total,time.monotonic()+wait)
+  while group_exists() and time.monotonic()<until:time.sleep(.05)
+ try:process.wait(timeout=left(.5))
+ except Exception as e:errors.append('wait:'+type(e).__name__)
+def owned_ids():
+ result=call(['ps','-aq','--no-trunc','--filter',f'label={label}={run["runId"]}']);require(result.returncode==0,'ownership-query-failed');return result.stdout.split()
+minimum=None
+try:
+ require(run.get('phase') in {'absence','red','green'},'unsupported-native-phase');require(not Path(run['ownershipFile']).exists(),'prepared-run-identity-already-used');require(not (Path.home()/'.testcontainers.properties').exists(),'private-testcontainers-properties-present');require(docker is not None,'docker-cli-missing');minimum=free();receipt['beforeFreeBytes']=minimum;require(minimum>=floor,'below-floor')
+ # Reject controls that could redirect host/image/socket ownership. No private config values logged.
+ for name in ['TESTCONTAINERS_HOST_OVERRIDE','TESTCONTAINERS_HUB_IMAGE_NAME_PREFIX','HUB_IMAGE_NAME_PREFIX','DOCKER_TLS_VERIFY','DOCKER_CERT_PATH']:
+  require(not os.environ.get(name),'unsupported-runtime-override:'+name)
+ require(os.environ.get('TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE') in (None,'','/var/run/docker.sock'),'unsupported-socket-override')
+ endpoint=run.get('dockerEndpoint') or os.environ.get('DOCKER_HOST')
+ if endpoint is None:
+  context=call(['context','show'],local=False);require(context.returncode==0,'context-query-failed');info=call(['context','inspect',context.stdout.strip()],local=False);require(info.returncode==0,'context-inspect-failed');endpoint=json.loads(info.stdout)[0]['Endpoints']['docker']['Host']
+ require(endpoint.startswith('unix://'),'local-unix-docker-required');env=os.environ.copy();env.pop('DOCKER_CONTEXT',None);env['DOCKER_HOST']=endpoint;env['PATH']=str(root/'.runtime/bin')+os.pathsep+env['PATH'];env['NODE_ENV']='test';env['DATABASE_URL']='postgres://placeholder:placeholder@127.0.0.1:1/blocked';env['RYUK_CONTAINER_IMAGE']='testcontainers/ryuk:0.14.0';env['TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE']='/var/run/docker.sock';receipt['localDockerEndpoint']=endpoint;receipt['cachedImages']={}
+ for image in ['postgres:16-alpine','testcontainers/ryuk:0.14.0']:
+  found=call(['image','inspect',image,'--format','{{.Id}}']);require(found.returncode==0,'cached-image-required');receipt['cachedImages'][image]=found.stdout.strip()
+ require(not owned_ids(),'preexisting-run-label');pre=call(['ps','-aq','--no-trunc']);require(pre.returncode==0,'container-inventory-failed');peer_ids=set(pre.stdout.split());receipt['preexistingContainerIds']=sorted(peer_ids)
+ prior_marker=call(['network','ls','-q','--no-trunc','--filter',f'label={label}={run["runId"]}']);require(prior_marker.returncode==0 and not prior_marker.stdout.strip(),'preexisting-run-marker')
+ marker_attempted=True
+ marker=call(['network','create','--driver','bridge','--label',f'{label}={run["runId"]}',f'codex-agency-{run["runId"]}']);require(marker.returncode==0 and re.fullmatch('[0-9a-f]{64}',marker.stdout.strip()) is not None,'daemon-marker-create-failed');run['daemonMarkerId']=marker.stdout.strip();run['status']='allocated-run-input';(root/'.runtime/authority-candidate-pg-run.json').write_text(json.dumps(run,indent=2)+'\n');receipt['daemonMarkerId']=run['daemonMarkerId']
+ journal=json.loads((root/'drizzle/meta/_journal.json').read_text());require(len(journal['entries'])==85 and journal['entries'][-1]['tag']=='0084_visual_workflows','unexpected-journal-cut')
+ head=subprocess.run(['git','rev-parse','HEAD'],capture_output=True,text=True,timeout=left());require(head.returncode==0,'source-head-failed');receipt['sourceHeadAtLaunch']=head.stdout.strip()
+ listing=subprocess.run(['git','ls-files','--','src','drizzle','package.json','bun.lock','vitest.globalSetup.ts','vitest.setup.ts','vitest.config.ts','vitest.classify.ts','tsconfig.json'],capture_output=True,text=True,timeout=left());require(listing.returncode==0,'source-list-failed');paths=listing.stdout.splitlines()+['src/features/agency-projects/authorityTransactionCandidate.test.ts','src/features/agency-projects/authorityTransactionCandidate.test-support.ts','src/features/agency-projects/authorityTransactionSpec.ts','src/features/agency-projects/authorityTransactionSpec.test.ts','.runtime/authority-candidate-owned-global-setup.ts','.runtime/vitest.authority-candidate-pg.config.ts','.runtime/authority-candidate-pg-run.json','.runtime/run-authority-candidate-pg.py'];candidate='src/features/agency-projects/authorityTransactionCandidate.ts';missing=[]
+ if run['phase']=='absence':require(not (root/candidate).exists(),'absence-phase-candidate-present');missing=[candidate]
+ else:require((root/candidate).exists(),'candidate-source-missing');paths.append(candidate)
+ receipt['expectedMissingSources']=missing
+ hashes={p:source_hash(p,native-15) for p in sorted(set(paths))};receipt['sourceStartHashes']=hashes
+ minimum=min(minimum,free());require(minimum>=floor,'below-floor-before-launch');require(cancel is None and time.monotonic()+15<native,'cancelled-or-preflight-deadline')
+ command=[str(root/'.runtime/bin/bun'),'--bun','node_modules/vitest/vitest.mjs','run','--config','.runtime/vitest.authority-candidate-pg.config.ts','--project','integration','src/features/agency-projects/authorityTransactionCandidate.test.ts','--maxWorkers=1'];receipt['command']=command
+ with log.open('w') as output:
+  process=subprocess.Popen(command,cwd=root,env=env,stdout=output,stderr=subprocess.STDOUT,start_new_session=True);launched=True;receipt.update(status='running',pid=process.pid);save();print(json.dumps({'status':'running','pid':process.pid,'runId':run['runId'],'log':str(log),'budgetSeconds':budget}),flush=True)
+  while process.poll() is None:
+   minimum=min(minimum,free())
+   if cancel is not None:stop='cancelled'
+   elif minimum<floor:stop='below-5GiB'
+   elif time.monotonic()>native:stop='native-deadline'
+   if stop:break
+   time.sleep(.1)
+except BaseException as e:
+ errors.append('run:'+type(e).__name__+((':'+str(e)) if isinstance(e,GateFailure) else ''));stop=stop or 'preflight-or-run-failure'
+finally:
+ if launched:
+  try:stop_group()
+  except BaseException as e:errors.append('group-cleanup:'+type(e).__name__)
+  receipt['exitCode']=process.poll();receipt['ownedProcessGroupEmptyVerified']=not group_exists();removed=[]
+  try:
+   ids=owned_ids();require(len(ids)<=1,'unexpected-owned-container-count')
+   for cid in ids:
+    require(re.fullmatch('[0-9a-f]{64}',cid) is not None and cid not in peer_ids,'invalid-or-preexisting-container')
+    inspect=call(['inspect','--format','{{json .Config.Labels}}',cid])
+    if inspect.returncode!=0:
+     require(cid not in owned_ids(),'container-inspect-unresolved');continue
+    require(json.loads(inspect.stdout).get(label)==run['runId'],'unique-label-mismatch');removal=call(['rm','--force','--volumes',cid],cap=5);require(removal.returncode==0 or cid not in owned_ids(),'owned-remove-unresolved');removed.append({'containerId':cid,'uniqueLabelVerified':True})
+   require(not owned_ids(),'owned-container-remains');time.sleep(min(.2,left(.2)));receipt['ownedContainersAbsentObserved']=not owned_ids()
+  except BaseException as e:errors.append('container-cleanup:'+type(e).__name__);receipt['ownedContainersAbsentObserved']=False
+  receipt['ownedCleanup']=removed;receipt['sharedRyukOrSessionSweep']=False
+ else:receipt['noNativeProcessLaunched']=True
+ if marker_attempted:
+  try:
+   query=call(['network','ls','-q','--no-trunc','--filter',f'label={label}={run["runId"]}']);require(query.returncode==0,'marker-query-failed')
+   marker_ids=query.stdout.split();require(len(marker_ids)<=1,'unexpected-marker-count')
+   for nid in marker_ids:
+    require(not run.get('daemonMarkerId') or nid==run['daemonMarkerId'],'marker-id-mismatch')
+    require(re.fullmatch('[0-9a-f]{64}',nid) is not None,'invalid-marker-id');inspect=call(['network','inspect',nid]);require(inspect.returncode==0 and json.loads(inspect.stdout)[0].get('Labels',{}).get(label)==run['runId'],'marker-ownership-unverified');removed=call(['network','rm',nid],cap=4);require(removed.returncode==0,'marker-remove-failed')
+   query=call(['network','ls','-q','--no-trunc','--filter',f'label={label}={run["runId"]}']);receipt['ownedMarkerAbsentObserved']=query.returncode==0 and not query.stdout.strip()
+  except BaseException as e:errors.append('marker-cleanup:'+type(e).__name__);receipt['ownedMarkerAbsentObserved']=False
+ if launched:
+  try:
+   receipt['sourceUnchanged']=all(source_hash(p)==v for p,v in hashes.items()) and all(not (root/p).exists() for p in receipt.get('expectedMissingSources',[]))
+  except BaseException as e:errors.append('source-recheck:'+type(e).__name__);receipt['sourceUnchanged']=False
+ try:receipt['minimumFreeBytes']=min(minimum,free()) if minimum is not None else free()
+ except Exception as e:errors.append('free-recheck:'+type(e).__name__)
+ complete=(not launched or (process.poll() is not None and receipt.get('ownedProcessGroupEmptyVerified') and receipt.get('ownedContainersAbsentObserved'))) and (not marker_attempted or receipt.get('ownedMarkerAbsentObserved'))
+ receipt.update(status=('terminal' if launched else 'held-before-launch') if complete else 'cleanup-incomplete',terminal=bool(complete),stopReason=stop,errors=errors,finishedAt=datetime.datetime.now(datetime.timezone.utc).isoformat(),elapsedSeconds=time.monotonic()-begin);receipt['withinTotalBudget']=receipt['elapsedSeconds']<=budget
+ owner=Path(run['ownershipFile'])
+ if owner.exists():
+  try:receipt['earlyContainerMetadata']=json.loads(owner.read_text())
+  except Exception as e:errors.append('owner-metadata:'+type(e).__name__)
+ save();print(json.dumps({k:v for k,v in receipt.items() if k not in ['sourceStartHashes','preexistingContainerIds','command']}),flush=True)
+clean=launched and receipt.get('exitCode')==0 and stop is None and not errors and receipt.get('ownedProcessGroupEmptyVerified') and receipt.get('ownedContainersAbsentObserved') and receipt.get('sourceUnchanged') and receipt.get('ownedMarkerAbsentObserved') and receipt.get('earlyContainerMetadata',{}).get('state')=='ready' and receipt['withinTotalBudget']
+raise SystemExit(0 if clean else 75)

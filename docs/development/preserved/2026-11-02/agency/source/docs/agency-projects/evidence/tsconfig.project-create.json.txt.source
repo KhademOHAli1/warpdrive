@@ -1,0 +1,15 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "incremental": false,
+    "types": [
+      "node"
+    ]
+  },
+  "include": [
+    "../src/constants/permissionFlags.ts",
+    "../src/features/permissions/actions-meta.ts",
+    "../src/features/permissions/projectCreateRegistration.test.ts"
+  ],
+  "exclude": []
+}

@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-11-01T06:05:30.440449+00:00",
+  "base": "92498f88b908ced53eb6a4b506d0caef078f8df0",
+  "reviewBase": "3e84bc14c60cd3abb7c6340ba2022e6aa0dc3af2",
+  "reviewPatchSha256": "a711f391c5f6fad2281937d38105fb2109c4df61b2a65e275ef273a2edb6df23",
+  "scope": "Exact five-file/six-addition project.create registry/action/FA-DE-EN label patch plus new pure regression suite. No project writer, route, module-admission or database change.",
+  "sourceHashes": {
+    "src/constants/permissionFlags.ts": "6a5213b101ed6cb03a1430f8ba006e4f14412dd6b5a3cdb1ee975286e69109ee",
+    "src/features/permissions/actions-meta.ts": "049d9ee0864e58b0b0e44b66c215c4af6655cbcd2e305d12a8695c3da9913d9d",
+    "src/features/permissions/projectCreateRegistration.test.ts": "1f7f90402999d2707b911141de41efdc3669f941b1eb4656c0b704d047fb0225",
+    "src/features/identity/messages/settings.fa.json": "db0473c64039891143786973932fe387b7b5e652016392768dd6d53713b4e2fe",
+    "src/features/identity/messages/settings.de.json": "42d7e769bc8fc9adc75e16ad346c1df9c4d0ac5cd5337c0a8abf9f27d82b7d80",
+    "src/features/identity/messages/settings.en.json": "c4bee0a196f68fc9498d175faa0778d8e5bcd13ee75d7b776584eea384f76cb6"
+  },
+  "supportingUnitFileHashes": {
+    "src/constants/permissionFlags.test.ts": "7f6c941000c4adc52c41270909965a560f1f76b2f962c841db61e60291cb4adc",
+    "src/features/permissions/can.test.ts": "7f7469d51c5952e47602f6675ada1d517f39b67647e1cb5b2146c7520af60d2d",
+    "src/features/identity/guards.test.ts": "2d1efdbce5ab7d1d912390bb216d1d80eb825c50937f8ac76448ec13277fb380",
+    "src/features/identity/settingsMessages.test.ts": "3d1250f7c031165be5ea548022b51c905b44eda766f0a073993dd3af247fcaeb",
+    "src/features/identity/germanFactories.test.ts": "f4765b4cbd75ad5bf1d5c9da97c8f5269158c0f56ceab505feb3100997c99aea"
+  },
+  "preFormatSourceHashes": {
+    "src/constants/permissionFlags.ts": "6a5213b101ed6cb03a1430f8ba006e4f14412dd6b5a3cdb1ee975286e69109ee",
+    "src/features/permissions/actions-meta.ts": "049d9ee0864e58b0b0e44b66c215c4af6655cbcd2e305d12a8695c3da9913d9d",
+    "src/features/permissions/projectCreateRegistration.test.ts": "83f6406f003110eac2ca6122a300f9f213cd940343bbb16f8326c4723dee5871",
+    "src/features/identity/messages/settings.fa.json": "db0473c64039891143786973932fe387b7b5e652016392768dd6d53713b4e2fe",
+    "src/features/identity/messages/settings.de.json": "42d7e769bc8fc9adc75e16ad346c1df9c4d0ac5cd5337c0a8abf9f27d82b7d80",
+    "src/features/identity/messages/settings.en.json": "c4bee0a196f68fc9498d175faa0778d8e5bcd13ee75d7b776584eea384f76cb6"
+  },
+  "environment": {
+    "bun": "1.4.4",
+    "vitest": "5.0.5",
+    "workers": 1
+  },
+  "meaningfulRed": {
+    "exitCode": 1,
+    "failed": 11,
+    "passed": 6,
+    "log": "evidence/project-create-registration-red-behavior.log"
+  },
+  "selectedGreen": {
+    "exitCode": 0,
+    "passed": 17,
+    "files": 1,
+    "log": "evidence/project-create-registration-green.log"
+  },
+  "checks": {
+    "affectedUnits": {
+      "exitCode": 0,
+      "passed": 57,
+      "files": 6,
+      "durationMilliseconds": 371,
+      "log": "evidence/project-create-source-units-1.log"
+    },
+    "typescript": {
+      "exitCode": 0,
+      "log": "evidence/project-create-source-types-2.log",
+      "config": "evidence/tsconfig.project-create.json.txt"
+    },
+    "biome": {
+      "exitCode": 0,
+      "files": 6,
+      "log": "evidence/project-create-source-biome-check-2.log"
+    },
+    "eslint": {
+      "exitCode": 0,
+      "typescriptFiles": 3,
+      "unchangedRepositoryRules": true,
+      "log": "evidence/project-create-source-eslint-1.log",
+      "config": "evidence/project-create-eslint.mjs.txt"
+    }
+  },
+  "guard": {
+    "liveFloorBytes": 5368709120,
+    "selectedUnitTimeoutSeconds": 30,
+    "sourceWindowBudgetSeconds": 60,
+    "sourceWindowElapsedSeconds": 9.909163,
+    "sourceWindowMinimumFreeBytes": 18897088512,
+    "sourceWindowAllRunsSequential": true,
+    "sourceWindowGroupsEmptyVerified": [
+      79901,
+      79936,
+      79971,
+      79987,
+      80006,
+      80031,
+      80043
+    ],
+    "sourceWindowReleased": true,
+    "receipts": [
+      "evidence/project-create-registration-unit-handles.json",
+      "evidence/project-create-affected-unit-handles.json",
+      "evidence/project-create-source-batch-handles.json"
+    ]
+  },
+  "preserved": [
+    "REGULAR_TRUE unchanged; ordinary missing/false denies, explicit true passes only the global can() check.",
+    "Native active-admin handling, inactive denial in can(), and high-risk grantor paths unchanged.",
+    "Five production hashes remain exactly those of the reviewed proposed patch; only the new test required formatting.",
+    "Exhaustive schema-write maps remain distinct from omitted stored keys/editor completion and the separate omitted create-property default."
+  ],
+  "limits": [
+    "Trusted pure actor/guard tests are not native authentication/hydration or persisted create/update/assignment service evidence.",
+    "No real PostgreSQL, service transaction/audit/race, native UI, module/history policy, project membership/CRM ceilings or through-commit fence is qualified.",
+    "Primary Integration catalogs differ from adopted Agency Settings; later upstream source adoption must rebase intended leaf additions only.",
+    "The preceding421/18 Agency feature qualification remains a separate exact-source execution; no arithmetic combined478 pass is claimed.",
+    "All96 task acceptance flags remain false; no migration allocation, DDL, app/worker/build/install/provider campaign or release acceptance."
+  ]
+}

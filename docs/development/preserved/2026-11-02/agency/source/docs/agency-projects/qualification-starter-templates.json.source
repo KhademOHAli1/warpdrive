@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-11-01T03:18:14.239511+00:00",
+  "agencyBase": "980833d0d74795c8f8fda77d962de017d96b6f03",
+  "scope": "Three data-only starter templates and catalog read boundary; no installer, persisted publication, native workflow or effect",
+  "environment": {
+    "bun": "1.4.4",
+    "vitest": "5.0.5",
+    "workers": 1
+  },
+  "sourceHashes": {
+    "src/features/agency-projects/templates/starters/campaign.v1.json": "c7686bbd9f379a554b0d85526b0c0f3711141ae349222822196d09b1d2207461",
+    "src/features/agency-projects/templates/starters/modeling.v1.json": "973c6f85d1ae936a700dd64327514e649fc5908f984e4e06e6e854ddb28afc13",
+    "src/features/agency-projects/templates/starters/short-video.v1.json": "d12f0adf3e4e85fb0a968feadab7b97d6e399f10e4755484080d4bcca26f814b",
+    "src/features/agency-projects/templates/starterTemplates.ts": "f1b8ecb1bb2ce7457968e2779e6f10f2797625caba60d039ca1683923a88fc2b",
+    "src/features/agency-projects/templates/starterTemplates.test.ts": "c92f21bb8597b03026b42ebe2beae216c8882dea24836a15208c504080b6e36c"
+  },
+  "checks": [
+    {
+      "name": "absent module red",
+      "exitCode": 1,
+      "failedSuites": 1,
+      "log": "evidence/starter-templates-red-missing.log"
+    },
+    {
+      "name": "incomplete catalog behavioral red",
+      "exitCode": 1,
+      "failed": 6,
+      "passed": 7,
+      "log": "evidence/starter-templates-red-incomplete.log"
+    },
+    {
+      "name": "catalog green after adding video/campaign",
+      "exitCode": 0,
+      "passed": 13,
+      "files": 1,
+      "log": "evidence/starter-templates-green.log"
+    },
+    {
+      "name": "formatted catalog final selection",
+      "exitCode": 0,
+      "passed": 13,
+      "files": 1,
+      "log": "evidence/starter-templates-green-formatted.log"
+    },
+    {
+      "name": "scoped Biome",
+      "status": "worker-reported pass",
+      "files": 5,
+      "rawLogAvailable": false
+    }
+  ],
+  "heldChecks": [
+    "Post-starter scoped types and type-aware lint were not launched; initially held by disk guard, now by coordinated Mail recovery window.",
+    "Combined feature selection after adding starters has not run; do not describe 285 prior tests plus 13 starter tests as one 298-case pass.",
+    "No full repository checks, PG, native UI/auth, migration/restore, provider, pilot or release acceptance."
+  ],
+  "limits": [
+    "Source copy present in FA/DE/EN; native-language review not performed.",
+    "Offsets are illustrative calendar-day assumptions, not dates, workweek/holiday calculations or agreed deadlines.",
+    "Private serialized catalog protects subsequent reads from caller mutation; immutable persisted template publication remains unimplemented.",
+    "No identity, recipient, availability, budget, included-revision or external action is embedded."
+  ]
+}

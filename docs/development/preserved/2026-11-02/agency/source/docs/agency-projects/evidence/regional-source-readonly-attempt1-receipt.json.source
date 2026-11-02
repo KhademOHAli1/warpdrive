@@ -1,0 +1,33 @@
+{
+  "capturedAt": "2026-11-01T12:10:04.383816+00:00",
+  "observationSource": "Root transcription of actualcanonicalguardstdout plusseparatepostterminalkillpg(pid,0), notnewexecution.",
+  "pid": 51649,
+  "session": 4052,
+  "terminal": true,
+  "rawExitCode": 2,
+  "stopReason": null,
+  "minimumFreeBytes": 14543548416,
+  "elapsedSeconds": 5.06,
+  "frozenInputCount": 41,
+  "frozenInputsUnchanged": true,
+  "ownedGroupRemaining": false,
+  "postTerminalGroupGone": true,
+  "phases": [
+    {
+      "phase": "types26",
+      "exitCode": 2,
+      "seconds": 4.6318,
+      "diagnostic": "FieldRow.tsx TS2307 './FieldRow.module.css' types unavailable infocusedconfig"
+    },
+    {
+      "phase": "Biome29",
+      "status": "NOTRUN stopfirsterror"
+    },
+    {
+      "phase": "typedESLint26",
+      "status": "NOTRUN stopfirsterror"
+    }
+  ],
+  "sourceChange": false,
+  "log": "agency-regional-source-readonly-attempt1.log"
+}

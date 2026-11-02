@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-11-01T09:57:00.698379+00:00",
+  "status": "prepared-not-run; candidate implementation absent",
+  "declaredExpandedCases": 11,
+  "scope": "Actual real-PostgreSQL transaction primitive candidate, synthetic keys/users, unchanged isolated85-entry journal through0084; no Agency DDL or accepted shared API",
+  "files": {
+    "src/features/agency-projects/authorityTransactionCandidate.test.ts": "294c737f7213b9f790a7708088eb106a5e2b8c18afc06218ddd5361d9a850807",
+    "src/features/agency-projects/authorityTransactionCandidate.test-support.ts": "e4e3c257b0146019fef8a4aefaa64c35732cba46597e40f284fdaf7d0105b175",
+    ".runtime/run-authority-candidate-pg.py": "fc52d16eff1fc46ef1f2e5ace8545fee920b7edf4fd81516c4c65b6edb571a47",
+    ".runtime/authority-candidate-owned-global-setup.ts": "cedebc0bc05de2785dd6c868c94f6b3264db3d00b17cb1f107e61def12b47544",
+    ".runtime/vitest.authority-candidate-pg.config.ts": "3e47bdc8929529535bdb3e3b9763d27282881cf5842d7e08f99dfe037a3e07be",
+    ".runtime/authority-candidate-pg-run.json": "dfd779f250881c97edb1597b193aa1b107a5a374db3e7ecf005a187e7125fdda"
+  },
+  "controlCopies": [
+    "docs/agency-projects/test-preparation/authority-candidate-run-authority-candidate-pg.py.txt",
+    "docs/agency-projects/test-preparation/authority-candidate-authority-candidate-owned-global-setup.ts.txt",
+    "docs/agency-projects/test-preparation/authority-candidate-vitest.authority-candidate-pg.config.ts.txt",
+    "docs/agency-projects/test-preparation/authority-candidate-authority-candidate-pg-run.json.txt"
+  ],
+  "expectedMissingSource": "src/features/agency-projects/authorityTransactionCandidate.ts",
+  "absenceWindow": {
+    "requestedTotalSeconds": 45,
+    "nativeCutoffSeconds": 20,
+    "floorBytes": 5368709120,
+    "grant": "queued, not granted at capture; no permission stored here"
+  },
+  "laterPhases": "Meaningful behavioral RED then GREEN require separate fresh identities, frozen inputs and finite coordinator grants; absence is not assertion RED.",
+  "review": "Read-only guard/harness review; timeout waiter now has2second settlement race so failed assertion reaches finally. No execution claim.",
+  "limits": [
+    "No database mock, provider, production database or app/worker starts.",
+    "No production lock key, owner API, first-entry writer participation, no-touch authentication or Privacy admission.",
+    "No whole-command cancellation, destructive client disposal, commit uncertainty or replay recovery proof."
+  ]
+}

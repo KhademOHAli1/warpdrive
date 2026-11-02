@@ -1,0 +1,3 @@
+import base from "../eslint.config.mjs";
+import { fileURLToPath } from "node:url";
+export default [...base, { files: ["src/constants/permissionFlags.ts", "src/features/permissions/actions-meta.ts", "src/features/permissions/projectCreateRegistration.test.ts"], languageOptions: { parserOptions: { projectService: false, project: fileURLToPath(new URL("./tsconfig.project-create.json", import.meta.url)) } } }];

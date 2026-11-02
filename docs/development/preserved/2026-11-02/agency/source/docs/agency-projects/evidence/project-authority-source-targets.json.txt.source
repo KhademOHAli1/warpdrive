@@ -1,0 +1,24 @@
+{
+  "files": [
+    "src/features/agency-projects/projectLocalAccess.ts",
+    "src/features/agency-projects/projectLocalAccess.test.ts",
+    "src/features/agency-projects/projectLocalAccess.test-support.ts",
+    "src/features/agency-projects/projectCreationPlan.ts",
+    "src/features/agency-projects/projectCreationPlan.test.ts",
+    "src/features/agency-projects/projectCreationPlan.test-support.ts"
+  ],
+  "unitFiles": [
+    "src/features/agency-projects/projectLocalAccess.test.ts",
+    "src/features/agency-projects/projectCreationPlan.test.ts"
+  ],
+  "preFormatHashes": {
+    "src/features/agency-projects/projectLocalAccess.ts": "2b554ee6c426db7cc9616b4a8bec5f75ac7e6263524885b153635ca791829b33",
+    "src/features/agency-projects/projectLocalAccess.test.ts": "8ded2f777bdae9410d638f73e07e2ad5134898c9757b73296f237d89fc82f4e1",
+    "src/features/agency-projects/projectLocalAccess.test-support.ts": "41247c988f3417c77f62532d877a22c839486dd8f3e908dd460dc110367ac167",
+    "src/features/agency-projects/projectCreationPlan.ts": "126c8a5100c9cfd83c2a6913b3fccbe028bab0bf17390c26e6d133ea3dac46b7",
+    "src/features/agency-projects/projectCreationPlan.test.ts": "4677f3c770c9abe495ed3df4aa3a08c216721ab8c2ff3a5e246711d51969ba7f",
+    "src/features/agency-projects/projectCreationPlan.test-support.ts": "56a2f6622e10d678626a76b048fc7f634956de164337e5080cf0abba1e919352"
+  },
+  "headAtStart": "6091c2234e974758b3f440060526f330f3b67c4d",
+  "primarySourceStateAtStart": "six new owned uncommitted TS files, no peer source mutation"
+}

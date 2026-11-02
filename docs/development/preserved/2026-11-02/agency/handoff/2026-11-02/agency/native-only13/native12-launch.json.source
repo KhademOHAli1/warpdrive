@@ -1,0 +1,2754 @@
+{
+  "admissionElapsedSeconds": 0.35290241590701044,
+  "allinRemainingBeforeExecSeconds": 179.64710566704161,
+  "argv": [
+    "/opt/homebrew/bin/gtimeout",
+    "--signal=INT",
+    "--kill-after=5s",
+    "50s",
+    ".runtime/bin/bun",
+    "--no-env-file",
+    "--bun",
+    "node_modules/vitest/vitest.mjs",
+    "run",
+    "--config",
+    "src/features/agency-projects/persistence/agencyProjectList.vitest.config.ts",
+    "--maxWorkers",
+    "1",
+    "--no-file-parallelism"
+  ],
+  "authorization": "AGENCY-LIST156-NATIVE13-ONLY-20261102-1",
+  "execIntentEpoch": 1793603156.525109,
+  "execIntentMonotonic": 646139.542491666,
+  "gates": [
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.01448304089717567,
+      "gate": "own_process_group",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.014521249919198453,
+      "gate": "safe_authorization",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.01453749998472631,
+      "gate": "safe_request_sha",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.014555832953192294,
+      "gate": "safe_actual_path",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.014598999987356365,
+      "gate": "task_owned_actual_path",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.014619290945120156,
+      "gate": "actual_path_not_symlink",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.015089540975168347,
+      "gate": "current_request_sha",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.015195249929092824,
+      "gate": "one_use_new_authorization",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.015199290937744081,
+      "gate": "workspace",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.015201082918792963,
+      "gate": "exact_source_counts",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.015202040900476277,
+      "gate": "exact_native_commands",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.015203374903649092,
+      "gate": "exact_limits",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.015204457915388048,
+      "gate": "exact_runtime_flags",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.017809165990911424,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.018010665895417333,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.018177790916524827,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.018381582922302186,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.018568582949228585,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.018760332954116166,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.018899665912613273,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.01903616590425372,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.01917733298614621,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.019271874916739762,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.019491290906444192,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.01963141595479101,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.019764999975450337,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.01989208289887756,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.020014415960758924,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.020140415988862514,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.02025616599712521,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.020380707923322916,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.02051666600164026,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.020633374922908843,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.02073870797175914,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.020882415934465826,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.02103533293120563,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.021154165966436267,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.021288582938723266,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.021393790957517922,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.021525290911085904,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.021627999958582222,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.021765790996141732,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.02188299992121756,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.02203849994111806,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.022140624932944775,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.022270499961450696,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.022413749946281314,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.02254083298612386,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.0226525409379974,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.0228005409007892,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.023123249993659556,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.023256749962456524,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.02330608293414116,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.023347790935076773,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.023388999979943037,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.023535332991741598,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.02366004092618823,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.02376104099676013,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.023888374911621213,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.024018874973990023,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.024115874897688627,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.0244289159309119,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.02457112492993474,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.024713124963454902,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.024841624894179404,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.02496791596058756,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.02510324993636459,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.025205790996551514,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.02532587491441518,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.025652707903645933,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.025777249946258962,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.025914207915775478,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.02603283291682601,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.026173874968662858,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.02627804095391184,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.02642074995674193,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.026544124935753644,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.026662582997232676,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.026787874987348914,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.0269211248960346,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.027035624952986836,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.027178040938451886,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.027324582915753126,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.027486125007271767,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.027796082897111773,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.027916957973502576,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.02805249998345971,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.02818666596431285,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.028329666005447507,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.028465707902796566,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.028614332899451256,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.028767332900315523,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.02893741591833532,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.029077582992613316,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.029245707904919982,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.029444290907122195,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.02964770793914795,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.029807499959133565,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.02986445790156722,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.029914874932728708,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.030063499929383397,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.030219207983464003,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.030272874981164932,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.030390749918296933,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03052379097789526,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.030654290923848748,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.030780165921896696,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03092849999666214,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03104083298239857,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.031148207955993712,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03126899991184473,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03138433292042464,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03152262500952929,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03167095792014152,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03182641591411084,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03200533299241215,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03213354095350951,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.0322957499884069,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03245883295312524,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.0326039579231292,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03273458289913833,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03289479098748416,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.033070582896471024,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.033243582933209836,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03332133300136775,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03346245794091374,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.0335818330058828,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.033705374924466014,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03383495798334479,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.033981624990701675,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.034147874917835,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.034297707956284285,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.034426040947437286,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.034537874977104366,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03464462491683662,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03481899993494153,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.034924082923680544,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03508808300830424,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03520120796747506,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.035364249954000115,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03552849998231977,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.035682749934494495,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03584508295170963,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03600158297922462,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03614350000862032,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.036288750008679926,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03641345794312656,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03652595798484981,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03666620794683695,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03677195799537003,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.036903625004924834,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03703854093328118,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03716954099945724,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03728133300319314,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03738487500231713,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03752299991901964,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03767083294223994,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.0377840829314664,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.037921040900982916,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.038057458004914224,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03819283295888454,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03837345796637237,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.038519499939866364,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03865337499883026,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03881416597869247,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03898620791733265,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03906558291055262,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03920437500346452,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03932012489531189,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": {
+        "TSFiles": 149,
+        "configMismatches": [],
+        "exactSet": true,
+        "sourceConfigPinsMatch": true,
+        "sourceInputs": 156,
+        "sourceMismatches": []
+      },
+      "entryElapsedSeconds": 0.04233999992720783,
+      "gate": "source156_and7configs_exact",
+      "passed": true
+    },
+    {
+      "details": [],
+      "entryElapsedSeconds": 0.042370624956674874,
+      "gate": "four_dotenv_absent",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.04261629097163677,
+      "gate": "bun_regular",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.09917149995453656,
+      "gate": "bun_hash",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.09917866589967161,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": {
+        "exitCode": 0,
+        "program": "/Users/ali/Developer/warpdrive-agency-projects/.runtime/bin/bun"
+      },
+      "entryElapsedSeconds": 0.12282758299261332,
+      "gate": "probe_exit",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.12283329095225781,
+      "gate": "bun_version",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.122838040930219,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": {
+        "exitCode": 0,
+        "program": "/usr/bin/git"
+      },
+      "entryElapsedSeconds": 0.13950574991758913,
+      "gate": "probe_exit",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.13951241597533226,
+      "gate": "source_head",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.13951562496367842,
+      "gate": "private_cache_exact_set",
+      "passed": true
+    },
+    {
+      "details": ".runtime/agency-project-list-native-cache",
+      "entryElapsedSeconds": 0.13968274998478591,
+      "gate": "private_cache_directory",
+      "passed": true
+    },
+    {
+      "details": ".runtime/agency-fixture-0098-admission-cache",
+      "entryElapsedSeconds": 0.13969283294864,
+      "gate": "private_cache_directory",
+      "passed": true
+    },
+    {
+      "details": "src/features/agency-projects/persistence/agencyProjectList.vitest.config.ts",
+      "entryElapsedSeconds": 0.13986370794009417,
+      "gate": "envDir_false",
+      "passed": true
+    },
+    {
+      "details": "src/features/agency-projects/persistence/agencyProjectList.vitest.config.ts",
+      "entryElapsedSeconds": 0.13993349997326732,
+      "gate": "private_cache_config",
+      "passed": true
+    },
+    {
+      "details": "src/features/agency-projects/persistence/agencyFixture0098Admission.vitest.config.ts",
+      "entryElapsedSeconds": 0.13996870792470872,
+      "gate": "envDir_false",
+      "passed": true
+    },
+    {
+      "details": "src/features/agency-projects/persistence/agencyFixture0098Admission.vitest.config.ts",
+      "entryElapsedSeconds": 0.14000608294736594,
+      "gate": "private_cache_config",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.14001966593787074,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": {
+        "exitCode": 0,
+        "program": "/usr/sbin/sysctl"
+      },
+      "entryElapsedSeconds": 0.14218895800877362,
+      "gate": "probe_exit",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.14219533291179687,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": {
+        "exitCode": 0,
+        "program": "/usr/bin/memory_pressure"
+      },
+      "entryElapsedSeconds": 0.14439558295998722,
+      "gate": "probe_exit",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.14449733297806233,
+      "gate": "memory_Q_parse",
+      "passed": true
+    },
+    {
+      "details": {
+        "Q": 53,
+        "pressure": 1
+      },
+      "entryElapsedSeconds": 0.14453149994369596,
+      "gate": "pressure_admission",
+      "passed": true
+    },
+    {
+      "details": {
+        "Q": 53
+      },
+      "entryElapsedSeconds": 0.14453195792157203,
+      "gate": "stop_floor_Q30",
+      "passed": true
+    },
+    {
+      "details": {
+        "freeDiskBytes": 13581561856
+      },
+      "entryElapsedSeconds": 0.14453329099342227,
+      "gate": "disk8GiB",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.14454016590025276,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.14454174996353686,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": {
+        "exitCode": 0,
+        "program": "/usr/bin/curl"
+      },
+      "entryElapsedSeconds": 0.1824184579309076,
+      "gate": "probe_exit",
+      "passed": true
+    },
+    {
+      "details": {
+        "httpStatus": "200",
+        "path": "/containers/json?all=1"
+      },
+      "entryElapsedSeconds": 0.18244312494061887,
+      "gate": "docker_API_status",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.18253424996510148,
+      "gate": "all_container_IDs",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.18253758293576539,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.18253862496931106,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": {
+        "exitCode": 0,
+        "program": "/usr/bin/curl"
+      },
+      "entryElapsedSeconds": 0.19134212494827807,
+      "gate": "probe_exit",
+      "passed": true
+    },
+    {
+      "details": {
+        "httpStatus": "200",
+        "path": "/containers/1b39c2e0cb523a1d36a2053a33cddd6391fbe26b84ca626121ee22da133bca59/json"
+      },
+      "entryElapsedSeconds": 0.19135079090483487,
+      "gate": "docker_API_status",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.19141620793379843,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.19141699990723282,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": {
+        "exitCode": 0,
+        "program": "/usr/bin/curl"
+      },
+      "entryElapsedSeconds": 0.19907529093325138,
+      "gate": "probe_exit",
+      "passed": true
+    },
+    {
+      "details": {
+        "httpStatus": "200",
+        "path": "/containers/958f91d8250e2bf9bce3819320a47fd30ecac7711ed8007de7dcabb60d6cddee/json"
+      },
+      "entryElapsedSeconds": 0.19908204092644155,
+      "gate": "docker_API_status",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.19915149989537895,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.19915262493304908,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": {
+        "exitCode": 0,
+        "program": "/usr/bin/curl"
+      },
+      "entryElapsedSeconds": 0.2066741659073159,
+      "gate": "probe_exit",
+      "passed": true
+    },
+    {
+      "details": {
+        "httpStatus": "200",
+        "path": "/containers/d31835d6d2bf86f9984408fb4b01bded8395915cefe64cac7230a3ebfb6a2e6e/json"
+      },
+      "entryElapsedSeconds": 0.2066807079827413,
+      "gate": "docker_API_status",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.20673995791003108,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.20674062496982515,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": {
+        "exitCode": 0,
+        "program": "/usr/bin/curl"
+      },
+      "entryElapsedSeconds": 0.21420904097612947,
+      "gate": "probe_exit",
+      "passed": true
+    },
+    {
+      "details": {
+        "httpStatus": "200",
+        "path": "/networks"
+      },
+      "entryElapsedSeconds": 0.2142162909731269,
+      "gate": "docker_API_status",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.21426754095591605,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.21426824992522597,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": {
+        "exitCode": 0,
+        "program": "/usr/bin/curl"
+      },
+      "entryElapsedSeconds": 0.22181599994655699,
+      "gate": "probe_exit",
+      "passed": true
+    },
+    {
+      "details": {
+        "httpStatus": "200",
+        "path": "/volumes"
+      },
+      "entryElapsedSeconds": 0.2218226249096915,
+      "gate": "docker_API_status",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.22187299991492182,
+      "gate": "exact_image_names",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.2219139999942854,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.22191470791585743,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": {
+        "exitCode": 0,
+        "program": "/usr/bin/curl"
+      },
+      "entryElapsedSeconds": 0.26072941592428833,
+      "gate": "probe_exit",
+      "passed": true
+    },
+    {
+      "details": {
+        "httpStatus": "200",
+        "path": "/images/postgres%3A16-alpine/json"
+      },
+      "entryElapsedSeconds": 0.26073883299250156,
+      "gate": "docker_API_status",
+      "passed": true
+    },
+    {
+      "details": {
+        "actual": {
+          "architecture": "arm64",
+          "id": "sha256:0cefaabd882e42bcb2a2f3dc56d3ce4770560ba62fd7f197f1a2e008fd5731ab",
+          "os": "linux",
+          "repoTags": [
+            "postgres:16-alpine"
+          ]
+        },
+        "image": "postgres:16-alpine"
+      },
+      "entryElapsedSeconds": 0.2607779579702765,
+      "gate": "cached_image_exact",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.26081099989823997,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.26081199990585446,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": {
+        "exitCode": 0,
+        "program": "/usr/bin/curl"
+      },
+      "entryElapsedSeconds": 0.28665437491144985,
+      "gate": "probe_exit",
+      "passed": true
+    },
+    {
+      "details": {
+        "httpStatus": "200",
+        "path": "/images/testcontainers%2Fryuk%3A0.14.0/json"
+      },
+      "entryElapsedSeconds": 0.2866644999012351,
+      "gate": "docker_API_status",
+      "passed": true
+    },
+    {
+      "details": {
+        "actual": {
+          "architecture": "arm64",
+          "id": "sha256:7c1a8a9a47c780ed0f983770a662f80deb115d95cce3e2daa3d12115b8cd28f0",
+          "os": "linux",
+          "repoTags": [
+            "testcontainers/ryuk:0.14.0"
+          ]
+        },
+        "image": "testcontainers/ryuk:0.14.0"
+      },
+      "entryElapsedSeconds": 0.28671937494073063,
+      "gate": "cached_image_exact",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.2867300829384476,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": {
+        "exitCode": 0,
+        "program": "/opt/homebrew/bin/gtimeout"
+      },
+      "entryElapsedSeconds": 0.34025816596113145,
+      "gate": "probe_exit",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34029108297545463,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3402944579720497,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34029537497553974,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34029574994929135,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3402962499530986,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34029674995690584,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34029712493065745,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.340297415968962,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34029791597276926,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3402983749983832,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3402987909503281,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34029908291995525,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3402995829237625,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3403001249535009,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3403006249573082,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3403008329914883,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34030108293518424,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34030162496492267,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34030204091686755,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34030245791655034,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34030283300671726,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34030325000640005,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34030362498015165,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3403040829580277,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34030437492765486,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34030479099601507,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3403051659697667,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3403055409435183,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3403058329131454,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3403061249991879,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34030641592107713,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34030674991663545,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34416774997953326,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34422054095193744,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34425616590306163,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3442845829995349,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.344311207998544,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34433862497098744,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3443667079554871,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3443892499199137,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3444178329082206,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3444459999445826,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3444713749922812,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.344504457898438,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3445324999047443,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34455587493721396,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3445823749061674,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.344606832950376,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3446301659569144,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3446640409529209,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3446908330079168,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34471962496172637,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34474249999038875,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34477637498639524,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34479958296287805,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3448240829166025,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3448627908946946,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3448848749976605,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34491512493696064,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3449395829811692,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3449633748969063,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34498774993699044,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34502141596749425,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34504695795476437,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34507275000214577,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34509874996729195,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34512458299286664,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3451489999424666,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34517258300911635,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34519595792517066,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34522195800673217,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34524574992246926,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3452692909631878,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34529162500984967,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34531599993351847,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34534004097804427,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34536274999845773,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3453854579711333,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3454104159027338,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34543516591656953,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3454606248997152,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34548987494781613,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3455132079543546,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.345550625002943,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3455730410059914,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3455981248989701,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34562449995428324,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3456527499947697,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3456759579712525,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3456999999471009,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3457247909391299,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3457475829636678,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34577483299653977,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34579808299895376,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34582408296409994,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3458479580003768,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34587366599589586,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3458958329865709,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3459200829965994,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34594766597729176,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3459784999722615,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3460019580088556,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34602545795496553,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3460475829197094,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34606916597113013,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34609783289488405,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3461217079311609,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34614670800510794,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34617008292116225,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34619529091287404,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34622170799411833,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34624545800033957,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34626824990846217,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34629174997098744,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34631654096301645,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34634345793165267,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3463725409237668,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3464030829491094,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34642633295152336,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3464480829425156,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34647087496705353,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3464990829816088,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3465243329992518,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3465485409833491,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34657083300407976,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34659349999856204,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3466174158966169,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34663987497333437,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34666212496813387,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34668695798609406,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3467101249843836,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.346730999997817,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34675145789515227,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3467734579462558,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3467978748958558,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34681962500326335,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3468407499603927,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34686487494036555,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3468898329883814,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3469142079120502,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3469372499966994,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34695974993519485,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34698358294554055,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34700637497007847,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3470297079766169,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34705383295658976,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34707374998833984,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34709474991541356,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34712233289610595,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3471456249244511,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3471720829838887,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34719474997837096,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34721779089886695,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3472399159800261,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34726449998561293,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3472867499804124,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3473104159347713,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3473326659295708,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34735679090954363,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3473802499938756,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34740483295172453,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.347429082961753,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34745362494140863,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34747883293312043,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34750241599977016,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3475310829235241,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34755437495186925,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34757899993564934,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3476017079083249,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34763333294540644,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34765695792157203,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34767933294642717,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3477030829526484,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.347723790910095,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34774612495675683,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.347766499966383,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3477919159922749,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34781895799096674,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34784508298616856,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34787166595924646,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3478953749872744,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34792208299040794,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3479448329890147,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34796987497247756,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3479957910021767,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.348019624943845,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34804349998012185,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34806770796421915,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": {
+        "TSFiles": 149,
+        "configMismatches": [],
+        "exactSet": true,
+        "sourceConfigPinsMatch": true,
+        "sourceInputs": 156,
+        "sourceMismatches": []
+      },
+      "entryElapsedSeconds": 0.3484094999730587,
+      "gate": "source156_and7configs_exact",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3484510829439387,
+      "gate": "request_still_frozen",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34845245792530477,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": {
+        "exitCode": 0,
+        "program": "/usr/sbin/sysctl"
+      },
+      "entryElapsedSeconds": 0.35092629096470773,
+      "gate": "probe_exit",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.35093158297240734,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": {
+        "exitCode": 0,
+        "program": "/usr/bin/memory_pressure"
+      },
+      "entryElapsedSeconds": 0.3528323749778792,
+      "gate": "probe_exit",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.352845040964894,
+      "gate": "memory_Q_parse",
+      "passed": true
+    },
+    {
+      "details": {
+        "Q": 53,
+        "pressure": 1
+      },
+      "entryElapsedSeconds": 0.3528894579503685,
+      "gate": "pressure_admission",
+      "passed": true
+    },
+    {
+      "details": {
+        "Q": 53
+      },
+      "entryElapsedSeconds": 0.35288979089818895,
+      "gate": "stop_floor_Q30",
+      "passed": true
+    },
+    {
+      "details": {
+        "freeDiskBytes": 13581508608
+      },
+      "entryElapsedSeconds": 0.35289116599597037,
+      "gate": "disk8GiB",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.35289337497670203,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": {
+        "minimum": 145,
+        "remainingSeconds": 179.64710566704161
+      },
+      "entryElapsedSeconds": 0.3528961659176275,
+      "gate": "allin_remaining_before_exec",
+      "passed": true
+    }
+  ],
+  "nativePhaseCapSeconds": 100,
+  "nativePhaseStartedMonotonic": 646139.531311791,
+  "ownPgid": 99844,
+  "requestSha256": "54a123c73311253b243ba4eebf72a7538f5490cac00cbd78199f62cdcd9f4e7e",
+  "resourcesAtExecBarrier": {
+    "Q": 53,
+    "freeDiskBytes": 13581508608,
+    "pressure": 1
+  },
+  "source": {
+    "TSFiles": 149,
+    "configMismatches": [],
+    "exactSet": true,
+    "sourceConfigPinsMatch": true,
+    "sourceInputs": 156,
+    "sourceMismatches": []
+  }
+}

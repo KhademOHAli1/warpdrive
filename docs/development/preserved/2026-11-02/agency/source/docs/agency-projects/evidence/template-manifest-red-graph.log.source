@@ -1,0 +1,1992 @@
+$ bun --bun vitest run --project unit src/features/agency-projects/templates "--maxWorkers=1"
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+  - ESM syntax in a file loaded as CommonJS (vitest.classify.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.5 /Users/ali/Developer/warpdrive-agency-projects
+
+ ❯ |unit| src/features/agency-projects/templates/templateManifestGraph.test.ts (14 tests | 13 failed) 25ms
+   ❯ template manifest graph constraints (14)
+     × rejects duplicate roles IDs 10ms
+     × rejects duplicate stages IDs 1ms
+     × rejects duplicate deliverables IDs 1ms
+     × rejects duplicate intents IDs 2ms
+     × rejects cross-kind duplicate IDs to keep install mappings unambiguous 1ms
+     × rejects invalid stage references from deliverables and intents 3ms
+     × rejects invalid deliverable or task dependency references 1ms
+     × requires assignment and review intent to reference a deliverable in their own stage 1ms
+     × rejects missing, wrong-kind and swapped role references 1ms
+     × rejects duplicate dependency edges 1ms
+     × rejects stage self-dependency and multi-stage cycles 1ms
+     × rejects task self-dependency and multi-task cycles 1ms
+     × rejects a dependency pointing into a later or unrelated stage 1ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 13 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| src/features/agency-projects/templates/templateManifestGraph.test.ts > template manifest graph constraints > rejects duplicate roles IDs
+AssertionError: expected { ok: true, value: { …(9) } } to deeply equal { Object (ok, error) }
+
+- Expected
++ Received
+
+  {
+-   "error": "invalid_manifest",
+-   "ok": false,
++   "ok": true,
++   "value": {
++     "deliverables": [
++       {
++         "id": "model",
++         "label": {
++           "de": "Überprüfung مدل",
++           "en": "Review مدل",
++           "fa": "مدل‌سازی مدل",
++         },
++         "responsibleRoleId": "producer",
++         "stageId": "production",
++       },
++     ],
++     "description": {
++       "de": "Interne Produktionsvorlage",
++       "en": "Internal production template",
++       "fa": "راهنمای داخلی",
++     },
++     "intents": [
++       {
++         "assigneeRoleId": "producer",
++         "dependsOn": [],
++         "dueOffset": {
++           "anchor": "project-start",
++           "basis": "calendar-days",
++           "days": 2,
++         },
++         "id": "brief_followup",
++         "kind": "follow-up",
++         "label": {
++           "de": "Überprüfung پیگیری",
++           "en": "Review پیگیری",
++           "fa": "مدل‌سازی پیگیری",
++         },
++         "stageId": "briefing",
++       },
++       {
++         "deliverableId": "model",
++         "dependsOn": [
++           "brief_followup",
++         ],
++         "dueOffset": {
++           "anchor": "project-start",
++           "basis": "calendar-days",
++           "days": 2,
++         },
++         "freelancerRoleId": "modeler",
++         "id": "model_assignment",
++         "internalProducerRoleId": "producer",
++         "kind": "assignment",
++         "label": {
++           "de": "Überprüfung همکاری",
++           "en": "Review همکاری",
++           "fa": "مدل‌سازی همکاری",
++         },
++         "stageId": "production",
++       },
++       {
++         "assigneeRoleId": "producer",
++         "deliverableId": "model",
++         "dependsOn": [
++           "model_assignment",
++         ],
++         "dueOffset": {
++           "anchor": "project-start",
++           "basis": "calendar-days",
++           "days": 2,
++         },
++         "id": "model_review",
++         "kind": "review",
++         "label": {
++           "de": "Überprüfung بازبینی",
++           "en": "Review بازبینی",
++           "fa": "مدل‌سازی بازبینی",
++         },
++         "stageId": "production",
++       },
++     ],
++     "label": {
++       "de": "Überprüfung پروژه",
++       "en": "Review پروژه",
++       "fa": "مدل‌سازی پروژه",
++     },
++     "roles": [
++       {
++         "id": "producer",
++         "kind": "internal-producer",
++         "label": {
++           "de": "Überprüfung تهیه‌کننده",
++           "en": "Review تهیه‌کننده",
++           "fa": "مدل‌سازی تهیه‌کننده",
++         },
++       },
++       {
++         "id": "modeler",
++         "kind": "freelancer-contact",
++         "label": {
++           "de": "Überprüfung مدل‌ساز",
++           "en": "Review مدل‌ساز",
++           "fa": "مدل‌سازی مدل‌ساز",
++         },
++       },
++       {
++         "id": "producer",
++         "kind": "internal-producer",
++         "label": {
++           "de": "Überprüfung تهیه‌کننده",
++           "en": "Review تهیه‌کننده",
++           "fa": "مدل‌سازی تهیه‌کننده",
++         },
++       },
++     ],
++     "schemaVersion": 1,
++     "stages": [
++       {
++         "dependsOn": [],
++         "id": "briefing",
++         "label": {
++           "de": "Überprüfung شرح کار",
++           "en": "Review شرح کار",
++           "fa": "مدل‌سازی شرح کار",
++         },
++       },
++       {
++         "dependsOn": [
++           "briefing",
++         ],
++         "id": "production",
++         "label": {
++           "de": "Überprüfung تولید",
++           "en": "Review تولید",
++           "fa": "مدل‌سازی تولید",
++         },
++       },
++     ],
++     "templateId": "modeling_project",
++     "version": 1,
++   },
+  }
+
+ ❯ expectInvalid src/features/agency-projects/templates/templateManifestGraph.test.ts:7:6
+      5| function expectInvalid(value: unknown) {
+      6|   expect(parseTemplateManifestJson(JSON.stringify(value)))
+      7|     .toEqual({ ok: false, error: "invalid_manifest" });
+       |      ^
+      8| }
+      9|
+ ❯ src/features/agency-projects/templates/templateManifestGraph.test.ts:13:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/13]⎯
+
+ FAIL  |unit| src/features/agency-projects/templates/templateManifestGraph.test.ts > template manifest graph constraints > rejects duplicate stages IDs
+AssertionError: expected { ok: true, value: { …(9) } } to deeply equal { Object (ok, error) }
+
+- Expected
++ Received
+
+  {
+-   "error": "invalid_manifest",
+-   "ok": false,
++   "ok": true,
++   "value": {
++     "deliverables": [
++       {
++         "id": "model",
++         "label": {
++           "de": "Überprüfung مدل",
++           "en": "Review مدل",
++           "fa": "مدل‌سازی مدل",
++         },
++         "responsibleRoleId": "producer",
++         "stageId": "production",
++       },
++     ],
++     "description": {
++       "de": "Interne Produktionsvorlage",
++       "en": "Internal production template",
++       "fa": "راهنمای داخلی",
++     },
++     "intents": [
++       {
++         "assigneeRoleId": "producer",
++         "dependsOn": [],
++         "dueOffset": {
++           "anchor": "project-start",
++           "basis": "calendar-days",
++           "days": 2,
++         },
++         "id": "brief_followup",
++         "kind": "follow-up",
++         "label": {
++           "de": "Überprüfung پیگیری",
++           "en": "Review پیگیری",
++           "fa": "مدل‌سازی پیگیری",
++         },
++         "stageId": "briefing",
++       },
++       {
++         "deliverableId": "model",
++         "dependsOn": [
++           "brief_followup",
++         ],
++         "dueOffset": {
++           "anchor": "project-start",
++           "basis": "calendar-days",
++           "days": 2,
++         },
++         "freelancerRoleId": "modeler",
++         "id": "model_assignment",
++         "internalProducerRoleId": "producer",
++         "kind": "assignment",
++         "label": {
++           "de": "Überprüfung همکاری",
++           "en": "Review همکاری",
++           "fa": "مدل‌سازی همکاری",
++         },
++         "stageId": "production",
++       },
++       {
++         "assigneeRoleId": "producer",
++         "deliverableId": "model",
++         "dependsOn": [
++           "model_assignment",
++         ],
++         "dueOffset": {
++           "anchor": "project-start",
++           "basis": "calendar-days",
++           "days": 2,
++         },
++         "id": "model_review",
++         "kind": "review",
++         "label": {
++           "de": "Überprüfung بازبینی",
++           "en": "Review بازبینی",
++           "fa": "مدل‌سازی بازبینی",
++         },
++         "stageId": "production",
++       },
++     ],
++     "label": {
++       "de": "Überprüfung پروژه",
++       "en": "Review پروژه",
++       "fa": "مدل‌سازی پروژه",
++     },
++     "roles": [
++       {
++         "id": "producer",
++         "kind": "internal-producer",
++         "label": {
++           "de": "Überprüfung تهیه‌کننده",
++           "en": "Review تهیه‌کننده",
++           "fa": "مدل‌سازی تهیه‌کننده",
++         },
++       },
++       {
++         "id": "modeler",
++         "kind": "freelancer-contact",
++         "label": {
++           "de": "Überprüfung مدل‌ساز",
++           "en": "Review مدل‌ساز",
++           "fa": "مدل‌سازی مدل‌ساز",
++         },
++       },
++     ],
++     "schemaVersion": 1,
++     "stages": [
++       {
++         "dependsOn": [],
++         "id": "briefing",
++         "label": {
++           "de": "Überprüfung شرح کار",
++           "en": "Review شرح کار",
++           "fa": "مدل‌سازی شرح کار",
++         },
++       },
++       {
++         "dependsOn": [
++           "briefing",
++         ],
++         "id": "production",
++         "label": {
++           "de": "Überprüfung تولید",
++           "en": "Review تولید",
++           "fa": "مدل‌سازی تولید",
++         },
++       },
++       {
++         "dependsOn": [],
++         "id": "briefing",
++         "label": {
++           "de": "Überprüfung شرح کار",
++           "en": "Review شرح کار",
++           "fa": "مدل‌سازی شرح کار",
++         },
++       },
++     ],
++     "templateId": "modeling_project",
++     "version": 1,
++   },
+  }
+
+ ❯ expectInvalid src/features/agency-projects/templates/templateManifestGraph.test.ts:7:6
+      5| function expectInvalid(value: unknown) {
+      6|   expect(parseTemplateManifestJson(JSON.stringify(value)))
+      7|     .toEqual({ ok: false, error: "invalid_manifest" });
+       |      ^
+      8| }
+      9|
+ ❯ src/features/agency-projects/templates/templateManifestGraph.test.ts:13:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/13]⎯
+
+ FAIL  |unit| src/features/agency-projects/templates/templateManifestGraph.test.ts > template manifest graph constraints > rejects duplicate deliverables IDs
+AssertionError: expected { ok: true, value: { …(9) } } to deeply equal { Object (ok, error) }
+
+- Expected
++ Received
+
+  {
+-   "error": "invalid_manifest",
+-   "ok": false,
++   "ok": true,
++   "value": {
++     "deliverables": [
++       {
++         "id": "model",
++         "label": {
++           "de": "Überprüfung مدل",
++           "en": "Review مدل",
++           "fa": "مدل‌سازی مدل",
++         },
++         "responsibleRoleId": "producer",
++         "stageId": "production",
++       },
++       {
++         "id": "model",
++         "label": {
++           "de": "Überprüfung مدل",
++           "en": "Review مدل",
++           "fa": "مدل‌سازی مدل",
++         },
++         "responsibleRoleId": "producer",
++         "stageId": "production",
++       },
++     ],
++     "description": {
++       "de": "Interne Produktionsvorlage",
++       "en": "Internal production template",
++       "fa": "راهنمای داخلی",
++     },
++     "intents": [
++       {
++         "assigneeRoleId": "producer",
++         "dependsOn": [],
++         "dueOffset": {
++           "anchor": "project-start",
++           "basis": "calendar-days",
++           "days": 2,
++         },
++         "id": "brief_followup",
++         "kind": "follow-up",
++         "label": {
++           "de": "Überprüfung پیگیری",
++           "en": "Review پیگیری",
++           "fa": "مدل‌سازی پیگیری",
++         },
++         "stageId": "briefing",
++       },
++       {
++         "deliverableId": "model",
++         "dependsOn": [
++           "brief_followup",
++         ],
++         "dueOffset": {
++           "anchor": "project-start",
++           "basis": "calendar-days",
++           "days": 2,
++         },
++         "freelancerRoleId": "modeler",
++         "id": "model_assignment",
++         "internalProducerRoleId": "producer",
++         "kind": "assignment",
++         "label": {
++           "de": "Überprüfung همکاری",
++           "en": "Review همکاری",
++           "fa": "مدل‌سازی همکاری",
++         },
++         "stageId": "production",
++       },
++       {
++         "assigneeRoleId": "producer",
++         "deliverableId": "model",
++         "dependsOn": [
++           "model_assignment",
++         ],
++         "dueOffset": {
++           "anchor": "project-start",
++           "basis": "calendar-days",
++           "days": 2,
++         },
++         "id": "model_review",
++         "kind": "review",
++         "label": {
++           "de": "Überprüfung بازبینی",
++           "en": "Review بازبینی",
++           "fa": "مدل‌سازی بازبینی",
++         },
++         "stageId": "production",
++       },
++     ],
++     "label": {
++       "de": "Überprüfung پروژه",
++       "en": "Review پروژه",
++       "fa": "مدل‌سازی پروژه",
++     },
++     "roles": [
++       {
++         "id": "producer",
++         "kind": "internal-producer",
++         "label": {
++           "de": "Überprüfung تهیه‌کننده",
++           "en": "Review تهیه‌کننده",
++           "fa": "مدل‌سازی تهیه‌کننده",
++         },
++       },
++       {
++         "id": "modeler",
++         "kind": "freelancer-contact",
++         "label": {
++           "de": "Überprüfung مدل‌ساز",
++           "en": "Review مدل‌ساز",
++           "fa": "مدل‌سازی مدل‌ساز",
++         },
++       },
++     ],
++     "schemaVersion": 1,
++     "stages": [
++       {
++         "dependsOn": [],
++         "id": "briefing",
++         "label": {
++           "de": "Überprüfung شرح کار",
++           "en": "Review شرح کار",
++           "fa": "مدل‌سازی شرح کار",
++         },
++       },
++       {
++         "dependsOn": [
++           "briefing",
++         ],
++         "id": "production",
++         "label": {
++           "de": "Überprüfung تولید",
++           "en": "Review تولید",
++           "fa": "مدل‌سازی تولید",
++         },
++       },
++     ],
++     "templateId": "modeling_project",
++     "version": 1,
++   },
+  }
+
+ ❯ expectInvalid src/features/agency-projects/templates/templateManifestGraph.test.ts:7:6
+      5| function expectInvalid(value: unknown) {
+      6|   expect(parseTemplateManifestJson(JSON.stringify(value)))
+      7|     .toEqual({ ok: false, error: "invalid_manifest" });
+       |      ^
+      8| }
+      9|
+ ❯ src/features/agency-projects/templates/templateManifestGraph.test.ts:13:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/13]⎯
+
+ FAIL  |unit| src/features/agency-projects/templates/templateManifestGraph.test.ts > template manifest graph constraints > rejects duplicate intents IDs
+AssertionError: expected { ok: true, value: { …(9) } } to deeply equal { Object (ok, error) }
+
+- Expected
++ Received
+
+  {
+-   "error": "invalid_manifest",
+-   "ok": false,
++   "ok": true,
++   "value": {
++     "deliverables": [
++       {
++         "id": "model",
++         "label": {
++           "de": "Überprüfung مدل",
++           "en": "Review مدل",
++           "fa": "مدل‌سازی مدل",
++         },
++         "responsibleRoleId": "producer",
++         "stageId": "production",
++       },
++     ],
++     "description": {
++       "de": "Interne Produktionsvorlage",
++       "en": "Internal production template",
++       "fa": "راهنمای داخلی",
++     },
++     "intents": [
++       {
++         "assigneeRoleId": "producer",
++         "dependsOn": [],
++         "dueOffset": {
++           "anchor": "project-start",
++           "basis": "calendar-days",
++           "days": 2,
++         },
++         "id": "brief_followup",
++         "kind": "follow-up",
++         "label": {
++           "de": "Überprüfung پیگیری",
++           "en": "Review پیگیری",
++           "fa": "مدل‌سازی پیگیری",
++         },
++         "stageId": "briefing",
++       },
++       {
++         "deliverableId": "model",
++         "dependsOn": [
++           "brief_followup",
++         ],
++         "dueOffset": {
++           "anchor": "project-start",
++           "basis": "calendar-days",
++           "days": 2,
++         },
++         "freelancerRoleId": "modeler",
++         "id": "model_assignment",
++         "internalProducerRoleId": "producer",
++         "kind": "assignment",
++         "label": {
++           "de": "Überprüfung همکاری",
++           "en": "Review همکاری",
++           "fa": "مدل‌سازی همکاری",
++         },
++         "stageId": "production",
++       },
++       {
++         "assigneeRoleId": "producer",
++         "deliverableId": "model",
++         "dependsOn": [
++           "model_assignment",
++         ],
++         "dueOffset": {
++           "anchor": "project-start",
++           "basis": "calendar-days",
++           "days": 2,
++         },
++         "id": "model_review",
++         "kind": "review",
++         "label": {
++           "de": "Überprüfung بازبینی",
++           "en": "Review بازبینی",
++           "fa": "مدل‌سازی بازبینی",
++         },
++         "stageId": "production",
++       },
++       {
++         "assigneeRoleId": "producer",
++         "dependsOn": [],
++         "dueOffset": {
++           "anchor": "project-start",
++           "basis": "calendar-days",
++           "days": 2,
++         },
++         "id": "brief_followup",
++         "kind": "follow-up",
++         "label": {
++           "de": "Überprüfung پیگیری",
++           "en": "Review پیگیری",
++           "fa": "مدل‌سازی پیگیری",
++         },
++         "stageId": "briefing",
++       },
++     ],
++     "label": {
++       "de": "Überprüfung پروژه",
++       "en": "Review پروژه",
++       "fa": "مدل‌سازی پروژه",
++     },
++     "roles": [
++       {
++         "id": "producer",
++         "kind": "internal-producer",
++         "label": {
++           "de": "Überprüfung تهیه‌کننده",
++           "en": "Review تهیه‌کننده",
++           "fa": "مدل‌سازی تهیه‌کننده",
++         },
++       },
++       {
++         "id": "modeler",
++         "kind": "freelancer-contact",
++         "label": {
++           "de": "Überprüfung مدل‌ساز",
++           "en": "Review مدل‌ساز",
++           "fa": "مدل‌سازی مدل‌ساز",
++         },
++       },
++     ],
++     "schemaVersion": 1,
++     "stages": [
++       {
++         "dependsOn": [],
++         "id": "briefing",
++         "label": {
++           "de": "Überprüfung شرح کار",
++           "en": "Review شرح کار",
++           "fa": "مدل‌سازی شرح کار",
++         },
++       },
++       {
++         "dependsOn": [
++           "briefing",
++         ],
++         "id": "production",
++         "label": {
++           "de": "Überprüfung تولید",
++           "en": "Review تولید",
++           "fa": "مدل‌سازی تولید",
++         },
++       },
++     ],
++     "templateId": "modeling_project",
++     "version": 1,
++   },
+  }
+
+ ❯ expectInvalid src/features/agency-projects/templates/templateManifestGraph.test.ts:7:6
+      5| function expectInvalid(value: unknown) {
+      6|   expect(parseTemplateManifestJson(JSON.stringify(value)))
+      7|     .toEqual({ ok: false, error: "invalid_manifest" });
+       |      ^
+      8| }
+      9|
+ ❯ src/features/agency-projects/templates/templateManifestGraph.test.ts:13:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/13]⎯
+
+ FAIL  |unit| src/features/agency-projects/templates/templateManifestGraph.test.ts > template manifest graph constraints > rejects cross-kind duplicate IDs to keep install mappings unambiguous
+AssertionError: expected { ok: true, value: { …(9) } } to deeply equal { Object (ok, error) }
+
+- Expected
++ Received
+
+  {
+-   "error": "invalid_manifest",
+-   "ok": false,
++   "ok": true,
++   "value": {
++     "deliverables": [
++       {
++         "id": "producer",
++         "label": {
++           "de": "Überprüfung مدل",
++           "en": "Review مدل",
++           "fa": "مدل‌سازی مدل",
++         },
++         "responsibleRoleId": "producer",
++         "stageId": "production",
++       },
++     ],
++     "description": {
++       "de": "Interne Produktionsvorlage",
++       "en": "Internal production template",
++       "fa": "راهنمای داخلی",
++     },
++     "intents": [
++       {
++         "assigneeRoleId": "producer",
++         "dependsOn": [],
++         "dueOffset": {
++           "anchor": "project-start",
++           "basis": "calendar-days",
++           "days": 2,
++         },
++         "id": "brief_followup",
++         "kind": "follow-up",
++         "label": {
++           "de": "Überprüfung پیگیری",
++           "en": "Review پیگیری",
++           "fa": "مدل‌سازی پیگیری",
++         },
++         "stageId": "briefing",
++       },
++       {
++         "deliverableId": "model",
++         "dependsOn": [
++           "brief_followup",
++         ],
++         "dueOffset": {
++           "anchor": "project-start",
++           "basis": "calendar-days",
++           "days": 2,
++         },
++         "freelancerRoleId": "modeler",
++         "id": "model_assignment",
++         "internalProducerRoleId": "producer",
++         "kind": "assignment",
++         "label": {
++           "de": "Überprüfung همکاری",
++           "en": "Review همکاری",
++           "fa": "مدل‌سازی همکاری",
++         },
++         "stageId": "production",
++       },
++       {
++         "assigneeRoleId": "producer",
++         "deliverableId": "model",
++         "dependsOn": [
++           "model_assignment",
++         ],
++         "dueOffset": {
++           "anchor": "project-start",
++           "basis": "calendar-days",
++           "days": 2,
++         },
++         "id": "model_review",
++         "kind": "review",
++         "label": {
++           "de": "Überprüfung بازبینی",
++           "en": "Review بازبینی",
++           "fa": "مدل‌سازی بازبینی",
++         },
++         "stageId": "production",
++       },
++     ],
++     "label": {
++       "de": "Überprüfung پروژه",
++       "en": "Review پروژه",
++       "fa": "مدل‌سازی پروژه",
++     },
++     "roles": [
++       {
++         "id": "producer",
++         "kind": "internal-producer",
++         "label": {
++           "de": "Überprüfung تهیه‌کننده",
++           "en": "Review تهیه‌کننده",
++           "fa": "مدل‌سازی تهیه‌کننده",
++         },
++       },
++       {
++         "id": "modeler",
++         "kind": "freelancer-contact",
++         "label": {
++           "de": "Überprüfung مدل‌ساز",
++           "en": "Review مدل‌ساز",
++           "fa": "مدل‌سازی مدل‌ساز",
++         },
++       },
++     ],
++     "schemaVersion": 1,
++     "stages": [
++       {
++         "dependsOn": [],
++         "id": "briefing",
++         "label": {
++           "de": "Überprüfung شرح کار",
++           "en": "Review شرح کار",
++           "fa": "مدل‌سازی شرح کار",
++         },
++       },
++       {
++         "dependsOn": [
++           "briefing",
++         ],
++         "id": "production",
++         "label": {
++           "de": "Überprüfung تولید",
++           "en": "Review تولید",
++           "fa": "مدل‌سازی تولید",
++         },
++       },
++     ],
++     "templateId": "modeling_project",
++     "version": 1,
++   },
+  }
+
+ ❯ expectInvalid src/features/agency-projects/templates/templateManifestGraph.test.ts:7:6
+      5| function expectInvalid(value: unknown) {
+      6|   expect(parseTemplateManifestJson(JSON.stringify(value)))
+      7|     .toEqual({ ok: false, error: "invalid_manifest" });
+       |      ^
+      8| }
+      9|
+ ❯ src/features/agency-projects/templates/templateManifestGraph.test.ts:18:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/13]⎯
+
+ FAIL  |unit| src/features/agency-projects/templates/templateManifestGraph.test.ts > template manifest graph constraints > rejects invalid stage references from deliverables and intents
+AssertionError: expected { ok: true, value: { …(9) } } to deeply equal { Object (ok, error) }
+
+- Expected
++ Received
+
+  {
+-   "error": "invalid_manifest",
+-   "ok": false,
++   "ok": true,
++   "value": {
++     "deliverables": [
++       {
++         "id": "model",
++         "label": {
++           "de": "Überprüfung مدل",
++           "en": "Review مدل",
++           "fa": "مدل‌سازی مدل",
++         },
++         "responsibleRoleId": "producer",
++         "stageId": "missing",
++       },
++     ],
++     "description": {
++       "de": "Interne Produktionsvorlage",
++       "en": "Internal production template",
++       "fa": "راهنمای داخلی",
++     },
++     "intents": [
++       {
++         "assigneeRoleId": "producer",
++         "dependsOn": [],
++         "dueOffset": {
++           "anchor": "project-start",
++           "basis": "calendar-days",
++           "days": 2,
++         },
++         "id": "brief_followup",
++         "kind": "follow-up",
++         "label": {
++           "de": "Überprüfung پیگیری",
++           "en": "Review پیگیری",
++           "fa": "مدل‌سازی پیگیری",
++         },
++         "stageId": "briefing",
++       },
++       {
++         "deliverableId": "model",
++         "dependsOn": [
++           "brief_followup",
++         ],
++         "dueOffset": {
++           "anchor": "project-start",
++           "basis": "calendar-days",
++           "days": 2,
++         },
++         "freelancerRoleId": "modeler",
++         "id": "model_assignment",
++         "internalProducerRoleId": "producer",
++         "kind": "assignment",
++         "label": {
++           "de": "Überprüfung همکاری",
++           "en": "Review همکاری",
++           "fa": "مدل‌سازی همکاری",
++         },
++         "stageId": "production",
++       },
++       {
++         "assigneeRoleId": "producer",
++         "deliverableId": "model",
++         "dependsOn": [
++           "model_assignment",
++         ],
++         "dueOffset": {
++           "anchor": "project-start",
++           "basis": "calendar-days",
++           "days": 2,
++         },
++         "id": "model_review",
++         "kind": "review",
++         "label": {
++           "de": "Überprüfung بازبینی",
++           "en": "Review بازبینی",
++           "fa": "مدل‌سازی بازبینی",
++         },
++         "stageId": "production",
++       },
++     ],
++     "label": {
++       "de": "Überprüfung پروژه",
++       "en": "Review پروژه",
++       "fa": "مدل‌سازی پروژه",
++     },
++     "roles": [
++       {
++         "id": "producer",
++         "kind": "internal-producer",
++         "label": {
++           "de": "Überprüfung تهیه‌کننده",
++           "en": "Review تهیه‌کننده",
++           "fa": "مدل‌سازی تهیه‌کننده",
++         },
++       },
++       {
++         "id": "modeler",
++         "kind": "freelancer-contact",
++         "label": {
++           "de": "Überprüfung مدل‌ساز",
++           "en": "Review مدل‌ساز",
++           "fa": "مدل‌سازی مدل‌ساز",
++         },
++       },
++     ],
++     "schemaVersion": 1,
++     "stages": [
++       {
++         "dependsOn": [],
++         "id": "briefing",
++         "label": {
++           "de": "Überprüfung شرح کار",
++           "en": "Review شرح کار",
++           "fa": "مدل‌سازی شرح کار",
++         },
++       },
++       {
++         "dependsOn": [
++           "briefing",
++         ],
++         "id": "production",
++         "label": {
++           "de": "Überprüfung تولید",
++           "en": "Review تولید",
++           "fa": "مدل‌سازی تولید",
++         },
++       },
++     ],
++     "templateId": "modeling_project",
++     "version": 1,
++   },
+  }
+
+ ❯ expectInvalid src/features/agency-projects/templates/templateManifestGraph.test.ts:8:118
+      9|
+     10| describe("template manifest graph constraints", () => {
+     11|   it.each(["roles", "stages", "deliverables", "intents"] as const)("re…
+       |                                                           ^
+     12|     const value = manifestFixture();
+     13|     expectInvalid({ ...value, [collection]: [...value[collection], val…
+ ❯ <anonymous> src/features/agency-projects/templates/templateManifestGraph.test.ts:38:16
+ ❯ new Promise native:1:11
+ ❯ new Promise native:1:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/13]⎯
+
+ FAIL  |unit| src/features/agency-projects/templates/templateManifestGraph.test.ts > template manifest graph constraints > rejects invalid deliverable or task dependency references
+AssertionError: expected { ok: true, value: { …(9) } } to deeply equal { Object (ok, error) }
+
+- Expected
++ Received
+
+  {
+-   "error": "invalid_manifest",
+-   "ok": false,
++   "ok": true,
++   "value": {
++     "deliverables": [
++       {
++         "id": "model",
++         "label": {
++           "de": "Überprüfung مدل",
++           "en": "Review مدل",
++           "fa": "مدل‌سازی مدل",
++         },
++         "responsibleRoleId": "producer",
++         "stageId": "production",
++       },
++     ],
++     "description": {
++       "de": "Interne Produktionsvorlage",
++       "en": "Internal production template",
++       "fa": "راهنمای داخلی",
++     },
++     "intents": [
++       {
++         "assigneeRoleId": "producer",
++         "dependsOn": [],
++         "dueOffset": {
++           "anchor": "project-start",
++           "basis": "calendar-days",
++           "days": 2,
++         },
++         "id": "brief_followup",
++         "kind": "follow-up",
++         "label": {
++           "de": "Überprüfung پیگیری",
++           "en": "Review پیگیری",
++           "fa": "مدل‌سازی پیگیری",
++         },
++         "stageId": "briefing",
++       },
++       {
++         "deliverableId": "missing",
++         "dependsOn": [
++           "brief_followup",
++         ],
++         "dueOffset": {
++           "anchor": "project-start",
++           "basis": "calendar-days",
++           "days": 2,
++         },
++         "freelancerRoleId": "modeler",
++         "id": "model_assignment",
++         "internalProducerRoleId": "producer",
++         "kind": "assignment",
++         "label": {
++           "de": "Überprüfung همکاری",
++           "en": "Review همکاری",
++           "fa": "مدل‌سازی همکاری",
++         },
++         "stageId": "production",
++       },
++     ],
++     "label": {
++       "de": "Überprüfung پروژه",
++       "en": "Review پروژه",
++       "fa": "مدل‌سازی پروژه",
++     },
++     "roles": [
++       {
++         "id": "producer",
++         "kind": "internal-producer",
++         "label": {
++           "de": "Überprüfung تهیه‌کننده",
++           "en": "Review تهیه‌کننده",
++           "fa": "مدل‌سازی تهیه‌کننده",
++         },
++       },
++       {
++         "id": "modeler",
++         "kind": "freelancer-contact",
++         "label": {
++           "de": "Überprüfung مدل‌ساز",
++           "en": "Review مدل‌ساز",
++           "fa": "مدل‌سازی مدل‌ساز",
++         },
++       },
++     ],
++     "schemaVersion": 1,
++     "stages": [
++       {
++         "dependsOn": [],
++         "id": "briefing",
++         "label": {
++           "de": "Überprüfung شرح کار",
++           "en": "Review شرح کار",
++           "fa": "مدل‌سازی شرح کار",
++         },
++       },
++       {
++         "dependsOn": [
++           "briefing",
++         ],
++         "id": "production",
++         "label": {
++           "de": "Überprüfung تولید",
++           "en": "Review تولید",
++           "fa": "مدل‌سازی تولید",
++         },
++       },
++     ],
++     "templateId": "modeling_project",
++     "version": 1,
++   },
+  }
+
+ ❯ expectInvalid src/features/agency-projects/templates/templateManifestGraph.test.ts:7:6
+      5| function expectInvalid(value: unknown) {
+      6|   expect(parseTemplateManifestJson(JSON.stringify(value)))
+      7|     .toEqual({ ok: false, error: "invalid_manifest" });
+       |      ^
+      8| }
+      9|
+ ❯ src/features/agency-projects/templates/templateManifestGraph.test.ts:31:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/13]⎯
+
+ FAIL  |unit| src/features/agency-projects/templates/templateManifestGraph.test.ts > template manifest graph constraints > requires assignment and review intent to reference a deliverable in their own stage
+AssertionError: expected { ok: true, value: { …(9) } } to deeply equal { Object (ok, error) }
+
+- Expected
++ Received
+
+  {
+-   "error": "invalid_manifest",
+-   "ok": false,
++   "ok": true,
++   "value": {
++     "deliverables": [
++       {
++         "id": "model",
++         "label": {
++           "de": "Überprüfung مدل",
++           "en": "Review مدل",
++           "fa": "مدل‌سازی مدل",
++         },
++         "responsibleRoleId": "producer",
++         "stageId": "briefing",
++       },
++     ],
++     "description": {
++       "de": "Interne Produktionsvorlage",
++       "en": "Internal production template",
++       "fa": "راهنمای داخلی",
++     },
++     "intents": [
++       {
++         "assigneeRoleId": "producer",
++         "dependsOn": [],
++         "dueOffset": {
++           "anchor": "project-start",
++           "basis": "calendar-days",
++           "days": 2,
++         },
++         "id": "brief_followup",
++         "kind": "follow-up",
++         "label": {
++           "de": "Überprüfung پیگیری",
++           "en": "Review پیگیری",
++           "fa": "مدل‌سازی پیگیری",
++         },
++         "stageId": "briefing",
++       },
++       {
++         "deliverableId": "model",
++         "dependsOn": [
++           "brief_followup",
++         ],
++         "dueOffset": {
++           "anchor": "project-start",
++           "basis": "calendar-days",
++           "days": 2,
++         },
++         "freelancerRoleId": "modeler",
++         "id": "model_assignment",
++         "internalProducerRoleId": "producer",
++         "kind": "assignment",
++         "label": {
++           "de": "Überprüfung همکاری",
++           "en": "Review همکاری",
++           "fa": "مدل‌سازی همکاری",
++         },
++         "stageId": "production",
++       },
++       {
++         "assigneeRoleId": "producer",
++         "deliverableId": "model",
++         "dependsOn": [
++           "model_assignment",
++         ],
++         "dueOffset": {
++           "anchor": "project-start",
++           "basis": "calendar-days",
++           "days": 2,
++         },
++         "id": "model_review",
++         "kind": "review",
++         "label": {
++           "de": "Überprüfung بازبینی",
++           "en": "Review بازبینی",
++           "fa": "مدل‌سازی بازبینی",
++         },
++         "stageId": "production",
++       },
++     ],
++     "label": {
++       "de": "Überprüfung پروژه",
++       "en": "Review پروژه",
++       "fa": "مدل‌سازی پروژه",
++     },
++     "roles": [
++       {
++         "id": "producer",
++         "kind": "internal-producer",
++         "label": {
++           "de": "Überprüfung تهیه‌کننده",
++           "en": "Review تهیه‌کننده",
++           "fa": "مدل‌سازی تهیه‌کننده",
++         },
++       },
++       {
++         "id": "modeler",
++         "kind": "freelancer-contact",
++         "label": {
++           "de": "Überprüfung مدل‌ساز",
++           "en": "Review مدل‌ساز",
++           "fa": "مدل‌سازی مدل‌ساز",
++         },
++       },
++     ],
++     "schemaVersion": 1,
++     "stages": [
++       {
++         "dependsOn": [],
++         "id": "briefing",
++         "label": {
++           "de": "Überprüfung شرح کار",
++           "en": "Review شرح کار",
++           "fa": "مدل‌سازی شرح کار",
++         },
++       },
++       {
++         "dependsOn": [
++           "briefing",
++         ],
++         "id": "production",
++         "label": {
++           "de": "Überprüfung تولید",
++           "en": "Review تولید",
++           "fa": "مدل‌سازی تولید",
++         },
++       },
++     ],
++     "templateId": "modeling_project",
++     "version": 1,
++   },
+  }
+
+ ❯ expectInvalid src/features/agency-projects/templates/templateManifestGraph.test.ts:7:6
+      5| function expectInvalid(value: unknown) {
+      6|   expect(parseTemplateManifestJson(JSON.stringify(value)))
+      7|     .toEqual({ ok: false, error: "invalid_manifest" });
+       |      ^
+      8| }
+      9|
+ ❯ src/features/agency-projects/templates/templateManifestGraph.test.ts:37:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/13]⎯
+
+ FAIL  |unit| src/features/agency-projects/templates/templateManifestGraph.test.ts > template manifest graph constraints > rejects missing, wrong-kind and swapped role references
+AssertionError: expected { ok: true, value: { …(9) } } to deeply equal { Object (ok, error) }
+
+- Expected
++ Received
+
+  {
+-   "error": "invalid_manifest",
+-   "ok": false,
++   "ok": true,
++   "value": {
++     "deliverables": [
++       {
++         "id": "model",
++         "label": {
++           "de": "Überprüfung مدل",
++           "en": "Review مدل",
++           "fa": "مدل‌سازی مدل",
++         },
++         "responsibleRoleId": "missing",
++         "stageId": "production",
++       },
++     ],
++     "description": {
++       "de": "Interne Produktionsvorlage",
++       "en": "Internal production template",
++       "fa": "راهنمای داخلی",
++     },
++     "intents": [
++       {
++         "assigneeRoleId": "producer",
++         "dependsOn": [],
++         "dueOffset": {
++           "anchor": "project-start",
++           "basis": "calendar-days",
++           "days": 2,
++         },
++         "id": "brief_followup",
++         "kind": "follow-up",
++         "label": {
++           "de": "Überprüfung پیگیری",
++           "en": "Review پیگیری",
++           "fa": "مدل‌سازی پیگیری",
++         },
++         "stageId": "briefing",
++       },
++       {
++         "deliverableId": "model",
++         "dependsOn": [
++           "brief_followup",
++         ],
++         "dueOffset": {
++           "anchor": "project-start",
++           "basis": "calendar-days",
++           "days": 2,
++         },
++         "freelancerRoleId": "modeler",
++         "id": "model_assignment",
++         "internalProducerRoleId": "producer",
++         "kind": "assignment",
++         "label": {
++           "de": "Überprüfung همکاری",
++           "en": "Review همکاری",
++           "fa": "مدل‌سازی همکاری",
++         },
++         "stageId": "production",
++       },
++       {
++         "assigneeRoleId": "producer",
++         "deliverableId": "model",
++         "dependsOn": [
++           "model_assignment",
++         ],
++         "dueOffset": {
++           "anchor": "project-start",
++           "basis": "calendar-days",
++           "days": 2,
++         },
++         "id": "model_review",
++         "kind": "review",
++         "label": {
++           "de": "Überprüfung بازبینی",
++           "en": "Review بازبینی",
++           "fa": "مدل‌سازی بازبینی",
++         },
++         "stageId": "production",
++       },
++     ],
++     "label": {
++       "de": "Überprüfung پروژه",
++       "en": "Review پروژه",
++       "fa": "مدل‌سازی پروژه",
++     },
++     "roles": [
++       {
++         "id": "producer",
++         "kind": "internal-producer",
++         "label": {
++           "de": "Überprüfung تهیه‌کننده",
++           "en": "Review تهیه‌کننده",
++           "fa": "مدل‌سازی تهیه‌کننده",
++         },
++       },
++       {
++         "id": "modeler",
++         "kind": "freelancer-contact",
++         "label": {
++           "de": "Überprüfung مدل‌ساز",
++           "en": "Review مدل‌ساز",
++           "fa": "مدل‌سازی مدل‌ساز",
++         },
++       },
++     ],
++     "schemaVersion": 1,
++     "stages": [
++       {
++         "dependsOn": [],
++         "id": "briefing",
++         "label": {
++           "de": "Überprüfung شرح کار",
++           "en": "Review شرح کار",
++           "fa": "مدل‌سازی شرح کار",
++         },
++       },
++       {
++         "dependsOn": [
++           "briefing",
++         ],
++         "id": "production",
++         "label": {
++           "de": "Überprüfung تولید",
++           "en": "Review تولید",
++           "fa": "مدل‌سازی تولید",
++         },
++       },
++     ],
++     "templateId": "modeling_project",
++     "version": 1,
++   },
+  }
+
+ ❯ expectInvalid src/features/agency-projects/templates/templateManifestGraph.test.ts:7:6
+      5| function expectInvalid(value: unknown) {
+      6|   expect(parseTemplateManifestJson(JSON.stringify(value)))
+      7|     .toEqual({ ok: false, error: "invalid_manifest" });
+       |      ^
+      8| }
+      9|
+ ❯ src/features/agency-projects/templates/templateManifestGraph.test.ts:42:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/13]⎯
+
+ FAIL  |unit| src/features/agency-projects/templates/templateManifestGraph.test.ts > template manifest graph constraints > rejects duplicate dependency edges
+AssertionError: expected { ok: true, value: { …(9) } } to deeply equal { Object (ok, error) }
+
+- Expected
++ Received
+
+  {
+-   "error": "invalid_manifest",
+-   "ok": false,
++   "ok": true,
++   "value": {
++     "deliverables": [
++       {
++         "id": "model",
++         "label": {
++           "de": "Überprüfung مدل",
++           "en": "Review مدل",
++           "fa": "مدل‌سازی مدل",
++         },
++         "responsibleRoleId": "producer",
++         "stageId": "production",
++       },
++     ],
++     "description": {
++       "de": "Interne Produktionsvorlage",
++       "en": "Internal production template",
++       "fa": "راهنمای داخلی",
++     },
++     "intents": [
++       {
++         "assigneeRoleId": "producer",
++         "dependsOn": [],
++         "dueOffset": {
++           "anchor": "project-start",
++           "basis": "calendar-days",
++           "days": 2,
++         },
++         "id": "brief_followup",
++         "kind": "follow-up",
++         "label": {
++           "de": "Überprüfung پیگیری",
++           "en": "Review پیگیری",
++           "fa": "مدل‌سازی پیگیری",
++         },
++         "stageId": "briefing",
++       },
++       {
++         "deliverableId": "model",
++         "dependsOn": [
++           "brief_followup",
++         ],
++         "dueOffset": {
++           "anchor": "project-start",
++           "basis": "calendar-days",
++           "days": 2,
++         },
++         "freelancerRoleId": "modeler",
++         "id": "model_assignment",
++         "internalProducerRoleId": "producer",
++         "kind": "assignment",
++         "label": {
++           "de": "Überprüfung همکاری",
++           "en": "Review همکاری",
++           "fa": "مدل‌سازی همکاری",
++         },
++         "stageId": "production",
++       },
++       {
++         "assigneeRoleId": "producer",
++         "deliverableId": "model",
++         "dependsOn": [
++           "model_assignment",
++         ],
++         "dueOffset": {
++           "anchor": "project-start",
++           "basis": "calendar-days",
++           "days": 2,
++         },
++         "id": "model_review",
++         "kind": "review",
++         "label": {
++           "de": "Überprüfung بازبینی",
++           "en": "Review بازبینی",
++           "fa": "مدل‌سازی بازبینی",
++         },
++         "stageId": "production",
++       },
++     ],
++     "label": {
++       "de": "Überprüfung پروژه",
++       "en": "Review پروژه",
++       "fa": "مدل‌سازی پروژه",
++     },
++     "roles": [
++       {
++         "id": "producer",
++         "kind": "internal-producer",
++         "label": {
++           "de": "Überprüfung تهیه‌کننده",
++           "en": "Review تهیه‌کننده",
++           "fa": "مدل‌سازی تهیه‌کننده",
++         },
++       },
++       {
++         "id": "modeler",
++         "kind": "freelancer-contact",
++         "label": {
++           "de": "Überprüfung مدل‌ساز",
++           "en": "Review مدل‌ساز",
++           "fa": "مدل‌سازی مدل‌ساز",
++         },
++       },
++     ],
++     "schemaVersion": 1,
++     "stages": [
++       {
++         "dependsOn": [],
++         "id": "briefing",
++         "label": {
++           "de": "Überprüfung شرح کار",
++           "en": "Review شرح کار",
++           "fa": "مدل‌سازی شرح کار",
++         },
++       },
++       {
++         "dependsOn": [
++           "briefing",
++           "briefing",
++         ],
++         "id": "production",
++         "label": {
++           "de": "Überprüfung تولید",
++           "en": "Review تولید",
++           "fa": "مدل‌سازی تولید",
++         },
++       },
++     ],
++     "templateId": "modeling_project",
++     "version": 1,
++   },
+  }
+
+ ❯ expectInvalid src/features/agency-projects/templates/templateManifestGraph.test.ts:7:6
+      5| function expectInvalid(value: unknown) {
+      6|   expect(parseTemplateManifestJson(JSON.stringify(value)))
+      7|     .toEqual({ ok: false, error: "invalid_manifest" });
+       |      ^
+      8| }
+      9|
+ ❯ src/features/agency-projects/templates/templateManifestGraph.test.ts:51:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/13]⎯
+
+ FAIL  |unit| src/features/agency-projects/templates/templateManifestGraph.test.ts > template manifest graph constraints > rejects stage self-dependency and multi-stage cycles
+AssertionError: expected { ok: true, value: { …(9) } } to deeply equal { Object (ok, error) }
+
+- Expected
++ Received
+
+  {
+-   "error": "invalid_manifest",
+-   "ok": false,
++   "ok": true,
++   "value": {
++     "deliverables": [
++       {
++         "id": "model",
++         "label": {
++           "de": "Überprüfung مدل",
++           "en": "Review مدل",
++           "fa": "مدل‌سازی مدل",
++         },
++         "responsibleRoleId": "producer",
++         "stageId": "production",
++       },
++     ],
++     "description": {
++       "de": "Interne Produktionsvorlage",
++       "en": "Internal production template",
++       "fa": "راهنمای داخلی",
++     },
++     "intents": [
++       {
++         "assigneeRoleId": "producer",
++         "dependsOn": [],
++         "dueOffset": {
++           "anchor": "project-start",
++           "basis": "calendar-days",
++           "days": 2,
++         },
++         "id": "brief_followup",
++         "kind": "follow-up",
++         "label": {
++           "de": "Überprüfung پیگیری",
++           "en": "Review پیگیری",
++           "fa": "مدل‌سازی پیگیری",
++         },
++         "stageId": "briefing",
++       },
++       {
++         "deliverableId": "model",
++         "dependsOn": [
++           "brief_followup",
++         ],
++         "dueOffset": {
++           "anchor": "project-start",
++           "basis": "calendar-days",
++           "days": 2,
++         },
++         "freelancerRoleId": "modeler",
++         "id": "model_assignment",
++         "internalProducerRoleId": "producer",
++         "kind": "assignment",
++         "label": {
++           "de": "Überprüfung همکاری",
++           "en": "Review همکاری",
++           "fa": "مدل‌سازی همکاری",
++         },
++         "stageId": "production",
++       },
++       {
++         "assigneeRoleId": "producer",
++         "deliverableId": "model",
++         "dependsOn": [
++           "model_assignment",
++         ],
++         "dueOffset": {
++           "anchor": "project-start",
++           "basis": "calendar-days",
++           "days": 2,
++         },
++         "id": "model_review",
++         "kind": "review",
++         "label": {
++           "de": "Überprüfung بازبینی",
++           "en": "Review بازبینی",
++           "fa": "مدل‌سازی بازبینی",
++         },
++         "stageId": "production",
++       },
++     ],
++     "label": {
++       "de": "Überprüfung پروژه",
++       "en": "Review پروژه",
++       "fa": "مدل‌سازی پروژه",
++     },
++     "roles": [
++       {
++         "id": "producer",
++         "kind": "internal-producer",
++         "label": {
++           "de": "Überprüfung تهیه‌کننده",
++           "en": "Review تهیه‌کننده",
++           "fa": "مدل‌سازی تهیه‌کننده",
++         },
++       },
++       {
++         "id": "modeler",
++         "kind": "freelancer-contact",
++         "label": {
++           "de": "Überprüfung مدل‌ساز",
++           "en": "Review مدل‌ساز",
++           "fa": "مدل‌سازی مدل‌ساز",
++         },
++       },
++     ],
++     "schemaVersion": 1,
++     "stages": [
++       {
++         "dependsOn": [
++           "briefing",
++         ],
++         "id": "briefing",
++         "label": {
++           "de": "Überprüfung شرح کار",
++           "en": "Review شرح کار",
++           "fa": "مدل‌سازی شرح کار",
++         },
++       },
++     ],
++     "templateId": "modeling_project",
++     "version": 1,
++   },
+  }
+
+ ❯ expectInvalid src/features/agency-projects/templates/templateManifestGraph.test.ts:7:6
+      5| function expectInvalid(value: unknown) {
+      6|   expect(parseTemplateManifestJson(JSON.stringify(value)))
+      7|     .toEqual({ ok: false, error: "invalid_manifest" });
+       |      ^
+      8| }
+      9|
+ ❯ src/features/agency-projects/templates/templateManifestGraph.test.ts:57:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/13]⎯
+
+ FAIL  |unit| src/features/agency-projects/templates/templateManifestGraph.test.ts > template manifest graph constraints > rejects task self-dependency and multi-task cycles
+AssertionError: expected { ok: true, value: { …(9) } } to deeply equal { Object (ok, error) }
+
+- Expected
++ Received
+
+  {
+-   "error": "invalid_manifest",
+-   "ok": false,
++   "ok": true,
++   "value": {
++     "deliverables": [
++       {
++         "id": "model",
++         "label": {
++           "de": "Überprüfung مدل",
++           "en": "Review مدل",
++           "fa": "مدل‌سازی مدل",
++         },
++         "responsibleRoleId": "producer",
++         "stageId": "production",
++       },
++     ],
++     "description": {
++       "de": "Interne Produktionsvorlage",
++       "en": "Internal production template",
++       "fa": "راهنمای داخلی",
++     },
++     "intents": [
++       {
++         "assigneeRoleId": "producer",
++         "dependsOn": [
++           "brief_followup",
++         ],
++         "dueOffset": {
++           "anchor": "project-start",
++           "basis": "calendar-days",
++           "days": 2,
++         },
++         "id": "brief_followup",
++         "kind": "follow-up",
++         "label": {
++           "de": "Überprüfung پیگیری",
++           "en": "Review پیگیری",
++           "fa": "مدل‌سازی پیگیری",
++         },
++         "stageId": "briefing",
++       },
++     ],
++     "label": {
++       "de": "Überprüfung پروژه",
++       "en": "Review پروژه",
++       "fa": "مدل‌سازی پروژه",
++     },
++     "roles": [
++       {
++         "id": "producer",
++         "kind": "internal-producer",
++         "label": {
++           "de": "Überprüfung تهیه‌کننده",
++           "en": "Review تهیه‌کننده",
++           "fa": "مدل‌سازی تهیه‌کننده",
++         },
++       },
++       {
++         "id": "modeler",
++         "kind": "freelancer-contact",
++         "label": {
++           "de": "Überprüfung مدل‌ساز",
++           "en": "Review مدل‌ساز",
++           "fa": "مدل‌سازی مدل‌ساز",
++         },
++       },
++     ],
++     "schemaVersion": 1,
++     "stages": [
++       {
++         "dependsOn": [],
++         "id": "briefing",
++         "label": {
++           "de": "Überprüfung شرح کار",
++           "en": "Review شرح کار",
++           "fa": "مدل‌سازی شرح کار",
++         },
++       },
++       {
++         "dependsOn": [
++           "briefing",
++         ],
++         "id": "production",
++         "label": {
++           "de": "Überprüfung تولید",
++           "en": "Review تولید",
++           "fa": "مدل‌سازی تولید",
++         },
++       },
++     ],
++     "templateId": "modeling_project",
++     "version": 1,
++   },
+  }
+
+ ❯ expectInvalid src/features/agency-projects/templates/templateManifestGraph.test.ts:7:6
+      5| function expectInvalid(value: unknown) {
+      6|   expect(parseTemplateManifestJson(JSON.stringify(value)))
+      7|     .toEqual({ ok: false, error: "invalid_manifest" });
+       |      ^
+      8| }
+      9|
+ ❯ src/features/agency-projects/templates/templateManifestGraph.test.ts:63:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/13]⎯
+
+ FAIL  |unit| src/features/agency-projects/templates/templateManifestGraph.test.ts > template manifest graph constraints > rejects a dependency pointing into a later or unrelated stage
+AssertionError: expected { ok: true, value: { …(9) } } to deeply equal { Object (ok, error) }
+
+- Expected
++ Received
+
+  {
+-   "error": "invalid_manifest",
+-   "ok": false,
++   "ok": true,
++   "value": {
++     "deliverables": [
++       {
++         "id": "model",
++         "label": {
++           "de": "Überprüfung مدل",
++           "en": "Review مدل",
++           "fa": "مدل‌سازی مدل",
++         },
++         "responsibleRoleId": "producer",
++         "stageId": "production",
++       },
++     ],
++     "description": {
++       "de": "Interne Produktionsvorlage",
++       "en": "Internal production template",
++       "fa": "راهنمای داخلی",
++     },
++     "intents": [
++       {
++         "assigneeRoleId": "producer",
++         "dependsOn": [
++           "model_assignment",
++         ],
++         "dueOffset": {
++           "anchor": "project-start",
++           "basis": "calendar-days",
++           "days": 2,
++         },
++         "id": "brief_followup",
++         "kind": "follow-up",
++         "label": {
++           "de": "Überprüfung پیگیری",
++           "en": "Review پیگیری",
++           "fa": "مدل‌سازی پیگیری",
++         },
++         "stageId": "briefing",
++       },
++       {
++         "deliverableId": "model",
++         "dependsOn": [
++           "brief_followup",
++         ],
++         "dueOffset": {
++           "anchor": "project-start",
++           "basis": "calendar-days",
++           "days": 2,
++         },
++         "freelancerRoleId": "modeler",
++         "id": "model_assignment",
++         "internalProducerRoleId": "producer",
++         "kind": "assignment",
++         "label": {
++           "de": "Überprüfung همکاری",
++           "en": "Review همکاری",
++           "fa": "مدل‌سازی همکاری",
++         },
++         "stageId": "production",
++       },
++       {
++         "assigneeRoleId": "producer",
++         "deliverableId": "model",
++         "dependsOn": [
++           "model_assignment",
++         ],
++         "dueOffset": {
++           "anchor": "project-start",
++           "basis": "calendar-days",
++           "days": 2,
++         },
++         "id": "model_review",
++         "kind": "review",
++         "label": {
++           "de": "Überprüfung بازبینی",
++           "en": "Review بازبینی",
++           "fa": "مدل‌سازی بازبینی",
++         },
++         "stageId": "production",
++       },
++     ],
++     "label": {
++       "de": "Überprüfung پروژه",
++       "en": "Review پروژه",
++       "fa": "مدل‌سازی پروژه",
++     },
++     "roles": [
++       {
++         "id": "producer",
++         "kind": "internal-producer",
++         "label": {
++           "de": "Überprüfung تهیه‌کننده",
++           "en": "Review تهیه‌کننده",
++           "fa": "مدل‌سازی تهیه‌کننده",
++         },
++       },
++       {
++         "id": "modeler",
++         "kind": "freelancer-contact",
++         "label": {
++           "de": "Überprüfung مدل‌ساز",
++           "en": "Review مدل‌ساز",
++           "fa": "مدل‌سازی مدل‌ساز",
++         },
++       },
++     ],
++     "schemaVersion": 1,
++     "stages": [
++       {
++         "dependsOn": [],
++         "id": "briefing",
++         "label": {
++           "de": "Überprüfung شرح کار",
++           "en": "Review شرح کار",
++           "fa": "مدل‌سازی شرح کار",
++         },
++       },
++       {
++         "dependsOn": [
++           "briefing",
++         ],
++         "id": "production",
++         "label": {
++           "de": "Überprüfung تولید",
++           "en": "Review تولید",
++           "fa": "مدل‌سازی تولید",
++         },
++       },
++     ],
++     "templateId": "modeling_project",
++     "version": 1,
++   },
+  }
+
+ ❯ expectInvalid src/features/agency-projects/templates/templateManifestGraph.test.ts:7:6
+      5| function expectInvalid(value: unknown) {
+      6|   expect(parseTemplateManifestJson(JSON.stringify(value)))
+      7|     .toEqual({ ok: false, error: "invalid_manifest" });
+       |      ^
+      8| }
+      9|
+ ❯ src/features/agency-projects/templates/templateManifestGraph.test.ts:73:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/13]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  13 failed | 35 passed (48)
+   Start at  17:18:16
+   Duration  232ms (tests 33%, import 29%, transform 29%, setup 6%, worker 3%)
+
+error: "vitest" exited with code 1
+error: script "test:unit" exited with code 1

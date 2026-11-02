@@ -1,0 +1,9 @@
+import { err } from "@/types/result";
+
+export function parseFeedbackDeclaration(_input: unknown) {
+  return err("invalid_feedback_declaration");
+}
+
+export function parseFeedbackCommand(_input: unknown) {
+  return err("invalid_feedback_command");
+}

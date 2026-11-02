@@ -1,0 +1,14 @@
+$ bun --bun vitest run --project unit src/features/agency-projects "--maxWorkers=1"
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+  - ESM syntax in a file loaded as CommonJS (vitest.classify.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.5 /Users/ali/Developer/warpdrive-agency-projects
+
+
+ Test Files  8 passed (8)
+      Tests  285 passed (285)
+   Start at  17:24:51
+   Duration  555ms (tests 39%, import 35%, transform 10%, setup 9%, worker 7%, environment 1%)
+

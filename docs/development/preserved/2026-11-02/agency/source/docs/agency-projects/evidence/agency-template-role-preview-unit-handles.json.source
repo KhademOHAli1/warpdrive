@@ -1,0 +1,98 @@
+{
+  "schemaVersion": 1,
+  "scope": "Mail recovery window permits routine small containerless selected units; no heavy campaign",
+  "runs": [
+    {
+      "phase": "red-missing",
+      "pid": 44323,
+      "startedAt": "2026-11-01T08:11:43.931139+00:00",
+      "finishedAt": "2026-11-01T08:11:44.958501+00:00",
+      "terminal": true,
+      "exitCode": 1,
+      "stopReason": null,
+      "beforeFreeBytes": 15394525184,
+      "minimumFreeBytes": 15382208512,
+      "afterFreeBytes": 15382208512,
+      "floorBytes": 5368709120,
+      "timeoutSeconds": 30,
+      "executionCutoffSeconds": 29,
+      "log": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/agency-template-role-preview-red-missing.log",
+      "command": [
+        "/Users/ali/Developer/warpdrive-agency-projects/.runtime/bin/bun",
+        "run",
+        "test:unit",
+        "src/features/agency-projects/templates/templateRolePreview.test.ts",
+        "--maxWorkers=1"
+      ]
+    },
+    {
+      "phase": "red-behavior",
+      "pid": 44380,
+      "startedAt": "2026-11-01T08:11:45.089396+00:00",
+      "finishedAt": "2026-11-01T08:11:45.707350+00:00",
+      "terminal": true,
+      "exitCode": 1,
+      "stopReason": null,
+      "beforeFreeBytes": 15375806464,
+      "minimumFreeBytes": 15366971392,
+      "afterFreeBytes": 15391293440,
+      "floorBytes": 5368709120,
+      "timeoutSeconds": 30,
+      "executionCutoffSeconds": 29,
+      "log": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/agency-template-role-preview-red-behavior.log",
+      "command": [
+        "/Users/ali/Developer/warpdrive-agency-projects/.runtime/bin/bun",
+        "run",
+        "test:unit",
+        "src/features/agency-projects/templates/templateRolePreview.test.ts",
+        "--maxWorkers=1"
+      ]
+    },
+    {
+      "phase": "green",
+      "pid": 44659,
+      "startedAt": "2026-11-01T08:12:39.129015+00:00",
+      "finishedAt": "2026-11-01T08:12:39.754726+00:00",
+      "terminal": true,
+      "exitCode": 0,
+      "stopReason": null,
+      "beforeFreeBytes": 15292817408,
+      "minimumFreeBytes": 15290630144,
+      "afterFreeBytes": 15315943424,
+      "floorBytes": 5368709120,
+      "timeoutSeconds": 30,
+      "executionCutoffSeconds": 29,
+      "log": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/agency-template-role-preview-green.log",
+      "command": [
+        "/Users/ali/Developer/warpdrive-agency-projects/.runtime/bin/bun",
+        "run",
+        "test:unit",
+        "src/features/agency-projects/templates/templateRolePreview.test.ts",
+        "--maxWorkers=1"
+      ]
+    },
+    {
+      "phase": "green-refactor",
+      "pid": 45056,
+      "startedAt": "2026-11-01T08:14:05.648664+00:00",
+      "finishedAt": "2026-11-01T08:14:06.266049+00:00",
+      "terminal": true,
+      "exitCode": 0,
+      "stopReason": null,
+      "beforeFreeBytes": 15034507264,
+      "minimumFreeBytes": 15032918016,
+      "afterFreeBytes": 15034507264,
+      "floorBytes": 5368709120,
+      "timeoutSeconds": 30,
+      "executionCutoffSeconds": 29,
+      "log": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/agency-template-role-preview-green-refactor.log",
+      "command": [
+        "/Users/ali/Developer/warpdrive-agency-projects/.runtime/bin/bun",
+        "run",
+        "test:unit",
+        "src/features/agency-projects/templates/templateRolePreview.test.ts",
+        "--maxWorkers=1"
+      ]
+    }
+  ]
+}

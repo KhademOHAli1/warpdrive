@@ -1,0 +1,20 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (.runtime/vitest.authority-candidate-pg.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.5 /Users/ali/Developer/warpdrive-agency-projects
+
+ ❯ |integration| src/features/agency-projects/authorityTransactionCandidate.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |integration| src/features/agency-projects/authorityTransactionCandidate.test.ts [ src/features/agency-projects/authorityTransactionCandidate.test.ts ]
+Error: Cannot find module './authorityTransactionCandidate' imported from /Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/authorityTransactionCandidate.test.ts
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  no tests
+   Start at  11:04:58
+   Duration  2.67s (transform 42%, setup 35%, worker 22%, environment 1%)
+

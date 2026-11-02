@@ -1,0 +1,21 @@
+src/features/identity/projectCreateGrantServices.test.ts format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+    156 156 │       const audit = await auditRows(h, "user.assign_permission_set");
+    157 157 │       expect(audit).toHaveLength(1);
+    158     │ - ····expect(audit).toMatchObject([
+    159     │ - ······{·actorId:·manager.id,·targetId,·after:·{·setId:·candidateId·}·},
+    160     │ - ····]);
+        158 │ + ····expect(audit).toMatchObject([{·actorId:·manager.id,·targetId,·after:·{·setId:·candidateId·}·}]);
+    161 159 │     });
+    162 160 │   
+  
+
+Checked 2 files in 51ms. No fixes applied.
+Found 1 error.
+check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Some errors were emitted while running checks.
+  
+

@@ -1,0 +1,436 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-11-01T07:06:51.427985+00:00",
+  "base": "651295aa648255c2d11e378b8bcd236678375868",
+  "status": "source-only-green-database-not-run",
+  "scope": "Two new service-test/fixture files; TypeScript configured for those two files plus two private TypeScript controls. Biome and unchanged-rule typed ESLint scoped to the two primary files only.",
+  "primarySourceHashes": {
+    "src/features/identity/projectCreateGrantServices.test.ts": "1225065a11599a59d1bf8d6f023704234bd625304e4ea48a3f25b0365780f332",
+    "src/features/identity/projectCreateGrantServices.test-support.ts": "e158ec0b0a9bd7d085bc3fd091383eef38c3a80b791c0bb173cdee6ebe0b14d2"
+  },
+  "privateCodeControlHashes": {
+    ".runtime/project-create-owned-global-setup.ts": "4b9215064c426a20b9987b7f46ec3bc4d1532fc972b1db71130539778b06da40",
+    ".runtime/vitest.project-create-pg.config.ts": "a09277eca48f3d635c17a133e3e3c8eea8ba269cd9be62fac5546a84cb4ac323"
+  },
+  "preFormatPrimaryHashes": {
+    "src/features/identity/projectCreateGrantServices.test.ts": "dfbf50cb4ed1f652c61a3100f1d06289a11e2282f1bed0d6974216fd1f9526a7",
+    "src/features/identity/projectCreateGrantServices.test-support.ts": "e158ec0b0a9bd7d085bc3fd091383eef38c3a80b791c0bb173cdee6ebe0b14d2"
+  },
+  "hashTiming": "Current post-format primary and code-control bytes captured after the final source-only checks. Native runtime-input values were not read, copied or hashed by this capture.",
+  "checks": {
+    "typescript": {
+      "finalExitCode": 0,
+      "configuredDirectTypeScriptInputs": [
+        "src/features/identity/projectCreateGrantServices.test.ts",
+        "src/features/identity/projectCreateGrantServices.test-support.ts",
+        ".runtime/project-create-owned-global-setup.ts",
+        ".runtime/vitest.project-create-pg.config.ts"
+      ],
+      "finalLog": "evidence/project-create-pg-source-types-2.log",
+      "config": "evidence/pg-source-tsconfig.project-create-pg.json.txt"
+    },
+    "biome": {
+      "finalExitCode": 0,
+      "primaryFiles": 2,
+      "initialFinding": "One test-only formatting finding; check exit1, write fixed one file, final check exit0.",
+      "finalLog": "evidence/project-create-pg-source-biome-check-2.log"
+    },
+    "typedEslint": {
+      "exitCode": 0,
+      "primaryTypeScriptFiles": 2,
+      "unchangedRepositoryRules": true,
+      "config": "evidence/pg-source-project-create-pg-eslint.mjs.txt",
+      "log": "evidence/project-create-pg-source-eslint-1.log"
+    },
+    "unitExecution": "not-run-in-this-batch",
+    "databaseServiceCases": {
+      "cases": 8,
+      "status": "NOT RUN",
+      "passClaim": false
+    }
+  },
+  "runs": [
+    {
+      "phase": "types",
+      "attempt": "1",
+      "pid": 7532,
+      "startedAt": "2026-11-01T06:49:34.188699+00:00",
+      "finishedAt": "2026-11-01T06:49:36.011603+00:00",
+      "terminal": true,
+      "exitCode": 0,
+      "stopReason": null,
+      "beforeFreeBytes": 17397727232,
+      "minimumFreeBytes": 17390518272,
+      "afterFreeBytes": 17390747648,
+      "floorBytes": 5368709120,
+      "windowRemainingSecondsAtLaunch": 58.99967699998524,
+      "windowBudgetSeconds": 60,
+      "log": "evidence/project-create-pg-source-types-1.log",
+      "command": [
+        "/Users/ali/Developer/warpdrive-agency-projects/.runtime/bin/bun",
+        "--smol",
+        "node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "-p",
+        ".runtime/tsconfig.project-create-pg.json"
+      ],
+      "originalLog": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/project-create-pg-source-types-1.log",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "phase": "biome-check",
+      "attempt": "1",
+      "pid": 7593,
+      "startedAt": "2026-11-01T06:49:41.925482+00:00",
+      "finishedAt": "2026-11-01T06:49:42.138053+00:00",
+      "terminal": true,
+      "exitCode": 1,
+      "stopReason": null,
+      "beforeFreeBytes": 17384161280,
+      "minimumFreeBytes": 17381183488,
+      "afterFreeBytes": 17381183488,
+      "floorBytes": 5368709120,
+      "windowRemainingSecondsAtLaunch": 51.26290508301463,
+      "windowBudgetSeconds": 60,
+      "log": "evidence/project-create-pg-source-biome-check-1.log",
+      "command": [
+        "/Users/ali/Developer/warpdrive-agency-projects/.runtime/bin/bun",
+        "node_modules/@biomejs/biome/bin/biome",
+        "check",
+        "src/features/identity/projectCreateGrantServices.test.ts",
+        "src/features/identity/projectCreateGrantServices.test-support.ts"
+      ],
+      "originalLog": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/project-create-pg-source-biome-check-1.log",
+      "logSha256": "69330c70706523d7c141933481e5d9730015baaa1dab981a47e3bedc35ef9e52"
+    },
+    {
+      "phase": "biome-write",
+      "attempt": "1",
+      "pid": 7622,
+      "startedAt": "2026-11-01T06:49:44.792837+00:00",
+      "finishedAt": "2026-11-01T06:49:44.903153+00:00",
+      "terminal": true,
+      "exitCode": 0,
+      "stopReason": null,
+      "beforeFreeBytes": 17384112128,
+      "minimumFreeBytes": 17383456768,
+      "afterFreeBytes": 17383456768,
+      "floorBytes": 5368709120,
+      "windowRemainingSecondsAtLaunch": 48.39549587504007,
+      "windowBudgetSeconds": 60,
+      "log": "evidence/project-create-pg-source-biome-write-1.log",
+      "command": [
+        "/Users/ali/Developer/warpdrive-agency-projects/.runtime/bin/bun",
+        "node_modules/@biomejs/biome/bin/biome",
+        "check",
+        "--write",
+        "src/features/identity/projectCreateGrantServices.test.ts",
+        "src/features/identity/projectCreateGrantServices.test-support.ts"
+      ],
+      "originalLog": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/project-create-pg-source-biome-write-1.log",
+      "logSha256": "0e0e4d67ce292c695bc25fc61158807f7c5902ec2003dd624e65e30ff2524da7"
+    },
+    {
+      "phase": "eslint",
+      "attempt": "1",
+      "pid": 7634,
+      "startedAt": "2026-11-01T06:49:44.973924+00:00",
+      "finishedAt": "2026-11-01T06:49:47.536392+00:00",
+      "terminal": true,
+      "exitCode": 0,
+      "stopReason": null,
+      "beforeFreeBytes": 17382301696,
+      "minimumFreeBytes": 17337454592,
+      "afterFreeBytes": 17354043392,
+      "floorBytes": 5368709120,
+      "windowRemainingSecondsAtLaunch": 48.21440691698808,
+      "windowBudgetSeconds": 60,
+      "log": "evidence/project-create-pg-source-eslint-1.log",
+      "command": [
+        "/Users/ali/Developer/warpdrive-agency-projects/.runtime/bin/bun",
+        "--smol",
+        "node_modules/eslint/bin/eslint.js",
+        "--config",
+        ".runtime/project-create-pg-eslint.mjs",
+        "src/features/identity/projectCreateGrantServices.test.ts",
+        "src/features/identity/projectCreateGrantServices.test-support.ts"
+      ],
+      "originalLog": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/project-create-pg-source-eslint-1.log",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "phase": "types",
+      "attempt": "2",
+      "pid": 7647,
+      "startedAt": "2026-11-01T06:49:47.606307+00:00",
+      "finishedAt": "2026-11-01T06:49:49.303096+00:00",
+      "terminal": true,
+      "exitCode": 0,
+      "stopReason": null,
+      "beforeFreeBytes": 17353637888,
+      "minimumFreeBytes": 17352675328,
+      "afterFreeBytes": 17374703616,
+      "floorBytes": 5368709120,
+      "windowRemainingSecondsAtLaunch": 45.58201629202813,
+      "windowBudgetSeconds": 60,
+      "log": "evidence/project-create-pg-source-types-2.log",
+      "command": [
+        "/Users/ali/Developer/warpdrive-agency-projects/.runtime/bin/bun",
+        "--smol",
+        "node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "-p",
+        ".runtime/tsconfig.project-create-pg.json"
+      ],
+      "originalLog": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/project-create-pg-source-types-2.log",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "phase": "biome-check",
+      "attempt": "2",
+      "pid": 7665,
+      "startedAt": "2026-11-01T06:49:49.363902+00:00",
+      "finishedAt": "2026-11-01T06:49:49.475980+00:00",
+      "terminal": true,
+      "exitCode": 0,
+      "stopReason": null,
+      "beforeFreeBytes": 17374564352,
+      "minimumFreeBytes": 17374384128,
+      "afterFreeBytes": 17374384128,
+      "floorBytes": 5368709120,
+      "windowRemainingSecondsAtLaunch": 43.824415417038836,
+      "windowBudgetSeconds": 60,
+      "log": "evidence/project-create-pg-source-biome-check-2.log",
+      "command": [
+        "/Users/ali/Developer/warpdrive-agency-projects/.runtime/bin/bun",
+        "node_modules/@biomejs/biome/bin/biome",
+        "check",
+        "src/features/identity/projectCreateGrantServices.test.ts",
+        "src/features/identity/projectCreateGrantServices.test-support.ts"
+      ],
+      "originalLog": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/project-create-pg-source-biome-check-2.log",
+      "logSha256": "967c1eb73ff103928ef8edf73b47e89032eeb26ac7ff0f457c68f8c3928f9618"
+    }
+  ],
+  "guard": {
+    "grantSourceThreadId": "01a18868-3300-7dc2-b49d-c3bdb067fae7",
+    "budgetSeconds": 60,
+    "teardownReserveSeconds": 1,
+    "liveFloorBytes": 5368709120,
+    "pollIntervalSeconds": 0.1,
+    "terminationGraceSeconds": 0.5,
+    "serialRuns": true,
+    "allRunsTerminal": true,
+    "allStopReasonsNull": true,
+    "recordedEmptyOwnedRunGroups": [
+      7532,
+      7593,
+      7622,
+      7634,
+      7647,
+      7665
+    ],
+    "minimumFreeBytes": 17337454592,
+    "elapsedSeconds": 15.287281,
+    "released": true,
+    "receipt": "evidence/project-create-pg-source-batch-handles.json",
+    "sourceGuardCopy": "evidence/pg-source-run-project-create-pg-source-batch.py.txt"
+  },
+  "configCopies": {
+    ".runtime/tsconfig.project-create-pg.json": {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/.runtime/tsconfig.project-create-pg.json",
+      "copy": "evidence/pg-source-tsconfig.project-create-pg.json.txt",
+      "sha256": "da0e6c4e07b5d179e8653b61b8b7aaeb8e041f17112916f9f0a5f6fb3189be57",
+      "bytes": 392
+    },
+    ".runtime/project-create-pg-eslint.mjs": {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/.runtime/project-create-pg-eslint.mjs",
+      "copy": "evidence/pg-source-project-create-pg-eslint.mjs.txt",
+      "sha256": "57edc66bde25e6f300c66ef7da184225bd53c451bbd1441b4614eaee848772e4",
+      "bytes": 400
+    },
+    ".runtime/run-project-create-pg-source-batch.py": {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/.runtime/run-project-create-pg-source-batch.py",
+      "copy": "evidence/pg-source-run-project-create-pg-source-batch.py.txt",
+      "sha256": "3d7df8c6e7d635d14affa14d0885fb5c7f3243cfb8ba9e71b4d826c7e8d2781a",
+      "bytes": 3753
+    },
+    ".runtime/project-create-pg-source-window.json": {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/.runtime/project-create-pg-source-window.json",
+      "copy": "evidence/pg-source-project-create-pg-source-window.json.txt",
+      "sha256": "18f58693a5b20d39d24cc2e1f3d4da04ca94d931cfe5594cc125080a81295d47",
+      "bytes": 214
+    },
+    ".runtime/project-create-pg-source-targets.json": {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/.runtime/project-create-pg-source-targets.json",
+      "copy": "evidence/pg-source-project-create-pg-source-targets.json.txt",
+      "sha256": "c862bfde42a26c37c936c95ac7e953cbbc55f2d38deba68420d112c144ee0930",
+      "bytes": 455
+    },
+    ".runtime/project-create-owned-global-setup.ts": {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/.runtime/project-create-owned-global-setup.ts",
+      "copy": "evidence/pg-source-project-create-owned-global-setup.ts.txt",
+      "sha256": "4b9215064c426a20b9987b7f46ec3bc4d1532fc972b1db71130539778b06da40",
+      "bytes": 2419
+    },
+    ".runtime/vitest.project-create-pg.config.ts": {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/.runtime/vitest.project-create-pg.config.ts",
+      "copy": "evidence/pg-source-vitest.project-create-pg.config.ts.txt",
+      "sha256": "a09277eca48f3d635c17a133e3e3c8eea8ba269cd9be62fac5546a84cb4ac323",
+      "bytes": 740
+    },
+    "tsconfig.json": {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/tsconfig.json",
+      "copy": "evidence/pg-source-base-tsconfig.json.txt",
+      "sha256": "3e482742ee772ce6c49ed50d2d5fc83592588b9e43b6a3890c409ae834c77ccb",
+      "bytes": 1047
+    },
+    "eslint.config.mjs": {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/eslint.config.mjs",
+      "copy": "evidence/pg-source-base-eslint.config.mjs.txt",
+      "sha256": "06a95b81d1e159118cbbe4351eb7becf4ab70b32505819de40f77463ca57e26f",
+      "bytes": 10497
+    }
+  },
+  "nativeAttempt1": {
+    "status": "held-before-native-launch",
+    "receipt": "evidence/project-create-pg-source-native-attempt1-held-handles.json",
+    "receiptSha256": "b6ef97ea187e00b474c3d6818c99174b5c3bc18fd99286fba8bdb87ce61ca4dd",
+    "startedAt": "2026-11-01T06:51:50.518185+00:00",
+    "finishedAt": "2026-11-01T06:51:50.690805+00:00",
+    "elapsedSeconds": 0.17270883393939584,
+    "localDockerEndpoint": "unix:///var/run/docker.sock",
+    "cachedImages": {},
+    "noNativeProcessLaunched": true,
+    "errors": [
+      "run:GateFailure:cached-image-required"
+    ],
+    "beforeFreeBytes": 17326227456,
+    "minimumFreeBytes": 17326227456,
+    "budgetSeconds": 90,
+    "nativeDeadlineSeconds": 65,
+    "scope": "owned candidate85-entry journal through0084; no Agency DDL or combined-lineage qualification",
+    "interpretation": "Default-socket cached-image preflight hold before native Popen, no database assertion or eight-case execution; not a test red or pass."
+  },
+  "nativeAttempt2": {
+    "statusAtRootDocumentationHandoff": "queued-on-verified-Colima-cache-profile-no-native-launch-yet",
+    "executionEvidenceInThisPacket": false,
+    "runtimeInputValuesCaptured": false,
+    "runtimeInputValuesTypeQualificationClaimed": false,
+    "explanation": "Later native profile values are independent runtime inputs. This packet does not snapshot them or treat them as the values checked before attempt1."
+  },
+  "evidenceCopies": [
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/project-create-pg-source-batch-handles.json",
+      "copy": "evidence/project-create-pg-source-batch-handles.json",
+      "sha256": "b6887d22d3f98abd14add1a58a5d95222272fbee592296110fdbe68d9ec596bb",
+      "bytes": 6234
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/project-create-pg-source-types-1.log",
+      "copy": "evidence/project-create-pg-source-types-1.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/project-create-pg-source-biome-check-1.log",
+      "copy": "evidence/project-create-pg-source-biome-check-1.log",
+      "sha256": "69330c70706523d7c141933481e5d9730015baaa1dab981a47e3bedc35ef9e52",
+      "bytes": 1147
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/project-create-pg-source-biome-write-1.log",
+      "copy": "evidence/project-create-pg-source-biome-write-1.log",
+      "sha256": "0e0e4d67ce292c695bc25fc61158807f7c5902ec2003dd624e65e30ff2524da7",
+      "bytes": 38
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/project-create-pg-source-eslint-1.log",
+      "copy": "evidence/project-create-pg-source-eslint-1.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/project-create-pg-source-types-2.log",
+      "copy": "evidence/project-create-pg-source-types-2.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/project-create-pg-source-biome-check-2.log",
+      "copy": "evidence/project-create-pg-source-biome-check-2.log",
+      "sha256": "967c1eb73ff103928ef8edf73b47e89032eeb26ac7ff0f457c68f8c3928f9618",
+      "bytes": 42
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/.runtime/tsconfig.project-create-pg.json",
+      "copy": "evidence/pg-source-tsconfig.project-create-pg.json.txt",
+      "sha256": "da0e6c4e07b5d179e8653b61b8b7aaeb8e041f17112916f9f0a5f6fb3189be57",
+      "bytes": 392
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/.runtime/project-create-pg-eslint.mjs",
+      "copy": "evidence/pg-source-project-create-pg-eslint.mjs.txt",
+      "sha256": "57edc66bde25e6f300c66ef7da184225bd53c451bbd1441b4614eaee848772e4",
+      "bytes": 400
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/.runtime/run-project-create-pg-source-batch.py",
+      "copy": "evidence/pg-source-run-project-create-pg-source-batch.py.txt",
+      "sha256": "3d7df8c6e7d635d14affa14d0885fb5c7f3243cfb8ba9e71b4d826c7e8d2781a",
+      "bytes": 3753
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/.runtime/project-create-pg-source-window.json",
+      "copy": "evidence/pg-source-project-create-pg-source-window.json.txt",
+      "sha256": "18f58693a5b20d39d24cc2e1f3d4da04ca94d931cfe5594cc125080a81295d47",
+      "bytes": 214
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/.runtime/project-create-pg-source-targets.json",
+      "copy": "evidence/pg-source-project-create-pg-source-targets.json.txt",
+      "sha256": "c862bfde42a26c37c936c95ac7e953cbbc55f2d38deba68420d112c144ee0930",
+      "bytes": 455
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/.runtime/project-create-owned-global-setup.ts",
+      "copy": "evidence/pg-source-project-create-owned-global-setup.ts.txt",
+      "sha256": "4b9215064c426a20b9987b7f46ec3bc4d1532fc972b1db71130539778b06da40",
+      "bytes": 2419
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/.runtime/vitest.project-create-pg.config.ts",
+      "copy": "evidence/pg-source-vitest.project-create-pg.config.ts.txt",
+      "sha256": "a09277eca48f3d635c17a133e3e3c8eea8ba269cd9be62fac5546a84cb4ac323",
+      "bytes": 740
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/tsconfig.json",
+      "copy": "evidence/pg-source-base-tsconfig.json.txt",
+      "sha256": "3e482742ee772ce6c49ed50d2d5fc83592588b9e43b6a3890c409ae834c77ccb",
+      "bytes": 1047
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/eslint.config.mjs",
+      "copy": "evidence/pg-source-base-eslint.config.mjs.txt",
+      "sha256": "06a95b81d1e159118cbbe4351eb7becf4ab70b32505819de40f77463ca57e26f",
+      "bytes": 10497
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/project-create-pg-handles.json",
+      "copy": "evidence/project-create-pg-source-native-attempt1-held-handles.json",
+      "sha256": "b6ef97ea187e00b474c3d6818c99174b5c3bc18fd99286fba8bdb87ce61ca4dd",
+      "bytes": 907
+    }
+  ],
+  "limits": [
+    "No PostgreSQL service test was executed by this source-only batch; all eight cases remain NOT RUN in this packet.",
+    "No full-project type/lint/build, migration execution, Docker launch, source adoption, provider action or release qualification is established.",
+    "The private TypeScript controls were type-checked; only the two primary test files received Biome and typed ESLint checks.",
+    "TypeScript source checking is not execution of the private setup/config or attestation of later runtime JSON values, daemon/cache selection, canonical bootstrap or database lineage.",
+    "Trusted service actors are not live native/session freshness, originating app/MCP admission, project membership/CRM ceilings or revocation-through-commit proof.",
+    "Future success of row and audit checks is not create/update transaction rollback or race evidence; provider delivery remains untested.",
+    "The held native receipt is historical attempt1 metadata only, separate from any later queued or frozen native inputs.",
+    "No ledger, progress, main contract, source, control, runtime input or Git state was changed by this documentation capture."
+  ]
+}

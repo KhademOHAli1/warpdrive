@@ -1,0 +1,9 @@
+{
+  "runId": "a86fa9ad-8edd-4d4b-83ea-01689846ecee",
+  "ownershipFile": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/project-create-pg-attempt2-owned-container.json",
+  "receiptFile": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/project-create-pg-attempt2-handles.json",
+  "logFile": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/project-create-pg-attempt2.log",
+  "daemonMarkerId": "a6f9d1b0c5fc70039491d657b90c1acd0a987db3de8da526479c2c629d6c35bb",
+  "dockerEndpoint": "unix:///Users/ali/.colima/warpdrive/docker.sock",
+  "status": "allocated-run-input"
+}

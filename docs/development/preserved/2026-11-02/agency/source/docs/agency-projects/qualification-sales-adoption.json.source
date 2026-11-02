@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-11-01T03:24:01.537229+00:00",
+  "agencyPreMerge": "ba2aeb0c0e13cd4610be974031c4c9f05aec8a48",
+  "ownerSource": "f006b5a5026449fd2bf792439b9149ba3517feb8",
+  "commonAncestor": "6b71b771d921df8930eebc15259ec0648bff0b73",
+  "scope": "Committed three-way source adoption only; no peer dirt or runtime adoption",
+  "sourceMerge": {
+    "textualConflicts": 0,
+    "ownerChangedPaths": 178,
+    "settingsSourcesPreserved": 4,
+    "agencyBaselineHashesMatch": true,
+    "newDependencies": false,
+    "lockfileChanged": false,
+    "migrationOrSchemaChanged": false,
+    "privateEnvironmentChanged": false,
+    "pipelineLifecycleEnabledByMerge": false
+  },
+  "ownerReport": {
+    "source": "evidence/sales-owner-storage-coordination-request.md",
+    "sha256": "221006ac033c2e863fd286803907c85768b20bea4ff6cfc945480bf4dd26a069",
+    "unit": {
+      "passed": 6068,
+      "files": 972
+    },
+    "postgresql": {
+      "passed": 245,
+      "files": 51
+    },
+    "typecheck": "owner-reported pass",
+    "lint": "owner-reported pass",
+    "exactSourceProductionBuild": "pending coordinated window",
+    "transferableCombinedAgencyPass": false
+  },
+  "localMetadataChecks": {
+    "initialWhitespace": {
+      "exitCode": 2,
+      "findings": 129,
+      "scope": "Exact owner frozen approved/TASKS.csv CRLF representation only"
+    },
+    "scopedCRLFAttributeAdded": true,
+    "finalStagedWhitespaceExitCode": 0,
+    "settingsAndBaselineByteComparison": "pass"
+  },
+  "limits": [
+    "No combined Agency types/lint/unit/build, native UI/auth, migration or recovery campaign was started.",
+    "MAIL recovery hold remains in force until explicit release.",
+    "SP-09 runtime handover and a generic project authority/fence remain unavailable.",
+    "Earlier owner build/native/restore evidence does not qualify this cut."
+  ]
+}

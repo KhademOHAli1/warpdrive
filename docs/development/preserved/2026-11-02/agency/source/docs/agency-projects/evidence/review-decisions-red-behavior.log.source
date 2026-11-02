@@ -1,0 +1,493 @@
+$ bun --bun vitest run --project unit src/features/agency-projects/reviews/reviewDecisions.test.ts "--maxWorkers=1"
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+  - ESM syntax in a file loaded as CommonJS (vitest.classify.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.5 /Users/ali/Developer/warpdrive-agency-projects
+
+ ❯ |unit| src/features/agency-projects/reviews/reviewDecisions.test.ts (36 tests | 17 failed) 12ms
+   ❯ proposed version-specific review decision boundary (22)
+     × keeps the native recorder and server recording time out of every browser action 5ms
+     × canonicalizes native/contact UUIDs while preserving exact version, evidence and occurrence provenance 0ms
+     × preserves supported nanosecond instants and their original offset strings 0ms
+   ❯ proposed immutable review history and optimistic revision policy (14)
+     × records exact internal approval provenance without changing its input 1ms
+     × keeps staff-recorded client approval separate from internal review and external authentication 1ms
+     × retains distinct records for multiple clients instead of inferring universal approval 0ms
+     × gives expected-revision conflicts precedence and fences replay 0ms
+     × rejects a decision for a different projectId 0ms
+     × rejects a decision for a different deliverableId 0ms
+     × compares the external version reference exactly, without URL normalization 0ms
+     × preserves old decisions when a newer version starts a fresh review epoch 0ms
+     × reopens the same version without inheriting its earlier recorded client approval 0ms
+     × requires an explicit reopen rather than relabeling an unchanged version 0ms
+     × makes approve/change ordering deterministic while leaving actual DB races unqualified 0ms
+     × rejects revision overflow for every admitted mutation without changing history 0ms
+     × rejects epoch overflow on version change and reopen before invalidating history 0ms
+     × can still record evidence at the maximum epoch because recording does not advance it 0ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 17 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| src/features/agency-projects/reviews/reviewDecisions.test.ts > proposed version-specific review decision boundary > keeps the native recorder and server recording time out of every browser action
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: true, value: { …(9) } }
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "action": "record-internal-review",
+-     "deliverableId": "defabcde-4567-4def-bcde-456789012abc",
+-     "evidenceReference": "review-note/2026-11-01",
+-     "expectedRevision": 4,
+-     "method": "internal-review",
+-     "occurredAt": "2026-11-01T05:50:00Z",
+-     "outcome": "approved",
+-     "projectId": "cdefabcd-3456-4cde-abcd-345678901abc",
+-     "reviewedVersionReference": "https://example.invalid/Review/Model%2Fv1?variant=A%2Fb#Teil-1",
+-   },
++   "error": "invalid_review_action",
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/reviews/reviewDecisions.test.ts:77:41
+     75|     for (const command of [internalReview(), recordedClientApproval(),…
+     76|       const { recordedByUserId, recordedAt, ...action } = command;
+     77|       expect(parseReviewAction(action)).toEqual({ ok: true, value: act…
+       |                                         ^
+     78|       expect(parseReviewAction({ ...action, recordedByUserId }))
+     79|         .toEqual({ ok: false, error: "invalid_review_action" });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/17]⎯
+
+ FAIL  |unit| src/features/agency-projects/reviews/reviewDecisions.test.ts > proposed version-specific review decision boundary > canonicalizes native/contact UUIDs while preserving exact version, evidence and occurrence provenance
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: true, value: { …(12) } }
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "action": "record-client-approval",
+-     "clientContactId": "bcdefabc-2345-4bcd-9efa-234567890abc",
+-     "deliverableId": "defabcde-4567-4def-bcde-456789012abc",
+-     "evidenceReference": "client-note/2026-11-01",
+-     "expectedRevision": 4,
+-     "method": "email",
+-     "occurredAt": "2026-11-01T09:10:00+03:30",
+-     "outcome": "approved",
+-     "projectId": "cdefabcd-3456-4cde-abcd-345678901abc",
+-     "recordedAt": "2026-11-01T06:00:00Z",
+-     "recordedByUserId": "abcdefab-1234-4abc-8def-1234567890ab",
+-     "reviewedVersionReference": "https://example.invalid/Review/Model%2Fv1?variant=A%2Fb#Teil-1",
+-   },
++   "error": "invalid_review_command",
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/reviews/reviewDecisions.test.ts:97:9
+     95|       recordedByUserId: command.recordedByUserId.toUpperCase(),
+     96|       clientContactId: command.clientContactId.toUpperCase(),
+     97|     })).toEqual({ ok: true, value: command });
+       |         ^
+     98|   });
+     99|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/17]⎯
+
+ FAIL  |unit| src/features/agency-projects/reviews/reviewDecisions.test.ts > proposed version-specific review decision boundary > preserves supported nanosecond instants and their original offset strings
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: true, value: { …(12) } }
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "action": "record-client-approval",
+-     "clientContactId": "bcdefabc-2345-4bcd-9efa-234567890abc",
+-     "deliverableId": "defabcde-4567-4def-bcde-456789012abc",
+-     "evidenceReference": "client-note/2026-11-01",
+-     "expectedRevision": 4,
+-     "method": "email",
+-     "occurredAt": "2026-11-01T09:30:00.000000001+03:30",
+-     "outcome": "approved",
+-     "projectId": "cdefabcd-3456-4cde-abcd-345678901abc",
+-     "recordedAt": "2026-11-01T06:00:00.000000002Z",
+-     "recordedByUserId": "abcdefab-1234-4abc-8def-1234567890ab",
+-     "reviewedVersionReference": "https://example.invalid/Review/Model%2Fv1?variant=A%2Fb#Teil-1",
+-   },
++   "error": "invalid_review_command",
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/reviews/reviewDecisions.test.ts:136:41
+    134|       recordedAt: "2026-11-01T06:00:00.000000002Z",
+    135|     };
+    136|     expect(parseReviewCommand(command)).toEqual({ ok: true, value: com…
+       |                                         ^
+    137|     const equalInstants = { ...command, recordedAt: "2026-11-01T06:00:…
+    138|     expect(parseReviewCommand(equalInstants)).toEqual({ ok: true, valu…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/17]⎯
+
+ FAIL  |unit| src/features/agency-projects/reviews/reviewDecisions.test.ts > proposed immutable review history and optimistic revision policy > records exact internal approval provenance without changing its input
+AssertionError: expected { ok: false, …(1) } to match object { ok: true, value: { …(2) } }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "receipt": {
+-       "action": "record-internal-review",
+-       "deliverableId": "defabcde-4567-4def-bcde-456789012abc",
+-       "policyVersion": 1,
+-       "previousReviewEpoch": 1,
+-       "previousRevision": 4,
+-       "previousVersionReference": "https://example.invalid/Review/Model%2Fv1?variant=A%2Fb#Teil-1",
+-       "projectId": "cdefabcd-3456-4cde-abcd-345678901abc",
+-       "reason": null,
+-       "recordedAt": "2026-11-01T06:00:00Z",
+-       "recordedByUserId": "abcdefab-1234-4abc-8def-1234567890ab",
+-       "reviewEpoch": 1,
+-       "revision": 5,
+-       "versionReference": "https://example.invalid/Review/Model%2Fv1?variant=A%2Fb#Teil-1",
+-     },
+-     "snapshot": {
+-       "currentVersionReference": "https://example.invalid/Review/Model%2Fv1?variant=A%2Fb#Teil-1",
+-       "decisions": [
+-         {
+-           "evidenceReference": "review-note/2026-11-01",
+-           "kind": "internal-review",
+-           "method": "internal-review",
+-           "occurredAt": "2026-11-01T05:50:00Z",
+-           "outcome": "approved",
+-           "recordedAt": "2026-11-01T06:00:00Z",
+-           "recordedAtRevision": 5,
+-           "recordedByUserId": "abcdefab-1234-4abc-8def-1234567890ab",
+-           "reviewEpoch": 1,
+-           "reviewedVersionReference": "https://example.invalid/Review/Model%2Fv1?variant=A%2Fb#Teil-1",
+-         },
+-       ],
+-       "reviewEpoch": 1,
+-       "revision": 5,
+-     },
+-   },
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/reviews/reviewDecisions.test.ts:185:20
+    183|     const current = Object.freeze({ ...snapshot(), decisions: Object.f…
+    184|     const result = applyReviewCommand(current, internalReview());
+    185|     expect(result).toMatchObject({ ok: true, value: {
+       |                    ^
+    186|       snapshot: { revision: 5, reviewEpoch: 1, currentVersionReference…
+    187|         kind: "internal-review", outcome: "approved", reviewedVersionR…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/17]⎯
+
+ FAIL  |unit| src/features/agency-projects/reviews/reviewDecisions.test.ts > proposed immutable review history and optimistic revision policy > keeps staff-recorded client approval separate from internal review and external authentication
+AssertionError: expected { ok: false, …(1) } to match object { ok: true, value: { …(2) } }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "receipt": {
+-       "action": "record-client-approval",
+-       "deliverableId": "defabcde-4567-4def-bcde-456789012abc",
+-       "policyVersion": 1,
+-       "previousReviewEpoch": 1,
+-       "previousRevision": 4,
+-       "previousVersionReference": "https://example.invalid/Review/Model%2Fv1?variant=A%2Fb#Teil-1",
+-       "projectId": "cdefabcd-3456-4cde-abcd-345678901abc",
+-       "reason": null,
+-       "recordedAt": "2026-11-01T06:00:00Z",
+-       "recordedByUserId": "abcdefab-1234-4abc-8def-1234567890ab",
+-       "reviewEpoch": 1,
+-       "revision": 5,
+-       "versionReference": "https://example.invalid/Review/Model%2Fv1?variant=A%2Fb#Teil-1",
+-     },
+-     "snapshot": {
+-       "decisions": [
+-         {
+-           "clientContactId": "bcdefabc-2345-4bcd-9efa-234567890abc",
+-           "evidenceReference": "client-note/2026-11-01",
+-           "kind": "staff-recorded-client-approval",
+-           "method": "email",
+-           "occurredAt": "2026-11-01T09:10:00+03:30",
+-           "outcome": "approved",
+-           "recordedAt": "2026-11-01T06:00:00Z",
+-           "recordedAtRevision": 5,
+-           "recordedByUserId": "abcdefab-1234-4abc-8def-1234567890ab",
+-           "reviewEpoch": 1,
+-           "reviewedVersionReference": "https://example.invalid/Review/Model%2Fv1?variant=A%2Fb#Teil-1",
+-         },
+-       ],
+-     },
+-   },
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/reviews/reviewDecisions.test.ts:208:20
+    206|   it("keeps staff-recorded client approval separate from internal revi…
+    207|     const result = applyReviewCommand(snapshot(), recordedClientApprov…
+    208|     expect(result).toMatchObject({ ok: true, value: { snapshot: { deci…
+       |                    ^
+    209|       kind: "staff-recorded-client-approval", outcome: "approved", rev…
+    210|       recordedByUserId: nativeRecorder.recordedByUserId, clientContact…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/17]⎯
+
+ FAIL  |unit| src/features/agency-projects/reviews/reviewDecisions.test.ts > proposed immutable review history and optimistic revision policy > retains distinct records for multiple clients instead of inferring universal approval
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/features/agency-projects/reviews/reviewDecisions.test.ts:229:22
+    227|   it("retains distinct records for multiple clients instead of inferri…
+    228|     const first = applyReviewCommand(snapshot(), recordedClientApprova…
+    229|     expect(first.ok).toBe(true);
+       |                      ^
+    230|     if (!first.ok) return;
+    231|     const second = applyReviewCommand(first.value.snapshot, {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/17]⎯
+
+ FAIL  |unit| src/features/agency-projects/reviews/reviewDecisions.test.ts > proposed immutable review history and optimistic revision policy > gives expected-revision conflicts precedence and fences replay
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: false, …(1) }
+
+- Expected
++ Received
+
+  {
+-   "error": "revision_conflict",
++   "error": "review_unavailable",
+    "ok": false,
+  }
+
+ ❯ src/features/agency-projects/reviews/reviewDecisions.test.ts:244:8
+    242|   it("gives expected-revision conflicts precedence and fences replay",…
+    243|     expect(applyReviewCommand(snapshot(), { ...internalReview(), expec…
+    244|       .toEqual({ ok: false, error: "revision_conflict" });
+       |        ^
+    245|     const first = applyReviewCommand(snapshot(), internalReview());
+    246|     expect(first.ok).toBe(true);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/17]⎯
+
+ FAIL  |unit| src/features/agency-projects/reviews/reviewDecisions.test.ts > proposed immutable review history and optimistic revision policy > rejects a decision for a different projectId
+ FAIL  |unit| src/features/agency-projects/reviews/reviewDecisions.test.ts > proposed immutable review history and optimistic revision policy > rejects a decision for a different deliverableId
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: false, …(1) }
+
+- Expected
++ Received
+
+  {
+-   "error": "review_target_mismatch",
++   "error": "review_unavailable",
+    "ok": false,
+  }
+
+ ❯ src/features/agency-projects/reviews/reviewDecisions.test.ts:254:8
+    252|   it.each(["projectId", "deliverableId"] as const)("rejects a decision…
+    253|     expect(applyReviewCommand(snapshot(), { ...internalReview(), [fiel…
+    254|       .toEqual({ ok: false, error: "review_target_mismatch" });
+       |        ^
+    255|   });
+    256|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/17]⎯
+
+ FAIL  |unit| src/features/agency-projects/reviews/reviewDecisions.test.ts > proposed immutable review history and optimistic revision policy > compares the external version reference exactly, without URL normalization
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: false, …(1) }
+
+- Expected
++ Received
+
+  {
+-   "error": "review_version_conflict",
++   "error": "review_unavailable",
+    "ok": false,
+  }
+
+ ❯ src/features/agency-projects/reviews/reviewDecisions.test.ts:259:8
+    257|   it("compares the external version reference exactly, without URL nor…
+    258|     expect(applyReviewCommand(snapshot(), { ...internalReview(), revie…
+    259|       .toEqual({ ok: false, error: "review_version_conflict" });
+       |        ^
+    260|   });
+    261|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/17]⎯
+
+ FAIL  |unit| src/features/agency-projects/reviews/reviewDecisions.test.ts > proposed immutable review history and optimistic revision policy > preserves old decisions when a newer version starts a fresh review epoch
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/features/agency-projects/reviews/reviewDecisions.test.ts:264:25
+    262|   it("preserves old decisions when a newer version starts a fresh revi…
+    263|     const approved = applyReviewCommand(snapshot(), internalReview());
+    264|     expect(approved.ok).toBe(true);
+       |                         ^
+    265|     if (!approved.ok) return;
+    266|     const historical = structuredClone(approved.value.snapshot.decisio…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/17]⎯
+
+ FAIL  |unit| src/features/agency-projects/reviews/reviewDecisions.test.ts > proposed immutable review history and optimistic revision policy > reopens the same version without inheriting its earlier recorded client approval
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/features/agency-projects/reviews/reviewDecisions.test.ts:286:25
+    284|   it("reopens the same version without inheriting its earlier recorded…
+    285|     const approved = applyReviewCommand(snapshot(), recordedClientAppr…
+    286|     expect(approved.ok).toBe(true);
+       |                         ^
+    287|     if (!approved.ok) return;
+    288|     const reason = "بررسی دوباره / Erneute Prüfung\nتأیید قبلی محفوظ م…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/17]⎯
+
+ FAIL  |unit| src/features/agency-projects/reviews/reviewDecisions.test.ts > proposed immutable review history and optimistic revision policy > requires an explicit reopen rather than relabeling an unchanged version
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: false, …(1) }
+
+- Expected
++ Received
+
+  {
+-   "error": "version_unchanged",
++   "error": "review_unavailable",
+    "ok": false,
+  }
+
+ ❯ src/features/agency-projects/reviews/reviewDecisions.test.ts:306:8
+    304|   it("requires an explicit reopen rather than relabeling an unchanged …
+    305|     expect(applyReviewCommand(snapshot(), { ...changeVersion(), versio…
+    306|       .toEqual({ ok: false, error: "version_unchanged" });
+       |        ^
+    307|   });
+    308|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/17]⎯
+
+ FAIL  |unit| src/features/agency-projects/reviews/reviewDecisions.test.ts > proposed immutable review history and optimistic revision policy > makes approve/change ordering deterministic while leaving actual DB races unqualified
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/features/agency-projects/reviews/reviewDecisions.test.ts:312:30
+    310|     const approvalFirst = applyReviewCommand(snapshot(), internalRevie…
+    311|     const versionFirst = applyReviewCommand(snapshot(), changeVersion(…
+    312|     expect(approvalFirst.ok).toBe(true);
+       |                              ^
+    313|     expect(versionFirst.ok).toBe(true);
+    314|     if (!approvalFirst.ok || !versionFirst.ok) return;
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/17]⎯
+
+ FAIL  |unit| src/features/agency-projects/reviews/reviewDecisions.test.ts > proposed immutable review history and optimistic revision policy > rejects revision overflow for every admitted mutation without changing history
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/features/agency-projects/reviews/reviewDecisions.test.ts:323:25
+    321|   it("rejects revision overflow for every admitted mutation without ch…
+    322|     const approved = applyReviewCommand(snapshot(), internalReview());
+    323|     expect(approved.ok).toBe(true);
+       |                         ^
+    324|     if (!approved.ok) return;
+    325|     const current = { ...approved.value.snapshot, revision: Number.MAX…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/17]⎯
+
+ FAIL  |unit| src/features/agency-projects/reviews/reviewDecisions.test.ts > proposed immutable review history and optimistic revision policy > rejects epoch overflow on version change and reopen before invalidating history
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/features/agency-projects/reviews/reviewDecisions.test.ts:336:25
+    334|   it("rejects epoch overflow on version change and reopen before inval…
+    335|     const approved = applyReviewCommand(snapshot(), internalReview());
+    336|     expect(approved.ok).toBe(true);
+       |                         ^
+    337|     if (!approved.ok) return;
+    338|     const current = { ...approved.value.snapshot, reviewEpoch: Number.…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/17]⎯
+
+ FAIL  |unit| src/features/agency-projects/reviews/reviewDecisions.test.ts > proposed immutable review history and optimistic revision policy > can still record evidence at the maximum epoch because recording does not advance it
+AssertionError: expected { ok: false, …(1) } to match object { ok: true, value: { …(2) } }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "receipt": {
+-       "previousReviewEpoch": 9007199254740991,
+-       "reviewEpoch": 9007199254740991,
+-     },
+-     "snapshot": {
+-       "reviewEpoch": 9007199254740991,
+-       "revision": 5,
+-     },
+-   },
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/reviews/reviewDecisions.test.ts:349:8
+    347|   it("can still record evidence at the maximum epoch because recording…
+    348|     expect(applyReviewCommand({ ...snapshot(), reviewEpoch: Number.MAX…
+    349|       .toMatchObject({ ok: true, value: {
+       |        ^
+    350|         snapshot: { revision: 5, reviewEpoch: Number.MAX_SAFE_INTEGER …
+    351|         receipt: { previousReviewEpoch: Number.MAX_SAFE_INTEGER, revie…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/17]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  17 failed | 19 passed (36)
+   Start at  04:30:43
+   Duration  121ms (transform 53%, tests 26%, import 10%, setup 7%, worker 4%)
+
+error: "vitest" exited with code 1
+error: script "test:unit" exited with code 1

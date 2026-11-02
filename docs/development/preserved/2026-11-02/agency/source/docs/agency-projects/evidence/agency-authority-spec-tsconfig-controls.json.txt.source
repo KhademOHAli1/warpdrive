@@ -1,0 +1,16 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "incremental": false,
+    "types": [
+      "node"
+    ]
+  },
+  "include": [
+    "../src/features/agency-projects/authorityTransactionSpec.ts",
+    "../src/features/agency-projects/authorityTransactionSpec.test.ts",
+    "../.runtime/authority-candidate-owned-global-setup.ts",
+    "../.runtime/vitest.authority-candidate-pg.config.ts"
+  ],
+  "exclude": []
+}

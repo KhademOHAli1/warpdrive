@@ -1,0 +1,68 @@
+{
+  "capturedAt": "2026-11-01T11:21:43.663731+00:00",
+  "scope": "Read-only committed/working Calendar source audit; no adoption or execution",
+  "ownerRepo": "/Users/ali/Developer/warpdrive-calendar",
+  "committedHead": "2803183809c646a063f78fe954c110adbb2f453f",
+  "committedActivityFilesMatchingAgency": 10,
+  "workingPorcelain": {
+    "modified": 60,
+    "untracked": 122
+  },
+  "journal": {
+    "committedLast": "0082",
+    "workingLocalTail": "0083..0092, unreconciled with programme tails"
+  },
+  "workingSurfaces": [
+    {
+      "path": "src/features/activities/repo.ts",
+      "api": "createActivity(db,actor,input,signal,options?) returns generated canonical row; no logical intent/callerID/project binding"
+    },
+    {
+      "path": "src/features/activities/schemas.ts",
+      "api": "calendar/timezone/visibility/availability/reminder; expected versions still optional; no accepted project kind"
+    },
+    {
+      "path": "src/features/activities/activityTransaction.ts",
+      "api": "Own transaction/savepoint and Result rollback; no qualified Agency-owned-transaction command"
+    },
+    {
+      "path": "src/features/activities/actions.ts",
+      "api": "CSRF/native activity.create, then assignment notification after creation"
+    },
+    {
+      "path": "src/db/schema/calendars.ts",
+      "api": "Source native/provider only; no selected Agency discriminator"
+    }
+  ],
+  "limits": [
+    "scheduleReminder:false does not supply idempotency/project binding or suppress every notification.",
+    "Every activity read/write/search/export/notification/realtime/MCP needs project visibility intersection.",
+    "Activity completion is not Agency recorded approval; no separate activity-cancellation state exists.",
+    "dueAt means start; all-day Gregorian dueDate/inclusiveendDate retain compatibility anchor/authored timezone.",
+    "Existing adopted workflow readiness only admits executable activity.create subject/dealId; extra assignee/due/type configuration remains not-ready."
+  ],
+  "nextEnabledScope": "Pure dated template preview using existing canonical Gregorian date helpers; no activity generation, instant, reminder or installed identity.",
+  "pending": "Immutable owner cut, reconciled migration lineage, project/activity revision and intent/binding semantics, authority transaction/effect boundary.",
+  "evidenceAuthority": "Independent explorer read/hash audit only. Reported owner test counts are not root execution.",
+  "committedTemporalSeam": {
+    "path": "src/lib/zonedDateTime.ts",
+    "sha256": "f01ed9fba3e61db80fc80c8f21cba77cf1d313b1c183aa7505fd810710160eae",
+    "byteIdenticalToAgency": true,
+    "function": "addCivilDays(date, days): Temporal.PlainDate calendar-day addition",
+    "limitations": "Temporal syntax is wider than strict ingress; expanded years/throwing invalid input require a strict boundary. Manifest already fixes calendar-days/project-start and offsets -3650..3650."
+  },
+  "dateContractQuestion": "ResolvedbyCalendarowner sourceartifact; existingactivityschema remainsbroader/unmodified andinstallation/integrationgatesremain.",
+  "testObligations": "T07/T11/T26 remain: exact dated preview, chosen rules, long offsets/Nowruz/leap, independent calendar/digits, date-only no drift, missing dependencies/atomic install and actual accessible RTL/native UI.",
+  "civilDateDecision": {
+    "capturedAt": "2026-11-01T12:22:47.718551+00:00",
+    "artifact": "evidence/calendar-owner-civil-date-contract.md",
+    "sha256": "1dba2dcf71e386f8ccd8e1227b3be594a8b5ed95fbc668bb8003045e35876ecd",
+    "status": "Acceptedsourcecontract forpuretemplatepreview only; tests/implementation/runtime separate",
+    "inputOutput": "CanonicalASCII Gregorian YYYY-MM-DD realdates0001-01-01..9999-12-31 inclusive",
+    "failure": "Typedinvalid_date forinvalidstart/calculation/noncanonicalresult/rangeoverflow; noclamp/truncation/normalization",
+    "offset": "Manifestvalidatedcalendar-days/project-start integer\u00b13650, existingaddCivilDays",
+    "existingActivitySchemaChanged": false,
+    "adoptedDirtyOwnerSource": false,
+    "installOrActivityAuthorityAccepted": false
+  }
+}

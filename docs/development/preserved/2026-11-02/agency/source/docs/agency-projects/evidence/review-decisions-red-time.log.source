@@ -1,0 +1,392 @@
+$ bun --bun vitest run --project unit src/features/agency-projects/reviews/reviewDecisions.test.ts "--maxWorkers=1"
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+  - ESM syntax in a file loaded as CommonJS (vitest.classify.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.5 /Users/ali/Developer/warpdrive-agency-projects
+
+ ❯ |unit| src/features/agency-projects/reviews/reviewDecisions.test.ts (43 tests | 7 failed) 29ms
+   ❯ proposed immutable review history and optimistic revision policy (21)
+     × records exact internal approval provenance without changing its input 7ms
+     × keeps staff-recorded client approval separate from internal review and external authentication 1ms
+     × preserves old decisions when a newer version starts a fresh review epoch 1ms
+     × reopens the same version without inheriting its earlier recorded client approval 1ms
+     × rejects server time after the original opening but before a prior committed approval 2ms
+     × does not move an opening backwards by a nanosecond on change or reopen 0ms
+     × permits equal server instants with different offsets and retains exact chronology receipt strings 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| src/features/agency-projects/reviews/reviewDecisions.test.ts > proposed immutable review history and optimistic revision policy > records exact internal approval provenance without changing its input
+AssertionError: expected { ok: true, value: { …(2) } } to match object { ok: true, value: { …(2) } }
+(3 matching properties omitted from actual)
+
+- Expected
++ Received
+
+@@ -3,21 +3,18 @@
+    "value": {
+      "receipt": {
+        "action": "record-internal-review",
+        "deliverableId": "defabcde-4567-4def-bcde-456789012abc",
+        "policyVersion": 1,
+-       "previousRecordedAt": "2026-11-01T05:00:00Z",
+        "previousReviewEpoch": 1,
+-       "previousReviewOpenedAt": "2026-11-01T05:00:00Z",
+        "previousRevision": 4,
+        "previousVersionReference": "https://example.invalid/Review/Model%2Fv1?variant=A%2Fb#Teil-1",
+        "projectId": "cdefabcd-3456-4cde-abcd-345678901abc",
+        "reason": null,
+        "recordedAt": "2026-11-01T06:00:00Z",
+        "recordedByUserId": "abcdefab-1234-4abc-8def-1234567890ab",
+        "reviewEpoch": 1,
+-       "reviewOpenedAt": "2026-11-01T05:00:00Z",
+        "revision": 5,
+        "versionReference": "https://example.invalid/Review/Model%2Fv1?variant=A%2Fb#Teil-1",
+      },
+      "snapshot": {
+        "currentVersionReference": "https://example.invalid/Review/Model%2Fv1?variant=A%2Fb#Teil-1",
+@@ -33,11 +30,11 @@
+            "recordedByUserId": "abcdefab-1234-4abc-8def-1234567890ab",
+            "reviewEpoch": 1,
+            "reviewedVersionReference": "https://example.invalid/Review/Model%2Fv1?variant=A%2Fb#Teil-1",
+          },
+        ],
+-       "lastRecordedAt": "2026-11-01T06:00:00Z",
++       "lastRecordedAt": "2026-11-01T05:00:00Z",
+        "reviewEpoch": 1,
+        "revision": 5,
+      },
+    },
+  }
+
+ ❯ src/features/agency-projects/reviews/reviewDecisions.test.ts:192:20
+    190|     const current = Object.freeze({ ...snapshot(), decisions: Object.f…
+    191|     const result = applyReviewCommand(current, internalReview());
+    192|     expect(result).toMatchObject({ ok: true, value: {
+       |                    ^
+    193|       snapshot: { revision: 5, reviewEpoch: 1, lastRecordedAt: nativeR…
+    194|         kind: "internal-review", outcome: "approved", reviewedVersionR…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+ FAIL  |unit| src/features/agency-projects/reviews/reviewDecisions.test.ts > proposed immutable review history and optimistic revision policy > keeps staff-recorded client approval separate from internal review and external authentication
+AssertionError: expected { ok: true, value: { …(2) } } to match object { ok: true, value: { …(2) } }
+(6 matching properties omitted from actual)
+
+- Expected
++ Received
+
+@@ -3,21 +3,18 @@
+    "value": {
+      "receipt": {
+        "action": "record-client-approval",
+        "deliverableId": "defabcde-4567-4def-bcde-456789012abc",
+        "policyVersion": 1,
+-       "previousRecordedAt": "2026-11-01T05:00:00Z",
+        "previousReviewEpoch": 1,
+-       "previousReviewOpenedAt": "2026-11-01T05:00:00Z",
+        "previousRevision": 4,
+        "previousVersionReference": "https://example.invalid/Review/Model%2Fv1?variant=A%2Fb#Teil-1",
+        "projectId": "cdefabcd-3456-4cde-abcd-345678901abc",
+        "reason": null,
+        "recordedAt": "2026-11-01T06:00:00Z",
+        "recordedByUserId": "abcdefab-1234-4abc-8def-1234567890ab",
+        "reviewEpoch": 1,
+-       "reviewOpenedAt": "2026-11-01T05:00:00Z",
+        "revision": 5,
+        "versionReference": "https://example.invalid/Review/Model%2Fv1?variant=A%2Fb#Teil-1",
+      },
+      "snapshot": {
+        "decisions": [
+@@ -33,9 +30,9 @@
+            "recordedByUserId": "abcdefab-1234-4abc-8def-1234567890ab",
+            "reviewEpoch": 1,
+            "reviewedVersionReference": "https://example.invalid/Review/Model%2Fv1?variant=A%2Fb#Teil-1",
+          },
+        ],
+-       "lastRecordedAt": "2026-11-01T06:00:00Z",
++       "lastRecordedAt": "2026-11-01T05:00:00Z",
+      },
+    },
+  }
+
+ ❯ src/features/agency-projects/reviews/reviewDecisions.test.ts:217:20
+    215|   it("keeps staff-recorded client approval separate from internal revi…
+    216|     const result = applyReviewCommand(snapshot(), recordedClientApprov…
+    217|     expect(result).toMatchObject({ ok: true, value: { snapshot: { last…
+       |                    ^
+    218|       kind: "staff-recorded-client-approval", outcome: "approved", rev…
+    219|       recordedByUserId: nativeRecorder.recordedByUserId, clientContact…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯
+
+ FAIL  |unit| src/features/agency-projects/reviews/reviewDecisions.test.ts > proposed immutable review history and optimistic revision policy > preserves old decisions when a newer version starts a fresh review epoch
+AssertionError: expected { ok: true, value: { …(2) } } to match object { ok: true, value: { …(2) } }
+(2 matching properties omitted from actual)
+
+- Expected
++ Received
+
+@@ -3,22 +3,19 @@
+    "value": {
+      "receipt": {
+        "action": "change-version",
+        "deliverableId": "defabcde-4567-4def-bcde-456789012abc",
+        "policyVersion": 1,
+-       "previousRecordedAt": "2026-11-01T06:00:00Z",
+        "previousReviewEpoch": 1,
+-       "previousReviewOpenedAt": "2026-11-01T05:00:00Z",
+        "previousRevision": 5,
+        "previousVersionReference": "https://example.invalid/Review/Model%2Fv1?variant=A%2Fb#Teil-1",
+        "projectId": "cdefabcd-3456-4cde-abcd-345678901abc",
+        "reason": "نسخه جدید / Neue Fassung
+  شرح تغییر / Änderungsgrund",
+        "recordedAt": "2026-11-01T06:00:00Z",
+        "recordedByUserId": "abcdefab-1234-4abc-8def-1234567890ab",
+        "reviewEpoch": 2,
+-       "reviewOpenedAt": "2026-11-01T06:00:00Z",
+        "revision": 6,
+        "versionReference": "https://example.invalid/Review/Model%2Fv2?variant=A%2Fb#Teil-1",
+      },
+      "snapshot": {
+        "currentVersionReference": "https://example.invalid/Review/Model%2Fv2?variant=A%2Fb#Teil-1",
+@@ -34,11 +31,11 @@
+            "recordedByUserId": "abcdefab-1234-4abc-8def-1234567890ab",
+            "reviewEpoch": 1,
+            "reviewedVersionReference": "https://example.invalid/Review/Model%2Fv1?variant=A%2Fb#Teil-1",
+          },
+        ],
+-       "lastRecordedAt": "2026-11-01T06:00:00Z",
++       "lastRecordedAt": "2026-11-01T05:00:00Z",
+        "reviewEpoch": 2,
+        "reviewOpenedAt": "2026-11-01T06:00:00Z",
+        "revision": 6,
+      },
+    },
+
+ ❯ src/features/agency-projects/reviews/reviewDecisions.test.ts:280:21
+    278|     const reason = "نسخه جدید / Neue Fassung\nشرح تغییر / Änderungsgru…
+    279|     const changed = applyReviewCommand(approved.value.snapshot, { ...c…
+    280|     expect(changed).toMatchObject({ ok: true, value: {
+       |                     ^
+    281|       snapshot: { revision: 6, reviewEpoch: 2, reviewOpenedAt: nativeR…
+    282|       receipt: {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯
+
+ FAIL  |unit| src/features/agency-projects/reviews/reviewDecisions.test.ts > proposed immutable review history and optimistic revision policy > reopens the same version without inheriting its earlier recorded client approval
+AssertionError: expected { ok: true, value: { …(2) } } to match object { ok: true, value: { …(2) } }
+(2 matching properties omitted from actual)
+
+- Expected
++ Received
+
+@@ -3,22 +3,19 @@
+    "value": {
+      "receipt": {
+        "action": "reopen-review",
+        "deliverableId": "defabcde-4567-4def-bcde-456789012abc",
+        "policyVersion": 1,
+-       "previousRecordedAt": "2026-11-01T06:00:00Z",
+        "previousReviewEpoch": 1,
+-       "previousReviewOpenedAt": "2026-11-01T05:00:00Z",
+        "previousRevision": 5,
+        "previousVersionReference": "https://example.invalid/Review/Model%2Fv1?variant=A%2Fb#Teil-1",
+        "projectId": "cdefabcd-3456-4cde-abcd-345678901abc",
+        "reason": "بررسی دوباره / Erneute Prüfung
+  تأیید قبلی محفوظ می‌ماند",
+        "recordedAt": "2026-11-01T06:00:00Z",
+        "recordedByUserId": "abcdefab-1234-4abc-8def-1234567890ab",
+        "reviewEpoch": 2,
+-       "reviewOpenedAt": "2026-11-01T06:00:00Z",
+        "revision": 6,
+        "versionReference": "https://example.invalid/Review/Model%2Fv1?variant=A%2Fb#Teil-1",
+      },
+      "snapshot": {
+        "currentVersionReference": "https://example.invalid/Review/Model%2Fv1?variant=A%2Fb#Teil-1",
+@@ -35,11 +32,11 @@
+            "recordedByUserId": "abcdefab-1234-4abc-8def-1234567890ab",
+            "reviewEpoch": 1,
+            "reviewedVersionReference": "https://example.invalid/Review/Model%2Fv1?variant=A%2Fb#Teil-1",
+          },
+        ],
+-       "lastRecordedAt": "2026-11-01T06:00:00Z",
++       "lastRecordedAt": "2026-11-01T05:00:00Z",
+        "reviewEpoch": 2,
+        "reviewOpenedAt": "2026-11-01T06:00:00Z",
+        "revision": 6,
+      },
+    },
+
+ ❯ src/features/agency-projects/reviews/reviewDecisions.test.ts:303:22
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯
+
+ FAIL  |unit| src/features/agency-projects/reviews/reviewDecisions.test.ts > proposed immutable review history and optimistic revision policy > rejects server time after the original opening but before a prior committed approval
+AssertionError: expected { ok: true, value: { …(2) } } to deeply equal { ok: false, …(1) }
+
+- Expected
++ Received
+
+  {
+-   "error": "review_time_conflict",
+-   "ok": false,
++   "ok": true,
++   "value": {
++     "receipt": {
++       "action": "record-internal-review",
++       "deliverableId": "defabcde-4567-4def-bcde-456789012abc",
++       "policyVersion": 1,
++       "previousReviewEpoch": 1,
++       "previousRevision": 5,
++       "previousVersionReference": "https://example.invalid/Review/Model%2Fv1?variant=A%2Fb#Teil-1",
++       "projectId": "cdefabcd-3456-4cde-abcd-345678901abc",
++       "reason": null,
++       "recordedAt": "2026-11-01T05:30:00Z",
++       "recordedByUserId": "abcdefab-1234-4abc-8def-1234567890ab",
++       "reviewEpoch": 1,
++       "revision": 6,
++       "versionReference": "https://example.invalid/Review/Model%2Fv1?variant=A%2Fb#Teil-1",
++     },
++     "snapshot": {
++       "currentVersionReference": "https://example.invalid/Review/Model%2Fv1?variant=A%2Fb#Teil-1",
++       "decisions": [
++         {
++           "evidenceReference": "review-note/2026-11-01",
++           "kind": "internal-review",
++           "method": "internal-review",
++           "occurredAt": "2026-11-01T05:50:00Z",
++           "outcome": "approved",
++           "recordedAt": "2026-11-01T06:00:00Z",
++           "recordedAtRevision": 5,
++           "recordedByUserId": "abcdefab-1234-4abc-8def-1234567890ab",
++           "reviewEpoch": 1,
++           "reviewedVersionReference": "https://example.invalid/Review/Model%2Fv1?variant=A%2Fb#Teil-1",
++         },
++         {
++           "evidenceReference": "review-note/2026-11-01",
++           "kind": "internal-review",
++           "method": "internal-review",
++           "occurredAt": "2026-11-01T05:20:00Z",
++           "outcome": "approved",
++           "recordedAt": "2026-11-01T05:30:00Z",
++           "recordedAtRevision": 6,
++           "recordedByUserId": "abcdefab-1234-4abc-8def-1234567890ab",
++           "reviewEpoch": 1,
++           "reviewedVersionReference": "https://example.invalid/Review/Model%2Fv1?variant=A%2Fb#Teil-1",
++         },
++       ],
++       "deliverableId": "defabcde-4567-4def-bcde-456789012abc",
++       "lastRecordedAt": "2026-11-01T06:00:00Z",
++       "projectId": "cdefabcd-3456-4cde-abcd-345678901abc",
++       "reviewEpoch": 1,
++       "reviewOpenedAt": "2026-11-01T05:00:00Z",
++       "revision": 6,
++     },
++   },
+  }
+
+ ❯ src/features/agency-projects/reviews/reviewDecisions.test.ts:432:11
+    430|       expect(applyReviewCommand(current, {
+    431|         ...command, expectedRevision: 5, recordedAt: "2026-11-01T05:30…
+    432|       })).toEqual({ ok: false, error: "review_time_conflict" });
+       |           ^
+    433|     }
+    434|     expect(current).toEqual(before);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/7]⎯
+
+ FAIL  |unit| src/features/agency-projects/reviews/reviewDecisions.test.ts > proposed immutable review history and optimistic revision policy > does not move an opening backwards by a nanosecond on change or reopen
+AssertionError: expected { ok: true, value: { …(2) } } to deeply equal { ok: false, …(1) }
+
+- Expected
++ Received
+
+  {
+-   "error": "review_time_conflict",
+-   "ok": false,
++   "ok": true,
++   "value": {
++     "receipt": {
++       "action": "change-version",
++       "deliverableId": "defabcde-4567-4def-bcde-456789012abc",
++       "policyVersion": 1,
++       "previousReviewEpoch": 1,
++       "previousRevision": 4,
++       "previousVersionReference": "https://example.invalid/Review/Model%2Fv1?variant=A%2Fb#Teil-1",
++       "projectId": "cdefabcd-3456-4cde-abcd-345678901abc",
++       "reason": "نسخه جدید / Neue Fassung",
++       "recordedAt": "2026-11-01T06:00:00.000000000Z",
++       "recordedByUserId": "abcdefab-1234-4abc-8def-1234567890ab",
++       "reviewEpoch": 2,
++       "revision": 5,
++       "versionReference": "https://example.invalid/Review/Model%2Fv2?variant=A%2Fb#Teil-1",
++     },
++     "snapshot": {
++       "currentVersionReference": "https://example.invalid/Review/Model%2Fv2?variant=A%2Fb#Teil-1",
++       "decisions": [],
++       "deliverableId": "defabcde-4567-4def-bcde-456789012abc",
++       "lastRecordedAt": "2026-11-01T06:00:00.000000001Z",
++       "projectId": "cdefabcd-3456-4cde-abcd-345678901abc",
++       "reviewEpoch": 2,
++       "reviewOpenedAt": "2026-11-01T06:00:00.000000000Z",
++       "revision": 5,
++     },
++   },
+  }
+
+ ❯ src/features/agency-projects/reviews/reviewDecisions.test.ts:449:10
+    447|     for (const command of [changeVersion(), reopenReview()]) {
+    448|       expect(applyReviewCommand(current, { ...command, recordedAt: "20…
+    449|         .toEqual({ ok: false, error: "review_time_conflict" });
+       |          ^
+    450|     }
+    451|     expect(current).toEqual(before);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/7]⎯
+
+ FAIL  |unit| src/features/agency-projects/reviews/reviewDecisions.test.ts > proposed immutable review history and optimistic revision policy > permits equal server instants with different offsets and retains exact chronology receipt strings
+AssertionError: expected { ok: true, value: { …(2) } } to match object { ok: true, value: { …(2) } }
+(18 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "ok": true,
+    "value": {
+      "receipt": {
+-       "previousRecordedAt": "2026-11-01T06:00:00.000000001Z",
+-       "previousReviewOpenedAt": "2026-11-01T06:00:00.000000001Z",
+        "recordedAt": "2026-11-01T09:30:00.000000001+03:30",
+-       "reviewOpenedAt": "2026-11-01T09:30:00.000000001+03:30",
+      },
+      "snapshot": {
+-       "lastRecordedAt": "2026-11-01T09:30:00.000000001+03:30",
++       "lastRecordedAt": "2026-11-01T06:00:00.000000001Z",
+        "reviewOpenedAt": "2026-11-01T09:30:00.000000001+03:30",
+      },
+    },
+  }
+
+ ❯ src/features/agency-projects/reviews/reviewDecisions.test.ts:459:8
+    457|     const current = { ...snapshot(), reviewOpenedAt: previous, lastRec…
+    458|     expect(applyReviewCommand(current, { ...reopenReview(), recordedAt…
+    459|       .toMatchObject({ ok: true, value: {
+       |        ^
+    460|         snapshot: { reviewOpenedAt: recordedAt, lastRecordedAt: record…
+    461|         receipt: { previousReviewOpenedAt: previous, reviewOpenedAt: r…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/7]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  7 failed | 36 passed (43)
+   Start at  04:41:59
+   Duration  174ms (import 35%, transform 31%, tests 28%, setup 4%, worker 2%)
+
+error: "vitest" exited with code 1
+error: script "test:unit" exited with code 1

@@ -1,0 +1,24 @@
+from pathlib import Path
+import os,signal,subprocess,sys,time,json,datetime
+root=Path.cwd();work=Path('/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work');floor=5*1024**3
+phase=sys.argv[1]
+if phase not in {'red-missing','red-behavior','red-visible-text','green','green-refactor'}:raise SystemExit('Invalid phase')
+def free():
+ s=os.statvfs(root);return s.f_bavail*s.f_frsize
+before=free();minimum=before
+if before<floor:print(json.dumps({'status':'held-before-launch','freeBytes':before}),flush=True);raise SystemExit(75)
+log=work/('reason-visibility-'+phase+'.log');env=os.environ.copy();env['PATH']=str(root/'.runtime/bin')+os.pathsep+env['PATH'];command=[str(root/'.runtime/bin/bun'),'run','test:unit','src/features/agency-projects/projectSchemas.test.ts','--maxWorkers=1'];started=datetime.datetime.now(datetime.timezone.utc).isoformat()
+with log.open('w') as output:
+ process=subprocess.Popen(command,cwd=root,env=env,stdout=output,stderr=subprocess.STDOUT,start_new_session=True);print(json.dumps({'phase':phase,'pid':process.pid,'timeoutSeconds':30,'beforeFreeBytes':before,'log':str(log)}),flush=True);deadline=time.monotonic()+30;stop=None
+ while process.poll() is None:
+  minimum=min(minimum,free())
+  if minimum<floor:stop='below-5GiB'
+  elif time.monotonic()>deadline:stop='timeout'
+  if stop:
+   os.killpg(process.pid,signal.SIGTERM)
+   try:process.wait(timeout=3)
+   except subprocess.TimeoutExpired:os.killpg(process.pid,signal.SIGKILL);process.wait()
+   break
+  time.sleep(.2)
+ code=process.wait();after=free();minimum=min(minimum,after);receipt={'phase':phase,'pid':process.pid,'startedAt':started,'finishedAt':datetime.datetime.now(datetime.timezone.utc).isoformat(),'terminal':True,'exitCode':code,'stopReason':stop,'beforeFreeBytes':before,'minimumFreeBytes':minimum,'afterFreeBytes':after,'floorBytes':floor,'timeoutSeconds':30,'log':str(log),'command':command};meta=work/'reason-visibility-unit-handles.json';data=json.loads(meta.read_text()) if meta.exists() else {'schemaVersion':1,'scope':'Mail recovery window permits routine small containerless selected units; no heavy campaign','runs':[]};data['runs'].append(receipt);meta.write_text(json.dumps(data,indent=2)+'\n');print(json.dumps(receipt),flush=True)
+raise SystemExit(code if stop is None else 75)

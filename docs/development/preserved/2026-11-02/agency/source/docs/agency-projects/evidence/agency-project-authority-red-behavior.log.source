@@ -1,0 +1,922 @@
+$ bun --bun vitest run --project unit src/features/agency-projects/projectLocalAccess.test.ts src/features/agency-projects/projectCreationPlan.test.ts "--maxWorkers=1"
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+  - ESM syntax in a file loaded as CommonJS (vitest.classify.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.5 /Users/ali/Developer/warpdrive-agency-projects
+
+ ❯ |unit| src/features/agency-projects/projectCreationPlan.test.ts (23 tests | 9 failed) 7ms
+   ❯ project creation plan from native staff facts (23)
+     × preserves global create semantics: regular explicit create 2ms
+     × preserves global create semantics: active native admin without flags 0ms
+     × preserves global create semantics: active native admin with unrelated flags 0ms
+     × uses ownership without an additional creator member row when both users are equal 1ms
+     × accepts an eligible selected owner without requiring that owner's global create grant 0ms
+     × plans only the fixed initial state and one creator read/edit row without copied workspace grants 0ms
+     × does not mutate or freeze caller-owned actor and staff facts 0ms
+     × does not let edits to one output alter input facts or another creation plan 0ms
+     × does not alias an earlier result to subsequently changed caller identities 0ms
+ ❯ |unit| src/features/agency-projects/projectLocalAccess.test.ts (174 tests | 124 failed) 26ms
+   ❯ project-local eligibility from trusted server facts (80)
+     × regular owner: complete local action table 4ms
+     × regular read: complete local action table 0ms
+     × regular edit: complete local action table 0ms
+     × regular coordinate: complete local action table 0ms
+     × regular both: complete local action table 0ms
+     × admin owner: complete local action table 0ms
+     × admin read: complete local action table 0ms
+     × admin edit: complete local action table 0ms
+     × admin coordinate: complete local action table 0ms
+     × admin both: complete local action table 0ms
+     × regular owner: independent assignment-coordinate grant 0ms
+     × regular coordinate: independent assignment-coordinate grant 0ms
+     × regular both: independent assignment-coordinate grant 0ms
+     × admin owner: independent assignment-coordinate grant 0ms
+     × admin coordinate: independent assignment-coordinate grant 0ms
+     × admin both: independent assignment-coordinate grant 0ms
+     × regular owner content edits respect every lifecycle state 0ms
+     × regular edit content edits respect every lifecycle state 0ms
+     × regular both content edits respect every lifecycle state 0ms
+     × admin owner content edits respect every lifecycle state 0ms
+     × admin edit content edits respect every lifecycle state 0ms
+     × admin both content edits respect every lifecycle state 0ms
+     × regular owner can maintain access in every state 0ms
+     × admin owner can maintain access in every state 0ms
+     × regular ownership does not depend on member row 0 0ms
+     × regular ownership does not depend on member row 1 0ms
+     × regular ownership does not depend on member row 2 0ms
+     × admin ownership does not depend on member row 0 0ms
+     × admin ownership does not depend on member row 1 0ms
+     × admin ownership does not depend on member row 2 0ms
+     × regular former owner retains only explicit outsider membership 0ms
+     × regular former owner retains only explicit read membership 0ms
+     × regular former owner retains only explicit edit membership 0ms
+     × regular former owner retains only explicit coordinate membership 0ms
+     × regular former owner retains only explicit both membership 0ms
+     × admin former owner retains only explicit outsider membership 0ms
+     × admin former owner retains only explicit read membership 0ms
+     × admin former owner retains only explicit edit membership 0ms
+     × admin former owner retains only explicit coordinate membership 0ms
+     × admin former owner retains only explicit both membership 0ms
+     × regular active member needs no owner-active context field 0ms
+     × admin active member needs no owner-active context field 0ms
+   ❯ local-first lifecycle delegation (94)
+     × owner planned start preserves the existing policy result 0ms
+     × owner planned hold preserves the existing policy result 0ms
+     × owner planned resume preserves the existing policy result 0ms
+     × owner planned complete preserves the existing policy result 0ms
+     × owner planned cancel preserves the existing policy result 0ms
+     × owner planned archive preserves the existing policy result 0ms
+     × owner planned restore preserves the existing policy result 0ms
+     × owner planned reopen preserves the existing policy result 0ms
+     × owner active start preserves the existing policy result 0ms
+     × owner active hold preserves the existing policy result 0ms
+     × owner active resume preserves the existing policy result 0ms
+     × owner active complete preserves the existing policy result 0ms
+     × owner active cancel preserves the existing policy result 0ms
+     × owner active archive preserves the existing policy result 0ms
+     × owner active restore preserves the existing policy result 0ms
+     × owner active reopen preserves the existing policy result 0ms
+     × owner on-hold start preserves the existing policy result 0ms
+     × owner on-hold hold preserves the existing policy result 0ms
+     × owner on-hold resume preserves the existing policy result 0ms
+     × owner on-hold complete preserves the existing policy result 0ms
+     × owner on-hold cancel preserves the existing policy result 0ms
+     × owner on-hold archive preserves the existing policy result 0ms
+     × owner on-hold restore preserves the existing policy result 0ms
+     × owner on-hold reopen preserves the existing policy result 0ms
+     × owner completed start preserves the existing policy result 0ms
+     × owner completed hold preserves the existing policy result 0ms
+     × owner completed resume preserves the existing policy result 0ms
+     × owner completed complete preserves the existing policy result 0ms
+     × owner completed cancel preserves the existing policy result 0ms
+     × owner completed archive preserves the existing policy result 0ms
+     × owner completed restore preserves the existing policy result 0ms
+     × owner completed reopen preserves the existing policy result 0ms
+     × owner canceled start preserves the existing policy result 0ms
+     × owner canceled hold preserves the existing policy result 0ms
+     × owner canceled resume preserves the existing policy result 0ms
+     × owner canceled complete preserves the existing policy result 0ms
+     × owner canceled cancel preserves the existing policy result 0ms
+     × owner canceled archive preserves the existing policy result 0ms
+     × owner canceled restore preserves the existing policy result 0ms
+     × owner canceled reopen preserves the existing policy result 1ms
+     × owner archived start preserves the existing policy result 0ms
+     × owner archived hold preserves the existing policy result 1ms
+     × owner archived resume preserves the existing policy result 0ms
+     × owner archived complete preserves the existing policy result 0ms
+     × owner archived cancel preserves the existing policy result 0ms
+     × owner archived archive preserves the existing policy result 0ms
+     × owner archived restore preserves the existing policy result 0ms
+     × owner archived reopen preserves the existing policy result 0ms
+     × regular owner receives the real revision conflict after eligibility 0ms
+     × regular edit receives the real revision conflict after eligibility 0ms
+     × admin owner receives the real revision conflict after eligibility 0ms
+     × admin edit receives the real revision conflict after eligibility 0ms
+     × regular owner hold still requires a reason 0ms
+     × regular owner cancel still requires a reason 0ms
+     × regular owner archive still requires a reason 0ms
+     × regular owner restore still requires a reason 0ms
+     × regular owner reopen still requires a reason 0ms
+     × admin owner hold still requires a reason 0ms
+     × admin owner cancel still requires a reason 0ms
+     × admin owner archive still requires a reason 0ms
+     × admin owner restore still requires a reason 0ms
+     × admin owner reopen still requires a reason 0ms
+     × regular restores archived planned without reopening it 1ms
+     × regular restores archived active without reopening it 0ms
+     × regular restores archived on-hold without reopening it 0ms
+     × regular restores archived completed without reopening it 0ms
+     × regular restores archived canceled without reopening it 0ms
+     × admin restores archived planned without reopening it 0ms
+     × admin restores archived active without reopening it 0ms
+     × admin restores archived on-hold without reopening it 0ms
+     × admin restores archived completed without reopening it 0ms
+     × admin restores archived canceled without reopening it 0ms
+     × regular explicitly reopens completed to planned 0ms
+     × regular explicitly reopens canceled to planned 0ms
+     × admin explicitly reopens completed to planned 0ms
+     × admin explicitly reopens canceled to planned 0ms
+     × regular owner cannot overflow revision 0ms
+     × regular edit cannot overflow revision 0ms
+     × admin owner cannot overflow revision 0ms
+     × admin edit cannot overflow revision 0ms
+     × regular delegation preserves exact receipt and caller facts 0ms
+     × admin delegation preserves exact receipt and caller facts 0ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 133 ⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| src/features/agency-projects/projectCreationPlan.test.ts > project creation plan from native staff facts > preserves global create semantics: regular explicit create
+ FAIL  |unit| src/features/agency-projects/projectCreationPlan.test.ts > project creation plan from native staff facts > preserves global create semantics: active native admin without flags
+ FAIL  |unit| src/features/agency-projects/projectCreationPlan.test.ts > project creation plan from native staff facts > preserves global create semantics: active native admin with unrelated flags
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/features/agency-projects/projectCreationPlan.test.ts:16:23
+     14|   it.each(globalCreateCases())("preserves global create semantics: $na…
+     15|     const result = planProjectCreation(input);
+     16|     expect(result.ok).toBe(allowed);
+       |                       ^
+     17|     if (!allowed) expect(result).toEqual(unavailable);
+     18|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/133]⎯
+
+ FAIL  |unit| src/features/agency-projects/projectCreationPlan.test.ts > project creation plan from native staff facts > uses ownership without an additional creator member row when both users are equal
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: true, value: { …(3) } }
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "creatorMembership": null,
+-     "initial": {
+-       "archivedFrom": null,
+-       "revision": 0,
+-       "state": "planned",
+-     },
+-     "ownerUserId": "abcdefab-1234-4abc-8def-1234567890ab",
+-   },
++   "error": "project_creation_unavailable",
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/projectCreationPlan.test.ts:36:40
+     34|     const input = creationInput();
+     35|     input.selectedOwner = { ...input.creator };
+     36|     expect(planProjectCreation(input)).toEqual({
+       |                                        ^
+     37|       ok: true,
+     38|       value: {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/133]⎯
+
+ FAIL  |unit| src/features/agency-projects/projectCreationPlan.test.ts > project creation plan from native staff facts > accepts an eligible selected owner without requiring that owner's global create grant
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: true, value: { …(3) } }
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "creatorMembership": {
+-       "assignmentCoordinate": false,
+-       "projectEdit": true,
+-       "userId": "abcdefab-1234-4abc-8def-1234567890ab",
+-     },
+-     "initial": {
+-       "archivedFrom": null,
+-       "revision": 0,
+-       "state": "planned",
+-     },
+-     "ownerUserId": "bcdefabc-2345-4bcd-9efa-234567890abc",
+-   },
++   "error": "project_creation_unavailable",
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/projectCreationPlan.test.ts:49:40
+     47|     const input = creationInput();
+     48|     expect(Object.keys(input.selectedOwner).sort()).toEqual(["id", "in…
+     49|     expect(planProjectCreation(input)).toEqual({ ok: true, value: expe…
+       |                                        ^
+     50|   });
+     51|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/133]⎯
+
+ FAIL  |unit| src/features/agency-projects/projectCreationPlan.test.ts > project creation plan from native staff facts > plans only the fixed initial state and one creator read/edit row without copied workspace grants
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: true, value: { …(3) } }
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "creatorMembership": {
+-       "assignmentCoordinate": false,
+-       "projectEdit": true,
+-       "userId": "abcdefab-1234-4abc-8def-1234567890ab",
+-     },
+-     "initial": {
+-       "archivedFrom": null,
+-       "revision": 0,
+-       "state": "planned",
+-     },
+-     "ownerUserId": "bcdefabc-2345-4bcd-9efa-234567890abc",
+-   },
++   "error": "project_creation_unavailable",
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/projectCreationPlan.test.ts:56:20
+     54|     input.actor.flags = new Set(["project.create", "permissions.manage…
+     55|     const result = planProjectCreation(input);
+     56|     expect(result).toEqual({ ok: true, value: expectedCreationPlan() }…
+       |                    ^
+     57|     if (!result.ok) return;
+     58|     expect(Object.keys(result.value).sort()).toEqual([
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/133]⎯
+
+ FAIL  |unit| src/features/agency-projects/projectCreationPlan.test.ts > project creation plan from native staff facts > does not mutate or freeze caller-owned actor and staff facts
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: true, value: { …(3) } }
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "creatorMembership": {
+-       "assignmentCoordinate": false,
+-       "projectEdit": true,
+-       "userId": "abcdefab-1234-4abc-8def-1234567890ab",
+-     },
+-     "initial": {
+-       "archivedFrom": null,
+-       "revision": 0,
+-       "state": "planned",
+-     },
+-     "ownerUserId": "bcdefabc-2345-4bcd-9efa-234567890abc",
+-   },
++   "error": "project_creation_unavailable",
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/projectCreationPlan.test.ts:74:40
+     72|     const input = creationInput();
+     73|     const before = structuredClone(input);
+     74|     expect(planProjectCreation(input)).toEqual({ ok: true, value: expe…
+       |                                        ^
+     75|     expect(input).toEqual(before);
+     76|     for (const value of [input, input.actor, input.actor.flags, input.…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/133]⎯
+
+ FAIL  |unit| src/features/agency-projects/projectCreationPlan.test.ts > project creation plan from native staff facts > does not let edits to one output alter input facts or another creation plan
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/features/agency-projects/projectCreationPlan.test.ts:86:22
+     84|     const first = planProjectCreation(input);
+     85|     const second = planProjectCreation(input);
+     86|     expect(first.ok).toBe(true);
+       |                      ^
+     87|     expect(second.ok).toBe(true);
+     88|     if (!first.ok || !second.ok) return;
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/133]⎯
+
+ FAIL  |unit| src/features/agency-projects/projectCreationPlan.test.ts > project creation plan from native staff facts > does not alias an earlier result to subsequently changed caller identities
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/features/agency-projects/projectCreationPlan.test.ts:104:23
+    102|     const input = creationInput();
+    103|     const result = planProjectCreation(input);
+    104|     expect(result.ok).toBe(true);
+       |                       ^
+    105|     if (!result.ok) return;
+    106|     input.selectedOwner.id = creationIds.other;
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/133]⎯
+
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > project-local eligibility from trusted server facts > regular owner: complete local action table
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > project-local eligibility from trusted server facts > regular read: complete local action table
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > project-local eligibility from trusted server facts > regular edit: complete local action table
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > project-local eligibility from trusted server facts > regular coordinate: complete local action table
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > project-local eligibility from trusted server facts > regular both: complete local action table
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > project-local eligibility from trusted server facts > admin owner: complete local action table
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > project-local eligibility from trusted server facts > admin read: complete local action table
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > project-local eligibility from trusted server facts > admin edit: complete local action table
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > project-local eligibility from trusted server facts > admin coordinate: complete local action table
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > project-local eligibility from trusted server facts > admin both: complete local action table
+AssertionError: expected { action: 'read', result: { …(2) } } to deeply equal { action: 'read', …(1) }
+
+- Expected
++ Received
+
+  {
+    "action": "read",
+    "result": {
+-     "ok": true,
+-     "value": true,
++     "error": "project_local_access_denied",
++     "ok": false,
+    },
+  }
+
+ ❯ src/features/agency-projects/projectLocalAccess.test.ts:20:96
+     18|     const current = context(type, relation);
+     19|     for (const action of actions) {
+     20|       expect({ action, result: checkProjectLocalAction(current, snapsh…
+       |                                                                                                ^
+     21|         action,
+     22|         result: expectedAccess(relation, action),
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/133]⎯
+
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > project-local eligibility from trusted server facts > regular owner: independent assignment-coordinate grant
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > project-local eligibility from trusted server facts > regular coordinate: independent assignment-coordinate grant
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > project-local eligibility from trusted server facts > regular both: independent assignment-coordinate grant
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > project-local eligibility from trusted server facts > admin owner: independent assignment-coordinate grant
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > project-local eligibility from trusted server facts > admin coordinate: independent assignment-coordinate grant
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > project-local eligibility from trusted server facts > admin both: independent assignment-coordinate grant
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/features/agency-projects/projectLocalAccess.test.ts:28:80
+     26|
+     27|   it.each(relationRows)("%s %s: independent assignment-coordinate gran…
+     28|     expect(hasProjectAssignmentCoordinateEligibility(context(type, rel…
+       |                                                                                ^
+     29|       expectedCoordinate(relation),
+     30|     );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/133]⎯
+
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > project-local eligibility from trusted server facts > regular owner content edits respect every lifecycle state
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > project-local eligibility from trusted server facts > regular edit content edits respect every lifecycle state
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > project-local eligibility from trusted server facts > regular both content edits respect every lifecycle state
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > project-local eligibility from trusted server facts > admin owner content edits respect every lifecycle state
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > project-local eligibility from trusted server facts > admin edit content edits respect every lifecycle state
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > project-local eligibility from trusted server facts > admin both content edits respect every lifecycle state
+AssertionError: expected { state: 'planned', …(1) } to deeply equal { state: 'planned', …(1) }
+
+- Expected
++ Received
+
+  {
+    "result": {
+-     "ok": true,
+-     "value": true,
++     "error": "project_local_access_denied",
++     "ok": false,
+    },
+    "state": "planned",
+  }
+
+ ❯ src/features/agency-projects/projectLocalAccess.test.ts:54:10
+     52|       const expected = ["planned", "active", "on-hold"].includes(state…
+     53|       expect({ state, result: checkProjectLocalAction(context(type, re…
+     54|         .toEqual({ state, result: expected });
+       |          ^
+     55|     }
+     56|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/133]⎯
+
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > project-local eligibility from trusted server facts > regular owner can maintain access in every state
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > project-local eligibility from trusted server facts > admin owner can maintain access in every state
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: true, value: true }
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": true,
++   "error": "project_local_access_denied",
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/projectLocalAccess.test.ts:61:90
+     59|     for (const state of states) {
+     60|       for (const action of ["manage-members", "transfer-owner"] as con…
+     61|         expect(checkProjectLocalAction(context(type, "owner"), snapsho…
+       |                                                                                          ^
+     62|       }
+     63|     }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/133]⎯
+
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > project-local eligibility from trusted server facts > regular ownership does not depend on member row 0
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > project-local eligibility from trusted server facts > regular ownership does not depend on member row 1
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > project-local eligibility from trusted server facts > regular ownership does not depend on member row 2
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > project-local eligibility from trusted server facts > admin ownership does not depend on member row 0
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > project-local eligibility from trusted server facts > admin ownership does not depend on member row 1
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > project-local eligibility from trusted server facts > admin ownership does not depend on member row 2
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: true, value: true }
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": true,
++   "error": "project_local_access_denied",
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/projectLocalAccess.test.ts:78:76
+     76|     const current = { ...context(type, "owner"), membership: row };
+     77|     for (const action of actions) {
+     78|       expect(checkProjectLocalAction(current, snapshot("active"), acti…
+       |                                                                            ^
+     79|     }
+     80|     expect(hasProjectAssignmentCoordinateEligibility(current)).toBe(tr…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/133]⎯
+
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > project-local eligibility from trusted server facts > regular former owner retains only explicit outsider membership
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > project-local eligibility from trusted server facts > regular former owner retains only explicit read membership
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > project-local eligibility from trusted server facts > regular former owner retains only explicit edit membership
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > project-local eligibility from trusted server facts > regular former owner retains only explicit coordinate membership
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > project-local eligibility from trusted server facts > regular former owner retains only explicit both membership
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > project-local eligibility from trusted server facts > admin former owner retains only explicit outsider membership
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > project-local eligibility from trusted server facts > admin former owner retains only explicit read membership
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > project-local eligibility from trusted server facts > admin former owner retains only explicit edit membership
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > project-local eligibility from trusted server facts > admin former owner retains only explicit coordinate membership
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > project-local eligibility from trusted server facts > admin former owner retains only explicit both membership
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: true, value: true }
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": true,
++   "error": "project_local_access_denied",
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/projectLocalAccess.test.ts:87:83
+     85|     const before = { ...after, ownerUserId: after.actor.id };
+     86|     const membershipBefore = structuredClone(after.membership);
+     87|     expect(checkProjectLocalAction(before, snapshot("active"), "transf…
+       |                                                                                   ^
+     88|     for (const action of actions) {
+     89|       expect({ action, result: checkProjectLocalAction(after, snapshot…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/133]⎯
+
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > project-local eligibility from trusted server facts > regular active member needs no owner-active context field
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > project-local eligibility from trusted server facts > admin active member needs no owner-active context field
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: true, value: true }
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": true,
++   "error": "project_local_access_denied",
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/projectLocalAccess.test.ts:102:66
+    100|     const current = { ...context(type, "edit"), ownerUserId: inactiveO…
+    101|     expect(Object.keys(current).sort()).toEqual(["actor", "membership"…
+    102|     expect(checkProjectLocalAction(current, snapshot(), "read")).toEqu…
+       |                                                                  ^
+    103|     expect(checkProjectLocalAction(current, snapshot(), "edit-content"…
+    104|     expect(transitionProjectForLocalActor(current, snapshot(), { actio…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/133]⎯
+
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > owner planned start preserves the existing policy result
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > owner planned hold preserves the existing policy result
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > owner planned resume preserves the existing policy result
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > owner planned complete preserves the existing policy result
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > owner planned cancel preserves the existing policy result
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > owner planned archive preserves the existing policy result
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > owner planned restore preserves the existing policy result
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > owner planned reopen preserves the existing policy result
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > owner active start preserves the existing policy result
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > owner active hold preserves the existing policy result
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > owner active resume preserves the existing policy result
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > owner active complete preserves the existing policy result
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > owner active cancel preserves the existing policy result
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > owner active archive preserves the existing policy result
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > owner active restore preserves the existing policy result
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > owner active reopen preserves the existing policy result
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > owner on-hold start preserves the existing policy result
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > owner on-hold hold preserves the existing policy result
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > owner on-hold resume preserves the existing policy result
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > owner on-hold complete preserves the existing policy result
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > owner on-hold cancel preserves the existing policy result
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > owner on-hold archive preserves the existing policy result
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > owner on-hold restore preserves the existing policy result
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > owner on-hold reopen preserves the existing policy result
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > owner completed start preserves the existing policy result
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > owner completed hold preserves the existing policy result
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > owner completed resume preserves the existing policy result
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > owner completed complete preserves the existing policy result
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > owner completed cancel preserves the existing policy result
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > owner completed archive preserves the existing policy result
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > owner completed restore preserves the existing policy result
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > owner completed reopen preserves the existing policy result
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > owner canceled start preserves the existing policy result
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > owner canceled hold preserves the existing policy result
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > owner canceled resume preserves the existing policy result
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > owner canceled complete preserves the existing policy result
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > owner canceled cancel preserves the existing policy result
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > owner canceled archive preserves the existing policy result
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > owner canceled restore preserves the existing policy result
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > owner canceled reopen preserves the existing policy result
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > owner archived start preserves the existing policy result
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > owner archived hold preserves the existing policy result
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > owner archived resume preserves the existing policy result
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > owner archived complete preserves the existing policy result
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > owner archived cancel preserves the existing policy result
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > owner archived archive preserves the existing policy result
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > owner archived restore preserves the existing policy result
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > owner archived reopen preserves the existing policy result
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: true, value: true }
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": true,
++   "error": "project_local_access_denied",
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/projectLocalAccess.test.ts:120:83
+    118|     const current = snapshot(state);
+    119|     const command = { action, expectedRevision: 7, reason: "تغییر برنا…
+    120|     expect(checkProjectLocalAction(context("regular", "owner"), curren…
+       |                                                                                   ^
+    121|     expect(transitionProjectForLocalActor(context("regular", "owner"),…
+    122|       .toEqual(transitionProject(current, command));
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/133]⎯
+
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > regular owner receives the real revision conflict after eligibility
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > regular edit receives the real revision conflict after eligibility
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > admin owner receives the real revision conflict after eligibility
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > admin edit receives the real revision conflict after eligibility
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: false, …(1) }
+
+- Expected
++ Received
+
+  {
+-   "error": "revision_conflict",
++   "error": "project_local_access_denied",
+    "ok": false,
+  }
+
+ ❯ src/features/agency-projects/projectLocalAccess.test.ts:140:9
+    138|     expect(transitionProjectForLocalActor(context(type, relation), sna…
+    139|       action: "start", expectedRevision: 6,
+    140|     })).toEqual({ ok: false, error: "revision_conflict" });
+       |         ^
+    141|   });
+    142|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/133]⎯
+
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > regular owner hold still requires a reason
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > regular owner cancel still requires a reason
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > regular owner archive still requires a reason
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > regular owner restore still requires a reason
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > regular owner reopen still requires a reason
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > admin owner hold still requires a reason
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > admin owner cancel still requires a reason
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > admin owner archive still requires a reason
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > admin owner restore still requires a reason
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > admin owner reopen still requires a reason
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: false, error: 'reason_required' }
+
+- Expected
++ Received
+
+  {
+-   "error": "reason_required",
++   "error": "project_local_access_denied",
+    "ok": false,
+  }
+
+ ❯ src/features/agency-projects/projectLocalAccess.test.ts:147:9
+    145|     expect(transitionProjectForLocalActor(context(type, "owner"), snap…
+    146|       action, expectedRevision: 7, reason: " \t\n",
+    147|     })).toEqual({ ok: false, error: "reason_required" });
+       |         ^
+    148|   });
+    149|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/133]⎯
+
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > regular restores archived planned without reopening it
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > admin restores archived planned without reopening it
+AssertionError: expected { ok: false, …(1) } to match object { ok: true, value: { next: { …(3) } } }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "next": {
+-       "archivedFrom": null,
+-       "revision": 8,
+-       "state": "planned",
+-     },
+-   },
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/projectLocalAccess.test.ts:154:22
+    152|       action: "restore", expectedRevision: 7, reason: "Wiederherstelle…
+    153|     });
+    154|     expect(restored).toMatchObject({
+       |                      ^
+    155|       ok: true,
+    156|       value: { next: { state: archivedFrom, revision: 8, archivedFrom:…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/133]⎯
+
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > regular restores archived active without reopening it
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > admin restores archived active without reopening it
+AssertionError: expected { ok: false, …(1) } to match object { ok: true, value: { next: { …(3) } } }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "next": {
+-       "archivedFrom": null,
+-       "revision": 8,
+-       "state": "active",
+-     },
+-   },
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/projectLocalAccess.test.ts:154:22
+    152|       action: "restore", expectedRevision: 7, reason: "Wiederherstelle…
+    153|     });
+    154|     expect(restored).toMatchObject({
+       |                      ^
+    155|       ok: true,
+    156|       value: { next: { state: archivedFrom, revision: 8, archivedFrom:…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/133]⎯
+
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > regular restores archived on-hold without reopening it
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > admin restores archived on-hold without reopening it
+AssertionError: expected { ok: false, …(1) } to match object { ok: true, value: { next: { …(3) } } }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "next": {
+-       "archivedFrom": null,
+-       "revision": 8,
+-       "state": "on-hold",
+-     },
+-   },
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/projectLocalAccess.test.ts:154:22
+    152|       action: "restore", expectedRevision: 7, reason: "Wiederherstelle…
+    153|     });
+    154|     expect(restored).toMatchObject({
+       |                      ^
+    155|       ok: true,
+    156|       value: { next: { state: archivedFrom, revision: 8, archivedFrom:…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/133]⎯
+
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > regular restores archived completed without reopening it
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > admin restores archived completed without reopening it
+AssertionError: expected { ok: false, …(1) } to match object { ok: true, value: { next: { …(3) } } }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "next": {
+-       "archivedFrom": null,
+-       "revision": 8,
+-       "state": "completed",
+-     },
+-   },
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/projectLocalAccess.test.ts:154:22
+    152|       action: "restore", expectedRevision: 7, reason: "Wiederherstelle…
+    153|     });
+    154|     expect(restored).toMatchObject({
+       |                      ^
+    155|       ok: true,
+    156|       value: { next: { state: archivedFrom, revision: 8, archivedFrom:…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/133]⎯
+
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > regular restores archived canceled without reopening it
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > admin restores archived canceled without reopening it
+AssertionError: expected { ok: false, …(1) } to match object { ok: true, value: { next: { …(3) } } }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "next": {
+-       "archivedFrom": null,
+-       "revision": 8,
+-       "state": "canceled",
+-     },
+-   },
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/projectLocalAccess.test.ts:154:22
+    152|       action: "restore", expectedRevision: 7, reason: "Wiederherstelle…
+    153|     });
+    154|     expect(restored).toMatchObject({
+       |                      ^
+    155|       ok: true,
+    156|       value: { next: { state: archivedFrom, revision: 8, archivedFrom:…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/133]⎯
+
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > regular explicitly reopens completed to planned
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > regular explicitly reopens canceled to planned
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > admin explicitly reopens completed to planned
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > admin explicitly reopens canceled to planned
+AssertionError: expected { ok: false, …(1) } to match object { ok: true, value: { next: { …(3) } } }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "next": {
+-       "archivedFrom": null,
+-       "revision": 8,
+-       "state": "planned",
+-     },
+-   },
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/projectLocalAccess.test.ts:167:9
+    165|     expect(transitionProjectForLocalActor(context(type, "owner"), snap…
+    166|       action: "reopen", expectedRevision: 7, reason: "Neue Produktion",
+    167|     })).toMatchObject({
+       |         ^
+    168|       ok: true,
+    169|       value: { next: { state: "planned", revision: 8, archivedFrom: nu…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/133]⎯
+
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > regular owner cannot overflow revision
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > regular edit cannot overflow revision
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > admin owner cannot overflow revision
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > admin edit cannot overflow revision
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: false, …(1) }
+
+- Expected
++ Received
+
+  {
+-   "error": "revision_exhausted",
++   "error": "project_local_access_denied",
+    "ok": false,
+  }
+
+ ❯ src/features/agency-projects/projectLocalAccess.test.ts:179:9
+    177|     expect(transitionProjectForLocalActor(context(type, relation), sna…
+    178|       action: "start", expectedRevision: Number.MAX_SAFE_INTEGER,
+    179|     })).toEqual({ ok: false, error: "revision_exhausted" });
+       |         ^
+    180|   });
+    181|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/133]⎯
+
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > regular delegation preserves exact receipt and caller facts
+ FAIL  |unit| src/features/agency-projects/projectLocalAccess.test.ts > local-first lifecycle delegation > admin delegation preserves exact receipt and caller facts
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: true, value: { …(2) } }
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "next": {
+-       "archivedFrom": null,
+-       "revision": 8,
+-       "state": "active",
+-     },
+-     "receipt": {
+-       "action": "start",
+-       "from": "planned",
+-       "policyVersion": 1,
+-       "previousRevision": 7,
+-       "reason": "هماهنگی / Abstimmung",
+-       "revision": 8,
+-       "to": "active",
+-     },
+-   },
++   "error": "project_local_access_denied",
++   "ok": false,
+  }
+
+ ❯ src/features/agency-projects/projectLocalAccess.test.ts:191:71
+    189|     Object.freeze(project);
+    190|     Object.freeze(command);
+    191|     expect(transitionProjectForLocalActor(current, project, command)).…
+       |                                                                       ^
+    192|     expect({ current, project, command }).toEqual(before);
+    193|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/133]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  133 failed | 64 passed (197)
+   Start at  09:52:04
+   Duration  363ms (tests 40%, transform 27%, import 23%, setup 6%, worker 4%)
+
+error: "vitest" exited with code 1
+error: script "test:unit" exited with code 1

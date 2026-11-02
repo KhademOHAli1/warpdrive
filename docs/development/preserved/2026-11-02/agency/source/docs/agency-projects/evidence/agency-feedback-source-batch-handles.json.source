@@ -1,0 +1,200 @@
+{
+  "schemaVersion": 1,
+  "scope": "Pending exact3-file feedback source-check window,30seconds total",
+  "window": {
+    "grantSourceThreadId": "01a18868-3300-7dc2-b49d-c3bdb067fae7",
+    "budgetSeconds": 30,
+    "teardownReserveSeconds": 1,
+    "startedAt": "2026-11-01T07:55:06.333916+00:00",
+    "deadlineMonotonic": 562718.017197166
+  },
+  "runs": [
+    {
+      "phase": "types",
+      "attempt": "1",
+      "pid": 38212,
+      "startedAt": "2026-11-01T07:55:06.334378+00:00",
+      "finishedAt": "2026-11-01T07:55:06.969578+00:00",
+      "terminal": true,
+      "exitCode": 0,
+      "stopReason": null,
+      "beforeFreeBytes": 13278859264,
+      "minimumFreeBytes": 13276880896,
+      "afterFreeBytes": 13293420544,
+      "floorBytes": 5368709120,
+      "windowRemainingSecondsAtLaunch": 28.999787666019984,
+      "windowBudgetSeconds": 30,
+      "log": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/agency-feedback-source-types-1.log",
+      "command": [
+        "/Users/ali/Developer/warpdrive-agency-projects/.runtime/bin/bun",
+        "--smol",
+        "node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "-p",
+        ".runtime/tsconfig.feedback-boundary.json"
+      ]
+    },
+    {
+      "phase": "biome-check",
+      "attempt": "1",
+      "pid": 38227,
+      "startedAt": "2026-11-01T07:55:07.042915+00:00",
+      "finishedAt": "2026-11-01T07:55:07.258370+00:00",
+      "terminal": true,
+      "exitCode": 1,
+      "stopReason": null,
+      "beforeFreeBytes": 13293801472,
+      "minimumFreeBytes": 13293793280,
+      "afterFreeBytes": 13297655808,
+      "floorBytes": 5368709120,
+      "windowRemainingSecondsAtLaunch": 28.291242333012633,
+      "windowBudgetSeconds": 30,
+      "log": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/agency-feedback-source-biome-check-1.log",
+      "command": [
+        "/Users/ali/Developer/warpdrive-agency-projects/.runtime/bin/bun",
+        "node_modules/@biomejs/biome/bin/biome",
+        "check",
+        "src/features/agency-projects/feedbackRecord.ts",
+        "src/features/agency-projects/feedbackRecord.test.ts",
+        "src/features/agency-projects/feedbackRecord.test-support.ts"
+      ]
+    },
+    {
+      "phase": "biome-write",
+      "attempt": "1",
+      "pid": 38266,
+      "startedAt": "2026-11-01T07:55:12.942847+00:00",
+      "finishedAt": "2026-11-01T07:55:13.051174+00:00",
+      "terminal": true,
+      "exitCode": 0,
+      "stopReason": null,
+      "beforeFreeBytes": 13286731776,
+      "minimumFreeBytes": 13286690816,
+      "afterFreeBytes": 13286690816,
+      "floorBytes": 5368709120,
+      "windowRemainingSecondsAtLaunch": 22.39128687500488,
+      "windowBudgetSeconds": 30,
+      "log": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/agency-feedback-source-biome-write-1.log",
+      "command": [
+        "/Users/ali/Developer/warpdrive-agency-projects/.runtime/bin/bun",
+        "node_modules/@biomejs/biome/bin/biome",
+        "check",
+        "--write",
+        "src/features/agency-projects/feedbackRecord.ts",
+        "src/features/agency-projects/feedbackRecord.test.ts",
+        "src/features/agency-projects/feedbackRecord.test-support.ts"
+      ]
+    },
+    {
+      "phase": "eslint",
+      "attempt": "1",
+      "pid": 38278,
+      "startedAt": "2026-11-01T07:55:13.120402+00:00",
+      "finishedAt": "2026-11-01T07:55:14.956345+00:00",
+      "terminal": true,
+      "exitCode": 0,
+      "stopReason": null,
+      "beforeFreeBytes": 13287735296,
+      "minimumFreeBytes": 13258711040,
+      "afterFreeBytes": 13282983936,
+      "floorBytes": 5368709120,
+      "windowRemainingSecondsAtLaunch": 22.213729833019897,
+      "windowBudgetSeconds": 30,
+      "log": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/agency-feedback-source-eslint-1.log",
+      "command": [
+        "/Users/ali/Developer/warpdrive-agency-projects/.runtime/bin/bun",
+        "--smol",
+        "node_modules/eslint/bin/eslint.js",
+        "--config",
+        ".runtime/feedback-eslint.mjs",
+        "src/features/agency-projects/feedbackRecord.ts",
+        "src/features/agency-projects/feedbackRecord.test.ts",
+        "src/features/agency-projects/feedbackRecord.test-support.ts"
+      ]
+    },
+    {
+      "phase": "types",
+      "attempt": "2",
+      "pid": 38294,
+      "startedAt": "2026-11-01T07:55:15.020730+00:00",
+      "finishedAt": "2026-11-01T07:55:15.448629+00:00",
+      "terminal": true,
+      "exitCode": 0,
+      "stopReason": null,
+      "beforeFreeBytes": 13279694848,
+      "minimumFreeBytes": 13275656192,
+      "afterFreeBytes": 13275656192,
+      "floorBytes": 5368709120,
+      "windowRemainingSecondsAtLaunch": 20.313397124991752,
+      "windowBudgetSeconds": 30,
+      "log": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/agency-feedback-source-types-2.log",
+      "command": [
+        "/Users/ali/Developer/warpdrive-agency-projects/.runtime/bin/bun",
+        "--smol",
+        "node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "-p",
+        ".runtime/tsconfig.feedback-boundary.json"
+      ]
+    },
+    {
+      "phase": "biome-check",
+      "attempt": "2",
+      "pid": 38305,
+      "startedAt": "2026-11-01T07:55:15.515139+00:00",
+      "finishedAt": "2026-11-01T07:55:15.624368+00:00",
+      "terminal": true,
+      "exitCode": 0,
+      "stopReason": null,
+      "beforeFreeBytes": 13280559104,
+      "minimumFreeBytes": 13280043008,
+      "afterFreeBytes": 13280043008,
+      "floorBytes": 5368709120,
+      "windowRemainingSecondsAtLaunch": 19.81898437498603,
+      "windowBudgetSeconds": 30,
+      "log": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/agency-feedback-source-biome-check-2.log",
+      "command": [
+        "/Users/ali/Developer/warpdrive-agency-projects/.runtime/bin/bun",
+        "node_modules/@biomejs/biome/bin/biome",
+        "check",
+        "src/features/agency-projects/feedbackRecord.ts",
+        "src/features/agency-projects/feedbackRecord.test.ts",
+        "src/features/agency-projects/feedbackRecord.test-support.ts"
+      ]
+    }
+  ],
+  "terminalSummary": {
+    "groups": [
+      {
+        "pid": 38212,
+        "state": "empty"
+      },
+      {
+        "pid": 38227,
+        "state": "empty"
+      },
+      {
+        "pid": 38266,
+        "state": "empty"
+      },
+      {
+        "pid": 38278,
+        "state": "empty"
+      },
+      {
+        "pid": 38294,
+        "state": "empty"
+      },
+      {
+        "pid": 38305,
+        "state": "empty"
+      }
+    ],
+    "elapsedSeconds": 9.28999,
+    "minimumFreeBytes": 13258711040,
+    "serial": true,
+    "released": true,
+    "productionSourceUnchanged": true,
+    "formatOnlyTestChanges": false
+  }
+}

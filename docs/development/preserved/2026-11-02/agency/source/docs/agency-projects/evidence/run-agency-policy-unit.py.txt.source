@@ -1,0 +1,29 @@
+from pathlib import Path
+import os,signal,subprocess,sys,time,json
+root=Path.cwd(); floor=3*1024**3
+phase=sys.argv[1]
+if phase not in {'red-missing','red-behavior','red-epoch','red-time','green','green-final'}:raise SystemExit('Unknown scoped phase')
+def free():
+ s=os.statvfs(root);return s.f_bavail*s.f_frsize
+before=free()
+if before<floor:
+ print(json.dumps({'status':'held-before-launch','freeBytes':before,'floorBytes':floor}),flush=True);raise SystemExit(75)
+log=Path('/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work')/('review-decisions-'+phase+'.log')
+env=os.environ.copy();env['PATH']=str(root/'.runtime/bin')+os.pathsep+env['PATH']
+command=[str(root/'.runtime/bin/bun'),'run','test:unit','src/features/agency-projects/reviews/reviewDecisions.test.ts','--maxWorkers=1']
+with log.open('w') as output:
+ process=subprocess.Popen(command,cwd=root,env=env,stdout=output,stderr=subprocess.STDOUT,start_new_session=True)
+ print(json.dumps({'phase':phase,'pid':process.pid,'timeoutSeconds':30,'beforeFreeBytes':before,'log':str(log),'command':command}),flush=True)
+ deadline=time.monotonic()+30;stop=None
+ while process.poll() is None:
+  if free()<floor:stop='below-3GiB'
+  elif time.monotonic()>deadline:stop='timeout'
+  if stop:
+   os.killpg(process.pid,signal.SIGTERM)
+   try:process.wait(timeout=3)
+   except subprocess.TimeoutExpired:os.killpg(process.pid,signal.SIGKILL);process.wait()
+   break
+  time.sleep(.2)
+ code=process.wait()
+ print(json.dumps({'phase':phase,'pid':process.pid,'terminal':True,'exitCode':code,'stopReason':stop,'afterFreeBytes':free(),'log':str(log)}),flush=True)
+raise SystemExit(code if stop is None else 75)

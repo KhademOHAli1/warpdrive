@@ -1,0 +1,13 @@
+import { err } from "@/types/result";
+
+export function checkProjectLocalAction(_context: unknown, _snapshot: unknown, _action: unknown) {
+  return err("project_local_access_denied");
+}
+
+export function hasProjectAssignmentCoordinateEligibility(_context: unknown) {
+  return false;
+}
+
+export function transitionProjectForLocalActor(_context: unknown, _snapshot: unknown, _command: unknown) {
+  return err("project_local_access_denied");
+}

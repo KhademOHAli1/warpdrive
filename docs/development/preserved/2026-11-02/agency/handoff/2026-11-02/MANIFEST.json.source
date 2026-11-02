@@ -1,0 +1,1745 @@
+{
+  "owner": "Agency",
+  "state": "UNFINISHED PRESERVATION - NOT FOR DEPLOYMENT",
+  "originalHead": "ec63a5bea531849c96202c859e8055845908895d",
+  "branch": "codex/preserve-agency-20261102",
+  "sourceFiles": [
+    {
+      "status": " M",
+      "path": "docs/agency-projects/TASKS.live.csv",
+      "mode": "0o644",
+      "bytes": 88591,
+      "symlink": false,
+      "sha256": "94fcb2c7c4c4d36433c07a9785f9561a322a926d3d9b04793d6fc6491010bc83",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "docs/agency-projects/TASKS.live.json",
+      "mode": "0o644",
+      "bytes": 116896,
+      "symlink": false,
+      "sha256": "c7d58494e05b5aaf70e7c61a5ba75c2e5bb3aab71fac7b1e41083cdabe4b9134",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/features/agency-projects/authorityConnectionBoundary.test.ts",
+      "mode": "0o644",
+      "bytes": 4942,
+      "symlink": false,
+      "sha256": "88aecb8f48a8e04673fbbdb44439e1fa18a3df238536084f8ea7a413d1b05e7b",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/features/agency-projects/authorityTransactionCandidate.test.ts",
+      "mode": "0o644",
+      "bytes": 11909,
+      "symlink": false,
+      "sha256": "6035d01adcf78486739374ce31f9e21c5e60dacd3c1b1abb8e10c75215e3be54",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/features/agency-projects/authorityTransactionCandidate.ts",
+      "mode": "0o644",
+      "bytes": 851,
+      "symlink": false,
+      "sha256": "450fc04a32eb7a45b04f27abcf810b63a5e2a968876e70950b2bebe703ef4110",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/features/agency-projects/projectLifecycle.test.ts",
+      "mode": "0o644",
+      "bytes": 7171,
+      "symlink": false,
+      "sha256": "31cdb99269364d3d591982c7bf9d391943821642ee9d058b5caa2c194aca032d",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/features/agency-projects/reasonBoundary.test.ts",
+      "mode": "0o644",
+      "bytes": 3032,
+      "symlink": false,
+      "sha256": "1d639dd710e07d40e07ecf611136684730ae6b9038e5b1c4e942df3c335be3ff",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/features/agency-projects/reviews/ReviewDecisionHistory.provenance.test.tsx",
+      "mode": "0o644",
+      "bytes": 5546,
+      "symlink": false,
+      "sha256": "8f504c2deb00fe34bd3abd4f03796c7c7a342a5bf6cba9f2c556d2491e399fe8",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/features/agency-projects/reviews/ReviewDecisionHistory.test-support.tsx",
+      "mode": "0o644",
+      "bytes": 4079,
+      "symlink": false,
+      "sha256": "7c223ceb11c895bff91af1128636e2cc083ef310f4d2412e10d7981a12d47411",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/features/agency-projects/valueSchemas.ts",
+      "mode": "0o644",
+      "bytes": 1420,
+      "symlink": false,
+      "sha256": "883b4f3ab4fe0eac9581e8fa1234087a7e5958df190251d9d2e9a0e4abd4d289",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "docs/agency-projects/main-adoption/core-policy-20261101.md",
+      "mode": "0o644",
+      "bytes": 4151,
+      "symlink": false,
+      "sha256": "de805befe9eca86a694c4c45f0641b3b254b17e42d38bad00829f6a301ab39b0",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "docs/agency-projects/main-adoption/create-read-start-20261101.md",
+      "mode": "0o644",
+      "bytes": 5134,
+      "symlink": false,
+      "sha256": "235adefefcdd11a12a25425a2c80f3e44c91b0dace5884e064dcca49fb6cc6dd",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "docs/agency-projects/main-adoption/create-read-start-20261102.md",
+      "mode": "0o644",
+      "bytes": 4818,
+      "symlink": false,
+      "sha256": "ec841de388a8c2f3f60a73c84c8f177c3b01d50cd32064907592ffce912e916d",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "docs/agency-projects/main-adoption/review-history-ui-20261102.md",
+      "mode": "0o644",
+      "bytes": 2042,
+      "symlink": false,
+      "sha256": "65f36dd899417d7955527f669d557e878ec9b89d34dcfd53417a0f0e57a19a03",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "docs/agency-projects/project-create-read-start-contract.md",
+      "mode": "0o644",
+      "bytes": 6609,
+      "symlink": false,
+      "sha256": "fb288121a29bb0e34d822de9aa3d549b222a3ed0999c8233073f969360cedc0b",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "docs/agency-projects/project-list-boundary-contract.md",
+      "mode": "0o644",
+      "bytes": 6447,
+      "symlink": false,
+      "sha256": "d5e40bee5c3d2551beb0a2ca451e03ac43802e0bb8a9a06004f8cddcc6c136cb",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "docs/agency-projects/project-list-native-contract.md",
+      "mode": "0o644",
+      "bytes": 6568,
+      "symlink": false,
+      "sha256": "a09d80fd809f66ff30c4a1f5368e3fcad9e94cbd51eff1f84f406cfc3235e474",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/ProjectCreationForm.test-support.tsx",
+      "mode": "0o644",
+      "bytes": 2461,
+      "symlink": false,
+      "sha256": "67009c9781bdafc87ae752bfeb910f8516921c04bf18543922abcd553f03d419",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/ProjectCreationForm.test.tsx",
+      "mode": "0o644",
+      "bytes": 8122,
+      "symlink": false,
+      "sha256": "6836891adb3c20e551db6cd9d8b8b8de2449a6dd5d0b44b0d12f5262f5d1c112",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/ProjectCreationForm.tsx",
+      "mode": "0o644",
+      "bytes": 5200,
+      "symlink": false,
+      "sha256": "7a77ba5dce40795f34b408cb1ff9e41df147bd7ad14b0453b3414b2d8926fd60",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/ProjectCreationRecovery.test.tsx",
+      "mode": "0o644",
+      "bytes": 5168,
+      "symlink": false,
+      "sha256": "1bf76a261e32bacebd5f03878b051a5d2fdfddedda215ea80b3038fe82336ebd",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/ProjectCreationSubmission.test.tsx",
+      "mode": "0o644",
+      "bytes": 7151,
+      "symlink": false,
+      "sha256": "109f7bc4f60af1d71ac2b61ed3e05be44907747284db558a7c37542a6e6d3ea9",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/ProjectListView.lifecycle.test.tsx",
+      "mode": "0o644",
+      "bytes": 4803,
+      "symlink": false,
+      "sha256": "41ab4216c74425fcfeac0a5b113eb6c3afa10c045d05629d721a2db8c7cfdad2",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/ProjectListView.test-support.tsx",
+      "mode": "0o644",
+      "bytes": 2187,
+      "symlink": false,
+      "sha256": "28b06c1b7e0bd017c47b2d54d81e3b18ada4a1fcf43f1509b8c378243c2bde75",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/ProjectListView.test.tsx",
+      "mode": "0o644",
+      "bytes": 7165,
+      "symlink": false,
+      "sha256": "eb691503c218067428bcb11e9485b69e19aaacc505248c4af9ef37d39394d1cd",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/ProjectListView.tsx",
+      "mode": "0o644",
+      "bytes": 4974,
+      "symlink": false,
+      "sha256": "3e1fa04a164dcac93d2d26bd74c4b6a87d624bc4645335584e71574564dd39e7",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/ProjectWorkspaceSummary.test-support.tsx",
+      "mode": "0o644",
+      "bytes": 1989,
+      "symlink": false,
+      "sha256": "0ea14e910a55f11833a5392ab91f336ec4c42a23ab397a955e3e7f68ee0228d1",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/ProjectWorkspaceSummary.test.tsx",
+      "mode": "0o644",
+      "bytes": 11721,
+      "symlink": false,
+      "sha256": "e7cde67e3c89b04125bddf74863d72527f6059ef2a64453ae4d4faa02e28db74",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/ProjectWorkspaceSummary.tsx",
+      "mode": "0o644",
+      "bytes": 4632,
+      "symlink": false,
+      "sha256": "007d78449e213ef0c7b57dcf46f4849644f3831ff9b113aea89aa26a51f57bf4",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/agencyProjectsMessages.ts",
+      "mode": "0o644",
+      "bytes": 796,
+      "symlink": false,
+      "sha256": "9ba1f0e017d5a818c9ecfea9e1d16257622bf019ca58c16e5bad2562166ee2fd",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/messages/agencyProjects.de.json",
+      "mode": "0o644",
+      "bytes": 5653,
+      "symlink": false,
+      "sha256": "1e040fa9197d10fea7546f784f21f8cb83178bb38f5fda5fabb62ca4ab6f7f68",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/messages/agencyProjects.en.json",
+      "mode": "0o644",
+      "bytes": 5020,
+      "symlink": false,
+      "sha256": "c691c980d7ed6eb6595d451682b2624139f69620633136ed76e57c24119ebe20",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/messages/agencyProjects.fa.json",
+      "mode": "0o644",
+      "bytes": 6973,
+      "symlink": false,
+      "sha256": "81c55d90e1956b3651522e9fda9c8fb0ca76ac9b2009c91c3c4bcdad3b5d16d1",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/persistence/0099_agency_projects.sql",
+      "mode": "0o644",
+      "bytes": 8404,
+      "symlink": false,
+      "sha256": "7e1b309ffa088199e2e152d33688662146c8ee40a849fc494327f3b942380dfe",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/persistence/agencyFixture0098.globalSetup.ts",
+      "mode": "0o644",
+      "bytes": 666,
+      "symlink": false,
+      "sha256": "579ac2c87fb03b48c54958c83cfcbea3f1a7a975fd643738c1284226753302dc",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/persistence/agencyFixture0098Admission.integration.test.ts",
+      "mode": "0o644",
+      "bytes": 1850,
+      "symlink": false,
+      "sha256": "095946bc71f9d9f48ea0bac02621e6307613b100667818c2015d3f6fa8f35d9f",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/persistence/agencyFixture0098Admission.vitest.config.ts",
+      "mode": "0o644",
+      "bytes": 675,
+      "symlink": false,
+      "sha256": "d05685bd18bef5eaeaaaf2a4040ba4b18f15ce0ad199e764861859406a3d76dd",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/persistence/agencyPersistence.fixtureManifest.ts",
+      "mode": "0o644",
+      "bytes": 4494,
+      "symlink": false,
+      "sha256": "1a0d88631dc84333501fbcc3eedbc9e0c3f63e0b539633be8b150d62a4f92a1d",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/persistence/agencyPersistence.globalSetup.ts",
+      "mode": "0o644",
+      "bytes": 7929,
+      "symlink": false,
+      "sha256": "ba710a4b86cc57698e76f0bd4226cb0e096d58ae16f3ccb4d98de67a756aeb79",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/persistence/agencyPersistence.vitest.config.ts",
+      "mode": "0o644",
+      "bytes": 947,
+      "symlink": false,
+      "sha256": "4f56a54eeb05fc53256fc029db7880dac62c31182e86acfedf86e682b0df0858",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/persistence/agencyPersistenceClosure.vitest.config.ts",
+      "mode": "0o644",
+      "bytes": 541,
+      "symlink": false,
+      "sha256": "5bf2f77993ee08db7e2c60b258fd49f4dde48a66806e2c3ed265ee1c1bc92827",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/persistence/agencyPersistenceCompatibility.vitest.config.ts",
+      "mode": "0o644",
+      "bytes": 578,
+      "symlink": false,
+      "sha256": "80490ed6fde6df9e103fbde934e22bf784e5daa887c2478ce88e9227d344865e",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/persistence/agencyPersistenceCompatibilityClosure.vitest.config.ts",
+      "mode": "0o644",
+      "bytes": 557,
+      "symlink": false,
+      "sha256": "8ad96e607018f7a987bffaee7b6d855cd2f469184da977cc9287ec7d5d7022da",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/persistence/agencyProjectJourney.vitest.config.ts",
+      "mode": "0o644",
+      "bytes": 619,
+      "symlink": false,
+      "sha256": "93a02067c468e61eaca3db3e8cfb3f51f61bbd71a849925c70ffe878dcf6c6bf",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/persistence/agencyProjectList.vitest.config.ts",
+      "mode": "0o644",
+      "bytes": 499,
+      "symlink": false,
+      "sha256": "d9e802a37541ac8403128bb6bdacc7e4db6db1b2216dfad66b2690c07afee296",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/persistence/agencyRepositoryQualification.vitest.config.ts",
+      "mode": "0o644",
+      "bytes": 555,
+      "symlink": false,
+      "sha256": "b78c07944a428ff63bd5a7a14323ae9acaca675419e2ee6597d8acc842e463e2",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/persistence/projectList.integration.test.ts",
+      "mode": "0o644",
+      "bytes": 10942,
+      "symlink": false,
+      "sha256": "1f026e115f924a5233b79a47ff66d1b6d52cb792c33b6e58c23f292b1ebc771c",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/persistence/projectList.test-support.ts",
+      "mode": "0o644",
+      "bytes": 6075,
+      "symlink": false,
+      "sha256": "78d4e6dc700e6ea9c60766c450efa13b4228c5e91e700779487067847e9505cd",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/persistence/projectListCursor.test.ts",
+      "mode": "0o644",
+      "bytes": 10171,
+      "symlink": false,
+      "sha256": "271ff350674a39265293c6961c4f4a7ef9219b490cbb9b144a1137c722e87fb7",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/persistence/projectListCursor.ts",
+      "mode": "0o644",
+      "bytes": 2103,
+      "symlink": false,
+      "sha256": "8c15149b54ddedb3777e65b0286cb060f0ec59ee97ee5ff3d9524170c3d5bffc",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/persistence/projectListInput.test.ts",
+      "mode": "0o644",
+      "bytes": 5496,
+      "symlink": false,
+      "sha256": "34702b77d0877ff7914a7455f40dbb29e55c74ebcdc2a503bcd758b16ed11ad3",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/persistence/projectListInput.ts",
+      "mode": "0o644",
+      "bytes": 2100,
+      "symlink": false,
+      "sha256": "2fb1a48998ed44345ebdff1882c82313536b265899e0f27d85e7ba0354b2d7a3",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/persistence/projectListPaging.integration.test.ts",
+      "mode": "0o644",
+      "bytes": 10956,
+      "symlink": false,
+      "sha256": "082326d195eec8500d4b97384a35cc33df68357f8f054e5bd1d1893a4e448756",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/persistence/projectListQuery.ts",
+      "mode": "0o644",
+      "bytes": 3633,
+      "symlink": false,
+      "sha256": "f39ebf27d57196f483afd75161f3db82794500c08b9c8c48df0382d5ef4292d0",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/persistence/projectListRepository.ts",
+      "mode": "0o644",
+      "bytes": 2885,
+      "symlink": false,
+      "sha256": "456f23f3a0c2f51feab0c58ce00074f46b52cab7705e4f213ffbd7e7d7ce9aa0",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/persistence/projectListTypes.ts",
+      "mode": "0o644",
+      "bytes": 2006,
+      "symlink": false,
+      "sha256": "14c40f90b309d5e10662e358b7eb905c83c78f7c56858784e81fbd9ee06396b7",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/persistence/projectListVisibility.ts",
+      "mode": "0o644",
+      "bytes": 2200,
+      "symlink": false,
+      "sha256": "ad6a01616c6e0f1d9e15e8c914e943ee7db8484169895ad9cba8f96f9abbd406",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/persistence/projectPersistence.integration.test.ts",
+      "mode": "0o644",
+      "bytes": 5372,
+      "symlink": false,
+      "sha256": "edd27a7dcbe87ec046c8d20aa0fc5313d36d8465a90557a0b0fe63ec8dd88565",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/persistence/projectPersistence.seeds.ts",
+      "mode": "0o644",
+      "bytes": 2256,
+      "symlink": false,
+      "sha256": "054131615b687f46ef0bf99147db87600745f508899f122a02965f87223852db",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/persistence/projectPersistence.test-support.ts",
+      "mode": "0o644",
+      "bytes": 411,
+      "symlink": false,
+      "sha256": "11e61916a88e1bbcdb11856fe88adf031426522b5eee40fdbc875751d77dc7ab",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/persistence/projectPersistenceCompatibility.integration.test.ts",
+      "mode": "0o644",
+      "bytes": 3816,
+      "symlink": false,
+      "sha256": "5325355309afb73e55a0b8b3ff039757cf092c855b5c18a4a5bc00c4b3ebd3f7",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/persistence/projectReceipts.integration.test.ts",
+      "mode": "0o644",
+      "bytes": 9144,
+      "symlink": false,
+      "sha256": "be89f3ae8df509a2ff0f4d6ec13f2ea92feebb59e973e20a43d236e6a89a725b",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/persistence/projectRepository.integration.test.ts",
+      "mode": "0o644",
+      "bytes": 9383,
+      "symlink": false,
+      "sha256": "84c865e343ea5c956741052fa71ef901da7d3625ffc7e67e38439f6125665212",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/persistence/projectRepository.test-support.ts",
+      "mode": "0o644",
+      "bytes": 4585,
+      "symlink": false,
+      "sha256": "a23dd164c06fb732b9d7e23ad2827406d8b4c3d2fa03f0ffaac6ba4ff55e5729",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/persistence/projectRepository.ts",
+      "mode": "0o644",
+      "bytes": 3426,
+      "symlink": false,
+      "sha256": "d87204f7b1f94882cb52028d1bcbdf302de3ec1f16bdcb5d7974f24d9d9ef405",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/persistence/projectRepositoryAccess.ts",
+      "mode": "0o644",
+      "bytes": 1954,
+      "symlink": false,
+      "sha256": "6b1ad93ced0469a748add781f58f2050a1936ff7265b050b95444ffe9ca6a858",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/persistence/projectRepositoryConcurrency.integration.test.ts",
+      "mode": "0o644",
+      "bytes": 9901,
+      "symlink": false,
+      "sha256": "dacc00318fe601a256dadd57d4b3316de73aed4409bd6623b40a43e3a167638a",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/persistence/projectRepositoryCreate.ts",
+      "mode": "0o644",
+      "bytes": 2493,
+      "symlink": false,
+      "sha256": "a85bdc8e301e9daab362bd1c218af027ef9d68d1b84188363198d5ef20579c68",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/persistence/projectRepositoryCrm.integration.test.ts",
+      "mode": "0o644",
+      "bytes": 4527,
+      "symlink": false,
+      "sha256": "d85ee29c594ce5276355ff631abc8894ffea808c8089f4a92ec0ebf14b1bd5fb",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/persistence/projectRepositoryHistory.ts",
+      "mode": "0o644",
+      "bytes": 1196,
+      "symlink": false,
+      "sha256": "4dddf79ef6433e4e62e105b89e47967f9476d15e700e86284b4ef46bdda8f7c6",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/persistence/projectRepositoryReplay.ts",
+      "mode": "0o644",
+      "bytes": 3924,
+      "symlink": false,
+      "sha256": "9462228a91e0c0ee0f8e47725126846b05999cee909bb5005368cbe4d40fa4f4",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/persistence/projectRepositoryStart.ts",
+      "mode": "0o644",
+      "bytes": 2478,
+      "symlink": false,
+      "sha256": "0a2da32010c584a3a9ed208b146afb7010762041e5463da653ddebd3692d6c39",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/persistence/projectRepositoryTables.ts",
+      "mode": "0o644",
+      "bytes": 3148,
+      "symlink": false,
+      "sha256": "ceffb36ad4d58041142e1653f67f10dfa1867299770121a05f049f48407603fc",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/persistence/projectRepositoryTypes.ts",
+      "mode": "0o644",
+      "bytes": 3776,
+      "symlink": false,
+      "sha256": "f021cc4ddf8f5edcaf2a511acbfcca5ddf21de920d5ec44e15f6e673f453a8e0",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/persistence/projectStartInput.ts",
+      "mode": "0o644",
+      "bytes": 441,
+      "symlink": false,
+      "sha256": "e4fd61d72dd58acaa81224573867cc1a98c792ebf7a9a080ebcedfa794e20cc2",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/projectCreationInput.test.ts",
+      "mode": "0o644",
+      "bytes": 4322,
+      "symlink": false,
+      "sha256": "a6afae0a8cb3c09a191d4fc72398e7d98d4393d44146aae86c966bb4cdc544b5",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/projectCreationInput.ts",
+      "mode": "0o644",
+      "bytes": 1006,
+      "symlink": false,
+      "sha256": "1f6f04d59f6acc846c1cb21db08a9511c7b736967ec49b4c8cc9023caf41410f",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/projectCreationUiTypes.ts",
+      "mode": "0o644",
+      "bytes": 967,
+      "symlink": false,
+      "sha256": "35f4e5140aef197f28385bed5683db01633c5d12ce324b0ee50b457be0d82421",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/projectListMessages.ts",
+      "mode": "0o644",
+      "bytes": 2420,
+      "symlink": false,
+      "sha256": "ce95f9a35310883b36e2754061ae9a42cff77f6fad9ac93757760424c95634c4",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/projectListUiTypes.ts",
+      "mode": "0o644",
+      "bytes": 1712,
+      "symlink": false,
+      "sha256": "2752f728608ad1b4fc11359ba8cd2895a5735fa6352f355cc0d058d39befe750",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/projectWorkspaceTypes.ts",
+      "mode": "0o644",
+      "bytes": 1408,
+      "symlink": false,
+      "sha256": "ed0436d84c90e09b54b7f6bbedfd193848d1a68097fa4dcf8e8225230f732fcc",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/reviews/ReviewDecisionHistory.tsx",
+      "mode": "0o644",
+      "bytes": 6198,
+      "symlink": false,
+      "sha256": "1ebb226bb5d6b8747587eebe661583c7481164c1899f3d60af31101a98cb3746",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/schema/agencyProjectAudit.ts",
+      "mode": "0o644",
+      "bytes": 6097,
+      "symlink": false,
+      "sha256": "d74718e2d95e703c10edbce4c47551024b52369ad44ae67cd19fa6300da0421d",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/schema/agencyProjects.ts",
+      "mode": "0o644",
+      "bytes": 3996,
+      "symlink": false,
+      "sha256": "38910b2c80b5bb93e06ce0c48dae6d129c8b73343e4702acbe111b39682f18cb",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/templates/TemplateInstallPreview.dates.test.tsx",
+      "mode": "0o644",
+      "bytes": 5843,
+      "symlink": false,
+      "sha256": "c45b5963ed4083f6fcc5d5d184e4a281c979353958c2d661441e8f01a0661510",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/templates/TemplateInstallPreview.selection.test.tsx",
+      "mode": "0o644",
+      "bytes": 4377,
+      "symlink": false,
+      "sha256": "44b4faa922875c6c0bfbe653ca072debb780f84f62decfd16831c9a7c4eddd83",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/templates/TemplateInstallPreview.test-support.tsx",
+      "mode": "0o644",
+      "bytes": 5889,
+      "symlink": false,
+      "sha256": "1420c70b93cb2c89b94a988d3659ee694aa17504f31228436f2218edac005b96",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/templates/TemplateInstallPreview.test.tsx",
+      "mode": "0o644",
+      "bytes": 6788,
+      "symlink": false,
+      "sha256": "d63f69a3795dc93c2bcadab8f47ade51de4d521c105f329a17e7ce4c2c14806d",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/templates/TemplateInstallPreview.tsx",
+      "mode": "0o644",
+      "bytes": 4126,
+      "symlink": false,
+      "sha256": "0e2e220501b88986fed58842595b758dc26691b648abe62acf6708153200badb",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/templates/TemplatePreviewContents.tsx",
+      "mode": "0o644",
+      "bytes": 7724,
+      "symlink": false,
+      "sha256": "f11960f4bc29b39f3c14bfea092b4893a4c8c8e7d316eac96ae04804bb8824b8",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/templates/TemplatePreviewRoles.tsx",
+      "mode": "0o644",
+      "bytes": 2869,
+      "symlink": false,
+      "sha256": "387b63e60b25bd03a5a00953a9853f00b332fc626d9ec6c5a005ba326d306479",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/templates/templateDatePreview.ts",
+      "mode": "0o644",
+      "bytes": 1838,
+      "symlink": false,
+      "sha256": "a6895d5d71df6a481376ed07c93500c2716d696915ff0e1f5201f62b43afcdcf",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/templates/templateInstallPreviewTypes.ts",
+      "mode": "0o644",
+      "bytes": 950,
+      "symlink": false,
+      "sha256": "a999220a960c1088bf0967dc38406bee3d63a2a60034020cf9642b156bbf284c",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/useProjectCreationSubmission.ts",
+      "mode": "0o644",
+      "bytes": 5271,
+      "symlink": false,
+      "sha256": "127c25f1c5a7c2781f069070f2fbe496a4af18e6b53f43b2662ab355ae8da305",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/agency-projects/useProjectStartSubmission.ts",
+      "mode": "0o644",
+      "bytes": 6874,
+      "symlink": false,
+      "sha256": "cd17654d6484cf89047bbb7df1168d67e56c2f837b877bdcb1fb597ff956fc6b",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    }
+  ],
+  "extraFiles": [
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/ProjectCreationForm.test-support.tsx",
+      "target": "agency/qualified-source/src/features/agency-projects/ProjectCreationForm.test-support.tsx",
+      "sha256": "67009c9781bdafc87ae752bfeb910f8516921c04bf18543922abcd553f03d419"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/ProjectCreationForm.test.tsx",
+      "target": "agency/qualified-source/src/features/agency-projects/ProjectCreationForm.test.tsx",
+      "sha256": "6836891adb3c20e551db6cd9d8b8b8de2449a6dd5d0b44b0d12f5262f5d1c112"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/ProjectCreationForm.tsx",
+      "target": "agency/qualified-source/src/features/agency-projects/ProjectCreationForm.tsx",
+      "sha256": "7a77ba5dce40795f34b408cb1ff9e41df147bd7ad14b0453b3414b2d8926fd60"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/ProjectCreationRecovery.test.tsx",
+      "target": "agency/qualified-source/src/features/agency-projects/ProjectCreationRecovery.test.tsx",
+      "sha256": "1bf76a261e32bacebd5f03878b051a5d2fdfddedda215ea80b3038fe82336ebd"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/ProjectCreationSubmission.test.tsx",
+      "target": "agency/qualified-source/src/features/agency-projects/ProjectCreationSubmission.test.tsx",
+      "sha256": "109f7bc4f60af1d71ac2b61ed3e05be44907747284db558a7c37542a6e6d3ea9"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/ProjectListView.lifecycle.test.tsx",
+      "target": "agency/qualified-source/src/features/agency-projects/ProjectListView.lifecycle.test.tsx",
+      "sha256": "41ab4216c74425fcfeac0a5b113eb6c3afa10c045d05629d721a2db8c7cfdad2"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/ProjectListView.test-support.tsx",
+      "target": "agency/qualified-source/src/features/agency-projects/ProjectListView.test-support.tsx",
+      "sha256": "28b06c1b7e0bd017c47b2d54d81e3b18ada4a1fcf43f1509b8c378243c2bde75"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/ProjectListView.test.tsx",
+      "target": "agency/qualified-source/src/features/agency-projects/ProjectListView.test.tsx",
+      "sha256": "eb691503c218067428bcb11e9485b69e19aaacc505248c4af9ef37d39394d1cd"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/ProjectListView.tsx",
+      "target": "agency/qualified-source/src/features/agency-projects/ProjectListView.tsx",
+      "sha256": "3e1fa04a164dcac93d2d26bd74c4b6a87d624bc4645335584e71574564dd39e7"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/ProjectWorkspaceSummary.test-support.tsx",
+      "target": "agency/qualified-source/src/features/agency-projects/ProjectWorkspaceSummary.test-support.tsx",
+      "sha256": "0ea14e910a55f11833a5392ab91f336ec4c42a23ab397a955e3e7f68ee0228d1"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/ProjectWorkspaceSummary.test.tsx",
+      "target": "agency/qualified-source/src/features/agency-projects/ProjectWorkspaceSummary.test.tsx",
+      "sha256": "e7cde67e3c89b04125bddf74863d72527f6059ef2a64453ae4d4faa02e28db74"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/ProjectWorkspaceSummary.tsx",
+      "target": "agency/qualified-source/src/features/agency-projects/ProjectWorkspaceSummary.tsx",
+      "sha256": "007d78449e213ef0c7b57dcf46f4849644f3831ff9b113aea89aa26a51f57bf4"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/agencyProjectsMessages.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/agencyProjectsMessages.ts",
+      "sha256": "9ba1f0e017d5a818c9ecfea9e1d16257622bf019ca58c16e5bad2562166ee2fd"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/assignmentBoundaryJourney.test.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/assignmentBoundaryJourney.test.ts",
+      "sha256": "beb2b35fc4929c993511df0be34e3102e909b3a302197117b7a76ad143381fd1"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/assignmentFixtures.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/assignmentFixtures.ts",
+      "sha256": "62d2b9fa6ec66206e021dde3cd465fbcdf8986a14d052c3fdad08c731912b25c"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/assignmentLifecycle.test.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/assignmentLifecycle.test.ts",
+      "sha256": "9b6c5d3c176d84c83cd5522df8df81ac9ca8193627076fec5d3b914bafefc483"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/assignmentLifecycle.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/assignmentLifecycle.ts",
+      "sha256": "f73b067b083bc9b801f32788b88fdd27dd69ba0f9420488b5fbefbcac2445988"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/assignmentSchemas.test.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/assignmentSchemas.test.ts",
+      "sha256": "5be393aa2f56883a4cd27efff2976cbbe5b202a69a4cadb3a4e719d7b1b990cf"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/assignmentSchemas.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/assignmentSchemas.ts",
+      "sha256": "6d90de3799b035f0d607c5d62335bb72bc2e0860102629fd6ba86a0325bfd187"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/assignmentVersion.test.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/assignmentVersion.test.ts",
+      "sha256": "a35c16e479aeccff57ac0f0d05e12b464941092413c46699a484f1312165adff"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/authorityConnectionBoundary.test-support.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/authorityConnectionBoundary.test-support.ts",
+      "sha256": "3fffcc6fa305c03948b28ca8422414ef7a51556e8a111c60375f73c68bfde5da"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/authorityConnectionBoundary.test.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/authorityConnectionBoundary.test.ts",
+      "sha256": "88aecb8f48a8e04673fbbdb44439e1fa18a3df238536084f8ea7a413d1b05e7b"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/authorityTransactionCandidate.test-support.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/authorityTransactionCandidate.test-support.ts",
+      "sha256": "52110a17bf2a56fc8e75b0dd1c8d2fadf9acba02cff296a1337a0bec60e16334"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/authorityTransactionCandidate.test.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/authorityTransactionCandidate.test.ts",
+      "sha256": "6035d01adcf78486739374ce31f9e21c5e60dacd3c1b1abb8e10c75215e3be54"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/authorityTransactionCandidate.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/authorityTransactionCandidate.ts",
+      "sha256": "450fc04a32eb7a45b04f27abcf810b63a5e2a968876e70950b2bebe703ef4110"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/authorityTransactionSpec.test.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/authorityTransactionSpec.test.ts",
+      "sha256": "5f8db288fc041291a46e6662bd2d2ecff9d3417fc15f4855524cb9c0baf00271"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/authorityTransactionSpec.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/authorityTransactionSpec.ts",
+      "sha256": "2c4048f55c768440751bceefe7bf9865a522ad9a90975ff1795c8360bf171611"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/communication/communicationPreferenceSchemas.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/communication/communicationPreferenceSchemas.ts",
+      "sha256": "fea77f1c1a0710450cb86a656dcf700566ca441f095be8445ec1df0a09807109"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/communication/communicationPreferenceTypes.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/communication/communicationPreferenceTypes.ts",
+      "sha256": "6a6aec4a0f4341d28661123d8ded5ff0eaf264f5534f9b56146292d72ac9d7e4"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/communication/communicationPreferences.test.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/communication/communicationPreferences.test.ts",
+      "sha256": "af6a93554eae215271096b96aab19571cb52eee96245886f3e30921fd60c95ee"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/communication/communicationPreferences.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/communication/communicationPreferences.ts",
+      "sha256": "fc1ce2e76dbe7db768cffb16e87b717117af0aec7a7097687594858457fd6def"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/communication/communicationValueSchemas.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/communication/communicationValueSchemas.ts",
+      "sha256": "0d4a6966305c5b759413c8e0dc1b769843c14a228f0b78e99ca73481fd461fcb"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/communication/manualCommunication.test-support.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/communication/manualCommunication.test-support.ts",
+      "sha256": "20e0ca43f71a8bcc2da5e37e2028823062712540fff110dbfededc3e270c21b8"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/communication/manualCommunication.test.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/communication/manualCommunication.test.ts",
+      "sha256": "17868eb7612149f95c26a27df60d72b5d19e2a57b20cee2c5ed129a69dc142b4"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/communication/manualCommunication.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/communication/manualCommunication.ts",
+      "sha256": "e94e2e987cbdbd06828bb886706abb701d1519c8181f77e7ebe1e1ef78a24f28"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/communication/manualCommunicationContext.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/communication/manualCommunicationContext.ts",
+      "sha256": "9f2bb64653231ff3dc8074c0fb6795bd3a119fe7feb8d11e64eec43ad7c83a11"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/communication/manualCommunicationEquality.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/communication/manualCommunicationEquality.ts",
+      "sha256": "43209ad66e0e94ebc07b6d68d463edb7a5e3a4153bfa1b3f432dec989d744b7a"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/communication/manualCommunicationPolicy.test.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/communication/manualCommunicationPolicy.test.ts",
+      "sha256": "e3212fd4a1910de37301dca1bd730a26f46a00dea6ef7eebdda4cb001488e613"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/communication/manualCommunicationPolicy.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/communication/manualCommunicationPolicy.ts",
+      "sha256": "e717de2da830526fce19b30c92e48a5b2533e00088465e1a396bf7287e85769c"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/communication/manualCommunicationSchemas.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/communication/manualCommunicationSchemas.ts",
+      "sha256": "ea97a3eb3bed9ff00e9ea90fd0b244a606b72fe6c6405c4e5dac6b8e8216b809"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/communication/manualCommunicationTypes.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/communication/manualCommunicationTypes.ts",
+      "sha256": "531b94a6d92b399ed42b5c56a34c647ee1c8fee3963fbbec475552aa5c80fa64"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/feedbackRecord.test-support.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/feedbackRecord.test-support.ts",
+      "sha256": "80a79d90fdf70cda5a05c8939f22315676b21b945f5edc6a1b9acf0a20bbeb29"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/feedbackRecord.test.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/feedbackRecord.test.ts",
+      "sha256": "1fcb9440aa3e5a9edfaed8d8767a8ff00eebac0ee46cc4177b532eb861bff9a9"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/feedbackRecord.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/feedbackRecord.ts",
+      "sha256": "383ebb9304f2860fff9fcbff4e1075a8b3be1807b07b4de7738842f6d8c5c10f"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/instantSchema.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/instantSchema.ts",
+      "sha256": "2835217e23c0be0e91a1093b66ce6e414e6be9ece590aa6b0c4faa7cd1af4df9"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/messages/agencyProjects.de.json",
+      "target": "agency/qualified-source/src/features/agency-projects/messages/agencyProjects.de.json",
+      "sha256": "1e040fa9197d10fea7546f784f21f8cb83178bb38f5fda5fabb62ca4ab6f7f68"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/messages/agencyProjects.en.json",
+      "target": "agency/qualified-source/src/features/agency-projects/messages/agencyProjects.en.json",
+      "sha256": "c691c980d7ed6eb6595d451682b2624139f69620633136ed76e57c24119ebe20"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/messages/agencyProjects.fa.json",
+      "target": "agency/qualified-source/src/features/agency-projects/messages/agencyProjects.fa.json",
+      "sha256": "81c55d90e1956b3651522e9fda9c8fb0ca76ac9b2009c91c3c4bcdad3b5d16d1"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/persistence/0099_agency_projects.sql",
+      "target": "agency/qualified-source/src/features/agency-projects/persistence/0099_agency_projects.sql",
+      "sha256": "7e1b309ffa088199e2e152d33688662146c8ee40a849fc494327f3b942380dfe"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/persistence/agencyFixture0098.globalSetup.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/persistence/agencyFixture0098.globalSetup.ts",
+      "sha256": "579ac2c87fb03b48c54958c83cfcbea3f1a7a975fd643738c1284226753302dc"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/persistence/agencyFixture0098Admission.integration.test.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/persistence/agencyFixture0098Admission.integration.test.ts",
+      "sha256": "095946bc71f9d9f48ea0bac02621e6307613b100667818c2015d3f6fa8f35d9f"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/persistence/agencyFixture0098Admission.vitest.config.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/persistence/agencyFixture0098Admission.vitest.config.ts",
+      "sha256": "d05685bd18bef5eaeaaaf2a4040ba4b18f15ce0ad199e764861859406a3d76dd"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/persistence/agencyPersistence.fixtureManifest.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/persistence/agencyPersistence.fixtureManifest.ts",
+      "sha256": "1a0d88631dc84333501fbcc3eedbc9e0c3f63e0b539633be8b150d62a4f92a1d"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/persistence/agencyPersistence.globalSetup.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/persistence/agencyPersistence.globalSetup.ts",
+      "sha256": "ba710a4b86cc57698e76f0bd4226cb0e096d58ae16f3ccb4d98de67a756aeb79"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/persistence/agencyPersistence.vitest.config.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/persistence/agencyPersistence.vitest.config.ts",
+      "sha256": "4f56a54eeb05fc53256fc029db7880dac62c31182e86acfedf86e682b0df0858"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/persistence/agencyPersistenceClosure.vitest.config.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/persistence/agencyPersistenceClosure.vitest.config.ts",
+      "sha256": "5bf2f77993ee08db7e2c60b258fd49f4dde48a66806e2c3ed265ee1c1bc92827"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/persistence/agencyPersistenceCompatibility.vitest.config.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/persistence/agencyPersistenceCompatibility.vitest.config.ts",
+      "sha256": "80490ed6fde6df9e103fbde934e22bf784e5daa887c2478ce88e9227d344865e"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/persistence/agencyPersistenceCompatibilityClosure.vitest.config.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/persistence/agencyPersistenceCompatibilityClosure.vitest.config.ts",
+      "sha256": "8ad96e607018f7a987bffaee7b6d855cd2f469184da977cc9287ec7d5d7022da"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/persistence/agencyProjectJourney.vitest.config.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/persistence/agencyProjectJourney.vitest.config.ts",
+      "sha256": "93a02067c468e61eaca3db3e8cfb3f51f61bbd71a849925c70ffe878dcf6c6bf"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/persistence/agencyProjectList.vitest.config.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/persistence/agencyProjectList.vitest.config.ts",
+      "sha256": "d9e802a37541ac8403128bb6bdacc7e4db6db1b2216dfad66b2690c07afee296"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/persistence/agencyRepositoryQualification.vitest.config.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/persistence/agencyRepositoryQualification.vitest.config.ts",
+      "sha256": "b78c07944a428ff63bd5a7a14323ae9acaca675419e2ee6597d8acc842e463e2"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/persistence/projectList.integration.test.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/persistence/projectList.integration.test.ts",
+      "sha256": "1f026e115f924a5233b79a47ff66d1b6d52cb792c33b6e58c23f292b1ebc771c"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/persistence/projectList.test-support.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/persistence/projectList.test-support.ts",
+      "sha256": "78d4e6dc700e6ea9c60766c450efa13b4228c5e91e700779487067847e9505cd"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/persistence/projectListCursor.test.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/persistence/projectListCursor.test.ts",
+      "sha256": "271ff350674a39265293c6961c4f4a7ef9219b490cbb9b144a1137c722e87fb7"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/persistence/projectListCursor.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/persistence/projectListCursor.ts",
+      "sha256": "8c15149b54ddedb3777e65b0286cb060f0ec59ee97ee5ff3d9524170c3d5bffc"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/persistence/projectListInput.test.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/persistence/projectListInput.test.ts",
+      "sha256": "34702b77d0877ff7914a7455f40dbb29e55c74ebcdc2a503bcd758b16ed11ad3"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/persistence/projectListInput.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/persistence/projectListInput.ts",
+      "sha256": "2fb1a48998ed44345ebdff1882c82313536b265899e0f27d85e7ba0354b2d7a3"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/persistence/projectListPaging.integration.test.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/persistence/projectListPaging.integration.test.ts",
+      "sha256": "082326d195eec8500d4b97384a35cc33df68357f8f054e5bd1d1893a4e448756"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/persistence/projectListQuery.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/persistence/projectListQuery.ts",
+      "sha256": "f39ebf27d57196f483afd75161f3db82794500c08b9c8c48df0382d5ef4292d0"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/persistence/projectListRepository.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/persistence/projectListRepository.ts",
+      "sha256": "456f23f3a0c2f51feab0c58ce00074f46b52cab7705e4f213ffbd7e7d7ce9aa0"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/persistence/projectListTypes.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/persistence/projectListTypes.ts",
+      "sha256": "14c40f90b309d5e10662e358b7eb905c83c78f7c56858784e81fbd9ee06396b7"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/persistence/projectListVisibility.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/persistence/projectListVisibility.ts",
+      "sha256": "ad6a01616c6e0f1d9e15e8c914e943ee7db8484169895ad9cba8f96f9abbd406"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/persistence/projectPersistence.integration.test.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/persistence/projectPersistence.integration.test.ts",
+      "sha256": "edd27a7dcbe87ec046c8d20aa0fc5313d36d8465a90557a0b0fe63ec8dd88565"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/persistence/projectPersistence.seeds.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/persistence/projectPersistence.seeds.ts",
+      "sha256": "054131615b687f46ef0bf99147db87600745f508899f122a02965f87223852db"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/persistence/projectPersistence.test-support.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/persistence/projectPersistence.test-support.ts",
+      "sha256": "11e61916a88e1bbcdb11856fe88adf031426522b5eee40fdbc875751d77dc7ab"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/persistence/projectPersistenceCompatibility.integration.test.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/persistence/projectPersistenceCompatibility.integration.test.ts",
+      "sha256": "5325355309afb73e55a0b8b3ff039757cf092c855b5c18a4a5bc00c4b3ebd3f7"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/persistence/projectReceipts.integration.test.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/persistence/projectReceipts.integration.test.ts",
+      "sha256": "be89f3ae8df509a2ff0f4d6ec13f2ea92feebb59e973e20a43d236e6a89a725b"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/persistence/projectRepository.integration.test.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/persistence/projectRepository.integration.test.ts",
+      "sha256": "84c865e343ea5c956741052fa71ef901da7d3625ffc7e67e38439f6125665212"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/persistence/projectRepository.test-support.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/persistence/projectRepository.test-support.ts",
+      "sha256": "a23dd164c06fb732b9d7e23ad2827406d8b4c3d2fa03f0ffaac6ba4ff55e5729"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/persistence/projectRepository.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/persistence/projectRepository.ts",
+      "sha256": "d87204f7b1f94882cb52028d1bcbdf302de3ec1f16bdcb5d7974f24d9d9ef405"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/persistence/projectRepositoryAccess.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/persistence/projectRepositoryAccess.ts",
+      "sha256": "6b1ad93ced0469a748add781f58f2050a1936ff7265b050b95444ffe9ca6a858"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/persistence/projectRepositoryConcurrency.integration.test.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/persistence/projectRepositoryConcurrency.integration.test.ts",
+      "sha256": "dacc00318fe601a256dadd57d4b3316de73aed4409bd6623b40a43e3a167638a"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/persistence/projectRepositoryCreate.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/persistence/projectRepositoryCreate.ts",
+      "sha256": "a85bdc8e301e9daab362bd1c218af027ef9d68d1b84188363198d5ef20579c68"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/persistence/projectRepositoryCrm.integration.test.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/persistence/projectRepositoryCrm.integration.test.ts",
+      "sha256": "d85ee29c594ce5276355ff631abc8894ffea808c8089f4a92ec0ebf14b1bd5fb"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/persistence/projectRepositoryHistory.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/persistence/projectRepositoryHistory.ts",
+      "sha256": "4dddf79ef6433e4e62e105b89e47967f9476d15e700e86284b4ef46bdda8f7c6"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/persistence/projectRepositoryReplay.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/persistence/projectRepositoryReplay.ts",
+      "sha256": "9462228a91e0c0ee0f8e47725126846b05999cee909bb5005368cbe4d40fa4f4"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/persistence/projectRepositoryStart.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/persistence/projectRepositoryStart.ts",
+      "sha256": "0a2da32010c584a3a9ed208b146afb7010762041e5463da653ddebd3692d6c39"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/persistence/projectRepositoryTables.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/persistence/projectRepositoryTables.ts",
+      "sha256": "ceffb36ad4d58041142e1653f67f10dfa1867299770121a05f049f48407603fc"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/persistence/projectRepositoryTypes.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/persistence/projectRepositoryTypes.ts",
+      "sha256": "f021cc4ddf8f5edcaf2a511acbfcca5ddf21de920d5ec44e15f6e673f453a8e0"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/persistence/projectStartInput.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/persistence/projectStartInput.ts",
+      "sha256": "e4fd61d72dd58acaa81224573867cc1a98c792ebf7a9a080ebcedfa794e20cc2"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/projectCreationInput.test.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/projectCreationInput.test.ts",
+      "sha256": "a6afae0a8cb3c09a191d4fc72398e7d98d4393d44146aae86c966bb4cdc544b5"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/projectCreationInput.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/projectCreationInput.ts",
+      "sha256": "1f6f04d59f6acc846c1cb21db08a9511c7b736967ec49b4c8cc9023caf41410f"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/projectCreationPlan.test-support.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/projectCreationPlan.test-support.ts",
+      "sha256": "56a2f6622e10d678626a76b048fc7f634956de164337e5080cf0abba1e919352"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/projectCreationPlan.test.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/projectCreationPlan.test.ts",
+      "sha256": "c7b9fb952ff0d633556115735855d5c5a12095a8d0d6d8e4bd7dd21d62dc1b4e"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/projectCreationPlan.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/projectCreationPlan.ts",
+      "sha256": "126c8a5100c9cfd83c2a6913b3fccbe028bab0bf17390c26e6d133ea3dac46b7"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/projectCreationUiTypes.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/projectCreationUiTypes.ts",
+      "sha256": "35f4e5140aef197f28385bed5683db01633c5d12ce324b0ee50b457be0d82421"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/projectLifecycle.test.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/projectLifecycle.test.ts",
+      "sha256": "31cdb99269364d3d591982c7bf9d391943821642ee9d058b5caa2c194aca032d"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/projectLifecycle.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/projectLifecycle.ts",
+      "sha256": "e535c05920128b9e5b0bff1e4fe3dad566d42582f9a1c5c7afc22e4cc0f153d4"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/projectListMessages.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/projectListMessages.ts",
+      "sha256": "ce95f9a35310883b36e2754061ae9a42cff77f6fad9ac93757760424c95634c4"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/projectListUiTypes.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/projectListUiTypes.ts",
+      "sha256": "2752f728608ad1b4fc11359ba8cd2895a5735fa6352f355cc0d058d39befe750"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/projectLocalAccess.test-support.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/projectLocalAccess.test-support.ts",
+      "sha256": "c7fda60e5667561d1db9ccd1d1f83b66d984e058f63c1224a6b3da7bae71dea8"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/projectLocalAccess.test.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/projectLocalAccess.test.ts",
+      "sha256": "e8e04ec893210e226d186e3bf315b8bf66add7ebaaa22abaeeed041125eae20c"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/projectLocalAccess.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/projectLocalAccess.ts",
+      "sha256": "2b554ee6c426db7cc9616b4a8bec5f75ac7e6263524885b153635ca791829b33"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/projectSchemas.test.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/projectSchemas.test.ts",
+      "sha256": "4b8b031181cfbf16ecd025ae0f85a16e2c1c6780208dbe4f1dcad6f2d06722ac"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/projectSchemas.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/projectSchemas.ts",
+      "sha256": "3009adc5370e735f0e8f8214f7435f112859f1d73e4bebecbd9bb4a8b23922c5"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/projectWorkspaceTypes.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/projectWorkspaceTypes.ts",
+      "sha256": "ed0436d84c90e09b54b7f6bbedfd193848d1a68097fa4dcf8e8225230f732fcc"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/reasonBoundary.test.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/reasonBoundary.test.ts",
+      "sha256": "1d639dd710e07d40e07ecf611136684730ae6b9038e5b1c4e942df3c335be3ff"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/reviews/ReviewDecisionHistory.provenance.test.tsx",
+      "target": "agency/qualified-source/src/features/agency-projects/reviews/ReviewDecisionHistory.provenance.test.tsx",
+      "sha256": "8f504c2deb00fe34bd3abd4f03796c7c7a342a5bf6cba9f2c556d2491e399fe8"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/reviews/ReviewDecisionHistory.test-support.tsx",
+      "target": "agency/qualified-source/src/features/agency-projects/reviews/ReviewDecisionHistory.test-support.tsx",
+      "sha256": "7c223ceb11c895bff91af1128636e2cc083ef310f4d2412e10d7981a12d47411"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/reviews/ReviewDecisionHistory.test.tsx",
+      "target": "agency/qualified-source/src/features/agency-projects/reviews/ReviewDecisionHistory.test.tsx",
+      "sha256": "f6e56f5204461b7202dd2abda474f680d8d90e26196f6a5d66258bf6aee483e6"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/reviews/ReviewDecisionHistory.tsx",
+      "target": "agency/qualified-source/src/features/agency-projects/reviews/ReviewDecisionHistory.tsx",
+      "sha256": "1ebb226bb5d6b8747587eebe661583c7481164c1899f3d60af31101a98cb3746"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/reviews/reviewBoundary.test.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/reviews/reviewBoundary.test.ts",
+      "sha256": "7c3cf06e7ed8c3816fe654dd4c7053bd9ae44c4d98f1dc74da5bb65db283eee4"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/reviews/reviewChronology.test.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/reviews/reviewChronology.test.ts",
+      "sha256": "a22e36dd6d6047f461eb86d06f8d26ed5fe83aa824b5946382ccc7ac53290794"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/reviews/reviewDecisionEntry.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/reviews/reviewDecisionEntry.ts",
+      "sha256": "8947cb3f0b54343b60427eac122ec5d4faba6194fa2616b65301f48991e6b097"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/reviews/reviewDecisions.test-support.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/reviews/reviewDecisions.test-support.ts",
+      "sha256": "b9ca3af776ce4188fb511df93f791ea82c7006e52d39c98db053f736f7d6eccc"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/reviews/reviewDecisions.test.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/reviews/reviewDecisions.test.ts",
+      "sha256": "47337b3caa6b2535697ef3092df75eb40e9e55e0d92c19579f9f9fd9233b8332"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/reviews/reviewDecisions.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/reviews/reviewDecisions.ts",
+      "sha256": "ae88ec8e43a66a44c7afe8423b764e6ed5a0cf27216ad189589d6dc4f5cf4284"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/reviews/reviewEpoch.test.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/reviews/reviewEpoch.test.ts",
+      "sha256": "277d44832afa36391033f791fa743f51ea5b9c4f29d3852bc424c17d580f0bf8"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/reviews/reviewSchemas.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/reviews/reviewSchemas.ts",
+      "sha256": "596f357de836bf2d9098ff54e5fb01aebdd24307125b986fd74f6b37169910ff"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/reviews/reviewTypes.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/reviews/reviewTypes.ts",
+      "sha256": "d133f9e18027926f7fb8aa11788bd92350fccee28602a69ce5a10184f914515e"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/reviews/revisionRoundScope.test-support.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/reviews/revisionRoundScope.test-support.ts",
+      "sha256": "c91cf46ce7771b7155e8c40a986650513f9c143f397decb181ee897893f42c7a"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/reviews/revisionRoundScope.test.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/reviews/revisionRoundScope.test.ts",
+      "sha256": "4db8eb8a99c714fd94e9d2c1edc96befcfa4f2302e8f2b8f03a9756510f81919"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/reviews/revisionRoundScope.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/reviews/revisionRoundScope.ts",
+      "sha256": "705dad21a82ab8bfa0a68021729c3a716a0791c1e40d4e711a0dc8c9460b7efc"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/reviews/revisionRoundScopePolicy.test.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/reviews/revisionRoundScopePolicy.test.ts",
+      "sha256": "95a637107c6deb6caed931e107888317ed2435adb9f4642d51a75a99d1cb789a"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/reviews/revisionRoundScopeSchemas.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/reviews/revisionRoundScopeSchemas.ts",
+      "sha256": "8d584f2fc4755c17d3e2a7d4b44bea59d0c9b210ca8776433d14a7ed9b1ed5f9"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/schema/agencyProjectAudit.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/schema/agencyProjectAudit.ts",
+      "sha256": "d74718e2d95e703c10edbce4c47551024b52369ad44ae67cd19fa6300da0421d"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/schema/agencyProjects.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/schema/agencyProjects.ts",
+      "sha256": "38910b2c80b5bb93e06ce0c48dae6d129c8b73343e4702acbe111b39682f18cb"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/templates/TemplateInstallPreview.dates.test.tsx",
+      "target": "agency/qualified-source/src/features/agency-projects/templates/TemplateInstallPreview.dates.test.tsx",
+      "sha256": "c45b5963ed4083f6fcc5d5d184e4a281c979353958c2d661441e8f01a0661510"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/templates/TemplateInstallPreview.selection.test.tsx",
+      "target": "agency/qualified-source/src/features/agency-projects/templates/TemplateInstallPreview.selection.test.tsx",
+      "sha256": "44b4faa922875c6c0bfbe653ca072debb780f84f62decfd16831c9a7c4eddd83"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/templates/TemplateInstallPreview.test-support.tsx",
+      "target": "agency/qualified-source/src/features/agency-projects/templates/TemplateInstallPreview.test-support.tsx",
+      "sha256": "1420c70b93cb2c89b94a988d3659ee694aa17504f31228436f2218edac005b96"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/templates/TemplateInstallPreview.test.tsx",
+      "target": "agency/qualified-source/src/features/agency-projects/templates/TemplateInstallPreview.test.tsx",
+      "sha256": "d63f69a3795dc93c2bcadab8f47ade51de4d521c105f329a17e7ce4c2c14806d"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/templates/TemplateInstallPreview.tsx",
+      "target": "agency/qualified-source/src/features/agency-projects/templates/TemplateInstallPreview.tsx",
+      "sha256": "0e2e220501b88986fed58842595b758dc26691b648abe62acf6708153200badb"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/templates/TemplatePreviewContents.tsx",
+      "target": "agency/qualified-source/src/features/agency-projects/templates/TemplatePreviewContents.tsx",
+      "sha256": "f11960f4bc29b39f3c14bfea092b4893a4c8c8e7d316eac96ae04804bb8824b8"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/templates/TemplatePreviewRoles.tsx",
+      "target": "agency/qualified-source/src/features/agency-projects/templates/TemplatePreviewRoles.tsx",
+      "sha256": "387b63e60b25bd03a5a00953a9853f00b332fc626d9ec6c5a005ba326d306479"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/templates/starterTemplates.test.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/templates/starterTemplates.test.ts",
+      "sha256": "c92f21bb8597b03026b42ebe2beae216c8882dea24836a15208c504080b6e36c"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/templates/starterTemplates.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/templates/starterTemplates.ts",
+      "sha256": "f1b8ecb1bb2ce7457968e2779e6f10f2797625caba60d039ca1683923a88fc2b"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/templates/starters/campaign.v1.json",
+      "target": "agency/qualified-source/src/features/agency-projects/templates/starters/campaign.v1.json",
+      "sha256": "c7686bbd9f379a554b0d85526b0c0f3711141ae349222822196d09b1d2207461"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/templates/starters/modeling.v1.json",
+      "target": "agency/qualified-source/src/features/agency-projects/templates/starters/modeling.v1.json",
+      "sha256": "973c6f85d1ae936a700dd64327514e649fc5908f984e4e06e6e854ddb28afc13"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/templates/starters/short-video.v1.json",
+      "target": "agency/qualified-source/src/features/agency-projects/templates/starters/short-video.v1.json",
+      "sha256": "d12f0adf3e4e85fb0a968feadab7b97d6e399f10e4755484080d4bcca26f814b"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/templates/templateDatePreview.boundary.test.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/templates/templateDatePreview.boundary.test.ts",
+      "sha256": "2f91edc0629128e4c3d6528cf661e8f2a0a3b5898cd3176c5b4a8c226c978939"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/templates/templateDatePreview.test-support.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/templates/templateDatePreview.test-support.ts",
+      "sha256": "6068068fa906f8d51af5e3459f1e634ac0758a2434f6cbc8996023a7fc03940d"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/templates/templateDatePreview.test.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/templates/templateDatePreview.test.ts",
+      "sha256": "341c94ecad8d0437fdf6268d62de864ad4f274a4c0af1a8da5066f1fefeb39f4"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/templates/templateDatePreview.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/templates/templateDatePreview.ts",
+      "sha256": "a6895d5d71df6a481376ed07c93500c2716d696915ff0e1f5201f62b43afcdcf"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/templates/templateInstallPreviewTypes.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/templates/templateInstallPreviewTypes.ts",
+      "sha256": "a999220a960c1088bf0967dc38406bee3d63a2a60034020cf9642b156bbf284c"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/templates/templateManifest.test-support.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/templates/templateManifest.test-support.ts",
+      "sha256": "4eb43d26a7b6cf2b5593f7a8f768131d52c7e445da9b9c01b3f52ed2f2e389c4"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/templates/templateManifest.test.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/templates/templateManifest.test.ts",
+      "sha256": "527e057c9a35d1f14dfc96a078be9df91a2748d5d7eb927677f184e10d8d95e0"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/templates/templateManifest.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/templates/templateManifest.ts",
+      "sha256": "5d783a9f9c1944ee07b869cd4787c49ac257e3287097f8f2893761860bbf580c"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/templates/templateManifestGraph.test.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/templates/templateManifestGraph.test.ts",
+      "sha256": "3f45e0fa05ad2fe39749dc2380a8f5bdc12de7d27e72a53b3eca1a9141250391"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/templates/templateManifestGraph.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/templates/templateManifestGraph.ts",
+      "sha256": "cd9510b3a3bf4883db827da0f212953915ad154c238f007da7cfe9a888cb9113"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/templates/templateManifestSchemas.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/templates/templateManifestSchemas.ts",
+      "sha256": "61f18441b4713fb68ea21c736f22d8cb960cf37d3ab2e105603dba8efb404673"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/templates/templateRolePreview.test-support.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/templates/templateRolePreview.test-support.ts",
+      "sha256": "bcd4e674c86148577626c862f125a4a7c83ee3d680b4630eb9ab42b956913b9c"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/templates/templateRolePreview.test.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/templates/templateRolePreview.test.ts",
+      "sha256": "917040f8ee8e674b00ac9d1950eeb876494f0b80cc0c992a6953bbb603e0ba07"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/templates/templateRolePreview.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/templates/templateRolePreview.ts",
+      "sha256": "7b8ad7949adc561d8f2c783c57655badfd55ce575812efaf7f12329b836c0a47"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/useProjectCreationSubmission.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/useProjectCreationSubmission.ts",
+      "sha256": "127c25f1c5a7c2781f069070f2fbe496a4af18e6b53f43b2662ab355ae8da305"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/useProjectStartSubmission.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/useProjectStartSubmission.ts",
+      "sha256": "cd17654d6484cf89047bbb7df1168d67e56c2f837b877bdcb1fb597ff956fc6b"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/src/features/agency-projects/valueSchemas.ts",
+      "target": "agency/qualified-source/src/features/agency-projects/valueSchemas.ts",
+      "sha256": "883b4f3ab4fe0eac9581e8fa1234087a7e5958df190251d9d2e9a0e4abd4d289"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/package.json",
+      "target": "agency/qualified-config/package.json",
+      "sha256": "1fc056ebcf03ce3a198d9060cdd489759bc3a8b9af34bc05b5acfcb84a4ef2f6"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/bun.lock",
+      "target": "agency/qualified-config/bun.lock",
+      "sha256": "529a9b6a87d9fc836c45a8e68f0da012ed8a111b0fc60b09a0e5c3c8bfbef0e4"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/tsconfig.json",
+      "target": "agency/qualified-config/tsconfig.json",
+      "sha256": "3e482742ee772ce6c49ed50d2d5fc83592588b9e43b6a3890c409ae834c77ccb"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/tsconfig.typecheck.json",
+      "target": "agency/qualified-config/tsconfig.typecheck.json",
+      "sha256": "0f4a3ebc7013449817cf60aeb54124423e21bba58bcaf87f17d534d3c4611b0d"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/eslint.config.mjs",
+      "target": "agency/qualified-config/eslint.config.mjs",
+      "sha256": "06a95b81d1e159118cbbe4351eb7becf4ab70b32505819de40f77463ca57e26f"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/next.config.test.ts",
+      "target": "agency/qualified-config/next.config.test.ts",
+      "sha256": "090a4365c3347c408660f9bcf85afdcca43cb06ece66081d383e8dc623fab0b0"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-agency-projects/next.config.ts",
+      "target": "agency/qualified-config/next.config.ts",
+      "sha256": "a7ed1394d84ac9fbd95200e58be0ed2d4163a6e64b2b57f249b1097435d3c660"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/SAFE-STOP-20261102.md",
+      "target": "agency/SAFE-STOP-20261102.md",
+      "sha256": "ac565c9361699a70acce098351226b62aa4c8194eba45e261ce43be6440c13b8"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/SAFE-STOP-20261102-ALLOWLIST.json",
+      "target": "agency/SAFE-STOP-20261102-ALLOWLIST.json",
+      "sha256": "79347de0802acf51313bc233f0b98dfcf53f425d6b422b772809b3b2fd6c939c"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/agency-project-list-native-20261102/actual-native-only-1/before.json",
+      "target": "agency/native-only13/before.json",
+      "sha256": "d36f7aee07f3225d6f5329f4bef8ac19698b11d2d39d0762a122a512014f6277"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/agency-project-list-native-20261102/actual-native-only-1/native1-before.json",
+      "target": "agency/native-only13/native1-before.json",
+      "sha256": "3c019f3874ec4318ce21375127e6081acd1cda1584a6e8fca2e3e5d5af04b5dc"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/agency-project-list-native-20261102/actual-native-only-1/native12-launch.json",
+      "target": "agency/native-only13/native12-launch.json",
+      "sha256": "b79ddd19bfbbf353b99da927c29aec610b8756a9784af561d7446252122fdc47"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/agency-project-list-native-20261102/actual-native-only-1/result.json",
+      "target": "agency/native-only13/result.json",
+      "sha256": "12a7293c445c2d240f5d69432f7e064c369759b58d69fc03a23ddc8236fa769b"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/agency-project-list-native-20261102/actual-native-only-1/post-census-1.json",
+      "target": "agency/native-only13/post-census-1.json",
+      "sha256": "84bfc31a27041089025ef5e2604d3aa2bb32a0ab2e3c21eae385f573e0d3b0a4"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/agency-project-list-native-20261102/actual-native-only-1/native1-launch.json",
+      "target": "agency/native-only13/native1-launch.json",
+      "sha256": "3e11151570494f2fd073de6a6a6b50ebfb4a35b46e54c5d3589db493db7293c5"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/agency-project-list-native-20261102/actual-native-only-1/final-census.json",
+      "target": "agency/native-only13/final-census.json",
+      "sha256": "0f4ef79515058cdf171cf1e718d147936b640fa0c761f4387d8f5b34c895c641"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/agency-project-list-native-20261102/actual-native-only-1/native1-entry.json",
+      "target": "agency/native-only13/native1-entry.json",
+      "sha256": "d9a11a17be4ea54948af2e76ed6142813bd2ac5d01d07a6d340eaa6af51e6c21"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/agency-project-list-native-20261102/actual-native-only-1/terminal-observation.json",
+      "target": "agency/native-only13/terminal-observation.json",
+      "sha256": "4b29b11ee22b83195e7fdab7bb5b92aa7216aec496ccb5d90b4b1f85ba8199ab"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-agency-projects-implementation/work/agency-project-list-native-20261102/request156-native-only13.json",
+      "target": "agency/request156-native-only13.json",
+      "sha256": "54a123c73311253b243ba4eebf72a7538f5490cac00cbd78199f62cdcd9f4e7e"
+    }
+  ],
+  "qualification": "Configured types andTL19 PASS. Legacy12 and private0098 admission1 nativePASS. Final full preservation receipt181.361096s exceeded180; no all-in conformance. Canonical admission/native authority/full96 acceptance remain open. Full156+7 qualified source/config cut archived as inert evidence; exact native13 receipts retained with false timing conformance. All96 programme items unaccepted.",
+  "limitations": "UNFINISHED preservation cut at older workspace HEAD. Do not merge wholesale onto main or deploy. Reconcile current main, private migration labels, metadata and real journey acceptance separately. Runtime/dependencies/secrets/raw unreviewed artifacts excluded; exact local evidence remains preserved.",
+  "authorization": "Human safe-stop instruction verified in Integration chat on 2026-11-02; Root sole closer.",
+  "workspace": "/Users/ali/Developer/warpdrive-agency-projects",
+  "createdAt": "2026-11-02T07:36:56.864314+00:00"
+}

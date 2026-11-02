@@ -1,0 +1,63 @@
+diff --git a/src/constants/permissionFlags.ts b/src/constants/permissionFlags.ts
+--- a/src/constants/permissionFlags.ts
++++ b/src/constants/permissionFlags.ts
+@@ -3,6 +3,7 @@
+   "deal.create",
+   "contact.create",
+   "activity.create",
++  "project.create",
+   "bulk.edit",
+   "data.import",
+   "data.export",
+@@ -69,6 +70,7 @@
+ 
+ // Granting any of these to a set requires the actor to be an admin (permissions spec 5.2).
+ export const HIGH_RISK_FLAGS = [
++  "project.create",
+   "workflow.publish",
+   "permissions.manage",
+   "pipeline.manage",
+diff --git a/src/features/permissions/actions-meta.ts b/src/features/permissions/actions-meta.ts
+--- a/src/features/permissions/actions-meta.ts
++++ b/src/features/permissions/actions-meta.ts
+@@ -21,6 +21,7 @@
+   | "deal.create"
+   | "contact.create"
+   | "activity.create"
++  | "project.create"
+   | "bulk.edit"
+   | "data.import"
+   | "data.export"
+diff --git a/src/features/identity/messages/settings.fa.json b/src/features/identity/messages/settings.fa.json
+--- a/src/features/identity/messages/settings.fa.json
++++ b/src/features/identity/messages/settings.fa.json
+@@ -704,6 +704,7 @@
+     },
+     "permissions": {
+       "deal_create": "ایجاد فرصت فروش",
++      "project_create": "ایجاد پروژه",
+       "contact_create": "ایجاد مخاطب",
+       "activity_create": "ایجاد فعالیت",
+       "bulk_edit": "ویرایش گروهی",
+diff --git a/src/features/identity/messages/settings.de.json b/src/features/identity/messages/settings.de.json
+--- a/src/features/identity/messages/settings.de.json
++++ b/src/features/identity/messages/settings.de.json
+@@ -704,6 +704,7 @@
+     },
+     "permissions": {
+       "deal_create": "Verkaufschancen erstellen",
++      "project_create": "Projekt erstellen",
+       "contact_create": "Kontakte erstellen",
+       "activity_create": "Aktivitäten erstellen",
+       "bulk_edit": "Mehrere Datensätze gleichzeitig bearbeiten",
+diff --git a/src/features/identity/messages/settings.en.json b/src/features/identity/messages/settings.en.json
+--- a/src/features/identity/messages/settings.en.json
++++ b/src/features/identity/messages/settings.en.json
+@@ -704,6 +704,7 @@
+     },
+     "permissions": {
+       "deal_create": "Create deals",
++      "project_create": "Create project",
+       "contact_create": "Create contacts",
+       "activity_create": "Create activities",
+       "bulk_edit": "Edit multiple records",

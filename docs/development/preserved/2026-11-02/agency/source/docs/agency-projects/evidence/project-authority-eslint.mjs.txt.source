@@ -1,0 +1,3 @@
+import base from "../eslint.config.mjs";
+import { fileURLToPath } from "node:url";
+export default [...base, { files: ["src/features/agency-projects/projectLocalAccess.ts", "src/features/agency-projects/projectLocalAccess.test.ts", "src/features/agency-projects/projectLocalAccess.test-support.ts", "src/features/agency-projects/projectCreationPlan.ts", "src/features/agency-projects/projectCreationPlan.test.ts", "src/features/agency-projects/projectCreationPlan.test-support.ts"], languageOptions: { parserOptions: { projectService: false, project: fileURLToPath(new URL("./tsconfig.project-authority.json", import.meta.url)) } } }];

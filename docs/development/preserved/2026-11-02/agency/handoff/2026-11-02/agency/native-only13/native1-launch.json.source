@@ -1,0 +1,2066 @@
+{
+  "admissionElapsedSeconds": 0.3455826659919694,
+  "allinRemainingBeforeExecSeconds": 147.18220174999442,
+  "argv": [
+    "/opt/homebrew/bin/gtimeout",
+    "--signal=INT",
+    "--kill-after=5s",
+    "30s",
+    ".runtime/bin/bun",
+    "--no-env-file",
+    "--bun",
+    "node_modules/vitest/vitest.mjs",
+    "run",
+    "--config",
+    "src/features/agency-projects/persistence/agencyFixture0098Admission.vitest.config.ts",
+    "--maxWorkers",
+    "1",
+    "--no-file-parallelism"
+  ],
+  "authorization": "AGENCY-LIST156-NATIVE13-ONLY-20261102-1",
+  "execIntentEpoch": 1793603188.989835,
+  "execIntentMonotonic": 646172.007396291,
+  "gates": [
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.015959249925799668,
+      "gate": "own_process_group",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.016002707998268306,
+      "gate": "safe_authorization",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.01602016598917544,
+      "gate": "safe_request_sha",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.0160399159649387,
+      "gate": "safe_actual_path",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.016084957984276116,
+      "gate": "task_owned_actual_path",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.01612370798829943,
+      "gate": "actual_path_not_symlink",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.016127915936522186,
+      "gate": "existing_actual_directory",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.016432582982815802,
+      "gate": "safe_terminal_code",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.01643324992619455,
+      "gate": "terminal_code_range",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.01665674999821931,
+      "gate": "same_authorization_and_request",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.0166571659501642,
+      "gate": "previous_actual_tool_terminal_zero",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.016946749994531274,
+      "gate": "same_legacy_launch_authorization",
+      "passed": true
+    },
+    {
+      "details": {
+        "minimum": 80,
+        "remainingSeconds": 147.51082758407574
+      },
+      "entryElapsedSeconds": 0.016949249897152185,
+      "gate": "allin_remaining_before_second_admission",
+      "passed": true
+    },
+    {
+      "details": {
+        "minimum": 40,
+        "remainingSeconds": 67.85254954104312
+      },
+      "entryElapsedSeconds": 0.016949790995568037,
+      "gate": "native_phase_remaining_before_second_admission",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.016950582969002426,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.0170197079423815,
+      "gate": "current_request_sha",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.017121665994636714,
+      "gate": "one_use_new_authorization",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.01712516590487212,
+      "gate": "workspace",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.017127207946032286,
+      "gate": "exact_source_counts",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.01712824997957796,
+      "gate": "exact_native_commands",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.0171297499909997,
+      "gate": "exact_limits",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.017130999942310154,
+      "gate": "exact_runtime_flags",
+      "passed": true
+    },
+    {
+      "details": {
+        "caseSummary": [
+          "12",
+          "12"
+        ],
+        "containerProof": true,
+        "expectedSourceHead": "714eda0f3496f3faea1dd35da3324083335aa901",
+        "fixtureRecords": [
+          {
+            "containerId": "d8f1dff4d87f8b5084238fdb614dcf429f1b824d464a0c1c4993c6e0214cf073",
+            "fixture": "agency-persistence",
+            "phase": "created"
+          },
+          {
+            "agencySqlPresent": true,
+            "containerId": "d8f1dff4d87f8b5084238fdb614dcf429f1b824d464a0c1c4993c6e0214cf073",
+            "fixture": "agency-persistence",
+            "lastTag": "0097_private_mail_intake",
+            "sourceHead": "714eda0f3496f3faea1dd35da3324083335aa901"
+          },
+          {
+            "agencySqlApplied": true,
+            "containerId": "d8f1dff4d87f8b5084238fdb614dcf429f1b824d464a0c1c4993c6e0214cf073",
+            "fixture": "agency-persistence",
+            "phase": "template-ready",
+            "sourceHead": "714eda0f3496f3faea1dd35da3324083335aa901"
+          }
+        ],
+        "fullPass": true,
+        "logPresent": true,
+        "metadataPGIds": [
+          "d8f1dff4d87f8b5084238fdb614dcf429f1b824d464a0c1c4993c6e0214cf073"
+        ],
+        "ownedPGIds": [
+          "d8f1dff4d87f8b5084238fdb614dcf429f1b824d464a0c1c4993c6e0214cf073"
+        ],
+        "readyPGIds": [
+          "d8f1dff4d87f8b5084238fdb614dcf429f1b824d464a0c1c4993c6e0214cf073"
+        ],
+        "suiteSummary": [
+          "2",
+          "2"
+        ]
+      },
+      "entryElapsedSeconds": 0.01752458291593939,
+      "gate": "actual_legacy12_and2suites_PASS",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.017524999915622175,
+      "gate": "legacy_PG_CID_proven_from_logs",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.01752670796122402,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": {
+        "exitCode": 0,
+        "program": "/bin/ps"
+      },
+      "entryElapsedSeconds": 0.06266687496099621,
+      "gate": "probe_exit",
+      "passed": true
+    },
+    {
+      "details": [],
+      "entryElapsedSeconds": 0.06307812500745058,
+      "gate": "legacy_owned_group_gone",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.06308424996677786,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.06308699992951006,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": {
+        "exitCode": 0,
+        "program": "/usr/bin/curl"
+      },
+      "entryElapsedSeconds": 0.09808929089922458,
+      "gate": "probe_exit",
+      "passed": true
+    },
+    {
+      "details": {
+        "httpStatus": "200",
+        "path": "/containers/json?all=1"
+      },
+      "entryElapsedSeconds": 0.09811633289791644,
+      "gate": "docker_API_status",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.09820737491827458,
+      "gate": "all_container_IDs",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.09821204096078873,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.09821299999020994,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": {
+        "exitCode": 0,
+        "program": "/usr/bin/curl"
+      },
+      "entryElapsedSeconds": 0.10794170794542879,
+      "gate": "probe_exit",
+      "passed": true
+    },
+    {
+      "details": {
+        "httpStatus": "200",
+        "path": "/containers/1b39c2e0cb523a1d36a2053a33cddd6391fbe26b84ca626121ee22da133bca59/json"
+      },
+      "entryElapsedSeconds": 0.10795304097700864,
+      "gate": "docker_API_status",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.10802599997259676,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.10802699998021126,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": {
+        "exitCode": 0,
+        "program": "/usr/bin/curl"
+      },
+      "entryElapsedSeconds": 0.1167812499916181,
+      "gate": "probe_exit",
+      "passed": true
+    },
+    {
+      "details": {
+        "httpStatus": "200",
+        "path": "/containers/958f91d8250e2bf9bce3819320a47fd30ecac7711ed8007de7dcabb60d6cddee/json"
+      },
+      "entryElapsedSeconds": 0.11679120792541653,
+      "gate": "docker_API_status",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.11687399994116277,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.11687554093077779,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": {
+        "exitCode": 0,
+        "program": "/usr/bin/curl"
+      },
+      "entryElapsedSeconds": 0.12568112497683614,
+      "gate": "probe_exit",
+      "passed": true
+    },
+    {
+      "details": {
+        "httpStatus": "200",
+        "path": "/containers/d31835d6d2bf86f9984408fb4b01bded8395915cefe64cac7230a3ebfb6a2e6e/json"
+      },
+      "entryElapsedSeconds": 0.12569929100573063,
+      "gate": "docker_API_status",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.12579758290667087,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.12579874997027218,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": {
+        "exitCode": 0,
+        "program": "/usr/bin/curl"
+      },
+      "entryElapsedSeconds": 0.13507337495684624,
+      "gate": "probe_exit",
+      "passed": true
+    },
+    {
+      "details": {
+        "httpStatus": "200",
+        "path": "/networks"
+      },
+      "entryElapsedSeconds": 0.13508491590619087,
+      "gate": "docker_API_status",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.1351437499979511,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.13514462497550994,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": {
+        "exitCode": 0,
+        "program": "/usr/bin/curl"
+      },
+      "entryElapsedSeconds": 0.14310724998358637,
+      "gate": "probe_exit",
+      "passed": true
+    },
+    {
+      "details": {
+        "httpStatus": "200",
+        "path": "/volumes"
+      },
+      "entryElapsedSeconds": 0.14311737497337162,
+      "gate": "docker_API_status",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.14318124996498227,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": {
+        "exitCode": 0,
+        "program": "/opt/homebrew/bin/gtimeout"
+      },
+      "entryElapsedSeconds": 0.1881869159406051,
+      "gate": "probe_exit",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.18821758299600333,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.18822949996683747,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.18823058297857642,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.18823108298238367,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.18823162489570677,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.1882319999858737,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.18823229090776294,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.1882325829938054,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.188232957967557,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.18823341594543308,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.18823379091918468,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.1882341660093516,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.18823462491855025,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.18823504098691046,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.18823537498246878,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.18823566590435803,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.1882359579904005,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.18823645799420774,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.1882374999113381,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.18823787500150502,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.18823820794932544,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.18823858292307705,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.18823895789682865,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.1882394579006359,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.18823987490031868,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.1882402909686789,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.1882406249642372,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.1882410409161821,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.18824133300222456,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.1882416249718517,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.18824191589374095,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.1882422500057146,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": {
+        "foreignContainersExact": true,
+        "foreignListenersExact": true,
+        "foreignNetworksExact": true,
+        "foreignVolumesExact": true,
+        "ownedPGProof": {
+          "d8f1dff4d87f8b5084238fdb614dcf429f1b824d464a0c1c4993c6e0214cf073": {
+            "absentFromCompleteAllContainerCensus": true,
+            "state": null,
+            "terminal": true
+          }
+        },
+        "ownedPGTerminal": true,
+        "unexplainedCurrentContainerIds": []
+      },
+      "entryElapsedSeconds": 0.18828999996185303,
+      "gate": "foreignContainersExact",
+      "passed": true
+    },
+    {
+      "details": {
+        "foreignContainersExact": true,
+        "foreignListenersExact": true,
+        "foreignNetworksExact": true,
+        "foreignVolumesExact": true,
+        "ownedPGProof": {
+          "d8f1dff4d87f8b5084238fdb614dcf429f1b824d464a0c1c4993c6e0214cf073": {
+            "absentFromCompleteAllContainerCensus": true,
+            "state": null,
+            "terminal": true
+          }
+        },
+        "ownedPGTerminal": true,
+        "unexplainedCurrentContainerIds": []
+      },
+      "entryElapsedSeconds": 0.18829054094385356,
+      "gate": "foreignNetworksExact",
+      "passed": true
+    },
+    {
+      "details": {
+        "foreignContainersExact": true,
+        "foreignListenersExact": true,
+        "foreignNetworksExact": true,
+        "foreignVolumesExact": true,
+        "ownedPGProof": {
+          "d8f1dff4d87f8b5084238fdb614dcf429f1b824d464a0c1c4993c6e0214cf073": {
+            "absentFromCompleteAllContainerCensus": true,
+            "state": null,
+            "terminal": true
+          }
+        },
+        "ownedPGTerminal": true,
+        "unexplainedCurrentContainerIds": []
+      },
+      "entryElapsedSeconds": 0.18829087493941188,
+      "gate": "foreignVolumesExact",
+      "passed": true
+    },
+    {
+      "details": {
+        "foreignContainersExact": true,
+        "foreignListenersExact": true,
+        "foreignNetworksExact": true,
+        "foreignVolumesExact": true,
+        "ownedPGProof": {
+          "d8f1dff4d87f8b5084238fdb614dcf429f1b824d464a0c1c4993c6e0214cf073": {
+            "absentFromCompleteAllContainerCensus": true,
+            "state": null,
+            "terminal": true
+          }
+        },
+        "ownedPGTerminal": true,
+        "unexplainedCurrentContainerIds": []
+      },
+      "entryElapsedSeconds": 0.18829112499952316,
+      "gate": "foreignListenersExact",
+      "passed": true
+    },
+    {
+      "details": {
+        "foreignContainersExact": true,
+        "foreignListenersExact": true,
+        "foreignNetworksExact": true,
+        "foreignVolumesExact": true,
+        "ownedPGProof": {
+          "d8f1dff4d87f8b5084238fdb614dcf429f1b824d464a0c1c4993c6e0214cf073": {
+            "absentFromCompleteAllContainerCensus": true,
+            "state": null,
+            "terminal": true
+          }
+        },
+        "ownedPGTerminal": true,
+        "unexplainedCurrentContainerIds": []
+      },
+      "entryElapsedSeconds": 0.1882912910077721,
+      "gate": "ownedPGTerminal",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.1882930409628898,
+      "gate": "PG_not_foreign_baseline",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.1882957499474287,
+      "gate": "exact_image_names",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.1883284579962492,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.18833070795517415,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": {
+        "exitCode": 0,
+        "program": "/usr/bin/curl"
+      },
+      "entryElapsedSeconds": 0.2281786659732461,
+      "gate": "probe_exit",
+      "passed": true
+    },
+    {
+      "details": {
+        "httpStatus": "200",
+        "path": "/images/postgres%3A16-alpine/json"
+      },
+      "entryElapsedSeconds": 0.22818783298134804,
+      "gate": "docker_API_status",
+      "passed": true
+    },
+    {
+      "details": {
+        "actual": {
+          "architecture": "arm64",
+          "id": "sha256:0cefaabd882e42bcb2a2f3dc56d3ce4770560ba62fd7f197f1a2e008fd5731ab",
+          "os": "linux",
+          "repoTags": [
+            "postgres:16-alpine"
+          ]
+        },
+        "image": "postgres:16-alpine"
+      },
+      "entryElapsedSeconds": 0.22822879091836512,
+      "gate": "cached_image_exact",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.22826670797076076,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.22826775000430644,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": {
+        "exitCode": 0,
+        "program": "/usr/bin/curl"
+      },
+      "entryElapsedSeconds": 0.26200949994381517,
+      "gate": "probe_exit",
+      "passed": true
+    },
+    {
+      "details": {
+        "httpStatus": "200",
+        "path": "/images/testcontainers%2Fryuk%3A0.14.0/json"
+      },
+      "entryElapsedSeconds": 0.26202249992638826,
+      "gate": "docker_API_status",
+      "passed": true
+    },
+    {
+      "details": {
+        "actual": {
+          "architecture": "arm64",
+          "id": "sha256:7c1a8a9a47c780ed0f983770a662f80deb115d95cce3e2daa3d12115b8cd28f0",
+          "os": "linux",
+          "repoTags": [
+            "testcontainers/ryuk:0.14.0"
+          ]
+        },
+        "image": "testcontainers/ryuk:0.14.0"
+      },
+      "entryElapsedSeconds": 0.2620814999099821,
+      "gate": "cached_image_exact",
+      "passed": true
+    },
+    {
+      "details": [],
+      "entryElapsedSeconds": 0.2622267910046503,
+      "gate": "four_dotenv_absent",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.2622605829965323,
+      "gate": "bun_regular",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3068531659664586,
+      "gate": "bun_hash",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.30686195800080895,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": {
+        "exitCode": 0,
+        "program": "/Users/ali/Developer/warpdrive-agency-projects/.runtime/bin/bun"
+      },
+      "entryElapsedSeconds": 0.313115332974121,
+      "gate": "probe_exit",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3131328329909593,
+      "gate": "bun_version",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.313137499964796,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": {
+        "exitCode": 0,
+        "program": "/usr/bin/git"
+      },
+      "entryElapsedSeconds": 0.32858170790132135,
+      "gate": "probe_exit",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.32858699990902096,
+      "gate": "source_head",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3285891249543056,
+      "gate": "private_cache_exact_set",
+      "passed": true
+    },
+    {
+      "details": ".runtime/agency-project-list-native-cache",
+      "entryElapsedSeconds": 0.3286502909613773,
+      "gate": "private_cache_directory",
+      "passed": true
+    },
+    {
+      "details": ".runtime/agency-fixture-0098-admission-cache",
+      "entryElapsedSeconds": 0.32867604098282754,
+      "gate": "private_cache_directory",
+      "passed": true
+    },
+    {
+      "details": "src/features/agency-projects/persistence/agencyProjectList.vitest.config.ts",
+      "entryElapsedSeconds": 0.3288616659119725,
+      "gate": "envDir_false",
+      "passed": true
+    },
+    {
+      "details": "src/features/agency-projects/persistence/agencyProjectList.vitest.config.ts",
+      "entryElapsedSeconds": 0.32891024998389184,
+      "gate": "private_cache_config",
+      "passed": true
+    },
+    {
+      "details": "src/features/agency-projects/persistence/agencyFixture0098Admission.vitest.config.ts",
+      "entryElapsedSeconds": 0.3289528749883175,
+      "gate": "envDir_false",
+      "passed": true
+    },
+    {
+      "details": "src/features/agency-projects/persistence/agencyFixture0098Admission.vitest.config.ts",
+      "entryElapsedSeconds": 0.32898995792493224,
+      "gate": "private_cache_config",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3290006249444559,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": {
+        "exitCode": 0,
+        "program": "/usr/sbin/sysctl"
+      },
+      "entryElapsedSeconds": 0.3310732499230653,
+      "gate": "probe_exit",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.33107824996113777,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": {
+        "exitCode": 0,
+        "program": "/usr/bin/memory_pressure"
+      },
+      "entryElapsedSeconds": 0.33331029093824327,
+      "gate": "probe_exit",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.33340341597795486,
+      "gate": "memory_Q_parse",
+      "passed": true
+    },
+    {
+      "details": {
+        "Q": 53,
+        "pressure": 1
+      },
+      "entryElapsedSeconds": 0.33343649993184954,
+      "gate": "pressure_admission",
+      "passed": true
+    },
+    {
+      "details": {
+        "Q": 53
+      },
+      "entryElapsedSeconds": 0.33343691600020975,
+      "gate": "stop_floor_Q30",
+      "passed": true
+    },
+    {
+      "details": {
+        "freeDiskBytes": 13566709760
+      },
+      "entryElapsedSeconds": 0.3334379999432713,
+      "gate": "disk8GiB",
+      "passed": true
+    },
+    {
+      "details": {
+        "minimum": 40,
+        "remainingSeconds": 67.53605766606051
+      },
+      "entryElapsedSeconds": 0.333443290903233,
+      "gate": "native_phase_remaining_before_second_exec",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.33675129094626755,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.33680087490938604,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3368393329437822,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3368755829287693,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3369088330073282,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.33694104093592614,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.33697170799132437,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.33699891599826515,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3370304579148069,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.33705891598947346,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3370883750030771,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3371235409285873,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.33715358295012265,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.33718033297918737,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.33721024997066706,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.33724016591440886,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.33727049990557134,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3373009159695357,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3373292499454692,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3373572078999132,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.33738370798528194,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.33741337491665035,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3374422499909997,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3374724999302998,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3375052079791203,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.33753233298193663,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.33756162493955344,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.33758937497623265,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3376159999752417,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3376449999632314,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3376770409522578,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3377049579285085,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.33773304091300815,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.33776274998672307,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.33779445791151375,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3378220829181373,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3378516249358654,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3378786660032347,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.33791120792739093,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.33794124994892627,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3379699159413576,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3379990829853341,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3380275829695165,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.33805820799898356,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3380863330094144,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3381138329859823,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.33814362494740635,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.33817174995783716,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3382015828974545,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3382318749791011,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3382594579597935,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3382892078952864,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.33831033296883106,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3383402079343796,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.33837179094552994,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3384002079255879,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3384282909100875,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.33845595794264227,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.33848395792301744,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.33851133298594505,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.33853195793926716,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3385602079797536,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.33859099994879216,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3386208749143407,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.33865266595967114,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.33868083299603313,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.33871012495364994,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3387393329758197,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.33877249993383884,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3388011249480769,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.33882979094050825,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3388580830069259,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.33888683293480426,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.33891574991866946,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3389447499066591,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.33897133299615234,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.33900162496138364,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3390315829310566,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3390637499978766,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.33909270795993507,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.33912191598210484,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.33915020793210715,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3391816249350086,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3392097079195082,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3392404579790309,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3392703329445794,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.339299124898389,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3393280829768628,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3393566249869764,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3393859579227865,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.33941237500403076,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3394418329698965,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.33946887496858835,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3394967499189079,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.33952595794107765,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.33955270797014236,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3395796249387786,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.33960962493438274,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.33963658299762756,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.33966379100456834,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.33969033299945295,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.33972020796500146,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.33975112496409565,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.33977808291092515,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.33980658289510757,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.33983420790173113,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3398622499080375,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3398902079788968,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.33992041600868106,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.339948832988739,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3399779580067843,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3400072499644011,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3400380410021171,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3400665828958154,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3400944579625502,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34012195793911815,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3401501659536734,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34017924999352545,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34020970796700567,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.340236832969822,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34026429092045873,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3402917499188334,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34032116597518325,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3403486659517512,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34037720796186477,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34040437499061227,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3404332499485463,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3404613329330459,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3404912499245256,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3405200829729438,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34055024990811944,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3405817080056295,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34061008295975626,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34064020798541605,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34066654089838266,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34069408290088177,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3407229579752311,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3407522909110412,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3407816248945892,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3408117078943178,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3408378749154508,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.340864458004944,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34089883300475776,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34092737489845604,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3409558749990538,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34098483296111226,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3410156249301508,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34104408300481737,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3410741249099374,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3411069998983294,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34113616589456797,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34116770792752504,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34120016591623425,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34123108291532844,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34126141597516835,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34129349992144853,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": {
+        "TSFiles": 149,
+        "configMismatches": [],
+        "exactSet": true,
+        "sourceConfigPinsMatch": true,
+        "sourceInputs": 156,
+        "sourceMismatches": []
+      },
+      "entryElapsedSeconds": 0.3417228749021888,
+      "gate": "source156_and7configs_exact",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3417699160054326,
+      "gate": "request_still_frozen",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3417709158966318,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": {
+        "exitCode": 0,
+        "program": "/usr/sbin/sysctl"
+      },
+      "entryElapsedSeconds": 0.34392129094339907,
+      "gate": "probe_exit",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34392729098908603,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": {
+        "exitCode": 0,
+        "program": "/usr/bin/memory_pressure"
+      },
+      "entryElapsedSeconds": 0.34552599990274757,
+      "gate": "probe_exit",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34553808299824595,
+      "gate": "memory_Q_parse",
+      "passed": true
+    },
+    {
+      "details": {
+        "Q": 53,
+        "pressure": 1
+      },
+      "entryElapsedSeconds": 0.34556895797140896,
+      "gate": "pressure_admission",
+      "passed": true
+    },
+    {
+      "details": {
+        "Q": 53
+      },
+      "entryElapsedSeconds": 0.3455692079151049,
+      "gate": "stop_floor_Q30",
+      "passed": true
+    },
+    {
+      "details": {
+        "freeDiskBytes": 13566668800
+      },
+      "entryElapsedSeconds": 0.3455700409831479,
+      "gate": "disk8GiB",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34557291597593576,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": {
+        "minimum": 80,
+        "remainingSeconds": 147.18220174999442
+      },
+      "entryElapsedSeconds": 0.3455757909687236,
+      "gate": "allin_remaining_before_exec",
+      "passed": true
+    },
+    {
+      "details": {
+        "minimum": 40,
+        "remainingSeconds": 67.52392212499399
+      },
+      "entryElapsedSeconds": 0.3455771249718964,
+      "gate": "native_phase_remaining_at_exec_barrier",
+      "passed": true
+    }
+  ],
+  "legacyActualToolTerminalCode": 0,
+  "nativePhaseRemainingAtExecBarrierSeconds": 67.52392212499399,
+  "nativePhaseRemainingBeforeAdmissionFinishSeconds": 67.53605766606051,
+  "ownPgid": 135,
+  "requestSha256": "54a123c73311253b243ba4eebf72a7538f5490cac00cbd78199f62cdcd9f4e7e",
+  "resourcesAtExecBarrier": {
+    "Q": 53,
+    "freeDiskBytes": 13566668800,
+    "pressure": 1
+  },
+  "source": {
+    "TSFiles": 149,
+    "configMismatches": [],
+    "exactSet": true,
+    "sourceConfigPinsMatch": true,
+    "sourceInputs": 156,
+    "sourceMismatches": []
+  }
+}

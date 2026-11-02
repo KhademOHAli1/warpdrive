@@ -1,0 +1,144 @@
+src/features/agency-projects/authorityTransactionSpec.test.ts format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+     20  20 │   
+     21  21 │   const invalidKeyValues = [
+     22     │ - ··undefined,·null,·"1",·true,·{},·[],·1.5,·Number.NaN,
+     23     │ - ··Number.POSITIVE_INFINITY,·Number.NEGATIVE_INFINITY,·MIN_INT32·-·1,·MAX_INT32·+·1,
+         22 │ + ··undefined,
+         23 │ + ··null,
+         24 │ + ··"1",
+         25 │ + ··true,
+         26 │ + ··{},
+         27 │ + ··[],
+         28 │ + ··1.5,
+         29 │ + ··Number.NaN,
+         30 │ + ··Number.POSITIVE_INFINITY,
+         31 │ + ··Number.NEGATIVE_INFINITY,
+         32 │ + ··MIN_INT32·-·1,
+         33 │ + ··MAX_INT32·+·1,
+     24  34 │   ];
+     25  35 │   const invalidKeyRows = invalidKeyValues.flatMap((value) =>
+    ······· │ 
+     27  37 │   );
+     28  38 │   const invalidTimeoutValues = [
+     29     │ - ··0,·-1,·60_001,·1.5,·Number.NaN,·Number.POSITIVE_INFINITY,
+     30     │ - ··Number.NEGATIVE_INFINITY,·"1",·true,·null,·undefined,·{},
+         39 │ + ··0,
+         40 │ + ··-1,
+         41 │ + ··60_001,
+         42 │ + ··1.5,
+         43 │ + ··Number.NaN,
+         44 │ + ··Number.POSITIVE_INFINITY,
+         45 │ + ··Number.NEGATIVE_INFINITY,
+         46 │ + ··"1",
+         47 │ + ··true,
+         48 │ + ··null,
+         49 │ + ··undefined,
+         50 │ + ··{},
+     31  51 │   ];
+     32  52 │   const invalidTimeoutRows = timeoutFields.flatMap((field) =>
+    ······· │ 
+     40  60 │     });
+     41  61 │   
+     42     │ - ··it.each([[MIN_INT32,·MAX_INT32],·[MAX_INT32,·MIN_INT32],·[0,·0]])(
+     43     │ - ····"accepts·the·exact·signed·int32·key·tuple·%j",
+     44     │ - ····(first,·second)·=>·{
+     45     │ - ······const·input·=·{·...spec(),·key:·[first,·second]·};
+     46     │ - ······expect(parseAuthorityTransactionSpec(input)).toEqual({·ok:·true,·value:·input·});
+     47     │ - ····},
+     48     │ - ··);
+         62 │ + ··it.each([
+         63 │ + ····[MIN_INT32,·MAX_INT32],
+         64 │ + ····[MAX_INT32,·MIN_INT32],
+         65 │ + ····[0,·0],
+         66 │ + ··])("accepts·the·exact·signed·int32·key·tuple·%j",·(first,·second)·=>·{
+         67 │ + ····const·input·=·{·...spec(),·key:·[first,·second]·};
+         68 │ + ····expect(parseAuthorityTransactionSpec(input)).toEqual({·ok:·true,·value:·input·});
+         69 │ + ··});
+     49  70 │   
+     50     │ - ··it.each([[1,·1,·1],·[60_000,·60_000,·60_000],·[1,·30_000,·60_000]])(
+     51     │ - ····"accepts·inclusive·ordered·timeout·bounds·%j",
+     52     │ - ····(lockMs,·statementMs,·idleMs)·=>·{
+     53     │ - ······const·input·=·{·...spec(),·sqlTimeouts:·{·lockMs,·statementMs,·idleMs·}·};
+     54     │ - ······expect(parseAuthorityTransactionSpec(input)).toEqual({·ok:·true,·value:·input·});
+     55     │ - ····},
+     56     │ - ··);
+         71 │ + ··it.each([
+         72 │ + ····[1,·1,·1],
+         73 │ + ····[60_000,·60_000,·60_000],
+         74 │ + ····[1,·30_000,·60_000],
+         75 │ + ··])("accepts·inclusive·ordered·timeout·bounds·%j",·(lockMs,·statementMs,·idleMs)·=>·{
+         76 │ + ····const·input·=·{·...spec(),·sqlTimeouts:·{·lockMs,·statementMs,·idleMs·}·};
+         77 │ + ····expect(parseAuthorityTransactionSpec(input)).toEqual({·ok:·true,·value:·input·});
+         78 │ + ··});
+     57  79 │   
+     58  80 │     it.each([null, undefined, [], {}, true, 3, "spec"].map((input) => ({ input })))(
+    ······· │ 
+     95 117 │     });
+     96 118 │   
+     97     │ - ··it.each([undefined,·null,·"",·"SHARED",·"Exclusive",·"update",·"·shared",·"shared·",·true,·1,·{}])(
+     98     │ - ····"rejects·a·noncanonical·mode:·%j",
+     99     │ - ····(mode)·=>·expect(parseAuthorityTransactionSpec({·...spec(),·mode·})).toEqual(invalid),
+        119 │ + ··it.each([
+        120 │ + ····undefined,
+        121 │ + ····null,
+        122 │ + ····"",
+        123 │ + ····"SHARED",
+        124 │ + ····"Exclusive",
+        125 │ + ····"update",
+        126 │ + ····"·shared",
+        127 │ + ····"shared·",
+        128 │ + ····true,
+        129 │ + ····1,
+        130 │ + ····{},
+        131 │ + ··])("rejects·a·noncanonical·mode:·%j",·(mode)·=>
+        132 │ + ····expect(parseAuthorityTransactionSpec({·...spec(),·mode·})).toEqual(invalid),
+    100 133 │     );
+    101 134 │   
+    102 135 │     it.each([undefined, null, [], 1, "time"].map((sqlTimeouts) => ({ sqlTimeouts })))(
+    103 136 │       "requires a timeout object: $sqlTimeouts",
+    104     │ - ····({·sqlTimeouts·})·=>·expect(parseAuthorityTransactionSpec({·...spec(),·sqlTimeouts·})).toEqual(invalid),
+        137 │ + ····({·sqlTimeouts·})·=>
+        138 │ + ······expect(parseAuthorityTransactionSpec({·...spec(),·sqlTimeouts·})).toEqual(invalid),
+    105 139 │     );
+    106 140 │   
+    ······· │ 
+    109 143 │     });
+    110 144 │   
+    111     │ - ··it.each([[2_000,·1_000,·3_000],·[1_000,·3_000,·2_000],·[3,·2,·1]])(
+    112     │ - ····"requires·lock·<=·statement·<=·idle:·%j",
+    113     │ - ····(lockMs,·statementMs,·idleMs)·=>·{
+    114     │ - ······expect(parseAuthorityTransactionSpec({·...spec(),·sqlTimeouts:·{·lockMs,·statementMs,·idleMs·}·}))
+    115     │ - ········.toEqual(invalid);
+    116     │ - ····},
+    117     │ - ··);
+        145 │ + ··it.each([
+        146 │ + ····[2_000,·1_000,·3_000],
+        147 │ + ····[1_000,·3_000,·2_000],
+        148 │ + ····[3,·2,·1],
+        149 │ + ··])("requires·lock·<=·statement·<=·idle:·%j",·(lockMs,·statementMs,·idleMs)·=>·{
+        150 │ + ····expect(
+        151 │ + ······parseAuthorityTransactionSpec({·...spec(),·sqlTimeouts:·{·lockMs,·statementMs,·idleMs·}·}),
+        152 │ + ····).toEqual(invalid);
+        153 │ + ··});
+    118 154 │   
+    119 155 │     it("detaches returned tuples and timeout objects without mutating or freezing caller input", () => {
+    ······· │ 
+    126 162 │       Reflect.set(first.value.sqlTimeouts, "lockMs", 1);
+    127 163 │       expect(input).toEqual(before);
+    128     │ - ····for·(const·value·of·[input,·input.key,·input.sqlTimeouts])·expect(Object.isFrozen(value)).toBe(false);
+        164 │ + ····for·(const·value·of·[input,·input.key,·input.sqlTimeouts])
+        165 │ + ······expect(Object.isFrozen(value)).toBe(false);
+    129 166 │       expect(parseAuthorityTransactionSpec(input)).toEqual({ ok: true, value: before });
+    130 167 │     });
+  
+
+Checked 2 files in 39ms. No fixes applied.
+Found 1 error.
+check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Some errors were emitted while running checks.
+  
+

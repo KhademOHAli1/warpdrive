@@ -1,0 +1,3 @@
+{"phase": 1, "command": [".runtime/bin/bun", "--bun", "node_modules/typescript/bin/tsc", "--project", ".runtime/tsconfig.regional-source.json", "--noEmit", "--incremental", "false"]}
+src/features/deal-workspace/sidebar/FieldRow.tsx(3,20): error TS2307: Cannot find module './FieldRow.module.css' or its corresponding type declarations.
+{"phase": 1, "exitCode": 2, "seconds": 4.6318}

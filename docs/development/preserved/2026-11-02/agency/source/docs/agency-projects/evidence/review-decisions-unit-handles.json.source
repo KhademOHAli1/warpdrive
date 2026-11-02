@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 1,
+  "scope": "MAIL-authorized single selected review policy unit file on existing dependencies only",
+  "guard": {
+    "minimumFreeBytes": 3221225472,
+    "timeoutSeconds": 30,
+    "workers": 1,
+    "belowFloorBehavior": "terminate only newly owned process group"
+  },
+  "runs": [
+    {
+      "phase": "red-missing",
+      "sessionId": 76466,
+      "pid": 84878,
+      "terminal": true,
+      "exitCode": 1,
+      "stopReason": null,
+      "beforeFreeBytes": 13880459264,
+      "afterFreeBytes": 13881020416,
+      "log": "review-decisions-red-missing.log",
+      "failedSuites": 1,
+      "assertionsCollected": 0
+    },
+    {
+      "phase": "red-behavior",
+      "pid": 86177,
+      "terminal": true,
+      "exitCode": 1,
+      "stopReason": null,
+      "beforeFreeBytes": 13153185792,
+      "afterFreeBytes": 13149708288,
+      "log": "review-decisions-red-behavior.log",
+      "failed": 17,
+      "passed": 19,
+      "files": 1
+    },
+    {
+      "phase": "red-epoch",
+      "pid": 89845,
+      "terminal": true,
+      "exitCode": 1,
+      "stopReason": null,
+      "beforeFreeBytes": 13464244224,
+      "afterFreeBytes": 13459169280,
+      "log": "review-decisions-red-epoch.log",
+      "failed": 5,
+      "passed": 34,
+      "files": 1
+    },
+    {
+      "phase": "red-time",
+      "sessionId": 40923,
+      "pid": 95591,
+      "terminal": true,
+      "exitCode": 1,
+      "stopReason": null,
+      "beforeFreeBytes": 12725506048,
+      "afterFreeBytes": 12720820224,
+      "log": "review-decisions-red-time.log",
+      "failed": 7,
+      "passed": 36,
+      "files": 1
+    },
+    {
+      "phase": "green",
+      "pid": 96867,
+      "terminal": true,
+      "exitCode": 0,
+      "stopReason": null,
+      "beforeFreeBytes": 12558118912,
+      "afterFreeBytes": 12569772032,
+      "log": "review-decisions-green.log",
+      "passed": 43,
+      "files": 1
+    }
+  ],
+  "forbiddenCampaignsStarted": false,
+  "pending": "No unit process remains. Lane released; types/lint/combined/PG/native/persistence gates remain open.",
+  "ownedRunGroupsEmptyVerified": [
+    84878,
+    86177,
+    89845,
+    95591,
+    96867
+  ]
+}

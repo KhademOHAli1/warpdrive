@@ -1,0 +1,242 @@
+src/features/agency-projects/reviews/revisionRoundScope.test.ts format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+     31  31 │       "rejects a nonpositive or unsafe ordinal/version: %s",
+     32  32 │       (value) => {
+     33     │ - ······expect(parseRevisionRoundDeclaration({·...round(),·roundNumber:·value·}))
+     34     │ - ········.toEqual(invalidDeclaration);
+     35     │ - ······expect(parseRevisionRoundDeclaration({·...round(),·expectedAllowanceVersion:·value·}))
+     36     │ - ········.toEqual(invalidDeclaration);
+         33 │ + ······expect(parseRevisionRoundDeclaration({·...round(),·roundNumber:·value·})).toEqual(
+         34 │ + ········invalidDeclaration,
+         35 │ + ······);
+         36 │ + ······expect(
+         37 │ + ········parseRevisionRoundDeclaration({·...round(),·expectedAllowanceVersion:·value·}),
+         38 │ + ······).toEqual(invalidDeclaration);
+     37  39 │       },
+     38  40 │     );
+    ······· │ 
+     47  49 │       for (const field of ["projectId", "deliverableId"]) {
+     48  50 │         for (const value of ["same-title", "", null, undefined]) {
+     49     │ - ········expect(parseRevisionRoundDeclaration({·...round(),·[field]:·value·}))
+     50     │ - ··········.toEqual(invalidDeclaration);
+         51 │ + ········expect(parseRevisionRoundDeclaration({·...round(),·[field]:·value·})).toEqual(
+         52 │ + ··········invalidDeclaration,
+         53 │ + ········);
+     51  54 │         }
+     52  55 │       }
+    ······· │ 
+     60  63 │         { versionReference: "asset/version-1" },
+     61  64 │       ]) {
+     62     │ - ······expect(parseRevisionRoundDeclaration({·...round(),·...extra·}))
+     63     │ - ········.toEqual(invalidDeclaration);
+         65 │ + ······expect(parseRevisionRoundDeclaration({·...round(),·...extra·})).toEqual(invalidDeclaration);
+     64  66 │       }
+     65  67 │     });
+    ······· │ 
+     68  70 │   describe("versioned staff-recorded allowance boundary", () => {
+     69  71 │     it("retains explicit unknown and agreed zero as distinct declarations", () => {
+     70     │ - ····expect(parseRevisionRoundAllowance(unknownAllowance()))
+     71     │ - ······.toEqual({·ok:·true,·value:·unknownAllowance()·});
+         72 │ + ····expect(parseRevisionRoundAllowance(unknownAllowance())).toEqual({
+         73 │ + ······ok:·true,
+         74 │ + ······value:·unknownAllowance(),
+         75 │ + ····});
+     72  76 │       expect(parseRevisionRoundAllowance(agreed(0))).toEqual({ ok: true, value: agreed(0) });
+     73  77 │     });
+    ······· │ 
+    100 104 │         for (const field of ["projectId", "deliverableId", "recordedByUserId"]) {
+    101 105 │           for (const value of ["same-name", "", null, undefined]) {
+    102     │ - ··········expect(parseRevisionRoundAllowance({·...allowance,·[field]:·value·}))
+    103     │ - ············.toEqual(invalidAllowance);
+        106 │ + ··········expect(parseRevisionRoundAllowance({·...allowance,·[field]:·value·})).toEqual(
+        107 │ + ············invalidAllowance,
+        108 │ + ··········);
+    104 109 │           }
+    105 110 │         }
+    ······· │ 
+    109 114 │     it("requires staff-recorded provenance and a known strict variant", () => {
+    110 115 │       for (const provenance of [undefined, "client-authenticated", "signed", true]) {
+    111     │ - ······expect(parseRevisionRoundAllowance({·...agreed(),·provenance·}))
+    112     │ - ········.toEqual(invalidAllowance);
+        116 │ + ······expect(parseRevisionRoundAllowance({·...agreed(),·provenance·})).toEqual(invalidAllowance);
+    113 117 │       }
+    114 118 │       for (const kind of [undefined, null, "Agreed", "included", "exhausted"]) {
+    ······· │ 
+    120 124 │         { evidenceReference: "agreement/1" },
+    121 125 │       ]) {
+    122     │ - ······expect(parseRevisionRoundAllowance({·...unknownAllowance(),·...extra·}))
+    123     │ - ········.toEqual(invalidAllowance);
+        126 │ + ······expect(parseRevisionRoundAllowance({·...unknownAllowance(),·...extra·})).toEqual(
+        127 │ + ········invalidAllowance,
+        128 │ + ······);
+    124 129 │       }
+    125 130 │     });
+    ······· │ 
+    135 140 │         expect(parseRevisionRoundAllowance({ ...agreed(), recordedAt })).toEqual(invalidAllowance);
+    136 141 │       }
+    137     │ - ····expect(parseRevisionRoundAllowance({·...unknownAllowance(),·recordedAt:·undefined·}))
+    138     │ - ······.toEqual(invalidAllowance);
+        142 │ + ····expect(parseRevisionRoundAllowance({·...unknownAllowance(),·recordedAt:·undefined·})).toEqual(
+        143 │ + ······invalidAllowance,
+        144 │ + ····);
+    139 145 │     });
+    140 146 │   
+    ······· │ 
+    145 151 │         expect(parseRevisionRoundAllowance(input)).toEqual(invalidAllowance);
+    146 152 │       }
+    147     │ - ····for·(const·agreementSource·of·["·",·"\u200c",·"Source\u0085",·"Source\nline",·"x".repeat(161)])·{
+    148     │ - ······expect(parseRevisionRoundAllowance({·...agreed(),·agreementSource·}))
+    149     │ - ········.toEqual(invalidAllowance);
+        153 │ + ····for·(const·agreementSource·of·[
+        154 │ + ······"·",
+        155 │ + ······"\u200c",
+        156 │ + ······"Source\u0085",
+        157 │ + ······"Source\nline",
+        158 │ + ······"x".repeat(161),
+        159 │ + ····])·{
+        160 │ + ······expect(parseRevisionRoundAllowance({·...agreed(),·agreementSource·})).toEqual(
+        161 │ + ········invalidAllowance,
+        162 │ + ······);
+    150 163 │       }
+    151 164 │       for (const evidenceReference of [
+    ······· │ 
+    156 169 │         "r".repeat(2049),
+    157 170 │       ]) {
+    158     │ - ······expect(parseRevisionRoundAllowance({·...agreed(),·evidenceReference·}))
+    159     │ - ········.toEqual(invalidAllowance);
+        171 │ + ······expect(parseRevisionRoundAllowance({·...agreed(),·evidenceReference·})).toEqual(
+        172 │ + ········invalidAllowance,
+        173 │ + ······);
+    160 174 │       }
+    161 175 │     });
+    ······· │ 
+    163 177 │     it("rejects invalid limits or versions rather than defaulting to unknown", () => {
+    164 178 │       for (const includedRounds of [-1, 1.5, "2", null, NaN, Infinity, Number.MAX_SAFE_INTEGER + 1]) {
+    165     │ - ······expect(parseRevisionRoundAllowance({·...agreed(),·includedRounds·}))
+    166     │ - ········.toEqual(invalidAllowance);
+        179 │ + ······expect(parseRevisionRoundAllowance({·...agreed(),·includedRounds·})).toEqual(
+        180 │ + ········invalidAllowance,
+        181 │ + ······);
+    167 182 │       }
+    168 183 │       for (const version of [0, -1, 1.5, "2", undefined, Number.MAX_SAFE_INTEGER + 1]) {
+    169 184 │         expect(parseRevisionRoundAllowance({ ...agreed(), version })).toEqual(invalidAllowance);
+    170     │ - ······expect(parseRevisionRoundAllowance({·...unknownAllowance(),·version·}))
+    171     │ - ········.toEqual(invalidAllowance);
+        185 │ + ······expect(parseRevisionRoundAllowance({·...unknownAllowance(),·version·})).toEqual(
+        186 │ + ········invalidAllowance,
+        187 │ + ······);
+    172 188 │       }
+    173 189 │     });
+    ······· │ 
+    190 206 │         { signature: "claim" },
+    191 207 │       ]) {
+    192     │ - ······expect(parseRevisionRoundDeclaration({·...round(),·...extra·}))
+    193     │ - ········.toEqual(invalidDeclaration);
+    194     │ - ······expect(parseRevisionRoundAllowance({·...agreed(),·...extra·}))
+    195     │ - ········.toEqual(invalidAllowance);
+        208 │ + ······expect(parseRevisionRoundDeclaration({·...round(),·...extra·})).toEqual(invalidDeclaration);
+        209 │ + ······expect(parseRevisionRoundAllowance({·...agreed(),·...extra·})).toEqual(invalidAllowance);
+    196 210 │       }
+    197 211 │     });
+  
+
+src/features/agency-projects/reviews/revisionRoundScope.ts:2:1 assist/source/organizeImports  FIXABLE  ━━━━━━━━━━
+
+  × Sort the imported names.
+  
+    1 │ import { err, ok, type Result } from "@/types/result";
+  > 2 │ import {
+      │ ^^^^^^^^
+  > 3 │   recordedRoundAllowanceSchema,
+  > 4 │   revisionRoundDeclarationSchema,
+  > 5 │   type RecordedRoundAllowance,
+  > 6 │   type RevisionRoundDeclaration,
+  > 7 │ } from "./revisionRoundScopeSchemas";
+      │ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    8 │ 
+    9 │ export type { RecordedRoundAllowance, RevisionRoundDeclaration } from "./revisionRoundScopeSchemas";
+  
+  i Safe fix: Organize imports and exports (Biome)
+  
+     1  1 │   import { err, ok, type Result } from "@/types/result";
+     2  2 │   import {
+     3    │ - ··recordedRoundAllowanceSchema,
+     4    │ - ··revisionRoundDeclarationSchema,
+     5    │ - ··type·RecordedRoundAllowance,
+     6    │ - ··type·RevisionRoundDeclaration,
+        3 │ + ··type·RecordedRoundAllowance,
+        4 │ + ··type·RevisionRoundDeclaration,
+        5 │ + ··recordedRoundAllowanceSchema,
+        6 │ + ··revisionRoundDeclarationSchema,
+     7  7 │   } from "./revisionRoundScopeSchemas";
+     8  8 │   
+  
+
+src/features/agency-projects/reviews/revisionRoundScope.ts format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+    35 35 │     round: RevisionRoundDeclaration,
+    36 36 │     allowance: RecordedRoundAllowance,
+    37    │ - ):·Result<
+    38    │ - ··RoundScopeAssessment,
+    39    │ - ··"round_scope_target_conflict"·|·"round_scope_version_conflict"
+    40    │ - >·{
+       37 │ + ):·Result<RoundScopeAssessment,·"round_scope_target_conflict"·|·"round_scope_version_conflict">·{
+    41 38 │     if (round.projectId !== allowance.projectId || round.deliverableId !== allowance.deliverableId) {
+    42 39 │       return err("round_scope_target_conflict");
+  
+
+src/features/agency-projects/reviews/revisionRoundScopePolicy.test.ts format ━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+     46  46 │     it("rejects another target or supplied-version mismatch before classification", () => {
+     47  47 │       for (const field of ["projectId", "deliverableId"] as const) {
+     48     │ - ······expect(evaluateRevisionRoundScope(round(),·{
+     49     │ - ········...agreed(),
+     50     │ - ········[field]:·"fabcdefa-6789-4bcd-9efa-678901234abc",
+     51     │ - ······})).toEqual({·ok:·false,·error:·"round_scope_target_conflict"·});
+         48 │ + ······expect(
+         49 │ + ········evaluateRevisionRoundScope(round(),·{
+         50 │ + ··········...agreed(),
+         51 │ + ··········[field]:·"fabcdefa-6789-4bcd-9efa-678901234abc",
+         52 │ + ········}),
+         53 │ + ······).toEqual({·ok:·false,·error:·"round_scope_target_conflict"·});
+     52  54 │       }
+     53  55 │       for (const allowance of [agreed(0), unknownAllowance()]) {
+     54     │ - ······expect(evaluateRevisionRoundScope(round(),·{·...allowance,·version:·3·}))
+     55     │ - ········.toEqual({·ok:·false,·error:·"round_scope_version_conflict"·});
+         56 │ + ······expect(evaluateRevisionRoundScope(round(),·{·...allowance,·version:·3·})).toEqual({
+         57 │ + ········ok:·false,
+         58 │ + ········error:·"round_scope_version_conflict",
+         59 │ + ······});
+     56  60 │       }
+     57  61 │     });
+    ······· │ 
+     95  99 │       const original = evaluateRevisionRoundScope(round(2), agreed(2));
+     96 100 │       const changed = { ...agreed(0), version: 3 };
+     97     │ - ····expect(evaluateRevisionRoundScope({·...round(2),·expectedAllowanceVersion:·3·},·changed))
+     98     │ - ······.toMatchObject({·ok:·true,·value:·{·classification:·"scope-review-required"·}·});
+     99     │ - ····expect(evaluateRevisionRoundScope(round(2),·changed))
+    100     │ - ······.toEqual({·ok:·false,·error:·"round_scope_version_conflict"·});
+        101 │ + ····expect(
+        102 │ + ······evaluateRevisionRoundScope({·...round(2),·expectedAllowanceVersion:·3·},·changed),
+        103 │ + ····).toMatchObject({·ok:·true,·value:·{·classification:·"scope-review-required"·}·});
+        104 │ + ····expect(evaluateRevisionRoundScope(round(2),·changed)).toEqual({
+        105 │ + ······ok:·false,
+        106 │ + ······error:·"round_scope_version_conflict",
+        107 │ + ····});
+    101 108 │       expect(evaluateRevisionRoundScope(round(2), agreed(2))).toEqual(original);
+    102 109 │     });
+  
+
+Checked 52 files in 58ms. No fixes applied.
+Found 4 errors.
+check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Some errors were emitted while running checks.
+  
+

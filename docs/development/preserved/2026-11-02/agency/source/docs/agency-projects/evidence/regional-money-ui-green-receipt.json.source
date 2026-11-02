@@ -1,0 +1,21 @@
+{
+  "capturedAt": "2026-11-01T11:48:23.131609+00:00",
+  "observationSource": "Root transcription ofactualcanonicalguardstdout andseparatepostterminal killpg(pid,0), not newexecution.",
+  "pid": 40967,
+  "session": 82584,
+  "terminal": true,
+  "rawExitCode": 0,
+  "stopReason": null,
+  "minimumFreeBytes": 17588764672,
+  "elapsedSeconds": 2.53,
+  "frozenInputCount": 34,
+  "frozenInputsUnchanged": true,
+  "ownedGroupRemaining": false,
+  "postTerminalGroupGone": true,
+  "passedCases": 8,
+  "failedCases": 0,
+  "testFiles": 2,
+  "vitestSeconds": 1.54,
+  "log": "agency-regional-ui-green-attempt1.log",
+  "scope": "Same8jsdomcases only; noDB/app/build/install/provider/automaticstatics."
+}

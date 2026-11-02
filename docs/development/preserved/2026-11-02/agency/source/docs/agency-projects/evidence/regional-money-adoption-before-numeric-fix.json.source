@@ -1,0 +1,46 @@
+{
+  "capturedAt": "2026-11-01T11:17:02.056483+00:00",
+  "scope": "Initial26-source-path adoption before root numeric correction, after observed7case RED",
+  "sourceCommit": "297c1dd5dbff4e19f6d1559a16bb258cc3368577",
+  "sourceHashes": {
+    "src/features/i18n/LocaleProvider.tsx": "1009d98d61abb524982b5ecca90b7503b6a677ac190383620fca0ec287bf2e5a",
+    "src/features/i18n/actions.ts": "794dbc14815c404867d04f82cefd5b3ff28ea7f9661c911a83c8bb86ccceb064",
+    "src/features/i18n/server.ts": "20a8472a1883bc855bf036fba2a9abedf6f074323d46e93d07a9e68c899960fb",
+    "src/features/i18n/preferences.ts": "b1b51660d72a33083c37461d9bb97b9268b7594e8ecd1f01b90c38bf6e0dcbf1",
+    "src/features/i18n/catalog.ts": "5831ce5710a4a8ffcd70f57d20609adfa8c014686b024079137eccc238cb56af",
+    "src/features/i18n/messages/dataConventions.fa.json": "580843068239b7eb4bcc9800776b5977aae0cb4989dff599b4327a28470109f8",
+    "src/features/i18n/messages/dataConventions.de.json": "e063c6a500fa4401f6052e717580291e5a0497dbcf8c311fa1e8aab8a889d2a6",
+    "src/features/i18n/messages/dataConventions.en.json": "bf1ea06b45f1d93bfc62a068a723445a2876b363868f522449b616e00b641e8f",
+    "src/lib/formatCurrency.ts": "6d4e17b6643a59e7d82105ea77781d35f45f3b651685379cb381eb2c05b671f6",
+    "src/lib/iranianMoney.ts": "a320a91d931a1c81a33ed578d68eeab289077577c09c0e4725dd0d13b3f7029c",
+    "src/lib/localeFormatting.ts": "6c332edf0150b3deba09ab40d962fa5f7728de3479c92de8d3f5b34bcde3640e",
+    "src/lib/useFormatters.ts": "b535b6286af85db871de1de64469a5048746749cf2e928bd21602e338495a8f8",
+    "src/lib/iranianMoney.test.ts": "e64016ae2aa0909c14a9432b9f05b9b1d4d53687ae68a50f920bc66ab71ca235",
+    "src/app/(app)/settings/profile/LanguageSettings.tsx": "d9687a84438822c807c2c416024007e07631a3d58ab68f519bdbde5d48ae9838",
+    "src/app/(app)/settings/profile/IranianMoneySetting.tsx": "f89bca0d2d48a5ced921d53c9692255c2533ac5d71393f753b78bbf3e92b643d",
+    "src/app/(app)/settings/profile/IranianMoneySetting.test.tsx": "10a76606dd57e27089f3b44cf3ddf87b5f3fea580bd5d69eeeb6d07fcbf23e4e",
+    "src/features/identity/iranianMoneyPreferences.integration.test.ts": "901b3f3978206d77b6bdfd13ffc67dd9b028642805c5e34a8792b9e7d6e3137d",
+    "src/features/custom-fields/CustomFieldCreateFields.tsx": "226a51d4e4193c8538f8822f1c7bd02d66f9aadfc372e392a703c730539eb7ea",
+    "src/features/custom-fields/InlineCustomFieldEditor.tsx": "e67338308d58cb41ce4bd4ada986c4b9ed9621966fd7692cca6eb0747a786b69",
+    "src/features/custom-fields/render.numeric-control.tsx": "e9b6944a7b6dbfca71d3ccb2e975b9328681f843dbda8c4d893dc5d90c7e67b1",
+    "src/features/custom-fields/render.widget-types.tsx": "49072a2e77faa98dae91ac5e71e9c1d82657a68ba9cb58d8838fea71aeea9e1d",
+    "src/features/custom-fields/render.widgets.tsx": "8ba597c7cc2546151a882b58f01fa3d59dd221695f26547e469ae6596cbd7ca6",
+    "src/features/custom-fields/monetaryEntryUnit.test.tsx": "a5e319d37fa5d1402d18980c9571245d90f27b0ae5eb2434ae565ffb574267d8",
+    "src/features/deals/AddDealModal.tsx": "78340024d8824f3b2e1119315f5dd73f56d524cdab0501a669b7a77994e0f4ab",
+    "src/features/leads/AddLeadModal.tsx": "cff566e804f526cc9d6c507658a5800943dea5652a8d4479913f4bebd970178b",
+    "src/features/deal-workspace/sidebar/DetailsBlock.tsx": "9e52451132d5f571b0cd88b6cc2d5da94fab9064677ef9535e60b4d436b32146"
+  },
+  "exactSourceBlobs": 24,
+  "additiveManualMerges": [
+    "src/app/(app)/settings/profile/LanguageSettings.tsx",
+    "src/features/i18n/catalog.ts"
+  ],
+  "prerequisitesAndNumberingUnchanged": true,
+  "numericRed": {
+    "failed": 3,
+    "controlsPassed": 4,
+    "cases": 7
+  },
+  "other8RegressionCases": "NOTRUN",
+  "sourceQualified": false
+}

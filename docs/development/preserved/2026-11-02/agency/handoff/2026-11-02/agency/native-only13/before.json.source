@@ -1,0 +1,2000 @@
+{
+  "BUN_OPTIONS": "--no-env-file",
+  "Q": 53,
+  "authorization": "AGENCY-LIST156-NATIVE13-ONLY-20261102-1",
+  "cleanEnvironmentKeys": [
+    "BUN_OPTIONS",
+    "CI",
+    "DOCKER_HOST",
+    "HOME",
+    "LANG",
+    "LOGNAME",
+    "NEXT_TELEMETRY_DISABLED",
+    "NODE_ENV",
+    "NO_COLOR",
+    "PATH",
+    "TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE",
+    "TMPDIR",
+    "TZ",
+    "USER",
+    "__NEXT_PROCESSED_ENV"
+  ],
+  "dotenvAbsent": true,
+  "dotenvCandidates": {
+    ".env": true,
+    ".env.local": true,
+    ".env.test": true,
+    ".env.test.local": true
+  },
+  "foreignContainers": {
+    "1b39c2e0cb523a1d36a2053a33cddd6391fbe26b84ca626121ee22da133bca59": {
+      "Id": "1b39c2e0cb523a1d36a2053a33cddd6391fbe26b84ca626121ee22da133bca59",
+      "Image": "sha256:309ba544ea482e5d4265d09921cdab07c8dad2cc4481d715c9b8ff5d3f0a149f",
+      "Name": "/warpdrive-mail-qualification-20261031",
+      "State": {
+        "Dead": false,
+        "ExitCode": 0,
+        "FinishedAt": "2026-10-31T13:44:34.589408784Z",
+        "Paused": false,
+        "Pid": 565248,
+        "Restarting": false,
+        "Running": true,
+        "StartedAt": "2026-10-31T13:44:34.764595795Z",
+        "Status": "running"
+      }
+    },
+    "958f91d8250e2bf9bce3819320a47fd30ecac7711ed8007de7dcabb60d6cddee": {
+      "Id": "958f91d8250e2bf9bce3819320a47fd30ecac7711ed8007de7dcabb60d6cddee",
+      "Image": "sha256:c2658820e763294a9e9de7b36c81e59b879e3459148351aee4e31a126ca64860",
+      "Name": "/warpdrive-integration-program-s3",
+      "State": {
+        "Dead": false,
+        "ExitCode": 0,
+        "FinishedAt": "2026-10-31T13:18:53.770140942Z",
+        "Paused": false,
+        "Pid": 527654,
+        "Restarting": false,
+        "Running": true,
+        "StartedAt": "2026-10-31T13:20:12.246148828Z",
+        "Status": "running"
+      }
+    },
+    "d31835d6d2bf86f9984408fb4b01bded8395915cefe64cac7230a3ebfb6a2e6e": {
+      "Id": "d31835d6d2bf86f9984408fb4b01bded8395915cefe64cac7230a3ebfb6a2e6e",
+      "Image": "sha256:c2658820e763294a9e9de7b36c81e59b879e3459148351aee4e31a126ca64860",
+      "Name": "/warpdrive-local-s3",
+      "State": {
+        "Dead": false,
+        "ExitCode": 0,
+        "FinishedAt": "0001-01-01T00:00:00Z",
+        "Paused": false,
+        "Pid": 1868,
+        "Restarting": false,
+        "Running": true,
+        "StartedAt": "2026-10-29T16:16:15.810808097Z",
+        "Status": "running"
+      }
+    }
+  },
+  "foreignListeners": [
+    {
+      "comm": "rapportd",
+      "endpoint": "*:54121",
+      "pid": "1001"
+    },
+    {
+      "comm": "rapportd",
+      "endpoint": "*:54121",
+      "pid": "1001"
+    },
+    {
+      "comm": "rapportd",
+      "endpoint": "*:56303",
+      "pid": "1001"
+    },
+    {
+      "comm": "rapportd",
+      "endpoint": "*:56304",
+      "pid": "1001"
+    },
+    {
+      "comm": "ControlCenter",
+      "endpoint": "*:5000",
+      "pid": "1155"
+    },
+    {
+      "comm": "ControlCenter",
+      "endpoint": "*:5000",
+      "pid": "1155"
+    },
+    {
+      "comm": "ControlCenter",
+      "endpoint": "*:7000",
+      "pid": "1155"
+    },
+    {
+      "comm": "ControlCenter",
+      "endpoint": "*:7000",
+      "pid": "1155"
+    },
+    {
+      "comm": "redis-server",
+      "endpoint": "127.0.0.1:6379",
+      "pid": "2554"
+    },
+    {
+      "comm": "redis-server",
+      "endpoint": "[::1]:6379",
+      "pid": "2554"
+    },
+    {
+      "comm": "postgres",
+      "endpoint": "127.0.0.1:5432",
+      "pid": "2589"
+    },
+    {
+      "comm": "postgres",
+      "endpoint": "[::1]:5432",
+      "pid": "2589"
+    },
+    {
+      "comm": "Mountain Duck",
+      "endpoint": "127.0.0.1:49179",
+      "pid": "2619"
+    },
+    {
+      "comm": "AdobeResourceSynchronizer",
+      "endpoint": "127.0.0.1:19292",
+      "pid": "2669"
+    },
+    {
+      "comm": "Adobe Desktop Service",
+      "endpoint": "127.0.0.1:15292",
+      "pid": "3058"
+    },
+    {
+      "comm": "Adobe Desktop Service",
+      "endpoint": "127.0.0.1:15393",
+      "pid": "3058"
+    },
+    {
+      "comm": "Adobe Desktop Service",
+      "endpoint": "127.0.0.1:16494",
+      "pid": "3058"
+    },
+    {
+      "comm": "postgres",
+      "endpoint": "127.0.0.1:54673",
+      "pid": "15051"
+    },
+    {
+      "comm": "ChatGPT",
+      "endpoint": "127.0.0.1:64230",
+      "pid": "19823"
+    },
+    {
+      "comm": "postgres",
+      "endpoint": "127.0.0.1:55480",
+      "pid": "27878"
+    },
+    {
+      "comm": "bun",
+      "endpoint": "127.0.0.1:3104",
+      "pid": "42134"
+    },
+    {
+      "comm": "postgres",
+      "endpoint": "127.0.0.1:55436",
+      "pid": "47693"
+    },
+    {
+      "comm": "postgres",
+      "endpoint": "127.0.0.1:55435",
+      "pid": "48960"
+    },
+    {
+      "comm": "Code Helper",
+      "endpoint": "127.0.0.1:52697",
+      "pid": "62619"
+    },
+    {
+      "comm": "postgres",
+      "endpoint": "127.0.0.1:55432",
+      "pid": "75521"
+    },
+    {
+      "comm": "limactl",
+      "endpoint": "127.0.0.1:54491",
+      "pid": "79861"
+    },
+    {
+      "comm": "limactl",
+      "endpoint": "*:53",
+      "pid": "79895"
+    },
+    {
+      "comm": "ssh",
+      "endpoint": "127.0.0.1:13465",
+      "pid": "80001"
+    },
+    {
+      "comm": "ssh",
+      "endpoint": "127.0.0.1:13993",
+      "pid": "80001"
+    },
+    {
+      "comm": "ssh",
+      "endpoint": "127.0.0.1:9000",
+      "pid": "80001"
+    },
+    {
+      "comm": "ssh",
+      "endpoint": "127.0.0.1:9160",
+      "pid": "80001"
+    },
+    {
+      "comm": "bun",
+      "endpoint": "127.0.0.1:3105",
+      "pid": "82134"
+    }
+  ],
+  "foreignNetworks": {
+    "48cea036ee2d88be55172b37be54f8aed33f426ddb0f4459002d5b9d1b8b01b5": {
+      "Driver": "host",
+      "Id": "48cea036ee2d88be55172b37be54f8aed33f426ddb0f4459002d5b9d1b8b01b5",
+      "Name": "host",
+      "Scope": "local"
+    },
+    "c8fe6619dcd06043734949f3e0eb5fc0338e5c3d248e2dfc2a2114fecdf2c7e9": {
+      "Driver": "bridge",
+      "Id": "c8fe6619dcd06043734949f3e0eb5fc0338e5c3d248e2dfc2a2114fecdf2c7e9",
+      "Name": "bridge",
+      "Scope": "local"
+    },
+    "e3440ebc7f565e9cac351d7ddadbd09343bdee4a6a3dcbb57a06fe85824ddac6": {
+      "Driver": "null",
+      "Id": "e3440ebc7f565e9cac351d7ddadbd09343bdee4a6a3dcbb57a06fe85824ddac6",
+      "Name": "none",
+      "Scope": "local"
+    }
+  },
+  "foreignVolumes": {
+    "warpdrive-integration-program-s3": {
+      "CreatedAt": "2026-10-31T14:17:29+01:00",
+      "Driver": "local",
+      "Mountpoint": "/var/lib/docker/volumes/warpdrive-integration-program-s3/_data",
+      "Name": "warpdrive-integration-program-s3"
+    },
+    "warpdrive-seaweed-data": {
+      "CreatedAt": "2026-10-29T17:16:15+01:00",
+      "Driver": "local",
+      "Mountpoint": "/var/lib/docker/volumes/warpdrive-seaweed-data/_data",
+      "Name": "warpdrive-seaweed-data"
+    }
+  },
+  "freeDiskBytes": 13581561856,
+  "gates": [
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.01448304089717567,
+      "gate": "own_process_group",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.014521249919198453,
+      "gate": "safe_authorization",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.01453749998472631,
+      "gate": "safe_request_sha",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.014555832953192294,
+      "gate": "safe_actual_path",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.014598999987356365,
+      "gate": "task_owned_actual_path",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.014619290945120156,
+      "gate": "actual_path_not_symlink",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.015089540975168347,
+      "gate": "current_request_sha",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.015195249929092824,
+      "gate": "one_use_new_authorization",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.015199290937744081,
+      "gate": "workspace",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.015201082918792963,
+      "gate": "exact_source_counts",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.015202040900476277,
+      "gate": "exact_native_commands",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.015203374903649092,
+      "gate": "exact_limits",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.015204457915388048,
+      "gate": "exact_runtime_flags",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.017809165990911424,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.018010665895417333,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.018177790916524827,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.018381582922302186,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.018568582949228585,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.018760332954116166,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.018899665912613273,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.01903616590425372,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.01917733298614621,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.019271874916739762,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.019491290906444192,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.01963141595479101,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.019764999975450337,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.01989208289887756,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.020014415960758924,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.020140415988862514,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.02025616599712521,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.020380707923322916,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.02051666600164026,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.020633374922908843,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.02073870797175914,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.020882415934465826,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.02103533293120563,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.021154165966436267,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.021288582938723266,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.021393790957517922,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.021525290911085904,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.021627999958582222,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.021765790996141732,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.02188299992121756,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.02203849994111806,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.022140624932944775,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.022270499961450696,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.022413749946281314,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.02254083298612386,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.0226525409379974,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.0228005409007892,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.023123249993659556,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.023256749962456524,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.02330608293414116,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.023347790935076773,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.023388999979943037,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.023535332991741598,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.02366004092618823,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.02376104099676013,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.023888374911621213,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.024018874973990023,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.024115874897688627,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.0244289159309119,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.02457112492993474,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.024713124963454902,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.024841624894179404,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.02496791596058756,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.02510324993636459,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.025205790996551514,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.02532587491441518,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.025652707903645933,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.025777249946258962,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.025914207915775478,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.02603283291682601,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.026173874968662858,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.02627804095391184,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.02642074995674193,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.026544124935753644,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.026662582997232676,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.026787874987348914,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.0269211248960346,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.027035624952986836,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.027178040938451886,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.027324582915753126,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.027486125007271767,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.027796082897111773,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.027916957973502576,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.02805249998345971,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.02818666596431285,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.028329666005447507,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.028465707902796566,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.028614332899451256,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.028767332900315523,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.02893741591833532,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.029077582992613316,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.029245707904919982,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.029444290907122195,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.02964770793914795,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.029807499959133565,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.02986445790156722,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.029914874932728708,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.030063499929383397,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.030219207983464003,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.030272874981164932,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.030390749918296933,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03052379097789526,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.030654290923848748,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.030780165921896696,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03092849999666214,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03104083298239857,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.031148207955993712,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03126899991184473,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03138433292042464,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03152262500952929,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03167095792014152,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03182641591411084,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03200533299241215,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03213354095350951,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.0322957499884069,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03245883295312524,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.0326039579231292,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03273458289913833,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03289479098748416,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.033070582896471024,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.033243582933209836,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03332133300136775,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03346245794091374,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.0335818330058828,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.033705374924466014,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03383495798334479,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.033981624990701675,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.034147874917835,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.034297707956284285,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.034426040947437286,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.034537874977104366,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03464462491683662,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03481899993494153,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.034924082923680544,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03508808300830424,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03520120796747506,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.035364249954000115,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03552849998231977,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.035682749934494495,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03584508295170963,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03600158297922462,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03614350000862032,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.036288750008679926,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03641345794312656,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03652595798484981,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03666620794683695,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03677195799537003,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.036903625004924834,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03703854093328118,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03716954099945724,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03728133300319314,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03738487500231713,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03752299991901964,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03767083294223994,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.0377840829314664,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.037921040900982916,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.038057458004914224,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03819283295888454,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03837345796637237,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.038519499939866364,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03865337499883026,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03881416597869247,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03898620791733265,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03906558291055262,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03920437500346452,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.03932012489531189,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": {
+        "TSFiles": 149,
+        "configMismatches": [],
+        "exactSet": true,
+        "sourceConfigPinsMatch": true,
+        "sourceInputs": 156,
+        "sourceMismatches": []
+      },
+      "entryElapsedSeconds": 0.04233999992720783,
+      "gate": "source156_and7configs_exact",
+      "passed": true
+    },
+    {
+      "details": [],
+      "entryElapsedSeconds": 0.042370624956674874,
+      "gate": "four_dotenv_absent",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.04261629097163677,
+      "gate": "bun_regular",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.09917149995453656,
+      "gate": "bun_hash",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.09917866589967161,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": {
+        "exitCode": 0,
+        "program": "/Users/ali/Developer/warpdrive-agency-projects/.runtime/bin/bun"
+      },
+      "entryElapsedSeconds": 0.12282758299261332,
+      "gate": "probe_exit",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.12283329095225781,
+      "gate": "bun_version",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.122838040930219,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": {
+        "exitCode": 0,
+        "program": "/usr/bin/git"
+      },
+      "entryElapsedSeconds": 0.13950574991758913,
+      "gate": "probe_exit",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.13951241597533226,
+      "gate": "source_head",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.13951562496367842,
+      "gate": "private_cache_exact_set",
+      "passed": true
+    },
+    {
+      "details": ".runtime/agency-project-list-native-cache",
+      "entryElapsedSeconds": 0.13968274998478591,
+      "gate": "private_cache_directory",
+      "passed": true
+    },
+    {
+      "details": ".runtime/agency-fixture-0098-admission-cache",
+      "entryElapsedSeconds": 0.13969283294864,
+      "gate": "private_cache_directory",
+      "passed": true
+    },
+    {
+      "details": "src/features/agency-projects/persistence/agencyProjectList.vitest.config.ts",
+      "entryElapsedSeconds": 0.13986370794009417,
+      "gate": "envDir_false",
+      "passed": true
+    },
+    {
+      "details": "src/features/agency-projects/persistence/agencyProjectList.vitest.config.ts",
+      "entryElapsedSeconds": 0.13993349997326732,
+      "gate": "private_cache_config",
+      "passed": true
+    },
+    {
+      "details": "src/features/agency-projects/persistence/agencyFixture0098Admission.vitest.config.ts",
+      "entryElapsedSeconds": 0.13996870792470872,
+      "gate": "envDir_false",
+      "passed": true
+    },
+    {
+      "details": "src/features/agency-projects/persistence/agencyFixture0098Admission.vitest.config.ts",
+      "entryElapsedSeconds": 0.14000608294736594,
+      "gate": "private_cache_config",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.14001966593787074,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": {
+        "exitCode": 0,
+        "program": "/usr/sbin/sysctl"
+      },
+      "entryElapsedSeconds": 0.14218895800877362,
+      "gate": "probe_exit",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.14219533291179687,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": {
+        "exitCode": 0,
+        "program": "/usr/bin/memory_pressure"
+      },
+      "entryElapsedSeconds": 0.14439558295998722,
+      "gate": "probe_exit",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.14449733297806233,
+      "gate": "memory_Q_parse",
+      "passed": true
+    },
+    {
+      "details": {
+        "Q": 53,
+        "pressure": 1
+      },
+      "entryElapsedSeconds": 0.14453149994369596,
+      "gate": "pressure_admission",
+      "passed": true
+    },
+    {
+      "details": {
+        "Q": 53
+      },
+      "entryElapsedSeconds": 0.14453195792157203,
+      "gate": "stop_floor_Q30",
+      "passed": true
+    },
+    {
+      "details": {
+        "freeDiskBytes": 13581561856
+      },
+      "entryElapsedSeconds": 0.14453329099342227,
+      "gate": "disk8GiB",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.14454016590025276,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.14454174996353686,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": {
+        "exitCode": 0,
+        "program": "/usr/bin/curl"
+      },
+      "entryElapsedSeconds": 0.1824184579309076,
+      "gate": "probe_exit",
+      "passed": true
+    },
+    {
+      "details": {
+        "httpStatus": "200",
+        "path": "/containers/json?all=1"
+      },
+      "entryElapsedSeconds": 0.18244312494061887,
+      "gate": "docker_API_status",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.18253424996510148,
+      "gate": "all_container_IDs",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.18253758293576539,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.18253862496931106,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": {
+        "exitCode": 0,
+        "program": "/usr/bin/curl"
+      },
+      "entryElapsedSeconds": 0.19134212494827807,
+      "gate": "probe_exit",
+      "passed": true
+    },
+    {
+      "details": {
+        "httpStatus": "200",
+        "path": "/containers/1b39c2e0cb523a1d36a2053a33cddd6391fbe26b84ca626121ee22da133bca59/json"
+      },
+      "entryElapsedSeconds": 0.19135079090483487,
+      "gate": "docker_API_status",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.19141620793379843,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.19141699990723282,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": {
+        "exitCode": 0,
+        "program": "/usr/bin/curl"
+      },
+      "entryElapsedSeconds": 0.19907529093325138,
+      "gate": "probe_exit",
+      "passed": true
+    },
+    {
+      "details": {
+        "httpStatus": "200",
+        "path": "/containers/958f91d8250e2bf9bce3819320a47fd30ecac7711ed8007de7dcabb60d6cddee/json"
+      },
+      "entryElapsedSeconds": 0.19908204092644155,
+      "gate": "docker_API_status",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.19915149989537895,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.19915262493304908,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": {
+        "exitCode": 0,
+        "program": "/usr/bin/curl"
+      },
+      "entryElapsedSeconds": 0.2066741659073159,
+      "gate": "probe_exit",
+      "passed": true
+    },
+    {
+      "details": {
+        "httpStatus": "200",
+        "path": "/containers/d31835d6d2bf86f9984408fb4b01bded8395915cefe64cac7230a3ebfb6a2e6e/json"
+      },
+      "entryElapsedSeconds": 0.2066807079827413,
+      "gate": "docker_API_status",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.20673995791003108,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.20674062496982515,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": {
+        "exitCode": 0,
+        "program": "/usr/bin/curl"
+      },
+      "entryElapsedSeconds": 0.21420904097612947,
+      "gate": "probe_exit",
+      "passed": true
+    },
+    {
+      "details": {
+        "httpStatus": "200",
+        "path": "/networks"
+      },
+      "entryElapsedSeconds": 0.2142162909731269,
+      "gate": "docker_API_status",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.21426754095591605,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.21426824992522597,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": {
+        "exitCode": 0,
+        "program": "/usr/bin/curl"
+      },
+      "entryElapsedSeconds": 0.22181599994655699,
+      "gate": "probe_exit",
+      "passed": true
+    },
+    {
+      "details": {
+        "httpStatus": "200",
+        "path": "/volumes"
+      },
+      "entryElapsedSeconds": 0.2218226249096915,
+      "gate": "docker_API_status",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.22187299991492182,
+      "gate": "exact_image_names",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.2219139999942854,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.22191470791585743,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": {
+        "exitCode": 0,
+        "program": "/usr/bin/curl"
+      },
+      "entryElapsedSeconds": 0.26072941592428833,
+      "gate": "probe_exit",
+      "passed": true
+    },
+    {
+      "details": {
+        "httpStatus": "200",
+        "path": "/images/postgres%3A16-alpine/json"
+      },
+      "entryElapsedSeconds": 0.26073883299250156,
+      "gate": "docker_API_status",
+      "passed": true
+    },
+    {
+      "details": {
+        "actual": {
+          "architecture": "arm64",
+          "id": "sha256:0cefaabd882e42bcb2a2f3dc56d3ce4770560ba62fd7f197f1a2e008fd5731ab",
+          "os": "linux",
+          "repoTags": [
+            "postgres:16-alpine"
+          ]
+        },
+        "image": "postgres:16-alpine"
+      },
+      "entryElapsedSeconds": 0.2607779579702765,
+      "gate": "cached_image_exact",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.26081099989823997,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.26081199990585446,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": {
+        "exitCode": 0,
+        "program": "/usr/bin/curl"
+      },
+      "entryElapsedSeconds": 0.28665437491144985,
+      "gate": "probe_exit",
+      "passed": true
+    },
+    {
+      "details": {
+        "httpStatus": "200",
+        "path": "/images/testcontainers%2Fryuk%3A0.14.0/json"
+      },
+      "entryElapsedSeconds": 0.2866644999012351,
+      "gate": "docker_API_status",
+      "passed": true
+    },
+    {
+      "details": {
+        "actual": {
+          "architecture": "arm64",
+          "id": "sha256:7c1a8a9a47c780ed0f983770a662f80deb115d95cce3e2daa3d12115b8cd28f0",
+          "os": "linux",
+          "repoTags": [
+            "testcontainers/ryuk:0.14.0"
+          ]
+        },
+        "image": "testcontainers/ryuk:0.14.0"
+      },
+      "entryElapsedSeconds": 0.28671937494073063,
+      "gate": "cached_image_exact",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.2867300829384476,
+      "gate": "bounded_probe_budget",
+      "passed": true
+    },
+    {
+      "details": {
+        "exitCode": 0,
+        "program": "/opt/homebrew/bin/gtimeout"
+      },
+      "entryElapsedSeconds": 0.34025816596113145,
+      "gate": "probe_exit",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34029108297545463,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3402944579720497,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34029537497553974,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34029574994929135,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3402962499530986,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34029674995690584,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34029712493065745,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.340297415968962,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34029791597276926,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3402983749983832,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3402987909503281,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34029908291995525,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3402995829237625,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3403001249535009,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3403006249573082,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3403008329914883,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34030108293518424,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34030162496492267,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34030204091686755,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34030245791655034,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34030283300671726,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34030325000640005,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34030362498015165,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3403040829580277,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34030437492765486,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34030479099601507,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3403051659697667,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3403055409435183,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3403058329131454,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.3403061249991879,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34030641592107713,
+      "gate": "listener_record",
+      "passed": true
+    },
+    {
+      "details": null,
+      "entryElapsedSeconds": 0.34030674991663545,
+      "gate": "listener_record",
+      "passed": true
+    }
+  ],
+  "imageDetails": {
+    "postgres:16-alpine": {
+      "architecture": "arm64",
+      "id": "sha256:0cefaabd882e42bcb2a2f3dc56d3ce4770560ba62fd7f197f1a2e008fd5731ab",
+      "os": "linux",
+      "repoTags": [
+        "postgres:16-alpine"
+      ]
+    },
+    "testcontainers/ryuk:0.14.0": {
+      "architecture": "arm64",
+      "id": "sha256:7c1a8a9a47c780ed0f983770a662f80deb115d95cce3e2daa3d12115b8cd28f0",
+      "os": "linux",
+      "repoTags": [
+        "testcontainers/ryuk:0.14.0"
+      ]
+    }
+  },
+  "images": {
+    "postgres:16-alpine": "sha256:0cefaabd882e42bcb2a2f3dc56d3ce4770560ba62fd7f197f1a2e008fd5731ab",
+    "testcontainers/ryuk:0.14.0": "sha256:7c1a8a9a47c780ed0f983770a662f80deb115d95cce3e2daa3d12115b8cd28f0"
+  },
+  "native12OwnedPgid": 99844,
+  "pressure": 1,
+  "privateCaches": [
+    ".runtime/agency-project-list-native-cache",
+    ".runtime/agency-fixture-0098-admission-cache"
+  ],
+  "requestSha256": "54a123c73311253b243ba4eebf72a7538f5490cac00cbd78199f62cdcd9f4e7e",
+  "source": {
+    "TSFiles": 149,
+    "configMismatches": [],
+    "exactSet": true,
+    "sourceConfigPinsMatch": true,
+    "sourceInputs": 156,
+    "sourceMismatches": []
+  },
+  "startedAtUtc": "2026-11-02T07:05:56.172209+00:00",
+  "startedEpoch": 1793603156.1722088,
+  "startedMonotonic": 646139.189589375,
+  "status": "admission_snapshot_complete"
+}
