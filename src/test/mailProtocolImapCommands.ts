@@ -202,16 +202,6 @@ function moveUids(context: CommandContext, folder: MailProtocolFolder, rest: str
   );
 }
 
-const UID_OPERATIONS = new Map<
-  string,
-  (context: CommandContext, folder: MailProtocolFolder, rest: string) => void
->([
-  ["SEARCH", searchUids],
-  ["FETCH", fetchUids],
-  ["STORE", storeFlags],
-  ["MOVE", moveUids],
-]);
-
 const AUTHENTICATED_COMMANDS = new Set([
   "LIST",
   "LSUB",
@@ -230,13 +220,24 @@ function uidCommand(context: CommandContext) {
     return;
   }
   const operation = context.argumentsText.split(" ")[0]?.toUpperCase() ?? "";
-  const handler = UID_OPERATIONS.get(operation);
   context.state.commands.push(operation);
-  if (handler === undefined) {
-    context.write(`${context.tag} BAD Unsupported UID command\r\n`);
-    return;
+  const rest = context.argumentsText.slice(operation.length + 1);
+  switch (operation) {
+    case "SEARCH":
+      searchUids(context, folder, rest);
+      return;
+    case "FETCH":
+      fetchUids(context, folder, rest);
+      return;
+    case "STORE":
+      storeFlags(context, folder, rest);
+      return;
+    case "MOVE":
+      moveUids(context, folder, rest);
+      return;
+    default:
+      context.write(`${context.tag} BAD Unsupported UID command\r\n`);
   }
-  handler(context, folder, context.argumentsText.slice(operation.length + 1));
 }
 
 export function imapFixtureCommand(

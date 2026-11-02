@@ -327,6 +327,15 @@
       "historical": true,
       "snapshot_date": "2026-11-02",
       "purpose": "Preserved supporting specification/evidence snapshot; not a competing live execution ledger"
+    },
+    {
+      "id": "code-scanning-2026-11-02",
+      "path": "https://github.com/KhademOHAli1/warpdrive/security/code-scanning",
+      "historical": true,
+      "snapshot_date": "2026-11-02",
+      "source_head": "3dc7fe76ea9c90b1321754873c349b50caaef3a1",
+      "status_authority": "dated alert observation; GitHub Code Scanning owns current alert state",
+      "count": 1
     }
   ],
   "items": [
@@ -79658,6 +79667,43 @@
       "remaining_gates": [
         "Module owner supplies actual bounded technical evidence at the selected source revision. The separate journey issue requires exact integrated CI and actual full selected user-journey acceptance; release, deployment and real provider/installation acceptance remain distinct."
       ]
+    },
+    {
+      "id": "ops/code-scanning-2026-11-02",
+      "title": "Resolve the 2 November CodeQL alert batch",
+      "module": "operations",
+      "kind": "maintenance",
+      "parent": "ops/maintenance-intake",
+      "source_tasks": [
+        {
+          "source": "code-scanning-2026-11-02",
+          "id": "default-branch",
+          "path": "https://github.com/KhademOHAli1/warpdrive/security/code-scanning",
+          "original": {
+            "observed_at": "2026-11-02",
+            "revision": "3dc7fe76ea9c90b1321754873c349b50caaef3a1",
+            "scope": "Default-branch CodeQL alerts #1-10, #13-15 and findings raised by the remediation."
+          }
+        }
+      ],
+      "acceptance": [
+        "At the reviewed exact main revision, CodeQL has no open default-branch alerts in this remediation batch, including findings raised by the fixes. Correct true positives in source with focused regression coverage.",
+        "Give every false-positive dismissal an alert-specific explanation of the traced source and sink and why the behavior is safe. A dismissal is not a source fix.",
+        "Relevant unit and integration checks, typecheck, lint, CodeQL scanning and delivery traceability pass at that exact revision. Record fixture-only and deployment limits separately."
+      ],
+      "dependencies": [],
+      "evidence": [],
+      "owner": "KhademOHAli1",
+      "owner_role": "security maintenance",
+      "observed_status": "in-progress",
+      "observed_stage": "source remediation",
+      "priority": "P1",
+      "release": "next",
+      "milestone": "Next usable release: Core CRM journeys",
+      "notes": "This dated maintenance batch addresses the requested CodeQL alerts. Zero open alerts is a scanning result, not full product security acceptance or deployment qualification.",
+      "remaining_gates": [
+        "Review the entire bounded alert set and exact-revision evidence before acceptance."
+      ]
     }
   ],
   "aliases": {
@@ -79839,7 +79885,8 @@
         "ops/journey-deal-stages",
         "ops/journey-calendar-reminders",
         "ops/journey-mailbox-recovery",
-        "ops/journey-durable-follow-up"
+        "ops/journey-durable-follow-up",
+        "ops/code-scanning-2026-11-02"
       ]
     }
   ]
