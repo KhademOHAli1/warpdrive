@@ -32,18 +32,16 @@ function oversizedFile(path: string): Result<never, ProgrammeIssue> {
   return err({ code: "file-size", path, message: "Register file exceeds the 4 MiB limit." });
 }
 
-function unchangedPath(
+function verifiedPath(
   root: string,
   path: string,
-  inspectedPath: string,
   opened: Stats,
   signal: AbortSignal,
-): Result<undefined, ProgrammeIssue> {
+): Result<string, ProgrammeIssue> {
   const current = inspectFile(root, path, signal);
   if (!current.ok) return current;
-  if (current.value !== inspectedPath || !sameVersion(lstatSync(current.value), opened))
-    return unsafeFile(path);
-  return ok(undefined);
+  if (!sameVersion(lstatSync(current.value), opened)) return unsafeFile(path);
+  return current;
 }
 
 async function readBounded(
@@ -69,17 +67,14 @@ async function readVerifiedHandle(
   handle: FileHandle,
   root: string,
   path: string,
-  inspectedPath: string,
-  before: Stats,
   signal: AbortSignal,
 ): Promise<Result<Buffer, ProgrammeIssue>> {
   signal.throwIfAborted();
   const opened = await handle.stat();
-  if (!opened.isFile() || !sameVersion(before, opened)) return unsafeFile(path);
-  if (opened.size > MAX_FILE_BYTES) return oversizedFile(path);
-
-  const current = unchangedPath(root, path, inspectedPath, opened, signal);
+  if (!opened.isFile()) return unsafeFile(path);
+  const current = verifiedPath(root, path, opened, signal);
   if (!current.ok) return current;
+  if (opened.size > MAX_FILE_BYTES) return oversizedFile(path);
   const data = await readBounded(handle, path, signal);
   if (!data.ok) return data;
 
@@ -87,19 +82,14 @@ async function readVerifiedHandle(
   if (!finished.isFile() || !sameVersion(opened, finished)) return unsafeFile(path);
   if (finished.size > MAX_FILE_BYTES) return oversizedFile(path);
   if (finished.size !== opened.size || finished.size !== data.value.length) return unsafeFile(path);
-  const remaining = unchangedPath(root, path, inspectedPath, opened, signal);
+  const remaining = verifiedPath(root, path, opened, signal);
   if (!remaining.ok) return remaining;
+  if (remaining.value !== current.value) return unsafeFile(path);
   signal.throwIfAborted();
   return data;
 }
 
-// Evidence references are checked for existence only. Secret/configuration content is never needed.
-export function inspectFile(
-  root: string,
-  path: string,
-  signal: AbortSignal,
-): Result<string, ProgrammeIssue> {
-  signal.throwIfAborted();
+function validatePathSyntax(path: string): Result<string[], ProgrammeIssue> {
   const segments = path.split("/");
   if (
     isAbsolute(path) ||
@@ -113,9 +103,21 @@ export function inspectFile(
       message: "Only non-secret repository-relative regular files are allowed.",
     });
   }
+  return ok(segments);
+}
+
+// Evidence references are checked for existence only. Secret/configuration content is never needed.
+export function inspectFile(
+  root: string,
+  path: string,
+  signal: AbortSignal,
+): Result<string, ProgrammeIssue> {
+  signal.throwIfAborted();
+  const validated = validatePathSyntax(path);
+  if (!validated.ok) return validated;
   try {
     let current = root;
-    for (const segment of segments) {
+    for (const segment of validated.value) {
       current = join(current, segment);
       if (lstatSync(current).isSymbolicLink())
         return err({
@@ -143,21 +145,18 @@ export async function readProgrammeFile(
   path: string,
   signal: AbortSignal,
 ): Promise<Result<Buffer, ProgrammeIssue>> {
-  const inspected = inspectFile(root, path, signal);
-  if (!inspected.ok) return inspected;
+  signal.throwIfAborted();
+  const validated = validatePathSyntax(path);
+  if (!validated.ok) return validated;
   try {
-    const before = lstatSync(inspected.value);
-    if (!before.isFile()) return unsafeFile(path);
-    if (before.size > MAX_FILE_BYTES) return oversizedFile(path);
-
-    // O_NOFOLLOW rejects a swapped leaf symlink. O_NONBLOCK keeps a swapped FIFO
-    // from hanging the verifier before fstat can reject it as a non-regular file.
+    // Open the syntax-validated repository path before inspecting the filesystem.
+    // O_NOFOLLOW rejects leaf symlinks; O_NONBLOCK prevents FIFOs from hanging.
     const handle = await open(
-      inspected.value,
+      join(root, ...validated.value),
       constants.O_RDONLY | constants.O_NOFOLLOW | constants.O_NONBLOCK,
     );
     try {
-      return await readVerifiedHandle(handle, root, path, inspected.value, before, signal);
+      return await readVerifiedHandle(handle, root, path, signal);
     } finally {
       await handle.close();
     }

@@ -158,24 +158,15 @@ export async function startMailProtocolImap(
       append = { length: Number(literal[1]), tag, path };
       write("+ Ready for literal\r\n");
     }
-    const commands = new Map<string, (tag: string, rest: string) => void>([
-      ["CAPABILITY", capability],
-      ["AUTHENTICATE", authenticate],
-      ["APPEND", beginAppend],
-      [
-        "LOGOUT",
-        (tag) => {
-          closed = true;
-          session.authenticated = false;
-          session.selected = "";
-          append = null;
-          input = Buffer.alloc(0);
-          write(`* BYE closing\r\n${tag} OK logout\r\n`);
-          socket.end();
-        },
-      ],
-    ]);
-    if (starttlsAvailable) commands.set("STARTTLS", upgrade);
+    function logout(tag: string) {
+      closed = true;
+      session.authenticated = false;
+      session.selected = "";
+      append = null;
+      input = Buffer.alloc(0);
+      write(`* BYE closing\r\n${tag} OK logout\r\n`);
+      socket.end();
+    }
     function commandLine(line: string) {
       if (authTag !== null) {
         authentication(authTag, line);
@@ -189,14 +180,27 @@ export async function startMailProtocolImap(
       }
       const [, tag = "", verb = "", rest = ""] = match;
       const command = verb.toUpperCase();
-      const handler = commands.get(command);
-      if (handler !== undefined) {
-        if (command === "APPEND" && !session.authenticated) {
-          write(`${tag} NO Authenticate first\r\n`);
+      switch (command) {
+        case "CAPABILITY":
+          capability(tag);
           return;
-        }
-        handler(tag, rest);
-      } else imapFixtureCommand(state, session, tag, command, rest, write);
+        case "STARTTLS":
+          if (starttlsAvailable) upgrade(tag);
+          else imapFixtureCommand(state, session, tag, command, rest, write);
+          return;
+        case "AUTHENTICATE":
+          authenticate(tag, rest);
+          return;
+        case "APPEND":
+          if (!session.authenticated) write(`${tag} NO Authenticate first\r\n`);
+          else beginAppend(tag, rest);
+          return;
+        case "LOGOUT":
+          logout(tag);
+          return;
+        default:
+          imapFixtureCommand(state, session, tag, command, rest, write);
+      }
     }
     function data(chunk: Buffer) {
       if (closed) return;

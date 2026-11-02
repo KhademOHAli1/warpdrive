@@ -15,6 +15,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 const openHook = vi.hoisted(() => ({
   before: undefined as (() => void) | undefined,
   after: undefined as (() => void) | undefined,
+  afterRead: undefined as (() => void) | undefined,
 }));
 
 vi.mock("node:fs/promises", async (importOriginal) => {
@@ -25,6 +26,14 @@ vi.mock("node:fs/promises", async (importOriginal) => {
       openHook.before?.();
       const handle = await actual.open(...args);
       openHook.after?.();
+      if (openHook.afterRead) {
+        const read = handle.read.bind(handle);
+        handle.read = (async (buffer: Buffer, offset: number, length: number, position: number) => {
+          const result = await read(buffer, offset, length, position);
+          openHook.afterRead?.();
+          return result;
+        }) as typeof handle.read;
+      }
       return handle;
     },
   };
@@ -47,6 +56,7 @@ function fixture() {
 afterEach(() => {
   openHook.before = undefined;
   openHook.after = undefined;
+  openHook.afterRead = undefined;
   for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true });
 });
 
@@ -61,14 +71,14 @@ describe("programme file reads", () => {
     expect(oversized.ok ? undefined : oversized.error.code).toBe("file-size");
   });
 
-  it("rejects a regular leaf replaced between inspection and opening", async () => {
+  it("reads a safe regular leaf replaced before opening", async () => {
     const f = fixture();
     openHook.before = () => {
       renameSync(f.file, join(f.directory, "original.json"));
       writeFileSync(f.file, "replacement");
     };
     const result = await readProgrammeFile(f.root, f.path, AbortSignal.timeout(5000));
-    expect(result.ok ? undefined : result.error.code).toBe("unsafe-path");
+    expect(result.ok && result.value.toString()).toBe("replacement");
   });
 
   it("rejects a leaf swapped for a symlink before opening", async () => {
@@ -108,12 +118,24 @@ describe("programme file reads", () => {
     expect(result.ok ? undefined : result.error.code).toBe("unsafe-path");
   });
 
-  it("rejects a same-size in-place rewrite after opening", async () => {
+  it("reads a same-size rewrite completed before handle validation", async () => {
     const f = fixture();
     openHook.after = () => {
       writeFileSync(f.file, "changed!");
       const changedAt = new Date("2040-01-01T00:00:00Z");
       utimesSync(f.file, changedAt, changedAt);
+    };
+    const result = await readProgrammeFile(f.root, f.path, AbortSignal.timeout(5000));
+    expect(result.ok && result.value.toString()).toBe("changed!");
+  });
+
+  it("rejects a same-size in-place rewrite during the handle read", async () => {
+    const f = fixture();
+    openHook.afterRead = () => {
+      writeFileSync(f.file, "changed!");
+      const changedAt = new Date("2040-01-01T00:00:00Z");
+      utimesSync(f.file, changedAt, changedAt);
+      openHook.afterRead = undefined;
     };
     const result = await readProgrammeFile(f.root, f.path, AbortSignal.timeout(5000));
     expect(result.ok ? undefined : result.error.code).toBe("unsafe-path");
