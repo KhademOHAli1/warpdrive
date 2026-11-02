@@ -211,7 +211,9 @@ it("projects legacy and folder failures as finite UI errors without raw diagnost
       status: "error",
       errorCode: "network",
     });
-    await db.execute(sql`UPDATE email_accounts SET last_error_id=NULL WHERE id=${account.id}`);
+    await db.execute(
+      sql`UPDATE email_accounts SET last_error_id=NULL,folder_paths='["INBOX"]'::jsonb WHERE id=${account.id}`,
+    );
     await db.execute(
       sql`INSERT INTO mail_folders(account_id,path,last_error_kind) VALUES(${account.id},'INBOX','authentication')`,
     );
