@@ -101,7 +101,7 @@ test("actual current OAuth rows encode valid, expired, revoked and inactive-owne
   expect(columns.map((row) => row.column_name)).not.toContain("scopes");
 });
 
-test("the valid refresh fixture exchanges and rotates through the actual OAuth path", async () => {
+test("the valid refresh fixture rotates normally and contains descendants after root replay", async () => {
   // Only Date is frozen by this suite; real PostgreSQL/network timers keep running.
   const seeded = await createIntegrationPlatformFixtures(
     h,
@@ -122,16 +122,24 @@ test("the valid refresh fixture exchanges and rotates through the actual OAuth p
   if (!first.ok) return;
   expect(first.value.token_type).toBe("Bearer");
   expect(first.value.refresh_token).not.toBe(grant.refreshToken);
-  expect(await exchangeMcpGrant(h.db, input, signal())).toEqual({
-    ok: false,
-    error: "invalid_grant",
-  });
   const second = await exchangeMcpGrant(
     h.db,
     { ...input, refresh_token: first.value.refresh_token },
     signal(),
   );
   expect(second.ok).toBe(true);
+  if (!second.ok) return;
+  expect(second.value.token_type).toBe("Bearer");
+  expect(second.value.refresh_token).not.toBe(first.value.refresh_token);
+
+  // Complete healthy rotations before simulating reuse, which contains the family.
+  expect(await exchangeMcpGrant(h.db, input, signal())).toEqual({
+    ok: false,
+    error: "invalid_grant",
+  });
+  expect(
+    await exchangeMcpGrant(h.db, { ...input, refresh_token: second.value.refresh_token }, signal()),
+  ).toEqual({ ok: false, error: "invalid_grant" });
 });
 
 test("multiple service workspaces and personal accounts retain current shared-admin and owner policies", async () => {
