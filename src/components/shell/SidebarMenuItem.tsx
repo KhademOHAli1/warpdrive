@@ -75,11 +75,6 @@ export function SidebarMenuItem({
   const hasChildren = children.length > 0;
   function activate(event: MouseEvent<HTMLAnchorElement>): void {
     if (!isPrimaryClick(event)) return;
-    if (expanded && hasChildren && !open) {
-      event.preventDefault();
-      setOverride({ path: pathname, open: true });
-      return;
-    }
     onNavigate?.();
   }
   const link = (

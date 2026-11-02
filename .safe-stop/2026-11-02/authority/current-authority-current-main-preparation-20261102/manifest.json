@@ -1,0 +1,148 @@
+{
+  "status": "SOURCE_ONLY_CURRENT_PUBLIC_CANDIDATE_PREPARED_NOT_CURRENT_HEAD_QUALIFIED",
+  "createdAtUtc": "2026-11-02T01:45:00.401604+00:00",
+  "publicBase": "3dc7fe76ea9c90b1321754873c349b50caaef3a1",
+  "publicBaseTree": "16f4424b718f3fbc46ec103ec7afc7d5aa4ed479",
+  "priorProposalBase": "b7f4bf9c6b2e88887493441aadb01ea3dcefde44",
+  "sourceValidationBase": "a29c08c356af8a308056086ecbac98f2d70683e4",
+  "artifactRoot": "/private/tmp/warpdrive-current-authority-current-main-3dc7fe7-01a19251",
+  "plainGitArchiveNoGitBranchCloneWorktree": true,
+  "archiveSha256": "8894a53c4c7d03966d7ae4019d95b9ee539575cbc53e9b3df21e05973d7ecd44",
+  "trackedBaseFiles": 5202,
+  "candidateOverlayPaths": [
+    {
+      "path": "src/features/auth/currentAuthorityFence.ts",
+      "sha256": "1b8f9e4371e020adcd6582a0fe73f4ffb6853c4b61cbd5a2423875cf3a32bf9d",
+      "mode": "100644",
+      "sameAsActual22Green": true
+    },
+    {
+      "path": "src/features/auth/currentNativeSession.ts",
+      "sha256": "864f339efb4c2f0a89513819da987810a273adacf688188369cc9fbd552e052f",
+      "mode": "100644",
+      "sameAsActual22Green": true
+    },
+    {
+      "path": "src/features/identity/permission-sets.service.ts",
+      "sha256": "31b91f21a5d8498daa3034034ad538f6dec9b783f845a4f52c9d563da3abbefa",
+      "mode": "100644",
+      "sameAsActual22Green": true
+    },
+    {
+      "path": "src/features/auth/currentAuthority.test-helpers.ts",
+      "sha256": "074fdad3ab511e34e98e2752558ad5e0b1796d892aa497a4a03f14703472916c",
+      "mode": "100644",
+      "sameAsActual22Green": true
+    },
+    {
+      "path": "src/features/auth/currentNativeSession.integration.test.ts",
+      "sha256": "73bcf7450a394fdcf2bcbf912b748626f36db09ce42e0da19ab0a5dc6885ce13",
+      "mode": "100644",
+      "sameAsActual22Green": true
+    },
+    {
+      "path": "src/features/auth/currentAuthorityFence.integration.test.ts",
+      "sha256": "ca73621af34b03440c121f0fd9bc0e6c87622a461d11890bfedab76ade69551a",
+      "mode": "100644",
+      "sameAsActual22Green": true
+    },
+    {
+      "path": "src/features/auth/currentAuthorityClock.integration.test.ts",
+      "sha256": "27ac0f5a9f4173020047b3d149ee29e3e834fd6775892a1149599f7011254e56",
+      "mode": "100644",
+      "sameAsActual22Green": true
+    },
+    {
+      "path": "src/features/auth/currentAuthorityIsolation.test-helpers.ts",
+      "sha256": "0c52b9f57b7874443e6af74fc1fd1f29392987e7b0966118086007de5ea21c93",
+      "mode": "100644",
+      "sameAsActual22Green": true
+    },
+    {
+      "path": "src/features/auth/currentAuthorityIsolation.integration.test.ts",
+      "sha256": "09a8adafd2a505f0dfab94b1cdfcefe6c6675c57dbd46162c0ea84892225377d",
+      "mode": "100644",
+      "sameAsActual22Green": true
+    },
+    {
+      "path": "src/features/privacy/registryIdsAuthentication1.ts",
+      "sha256": "60e578d458b239176041f547e6c5c761dd88b77878a897b59e8990a4b9bc6469",
+      "mode": "100644",
+      "ownedMetadataOnly": true
+    },
+    {
+      "path": "src/features/privacy/registryIdsAuthentication2.ts",
+      "sha256": "e932615b374952353bff082e86738c82cec1a947538dcaa134d43384379057e0",
+      "mode": "100644",
+      "ownedMetadataOnly": true
+    }
+  ],
+  "all11PreimagesMatchPriorProposal": true,
+  "nineSourceTestPostimagesExactActualGreen": true,
+  "nativeFiles": [
+    "src/features/auth/currentNativeSession.integration.test.ts",
+    "src/features/auth/currentAuthorityFence.integration.test.ts",
+    "src/features/auth/currentAuthorityClock.integration.test.ts",
+    "src/features/auth/currentAuthorityIsolation.integration.test.ts"
+  ],
+  "native22OraclesUnchanged": true,
+  "registryAuth1And2Only": true,
+  "callbackClassificationUnchanged": "Explicit transaction-local caller effect boundary; domains own actual SQL mutations/publication. No provider/process side effect or generic lifecycle adapter is introduced.",
+  "clockClassificationUnchanged": "Inferred execute:sql writer identifier is a read-only DB wall-clock SELECT, not a new persistent data writer. Fence execute includes read-only isolation assertion and existing advisory locks. Classify under existing authentication; lifecycle capabilities stay unchanged/unsupported.",
+  "capabilitiesAndPrivacyGroupsUnchanged": true,
+  "protectedPublicChangesSinceB7": 13,
+  "protectedRegistryFiles": 52,
+  "allOtherPublicPathsExact": true,
+  "protectedMcpSourceReviews": [
+    "sourceReview:src/features/oauth/authorize.ts#8c912d297b1c7950dea8780e8f8f25e66d4dab292ba99963cd232c483620432f",
+    "sourceReview:src/features/mcp/http.ts#6271ea875e43fcde24eeb2d1a2496f2ef89cbc707c1c3d2b6a8d2674f44f5e9a"
+  ],
+  "borrowedDependencySymlink": {
+    "path": "/private/tmp/warpdrive-current-authority-current-main-3dc7fe7-01a19251/node_modules",
+    "target": "/Users/ali/Developer/warpdrive-settings-ux/node_modules",
+    "readOnlyReuseOnly": true
+  },
+  "patches": {
+    "source9Sha256": "c052d1a1afe4c4e3b6a41210f9a9a814509c5f639982ceb1db1a1e632de3d458",
+    "metadata2Sha256": "02f085a88939c7de57027cda3365b3e5ea51478f3cc7294d645acf818bb4fcd0",
+    "combined11Sha256": "ccc8ca3f1367ce598cfbad4d9014697194a85ab50bf9d3ca92a9c24797040e5c",
+    "reverseApplyCheck": "PASS"
+  },
+  "evidenceBoundary": {
+    "actualGreen": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-settings-ux/outputs/current-authority-rc-green-20261102/qualification.json",
+    "actualGreenSha256": "a3429f4832df200f10b4af82c102a6ce58371e0758d7fbd2d992dfc47cbc2b0a",
+    "actual22Green": "private a29 export with unchanged TS inputs through b7, not public3dc/future finalhead/CI qualification",
+    "checksRunForThisPreparation": [
+      "Git object/archive/preimage/postimage/mode and exhaustive path preservation verification",
+      "Git apply check + local-artifact apply + combined reverse check only"
+    ],
+    "compilerNativeInventoryBunBuildInstallServicesRun": false
+  },
+  "pending": [
+    "Root finite current configured compiler/typegen/typedlint/Biome/inventory checks",
+    "PR911 final public head three-path reconciliation",
+    "exact final integrated public-head hosted CI"
+  ],
+  "openGates": [
+    "native-only eligibility and legacy compatibility",
+    "other authority writers",
+    "clock correctness after arbitrary callback wait",
+    "held SQL cancellation",
+    "production consumer adoption",
+    "provider/installed/full-product acceptance"
+  ],
+  "preparationCorrectionReceipt": "preparation-correction.json",
+  "artifactPins": {
+    "candidate-tree-proof.json": "fc8280ef04f34cb2e39edf429d9f207db7b30d20a345d9cad8360feb0af1ae3a",
+    "combined.patch": "ccc8ca3f1367ce598cfbad4d9014697194a85ab50bf9d3ca92a9c24797040e5c",
+    "environment.PROPOSED.json": "5ce51c7bae41522213fd8f87975046a4d2b561359add827687d2a93cf4871a86",
+    "owned-preimage-proof.json": "d8e13c419f18476c5b683dc1111b01a1dc8a9578e074ee4836d8fc7985efaa9d",
+    "preparation-correction.json": "b372891127589350f4de3f654f15fb555ce574d2ec6bd46d74a64c0321d05b51",
+    "prepare-before-mcp-location-correction.py.txt": "12338323e3f29a6ec9cd03fa7c465143ab9ee47329e311bb4c3177509dc9261a",
+    "prepare.py": "fd4199af2b6513659807a5f0e8d0e4a576922e6f1a103d18f65026a83e4dab3b",
+    "protected-current-registry.json": "ed246f61d9a11ec80c459ec68d026c35de723c1889b31fe8a71ab14c9c39511b",
+    "protected-public13.json": "77e117cd890d95f14b87bb672f698839663599fb67071379f0ea7bd1be61c79a",
+    "public-3dc7fe7.tar": "8894a53c4c7d03966d7ae4019d95b9ee539575cbc53e9b3df21e05973d7ecd44",
+    "validation-plan.PROPOSED.json": "8413b426d0d716de60120c7d2dd085bcf636ec60ac4ad12a2e8504ecc98c9af1"
+  }
+}

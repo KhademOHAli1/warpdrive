@@ -4,6 +4,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { DOCS_SITE_URL } from "@/constants/docs";
 import { LeftNav } from "./LeftNav";
+import styles from "./LeftNav.module.css";
 
 // LeftNav reads the current path via usePathname to mark the active item; mock it so the
 // component renders outside an app-router provider.
@@ -39,6 +40,42 @@ afterEach(() => {
 });
 
 describe("LeftNav", () => {
+  test.each([true, false])(
+    "orders daily destinations before utilities (expanded: %s)",
+    (expanded) => {
+      setViewport(expanded);
+      render(<LeftNav />);
+      const navigation = screen.getByRole("navigation", { name: "Primary" });
+      expect(
+        within(navigation)
+          .getAllByRole("link")
+          .map((link) => link.getAttribute("href")),
+      ).toEqual([
+        "/pipeline",
+        "/activities",
+        "/inbox",
+        "/leads",
+        "/contacts/people",
+        "/dashboard",
+        "/workflows",
+        "/settings",
+        DOCS_SITE_URL,
+      ]);
+    },
+  );
+
+  test.each([true, false])("keeps the logo as a Home link (expanded: %s)", (expanded) => {
+    setViewport(expanded);
+    render(<LeftNav />);
+    const home = screen.getByRole("link", { name: "Warpdrive home" });
+    expect(home.getAttribute("href")).toBe("/pipeline");
+    document.addEventListener("click", (event) => event.preventDefault(), { once: true });
+    fireEvent.click(home);
+    expect(
+      screen.getByRole("button", { name: expanded ? "Collapse sidebar" : "Expand sidebar" }),
+    ).not.toBeNull();
+  });
+
   test("server render honors initialExpanded so the width is correct at first paint (no reload flash)", () => {
     // The flash was caused by the server always rendering collapsed (localStorage is not readable
     // during SSR) and the client correcting to expanded post-mount, animating the width. With the
@@ -206,32 +243,65 @@ describe("LeftNav bracket shortcuts", () => {
   test("links to the docs site in a new tab", () => {
     setViewport(true);
     render(<LeftNav />);
-    const docs = screen.getByRole("link", { name: "Docs" });
+    const docs = screen.getByRole("link", { name: "Help & docs" });
     expect(docs.getAttribute("href")).toBe(DOCS_SITE_URL);
     expect(docs.getAttribute("target")).toBe("_blank");
     expect(docs.getAttribute("rel")).toContain("noreferrer");
   });
 
-  test("puts the collapse control before the navigation, as in Finance OS", () => {
+  test("keeps Settings, Help and the collapse control together below daily work", () => {
     setViewport(true);
     render(<LeftNav />);
-    const docs = screen.getByRole("link", { name: "Docs" });
+    const navigation = screen.getByRole("navigation", { name: "Primary" });
+    const footer = navigation.querySelector(`.${styles.utilityNav}`);
+    expect(footer).not.toBeNull();
+    expect(
+      within(footer as HTMLElement)
+        .getAllByRole("link")
+        .map((link) => link.textContent),
+    ).toEqual(["Settings", "Help & docs"]);
+    const docs = screen.getByRole("link", { name: "Help & docs" });
     const toggle = screen.getByRole("button", { name: "Collapse sidebar" });
-    expect(toggle.compareDocumentPosition(docs) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(footer?.contains(toggle)).toBe(true);
+    expect(docs.compareDocumentPosition(toggle) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   test("keeps an accessible name for the docs link on the collapsed rail", () => {
     setViewport(false);
     render(<LeftNav />);
-    expect(screen.getByRole("link", { name: "Docs" })).not.toBeNull();
+    expect(screen.getByRole("link", { name: "Help & docs" })).not.toBeNull();
   });
 });
 
-describe("Finance OS submenu behavior", () => {
-  test("the first click reveals Contacts children before navigating", () => {
+describe("sidebar submenu behavior", () => {
+  test.each(["Contacts", "Activities"])(
+    "the first %s label click navigates without expanding",
+    (label) => {
+      setViewport(true);
+      render(<LeftNav />);
+      let prevented = true;
+      document.addEventListener(
+        "click",
+        (event) => {
+          prevented = event.defaultPrevented;
+          event.preventDefault();
+        },
+        { once: true },
+      );
+      fireEvent.click(screen.getByRole("link", { name: label }));
+      expect(prevented).toBe(false);
+      expect(
+        screen
+          .getByRole("button", { name: `Expand ${label} navigation` })
+          .getAttribute("aria-expanded"),
+      ).toBe("false");
+    },
+  );
+
+  test("the Contacts arrow separately reveals and hides children", () => {
     setViewport(true);
     render(<LeftNav />);
-    fireEvent.click(screen.getByRole("link", { name: "Contacts" }));
+    fireEvent.click(screen.getByRole("button", { name: "Expand Contacts navigation" }));
     expect(
       screen
         .getByRole("button", { name: "Collapse Contacts navigation" })

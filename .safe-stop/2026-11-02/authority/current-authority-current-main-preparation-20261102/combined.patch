@@ -1,0 +1,1407 @@
+diff --git a/src/features/auth/currentAuthorityFence.ts b/src/features/auth/currentAuthorityFence.ts
+new file mode 100644
+--- /dev/null
++++ b/src/features/auth/currentAuthorityFence.ts
+@@ -0,0 +1,42 @@
++import { sql } from "drizzle-orm";
++import { AppError, ERROR_IDS } from "@/constants/errorIds";
++import type { Db } from "@/db/client";
++
++export type AuthorityTransaction = Parameters<Parameters<Db["transaction"]>[0]>[0];
++
++// Nested transaction options cannot change an existing snapshot. Reject an unsupported
++// adapter before requesting either fence, rather than accepting stale post-wait authority.
++async function assertReadCommitted(tx: AuthorityTransaction, signal: AbortSignal): Promise<void> {
++  signal.throwIfAborted();
++  const result = await tx.execute<{ isolation: string }>(
++    sql`SELECT current_setting('transaction_isolation') AS isolation`,
++  );
++  signal.throwIfAborted();
++  if (result.rows[0]?.isolation !== "read committed")
++    throw new AppError(ERROR_IDS.DB_INVARIANT, "Current authority requires read committed");
++}
++
++// Acquire before every other advisory/row lock, on the transaction that owns the effect.
++// Only enrolled writers participate; this is not global revocation coverage. Never upgrade
++// a shared holder to exclusive. Authority-changing commands must choose exclusive at entry.
++export async function lockCurrentAuthorityRead(
++  tx: AuthorityTransaction,
++  signal: AbortSignal,
++): Promise<void> {
++  await assertReadCommitted(tx, signal);
++  await tx.execute(
++    sql`SELECT pg_advisory_xact_lock_shared(hashtext('warpdrive-current-authority'), hashtext('actor-v1'))`,
++  );
++  signal.throwIfAborted();
++}
++
++export async function lockCurrentAuthorityWrite(
++  tx: AuthorityTransaction,
++  signal: AbortSignal,
++): Promise<void> {
++  await assertReadCommitted(tx, signal);
++  await tx.execute(
++    sql`SELECT pg_advisory_xact_lock(hashtext('warpdrive-current-authority'), hashtext('actor-v1'))`,
++  );
++  signal.throwIfAborted();
++}
+diff --git a/src/features/auth/currentNativeSession.ts b/src/features/auth/currentNativeSession.ts
+new file mode 100644
+--- /dev/null
++++ b/src/features/auth/currentNativeSession.ts
+@@ -0,0 +1,113 @@
++import { and, eq, sql, TransactionRollbackError } from "drizzle-orm";
++import { AppError, ERROR_IDS } from "@/constants/errorIds";
++import type { Db } from "@/db/client";
++import { authUsers, sessions, users } from "@/db/schema";
++import { type HydratedActor, hydrateActor } from "@/server/hydrateActor";
++import { err, type Result } from "@/types/result";
++import { evaluateSessionAccess } from "./better/accessPolicy";
++import { type AuthorityTransaction, lockCurrentAuthorityRead } from "./currentAuthorityFence";
++import { readAuthPolicy } from "./management/policy";
++
++// Internal handle from a server credential check, never authentication by itself. An HTTP
++// caller must obtain it from authenticated context, not from command fields or a cookie ID.
++export interface NativeSessionRef {
++  readonly userId: string;
++  readonly sessionId: string;
++}
++
++type NativeSessionDenied = { ok: false; error: "native_session_invalid" };
++
++// No touching, no fresh-authentication escalation, and no implicit transaction/lock. The
++// caller owns the shared fence. Unenrolled session/role/team/parent writers remain a gap.
++export async function verifyCurrentNativeSession(
++  tx: AuthorityTransaction,
++  who: NativeSessionRef,
++  signal: AbortSignal,
++): Promise<boolean> {
++  signal.throwIfAborted();
++  const [row] = await tx
++    .select({ user: users, session: sessions, identity: authUsers })
++    .from(sessions)
++    .innerJoin(users, eq(users.id, sessions.userId))
++    .innerJoin(authUsers, eq(authUsers.id, users.id))
++    .where(and(eq(sessions.id, who.sessionId), eq(sessions.userId, who.userId)))
++    .limit(1);
++  signal.throwIfAborted();
++  if (
++    row === undefined ||
++    !row.user.isActive ||
++    row.user.invitedAt !== null ||
++    row.session.revokedAt !== null ||
++    row.session.authMethod === "legacy" ||
++    !row.identity.emailVerified ||
++    row.identity.email.toLowerCase() !== row.user.email.toLowerCase()
++  )
++    return false;
++
++  const policy = await readAuthPolicy(tx, signal);
++  // Sample AFTER authority reads: transaction now() and a pre-query JS Date both age while
++  // waiting. Numeric text avoids a driver timestamp/DateStyle or host-timezone assumption.
++  const clockResult = await tx.execute<{ milliseconds: string }>(
++    sql`SELECT (extract(epoch from clock_timestamp()) * 1000)::text AS milliseconds`,
++  );
++  signal.throwIfAborted();
++  const now = new Date(Number(clockResult.rows[0]?.milliseconds ?? "invalid"));
++  if (!Number.isFinite(now.getTime()))
++    throw new AppError(ERROR_IDS.DB_INVARIANT, "Current native session clock was invalid");
++  return evaluateSessionAccess({
++    ...policy,
++    active: row.user.isActive,
++    emailVerified: row.identity.emailVerified,
++    isAdmin: row.user.isAdmin,
++    twoFactorEnabled: row.identity.twoFactorEnabled,
++    assurance: row.session.assurance,
++    lastSeenAt: row.session.lastSeenAt,
++    expiresAt: row.session.expiresAt,
++    createdAt: row.session.createdAt,
++    now,
++  }).allowed;
++}
++
++// Invoke at the outer request transaction boundary, before the effect takes any other locks.
++// This freezes enrolled authority writers through local commit and checks wall-clock validity
++// at the callback tail; it cannot freeze time during COMMIT or terminate already-admitted work.
++// Callback effects must be rollbackable on tx. Provider I/O and process publication/notification
++// belong after successful wrapper commit: a tail denial cannot retract external effects.
++export async function withCurrentNativeActor<R extends Result<unknown, unknown>>(
++  db: Db,
++  who: NativeSessionRef,
++  signal: AbortSignal,
++  effect: (tx: AuthorityTransaction, actor: HydratedActor) => Promise<R>,
++): Promise<R | NativeSessionDenied> {
++  signal.throwIfAborted();
++  let failedResult: R | NativeSessionDenied | undefined;
++  try {
++    return await db.transaction(
++      async (tx) => {
++        await lockCurrentAuthorityRead(tx, signal);
++        if (!(await verifyCurrentNativeSession(tx, who, signal)))
++          return err("native_session_invalid" as const);
++        const actor = await hydrateActor(tx, who.userId, signal);
++        if (actor === null) return err("native_session_invalid" as const);
++        const result = await effect(tx, actor);
++        signal.throwIfAborted();
++        if (!result.ok) {
++          failedResult = result;
++          tx.rollback();
++        }
++        if (!(await verifyCurrentNativeSession(tx, who, signal))) {
++          failedResult = err("native_session_invalid" as const);
++          tx.rollback();
++        }
++        signal.throwIfAborted();
++        return result;
++      },
++      { isolationLevel: "read committed" },
++    );
++  } catch (error) {
++    // Rollback/commit/transport/native errors are never retried or translated into denials.
++    if (failedResult !== undefined && error instanceof TransactionRollbackError)
++      return failedResult;
++    throw error;
++  }
++}
+diff --git a/src/features/identity/permission-sets.service.ts b/src/features/identity/permission-sets.service.ts
+--- a/src/features/identity/permission-sets.service.ts
++++ b/src/features/identity/permission-sets.service.ts
+@@ -2,7 +2,9 @@
+ import type { PermissionFlagKey } from "@/constants/permissionFlags";
+ import type { Db } from "@/db/client";
+ import { permissionSets, users } from "@/db/schema";
++import { lockCurrentAuthorityWrite } from "@/features/auth/currentAuthorityFence";
+ import type { PermSetUser } from "@/features/permissions/effective";
++import { hydrateActor } from "@/server/hydrateActor";
+ import { err, ok, type Result } from "@/types/result";
+ import { recordAudit } from "./audit";
+ import { canEditPermissionSet, canGrantFlags } from "./guards";
+@@ -49,44 +51,57 @@
+   input: { setId: string; flags: Partial<Record<PermissionFlagKey, boolean>> },
+   signal: AbortSignal,
+ ): Promise<Result<true, string>> {
+-  // Resolve the actor's own set id to block self-set edits.
+-  const [me] = await db
+-    .select({ setId: users.permissionSetId })
+-    .from(users)
+-    .where(eq(users.id, actor.id))
+-    .limit(1);
+-  const editGate = canEditPermissionSet(actor, {
+-    setId: input.setId,
+-    actorOwnSetId: me?.setId ?? null,
+-  });
+-  if (editGate.ok === false) return editGate;
+-  const enabled = Object.entries(input.flags)
+-    .filter(([, v]) => v === true)
+-    .map(([k]) => k as PermissionFlagKey);
+-  const grant = canGrantFlags(actor, enabled);
+-  if (grant.ok === false) return grant;
+   signal.throwIfAborted();
+-  const [before] = await db
+-    .select()
+-    .from(permissionSets)
+-    .where(eq(permissionSets.id, input.setId))
+-    .limit(1);
+-  if (before === undefined) return err("not_found");
+-  await db
+-    .update(permissionSets)
+-    .set({ flags: input.flags })
+-    .where(eq(permissionSets.id, input.setId));
+-  await recordAudit(
+-    db,
+-    {
+-      actorId: actor.id,
+-      targetType: "permission_set",
+-      targetId: input.setId,
+-      action: "permission_set.update",
+-      before: { flags: before.flags },
+-      after: { flags: input.flags },
++  // Outer callers must enter here before taking other locks. This single writer is enrolled;
++  // assignment/admin/team/group/session writers do not yet share this fence.
++  return db.transaction(
++    async (tx): Promise<Result<true, string>> => {
++      await lockCurrentAuthorityWrite(tx, signal);
++      const currentActor = await hydrateActor(tx, actor.id, signal);
++      if (currentActor === null) return err("unauthorized");
++      // Resolve the current actor's own set inside the same fence as its edit/grant gates.
++      const [me] = await tx
++        .select({ setId: users.permissionSetId })
++        .from(users)
++        .where(eq(users.id, currentActor.id))
++        .limit(1);
++      signal.throwIfAborted();
++      const editGate = canEditPermissionSet(currentActor, {
++        setId: input.setId,
++        actorOwnSetId: me?.setId ?? null,
++      });
++      if (editGate.ok === false) return editGate;
++      const enabled = Object.entries(input.flags)
++        .filter(([, v]) => v === true)
++        .map(([k]) => k as PermissionFlagKey);
++      const grant = canGrantFlags(currentActor, enabled);
++      if (grant.ok === false) return grant;
++      const [before] = await tx
++        .select()
++        .from(permissionSets)
++        .where(eq(permissionSets.id, input.setId))
++        .limit(1);
++      signal.throwIfAborted();
++      if (before === undefined) return err("not_found");
++      await tx
++        .update(permissionSets)
++        .set({ flags: input.flags })
++        .where(eq(permissionSets.id, input.setId));
++      await recordAudit(
++        tx,
++        {
++          actorId: currentActor.id,
++          targetType: "permission_set",
++          targetId: input.setId,
++          action: "permission_set.update",
++          before: { flags: before.flags },
++          after: { flags: input.flags },
++        },
++        signal,
++      );
++      signal.throwIfAborted();
++      return ok(true);
+     },
+-    signal,
++    { isolationLevel: "read committed" },
+   );
+-  return ok(true);
+ }
+diff --git a/src/features/auth/currentAuthority.test-helpers.ts b/src/features/auth/currentAuthority.test-helpers.ts
+new file mode 100644
+--- /dev/null
++++ b/src/features/auth/currentAuthority.test-helpers.ts
+@@ -0,0 +1,251 @@
++import assert from "node:assert/strict";
++import { and, eq, sql } from "drizzle-orm";
++import { Client, type QueryConfig, type QueryResult, type QueryResultRow } from "pg";
++import { dealChannel } from "@/constants/boardChannels";
++import { changeLogs, channelVersions, deals, permissionSets, sessions, users } from "@/db/schema";
++import { updateDeal } from "@/features/deals/dealUpdate";
++import { updatePermissionSetFlags } from "@/features/identity/permission-sets.service";
++import { hydrateActor } from "@/server/hydrateActor";
++import type { TestDb } from "@/test/db";
++import { createIntegrationPlatformFixtures } from "@/test/integrationPlatformFixtures";
++import type { AuthorityTransaction } from "./currentAuthorityFence";
++import { type NativeSessionRef, withCurrentNativeActor } from "./currentNativeSession";
++import { loadLiveSessionByToken } from "./session";
++
++export const authoritySignal = () => AbortSignal.timeout(10_000);
++
++// Keep observation on its own disposable fixture connection. Bounds belong to ClientConfig,
++// not QueryConfig; statement_timeout also bounds the SQL itself, not only its JS promise.
++export async function boundedAuthorityProbe<Row extends QueryResultRow>(
++  h: Pick<TestDb, "url">,
++  config: QueryConfig<unknown[]>,
++  signal: AbortSignal,
++) {
++  signal.throwIfAborted();
++  const client = new Client({
++    connectionString: h.url,
++    connectionTimeoutMillis: 1000,
++    statement_timeout: 1000,
++    query_timeout: 1500,
++    pipeline: false,
++  });
++  let transportError: Error | undefined;
++  client.on("error", (error: Error) => {
++    transportError ??= error;
++  });
++  let outcome: { ok: true; value: QueryResult<Row> } | { ok: false; error: unknown };
++  let cleanupFailed = false;
++  let cleanupError: unknown;
++  try {
++    try {
++      await client.connect();
++      signal.throwIfAborted();
++      const result = await client.query<Row, unknown[]>(config);
++      signal.throwIfAborted();
++      outcome = { ok: true, value: result };
++    } catch (error) {
++      outcome = { ok: false, error };
++    }
++  } finally {
++    try {
++      await client.end();
++    } catch (error) {
++      cleanupFailed = true;
++      cleanupError = error;
++    }
++  }
++  if (cleanupFailed) {
++    if (!outcome.ok)
++      throw new AggregateError([outcome.error, cleanupError], "Authority probe and cleanup failed");
++    throw cleanupError;
++  }
++  if (!outcome.ok) throw outcome.error;
++  if (transportError !== undefined) throw transportError;
++  return outcome.value;
++}
++
++export function deferred<T>() {
++  let resolve: (value: T) => void = () => undefined;
++  let reject: (error: unknown) => void = () => undefined;
++  const promise = new Promise<T>((done, fail) => {
++    resolve = done;
++    reject = fail;
++  });
++  return { promise, resolve, reject };
++}
++
++export async function currentAuthorityFixture(h: TestDb) {
++  const seeded = await createIntegrationPlatformFixtures(
++    h,
++    { namespace: "currentauthority", now: new Date() },
++    authoritySignal(),
++  );
++  assert(seeded.ok, "native authority fixture setup failed");
++  const f = seeded.value;
++  // This is real cookie-token lookup; the new internal-ID helper is not authentication.
++  const authenticated = await loadLiveSessionByToken(
++    h.db,
++    f.sessions.member.token,
++    authoritySignal(),
++  );
++  assert(authenticated.ok, "fixture cookie did not authenticate");
++  const ref: NativeSessionRef = authenticated.value;
++  const admin = await hydrateActor(h.db, f.users.admin.id, authoritySignal());
++  assert(admin?.type === "admin", "fixture administrator missing");
++  assert(f.users.member.permissionSetId !== null, "fixture member permission set missing");
++  const [permissionSet] = await h.db
++    .select()
++    .from(permissionSets)
++    .where(eq(permissionSets.id, f.users.member.permissionSetId));
++  assert(permissionSet !== undefined, "fixture permission set missing");
++  return { f, ref, admin, permissionSet };
++}
++
++export type CurrentAuthorityFixture = Awaited<ReturnType<typeof currentAuthorityFixture>>;
++
++export function editDeal(h: Pick<TestDb, "db">, f: CurrentAuthorityFixture, title: string) {
++  return withCurrentNativeActor(h.db, f.ref, authoritySignal(), (tx, actor) =>
++    updateDeal(
++      tx,
++      actor,
++      {
++        dealId: f.f.deals.visible.id,
++        expectedUpdatedAt: f.f.deals.visible.updatedAt.toISOString(),
++        title,
++      },
++      authoritySignal(),
++    ),
++  );
++}
++
++export function replaceEditFlag(
++  tx: AuthorityTransaction,
++  f: CurrentAuthorityFixture,
++  enabled: boolean,
++) {
++  return updatePermissionSetFlags(
++    tx,
++    f.admin,
++    { setId: f.permissionSet.id, flags: { ...f.permissionSet.flags, "deal.edit_own": enabled } },
++    authoritySignal(),
++  );
++}
++
++// The outer transaction identifies this exact connection before the real command acquires
++// its fence. It takes no data/advisory lock and adds no production interception hook.
++export function observedTransaction<T>(
++  h: TestDb,
++  effect: (tx: AuthorityTransaction) => Promise<T>,
++) {
++  const backend = deferred<number>();
++  void backend.promise.catch(() => undefined);
++  let settled = false;
++  const task = h.db.transaction(async (tx) => {
++    await tx.execute(sql`SET LOCAL statement_timeout = '8s'`);
++    const result = await tx.execute<{ pid: number }>(sql`SELECT pg_backend_pid() AS pid`);
++    const row = result.rows[0];
++    assert(row !== undefined, "test backend missing");
++    backend.resolve(row.pid);
++    return effect(tx);
++  });
++  const drained = task.then(
++    (value) => {
++      settled = true;
++      return { status: "fulfilled" as const, value };
++    },
++    (reason: unknown) => {
++      settled = true;
++      backend.reject(reason);
++      return { status: "rejected" as const, reason };
++    },
++  );
++  return { task, drained, backend: backend.promise, isSettled: () => settled };
++}
++
++export function heldTransaction<T>(h: TestDb, setup: (tx: AuthorityTransaction) => Promise<T>) {
++  const ready = deferred<T>();
++  const release = deferred<void>();
++  void ready.promise.catch(() => undefined);
++  const control = observedTransaction(h, async (tx) => {
++    const value = await setup(tx);
++    ready.resolve(value);
++    await release.promise;
++    return value;
++  });
++  void control.drained.then((outcome) => {
++    if (outcome.status === "rejected") ready.reject(outcome.reason);
++  });
++  return { ...control, ready: ready.promise, release: () => release.resolve(undefined) };
++}
++
++export async function waitForBackendLock(h: TestDb, pid: number, kind: "advisory" | "row") {
++  const signal = AbortSignal.timeout(5000);
++  for (;;) {
++    signal.throwIfAborted();
++    const result = await boundedAuthorityProbe<{ waiting: boolean }>(
++      h,
++      {
++        text: `SELECT EXISTS (
++        SELECT 1 FROM pg_stat_activity WHERE datname=current_database() AND pid=$1
++        AND wait_event_type='Lock' AND
++        (($2='advisory' AND wait_event='advisory') OR
++         ($2='row' AND wait_event IN ('tuple','transactionid')))
++      ) AS waiting`,
++        values: [pid, kind],
++      },
++      signal,
++    );
++    signal.throwIfAborted();
++    if (result.rows[0]?.waiting === true) return;
++    // Poll cadence only; transaction barriers, not elapsed sleeps, decide test order.
++    await new Promise<void>((resolve) => setTimeout(resolve, 10));
++  }
++}
++
++export async function expireAfterTransactionBegan(h: TestDb, ref: NativeSessionRef, pid: number) {
++  const signal = authoritySignal();
++  signal.throwIfAborted();
++  const [expired] = await h.db
++    .update(sessions)
++    .set({ expiresAt: sql`clock_timestamp()` })
++    .where(eq(sessions.id, ref.sessionId))
++    .returning({ expiresAt: sessions.expiresAt });
++  assert(expired !== undefined, "session expiry fixture missing");
++  const proof = await boundedAuthorityProbe<{ started_before_expiry: boolean; expired: boolean }>(
++    h,
++    {
++      text: `SELECT a.xact_start < s.expires_at AS started_before_expiry,
++      clock_timestamp() >= s.expires_at AS expired
++      FROM pg_stat_activity a CROSS JOIN sessions s WHERE a.pid=$1 AND s.id=$2`,
++      values: [pid, ref.sessionId],
++    },
++    signal,
++  );
++  assert(
++    proof.rows[0]?.started_before_expiry === true,
++    "test transaction must predate session expiry",
++  );
++  assert(proof.rows[0].expired, "database wall clock must have reached fixture expiry");
++}
++
++export async function readNativeState(h: TestDb, ref: NativeSessionRef) {
++  const [session] = await h.db.select().from(sessions).where(eq(sessions.id, ref.sessionId));
++  const [user] = await h.db.select().from(users).where(eq(users.id, ref.userId));
++  assert(session !== undefined && user !== undefined, "native state fixture missing");
++  return { session, user };
++}
++
++export async function readDealEffects(h: TestDb, f: CurrentAuthorityFixture) {
++  const id = f.f.deals.visible.id;
++  const [deal] = await h.db.select().from(deals).where(eq(deals.id, id));
++  const logs = await h.db
++    .select()
++    .from(changeLogs)
++    .where(and(eq(changeLogs.entityType, "deal"), eq(changeLogs.entityId, id)))
++    .orderBy(changeLogs.id);
++  const versions = await h.db
++    .select()
++    .from(channelVersions)
++    .where(eq(channelVersions.channel, dealChannel(id)));
++  return { deal, logs, versions };
++}
+diff --git a/src/features/auth/currentNativeSession.integration.test.ts b/src/features/auth/currentNativeSession.integration.test.ts
+new file mode 100644
+--- /dev/null
++++ b/src/features/auth/currentNativeSession.integration.test.ts
+@@ -0,0 +1,229 @@
++import assert from "node:assert/strict";
++import { eq, sql } from "drizzle-orm";
++import { afterEach, beforeEach, expect, test } from "vitest";
++import { authUsers, permissionSets, sessions, teamMembers, teams, users } from "@/db/schema";
++import { updateDeal } from "@/features/deals/dealUpdate";
++import { makeTestDb, type TestDb } from "@/test/db";
++import { err } from "@/types/result";
++import {
++  authoritySignal,
++  currentAuthorityFixture,
++  editDeal,
++  readDealEffects,
++  readNativeState,
++} from "./currentAuthority.test-helpers";
++import { withCurrentNativeActor } from "./currentNativeSession";
++
++let h: TestDb;
++beforeEach(async () => {
++  h = await makeTestDb();
++});
++afterEach(async () => {
++  await h.close();
++});
++
++test("ordinary native edit needs no fresh proof, reloads team grants, and never touches authentication", async () => {
++  const f = await currentAuthorityFixture(h);
++  await h.db
++    .update(sessions)
++    .set({ freshAuthenticatedAt: sql`clock_timestamp() - interval '1 hour'` })
++    .where(eq(sessions.id, f.ref.sessionId));
++  await h.db
++    .update(permissionSets)
++    .set({ flags: { ...f.permissionSet.flags, "team.viewMembers": true } })
++    .where(eq(permissionSets.id, f.permissionSet.id));
++  const [team] = await h.db
++    .insert(teams)
++    .values({ name: "Current authority team", managerId: f.ref.userId })
++    .returning();
++  assert(team !== undefined);
++  await h.db.insert(teamMembers).values({ teamId: team.id, userId: f.f.users.outsider.id });
++  const before = await readNativeState(h, f.ref);
++  let managed: string[] = [];
++  const result = await withCurrentNativeActor(h.db, f.ref, authoritySignal(), (tx, actor) => {
++    managed = [...(actor.managedUserIds ?? [])];
++    return updateDeal(
++      tx,
++      actor,
++      {
++        dealId: f.f.deals.visible.id,
++        expectedUpdatedAt: f.f.deals.visible.updatedAt.toISOString(),
++        title: "Current native edit",
++      },
++      authoritySignal(),
++    );
++  });
++  expect(result.ok).toBe(true);
++  expect(managed).toEqual([f.f.users.outsider.id]);
++  expect(await readNativeState(h, f.ref)).toEqual(before);
++  const effects = await readDealEffects(h, f);
++  expect(effects.deal?.title).toBe("Current native edit");
++  expect(effects.logs).toHaveLength(1);
++  expect(Number(effects.versions[0]?.version)).toBe(1);
++});
++
++test.each([
++  "wrong_user",
++  "revoked",
++  "inactive",
++  "invited",
++  "unverified",
++  "identity_email_mismatch",
++  "legacy",
++  "pending",
++  "password_admin",
++] as const)("native admission rejects %s without work or authentication touches", async (kind) => {
++  const f = await currentAuthorityFixture(h);
++  switch (kind) {
++    case "revoked":
++      await h.db
++        .update(sessions)
++        .set({ revokedAt: sql`clock_timestamp()` })
++        .where(eq(sessions.id, f.ref.sessionId));
++      break;
++    case "inactive":
++      await h.db.update(users).set({ isActive: false }).where(eq(users.id, f.ref.userId));
++      break;
++    case "invited":
++      await h.db
++        .update(users)
++        .set({ invitedAt: sql`clock_timestamp()` })
++        .where(eq(users.id, f.ref.userId));
++      break;
++    case "unverified":
++      await h.db
++        .update(authUsers)
++        .set({ emailVerified: false })
++        .where(eq(authUsers.id, f.ref.userId));
++      break;
++    case "identity_email_mismatch":
++      await h.db
++        .update(authUsers)
++        .set({ email: "moved-authority@example.test" })
++        .where(eq(authUsers.id, f.ref.userId));
++      break;
++    case "legacy":
++      await h.db
++        .update(sessions)
++        .set({ authMethod: "legacy" })
++        .where(eq(sessions.id, f.ref.sessionId));
++      break;
++    case "pending":
++      await h.db
++        .update(sessions)
++        .set({ assurance: "pending" })
++        .where(eq(sessions.id, f.ref.sessionId));
++      break;
++    case "password_admin":
++      await h.db.update(users).set({ isAdmin: true }).where(eq(users.id, f.ref.userId));
++      break;
++    case "wrong_user":
++      break;
++  }
++  const before = await readNativeState(h, f.ref);
++  const effects = await readDealEffects(h, f);
++  let called = false;
++  const ref = kind === "wrong_user" ? { ...f.ref, userId: f.f.users.outsider.id } : f.ref;
++  const result = await withCurrentNativeActor(h.db, ref, authoritySignal(), () => {
++    called = true;
++    return Promise.resolve(err("work_must_not_run"));
++  });
++  expect(result).toEqual({ ok: false, error: "native_session_invalid" });
++  expect(called).toBe(false);
++  expect(await readNativeState(h, f.ref)).toEqual(before);
++  expect(await readDealEffects(h, f)).toEqual(effects);
++});
++
++test("a domain failure after a real deal write rolls back the deal, log and publication", async () => {
++  const f = await currentAuthorityFixture(h);
++  const before = await readDealEffects(h, f);
++  const result = await withCurrentNativeActor(h.db, f.ref, authoritySignal(), async (tx, actor) => {
++    const updated = await updateDeal(
++      tx,
++      actor,
++      {
++        dealId: f.f.deals.visible.id,
++        expectedUpdatedAt: f.f.deals.visible.updatedAt.toISOString(),
++        title: "Rolled back by domain failure",
++      },
++      authoritySignal(),
++    );
++    expect(updated.ok).toBe(true);
++    return err("domain_declined" as const);
++  });
++  expect(result).toEqual({ ok: false, error: "domain_declined" });
++  expect(await readDealEffects(h, f)).toEqual(before);
++});
++
++test("an actual SQL failure is preserved after the real deal write rolls back", async () => {
++  const f = await currentAuthorityFixture(h);
++  const before = await readDealEffects(h, f);
++  let original: unknown;
++  const outcome = await withCurrentNativeActor(
++    h.db,
++    f.ref,
++    authoritySignal(),
++    async (tx, actor) => {
++      const updated = await updateDeal(
++        tx,
++        actor,
++        {
++          dealId: f.f.deals.visible.id,
++          expectedUpdatedAt: f.f.deals.visible.updatedAt.toISOString(),
++          title: "Rolled back by database error",
++        },
++        authoritySignal(),
++      );
++      expect(updated.ok).toBe(true);
++      try {
++        await tx.execute(sql`SELECT 1 / 0`);
++      } catch (error) {
++        original = error;
++        throw error;
++      }
++      return updated;
++    },
++  ).then(
++    (value) => ({ status: "fulfilled" as const, value }),
++    (reason: unknown) => ({ status: "rejected" as const, reason }),
++  );
++  assert(outcome.status === "rejected", "native SQL error must reject");
++  expect(outcome.reason).toBe(original);
++  expect(original).toMatchObject({ cause: { code: "22012" } });
++  expect(await readDealEffects(h, f)).toEqual(before);
++});
++
++test("a callback-tail abort preserves its exact reason and rolls back the completed deal work", async () => {
++  const f = await currentAuthorityFixture(h);
++  const before = await readDealEffects(h, f);
++  const controller = new AbortController();
++  const reason = new Error("Unique native callback-tail abort");
++  const outcome = await withCurrentNativeActor(
++    h.db,
++    f.ref,
++    controller.signal,
++    async (tx, actor) => {
++      const updated = await updateDeal(
++        tx,
++        actor,
++        {
++          dealId: f.f.deals.visible.id,
++          expectedUpdatedAt: f.f.deals.visible.updatedAt.toISOString(),
++          title: "Rolled back by callback-tail abort",
++        },
++        controller.signal,
++      );
++      expect(updated.ok).toBe(true);
++      // This tests the final callback checkpoint, not cancellation of a pending database query.
++      controller.abort(reason);
++      return updated;
++    },
++  ).then(
++    (value) => ({ status: "fulfilled" as const, value }),
++    (failure: unknown) => ({ status: "rejected" as const, reason: failure }),
++  );
++  assert(outcome.status === "rejected", "callback-tail abort must reject");
++  expect(outcome.reason).toBe(reason);
++  expect(await readDealEffects(h, f)).toEqual(before);
++  expect((await editDeal(h, f, "Valid after callback-tail abort")).ok).toBe(true);
++});
+diff --git a/src/features/auth/currentAuthorityFence.integration.test.ts b/src/features/auth/currentAuthorityFence.integration.test.ts
+new file mode 100644
+--- /dev/null
++++ b/src/features/auth/currentAuthorityFence.integration.test.ts
+@@ -0,0 +1,142 @@
++import assert from "node:assert/strict";
++import { eq, sql } from "drizzle-orm";
++import { afterEach, beforeEach, expect, test } from "vitest";
++import { ERROR_IDS } from "@/constants/errorIds";
++import { auditEvents, deals, permissionSets } from "@/db/schema";
++import { updatePermissionSetFlags } from "@/features/identity/permission-sets.service";
++import { makeTestDb, type TestDb } from "@/test/db";
++import {
++  currentAuthorityFixture,
++  editDeal,
++  heldTransaction,
++  observedTransaction,
++  readDealEffects,
++  replaceEditFlag,
++  waitForBackendLock,
++} from "./currentAuthority.test-helpers";
++
++let h: TestDb;
++beforeEach(async () => {
++  h = await makeTestDb();
++});
++afterEach(async () => {
++  await h.close();
++});
++
++test("a real flags writer commits before the queued native edit rechecks authority", async () => {
++  const f = await currentAuthorityFixture(h);
++  const before = await readDealEffects(h, f);
++  const writer = heldTransaction(h, (tx) => replaceEditFlag(tx, f, false));
++  let command:
++    | ReturnType<typeof observedTransaction<Awaited<ReturnType<typeof editDeal>>>>
++    | undefined;
++  try {
++    expect(await writer.ready).toEqual({ ok: true, value: true });
++    command = observedTransaction(h, (tx) => editDeal({ db: tx }, f, "Denied queued edit"));
++    await waitForBackendLock(h, await command.backend, "advisory");
++    expect(command.isSettled()).toBe(false);
++  } finally {
++    writer.release();
++    await Promise.all([writer.drained, command?.drained]);
++  }
++  assert(command !== undefined);
++  expect(await writer.task).toEqual({ ok: true, value: true });
++  expect(await command.task).toMatchObject({ ok: false, error: { id: ERROR_IDS.PERM_DENIED } });
++  expect(await readDealEffects(h, f)).toEqual(before);
++  expect(
++    await h.db.select().from(auditEvents).where(eq(auditEvents.targetId, f.permissionSet.id)),
++  ).toEqual([expect.objectContaining({ action: "permission_set.update" })]);
++});
++
++test("an admitted native edit holds the real flags writer until its local commit", async () => {
++  const f = await currentAuthorityFixture(h);
++  const before = await readDealEffects(h, f);
++  const rowBlocker = heldTransaction(h, async (tx) => {
++    await tx
++      .select({ id: deals.id })
++      .from(deals)
++      .where(eq(deals.id, f.f.deals.visible.id))
++      .for("update");
++  });
++  let command:
++    | ReturnType<typeof observedTransaction<Awaited<ReturnType<typeof editDeal>>>>
++    | undefined;
++  let writer:
++    | ReturnType<typeof observedTransaction<Awaited<ReturnType<typeof replaceEditFlag>>>>
++    | undefined;
++  try {
++    await rowBlocker.ready;
++    command = observedTransaction(h, (tx) => editDeal({ db: tx }, f, "Admitted before removal"));
++    await waitForBackendLock(h, await command.backend, "row");
++    writer = observedTransaction(h, (tx) => replaceEditFlag(tx, f, false));
++    await waitForBackendLock(h, await writer.backend, "advisory");
++    expect(command.isSettled()).toBe(false);
++    expect(writer.isSettled()).toBe(false);
++  } finally {
++    rowBlocker.release();
++    await Promise.all([rowBlocker.drained, command?.drained, writer?.drained]);
++  }
++  assert(command !== undefined && writer !== undefined);
++  expect(await rowBlocker.task).toBeUndefined();
++  expect((await command.task).ok).toBe(true);
++  expect(await writer.task).toEqual({ ok: true, value: true });
++  const after = await readDealEffects(h, f);
++  expect(after.deal?.title).toBe("Admitted before removal");
++  expect(after.logs).toHaveLength(before.logs.length + 1);
++  expect(Number(after.versions[0]?.version)).toBe(Number(before.versions[0]?.version ?? 0) + 1);
++  const [set] = await h.db
++    .select()
++    .from(permissionSets)
++    .where(eq(permissionSets.id, f.permissionSet.id));
++  expect(set?.flags["deal.edit_own"]).toBe(false);
++  expect(
++    await h.db.select().from(auditEvents).where(eq(auditEvents.targetId, f.permissionSet.id)),
++  ).toEqual([expect.objectContaining({ action: "permission_set.update" })]);
++});
++
++test("a root flags writer rolls back its changed flag when the real audit insert fails", async () => {
++  const f = await currentAuthorityFixture(h);
++  const before = await h.db
++    .select()
++    .from(permissionSets)
++    .where(eq(permissionSets.id, f.permissionSet.id));
++  const beforeAudit = await h.db
++    .select()
++    .from(auditEvents)
++    .where(eq(auditEvents.targetId, f.permissionSet.id));
++  // Isolated disposable test database only. No trigger or production failure hook is needed.
++  await h.db.execute(sql`ALTER TABLE audit_events ADD CONSTRAINT current_authority_fixture_audit_reject
++    CHECK (action <> 'permission_set.update')`);
++  try {
++    const outcome = await updatePermissionSetFlags(
++      h.db,
++      f.admin,
++      { setId: f.permissionSet.id, flags: { ...f.permissionSet.flags, "deal.edit_own": false } },
++      AbortSignal.timeout(10_000),
++    ).then(
++      (value) => ({ status: "fulfilled" as const, value }),
++      (reason: unknown) => ({ status: "rejected" as const, reason }),
++    );
++    assert(outcome.status === "rejected", "the real audit CHECK must fail");
++    expect(outcome.reason).toMatchObject({ cause: { code: "23514" } });
++    expect(
++      await h.db.select().from(permissionSets).where(eq(permissionSets.id, f.permissionSet.id)),
++    ).toEqual(before);
++    expect(
++      await h.db.select().from(auditEvents).where(eq(auditEvents.targetId, f.permissionSet.id)),
++    ).toEqual(beforeAudit);
++  } finally {
++    await h.db.execute(
++      sql`ALTER TABLE audit_events DROP CONSTRAINT current_authority_fixture_audit_reject`,
++    );
++  }
++  // The transaction and exclusive fence were released even on the audit failure.
++  expect(
++    await updatePermissionSetFlags(
++      h.db,
++      f.admin,
++      { setId: f.permissionSet.id, flags: { ...f.permissionSet.flags, "deal.edit_own": false } },
++      AbortSignal.timeout(10_000),
++    ),
++  ).toEqual({ ok: true, value: true });
++});
+diff --git a/src/features/auth/currentAuthorityClock.integration.test.ts b/src/features/auth/currentAuthorityClock.integration.test.ts
+new file mode 100644
+--- /dev/null
++++ b/src/features/auth/currentAuthorityClock.integration.test.ts
+@@ -0,0 +1,108 @@
++import assert from "node:assert/strict";
++import { eq, sql } from "drizzle-orm";
++import { afterEach, beforeEach, expect, test } from "vitest";
++import { deals, sessions } from "@/db/schema";
++import { makeTestDb, type TestDb } from "@/test/db";
++import {
++  authoritySignal,
++  currentAuthorityFixture,
++  editDeal,
++  expireAfterTransactionBegan,
++  heldTransaction,
++  observedTransaction,
++  readDealEffects,
++  readNativeState,
++  replaceEditFlag,
++  waitForBackendLock,
++} from "./currentAuthority.test-helpers";
++import { lockCurrentAuthorityWrite } from "./currentAuthorityFence";
++
++let h: TestDb;
++beforeEach(async () => {
++  h = await makeTestDb();
++});
++afterEach(async () => {
++  await h.close();
++});
++
++test("native session expiry uses the database wall clock after waiting for the fence", async () => {
++  const f = await currentAuthorityFixture(h);
++  const before = await readDealEffects(h, f);
++  const fenceBlocker = heldTransaction(h, (tx) => lockCurrentAuthorityWrite(tx, authoritySignal()));
++  let command:
++    | ReturnType<typeof observedTransaction<Awaited<ReturnType<typeof editDeal>>>>
++    | undefined;
++  let afterExpiry: Awaited<ReturnType<typeof readNativeState>> | undefined;
++  try {
++    await fenceBlocker.ready;
++    command = observedTransaction(h, (tx) => editDeal({ db: tx }, f, "Expired while queued"));
++    const pid = await command.backend;
++    await waitForBackendLock(h, pid, "advisory");
++    // A fixture write sets the deadline to wall-clock now after BEGIN. This deterministically
++    // distinguishes transaction now() without relying on a fixed sleep or mocked clock.
++    await expireAfterTransactionBegan(h, f.ref, pid);
++    afterExpiry = await readNativeState(h, f.ref);
++  } finally {
++    fenceBlocker.release();
++    await Promise.all([fenceBlocker.drained, command?.drained]);
++  }
++  assert(command !== undefined && afterExpiry !== undefined);
++  await fenceBlocker.task;
++  expect(await command.task).toEqual({ ok: false, error: "native_session_invalid" });
++  expect(await readNativeState(h, f.ref)).toEqual(afterExpiry);
++  expect(await readDealEffects(h, f)).toEqual(before);
++  // The failed admission must have released its shared lock.
++  expect(await h.db.transaction((tx) => replaceEditFlag(tx, f, true))).toEqual({
++    ok: true,
++    value: true,
++  });
++});
++
++test("expiry during a real deal row wait rolls back the write, log and durable publication", async () => {
++  const f = await currentAuthorityFixture(h);
++  const before = await readDealEffects(h, f);
++  const rowBlocker = heldTransaction(h, async (tx) => {
++    await tx
++      .select({ id: deals.id })
++      .from(deals)
++      .where(eq(deals.id, f.f.deals.visible.id))
++      .for("update");
++  });
++  let command:
++    | ReturnType<typeof observedTransaction<Awaited<ReturnType<typeof editDeal>>>>
++    | undefined;
++  let afterExpiry: Awaited<ReturnType<typeof readNativeState>> | undefined;
++  try {
++    await rowBlocker.ready;
++    command = observedTransaction(h, (tx) => editDeal({ db: tx }, f, "Expired during write wait"));
++    const pid = await command.backend;
++    await waitForBackendLock(h, pid, "row");
++    await expireAfterTransactionBegan(h, f.ref, pid);
++    afterExpiry = await readNativeState(h, f.ref);
++  } finally {
++    rowBlocker.release();
++    await Promise.all([rowBlocker.drained, command?.drained]);
++  }
++  assert(command !== undefined && afterExpiry !== undefined);
++  await rowBlocker.task;
++  expect(await command.task).toEqual({ ok: false, error: "native_session_invalid" });
++  expect(await readNativeState(h, f.ref)).toEqual(afterExpiry);
++  expect(await readDealEffects(h, f)).toEqual(before);
++
++  // Both a valid real command and a real exclusive writer still work after the rollback.
++  await h.db
++    .update(sessions)
++    .set({ expiresAt: sql`clock_timestamp() + interval '1 hour'` })
++    .where(eq(sessions.id, f.ref.sessionId));
++  expect((await editDeal(h, f, "Valid after expiry rollback")).ok).toBe(true);
++  expect(await h.db.transaction((tx) => replaceEditFlag(tx, f, false))).toEqual({
++    ok: true,
++    value: true,
++  });
++  const afterControl = await readDealEffects(h, f);
++  expect(afterControl.deal?.title).toBe("Valid after expiry rollback");
++  expect(afterControl.logs).toHaveLength(before.logs.length + 1);
++  expect(Number(afterControl.versions[0]?.version)).toBe(
++    Number(before.versions[0]?.version ?? 0) + 1,
++  );
++});
+diff --git a/src/features/auth/currentAuthorityIsolation.test-helpers.ts b/src/features/auth/currentAuthorityIsolation.test-helpers.ts
+new file mode 100644
+--- /dev/null
++++ b/src/features/auth/currentAuthorityIsolation.test-helpers.ts
+@@ -0,0 +1,141 @@
++import assert from "node:assert/strict";
++import { eq, sql } from "drizzle-orm";
++import { drizzle } from "drizzle-orm/node-postgres";
++import type { Db } from "@/db/client";
++import * as schema from "@/db/schema";
++import { auditEvents, permissionSets, users } from "@/db/schema";
++import { hydrateActor } from "@/server/hydrateActor";
++import type { TestDb } from "@/test/db";
++import { authoritySignal, boundedAuthorityProbe, deferred } from "./currentAuthority.test-helpers";
++import type { AuthorityTransaction } from "./currentAuthorityFence";
++
++export function trackedTask<T>(task: Promise<T>) {
++  let settled = false;
++  const drained = task.then(
++    (value) => {
++      settled = true;
++      return { status: "fulfilled" as const, value };
++    },
++    (reason: unknown) => {
++      settled = true;
++      return { status: "rejected" as const, reason };
++    },
++  );
++  return { task, drained, isSettled: () => settled };
++}
++
++// A genuine ROOT Drizzle Db over a public checked-out client. No surrounding transaction
++// primes the snapshot or turns the entry under test into a nested savepoint.
++export async function repeatableReadRoot<T>(
++  h: TestDb,
++  work: (db: Db, pid: number) => Promise<T>,
++): Promise<T> {
++  const client = await h.pool.connect();
++  try {
++    await client.query(
++      "SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION LEVEL REPEATABLE READ",
++    );
++    await client.query("SET statement_timeout = '8s'");
++    const defaults = await client.query<{ default_transaction_isolation: string }>(
++      "SHOW default_transaction_isolation",
++    );
++    assert.equal(defaults.rows[0]?.default_transaction_isolation, "repeatable read");
++    const backend = await client.query<{ pid: number }>("SELECT pg_backend_pid() AS pid");
++    const pid = backend.rows[0]?.pid;
++    assert(pid !== undefined, "root fixture backend missing");
++    return await work(drizzle(client, { schema }), pid);
++  } finally {
++    // The callback drains its commands first. Discard this owned fixture connection so its
++    // changed session defaults cannot escape into a later pooled test transaction.
++    client.release(true);
++  }
++}
++
++export function openRepeatableRead<T>(h: TestDb, work: (tx: AuthorityTransaction) => Promise<T>) {
++  const backend = deferred<number>();
++  void backend.promise.catch(() => undefined);
++  const run = trackedTask(
++    h.db.transaction(
++      async (tx) => {
++        await tx.execute(sql`SET LOCAL statement_timeout = '8s'`);
++        const result = await tx.execute<{ pid: number }>(sql`SELECT pg_backend_pid() AS pid`);
++        const row = result.rows[0];
++        assert(row !== undefined, "adapter fixture backend missing");
++        backend.resolve(row.pid);
++        return work(tx);
++      },
++      { isolationLevel: "repeatable read" },
++    ),
++  );
++  void run.drained.then((outcome) => {
++    if (outcome.status === "rejected") backend.reject(outcome.reason);
++  });
++  return { ...run, backend: backend.promise };
++}
++
++export async function assertQueuedSnapshot(h: TestDb, pid: number) {
++  const result = await boundedAuthorityProbe<{
++    advisory_wait: boolean;
++    has_snapshot: boolean;
++    in_transaction: boolean;
++  }>(
++    h,
++    {
++      text: `SELECT wait_event='advisory' AS advisory_wait,
++      backend_xmin IS NOT NULL AS has_snapshot, xact_start IS NOT NULL AS in_transaction
++      FROM pg_stat_activity WHERE datname=current_database() AND pid=$1`,
++      values: [pid],
++    },
++    authoritySignal(),
++  );
++  assert.deepEqual(result.rows, [
++    { advisory_wait: true, has_snapshot: true, in_transaction: true },
++  ]);
++}
++
++export async function settledOrAdvisoryRequest(
++  h: TestDb,
++  pid: number,
++  run: { isSettled: () => boolean },
++): Promise<"settled" | "advisory_requested"> {
++  const signal = AbortSignal.timeout(5000);
++  for (;;) {
++    signal.throwIfAborted();
++    if (run.isSettled()) return "settled";
++    const result = await boundedAuthorityProbe<{ requested: boolean }>(
++      h,
++      {
++        text: "SELECT EXISTS (SELECT 1 FROM pg_locks WHERE pid=$1 AND locktype='advisory') AS requested",
++        values: [pid],
++      },
++      signal,
++    );
++    signal.throwIfAborted();
++    if (result.rows[0]?.requested === true) return "advisory_requested";
++    // This only paces observation. Actual settlement/advisory state is the ordering oracle.
++    await new Promise<void>((resolve) => setTimeout(resolve, 10));
++  }
++}
++
++export async function delegatedManager(h: TestDb) {
++  const [set] = await h.db
++    .insert(permissionSets)
++    .values({ name: "RR delegated managers", flags: { "permissions.manage": true } })
++    .returning();
++  assert(set !== undefined);
++  const [user] = await h.db
++    .insert(users)
++    .values({ email: "rr-manager@example.test", name: "RR manager", permissionSetId: set.id })
++    .returning();
++  assert(user !== undefined);
++  const actor = await hydrateActor(h.db, user.id, authoritySignal());
++  assert(actor !== null, "delegated manager fixture must exist");
++  assert(actor.flags.has("permissions.manage"), "delegated manager fixture must be allowed");
++  return { set, actor };
++}
++
++export async function permissionEffects(h: TestDb, setId: string) {
++  const rows = await h.db.select().from(permissionSets).where(eq(permissionSets.id, setId));
++  const audit = await h.db.select().from(auditEvents).where(eq(auditEvents.targetId, setId));
++  return { rows, audit };
++}
+diff --git a/src/features/auth/currentAuthorityIsolation.integration.test.ts b/src/features/auth/currentAuthorityIsolation.integration.test.ts
+new file mode 100644
+--- /dev/null
++++ b/src/features/auth/currentAuthorityIsolation.integration.test.ts
+@@ -0,0 +1,203 @@
++import assert from "node:assert/strict";
++import { sql } from "drizzle-orm";
++import { afterEach, beforeEach, expect, test } from "vitest";
++import { AppError, ERROR_IDS } from "@/constants/errorIds";
++import { updateDeal } from "@/features/deals/dealUpdate";
++import { updatePermissionSetFlags } from "@/features/identity/permission-sets.service";
++import { makeTestDb, type TestDb } from "@/test/db";
++import { ok } from "@/types/result";
++import {
++  authoritySignal,
++  currentAuthorityFixture,
++  heldTransaction,
++  readDealEffects,
++  replaceEditFlag,
++  waitForBackendLock,
++} from "./currentAuthority.test-helpers";
++import { lockCurrentAuthorityWrite } from "./currentAuthorityFence";
++import {
++  assertQueuedSnapshot,
++  delegatedManager,
++  openRepeatableRead,
++  permissionEffects,
++  repeatableReadRoot,
++  settledOrAdvisoryRequest,
++  trackedTask,
++} from "./currentAuthorityIsolation.test-helpers";
++import { withCurrentNativeActor } from "./currentNativeSession";
++
++let h: TestDb;
++beforeEach(async () => {
++  h = await makeTestDb();
++});
++afterEach(async () => {
++  await h.close();
++});
++
++test("root native admission overrides RR defaults and sees flag revocation committed while queued", async () => {
++  const f = await currentAuthorityFixture(h);
++  const before = await readDealEffects(h, f);
++  let observed: { isolation: string; canEdit: boolean } | undefined;
++  await repeatableReadRoot(h, async (db, pid) => {
++    const remover = heldTransaction(h, (tx) => replaceEditFlag(tx, f, false));
++    let command: ReturnType<typeof trackedTask> | undefined;
++    try {
++      expect(await remover.ready).toEqual({ ok: true, value: true });
++      command = trackedTask(
++        withCurrentNativeActor(db, f.ref, authoritySignal(), async (tx, actor) => {
++          const result = await tx.execute<{ isolation: string }>(
++            sql`SELECT current_setting('transaction_isolation') AS isolation`,
++          );
++          const row = result.rows[0];
++          assert(row !== undefined);
++          observed = { isolation: row.isolation, canEdit: actor.flags.has("deal.edit_own") };
++          return updateDeal(
++            tx,
++            actor,
++            {
++              dealId: f.f.deals.visible.id,
++              expectedUpdatedAt: f.f.deals.visible.updatedAt.toISOString(),
++              title: "Must deny after RR queue",
++            },
++            authoritySignal(),
++          );
++        }),
++      );
++      await waitForBackendLock(h, pid, "advisory");
++      await assertQueuedSnapshot(h, pid);
++    } finally {
++      remover.release();
++      await Promise.all([remover.drained, command?.drained]);
++    }
++    assert(command !== undefined);
++    expect(await remover.task).toEqual({ ok: true, value: true });
++    expect
++      .soft(await command.task)
++      .toMatchObject({ ok: false, error: { id: ERROR_IDS.PERM_DENIED } });
++  });
++  expect.soft(observed).toEqual({ isolation: "read committed", canEdit: false });
++  expect(await readDealEffects(h, f)).toEqual(before);
++});
++
++test("root flags writer overrides RR defaults and rechecks a revoked manager grant after its wait", async () => {
++  const f = await currentAuthorityFixture(h);
++  const manager = await delegatedManager(h);
++  const before = await permissionEffects(h, f.permissionSet.id);
++  await repeatableReadRoot(h, async (db, pid) => {
++    // Revoke the manager's OWN set, then edit a DIFFERENT target. A same-row RR update
++    // would produce 40001 and could mask the stale-authority acceptance being tested.
++    const remover = heldTransaction(h, (tx) =>
++      updatePermissionSetFlags(
++        tx,
++        f.admin,
++        { setId: manager.set.id, flags: {} },
++        authoritySignal(),
++      ),
++    );
++    let command: ReturnType<typeof trackedTask> | undefined;
++    try {
++      expect(await remover.ready).toEqual({ ok: true, value: true });
++      command = trackedTask(
++        updatePermissionSetFlags(
++          db,
++          manager.actor,
++          {
++            setId: f.permissionSet.id,
++            flags: { ...f.permissionSet.flags, "deal.edit_own": false },
++          },
++          authoritySignal(),
++        ),
++      );
++      await waitForBackendLock(h, pid, "advisory");
++      await assertQueuedSnapshot(h, pid);
++    } finally {
++      remover.release();
++      await Promise.all([remover.drained, command?.drained]);
++    }
++    assert(command !== undefined);
++    expect(await remover.task).toEqual({ ok: true, value: true });
++    expect.soft(await command.task).toEqual({ ok: false, error: "permissions.manage required" });
++  });
++  expect(await permissionEffects(h, f.permissionSet.id)).toEqual(before);
++});
++
++test("an already-open RR native adapter fails with the operational invariant before asking for a fence", async () => {
++  const f = await currentAuthorityFixture(h);
++  const before = await readDealEffects(h, f);
++  const blocker = heldTransaction(h, (tx) => lockCurrentAuthorityWrite(tx, authoritySignal()));
++  let entered = false;
++  let ordering: "settled" | "advisory_requested" | undefined;
++  let run: ReturnType<typeof openRepeatableRead> | undefined;
++  try {
++    await blocker.ready;
++    run = openRepeatableRead(h, (tx) =>
++      withCurrentNativeActor(tx, f.ref, authoritySignal(), (guarded, actor) => {
++        entered = true;
++        return updateDeal(
++          guarded,
++          actor,
++          {
++            dealId: f.f.deals.visible.id,
++            expectedUpdatedAt: f.f.deals.visible.updatedAt.toISOString(),
++            title: "Must reject open RR adapter",
++          },
++          authoritySignal(),
++        );
++      }),
++    );
++    ordering = await settledOrAdvisoryRequest(h, await run.backend, run);
++  } finally {
++    blocker.release();
++    await Promise.all([blocker.drained, run?.drained]);
++  }
++  assert(run !== undefined);
++  await blocker.task;
++  expect.soft(ordering).toBe("settled");
++  expect.soft(entered).toBe(false);
++  const outcome = await run.drained;
++  expect.soft(outcome.status).toBe("rejected");
++  if (outcome.status === "rejected") {
++    expect.soft(outcome.reason).toBeInstanceOf(AppError);
++    expect.soft(outcome.reason).toMatchObject({
++      id: ERROR_IDS.DB_INVARIANT,
++      message: "Current authority requires read committed",
++    });
++  }
++  expect.soft(await readDealEffects(h, f)).toEqual(before);
++  expect(
++    await withCurrentNativeActor(h.db, f.ref, authoritySignal(), () => Promise.resolve(ok(true))),
++  ).toEqual({ ok: true, value: true });
++});
++
++test("an already-open RR flags adapter fails with the operational invariant before asking for a fence", async () => {
++  const f = await currentAuthorityFixture(h);
++  const before = await permissionEffects(h, f.permissionSet.id);
++  const blocker = heldTransaction(h, (tx) => lockCurrentAuthorityWrite(tx, authoritySignal()));
++  let ordering: "settled" | "advisory_requested" | undefined;
++  let run: ReturnType<typeof openRepeatableRead> | undefined;
++  try {
++    await blocker.ready;
++    run = openRepeatableRead(h, (tx) => replaceEditFlag(tx, f, false));
++    ordering = await settledOrAdvisoryRequest(h, await run.backend, run);
++  } finally {
++    blocker.release();
++    await Promise.all([blocker.drained, run?.drained]);
++  }
++  assert(run !== undefined);
++  await blocker.task;
++  expect.soft(ordering).toBe("settled");
++  const outcome = await run.drained;
++  expect.soft(outcome.status).toBe("rejected");
++  if (outcome.status === "rejected") {
++    expect.soft(outcome.reason).toBeInstanceOf(AppError);
++    expect.soft(outcome.reason).toMatchObject({
++      id: ERROR_IDS.DB_INVARIANT,
++      message: "Current authority requires read committed",
++    });
++  }
++  expect.soft(await permissionEffects(h, f.permissionSet.id)).toEqual(before);
++  expect(await h.db.transaction((tx) => replaceEditFlag(tx, f, false))).toEqual({
++    ok: true,
++    value: true,
++  });
++});
+diff --git a/src/features/privacy/registryIdsAuthentication1.ts b/src/features/privacy/registryIdsAuthentication1.ts
+--- a/src/features/privacy/registryIdsAuthentication1.ts
++++ b/src/features/privacy/registryIdsAuthentication1.ts
+@@ -86,7 +86,7 @@
+   "sourceReview:src/features/identity/avatar/AvatarUpload.tsx#913dc3c4b437a838df8bccf2b2c78dff9d3142d9ad56506e5cc9250b86b29a5c",
+   "sourceReview:src/features/identity/guards.ts#fcbdac62eda4db3305a9986aee0093248ae5808c3079f7c924eb0e0888d0a034",
+   "sourceReview:src/features/identity/invite.service.ts#db6e5bced1bdd2c1409c2b67f798f965c8a7fcc174f6cc9a0c8ba305302519fa",
+-  "sourceReview:src/features/identity/permission-sets.service.ts#261de9d334142466cbe3e1f6488599c9666bde95927b5daea298740349eb3a93",
++  "sourceReview:src/features/identity/permission-sets.service.ts#31b91f21a5d8498daa3034034ad538f6dec9b783f845a4f52c9d563da3abbefa",
+   "sourceReview:src/features/identity/preferencesRepo.ts#5754120d12522b06a74f2ef04167872d6ccecde46f33e2f1395d1fad2027db91",
+   "sourceReview:src/features/identity/profile.service.ts#c4d4abf9a4c921b22d23352ec916144f46d9b95d955da97ef6332cea7945f1ef",
+   "sourceReview:src/features/identity/teams.service.ts#fa1eff995752f50eba9c34f61147c3d73cbf528b967e0bbc2c48900d57e92ece",
+@@ -140,4 +140,6 @@
+   "writer:src/features/auth/better/hashedAdapter.ts#update:raw",
+   "writer:src/features/auth/better/logoutCurrentRequest.ts#update:sessions",
+   "writer:src/features/auth/better/providers.ts#update:dynamic",
++  "sourceReview:src/features/auth/currentAuthorityFence.ts#1b8f9e4371e020adcd6582a0fe73f4ffb6853c4b61cbd5a2423875cf3a32bf9d",
++  "sourceReview:src/features/auth/currentNativeSession.ts#864f339efb4c2f0a89513819da987810a273adacf688188369cc9fbd552e052f",
+ ];
+diff --git a/src/features/privacy/registryIdsAuthentication2.ts b/src/features/privacy/registryIdsAuthentication2.ts
+--- a/src/features/privacy/registryIdsAuthentication2.ts
++++ b/src/features/privacy/registryIdsAuthentication2.ts
+@@ -110,4 +110,7 @@
+   "writer:src/features/oauth/tokens.ts#update:oauthAccessTokens",
+   "writer:src/features/oauth/tokens.ts#update:oauthAuthCodes",
+   "writer:src/features/oauth/tokens.ts#update:oauthRefreshTokens",
++  "writer:src/features/auth/currentAuthorityFence.ts#execute:sql",
++  "writer:src/features/auth/currentNativeSession.ts#execute:sql",
++  "writer:src/features/auth/currentNativeSession.ts#effect:caller_adapter",
+ ];

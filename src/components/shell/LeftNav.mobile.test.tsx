@@ -16,6 +16,28 @@ vi.stubGlobal("matchMedia", (media: string) => ({
 }));
 afterEach(cleanup);
 
+it.each(["Contacts", "Activities"])(
+  "closes the drawer on the first %s destination click",
+  async (label) => {
+    const user = userEvent.setup();
+    render(
+      <>
+        <header>
+          <MobileNavTrigger />
+        </header>
+        <LeftNav />
+      </>,
+    );
+    await user.click(
+      within(screen.getByRole("banner")).getByRole("button", { name: "Expand sidebar" }),
+    );
+    const dialog = await screen.findByRole("dialog", { name: "Primary" });
+    document.addEventListener("click", (event) => event.preventDefault(), { once: true });
+    await user.click(within(dialog).getByRole("link", { name: label }));
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  },
+);
+
 it("opens the Farsi navigation from the right and restores focus after Escape", async () => {
   const user = userEvent.setup();
   render(

@@ -1,0 +1,257 @@
+{
+  "owner": "Root",
+  "state": "UNFINISHED PRESERVATION - NOT FOR DEPLOYMENT",
+  "originalHead": "09288d518fd574fd069fb6a1dc670596f71a8831",
+  "branch": "codex/preserve-settings-20261102",
+  "sourceFiles": [
+    {
+      "status": " M",
+      "path": "src/components/shell/LeftNav.mobile.test.tsx",
+      "mode": 420,
+      "bytes": 2306,
+      "sha256": "0d0c2e58d4d672f07ebe6b6b982fff85a46da90006bc8c16d952e3c9725e2acb"
+    },
+    {
+      "status": " M",
+      "path": "src/components/shell/LeftNav.module.css",
+      "mode": 420,
+      "bytes": 17515,
+      "sha256": "81b21669b1e569789105ae4281d3ada7e3b30cb079c61267f028de57e4928199"
+    },
+    {
+      "status": " M",
+      "path": "src/components/shell/LeftNav.test.tsx",
+      "mode": 420,
+      "bytes": 12398,
+      "sha256": "d69c5c60a927b95253db332e7e7cd0acc5cc40240d4b2e61bc6a7973ba6a4e55"
+    },
+    {
+      "status": " M",
+      "path": "src/components/shell/LeftNav.tsx",
+      "mode": 420,
+      "bytes": 2141,
+      "sha256": "350311d6139058d990ec105ceec661f0c77b296ff28293be612c109c05f9e649"
+    },
+    {
+      "status": " M",
+      "path": "src/components/shell/NavIcons.module.css",
+      "mode": 420,
+      "bytes": 97,
+      "sha256": "301f94427b45c25bd448bd8775aa83183cb9305f44f523af67166b9b42a326ff"
+    },
+    {
+      "status": " M",
+      "path": "src/components/shell/NavIcons.test.tsx",
+      "mode": 420,
+      "bytes": 5157,
+      "sha256": "a7c8838e9966ad50f25d6f4336c0bc31a5852610944b28cf424c642987457735"
+    },
+    {
+      "status": " M",
+      "path": "src/components/shell/NavIcons.tsx",
+      "mode": 420,
+      "bytes": 2499,
+      "sha256": "0af1772c9034cb593eda9bdc197c1ae52276c6ad24588f110dfc4605041bf7c3"
+    },
+    {
+      "status": " M",
+      "path": "src/components/shell/SidebarChrome.tsx",
+      "mode": 420,
+      "bytes": 1036,
+      "sha256": "c1da3f4f70a023275e75c53fd631fe90116374e2a4d278496a51016dc9010857"
+    },
+    {
+      "status": " M",
+      "path": "src/components/shell/SidebarMenu.tsx",
+      "mode": 420,
+      "bytes": 4108,
+      "sha256": "6865239a9c9d91855967fb5ef46c41541b5368a1abdd98c31fa452a5847094e6"
+    },
+    {
+      "status": " M",
+      "path": "src/components/shell/SidebarMenuItem.tsx",
+      "mode": 420,
+      "bytes": 4991,
+      "sha256": "ebc976a742ce68f1dd01230d65fe6af77515121141c86b02eba03e6297025e31"
+    },
+    {
+      "status": " M",
+      "path": "src/constants/nav.ts",
+      "mode": 420,
+      "bytes": 1152,
+      "sha256": "2ae978a6b2103140e0ac37670ae444bdd5cda995be4be837d6c283cf79c7ae6f"
+    },
+    {
+      "status": " M",
+      "path": "src/features/i18n/messages/de.json",
+      "mode": 420,
+      "bytes": 3298,
+      "sha256": "c87768925833caa3903fef9c49782a429e65a505b93a169c6bf5e080d2c88025"
+    },
+    {
+      "status": " M",
+      "path": "src/features/i18n/messages/en.json",
+      "mode": 420,
+      "bytes": 2855,
+      "sha256": "182eeaf97cd9c20df205c858e152dd48ea2909786562f1b4220281a5fdbaf919"
+    },
+    {
+      "status": " M",
+      "path": "src/features/i18n/messages/fa.json",
+      "mode": 420,
+      "bytes": 3968,
+      "sha256": "5513b0f5fc262459bb715422817075d9729f28a98d718dc0084469ebed339da6"
+    },
+    {
+      "status": " M",
+      "path": "src/features/shortcuts/GlobalShortcuts.test.tsx",
+      "mode": 420,
+      "bytes": 5150,
+      "sha256": "aa37e1afd4ac4243ec74ca31906e518fd9a4d963c29389cfad698cf00f54dc67"
+    },
+    {
+      "status": " M",
+      "path": "src/features/shortcuts/GlobalShortcuts.tsx",
+      "mode": 420,
+      "bytes": 1211,
+      "sha256": "bc4b5820f25fa52e6fd5b73ddffa79dd898044876cc0cdac1e068a7e084bd1ae"
+    },
+    {
+      "status": "??",
+      "path": ".github/CODEOWNERS",
+      "mode": 420,
+      "bytes": 108,
+      "sha256": "3b8ef0531cc5288901c848d2986401e6a7bcb784ba552782936c36e8a2fd0a29"
+    },
+    {
+      "status": "??",
+      "path": ".github/PULL_REQUEST_TEMPLATE.md",
+      "mode": 420,
+      "bytes": 823,
+      "sha256": "99b1d4adf5ee0c9007f3bf4f5695e924280a24547d5c983f1259ef9088731c9b"
+    },
+    {
+      "status": "??",
+      "path": ".github/dependabot.yml",
+      "mode": 420,
+      "bytes": 1212,
+      "sha256": "cc88890c2b4bc034fdb8da958617b40fe3495ac83ad8385687b293df32257aae"
+    },
+    {
+      "status": "??",
+      "path": ".github/workflows/bun-audit.yml",
+      "mode": 420,
+      "bytes": 1224,
+      "sha256": "905ba1014b881aae8a02404aed4a43e4ea2ca49e4d727b4b03a336a751718fa1"
+    },
+    {
+      "status": "??",
+      "path": ".github/workflows/dependency-review.yml",
+      "mode": 420,
+      "bytes": 830,
+      "sha256": "c60c4e60d570b57b73567897d4dabc94f3ba2be2cda6fca034f3d802b1d6249c"
+    },
+    {
+      "status": "??",
+      "path": "CODE_OF_CONDUCT.md",
+      "mode": 420,
+      "bytes": 1340,
+      "sha256": "6c2a654828b13587cdbae357123eef95a39d32571df131da4e0bb9a7f6b2fbf7"
+    },
+    {
+      "status": "??",
+      "path": "CONTRIBUTING.md",
+      "mode": 420,
+      "bytes": 4057,
+      "sha256": "eef5c20fa3fb78dd7d0c5a6abc7e62acf5a197f854b7160403409781a48a1f35"
+    },
+    {
+      "status": "??",
+      "path": "docs/security-maintenance.md",
+      "mode": 420,
+      "bytes": 4519,
+      "sha256": "945eed699523950cabe6c2e3a0aaf8482677ceb24fbf9e8dafc16de9ff4b1254"
+    },
+    {
+      "status": "??",
+      "path": "src/components/shell/SidebarToggle.tsx",
+      "mode": 420,
+      "bytes": 1571,
+      "sha256": "93def58005c3694c3cf332ee1827f5772e7debb9fbc14224321a81ee30cbb5fb"
+    },
+    {
+      "status": "??",
+      "path": "src/components/shell/financeNavGlyphs.ts",
+      "mode": 420,
+      "bytes": 11461,
+      "sha256": "a67f338f40e37fd0db600fb45f2fe04146549aea0fea55eb494ade5893884678"
+    }
+  ],
+  "extraFiles": [
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-settings-ux/outputs/safe-stop-20261102/AUTHORIZATION.md",
+      "target": "AUTHORIZATION.md",
+      "sha256": "727c043bb42f0219ba60183959b0e66e6701e010c35a37cece7685f3af2d7b7c"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-settings-ux/outputs/safe-stop-20261102/status-draft.md",
+      "target": "status-draft.md",
+      "sha256": "32935982077e4eed9c1152ffd6c52ed4bf271b137665b72fbfdc215174ec0f6b"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-settings-ux/WARPDRIVE-OPERATING-AGREEMENT.md",
+      "target": "OPERATING-AGREEMENT.md",
+      "sha256": "1b2bb2b345f8424849c10d4d30dd37074c9d254c8bc8c2b45222e6d7d8bafdd0"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-settings-ux/WARPDRIVE-QUEUE.md",
+      "target": "QUEUE-at-stop.md",
+      "sha256": "21c449ceb3907c2c3b414598ed70a7481d750159ec166c3dfaa2b1df7750bb4c"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-settings-ux/outputs/current-authority-current-main-preparation-20261102/HANDOFF.md",
+      "target": "authority/current-authority-current-main-preparation-20261102/HANDOFF.md",
+      "sha256": "ce773e7aa057b931a08324f3c29e36d6cfca05d4fee505afbe5f3ed2dc3f6c3d"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-settings-ux/outputs/current-authority-current-main-preparation-20261102/combined.patch",
+      "target": "authority/current-authority-current-main-preparation-20261102/combined.patch",
+      "sha256": "ccc8ca3f1367ce598cfbad4d9014697194a85ab50bf9d3ca92a9c24797040e5c"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-settings-ux/outputs/current-authority-current-main-preparation-20261102/manifest.json",
+      "target": "authority/current-authority-current-main-preparation-20261102/manifest.json",
+      "sha256": "74ee5f1c52021d2ca638951b23da5aaadc51e18efc50ba6bcceaa35ffe656d85"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-settings-ux/outputs/current-authority-rc-green-20261102/HANDOFF.md",
+      "target": "authority/current-authority-rc-green-20261102/HANDOFF.md",
+      "sha256": "1c136308915620bd4d07be36b101bd1e557acd8b6f5c49d82c365f87739ac7ef"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-settings-ux/outputs/current-authority-rc-green-20261102/manifest.json",
+      "target": "authority/current-authority-rc-green-20261102/manifest.json",
+      "sha256": "ed9aed6bd9b657736d8749fc5ba6ceb8fe935db616031a392155cc9f704d4f72"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-settings-ux/outputs/current-authority-rc-green-20261102/source-pins.json",
+      "target": "authority/current-authority-rc-green-20261102/source-pins.json",
+      "sha256": "1dfc6812abeeec590eb0d931cb8f64d851b560b83f3e56f440b8664de3737d3f"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-settings-ux/outputs/current-authority-rc-green-20261102/qualification.json",
+      "target": "authority/current-authority-rc-green-20261102/qualification.json",
+      "sha256": "a3429f4832df200f10b4af82c102a6ce58371e0758d7fbd2d992dfc47cbc2b0a"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-settings-ux/outputs/current-authority-rc-green-20261102/execution-result.json",
+      "target": "authority/current-authority-rc-green-20261102/execution-result.json",
+      "sha256": "a043b8638b72c6385fdf33111536da25374a08938a598fef0bd890f8b612e47f"
+    }
+  ],
+  "qualification": "Published main09288d5 is separate. Sidebar/shortcut18 source plus8 governance files remain WIP; shortcut16 focused cases/Biome2 passed at recorded cut, whole sidebar browser/types/RTL/zoom checks outstanding. No safe-stop tests run.",
+  "limitations": "Do not deploy or merge this frozen full WIP cut. Existing main remains09288d5. No whole journey/roadmap acceptance. Premium excluded.",
+  "authorization": "Human safe-stop instruction verified in Integration chat on 2026-11-02; Root sole closer.",
+  "workspace": "/Users/ali/Developer/warpdrive-settings-ux",
+  "createdAt": "2026-11-02T07:19:27.419423+00:00"
+}
