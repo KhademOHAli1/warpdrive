@@ -1,0 +1,343 @@
+{
+  "schemaVersion": 1,
+  "state": "EXACT_HEAD_HOSTED_CI_SUCCESS",
+  "repository": "KhademOHAli1/warpdrive",
+  "head": "09288d518fd574fd069fb6a1dc670596f71a8831",
+  "increment": "Bounded public Privacy completion guards, projected core regressions, SHA companions and actual source inventory",
+  "observedAtUtc": "2026-11-02T07:17:43.817Z",
+  "observation": {
+    "startedAtUtc": "2026-11-02T07:00:22.843Z",
+    "deadlineUtc": "2026-11-02T07:30:22.843Z",
+    "finiteWindowMinutes": 30,
+    "terminalObservedAtUtc": "2026-11-02T07:17:22.280Z",
+    "snapshots": 18,
+    "withinWindow": true,
+    "noRerun": true,
+    "ended": true
+  },
+  "runs": [
+    {
+      "id": 41403094273,
+      "name": "Public Bun CI",
+      "head": "09288d518fd574fd069fb6a1dc670596f71a8831",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/41403094273",
+      "createdAtUtc": "2026-11-02T06:56:34Z",
+      "updatedAtUtc": "2026-11-02T07:16:59Z"
+    },
+    {
+      "id": 41403094209,
+      "name": "Delivery checks",
+      "head": "09288d518fd574fd069fb6a1dc670596f71a8831",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/41403094209",
+      "createdAtUtc": "2026-11-02T06:56:34Z",
+      "updatedAtUtc": "2026-11-02T06:56:47Z"
+    },
+    {
+      "id": 41403093251,
+      "name": "Push on main",
+      "head": "09288d518fd574fd069fb6a1dc670596f71a8831",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/41403093251",
+      "createdAtUtc": "2026-11-02T06:56:33Z",
+      "updatedAtUtc": "2026-11-02T06:59:50Z"
+    }
+  ],
+  "checks": [
+    {
+      "id": 125139001327,
+      "name": "Analyze (python)",
+      "head": "09288d518fd574fd069fb6a1dc670596f71a8831",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/41403093251/job/125139001327",
+      "startedAtUtc": "2026-11-02T06:56:38Z",
+      "completedAtUtc": "2026-11-02T06:57:35Z"
+    },
+    {
+      "id": 125139001240,
+      "name": "Analyze (javascript-typescript)",
+      "head": "09288d518fd574fd069fb6a1dc670596f71a8831",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/41403093251/job/125139001240",
+      "startedAtUtc": "2026-11-02T06:56:38Z",
+      "completedAtUtc": "2026-11-02T06:59:49Z"
+    },
+    {
+      "id": 125139001038,
+      "name": "Analyze (actions)",
+      "head": "09288d518fd574fd069fb6a1dc670596f71a8831",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/41403093251/job/125139001038",
+      "startedAtUtc": "2026-11-02T06:56:38Z",
+      "completedAtUtc": "2026-11-02T06:57:22Z"
+    },
+    {
+      "id": 125139000921,
+      "name": "Marketing site checks",
+      "head": "09288d518fd574fd069fb6a1dc670596f71a8831",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/41403094273/job/125139000921",
+      "startedAtUtc": "2026-11-02T06:56:42Z",
+      "completedAtUtc": "2026-11-02T06:57:13Z"
+    },
+    {
+      "id": 125139000548,
+      "name": "Documentation site checks",
+      "head": "09288d518fd574fd069fb6a1dc670596f71a8831",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/41403094273/job/125139000548",
+      "startedAtUtc": "2026-11-02T06:56:38Z",
+      "completedAtUtc": "2026-11-02T06:56:53Z"
+    },
+    {
+      "id": 125139000298,
+      "name": "CRM checks",
+      "head": "09288d518fd574fd069fb6a1dc670596f71a8831",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/41403094273/job/125139000298",
+      "startedAtUtc": "2026-11-02T06:56:38Z",
+      "completedAtUtc": "2026-11-02T07:16:58Z"
+    },
+    {
+      "id": 125139000050,
+      "name": "Delivery traceability",
+      "head": "09288d518fd574fd069fb6a1dc670596f71a8831",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/41403094209/job/125139000050",
+      "startedAtUtc": "2026-11-02T06:56:37Z",
+      "completedAtUtc": "2026-11-02T06:56:44Z"
+    },
+    {
+      "id": 125138999872,
+      "name": "Delivery tooling",
+      "head": "09288d518fd574fd069fb6a1dc670596f71a8831",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/41403094209/job/125138999872",
+      "startedAtUtc": "2026-11-02T06:56:38Z",
+      "completedAtUtc": "2026-11-02T06:56:46Z"
+    }
+  ],
+  "requiredChecks": {
+    "total": 8,
+    "success": 8,
+    "failed": 0,
+    "pending": 0
+  },
+  "crm": {
+    "jobId": 125139000298,
+    "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/41403094273/job/125139000298",
+    "steps": [
+      {
+        "number": 1,
+        "name": "Set up job",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "number": 2,
+        "name": "Check out source",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "number": 3,
+        "name": "Set up package-pinned Bun",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "number": 4,
+        "name": "Install locked app dependencies",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "number": 5,
+        "name": "Generate and check app types",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "number": 6,
+        "name": "Check translations and lint",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "number": 7,
+        "name": "Run app unit tests",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "number": 8,
+        "name": "Run app PostgreSQL integration tests",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "number": 9,
+        "name": "Build app with isolated validation placeholders",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "number": 10,
+        "name": "Build server entrypoints",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "number": 19,
+        "name": "Post Set up package-pinned Bun",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "number": 20,
+        "name": "Post Check out source",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "number": 21,
+        "name": "Complete job",
+        "status": "completed",
+        "conclusion": "success"
+      }
+    ],
+    "units": {
+      "filesPassed": 1206,
+      "filesSkipped": 1,
+      "filesTotal": 1207,
+      "testsPassed": 8812,
+      "testsSkipped": 3,
+      "testsTotal": 8815,
+      "durationSeconds": 520.89,
+      "evidence": "Actual completed exact-09288d5 CRM log; no parent counts reused"
+    },
+    "postgres": {
+      "filesPassed": 653,
+      "filesTotal": 653,
+      "testsPassed": 3131,
+      "testsTotal": 3131,
+      "testsFailed": 0,
+      "skipsReportedInSummary": 0,
+      "durationSeconds": 397.08,
+      "evidence": "Actual completed exact-09288d5 CRM log; no parent counts reused"
+    },
+    "publicGuardRegressions": {
+      "files": [
+        {
+          "path": "src/features/privacy/authorityCompletionExpiry.integration.test.ts",
+          "passed": 3
+        },
+        {
+          "path": "src/features/privacy/selfService.integration.test.ts",
+          "passed": 5
+        },
+        {
+          "path": "src/features/privacy/authorityAtomicity.integration.test.ts",
+          "passed": 2
+        }
+      ],
+      "totalPassed": 10,
+      "actualLogLines": [
+        "2026-11-02T07:11:56.6322041Z  ✓  integration  src/features/privacy/selfService.integration.test.ts (5 tests) 328ms",
+        "2026-11-02T07:13:31.2530798Z  ✓  integration  src/features/privacy/authorityCompletionExpiry.integration.test.ts (3 tests) 9616ms",
+        "2026-11-02T07:14:13.8715778Z  ✓  integration  src/features/privacy/authorityAtomicity.integration.test.ts (2 tests) 157ms"
+      ]
+    },
+    "summaryLines": [
+      "2026-11-02T07:08:00.4681183Z  Test Files  1206 passed | 1 skipped (1207)",
+      "2026-11-02T07:08:00.4713529Z       Tests  8812 passed | 3 skipped (8815)",
+      "2026-11-02T07:08:00.4723337Z    Duration  520.89s (tests 38%, import 30%, environment 23%, setup 5%, transform 3%)",
+      "2026-11-02T07:14:38.0110425Z  Test Files  653 passed (653)",
+      "2026-11-02T07:14:38.0123934Z       Tests  3131 passed (3131)",
+      "2026-11-02T07:14:38.0132877Z    Duration  397.08s (tests 74%, import 24%, transform 1%)"
+    ],
+    "appBuild": {
+      "result": "SUCCESS",
+      "staticPages": 67,
+      "output": [
+        "2026-11-02T07:15:52.7477965Z ✓ Compiled successfully in 73s",
+        "2026-11-02T07:16:32.6277845Z   Finished TypeScript in 39.3s ...",
+        "2026-11-02T07:16:37.8640577Z ✓ Generating static pages using 3 workers (67/67) in 2.6s"
+      ],
+      "environment": "Hosted isolated validation placeholders; not deployment or installed acceptance"
+    },
+    "serverBundles": {
+      "result": "SUCCESS",
+      "count": 5,
+      "outputs": [
+        "2026-11-02T07:16:55.6363422Z   dist/ws.mjs  170.1kb",
+        "2026-11-02T07:16:55.6482925Z   dist/migrate.mjs  190.3kb",
+        "2026-11-02T07:16:55.6600613Z   dist/sweep-spam.mjs  161.8kb",
+        "2026-11-02T07:16:55.6605937Z   dist/auth-operator.mjs  334.1kb",
+        "2026-11-02T07:16:55.7027820Z   dist/worker.mjs  1.7mb ⚠️"
+      ],
+      "bundleSizeWarningPreserved": "worker.mjs 1.7mb warning marker remains in completed log; build step succeeded"
+    },
+    "completedLog": {
+      "path": "hosted-ci-crm-job-125139000298-09288d5.log",
+      "bytes": 541655,
+      "sha256": "5566a0ab5111c221e9a291a8a1bdd32397f70dcb99a5b4c0b758bbb744a70224"
+    }
+  },
+  "gates": {
+    "typeGenerationAndFullConfiguredTypes": "SUCCESS",
+    "translationsBiomeFullESLint": "SUCCESS",
+    "units": "SUCCESS",
+    "postgres": "SUCCESS",
+    "appBuild67Pages": "SUCCESS",
+    "allFiveServerBundles": "SUCCESS",
+    "marketingSite": "SUCCESS",
+    "documentationSite": "SUCCESS",
+    "codeQLThreeAnalyses": "SUCCESS",
+    "deliveryTooling": "SUCCESS",
+    "deliveryTraceability": "SUCCESS"
+  },
+  "preservedHistory": {
+    "parent941Green": "../privacy-mounted-ui-ready-20261102/hosted-ci-final-941b004.json",
+    "parent7b80581Green": "../workflow-migration-compat-forward-repair-20261102/hosted-ci-final-7b80581.json",
+    "bf386afMarkdownFailure": "../workflow-canonical-preparation-20261102/hosted-ci-final-bf386af.json",
+    "df26904LegacySnapshotFixtureFailure": "../workflow-canonical-forward-format-20261102/hosted-ci-final-df26904.json",
+    "privateGuardRedGreen": "Private 4RED/11GREEN and current-main local public selection10 remain separate receipts; not relabelled as hosted evidence."
+  },
+  "limitations": [
+    "Hosted CI qualifies this exact published revision. It establishes no installed/provider/customer acceptance or broader Privacy capability.",
+    "No rollback-wait abort or COMMIT acknowledgement guarantee is claimed.",
+    "Private status/observation/UI/lint bundle, later feature work and DDL remain outside this checkpoint."
+  ],
+  "safeStop": {
+    "instructionReceived": true,
+    "onlyAlreadyRunningExactCIObserved": true,
+    "newJobsStarted": 0,
+    "featureFixesOrPublications": 0,
+    "observationEnded": true,
+    "noRemainingObserverLoop": true,
+    "rootOwnsFinalClosure": true
+  },
+  "operations": {
+    "readOnlyGitHubObservation": true,
+    "sourceEdits": false,
+    "indexOrRefMutations": false,
+    "pushes": false,
+    "reruns": false,
+    "localHeavyWork": false,
+    "otherChatMessages": false,
+    "onlyOwnedHostedCIArtifactsWritten": true
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "owner": "Calendar",
+  "branch": "codex/preserve-calendar-20261102",
+  "commit": "1e93e8e4f7fc67da3fa204b688731dc551334c4b",
+  "tree": "e92de163175a8c4985cd91f490e26dba7213d27d",
+  "sourceFiles": 299,
+  "extras": 25,
+  "remoteVerified": true,
+  "sourceIndexHeadStatusUnchanged": true,
+  "allPreservedBlobsVerified": true,
+  "mainMutated": false,
+  "deployment": false,
+  "ci": "intentionally skipped for unfinished preservation",
+  "at": "2026-11-02T07:30:36.459863+00:00"
+}

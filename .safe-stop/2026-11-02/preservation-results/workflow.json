@@ -1,0 +1,15 @@
+{
+  "owner": "Workflow",
+  "branch": "codex/preserve-workflow-20261102",
+  "commit": "4e0280e973aa04fe2fb1946c86b3509dbea8289b",
+  "tree": "d111079bf6c346e1eace259c00e3a40368c87c8f",
+  "sourceFiles": 76,
+  "extras": 81,
+  "remoteVerified": true,
+  "sourceIndexHeadStatusUnchanged": true,
+  "allPreservedBlobsVerified": true,
+  "mainMutated": false,
+  "deployment": false,
+  "ci": "intentionally skipped for unfinished preservation",
+  "at": "2026-11-02T07:26:21.283890+00:00"
+}
