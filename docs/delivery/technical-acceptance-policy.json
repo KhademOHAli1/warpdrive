@@ -20,11 +20,7 @@
     "delivery/mcp-issuer-response-20261102"
   ],
   "required_workflows": {
-    "403980173": [
-      "Analyze (javascript-typescript)",
-      "Analyze (actions)",
-      "Analyze (python)"
-    ]
+    "403980173": ["Analyze (javascript-typescript)", "Analyze (actions)", "Analyze (python)"]
   },
   "items": {
     "integration/CONN-001": {
