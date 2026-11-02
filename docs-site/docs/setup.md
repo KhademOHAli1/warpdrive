@@ -55,7 +55,8 @@ boot rather than misbehaving hours later.
 | `NEXT_PUBLIC_WS_URL` | `wss://crm.example.com/_ws` |
 | `WS_PUBLIC_URL` | `ws://ws:8080`, the internal Compose address |
 | `MINIO_ENDPOINT` | `https://s3.crm.example.com` |
-| `DATABASE_URL` | `postgres://warpdrive:warpdrive@postgres:5432/warpdrive` |
+| `POSTGRES_PASSWORD` | A unique generated password; required by Compose on new and existing volumes |
+| `DATABASE_URL` | `postgres://warpdrive:<same-password>@postgres:5432/warpdrive` |
 | `SEED_ADMIN_EMAIL` | Intended first administrator's exact email, required in production |
 | `ALLOW_FIRST_LOGIN_ADMIN` | Keep `false`; first sign-in does not create an administrator |
 
@@ -118,7 +119,7 @@ have configured a working provider; passkeys are enrolled after joining.
 | `AUTH_SMTP_HOST`, `AUTH_SMTP_PORT` | SMTP host and port, commonly port `587` |
 | `AUTH_SMTP_SECURE` | `false` uses STARTTLS, required in production; `true` uses implicit TLS, commonly port `465` |
 | `AUTH_SMTP_USER`, `AUTH_SMTP_PASSWORD` | SMTP credentials when required by the service |
-| `AUTH_TRUSTED_PROXY_HEADER` | Defaults to `none`; select a header only when trusted ingress strips or replaces client-supplied values |
+| `AUTH_TRUSTED_PROXY_HEADER` | Defaults to `none` for direct/local runs; production Compose sets `x-real-ip` because Caddy overwrites that header with the TCP peer address |
 
 The regular worker delivers the encrypted authentication outbox every minute.
 Queueing a message is not proof of delivery. Check SMTP and worker health, then

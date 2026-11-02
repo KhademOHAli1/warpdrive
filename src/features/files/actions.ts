@@ -138,12 +138,15 @@ export async function confirmUpload(
     await args.storage.deleteObject(row.s3Key, signal);
     return err(new AppError(ERROR_IDS.FILE_METADATA_MISMATCH, "metadata mismatch", {}));
   }
+  if (head.value.etag.length === 0) {
+    return err(new AppError(ERROR_IDS.FILE_METADATA_MISMATCH, "source ETag missing", {}));
+  }
 
   // Copy the validated object to an immutable key the uploader's still-valid presigned POST
   // can never target (its policy pins the upload key). Downloads serve ONLY this key, so an
   // overwrite of the upload key after confirm cannot change what a recipient receives (F33).
   const immutableKey = confirmedObjectKey(row.s3Key);
-  const copied = await args.storage.copyObject(row.s3Key, immutableKey, signal);
+  const copied = await args.storage.copyObject(row.s3Key, immutableKey, signal, head.value.etag);
   if (!copied.ok) return copied;
   signal.throwIfAborted();
 
@@ -152,6 +155,13 @@ export async function confirmUpload(
   const confirmedHead = await args.storage.headObject(immutableKey, signal);
   if (!confirmedHead.ok) return confirmedHead;
   signal.throwIfAborted();
+  if (
+    confirmedHead.value.size !== row.sizeBytes ||
+    confirmedHead.value.contentType !== row.contentType
+  ) {
+    await args.storage.deleteObject(immutableKey, signal);
+    return err(new AppError(ERROR_IDS.FILE_METADATA_MISMATCH, "confirmed metadata mismatch", {}));
+  }
 
   await db
     .update(files)

@@ -11,6 +11,12 @@ import { seedUser } from "@/db/testing/factories";
 import { getLeadRelations } from "./leadRepo";
 
 const sig = () => new AbortController().signal;
+const actor = (id: string) => ({
+  id,
+  type: "regular" as const,
+  isActive: true,
+  groupIds: new Set<string>(),
+});
 
 async function insertLead(
   db: Parameters<Parameters<typeof withTestDb>[0]>[0],
@@ -50,7 +56,7 @@ describe("getLeadRelations", () => {
       if (org === undefined || person === undefined) throw new Error("seed failed");
       const lead = await insertLead(db, owner.id, { personId: person.id, orgId: org.id });
 
-      const rel = await getLeadRelations(db, lead, sig());
+      const rel = await getLeadRelations(db, actor(owner.id), lead, sig());
       expect(rel.org?.id).toBe(org.id);
       expect(rel.org?.domain).toBe("acme.com");
       expect(rel.person?.id).toBe(person.id);
@@ -62,7 +68,7 @@ describe("getLeadRelations", () => {
     await withTestDb(async (db) => {
       const owner = await seedUser(db);
       const lead = await insertLead(db, owner.id, { personId: null, orgId: null });
-      const rel = await getLeadRelations(db, lead, sig());
+      const rel = await getLeadRelations(db, actor(owner.id), lead, sig());
       expect(rel.person).toBeNull();
       expect(rel.org).toBeNull();
     });
@@ -87,7 +93,7 @@ describe("getLeadRelations", () => {
       if (org === undefined || person === undefined) throw new Error("seed failed");
       const lead = await insertLead(db, owner.id, { personId: person.id, orgId: org.id });
 
-      const rel = await getLeadRelations(db, lead, sig());
+      const rel = await getLeadRelations(db, actor(owner.id), lead, sig());
       expect(rel.person).toBeNull();
       expect(rel.org).toBeNull();
     });

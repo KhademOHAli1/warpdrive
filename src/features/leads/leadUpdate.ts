@@ -13,6 +13,7 @@ import { syncEntityLabelNames } from "@/features/labels/labelsRepo.entities";
 import { mayTransferOwner, toTransferActor } from "@/features/permissions/mayTransferOwner";
 import { err, ok, type Result } from "@/types/result";
 import type { LeadSession } from "./leadActions";
+import { canLeadAction, leadActionClause } from "./leadWriteAuth";
 import { type LeadUpdateInput, leadUpdateInput } from "./schemas";
 import { leadVisibilityClause } from "./visibility";
 
@@ -92,6 +93,30 @@ export async function updateLead(
   const input = parsed.data;
   signal.throwIfAborted();
 
+  // Load under the visibility gate (404-on-invisible): an invisible lead must not leak existence
+  // via a distinguishable CAS-mismatch response.
+  const [visible] = await db
+    .select({
+      id: leads.id,
+      ownerId: leads.ownerId,
+      visibilityLevel: leads.visibilityLevel,
+      visibilityGroupId: leads.visibilityGroupId,
+      visibleToUserIds: leads.visibleToUserIds,
+    })
+    .from(leads)
+    .where(and(eq(leads.id, input.leadId), isNull(leads.deletedAt), leadVisibilityClause(session)));
+  signal.throwIfAborted();
+  if (visible === undefined) {
+    return err(
+      new AppError(ERROR_IDS.LEAD_NOT_FOUND, "Lead not found or not visible", {
+        leadId: input.leadId,
+      }),
+    );
+  }
+  if (!canLeadAction(session, "deal.edit", visible)) {
+    return err(new AppError(ERROR_IDS.PERM_DENIED, "Not permitted to edit this lead"));
+  }
+
   if (input.ownerId !== undefined) {
     const ownerCheck = await checkOwnerChange(db, session, input.leadId, input.ownerId, signal);
     if (!ownerCheck.ok) return ownerCheck;
@@ -102,21 +127,6 @@ export async function updateLead(
     const validated = await validateCustomFieldsPartial(db, "lead", input.customFields, signal);
     if (!validated.ok) return validated;
     customFields = validated.value;
-  }
-
-  // Load under the visibility gate (404-on-invisible): an invisible lead must not leak existence
-  // via a distinguishable CAS-mismatch response.
-  const [visible] = await db
-    .select({ id: leads.id })
-    .from(leads)
-    .where(and(eq(leads.id, input.leadId), isNull(leads.deletedAt), leadVisibilityClause(session)));
-  signal.throwIfAborted();
-  if (visible === undefined) {
-    return err(
-      new AppError(ERROR_IDS.LEAD_NOT_FOUND, "Lead not found or not visible", {
-        leadId: input.leadId,
-      }),
-    );
   }
 
   const patch = buildPatch(input, customFields, new Date());
@@ -130,6 +140,8 @@ export async function updateLead(
       and(
         eq(leads.id, input.leadId),
         isNull(leads.deletedAt),
+        leadVisibilityClause(session),
+        leadActionClause(session, "deal.edit"),
         sql`date_trunc('milliseconds', ${leads.updatedAt}) = ${new Date(input.expectedUpdatedAt)}`,
       ),
     )

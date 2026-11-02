@@ -47,10 +47,19 @@ export interface StorageClient {
     sourceKey: string,
     destKey: string,
     signal: AbortSignal,
+    expectedSourceEtag?: string,
+  ): Promise<Result<void, AppError>>;
+  // Store bytes already inspected by the server under a key that a presigned
+  // upload cannot target. Avatars use this instead of copying a mutable source.
+  putObjectBytes(
+    key: string,
+    bytes: Buffer,
+    contentType: string,
+    signal: AbortSignal,
   ): Promise<Result<void, AppError>>;
   deleteObject(key: string, signal: AbortSignal): Promise<Result<void, AppError>>;
-  // Fetch the raw bytes of an object. Used at send-time to inline attachments into
-  // the MIME message. Never used for presigned download URLs served to browsers.
+  // Fetch the raw bytes of an object for server-side inspection or attachment
+  // delivery. Never used for presigned download URLs served to browsers.
   getObjectBytes(key: string, signal: AbortSignal): Promise<Result<Buffer, AppError>>;
 }
 
@@ -148,20 +157,43 @@ class MinioStorageClient implements StorageClient {
     sourceKey: string,
     destKey: string,
     signal: AbortSignal,
+    expectedSourceEtag?: string,
   ): Promise<Result<void, AppError>> {
     signal.throwIfAborted();
     try {
-      // CopyConditions left empty: an unconditional server-side copy within the bucket.
+      if (expectedSourceEtag === "") {
+        return err(new AppError(ERROR_IDS.FILE_METADATA_MISMATCH, "source ETag missing", {}));
+      }
+      const conditions = new Minio.CopyConditions();
+      if (expectedSourceEtag !== undefined) conditions.setMatchETag(expectedSourceEtag);
       await this.client.copyObject(
         env.MINIO_BUCKET,
         destKey,
         `/${env.MINIO_BUCKET}/${sourceKey}`,
-        new Minio.CopyConditions(),
+        conditions,
       );
       signal.throwIfAborted();
       return ok(undefined);
     } catch (cause) {
       return err(storageErr(cause, "copy object failed", { sourceKey, destKey }));
+    }
+  }
+
+  async putObjectBytes(
+    key: string,
+    bytes: Buffer,
+    contentType: string,
+    signal: AbortSignal,
+  ): Promise<Result<void, AppError>> {
+    signal.throwIfAborted();
+    try {
+      await this.client.putObject(env.MINIO_BUCKET, key, bytes, bytes.length, {
+        "Content-Type": contentType,
+      });
+      signal.throwIfAborted();
+      return ok(undefined);
+    } catch (cause) {
+      return err(storageErr(cause, "put object bytes failed", { key }));
     }
   }
 

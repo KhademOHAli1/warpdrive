@@ -14,6 +14,7 @@ function fakeStorage(over: Partial<StorageClient> = {}): StorageClient {
     headObject: () => Promise.resolve(ok({ size: 10, etag: "e", contentType: "text/csv" })),
     presignGet: () => Promise.resolve(ok("http://get")),
     copyObject: () => Promise.resolve(ok(undefined)),
+    putObjectBytes: () => Promise.resolve(ok(undefined)),
     deleteObject: () => Promise.resolve(ok(undefined)),
     getObjectBytes: () => Promise.resolve(ok(Buffer.from("Name\nA"))),
     ...over,

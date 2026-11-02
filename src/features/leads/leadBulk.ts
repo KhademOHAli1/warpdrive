@@ -8,6 +8,7 @@ import { syncEntityLabelNames } from "@/features/labels/labelsRepo.entities";
 import { mayTransferOwner, toTransferActor } from "@/features/permissions/mayTransferOwner";
 import { err, ok, type Result } from "@/types/result";
 import type { LeadSession } from "./leadActions";
+import { leadActionClause } from "./leadWriteAuth";
 import { type BulkUpdateLeadsInput, bulkUpdateLeadsInput } from "./schemas";
 import { leadVisibilityClause } from "./visibility";
 
@@ -35,6 +36,8 @@ export async function bulkUpdateLeads(
 ): Promise<Result<{ updated: number; skipped: number }, AppError>> {
   const input = bulkUpdateLeadsInput.parse(raw);
   signal.throwIfAborted();
+  if (session.isAdmin !== true && session.flags["bulk.edit"] !== true)
+    return err(new AppError(ERROR_IDS.PERM_DENIED, "bulk.edit capability required"));
 
   const transferActor = toTransferActor(session);
   const ownerScopedToSelf =
@@ -61,9 +64,14 @@ export async function bulkUpdateLeads(
 
   const uniqueIds = [...new Set(input.ids)];
   const includeDeleted = input.change.deleted === false;
-  const predicates = [inArray(leads.id, uniqueIds), leadVisibilityClause(session)];
+  const predicates = [
+    inArray(leads.id, uniqueIds),
+    leadVisibilityClause(session),
+    leadActionClause(session, "deal.edit"),
+  ];
   if (!includeDeleted) predicates.push(isNull(leads.deletedAt));
   if (ownerScopedToSelf) predicates.push(eq(leads.ownerId, session.userId));
+  if (input.change.deleted !== undefined) predicates.push(leadActionClause(session, "deal.delete"));
 
   const updatedRows = await db
     .update(leads)

@@ -34,7 +34,8 @@ Fill it in. The deployment-specific values:
 | `NEXT_PUBLIC_WS_URL`      | `wss://crm.example.com/_ws`                                                 |
 | `WS_PUBLIC_URL`           | `ws://ws:8080` (internal compose address)                                   |
 | `MINIO_ENDPOINT`          | `https://s3.crm.example.com` (public: the browser uploads directly here)    |
-| `DATABASE_URL`            | `postgres://warpdrive:warpdrive@postgres:5432/warpdrive`                    |
+| `POSTGRES_PASSWORD`       | a unique generated password for a new database volume                       |
+| `DATABASE_URL`            | `postgres://warpdrive:<same-password>@postgres:5432/warpdrive`              |
 | `SEED_ADMIN_EMAIL`        | the first admin's email (required in production)                            |
 | `ALLOW_FIRST_LOGIN_ADMIN` | `false` (the env boundary rejects `true` in production)                     |
 | `AUTH_SECRET`             | a dedicated random secret of at least 32 characters, stable across restarts |
@@ -51,6 +52,8 @@ openssl rand -base64 32          # -> TOKEN_ENCRYPTION_KEY
 openssl rand -hex 32             # -> WS_TICKET_SECRET
 # a separate random secret for Better Auth
 openssl rand -hex 32             # -> AUTH_SECRET
+# a separate database password; hex needs no URL escaping in DATABASE_URL
+openssl rand -hex 32             # -> POSTGRES_PASSWORD and the password in DATABASE_URL
 # MinIO credentials
 openssl rand -hex 16             # -> MINIO_ACCESS_KEY / MINIO_SECRET_KEY
 ```
@@ -122,6 +125,13 @@ is missing, and because two items are load-bearing assumptions rather than setti
   client address; see `src/constants/rateLimits.ts`. The tracking endpoints never fail a request
   when over the limit, they only skip the recording, so a real recipient's click still reaches
   the real destination.
+- **Native-auth client identity.** The production Caddy vhost overwrites `X-Real-IP` with its
+  actual TCP peer address, and Compose sets `AUTH_TRUSTED_PROXY_HEADER=x-real-ip` only for the app
+  behind that proxy. This keeps one client's auth attempts from consuming every user's allowance.
+  The local/dev Compose override resets the setting to `none` because it exposes the app port
+  directly, where a caller could forge that header. If a CDN or another proxy is placed before
+  Caddy, configure trusted proxy handling for that specific ingress before relying on per-client
+  identity; otherwise Caddy sees the proxy as one peer.
 - **This depends on Caddy being the only way in.** The limiter identifies a caller from the last
   `X-Forwarded-For` entry, which is trustworthy only because Caddy appends the true peer address
   to whatever the client sent. Publish a host port for `app` and that header becomes entirely
@@ -129,10 +139,14 @@ is missing, and because two items are load-bearing assumptions rather than setti
   nothing. Keep Caddy as the sole public listener.
 - **WebSocket bounds.** A socket that connects without authenticating is closed after 10s, frames
   are capped at 64 KB, and total connections at 1000 (`src/constants/wsLimits.ts`).
-- **Postgres credentials.** `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_DB` are overridable
-  and fall back to `warpdrive`. Postgres applies the password at initdb only, so pick it on a
-  fresh deploy and keep it identical to the password in `DATABASE_URL`; setting it against an
-  existing `pgdata` volume does not rotate anything and only breaks the connection string.
+- **Postgres credentials.** Compose requires `POSTGRES_PASSWORD`; there is no password fallback.
+  Set a unique value before the first start and use that same value in `DATABASE_URL`. Postgres
+  applies this setting only when it initializes a new `pgdata` volume. For an existing volume,
+  first set `POSTGRES_PASSWORD` to the database's _current_ password before upgrading. Changing
+  the environment variable alone does not rotate the database role. To rotate a historical
+  default, change the role password in PostgreSQL, then update `POSTGRES_PASSWORD` and
+  `DATABASE_URL` together before restarting the application services. Keep Postgres off host
+  ports in production.
 - **MCP client registration.** Open by default so MCP clients can self-onboard. See
   [mcp-server.md](mcp-server.md) for why you may want `OAUTH_REGISTRATION=disabled` once your
   clients are connected.

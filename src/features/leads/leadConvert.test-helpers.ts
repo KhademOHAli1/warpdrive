@@ -17,7 +17,7 @@ export function session(userId: string, extra: Partial<LeadSession> = {}): LeadS
     visibilityGroupIds: [],
     managedUserIds: [] as string[],
     primaryVisibilityGroupId: null,
-    flags: { "deal.create": true },
+    flags: { "deal.create": true, "deal.edit_own": true },
     ...extra,
   };
 }

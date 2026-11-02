@@ -70,8 +70,8 @@ interface ConfirmArgs {
 // object's declared Content-Type, so a HEAD only echoes the client's requested type and cannot
 // detect a client that declared image/png but POSTed other bytes. Sniffing the actual magic bytes
 // (and re-checking size on the real object) is the true "is this an image under the cap" gate;
-// validating before the copy means a bad upload never overwrites the user's current avatar. Only
-// then copy to the confirmed key (which the still-valid presigned POST can never target, F33) and
+// writing the already inspected bytes means a replacement upload cannot change what is confirmed.
+// The confirmed key cannot be targeted by the still-valid presigned POST (F33). Finally,
 // point avatar_url at a freshly versioned serve URL that busts the browser cache.
 export async function confirmAvatarUpload(
   db: Db,
@@ -86,19 +86,16 @@ export async function confirmAvatarUpload(
   if (!bytes.ok) return bytes;
   signal.throwIfAborted();
 
-  if (
-    bytes.value.length === 0 ||
-    bytes.value.length > AVATAR_MAX_BYTES ||
-    sniffImageType(bytes.value) === null
-  ) {
+  const imageType = sniffImageType(bytes.value);
+  if (bytes.value.length === 0 || bytes.value.length > AVATAR_MAX_BYTES || imageType === null) {
     // Reject and remove the upload object so no orphan is left behind. The confirmed key (the
     // user's current avatar, if any) is untouched.
     await args.storage.deleteObject(uploadKey, signal);
     return err(invalid("uploaded object is not a valid avatar image"));
   }
 
-  const copied = await args.storage.copyObject(uploadKey, destKey, signal);
-  if (!copied.ok) return copied;
+  const stored = await args.storage.putObjectBytes(destKey, bytes.value, imageType, signal);
+  if (!stored.ok) return stored;
   signal.throwIfAborted();
 
   const url = avatarPublicUrl(args.actor.id, randomUUID());
