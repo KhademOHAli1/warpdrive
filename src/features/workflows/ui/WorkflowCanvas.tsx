@@ -22,6 +22,7 @@ import {
 } from "../graphEditor";
 import { positionFor } from "../nodeLayout";
 import { displayNodeName } from "../nodeNames";
+import { orderedWorkflowNodes } from "../nodeOrder";
 import type { WorkflowDefinition, WorkflowEdge } from "../schemas";
 import { ConnectionFeedback } from "./ConnectionFeedback";
 import { ResponsiveViewport, type RevealNode } from "./ResponsiveViewport";
@@ -81,13 +82,17 @@ export function WorkflowCanvas({
     const node = definition.nodes.find((item) => item.id === id);
     return node === undefined ? t("unavailableValue") : displayNodeName(node, locale);
   }
+  const nodeIndices = new Map(
+    orderedWorkflowNodes(definition).map((node, index) => [node.id, index]),
+  );
+  const uniqueIds = nodeIndices.size === definition.nodes.length;
   const nodes: CanvasNode[] = definition.nodes.map((node, index) => ({
     id: node.id,
     type: "workflow",
     data: {
       node,
       invalid: invalidNodes.has(node.id),
-      index,
+      index: uniqueIds ? (nodeIndices.get(node.id) ?? index) : index,
       completed: completedNodes?.has(node.id) === true,
       onAdd: editable ? onAdd : undefined,
       outputs: definition.edges.filter((edge) => edge.from === node.id).map((edge) => edge.port),

@@ -1,0 +1,33 @@
+{
+  "at": "2026-11-02T03:27:02.492575+00:00",
+  "owned_cwd_sample": [
+    {
+      "pid": 33909,
+      "command": "time",
+      "cwd": "/Users/ali/.codex/worktrees/workflow-roadmap-owned/warpdrive-builder-ux-20261031",
+      "rss_kib": 1376
+    },
+    {
+      "pid": 33910,
+      "command": "gtimeout",
+      "cwd": "/Users/ali/.codex/worktrees/workflow-roadmap-owned/warpdrive-builder-ux-20261031",
+      "rss_kib": 1824
+    },
+    {
+      "pid": 33911,
+      "command": "bun",
+      "cwd": "/Users/ali/.codex/worktrees/workflow-roadmap-owned/warpdrive-builder-ux-20261031",
+      "rss_kib": 210432
+    },
+    {
+      "pid": 33912,
+      "command": "bun",
+      "cwd": "/Users/ali/.codex/worktrees/workflow-roadmap-owned/warpdrive-builder-ux-20261031",
+      "rss_kib": 124656
+    }
+  ],
+  "sample_rss_kib": 338288,
+  "pressure": "1",
+  "available": "The system has 38654705664 (2359296 pages with a page size of 16384).\nSystem-wide memory free percentage: 53%",
+  "limit": "One early sample only, not continuouspeak."
+}

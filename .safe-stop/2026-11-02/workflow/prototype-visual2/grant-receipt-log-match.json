@@ -1,0 +1,23 @@
+[
+  {
+    "timestamp": "2026-11-02T05:35:39.177Z",
+    "type": "response_item",
+    "payload_type": "function_call_output",
+    "role": null,
+    "source": "Own exactchat receipt, boundedrecent32MiB; noforeignsession read."
+  },
+  {
+    "timestamp": "2026-11-02T05:35:39.178Z",
+    "type": "event_msg",
+    "payload_type": "item_completed",
+    "role": null,
+    "source": "Own exactchat receipt, boundedrecent32MiB; noforeignsession read."
+  },
+  {
+    "timestamp": "2026-11-02T05:46:45.396Z",
+    "type": "response_item",
+    "payload_type": "custom_tool_call",
+    "role": null,
+    "source": "Own exactchat receipt, boundedrecent32MiB; noforeignsession read."
+  }
+]

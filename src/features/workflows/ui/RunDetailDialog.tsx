@@ -15,17 +15,20 @@ export function RunDetailDialog({
   workflowId,
   runId,
   onClose,
+  onCloseAutoFocus,
 }: {
   workflowId: string;
   runId: string;
   onClose: () => void;
+  onCloseAutoFocus?: (event: Event) => void;
 }) {
   const t = useAppTranslations("workflows");
   const query = trpc.workflows.run.useQuery(
     { id: workflowId, runId },
     {
       refetchInterval: (state) =>
-        state.state.data?.status === "queued" || state.state.data?.status === "running"
+        state.state.data !== undefined &&
+        ["queued", "running", "waiting"].includes(state.state.data.status)
           ? 2500
           : false,
     },
@@ -37,7 +40,10 @@ export function RunDetailDialog({
         if (!open) onClose();
       }}
     >
-      <DialogContent className="flex h-[calc(100dvh-24px)] w-[calc(100vw-24px)] max-w-none flex-col gap-4 overflow-hidden p-0 sm:max-w-none">
+      <DialogContent
+        className="flex h-[calc(100dvh-24px)] w-[calc(100vw-24px)] max-w-none flex-col gap-4 overflow-hidden p-0 sm:max-w-none"
+        onCloseAutoFocus={onCloseAutoFocus}
+      >
         <DialogHeader className="px-5 pt-5 pe-12">
           <DialogTitle>{t("runDetails")}</DialogTitle>
           <DialogDescription>{t("historicalGraphHint")}</DialogDescription>

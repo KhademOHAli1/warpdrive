@@ -1,0 +1,18 @@
+{
+  "at": "2026-11-02T05:02:07.139907+00:00",
+  "status": "PRIVATE_EDITOR12_READY_FOR_SEQUENTIAL_MAIN_RECONCILIATION",
+  "code_manifest_sha256": "e665cb7af788f7c5bac003173d9ac6e598ed15e89688899bbd4ed0967196ba60",
+  "code_patch_sha256": "2327c99478345ae1c133969eed24f0178d56acb4fbca4f5ba0fa3f7dec42b4b0",
+  "documentation_manifest_sha256": "51c268114d7690f8b4317936b07373d4bd997e64226b0ad320e3c0dd8b9f1d1d",
+  "static_receipt": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/static12-observed.json",
+  "static_receipt_sha256": "21162dc9c76a619bf08dfcdb668439414b56fd0ba2c740cb844a0d7ad8d74eee",
+  "static335_unchanged": true,
+  "affected34": "Previously observed PASS, retained without repeat",
+  "source_reviews": [
+    "review.json",
+    "review-final.json"
+  ],
+  "fixtures3": "Separately reviewed tooling, statics PASS but not part of shipping editor12",
+  "main_integration": "Main alone reconciles after current duration CI is green; preserve df26904 table formatting and Main delivery notices. Apply additive documentation patch; do not overwrite current Main with old full payload documents. Run required Markdown formatting checks at landing.",
+  "limits": "No application/browser/AT/provider/installed/fullWF acceptance added. Core51 remains immutable. Three Biome infos remain unchanged."
+}

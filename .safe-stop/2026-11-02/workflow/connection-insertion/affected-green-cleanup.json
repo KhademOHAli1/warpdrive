@@ -1,0 +1,24 @@
+{
+  "at": "2026-11-02T03:39:55.860221+00:00",
+  "owned_cwd_after": [],
+  "source_hashes_unchanged": true,
+  "all_four_dotenv_absent": true,
+  "pressure": "1",
+  "available": "The system has 38654705664 (2359296 pages with a page size of 16384).\nSystem-wide memory free percentage: 54%",
+  "log_sha256": "7c5ad0b233435bec9faf1b12e2c899e7c24c873090499b930d23d19144dcdf8e",
+  "summary_lines": [
+    " \u2713 |unit| src/features/workflows/ui/ConnectionInsertion.test.tsx (6 tests) 445ms",
+    " \u2713 |unit| src/features/workflows/ui/DurationWaitAuthoring.test.tsx (3 tests) 399ms",
+    " \u2713 |unit| src/features/workflows/ui/NodePalette.numbering.test.tsx (4 tests) 103ms",
+    " \u2713 |unit| src/features/workflows/ui/NodePalette.test.tsx (1 test) 83ms",
+    " \u2713 |unit| src/features/workflows/connectionInsertion.test.ts (4 tests) 7ms",
+    " \u2713 |unit| src/features/workflows/ui/useConnectionGestures.test.tsx (2 tests) 11ms",
+    " \u2713 |unit| src/features/workflows/graphEditor.test.ts (5 tests) 4ms",
+    " \u2713 |unit| src/features/workflows/connectionGestures.test.ts (4 tests) 3ms",
+    " Test Files  8 passed (8)",
+    "      Tests  29 passed (29)",
+    "   Duration  3.58s (tests 32%, environment 30%, import 24%, transform 7%, setup 6%)",
+    "        4.23 real         4.48 user         0.97 sys",
+    "           377143296  maximum resident set size"
+  ]
+}

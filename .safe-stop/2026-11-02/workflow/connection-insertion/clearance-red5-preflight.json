@@ -1,0 +1,28 @@
+{
+  "at": "2026-11-02T03:49:58.142736+00:00",
+  "status": "ADMITTED_CLEARANCE_TEST_FIRST_NO_FURTHER_PRODUCTION_EDIT",
+  "cwd": "/Users/ali/.codex/worktrees/workflow-roadmap-owned/warpdrive-builder-ux-20261031",
+  "resources": {
+    "pressure": 1,
+    "available_percent": 56,
+    "free_bytes": 15810412544
+  },
+  "source_hashes": {
+    "src/features/workflows/nodeLayout.ts": "55a5a941d04b399453a9ac7ed0b5c5318257b058d852c2dbefa7dd893eba839a",
+    "src/features/workflows/nodePlacement.test.ts": "7a6f7253ac0d3f3d48995b36078775cb9be579889fb8a5fd651caf7c112bc57a",
+    "src/features/workflows/ui/WorkflowNodeCard.tsx": "fce5c4ea99c23ae22daca7df7ea2c54e0cde93c195c4a6151036b17cc74b7748",
+    "src/features/workflows/ui/NodeSummary.tsx": "553d1cc6da747d84e90f066b448e70f9df042f8ae52cde7de291a0d0b98885c0",
+    "src/features/workflows/connectionGestures.ts": "f151f3c795c425eec2ea1eb47c407d0a943cee0f3801ccf5a30beb7ee4185251",
+    "src/features/workflows/ui/BuilderWorkspace.tsx": "4d74f6fcbe559f96e1b543cc4865e70d66e19cb00c5753dd89a192938f5c8333"
+  },
+  "expected_unobserved": {
+    "clearance_RED": 3,
+    "bounds_controls": 2
+  },
+  "log": "/tmp/warpdrive-workflow-connection-insertion-clearance-red5-20261102-01.log",
+  "BUN_OPTIONS": "--no-env-file",
+  "all_four_dotenv_absent": true,
+  "vite_env_dir": false,
+  "limit_seconds_including_cleanup": 60,
+  "meaning": "Current midpoint offers130px initially/65px on repeatedinsertion. Propertytests require existing360x260layoutcellclearance; this is layoutmath,not actualrenderproof."
+}

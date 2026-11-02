@@ -210,3 +210,23 @@ Pointer feel is evaluated in the running Warpdrive preview, not inferred from st
 forgiving port targets and card drops; preflight validation; original-edge preservation after
 rejection/cancellation; atomic connected insertion; one undo entry per completed drag; and
 readable explicit step navigation. See [interaction review](builder-interaction-review.md).
+
+## M08 reference continuation, 1 November 2026
+
+The newly available Mobbin connector returned the exact
+[Filtering and sorting automations flow](https://mobbin.com/flows/c2aa3131-29ef-4ffc-8999-824194e5829d)
+on a narrow query. Only preview frames 1, 4 and 7 of the seven-frame capture were returned
+and visually inspected. This supplements the original browser notes; it is not a complete
+captured-flow review or a live Attio execution test.
+
+| Frame | Visible evidence | WF-016 implication |
+| --- | --- | --- |
+| 1, screen `1f36563f-086f-43e5-b675-b2040a8a68d0` | Library columns distinguish workflow, runs, status, creator and publication date; live/draft labels and publication groups are visible alongside sort, filter, search and creation controls. | Keep compact readable metadata and make draft/publication/active state explicit within Warpdrive's existing table style. |
+| 4, screen `0395e765-bdb6-4360-8c61-3d4b9b677829` | Name sorting is selected; an open filter menu offers creator metadata. | Show the current sort criterion and understandable available filters. A creator filter is not evidence of execution-owner authority. |
+| 7, screen `cd7a22ff-25b1-4535-a4ce-fd64610629b5` | A removable creator-exclusion filter chip remains beside name sorting; the list shows a generic empty state and creation action. | Use readable removable chips and a matching-empty state with Clear filters. Clear-filter behavior is a Warpdrive requirement, not observed interaction in this preview. |
+
+The connector did not expose frames 2, 3, 5 or 6. These new previews do not establish a
+status-filter menu, creator picker/operator interaction, sort-menu options/direction or
+execution-owner filtering. The partial original frame-2 observations above remain historical
+evidence with their stated limits. No assets, collections or comments were saved. WF-002
+remains in progress while the required complete sequences are unreviewed.

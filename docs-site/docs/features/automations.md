@@ -5,20 +5,28 @@ description: "Connect nodes, configure conditional branches, simulate, publish, 
 
 # Visual workflows
 
-**Early access:** create a process by connecting a manual start, deal-read nodes, conditions,
-and follow-up tasks. Automatic CRM triggers, waits, email, and provider integrations remain
-in development. Existing email scheduling and reminders keep their existing workers.
+**Early access:** connect a manual start, deal reads, conditions, fixed waits, and follow-up
+tasks. Automatic CRM triggers, email, and provider integrations remain in development.
+Existing email scheduling and reminders keep their existing workers.
 
 ## Start a workflow
 
-Open **Workflows** in the sidebar and choose **New workflow**. Select a follow-up template
+Open **Workflows** in the sidebar and choose **New workflow**. Select the built-in follow-up starter
 or a blank canvas with just the manual start, then give the workflow a name.
 
-**Add node** offers **Read deal**, **Create task**, and **Condition**. Each new node starts
+**Add node** offers **Read deal**, **Create task**, **Condition**, and **Wait**. Each new node starts
 unconnected when added from the toolbar. To extend a specific path, use **+ Next step**
 on a node or **Add a new connected step** in its Connections panel. Conditions offer an
 independent add control for each outcome. The searchable picker identifies the source and
 connects the chosen step in one edit.
+
+To insert a step into an existing path, select the node immediately before it, open
+**Connections**, and choose **Insert a step here**. The picker offers **Read deal**,
+**Create task**, and **Wait** for this connection. Choosing a step retains the downstream path
+and existing step settings and mappings. Existing steps keep their positions; the inserted step is placed in
+a clear space and opens selected in **Configure**, with **Step name** focused. Closing the
+picker leaves the graph unchanged. To add a **Condition**, use a free output's add control or
+**Add node**, then explicitly connect both condition outcomes.
 
 ## Connect the process
 
@@ -59,6 +67,11 @@ Selecting a step from the selector or issue list brings it into view at a readab
 Keyboard users can select nodes from the step selector; Delete/Backspace on a selected graph
 node removes it. Editing text with Backspace does not remove graph nodes.
 
+Closing the step picker, run setup or run details returns keyboard focus to the control
+that opened it. Adding a step moves focus to its name field. If a history update removes
+the original run-details control, focus returns to **Refresh**, or to the **Run history**
+heading while Refresh is unavailable.
+
 ![Farsi mobile canvas with condition branches](../../../docs/images/workflows/interaction-review/editor-fa-mobile.jpg)
 
 Captured 31 October 2026 using synthetic local records. The current application shell,
@@ -81,7 +94,12 @@ contains is case-sensitive. Deal statuses and boolean values have translated cho
 the stored values stay language-neutral. Numeric/money comparisons, AND/OR groups, and
 parallel joins remain later work. Only the selected condition branch executes.
 
-Node cards summarize task titles, selected record sources, and condition comparisons.
+**Wait** pauses the run for a fixed number of whole minutes, from 1 to 525,600. Enter `1`
+for one minute. The wait begins when the run reaches this step and measures elapsed time,
+independent of timezone, calendar, or business days. Values from earlier steps and waits
+until a calendar date are not supported.
+
+Node cards summarize task titles, selected record sources, condition comparisons, and waits.
 A step can use its automatic localized title or a custom name. Automatic titles follow
 language changes; custom names and task text remain exactly as entered.
 
@@ -98,7 +116,8 @@ only the draft. Existing runs retain their original published version.
 
 Select **Simulate**, enter at least two characters to search for a visible deal, select it,
 and confirm. Simulation uses the published version and canonical CRM validation, then rolls
-back task changes. Run history is retained. Publication is currently required before simulation.
+back task changes. Simulation skips real waiting and shows the simulated resume time. Run
+history is retained. Publication is currently required before simulation.
 
 ## Run and inspect
 
@@ -110,17 +129,19 @@ minutely reconciliation recover missed enqueues.
 Choose **View run** to inspect the immutable published graph used for that run. Completed
 steps and their connected path appear in green; the step list distinguishes completed,
 simulated, not-reached, and failed-cursor states. Selecting a step focuses it on the graph.
-Later draft changes do not alter this historical view. Queued/running details update while open.
+Later draft changes do not alter this historical view. Waiting runs show their scheduled
+resume time. This is the earliest time they can continue; background processing may resume
+them later. Queued, running, and waiting details update while open.
 
 ![Farsi simulation graph and step results](../../../docs/images/workflows/interaction-review/run-fa.jpg)
 
 Raw CRM inputs/outputs are withheld because historical access may change. Detailed redacted
 step payloads, attempt timing, and manual retry are later milestones.
 
-**Cancel run** stops subsequent steps; already committed tasks remain. **Pause** prevents
-new runs while previously admitted runs continue. Publishing reactivates a paused workflow.
-The worker rechecks the initiating user's current permissions and deal visibility at every
-step. Losing access or being deactivated stops the run.
+**Cancel run** stops a pending wait and subsequent steps; already completed tasks remain.
+**Pause** prevents new runs while previously admitted runs continue. Publishing reactivates
+a paused workflow. Runs use the initiating user's current permissions. Deal reads and task
+creation check access when they execute. Deactivation or a denied action stops the run.
 
 ## Permissions and languages
 
@@ -140,7 +161,13 @@ the Iranian calendar. Calendar display does not enable Iranian recurring schedul
 
 The repository's `docs/workflows/` directory contains the approved 42-task plan, Mobbin
 references, architecture, operations, and visual test ledger. This manual node builder is
-one milestone within R1. CRM events, richer actions, grouped conditions, waits, notifications,
-controlled email, operational limits, retention, and full accessibility qualification remain.
+one milestone within R1. CRM events, richer actions, grouped conditions, waits until a date
+or based on earlier values, notifications, controlled email, operational limits, retention,
+and full accessibility qualification remain.
 Calendar-aware recurrence and provider connections follow in R2; approvals, loops, and
 sub-workflows follow in R3.
+
+
+### Step numbers after inserting a step
+
+After inserting a step into an existing connection, the step list, canvas, run trace, connection selectors and variable references use matching step numbers. A step follows its upstream dependencies. Existing positions and configuration remain intact. At a condition, the run follows the selected branch.

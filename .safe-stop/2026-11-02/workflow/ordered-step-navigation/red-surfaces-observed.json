@@ -1,0 +1,25 @@
+{
+  "at": "2026-11-02T05:50:08.047437+00:00",
+  "status": "INITIAL_RED_SURFACES_4_DOMAIN_FAILURES_2_TEST_SELECTOR_FAILURES_9_CONTROLS_PASS",
+  "tests": 15,
+  "failed": 6,
+  "passed": 9,
+  "setup_or_import_failures": 0,
+  "domain_failures": [
+    "insertionstriporder",
+    "Canvasindexmapping",
+    "BindingFieldsourceordinal",
+    "ConnectionEditortargetordinal"
+  ],
+  "test_selector_failures": [
+    "RunTrace wordboundary afterManualstart collideswithconcatenatedNotreached",
+    "EdgeInspector expectedTargetnode but actualaccessibleDestinationnode"
+  ],
+  "wall_s": 3.43,
+  "vitest_s": 2.77,
+  "max_individual_rss_bytes": 373702656,
+  "production_edits": 0,
+  "raw_log_sha256": "a3f5ae0392e2be0ef8967dbd82c1f1b67abe09374228a06d6694641016c812f0",
+  "source_snapshot": "red-surfaces-source/",
+  "next": "Fixonlytestselectorsandrerunbaselinebeforeproductionfix."
+}

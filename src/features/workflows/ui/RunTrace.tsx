@@ -8,8 +8,10 @@ import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
 import type { RouterOutputs } from "@/lib/trpc-client";
 import { useFormatters } from "@/lib/useFormatters";
 import { displayNodeName } from "../nodeNames";
+import { orderedWorkflowNodes } from "../nodeOrder";
 import { NodeSummary } from "./NodeSummary";
 import type { RevealNode } from "./ResponsiveViewport";
+import { WaitTimestamp } from "./WaitTimestamp";
 import { WorkflowCanvas } from "./WorkflowCanvas";
 
 export type RunDetail = RouterOutputs["workflows"]["run"];
@@ -17,7 +19,11 @@ export function RunTrace({ detail }: { detail: RunDetail }) {
   const t = useAppTranslations("workflows");
   const locale = useLocale();
   const fmt = useFormatters();
-  const [selected, setSelected] = useState(detail.definition.nodes[0]?.id ?? "start");
+  const [selected, setSelected] = useState(
+    detail.status === "waiting" && detail.nextNodeId !== null
+      ? detail.nextNodeId
+      : (detail.definition.nodes[0]?.id ?? "start"),
+  );
   const [reveal, setReveal] = useState<RevealNode>();
   const completed = new Set(detail.steps.map((step) => step.nodeId));
   const node = detail.definition.nodes.find((item) => item.id === selected);
@@ -46,6 +52,12 @@ export function RunTrace({ detail }: { detail: RunDetail }) {
       <p className="px-5 text-xs leading-5 text-muted-foreground">
         {t(detail.mode === "simulation" ? "simulationTraceHint" : "liveTraceHint")}
       </p>
+      {detail.status === "waiting" && (
+        <p className="px-5 text-sm text-muted-foreground">
+          <WaitTimestamp value={detail.resumeAt} label={t("scheduledResume")} />
+          <span className="mt-1 block text-xs">{t("waitRecoveryHint")}</span>
+        </p>
+      )}
       {detail.status === "failed" && (
         <p role="alert" className="px-5 text-sm text-destructive">
           {t("runError")} <bdi className="font-mono text-xs">{detail.errorId}</bdi>
@@ -72,13 +84,14 @@ export function RunTrace({ detail }: { detail: RunDetail }) {
             <p className="mt-2 text-xs leading-5 text-muted-foreground">{t("traceHint")}</p>
           </div>
           <ol className="space-y-2" aria-label={t("steps")}>
-            {detail.definition.nodes.map((item, index) => {
+            {orderedWorkflowNodes(detail.definition).map((item, index) => {
               const step = detail.steps.find((entry) => entry.nodeId === item.id);
               const Icon = step === undefined ? Circle : Check;
               return (
                 <li key={item.id}>
                   <Button
                     variant={selected === item.id ? "outline" : "ghost"}
+                    aria-pressed={selected === item.id}
                     className="h-auto min-h-10 w-full justify-start whitespace-normal py-2 text-start"
                     onClick={() => {
                       setSelected(item.id);
@@ -98,13 +111,28 @@ export function RunTrace({ detail }: { detail: RunDetail }) {
                       </bdi>
                       <span className="mt-1 block text-[11px] font-normal text-muted-foreground">
                         {step === undefined
-                          ? detail.nextNodeId === item.id && detail.status === "failed"
-                            ? t("stoppedHere")
-                            : t("stepNotReached")
+                          ? detail.nextNodeId === item.id && detail.status === "waiting"
+                            ? t("stepWaiting")
+                            : detail.nextNodeId === item.id && detail.status === "failed"
+                              ? t("stoppedHere")
+                              : t("stepNotReached")
                           : step.simulated
                             ? t("stepSimulated")
                             : t("stepCompleted")}
                       </span>
+                      {item.type === "delay" && step?.simulated === true && (
+                        <span className="mt-1 block text-[11px] font-normal text-muted-foreground">
+                          {t("simulatedWait")}
+                        </span>
+                      )}
+                      {item.type === "delay" && step?.waitResumeAt !== undefined && (
+                        <span className="mt-1 block text-[11px] font-normal text-muted-foreground">
+                          <WaitTimestamp
+                            value={step.waitResumeAt}
+                            label={t(step.simulated ? "simulatedResume" : "scheduledResume")}
+                          />
+                        </span>
+                      )}
                     </span>
                   </Button>
                 </li>

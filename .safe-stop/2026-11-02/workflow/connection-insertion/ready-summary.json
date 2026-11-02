@@ -1,0 +1,41 @@
+{
+  "at": "2026-11-02T05:02:07.139907+00:00",
+  "status": "STATIC12_PASS_EDITOR12_HANDOFF_READY",
+  "plan": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/static12-plan.json",
+  "plan_sha256": "ad57a1afe4f0b28b9330b58e0c75bd4f1f609721df464889d26458b198dfa4fe",
+  "pin_count": 335,
+  "packet_manifest_sha256": "e665cb7af788f7c5bac003173d9ac6e598ed15e89688899bbd4ed0967196ba60",
+  "packet_patch_sha256": "2327c99478345ae1c133969eed24f0178d56acb4fbca4f5ba0fa3f7dec42b4b0",
+  "packet_readme_sha256": "391e9c5fef2fe292cdc82879760a171437f4617ded202ce7201aa01e257091e0",
+  "payload_hashes_verified": 12,
+  "base_hashes_verified": 9,
+  "review_final_sha256": "9b0adfde5a4bcb66d33121fe04869adb3cf8e5402669201413fe66588211d309",
+  "current_resources": {
+    "pressure": 1,
+    "Q": 55,
+    "free_bytes": 15564414976
+  },
+  "start_received": true,
+  "owned_runner_live": false,
+  "documentation_companion": {
+    "manifest": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/documentation-packet/manifest.json",
+    "sha256": "51c268114d7690f8b4317936b07373d4bd997e64226b0ad320e3c0dd8b9f1d1d",
+    "patch_sha256": "3377267047b706e34c99d2734ef72aa3c6b2fc8e2709e0b423aaa15efccc0b7d",
+    "files": 3,
+    "all_local_original_bytes_preserved": true,
+    "source_wording_review": "PASS",
+    "artifact_patch_check": "PASS",
+    "static335_inputs_unchanged": true
+  },
+  "history": [
+    {
+      "at": "2026-11-02T03:57:15.045959+00:00",
+      "status": "STATIC12_READY_REQUEST_NEXT",
+      "start_received": false
+    }
+  ],
+  "consumed_id": "WORKFLOW-INSERTION-STATIC12-20261102-1",
+  "static_receipt": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/static12-observed.json",
+  "static_receipt_sha256": "21162dc9c76a619bf08dfcdb668439414b56fd0ba2c740cb844a0d7ad8d74eee",
+  "qualification": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/qualification.json"
+}

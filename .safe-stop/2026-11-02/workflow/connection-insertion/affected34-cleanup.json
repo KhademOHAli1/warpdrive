@@ -1,0 +1,27 @@
+{
+  "at": "2026-11-02T03:52:13.554524+00:00",
+  "owned_cwd_after": [],
+  "source_hashes_unchanged": true,
+  "all_four_dotenv_absent": true,
+  "pressure": "1",
+  "available": "The system has 38654705664 (2359296 pages with a page size of 16384).\nSystem-wide memory free percentage: 55%",
+  "log_sha256": "7352e5a7551cdca49f5ef68cb9f870f5c1d6820f6393f0a781019c2f023cc341",
+  "summary_lines": [
+    " \u2713 |unit| src/features/workflows/nodePlacement.test.ts (5 tests) 3ms",
+    " \u2713 |unit| src/features/workflows/ui/ConnectionInsertion.test.tsx (6 tests) 888ms",
+    "   \u2713 opens an occupied output palette without committing and restores its opener on Escape 452ms",
+    " \u2713 |unit| src/features/workflows/ui/DurationWaitAuthoring.test.tsx (3 tests) 400ms",
+    " \u2713 |unit| src/features/workflows/ui/NodePalette.numbering.test.tsx (4 tests) 104ms",
+    " \u2713 |unit| src/features/workflows/ui/NodePalette.test.tsx (1 test) 81ms",
+    " \u2713 |unit| src/features/workflows/ui/useConnectionGestures.test.tsx (2 tests) 10ms",
+    " \u2713 |unit| src/features/workflows/connectionInsertion.test.ts (4 tests) 7ms",
+    " \u2713 |unit| src/features/workflows/graphEditor.test.ts (5 tests) 4ms",
+    " \u2713 |unit| src/features/workflows/connectionGestures.test.ts (4 tests) 3ms",
+    " Test Files  9 passed (9)",
+    "      Tests  34 passed (34)",
+    "   Duration  4.47s (tests 36%, environment 28%, import 22%, transform 9%, setup 5%)",
+    "        4.78 real         5.02 user         1.05 sys",
+    "           391970816  maximum resident set size"
+  ],
+  "formatter_log": "Checked 12 files in 34ms. Fixed 1 file.\n        0.11 real         0.04 user         0.05 sys\n            47644672  maximum resident set size\n                   0  average shared memory size\n                   0  average unshared data size\n                   0  average unshared stack size\n                4563  page reclaims\n                1402  page faults\n                   0  swaps\n                   0  block input operations\n                   0  block output operations\n                   0  messages sent\n                   0  messages received\n                   1  signals received\n                  25  voluntary context switches\n                3220  involuntary context switches\n            14790261  instructions retired\n             5901701  cycles elapsed\n             1425792  peak memory footprint\n"
+}

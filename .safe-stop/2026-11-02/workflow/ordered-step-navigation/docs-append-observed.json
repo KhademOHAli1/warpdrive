@@ -1,0 +1,23 @@
+{
+  "at": "2026-11-02T06:07:57.512431+00:00",
+  "files": [
+    {
+      "path": "docs-site/docs/features/automations.md",
+      "before_sha256": "8a4ebedd74f494f66c8f6ccc7872cb3af82126db85335b22bccf6f7d76fdc232",
+      "after_append_sha256": "41d3ad6dd16b05dfee09bc6b43619265efdbe57c47a8c3b7638c6ec87f6602f3",
+      "all_original_bytes_preserved_before_format": true
+    },
+    {
+      "path": "docs/workflows/status.md",
+      "before_sha256": "b0ecb15956d225f1aa46622563721147bb1f4a07c59b6fc8fe756019d5c17dd7",
+      "after_append_sha256": "3213ee05d9e39c4750d04159b690a20745520f55b14051c36d6f7bac4c4b1839",
+      "all_original_bytes_preserved_before_format": true
+    },
+    {
+      "path": "docs/workflows/CONTINUATION.md",
+      "before_sha256": "86f1a63461f9cdb6916c9df444892426ac66a65a84d053fd3ef46665edff3a1f",
+      "after_append_sha256": "970ee101d5ae9e5c946212cd8aff88c883a1ab3950a0eea63c55cd06d556aea4",
+      "all_original_bytes_preserved_before_format": true
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "id": "WORKFLOW-FIGMA-VISUAL2-20261102-1",
+  "browserStartedAt": "2026-11-02T05:36:08.438Z",
+  "interactionEndedAt": "2026-11-02T05:40:45.735Z",
+  "cleanedAt": "2026-11-02T05:40:46.127Z",
+  "browserStartToInteractionSeconds": 277.297,
+  "browserStartToCleanupSeconds": 277.689,
+  "case2Seconds": 135.192,
+  "ownedIds": [
+    "351774861",
+    "351774864",
+    "351774868"
+  ],
+  "remainingOwnedIds": [],
+  "foreignBaselineIds": [
+    "351774610",
+    "351774788"
+  ],
+  "missingForeignIds": [],
+  "changedForeignUrlIds": [],
+  "viewportOverrideUsed": false,
+  "globalBrowserKill": false,
+  "prototypeWrites": 0,
+  "appActions": 0,
+  "dbActions": 0
+}

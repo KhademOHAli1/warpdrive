@@ -1,0 +1,9 @@
+{
+  "id": "WORKFLOW-FIGMA-VISUAL2-20261102-1",
+  "admission_at": "2026-11-02T05:35:54.852853+00:00",
+  "pressure": "1",
+  "q": 52,
+  "disk_free_bytes": 12185120768,
+  "plan_sha256": "dc739c753d27e946a781aa7726fdb0ff07ecb6777beefa387921a8e437613aba",
+  "scope": "2cases5frames3clicks2scrolls;600allin120cleanup;noapp/DB/sourcewrites"
+}

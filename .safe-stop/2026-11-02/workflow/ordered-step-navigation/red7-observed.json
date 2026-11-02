@@ -1,0 +1,18 @@
+{
+  "at": "2026-11-02T05:33:33.755929+00:00",
+  "status": "ACTUAL_RED_1_ORDER_ASSERTION_6_CONTROLS_PASS",
+  "tests": 7,
+  "failed": 1,
+  "passed": 6,
+  "setup_failures": 0,
+  "command_exit": 1,
+  "wall_s": 2.19,
+  "vitest_s": 1.47,
+  "max_individual_rss_bytes": 373604352,
+  "raw_log_sha256": "7cd154a286e4ade63a815934168418b1ff5f5a5220e0c19228ebd2a1ddf66c87",
+  "test_sha256": "84a7aac98c150b3dafcdb37f3b46361cc150693f8f080e40e076b90e60732d09",
+  "production_unchanged": true,
+  "four_dotenv_absent": true,
+  "terminal": "tool-ownedsession75837 exited1; no retry",
+  "limits": "MaxindividualRSS, notcontinuousaggregatepeak. DOMorderonly, no actualnarrowpixel/browser/AT/completeWF017."
+}

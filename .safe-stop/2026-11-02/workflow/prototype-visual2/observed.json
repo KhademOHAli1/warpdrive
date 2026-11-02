@@ -1,0 +1,115 @@
+{
+  "at": "2026-11-02T06:03:28.831158+00:00",
+  "id": "WORKFLOW-FIGMA-VISUAL2-20261102-1",
+  "status": "BOUNDED_2_CASE_PROTOTYPE_PLAYBACK_PASS_CLEANUP_RETURNED",
+  "cases": 2,
+  "target_frames": 5,
+  "prototype_navigation_clicks": 3,
+  "internal_scroll_gestures": 2,
+  "actual_routes": [
+    {
+      "from": "19:4960",
+      "to": "29:5400"
+    },
+    {
+      "from": "16:6660",
+      "to": "16:6730"
+    },
+    {
+      "from": "16:6730",
+      "to": "45:7118"
+    }
+  ],
+  "fa_frame_size": [
+    390,
+    844
+  ],
+  "fa_query": "عنوان",
+  "behavior": "DEhistory/waitingidentityandrenderagree; FAordereddown/upreveal lowerHistory/providercontrols withfixedheader, inspector→focusedsearch visiblequery/halo/label/apply.",
+  "ax_scope": "Document identity and presentationURL only; Figma screenreadersupportwasdisabled, no semanticcanvasnodes/DOMfocus/ATclaim.",
+  "viewer_setup": "ObservedActual100% initialcrop; FA observedOptionsmenuFitwidthheight beforefinalbaseline, ownPresentURLscale-down. No globalbrowserviewportoverride.",
+  "decisive_pngs": {
+    "de-history.png": "3a5163c422f462c3cfc29bb4c633a04ec304f0f6566eb329c74b57e1d72c4829",
+    "de-waiting.png": "f2f05aa77e262549ff3c4197095a2c4709964c93c4497e82ab859f2a3e502cc9",
+    "fa-ordered-fit.png": "c1b6677e1c8b929303db55ad17ec79ac5b9d44e6a05c4c7dc285a751d6437bfd",
+    "fa-ordered-scroll-down.png": "5503b032b2b12f20e3893451e28ffa92125e044ff2497f806a2412b27778cae8",
+    "fa-ordered-scroll-up.png": "6ac111a3f3d072a3f5d82b947a2c08a0028abd8a8bab8139a45ee847ed05d8e4",
+    "fa-inspector.png": "200061377d45d3fb58b567409894b0dd8cbcde796975c85dd4b646075c8a3176",
+    "fa-variable-search.png": "0642853e13214cea5e27145b9e9b4454ee3a9fe28500cda33367b1c024b3e539"
+  },
+  "additional_preserved_png": "fa-ordered-initial.png, originalActual100%croppedbaseline",
+  "independent_review": {
+    "path": "/Users/ali/.codex/workflow-evidence/20261102/prototype-visual2/review.json",
+    "sha256": "fc61c55ce75a560fb369f66ca2170667b50dfc42e4796dec9a76f61cdec93c12",
+    "scope": "Seven decisivecaptures PASS; reviewpredates exacttimingrecovery, itsconservativeupperbound remainsvalid."
+  },
+  "timing": {
+    "at": "2026-11-02T05:47:57.663848+00:00",
+    "grant_receipt_at": "2026-11-02T05:35:39.177Z",
+    "evidence": "Exact incoming START text in ownchat rolloutresponse_item function_call_output; duplicateevent_msg is not secondgrant.",
+    "case1_end_at": "2026-11-02T05:38:30.543000+00:00",
+    "case1_grant_to_waiting_observation_s": 106.748,
+    "case1_grant_to_end_s": 171.366,
+    "case2_s": 135.192,
+    "grant_to_interaction_end_s": 306.558,
+    "grant_to_cleanup_s": 306.95,
+    "cleanup_s": 0.392,
+    "limits": {
+      "case1_max180": true,
+      "case2_max300": true,
+      "interaction_by480": true,
+      "cleanup_by600": true
+    },
+    "supersedes": "Previouslynotseparatelycapturedgranttime nowrecoveredauthoritatively. Originalterminal-resource/upperboundreceipts retainedunchanged."
+  },
+  "cleanup": {
+    "id": "WORKFLOW-FIGMA-VISUAL2-20261102-1",
+    "browserStartedAt": "2026-11-02T05:36:08.438Z",
+    "interactionEndedAt": "2026-11-02T05:40:45.735Z",
+    "cleanedAt": "2026-11-02T05:40:46.127Z",
+    "browserStartToInteractionSeconds": 277.297,
+    "browserStartToCleanupSeconds": 277.689,
+    "case2Seconds": 135.192,
+    "ownedIds": [
+      "351774861",
+      "351774864",
+      "351774868"
+    ],
+    "remainingOwnedIds": [],
+    "foreignBaselineIds": [
+      "351774610",
+      "351774788"
+    ],
+    "missingForeignIds": [],
+    "changedForeignUrlIds": [],
+    "viewportOverrideUsed": false,
+    "globalBrowserKill": false,
+    "prototypeWrites": 0,
+    "appActions": 0,
+    "dbActions": 0
+  },
+  "resource_observation": {
+    "at": "2026-11-02T05:42:13.480163+00:00",
+    "pressure": "1",
+    "q": 54,
+    "admission_to_cleanup_s": 291.274147,
+    "case1_admission_to_waiting_s": 91.072147,
+    "last_pregrant_clock": "2026-11-02T05:33:33.755929+00:00",
+    "conservative_allocation_to_cleanup_upper_bound_s": 432.371071,
+    "limit": "Exact grant-receipt clock not separately captured. Case1 admission91.073s is not exact grantclock; whole600 upperbound conservative from pregrantREDreceipt. Resource endpoints only, no continuous/peakclaim."
+  },
+  "source_freeze": {
+    "at": "2026-11-02T05:43:23.556400+00:00",
+    "count": 336,
+    "expected_prejob_test_delta": "/Users/ali/.codex/worktrees/workflow-roadmap-owned/warpdrive-builder-ux-20261031/src/features/workflows/ui/ConnectionInsertion.test.tsx",
+    "mismatches": [],
+    "source_unchanged_through_visual_job": true,
+    "worker_ack": "No writes in flight; both ownedtestfiles remainedunchanged."
+  },
+  "limits": [
+    "DErightedgeclippedbyviewer, no fullDEpixelqualification",
+    "Threeprototypeclicks only; remainingauthor/test/correct/publish/otherFAreturnroutes unplayed",
+    "No actualCRM app/nativeauth/elapsedminute/provider/installed/keyboard/AT acceptance",
+    "WholeWF005andWF001-042remainopen; no unchangedR2exportre-review"
+  ]
+}

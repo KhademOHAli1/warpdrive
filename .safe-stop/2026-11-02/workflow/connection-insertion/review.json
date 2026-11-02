@@ -1,0 +1,95 @@
+{
+  "at": "2026-11-02T03:46:48.849235+00:00",
+  "reviewer": "/root/roadmap_audit",
+  "status": "PASS_BOUNDED_SOURCE_REVIEW_UNIT_EVIDENCE_ONLY",
+  "blocking_findings": [],
+  "note": {
+    "path": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/review.md",
+    "sha256": "cd5a7d039116c287d127dc16166b108ad47cef2311905ffa2c0e5e98293010a0"
+  },
+  "reviewed_source_root": "/Users/ali/.codex/worktrees/workflow-roadmap-owned/warpdrive-builder-ux-20261031",
+  "reviewed_owned_source_hashes": {
+    "src/features/workflows/connectionGestures.ts": "f151f3c795c425eec2ea1eb47c407d0a943cee0f3801ccf5a30beb7ee4185251",
+    "src/features/workflows/nodeLayout.ts": "55a5a941d04b399453a9ac7ed0b5c5318257b058d852c2dbefa7dd893eba839a",
+    "src/features/workflows/ui/ConnectionEditor.tsx": "09c250c751a53f00ea143f167e4778079d2cd5fdd43bcf6f68d4ebdd2a5842b6",
+    "src/features/workflows/ui/BuilderWorkspace.tsx": "4d74f6fcbe559f96e1b543cc4865e70d66e19cb00c5753dd89a192938f5c8333",
+    "src/features/workflows/ui/NodePalette.tsx": "421324b005a73f559b332f6abde063402f5c61403851bf48f757d063fa70b423",
+    "src/features/workflows/messages/workflows.en.json": "18e59537ea3d2f8d5868790f6b5db4e2fe3ac6111dba7e47851eaff42b7f65cc",
+    "src/features/workflows/messages/workflows.fa.json": "5e00117f7aaba912058fb72b32fcb2430e047480d24d144a0b0ee1cb027ba8b3",
+    "src/features/workflows/messages/workflows.de.json": "598caa957b5a885d975854c6cc3b7adfa6b25ef09c02bb1f0e036592c0ed482b",
+    "src/features/workflows/connectionGestures.test.ts": "829c29dbc0fcceed901dbd8d5e3accc7f25d8658a9eeb5f97da2510a51cb3e19",
+    "src/features/workflows/connectionInsertion.test.ts": "445efe59dd5e487200e8f6fbce096a768bef1938fdd7a15f08107bbaca17d70c",
+    "src/features/workflows/ui/ConnectionInsertion.test.tsx": "1932665d15e3c2dcface80718e792c652e6284ff28c5cdeab24ad3160ae526e0"
+  },
+  "assessment": {
+    "atomic_splice": "Previous-edge parameter removes only candidate connection; upstream uses original port, downstream uses new.next, second error propagates. No intermediate onChange; no original graph/config/layout mutation.",
+    "condition_scope": "Occupied output allowlist exposes three linear types; free-output and toolbar Condition unchanged. Existing connectNodes invalidPort guard rejects ambiguous condition insertion; no global validation change.",
+    "placement": "Default occupied-edge midpoint replaces exact tested coordinate collision; explicit caller position remains authoritative. Existing positions retained.",
+    "ui": "Per-port editable/node-limit guards, one commit, selection/reveal/name-focus path and EN/FA/DE labels inspected. Separate UI subreview found no blocker."
+  },
+  "owner_evidence_read": {
+    "initial_mixed_red": {
+      "path": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/red8-observed.json",
+      "sha256": "d423aa3d1a718c6c6d2105e5422a630a686b50955e1d60fb94967936dab08a70",
+      "scope": "5behavior failures+2selector-only failures+1control; not7behaviorRED."
+    },
+    "corrected_red": {
+      "path": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/red8-r2-observed.json",
+      "sha256": "e22bdad5cb6f3ff4bb63ff9011808f212a3c5f19801f9f3220c9032e222f38ef",
+      "behavior_failures": 5,
+      "controls": 3,
+      "setup_failures": 0
+    },
+    "placement_red": {
+      "path": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/placement-red8-observed.json",
+      "sha256": "f99b8633c3c3b43b136cba3aee60b6b0c74e4ce471ce06fc25b39439b741fe20",
+      "passed": 7,
+      "intended_placement_failures": 1
+    },
+    "affected_green_preflight": {
+      "path": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/affected-green-preflight.json",
+      "sha256": "448f1fee1e92c244f92f4fbdf4a375203478e8450ae887bed13e6533da8c51bf"
+    },
+    "affected_green_cleanup": {
+      "path": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/affected-green-cleanup.json",
+      "sha256": "8ddb4e681c68c95ac8232402acb8272538499eb03b34d6e134c97011573b6149",
+      "tests": 29,
+      "files": 8,
+      "command_seconds": 4.23,
+      "admission_to_cleanup_seconds": 4.458836,
+      "source_hashes_conserved": 24,
+      "current_source_matches_run_pins": true,
+      "log_hash_matches": true,
+      "owned_cwd_after": [],
+      "four_dotenv_absent": true,
+      "pressure": 1,
+      "Q": 54
+    },
+    "formatting_owner_report": "Biome11 PASS0.16s,2formatted,0diagnostics. Not independently rerun; current24 hashes match affected GREEN preflight."
+  },
+  "limitations": [
+    "Canvas mocked in new UI test: no actual rendered nonoverlap/drag-drop proof.",
+    "Midpoint is bounded placement, not arbitrary dense-graph collision avoidance.",
+    "Ordered strip remains node-array order; wholeWF017 open.",
+    "Configured static/new three-file browser-fixture qualification/browser/Main integration/exact-head CI pending.",
+    "No native-runtime/provider/security/AT/browser acceptance follows unit/source review.",
+    "No continuous aggregate/PG resource peak measured by this review."
+  ],
+  "preservation": {
+    "current_24_affected_source_hashes_match": true,
+    "qualified_core_local_mirror_files": 94,
+    "local_mirror_hashes_match_receipt": true,
+    "mirror_receipt": {
+      "path": "/Users/ali/.codex/workflow-evidence/20261102/mirror-receipt.json",
+      "sha256": "337317541f41a0998ef28da1cdc66c251a404b788fa997840ede9552107b539b"
+    },
+    "cold_documents_read": false,
+    "Main_or_excluded_source_read": false,
+    "application_or_test_source_changed": false,
+    "only_writes": [
+      "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/review.md",
+      "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/review.json"
+    ]
+  },
+  "checks_run_by_reviewer": []
+}

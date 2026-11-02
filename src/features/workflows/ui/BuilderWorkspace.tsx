@@ -10,8 +10,9 @@ import { useFormatters } from "@/lib/useFormatters";
 import { appendConnectedNode, type OutputTarget } from "../connectionGestures";
 import { type ConnectionProblem, edgeId, insertNode, removeNode } from "../graphEditor";
 import { type CreatableNodeType, makeNode } from "../nodeFactory";
-import { arrangeGraph, positionFor } from "../nodeLayout";
+import { arrangeGraph, positionForNewNode } from "../nodeLayout";
 import { displayNodeName, nodeLabelKeys } from "../nodeNames";
+import { orderedWorkflowNodes } from "../nodeOrder";
 import type { DefinitionIssue, NodePosition, WorkflowDefinition } from "../schemas";
 import { BuilderFrame } from "./BuilderFrame";
 import { ConnectionEditor } from "./ConnectionEditor";
@@ -21,7 +22,10 @@ import { type GraphHistoryControls, HistoryControls, handleHistoryKey } from "./
 import { NodeInspector } from "./NodeInspector";
 import { NodePalette } from "./NodePalette";
 import type { RevealNode } from "./ResponsiveViewport";
+import { focusAvailable, useDialogFocus } from "./useDialogFocus";
 import { WorkflowCanvas } from "./WorkflowCanvas";
+
+const linearNodeTypes: readonly CreatableNodeType[] = ["record.read", "activity.create", "delay"];
 
 export function BuilderWorkspace({
   definition,
@@ -41,6 +45,10 @@ export function BuilderWorkspace({
   const fmt = useFormatters();
   const [expanded, setExpanded] = useState(false);
   const focusButton = useRef<HTMLButtonElement>(null);
+  const addButton = useRef<HTMLButtonElement>(null);
+  const stepName = useRef<HTMLInputElement>(null);
+  const paletteFocus = useDialogFocus();
+  const focusInsertedStep = useRef(false);
   const [selected, setSelected] = useState(definition.nodes[0]?.id ?? "start");
   const [selectedEdge, setSelectedEdge] = useState<string | null>(null);
   const [palette, setPalette] = useState<{ output?: OutputTarget; position?: NodePosition } | null>(
@@ -55,6 +63,13 @@ export function BuilderWorkspace({
   const node = definition.nodes.find((item) => item.id === selected);
   const edge = definition.edges.find((item) => edgeId(item) === selectedEdge);
   const source = definition.nodes.find((item) => item.id === palette?.output?.from);
+  const pendingOutput = palette?.output;
+  const occupiedOutput =
+    pendingOutput === undefined
+      ? undefined
+      : definition.edges.find(
+          (item) => item.from === pendingOutput.from && item.port === pendingOutput.port,
+        );
   const invalidNodes = new Set(
     issues.flatMap((issue) => (issue.nodeId === undefined ? [] : [issue.nodeId])),
   );
@@ -66,22 +81,20 @@ export function BuilderWorkspace({
     select(id);
     setReveal((previous) => ({ id, nonce: previous.nonce + 1 }));
   }
+  function openPalette(
+    request: { output?: OutputTarget; position?: NodePosition },
+    opener = document.activeElement,
+  ) {
+    paletteFocus.remember(
+      opener instanceof HTMLElement && opener !== document.body ? opener : addButton.current,
+    );
+    focusInsertedStep.current = false;
+    setPalette(request);
+  }
   function add(type: CreatableNodeType) {
-    const id = "node_" + crypto.randomUUID().slice(0, 8);
+    const id = `node_${crypto.randomUUID().slice(0, 8)}`;
     const output = palette?.output;
-    const origin = positionFor(definition, output?.from ?? selected);
-    const position = palette?.position ?? {
-      x:
-        origin.x +
-        (output === undefined
-          ? 360
-          : output.port === "true"
-            ? -200
-            : output.port === "false"
-              ? 200
-              : 0),
-      y: origin.y + 260,
-    };
+    const position = palette?.position ?? positionForNewNode(definition, selected, output);
     const next = makeNode(definition, type, id, t(nodeLabelKeys[type]), t("subject"), output?.from);
     if (output === undefined) onChange(insertNode(definition, next, position));
     else {
@@ -93,6 +106,7 @@ export function BuilderWorkspace({
       onChange(result.value);
     }
     setProblem(null);
+    focusInsertedStep.current = true;
     revealStep(id);
     setPalette(null);
     setLayoutRevision((value) => value + 1);
@@ -123,10 +137,11 @@ export function BuilderWorkspace({
               </Tip>
             )}
             <Button
+              ref={addButton}
               variant="outline"
               size="sm"
               disabled={!editable || definition.nodes.length >= 100}
-              onClick={() => setPalette({})}
+              onClick={(event) => openPalette({}, event.currentTarget)}
             >
               <Plus className="size-4" />
               {t("addNode")}
@@ -158,7 +173,7 @@ export function BuilderWorkspace({
               aria-label={t("steps")}
               className="flex shrink-0 gap-1 overflow-x-auto border-b p-2 [&>button]:shrink-0"
             >
-              {definition.nodes.map((item, index) => (
+              {orderedWorkflowNodes(definition).map((item, index) => (
                 <Button
                   key={item.id}
                   variant={selected === item.id && selectedEdge === null ? "outline" : "ghost"}
@@ -186,7 +201,7 @@ export function BuilderWorkspace({
               reveal={reveal}
               onAdd={(output, position) => {
                 select(output.from);
-                setPalette({ output, position });
+                openPalette({ output, position });
               }}
             />
           </div>
@@ -210,6 +225,7 @@ export function BuilderWorkspace({
                   definition={definition}
                   node={node}
                   editable={editable}
+                  nameInputRef={stepName}
                   onChange={(changed) =>
                     onChange((graph) => ({
                       ...graph,
@@ -227,7 +243,7 @@ export function BuilderWorkspace({
                   editable={editable}
                   onChange={onChange}
                   onProblem={setProblem}
-                  onAdd={(output) => setPalette({ output })}
+                  onAdd={(output) => openPalette({ output })}
                 />
               </>
             ) : (
@@ -240,6 +256,13 @@ export function BuilderWorkspace({
             open
             onClose={() => setPalette(null)}
             onAdd={add}
+            allowedTypes={occupiedOutput === undefined ? undefined : linearNodeTypes}
+            onCloseAutoFocus={(event) => {
+              if (focusInsertedStep.current) {
+                event.preventDefault();
+                focusAvailable(stepName.current);
+              } else paletteFocus.restore(event, addButton.current);
+            }}
             context={
               palette.output === undefined
                 ? undefined

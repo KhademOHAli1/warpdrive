@@ -1,0 +1,15 @@
+{
+  "at": "2026-11-02T05:56:44.369403+00:00",
+  "status": "ACTUAL_PURE_RED6_CONTROLS2",
+  "tests": 8,
+  "failed": 6,
+  "passed": 2,
+  "command_exit": 1,
+  "setup_failures": 0,
+  "wall_s": 0.39,
+  "vitest_ms": 71,
+  "max_individual_rss_bytes": 206422016,
+  "raw_log_sha256": "60efcb431dc1f19a06b63770d0eed4eb4eb4d568ed52d48fcd17acfdd4b1a839",
+  "baseline": "Extractedunchangedcreation-array behavior; sixUI REDalreadyobserved beforeextraction.",
+  "limits": "Displaydependencies/retention only; no runtimebranchselection or publishreadiness changed."
+}

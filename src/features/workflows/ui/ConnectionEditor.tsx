@@ -7,6 +7,7 @@ import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
 import { useFormatters } from "@/lib/useFormatters";
 import { type ConnectionProblem, connectNodes, disconnectNodes, portsFor } from "../graphEditor";
 import { displayNodeName } from "../nodeNames";
+import { orderedWorkflowNodes } from "../nodeOrder";
 import type { WorkflowDefinition, WorkflowNode } from "../schemas";
 import type { AddFromOutput } from "./useConnectionGestures";
 
@@ -28,6 +29,7 @@ export function ConnectionEditor({
   const t = useAppTranslations("workflows");
   const locale = useLocale();
   const fmt = useFormatters();
+  const orderedNodes = orderedWorkflowNodes(definition);
   return (
     <section className="space-y-4 border-t p-5" aria-label={t("connections")}>
       <h3 className="text-sm font-semibold">{t("connections")}</h3>
@@ -46,14 +48,14 @@ export function ConnectionEditor({
               value={existing?.to ?? ""}
               options={[
                 { value: "", label: t("unconnected") },
-                ...definition.nodes
+                ...orderedNodes
                   .filter((target) => target.id !== node.id && !target.type.startsWith("trigger."))
                   .map((target) => ({
                     value: target.id,
                     label:
                       displayNodeName(target, locale) +
                       " · " +
-                      fmt.number(definition.nodes.findIndex((item) => item.id === target.id) + 1),
+                      fmt.number(orderedNodes.findIndex((item) => item.id === target.id) + 1),
                   })),
               ]}
               onChange={(target) => {
@@ -75,7 +77,7 @@ export function ConnectionEditor({
                 onProblem(null);
               }}
             />
-            {existing === undefined && onAdd !== undefined && (
+            {onAdd !== undefined && (
               <Button
                 variant="outline"
                 size="sm"
@@ -84,7 +86,7 @@ export function ConnectionEditor({
                 onClick={() => onAdd({ from: node.id, port })}
               >
                 <Plus className="size-3.5" />
-                {t("addConnectedStep")}
+                {t(existing === undefined ? "addConnectedStep" : "insertConnectedStep")}
               </Button>
             )}
           </div>

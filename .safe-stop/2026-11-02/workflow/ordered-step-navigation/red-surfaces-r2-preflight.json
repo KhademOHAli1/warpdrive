@@ -1,0 +1,13 @@
+{
+  "at": "2026-11-02T05:51:16.085643+00:00",
+  "production_unchanged": true,
+  "pressure": "1",
+  "q": 53,
+  "correction": "Selectoronly RunTraceprefix boundary removed, EdgeInspectoractualDestinationnodelabel. No oracle/order expectations removed.",
+  "tests": [
+    "src/features/workflows/ui/ConnectionInsertion.test.tsx",
+    "src/features/workflows/ui/WorkflowCanvas.test.tsx",
+    "src/features/workflows/ui/RunTrace.selection.test.tsx",
+    "src/features/workflows/ui/NodeOrdinals.test.tsx"
+  ]
+}

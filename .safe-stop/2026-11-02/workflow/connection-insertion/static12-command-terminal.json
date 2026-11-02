@@ -1,0 +1,224 @@
+{
+  "id": "WORKFLOW-INSERTION-STATIC12-20261102-1",
+  "ended_at": "2026-11-02T04:59:25.170716+00:00",
+  "command_exit": 0,
+  "execution_elapsed_s": 17.965592499938793,
+  "stop_reason": null,
+  "owned_pid": 63848,
+  "observed_owned_pids": [
+    63848,
+    63850,
+    63851,
+    63852,
+    63853,
+    63858,
+    63931
+  ],
+  "observed_owned_pgids": [
+    63848,
+    63850
+  ],
+  "remaining_owned": [],
+  "resource_samples": [
+    {
+      "elapsed_s": 0.03,
+      "pressure": "1",
+      "q": 54,
+      "owned_rss_bytes": 1687552
+    },
+    {
+      "elapsed_s": 0.573,
+      "pressure": "1",
+      "q": 54,
+      "owned_rss_bytes": 163053568
+    },
+    {
+      "elapsed_s": 1.114,
+      "pressure": "1",
+      "q": 55,
+      "owned_rss_bytes": 384057344
+    },
+    {
+      "elapsed_s": 1.658,
+      "pressure": "1",
+      "q": 55,
+      "owned_rss_bytes": 678281216
+    },
+    {
+      "elapsed_s": 2.202,
+      "pressure": "1",
+      "q": 55,
+      "owned_rss_bytes": 810975232
+    },
+    {
+      "elapsed_s": 2.743,
+      "pressure": "1",
+      "q": 55,
+      "owned_rss_bytes": 972292096
+    },
+    {
+      "elapsed_s": 3.283,
+      "pressure": "1",
+      "q": 55,
+      "owned_rss_bytes": 1294614528
+    },
+    {
+      "elapsed_s": 3.824,
+      "pressure": "1",
+      "q": 55,
+      "owned_rss_bytes": 1753677824
+    },
+    {
+      "elapsed_s": 4.368,
+      "pressure": "1",
+      "q": 55,
+      "owned_rss_bytes": 1951596544
+    },
+    {
+      "elapsed_s": 4.921,
+      "pressure": "1",
+      "q": 54,
+      "owned_rss_bytes": 2325315584
+    },
+    {
+      "elapsed_s": 5.462,
+      "pressure": "1",
+      "q": 53,
+      "owned_rss_bytes": 2579693568
+    },
+    {
+      "elapsed_s": 6.007,
+      "pressure": "1",
+      "q": 53,
+      "owned_rss_bytes": 2731409408
+    },
+    {
+      "elapsed_s": 6.561,
+      "pressure": "1",
+      "q": 53,
+      "owned_rss_bytes": 2865430528
+    },
+    {
+      "elapsed_s": 7.108,
+      "pressure": "1",
+      "q": 51,
+      "owned_rss_bytes": 3420667904
+    },
+    {
+      "elapsed_s": 7.665,
+      "pressure": "1",
+      "q": 51,
+      "owned_rss_bytes": 4011835392
+    },
+    {
+      "elapsed_s": 8.211,
+      "pressure": "1",
+      "q": 50,
+      "owned_rss_bytes": 4477075456
+    },
+    {
+      "elapsed_s": 8.742,
+      "pressure": "1",
+      "q": 50,
+      "owned_rss_bytes": 4500865024
+    },
+    {
+      "elapsed_s": 9.285,
+      "pressure": "1",
+      "q": 50,
+      "owned_rss_bytes": 4505567232
+    },
+    {
+      "elapsed_s": 9.827,
+      "pressure": "1",
+      "q": 50,
+      "owned_rss_bytes": 4534927360
+    },
+    {
+      "elapsed_s": 10.381,
+      "pressure": "1",
+      "q": 49,
+      "owned_rss_bytes": 4962254848
+    },
+    {
+      "elapsed_s": 10.913,
+      "pressure": "1",
+      "q": 48,
+      "owned_rss_bytes": 4991172608
+    },
+    {
+      "elapsed_s": 11.455,
+      "pressure": "1",
+      "q": 48,
+      "owned_rss_bytes": 5017174016
+    },
+    {
+      "elapsed_s": 11.994,
+      "pressure": "1",
+      "q": 49,
+      "owned_rss_bytes": 72581120
+    },
+    {
+      "elapsed_s": 12.534,
+      "pressure": "1",
+      "q": 49,
+      "owned_rss_bytes": 177520640
+    },
+    {
+      "elapsed_s": 13.073,
+      "pressure": "1",
+      "q": 49,
+      "owned_rss_bytes": 254083072
+    },
+    {
+      "elapsed_s": 13.613,
+      "pressure": "1",
+      "q": 49,
+      "owned_rss_bytes": 483360768
+    },
+    {
+      "elapsed_s": 14.153,
+      "pressure": "1",
+      "q": 49,
+      "owned_rss_bytes": 683507712
+    },
+    {
+      "elapsed_s": 14.701,
+      "pressure": "1",
+      "q": 49,
+      "owned_rss_bytes": 1093124096
+    },
+    {
+      "elapsed_s": 15.243,
+      "pressure": "1",
+      "q": 49,
+      "owned_rss_bytes": 1366523904
+    },
+    {
+      "elapsed_s": 15.786,
+      "pressure": "1",
+      "q": 49,
+      "owned_rss_bytes": 1717649408
+    },
+    {
+      "elapsed_s": 16.326,
+      "pressure": "1",
+      "q": 49,
+      "owned_rss_bytes": 2137587712
+    },
+    {
+      "elapsed_s": 16.867,
+      "pressure": "1",
+      "q": 49,
+      "owned_rss_bytes": 2726445056
+    },
+    {
+      "elapsed_s": 17.402,
+      "pressure": "1",
+      "q": 49,
+      "owned_rss_bytes": 3117662208
+    }
+  ],
+  "max_sampled_owned_rss_bytes": 5017174016,
+  "limit": "Sampled aggregate only; no continuous peak claim."
+}

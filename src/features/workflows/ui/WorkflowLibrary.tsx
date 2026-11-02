@@ -3,7 +3,7 @@
 import { ArrowUpRight, GitBranch, Plus } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useId, useState } from "react";
+import { type MouseEvent, useId, useRef, useState } from "react";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import {
@@ -22,6 +22,7 @@ import { useFormatters } from "@/lib/useFormatters";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { createWorkflowAction } from "../actions";
 import { initialBlankDefinition, initialDefinition } from "../editorModel";
+import { useDialogFocus } from "./useDialogFocus";
 
 export function WorkflowLibrary({ canCreate }: { canCreate: boolean }) {
   const t = useAppTranslations("workflows");
@@ -34,6 +35,8 @@ export function WorkflowLibrary({ canCreate }: { canCreate: boolean }) {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState(false);
   const id = useId();
+  const focus = useDialogFocus();
+  const newWorkflow = useRef<HTMLButtonElement>(null);
   async function create() {
     setPending(true);
     setError(false);
@@ -64,7 +67,8 @@ export function WorkflowLibrary({ canCreate }: { canCreate: boolean }) {
       setPending(false);
     }
   }
-  function start() {
+  function start(event: MouseEvent<HTMLButtonElement>) {
+    focus.remember(event.currentTarget);
     setName(t("defaultName"));
     setError(false);
     setOpen(true);
@@ -80,7 +84,7 @@ export function WorkflowLibrary({ canCreate }: { canCreate: boolean }) {
           <p className="mt-2 text-sm text-muted-foreground">{t("subtitle")}</p>
         </div>
         {canCreate && (
-          <Button onClick={start}>
+          <Button ref={newWorkflow} onClick={start}>
             <Plus className="size-4" />
             {t("new")}
           </Button>
@@ -143,7 +147,7 @@ export function WorkflowLibrary({ canCreate }: { canCreate: boolean }) {
           if (!pending) setOpen(value);
         }}
       >
-        <DialogContent>
+        <DialogContent onCloseAutoFocus={(event) => focus.restore(event, newWorkflow.current)}>
           <DialogHeader>
             <DialogTitle>{t("new")}</DialogTitle>
             <DialogDescription>{t("createHint")}</DialogDescription>

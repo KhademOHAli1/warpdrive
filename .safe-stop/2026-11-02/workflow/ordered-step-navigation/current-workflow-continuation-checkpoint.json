@@ -1,0 +1,1563 @@
+{
+  "updated_at": "2026-11-02T06:22:42.944190+00:00",
+  "goal_status": "active/incomplete: full WF-001 through WF-042 remains open",
+  "current_goal_turn": {
+    "classification": "progress",
+    "evidence": "Current private wait source passed configured static, GUI31 and fresh native10. Independent final packet review PASS; actual Main handoff sent, awaiting integration. No duplicate check pending."
+  },
+  "source_root": "/Users/ali/.codex/worktrees/workflow-roadmap-owned/warpdrive-builder-ux-20261031",
+  "branch": null,
+  "head": "43a5fb4d2a6be7bbbd260855a6a8e1ce55fbf3c1",
+  "checkout_state": "Existing managed checkout remains detached43 with private duration work; AF10 is the delivered focus base and immutable packet comparison, not a claim about latest Main. Original preview source and separate excluded workspace/branch remain preserved.",
+  "canonical_latest_observed": {
+    "scope": "Historical observations retained below; no current Main source/ref/CI inspection in this documentation task.",
+    "packet_baseline": "af10dc28250b1eee8db89c83ae353b7dd542f4ac",
+    "managed_source_stays": "43a5fb4d2a6be7bbbd260855a6a8e1ce55fbf3c1",
+    "duration_packet_integrated": true,
+    "historical_observations": {
+      "sha": "af10dc28250b1eee8db89c83ae353b7dd542f4ac",
+      "source": "Read-only canonical HEAD and git-show comparison of all13 frozen packet files, zero byte differences. Last observed origin/main still ba9d2d5; no remote refresh/hostedCI query.",
+      "managed_source_stays": "43a5fb4d2a6be7bbbd260855a6a8e1ce55fbf3c1",
+      "focus_increment_integrated": true,
+      "current_canonical_focus_qualification": "Exactaf10dc2 MainCI41352755179COMPLETEDSUCCESS, all3requiredjobsPASS. CurrentlatestMainbeyondthatincrementnotqueried.",
+      "older_012_basis": "012f4e7a8d9a3151f087b0cf89a8825081311166 was the actual R3 install basis, not a continuing exact-HEAD requirement.",
+      "publication_observation": "Main board later records af10dc2 pushed after ba9d2d5 fullCI GREEN; exact af10dc2 CI still not verified by this chat.",
+      "latest_refresh": {
+        "recorded_at": "2026-11-01T22:46:01.138569+00:00",
+        "local_head_at_initial_readback": "66d190750d5bccf611471ec47fd445164e35edcf",
+        "remote_main_sha": "ee36663b3318ba84b7a0b1600e34e773f9597d88",
+        "runs": [
+          {
+            "id": 41358379551,
+            "head_sha": "ee36663b3318ba84b7a0b1600e34e773f9597d88",
+            "status": "in_progress",
+            "conclusion": null,
+            "html_url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/41358379551"
+          }
+        ],
+        "prior_66d_run": {
+          "id": 41357710391,
+          "conclusion": "cancelled",
+          "CRM": "cancelled,nofailedstepreported",
+          "sites": "success"
+        },
+        "focus_ancestry_observation": {
+          "base": "af10dc28250b1eee8db89c83ae353b7dd542f4ac",
+          "head": "ee36663b3318ba84b7a0b1600e34e773f9597d88",
+          "status": "ahead",
+          "ahead_by": 6,
+          "behind_by": 0,
+          "merge_base_sha": "af10dc28250b1eee8db89c83ae353b7dd542f4ac"
+        },
+        "limits": "Canonicalsharedhead/CI/ancestrymetadataonly; excludedworkspace,branch,sourcefilesanddiff notinspected. No Gitmutation/retry/publishperformed. FocusexactheadhistoricalCIstillPASS; latestMainnotassumedgreen."
+      }
+    },
+    "latest_reported_sha": "df26904d3daebecf3428d6fec303be098aa9d3ab",
+    "duration_ci_pending": false,
+    "source": "Main reports, no current working source inspected",
+    "latest_qualified_duration_sha": "7b805816813594fa934f7613a94e17fa4f1b74c6",
+    "existing_focus_increment_delivered": true,
+    "new_private_editor_ordering_integrated": false,
+    "latest_head_limit": "Onlyqualifiedduration7bmetadataresolved; anylaterMainPrivacyincrement followsitsownexactCI."
+  },
+  "remote_main_verified": null,
+  "completed_prs_verified_merged": [
+    2,
+    3
+  ],
+  "main_ci": {
+    "duration_increment": {
+      "at": "2026-11-02T06:22:42.944190+00:00",
+      "sha": "7b805816813594fa934f7613a94e17fa4f1b74c6",
+      "state": "DURATION_CORE_SOURCE_DELIVERED_EXACT_MAIN_CI_GREEN",
+      "source": "SoleintegratorMaincompactcursor631; immutablecommitfullIDresolvedread-onlyfromcanonicalGitmetadata",
+      "ci": "Mainreports8796unit+3128PGPASS, app+workers+sites+CodeQL+traceabilityallPASS. Legacyrowcomparison/null-deadlineforwardfixpassed. Newprivateinsertion/orderingnotinthiscut.",
+      "limits": "Source/local/hostedqualification only; actualCRMauthor/publish/livewait/task/provider/installed/AT/fullWFacceptance remainopen."
+    },
+    "existing_focus_increment": {
+      "at": "2026-11-01T22:08:24.920026+00:00",
+      "state": "DELIVERED_SOURCE_INCREMENT: pushedcanonicalaf10dc2 plusall3requiredexact-headCIjobsSUCCESS",
+      "packet": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-workflow-continuation/outputs/workflow-focus-qualified-main43-20261101",
+      "patch_sha256": "122ceb9ade7cbe695a7351a0d8153f82975940d09428fcb89e5b0e1182b77911",
+      "final_checks": "13/13 focused cases, Biome, scoped ESLint and declared typegen/typecheck passed; terminal groups absent",
+      "canonical_local_commit": "af10dc28250b1eee8db89c83ae353b7dd542f4ac",
+      "adoption_receipt": "outputs/workflow-focus-main-adoption-observed.json",
+      "ci_run": 41352755179,
+      "ci_url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/41352755179",
+      "ci_counts": "8322unitPASS/3SKIP;2947PostgreSQLPASS; types/lint/app/server/marketing/docsPASS",
+      "limit": "Keyboardfocus13files andMainreviewedprivacycompanions only; no privatewait/installed/browser/ATqualification"
+    },
+    "latest_parent_report": "Root reports latest full Main green at compact cursor515, but this packet is not integrated. No unrelated head or counts copied; no Main/CI query in this documentation task.",
+    "historical_before_qualification": {
+      "current_canonical_9fb": "Not queried in this documentation task. No claim that current dirty focus candidate is published or CI-qualified.",
+      "historical_43": {
+        "sha": "43a5fb4d2a6be7bbbd260855a6a8e1ce55fbf3c1",
+        "tree": "4b477872f1e9010383343060dc15949169dcf89e",
+        "ci_run": 41320388147,
+        "ci_status": "FINAL ownerhandoff: SUCCESS all3jobs;8309unit/3skipped,2940PG/631files,types/lint,app+fiveworkers,site30tests/build,docsbuild. Exact43clean/published.",
+        "change_since_fd49": "four test-fixture files only;14/14 affectedPG and types/scopedlint/inventory passed per owner",
+        "earlier_fd49_ci": "not green: outdated mailbox uniqueness fixture assertion",
+        "handoff_report": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-settings-ux/outputs/branch-consolidation-20261101/RESULT.md"
+      },
+      "current_canonical_status": "Exactaf10dc2 focus sourceDELIVERED: fullCI41352755179COMPLETEDSUCCESS at21:59:56Z;8322unitPASS/3skip,2947PGPASS, allrequiredtypes/lint/app/server/sitesbuildsPASS. Privatewaitsourceabsent.",
+      "latest_shared_main_refresh": "See outputs/workflow-canonical-refresh-66d-ee366-20261101.json. Sourcefocusaf10historicalPASS andcontainedinEE; latestsharedMainqualification followsownexactCI, notoldfocusrun.",
+      "latest_run_observation": {
+        "id": 41358379551,
+        "head_sha": "ee36663b3318ba84b7a0b1600e34e773f9597d88",
+        "status": "in_progress",
+        "conclusion": null,
+        "html_url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/41358379551",
+        "updated_at": "2026-11-01T22:41:37Z"
+      }
+    }
+  },
+  "operating_agreement": {
+    "path": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-settings-ux/WARPDRIVE-OPERATING-AGREEMENT.md",
+    "effective": "2026-11-01",
+    "canonical_integrator_thread": "01a19251-a472-7cd1-86cd-8dc245dd5b84",
+    "canonical_workspace": "/Users/ali/Developer/warpdrive-settings-ux",
+    "module_ownership": "Standing Workflow ownership; routine private module implementation, filenames, fixtures, formatting, fixes and generated type outputs are autonomous. Preserve peers and existing workspaces. Newer canonical HEAD does not require routine rebase or suspend private work.",
+    "self_serve_checks": "One owned focused formatting/unit/component invocation per chat within standing120s/one-worker limits. Whole-project configured Next/TSC and type-aware ESLint use the sole integrator heavy queue (up to180s combined compiler), as do DB/browser/build/install/service campaigns. Use declared Bun1.4.4 and synthetic isolation, preserve peers and resource limits; do not infer a new grant from a consumed plan.",
+    "heavy_queue": "Sole integrator schedules installs, DB/Testcontainers, browser/playback, builds and services. Default total limits: DB/browser5min, install/build15min including cleanup. No routine MAIL permission chain and no generic guard project as a slot prerequisite.",
+    "canonical_mutations": "Only integrator stages/commits/pushes canonical main. Preserve migrations0000-0097; reserve new canonical number in single queue before use. Shared contracts go once to integrator; provider/credential/cloud/production/publication authority unchanged.",
+    "status_reporting": "Delivered / In progress / Blocked / Next delivery. Old per-file/hash/fresh-MAIL/exact012 freeze conditions below are historical, not current standing policy."
+  },
+  "ownership_phase": "Standing Workflow module ownership. This documentation update owns only five durable continuation files and a new backup folder, not the frozen packet or managed application/tests.",
+  "dependency_state": {
+    "status": "private_install_and_managed_link_pass",
+    "receipt": {
+      "path": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-workflow-continuation/outputs/workflow-main-adoption-20261101/dependency-isolation-r3-receipt.json",
+      "sha256": "0ebf92fdd3da7aecd05412314fee23e1f037bcdc03e48177f11dba65a3cbdbfc"
+    },
+    "install_basis_canonical": "012f4e7a8d9a3151f087b0cf89a8825081311166",
+    "managed_basis": "43a5fb4d2a6be7bbbd260855a6a8e1ce55fbf3c1",
+    "seconds_supervisor": 41.85,
+    "seconds_outer": 42.30712145799771,
+    "exit_code": 0,
+    "pins_unchanged": 29,
+    "owned_group_gone": true,
+    "min_free_bytes": 16917168128,
+    "bun": "/tmp/warpdrive-bun144/bin/bun (1.4.4)",
+    "managed_node_modules_target": "/Users/ali/.codex/worktrees/workflow-roadmap-owned/warpdrive-focus-deps-main43-20261101/node_modules",
+    "old_target_preserved": "/private/tmp/warpdrive-builder-ux-20261031/node_modules",
+    "installed_metadata": {
+      "next": "16.4.3",
+      "typescript": "6.0.3",
+      "vitest": "5.0.5",
+      "react": "19.3.1",
+      "react_dom": "19.3.1",
+      "jsdom": "29.1.1",
+      "next_intl": "4.14.9",
+      "biome": "2.6.4"
+    },
+    "fresh_runtime_witness": {
+      "verified_at": "2026-11-01T22:54:41.386977+00:00",
+      "binary": "/tmp/warpdrive-bun144/bin/bun",
+      "reported_version": "1.4.4",
+      "sha256": "0a2237cdcfa0d16ef501d9acca9f0026309ef348bea7393a64e8d1e3609565cc",
+      "pinned_in_current_plans": true,
+      "purpose": "Read-only runtime witness after peerreported wrongCLI4.2; no newcheck/native/install started. FrozenCLI maybereusedread-only, mustnotberemovedwhilepeersdependonit."
+    }
+  },
+  "regression_application": {
+    "receipt": {
+      "path": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-workflow-continuation/outputs/workflow-focus-creation-regressions-applied-main43.json",
+      "sha256": "2e467cd964809d5e336764ea7889233de7c30169fe8f6993f2bb3b6ea09150ef"
+    },
+    "file": "src/features/workflows/ui/WorkflowDialogs.focus.test.tsx",
+    "state": "Applied before RED. Immutable receipt UNEXECUTED status describes application time only; later actual RED and GREEN supersede that pending state.",
+    "production_unchanged_at_application_boundary": true
+  },
+  "red4r2": {
+    "status": "TERMINAL_EXPECTED_RED",
+    "observed": {
+      "path": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-workflow-continuation/outputs/workflow-focus-creation-red4-r2-observed.json",
+      "sha256": "cded851b11a301b18ff7270326de4e474a8430f07b4bad4b87c74891f9f0df21"
+    },
+    "receipt": {
+      "path": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-workflow-continuation/outputs/workflow-focus-creation-red4-r2-supervisor-receipt.json",
+      "sha256": "9ca0a4908055c93eb96bbaef47ed247bbf12a6ef2c2ca031fe494d9b2de544ac"
+    },
+    "log": {
+      "path": "/tmp/warpdrive-workflow-creation-red-main43-20261101-r2-01.log",
+      "sha256": "4ee28b8f4779c4d66650b867183ffedc16943ef148ba3345008730eabd46db74"
+    },
+    "selected": 4,
+    "passed": 1,
+    "intended_focus_failures": 3,
+    "unselected_skipped": 6,
+    "actual_failed_focus": "BODY at all three intended assertions; no setup failure",
+    "vitest_seconds": 5.12,
+    "supervisor_seconds": 6.932,
+    "exit_code": 1,
+    "worker_pgid": 14198,
+    "bun_pid": 14199,
+    "pins_unchanged": 46,
+    "min_free_bytes": 13140086784,
+    "owned_group_gone": true
+  },
+  "production_fix_status": "Minimum runtime definition-schema boundary, exact-error tests and both selected-digit hint consumers are PRIVATE_SOURCE_QUALIFIED by current configured static/GUI31/native10. Earlier focus increment is separately delivered at AF10; duration waits are not yet integrated or delivered.",
+  "final_checks": {
+    "status": "PRIVATE_SOURCE_QUALIFIED_MAIN_BROWSER_PENDING",
+    "scope": "Private configured static, affected GUI31 and real-Postgres runtime5/public5 only. No current Main integration, installed migration, native app/browser/AT, elapsed-minute, provider or whole-lifecycle acceptance.",
+    "source_head": "43a5fb4d2a6be7bbbd260855a6a8e1ce55fbf3c1",
+    "code_paths": 53,
+    "input_pins": 289,
+    "source_pin_mismatches": [],
+    "configured_static": {
+      "status": "PASS",
+      "declared_pipeline": "Next typegen followed by full tsc with the declared project, typed ESLint8 and Biome11; no new exclusions or bare-tsc substitution.",
+      "command_seconds": 18.51,
+      "cleanup_seconds": 35.350514,
+      "receipt": {
+        "path": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-workflow-continuation/outputs/workflow-runtime-version-green-compiler-observed.json",
+        "sha256": "e209875f3c1c66f899883876e0693b4adf12786dbe463b10088db5297f6cf005"
+      },
+      "log": {
+        "path": "/tmp/warpdrive-workflow-runtime-version-green-compiler-20261102-01.log",
+        "sha256": "c93be543a229bd8a2a6a261f9b1ebd8afe311f9f4d5b1c168b68aa23f0dc211d"
+      },
+      "authorization": "WORKFLOW-RUNTIME10-GREEN-20261102-1",
+      "limit": "Local sample and time-l accounting, not a continuous aggregate peak. Compiler PASS is distinct from the original combined allocation return overrun."
+    },
+    "affected_gui": {
+      "status": "PASS",
+      "tests": 31,
+      "files": 5,
+      "command_seconds": 4.61,
+      "cleanup_seconds": 9.651323,
+      "receipt": {
+        "path": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-workflow-continuation/outputs/workflow-runtime-numbering-unit-green-observed.json",
+        "sha256": "0711c6ef83813374db0263ca43630889f9d608322198a3e9604c92b7c545ac9a"
+      },
+      "log": {
+        "path": "/tmp/warpdrive-workflow-runtime-numbering-unit-green-20261102-01.log",
+        "sha256": "34897fbd1fa53a7bfcec61b8f77cf64c46b42c8c1f63a49603d2522054bf493f"
+      },
+      "limit": "Overlaps earlier GUI cuts; do not sum counts. No native application/browser/AT qualification."
+    },
+    "fresh_native": {
+      "status": "PASS_RUNTIME5_PUBLIC5_ALL10",
+      "tests": 10,
+      "files": 2,
+      "failed": 0,
+      "setup_failures": 0,
+      "unselected": 0,
+      "command_seconds": 4.81,
+      "full_cleanup_seconds": 18.221823,
+      "allocation_seconds": 180,
+      "receipt": {
+        "path": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-workflow-continuation/outputs/workflow-runtime-version-green-native10-observed.json",
+        "sha256": "3f9227144b3d31e290cd366bc8892e094299e1402f2f659c070dcc52663e8c84"
+      },
+      "log": {
+        "path": "/tmp/warpdrive-workflow-runtime-version-green-native10-20261102-01.log",
+        "sha256": "743c7095258d88da4300b73c1c69d3ac9bbf237bf952e6ef9b75cf0bbeb25521"
+      },
+      "authorization": "WORKFLOW-RUNTIME10-NATIVE-20261102-2",
+      "all_289_pins_unchanged": true,
+      "foreign_baseline": "Exact3containers/3networks/2volumes and cached PG/Ryuk images preserved; natural owned cleanup, no manual deletion/prune/pull.",
+      "environment": "Bun1.4.4, BUN_OPTIONS/direct --no-env-file, Vite envDir:false, actual four Next dotenv files absent before and after.",
+      "asserted": "Exact WORKFLOW_INVALID for four unsupported stored-version cases; cleared active deadline; unchanged version/actor/workflow IDs, trigger, outputs and prior steps; no new CRM effects; stale advance stays failed. Numeric-v1 control and five public service journeys pass.",
+      "source_inspected_only": "Cursor/nextNodeId retention follows failRun source. No separate post-failure nextNodeId equality assertion exists.",
+      "limit": "Controlled deadlines and archive fixture, not actual elapsed-minute delivery, public archive API, Main/CI/installed/browser/AT/provider proof. No continuous aggregate or PostgreSQL peak measurement."
+    }
+  },
+  "static_history_preserved": {
+    "initial_green13": "13/13,3files,zero skips; Vitest2.99s/supervisor4.067s, then formatting and lint fixes changed source, so final reruns above supersede this cut.",
+    "initial_biome": "Exit0,1.213s,4files formatted;2optional-chain warnings and3template infos, not zero diagnostics.",
+    "initial_typecheck": "Declared Next typegen + tsc pipeline PASS39.855s, not bare tsc.",
+    "initial_eslint": "FAIL9.613s: unnecessary unknown cast in test and unbound method in WorkflowEditor. Both corrected before final reruns.",
+    "older_green9_green10": "Valid only for their earlier pinned source cuts; retained in historical checkpoint and receipts.",
+    "initial_red_setup": "Earlier zero-test setup failure is not behavioral RED evidence; later intended assertion failures are separately preserved."
+  },
+  "resource_observation_limits": {
+    "latest_owner_report": "Latest final preflights kernel pressure level1, Q51, disk >8GiB. Final owned groups independently absent; no Workflow owned job live at parent readback.",
+    "honest_sampling": "Fast RED/GREEN had Q samples but no live aggregate RSS sample. First typecheck owner-reported max sampled RSS2860728320B, Q45-54; no kernel-pressure pre-sample was captured before that first typecheck. Transient pressurelevel2 was observed after the initial ESLint group was gone; no next check began until level1/Q53/free12682813440B. Do not claim normal pressure throughout.",
+    "docs_r4": "Historical unsafe=true/groupsGone=false receipt remains unresolved as a receipt result; operational queue release did not retroactively make it pass. No owned child PGID/birth registry, so later controller absence alone does not prove its child cleanup. Protected baseline82133/82134/42134 were not owned R4 groups.",
+    "duration_wait_current": "Current receipts retain fresh normal-pressure pre/post samples, actual source-pin conservation, four-dotenv absence and owned/foreign resource cleanup. Samples/time-l are not continuous aggregate or PostgreSQL peak proof; original combined return overrun and older native9 observation overrun remain explicit."
+  },
+  "prototype": {
+    "file_url": "https://www.figma.com/design/lo6eJ7kZQykfj0HduMaoGN",
+    "file_key": "lo6eJ7kZQykfj0HduMaoGN",
+    "owner_agent": "/root/acceptance_prototypes",
+    "status": "R2 native112-frame package ready;20 corrected PNGs independently visually inspected, all four captured-state/copy finding classes closed, no new observed clipping/layout regression in reviewed initial viewports.",
+    "r2_folder": "outputs/workflow-prototype-20261101-r2",
+    "pins": {
+      "path": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-workflow-continuation/outputs/workflow-prototype-20261101-r2/pins.json",
+      "sha256": "384e65a569d1b9447588bf5abb9cd1bb8e131b9a172fb67bc80a5dddc8d3d8b7"
+    },
+    "coverage": {
+      "path": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-workflow-continuation/outputs/workflow-prototype-20261101-r2/coverage.json",
+      "sha256": "e9cf73887717d0eb7993d7a03e936a1bc48bcf954fb4f2f70a4365dd89e6e25b"
+    },
+    "native_audit": {
+      "path": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-workflow-continuation/outputs/workflow-prototype-20261101-r2/native-audit.json",
+      "sha256": "f09225e623b2e6029d00907e76ffdd966195229e083ebb8ee2d9883473eb3225"
+    },
+    "independent_visual_resolution_md": {
+      "path": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-workflow-continuation/outputs/workflow-prototype-r2-visual-resolution-review.md",
+      "sha256": "a6a57d4b9e29b44a99a6fe3ed6802c382efb28bc7ec7bf29af869907f3d4dab0"
+    },
+    "independent_visual_resolution_json": {
+      "path": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-workflow-continuation/outputs/workflow-prototype-r2-visual-resolution-review.json",
+      "sha256": "b522032c06d18d754e35ff93699dfd44b858fd345bddbdd247c6ad80fe04fda5"
+    },
+    "primary_frames": 112,
+    "corrected_pngs": 20,
+    "unchanged_png_copies": 92,
+    "text_corrections": 24,
+    "owner_reported_primary_links": 412,
+    "owner_reported_narrow_links": 224,
+    "preservation": "Original package and f1 plan retained; original210files preserved per producer evidence. f1 plan withdrawn, never launch. R2 pixels/metadata do not establish application/runtime/keyboard/AT acceptance.",
+    "local_draft_semantics": "Local Warpdrive draft available under owned-account/current actor/CRM checks despite provider revocation; external SEND/reconnect rights remain distinct. No invented provider draft write capability.",
+    "browser_playback": {
+      "status": "TERMINAL_PARTIAL_FAILED_TIMING",
+      "plan": "outputs/workflow-prototype-browser-plan-r2.json",
+      "plan_sha256": "12db59566a94e3b9c1de397804940b9bc5409209ae10e8c31bf2b59169cc924e",
+      "terminal": {
+        "path": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-workflow-continuation/outputs/workflow-prototype-playback-r2-20261101/terminal.json",
+        "sha256": "0728ea354e2ea7a5ad1880351d8fea34db0f37761e49e8f99790dc17aa8f2b5b"
+      },
+      "timing_scope_addendum": {
+        "path": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-workflow-continuation/outputs/workflow-prototype-playback-r2-20261101/timing-and-scope-addendum.json",
+        "sha256": "1e6f9bbeb53d2da26f174ea16c26f7163d5c48cf56fce81f2aad62abebbbf83b"
+      },
+      "actual_start": "2026-11-01T18:59:45.160Z",
+      "actual_finish": "2026-11-01T19:04:54.357Z",
+      "total_seconds": 309.197,
+      "total_limit_seconds": 300,
+      "overrun_seconds": 9.197,
+      "interaction_limit_seconds": 270,
+      "limits_met": false,
+      "observed": "DE Light library23:5800 screenshot, then actual first workflow-row click to editor16:877 with URL/content verification.",
+      "not_validated": [
+        "history/waiting transition: metadata19:4960 versus AX29:5400 mismatch",
+        "Farsi narrow content and scroll: selection returned, no content/scroll proof",
+        "complete desktop author/test/publish/run journey",
+        "keyboard/AT",
+        "application/provider behavior"
+      ],
+      "owned_tab_ids": [
+        351774595,
+        351774598
+      ],
+      "owned_remaining": [],
+      "raw_receipt_correction": "Terminal raw 270ms-window and cleanup-immediate wording is not accepted as timing proof; addendum records270seconds, missed interaction deadline,309.197seconds total and partial failed timing.",
+      "retry": "None started/authorized by this documentation update."
+    },
+    "wf005_complete": false,
+    "bounded_visual2": {
+      "status": "BOUNDED_VISUAL2_PASS_FIVE_FRAMES_THREE_ROUTES_TWO_SCROLLS",
+      "receipt": "/Users/ali/.codex/workflow-evidence/20261102/prototype-visual2/observed.json",
+      "sha256": "0e7839c285a87f6181d88a87113cbd6b929b3144d78178c26df7c2a0a9749865",
+      "exact_timing": "/Users/ali/.codex/workflow-evidence/20261102/prototype-visual2/exact-timing-addendum.json",
+      "allocation_to_cleanup_s": 306.95,
+      "case1_s": 171.366,
+      "case2_s": 135.192,
+      "all_timing_gates_pass": true,
+      "owned_tabs_remaining": [],
+      "unrelated_tabs_urls_preserved": 2,
+      "review": "/Users/ali/.codex/workflow-evidence/20261102/prototype-visual2/review.json",
+      "limits": "AXdocumentidentityonly/depictedfocus;DErightedgeviewercropped. NoCRM/DOMfocus/keyboardAT/wholeWF005acceptance."
+    }
+  },
+  "owned_runtime_state": "No live owned check/process/resource at final cleanup/readback. Compiler and fresh native allocations consumed and returned; no duplicate run or pending START for these plans.",
+  "next_action": "FreshMainstatic14START thenqualifiedcombinedinsertion/ordering/docsintegration andexactCI. Continueunfinishedprototypeauthor/test/publish/FAreturnroutes andactualCRMlivejourney underfreshfiniteallocations. FullWF001-042 remainsactive.",
+  "not_released_by_this_checkpoint": [
+    "canonical stage/commit/push",
+    "provider/credential/cloud/production operations",
+    "unreserved canonical migrations",
+    "new heavy campaign"
+  ],
+  "preparation_only": {
+    "privacy_main39_review": {
+      "source_inventory": "all four Workflow stores explicitly classified",
+      "lifecycle_operations": "all six explicitly unsupported, dedicated subject/provenance adapter missing",
+      "immutable_version_guard": "unconditional UPDATE/DELETE rejection retained in published86",
+      "report": "workflow-privacy-integration-main39.md",
+      "runtime_or_deletion_performed": false
+    },
+    "mail_review_current": "v2 audited,14sourcefiles at exact43; v1 preserved. Terminal Workflow cancellation prevents mail-row recreation; CRM-copy repair separate from one-shot IMAPAPPEND. Preparation only.",
+    "bulk_atomicity_review": {
+      "path": "workflow-bulk-atomicity-boundaries.md",
+      "sha256": "d15432b11766d604d57848c0e6ee0c56e73c9a93a597763cc861083518eb4907",
+      "result": "Universal100events/txcandidate disproved: atomicunboundedadmintransfer/merges/historyconversion/stagerelocation;bulkLeadEdit500oneUPDATE;bulkArchiveuncappedouterTx. ActualcommitnotResult.errisjournaltruth."
+    },
+    "node_copy_policy": {
+      "path": "workflow-current-node-copy-policy.md",
+      "sha256": "7dc0cda8a3e0b3828100b282a7f5255ff5475a822a7721328254138aa39b2bce",
+      "result": "7registeredtype/version1pairs, exactallowlistedfields/strictbindings andknownincompleteforms;unknownfields/versionsreject. No email/provider/credentialconfigregistered; no copierimplemented."
+    },
+    "admission_architecture_review": {
+      "path": "workflow-event-admission-architecture-review.md",
+      "sha256": "797b6331dd052b824ccb1f4a66b52a0132a6fa092af6f42441d53b05c608d4f1",
+      "result": "Bhistoricalepoch-pinnedpagedmatchingpreferredconditionally;AnocapSyncstillviable. Pending/runmaterialization,authoritytiming,quotas/fanout/lockordergatesnotsettled; no decisionfreeze/sourcecode."
+    },
+    "event_authority_fence_review": {
+      "markdown": "outputs/workflow-event-authority-fences-main43.md",
+      "markdown_sha256": "b7207506850979f6bd5055becb691f42a0017d01ae1745cb7e18ab87a0fabe56",
+      "json": "outputs/workflow-event-authority-fences-main43.json",
+      "json_sha256": "471d6520cec20379f17ae5d815a5bae0bdd1b12b8a4d89947c6df89cc6bbdb59",
+      "source_ceiling": "43a5fb4d2a6be7bbbd260855a6a8e1ce55fbf3c1",
+      "result": "No common durable CRM authority generation/completefence across7identitymutationgroups. Currenthydration iscurrentstate;partialauthlocks/privacyspecificgenerations/audit/timestamps do notprove eventtimeauthority. A/Btiminggate remainsopen; noengine/schema/publiccontractchange."
+    },
+    "additional_preparation": [
+      "workflow-create-authority-test-plan.md",
+      "workflow-overdue-wait-preconditions.md",
+      "workflow-privacy-integration-main39.md",
+      "workflow-mail-reuse-current-main-review.md",
+      "workflow-mail-reuse-current-main-review.json",
+      "workflow-overdue-wait-current-main-review.md",
+      "workflow-overdue-wait-current-main-review.json",
+      "workflow-prototype-localization-review.md",
+      "workflow-focus-main-adoption-audit.md",
+      "workflow-focus-main-adoption-audit.json",
+      "workflow-mail-reuse-current-main-review-v2.md",
+      "workflow-mail-reuse-current-main-review-v2.json",
+      "workflow-mail-reuse-review-audit.md",
+      "workflow-bulk-atomicity-boundaries.md",
+      "workflow-bulk-atomicity-boundaries.json",
+      "workflow-current-node-copy-policy.md",
+      "workflow-current-node-copy-policy.json",
+      "workflow-event-admission-architecture-review.md",
+      "workflow-focus-semantic-review-main43.md",
+      "workflow-focus-semantic-review-main43.json",
+      "workflow-focus-empty-library-opener-regression-main43.patch",
+      "workflow-event-authority-fences-main43.md",
+      "workflow-event-authority-fences-main43.json",
+      "workflow-typegen-network-boundary-review.md",
+      "workflow-docs-r4-resource-observation.json",
+      "workflow-docs-r4-current-validator-process-observation.json",
+      "workflow-prototype-final-de-light-visual-review.md",
+      "workflow-prototype-final-de-light-visual-review.json",
+      "workflow-prototype-final-de-dark-visual-review.md",
+      "workflow-prototype-final-de-dark-visual-review.json",
+      "workflow-prototype-final-fa-light-visual-review.md",
+      "workflow-prototype-final-fa-light-visual-review.json",
+      "workflow-prototype-final-fa-dark-visual-review.md",
+      "workflow-prototype-final-fa-dark-visual-review.json",
+      "workflow-prototype-112-visual-review-index.md",
+      "workflow-prototype-112-visual-review-index.json",
+      "workflow-main-adoption-20261101/dependency-isolation-plan-r2.json",
+      "workflow-main-adoption-20261101/dependency-isolation-plan-r3.json"
+    ]
+  },
+  "historical_checkpoint_before_operating_reset_sync": {
+    "preserved_sha256": "c21c33397f906b14e9834d58faf91b8e16138b931ec8c4c1e0f6d61b9b19e749",
+    "record": {
+      "goal_status": "active/incomplete",
+      "previous_goal_turn": "progress: independent exact43 review found two creation-dialog focus defects, prepared an unapplied regression patch, and traced the absence of a common CRM authority fence. No tests were claimed.",
+      "source_root": "/Users/ali/.codex/worktrees/workflow-roadmap-owned/warpdrive-builder-ux-20261031",
+      "branch": null,
+      "head": "43a5fb4d2a6be7bbbd260855a6a8e1ce55fbf3c1",
+      "remote_main_verified": "39a00ff80370ee8c63a9824bfbff7307a80c7594",
+      "completed_prs_verified_merged": [
+        2,
+        3
+      ],
+      "main_ci": {
+        "id": 41309527822,
+        "last_verified_status": "completed",
+        "crm_job_id": 124856801817,
+        "last_verified_step": "CRM checks completed successfully",
+        "conclusion": "success",
+        "all_three_jobs": "success"
+      },
+      "narrow_source_release": "used earlier for post-RED RunHistory fix; currently superseded by full source/ref/checkout freeze",
+      "not_released": [
+        "refs",
+        "commits",
+        "pushes",
+        "new branches",
+        "migration/catalog/shared-adapter changes",
+        "other source changes"
+      ],
+      "changed_since_preserved_bundle": [
+        "src/features/workflows/ui/WorkflowFocusFallback.test.tsx",
+        "src/features/workflows/ui/RunHistory.tsx"
+      ],
+      "test_hash": "d1c211f72b39a743489206e71759dad455aa5280605578517bb570cf5f783696",
+      "red10_status": "terminal:1pass/1intendedfail in1file,guard3.05s,13pinsconserved,groupgone",
+      "production_fix_status": "RunHistory heading fallback correction passed observed RED then GREEN10; broader static/browser/current-main/fullCI qualification still pending.",
+      "reference_research": "all ten registered flows and 53 frames inspected; no application/provider qualification",
+      "next_action": "Finish nativeR2exports/audits and independent20PNGresolution review; preserveold200file evidence. Then prepareNEWpinnedremoteFigma300plan; f1isWITHDRAWN andmustneverlaunch. PrivateBunR3(5e11e58f...) isready/UNSTARTED,requiresfreshMAILspecificgrant and source43/canonical012/25pins/4Git+physicalinputs recheck. Mainconditionalmanagedlinkcustodyreceived; oldexternaltargetnevermodified. No install/test/browser/runtime withoutfreshgrant. Afterprivate graph,actualnewfocusRED beforefix; latestMainadoption beforeintegration remainsseparate.",
+      "source_preflight": "13/13 GREEN10 candidate pins conserved; plan cd005b9d and canonical guard5b1a23f4 unchanged; fresh log absent; no runtime launched.",
+      "resource_owner_latest": "DocsR4historicfailed/ESLintUNKNOWNunchanged; MainacceptedOPERATIONALqueuereleasefromfreshquiescence. MainESLINT120waswithdrawnUNEXECUTED;7docscommitted/pushedas012f4e7withnewhostedCIinprogress(ownerreport). MAILnine-casephaseactuallyran: observedexec60a6da64terminalexit1/17.488s,worker84457/groupquiescent,ownedcontainerremoved,candidaterestored perowneroutput; owner/Mainadjudication andfreshnextgrantstillneeded. No Workflowgrant.",
+      "canonical_authority_precondition": "Frozen source MCP authentication exposes ungated contact/activity creates to regular actors lacking corresponding global create flag; source chain traced, no exploit test/current-main qualification. Exact report workflow-event-outbox-other-entities.md.",
+      "canonical_authority_main_refresh": {
+        "commit": "39a00ff80370ee8c63a9824bfbff7307a80c7594",
+        "authority_chain_blobs_compared": 17,
+        "identical": 17,
+        "source_gap_persists_at_exact_commit": true,
+        "runtime_exploit_tested": false,
+        "fix_ownership": "not released; integration owner informed"
+      },
+      "current_goal_turn": "progress: all112 old final PNGs actually reviewed (28per locale/theme),4prototype state/copy classes identified across20frames;24remote text changes applied with same geometry/links/fonts, R2exports/audits ongoing. Separate dependencyR3plan binds actualMain012/4Git+physical equal inputs and8GiBfloor; no app runtime/source change.",
+      "green10_status": "TERMINAL PASS:10cases/3files,13pins conserved, guard3.55s/outer3.688s, ownedPGID37753gone; slot returned. Focus candidate only; no further grant.",
+      "green10_plan": "workflow-poll-green10-plan.json",
+      "production_sha256": "5a05f7bc2d107194de59e1252d05df1b72f387b876ab7a3df778e8c1f664365a",
+      "prototype": {
+        "file_url": "https://www.figma.com/design/lo6eJ7kZQykfj0HduMaoGN",
+        "file_key": "lo6eJ7kZQykfj0HduMaoGN",
+        "session_id": "f2c196a6-03df-405e-841b-689fb31dc84b",
+        "owner_agent": "/root/acceptance_prototypes",
+        "status": "Finalnative112frames/112canonicalPNGs ready:44desktop+68narrow;412primarylinks/224narrow;0unresolved/unreachable/viewport/font/imagefill/unintendedoverflow. Independent53checkartifactintegrityPASS;6mailsemanticrendersPASS.",
+        "exact_source_fonts_available": [
+          "Inter",
+          "Vazirmatn"
+        ],
+        "local_runtime_or_browser_started": false,
+        "index_node": "21:5176",
+        "first_journey_nodes": {
+          "de_light_library": "23:5800",
+          "de_light_editor": "16:877",
+          "fa_dark_library": "23:5929",
+          "fa_dark_editor": "16:4055"
+        },
+        "structural_evidence": "Native editable text/component instances, zero image-filled UI nodes and zero font mismatches reported; root reviewed DE/FA editor and narrow/publication renders",
+        "root_review_corrections": [
+          "source toolbar/ordered steps/ports/connectors and zoom restored",
+          "FA duplicate Settings label differentiated",
+          "FA wordmark anchored logically, source documentation footer and active edge restored",
+          "FA inspector wrapped text fitted",
+          "publish confirmation states publish AND activate",
+          "explicit permissions and connected mailbox draft capability added to publication reviews"
+        ],
+        "remaining_visual_gate": "Actualpresentationclick/scroll playback awaitingfreshremoteFigma300grant; keyboardAT/applicationbehaviorunqualified. WF005notcomplete.",
+        "old_capture_status": "Original FA frame8:588 screenshot request timed out without handle/URL; original frame retained, no blind retry. New corrected frames captured after actual edits.",
+        "contrast_design_correction": {
+          "before_hex": "#64748b",
+          "before_ratio": 4.4648,
+          "after_hex": "#627289",
+          "after_ratio": 4.5953,
+          "background": "#f5f8fb",
+          "variable": "Workflow/Proposed accessibility/mutedOnMain",
+          "variable_id": "VariableID:30:5451",
+          "affected_text_nodes": 52,
+          "light_frames": 28,
+          "application_source_changed": false
+        },
+        "structural_audit": "All56 primaryframes reachable; reaction targets resolve; exactfontfamilies; zeroimagefills; zeroautolayoutoverflow reported",
+        "representative_root_narrow_review": "DELight mapping/testsetup andFADark focusedsearch/waiting reviewed; no clipping; coherent intentionally untitled sample. German CTA/copy refinements requested.",
+        "independent_localization_review": "14canonicalPNG representative review, no additional concrete defect; exactframehashes in workflow-prototype-localization-review.md; excludes laternewnarrowstates.",
+        "local_draft_semantics": "Corrected to localWarpdrive drafts underownedaccount/currentactor/CRMchecks;providerrevocationalone isnotblocker;externalSEND/reconnectrightsseparate. Independentresolutionrecord8ed2077f...",
+        "contrast_final": "2508active/28usedpairs/0assessedfailures;8inactive+612occludedexcluded;120visibleemptyTEXTIDsseparatelyproven.3248−120=3128=2508+8+612;204hiddenoutsideinventory. Metadataonlyreconciliationdeb9f16b...;nativePNGsunchanged.",
+        "browser_plan": "workflow-prototype-browser-plan.json",
+        "browser_plan_sha256": "f1aab2943a13a252f083ad2b6677ec592031144fc2b48ce607bd1c5476f2decb",
+        "independent_final_audits": {
+          "integrity": "workflow-prototype-final-integrity-review.md/json,53scopedchecksPASS",
+          "mail_semantics": "workflow-prototype-mail-semantics-resolution.md,6finalrendersPASS",
+          "empty_text_reconciliation": "120uniqueemptyvisibleIDs verified;116iconlabels+4Inputvalues;204separatehiddenIDs;noUnhandledNonemptyDifference",
+          "canonical_scope": "112manifestPNGs+2auxiliaryrenders;5historicalacceptanceprefixPNGs excluded;independentpreservation121filehash/modewindow,owner200fileaggregate distinct"
+        },
+        "browser_plan_status": "f1aab294planWITHDRAWNcoordinatorack;nevergrant/launch. Native24textcorrectionschangedremoteprimaryscreens;oldlocalevidenceintact. NewplanmustpinR2afteractualexports/audits/review.",
+        "final_112_pixel_review": {
+          "index_md": "outputs/workflow-prototype-112-visual-review-index.md",
+          "index_md_sha256": "4f3bd83b2c8731c7cec312eba63a86dccecf0c18e3a52fc8639d94ea281ccdfa",
+          "index_json": "outputs/workflow-prototype-112-visual-review-index.json",
+          "index_json_sha256": "13b0e6031da20f003b6558b6979602ad9f0c1a3e79394da86d2e1596f0d6667d",
+          "coverage": "112uniqueexactcanonicalIDs/paths/SHA/physicalbytes,28each4variants,explicitpixelreviewflags;rootDEDLightmapping16:1520supplementkeptseparate",
+          "findings": "Filled library query vsunrelatedrows;desktopactionquery/CRMmatchingcaptionvsSEND;desktopTitlequeryvsamount;narrowsimulationexternal-stepvslocaldraft.4classes/20frames;nointeractionqualification."
+        },
+        "r2_correction": {
+          "owner_agent": "/root/acceptance_prototypes",
+          "new_folder": "outputs/workflow-prototype-20261101-r2",
+          "status": "24exactTextmutationssucceeded/20frames;16of20modifiedPNGsreportedsavedandpixelcheckedbyowner;remaining4exportsandfreshmetadata/auditsongoing. No finalR2qualificationclaim yet.",
+          "bounds": "Geometry/fonts/tokens/navigationunchanged per native readback:112frames,412routes/224narrow,0invalid/viewportmismatch,20verticalclippedscrollcontainers. Exactfreshcontrast/textcountsawaited.",
+          "root_visually_checked": "NewDELightlibrary/picker/mappingrendersfit,blankfieldsandneutralcaptionresolvecapturedstateinconsistency;scopeonlythese3initialviewports.",
+          "independent_review_agent": "/root/roadmap_audit reviewingall20modifiedPNGs,outputworkflow-prototype-r2-visual-resolution-review.md/json,notyetcomplete",
+          "old_evidence": "Entireoldworkflow-prototype-20261101folderandoldf1planremainpreserved;nooverwritingoldcanonicalPNGs."
+        }
+      },
+      "privacy_main39_review": {
+        "source_inventory": "all four Workflow stores explicitly classified",
+        "lifecycle_operations": "all six explicitly unsupported, dedicated subject/provenance adapter missing",
+        "immutable_version_guard": "unconditional UPDATE/DELETE rejection retained in published86",
+        "report": "workflow-privacy-integration-main39.md",
+        "runtime_or_deletion_performed": false
+      },
+      "coordination_cursors": {
+        "main": "0d3b90a9-401e-41c0-a108-b1b3d6e6a228:154",
+        "mail": "8fea3e15-9b3a-4375-840d-0b0a8bb9cf11:236"
+      },
+      "additional_preparation": [
+        "workflow-create-authority-test-plan.md",
+        "workflow-overdue-wait-preconditions.md",
+        "workflow-privacy-integration-main39.md",
+        "workflow-mail-reuse-current-main-review.md",
+        "workflow-mail-reuse-current-main-review.json",
+        "workflow-overdue-wait-current-main-review.md",
+        "workflow-overdue-wait-current-main-review.json",
+        "workflow-prototype-localization-review.md",
+        "workflow-focus-main-adoption-audit.md",
+        "workflow-focus-main-adoption-audit.json",
+        "workflow-mail-reuse-current-main-review-v2.md",
+        "workflow-mail-reuse-current-main-review-v2.json",
+        "workflow-mail-reuse-review-audit.md",
+        "workflow-bulk-atomicity-boundaries.md",
+        "workflow-bulk-atomicity-boundaries.json",
+        "workflow-current-node-copy-policy.md",
+        "workflow-current-node-copy-policy.json",
+        "workflow-event-admission-architecture-review.md",
+        "workflow-focus-semantic-review-main43.md",
+        "workflow-focus-semantic-review-main43.json",
+        "workflow-focus-empty-library-opener-regression-main43.patch",
+        "workflow-event-authority-fences-main43.md",
+        "workflow-event-authority-fences-main43.json",
+        "workflow-typegen-network-boundary-review.md",
+        "workflow-docs-r4-resource-observation.json",
+        "workflow-docs-r4-current-validator-process-observation.json",
+        "workflow-prototype-final-de-light-visual-review.md",
+        "workflow-prototype-final-de-light-visual-review.json",
+        "workflow-prototype-final-de-dark-visual-review.md",
+        "workflow-prototype-final-de-dark-visual-review.json",
+        "workflow-prototype-final-fa-light-visual-review.md",
+        "workflow-prototype-final-fa-light-visual-review.json",
+        "workflow-prototype-final-fa-dark-visual-review.md",
+        "workflow-prototype-final-fa-dark-visual-review.json",
+        "workflow-prototype-112-visual-review-index.md",
+        "workflow-prototype-112-visual-review-index.json",
+        "workflow-main-adoption-20261101/dependency-isolation-plan-r2.json",
+        "workflow-main-adoption-20261101/dependency-isolation-plan-r3.json"
+      ],
+      "ownership_phase": "Exactly13focusUI/helper/testfiles owned under workflow-focus-ownership-20261101.json.4docs/lifecycledraft/scratch/sharedsource/migrations remainpreserved/uneditable; no stage/commit/push/mainwrite/newbranch.",
+      "remote_main_after_mail": {
+        "sha": "fd49d8fa4ec3f344b3343b0484696e65bc5545e0",
+        "ci_run": 41318148109,
+        "crm_job": 124882484475,
+        "last_verified_ci": "in_progress; docs and marketing succeeded",
+        "scope": "published base, excludes uncommitted focus candidate"
+      },
+      "updated_at": "2026-11-01T18:22:20.548364+00:00",
+      "checkout_state": "detached at admittedmain43 after explicitly authorized ordinaryfetch/switch;21WIPfullstat/bytes/modes conserved",
+      "main_latest_owner_report": {
+        "sha": "43a5fb4d2a6be7bbbd260855a6a8e1ce55fbf3c1",
+        "tree": "4b477872f1e9010383343060dc15949169dcf89e",
+        "ci_run": 41320388147,
+        "ci_status": "FINAL ownerhandoff: SUCCESS all3jobs;8309unit/3skipped,2940PG/631files,types/lint,app+fiveworkers,site30tests/build,docsbuild. Exact43clean/published.",
+        "change_since_fd49": "four test-fixture files only;14/14 affectedPG and types/scopedlint/inventory passed per owner",
+        "earlier_fd49_ci": "not green: outdated mailbox uniqueness fixture assertion",
+        "handoff_report": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-settings-ux/outputs/branch-consolidation-20261101/RESULT.md"
+      },
+      "green10_receipt": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-workflow-continuation/outputs/workflow-poll-focus-20261101/green10-receipt.json",
+      "mail_review_current": "v2 audited,14sourcefiles at exact43; v1 preserved. Terminal Workflow cancellation prevents mail-row recreation; CRM-copy repair separate from one-shot IMAPAPPEND. Preparation only.",
+      "adoption_readonly_audit": "All21paths audited:18taskfiles+3scratchQA; all13trackedtaskbases identical92/43, all8untrackedpaths absent43/index; bytes/modes/index/status/HEAD/dependencysymlink conserved.13GREENpins match. No collision/adoption.",
+      "adoption_receipt_directory": "outputs/workflow-main-adoption-20261101",
+      "adoption_patch_sha256": "2a9e3c80d7021294f4ba8e4e09959df69f93262c472b1f071be08dba7fad1613",
+      "dependency_plan": "outputs/workflow-main-adoption-20261101/dependency-isolation-plan-r3.json",
+      "dependency_plan_status": "R3SHA5e11e58f39ef792de149120c34fc41f4b96d57d27a8bc8d6031ce44f2fe2aa89,8GiBfloor,120TOTAL/115canonicalguard/29pins,sameprivateabsentdir/log. UNSTARTED;noresourcegrant. Old176andcb361R2retainedimmutable/unstarted;noteligibleforlaunch.",
+      "typecheck_preflight": "RequiredtypesneedsNexttypegen+TSC;exact33absentignoredgeneratedoutputs(28i18n+next-env+4.nexttypes)mustbeallowlisted;AGENTS/configfrozen;NextdotenvindependentofBunflag;CIblocksTSautoinstallbutSWCneedsenforcednetworkdeny. Readonlyreport0dedb28b...withpinnedBunpath, noexec.",
+      "typecheck_preflight_report": "outputs/workflow-main-adoption-20261101/typecheck-readonly-preflight.md",
+      "typecheck_preflight_report_sha256": "0dedb28b6a66b6515cb01d8c6f3a863c6565dc5749e3fa6b85c52db239fd22c2",
+      "owned_runtime_state": "No Workflowrunner/build/install/browser/app/worker/DB active. PriorGREENexec86147,fetchPGID47617,checkoutPGID47764terminal/groupgone. Oldprotectedpreviews/services untouched.",
+      "bulk_atomicity_review": {
+        "path": "workflow-bulk-atomicity-boundaries.md",
+        "sha256": "d15432b11766d604d57848c0e6ee0c56e73c9a93a597763cc861083518eb4907",
+        "result": "Universal100events/txcandidate disproved: atomicunboundedadmintransfer/merges/historyconversion/stagerelocation;bulkLeadEdit500oneUPDATE;bulkArchiveuncappedouterTx. ActualcommitnotResult.errisjournaltruth."
+      },
+      "node_copy_policy": {
+        "path": "workflow-current-node-copy-policy.md",
+        "sha256": "7dc0cda8a3e0b3828100b282a7f5255ff5475a822a7721328254138aa39b2bce",
+        "result": "7registeredtype/version1pairs, exactallowlistedfields/strictbindings andknownincompleteforms;unknownfields/versionsreject. No email/provider/credentialconfigregistered; no copierimplemented."
+      },
+      "admission_architecture_review": {
+        "path": "workflow-event-admission-architecture-review.md",
+        "sha256": "797b6331dd052b824ccb1f4a66b52a0132a6fa092af6f42441d53b05c608d4f1",
+        "result": "Bhistoricalepoch-pinnedpagedmatchingpreferredconditionally;AnocapSyncstillviable. Pending/runmaterialization,authoritytiming,quotas/fanout/lockordergatesnotsettled; no decisionfreeze/sourcecode."
+      },
+      "resource_queue_order": "RemoteFigmaf1WITHDRAWN; no stalegrant. NativeR2remoteartifact corrections explicitly accepted; localapp/browser/install/test/resourcephases still needfreshspecificadmission afteractualMAILphasecleanup. PrivateBunR3ready; newFigma plannotyetprepared.",
+      "live_readonly_verification": {
+        "at": "2026-11-01T17:45:57.014187+00:00",
+        "managed_head": "43a5fb4d2a6be7bbbd260855a6a8e1ce55fbf3c1",
+        "canonical_head": "43a5fb4d2a6be7bbbd260855a6a8e1ce55fbf3c1",
+        "source_pins_matched": 25,
+        "figma_evidence_pins_matched": 7,
+        "private_dependency_directory_exists": false,
+        "install_log_exists": false,
+        "browser_opened_this_turn": false,
+        "qualification": "file/sourcecustody only; no install/static/test/build/browser/DB/application proof"
+      },
+      "focus_semantic_review": {
+        "markdown": "outputs/workflow-focus-semantic-review-main43.md",
+        "markdown_sha256": "046b04a8f173bc7172dc7d3ccfba2928fbe88b8cfab0fd95814e9c5a8f763b00",
+        "json": "outputs/workflow-focus-semantic-review-main43.json",
+        "json_sha256": "ee6524b925a35c4791650ad5d648836ca49a7ed432fbbbd80dbb9293165b8aed",
+        "findings": [
+          "Removed empty-state Newworkflow opener has no stable close fallback",
+          "Successfulcreation clears opener before delayedroutecommit; interimclose has no target"
+        ],
+        "regression_patch": "outputs/workflow-focus-empty-library-opener-regression-main43.patch",
+        "regression_patch_sha256": "a6e72cd1e83d6e154005994e5aa7b7d459d079272a381a519067901afc391a12",
+        "patch_status": "UNAPPLIED/UNEXECUTED;onecase;all13candidatefiles unchanged",
+        "next": "ObserveRED before productionfix, followingprivate dependencysetup/freshfinitegrant; oldGREEN10doesnotcoverthese cases."
+      },
+      "event_authority_fence_review": {
+        "markdown": "outputs/workflow-event-authority-fences-main43.md",
+        "markdown_sha256": "b7207506850979f6bd5055becb691f42a0017d01ae1745cb7e18ab87a0fabe56",
+        "json": "outputs/workflow-event-authority-fences-main43.json",
+        "json_sha256": "471d6520cec20379f17ae5d815a5bae0bdd1b12b8a4d89947c6df89cc6bbdb59",
+        "source_ceiling": "43a5fb4d2a6be7bbbd260855a6a8e1ce55fbf3c1",
+        "result": "No common durable CRM authority generation/completefence across7identitymutationgroups. Currenthydration iscurrentstate;partialauthlocks/privacyspecificgenerations/audit/timestamps do notprove eventtimeauthority. A/Btiminggate remainsopen; noengine/schema/publiccontractchange."
+      },
+      "dependency_basis_amendment": {
+        "path": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-settings-ux/outputs/workflow-dependency-basis-amendment-20261101.json",
+        "sha256": "735a40d514dcca878450a7e966bedf48ef03f6fa003d5298c381756750f73ada",
+        "decision": "Mainexplicitoptiona:keepmanageddetached43forprivate dependencies if all4immutableGit+physicaldeclaredinputs at observednewerMain equal43;separatefrozenrevisedplan;anydriftstop;freshMAILgrantstillrequired. NewerMainadoption/qualificationseparate.",
+        "last_observed_canonical_head": "43a5fb4d2a6be7bbbd260855a6a8e1ce55fbf3c1",
+        "revised_plan_status": "No newer canonicalhead yetobserved;old176unchanged. Prepare separate revisedplan withactualnewerHEAD/equalityproof onceitexists,never inventfutureSHA orsilentlyreinterpret176."
+      },
+      "r4_resource_observations": {
+        "receipt": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/integration-docs-format-static90-r4-run-20261101-8p9wwct8/receipt.json",
+        "receipt_sha256": "8878c8c54b6e3ba8cbc551668f143aab7e44af614206066939db860e78f9aede",
+        "controller_observation": "outputs/workflow-docs-r4-resource-observation.json",
+        "controller_observation_sha256": "3e796c32738cb53fb780d25b630694691203d245252cf7d2234e065c617992a7",
+        "current_validator_name_inventory": "outputs/workflow-docs-r4-current-validator-process-observation.json",
+        "inventory_sha256": "53ad633e791ae9f06a08193e483f5fc1ea556f5fa0ef294dc5b291a53ae13f24",
+        "finding": "Controller absent17:51:17 ps/libproc ESRCH. Receipt has no owned childPGID/birth registry; group cleanup UNKNOWN.17:53:43 all111 current executable-name matches had known kernel identities; only2 newer Node candidates belong to CUA/Playwright tool infrastructure, no newer Bun/nativeLint. This does not reconstruct owned provenance or release HOLD.",
+        "signals": 0,
+        "resource_release_authority": false
+      },
+      "typegen_enforcement_review": {
+        "path": "outputs/workflow-typegen-network-boundary-review.md",
+        "sha256": "1c42932dd619b4c8d11315be13d4d8b4bb76d4b8823e40c0b835e5dde3f35be2",
+        "result": "Existing canonical guard only limits resource/time and checks hashes afterward; no network/write enforcement. No approved existing combined task profile found. Local sandbox mechanism docs do not prove the exact33output policy applied. No probe/Next/Bun execution or invented profile."
+      },
+      "latest_source_custody": {
+        "at": "2026-11-01T17:58:37.848042+00:00",
+        "managed_head": "43a5fb4d2a6be7bbbd260855a6a8e1ce55fbf3c1",
+        "canonical_head": "43a5fb4d2a6be7bbbd260855a6a8e1ce55fbf3c1",
+        "dependency_source_pins_matched": 25,
+        "application_source_changed_this_turn": false,
+        "browser_or_application_validation_launched_this_turn": false
+      },
+      "canonical_latest_observed": {
+        "sha": "012f4e7a8d9a3151f087b0cf89a8825081311166",
+        "source": "ActuallocalcanonicalHEADobserved18:10ZandR3revalidated;coordinatorreports7docspushed/newhostedCIinprogress",
+        "managed_source_stays": "43a5fb4d2a6be7bbbd260855a6a8e1ce55fbf3c1",
+        "newer_main_qualified_for_focus": false,
+        "four_dependency_inputs_git_and_physical_equal_to43": true
+      },
+      "dependency_link_source_custody": "Mainexplicitconditionalpermissionreceived:onlymanagedignorednode_moduleslink,afterfreshinstallgrant/terminal0/29pins+metadata/groupgone/sufficientpostbudget,archiveoldlinktext/mode/identitythenatomicallyreplacewithnewownprivatetarget. Preserveoldexternaltarget/all21WIP/index/refs/Main. Unexpectedidentityorpartialinstall=>noreplacement. This isnotinstall/runtimegrant."
+    }
+  },
+  "current_focus_delivery": {
+    "at": "2026-11-01T22:08:24.920026+00:00",
+    "state": "DELIVERED_SOURCE_INCREMENT: pushedcanonicalaf10dc2 plusall3requiredexact-headCIjobsSUCCESS",
+    "packet": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-workflow-continuation/outputs/workflow-focus-qualified-main43-20261101",
+    "patch_sha256": "122ceb9ade7cbe695a7351a0d8153f82975940d09428fcb89e5b0e1182b77911",
+    "final_checks": "13/13 focused cases, Biome, scoped ESLint and declared typegen/typecheck passed; terminal groups absent",
+    "canonical_local_commit": "af10dc28250b1eee8db89c83ae353b7dd542f4ac",
+    "adoption_receipt": "outputs/workflow-focus-main-adoption-observed.json",
+    "ci_run": 41352755179,
+    "ci_url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/41352755179",
+    "ci_counts": "8322unitPASS/3SKIP;2947PostgreSQLPASS; types/lint/app/server/marketing/docsPASS",
+    "limit": "Keyboardfocus13files andMainreviewedprivacycompanions only; no privatewait/installed/browser/ATqualification"
+  },
+  "next_duration_wait": {
+    "state": "PRIVATE_SOURCE_QUALIFIED_MAIN_BROWSER_PENDING",
+    "qualification": {
+      "status": "PRIVATE_SOURCE_QUALIFIED_MAIN_BROWSER_PENDING",
+      "scope": "Private configured static, affected GUI31 and real-Postgres runtime5/public5 only. No current Main integration, installed migration, native app/browser/AT, elapsed-minute, provider or whole-lifecycle acceptance.",
+      "source_head": "43a5fb4d2a6be7bbbd260855a6a8e1ce55fbf3c1",
+      "code_paths": 53,
+      "input_pins": 289,
+      "source_pin_mismatches": [],
+      "configured_static": {
+        "status": "PASS",
+        "declared_pipeline": "Next typegen followed by full tsc with the declared project, typed ESLint8 and Biome11; no new exclusions or bare-tsc substitution.",
+        "command_seconds": 18.51,
+        "cleanup_seconds": 35.350514,
+        "receipt": {
+          "path": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-workflow-continuation/outputs/workflow-runtime-version-green-compiler-observed.json",
+          "sha256": "e209875f3c1c66f899883876e0693b4adf12786dbe463b10088db5297f6cf005"
+        },
+        "log": {
+          "path": "/tmp/warpdrive-workflow-runtime-version-green-compiler-20261102-01.log",
+          "sha256": "c93be543a229bd8a2a6a261f9b1ebd8afe311f9f4d5b1c168b68aa23f0dc211d"
+        },
+        "authorization": "WORKFLOW-RUNTIME10-GREEN-20261102-1",
+        "limit": "Local sample and time-l accounting, not a continuous aggregate peak. Compiler PASS is distinct from the original combined allocation return overrun."
+      },
+      "affected_gui": {
+        "status": "PASS",
+        "tests": 31,
+        "files": 5,
+        "command_seconds": 4.61,
+        "cleanup_seconds": 9.651323,
+        "receipt": {
+          "path": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-workflow-continuation/outputs/workflow-runtime-numbering-unit-green-observed.json",
+          "sha256": "0711c6ef83813374db0263ca43630889f9d608322198a3e9604c92b7c545ac9a"
+        },
+        "log": {
+          "path": "/tmp/warpdrive-workflow-runtime-numbering-unit-green-20261102-01.log",
+          "sha256": "34897fbd1fa53a7bfcec61b8f77cf64c46b42c8c1f63a49603d2522054bf493f"
+        },
+        "limit": "Overlaps earlier GUI cuts; do not sum counts. No native application/browser/AT qualification."
+      },
+      "fresh_native": {
+        "status": "PASS_RUNTIME5_PUBLIC5_ALL10",
+        "tests": 10,
+        "files": 2,
+        "failed": 0,
+        "setup_failures": 0,
+        "unselected": 0,
+        "command_seconds": 4.81,
+        "full_cleanup_seconds": 18.221823,
+        "allocation_seconds": 180,
+        "receipt": {
+          "path": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-workflow-continuation/outputs/workflow-runtime-version-green-native10-observed.json",
+          "sha256": "3f9227144b3d31e290cd366bc8892e094299e1402f2f659c070dcc52663e8c84"
+        },
+        "log": {
+          "path": "/tmp/warpdrive-workflow-runtime-version-green-native10-20261102-01.log",
+          "sha256": "743c7095258d88da4300b73c1c69d3ac9bbf237bf952e6ef9b75cf0bbeb25521"
+        },
+        "authorization": "WORKFLOW-RUNTIME10-NATIVE-20261102-2",
+        "all_289_pins_unchanged": true,
+        "foreign_baseline": "Exact3containers/3networks/2volumes and cached PG/Ryuk images preserved; natural owned cleanup, no manual deletion/prune/pull.",
+        "environment": "Bun1.4.4, BUN_OPTIONS/direct --no-env-file, Vite envDir:false, actual four Next dotenv files absent before and after.",
+        "asserted": "Exact WORKFLOW_INVALID for four unsupported stored-version cases; cleared active deadline; unchanged version/actor/workflow IDs, trigger, outputs and prior steps; no new CRM effects; stale advance stays failed. Numeric-v1 control and five public service journeys pass.",
+        "source_inspected_only": "Cursor/nextNodeId retention follows failRun source. No separate post-failure nextNodeId equality assertion exists.",
+        "limit": "Controlled deadlines and archive fixture, not actual elapsed-minute delivery, public archive API, Main/CI/installed/browser/AT/provider proof. No continuous aggregate or PostgreSQL peak measurement."
+      }
+    },
+    "packet": {
+      "directory": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-workflow-continuation/outputs/workflow-duration-wait-qualified-20261102",
+      "state": "READY_AND_MAIN_HANDOFF_SENT_AWAITING_INTEGRATION",
+      "manifest": {
+        "path": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-workflow-continuation/outputs/workflow-duration-wait-qualified-20261102/manifest.json",
+        "sha256": "c901bc85335a8a938704fc38d74a00e3a4c5d4dd4a3523e98225e6bf0412ceb1"
+      },
+      "patch": {
+        "path": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-workflow-continuation/outputs/workflow-duration-wait-qualified-20261102/duration-wait.patch",
+        "sha256": "cfc049520dec221d80a8f2015eae1dd281170fba90eefe65ec19f513aa8ddae2"
+      },
+      "readme": {
+        "path": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-workflow-continuation/outputs/workflow-duration-wait-qualified-20261102/README.md",
+        "sha256": "85479fe9a9a65cb6597cbb50b05fc33275d6b35471d7711001f6035a9a766b24"
+      },
+      "payload_files": 51,
+      "non_documentation_payload_paths": 46,
+      "unchanged_AF10_dependency_paths": 7,
+      "code_paths": 53,
+      "input_pins": 289,
+      "base_commit": "af10dc28250b1eee8db89c83ae353b7dd542f4ac",
+      "base_scope": "Only selected immutable AF10 historical module/doc blobs and plain artifact base-tree reviewed; no current Main or excluded workspace/branch/source inspected.",
+      "independent_review": {
+        "path": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-workflow-continuation/outputs/workflow-duration-wait-qualified-20261102/review-observed.json",
+        "sha256": "e5524355d0b875fe9240bdcce4036d83409335909c28dab12cdb20d2ae6a02cb"
+      },
+      "handoff": {
+        "status": "COMPLETED_QUALIFIED_SOURCE_HANDOFF_SENT",
+        "at": "2026-11-02T02:36:17.411894+00:00",
+        "receipt": {
+          "path": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-workflow-continuation/outputs/workflow-duration-wait-qualified-20261102/main-handoff-sent.json",
+          "sha256": "2754428b1c873d2f5f9cd8f9fe62d51e3e319a1909dad3ca539ee6e2f28f5630"
+        },
+        "to_thread": "01a19251-a472-7cd1-86cd-8dc245dd5b84",
+        "limit": "Actual tool send confirmed by root. Sending a qualified source packet is not Main acceptance, integration, CI, publication or installed/browser acceptance."
+      }
+    },
+    "plan_disposition": {
+      "compiler": {
+        "plan": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-workflow-continuation/outputs/workflow-runtime-version-green-compiler-plan.json",
+        "status": "CONSUMED_COMPILER_PASS_CLEANUP_RETURNED",
+        "authorization": "WORKFLOW-RUNTIME10-GREEN-20261102-1",
+        "receipt": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-workflow-continuation/outputs/workflow-runtime-version-green-compiler-observed.json"
+      },
+      "native": {
+        "plan": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-workflow-continuation/outputs/workflow-runtime-version-green-native10-plan.json",
+        "status": "CONSUMED_TERMINAL_ALL10_PASS_FULL_CLEANUP_RETURNED",
+        "authorization": "WORKFLOW-RUNTIME10-NATIVE-20261102-2",
+        "receipt": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-workflow-continuation/outputs/workflow-runtime-version-green-native10-observed.json"
+      },
+      "original_combined_allocation": {
+        "authorization": "WORKFLOW-RUNTIME10-GREEN-20261102-1",
+        "status": "COMPILER_PASS_NATIVE_UNSTARTED_TIME_ADMISSION_FAILED",
+        "compiler_cleanup_seconds": 35.350514,
+        "native_admission_seconds": 230.57834,
+        "final_return_observed_seconds": 370.614428,
+        "native_started": false,
+        "tests_executed": 0,
+        "receipt": {
+          "path": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-workflow-continuation/outputs/workflow-runtime-version-green-native10-unstarted-release.json",
+          "sha256": "e77ab071f6f907d0ba646d5507aad86e9b49466219fc0d375fb9c57d95c41c5f"
+        },
+        "limit": "Source inspection consumed remaining admission time. Compiler cleanup met its own180s bound; no combined300s conformance. Fresh native-only authorization was separate; no ID reused."
+      },
+      "pending_duplicate_rerun": false,
+      "pending_rerun_plans": [],
+      "rule": "These plans are consumed, not launch instructions. No duplicate compiler/native rerun is pending. Unchanged admission7, clock, upgrade and recovery suites retain their own source-scoped evidence; repeat only for a new affected change or required integration check with a fresh applicable allocation."
+    },
+    "migration": "Private0100 SQL body remains reserved/unlanded. Preserve original history and SQL body; Main owns ready canonical ordinal, journal/snapshot and installed upgrade/privacy reconciliation.",
+    "full_roadmap": "WF-001 through WF-042 active and incomplete",
+    "remaining": [
+      "Main review/reconciliation/integration of this duration increment and required exact-head CI before Delivered.",
+      "Canonical migration ordinal/journal/snapshot and populated-upgrade acceptance; private0100 is reserved only and its idx100-after97 journal must not be applied blindly.",
+      "Reviewed Privacy producer-boundary bindings and regenerated inventory; all six lifecycle capabilities remain Unsupported for all four Workflow stores.",
+      "Fresh finite synthetic app/worker/native session/browser basis and actual elapsed-minute journey, EN/FA/DE, narrow/theme, keyboard and AT qualification.",
+      "Provider and broader lifecycle/automatic CRM/template/recurrence acceptance; no such completion is claimed by this slice.",
+      "Full WF-001 through WF-042 roadmap remains active and incomplete."
+    ],
+    "historical_before_private_source_qualification": {
+      "state": "Private strictadmission/publicjourneys GREEN on pre-runtimeguardcut; currentguard applied/source-reviewed, GUI31GREEN, newconfiguredstatic/native10pending",
+      "contract": "outputs/workflow-duration-wait-contract-20261101.md",
+      "integration_test": "src/features/workflows/delay.integration.test.ts",
+      "cases_defined": 6,
+      "integration_test_executed": true,
+      "migration": "Private0100SQLbody populated-upgrade test PASS, original canonical0000-0097 preserved. Main canonical ordinal/journal/snapshots/installed upgrade admission remain pending.",
+      "heavy_queue": "No owned check/process/resource live. R1compiler terminal lint1 failure, native17 unstarted/released; factory5focusedPASS now, new268pin r2plans ready/unstarted awaitnewMainSTART.",
+      "unit_duration_contract": "Historical duration contract TDD RED10+8controls thenGREEN34/34 retained; r3 private literal readiness now enabled and41focusedauthoring/affectedunitPASS, not native/Main acceptance.",
+      "full_roadmap": "WF-001 through WF-042 remains active and incomplete",
+      "unit_receipt": "outputs/workflow-delay-contract-tdd-result.json",
+      "native_plan": "outputs/workflow-duration-wait-red6-plan-r3.json",
+      "duration_editor": "GREEN35 on earlier bounded cut; combined waiting/validation/focus72PASS, summary/form27PASS and latest summary-refactor17PASS overlap. No count aggregation.",
+      "native_red_receipt": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-workflow-continuation/outputs/workflow-duration-wait-red6-r3-observed.json",
+      "native_tests_prepared": "All17 actually ran:16PASS/1intendedworkerfairnessRED; post-fix3affected worker cases selected/8unselected in recovery file. Other14 earlierpassing cases remain tied to unchanged source.",
+      "waiting_ui_red": "Actual6intendedfailures+1dismissalcontrol followed by combined72PASS; not browser/AT/runtime acceptance.",
+      "resource_state": "No ownedcheck/process/resource live. r2-1releasedunstartedQ34; fresh r2-2staticPASS/native13PASS4runtimeRED consumed/returned withinenvelopes. NumberingRED4, paletteRED4 and currentGUI31 terminal/clean. New289pin configuredstatic/native10ready, no STARTyet.",
+      "readiness": "Supported numeric-v1 literal waits enabled in private r3 only; no Main/deployed public delivery.",
+      "focused_current": "Current r3 affected7files/41PASS,4.33s, cleanup12.197s; earlier72waiting/validation/focus and other counts overlap, no sum.",
+      "format_current": "R3Biome8/fixed1nodeFactory; newpublic/runtime4testhelperfilesBiome4/fixed4PASS0.16s, no semantic assertion change.",
+      "compiler_current": "Pre-guard r2fullNexttypegenTSC/factorytypedlint1/Biome1PASS11.68s. Newguard/hints/config/testingchanges have formatting11PASS; newconfiguredstatic8TSpending.",
+      "next_compiler": "outputs/workflow-runtime-version-green-compiler-plan.json:289pins,8typedTS/11Biome/fullconfiguredtypecheck,<=180s",
+      "next_native": "outputs/workflow-runtime-version-green-native10-plan.json:affectedruntime5/public5,10/no filters/2files,<=120s,expected10GREENunobserved",
+      "ui_summary": "Actual11 intended RED +16controls, final27/27 target tests/BiomePASS; account numbering and explicit mapped-duration explanation; source ownership returned",
+      "native_clock_test": "Actual enhanced lock-contention database-clock case PASS364ms in Native17; real row-lock barrier/50msSQLhold/release-clock deadline bounds. This does not prove cancellation audit clock skew handling.",
+      "followup_clock_finding": {
+        "state": "ACTUAL_RED_THEN_GREEN",
+        "source": "src/features/workflows/runControl.ts",
+        "red_receipt": "outputs/workflow-clock-upgrade-native2-observed.json",
+        "green_receipt": "outputs/workflow-clock-version-native9-observed.json",
+        "fix": "Clock queried from DB after row lock; same validated Date persists both cancelledAt/updatedAt.",
+        "limit": "Two targeted cancellation cases GREEN; no general timestamp/lifecycle/provider acceptance claim."
+      },
+      "native_current": "Actualr2native17:13PASS4runtimeRED/0setup/0unselected;6.87scommand,77.506sfinalcleanup/129.307soverall,268pins/foreign3preserved. Sourceprotectedbeforefix.",
+      "public_admission_source_review": {
+        "state": "R3privateapplied/unit41PASS; five normal public journey cases andhelpers promoted/formatted, no native execution yet.",
+        "journey": "manualstart→literaldurationwait→currentauthorizeddealread→linkedtask",
+        "gates": [
+          "readiness literal-only bounds",
+          "factory delay config and palette insertion",
+          "delay canvas icon and localized resumeAt field label",
+          "actual save/publish/publicadmit live+simulation",
+          "armedwait pinnedN despite newN+1 publication",
+          "pause admittedwait/newadmission denial; preservearchive/currentauthorityfail fence",
+          "public freshness/revision/unauthorized/requestdedup regressions"
+        ],
+        "copy_finding": "R3 pauseHint now describes admitted runs/waits and current authority/archive fence; no new archive action/service or lifecycle completion."
+      },
+      "populated_upgrade_source_review": {
+        "state": "ActualrealPGSQLbodycompatibilityPASS974ms underreserved/privatecontiguousfixture; canonicalinstalledchainremainsopen",
+        "reuse": "src/db/integrationWorkflowMigration.integration.test.ts and freshMigrationDb/ledger helpers",
+        "gap": "Fixed installPrefix helper parses fulljournal before slicing and rightly rejects private97→100gap; never weaken canonical parser.",
+        "approach": "Disposable exact0000–0097prefix folder plus contiguous fixtureidx/tag98 containing byte-identical0100SQLbody; applyMigrations accepts explicitfolder. Use candidate arrayposition98, notreservedidx100.",
+        "candidate_sql_sha256": "ba65deaf21f4f5c38cd7414afd851f91a14b5c2aed3e758bb75b36b56b3a63ef",
+        "must_cover": [
+          "fivelegacyrunstatuses withnonemptytrigger/outputJSON",
+          "completedsteps andpublishedversions",
+          "linkedCRMdeal/activityrows",
+          "allpriorledgerrows andoneaddedcandidatehash",
+          "onlynewresume_at null onlegacyruns",
+          "unchangedFKcatalog and23503FK/55000immutabilityguards"
+        ],
+        "limit": "PopulatedSQLbodycompatibility only; finalcanonicalordinal/journal/snapshot/installedadmission remain Main gates.",
+        "candidate": "outputs/workflow-duration-upgrade-candidate/receipt.json",
+        "review_finding": "Assign makeTestDb handle before schemareset inside outertry, so finally closes it evenifresetfails; do notmodifysharedfreshMigrationDb just for thiscandidate.",
+        "timeout": "CooperativeAbortSignal30s; test45s allowscleanupheadroom.",
+        "candidate_test_sha256": "72bc682a7aad474bfc3396f29b01510acb81c0245b06414c5341f0a1518aa74e",
+        "application_receipt": "outputs/workflow-duration-upgrade-application.json"
+      },
+      "qualified_source_snapshot": "outputs/workflow-wait-fairness-qualified-source/manifest.json",
+      "format_clock_receipt": "outputs/workflow-cancel-clock-format-observed.json",
+      "public_authoring_red": {
+        "status": "INTENDED_RED",
+        "command_exit": 1,
+        "tool_session": 63947,
+        "started_at": "2026-11-01T22:15:53.035349+00:00",
+        "cleanup_observed_at": "2026-11-01T22:16:04.762359+00:00",
+        "elapsed_to_cleanup_seconds": 11.72701,
+        "command_real_seconds": 2.37,
+        "vitest_seconds": 1.53,
+        "time_l_maxrss_bytes": 352485376,
+        "cases": 10,
+        "intended_failed": 5,
+        "controls_passed": 5,
+        "skipped": 0,
+        "failure_scope": [
+          "EN/FA/DEmissingwaitchoice afterkeyboardpaletteopen/search; insertion/configuration/selection/inspector/finalfocus assertionsunreached",
+          "Validliteralbounds1and525600schemavalid, but executableNode remainsfalse; subsequentdefinitionreadyassertionunreached"
+        ],
+        "control_scope": [
+          "referenceconfigurationauthorablebutunready",
+          "invalidliteral0,1.5,525601,string1unready"
+        ],
+        "format": "Biome2PASS/nofixes",
+        "source_hashes": {
+          "src/features/workflows/durationReadiness.test.ts": "02f7a361f63677e48c55bdb2e6b92deacc44fc0f8052b697aee2779191e8ed01",
+          "src/features/workflows/ui/DurationWaitAuthoring.test.tsx": "c28fb9b33dc4b6ec275bea80c3fce2957f0b5987ffb83fde86b92b483893187c"
+        },
+        "pre_pressure": 1,
+        "pre_Q": 64,
+        "post_pressure": 1,
+        "post_Q": 65,
+        "owned_cwd_processes_after": [],
+        "log": "/tmp/warpdrive-workflow-public-authoring-red10-20261101-01.log",
+        "log_sha256": "26131a3932e5e19403c9e1f902e8d1deec0f910a72a6f789335f5c774eb7a378",
+        "source_snapshot": "outputs/workflow-public-authoring-red10-source",
+        "limit": "Containerfreeunit/JSDOM andpuregates only; no native/publicsave/admit/browser/ATproof. Live RSS sample missed fastcommand; time-l is commandaccounting, notcontinuousaggregatepeak. Publicproductionreadinessunchanged/closed."
+      },
+      "public_authoring_source_review": {
+        "state": "Independentread-onlyPASS forunreachedlateUIassertions; no edits/executionbyreviewer",
+        "facts": [
+          "startnameautomatic localizedEN/FA/DE",
+          "durationtextinputusesString(literal)",
+          "navigationaria-pressedandstep-nameinsertionfocusareexplicit",
+          "selectiondoesnotmutatedefinition"
+        ],
+        "numeric_reference_limit": "Currentregistryhasnooutputtype number; record.read.value isdecimalmoney, conditionboolean, othersstrings. Exactreference typeequality preventsvalidnumericreferenceworkflow. Existingcontrolclaimsconfigschemaauthorability anddirectexecutableNoderejection only; it doesnotprove anotherwisevalidreferencegraph."
+      },
+      "public_integration_candidate": {
+        "historical_before_latest_update": {
+          "state": "Fivecasespreparedoutside managedsource, independentlysource-reviewedPASS, unapplied/unexecuted",
+          "receipt": "outputs/workflow-duration-public-admission-candidate/receipt.json",
+          "coverage": [
+            "realsave/publish/admitlivewaitandlinkedassignedtask",
+            "publicsimulation/taskrollback",
+            "armedNdeadline/versionpinwhileN+1changes/newadmission",
+            "pauseexistingwaitcontinues/newadmitdenied",
+            "intentionalarchivefixturefencefailed/cleared/noeffect"
+          ],
+          "limits": "Readinessclosednow; do notspendDBslotrepeatingknownpublicationfailures. Apply/exercisethesecasesaftergatequalificationandpublicactivation. No stalerevisionrejection/concurrency/elapsed-time/newpublicarchiveAPIproof."
+        },
+        "current_state": "Five reviewed public journey cases/helpers now promoted/formatted; native17 pending."
+      },
+      "public_authoring_candidate": {
+        "state": "R3_APPLIED_FOCUSED41_PASS_STATIC_NATIVE_PENDING",
+        "directory": "outputs/workflow-duration-public-authoring-candidate/",
+        "owner": "acceptance_prototypes",
+        "constraint": "Applied only after actualclockGREEN/populatedupgradePASS/admission4RED. No lifecycle/dependency/runtimeversionguard change; new configuredstatic/native17 pending.",
+        "manifest": "outputs/workflow-duration-public-authoring-candidate/r3/manifest.json",
+        "patch": "outputs/workflow-duration-public-authoring-candidate/r3/public-authoring-r3.patch",
+        "patch_sha256": "258b2c40b9318c6d17c36e031f37536b0fafaf766438427440b6d0dc5f301002",
+        "reviewer": "event_inventory",
+        "r1_preserved": true,
+        "r2_preserved": true,
+        "r3_source_review": "IndependentdeltaPASS: privateunknown-inputbooleanstrict===1validator, no casts/coercion/typeweakening. Unexecutedstatic/nativequalification.",
+        "application_receipt": "outputs/workflow-public-authoring-r3-application.json"
+      },
+      "clock_fix": {
+        "historical_before_latest_update": {
+          "source": "src/features/workflows/runControl.ts",
+          "sha256": "f148af993e57bc4f2b95bced9b56ea3d9529ae647d34ab94d7367752ae245057",
+          "behavior": "OnefiniteDBclocktimestamp afterrunlock/currentauthorization/statusguard reusedforcancelledAt+updatedAt; noconnection/ACL/provider/storechange.",
+          "state": "FORMATTED_ONLY_POSTFIX_UNVERIFIED",
+          "format_receipt": "outputs/workflow-cancel-clock-fix-format-observed.json",
+          "red_source_snapshot": "outputs/workflow-cancel-clock-red-source/manifest.json"
+        },
+        "current_state": "f148af DB-clock fix compiled and two targeted native cancellation cases GREEN."
+      },
+      "version_fence": {
+        "historical_before_latest_update": {
+          "state": "Sourcefindinginunappliedpublicr1candidate/inheritedreadiness; rawDBfixturetest7applied/formattedonly, no actualREDyet",
+          "risk_limit": "Publicsave/publishalreadyvalidate1 andhistoryimmutable, so notpublicinjectionproof. Admissionreadsstoredbodywithoutreparse; sourcehelperomits strictversions.",
+          "test": "src/features/workflows/readinessVersions.integration.test.ts",
+          "production_r2_candidate": "outputs/workflow-duration-public-authoring-candidate/r2/public-authoring-r2.patch",
+          "expected_current": "4manual/schemaRED+2closed-delaydenialcontrols+1validmanualcontrol, unverifieduntilrun."
+        },
+        "current_state": "Admission numeric/schema4 actualRED established, r3 strictguard applied with unit41PASS; admission7 GREEN and runtime5 baseline pending."
+      },
+      "pending_allocation_acceptance": {
+        "historical_before_latest_update": "Mainaccepted replacementwithcompiler2→native9<=300s/259pins, expectedclock2GREEN+version4RED/3controls; explicitlyNOallocationyet. No scopeenlargementuntilnewexactID/startnotice.",
+        "current_state": "New Main compiler9TS/Biome12/native17 request prepared268pins, no START yet."
+      },
+      "runtime_version_followup": {
+        "historical_before_latest_update": {
+          "state": "Source-onlygapconfirmed; no runtime test/productionfix yet. Separatefromaccepted9caseallocation.",
+          "finding": "execution.tsdoesnotvalidate persisteddefinition.schemaVersion; runStep queued/waitingdelaybranchesdispatchbytype/deadline andbypassrunActions.executableNode. Unsupportedalreadyqueued/waitingversionsmayarm/continueon sourceinspection.",
+          "sources": [
+            "src/features/workflows/execution.ts:36",
+            "src/features/workflows/runStep.ts:23-39",
+            "src/features/workflows/runActions.ts:38"
+          ],
+          "limit": "No publicinjectionreachability orruntimeoutcomeclaimed. Admission7testsdo notcovercontinuation. NeedrealPGpreexisting-runregressionsandfixbeforefullWF007/013/041qualification.",
+          "candidate_owner": "event_inventory",
+          "candidate_directory": "outputs/workflow-runtime-version-candidate/",
+          "constraint": "Output-onlytestpreparation; never silentlywidentheacceptedcompiler2/native9selection."
+        },
+        "current_state": "Five reviewed cases/helpers promoted/formatted; expected4RED+1control unobserved, no runtime production fix."
+      },
+      "public_authoring_current": {
+        "state": "PRIVATE_UNIT41_PASS",
+        "receipt": "outputs/workflow-public-authoring-green-observed.json",
+        "files": 7,
+        "tests": 41,
+        "limits": "Component/unit only; full compiler, native public5, browser/AT, Main/CI pending."
+      },
+      "runtime_version_gap": {
+        "state": "ACTUAL4RED_THEN_BOUNDARY_APPLIED_GREEN_PENDING",
+        "red_receipt": "outputs/workflow-public-runtime-native17-r2-observed.json",
+        "source_snapshot": "outputs/workflow-public-runtime-version-red-source/manifest.json",
+        "source_sha256": "c72161a7b12054f6112280d5416274e9bc2b96bf25b59919403de5c96c22ad7e",
+        "exact_error_assertion": "WORKFLOW_INVALID",
+        "review": "Independentread-onlyreviewfoundnoactionableregression",
+        "current_native_green": false
+      },
+      "current_static_receipt": "outputs/workflow-public-runtime-compiler-observed.json",
+      "factory_refactor": {
+        "state": "FOCUSED5_PASS_CONFIGURED_STATIC_PENDING",
+        "receipt": "outputs/workflow-factory-refactor-unit5-observed.json",
+        "sha256": "b24b728b40f3e2de87cd1dac6c8acb8ec4358bee29f350b429637bcbf3b8c376"
+      },
+      "current_gui": {
+        "receipt": "outputs/workflow-runtime-numbering-unit-green-observed.json",
+        "pass": 31,
+        "files": 5,
+        "command_seconds": 4.61,
+        "cleanup_seconds": 9.651323,
+        "limits": "JSDOMonly; priorcountsoverlap"
+      },
+      "approved_archive_reconciliation": {
+        "approval": "outputs/workflow-library-lifecycle-reconciliation-approval.json",
+        "document": "docs/workflows/lifecycle-contract.md",
+        "sha256": "ae5096330793111e20dbfea9b1cee8a093202dbd18cdd61dfe7a05363607d31a",
+        "lifecycle_endpoints_implemented": false
+      },
+      "environment_guard": {
+        "future": "BUN_OPTIONS/directflag/ViteenvDirfalse/fourdotenvabsence",
+        "historical_review": "outputs/workflow-dotenv-historical-proof-review-20261102.md",
+        "retroactive_absence_claim": false
+      }
+    }
+  },
+  "last_goal_turn_classification": "PROGRESS: actualFigma2cases/5frames/3routes/2scrolls passed andownedtabsclosed306.950s, exactgrantreceipt/timinggatesverified. Actual6UIRED+6pureRED ledtoshared6surfacenumberingfix,37affectedcases+Biome12+reviewPASS. Docs3current/oldsemanticspreserved. Concretecode/docsartifactpacketsand346pin static14requestsent; no fullgoalcompletion.",
+  "library_search_source_review": {
+    "state": "Read-onlysourcefinding, no searchimplementation orchecks",
+    "source_root": "/Users/ali/.codex/worktrees/workflow-roadmap-owned/warpdrive-builder-ux-20261031",
+    "findings": [
+      "WorkflowLibrary calls inputlessworkflows.list andrendersreturnedrows",
+      "listWorkflows excludesarchived andboundsnonadmins toowner",
+      "serverordersupdatedAt descending andlimit100, withnocursor/total/paginationmetadata"
+    ],
+    "required_next_implementation": "Validatedoptionalnamequery inrouter/listWorkflows, parameterizedserverpredicatebeforelimit, thenUIqueryinput. Client-onlyfilter cannotfulfillsearch requirement.",
+    "sources": [
+      "src/features/workflows/ui/WorkflowLibrary.tsx:31",
+      "src/features/workflows/router.ts:20",
+      "src/features/workflows/queries.ts:10-28",
+      "src/app/(app)/workflows/page.tsx:13"
+    ],
+    "scope_limit": "IndependentWF016findingonly. Nativeclock/upgrade/publicwait milestone stillfirst; no client-onlysubsetsubstituted for fullsearch."
+  },
+  "status": "VISUAL2_PASS_ORDERED_STEPS_UNIT37_PASS_CURRENT346_STATIC_PENDING",
+  "historical_focus13_final_checks": {
+    "biome": {
+      "status": "PASS_ZERO_DIAGNOSTICS",
+      "receipt": {
+        "path": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-workflow-continuation/outputs/workflow-focus-format13-r2-supervisor-receipt.json",
+        "sha256": "3f70eb00414167b2023048cf08ed1ca651721130a6810c08580134f179e56c89"
+      },
+      "log": {
+        "path": "/tmp/warpdrive-workflow-focus-format13-20261101-02.log",
+        "sha256": "712dd1916197d2a8a0864a1ac342355fc676febddd840dbdcc02b054d934e917"
+      },
+      "supervisor_seconds": 0.434,
+      "exit_code": 0,
+      "files_checked": 13,
+      "files_fixed": 2,
+      "pgid": 17436,
+      "owned_group_gone": true
+    },
+    "eslint": {
+      "status": "PASS_NO_DIAGNOSTICS",
+      "receipt": {
+        "path": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-workflow-continuation/outputs/workflow-focus-eslint13-r2-supervisor-receipt.json",
+        "sha256": "09f520af039425131d13f6b5c12dc39d01474c76ee515bb0d505c4ee495dcfca"
+      },
+      "log": {
+        "path": "/tmp/warpdrive-workflow-focus-eslint13-20261101-02.log",
+        "sha256": "cf3cae719d324eec82f4ee87f46ef32b5afbc3492d5fabbb9cdc6cf80ffe644c"
+      },
+      "supervisor_seconds": 8.929,
+      "exit_code": 0,
+      "files": 13,
+      "pins_unchanged_owner_readback": 48,
+      "pgid": 17499,
+      "owned_group_gone": true
+    },
+    "focused_tests": {
+      "status": "PASS",
+      "receipt": {
+        "path": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-workflow-continuation/outputs/workflow-focus-green13-final-supervisor-receipt.json",
+        "sha256": "07822f87b750938c7850cd3c6ec34fa68a215c923027369ec76e74972c94792e"
+      },
+      "log": {
+        "path": "/tmp/warpdrive-workflow-focus-green13-main43-20261101-02.log",
+        "sha256": "472d6daf6d9a6b81b20517e0131bd09470dce406aa0b542a793be0be0ddd633f"
+      },
+      "files_passed": 3,
+      "tests_passed": 13,
+      "tests_skipped": 0,
+      "vitest_seconds": 3.21,
+      "supervisor_seconds": 3.823,
+      "exit_code": 0,
+      "pins_unchanged_owner_readback": 46,
+      "min_free_bytes_owner_readback": 12562350080,
+      "pgid": 17657,
+      "owned_group_gone": true
+    },
+    "declared_typecheck": {
+      "status": "PASS",
+      "receipt": {
+        "path": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-workflow-continuation/outputs/workflow-focus-typecheck-final-supervisor-receipt.json",
+        "sha256": "31ff59b5d1f8f4c6422896b11bc9d33639f70790050491cb1ff6b07082825503"
+      },
+      "log": {
+        "path": "/tmp/warpdrive-workflow-focus-typecheck-20261101-02.log",
+        "sha256": "3a4fc3d35e2e25ec21ab242086552161e9953e0b1cd78ad518a4ac786b70fe7d"
+      },
+      "pipeline": "bun --bun next typegen && bun --bun tsc --noEmit -p tsconfig.typecheck.json",
+      "supervisor_seconds": 5.061,
+      "exit_code": 0,
+      "pins_unchanged_owner_readback": 46,
+      "min_free_bytes_owner_readback": 12556455936,
+      "pgid": 17803,
+      "owned_group_gone": true
+    },
+    "scope": "Final checks cover current13-file focus/selection working candidate on detached43, after lint/style fixes. They do not qualify current canonical9fb, app/browser/AT/provider behavior or full roadmap."
+  },
+  "current_duration_delivery": {
+    "directory": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-workflow-continuation/outputs/workflow-duration-wait-qualified-20261102",
+    "state": "DURATION_CORE_SOURCE_DELIVERED_EXACT_MAIN_CI_GREEN",
+    "manifest": {
+      "path": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-workflow-continuation/outputs/workflow-duration-wait-qualified-20261102/manifest.json",
+      "sha256": "c901bc85335a8a938704fc38d74a00e3a4c5d4dd4a3523e98225e6bf0412ceb1"
+    },
+    "patch": {
+      "path": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-workflow-continuation/outputs/workflow-duration-wait-qualified-20261102/duration-wait.patch",
+      "sha256": "cfc049520dec221d80a8f2015eae1dd281170fba90eefe65ec19f513aa8ddae2"
+    },
+    "readme": {
+      "path": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-workflow-continuation/outputs/workflow-duration-wait-qualified-20261102/README.md",
+      "sha256": "85479fe9a9a65cb6597cbb50b05fc33275d6b35471d7711001f6035a9a766b24"
+    },
+    "payload_files": 51,
+    "non_documentation_payload_paths": 46,
+    "unchanged_AF10_dependency_paths": 7,
+    "code_paths": 53,
+    "input_pins": 289,
+    "base_commit": "af10dc28250b1eee8db89c83ae353b7dd542f4ac",
+    "base_scope": "Only selected immutable AF10 historical module/doc blobs and plain artifact base-tree reviewed; no current Main or excluded workspace/branch/source inspected.",
+    "independent_review": {
+      "path": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-workflow-continuation/outputs/workflow-duration-wait-qualified-20261102/review-observed.json",
+      "sha256": "e5524355d0b875fe9240bdcce4036d83409335909c28dab12cdb20d2ae6a02cb"
+    },
+    "handoff": {
+      "status": "COMPLETED_QUALIFIED_SOURCE_HANDOFF_SENT",
+      "at": "2026-11-02T02:36:17.411894+00:00",
+      "receipt": {
+        "path": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-workflow-continuation/outputs/workflow-duration-wait-qualified-20261102/main-handoff-sent.json",
+        "sha256": "2754428b1c873d2f5f9cd8f9fe62d51e3e319a1909dad3ca539ee6e2f28f5630"
+      },
+      "to_thread": "01a19251-a472-7cd1-86cd-8dc245dd5b84",
+      "limit": "Actual tool send confirmed by root. Sending a qualified source packet is not Main acceptance, integration, CI, publication or installed/browser acceptance."
+    },
+    "main_observation": {
+      "at": "2026-11-02T06:22:42.944190+00:00",
+      "sha": "7b805816813594fa934f7613a94e17fa4f1b74c6",
+      "state": "DURATION_CORE_SOURCE_DELIVERED_EXACT_MAIN_CI_GREEN",
+      "source": "SoleintegratorMaincompactcursor631; immutablecommitfullIDresolvedread-onlyfromcanonicalGitmetadata",
+      "ci": "Mainreports8796unit+3128PGPASS, app+workers+sites+CodeQL+traceabilityallPASS. Legacyrowcomparison/null-deadlineforwardfixpassed. Newprivateinsertion/orderingnotinthiscut.",
+      "limits": "Source/local/hostedqualification only; actualCRMauthor/publish/livewait/task/provider/installed/AT/fullWFacceptance remainopen."
+    }
+  },
+  "plan_disposition": {
+    "compiler": {
+      "plan": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-workflow-continuation/outputs/workflow-runtime-version-green-compiler-plan.json",
+      "status": "CONSUMED_COMPILER_PASS_CLEANUP_RETURNED",
+      "authorization": "WORKFLOW-RUNTIME10-GREEN-20261102-1",
+      "receipt": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-workflow-continuation/outputs/workflow-runtime-version-green-compiler-observed.json"
+    },
+    "native": {
+      "plan": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-workflow-continuation/outputs/workflow-runtime-version-green-native10-plan.json",
+      "status": "CONSUMED_TERMINAL_ALL10_PASS_FULL_CLEANUP_RETURNED",
+      "authorization": "WORKFLOW-RUNTIME10-NATIVE-20261102-2",
+      "receipt": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-workflow-continuation/outputs/workflow-runtime-version-green-native10-observed.json"
+    },
+    "original_combined_allocation": {
+      "authorization": "WORKFLOW-RUNTIME10-GREEN-20261102-1",
+      "status": "COMPILER_PASS_NATIVE_UNSTARTED_TIME_ADMISSION_FAILED",
+      "compiler_cleanup_seconds": 35.350514,
+      "native_admission_seconds": 230.57834,
+      "final_return_observed_seconds": 370.614428,
+      "native_started": false,
+      "tests_executed": 0,
+      "receipt": {
+        "path": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-workflow-continuation/outputs/workflow-runtime-version-green-native10-unstarted-release.json",
+        "sha256": "e77ab071f6f907d0ba646d5507aad86e9b49466219fc0d375fb9c57d95c41c5f"
+      },
+      "limit": "Source inspection consumed remaining admission time. Compiler cleanup met its own180s bound; no combined300s conformance. Fresh native-only authorization was separate; no ID reused."
+    },
+    "pending_duplicate_rerun": false,
+    "pending_rerun_plans": [],
+    "rule": "These plans are consumed, not launch instructions. No duplicate compiler/native rerun is pending. Unchanged admission7, clock, upgrade and recovery suites retain their own source-scoped evidence; repeat only for a new affected change or required integration check with a fresh applicable allocation."
+  },
+  "remaining_acceptance": [
+    "Main review/reconciliation/integration of this duration increment and required exact-head CI before Delivered.",
+    "Canonical migration ordinal/journal/snapshot and populated-upgrade acceptance; private0100 is reserved only and its idx100-after97 journal must not be applied blindly.",
+    "Reviewed Privacy producer-boundary bindings and regenerated inventory; all six lifecycle capabilities remain Unsupported for all four Workflow stores.",
+    "Fresh finite synthetic app/worker/native session/browser basis and actual elapsed-minute journey, EN/FA/DE, narrow/theme, keyboard and AT qualification.",
+    "Provider and broader lifecycle/automatic CRM/template/recurrence acceptance; no such completion is claimed by this slice.",
+    "Full WF-001 through WF-042 roadmap remains active and incomplete."
+  ],
+  "durable_backup": {
+    "directory": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-workflow-continuation/outputs/workflow-continuation-backup-20261102T023729755943Z",
+    "manifest": {
+      "path": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-workflow-continuation/outputs/workflow-continuation-backup-20261102T023729755943Z/backup-manifest.json",
+      "sha256": "9ad8876d911acfdc5f28a7c33cd1adaad9114027af71bb881fb7a77628141ca0"
+    },
+    "scope": "Exact pre-edit bytes/modes of these five durable files. Earlier facts and receipts are historical, not rewritten."
+  },
+  "browser_preparation": {
+    "at": "2026-11-02T06:22:42.944190+00:00",
+    "state": "CANONICAL99_SOURCE_READY_ORDERING37_GREEN_CURRENT346_STATIC_PENDING_RUNTIME_UNRUN",
+    "acceptance_plan": "outputs/workflow-browser-acceptance-plan-20261102/README.md",
+    "candidate": "outputs/workflow-browser-fixture-candidate/r3/README.md",
+    "patch_sha256": "2118219be759fa3ebcc6b5c98aec4c501bbcae02eec592081b63916efbcc8b88",
+    "independent_source_review": "outputs/workflow-browser-fixture-candidate/r2/independent-review.json",
+    "promotion": "outputs/workflow-browser-fixture-r3-promoted.json",
+    "formatting": "outputs/workflow-browser-fixture-format3-observed.json",
+    "formatting_result": "PASS exit0/0.15s/3files/2formatted/3info/0warnings/0errors; whitespace-onlypostimagechanges",
+    "current_tooling_postimages": {
+      "/Users/ali/.codex/worktrees/workflow-roadmap-owned/warpdrive-builder-ux-20261031/src/features/workflows/browserFixture.test-helpers.ts": "f36b0e2ac55f26ea20d2d2f68ab425c5ff031f558ce281a2c00ba577a50a8894",
+      "/Users/ali/.codex/worktrees/workflow-roadmap-owned/warpdrive-builder-ux-20261031/scripts/workflow-browser-seed.ts": "6e9047fbeb71d04830ba68b8fc03f1f469be05b886bc34b9bb37ed53d3fd200f",
+      "/Users/ali/.codex/worktrees/workflow-roadmap-owned/warpdrive-builder-ux-20261031/src/entrypoints/workflowBrowserWorker.ts": "6a58ffd726a9d39fcada1f6ed1a9bd30edc4d0a419298b289af0fb89368a2888"
+    },
+    "static_plan": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/static12-plan.json",
+    "static_request_sent": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/static12-request-sent.json",
+    "source_qualification_limit": "Canonical99 normalreaderPASS; browserfixture3 priorstaticPASS; currentordering37componentPASS, current346fullconfiguredstatic14 notstarted. No privateDB/app/nativeauth/elapsedminute/runtimeproof.",
+    "migration_gate": "Oldprivatejournalgap removed by exactpublishedcanonical0098adoption; normal sourcereader passes99entries. Actual normaldb:migrate/ledger/integrity/schema/privatefixture/app stillunrun.",
+    "resources_started": false,
+    "no_owned_runner_remains": true,
+    "browser_started": false,
+    "supersedes": {
+      "at": "2026-11-02T02:50:33.906098+00:00",
+      "state": "OUTPUT_R2_REVIEW_IN_PROGRESS_NO_PROMOTION_OR_START",
+      "acceptance_plan": "outputs/workflow-browser-acceptance-plan-20261102/README.md",
+      "candidate": "outputs/workflow-browser-fixture-candidate/r2/README.md",
+      "patch_sha256": "b2e0df4e13b26f37ca41f5d8b1b36f4b4083bf068a61308e6a22d20afe816344",
+      "scope": "PureDb seed + one-shot private delivery + workflow-only worker; actual native UIlogin and naturally persisted one-minute wait required",
+      "migration_gate": "Normal db:migrate rejects private97→100 journal gap; Main accepted canonical/schema basis needed",
+      "resources_started": false
+    },
+    "actual_ui_authoring_note": "outputs/workflow-browser-ui-authoring-20261102.md",
+    "first_browser_journey": "Create new blank workflow in UI, connected Wait/Readdeal/Task, explicit read.title/read.id mappings, save/publish/live run/natural minute/exact task; seeded draft onlycontrol.",
+    "separate_wf017_gap": "Occupiededgeinsertion nowcomponent/layoutmathqualified; orderedstrip/node-arrayorder, actualrenderednarrow/largergraph/keyboardAT andwholeWF017 remainopen.",
+    "static_receipt": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/static12-observed.json",
+    "runtime_resources_started": false,
+    "current_pins": "/Users/ali/.codex/workflow-evidence/20261102/ordered-step-navigation/static14-plan.json",
+    "canonical_adoption": {
+      "at": "2026-11-02T05:20:51.875731+00:00",
+      "state": "EXACT_CANONICAL_SOURCE_ADOPTED_REVIEW_PASS_NORMAL_SOURCE_READER_GREEN",
+      "immutable_basis": "bf386af1315b066a0be402c966e7cef89bcd4f9a",
+      "manifest_sha256": "495f2922f59b392b71d7c578977cadd173b66f40321d3de3d48b7380eb685504",
+      "patch_sha256": "73e78efaec8fa3707856a5d563c8ed41ab9052b30f80ef2dc9166b66a37591f7",
+      "adopted_receipt": "/Users/ali/.codex/workflow-evidence/20261102/browser-canonical-basis/canonical-adoption/adopted.json",
+      "current_pins": "/Users/ali/.codex/workflow-evidence/20261102/browser-canonical-basis/canonical-adoption/current336-pins.json",
+      "pin_count": 336,
+      "independent_review": "/Users/ali/.codex/workflow-evidence/20261102/browser-canonical-basis/adoption-review.json",
+      "independent_review_sha256": "3cf44b82a41e69bb6e466d6d3f0fbe7426969b7fdfb84e33ec2c6547c019cc8e",
+      "source_reader_red": "/Users/ali/.codex/workflow-evidence/20261102/browser-canonical-basis/loader-before-observed.json",
+      "source_reader_green": "/Users/ali/.codex/workflow-evidence/20261102/browser-canonical-basis/loader-after-observed.json",
+      "normaldb_migrate": "UNRUN",
+      "private_fixture_runtime": "UNRUN",
+      "compiler_scope": "Old335 static12 PASS preserved; adopted canonicalfixturepair exactMain-qualified. No freshfullprivate336 type/lint invocation.",
+      "prefix98": "Independent all98SQL bodies match immutableMain; journal first98 and0097snapshot preserved.",
+      "no_live_owned_job": true
+    }
+  },
+  "next_r1_event_admission_review": {
+    "path": "outputs/workflow-r1-event-admission-next-20261102/review.md",
+    "sha256": "53317c7ce4ba59a8ba8d517b3714af1d8d962ff165a55e5b9bed3621bbdb6f6c",
+    "scope": "Read-only managed-parent43 source/currentWorkflow plus prior reports; no currentMain/excludedsource or implementation/checks",
+    "next": "One written cross-owner admission/authority/outbox contract; no automatic publication gate widened or new migration assigned"
+  },
+  "current_insertion": {
+    "at": "2026-11-02T05:02:07.139907+00:00",
+    "state": "INSERTION12_PRIOR_QUALIFIED_ORDERING_FOLLOWUP37_PASS_STATIC14_PENDING",
+    "source_paths": 71,
+    "static_plan": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/static12-plan.json",
+    "static_plan_sha256": "ad57a1afe4f0b28b9330b58e0c75bd4f1f609721df464889d26458b198dfa4fe",
+    "pins": 335,
+    "actual_ui": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/affected34-observed.json",
+    "new_packet": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/packet",
+    "packet_manifest_sha256": "e665cb7af788f7c5bac003173d9ac6e598ed15e89688899bbd4ed0967196ba60",
+    "source_reviews": [
+      "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/review.json",
+      "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/review-final.json"
+    ],
+    "meaning": "Atomicoccupiededgeinsertion plusconservativefree-cellplacement, ENFADEkeyboardfocus/componentcontrols. NofullWF017completion.",
+    "old_requests": "Static3withdrawnUNSTARTED; preparedstatic11supersededUNSTARTED; noauthorizationconsumed.",
+    "no_live_job": true,
+    "documentation_companion": {
+      "manifest": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/documentation-packet/manifest.json",
+      "sha256": "51c268114d7690f8b4317936b07373d4bd997e64226b0ad320e3c0dd8b9f1d1d",
+      "patch_sha256": "3377267047b706e34c99d2734ef72aa3c6b2fc8e2709e0b423aaa15efccc0b7d",
+      "files": 3,
+      "all_local_original_bytes_preserved": true,
+      "source_wording_review": "PASS",
+      "artifact_patch_check": "PASS",
+      "static335_inputs_unchanged": true
+    },
+    "documentation_updated_at": "2026-11-02T04:11:59.827653+00:00",
+    "static_receipt": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/static12-observed.json",
+    "static_receipt_sha256": "21162dc9c76a619bf08dfcdb668439414b56fd0ba2c740cb844a0d7ad8d74eee",
+    "qualification": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/qualification.json",
+    "current_source_scope": "Current64codepaths/336pins after independent canonicaladoption; shippingeditor12 hashes remainunchanged. Historical335static12 exactcut retained.",
+    "historical_static335_scope": "Priorprivateinsertion12 at exact335cut; neworderingfollowup hascurrent346staticpending.",
+    "current_ordering": {
+      "at": "2026-11-02T06:22:42.944190+00:00",
+      "status": "SOURCE_UNIT37_REVIEW_BIOME_PASS_CONFIGURED_STATIC14_PENDING",
+      "source_code_files": 12,
+      "unit_receipt": "/Users/ali/.codex/workflow-evidence/20261102/ordered-step-navigation/green-affected-observed.json",
+      "unit_tests": 37,
+      "unit_files": 9,
+      "tdd": [
+        "red7-observed.json",
+        "red-surfaces-observed.json",
+        "red-surfaces-r2-observed.json",
+        "pure-red-observed.json"
+      ],
+      "review": "/Users/ali/.codex/workflow-evidence/20261102/ordered-step-navigation/review.json",
+      "code_packet": "/Users/ali/.codex/workflow-evidence/20261102/ordered-step-navigation/packet",
+      "code_manifest_sha256": "0ac5da516d33194bd1125828193c9731c4eee1b80c1c3343788c6527bdab6bb9",
+      "code_patch_sha256": "28d0aae04151177931b49ad7fcd57d512d1852c83cb951654a6f1d3648015051",
+      "docs_packet": "/Users/ali/.codex/workflow-evidence/20261102/ordered-step-navigation/documentation-packet",
+      "docs_manifest_sha256": "9022a15b3fa0fc997f405551c5c9461195d513e14d7aa29f4794b0a2dd205e7c",
+      "docs_patch_sha256": "3965771665b0819dec3fa6e137d66e31390d80ef4fae9a6c14a3a621b5b30cc2",
+      "static_plan": "/Users/ali/.codex/workflow-evidence/20261102/ordered-step-navigation/static14-plan.json",
+      "static_plan_sha256": "78d7bf89f3288ec8fe71ec510cc047bbaffda65881613dcd4e755bf9c0364bc4",
+      "input_pins": 346,
+      "compiler_started": false,
+      "no_live_owned_job": true,
+      "scope": "Shareddependencydisplayorder, creationpriorityamongcurrentlyeligible; graphnodes/config/bindings/edges/layoutandCanvasoriginalz-order/positionspreserved.",
+      "limits": "Currentfulltypes/typedlint/MainCI/narrowCRM/browser/AT/fullWF017open; old335/336proofnotrebound."
+    }
+  },
+  "prototype_next": {
+    "state": "VISUAL2_BOUNDED_COMPLETE_NOT_WHOLE_WF005",
+    "actual": {
+      "status": "BOUNDED_VISUAL2_PASS_FIVE_FRAMES_THREE_ROUTES_TWO_SCROLLS",
+      "receipt": "/Users/ali/.codex/workflow-evidence/20261102/prototype-visual2/observed.json",
+      "sha256": "0e7839c285a87f6181d88a87113cbd6b929b3144d78178c26df7c2a0a9749865",
+      "exact_timing": "/Users/ali/.codex/workflow-evidence/20261102/prototype-visual2/exact-timing-addendum.json",
+      "allocation_to_cleanup_s": 306.95,
+      "case1_s": 171.366,
+      "case2_s": 135.192,
+      "all_timing_gates_pass": true,
+      "owned_tabs_remaining": [],
+      "unrelated_tabs_urls_preserved": 2,
+      "review": "/Users/ali/.codex/workflow-evidence/20261102/prototype-visual2/review.json",
+      "limits": "AXdocumentidentityonly/depictedfocus;DErightedgeviewercropped. NoCRM/DOMfocus/keyboardAT/wholeWF005acceptance."
+    },
+    "remaining": "Fullauthor/test/correction/publication/run andFAreturn/context/library/historyroutes unplayed. No unchangedR2exportrepeat."
+  },
+  "artifact_availability": {
+    "observed": "StandaloneolderGUIreceiptcompressed,dataless; blockedownreadPython28565/cat30075stopped, bothsessions50965/96041terminal143. Noactualteststartedinthosereads.",
+    "local_core_mirror": "/Users/ali/.codex/workflow-evidence/20261102/duration-wait-qualified",
+    "mirror_receipt": "/Users/ali/.codex/workflow-evidence/20261102/mirror-receipt.json",
+    "all94_file_hashes_verified": true,
+    "no_global_sync_or_foreign_process_change": true
+  },
+  "main_integration_observation": {
+    "at": "2026-11-02T06:22:42.944190+00:00",
+    "sha": "7b805816813594fa934f7613a94e17fa4f1b74c6",
+    "state": "DURATION_CORE_SOURCE_DELIVERED_EXACT_MAIN_CI_GREEN",
+    "source": "SoleintegratorMaincompactcursor631; immutablecommitfullIDresolvedread-onlyfromcanonicalGitmetadata",
+    "ci": "Mainreports8796unit+3128PGPASS, app+workers+sites+CodeQL+traceabilityallPASS. Legacyrowcomparison/null-deadlineforwardfixpassed. Newprivateinsertion/orderingnotinthiscut.",
+    "limits": "Source/local/hostedqualification only; actualCRMauthor/publish/livewait/task/provider/installed/AT/fullWFacceptance remainopen."
+  },
+  "figma_work_session": {
+    "fileKey": "lo6eJ7kZQykfj0HduMaoGN",
+    "sessionId": "895ad6f7-37d9-4f97-8127-f8987d517851",
+    "description": "ContinueWF005currentprototypeacceptance; reuseoneligibleFigmaMCPfollowups",
+    "skill": "/Users/ali/.codex/plugins/cache/openai-curated-remote/figma/17.0.0/skills/figma-use/SKILL.md"
+  },
+  "duration_upgrade_lint_candidate": {
+    "status": "ALTERNATE_RETAINED_NOT_ADOPTED_MAIN_EQUIVALENT_FIXED",
+    "manifest": "/Users/ali/.codex/workflow-evidence/20261102/duration-upgrade-lint-fix/manifest.json",
+    "patch": "/Users/ali/.codex/workflow-evidence/20261102/duration-upgrade-lint-fix/duration-upgrade-lint-fix.patch",
+    "patch_sha256": "adc1f3674b8414a900e69532ffe53b57842d1c92910e3b179763fcf2c30840c2",
+    "candidate_sha256": "764f100b09c48d00d188a8ccdf09b4f9954f909d06812b25d19beef2b59f3702",
+    "base_sha256": "a61a604884b9577accedbb3e06643603cf2b952274a7e3f24bc2fba6589e0a1e",
+    "review": "/Users/ali/.codex/workflow-evidence/20261102/duration-upgrade-lint-fix/root-review.json",
+    "managed335_inputs_written": false,
+    "qualification": "No compiler/lint/native run. Main must preserve0098retags andvalidateitsreconciledvariant; do notcopyold0100-namedwholefile.",
+    "main_equivalent": {
+      "source": "Direct Main delegation plus compactcursor567",
+      "helper_sha256": "5c4a91e08aee797a2431b0b758029f0f7388d7e80b245620fa408db004845bc4",
+      "review_reference": "Main task outputs/workflow-canonical-preparation-20261102/fixture-complexity-extraction/source-equivalence-review.json",
+      "state": "Main equivalent extraction independently source-reviewed/Biome1PASS; latest fresh fullTSC/typedlintPASS, formatting in canonical migration test stillfails. Nativeupgrade/inventory pending.",
+      "root_alternate_applied": false,
+      "managed335_inputs_changed": false
+    }
+  },
+  "browser_canonical_basis": {
+    "directory": "/Users/ali/.codex/workflow-evidence/20261102/browser-canonical-basis",
+    "state": "EXACT_CANONICAL_SOURCE_ADOPTED_REVIEW_PASS_NORMAL_SOURCE_READER_GREEN",
+    "v2_manifest": "/Users/ali/.codex/workflow-evidence/20261102/browser-canonical-basis/coherent-v2/manifest.json",
+    "v2_manifest_sha256": "1c2b95e2954248bf724d10303497724ab60e1c98f4984f5adaf6b9cf1e7a7e5e",
+    "v2_patch_sha256": "b2a3c2d2f939805726a6a2af4e1b15a0303745be0128a9dc0a2050f5cc9db18f",
+    "adoption_seam": "Original durationWaitMigration.test-helpers.ts expects0100/idx100; minimal0098/idx98 proposal solvespath. Knownactualcomplexity19 finding remainsunlessMainqualifiedequivalentseedDurationSteps extraction adopted; canonicalhelper5c4a91e08aee797a2431b0b758029f0f7388d7e80b245620fa408db004845bc4 proofseparate. No metadata/helper sourceadopted and static335 unchanged.",
+    "independent_review": "/Users/ali/.codex/workflow-evidence/20261102/browser-canonical-basis/adoption-review.json",
+    "proof_hashes": {
+      "/Users/ali/.codex/workflow-evidence/20261102/browser-canonical-basis/independent-review.json": "f3454dba9a57286b0da659001e5c20b5a3c263ccb0185e7ff5776a24f1938e28",
+      "/Users/ali/.codex/workflow-evidence/20261102/browser-canonical-basis/independent-review.md": "89014a22b887c91c6191ab5422a849fb3169eb2995e6f2b01cdeb6d3e47a3073",
+      "/Users/ali/.codex/workflow-evidence/20261102/browser-canonical-basis/prefix-comparison.json": "8de1f2336b56b5c2db61f60fcb680807cb398a3c724dda90c7e4fc7070fcef31"
+    },
+    "at": "2026-11-02T05:20:51.875731+00:00",
+    "immutable_basis": "bf386af1315b066a0be402c966e7cef89bcd4f9a",
+    "manifest_sha256": "495f2922f59b392b71d7c578977cadd173b66f40321d3de3d48b7380eb685504",
+    "patch_sha256": "73e78efaec8fa3707856a5d563c8ed41ab9052b30f80ef2dc9166b66a37591f7",
+    "adopted_receipt": "/Users/ali/.codex/workflow-evidence/20261102/browser-canonical-basis/canonical-adoption/adopted.json",
+    "current_pins": "/Users/ali/.codex/workflow-evidence/20261102/browser-canonical-basis/canonical-adoption/current336-pins.json",
+    "pin_count": 336,
+    "independent_review_sha256": "3cf44b82a41e69bb6e466d6d3f0fbe7426969b7fdfb84e33ec2c6547c019cc8e",
+    "source_reader_red": "/Users/ali/.codex/workflow-evidence/20261102/browser-canonical-basis/loader-before-observed.json",
+    "source_reader_green": "/Users/ali/.codex/workflow-evidence/20261102/browser-canonical-basis/loader-after-observed.json",
+    "normaldb_migrate": "UNRUN",
+    "private_fixture_runtime": "UNRUN",
+    "compiler_scope": "Old335 static12 PASS preserved; adopted canonicalfixturepair exactMain-qualified. No freshfullprivate336 type/lint invocation.",
+    "prefix98": "Independent all98SQL bodies match immutableMain; journal first98 and0097snapshot preserved.",
+    "no_live_owned_job": true,
+    "hosted_fixture_observation": "Mainreports exactpublishedcanonicalupgrade1PASS in hostedPGphase; fullCIoneolderfixtureFAIL, no wholeCI/private runtime credit."
+  },
+  "current_ordering": {
+    "at": "2026-11-02T06:22:42.944190+00:00",
+    "status": "SOURCE_UNIT37_REVIEW_BIOME_PASS_CONFIGURED_STATIC14_PENDING",
+    "source_code_files": 12,
+    "unit_receipt": "/Users/ali/.codex/workflow-evidence/20261102/ordered-step-navigation/green-affected-observed.json",
+    "unit_tests": 37,
+    "unit_files": 9,
+    "tdd": [
+      "red7-observed.json",
+      "red-surfaces-observed.json",
+      "red-surfaces-r2-observed.json",
+      "pure-red-observed.json"
+    ],
+    "review": "/Users/ali/.codex/workflow-evidence/20261102/ordered-step-navigation/review.json",
+    "code_packet": "/Users/ali/.codex/workflow-evidence/20261102/ordered-step-navigation/packet",
+    "code_manifest_sha256": "0ac5da516d33194bd1125828193c9731c4eee1b80c1c3343788c6527bdab6bb9",
+    "code_patch_sha256": "28d0aae04151177931b49ad7fcd57d512d1852c83cb951654a6f1d3648015051",
+    "docs_packet": "/Users/ali/.codex/workflow-evidence/20261102/ordered-step-navigation/documentation-packet",
+    "docs_manifest_sha256": "9022a15b3fa0fc997f405551c5c9461195d513e14d7aa29f4794b0a2dd205e7c",
+    "docs_patch_sha256": "3965771665b0819dec3fa6e137d66e31390d80ef4fae9a6c14a3a621b5b30cc2",
+    "static_plan": "/Users/ali/.codex/workflow-evidence/20261102/ordered-step-navigation/static14-plan.json",
+    "static_plan_sha256": "78d7bf89f3288ec8fe71ec510cc047bbaffda65881613dcd4e755bf9c0364bc4",
+    "input_pins": 346,
+    "compiler_started": false,
+    "no_live_owned_job": true,
+    "scope": "Shareddependencydisplayorder, creationpriorityamongcurrentlyeligible; graphnodes/config/bindings/edges/layoutandCanvasoriginalz-order/positionspreserved.",
+    "limits": "Currentfulltypes/typedlint/MainCI/narrowCRM/browser/AT/fullWF017open; old335/336proofnotrebound."
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "id": "WORKFLOW-INSERTION-STATIC12-20261102-1",
+  "at": "2026-11-02T04:59:49.285728+00:00",
+  "pins_checked": 335,
+  "changed_pins": [],
+  "dataless": [],
+  "dotenv_present": [],
+  "dependencies_unchanged": true,
+  "head_unchanged": true,
+  "index_unchanged": true,
+  "foreign_tcp_listeners": "p1001\ncrapportd\nf13\nn*:54121\nf15\nn*:54121\nf20\nn*:56303\nf23\nn*:56304\np1155\ncControlCenter\nf10\nn*:7000\nf11\nn*:7000\nf12\nn*:5000\nf13\nn*:5000\np2554\ncredis-server\nf6\nn127.0.0.1:6379\nf7\nn[::1]:6379\np2589\ncpostgres\nf7\nn[::1]:5432\nf8\nn127.0.0.1:5432\np2619\ncMountain Duck\nf375\nn127.0.0.1:49179\np2669\ncAdobeResourceSynchronizer\nf10\nn127.0.0.1:19292\np3058\ncAdobe Desktop Service\nf31\nn127.0.0.1:15292\nf40\nn127.0.0.1:15393\nf41\nn127.0.0.1:16494\np15051\ncpostgres\nf5\nn127.0.0.1:54673\np19823\ncChatGPT\nf150\nn127.0.0.1:64230\np27878\ncpostgres\nf5\nn127.0.0.1:55480\np42134\ncbun\nf7\nn127.0.0.1:3104\np47693\ncpostgres\nf5\nn127.0.0.1:55436\np48960\ncpostgres\nf5\nn127.0.0.1:55435\np62619\ncCode Helper\nf35\nn127.0.0.1:52697\np75521\ncpostgres\nf5\nn127.0.0.1:55432\np79861\nclimactl\nf14\nn127.0.0.1:54491\np79895\nclimactl\nf9\nn*:53\np80001\ncssh\nf9\nn127.0.0.1:9000\nf10\nn127.0.0.1:13993\nf11\nn127.0.0.1:9160\nf12\nn127.0.0.1:13465\np82134\ncbun\nf5\nn127.0.0.1:3105\n",
+  "foreign_listeners_unchanged": true,
+  "remaining_owned": [],
+  "memory_pressure_level": "1",
+  "memory_available": "The system has 38654705664 (2359296 pages with a page size of 16384).\nSystem-wide memory free percentage: 49%",
+  "closed_at": "2026-11-02T04:59:49.436904+00:00",
+  "preflight_to_cleanup_s": 75.563804,
+  "allocation_cleanup_upper_bound_s": 106.930855,
+  "upper_bound_basis": "Last readiness refresh completed before fresh START arrived; exact grant-receipt clock was not separately captured.",
+  "cleanup_pass": true
+}

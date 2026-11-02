@@ -1,0 +1,12 @@
+{
+  "at": "2026-11-02T04:58:02.506049+00:00",
+  "status": "READY_UNSTARTED",
+  "plan_sha256": "ad57a1afe4f0b28b9330b58e0c75bd4f1f609721df464889d26458b198dfa4fe",
+  "checked": 335,
+  "mismatches": [],
+  "dataless_skipped": [],
+  "compiler_invocations": 0,
+  "browser_tabs_created": 0,
+  "db_invocations": 0,
+  "note": "Read-only readiness refresh, not authorization or execution."
+}

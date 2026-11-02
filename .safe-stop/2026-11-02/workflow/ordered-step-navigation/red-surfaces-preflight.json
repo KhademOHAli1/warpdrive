@@ -1,0 +1,25 @@
+{
+  "at": "2026-11-02T05:48:40.634193+00:00",
+  "pressure": "1",
+  "q": 52,
+  "pins": {
+    "src/features/workflows/ui/BuilderWorkspace.tsx": "4d74f6fcbe559f96e1b543cc4865e70d66e19cb00c5753dd89a192938f5c8333",
+    "src/features/workflows/ui/WorkflowCanvas.tsx": "13d19e186ae5bd4fd4cc73ca4d4a2d73a47e4b0838fb6364a2cebae1eba12821",
+    "src/features/workflows/ui/RunTrace.tsx": "522daf1931aa062a1590cc179ef1c785da97f56218d59ec198d2d34f5700a75a",
+    "src/features/workflows/ui/BindingField.tsx": "c533a336d5ff84505b3d74349efbac94abd4a084a6cce99e1b6608818bbcac25",
+    "src/features/workflows/ui/ConnectionEditor.tsx": "09c250c751a53f00ea143f167e4778079d2cd5fdd43bcf6f68d4ebdd2a5842b6",
+    "src/features/workflows/ui/EdgeInspector.tsx": "1f59ad7cd511d6b306637cc1076cb7cf73b06005a19e99ef8ffcc2f90b274258",
+    "src/features/workflows/ui/ConnectionInsertion.test.tsx": "84a7aac98c150b3dafcdb37f3b46361cc150693f8f080e40e076b90e60732d09",
+    "src/features/workflows/ui/WorkflowCanvas.test.tsx": "c64edeb937ba8a23c110151b4fff6522d1596d31a151c3ea90d36d93afe1cd58",
+    "src/features/workflows/ui/RunTrace.selection.test.tsx": "cc805a3f5659f80206f446f1fd5134a25614bafe8b05fac1028f8ae0cc4aea0d",
+    "src/features/workflows/ui/NodeOrdinals.test.tsx": "c238ca692ea5651a70112ddf9edea057002412231fc4d6aac95a5bb6ad201774"
+  },
+  "production_edits": 0,
+  "tests": [
+    "src/features/workflows/ui/ConnectionInsertion.test.tsx",
+    "src/features/workflows/ui/WorkflowCanvas.test.tsx",
+    "src/features/workflows/ui/RunTrace.selection.test.tsx",
+    "src/features/workflows/ui/NodeOrdinals.test.tsx"
+  ],
+  "script": "Bun1.4.4cleanenv/directnoenv+BUN_OPTIONS;configuredunit/oneworker/45swork+2kill;DB/browser0"
+}

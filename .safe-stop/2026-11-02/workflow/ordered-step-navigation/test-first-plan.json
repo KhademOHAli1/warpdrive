@@ -1,0 +1,14 @@
+{
+  "at": "2026-11-02T05:30:56.627225+00:00",
+  "behavior": "Afteroccupied-outputWaitinsertion, numberedWorkflowstepsfollows unambiguous connectedlinearpath start\u2192Wait\u2192read\u2192task, notcreationarray.",
+  "source_before_sha256": "1932665d15e3c2dcface80718e792c652e6284ff28c5cdeab24ad3160ae526e0",
+  "test_file": "/Users/ali/.codex/worktrees/workflow-roadmap-owned/warpdrive-builder-ux-20261031/src/features/workflows/ui/ConnectionInsertion.test.tsx",
+  "production_edits": 0,
+  "prior_editor12_packet": "Immutable and stillboundto earlier335staticcut; this is a separatefollowup.",
+  "limits": "DOM semantics only; no pixel/narrowbrowser/AT/branch-order/wholeWF017claim. Figma2retainspriority.",
+  "requirements": [
+    "docs/workflows/implementation-plan.md:51",
+    "docs/workflows/implementation-plan.md:100",
+    "docs/workflows/ux-design-reference.md:89"
+  ]
+}

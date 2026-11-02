@@ -1,0 +1,35 @@
+{
+  "at": "2026-11-02T05:00:08.818857+00:00",
+  "id": "WORKFLOW-INSERTION-STATIC12-20261102-1",
+  "status": "PASS_TERMINAL_CLEANUP_RETURNED",
+  "checks": {
+    "declared_next_typegen_full_tsc": "PASS",
+    "configured_typed_eslint_12": "PASS",
+    "biome15": "PASS_EXIT0_WITH_3_INFORMATIONAL_USE_TEMPLATE_DIAGNOSTICS"
+  },
+  "command_exit": 0,
+  "command_wall_s": 17.7,
+  "wrapper_execution_s": 17.965592499938793,
+  "preflight_to_cleanup_s": 75.563804,
+  "allocation_to_cleanup_upper_bound_s": 106.930855,
+  "upper_bound_basis": "Last readiness refresh completed before fresh START arrived; exact grant-receipt clock was not separately captured.",
+  "all_335_pins_unchanged": true,
+  "head_index_dependencies_foreign_listeners_unchanged": true,
+  "four_dotenv_absent": true,
+  "owned_groups_gone": true,
+  "normal_pressure": true,
+  "minimum_sampled_q": 48,
+  "max_sampled_owned_rss_bytes": 5017174016,
+  "peak_limit": "Sampled aggregate only; no continuous peak claim.",
+  "unit_invocations": 0,
+  "native_invocations": 0,
+  "browser_tabs_created": 0,
+  "files": [
+    "static12-preflight.json",
+    "static12-launch.json",
+    "static12-command-terminal.json",
+    "static12-cleanup.json"
+  ],
+  "log": "/tmp/warpdrive-workflow-insertion-fixture-static12-20261102-01.log",
+  "limits": "Private editor/fixture configured statics only; Main CI, browser/AT and actual app journey separate. Prior affected34/native10 retained without repeat."
+}

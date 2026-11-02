@@ -1,0 +1,27 @@
+{
+  "at": "2026-11-02T06:23:49.969648+00:00",
+  "mirrors": [
+    {
+      "path": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-workflow-continuation/outputs/workflow-duration-wait-current-source.json",
+      "dataless": false,
+      "mirror": "/Users/ali/.codex/workflow-evidence/20261102/ordered-step-navigation/current-workflow-duration-wait-current-source.json",
+      "sha256": "42b3fc5a10d7c3f8f003f6233f97100120bb41cd93b9ace50d866263073a8446",
+      "status": "VISUAL2_PASS_ORDERED_STEPS_UNIT37_PASS_CURRENT346_STATIC_PENDING",
+      "code_paths": 71
+    },
+    {
+      "path": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-workflow-continuation/outputs/workflow-continuation-checkpoint.json",
+      "dataless": false,
+      "mirror": "/Users/ali/.codex/workflow-evidence/20261102/ordered-step-navigation/current-workflow-continuation-checkpoint.json",
+      "sha256": "15718a0992be2226409f21491eb14eac0981244a7fda426bbbe256a3bd16f3cf",
+      "status": "VISUAL2_PASS_ORDERED_STEPS_UNIT37_PASS_CURRENT346_STATIC_PENDING",
+      "code_paths": null
+    }
+  ],
+  "local_handoff": "/Users/ali/.codex/workflow-evidence/20261102/ordered-step-navigation/CURRENT-HANDOFF.md",
+  "cold_originals_preserved": [
+    "outputs/managed-workflow-progress.md",
+    "outputs/workflow-consolidation-20261101/HANDOFF.md"
+  ],
+  "no_hydration": true
+}

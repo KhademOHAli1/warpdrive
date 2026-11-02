@@ -1,0 +1,10 @@
+{
+  "at": "2026-11-02T03:59:22.221625+00:00",
+  "to": "01a19251-a472-7cd1-86cd-8dc245dd5b84",
+  "status": "REQUEST_SENT_NO_START",
+  "plan_sha256": "ad57a1afe4f0b28b9330b58e0c75bd4f1f609721df464889d26458b198dfa4fe",
+  "plan": "/Users/ali/.codex/workflow-evidence/20261102/connection-insertion/static12-plan.json",
+  "old_static3": "WITHDRAWN_UNSTARTED",
+  "prototype600_requested": true,
+  "runner_live": false
+}
