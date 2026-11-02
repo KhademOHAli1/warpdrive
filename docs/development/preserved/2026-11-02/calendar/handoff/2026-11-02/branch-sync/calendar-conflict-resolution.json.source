@@ -1,0 +1,197 @@
+{
+  "atUtc": "2026-11-02T08:37:07.379706+00:00",
+  "oldBranchHead": "1e93e8e4f7fc67da3fa204b688731dc551334c4b",
+  "main": "09288d518fd574fd069fb6a1dc670596f71a8831",
+  "scope": "13 source/test conflicts only; no drizzle/dependency/flag/ref/real-workspace mutation",
+  "resolutions": [
+    {
+      "path": "src/app/(app)/activities/calendar/CalendarClient.tsx",
+      "conflictedBeforeSha256": "a0b677727f7b2cee338e7341d517b1adf35d96e3b22328d0b4b6cd7209f85f83",
+      "afterSha256": "52b76d341c537cf34ec86d355114e3c5e047f383a3d7a0415fad44d6b9ffc2a4",
+      "oldSha256": "35b51dd69d1eb7477fdd25873d079bcfb46afb9b2cc2f31d7174a49d2077c997",
+      "mainSha256": "d919ca47699cd6876fcb31097a365843c6710f17b878dd64c3f8d5d0692d4b51",
+      "decision": "Calendar focus/day behavior plus Main Shift/IME, shared typing-target and floating-overlay admission guards."
+    },
+    {
+      "path": "src/app/(app)/activities/calendar/CalendarNavigation.test.tsx",
+      "conflictedBeforeSha256": "3007d1cf52f875f867d0a7e99b44cac02f054973514e4ce031496388bcbeae69",
+      "afterSha256": "acf654c9aa0e9d98e5381dfd75c43109dd8e9793d1a7795edaf06bfcc34e8bc0",
+      "oldSha256": "37f8bb960b19c9e7ba7c48d0cb43802ba4bfb67e7e593d584236d414019c1238",
+      "mainSha256": "375e44971bbe29fecbc6a756d72d97bf0951df0775c009251caad00e96aada54",
+      "decision": "Union Calendar day/locale cases and mocks with Main week/month navigation and explicit-creation cases."
+    },
+    {
+      "path": "src/app/(app)/activities/calendar/CalendarPortalShortcut.test.tsx",
+      "conflictedBeforeSha256": "8d76d81576a104786e14e799fac4d3152f1e6cb7e7d992937204c3de8ec7e539",
+      "afterSha256": "7a5010cbe9405306b0b97a93c4cd240d890439f2f27992f6a70c53535236a8a1",
+      "oldSha256": "076cd7075e7d500566523a80025aa403078015c415342a58765ba680d6da8366",
+      "mainSha256": "6f541b81f646a1b0bab2b95bb77bd66bafa2ca121d9b17925748137829965a80",
+      "decision": "Union week/day portal containment/typed fixture with Main role/contenteditable/Shift/IME/overlay controls."
+    },
+    {
+      "path": "src/app/(app)/settings/connections/ConnectionsClient.test.tsx",
+      "conflictedBeforeSha256": "18f616d0f3cc7aa1512bcb12dddcc214672e09e6d8eb74cd66f7878e79a1fdda",
+      "afterSha256": "635b57717ae32d0c15314eab3525a474b27de81d6eefca046bbca42c54a47e89",
+      "oldSha256": "154a60dfec4091be2b0b6172c3794f3d917814f98d51bd0e215908bddeed2716",
+      "mainSha256": "5411e58358256c7b36b63b87cf7bef1a3c7042e00c0d5778c20e5eb8f59075ef",
+      "decision": "Union every Calendar account case with Main named revoke/cancel/result/transport/duplicate-submit/mailbox-link controls."
+    },
+    {
+      "path": "src/app/(app)/settings/connections/ConnectionsClient.tsx",
+      "conflictedBeforeSha256": "8f18039a973c278440ba09edbf081c0d819c89a3538439bacce507676c4b8e39",
+      "afterSha256": "29aba40d6c3a47b5792dacf8115e8d926f9069ce7d512201d19e6196231c79b0",
+      "oldSha256": "abc42a8569968e28c7a69aa6aebcbfec5071e2de381ef66b4af9629d374e07f6",
+      "mainSha256": "4ab5509a50f7aa6f1909dc2dfd0bf0240fedc8b1fc146928db6e1254c68f856a",
+      "decision": "Calendar card alongside all Main confirmation/pending/error/accessibility/wrapping and mailbox-link behavior."
+    },
+    {
+      "path": "src/config/env.ts",
+      "conflictedBeforeSha256": "083b9c825d134bb94c1251e47af4b706c813c962c90033ecd22971699638a20b",
+      "afterSha256": "dd0a77ff54fc0ead609d3d5170b78360aa5b175e0931a40da7f332558c37fe31",
+      "oldSha256": "fa3921c2cb94c9493893b09105ccb2404ba47a8dd45909ac638eb4e6db57add0",
+      "mainSha256": "ca6f8e9650a02069899aa038b6faabd236974635cc039a40317795167ec49d7e",
+      "decision": "Union independent optional Calendar OAuth/paired-secret guard and Main Slack config/secret-file support; defaults unchanged."
+    },
+    {
+      "path": "src/constants/errorIds.ts",
+      "conflictedBeforeSha256": "c38d3d4c3718c7aaed1a3de128c42a9bbd8e6591d651fd7a6a3fefb5bcfcbfc3",
+      "afterSha256": "7d172501461d4b0756f0bbfc3e54bca8eb460a51e439042fbc7951f0025b0100",
+      "oldSha256": "4d67ee8194ee12f1c477cda614c3958277f33dfc5bca2f4d98e1f39ddc6afa6e",
+      "mainSha256": "d578ad0f39a4ed573e72094e572efd99f9d1fcf2e482d8d6f109037dfa7d7d6c",
+      "decision": "Preserve canonical strict-completion ID and Calendar conflict/provider/catalog/binding IDs, no renumbering."
+    },
+    {
+      "path": "src/features/activities/actions.ts",
+      "conflictedBeforeSha256": "182e5862db8e10b22e52b9a5cae9fe8ddcc3d45581af0899adffe98d58156a70",
+      "afterSha256": "1580aaca6882158d3b2caefc29f252e1963854673d940f37bc022c6350c54bbf",
+      "oldSha256": "1580aaca6882158d3b2caefc29f252e1963854673d940f37bc022c6350c54bbf",
+      "mainSha256": "c3c9c4db0b02dba9859773ef7f014ed75e83e3e3fce276f4d6a3290db582c218",
+      "decision": "Main CSRF/current actor/strict input order plus Calendar explicit revision and authoritative output version."
+    },
+    {
+      "path": "src/features/activities/completeActivityAction.validation.test.ts",
+      "conflictedBeforeSha256": "d90876aa94c3887ba590bfdfddf2ea0392ae1468dac257ec5ceb995f3bf33b97",
+      "afterSha256": "f09b5dfcc563839a427af8f4c127104be67272dc45a596aee65a7a8e1b1b9897",
+      "oldSha256": "f09b5dfcc563839a427af8f4c127104be67272dc45a596aee65a7a8e1b1b9897",
+      "mainSha256": "f3e71b20853205846355f2a9af4ba8f0916d1bd149c974a918fb305c32eeb808",
+      "decision": "Preserve Main strict malformed-input/auth/no-command controls plus Calendar explicit/legacy revision result controls."
+    },
+    {
+      "path": "src/features/activities/completeActivityInput.ts",
+      "conflictedBeforeSha256": "b30c292715387dd737dd563b15c933bb14dabd6af2c64bc0f7b96e48b0e63f0b",
+      "afterSha256": "d337da3d9b7594100ced17bd98a8c22ee705b90b0615d391acdd08c96458f77a",
+      "oldSha256": "d337da3d9b7594100ced17bd98a8c22ee705b90b0615d391acdd08c96458f77a",
+      "mainSha256": "a238669be02a067867c2836aa90508d7243a3627ca0fa427cd14f54b7fef2213",
+      "decision": "Main strict-object id/done validation plus positive optional expectedVersion."
+    },
+    {
+      "path": "src/features/activities/repo.ts",
+      "conflictedBeforeSha256": "0f6d2a8bcd037a809c41917457fd31e485e3190db0f2d79544956de5755858f1",
+      "afterSha256": "6e8a9abbb34ac17fe51affe4ee84c3e716f7500704477ce5a5d194dfd031e62e",
+      "oldSha256": "5574deae0a3fccf6ace80d3df22822834a3817e6d791a5d2d6c439d1f1718e24",
+      "mainSha256": "ca2826ab2fa920998fee9d28df2cd8f9ebf7a39e2844bba38e7b2c1e8dc69400",
+      "decision": "Main FOR UPDATE lock and same-state no writes; Calendar guard retains visibility/CRM permission checks plus Calendar authority/revision checks."
+    },
+    {
+      "path": "src/features/auth/management/offboarding.ts",
+      "conflictedBeforeSha256": "609d127d6ad0bc0d73d0c7d164e8f335e2b233732324a588c1a68de552f05176",
+      "afterSha256": "a21fe39c4185645229ddb1d157578783bfc596e0d263482853c0037269d412aa",
+      "oldSha256": "600293be757c41802c185802e8471bfdc6e065e1c117dffc7670b3d4716a4f90",
+      "mainSha256": "a21fe39c4185645229ddb1d157578783bfc596e0d263482853c0037269d412aa",
+      "decision": "Retain Main atomic auth-account\u2192MCP\u2192owner/mailbox lock order, Gmail-only durable revocation receipt and credential/generation invalidation. Old Calendar hook ran before the transaction/locks and depends on unadmitted provider tables. Reconcile the Calendar revoke hook only inside the accepted transaction with canonical schema and real offboarding/race proof."
+    },
+    {
+      "path": "src/features/notifications/email/job.ts",
+      "conflictedBeforeSha256": "76c4736a3b16c851a4dab2d28d28146676a50e1518dd4cc84825e06e29b8aeff",
+      "afterSha256": "cc7658c940935038e549dfabfad8f219b7e32b84116302a2673c39baaa431e57",
+      "oldSha256": "394a1be872b35fb953d11eb76e187dbfc51dafea570302e83fb0023000f8f37d",
+      "mainSha256": "cc7658c940935038e549dfabfad8f219b7e32b84116302a2673c39baaa431e57",
+      "decision": "Retain Main durable dispatch/runSendJob attempt, idempotency, final admission and truthful pending/needs-review behavior. Old Calendar pre-send checks and direct legacy send cannot replace this dispatcher. Bind Calendar receipt/intent authority at current final submission admission later. Calendar tests using legacy SendFn/{send} require adaptation, not a restored bypass."
+    }
+  ],
+  "deferred": [
+    {
+      "path": "src/features/auth/management/offboarding.ts",
+      "archivePath": ".safe-stop/2026-11-02/branch-sync/deferred-source/src/features/auth/management/offboarding.ts.source",
+      "branchSourceSha256": "600293be757c41802c185802e8471bfdc6e065e1c117dffc7670b3d4716a4f90",
+      "reason": "Retain Main atomic auth-account\u2192MCP\u2192owner/mailbox lock order, Gmail-only durable revocation receipt and credential/generation invalidation. Old Calendar hook ran before the transaction/locks and depends on unadmitted provider tables. Reconcile the Calendar revoke hook only inside the accepted transaction with canonical schema and real offboarding/race proof."
+    },
+    {
+      "path": "src/features/notifications/email/job.ts",
+      "archivePath": ".safe-stop/2026-11-02/branch-sync/deferred-source/src/features/notifications/email/job.ts.source",
+      "branchSourceSha256": "394a1be872b35fb953d11eb76e187dbfc51dafea570302e83fb0023000f8f37d",
+      "reason": "Retain Main durable dispatch/runSendJob attempt, idempotency, final admission and truthful pending/needs-review behavior. Old Calendar pre-send checks and direct legacy send cannot replace this dispatcher. Bind Calendar receipt/intent authority at current final submission admission later. Calendar tests using legacy SendFn/{send} require adaptation, not a restored bypass."
+    },
+    {
+      "path": "src/features/activities/repo.ts",
+      "archivePath": ".safe-stop/2026-11-02/branch-sync/deferred-source/src/features/activities/repo.ts.source",
+      "branchSourceSha256": "5574deae0a3fccf6ace80d3df22822834a3817e6d791a5d2d6c439d1f1718e24",
+      "reason": "Only the proposed FOR NO KEY UPDATE completion lock mode is deferred. Main FOR UPDATE is retained while Calendar visibility/revision and no-write same-state logic are integrated. Qualify actual competing completion/FK/calendar lock interactions before adopting the weaker lock proposal."
+    }
+  ],
+  "verification": {
+    "syntaxParseOnly": {
+      "files": 13,
+      "diagnostics": 0,
+      "tool": "TypeScript createSourceFile/parseDiagnostics only, no programme/typecheck/emit"
+    },
+    "gitDiffCheck": {
+      "files": 13,
+      "diagnostics": 0,
+      "rawExitCodes": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "interpretation": "git diff --no-index --check /dev/null <file> returned1 for file additions with empty stdout/stderr; initial wrapper incorrectly expected0. No whitespace errors were emitted."
+    },
+    "noConflictMarkersInOwnedPaths": true,
+    "mainOffboardingByteExact": true,
+    "mainNotificationJobByteExact": true,
+    "testsCompilersNativeServicesStarted": false
+  },
+  "knownUnqualifiedInterfaces": [
+    "Legacy Calendar native tests import removed SendFn and pass {send}; adapt to Main durable transport separately.",
+    "Canonical Calendar DDL/model/journal and final email policy remain unadmitted.",
+    "Main FOR UPDATE lock retained; qualify Calendar current-cut native/race behavior separately."
+  ],
+  "suggestedFocusedChecks": {
+    "uiAndPure": [
+      "src/app/(app)/activities/calendar/CalendarNavigation.test.tsx",
+      "src/app/(app)/activities/calendar/CalendarPortalShortcut.test.tsx",
+      "src/app/(app)/settings/connections/ConnectionsClient.test.tsx",
+      "src/features/activities/completeActivityAction.validation.test.ts",
+      "src/features/activities/completeActivityContract.test.ts",
+      "src/config/env.calendar.test.ts",
+      "src/config/env.test.ts"
+    ],
+    "laterNativeAfterCanonicalFixtureAdmission": [
+      "src/features/activities/completeActivityReplay.integration.test.ts",
+      "src/features/activities/calendarCompletionRevisionReplay.integration.test.ts",
+      "src/features/activities/calendarConcurrency.integration.test.ts",
+      "src/features/auth/management/offboarding.integration.test.ts",
+      "src/features/auth/management/offboarding.mail.integration.test.ts",
+      "src/features/notifications/email/notificationAdmission.gmail.integration.test.ts",
+      "src/features/notifications/email/notificationAdmission.smtp.integration.test.ts",
+      "src/features/notifications/email/notificationCrmPrivacy.preReceipt.integration.test.ts"
+    ],
+    "explicitlyNeedsFixtureContractAdaptation": [
+      "src/features/activities/reminderDefaultsPast.test-helpers.ts",
+      "src/features/activities/reminderDefaultsActivation.integration.test.ts",
+      "src/features/notifications/calendarPrivacy.integration.test.ts",
+      "src/features/notifications/reminderEmailLifecycle.integration.test.ts",
+      "src/features/notifications/reminderChannels.integration.test.ts",
+      "src/features/notifications/legacyReminderPolicy.integration.test.ts"
+    ]
+  }
+}

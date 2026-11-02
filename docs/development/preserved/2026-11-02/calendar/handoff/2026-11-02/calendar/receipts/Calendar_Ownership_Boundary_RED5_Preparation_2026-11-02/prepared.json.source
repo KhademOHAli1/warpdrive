@@ -1,0 +1,285 @@
+{
+  "recordedAt": "2026-11-02T01:07:24.667111+00:00",
+  "state": "SOURCE_METADATA_AND_BIOME_PASS_NATIVE_UNRUN",
+  "sourceHead": "2803183809c646a063f78fe954c110adbb2f453f",
+  "selected": 5,
+  "files": 3,
+  "expectedOnlyAfterExecution": {
+    "pass": 2,
+    "behaviorRed": 3,
+    "setupErrors": 0
+  },
+  "noNameFilters": true,
+  "workers": 1,
+  "sourcePins": [
+    {
+      "path": ".runtime/calendar-engine-admission-candidate/README.md",
+      "sha256": "f8f17909b3e8cbc3564c95116420ee8091c6f174fbcc50afbd5bc5a10188214f"
+    },
+    {
+      "path": ".runtime/calendar-engine-admission-candidate/engineAdmission.biome.json",
+      "sha256": "6de3ff7dcdebc23e84ac661928258a8addbd4308df6bd3d56f6de654aac1c2c1"
+    },
+    {
+      "path": ".runtime/calendar-engine-admission-candidate/engineAdmission.eslint.config.mjs",
+      "sha256": "27964ba1dfa9a2bd046dfcea26c8a84a380d100c8774dc9af4acb79da3ab6886"
+    },
+    {
+      "path": ".runtime/calendar-engine-admission-candidate/engineAdmission.integration.test.ts",
+      "sha256": "d186b183fcf4940f70e989c7971557aef7cb7fa80a46c03ca32afa32a06f1460"
+    },
+    {
+      "path": ".runtime/calendar-engine-admission-candidate/engineAdmission.tsconfig.json",
+      "sha256": "8abb45d82def77d5f5029fa9e8d9a5bbcfb04d63b2bdb340ce726de2cc9a1a17"
+    },
+    {
+      "path": ".runtime/calendar-engine-admission-candidate/engineAdmission.vitest.config.mts",
+      "sha256": "defee4bdc771a70c275042272d7f03841984bc7147b6b48ed10e5968db0ca6b8"
+    },
+    {
+      "path": ".runtime/calendar-engine-admission-candidate/engineAdmissionFixture.ts",
+      "sha256": "742b42d75e8eaad912d68993c9ac79b518a792a8719c92b8d65bc5c82ee81b15"
+    },
+    {
+      "path": ".runtime/calendar-existing-edit-atomicity-draft/existingEditAtomicity.globalSetup.ts",
+      "sha256": "a7caff67305c3e51c621f45438f12cb29fb57912c519a23af0432ee3903bb073"
+    },
+    {
+      "path": ".runtime/calendar-existing-edit-atomicity-draft/existingEditAtomicity.setup.ts",
+      "sha256": "8375dad1473c86b849081fb4ad661c83afaee30d4ce13fcf948381e6d42aa13d"
+    },
+    {
+      "path": ".runtime/calendar-existing-edit-atomicity-draft/existingEditAtomicityContainer.ts",
+      "sha256": "d0b08079fd7e84333d41d518b38f90d2b7e1efec9c347e133d18fb3ccf359950"
+    },
+    {
+      "path": ".runtime/calendar-legacy-adoption-candidate/README.md",
+      "sha256": "cffc734ff80fa30b02091c89ae102b908b57919ad2de733f9dba6234d1ee5f07"
+    },
+    {
+      "path": ".runtime/calendar-legacy-adoption-candidate/fixture.ts",
+      "sha256": "f4645ac6ae283ef2822a4bcb1570f131b69f4f1900393140b1865949235e785e"
+    },
+    {
+      "path": ".runtime/calendar-legacy-adoption-candidate/legacyAdoption.biome.json",
+      "sha256": "f894cfeef37a620cac3531b83d59ebe091750ed6edb95ceb038ae30720696667"
+    },
+    {
+      "path": ".runtime/calendar-legacy-adoption-candidate/legacyAdoption.eslint.config.mjs",
+      "sha256": "64bdc6fa453cccc16baf3ccfdf0c6f93b42b48c05ed71a78d742f879f0818835"
+    },
+    {
+      "path": ".runtime/calendar-legacy-adoption-candidate/legacyAdoption.tsconfig.json",
+      "sha256": "454c5ac210b4d0e71f7652b7bac2e746feb965e9612deca56cbcc39dd9ff9a9a"
+    },
+    {
+      "path": ".runtime/calendar-legacy-adoption-candidate/legacyAdoption.vitest.config.mts",
+      "sha256": "739a9b641ddb55a4a54bf4adc3a39e4964466eac52dc758543cb6eadabeed52c"
+    },
+    {
+      "path": ".runtime/calendar-legacy-adoption-candidate/ownerAdoption.integration.test.ts",
+      "sha256": "5cbdf9947986d947f7e7ee1c0ed93baa7e7014f42de04016fe8707a99461e825"
+    },
+    {
+      "path": ".runtime/calendar-legacy-fence-candidate/README.md",
+      "sha256": "b9e7f0a762ed774a2d758ac7143831c3e38f27df2cc352569e2061dcc0e35883"
+    },
+    {
+      "path": ".runtime/calendar-legacy-fence-candidate/legacyQueue.biome.json",
+      "sha256": "f9d351a6d73a7a3df40de71ee3e6d124114aba420af3c810dd583e2e28b4776a"
+    },
+    {
+      "path": ".runtime/calendar-legacy-fence-candidate/legacyQueue.eslint.config.mjs",
+      "sha256": "4fd62de358a7acd4ff490f81f252b6ff248ae48da60bb6bc73007048ecafee12"
+    },
+    {
+      "path": ".runtime/calendar-legacy-fence-candidate/legacyQueue.tsconfig.json",
+      "sha256": "8abb45d82def77d5f5029fa9e8d9a5bbcfb04d63b2bdb340ce726de2cc9a1a17"
+    },
+    {
+      "path": ".runtime/calendar-legacy-fence-candidate/legacyQueue.vitest.config.mts",
+      "sha256": "a05abee2901531aa30bcd4f3b2c1029a5e67aa13c2fdbb28e780aeb39a2d4037"
+    },
+    {
+      "path": ".runtime/calendar-legacy-fence-candidate/legacyQueueBoundary.integration.test.ts",
+      "sha256": "e1e0eaab3e7e6ed02d416c3d4bb52ae3ba5ab6c5e022a5854ec03e7de0bcd119"
+    },
+    {
+      "path": ".runtime/calendar-legacy-fence-candidate/queueFixture.ts",
+      "sha256": "f0a0f6b31ab3e5d78fee54e1b9256284c701053155add93aa8babbb07b0ad1db"
+    },
+    {
+      "path": ".runtime/calendar-ownership-boundary-red5/boundary.biome.json",
+      "sha256": "badac1a32a4bd2baa68fbe7f9e07cb29319bab6adf93a8f01aea909ff7466010"
+    },
+    {
+      "path": ".runtime/calendar-ownership-boundary-red5/boundary.eslint.config.mjs",
+      "sha256": "09d4ad52ea241f62964f055adbd9cdfae69f88862dbad2c1aa1ccecc123ab8be"
+    },
+    {
+      "path": ".runtime/calendar-ownership-boundary-red5/boundary.tsconfig.json",
+      "sha256": "a017c4888d485b27de19ac9a55e6f584604a3f34fae90404f59dd5dd128e7052"
+    },
+    {
+      "path": ".runtime/calendar-ownership-boundary-red5/boundary.vitest.config.mts",
+      "sha256": "00fa09b0712ccbc408fa1a424eb49718bf84ef8da5b98ca8312f480b46b69d63"
+    },
+    {
+      "path": ".runtime/calendar-ownership-boundary-red5/selection.json",
+      "sha256": "5c6db2d07f555f715d51ed7ca28a9b74e81388d93f125afe954b015cd14ac962"
+    },
+    {
+      "path": "bun.lock",
+      "sha256": "99a1a7e6efcdab1597312c4660effe16bb2dc3d1e7836d861653591b1a0dad8f"
+    },
+    {
+      "path": "drizzle/0085_activity_reminder_intents.sql",
+      "sha256": "d14601facebcf3e573fb422ce0d8f758bf746fc4f0fd1ff6b15bad64fec443e7"
+    },
+    {
+      "path": "package.json",
+      "sha256": "da09ddb9c8b78ec434e7e87c12f623925c1dccffc516a8038ffeb459f31f0d97"
+    },
+    {
+      "path": "src/constants/jobNames.ts",
+      "sha256": "5aae9926286a8c79cbeb4f3310910a47ece76af8ba738d2b102997f596dde525"
+    },
+    {
+      "path": "src/db/schema/activities.ts",
+      "sha256": "2af776ea8d7c742614cc8fdbc4fcd54870160f6b34a043a6530fcd30163634ad"
+    },
+    {
+      "path": "src/db/schema/activityReminderIntents.ts",
+      "sha256": "5ac419eb18a31ec2ad121c936b9c1f041d22813729c2eec4e9c927ddde86c589"
+    },
+    {
+      "path": "src/db/testing/factories.ts",
+      "sha256": "c8efb3c5a2b0a1a7c31c914255a51cd39ce76c5f8e54f5d33c5b0c490b273e29"
+    },
+    {
+      "path": "src/features/activities/activityAccessGuard.ts",
+      "sha256": "47da2e2ee208e78464c13161e01df8e882663169cd763e6919b30ecd33bcf8e6"
+    },
+    {
+      "path": "src/features/activities/activityReminderWrite.ts",
+      "sha256": "f0d71074ad277e9fc1623a99c3aa839f39663c10b311acee5e2810eb6c8e0b24"
+    },
+    {
+      "path": "src/features/activities/activityUpdate.ts",
+      "sha256": "7c6a13371cad2752770357d1012b765f5539c742fcb8f163e5db600e528224d1"
+    },
+    {
+      "path": "src/features/activities/personalReminderSettings.ts",
+      "sha256": "74a5bde1c377648ea81d8a506bbbe97066751125b0c6b0746fb68952459b809c"
+    },
+    {
+      "path": "src/features/activities/reminderAdmission.ts",
+      "sha256": "a7ea6ac6fe5a3f1b173ba825d18b29c116f4a43f030757fa13cda401831bcf07"
+    },
+    {
+      "path": "src/features/activities/reminderIntent.ts",
+      "sha256": "417f07bbb7d531f621c14802e01c50bc021bbe4911615a717a999feb850de916"
+    },
+    {
+      "path": "src/features/activities/reminderOutbox.ts",
+      "sha256": "390806602fb800bab6f9ac67adec7cfc54209ef6e7dab4144c3a759c48a2a0b8"
+    },
+    {
+      "path": "src/features/activities/reminderPolicies.ts",
+      "sha256": "72c51861f5acd743d0c114c5f60b4785c9abeb194a76b2629c12757b2d472797"
+    },
+    {
+      "path": "src/features/activities/reminderPolicy.ts",
+      "sha256": "e15add1a5772f6099d0efedeef8811f65700f23f8aecc082c4d25b6bb9aac022"
+    },
+    {
+      "path": "src/features/activities/reminderPolicyPlans.ts",
+      "sha256": "b18720c677b82f54785ac7da03bfd62b4aa338d17a9a9af4096dbf67aaee8dc5"
+    },
+    {
+      "path": "src/features/activities/reminderSettingsAccess.ts",
+      "sha256": "c94950e3bf400ef34623eb38f0c2ec35e58b558a6b07d303209c9b1a1813ec27"
+    },
+    {
+      "path": "src/features/activities/reminderSettingsWrite.ts",
+      "sha256": "f97830dedfaa17c01921a0d4e0da8959785093ff748b09d767aae3eacc2f36a0"
+    },
+    {
+      "path": "src/features/activities/reminders.ts",
+      "sha256": "60189ed200fd5e8470ece8b83e406d974586776d5950326a276e9ba2d61835e7"
+    },
+    {
+      "path": "src/features/activities/repo.ts",
+      "sha256": "5574deae0a3fccf6ace80d3df22822834a3817e6d791a5d2d6c439d1f1718e24"
+    },
+    {
+      "path": "src/features/notifications/calendarPrivacy.ts",
+      "sha256": "368a8c86f8805a36c569d4bafd4c8aa9e71cdca1440d9967d7b51f373e3e929b"
+    },
+    {
+      "path": "tsconfig.typecheck.json",
+      "sha256": "0f4a3ebc7013449817cf60aeb54124423e21bba58bcaf87f17d534d3c4611b0d"
+    },
+    {
+      "path": "vitest.config.ts",
+      "sha256": "eb300f409ce431f415b89619bb5c3150e63ff14b1c6864a52f66dfe56989e6f7"
+    }
+  ],
+  "productionEdits": false,
+  "priorApplicationQualification": "Calendar_History_Receipt_GREEN22_2026-11-02/result.json; no later application edits",
+  "focusedChecks": {
+    "queueBiome": {
+      "checked": 6,
+      "fixed": 0
+    },
+    "ownerBiome": {
+      "checked": 6,
+      "fixed": 5
+    },
+    "admissionBiome": {
+      "checked": 6,
+      "fixed": 1
+    },
+    "combinedConfigBiome": {
+      "checked": 4,
+      "fixed": 4
+    },
+    "actualConfigMetadata": {
+      "files": 3,
+      "defined": 5,
+      "filters": false
+    }
+  },
+  "futureEnvironment": {
+    "BUN_OPTIONS": "--no-env-file",
+    "Bun": "1.4.4",
+    "directNoEnvFile": true,
+    "envDir": false,
+    "cleanEnvironment": true,
+    "freshDotenvAbsenceRequired": true
+  },
+  "compilerTypedLintFiles": [
+    ".runtime/calendar-legacy-fence-candidate/queueFixture.ts",
+    ".runtime/calendar-legacy-fence-candidate/legacyQueueBoundary.integration.test.ts",
+    ".runtime/calendar-legacy-adoption-candidate/fixture.ts",
+    ".runtime/calendar-legacy-adoption-candidate/ownerAdoption.integration.test.ts",
+    ".runtime/calendar-engine-admission-candidate/engineAdmissionFixture.ts",
+    ".runtime/calendar-engine-admission-candidate/engineAdmission.integration.test.ts",
+    ".runtime/calendar-ownership-boundary-red5/boundary.vitest.config.mts"
+  ],
+  "scope": "Replace only unstarted queue1 with combined ownership boundary5. Canonical upgrade1 remains separate. History22 GREEN retained without rerun.",
+  "limits": [
+    "No static qualification/native result yet",
+    "No production fix or canonical SQL",
+    "No engine11/7/INSERT1/history22/upgrade repeats",
+    "Not compatible legacy callback/shared-lock race/receipt-transfer/drained-consumer/final-MAIL/live-worker/browser/provider proof"
+  ],
+  "independentCombinedMetadataReview": "PASS; exact3files/5cases/oneglobalsetup/nofilters/compilerandlintscopes/syntheticenvironment; no execution",
+  "preparationCorrection": {
+    "rawQueueProjection": "three start_after AS startafter projections",
+    "oldPreparedManifest": "sql-column-correction/prepared.before.json",
+    "noNativeAttemptYet": true,
+    "focusedBiomeOne": "PASS; zero fixes",
+    "scopeAndOraclesUnchanged": true
+  }
+}

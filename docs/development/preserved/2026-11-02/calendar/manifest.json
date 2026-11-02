@@ -1,0 +1,2619 @@
+{
+  "module": "calendar",
+  "sourceBranch": "codex/preserve-calendar-20261102",
+  "originalHead": "dce675d4dd57e42a07064de25e1d6886ff187eff",
+  "baseMain": "09288d518fd574fd069fb6a1dc670596f71a8831",
+  "files": [
+    {
+      "originalPath": ".safe-stop/2026-11-02/MANIFEST.json",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/handoff/2026-11-02/MANIFEST.json.source",
+      "gitBlob": "35c63dbb7e92597be55f04b77a0535814da5df62",
+      "originalMode": "100644",
+      "sha256": "339298c8be0b8d3683851341003e2e4791500c884d05dbd0d9cf933f28006b21",
+      "bytes": 78015
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/branch-sync/CALENDAR-RESOLUTION.md",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/handoff/2026-11-02/branch-sync/CALENDAR-RESOLUTION.md.source",
+      "gitBlob": "c3193a83f2de52307aa41794ba2c0d9231f6a1e6",
+      "originalMode": "100644",
+      "sha256": "048b54b99227b48a9a7860dc0f6275c44d7d599580034211ebf12e3f176e9617",
+      "bytes": 1941
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/branch-sync/SYNC.json",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/handoff/2026-11-02/branch-sync/SYNC.json.source",
+      "gitBlob": "f829836b7a944de995e88e4d7e27825c2f8af3b9",
+      "originalMode": "100644",
+      "sha256": "8665c713bfe32900e7788a3594bd6e85c853f772b3aa558ba734b545a0f66f91",
+      "bytes": 13153
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/branch-sync/SYNC.md",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/handoff/2026-11-02/branch-sync/SYNC.md.source",
+      "gitBlob": "64defe7c3e14b46be16a55ab1f3bd20e24193f52",
+      "originalMode": "100644",
+      "sha256": "bbbb4b29f65bdcb901385e476bcb463cf086972a4df63ec7e29da2cac85e22ea",
+      "bytes": 1248
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/branch-sync/calendar-conflict-resolution.json",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/handoff/2026-11-02/branch-sync/calendar-conflict-resolution.json.source",
+      "gitBlob": "b8726a5413dfa8146cbf78ef910a1d7561bcccd7",
+      "originalMode": "100644",
+      "sha256": "97625dd0b0b616e0daa2330b45e3f53af60f15de561bb437d139c04242fdc7d3",
+      "bytes": 13086
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/branch-sync/deferred-source/src/features/activities/repo.ts.source",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/handoff/2026-11-02/branch-sync/deferred-source/src/features/activities/repo.ts.source.source",
+      "gitBlob": "b678957cc6154c536bf95ddd22d6cb2020adcbe6",
+      "originalMode": "100644",
+      "sha256": "5574deae0a3fccf6ace80d3df22822834a3817e6d791a5d2d6c439d1f1718e24",
+      "bytes": 10179
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/branch-sync/deferred-source/src/features/auth/management/offboarding.ts.source",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/handoff/2026-11-02/branch-sync/deferred-source/src/features/auth/management/offboarding.ts.source.source",
+      "gitBlob": "bbc8bcaee3c359f4fbc46f0927c956f3f88ac9e6",
+      "originalMode": "100644",
+      "sha256": "600293be757c41802c185802e8471bfdc6e065e1c117dffc7670b3d4716a4f90",
+      "bytes": 1821
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/branch-sync/deferred-source/src/features/notifications/email/job.ts.source",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/handoff/2026-11-02/branch-sync/deferred-source/src/features/notifications/email/job.ts.source.source",
+      "gitBlob": "cae51f6d69da8d843f8d60995446583658c1131a",
+      "originalMode": "100644",
+      "sha256": "394a1be872b35fb953d11eb76e187dbfc51dafea570302e83fb0023000f8f37d",
+      "bytes": 7711
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/branch-sync/private-migration-proposals/drizzle/0083_calendar_event_revision.sql.source",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/handoff/2026-11-02/branch-sync/private-migration-proposals/drizzle/0083_calendar_event_revision.sql.source.source",
+      "gitBlob": "0cc60c7386b3e3793ba80a7e8c4caa26f546b087",
+      "originalMode": "100644",
+      "sha256": "e808b67306e4dbef50dcb6599bb5869041325d51705ada0db3085c381dbc44f3",
+      "bytes": 488
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/branch-sync/private-migration-proposals/drizzle/0084_calendar_ownership.sql.source",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/handoff/2026-11-02/branch-sync/private-migration-proposals/drizzle/0084_calendar_ownership.sql.source.source",
+      "gitBlob": "e552d3da5bbd76de88bfe563ced4ea49b56b7079",
+      "originalMode": "100644",
+      "sha256": "778f61c6cb514f65d7a380dd518a1cd4fab54299e3c8e789e589a6d19cbab543",
+      "bytes": 2349
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/branch-sync/private-migration-proposals/drizzle/0085_activity_reminder_intents.sql.source",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/handoff/2026-11-02/branch-sync/private-migration-proposals/drizzle/0085_activity_reminder_intents.sql.source.source",
+      "gitBlob": "83ca5b27be60db833ddca7f66c468152349082ca",
+      "originalMode": "100644",
+      "sha256": "d14601facebcf3e573fb422ce0d8f758bf746fc4f0fd1ff6b15bad64fec443e7",
+      "bytes": 1805
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/branch-sync/private-migration-proposals/drizzle/0086_calendar_reminders_and_google_grants.sql.source",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/handoff/2026-11-02/branch-sync/private-migration-proposals/drizzle/0086_calendar_reminders_and_google_grants.sql.source.source",
+      "gitBlob": "1d8516f0d40cb2eaac2eb07e4367c30ef842c35f",
+      "originalMode": "100644",
+      "sha256": "b2b7680863a60701faf2cd1516614d8f9d81d48d61ed3e061f3bb85b3eaf5e22",
+      "bytes": 6764
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/branch-sync/private-migration-proposals/drizzle/0087_calendar_reminder_rebuilds.sql.source",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/handoff/2026-11-02/branch-sync/private-migration-proposals/drizzle/0087_calendar_reminder_rebuilds.sql.source.source",
+      "gitBlob": "3b3ac5e5fc2d986dacd0fa1c58c6d9b9e9d85516",
+      "originalMode": "100644",
+      "sha256": "acfeede51b1cc17d2e23b3449eeeb59b13ddfdedc9b7c0124ce8271e9cd18a4a",
+      "bytes": 2968
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/branch-sync/private-migration-proposals/drizzle/0088_calendar_reminder_acl_rebuilds.sql.source",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/handoff/2026-11-02/branch-sync/private-migration-proposals/drizzle/0088_calendar_reminder_acl_rebuilds.sql.source.source",
+      "gitBlob": "07d8b8dc35d55113bc1647f9ab73c6d949c3225c",
+      "originalMode": "100644",
+      "sha256": "bb4ab2f8c3d34d9b6a6e4cc21c8704dbc0a90108ff65ff85c8133afbd11ad705",
+      "bytes": 2159
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/branch-sync/private-migration-proposals/drizzle/0089_calendar_reminder_receipt_index.sql.source",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/handoff/2026-11-02/branch-sync/private-migration-proposals/drizzle/0089_calendar_reminder_receipt_index.sql.source.source",
+      "gitBlob": "aea9ebec6149395225d22f195820099e13859707",
+      "originalMode": "100644",
+      "sha256": "99761a3d1eeaf9568bd1a8713474343af1cc3fd3068a1894dab7a4556fc5cec4",
+      "bytes": 113
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/branch-sync/private-migration-proposals/drizzle/0090_calendar_reminder_activation.sql.source",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/handoff/2026-11-02/branch-sync/private-migration-proposals/drizzle/0090_calendar_reminder_activation.sql.source.source",
+      "gitBlob": "22921fe7926d327e1c70933f77df1690eab44640",
+      "originalMode": "100644",
+      "sha256": "edb6a3d15b4e2b3e3cac51373e8185e7f4a433aca24dfc4bcdd75c9a5b8220af",
+      "bytes": 1489
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/branch-sync/private-migration-proposals/drizzle/0091_calendar_connection_generation.sql.source",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/handoff/2026-11-02/branch-sync/private-migration-proposals/drizzle/0091_calendar_connection_generation.sql.source.source",
+      "gitBlob": "d579c99aa9075c182d34330cf6578a6a22afeeb3",
+      "originalMode": "100644",
+      "sha256": "1683c236349ac7c84317400fd4835b6b1ac5a7659f9d6fe4303dd5c2485d1042",
+      "bytes": 717
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/branch-sync/private-migration-proposals/drizzle/0092_calendar_provider_catalog.sql.source",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/handoff/2026-11-02/branch-sync/private-migration-proposals/drizzle/0092_calendar_provider_catalog.sql.source.source",
+      "gitBlob": "f0d350480f48c5aa9a96a3cb533a59cb1b7e286e",
+      "originalMode": "100644",
+      "sha256": "a5ec44e6fb1c74484ac61ae863aadf7411f9dd6b2e748fc612bbff4e06f85321",
+      "bytes": 5130
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/branch-sync/private-migration-proposals/drizzle/meta/0083_snapshot.json.source",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/handoff/2026-11-02/branch-sync/private-migration-proposals/drizzle/meta/0083_snapshot.json.source.source",
+      "gitBlob": "80628036770c88505e4293046d45c27a07473e38",
+      "originalMode": "100644",
+      "sha256": "feda0dddcc4f5c17500d847dc047194f817aef205279c804a4a3ac3c954a3784",
+      "bytes": 243043
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/branch-sync/private-migration-proposals/drizzle/meta/0084_snapshot.json.source",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/handoff/2026-11-02/branch-sync/private-migration-proposals/drizzle/meta/0084_snapshot.json.source.source",
+      "gitBlob": "a98623c0b89e9411f1d1018c02dc9c67283a736e",
+      "originalMode": "100644",
+      "sha256": "edee5e72acc4721db81101ad02261c40976a8856fd870941120a12135e3c48b9",
+      "bytes": 249072
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/branch-sync/private-migration-proposals/drizzle/meta/0085_snapshot.json.source",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/handoff/2026-11-02/branch-sync/private-migration-proposals/drizzle/meta/0085_snapshot.json.source.source",
+      "gitBlob": "1bde31ba0a0a89e2f4a061f52dbdd2a971132611",
+      "originalMode": "100644",
+      "sha256": "ab2d1e860cf8446c078e453f2ce2e84b654d9d2c58822b090106975ee0cc5905",
+      "bytes": 253761
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/branch-sync/private-migration-proposals/drizzle/meta/0086_snapshot.json.source",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/handoff/2026-11-02/branch-sync/private-migration-proposals/drizzle/meta/0086_snapshot.json.source.source",
+      "gitBlob": "8d96727f6fd4868c1852812190fef055af2ce9c6",
+      "originalMode": "100644",
+      "sha256": "a53d8a15fc3034c7a77bde473b12448c0888e2793eb037ee2b7d4d7346dbbacd",
+      "bytes": 271823
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/branch-sync/private-migration-proposals/drizzle/meta/0087_snapshot.json.source",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/handoff/2026-11-02/branch-sync/private-migration-proposals/drizzle/meta/0087_snapshot.json.source.source",
+      "gitBlob": "982f0a00085234d4890b938faa88707215fa9d8d",
+      "originalMode": "100644",
+      "sha256": "826cc0fa592b3169141199f6d575ab691b32a405712bcfdb323b5f80874c7c36",
+      "bytes": 271823
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/branch-sync/private-migration-proposals/drizzle/meta/0088_snapshot.json.source",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/handoff/2026-11-02/branch-sync/private-migration-proposals/drizzle/meta/0088_snapshot.json.source.source",
+      "gitBlob": "ffaefcecf2c41ac020f0b8d97e6a9508f8fcf5f1",
+      "originalMode": "100644",
+      "sha256": "91ca28b079d78f55df6b85389d56cb2af95dcd21331e8a14c0f54ad408a04274",
+      "bytes": 271823
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/branch-sync/private-migration-proposals/drizzle/meta/0089_snapshot.json.source",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/handoff/2026-11-02/branch-sync/private-migration-proposals/drizzle/meta/0089_snapshot.json.source.source",
+      "gitBlob": "5e414ad83ce16bb7bc8e41921229ec7044a07ae7",
+      "originalMode": "100644",
+      "sha256": "82cf8dbd86973b1614110fd099bf6cc0b67fe699ec0be9d86a4b7a402279dc1d",
+      "bytes": 272255
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/branch-sync/private-migration-proposals/drizzle/meta/0090_snapshot.json.source",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/handoff/2026-11-02/branch-sync/private-migration-proposals/drizzle/meta/0090_snapshot.json.source.source",
+      "gitBlob": "f208eaadfa1d52653edbc82c280ea92e65cbd189",
+      "originalMode": "100644",
+      "sha256": "7b707ad085722cd108d83e03577e388b2ec546b5843fcd96e58eb86d6a80005c",
+      "bytes": 272686
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/branch-sync/private-migration-proposals/drizzle/meta/0091_snapshot.json.source",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/handoff/2026-11-02/branch-sync/private-migration-proposals/drizzle/meta/0091_snapshot.json.source.source",
+      "gitBlob": "bc1cc58fb474096a406d6f1790a55d83f7c44c49",
+      "originalMode": "100644",
+      "sha256": "bd03a2329b463e3b26f508cb86b82df239f97788eb38f118aa8bd711c2ad47e0",
+      "bytes": 273269
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/branch-sync/private-migration-proposals/drizzle/meta/0092_snapshot.json.source",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/handoff/2026-11-02/branch-sync/private-migration-proposals/drizzle/meta/0092_snapshot.json.source.source",
+      "gitBlob": "4f73fee2cec56005829141591a9162b959706072",
+      "originalMode": "100644",
+      "sha256": "0d45bc6f5e83b78d1f025e54f03c1255f50daaa0a8c151722279b301c5cb97a1",
+      "bytes": 285432
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/branch-sync/private-migration-proposals/drizzle/meta/_journal.json.source",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/handoff/2026-11-02/branch-sync/private-migration-proposals/drizzle/meta/_journal.json.source.source",
+      "gitBlob": "c37f101e8a7056ae4d3237786f5796d3a9c2fd64",
+      "originalMode": "100644",
+      "sha256": "6bc68085e7777359e2d1932d22723a90dfdc88514c6a85d83766cd6cbf512f4e",
+      "bytes": 13723
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/calendar/EVIDENCE_PATHS.txt",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/handoff/2026-11-02/calendar/EVIDENCE_PATHS.txt.source",
+      "gitBlob": "a34dbb32a0e656770fe7fa1604341a851abff00c",
+      "originalMode": "100644",
+      "sha256": "0ccad80373bc59a2b3060bfe0a208055cb63ea4169a3ad81d14e74a6b7ed2164",
+      "bytes": 1846
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/calendar/EXTERNAL_PRESERVATION_INPUTS.json",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/handoff/2026-11-02/calendar/EXTERNAL_PRESERVATION_INPUTS.json.source",
+      "gitBlob": "a1111ee1fea9d43cf66300f54013d1885608883a",
+      "originalMode": "100644",
+      "sha256": "242003680af081bbe6d9a5e7b5e32ecadac21d45bf5b24d56a43451922d79dba",
+      "bytes": 8810
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/calendar/FREEZE.json",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/handoff/2026-11-02/calendar/FREEZE.json.source",
+      "gitBlob": "276e351255cd64ff96f9725117f12364530bd514",
+      "originalMode": "100644",
+      "sha256": "e0f1937dad61373f34ab9cb18e38bfff8d175fe48af74c9811f201d1d38445b6",
+      "bytes": 856
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/calendar/OWNED_ALLOWLIST.json",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/handoff/2026-11-02/calendar/OWNED_ALLOWLIST.json.source",
+      "gitBlob": "d179371c39f79f472f95b081fc3b1ed0d1f1eae5",
+      "originalMode": "100644",
+      "sha256": "96969408b3380968e87c49d5be4fe7ec141d0f12369067c8f0170bc520ec0cc7",
+      "bytes": 82742
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/calendar/OWNED_ALLOWLIST.tsv",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/handoff/2026-11-02/calendar/OWNED_ALLOWLIST.tsv.source",
+      "gitBlob": "c2c5a1e0793034460cdd9cab487653255e2f69c5",
+      "originalMode": "100644",
+      "sha256": "6cebb4340c163b607019d08ca93bf6e691923fe98457469edb519a8a6422bc6e",
+      "bytes": 45738
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/calendar/OWNED_ALLOWLIST.txt",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/handoff/2026-11-02/calendar/OWNED_ALLOWLIST.txt.source",
+      "gitBlob": "0e8d89d45e0ff2b6c4bddbc00c3716a9ad95bea6",
+      "originalMode": "100644",
+      "sha256": "2c5483c1ee4c5503cf1cfe0c0bcc5def83f68fd762747145970d0ed09840098b",
+      "bytes": 16433
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/calendar/SAFE_STOP.md",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/handoff/2026-11-02/calendar/SAFE_STOP.md.source",
+      "gitBlob": "98919f48a00809cb0cfb3125ee049e6e77e4d356",
+      "originalMode": "100644",
+      "sha256": "766bb973d5bea513be3daaab6a015d06c3b4b6f72ca5da5f503734b932df3bbc",
+      "bytes": 6534
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/calendar/STATIC_FIXTURE_SOURCE.json",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/handoff/2026-11-02/calendar/STATIC_FIXTURE_SOURCE.json.source",
+      "gitBlob": "40007371f0b7384f6e7956ab0ee4b055a99a36dd",
+      "originalMode": "100644",
+      "sha256": "49d89ccb7f975cad8e0de93dd3069436068831fcb8a6e1de87d3784be92ed9a4",
+      "bytes": 79541
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/calendar/archives.json",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/handoff/2026-11-02/calendar/archives.json.source",
+      "gitBlob": "71e4d914e6c7654360fea7661f50d1b4926766fe",
+      "originalMode": "100644",
+      "sha256": "a2d9588c540be601f34a5de1aaddb205611a9ed0fbf4dd1861e7610da9bad707",
+      "bytes": 425
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/calendar/git-status.json",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/handoff/2026-11-02/calendar/git-status.json.source",
+      "gitBlob": "7ca5bd70f8c2aafde338a00ae5d687b10250bed9",
+      "originalMode": "100644",
+      "sha256": "4e9f15a952442461cdb148f51c2ffa1116999d7061856a9531ba5e5506da1116",
+      "bytes": 31949
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/calendar/git-status.porcelain.z",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/handoff/2026-11-02/calendar/git-status.porcelain.z.source",
+      "gitBlob": "18e00a58a486a642815dad849aa1effe6ee3b252",
+      "originalMode": "100644",
+      "sha256": "114c337985a2bcf27424d1fe1e900751fe413104d96b1ea87a9d8b3a512a85a1",
+      "bytes": 17330
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/calendar/owned-cleanup.json",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/handoff/2026-11-02/calendar/owned-cleanup.json.source",
+      "gitBlob": "c5adf4d10e94c96119c37a52a5b5f4a9ec12542d",
+      "originalMode": "100644",
+      "sha256": "34dabd15cdc69d68c47951bc3b7abadc30d8f255e48a31aeeebbdfaf11975c07",
+      "bytes": 1213
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/calendar/owned-dirty-source.tar.gz",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/handoff/2026-11-02/calendar/owned-dirty-source.tar.gz.source",
+      "gitBlob": "b4011d29699c2a7f321439d9790561b7df64ce96",
+      "originalMode": "100644",
+      "sha256": "8556413c4144a32609459b7369e3b1ec255f8ec937c3a3e01b2d13880e8b905d",
+      "bytes": 755310
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/calendar/owned-static-fixture-source.tar.gz",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/handoff/2026-11-02/calendar/owned-static-fixture-source.tar.gz.source",
+      "gitBlob": "95a41b7ad9812aea7aa5979491411f3f36fcc11b",
+      "originalMode": "100644",
+      "sha256": "b2e790319ac4135fd2d9ea502579bff8280263928a74756c5b8f439cef7fb2f5",
+      "bytes": 547551
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/calendar/receipts/Calendar_Canonical_Upgrade_GREEN1_2026-11-02/native-test-candidate.sql",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/handoff/2026-11-02/calendar/receipts/Calendar_Canonical_Upgrade_GREEN1_2026-11-02/native-test-candidate.sql.source",
+      "gitBlob": "622d59b0b7bde9bc49220e7803fca82e11279038",
+      "originalMode": "100644",
+      "sha256": "dd1a8209c521d35798f2c9916a7f6d151c5cc7c075761f5daa5df3cb96604bb4",
+      "bytes": 15408
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/calendar/receipts/Calendar_Canonical_Upgrade_GREEN1_2026-11-02/native.log",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/handoff/2026-11-02/calendar/receipts/Calendar_Canonical_Upgrade_GREEN1_2026-11-02/native.log.source",
+      "gitBlob": "c41618fc895ce532e3e428104a8a86d35309ea20",
+      "originalMode": "100644",
+      "sha256": "c3904e68e921a2baf491dd5a927dededef53a44b6dc4d80ed4b7258fe8b0a77d",
+      "bytes": 2712
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/calendar/receipts/Calendar_Canonical_Upgrade_GREEN1_2026-11-02/result.json",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/handoff/2026-11-02/calendar/receipts/Calendar_Canonical_Upgrade_GREEN1_2026-11-02/result.json.source",
+      "gitBlob": "aa55f8aabc8d4d58190ffde7e7cd5594e54f409f",
+      "originalMode": "100644",
+      "sha256": "c0e53189bd15bd6a2a42d5d32e27c74967abe6b9c22c84def5e8d36c826dcc19",
+      "bytes": 3019
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/calendar/receipts/Calendar_Canonical_Upgrade_RED1_2026-11-02/result.json",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/handoff/2026-11-02/calendar/receipts/Calendar_Canonical_Upgrade_RED1_2026-11-02/result.json.source",
+      "gitBlob": "bd5360a91a5a91c0c034cf14b93b99b6d3cde5bc",
+      "originalMode": "100644",
+      "sha256": "05e50f47d1171d4391f98a0de775e9317c2128f6481d2806b3611b175a3004b3",
+      "bytes": 2427
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/calendar/receipts/Calendar_Canonical_Upgrade_RED1_2026-11-02/timing-observation.json",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/handoff/2026-11-02/calendar/receipts/Calendar_Canonical_Upgrade_RED1_2026-11-02/timing-observation.json.source",
+      "gitBlob": "ea1e06493e401000e46ecbeefa64e4100ecda6b6",
+      "originalMode": "100644",
+      "sha256": "19c2010416f15dc00eb13bd80f31fedad61388dc81634e5c5a2fda86da7d4dd0",
+      "bytes": 694
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/calendar/receipts/Calendar_History_Receipt_GREEN22_2026-11-02/result.json",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/handoff/2026-11-02/calendar/receipts/Calendar_History_Receipt_GREEN22_2026-11-02/result.json.source",
+      "gitBlob": "9e827d565a819a4e19ba2bd3063de9e8df3b0457",
+      "originalMode": "100644",
+      "sha256": "45b31154713c39569c092072595fd98c8846d1408bdf5ed611efca8561d637bf",
+      "bytes": 2553
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/calendar/receipts/Calendar_Legacy_Fence_Preparation_2026-11-02/legacy-receipt-transfer-decision.md",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/handoff/2026-11-02/calendar/receipts/Calendar_Legacy_Fence_Preparation_2026-11-02/legacy-receipt-transfer-decision.md.source",
+      "gitBlob": "36dbfc5508842e5b8597073a88d1511a3acec8b5",
+      "originalMode": "100644",
+      "sha256": "a553440ba4bbab88f7d715c350f3c64db06422ec9c79c8985f8f73366196ec27",
+      "bytes": 10040
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/calendar/receipts/Calendar_Ownership_Boundary_RED5_Preparation_2026-11-02/combined-source-review.json",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/handoff/2026-11-02/calendar/receipts/Calendar_Ownership_Boundary_RED5_Preparation_2026-11-02/combined-source-review.json.source",
+      "gitBlob": "642a98d61b209afed165dcb3fe47e55c0d23191d",
+      "originalMode": "100644",
+      "sha256": "3508fdfbc2c1483f85804953a5b85cc6e3827395690f1be3584180f9d1cf5b77",
+      "bytes": 159
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/calendar/receipts/Calendar_Ownership_Boundary_RED5_Preparation_2026-11-02/prepared.json",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/handoff/2026-11-02/calendar/receipts/Calendar_Ownership_Boundary_RED5_Preparation_2026-11-02/prepared.json.source",
+      "gitBlob": "326175ece715b8df3b98cbe5bc68a024bc24319f",
+      "originalMode": "100644",
+      "sha256": "558b2562f91a12dba9f13da17dd04fad9775277a312d938515e4251490a07ef9",
+      "bytes": 11492
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/calendar/receipts/Calendar_Ownership_Boundary_RED5_Preparation_2026-11-02/selection.json",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/handoff/2026-11-02/calendar/receipts/Calendar_Ownership_Boundary_RED5_Preparation_2026-11-02/selection.json.source",
+      "gitBlob": "d3ba8050579c935ba36c369def7e1f53e93210be",
+      "originalMode": "100644",
+      "sha256": "5c6db2d07f555f715d51ed7ca28a9b74e81388d93f125afe954b015cd14ac962",
+      "bytes": 1090
+    },
+    {
+      "originalPath": ".safe-stop/2026-11-02/calendar/tracked-diff.patch",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/handoff/2026-11-02/calendar/tracked-diff.patch.source",
+      "gitBlob": "89c0ea172905aa238344f3c4570a4dbd80c55af2",
+      "originalMode": "100644",
+      "sha256": "2420c02c4c6714cebe03785b6315d86f73d66a085beaa95dbc3f0a4b84869de9",
+      "bytes": 209197
+    },
+    {
+      "originalPath": "docs/calendar-acceptance-register.md",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/docs/calendar-acceptance-register.md.source",
+      "gitBlob": "7f3e5bee3274aa9f3e53e7a24d071ce4bce22084",
+      "originalMode": "100644",
+      "sha256": "d61f70c47925f8dc6578ba6892994cf3caaabdebe2731ba2b23b895a73ae1eba",
+      "bytes": 22281
+    },
+    {
+      "originalPath": "docs/calendar-handoff-2026-10-31.md",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/docs/calendar-handoff-2026-10-31.md.source",
+      "gitBlob": "86f54b0968833ae9c08b9f3cc81233c4fde0303a",
+      "originalMode": "100644",
+      "sha256": "9ba64c75f873f05f514381c2ba662a10c51bc7a1727020a33e19955f15d85d2d",
+      "bytes": 23440
+    },
+    {
+      "originalPath": "docs/calendar-implementation-plan.md",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/docs/calendar-implementation-plan.md.source",
+      "gitBlob": "16514545f4d7e8717d90a36d94426800d17135a5",
+      "originalMode": "100644",
+      "sha256": "ede4f45a84f4b36e999a3c2962e4f5a58eae98e26495975fb2cf69e95555797c",
+      "bytes": 24729
+    },
+    {
+      "originalPath": "docs/calendar-progress-2026-10-31.md",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/docs/calendar-progress-2026-10-31.md.source",
+      "gitBlob": "236dc9fe8dc122b83b9abd49bd2412af9cc63478",
+      "originalMode": "100644",
+      "sha256": "fc3d25d05954533ff93d79c1c5c6ee5f1ed37bebbe89585cb54242b4eade5912",
+      "bytes": 16343
+    },
+    {
+      "originalPath": "docs/calendar-progress-2026-11-01.md",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/docs/calendar-progress-2026-11-01.md.source",
+      "gitBlob": "728ff5c2fba57d892137ace22387cd37092236aa",
+      "originalMode": "100644",
+      "sha256": "11e579bb0cd244f0e0c48981639e3010bf30dd06a1c54869236350abf43c11a7",
+      "bytes": 56788
+    },
+    {
+      "originalPath": "docs/deploy.md",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/docs/deploy.md.source",
+      "gitBlob": "8ce453e8921e580caabda9c4528ca90fe868c4ba",
+      "originalMode": "100644",
+      "sha256": "056db51380b217642dadd8dd854ba0d1796f064f38240f2a7588f4322c9a509d",
+      "bytes": 11096
+    },
+    {
+      "originalPath": "docs/google-calendar-event-workflow.md",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/docs/google-calendar-event-workflow.md.source",
+      "gitBlob": "24ec91986774a124cb1c9dd1dc1f8d87eea1c759",
+      "originalMode": "100644",
+      "sha256": "3e0eda8b6ed2182659b23a8ed8e7553573f7352d3999b6a4abb010ae38edf9f7",
+      "bytes": 68590
+    },
+    {
+      "originalPath": "src/app/(app)/activities/calendar/AgendaDayColumn.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/app/(app)/activities/calendar/AgendaDayColumn.tsx.source",
+      "gitBlob": "d0ed02ede55579b089ab213377038de8f12cf608",
+      "originalMode": "100644",
+      "sha256": "38a7786a1e233285a58ee20fbeec0836fd7c9b9ab5c0293904e0886f46e58832",
+      "bytes": 7246
+    },
+    {
+      "originalPath": "src/app/(app)/activities/calendar/AllDayLane.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/app/(app)/activities/calendar/AllDayLane.tsx.source",
+      "gitBlob": "f23cd1048bbb3c807a567aec86e777a971ad0070",
+      "originalMode": "100644",
+      "sha256": "2ce4674d8f522920117c499888866f98953cb7535a5f527089a1d86e74ba7d55",
+      "bytes": 1908
+    },
+    {
+      "originalPath": "src/app/(app)/activities/calendar/CalendarClient.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/app/(app)/activities/calendar/CalendarClient.tsx.source",
+      "gitBlob": "eaab821148be363eca0f1c2653ecc63a9b80df46",
+      "originalMode": "100644",
+      "sha256": "52b76d341c537cf34ec86d355114e3c5e047f383a3d7a0415fad44d6b9ffc2a4",
+      "bytes": 7167
+    },
+    {
+      "originalPath": "src/app/(app)/activities/calendar/CalendarNavigation.test.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/app/(app)/activities/calendar/CalendarNavigation.test.tsx.source",
+      "gitBlob": "7d099c2db810fb33dba1d64126e996c63741c5c6",
+      "originalMode": "100644",
+      "sha256": "acf654c9aa0e9d98e5381dfd75c43109dd8e9793d1a7795edaf06bfcc34e8bc0",
+      "bytes": 4492
+    },
+    {
+      "originalPath": "src/app/(app)/activities/calendar/CalendarPortalShortcut.test.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/app/(app)/activities/calendar/CalendarPortalShortcut.test.tsx.source",
+      "gitBlob": "23bcf7d19c8fae9d870163994301b333a5f9fbf0",
+      "originalMode": "100644",
+      "sha256": "7a5010cbe9405306b0b97a93c4cd240d890439f2f27992f6a70c53535236a8a1",
+      "bytes": 9909
+    },
+    {
+      "originalPath": "src/app/(app)/activities/calendar/CalendarSelection.test.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/app/(app)/activities/calendar/CalendarSelection.test.tsx.source",
+      "gitBlob": "03d1452ba3ce057bbb5e680f7b8f9d22967af632",
+      "originalMode": "100644",
+      "sha256": "5b6f339cdde0c7bb94b805e9fd4cf2c0c5ef77eac88572fb97d0b130e23d5365",
+      "bytes": 2440
+    },
+    {
+      "originalPath": "src/app/(app)/activities/calendar/WeekAgendaGrid.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/app/(app)/activities/calendar/WeekAgendaGrid.tsx.source",
+      "gitBlob": "b69a712d592c5a3cabb60d185f42ceceb049269e",
+      "originalMode": "100644",
+      "sha256": "f27eff00a24c956a57ccef88080b02f7f56037ed107db7d4b8d94d412bc4872d",
+      "bytes": 9591
+    },
+    {
+      "originalPath": "src/app/(app)/activities/calendar/calendarChip.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/app/(app)/activities/calendar/calendarChip.tsx.source",
+      "gitBlob": "f2c82edf200c50414867d63ff877bd5bcbf9798c",
+      "originalMode": "100644",
+      "sha256": "2d29b63bdc0741ce63da43977916af677102afec7fa2f33724d9c60fc2a2d16e",
+      "bytes": 3501
+    },
+    {
+      "originalPath": "src/app/(app)/activities/calendar/calendarEmptyState.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/app/(app)/activities/calendar/calendarEmptyState.ts.source",
+      "gitBlob": "27217bb56aa53ff2851f2eceb3edbcb055ab2412",
+      "originalMode": "100644",
+      "sha256": "1e0740548fb35d4efb9f3d54e59e8169154368b01dec8f773f22b55284e7a65f",
+      "bytes": 1594
+    },
+    {
+      "originalPath": "src/app/(app)/settings/connections/ConnectionsClient.test.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/app/(app)/settings/connections/ConnectionsClient.test.tsx.source",
+      "gitBlob": "0c07b432544027ca4039cd7d8f6104c06f02e52e",
+      "originalMode": "100644",
+      "sha256": "c1c262294e76a4e11185e9651578efd71f8f1cdc49100cdef850b8e909b6ce1b",
+      "bytes": 9065
+    },
+    {
+      "originalPath": "src/app/(app)/settings/connections/ConnectionsClient.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/app/(app)/settings/connections/ConnectionsClient.tsx.source",
+      "gitBlob": "71e19114aa7cacd8186cd8512667cbaf398d9afe",
+      "originalMode": "100644",
+      "sha256": "6f70f1d84b99557c2aad5363eee9cce17774a1562bd51df0e2e0d9da592b170a",
+      "bytes": 5303
+    },
+    {
+      "originalPath": "src/app/api/calendar/google/oauth/callback/route.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/app/api/calendar/google/oauth/callback/route.ts.source",
+      "gitBlob": "b7e4aa5453969a87f9200c70a7213241ad28c46f",
+      "originalMode": "100644",
+      "sha256": "06727aa794cdf3f01685981b4bce1ab62c6c857772557b08b772af6d38636699",
+      "bytes": 667
+    },
+    {
+      "originalPath": "src/app/api/calendar/google/oauth/start/route.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/app/api/calendar/google/oauth/start/route.ts.source",
+      "gitBlob": "a68324312a907183f501daffa0275d5f0b3c58c1",
+      "originalMode": "100644",
+      "sha256": "0ec47e35512eb99e31bbfb3898859cecebaed2aeef9368906b266149b599d5f6",
+      "bytes": 659
+    },
+    {
+      "originalPath": "src/components/ui/Combobox.test.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/components/ui/Combobox.test.tsx.source",
+      "gitBlob": "bb793cd4f0bf8b8cc9f551b3bfc9bc01e95c7e3a",
+      "originalMode": "100644",
+      "sha256": "125ef9a2eebf4dd32d9f92a2aa4583152e4ae5eabeb2c3a4f3da923d79a96438",
+      "bytes": 7173
+    },
+    {
+      "originalPath": "src/components/ui/Combobox.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/components/ui/Combobox.tsx.source",
+      "gitBlob": "ee97634dafadd48dba7e05912af0d56269b700cc",
+      "originalMode": "100644",
+      "sha256": "28ea15f0e4e008b07b3a33e43a391ecb88d2686a977f2b4a888887690e9ebc00",
+      "bytes": 5573
+    },
+    {
+      "originalPath": "src/components/ui/TimePicker.test.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/components/ui/TimePicker.test.tsx.source",
+      "gitBlob": "9d3a9dd02deb6c13bf753ec776ad9c0459b6a9fa",
+      "originalMode": "100644",
+      "sha256": "5ed2e80934f095507a0f2d07d3e9a31d7e614ab7a88c468499607a9e86076c6a",
+      "bytes": 9914
+    },
+    {
+      "originalPath": "src/components/ui/TimePicker.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/components/ui/TimePicker.tsx.source",
+      "gitBlob": "a9036d263090c3ff183eb2f0654eccfd09e9b749",
+      "originalMode": "100644",
+      "sha256": "d91722e9e365827888781d3d8c01e7ace0a9cba65f00408461720dec3f0fe0e2",
+      "bytes": 3506
+    },
+    {
+      "originalPath": "src/config/env.calendar.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/config/env.calendar.test.ts.source",
+      "gitBlob": "364356e37837b6bbffadbd559f126a90dd984c9f",
+      "originalMode": "100644",
+      "sha256": "f99c40da6845dc0b08a5729d12e3144b40c2f3a6c3ed89852c403ef2597d2d1d",
+      "bytes": 2583
+    },
+    {
+      "originalPath": "src/config/env.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/config/env.ts.source",
+      "gitBlob": "dfa4ebc179de5c4aced2fae9561434f8603c80c8",
+      "originalMode": "100644",
+      "sha256": "dd0a77ff54fc0ead609d3d5170b78360aa5b175e0931a40da7f332558c37fe31",
+      "bytes": 7893
+    },
+    {
+      "originalPath": "src/constants/errorIds.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/constants/errorIds.ts.source",
+      "gitBlob": "68dd2f8b9010e49a0e85d0387a3114e5a08b623e",
+      "originalMode": "100644",
+      "sha256": "7d172501461d4b0756f0bbfc3e54bca8eb460a51e439042fbc7951f0025b0100",
+      "bytes": 19529
+    },
+    {
+      "originalPath": "src/constants/jobNames.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/constants/jobNames.ts.source",
+      "gitBlob": "ada934eb4570ca29bd4b0cfa25f393e3fd450657",
+      "originalMode": "100644",
+      "sha256": "9dee11b625358ed61bc1c70171d068ca9a8e6d10905b66c5c84e34220d97d7f0",
+      "bytes": 2072
+    },
+    {
+      "originalPath": "src/db/schema/activities.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/db/schema/activities.ts.source",
+      "gitBlob": "02276eb352ec385fbba870e68c5904c86d8c90ab",
+      "originalMode": "100644",
+      "sha256": "2af776ea8d7c742614cc8fdbc4fcd54870160f6b34a043a6530fcd30163634ad",
+      "bytes": 5340
+    },
+    {
+      "originalPath": "src/db/schema/activityReminderIntents.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/db/schema/activityReminderIntents.ts.source",
+      "gitBlob": "c10b9a647d1a807cac594beae7bcd4a0e3fc2183",
+      "originalMode": "100644",
+      "sha256": "5ac419eb18a31ec2ad121c936b9c1f041d22813729c2eec4e9c927ddde86c589",
+      "bytes": 2216
+    },
+    {
+      "originalPath": "src/db/schema/calendarProviderAccounts.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/db/schema/calendarProviderAccounts.ts.source",
+      "gitBlob": "79772709d3ad2a53c7fa70ffb9ba10222c6a87f1",
+      "originalMode": "100644",
+      "sha256": "2ca67d0a10bdc87e8670e01fa7e0ff5e336f33559d10166d37e4ad4c835b023d",
+      "bytes": 4105
+    },
+    {
+      "originalPath": "src/db/schema/calendarProviderCatalog.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/db/schema/calendarProviderCatalog.ts.source",
+      "gitBlob": "9d0a66b2c591737d3c851871d98591b56d02757d",
+      "originalMode": "100644",
+      "sha256": "27e960d86b82d68e64ca567ad103a12c160d1578e8a779b60bbbdaa78c884124",
+      "bytes": 4605
+    },
+    {
+      "originalPath": "src/db/schema/calendarReminderSettings.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/db/schema/calendarReminderSettings.ts.source",
+      "gitBlob": "d5d070c7fb174e74d658956c300a6fc07cf45147",
+      "originalMode": "100644",
+      "sha256": "c1b4b1f6bd6d33484923159dc77626a172ac66d51ad6a24043dea810993549d5",
+      "bytes": 2735
+    },
+    {
+      "originalPath": "src/db/schema/calendars.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/db/schema/calendars.ts.source",
+      "gitBlob": "1393990b1227977b1110f12020b9dff81e34b74f",
+      "originalMode": "100644",
+      "sha256": "39b48234186a6c2a1b930b150653186bd4a3bde122f317557f448c50b7b31299",
+      "bytes": 1685
+    },
+    {
+      "originalPath": "src/db/schema/index.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/db/schema/index.ts.source",
+      "gitBlob": "d4eb43f3a2caf59df8032e867d49a9968b1e21d6",
+      "originalMode": "100644",
+      "sha256": "05aba1daafd97abb40960228996b8aaf932602f6e6121d7eab0788966411fa3c",
+      "bytes": 2169
+    },
+    {
+      "originalPath": "src/features/activities/ActivityTimeZoneHint.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/ActivityTimeZoneHint.tsx.source",
+      "gitBlob": "d3aab3b8bfa79ecd5134e4e596fd2ad7f042cf54",
+      "originalMode": "100644",
+      "sha256": "775ed3c55724c5d9f3b7372ab7cb46d0af7129ed0fe40e7ed4c01a34fdc41593",
+      "bytes": 1267
+    },
+    {
+      "originalPath": "src/features/activities/CalendarEventCrmDetails.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/CalendarEventCrmDetails.tsx.source",
+      "gitBlob": "3f299792445a9694bc3dcaa4a3da844506d4bc3d",
+      "originalMode": "100644",
+      "sha256": "3e9c800aa25d41b4b6b527381380687cd469fa9f4ee8db39c189c950dea4d07b",
+      "bytes": 4362
+    },
+    {
+      "originalPath": "src/features/activities/CalendarEventCrmDisclosure.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/CalendarEventCrmDisclosure.tsx.source",
+      "gitBlob": "27d3c242f886b3f2de84dfd0f68897a2b046fd4c",
+      "originalMode": "100644",
+      "sha256": "9ef0a004aba795d39675d08a0957db5297385ce3ac8f37ac00f44cbd9ec29dde",
+      "bytes": 2209
+    },
+    {
+      "originalPath": "src/features/activities/CalendarEventDetails.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/CalendarEventDetails.tsx.source",
+      "gitBlob": "609631d0f43d864917892459134738791bbf2d55",
+      "originalMode": "100644",
+      "sha256": "afd0043306d33b1041d36230edc1d383614ed3cbccb02c19d95b250d3f0a3fae",
+      "bytes": 1988
+    },
+    {
+      "originalPath": "src/features/activities/CalendarEventDialog.test.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/CalendarEventDialog.test.tsx.source",
+      "gitBlob": "f55faf9d6dfe844d8c24480092aa12e9558ec66d",
+      "originalMode": "100644",
+      "sha256": "0674d8e7b8bb586733377040fd41b50b0d246add4620855babf68c1fb94e7f49",
+      "bytes": 10529
+    },
+    {
+      "originalPath": "src/features/activities/CalendarEventDialog.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/CalendarEventDialog.tsx.source",
+      "gitBlob": "7787ac7ea81902b658c61d3c1e1093fa8d19c0c0",
+      "originalMode": "100644",
+      "sha256": "38483df30039e67428d15e7e33271188fb55432c38c23ebfb75041e605cfe276",
+      "bytes": 9657
+    },
+    {
+      "originalPath": "src/features/activities/CalendarEventOwnership.test.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/CalendarEventOwnership.test.tsx.source",
+      "gitBlob": "ec3117ea22e4eda5cf962d3abbc69d58c83b6e8e",
+      "originalMode": "100644",
+      "sha256": "c41d627bfabdcf5cf166b4d7d1c0269a7b49872d47945b5b66387dc82d1a2736",
+      "bytes": 1712
+    },
+    {
+      "originalPath": "src/features/activities/CalendarEventOwnership.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/CalendarEventOwnership.tsx.source",
+      "gitBlob": "505fe6292a0f57a9841ef39fa780a1ab4bf00ddf",
+      "originalMode": "100644",
+      "sha256": "dba4df52bee7bf9ab8d7f67e44c88c417502a5900f347f15aaee66282f76157d",
+      "bytes": 5221
+    },
+    {
+      "originalPath": "src/features/activities/CalendarEventPolish.test.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/CalendarEventPolish.test.tsx.source",
+      "gitBlob": "7cb6638fe2405cb2dfbee44b435f46c7694a6837",
+      "originalMode": "100644",
+      "sha256": "9a9221dba1042e83ca2dc6a8964cef5b0bfe2ab14d0c97040c71914eb104ade9",
+      "bytes": 19953
+    },
+    {
+      "originalPath": "src/features/activities/CalendarEventReminders.test.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/CalendarEventReminders.test.tsx.source",
+      "gitBlob": "33bd934a8ba23c05d54ba23c4923817ef013748a",
+      "originalMode": "100644",
+      "sha256": "a34b946671f05b24eeb6c6dc5a0eec9e86e3eacbb318b098cd8a3dd7c04b64d4",
+      "bytes": 9310
+    },
+    {
+      "originalPath": "src/features/activities/CalendarEventSchedule.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/CalendarEventSchedule.tsx.source",
+      "gitBlob": "476d63f9ab52eae38bcb0e81d5af1ee6455ab6d8",
+      "originalMode": "100644",
+      "sha256": "fac4316bfa4980f8471d593449ab29eebc2c78bcfa1b6fa78baaa763389d346a",
+      "bytes": 2783
+    },
+    {
+      "originalPath": "src/features/activities/CalendarEventTimeZone.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/CalendarEventTimeZone.tsx.source",
+      "gitBlob": "434128e04cc5c04905156dc089991f08b02f567d",
+      "originalMode": "100644",
+      "sha256": "c12384234ad31979877bb8015c34c5746f37876f731b31d747bbf5c753a4e0f9",
+      "bytes": 2281
+    },
+    {
+      "originalPath": "src/features/activities/CalendarEventViewer.test.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/CalendarEventViewer.test.tsx.source",
+      "gitBlob": "6d6948e2774f3033228ce77c3a962e525446324a",
+      "originalMode": "100644",
+      "sha256": "6062d347370fcbc98a7b9cf2c378c68ac90cff4339ded4ae2101cd5852ec8512",
+      "bytes": 1627
+    },
+    {
+      "originalPath": "src/features/activities/CalendarEventViewer.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/CalendarEventViewer.tsx.source",
+      "gitBlob": "40ca79197067841d808255820b49e6f988a3a5c1",
+      "originalMode": "100644",
+      "sha256": "2772dfb41a93956f7e2c0a519288983b27cd9487afa28dc1a8bfa00e9647205b",
+      "bytes": 6105
+    },
+    {
+      "originalPath": "src/features/activities/CalendarManager.test.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/CalendarManager.test.tsx.source",
+      "gitBlob": "39ff72d0bc9d597e3ed40cf426669cd225aa70d7",
+      "originalMode": "100644",
+      "sha256": "c214dd8cf3aebf0470ef19d3a5bde33d5133a0e51b56a263bc766591e85e1673",
+      "bytes": 10085
+    },
+    {
+      "originalPath": "src/features/activities/CalendarManager.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/CalendarManager.tsx.source",
+      "gitBlob": "a5d8a3093132414cc099d9ccf644d027d10ce5d0",
+      "originalMode": "100644",
+      "sha256": "e280fb614a27fa1bbd1e5f84383a6e5907cfbfbe02d913f956801a67cc416b14",
+      "bytes": 11443
+    },
+    {
+      "originalPath": "src/features/activities/CalendarMeetingField.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/CalendarMeetingField.tsx.source",
+      "gitBlob": "3eabc02dd9073892bcb77092c0a4275a7fd2ea72",
+      "originalMode": "100644",
+      "sha256": "75636c65e0bcca01024986224283323ce179e9635e7de374e6581fe2617b45aa",
+      "bytes": 7285
+    },
+    {
+      "originalPath": "src/features/activities/CalendarMembersEditor.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/CalendarMembersEditor.tsx.source",
+      "gitBlob": "a78b468cfafdc6893118a9a428b44a9a409b6038",
+      "originalMode": "100644",
+      "sha256": "3b5989b2a97e20f9f902de224086ca6bb5d3abe477f515b97cacdca32f9e6935",
+      "bytes": 4562
+    },
+    {
+      "originalPath": "src/features/activities/CalendarPersonalRemindersPanel.test.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/CalendarPersonalRemindersPanel.test.tsx.source",
+      "gitBlob": "bfc42a14d8ba2caede7e3875d51765870994f446",
+      "originalMode": "100644",
+      "sha256": "a754ff681b058005b514cb9a78abe611e6e6f3f5bbf5b4656f2170dc3fa73ac4",
+      "bytes": 4641
+    },
+    {
+      "originalPath": "src/features/activities/CalendarPersonalRemindersPanel.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/CalendarPersonalRemindersPanel.tsx.source",
+      "gitBlob": "3283d5cfe68cb0745e9c2c8f2cdd669b9f6032bf",
+      "originalMode": "100644",
+      "sha256": "75c3c763cb16f2b901ff9107e936c82414aafb5c1a0b6903f708582dae088611",
+      "bytes": 3872
+    },
+    {
+      "originalPath": "src/features/activities/CalendarReminderDefaultsEditor.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/CalendarReminderDefaultsEditor.tsx.source",
+      "gitBlob": "669b40f296f0e152f2215c7eb11dfd94f85bce0e",
+      "originalMode": "100644",
+      "sha256": "38684e639f8cbb061bcf78c9addd691b9ea153677ddcadbcb9e280c68c6d9418",
+      "bytes": 3135
+    },
+    {
+      "originalPath": "src/features/activities/CalendarReminderDefaultsPanel.test.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/CalendarReminderDefaultsPanel.test.tsx.source",
+      "gitBlob": "7a4424ee10e7d2a84d8a72d5d973918601ad81c7",
+      "originalMode": "100644",
+      "sha256": "26ca7d76d3e4b8965673a94dea7c03b6b6f21e9fece09c17146c7c4f044a4043",
+      "bytes": 5815
+    },
+    {
+      "originalPath": "src/features/activities/CalendarReminderDefaultsPanel.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/CalendarReminderDefaultsPanel.tsx.source",
+      "gitBlob": "49c2e50ce211790666882cedb0126072132ca2b3",
+      "originalMode": "100644",
+      "sha256": "b5a6a643e87c08d64e0e139b0dc8298b34e84813cf8b676e022fc99958f6bf29",
+      "bytes": 5557
+    },
+    {
+      "originalPath": "src/features/activities/CalendarReminderDisclosure.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/CalendarReminderDisclosure.tsx.source",
+      "gitBlob": "fa6442bdf0ae55d6ad573149303fb4acab0f3c91",
+      "originalMode": "100644",
+      "sha256": "fa59ec726e851f9f5b2256b57c25a9e1ba04a105f0d3e3e2c870059d31355f4a",
+      "bytes": 3024
+    },
+    {
+      "originalPath": "src/features/activities/CalendarReminderEditor.test.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/CalendarReminderEditor.test.tsx.source",
+      "gitBlob": "24c58522f1e66b12f88e3174469ad85e09160809",
+      "originalMode": "100644",
+      "sha256": "8231c4b86dabb04e0dfca69a1878e4e591db3e46cbdd5d087aafd94f06602990",
+      "bytes": 11399
+    },
+    {
+      "originalPath": "src/features/activities/CalendarReminderEditor.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/CalendarReminderEditor.tsx.source",
+      "gitBlob": "ffe12cb8e72d3cfbfd8264f323574b68213a6b99",
+      "originalMode": "100644",
+      "sha256": "e1c3ff50cb3d31858fde269026d8d9eb12f0fde850bbada1e1f48948c83771d6",
+      "bytes": 4858
+    },
+    {
+      "originalPath": "src/features/activities/CalendarReminderNumber.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/CalendarReminderNumber.tsx.source",
+      "gitBlob": "54a2db7d906b0e7d79c37c3cf078f1e6216b4a6c",
+      "originalMode": "100644",
+      "sha256": "55d023bd741bab583313280fabda63398dd8969466aee28244670fb2901b0b7d",
+      "bytes": 3144
+    },
+    {
+      "originalPath": "src/features/activities/CalendarReminderRuleRow.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/CalendarReminderRuleRow.tsx.source",
+      "gitBlob": "a7922cd182fbba33d6fbbe791ae40d992f165788",
+      "originalMode": "100644",
+      "sha256": "94be2055969e7750059992c53d17dba02f435bbc9877915dd23b20fc7048fd46",
+      "bytes": 4174
+    },
+    {
+      "originalPath": "src/features/activities/CalendarReminderRules.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/CalendarReminderRules.tsx.source",
+      "gitBlob": "48cba841f96cc3e5b8f181c751d43b820e83462e",
+      "originalMode": "100644",
+      "sha256": "4b2e8af51b78deffe53a037b8a02c2862e90f61022df8eb342d700e62ec33892",
+      "bytes": 6069
+    },
+    {
+      "originalPath": "src/features/activities/CalendarReminderSummary.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/CalendarReminderSummary.tsx.source",
+      "gitBlob": "dee020cdffb53ef6f93984fa5fb5bbf601cfc740",
+      "originalMode": "100644",
+      "sha256": "809b8a9f7708cabd5e78c9192d8303ea2c6d3864a8b59319a0d2ad211ce64620",
+      "bytes": 1171
+    },
+    {
+      "originalPath": "src/features/activities/CalendarSettingsForm.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/CalendarSettingsForm.tsx.source",
+      "gitBlob": "26bff22ebd8622b28a8ab0ddbb77428ab6990a9e",
+      "originalMode": "100644",
+      "sha256": "de10e10ff879201ad286ec6acdcd0fed38b5b7b6151e68efdbb2f5ac349f31e5",
+      "bytes": 3781
+    },
+    {
+      "originalPath": "src/features/activities/actions.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/actions.ts.source",
+      "gitBlob": "ed5be7517b79dbee9ec85fea79ba7f885edef1ae",
+      "originalMode": "100644",
+      "sha256": "1580aaca6882158d3b2caefc29f252e1963854673d940f37bc022c6350c54bbf",
+      "bytes": 4375
+    },
+    {
+      "originalPath": "src/features/activities/activityAccessGuard.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/activityAccessGuard.ts.source",
+      "gitBlob": "f8c7b72ceb66eb1bb0637504d48a3ff4f8655c63",
+      "originalMode": "100644",
+      "sha256": "47da2e2ee208e78464c13161e01df8e882663169cd763e6919b30ecd33bcf8e6",
+      "bytes": 1575
+    },
+    {
+      "originalPath": "src/features/activities/activityDelete.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/activityDelete.ts.source",
+      "gitBlob": "8479d7ef2f100054d40e42ccd3db7a13e4bf8c88",
+      "originalMode": "100644",
+      "sha256": "d24b5ecee8d593993ce1fd9230a65714a53923998e91a1489b79674ac420b3f2",
+      "bytes": 2083
+    },
+    {
+      "originalPath": "src/features/activities/activityReminderWrite.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/activityReminderWrite.ts.source",
+      "gitBlob": "cf893ac59d69790770a20d35b95f2c3b893fbe27",
+      "originalMode": "100644",
+      "sha256": "f0d71074ad277e9fc1623a99c3aa839f39663c10b311acee5e2810eb6c8e0b24",
+      "bytes": 1048
+    },
+    {
+      "originalPath": "src/features/activities/activityRows.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/activityRows.ts.source",
+      "gitBlob": "f1cfcde2f4584782e4a6104575ec85c414efe383",
+      "originalMode": "100644",
+      "sha256": "94483fcf2b99320d3684d5eed88f0c5485276375583899e1a3318cc3909093bb",
+      "bytes": 11591
+    },
+    {
+      "originalPath": "src/features/activities/activityTransaction.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/activityTransaction.ts.source",
+      "gitBlob": "066c27b750492dd6284dbff52864b4c3cd4bc8eb",
+      "originalMode": "100644",
+      "sha256": "5b9280dd4b8220a15afb57736a1019de9931df31f328b7c0c355ea6e930ed2e6",
+      "bytes": 970
+    },
+    {
+      "originalPath": "src/features/activities/activityUpdate.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/activityUpdate.ts.source",
+      "gitBlob": "ffb3a0fb1372e1bb78edc26d917a0123c7fe053d",
+      "originalMode": "100644",
+      "sha256": "7c6a13371cad2752770357d1012b765f5539c742fcb8f163e5db600e528224d1",
+      "bytes": 11234
+    },
+    {
+      "originalPath": "src/features/activities/availability.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/availability.test.ts.source",
+      "gitBlob": "a4099363cfa3649f982d618af8546058eec89b11",
+      "originalMode": "100644",
+      "sha256": "64bfc6ae5ae74b040914dca91f00bb9fd917caf1184473e612e8cebbc946d87c",
+      "bytes": 5083
+    },
+    {
+      "originalPath": "src/features/activities/availability.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/availability.ts.source",
+      "gitBlob": "fff8fe8fd243137c2c37085bdbb1efa179426f85",
+      "originalMode": "100644",
+      "sha256": "e2074e65fb8e222fba4e07cbca9abcbee54ff5857b534ed458f3dab9171ade3c",
+      "bytes": 2510
+    },
+    {
+      "originalPath": "src/features/activities/calendar.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/calendar.ts.source",
+      "gitBlob": "71534f0366e7c6ac3230714661bbb2b368fb05d1",
+      "originalMode": "100644",
+      "sha256": "b1a018fce8de64656cc89742e3718412d8ee1986b02575742aeff76f7ad8bebf",
+      "bytes": 11883
+    },
+    {
+      "originalPath": "src/features/activities/calendarAccess.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/calendarAccess.ts.source",
+      "gitBlob": "32f0c7141ed99af3b6b71e4ee487379aac028d56",
+      "originalMode": "100644",
+      "sha256": "c17343b9ec43b2fff3fa7e31e2cc1730f9def1555a542a2ea4fba51c773720bf",
+      "bytes": 4040
+    },
+    {
+      "originalPath": "src/features/activities/calendarActions.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/calendarActions.ts.source",
+      "gitBlob": "75b8a6c60fb632249990d4d37639b7fd17855312",
+      "originalMode": "100644",
+      "sha256": "c017bcae0e1a1aabcc895c55c4d6bea59bf08e3d06f3265f5bdd04aa19358687",
+      "bytes": 2694
+    },
+    {
+      "originalPath": "src/features/activities/calendarCompletionRevisionReplay.integration.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/calendarCompletionRevisionReplay.integration.test.ts.source",
+      "gitBlob": "e09c56cd3b44c5633ec9a8dd02c2b7dbf2bffa75",
+      "originalMode": "100644",
+      "sha256": "d7b457a8388c9b3c4b4e02c218c10ae83bd62e23ae8f5bc386ef637ad82beaa2",
+      "bytes": 4378
+    },
+    {
+      "originalPath": "src/features/activities/calendarConcurrency.integration.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/calendarConcurrency.integration.test.ts.source",
+      "gitBlob": "72012643c871d4ec900dab1235cb0e7a3eaac5af",
+      "originalMode": "100644",
+      "sha256": "017477c7d65549395b5f9b3f0e7f9a17484acec1a95462535c911a587abc5883",
+      "bytes": 5703
+    },
+    {
+      "originalPath": "src/features/activities/calendarEventBoundary.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/calendarEventBoundary.test.ts.source",
+      "gitBlob": "faeab6e602d40a1c9c9dc0bd892e415a39fe36dc",
+      "originalMode": "100644",
+      "sha256": "875bab9b7b9d0c8c6e3d2d4c89618f685df1ca4698e19d5b27578c9d49afd014",
+      "bytes": 809
+    },
+    {
+      "originalPath": "src/features/activities/calendarEventDraft.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/calendarEventDraft.ts.source",
+      "gitBlob": "d9c185aa6b925cecaea8068ccf1efc4bc5017a3f",
+      "originalMode": "100644",
+      "sha256": "a7d1fc0d205e657d37e752b31c73eefb95555924dce8290cb4fa7a8fd705840f",
+      "bytes": 8542
+    },
+    {
+      "originalPath": "src/features/activities/calendarEventRoundTrip.integration.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/calendarEventRoundTrip.integration.test.ts.source",
+      "gitBlob": "7cffe5453d992a5ffb93798a52f9c92d066afa99",
+      "originalMode": "100644",
+      "sha256": "8cddeac88a4cdcbdf9539f0d52d38e55b91af737728286122449a529fdd45ce4",
+      "bytes": 5926
+    },
+    {
+      "originalPath": "src/features/activities/calendarLeadBoundary.integration.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/calendarLeadBoundary.integration.test.ts.source",
+      "gitBlob": "6dbd06f8e4e7ff1181511454a655d173260237e6",
+      "originalMode": "100644",
+      "sha256": "c749bf356c56a6c79b66a30b8adf3929f503bd03868229707569e35a36ea8c21",
+      "bytes": 6766
+    },
+    {
+      "originalPath": "src/features/activities/calendarNavigation.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/calendarNavigation.test.ts.source",
+      "gitBlob": "c0df595759954fae91b6416c14343a413ab7fb88",
+      "originalMode": "100644",
+      "sha256": "6eaeff69303b646870ad4061d32692e500376fc3938b2fe01e00e242198ef362",
+      "bytes": 1022
+    },
+    {
+      "originalPath": "src/features/activities/calendarReminderCatalog.integration.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/calendarReminderCatalog.integration.test.ts.source",
+      "gitBlob": "a3c027ef5d7fd6b2bec94936028201edd4a50ef1",
+      "originalMode": "100644",
+      "sha256": "aa721148f1e56316cebf04d6d0932d10b1628dee986684f9bade3017aabd8681",
+      "bytes": 7764
+    },
+    {
+      "originalPath": "src/features/activities/calendarReminderCatalog.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/calendarReminderCatalog.ts.source",
+      "gitBlob": "156f43245e9d2d2e9aa09a90081e53c9a4cbf73a",
+      "originalMode": "100644",
+      "sha256": "b6c5ffbd761d109e671462b5c6b6f7265cadbf6fde8af46613f001c0d6d43edb",
+      "bytes": 2305
+    },
+    {
+      "originalPath": "src/features/activities/calendarReminderDelivery.integration.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/calendarReminderDelivery.integration.test.ts.source",
+      "gitBlob": "87803ee5a4d2b106b8679f4d7fc6ced93b458fa3",
+      "originalMode": "100644",
+      "sha256": "c2f6e70cee0cc01445c0dc1b9e163edd74639dd066c402558eae2758fa9f14c2",
+      "bytes": 5006
+    },
+    {
+      "originalPath": "src/features/activities/calendarReminderInsertFailure.integration.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/calendarReminderInsertFailure.integration.test.ts.source",
+      "gitBlob": "e0aecf86f509761093a26e9e69768986b1c949ed",
+      "originalMode": "100644",
+      "sha256": "9583a2631444a8ad3fe7e748a1f37e22a7c1ce1c541fe3f8c6a43f81a19be59a",
+      "bytes": 6339
+    },
+    {
+      "originalPath": "src/features/activities/calendarRouter.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/calendarRouter.ts.source",
+      "gitBlob": "67d8f0358d42303c8c6276dd91721a2df61d07a3",
+      "originalMode": "100644",
+      "sha256": "146c958369de8de87ec4918ca9f05cc805c76bb9065f47e86bfe397ca0e53cd6",
+      "bytes": 1967
+    },
+    {
+      "originalPath": "src/features/activities/calendarSchemas.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/calendarSchemas.ts.source",
+      "gitBlob": "8c1d3a3f0c77ab598aeca86bf7f1976d02991c9a",
+      "originalMode": "100644",
+      "sha256": "23ed2ed29a8f4715a6d37f2d0b53a19c7f0d5d45462183bbf96b6914d330068d",
+      "bytes": 466
+    },
+    {
+      "originalPath": "src/features/activities/calendarSelection.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/calendarSelection.test.ts.source",
+      "gitBlob": "06c084fe29dab11ccd677f552e9b994eabb7bf21",
+      "originalMode": "100644",
+      "sha256": "76cb265ac46763cc4fc95b3883cae7e62b34230e7278c798e487dbf11ae1c7c9",
+      "bytes": 748
+    },
+    {
+      "originalPath": "src/features/activities/calendarSelection.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/calendarSelection.ts.source",
+      "gitBlob": "eb212afb1f7715dafa8d22bcb440579ec9b0bfb9",
+      "originalMode": "100644",
+      "sha256": "df631edad48b8c04fa4326503c83a2c45418b8574cddad5e6cd9e92a9a8b44c4",
+      "bytes": 1132
+    },
+    {
+      "originalPath": "src/features/activities/calendarView.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/calendarView.ts.source",
+      "gitBlob": "8bc2a1d4207eec122e8fe0ae41d31ef106003441",
+      "originalMode": "100644",
+      "sha256": "0a0936895339a3f5c324f802f62f20a20f7bfa1798c53e52f73b06f41635fe75",
+      "bytes": 4237
+    },
+    {
+      "originalPath": "src/features/activities/calendars.integration.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/calendars.integration.test.ts.source",
+      "gitBlob": "3a2a99ee06053d3904b3177c991a9108dbc9295c",
+      "originalMode": "100644",
+      "sha256": "dc893fce79db8efdbadf31c0c448fdb60b74586ead992ac279ab673d022b28dc",
+      "bytes": 8318
+    },
+    {
+      "originalPath": "src/features/activities/calendars.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/calendars.ts.source",
+      "gitBlob": "5a0358b3dc3d16355897bdb86690959cf10382d3",
+      "originalMode": "100644",
+      "sha256": "4bad897ba82e1b1ff6045f5814a8f7b8464afa97f8f25c35eb2616d3e41aa253",
+      "bytes": 8420
+    },
+    {
+      "originalPath": "src/features/activities/completeActivityAction.validation.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/completeActivityAction.validation.test.ts.source",
+      "gitBlob": "2d38773ab2e303c812d36ad02a5a7bf2de261038",
+      "originalMode": "100644",
+      "sha256": "f09b5dfcc563839a427af8f4c127104be67272dc45a596aee65a7a8e1b1b9897",
+      "bytes": 8044
+    },
+    {
+      "originalPath": "src/features/activities/completeActivityContract.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/completeActivityContract.test.ts.source",
+      "gitBlob": "f4edf81e06a4ade1b3e089bddc4460c4cc73edf6",
+      "originalMode": "100644",
+      "sha256": "243df95a17996a648e7c1ae5c592023913004cacbbac09c41982dcc469410e39",
+      "bytes": 1736
+    },
+    {
+      "originalPath": "src/features/activities/completeActivityInput.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/completeActivityInput.ts.source",
+      "gitBlob": "97210e598f85192de238cb8c050a47e49d218b90",
+      "originalMode": "100644",
+      "sha256": "d337da3d9b7594100ced17bd98a8c22ee705b90b0615d391acdd08c96458f77a",
+      "bytes": 265
+    },
+    {
+      "originalPath": "src/features/activities/forEntity.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/forEntity.ts.source",
+      "gitBlob": "d02cd42c5dda891701240f31cd45d9eb3d7b3e9f",
+      "originalMode": "100644",
+      "sha256": "0fbb9f6fe7f16a86d4646be2adc2dddfe8954dc1d2e0bb6b520b9a3fb678ee38",
+      "bytes": 11180
+    },
+    {
+      "originalPath": "src/features/activities/getForEdit.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/getForEdit.ts.source",
+      "gitBlob": "ea4109f3830c83cb968fdbbddbd074e2af5bfa9c",
+      "originalMode": "100644",
+      "sha256": "0746040b7a1b06a14c545252c4bcdeb06938e67e26a36c9521cdfe1f19628554",
+      "bytes": 6629
+    },
+    {
+      "originalPath": "src/features/activities/messages/calendar.de.json",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/messages/calendar.de.json.source",
+      "gitBlob": "5fb3064afce18753d762fb6f3691a5f05142c221",
+      "originalMode": "100644",
+      "sha256": "6c6e772fdf08dffc4ed3d19f65778ee6408e132fa978970f787da28e55c77a53",
+      "bytes": 15072
+    },
+    {
+      "originalPath": "src/features/activities/messages/calendar.en.json",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/messages/calendar.en.json.source",
+      "gitBlob": "c96d23202a3dd5847a7c53d877dbed6b0f06cfd3",
+      "originalMode": "100644",
+      "sha256": "c5b1fa23b729a1fe8a8a25dc19c6ec8a880d1404fa4b2aed0601935cfd3ae410",
+      "bytes": 12811
+    },
+    {
+      "originalPath": "src/features/activities/messages/calendar.fa.json",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/messages/calendar.fa.json.source",
+      "gitBlob": "dc3b07121d34be74e85d3ee7233f84dd43cc04c0",
+      "originalMode": "100644",
+      "sha256": "2df1871c2e23c09174f7633d2cfea93a8d244b2925d55a7d930ba2fc627a6cdc",
+      "bytes": 19406
+    },
+    {
+      "originalPath": "src/features/activities/personalReminderDelivery.integration.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/personalReminderDelivery.integration.test.ts.source",
+      "gitBlob": "efdfbd5c5645a9d230dc8dc2275c7a0f883ff1ad",
+      "originalMode": "100644",
+      "sha256": "22e0a7d7a9307b553a5d2872b12affac26fa755e12582c74d0110af7d5b6927d",
+      "bytes": 6644
+    },
+    {
+      "originalPath": "src/features/activities/personalReminderSettings.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/personalReminderSettings.ts.source",
+      "gitBlob": "67dbca48e95e229a4265c345eb62868e4ac27144",
+      "originalMode": "100644",
+      "sha256": "74a5bde1c377648ea81d8a506bbbe97066751125b0c6b0746fb68952459b809c",
+      "bytes": 3634
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/CalendarCatalogEntry.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/CalendarCatalogEntry.tsx.source",
+      "gitBlob": "464e6d9e92e40ae3269adb5f524b5a21461f2b17",
+      "originalMode": "100644",
+      "sha256": "e11e35c138e710826dfb760d4c82177c4aefd6afcf76a9fdb05444b097b58247",
+      "bytes": 2795
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/CalendarCatalogPanel.test.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/CalendarCatalogPanel.test.tsx.source",
+      "gitBlob": "bf3328ffdc09fb19bf2197ed92054a86ba763fea",
+      "originalMode": "100644",
+      "sha256": "30d9396134bbaab363a6e5a38242525b551b035a1c1230daa7e51f0b3416e836",
+      "bytes": 15779
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/CalendarCatalogPanel.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/CalendarCatalogPanel.tsx.source",
+      "gitBlob": "1dd5270be9a4e5a19cf05f75ed3e3f1a97e0d729",
+      "originalMode": "100644",
+      "sha256": "af8a25dfdb19b3952c5be22c6cedd116e0c1743ac13c7f1f80bddb740c1a2470",
+      "bytes": 3479
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/CalendarConnectionAccount.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/CalendarConnectionAccount.tsx.source",
+      "gitBlob": "9f5cf7787dfa59d2d3f916acc37b76087e5cbe41",
+      "originalMode": "100644",
+      "sha256": "d925a4a1b9b6c6bad02cb0cc903c5168388e6f2e32607ac0bd6cb9519fef75fa",
+      "bytes": 2778
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/CalendarConnectionCard.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/CalendarConnectionCard.tsx.source",
+      "gitBlob": "13f5e2ca9107fcedd2146ea410fa91d8aa568329",
+      "originalMode": "100644",
+      "sha256": "3fb026969701a58dad735fd58c9699dee97fc76cd8a4913566c15652783c2592",
+      "bytes": 4370
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/README.md",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/README.md.source",
+      "gitBlob": "912a2f13c975fbd6c7513a685f92ab046fbe54b1",
+      "originalMode": "100644",
+      "sha256": "548bac8a0a9f640af1e294d4083e511655629e8f8f987ab21365e1b7d44f31f7",
+      "bytes": 10062
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/accountAccess.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/accountAccess.ts.source",
+      "gitBlob": "29b9b8724f038fc335833863436d39238795b58e",
+      "originalMode": "100644",
+      "sha256": "5caab1fd22fe6e75de07604a1b2afc37764297fc87ec1cf3f510c5dede945189",
+      "bytes": 1631
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/accountAuthorization.integration.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/accountAuthorization.integration.test.ts.source",
+      "gitBlob": "af87a4f2daa4a5ea6a2cd1594f51cd7891e694a7",
+      "originalMode": "100644",
+      "sha256": "5530337ee384ef30877c95f4a65d9187a064f331b6246dc3beced298b0e5bbde",
+      "bytes": 8459
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/accountAuthorization.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/accountAuthorization.ts.source",
+      "gitBlob": "ec111e12d8dd48c7ed07acb62dbff23c85839fec",
+      "originalMode": "100644",
+      "sha256": "6e2c56dd74df9df0b836576da05b787007ad2f7f60b99566ec9d2d0ca1ed78ca",
+      "bytes": 2255
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/accountAuthorizationCancel.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/accountAuthorizationCancel.ts.source",
+      "gitBlob": "19b34ca74be0f47e07f2601594ce38fb6fbb0bc8",
+      "originalMode": "100644",
+      "sha256": "e985c367fcacbeca1c5b17b7144c86e39ca16b1dde06593661e3521b402439c2",
+      "bytes": 2278
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/accountAuthorizationLimit.integration.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/accountAuthorizationLimit.integration.test.ts.source",
+      "gitBlob": "1c717b37052f372b23608285514d76eaa545356d",
+      "originalMode": "100644",
+      "sha256": "2896b13137153b824db0ae4e7f725585b1499a3af3896bfc638e26ec6848e4c3",
+      "bytes": 5831
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/accountAuthorizationState.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/accountAuthorizationState.ts.source",
+      "gitBlob": "c0700eac34d1217488d076b0d1d21c5a3d7ed36e",
+      "originalMode": "100644",
+      "sha256": "9d7b2ca879aa4561133bd1310ce0bf2f42c4ca15fe6c4144d9f10e0d02bbe339",
+      "bytes": 6936
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/accountBind.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/accountBind.ts.source",
+      "gitBlob": "d13fd6afd9a9504a18ba2cc6dfde0fe679d60b5b",
+      "originalMode": "100644",
+      "sha256": "789ad79dcbfbb2c2bb0cb4630071db365f11c012e069c3c0dac9d5b63267891a",
+      "bytes": 5993
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/accountConnectionGeneration.integration.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/accountConnectionGeneration.integration.test.ts.source",
+      "gitBlob": "0fc802558affe932a9410c8b454841df05b525a8",
+      "originalMode": "100644",
+      "sha256": "642c71ca8e931dd88eb7878d57f00201d833cd6813c99ea3570df7a93593733c",
+      "bytes": 7605
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/accountConnectionGeneration.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/accountConnectionGeneration.ts.source",
+      "gitBlob": "56876d1533e8cc5a5861154039d7748d38648065",
+      "originalMode": "100644",
+      "sha256": "b68e7e00926571e2b93f60ea7e67eec1f4a323b08c423a50e284b1e666296d4a",
+      "bytes": 1052
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/accountConnectionMigration.integration.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/accountConnectionMigration.integration.test.ts.source",
+      "gitBlob": "0f65f32276f327629692700df668f053135c724d",
+      "originalMode": "100644",
+      "sha256": "3b8f4ac0598213b14ad3fa80dbc75bc7db3609aa023319564f196b0a3d5e6b32",
+      "bytes": 4318
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/accountConnectionMigration.schema-helpers.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/accountConnectionMigration.schema-helpers.ts.source",
+      "gitBlob": "7a9c8d7ce9fafa35786f2cd92af4b182e0b3d49a",
+      "originalMode": "100644",
+      "sha256": "dda0771769ef5f696d5e927dca7521781a49d7b210334498eb8820b6d95a9050",
+      "bytes": 3179
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/accountConnectionMigration.test-helpers.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/accountConnectionMigration.test-helpers.ts.source",
+      "gitBlob": "2a1607cecbb186fa23c54917b6348162a2306f5b",
+      "originalMode": "100644",
+      "sha256": "0c026aae129268db79f5ccb632b6358d96aecdbf5690553a6eb5402e484a7c0a",
+      "bytes": 4994
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/accountConnectionSnapshot.integration.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/accountConnectionSnapshot.integration.test.ts.source",
+      "gitBlob": "209294054ba334cdb8f013438cfc896fa2949e99",
+      "originalMode": "100644",
+      "sha256": "085a3d7f6e72cc5c25e100270bae9c3b8bdcd8f2628ab789d27ef30ec48a4e45",
+      "bytes": 5974
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/accountConnectionSnapshot.test-helpers.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/accountConnectionSnapshot.test-helpers.ts.source",
+      "gitBlob": "8443378510561ef9156f2e7299d9ad82971d6da3",
+      "originalMode": "100644",
+      "sha256": "209ede1c62059a6e6214d7ce1fc364b0f2efae3b647ffc27d9852c1952186e28",
+      "bytes": 4879
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/accountConnectionSupersession.integration.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/accountConnectionSupersession.integration.test.ts.source",
+      "gitBlob": "3b9781415ef2b64658be15fb0736ce0c4bf679d7",
+      "originalMode": "100644",
+      "sha256": "e3d5363a796798bf043709fa6de1d842997784645e861ae9bd65030beb6619ab",
+      "bytes": 9274
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/accountGrantGeneration.integration.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/accountGrantGeneration.integration.test.ts.source",
+      "gitBlob": "8cf7870031131baf918db1a835aa3fd1916d961d",
+      "originalMode": "100644",
+      "sha256": "8b79978d60290d2bac0e1116a6d0c76b00f49b2fbe26b6315367695466621c33",
+      "bytes": 4553
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/accountOffboarding.integration.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/accountOffboarding.integration.test.ts.source",
+      "gitBlob": "1e7ec4852019885ff0f81c71627eee5a524bc611",
+      "originalMode": "100644",
+      "sha256": "16219d15afb28322f08ec48e69a3ca9bf3b6712d2c4c5e1c4ed68a6b179368db",
+      "bytes": 2384
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/accountTestHelpers.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/accountTestHelpers.ts.source",
+      "gitBlob": "1e2328adc5f7a5b3bde4cfa399f6b68055d8b576",
+      "originalMode": "100644",
+      "sha256": "63a49313c3cb2e6c13a4db54e48466e09e0b185eb987ad397d88aa5bf3305b4f",
+      "bytes": 2991
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/accountTokens.integration.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/accountTokens.integration.test.ts.source",
+      "gitBlob": "e6730e4e73b8bae6df5b4d00e98c8fb2c314c08a",
+      "originalMode": "100644",
+      "sha256": "32b823d21d1f39a5b1621a91d5c95efadfff9e38f7dac0c218622c3e07d32653",
+      "bytes": 9182
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/accountTokens.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/accountTokens.ts.source",
+      "gitBlob": "b32f87ed0a3d6ced44520fc5a2d444931e15d06d",
+      "originalMode": "100644",
+      "sha256": "0c88d4cbb7487b24b63d4b30b1178c7bddaea3efb7747ea47f42776ef4956589",
+      "bytes": 4800
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/accounts.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/accounts.ts.source",
+      "gitBlob": "c997521b094ce0a9772dcf492a01a509618d4a62",
+      "originalMode": "100644",
+      "sha256": "c05d8cf43e316284e0335035e00d037ba4380e32693a215db386bccf02868d10",
+      "bytes": 4240
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/authorization.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/authorization.test.ts.source",
+      "gitBlob": "aad37bb7562ec4197b04e6eb819921824fda0ea0",
+      "originalMode": "100644",
+      "sha256": "5d10c2762a85ce785a9e3c5bdd4952ef8eca1c749fa6bf8012382ebefc34ef2d",
+      "bytes": 5033
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/authorization.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/authorization.ts.source",
+      "gitBlob": "88bbd1305c6939627052386c8bf0bac06eae027b",
+      "originalMode": "100644",
+      "sha256": "22b42dd922c636d4dfb8e02f79f61c12c007ad31169676b10c5303bda4a488fe",
+      "bytes": 2863
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/authorizationBrowserFlows.integration.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/authorizationBrowserFlows.integration.test.ts.source",
+      "gitBlob": "e7356ee9cdfa0c49db6a1657690ad6d8454b2959",
+      "originalMode": "100644",
+      "sha256": "79c0c06ba1800212a314ae8b5cdbded6d1aa8c3a80c711b19afe60e142802982",
+      "bytes": 7320
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/authorizationBrowserFlows.test-helpers.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/authorizationBrowserFlows.test-helpers.ts.source",
+      "gitBlob": "37e0c3653fa3ccc6de40edf6f7b13ba6622beea0",
+      "originalMode": "100644",
+      "sha256": "b024f1286087a24205be2a7d8390eee495eb5a7dbc44862a8155f95d44d6c157",
+      "bytes": 6278
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/authorizationCallbackHttp.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/authorizationCallbackHttp.ts.source",
+      "gitBlob": "3ce99be1c35e6e33da86d21b95112a72be6fc19c",
+      "originalMode": "100644",
+      "sha256": "f69d7da5f6aaca198a15093feb4aaa2e0de84b02440aa85023602e3f825044b5",
+      "bytes": 3079
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/authorizationConfig.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/authorizationConfig.ts.source",
+      "gitBlob": "bdd229537337ca9ab8ebce6b5d12d3a834b1d285",
+      "originalMode": "100644",
+      "sha256": "7036965dc2ceec0a68e3124854f84d8416546a9c8ce996b4f19821610c9b503f",
+      "bytes": 2002
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/authorizationDeployment.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/authorizationDeployment.test.ts.source",
+      "gitBlob": "14c7ed8b6f3970afdf7bdf7e06b60733bf1a31f8",
+      "originalMode": "100644",
+      "sha256": "ae4708f434f765627f17385b6d8a7b65f491df1518a34a793246793048eaad96",
+      "bytes": 944
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/authorizationDeployment.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/authorizationDeployment.ts.source",
+      "gitBlob": "e5d4545474850425e97fa719df1baf66b9b7cf1f",
+      "originalMode": "100644",
+      "sha256": "23add1ac81d26e16ef3dcf20b878572b4113ef85a9cadaed28560f90be32eae5",
+      "bytes": 917
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/authorizationExpiryLock.integration.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/authorizationExpiryLock.integration.test.ts.source",
+      "gitBlob": "9b5bc6c604e8030da45f07e622f2ef6ff86a3c3b",
+      "originalMode": "100644",
+      "sha256": "7d95eb354fd7f1c24190ad5d6e57b5c40a1d33403a00aca7c0698877b92f2eac",
+      "bytes": 6361
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/authorizationHttp.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/authorizationHttp.ts.source",
+      "gitBlob": "93be3552f622ffea9e56479830ec991e79219e6e",
+      "originalMode": "100644",
+      "sha256": "02e64960a4c4889b55541b64ee64dc31c57d7879052a2d4525bc593233be17c2",
+      "bytes": 2277
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/authorizationREADME.md",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/authorizationREADME.md.source",
+      "gitBlob": "4fb3065b9aed927fb47658ab1075028d3c5fd00b",
+      "originalMode": "100644",
+      "sha256": "0347c35c415b7eaf41f7c306dbd2f6b18773a9a8172e8491f27839c0ba334366",
+      "bytes": 17876
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/authorizationRoutes.integration.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/authorizationRoutes.integration.test.ts.source",
+      "gitBlob": "0868bfe2ef9154efba7363b9226deda11ad9007a",
+      "originalMode": "100644",
+      "sha256": "29f85058cac3cb988dc9996c21c4c05fe7eadbfe9d565604b9be767758b49e7d",
+      "bytes": 10767
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/authorizationRoutes.test-helpers.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/authorizationRoutes.test-helpers.ts.source",
+      "gitBlob": "eebdc2d07acca8cac2447a849212f2d5c876f923",
+      "originalMode": "100644",
+      "sha256": "a91988cd25a43ec374784fffe0ceacab2a5827eec89adbe1ddca932200bca31c",
+      "bytes": 3208
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/authorizationStartHttp.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/authorizationStartHttp.ts.source",
+      "gitBlob": "fbe92d55e49cd53c8e5e6f945f09484e3f8ad60d",
+      "originalMode": "100644",
+      "sha256": "76f49c3acb529447b415ee7282e692971a5e25a9475368a0cb98b6c4d861ace7",
+      "bytes": 2474
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/calendarBindingAccess.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/calendarBindingAccess.ts.source",
+      "gitBlob": "7c745b7247b8d726c2787868656fcfcbe606874c",
+      "originalMode": "100644",
+      "sha256": "91344a41dd9ba998e548b7d613e2871bda92f4164156efe380ad7be86a19f5ba",
+      "bytes": 3639
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/calendarBindingLifecycle.integration.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/calendarBindingLifecycle.integration.test.ts.source",
+      "gitBlob": "4655ffd2a5cf2c95bf255a4b7f180066111e2de9",
+      "originalMode": "100644",
+      "sha256": "828cfe3642a99ad4dd144b2184f97b94573ed6ece1de92f24d7da5900189e619",
+      "bytes": 7878
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/calendarBindings.integration.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/calendarBindings.integration.test.ts.source",
+      "gitBlob": "1be06502ee507820e09694737064fca255fc6c34",
+      "originalMode": "100644",
+      "sha256": "c0072c093ed8ccd09d5fda9379711c4dd7c5da1c47f0aa2ed11c58d2660df554",
+      "bytes": 6484
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/calendarBindings.test-helpers.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/calendarBindings.test-helpers.ts.source",
+      "gitBlob": "7e35d9a7f7e35a1ed74d143c56619913ff198e1f",
+      "originalMode": "100644",
+      "sha256": "c90da18561b6ebacfdfc168a2db947f9894b63d3d7b82f1886fa5f53549c1c6d",
+      "bytes": 3696
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/calendarBindings.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/calendarBindings.ts.source",
+      "gitBlob": "a3990d3c7e58ba647fd4dbbb3a8448ed6736378f",
+      "originalMode": "100644",
+      "sha256": "bb89e69cc3e4b0298c2abc76323ce65aeee9650070bdcdef93cbc24576090ab8",
+      "bytes": 4832
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/calendarCatalog.gate-helpers.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/calendarCatalog.gate-helpers.ts.source",
+      "gitBlob": "edd1f876a6e5613407521958ae5564d0d77660ec",
+      "originalMode": "100644",
+      "sha256": "028b5a78e17de2632c046f86ca5116e53559284f46b96b152d9448e386db30e0",
+      "bytes": 1837
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/calendarCatalog.integration.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/calendarCatalog.integration.test.ts.source",
+      "gitBlob": "a105b5a578a8c4e1b554c81eb312663e872b4e51",
+      "originalMode": "100644",
+      "sha256": "a78dce3f581926f102b2579169a040a8cd3f3a874a2f7c1182286051b038fb49",
+      "bytes": 8000
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/calendarCatalog.test-helpers.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/calendarCatalog.test-helpers.ts.source",
+      "gitBlob": "d39c01276ab79ec275b1d60ddab7313922bf7e94",
+      "originalMode": "100644",
+      "sha256": "146a9235b751b89ce13fe47b3bb9917b8f1ce08821d210b8e0f2591dc61e0827",
+      "bytes": 3187
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/calendarCatalog.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/calendarCatalog.ts.source",
+      "gitBlob": "e137511b2a2b4d5947dcba01b4e9376df5d8e913",
+      "originalMode": "100644",
+      "sha256": "120a92f93328fde59e1a902b41a2a5e92106481bbce729a7259293f19b0c0c5e",
+      "bytes": 2731
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/calendarCatalogActions.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/calendarCatalogActions.test.ts.source",
+      "gitBlob": "b53c726a7f29a82195e9d0b0fa36c9de7dcbe97c",
+      "originalMode": "100644",
+      "sha256": "92ab0dee5abf7f1e528d54693ec992cbbb307aa92fe47439089bedb4e2ec9bd5",
+      "bytes": 7186
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/calendarCatalogActions.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/calendarCatalogActions.ts.source",
+      "gitBlob": "7df0a1a293434101dd4ab0cfc434e7272769f763",
+      "originalMode": "100644",
+      "sha256": "9176700305e88bfa336f8211f8c2755996c15d78c4e9b2359016204b39b1836a",
+      "bytes": 3567
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/calendarCatalogBoundary.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/calendarCatalogBoundary.test.ts.source",
+      "gitBlob": "63074845bac27dc1620c17e681b2f882855f2b62",
+      "originalMode": "100644",
+      "sha256": "a00f530ee7af37ef127abb1bec06164e2b792c6e147110a469e7b20a144915d6",
+      "bytes": 3373
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/calendarCatalogBoundary.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/calendarCatalogBoundary.ts.source",
+      "gitBlob": "617ca27a429177cf6b218f2df956642fb9e31f27",
+      "originalMode": "100644",
+      "sha256": "c547ad6ea389470930015dff310f8ebb6b99d31df5ac909817c9607f772c175d",
+      "bytes": 1040
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/calendarCatalogConcurrency.integration.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/calendarCatalogConcurrency.integration.test.ts.source",
+      "gitBlob": "231668ec27090c920fed0ce0f8611a3436aed9bf",
+      "originalMode": "100644",
+      "sha256": "05cfc5ba44a576119a4eb9804b9346ff99e338a07bd17f09ca2c7e7d47b23970",
+      "bytes": 7952
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/calendarCatalogDurability.integration.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/calendarCatalogDurability.integration.test.ts.source",
+      "gitBlob": "4b5807961227cc131c44ea087779df3b8072e817",
+      "originalMode": "100644",
+      "sha256": "963ac8aa598ff2082fab39a85839bfbafdba1961319c77faf9c8dfc5822802b9",
+      "bytes": 6546
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/calendarCatalogExpiry.integration.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/calendarCatalogExpiry.integration.test.ts.source",
+      "gitBlob": "d34dc57c21d07e4b4e664790b6fa22a7739e8bfc",
+      "originalMode": "100644",
+      "sha256": "4ba7af2eafb28910f0dcd333c0d10735fc9f2fdc6e4b69230c4b232bced23481",
+      "bytes": 1550
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/calendarCatalogPublish.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/calendarCatalogPublish.ts.source",
+      "gitBlob": "6489cf95bf4b70ed81f6548f66e9fc7a11dae800",
+      "originalMode": "100644",
+      "sha256": "a7811c1388b44bc3d94224899ee785e0b2a338933f573caae8de8a89e049b2e9",
+      "bytes": 4509
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/calendarCatalogQuery.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/calendarCatalogQuery.ts.source",
+      "gitBlob": "b85fc3584f1cc2c6075d30db6e29fb1e97159c44",
+      "originalMode": "100644",
+      "sha256": "4d0cee051854712b921ce6a995ac835ad3e4949e73781c0871f82da0979f673b",
+      "bytes": 4435
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/calendarCatalogSchemas.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/calendarCatalogSchemas.test.ts.source",
+      "gitBlob": "0eb4697e9f4b0beb2c291578e50acccdfbbff974",
+      "originalMode": "100644",
+      "sha256": "46f420a4a5fdcc5742eed347bdf672cef539fc8b378a572444f121d32140f57f",
+      "bytes": 3707
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/calendarCatalogState.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/calendarCatalogState.ts.source",
+      "gitBlob": "59609836d83a02957cebcde76e2ec4222b1bbf9a",
+      "originalMode": "100644",
+      "sha256": "d0ef4c0c06d8615b9725762d40ef45826a24724c61d417920e28747ee9c1e810",
+      "bytes": 3136
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/calendarCatalogUiFixture.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/calendarCatalogUiFixture.ts.source",
+      "gitBlob": "9825a7e7c112ef3d087a45f0b8d128bcf522cdb9",
+      "originalMode": "100644",
+      "sha256": "7dfba84bb20ff92d4ad5dd4007f1040c26ad86d7d2bba2ccaacf1d2fa2f16b49",
+      "bytes": 4217
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/calendarDiscovery.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/calendarDiscovery.test.ts.source",
+      "gitBlob": "40d7dda4acd34b2444e5a5c1e41a9e908d4ce31c",
+      "originalMode": "100644",
+      "sha256": "3fce11a5c0c4b7f95e76264b2dbcddb42105ca65eb9955530e036a2e55ae2f1f",
+      "bytes": 9111
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/calendarDiscovery.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/calendarDiscovery.ts.source",
+      "gitBlob": "b97c56406a1f1ba1dd1c4eb2078e96b8eb31a090",
+      "originalMode": "100644",
+      "sha256": "f3d04c81d68aeff796bfb24c8e78bcbddc0fce1bd8c209724b10772c29834762",
+      "bytes": 2340
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/calendarDiscoveryBudget.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/calendarDiscoveryBudget.test.ts.source",
+      "gitBlob": "06a1a659d176ee852ca6fa3d1464ae6700c40c83",
+      "originalMode": "100644",
+      "sha256": "07b7e41d944a08c576042d8f8c4df3e1b93b70da79bbb4ee6ce0a4fe1c8e9fde",
+      "bytes": 2157
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/calendarSourceGuard.integration.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/calendarSourceGuard.integration.test.ts.source",
+      "gitBlob": "7dcf19dbb035e8451fd4e193c03a211ff5520423",
+      "originalMode": "100644",
+      "sha256": "9ee78de459f32ffddc4586815c43db12db5426655214cc152930b6b86106891b",
+      "bytes": 8490
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/calendarSourceGuard.test-helpers.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/calendarSourceGuard.test-helpers.ts.source",
+      "gitBlob": "3cda2df4ec4e7e375bffdfa80bed1d53f940fc4c",
+      "originalMode": "100644",
+      "sha256": "230e70fa27cead976a02b2812731b591bd781f1e9375bed4bd0b2c9714194c7d",
+      "bytes": 5105
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/catalogContracts.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/catalogContracts.ts.source",
+      "gitBlob": "834e5e8fb9210b16131c6e147bb2ab4eec703749",
+      "originalMode": "100644",
+      "sha256": "87d5efe52a43d1527bbfeed720c1c8d944fbc27b2752c131cc48059b1ebe99b0",
+      "bytes": 890
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/catalogStorage.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/catalogStorage.ts.source",
+      "gitBlob": "fafadd16528b97ddcf66d9b9dcce3fc73c72445b",
+      "originalMode": "100644",
+      "sha256": "3b4760ba1100c33aa93e264b7a1f428483ace54227ad22b965a3b8e92686282c",
+      "bytes": 1532
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/client.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/client.test.ts.source",
+      "gitBlob": "cb7764a135afcccb2f2cbc15945de964454f621e",
+      "originalMode": "100644",
+      "sha256": "c3acf2248fc77a8a72ddacf3450d4b97383926c0e92a712d51e5c36012ed08e2",
+      "bytes": 5846
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/client.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/client.ts.source",
+      "gitBlob": "2d1e58b50ac2d350638dc7c4112ed6728410826a",
+      "originalMode": "100644",
+      "sha256": "fcb5f10a22ff7a9da5781d73d0bf4f9bb8353641aeb1ad17e484937145e96818",
+      "bytes": 2819
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/conference.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/conference.test.ts.source",
+      "gitBlob": "0155f8351349b417a96a66b894577f7ef3d90252",
+      "originalMode": "100644",
+      "sha256": "8b5ff44f89000540f803a4bbf5b5828ee07414986e543a06275e1ee399eee5ee",
+      "bytes": 6223
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/conference.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/conference.ts.source",
+      "gitBlob": "11fc22c7743bd6c8aee254154b9c770f4dcdb5dd",
+      "originalMode": "100644",
+      "sha256": "3fbf2cc25b082cd6a58bd05fc90434949be5180e2f0a673322d7f28758e2095d",
+      "bytes": 1408
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/connectionActions.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/connectionActions.test.ts.source",
+      "gitBlob": "a2d4f9c20308229d2a51a7249c3d4d528da83eb3",
+      "originalMode": "100644",
+      "sha256": "59e5c56c514ef6fee1aa9f61a5faf6766da4935957a5799d68b429227748294b",
+      "bytes": 3409
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/connectionActions.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/connectionActions.ts.source",
+      "gitBlob": "1822fd6fa6ac7dae74e285b9335e16c2893a18ba",
+      "originalMode": "100644",
+      "sha256": "be2fd17bfd71b9ec8aaa98591aad08e3cc6c50d45a05f6de5e58cdb5d65e8ac1",
+      "bytes": 1666
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/connectionBoundary.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/connectionBoundary.test.ts.source",
+      "gitBlob": "7ffb4c8efdea14eac8461227afea4ef200b312e5",
+      "originalMode": "100644",
+      "sha256": "6bbaa9c4537313395fea592de985ddc2a0f64d580c048f76a964884e2a79a1c0",
+      "bytes": 1792
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/connectionQuery.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/connectionQuery.ts.source",
+      "gitBlob": "2b15d49c112c26e2e3c50046fe66b03c4d1234b1",
+      "originalMode": "100644",
+      "sha256": "30c6a9f090ea2494fed179dc7015bbc06e76edc3243f1eddf41c17930f725fdf",
+      "bytes": 725
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/connectionRequest.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/connectionRequest.test.ts.source",
+      "gitBlob": "12db6a4ecc8d49aac42815b6fedb347730a327d1",
+      "originalMode": "100644",
+      "sha256": "454ebe59321616010c3765f8171f7d4e5c63fce3cab0f96eaebeb8142dfe3919",
+      "bytes": 2660
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/connectionRequest.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/connectionRequest.ts.source",
+      "gitBlob": "7756854cf0355b7b20e4be3c8aade79c918b3100",
+      "originalMode": "100644",
+      "sha256": "6ba5758c2f3e980dca8204f77a990ac4d301f240a8c41823ce9d82e16c105c27",
+      "bytes": 1489
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/contracts.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/contracts.ts.source",
+      "gitBlob": "c5cdc2467df1e8033ca5b227c134a7cb1c58a1f5",
+      "originalMode": "100644",
+      "sha256": "6b6e004472c7c6f86945f107858318e7f9c6a1ab50f1e247f0f313ef5b5f315b",
+      "bytes": 2002
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/errorReasons.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/errorReasons.test.ts.source",
+      "gitBlob": "4d83dc8ef1f003eca33bb3da5d3f6878146c43f9",
+      "originalMode": "100644",
+      "sha256": "4cca1cfabefb13d71fdd6aa249082fbbf9d28e4dd20e98ca208c45a8e92bf76d",
+      "bytes": 2609
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/errors.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/errors.ts.source",
+      "gitBlob": "19fdf84e2c28fa079c7fb439861c11169e6a5177",
+      "originalMode": "100644",
+      "sha256": "04a8d74a6b71b3778855d31b60a356c7c03ec5e85fbe3e5b41f8b39cf0f17ece",
+      "bytes": 2254
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/eventStorage.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/eventStorage.ts.source",
+      "gitBlob": "ce2e21db270907343b8df332b8e1c082a9a8ae06",
+      "originalMode": "100644",
+      "sha256": "7fb567251b9d5c386180ba41b8fe8d010f11e503510e65bd67a97792b4cf51e4",
+      "bytes": 1850
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/eventSyncBounds.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/eventSyncBounds.test.ts.source",
+      "gitBlob": "6ab0cba2af0955b7867b498561f765be2287ebb9",
+      "originalMode": "100644",
+      "sha256": "1be5f2d8b2363f1dd2994759aaca5c0a5d23daac1616ae87cb06ecadf4b4d145",
+      "bytes": 6933
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/eventSyncBoundsFixture.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/eventSyncBoundsFixture.ts.source",
+      "gitBlob": "9e120797ae9b8eb053a0d86755c7df98842cde78",
+      "originalMode": "100644",
+      "sha256": "0175f2e62883e51da940b39bbb69d9375383a0fee412b21a250583d1a2ca098d",
+      "bytes": 3853
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/eventSyncBudget.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/eventSyncBudget.ts.source",
+      "gitBlob": "c9bab9c4e1b8e42374dba70a5cfece28c7b96e20",
+      "originalMode": "100644",
+      "sha256": "b087a8ed8423fb5b388c2e2cb010eaaed948c0ae1b8c601015a543724e524c3f",
+      "bytes": 2745
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/eventSyncCursorBounds.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/eventSyncCursorBounds.test.ts.source",
+      "gitBlob": "796d8317bfbd22da89115d651896802dcc8131ea",
+      "originalMode": "100644",
+      "sha256": "1d766a6f0e8b1377a57815da88f6c5e1bd5ece8725d7be002641e0034fe1a665",
+      "bytes": 3957
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/eventSyncPages.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/eventSyncPages.test.ts.source",
+      "gitBlob": "0b3b382a2083a042fef187d0842fe3c86d4c6142",
+      "originalMode": "100644",
+      "sha256": "faf22a2e8ec220a62747cdfe84544cc81291ccf93a69bf3351a7e0b24a110ad9",
+      "bytes": 5070
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/eventSyncPages.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/eventSyncPages.ts.source",
+      "gitBlob": "b8c0ce902429284b9a731099434382a2635c62fe",
+      "originalMode": "100644",
+      "sha256": "b5f9181d06e4cfb24df58001757e86cb59f61307e23992d7094620166d65a9f3",
+      "bytes": 2555
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/eventSyncPagesFixture.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/eventSyncPagesFixture.ts.source",
+      "gitBlob": "33a3cd9fa5791f5733eb00d7550af24a2322594f",
+      "originalMode": "100644",
+      "sha256": "91f4d6f6ffb239d56bc79dc4d94c9c685fea4e5de3e285000a95f8465b0d7dac",
+      "bytes": 6382
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/eventSyncPayloadBounds.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/eventSyncPayloadBounds.test.ts.source",
+      "gitBlob": "1be3c7391c47df9df6535f9b18b9b3de450153ac",
+      "originalMode": "100644",
+      "sha256": "24fe866cd7ce955d9a9c86edb0efcf128e73aec17f7b2b510ab330e2aca52e0f",
+      "bytes": 4000
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/eventSyncPayloadPages.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/eventSyncPayloadPages.test.ts.source",
+      "gitBlob": "21181cfc513a7908d6c63953bcf8f4f0ee47bfd8",
+      "originalMode": "100644",
+      "sha256": "0c3fb5e47009a0c17d1351d4929fe2570b33d24e9431deb9f6d46f7313a6592f",
+      "bytes": 3311
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/eventSyncStaging.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/eventSyncStaging.test.ts.source",
+      "gitBlob": "6c5ede5f4f7bcb6a13e7a0a6c30545f8890beac3",
+      "originalMode": "100644",
+      "sha256": "856cbc1e82c9d14351d30a53f23dca626f867080b7fdb9934a7ab647bac9441e",
+      "bytes": 4026
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/path.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/path.ts.source",
+      "gitBlob": "899be70439b9af2111ea49008191d9886e413025",
+      "originalMode": "100644",
+      "sha256": "703d34c8cf091231564673459d0e8db6beecf6609df360a721b878d2eab24fee",
+      "bytes": 683
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/pathSafety.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/pathSafety.test.ts.source",
+      "gitBlob": "89bc9f9e947b481847bbe43dc99b1d588996b791",
+      "originalMode": "100644",
+      "sha256": "bb4ac0be57128bf506970c895d9b129827489773bd7aa1cce770e515ec9aa3c6",
+      "bytes": 3189
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/schemas.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/schemas.ts.source",
+      "gitBlob": "9e91b8bf46bf65c28c7cc1b3065f6d2bbc0b041b",
+      "originalMode": "100644",
+      "sha256": "db6b5d77f2908af792c0a91d12c583ad6717bb0572f641f5a6a076556b33d86e",
+      "bytes": 3565
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/sync.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/sync.ts.source",
+      "gitBlob": "f44a8996292e4beef6c7a71cea4156281ec6de0d",
+      "originalMode": "100644",
+      "sha256": "78785831d44b17d676ada5c6291f47688669aab85293289e91e5228b8ddde904",
+      "bytes": 1382
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/tokenClient.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/tokenClient.test.ts.source",
+      "gitBlob": "892bb14cab445a968b3642539a201ab7c4abf5e2",
+      "originalMode": "100644",
+      "sha256": "7a87904bebeeee83c88440e372ad058cfd1178494de1de0ad4c3d5f5a24daf19",
+      "bytes": 7642
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/tokenClient.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/tokenClient.ts.source",
+      "gitBlob": "5191a49f56057c1e97a12bdc82706d2580d2af92",
+      "originalMode": "100644",
+      "sha256": "d3cd8b668dbe41c0539b17cf9d9cada706adf12dd5c4a87b7ae319a6c1cd427b",
+      "bytes": 4311
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/tokenCrypto.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/tokenCrypto.test.ts.source",
+      "gitBlob": "f04c9079feb2f8d286ca54a3b6d60ca84a46862d",
+      "originalMode": "100644",
+      "sha256": "bae7334760690c22df1a75fbb975dbdb78a44b4822763b3d20dcab1f0ae9c471",
+      "bytes": 805
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/tokenCrypto.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/tokenCrypto.ts.source",
+      "gitBlob": "c9dba1959f5af7c7f7c631380046586b16edd2b0",
+      "originalMode": "100644",
+      "sha256": "836fd28259e4dc5c20732e88e4298783163f84ea3f98bf5566f3bca967128525",
+      "bytes": 474
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/tokenHttp.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/tokenHttp.ts.source",
+      "gitBlob": "02d9cd6674d12ef69d9f3db86073925af2d1f6cc",
+      "originalMode": "100644",
+      "sha256": "56f1df098fd2b660eb4f88c925d25683edb952e2bec4ac1009becf298083327b",
+      "bytes": 1980
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/tokenSchemas.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/tokenSchemas.ts.source",
+      "gitBlob": "264b37f206ee5baad9371ee7779ffc2e57571734",
+      "originalMode": "100644",
+      "sha256": "0354fea12e8f6d97e3353ed39a844724331cf79207ba04f64fee72778cd5d4b5",
+      "bytes": 1582
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/transport.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/transport.test.ts.source",
+      "gitBlob": "6ae310421e23cea2fff31d012b6fb76defba8ed4",
+      "originalMode": "100644",
+      "sha256": "2e94c6efc234647f4f21e6b118f005c8b0b4c786c9c00f9f67815ca5bc1d1441",
+      "bytes": 3957
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/transport.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/transport.ts.source",
+      "gitBlob": "021f51477014458ff0f5465f170644aa82e4c099",
+      "originalMode": "100644",
+      "sha256": "adf164e6a318404b7ebcd43e62e555ece3e329dd655fec6aa324c60177f641e3",
+      "bytes": 2185
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/useCalendarCatalog.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/useCalendarCatalog.ts.source",
+      "gitBlob": "e63f51abf38d16ec18780e24f1cef7d6fcb5ea07",
+      "originalMode": "100644",
+      "sha256": "db3ac67541efa0e760d1371e9ce407a7490b26299dc0557bea1bc31b8e535fb1",
+      "bytes": 4164
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/useCalendarConnection.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/useCalendarConnection.ts.source",
+      "gitBlob": "3a5b2bf062d81ba1d866e3496e39f21e04db598c",
+      "originalMode": "100644",
+      "sha256": "7d5d92d99558dc6b8662026896837957dc853177853fbbdea860d60ad3b6be9e",
+      "bytes": 3774
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/writes.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/writes.test.ts.source",
+      "gitBlob": "6a8a6a60afee62cce74766a5c443a235e1d328b8",
+      "originalMode": "100644",
+      "sha256": "80e84413074702833aa8169f4969cb78eda058e1a8a8da2aab8088083ba8081b",
+      "bytes": 3478
+    },
+    {
+      "originalPath": "src/features/activities/providers/google/writes.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/providers/google/writes.ts.source",
+      "gitBlob": "bc548b37e00dc213487b86cfe40d4003b2f2bd52",
+      "originalMode": "100644",
+      "sha256": "a00a9716c35fcbc753a77b1e55cc2116c40ba0ccf3e5dd4c203ce16c2ec1cc53",
+      "bytes": 4894
+    },
+    {
+      "originalPath": "src/features/activities/reminderAdmission.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/reminderAdmission.ts.source",
+      "gitBlob": "a6da116fbaf14a15a15797a2e7b720f4b964e4d6",
+      "originalMode": "100644",
+      "sha256": "a7ea6ac6fe5a3f1b173ba825d18b29c116f4a43f030757fa13cda401831bcf07",
+      "bytes": 5337
+    },
+    {
+      "originalPath": "src/features/activities/reminderDefaultsActivation.integration.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/reminderDefaultsActivation.integration.test.ts.source",
+      "gitBlob": "af0ddb092199495a35bde98a6a5ffe94f14a255a",
+      "originalMode": "100644",
+      "sha256": "a7e3418dc7c3729faf6cfce6b2dd4cf9d488e0bdaace0bcb054c8227cc0dd42f",
+      "bytes": 11461
+    },
+    {
+      "originalPath": "src/features/activities/reminderDefaultsConcurrency.integration.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/reminderDefaultsConcurrency.integration.test.ts.source",
+      "gitBlob": "cc2969d9fb44c196395352c27173d051930129f1",
+      "originalMode": "100644",
+      "sha256": "02c428137b654ef6b68030b0cb46c095fcd7c610ee79846edf9b97ac05ff1968",
+      "bytes": 7320
+    },
+    {
+      "originalPath": "src/features/activities/reminderDefaultsImplicit.integration.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/reminderDefaultsImplicit.integration.test.ts.source",
+      "gitBlob": "65d2eeddfb9db9f405205fc6886914e31838b1f9",
+      "originalMode": "100644",
+      "sha256": "5ee4f183e6ff89672552a640b54cd47ec0ea3ec9e4c2a555eb843864eb269d60",
+      "bytes": 3860
+    },
+    {
+      "originalPath": "src/features/activities/reminderDefaultsPast.integration.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/reminderDefaultsPast.integration.test.ts.source",
+      "gitBlob": "90cc7a560a2ed8baebe32b5ab557e2cc942b770c",
+      "originalMode": "100644",
+      "sha256": "98c1a49f0be34888ce30f78b4467bf1075b42488335511329a14e90db5603f66",
+      "bytes": 7736
+    },
+    {
+      "originalPath": "src/features/activities/reminderDefaultsPast.test-helpers.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/reminderDefaultsPast.test-helpers.ts.source",
+      "gitBlob": "10b05c721a72e841599d3a618a240cd39e0c07c2",
+      "originalMode": "100644",
+      "sha256": "5fceda27126b96d1a9bf897a45d99fa342803786c2c10b7e9510a914846234c3",
+      "bytes": 6987
+    },
+    {
+      "originalPath": "src/features/activities/reminderDelivery.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/reminderDelivery.ts.source",
+      "gitBlob": "6bd44101e698b83c4f938e10217df6e1053173f9",
+      "originalMode": "100644",
+      "sha256": "355978442062280b7182a77e9136b4da2c037fd482a2fbf1415acb524f11c6fc",
+      "bytes": 3161
+    },
+    {
+      "originalPath": "src/features/activities/reminderEmailHandoff.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/reminderEmailHandoff.ts.source",
+      "gitBlob": "a3d95371479eafc7b9732dc4fd3475f1438c3100",
+      "originalMode": "100644",
+      "sha256": "3b8c80f49c2a97ff29c81eea67ee36ed598293a5eafd1bde9c481ae5da647cbd",
+      "bytes": 2420
+    },
+    {
+      "originalPath": "src/features/activities/reminderIntent.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/reminderIntent.ts.source",
+      "gitBlob": "9bbf44f6a75bdc52a22793e39c110ff274b250e4",
+      "originalMode": "100644",
+      "sha256": "417f07bbb7d531f621c14802e01c50bc021bbe4911615a717a999feb850de916",
+      "bytes": 3713
+    },
+    {
+      "originalPath": "src/features/activities/reminderLock.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/reminderLock.ts.source",
+      "gitBlob": "8aa48e2058dcb7c3df31cca4e90d01b6043d6c35",
+      "originalMode": "100644",
+      "sha256": "3b952216b91aee077ab83c69ac48e17cde7ba53f3db726b7fbb33bdff27fed00",
+      "bytes": 650
+    },
+    {
+      "originalPath": "src/features/activities/reminderOutbox.integration.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/reminderOutbox.integration.test.ts.source",
+      "gitBlob": "3ac919b400b720499af81124364810c43d72603f",
+      "originalMode": "100644",
+      "sha256": "65a4dff2175cb41f250c56467b09270ca921a5a060d7707239178cdb79973f4f",
+      "bytes": 6581
+    },
+    {
+      "originalPath": "src/features/activities/reminderOutbox.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/reminderOutbox.ts.source",
+      "gitBlob": "8579839e923651ce05e7492a14fa01a0a228dfd8",
+      "originalMode": "100644",
+      "sha256": "390806602fb800bab6f9ac67adec7cfc54209ef6e7dab4144c3a759c48a2a0b8",
+      "bytes": 4340
+    },
+    {
+      "originalPath": "src/features/activities/reminderOutboxRecovery.integration.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/reminderOutboxRecovery.integration.test.ts.source",
+      "gitBlob": "62ffbb1306dc92d3808d4bbafdf97b2f65923130",
+      "originalMode": "100644",
+      "sha256": "3fe3f3f2145e87a211e52d7057f351c6dc8cbce5879c1dcb907df99c63865975",
+      "bytes": 6797
+    },
+    {
+      "originalPath": "src/features/activities/reminderPolicies.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/reminderPolicies.ts.source",
+      "gitBlob": "db29bbbc57350f5f43f346fc6a4070dbf9d8a159",
+      "originalMode": "100644",
+      "sha256": "72c51861f5acd743d0c114c5f60b4785c9abeb194a76b2629c12757b2d472797",
+      "bytes": 3588
+    },
+    {
+      "originalPath": "src/features/activities/reminderPolicy.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/reminderPolicy.test.ts.source",
+      "gitBlob": "c84040f322c15e6b7d9f2132cc9d5738fd652c75",
+      "originalMode": "100644",
+      "sha256": "30ff493109a064cb53ea71230de4690a8892312cecbb4e9a29e47d9a0b848e62",
+      "bytes": 4037
+    },
+    {
+      "originalPath": "src/features/activities/reminderPolicy.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/reminderPolicy.ts.source",
+      "gitBlob": "0ec967af1055d46eba562fad82a4006cd28dffb8",
+      "originalMode": "100644",
+      "sha256": "e15add1a5772f6099d0efedeef8811f65700f23f8aecc082c4d25b6bb9aac022",
+      "bytes": 3848
+    },
+    {
+      "originalPath": "src/features/activities/reminderPolicyPlans.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/reminderPolicyPlans.ts.source",
+      "gitBlob": "f0c7de1baeb40a6e7255853df0ca45fb2efeabc2",
+      "originalMode": "100644",
+      "sha256": "b18720c677b82f54785ac7da03bfd62b4aa338d17a9a9af4096dbf67aaee8dc5",
+      "bytes": 3777
+    },
+    {
+      "originalPath": "src/features/activities/reminderRebuild.integration.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/reminderRebuild.integration.test.ts.source",
+      "gitBlob": "a9abdf5bf6281ee43e0fefd067d92a38eeab1b5b",
+      "originalMode": "100644",
+      "sha256": "c3a38d3f07f0546ccd8427ee7c58c7e560a45d229eea19c8c23bfc1be91cbc04",
+      "bytes": 10934
+    },
+    {
+      "originalPath": "src/features/activities/reminderRebuild.test-helpers.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/reminderRebuild.test-helpers.ts.source",
+      "gitBlob": "263b02d928814554febc6c0b02314a33a642ec49",
+      "originalMode": "100644",
+      "sha256": "b36f351ee5acd29d0cec775200abdc1a6355e28eb12034df12fb7b7253b43b6c",
+      "bytes": 1215
+    },
+    {
+      "originalPath": "src/features/activities/reminderRebuild.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/reminderRebuild.ts.source",
+      "gitBlob": "6ed75a5f39b3fdb51c2a987bdcc2face4c56236e",
+      "originalMode": "100644",
+      "sha256": "c043de468c44a9dc105fc24f70cd4e7604dbeaa08ead15ce947b706ddeaefc3e",
+      "bytes": 1732
+    },
+    {
+      "originalPath": "src/features/activities/reminderRebuildConcurrency.integration.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/reminderRebuildConcurrency.integration.test.ts.source",
+      "gitBlob": "f92152888b8b8d552d765b956e33f8be63e63aa0",
+      "originalMode": "100644",
+      "sha256": "1ca72b215eae74119b2c464149dcb5f7fc53f25ca8fe48349a5f8605eb0036ed",
+      "bytes": 5024
+    },
+    {
+      "originalPath": "src/features/activities/reminderRuleActivation.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/reminderRuleActivation.ts.source",
+      "gitBlob": "ba92d47025e2867ee2d7d2973719677657865506",
+      "originalMode": "100644",
+      "sha256": "679d7432196e27fc2e31a3b16f30ba1a216e91e6f2ea571a6992541c16b11615",
+      "bytes": 2478
+    },
+    {
+      "originalPath": "src/features/activities/reminderSettings.integration.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/reminderSettings.integration.test.ts.source",
+      "gitBlob": "91d6bb1501dedf151a7967846243581978387794",
+      "originalMode": "100644",
+      "sha256": "9c8fc21da440251dd194bd8bfb7adb878f0fdf3bf6c41e62221b2860aabb7dc0",
+      "bytes": 8795
+    },
+    {
+      "originalPath": "src/features/activities/reminderSettings.test-helpers.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/reminderSettings.test-helpers.ts.source",
+      "gitBlob": "090f2c30b07584b69a056c87ea119192511a8ae0",
+      "originalMode": "100644",
+      "sha256": "43e6a71203c51c8aa6ffdb9065e8f72f2f5e4cd69f6e7fea73d29a8b45eaffde",
+      "bytes": 2017
+    },
+    {
+      "originalPath": "src/features/activities/reminderSettingsAccess.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/reminderSettingsAccess.ts.source",
+      "gitBlob": "0d2cfc7fc63be60a998d4a84db1ed12b78ad221b",
+      "originalMode": "100644",
+      "sha256": "c94950e3bf400ef34623eb38f0c2ec35e58b558a6b07d303209c9b1a1813ec27",
+      "bytes": 3777
+    },
+    {
+      "originalPath": "src/features/activities/reminderSettingsActions.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/reminderSettingsActions.ts.source",
+      "gitBlob": "2fca01d881ddf550635c72094c04aabbcdc1cd4d",
+      "originalMode": "100644",
+      "sha256": "b3d70bcadbdbd7356049643595c140fbb70ff1a92f379a7659fc8116c17652ff",
+      "bytes": 1431
+    },
+    {
+      "originalPath": "src/features/activities/reminderSettingsDefaults.integration.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/reminderSettingsDefaults.integration.test.ts.source",
+      "gitBlob": "2c7a64eaeb405c296f9c5fb07a7a8c462a07443f",
+      "originalMode": "100644",
+      "sha256": "fb5feaecbd53060aec31f050167df339c4c74c1f67d42f273baf010a1a02b806",
+      "bytes": 6205
+    },
+    {
+      "originalPath": "src/features/activities/reminderSettingsRouter.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/reminderSettingsRouter.ts.source",
+      "gitBlob": "4c1db01d1c87ae8b41818d8af74788d00f20c415",
+      "originalMode": "100644",
+      "sha256": "5ff37120c70032e629fa82386cf9f62675642c358bdaf47c6bef01997efddcdb",
+      "bytes": 1120
+    },
+    {
+      "originalPath": "src/features/activities/reminderSettingsSchemas.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/reminderSettingsSchemas.ts.source",
+      "gitBlob": "968f8d91250eece08697403fca6e1509b47f03cb",
+      "originalMode": "100644",
+      "sha256": "b6d9a81064f65ee4565a5a2f1d67bc99863800658940e2803dacdada3a7dd938",
+      "bytes": 633
+    },
+    {
+      "originalPath": "src/features/activities/reminderSettingsState.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/reminderSettingsState.ts.source",
+      "gitBlob": "7ba1ee8d9bb60ca91aef61b8288d0c74f0a9452a",
+      "originalMode": "100644",
+      "sha256": "73db58644bc0f31636ec419d5fda26756f9028363950776013ad9bd68ef9d3a6",
+      "bytes": 3913
+    },
+    {
+      "originalPath": "src/features/activities/reminderSettingsWrite.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/reminderSettingsWrite.ts.source",
+      "gitBlob": "ff8399e96f91e296bd11aad0eef3113a3f893c0e",
+      "originalMode": "100644",
+      "sha256": "f97830dedfaa17c01921a0d4e0da8959785093ff748b09d767aae3eacc2f36a0",
+      "bytes": 3748
+    },
+    {
+      "originalPath": "src/features/activities/reminders.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/reminders.test.ts.source",
+      "gitBlob": "5e3934356579bc3a1ab2a8e19e07b3bc20efa10b",
+      "originalMode": "100644",
+      "sha256": "fff1ba165f9e3965802892ec406c5ff9be788eeced0c9b8f212bd76d12fafeeb",
+      "bytes": 9470
+    },
+    {
+      "originalPath": "src/features/activities/reminders.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/reminders.ts.source",
+      "gitBlob": "fc5f9fb27b449fe48173bed405389bc5dd5b13fd",
+      "originalMode": "100644",
+      "sha256": "60189ed200fd5e8470ece8b83e406d974586776d5950326a276e9ba2d61835e7",
+      "bytes": 1277
+    },
+    {
+      "originalPath": "src/features/activities/repo.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/repo.ts.source",
+      "gitBlob": "b91057dcb694d5c5e807986d58b0cb91864f90f4",
+      "originalMode": "100644",
+      "sha256": "6e8a9abbb34ac17fe51affe4ee84c3e716f7500704477ce5a5d194dfd031e62e",
+      "bytes": 10172
+    },
+    {
+      "originalPath": "src/features/activities/schemas.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/schemas.ts.source",
+      "gitBlob": "8c50a97d1ec2e57f3c17f87ead0a552f23b97cdf",
+      "originalMode": "100644",
+      "sha256": "29061ab3a2a476a3912c76ab259ee46f30986f9c393100d29a32020319717cb9",
+      "bytes": 6275
+    },
+    {
+      "originalPath": "src/features/activities/useCalendarDraftGuard.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/useCalendarDraftGuard.ts.source",
+      "gitBlob": "74ac6f71797db2b30ff9236b451223cf16fbe78e",
+      "originalMode": "100644",
+      "sha256": "84946c79775720a5e1a658248b36ff0874bf16aa0be84a93848a00266c118cdd",
+      "bytes": 1584
+    },
+    {
+      "originalPath": "src/features/activities/useCalendarEventEditor.completion.test.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/useCalendarEventEditor.completion.test.tsx.source",
+      "gitBlob": "36bf846f39455a00c8dc9c1c3d2424c8361a0d25",
+      "originalMode": "100644",
+      "sha256": "552d6d7584fb4be5f162d808d230e554719ff36e45a83cc7b2ab7bfd2a2378d7",
+      "bytes": 3828
+    },
+    {
+      "originalPath": "src/features/activities/useCalendarEventEditor.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/useCalendarEventEditor.ts.source",
+      "gitBlob": "66d305e088c6608966f273e7102f2202d986306c",
+      "originalMode": "100644",
+      "sha256": "9b66cf881d0b1b7f99e4923a7806b1601a8373f7625e768762359965b466c910",
+      "bytes": 8974
+    },
+    {
+      "originalPath": "src/features/activities/useCalendarEventSettings.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/useCalendarEventSettings.ts.source",
+      "gitBlob": "d2bec896025e2c0683379f39d208bbe07628596a",
+      "originalMode": "100644",
+      "sha256": "47be16536c9f72121bf4f215f297434d1ab8f6cc649cd9a3cbd26c21caf5107c",
+      "bytes": 1800
+    },
+    {
+      "originalPath": "src/features/activities/useCalendarMutation.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/useCalendarMutation.ts.source",
+      "gitBlob": "afbb845b60f07dd683fcf1b4504a1bf54ad718f0",
+      "originalMode": "100644",
+      "sha256": "2f56513351bfc17700310fc6d32da3c075788535f0a911a1f9db9a1be68651b8",
+      "bytes": 872
+    },
+    {
+      "originalPath": "src/features/activities/useCalendarNavigationGuard.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/useCalendarNavigationGuard.ts.source",
+      "gitBlob": "610b3dcbb3d1034a879029cc6b48bcb9922311b8",
+      "originalMode": "100644",
+      "sha256": "80fb9508af1a74f1c269c31a5fc8b08a4db67028a6f51473a65a6a936f75a6f1",
+      "bytes": 886
+    },
+    {
+      "originalPath": "src/features/activities/useCalendarPersonalReminderDraft.test.tsx",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/useCalendarPersonalReminderDraft.test.tsx.source",
+      "gitBlob": "21d4d58a2a860592002bcd02263f9efb7b331484",
+      "originalMode": "100644",
+      "sha256": "f08c8a08fcb7004cf15f2d49a8e023fdba63d4ba3019c242fe00ae71e59c5759",
+      "bytes": 1869
+    },
+    {
+      "originalPath": "src/features/activities/useCalendarPersonalReminderDraft.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/useCalendarPersonalReminderDraft.ts.source",
+      "gitBlob": "ef1fbf474c0b6fefc76e25d968a86e7498567eaa",
+      "originalMode": "100644",
+      "sha256": "f07b2230496e9152b759c04deafaab46896e6c7318a7659fc62ca2157dad555d",
+      "bytes": 1613
+    },
+    {
+      "originalPath": "src/features/activities/useCalendarSelection.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/useCalendarSelection.ts.source",
+      "gitBlob": "c8e3cca8fb14a5d7f7743040c869277ae4a0c330",
+      "originalMode": "100644",
+      "sha256": "9a8d993b020e4ee5a1e3b1e568e4c7507defc03fb461a02b56801dcaf2eb2b89",
+      "bytes": 2126
+    },
+    {
+      "originalPath": "src/features/activities/visibility.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/activities/visibility.ts.source",
+      "gitBlob": "75ace07850db50119ded588a20a4d4c103428387",
+      "originalMode": "100644",
+      "sha256": "f99909d3bcefe19da59d302667da7afacab068d1ce158fb00db481c27dd4a4a6",
+      "bytes": 6544
+    },
+    {
+      "originalPath": "src/features/leads/leadTimeline.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/leads/leadTimeline.ts.source",
+      "gitBlob": "39b6a4437723de704238baad096f2e5610f6d3ec",
+      "originalMode": "100644",
+      "sha256": "7044501e69961e7302548152c6dea1d2b449ffdf240d738576e08dd6303f3c38",
+      "bytes": 7793
+    },
+    {
+      "originalPath": "src/features/notifications/calendarPrivacy.integration.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/notifications/calendarPrivacy.integration.test.ts.source",
+      "gitBlob": "e15bd2143c8bfc4241a9688c7ded2401a313a597",
+      "originalMode": "100644",
+      "sha256": "bf05478534cbf51e4ced549c9c12c5a8dead6b6af5de50110f81968a54239bfe",
+      "bytes": 7093
+    },
+    {
+      "originalPath": "src/features/notifications/calendarPrivacy.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/notifications/calendarPrivacy.ts.source",
+      "gitBlob": "5c0f1b07484a91fbc89a79a9fc1dca845c5d23c4",
+      "originalMode": "100644",
+      "sha256": "368a8c86f8805a36c569d4bafd4c8aa9e71cdca1440d9967d7b51f373e3e929b",
+      "bytes": 9315
+    },
+    {
+      "originalPath": "src/features/notifications/feed.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/notifications/feed.ts.source",
+      "gitBlob": "abcf9129064024ef71aa31a061d359518ebb8ee8",
+      "originalMode": "100644",
+      "sha256": "8a423d046d6fdb0669a71934c99c127d63d0ea3875d6fec8f01a37badce2e2b5",
+      "bytes": 6806
+    },
+    {
+      "originalPath": "src/features/notifications/legacyReminderPolicy.integration.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/notifications/legacyReminderPolicy.integration.test.ts.source",
+      "gitBlob": "219d8f4bee76665dada375b86d1779ec08cbf51c",
+      "originalMode": "100644",
+      "sha256": "ae82a6d54e4c314a984dd6a1d3fc838be8d00862c7e5957c0cef49b3a2ac4e61",
+      "bytes": 8456
+    },
+    {
+      "originalPath": "src/features/notifications/produce.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/notifications/produce.ts.source",
+      "gitBlob": "6d53848d5101b2b5c4ceb44f64e320bed79db180",
+      "originalMode": "100644",
+      "sha256": "269ae5d14be73699611396d059acb6c7e87f65f41072cef134ff793e47eaa2fe",
+      "bytes": 4282
+    },
+    {
+      "originalPath": "src/features/notifications/reminderChannels.integration.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/notifications/reminderChannels.integration.test.ts.source",
+      "gitBlob": "20c5ee88807d5bf0cc34e3d47a1f996a2d4305db",
+      "originalMode": "100644",
+      "sha256": "05559e614a58db8ed0bbe987ce90949cad10520f6f9ae29e4417a0f724a25be9",
+      "bytes": 8806
+    },
+    {
+      "originalPath": "src/features/notifications/reminderChannels.test-helpers.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/notifications/reminderChannels.test-helpers.ts.source",
+      "gitBlob": "a74a9de7739646575d0de1d173166cba2cb82ca9",
+      "originalMode": "100644",
+      "sha256": "28fdeccaeb27d31f517851f8e759046d0e999324282fdaf492acaf7ec3ef858b",
+      "bytes": 4576
+    },
+    {
+      "originalPath": "src/features/notifications/reminderEmailLifecycle.integration.test.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/notifications/reminderEmailLifecycle.integration.test.ts.source",
+      "gitBlob": "1fb5f1e6feddbbb0370d6d0777458a48fb056142",
+      "originalMode": "100644",
+      "sha256": "07175ae376aba5fb21d77e623da79b6e5f9ea4a60b5c3e287a1b02054e58d2f6",
+      "bytes": 4601
+    },
+    {
+      "originalPath": "src/features/notifications/wire.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/features/notifications/wire.ts.source",
+      "gitBlob": "6f61c4b19ead9564e314141e5cb584d9cf91be53",
+      "originalMode": "100644",
+      "sha256": "7aef69dfc0903e580597c96332bac49e429749c968dea118ef2ca147095187cb",
+      "bytes": 9011
+    },
+    {
+      "originalPath": "src/jobs/boss.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/jobs/boss.ts.source",
+      "gitBlob": "bfdd4c1ec09d22270aa4de72be36ea81717bb015",
+      "originalMode": "100644",
+      "sha256": "d9b4f8479f5a9d437b8649662e42734eb45e8b750220b7165f851ae9934c01e4",
+      "bytes": 1142
+    },
+    {
+      "originalPath": "src/server/trpc/root.ts",
+      "archivePath": "docs/development/preserved/2026-11-02/calendar/source/src/server/trpc/root.ts.source",
+      "gitBlob": "c0d3ae343bef320cb9e5e9703e88e89d0e4d8052",
+      "originalMode": "100644",
+      "sha256": "dd4999268bab89ac0519c43f9bef1ac288132be51f41b81a31a052e4fc1fe696",
+      "bytes": 2473
+    }
+  ],
+  "meaning": "Dated inert preservation, not active implementation/qualification. Exact original history is retained by the consolidation merge parents. Only the explicit qualified adoption manifest determines active code.",
+  "originalFileExtensionSuffix": ".source",
+  "activeCodeExecution": false
+}

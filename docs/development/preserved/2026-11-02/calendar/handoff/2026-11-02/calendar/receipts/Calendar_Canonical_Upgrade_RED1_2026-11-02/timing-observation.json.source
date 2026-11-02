@@ -1,0 +1,12 @@
+{
+  "resultSha256": "05e50f47d1171d4391f98a0de775e9317c2128f6481d2806b3611b175a3004b3",
+  "independentCleanupVerificationDelayAfterNativeEndedSeconds": 88.91192507743835,
+  "nativeCommandSecondsByCoarseShellClock": 5,
+  "containerRemovedLogPrecedesNativeEnd": true,
+  "totalAllocationIncludingIndependentObservation": 163.39282941818237,
+  "notes": [
+    "Exact independent verification occurred later than process termination; intermediate timing/continuous peak RSS unmeasured",
+    "Fixture removal awaited and emitted before native process ended; temporary-root/presence checks were independently confirmed later",
+    "No broader timing, durability or performance conformance claim"
+  ]
+}

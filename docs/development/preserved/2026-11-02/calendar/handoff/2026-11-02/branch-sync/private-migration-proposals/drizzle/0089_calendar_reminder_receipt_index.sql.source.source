@@ -1,0 +1,1 @@
+CREATE INDEX "activity_reminder_notification_idx" ON "activity_reminder_intents" USING btree ("notification_id");

@@ -1,0 +1,232 @@
+// Lead detail timeline: unions lead notes (entity_type='lead'), lead-scoped activities
+// (activities.lead_id), lead change-log rows (change_logs where entity_type='lead', e.g. label/
+// owner edits and the convert-to-deal event), and lead-scoped email (email_threads.lead_id) into
+// one feed. Notes + activities + changelog are shaped through the shared buildHistoryTimeline so
+// the lead feed renders with the same cards as the deal workspace; email is returned separately
+// (the Email tab), mirroring the deal workspace which keeps email out of the interleaved history
+// model.
+import { and, desc, eq, isNull } from "drizzle-orm";
+import type { NodePgDatabase } from "drizzle-orm/node-postgres";
+import type * as schema from "@/db/schema";
+import {
+  activities,
+  activityTypes,
+  emailMessages,
+  emailThreads,
+  notes,
+  organizations,
+  persons,
+  users,
+} from "@/db/schema";
+import { leads } from "@/db/schema/leads";
+import { activityAccountPreferences } from "@/features/activities/accountTimeZone";
+import type { CalendarActivity } from "@/features/activities/calendar";
+import { loadCalendarAccess } from "@/features/activities/calendarAccess";
+import { isActivityOverdue } from "@/features/activities/overdue";
+import { linkedParentVisible } from "@/features/activities/parentLinkVisibility";
+import { listChangeLog } from "@/features/collaboration/changeLog";
+import {
+  buildHistoryTimeline,
+  type HistoryItem,
+  type NoteItem,
+} from "@/features/deal-workspace/historyTimeline";
+import type { Locale } from "@/features/i18n/registry";
+import type { AuthUser } from "@/features/permissions/types";
+import type { NumberingSystem } from "@/lib/numberingSystem";
+import type { DealVisibilitySession } from "@/types/session";
+import { leadVisibilityClause } from "./visibility";
+
+type Db = NodePgDatabase<typeof schema>;
+
+function sessionActor(session: DealVisibilitySession): AuthUser {
+  return {
+    id: session.userId,
+    type: session.isAdmin ? "admin" : "regular",
+    isActive: session.isActive,
+    groupIds: new Set(session.visibilityGroupIds),
+    managedUserIds: new Set(session.managedUserIds ?? []),
+  };
+}
+
+export interface LeadTimelineEmail {
+  id: string;
+  subject: string | null;
+  snippet: string | null;
+  direction: string;
+  fromEmail: string;
+  sentAt: Date | null;
+}
+
+export interface LeadTimelineResult {
+  items: HistoryItem[];
+  emails: LeadTimelineEmail[];
+}
+
+const EMPTY: LeadTimelineResult = { items: [], emails: [] };
+
+// Feed for a single lead, gated by leadVisibilityClause: an actor who cannot see the lead gets an
+// empty feed (never leak note/activity/email existence).
+export async function leadTimeline(
+  db: Db,
+  session: DealVisibilitySession,
+  leadId: string,
+  signal: AbortSignal,
+  locale: Locale = "en",
+  numberingSystem?: NumberingSystem,
+): Promise<LeadTimelineResult> {
+  signal.throwIfAborted();
+  const [visible] = await db
+    .select({ id: leads.id })
+    .from(leads)
+    .where(and(eq(leads.id, leadId), isNull(leads.deletedAt), leadVisibilityClause(session)));
+  if (visible === undefined) return EMPTY;
+  signal.throwIfAborted();
+
+  const noteRows = await db
+    .select({
+      id: notes.id,
+      body: notes.body,
+      createdAt: notes.createdAt,
+      actorName: users.name,
+    })
+    .from(notes)
+    .leftJoin(users, eq(users.id, notes.authorId))
+    .where(and(eq(notes.entityType, "lead"), eq(notes.entityId, leadId), isNull(notes.deletedAt)))
+    .orderBy(desc(notes.createdAt));
+  const noteItems: NoteItem[] = noteRows.map((n) => ({
+    id: n.id,
+    body: n.body,
+    createdAt: n.createdAt,
+    actorName: n.actorName,
+  }));
+  signal.throwIfAborted();
+
+  const now = Date.now();
+
+  const activityRows = await db
+    .select({
+      id: activities.id,
+      subject: activities.subject,
+      dueAt: activities.dueAt,
+      allDay: activities.allDay,
+      dueDate: activities.dueDate,
+      endDate: activities.endDate,
+      endAt: activities.endAt,
+      durationMinutes: activities.durationMinutes,
+      typeKey: activityTypes.key,
+      done: activities.done,
+      doneAt: activities.doneAt,
+      videoCallUrl: activities.videoCallUrl,
+      ownerName: users.name,
+      personVisibleId: persons.id,
+      personName: persons.name,
+      personOwnerId: persons.ownerId,
+      personLevel: persons.visibilityLevel,
+      personGroupId: persons.visibilityGroupId,
+      personVisibleTo: persons.visibleToUserIds,
+      orgVisibleId: organizations.id,
+      orgName: organizations.name,
+      orgOwnerId: organizations.ownerId,
+      orgLevel: organizations.visibilityLevel,
+      orgGroupId: organizations.visibilityGroupId,
+      orgVisibleTo: organizations.visibleToUserIds,
+    })
+    .from(activities)
+    .innerJoin(activityTypes, eq(activities.typeId, activityTypes.id))
+    .leftJoin(users, eq(users.id, activities.assigneeId))
+    .leftJoin(persons, and(eq(persons.id, activities.personId), isNull(persons.deletedAt)))
+    .leftJoin(
+      organizations,
+      and(eq(organizations.id, activities.orgId), isNull(organizations.deletedAt)),
+    )
+    .where(and(eq(activities.leadId, leadId), isNull(activities.deletedAt)));
+  const actor = sessionActor(session);
+  const preferences = await activityAccountPreferences(db, actor.id);
+  const activityItems: CalendarActivity[] = [];
+  const calendarAccess = await loadCalendarAccess(
+    db,
+    actor,
+    activityRows.map((row) => row.id),
+    signal,
+  );
+  for (const row of activityRows) {
+    if (calendarAccess.get(row.id)?.read === false) continue;
+    if (row.dueAt === null) continue;
+    const personOk = linkedParentVisible(actor, "person", row.personVisibleId, {
+      ownerId: row.personOwnerId,
+      level: row.personLevel,
+      groupId: row.personGroupId,
+      visibleTo: row.personVisibleTo,
+    });
+    const orgOk = linkedParentVisible(actor, "organization", row.orgVisibleId, {
+      ownerId: row.orgOwnerId,
+      level: row.orgLevel,
+      groupId: row.orgGroupId,
+      visibleTo: row.orgVisibleTo,
+    });
+    activityItems.push({
+      id: row.id,
+      subject: row.subject,
+      dueAt: row.dueAt,
+      allDay: row.allDay,
+      dueDate: row.dueDate,
+      endDate: row.endDate,
+      endAt: row.endAt,
+      durationMinutes: row.durationMinutes,
+      typeKey: row.typeKey,
+      done: row.done,
+      doneAt: row.doneAt,
+      videoCallUrl: row.videoCallUrl,
+      dealId: null,
+      leadId,
+      personId: personOk ? row.personVisibleId : null,
+      personName: personOk ? row.personName : null,
+      orgId: orgOk ? row.orgVisibleId : null,
+      orgName: orgOk ? row.orgName : null,
+      overdue: isActivityOverdue(
+        row.dueAt,
+        row.allDay,
+        row.done,
+        now,
+        preferences.timeZone,
+        row.dueDate,
+        row.endDate,
+        row.endAt,
+      ),
+      ownerName: row.ownerName,
+    });
+  }
+  signal.throwIfAborted();
+
+  const emailRows = await db
+    .select({
+      id: emailMessages.id,
+      subject: emailMessages.subject,
+      snippet: emailMessages.snippet,
+      direction: emailMessages.direction,
+      fromEmail: emailMessages.fromEmail,
+      sentAt: emailMessages.sentAt,
+    })
+    .from(emailMessages)
+    .innerJoin(emailThreads, eq(emailThreads.id, emailMessages.threadId))
+    // Exclude trashed threads (P4): a conversation moved to Gmail Trash leaves every view, the lead
+    // Email tab included.
+    .where(and(eq(emailThreads.leadId, leadId), isNull(emailThreads.trashedAt)))
+    .orderBy(desc(emailMessages.sentAt));
+  signal.throwIfAborted();
+
+  const changelog = await listChangeLog(db, "lead", leadId, signal);
+  signal.throwIfAborted();
+
+  return {
+    items: buildHistoryTimeline(
+      activityItems,
+      changelog,
+      noteItems,
+      undefined,
+      locale,
+      numberingSystem,
+    ),
+    emails: emailRows,
+  };
+}

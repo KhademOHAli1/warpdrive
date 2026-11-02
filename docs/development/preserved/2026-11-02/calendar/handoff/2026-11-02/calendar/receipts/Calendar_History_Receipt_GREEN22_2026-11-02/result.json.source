@@ -1,0 +1,58 @@
+{
+  "id": "CALENDAR-HISTORY-FIX22-20261102-1",
+  "state": "PASS_WITH_ACTUAL_TERMINAL_CLEANUP",
+  "recordedAt": "2026-11-02T00:55:52.411314+00:00",
+  "compiler": {
+    "exitCode": 0,
+    "secondsByShellClock": 17,
+    "declaredNextTypegenAndFullAppTsc": "PASS",
+    "scopedFixtureTsc": "PASS",
+    "typedLint": {
+      "productionFiles": 1,
+      "fixtureConfigFiles": 3,
+      "errors": 0,
+      "warnings": 0,
+      "ignored": 0
+    }
+  },
+  "native": {
+    "exitCode": 0,
+    "files": 4,
+    "passed": 22,
+    "deliberatelyUnselected": 30,
+    "defined": 52,
+    "setupFailures": 0,
+    "secondsByShellClock": 9,
+    "runnerSummary": "Test Files  4 passed (4)\n      Tests  22 passed | 30 skipped (52)\n   Start at  00:55:06\n   Duration  6.38s (tests 74%, import 13%, transform 12%)\n\n{\"event\":\"private_fixture_cleanup_owned\",\"module\":\"calendar-existing-edit-atomicity\",\"runId\":\"c06ed9fd-61c5-4e23-91cb-48bf992347b0\",\"imageId\":\"sha256:0cefaabd882e42bcb2a2f3dc56d3ce4770560ba62fd7f197f1a2e008fd5731ab\",\"containerId\":\"3310c3452ff2e2d6570d26d0040037410a21ded3a5633193b12f589c356282b5\"}\n{\"event\":\"private_fixture_removed\",\"module\":\"calendar-existing-edit-atomicity\",\"runId\":\"c06ed9fd-61c5-4e23-91cb-48bf992347b0\",\"imageId\":\"sha256:0cefaabd882e42bcb2a2f3dc56d3ce4770560ba62fd7f197f1a2e008fd5731ab\",\"containerId\":\"3310c3452ff2e2d6570d26d0040037410a21ded3a5633193b12f589c356282b5\"}"
+  },
+  "cleanup": {
+    "ownedContainerId": "3310c3452ff2e2d6570d26d0040037410a21ded3a5633193b12f589c356282b5",
+    "runId": "c06ed9fd-61c5-4e23-91cb-48bf992347b0",
+    "containerAbsent": true,
+    "exactRunLabelsAbsent": true,
+    "ownedProcessGroupsGone": [
+      43233,
+      44123
+    ],
+    "foreignBaselineCount": 3,
+    "foreignBaselineRetained": true,
+    "postForeignCount": 3,
+    "source21PinsUnchanged": true
+  },
+  "allocationSecondsIncludingCleanupObservation": 101.24845695495605,
+  "launchResources": {
+    "level": 1,
+    "availablePercent": 49
+  },
+  "postResources": {
+    "level": 1,
+    "availablePercent": 52,
+    "diskFreeBytes": 13836636160
+  },
+  "peakAggregateRss": "unmeasured; resource samples happened after phases had terminated",
+  "limits": [
+    "Private logical SQL/direct producer/admission/feed proof only",
+    "No canonical/installed upgrade, separate queue/fence, owner adoption, engine final-admission invariant, live worker/browser or provider acceptance",
+    "Canonical durable MAIL pipeline unchanged; email controls prove direct current admission separation, not provider sending"
+  ]
+}

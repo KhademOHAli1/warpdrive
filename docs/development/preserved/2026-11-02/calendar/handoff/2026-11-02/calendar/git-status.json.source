@@ -1,0 +1,1205 @@
+{
+  "workspace": "/Users/ali/Developer/warpdrive-calendar",
+  "head": "2803183809c646a063f78fe954c110adbb2f453f",
+  "branch": "DETACHED",
+  "gitCommonDir": "/Users/ali/Developer/warpdrive/.git",
+  "recordedAt": "2026-11-02T07:16:41.390945+00:00",
+  "entries": [
+    {
+      "status": " M",
+      "path": "docs/calendar-implementation-plan.md"
+    },
+    {
+      "status": " M",
+      "path": "docs/deploy.md"
+    },
+    {
+      "status": " M",
+      "path": "docs/google-calendar-event-workflow.md"
+    },
+    {
+      "status": " M",
+      "path": "drizzle/meta/_journal.json"
+    },
+    {
+      "status": " M",
+      "path": "src/app/(app)/activities/calendar/AgendaDayColumn.tsx"
+    },
+    {
+      "status": " M",
+      "path": "src/app/(app)/activities/calendar/AllDayLane.tsx"
+    },
+    {
+      "status": " M",
+      "path": "src/app/(app)/activities/calendar/CalendarClient.tsx"
+    },
+    {
+      "status": " M",
+      "path": "src/app/(app)/activities/calendar/WeekAgendaGrid.tsx"
+    },
+    {
+      "status": " M",
+      "path": "src/app/(app)/activities/calendar/calendarChip.tsx"
+    },
+    {
+      "status": " M",
+      "path": "src/app/(app)/activities/calendar/calendarEmptyState.ts"
+    },
+    {
+      "status": " M",
+      "path": "src/app/(app)/settings/connections/ConnectionsClient.tsx"
+    },
+    {
+      "status": " M",
+      "path": "src/components/ui/Combobox.test.tsx"
+    },
+    {
+      "status": " M",
+      "path": "src/components/ui/Combobox.tsx"
+    },
+    {
+      "status": " M",
+      "path": "src/components/ui/TimePicker.test.tsx"
+    },
+    {
+      "status": " M",
+      "path": "src/components/ui/TimePicker.tsx"
+    },
+    {
+      "status": " M",
+      "path": "src/config/env.ts"
+    },
+    {
+      "status": " M",
+      "path": "src/constants/errorIds.ts"
+    },
+    {
+      "status": " M",
+      "path": "src/constants/jobNames.ts"
+    },
+    {
+      "status": " M",
+      "path": "src/db/schema/activities.ts"
+    },
+    {
+      "status": " M",
+      "path": "src/db/schema/index.ts"
+    },
+    {
+      "status": " M",
+      "path": "src/features/activities/ActivityTimeZoneHint.tsx"
+    },
+    {
+      "status": " M",
+      "path": "src/features/activities/CalendarEventCrmDetails.tsx"
+    },
+    {
+      "status": " M",
+      "path": "src/features/activities/CalendarEventDetails.tsx"
+    },
+    {
+      "status": " M",
+      "path": "src/features/activities/CalendarEventDialog.test.tsx"
+    },
+    {
+      "status": " M",
+      "path": "src/features/activities/CalendarEventDialog.tsx"
+    },
+    {
+      "status": " M",
+      "path": "src/features/activities/CalendarEventPolish.test.tsx"
+    },
+    {
+      "status": " M",
+      "path": "src/features/activities/CalendarEventSchedule.tsx"
+    },
+    {
+      "status": " M",
+      "path": "src/features/activities/CalendarMeetingField.tsx"
+    },
+    {
+      "status": " M",
+      "path": "src/features/activities/actions.ts"
+    },
+    {
+      "status": " M",
+      "path": "src/features/activities/activityDelete.ts"
+    },
+    {
+      "status": " M",
+      "path": "src/features/activities/activityRows.ts"
+    },
+    {
+      "status": " M",
+      "path": "src/features/activities/activityUpdate.ts"
+    },
+    {
+      "status": " M",
+      "path": "src/features/activities/availability.test.ts"
+    },
+    {
+      "status": " M",
+      "path": "src/features/activities/availability.ts"
+    },
+    {
+      "status": " M",
+      "path": "src/features/activities/calendar.ts"
+    },
+    {
+      "status": " M",
+      "path": "src/features/activities/calendarEventDraft.ts"
+    },
+    {
+      "status": " M",
+      "path": "src/features/activities/calendarEventRoundTrip.integration.test.ts"
+    },
+    {
+      "status": " M",
+      "path": "src/features/activities/calendarView.ts"
+    },
+    {
+      "status": " M",
+      "path": "src/features/activities/forEntity.ts"
+    },
+    {
+      "status": " M",
+      "path": "src/features/activities/getForEdit.ts"
+    },
+    {
+      "status": " M",
+      "path": "src/features/activities/messages/calendar.de.json"
+    },
+    {
+      "status": " M",
+      "path": "src/features/activities/messages/calendar.en.json"
+    },
+    {
+      "status": " M",
+      "path": "src/features/activities/messages/calendar.fa.json"
+    },
+    {
+      "status": " M",
+      "path": "src/features/activities/reminders.test.ts"
+    },
+    {
+      "status": " M",
+      "path": "src/features/activities/reminders.ts"
+    },
+    {
+      "status": " M",
+      "path": "src/features/activities/repo.ts"
+    },
+    {
+      "status": " M",
+      "path": "src/features/activities/schemas.ts"
+    },
+    {
+      "status": " M",
+      "path": "src/features/activities/useCalendarEventEditor.ts"
+    },
+    {
+      "status": " M",
+      "path": "src/features/activities/visibility.ts"
+    },
+    {
+      "status": " M",
+      "path": "src/features/auth/management/offboarding.ts"
+    },
+    {
+      "status": " M",
+      "path": "src/features/email/emailVisibility.ts"
+    },
+    {
+      "status": " M",
+      "path": "src/features/files/fileAuthz.ts"
+    },
+    {
+      "status": " M",
+      "path": "src/features/leads/leadTimeline.ts"
+    },
+    {
+      "status": " M",
+      "path": "src/features/notifications/email/job.ts"
+    },
+    {
+      "status": " M",
+      "path": "src/features/notifications/feed.ts"
+    },
+    {
+      "status": " M",
+      "path": "src/features/notifications/produce.ts"
+    },
+    {
+      "status": " M",
+      "path": "src/features/notifications/wire.ts"
+    },
+    {
+      "status": " M",
+      "path": "src/jobs/boss.ts"
+    },
+    {
+      "status": " M",
+      "path": "src/server/hydrateActor.ts"
+    },
+    {
+      "status": " M",
+      "path": "src/server/trpc/root.ts"
+    },
+    {
+      "status": "??",
+      "path": "docs/calendar-acceptance-register.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/calendar-handoff-2026-10-31.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/calendar-progress-2026-10-31.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/calendar-progress-2026-11-01.md"
+    },
+    {
+      "status": "??",
+      "path": "drizzle/0083_calendar_event_revision.sql"
+    },
+    {
+      "status": "??",
+      "path": "drizzle/0084_calendar_ownership.sql"
+    },
+    {
+      "status": "??",
+      "path": "drizzle/0085_activity_reminder_intents.sql"
+    },
+    {
+      "status": "??",
+      "path": "drizzle/0086_calendar_reminders_and_google_grants.sql"
+    },
+    {
+      "status": "??",
+      "path": "drizzle/0087_calendar_reminder_rebuilds.sql"
+    },
+    {
+      "status": "??",
+      "path": "drizzle/0088_calendar_reminder_acl_rebuilds.sql"
+    },
+    {
+      "status": "??",
+      "path": "drizzle/0089_calendar_reminder_receipt_index.sql"
+    },
+    {
+      "status": "??",
+      "path": "drizzle/0090_calendar_reminder_activation.sql"
+    },
+    {
+      "status": "??",
+      "path": "drizzle/0091_calendar_connection_generation.sql"
+    },
+    {
+      "status": "??",
+      "path": "drizzle/0092_calendar_provider_catalog.sql"
+    },
+    {
+      "status": "??",
+      "path": "drizzle/meta/0083_snapshot.json"
+    },
+    {
+      "status": "??",
+      "path": "drizzle/meta/0084_snapshot.json"
+    },
+    {
+      "status": "??",
+      "path": "drizzle/meta/0085_snapshot.json"
+    },
+    {
+      "status": "??",
+      "path": "drizzle/meta/0086_snapshot.json"
+    },
+    {
+      "status": "??",
+      "path": "drizzle/meta/0087_snapshot.json"
+    },
+    {
+      "status": "??",
+      "path": "drizzle/meta/0088_snapshot.json"
+    },
+    {
+      "status": "??",
+      "path": "drizzle/meta/0089_snapshot.json"
+    },
+    {
+      "status": "??",
+      "path": "drizzle/meta/0090_snapshot.json"
+    },
+    {
+      "status": "??",
+      "path": "drizzle/meta/0091_snapshot.json"
+    },
+    {
+      "status": "??",
+      "path": "drizzle/meta/0092_snapshot.json"
+    },
+    {
+      "status": "??",
+      "path": "src/app/(app)/activities/calendar/CalendarNavigation.test.tsx"
+    },
+    {
+      "status": "??",
+      "path": "src/app/(app)/activities/calendar/CalendarPortalShortcut.test.tsx"
+    },
+    {
+      "status": "??",
+      "path": "src/app/(app)/activities/calendar/CalendarSelection.test.tsx"
+    },
+    {
+      "status": "??",
+      "path": "src/app/(app)/settings/connections/ConnectionsClient.test.tsx"
+    },
+    {
+      "status": "??",
+      "path": "src/app/api/calendar/google/oauth/callback/route.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/app/api/calendar/google/oauth/start/route.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/config/env.calendar.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/db/schema/activityReminderIntents.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/db/schema/calendarProviderAccounts.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/db/schema/calendarProviderCatalog.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/db/schema/calendarReminderSettings.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/db/schema/calendars.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/CalendarEventCrmDisclosure.tsx"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/CalendarEventOwnership.test.tsx"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/CalendarEventOwnership.tsx"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/CalendarEventReminders.test.tsx"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/CalendarEventTimeZone.tsx"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/CalendarEventViewer.test.tsx"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/CalendarEventViewer.tsx"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/CalendarManager.test.tsx"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/CalendarManager.tsx"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/CalendarMembersEditor.tsx"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/CalendarPersonalRemindersPanel.test.tsx"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/CalendarPersonalRemindersPanel.tsx"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/CalendarReminderDefaultsEditor.tsx"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/CalendarReminderDefaultsPanel.test.tsx"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/CalendarReminderDefaultsPanel.tsx"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/CalendarReminderDisclosure.tsx"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/CalendarReminderEditor.test.tsx"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/CalendarReminderEditor.tsx"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/CalendarReminderNumber.tsx"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/CalendarReminderRuleRow.tsx"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/CalendarReminderRules.tsx"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/CalendarReminderSummary.tsx"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/CalendarSettingsForm.tsx"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/activityAccessGuard.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/activityReminderWrite.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/activityTransaction.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/calendarAccess.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/calendarActions.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/calendarCompletionRevisionReplay.integration.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/calendarConcurrency.integration.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/calendarEventBoundary.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/calendarLeadBoundary.integration.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/calendarNavigation.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/calendarReminderCatalog.integration.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/calendarReminderCatalog.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/calendarReminderDelivery.integration.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/calendarReminderInsertFailure.integration.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/calendarRouter.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/calendarSchemas.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/calendarSelection.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/calendarSelection.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/calendars.integration.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/calendars.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/completeActivityAction.validation.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/completeActivityContract.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/completeActivityInput.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/completeActivityReplay.integration.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/personalReminderDelivery.integration.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/personalReminderSettings.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/CalendarCatalogEntry.tsx"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/CalendarCatalogPanel.test.tsx"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/CalendarCatalogPanel.tsx"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/CalendarConnectionAccount.tsx"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/CalendarConnectionCard.tsx"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/README.md"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/accountAccess.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/accountAuthorization.integration.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/accountAuthorization.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/accountAuthorizationCancel.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/accountAuthorizationLimit.integration.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/accountAuthorizationState.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/accountBind.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/accountConnectionGeneration.integration.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/accountConnectionGeneration.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/accountConnectionMigration.integration.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/accountConnectionMigration.schema-helpers.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/accountConnectionMigration.test-helpers.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/accountConnectionSnapshot.integration.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/accountConnectionSnapshot.test-helpers.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/accountConnectionSupersession.integration.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/accountGrantGeneration.integration.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/accountOffboarding.integration.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/accountTestHelpers.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/accountTokens.integration.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/accountTokens.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/accounts.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/authorization.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/authorization.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/authorizationBrowserFlows.integration.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/authorizationBrowserFlows.test-helpers.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/authorizationCallbackHttp.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/authorizationConfig.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/authorizationDeployment.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/authorizationDeployment.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/authorizationExpiryLock.integration.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/authorizationHttp.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/authorizationREADME.md"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/authorizationRoutes.integration.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/authorizationRoutes.test-helpers.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/authorizationStartHttp.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/calendarBindingAccess.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/calendarBindingLifecycle.integration.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/calendarBindings.integration.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/calendarBindings.test-helpers.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/calendarBindings.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/calendarCatalog.gate-helpers.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/calendarCatalog.integration.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/calendarCatalog.test-helpers.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/calendarCatalog.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/calendarCatalogActions.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/calendarCatalogActions.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/calendarCatalogBoundary.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/calendarCatalogBoundary.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/calendarCatalogConcurrency.integration.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/calendarCatalogDurability.integration.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/calendarCatalogExpiry.integration.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/calendarCatalogPublish.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/calendarCatalogQuery.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/calendarCatalogSchemas.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/calendarCatalogState.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/calendarCatalogUiFixture.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/calendarDiscovery.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/calendarDiscovery.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/calendarDiscoveryBudget.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/calendarSourceGuard.integration.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/calendarSourceGuard.test-helpers.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/catalogContracts.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/catalogStorage.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/client.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/client.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/conference.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/conference.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/connectionActions.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/connectionActions.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/connectionBoundary.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/connectionQuery.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/connectionRequest.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/connectionRequest.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/contracts.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/errorReasons.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/errors.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/eventStorage.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/eventSyncBounds.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/eventSyncBoundsFixture.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/eventSyncBudget.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/eventSyncCursorBounds.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/eventSyncPages.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/eventSyncPages.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/eventSyncPagesFixture.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/eventSyncPayloadBounds.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/eventSyncPayloadPages.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/eventSyncStaging.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/path.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/pathSafety.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/schemas.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/sync.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/tokenClient.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/tokenClient.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/tokenCrypto.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/tokenCrypto.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/tokenHttp.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/tokenSchemas.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/transport.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/transport.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/useCalendarCatalog.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/useCalendarConnection.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/writes.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/providers/google/writes.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/reminderAdmission.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/reminderDefaultsActivation.integration.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/reminderDefaultsConcurrency.integration.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/reminderDefaultsImplicit.integration.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/reminderDefaultsPast.integration.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/reminderDefaultsPast.test-helpers.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/reminderDelivery.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/reminderEmailHandoff.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/reminderIntent.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/reminderLock.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/reminderOutbox.integration.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/reminderOutbox.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/reminderOutboxRecovery.integration.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/reminderPolicies.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/reminderPolicy.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/reminderPolicy.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/reminderPolicyPlans.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/reminderRebuild.integration.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/reminderRebuild.test-helpers.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/reminderRebuild.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/reminderRebuildConcurrency.integration.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/reminderRuleActivation.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/reminderSettings.integration.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/reminderSettings.test-helpers.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/reminderSettingsAccess.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/reminderSettingsActions.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/reminderSettingsDefaults.integration.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/reminderSettingsRouter.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/reminderSettingsSchemas.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/reminderSettingsState.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/reminderSettingsWrite.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/useCalendarDraftGuard.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/useCalendarEventEditor.completion.test.tsx"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/useCalendarEventSettings.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/useCalendarMutation.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/useCalendarNavigationGuard.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/useCalendarPersonalReminderDraft.test.tsx"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/useCalendarPersonalReminderDraft.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/activities/useCalendarSelection.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/notifications/calendarPrivacy.integration.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/notifications/calendarPrivacy.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/notifications/legacyReminderPolicy.integration.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/notifications/reminderChannels.integration.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/notifications/reminderChannels.test-helpers.ts"
+    },
+    {
+      "status": "??",
+      "path": "src/features/notifications/reminderEmailLifecycle.integration.test.ts"
+    }
+  ]
+}

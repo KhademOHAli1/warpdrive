@@ -1,0 +1,21 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.config" without a file extension (.runtime/calendar-canonical-upgrade-candidate/upgrade.vitest.config.mts:2:18). Add the file extension
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+  - ESM syntax in a file loaded as CommonJS (vitest.classify.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.5 /Users/ali/Developer/warpdrive-calendar
+
+{"event":"private_fixture_starting","module":"calendar-existing-edit-atomicity","runId":"e41560d6-07b1-405a-8387-a3f4671d8476","imageId":"sha256:0cefaabd882e42bcb2a2f3dc56d3ce4770560ba62fd7f197f1a2e008fd5731ab","containerId":null}
+{"event":"private_fixture_created","module":"calendar-existing-edit-atomicity","runId":"e41560d6-07b1-405a-8387-a3f4671d8476","imageId":"sha256:0cefaabd882e42bcb2a2f3dc56d3ce4770560ba62fd7f197f1a2e008fd5731ab","containerId":"505a69abea6f01912dea22ff9072797478110f723c41545b1d0c2d3c8913823c"}
+{"event":"private_fixture_ready","module":"calendar-existing-edit-atomicity","runId":"e41560d6-07b1-405a-8387-a3f4671d8476","imageId":"sha256:0cefaabd882e42bcb2a2f3dc56d3ce4770560ba62fd7f197f1a2e008fd5731ab","containerId":"505a69abea6f01912dea22ff9072797478110f723c41545b1d0c2d3c8913823c"}
+{"event":"canonical_upgrade_fixture_ready","canonicalCount":98,"baselineHash":"dd1a8209c521d35798f2c9916a7f6d151c5cc7c075761f5daa5df3cb96604bb4","baselineWhen":1793540158015,"runId":"e41560d6-07b1-405a-8387-a3f4671d8476"}
+ ✓ |integration| .runtime/calendar-canonical-upgrade-candidate/populatedUpgrade.integration.test.ts > preserves canonical legacy data without activating native reminders during the historical native upgrade 497ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  02:37:08
+   Duration  3.77s (tests 43%, import 42%, transform 14%)
+
+{"event":"private_fixture_cleanup_owned","module":"calendar-existing-edit-atomicity","runId":"e41560d6-07b1-405a-8387-a3f4671d8476","imageId":"sha256:0cefaabd882e42bcb2a2f3dc56d3ce4770560ba62fd7f197f1a2e008fd5731ab","containerId":"505a69abea6f01912dea22ff9072797478110f723c41545b1d0c2d3c8913823c"}
+{"event":"private_fixture_removed","module":"calendar-existing-edit-atomicity","runId":"e41560d6-07b1-405a-8387-a3f4671d8476","imageId":"sha256:0cefaabd882e42bcb2a2f3dc56d3ce4770560ba62fd7f197f1a2e008fd5731ab","containerId":"505a69abea6f01912dea22ff9072797478110f723c41545b1d0c2d3c8913823c"}
