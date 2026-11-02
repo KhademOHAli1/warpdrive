@@ -104,6 +104,13 @@ Query strings, fragments, user information, raw whitespace or controls, backslas
 normalizing dot segments are rejected. The configured issuer is `BASE_URL` literally,
 including a trailing slash when configured; discovery and signed tokens use that same issuer.
 
+Validated authorization callbacks for approval and denial include exactly one `iss` equal to
+this literal issuer. Authorization-server metadata advertises
+`authorization_response_iss_parameter_supported: true`. Before exchanging a returned code,
+clients must compare the decoded `iss` string with the issuer recorded from discovery and
+reject a missing or different value. Do not normalize scheme, host, port, escaping or a
+trailing slash for this comparison.
+
 The MCP profile requires a valid HTTPS `BASE_URL` without a query, fragment or user information.
 An invalid profile hides the MCP endpoint in Settings and makes MCP discovery, registration
 and protocol entry points unavailable. This profile does not change other applications'

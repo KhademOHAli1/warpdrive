@@ -57,6 +57,7 @@ test.each(
     expect(authorization.status).toBe(200);
     expect(await authorization.json()).toEqual({
       issuer: baseUrl,
+      authorization_response_iss_parameter_supported: true,
       authorization_endpoint: "https://crm.example.test/oauth/authorize",
       token_endpoint: "https://crm.example.test/oauth/token",
       ...(registration === "open"

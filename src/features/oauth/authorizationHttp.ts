@@ -43,6 +43,7 @@ function loginRedirect(input: AuthorizationRequest): Response {
 function clientRedirect(redirectUri: string, values: Record<string, string>): Response {
   const target = new URL(redirectUri);
   for (const [name, value] of Object.entries(values)) target.searchParams.set(name, value);
+  target.searchParams.set("iss", env.BASE_URL);
   return NextResponse.redirect(target, { status: 302 });
 }
 

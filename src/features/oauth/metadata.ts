@@ -13,6 +13,7 @@ export function buildAuthServerMetadata(
   const base = withoutTrailingSlash(baseUrl);
   return {
     issuer: baseUrl,
+    authorization_response_iss_parameter_supported: true,
     authorization_endpoint: `${base}/oauth/authorize`,
     token_endpoint: `${base}/oauth/token`,
     // Omitted entirely (not advertised as an endpoint that then 404s) when a deploy has turned

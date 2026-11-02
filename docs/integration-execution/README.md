@@ -30,8 +30,9 @@ record. Later main changes follow the current owner's sequential publication bou
 BASE and ARCH are complete as their recorded runtime-baseline/design-review tasks.
 CONN-001 through CONN-003, CONN-023, QA-001/002, AISEC-001/002 and eight reviewed UX design tasks retain their earlier completions.
 EVT-001's [source reconciliation](workflow-event-reconciliation-20261101.md) and MS-001's
-[official account/consent review](microsoft-account-consent-review-20261101.md) add only their stated review criteria:
-**42 of 446 tasks**, with 404 remaining planned. [Prior provider foundation qualification](provider-contract-qualification.md)
+[official account/consent review](microsoft-account-consent-review-20261101.md) add only their stated review criteria.
+[AISEC-010's discovery acceptance](mcp-discovery-acceptance-20261102.md) adds the local compatibility closure:
+**43 of 446 tasks**, with 403 remaining planned. [Prior provider foundation qualification](provider-contract-qualification.md)
 records its exact source and evidence. [The historical foundation batch](foundation-qualification-20261031.md)
 separates new focused checks from pending broad qualification.
 Design closure does not implement their future grant, event, lifecycle or sandbox behavior.
