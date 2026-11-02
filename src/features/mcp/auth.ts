@@ -1,6 +1,8 @@
 import type { AuthInfo } from "@modelcontextprotocol/server";
+import { env } from "@/config/env";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
+import { resolveMcpResourceProfile } from "@/features/oauth/resource";
 import { verifyAccessToken } from "@/features/oauth/tokens";
 import { hydrateActor } from "@/server/hydrateActor";
 import type { AppContext } from "@/server/trpc/context";
@@ -19,6 +21,10 @@ export async function authenticateMcp(
   signal: AbortSignal,
 ): Promise<Result<{ ctx: AppContext; authInfo: AuthInfo }, AppError>> {
   signal.throwIfAborted();
+  const profile = resolveMcpResourceProfile(env.BASE_URL);
+  if (!profile.ok) {
+    return err(new AppError(ERROR_IDS.OAUTH_INVALID_TARGET, "MCP resource is unavailable", {}));
+  }
   const token = bearerToken(authorizationHeader);
   if (token === null) {
     return err(new AppError(ERROR_IDS.OAUTH_INVALID_GRANT, "bearer token is required", {}));
@@ -36,6 +42,7 @@ export async function authenticateMcp(
     clientId: verified.value.clientId,
     scopes: [],
     expiresAt: Math.floor(verified.value.expiresAt.getTime() / 1_000),
+    resource: new URL(profile.value.resource),
   };
   return ok({ ctx: buildAppContext(db, actor), authInfo });
 }

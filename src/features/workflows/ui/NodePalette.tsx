@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowDown, Database, GitBranch, ListTodo, Search } from "lucide-react";
+import { ArrowDown, Clock, Database, GitBranch, ListTodo, Search } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import {
@@ -12,25 +12,45 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/Input";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
+import { useFormatters } from "@/lib/useFormatters";
 import type { CreatableNodeType } from "../nodeFactory";
+import { delayMinutesSchema } from "../registry";
+
+function delayHintBounds(format: (value: number) => string) {
+  const min = delayMinutesSchema.minValue;
+  const max = delayMinutesSchema.maxValue;
+  return {
+    min: min === null ? "" : format(min),
+    max: max === null ? "" : format(max),
+  };
+}
 
 export function NodePalette({
   open,
   onClose,
   onAdd,
   context,
+  onCloseAutoFocus,
 }: {
   open: boolean;
   onClose: () => void;
   onAdd: (type: CreatableNodeType) => void;
   context?: string;
+  onCloseAutoFocus?: (event: Event) => void;
 }) {
   const t = useAppTranslations("workflows");
+  const fmt = useFormatters();
   const [search, setSearch] = useState("");
   const choices = [
     { type: "record.read", label: t("read"), hint: t("readActionHint"), Icon: Database },
     { type: "activity.create", label: t("task"), hint: t("taskActionHint"), Icon: ListTodo },
     { type: "condition", label: t("condition"), hint: t("conditionActionHint"), Icon: GitBranch },
+    {
+      type: "delay",
+      label: t("delay"),
+      hint: t("delayMinutesHint", delayHintBounds(fmt.number)),
+      Icon: Clock,
+    },
   ] as const;
   const query = search.trim().toLocaleLowerCase().replaceAll("ي", "ی").replaceAll("ك", "ک");
   const matches = choices.filter((choice) =>
@@ -43,7 +63,10 @@ export function NodePalette({
         if (!value) onClose();
       }}
     >
-      <DialogContent className="max-h-[calc(100dvh-32px)] w-[calc(100vw-32px)] max-w-xl overflow-y-auto">
+      <DialogContent
+        className="max-h-[calc(100dvh-32px)] w-[calc(100vw-32px)] max-w-xl overflow-y-auto"
+        onCloseAutoFocus={onCloseAutoFocus}
+      >
         <DialogHeader>
           <DialogTitle>{t("chooseNode")}</DialogTitle>
           <DialogDescription>

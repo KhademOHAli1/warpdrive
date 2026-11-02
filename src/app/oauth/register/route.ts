@@ -7,10 +7,13 @@ import {
   registerClient,
   sanitizeClientName,
 } from "@/features/oauth/clients";
+import { resolveMcpResourceProfile } from "@/features/oauth/resource";
 import { checkRateLimit, tooManyRequestsResponse } from "@/server/rateLimitGuard";
 
 export async function POST(req: Request): Promise<Response> {
-  if (!env.MCP_ENABLED) return new NextResponse("Not found", { status: 404 });
+  if (!env.MCP_ENABLED || !resolveMcpResourceProfile(env.BASE_URL).ok) {
+    return new NextResponse("Not found", { status: 404 });
+  }
   // A deploy that has finished connecting its clients can close this door. 404 rather than 403
   // to match the MCP_ENABLED kill switch above and to say nothing about what exists here.
   if (env.OAUTH_REGISTRATION === "disabled") {

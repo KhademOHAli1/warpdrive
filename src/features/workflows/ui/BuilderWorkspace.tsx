@@ -21,6 +21,7 @@ import { type GraphHistoryControls, HistoryControls, handleHistoryKey } from "./
 import { NodeInspector } from "./NodeInspector";
 import { NodePalette } from "./NodePalette";
 import type { RevealNode } from "./ResponsiveViewport";
+import { focusAvailable, useDialogFocus } from "./useDialogFocus";
 import { WorkflowCanvas } from "./WorkflowCanvas";
 
 export function BuilderWorkspace({
@@ -41,6 +42,10 @@ export function BuilderWorkspace({
   const fmt = useFormatters();
   const [expanded, setExpanded] = useState(false);
   const focusButton = useRef<HTMLButtonElement>(null);
+  const addButton = useRef<HTMLButtonElement>(null);
+  const stepName = useRef<HTMLInputElement>(null);
+  const paletteFocus = useDialogFocus();
+  const focusInsertedStep = useRef(false);
   const [selected, setSelected] = useState(definition.nodes[0]?.id ?? "start");
   const [selectedEdge, setSelectedEdge] = useState<string | null>(null);
   const [palette, setPalette] = useState<{ output?: OutputTarget; position?: NodePosition } | null>(
@@ -66,8 +71,18 @@ export function BuilderWorkspace({
     select(id);
     setReveal((previous) => ({ id, nonce: previous.nonce + 1 }));
   }
+  function openPalette(
+    request: { output?: OutputTarget; position?: NodePosition },
+    opener = document.activeElement,
+  ) {
+    paletteFocus.remember(
+      opener instanceof HTMLElement && opener !== document.body ? opener : addButton.current,
+    );
+    focusInsertedStep.current = false;
+    setPalette(request);
+  }
   function add(type: CreatableNodeType) {
-    const id = "node_" + crypto.randomUUID().slice(0, 8);
+    const id = `node_${crypto.randomUUID().slice(0, 8)}`;
     const output = palette?.output;
     const origin = positionFor(definition, output?.from ?? selected);
     const position = palette?.position ?? {
@@ -93,6 +108,7 @@ export function BuilderWorkspace({
       onChange(result.value);
     }
     setProblem(null);
+    focusInsertedStep.current = true;
     revealStep(id);
     setPalette(null);
     setLayoutRevision((value) => value + 1);
@@ -123,10 +139,11 @@ export function BuilderWorkspace({
               </Tip>
             )}
             <Button
+              ref={addButton}
               variant="outline"
               size="sm"
               disabled={!editable || definition.nodes.length >= 100}
-              onClick={() => setPalette({})}
+              onClick={(event) => openPalette({}, event.currentTarget)}
             >
               <Plus className="size-4" />
               {t("addNode")}
@@ -186,7 +203,7 @@ export function BuilderWorkspace({
               reveal={reveal}
               onAdd={(output, position) => {
                 select(output.from);
-                setPalette({ output, position });
+                openPalette({ output, position });
               }}
             />
           </div>
@@ -210,6 +227,7 @@ export function BuilderWorkspace({
                   definition={definition}
                   node={node}
                   editable={editable}
+                  nameInputRef={stepName}
                   onChange={(changed) =>
                     onChange((graph) => ({
                       ...graph,
@@ -227,7 +245,7 @@ export function BuilderWorkspace({
                   editable={editable}
                   onChange={onChange}
                   onProblem={setProblem}
-                  onAdd={(output) => setPalette({ output })}
+                  onAdd={(output) => openPalette({ output })}
                 />
               </>
             ) : (
@@ -240,6 +258,12 @@ export function BuilderWorkspace({
             open
             onClose={() => setPalette(null)}
             onAdd={add}
+            onCloseAutoFocus={(event) => {
+              if (focusInsertedStep.current) {
+                event.preventDefault();
+                focusAvailable(stepName.current);
+              } else paletteFocus.restore(event, addButton.current);
+            }}
             context={
               palette.output === undefined
                 ? undefined

@@ -1,4 +1,5 @@
 import { classifications, classifyInventory } from "./registryClassification";
+import { exportStorageClassification } from "./registryClassificationsExportStorage";
 import { archiveCodecIds1 } from "./registryIdsArchiveCodec1";
 import { authenticationIds1 } from "./registryIdsAuthentication1";
 import { authenticationIds2 } from "./registryIdsAuthentication2";
@@ -11,6 +12,7 @@ import { disclosureContractsIds1 } from "./registryIdsDisclosureContracts1";
 import { emailIds1 } from "./registryIdsEmail1";
 import { emailIds2 } from "./registryIdsEmail2";
 import { enrichmentIds1 } from "./registryIdsEnrichment1";
+import { exportStorageIds1 } from "./registryIdsExportStorage1";
 import { filesIds1 } from "./registryIdsFiles1";
 import { importsIds1 } from "./registryIdsImports1";
 import { infrastructureIds1 } from "./registryIdsInfrastructure1";
@@ -46,6 +48,7 @@ export const registryEntries: RegistryEntry[] = [
   classifyInventory([...emailIds1, ...emailIds2], classifications.email),
   classifyInventory([...enrichmentIds1], classifications.enrichment),
   classifyInventory([...filesIds1], classifications.files),
+  classifyInventory(exportStorageIds1, exportStorageClassification),
   classifyInventory([...importsIds1], classifications.imports),
   classifyInventory([...infrastructureIds1, ...infrastructureIds2], classifications.infrastructure),
   classifyInventory([...notificationsIds1], classifications.notifications),
@@ -161,13 +164,14 @@ export const registryEntries: RegistryEntry[] = [
       "minimal case summaries",
       "initial reviewer membership",
       "minimal assignment receipts",
+      "deny-only reviewer form selectors",
     ],
     subjectRelation:
       "A native authenticated requester supplies its own user subject and in-app recipient. Initial triage assignment does not verify identity, expand subject scope or disclose matched records.",
     purpose:
-      "Create and read requester-bound cases, list minimal unassigned intake summaries and atomically claim the first reviewer membership using explicit current global authority.",
+      "Create and read requester-bound cases, list minimal unassigned intake summaries and atomically claim the first reviewer membership using explicit current global authority. Reviewer Server Actions forward only the actor and session from fresh native resolution.",
     disclosure:
-      "Own-status reads expose minimal requester-bound summaries. Initial assignment requires case.assign, authority.manage and case.review; it copies only existing permitted capabilities. HTTP credentials, origin/abuse controls and localized UI remain separate integration.",
+      "Own-status reads expose minimal requester-bound summaries. Initial assignment requires case.assign, authority.manage and case.review; it copies only existing permitted capabilities. Reviewer actions use existing CSRF/fresh-session guards and a deny-only stale-form selector. Real HTTP/native-auth acceptance, abuse controls and localized reviewer UI remain separate integration.",
     retention:
       "Writes use existing encrypted privacy cases, memberships and minimal events. Their retention still requires operator activation; no new retention period or deletion receipt is inferred.",
     externalEffects:
@@ -176,24 +180,25 @@ export const registryEntries: RegistryEntry[] = [
   }),
   classifyInventory(personalRequestsIds1, {
     ...classifications.privacy,
-    owner: "privacy requester interface and shared HTTP/auth transport",
+    owner: "privacy requester/reviewer interfaces and shared HTTP/auth transport",
     categories: [
       "browser request summary and frozen retry intent",
       "requester and minimal receipt references",
       "own-case summaries, URL selectors and frozen confirmation commands",
+      "minimal reviewer intake pages and frozen assignment commands/receipts",
       "transient allowlisted case-return request headers",
       "global matched CRM/authentication body copies",
       "native account security status and authentication inputs",
       "localized interface metadata",
     ],
     subjectRelation:
-      "The server resolves the actor natively; path hints are not authority and the expected requester UUID is deny-only. Global non-API app/Server Action body copies can contain unrelated CRM data and authentication secrets; actor/path never determine their subject scope.",
+      "The server resolves the actor natively; path hints are not authority and expected requester/reviewer UUIDs are deny-only. Reviewer assignment does not establish subject identity or authorize case-content disclosure. Global non-API app/Server Action body copies can contain unrelated CRM data and authentication secrets; actor/path never determine their subject scope.",
     purpose:
-      "Mount requester intake/detail routes, preserve a validated case return path through existing sign-in/pending flows, read minimal own-case status and submit exact own-account confirmation commands through existing CSRF/fresh-session Server Actions.",
+      "Mount requester intake/detail routes, preserve a validated case return path, read minimal own-case status and submit exact own-account confirmation commands. The root also offers explicit paged reviewer triage and frozen assignment retries through existing CSRF/fresh-session Server Actions, with no new route or case-detail access.",
     disclosure:
-      "Only minimal own-case summaries and command receipts are displayed. Case status is not proof status or approval. Body copies inherit native confidentiality and are excluded from case disclosure and routine telemetry. Replay-block/autocapture declarations do not establish installed browser acceptance.",
+      "Own-case summaries remain requester-bound. Reviewer intake requires current case.assign authority; initial claim additionally requires authority.manage and case.review. Minimal rows/receipts clear on current access or security denial; an assignment receipt is historical, not proof of current ownership or approval. Body copies remain excluded from disclosure/telemetry. Replay masking does not establish installed browser acceptance.",
     retention:
-      "Form/case state remains in component memory; intake success does not clear its summary. Next can buffer matched request-body copies until completion/abort, under the shared finite 64mb limit. Case URLs remain linkable browser/HTTP metadata. No durable store, expiry policy or physical memory-erasure proof is introduced.",
+      "Form/case/queue state and frozen unknown-result intents remain in component memory; intake success does not clear the personal summary. Identity changes clear displayed reviewer data and suppress late results. Next can buffer matched request bodies under the existing 64mb limit. Case URLs remain linkable metadata. No durable browser store, expiry policy or physical memory-erasure proof is introduced.",
     externalEffects:
       "The matcher excludes /api and /api/... before proxy body cloning; other matched paths scrub caller hints and stamp only validated case pathnames. Header deletion is transient, not a DB writer. Existing action body limits, native authorization and recipients remain; neither universal POST equivalence, response-body/encryption changes nor CSP nonces are established.",
     erasureTask: "DPL-26",

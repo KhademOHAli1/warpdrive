@@ -66,7 +66,7 @@ describe("requestAvatarUpload", () => {
 });
 
 describe("confirmAvatarUpload", () => {
-  it("copies a valid image to the confirmed key and sets a versioned avatar_url", async () => {
+  it("stores a valid image at the confirmed key and sets a versioned avatar_url", async () => {
     await withTestDb(async (db) => {
       const me = await seedUser(db);
       const storage = new FakeStorageClient();
@@ -78,6 +78,44 @@ describe("confirmAvatarUpload", () => {
       expect(storage.objectsByKey.has(avatarObjectKey(me.id))).toBe(true);
       const [row] = await db.select().from(users).where(eq(users.id, me.id));
       expect(row?.avatarUrl).toContain(`/api/users/${me.id}/avatar?v=`);
+    });
+  });
+
+  it("publishes the inspected bytes even if the upload key changes immediately after the read", async () => {
+    await withTestDb(async (db) => {
+      const me = await seedUser(db);
+      const validBytes = pngBytes();
+      const replacement = Buffer.from("%PDF-1.7\nreplacement");
+      const uploadKey = avatarUploadKey(me.id);
+      const storage = new FakeStorageClient();
+      putUploadObject(storage, me.id, validBytes, "image/png");
+      const getObjectBytes = storage.getObjectBytes.bind(storage);
+      storage.getObjectBytes = async (key, signal) => {
+        const read = await getObjectBytes(key, signal);
+        if (key === uploadKey) {
+          storage.objectsByKey.set(key, { size: replacement.length, contentType: "image/png" });
+          storage.objectBytes.set(key, replacement);
+        }
+        return read;
+      };
+
+      const result = await confirmAvatarUpload(db, { actor: { id: me.id }, storage }, SIGNAL());
+      expect(result.ok).toBe(true);
+      expect(storage.objectBytes.get(avatarObjectKey(me.id))).toEqual(validBytes);
+      expect(storage.objectsByKey.get(avatarObjectKey(me.id))?.contentType).toBe("image/png");
+      expect(storage.calls.some((call) => call.method === "copyObject")).toBe(false);
+    });
+  });
+
+  it("sets the confirmed Content-Type from inspected bytes, not the upload declaration", async () => {
+    await withTestDb(async (db) => {
+      const me = await seedUser(db);
+      const storage = new FakeStorageClient();
+      putUploadObject(storage, me.id, pngBytes(), "image/jpeg");
+
+      const result = await confirmAvatarUpload(db, { actor: { id: me.id }, storage }, SIGNAL());
+      expect(result.ok).toBe(true);
+      expect(storage.objectsByKey.get(avatarObjectKey(me.id))?.contentType).toBe("image/png");
     });
   });
 

@@ -21,6 +21,7 @@ import {
   useLocalePreferences,
   useSetLocalePreferences,
 } from "@/features/i18n/LocaleProvider";
+import { isOverlayOpen, isTypingTarget } from "@/features/shortcuts/shortcutTarget";
 import { MonthView } from "./MonthView";
 import { WeekAgendaGrid } from "./WeekAgendaGrid";
 
@@ -69,7 +70,30 @@ export function CalendarClient({
   return (
     // Not <main>: the app shell already owns that landmark, and a second one inside it hides the
     // shell's from assistive tech instead of adding anything.
-    <section aria-label={t("title")} className="p-4">
+    <section
+      aria-label={t("title")}
+      className="p-4"
+      onKeyDown={(event) => {
+        if (
+          event.defaultPrevented ||
+          event.ctrlKey ||
+          event.metaKey ||
+          event.altKey ||
+          event.shiftKey ||
+          event.nativeEvent.isComposing ||
+          event.nativeEvent.keyCode === 229 ||
+          !(event.target instanceof Node) ||
+          !event.currentTarget.contains(event.target) ||
+          event.key.toLowerCase() !== "c" ||
+          createDate !== null ||
+          editingId !== null
+        )
+          return;
+        if (isTypingTarget(event.target) || isOverlayOpen(document)) return;
+        event.preventDefault();
+        setCreateDate(anchorIso);
+      }}
+    >
       <header className="mb-4 flex flex-wrap items-center gap-3">
         <Button onClick={() => setCreateDate(todayIso)}>
           <Plus className="size-4" aria-hidden />

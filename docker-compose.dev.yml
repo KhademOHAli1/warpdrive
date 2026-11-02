@@ -15,6 +15,9 @@ services:
 
   app:
     ports: ["3000:3000"]
+    environment:
+      # Direct host-port traffic can supply arbitrary proxy headers.
+      AUTH_TRUSTED_PROXY_HEADER: none
 
   ws:
     ports: ["8080:8080"]

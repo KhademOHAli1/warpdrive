@@ -28,11 +28,14 @@ export const workflowRuns = pgTable(
       .references(() => users.id),
     requestKey: uuid("request_key").notNull(),
     mode: text("mode", { enum: ["simulation", "live"] }).notNull(),
-    status: text("status", { enum: ["queued", "running", "succeeded", "failed", "cancelled"] })
+    status: text("status", {
+      enum: ["queued", "running", "waiting", "succeeded", "failed", "cancelled"],
+    })
       .notNull()
       .default("queued"),
     trigger: jsonb("trigger").$type<{ recordId: string }>().notNull(),
     nextNodeId: text("next_node_id"),
+    resumeAt: timestamp("resume_at", { withTimezone: true }),
     outputs: jsonb("outputs").$type<RunOutputs>().notNull().default(sql`'{}'::jsonb`),
     errorId: text("error_id"),
     cancelledBy: uuid("cancelled_by").references(() => users.id),
@@ -48,9 +51,15 @@ export const workflowRuns = pgTable(
       name: "workflow_run_pinned_version_fk",
     }),
     index("workflow_runs_ready_idx").on(t.status, t.createdAt),
+    index("workflow_runs_wait_due_idx").on(t.resumeAt, t.id).where(sql`${t.status} = 'waiting'`),
     check(
       "workflow_runs_status_ck",
-      sql`${t.status} IN ('queued','running','succeeded','failed','cancelled')`,
+      sql`${t.status} IN ('queued','running','waiting','succeeded','failed','cancelled')`,
+    ),
+    check(
+      "workflow_runs_wait_state_ck",
+      sql`(${t.status} = 'waiting' AND ${t.resumeAt} IS NOT NULL AND isfinite(${t.resumeAt}) AND ${t.nextNodeId} IS NOT NULL)
+        OR (${t.status} <> 'waiting' AND ${t.resumeAt} IS NULL)`,
     ),
     check("workflow_runs_mode_ck", sql`${t.mode} IN ('simulation','live')`),
   ],

@@ -32,6 +32,7 @@ export interface MailProtocolImapState {
 
 export interface MailProtocolSession {
   selected: string;
+  authenticated: boolean;
 }
 
 function mailboxName(input: string): string {
@@ -201,15 +202,16 @@ function moveUids(context: CommandContext, folder: MailProtocolFolder, rest: str
   );
 }
 
-const UID_OPERATIONS: Record<
-  string,
-  (context: CommandContext, folder: MailProtocolFolder, rest: string) => void
-> = {
-  SEARCH: searchUids,
-  FETCH: fetchUids,
-  STORE: storeFlags,
-  MOVE: moveUids,
-};
+const AUTHENTICATED_COMMANDS = new Set([
+  "LIST",
+  "LSUB",
+  "NAMESPACE",
+  "SELECT",
+  "EXAMINE",
+  "UID",
+  "CHECK",
+  "CLOSE",
+]);
 
 function uidCommand(context: CommandContext) {
   const folder = context.state.folders.get(context.session.selected);
@@ -218,13 +220,24 @@ function uidCommand(context: CommandContext) {
     return;
   }
   const operation = context.argumentsText.split(" ")[0]?.toUpperCase() ?? "";
-  const handler = UID_OPERATIONS[operation];
   context.state.commands.push(operation);
-  if (handler === undefined) {
-    context.write(`${context.tag} BAD Unsupported UID command\r\n`);
-    return;
+  const rest = context.argumentsText.slice(operation.length + 1);
+  switch (operation) {
+    case "SEARCH":
+      searchUids(context, folder, rest);
+      return;
+    case "FETCH":
+      fetchUids(context, folder, rest);
+      return;
+    case "STORE":
+      storeFlags(context, folder, rest);
+      return;
+    case "MOVE":
+      moveUids(context, folder, rest);
+      return;
+    default:
+      context.write(`${context.tag} BAD Unsupported UID command\r\n`);
   }
-  handler(context, folder, context.argumentsText.slice(operation.length + 1));
 }
 
 export function imapFixtureCommand(
@@ -237,6 +250,10 @@ export function imapFixtureCommand(
 ) {
   const context = { state, session, tag, argumentsText, write };
   state.commands.push(command);
+  if (!session.authenticated && AUTHENTICATED_COMMANDS.has(command)) {
+    write(`${tag} NO Authenticate first\r\n`);
+    return;
+  }
   switch (command) {
     case "LIST":
     case "LSUB":

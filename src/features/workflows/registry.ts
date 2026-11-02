@@ -8,6 +8,11 @@ interface ActionSpec {
   effect: "none" | "database" | "wait";
 }
 const entity = z.enum(["deal", "lead", "person", "organization"]);
+export const delayMinutesSchema = z
+  .number()
+  .int()
+  .min(1)
+  .max(365 * 24 * 60);
 export const conditionConfigSchema = z
   .strictObject({
     left: bindingSchema,
@@ -69,7 +74,12 @@ export const actionRegistry: Record<WorkflowNode["type"], ActionSpec> = {
     effect: "none",
   },
   delay: {
-    config: z.strictObject({ minutes: bindingSchema }),
+    config: z.strictObject({
+      minutes: bindingSchema.refine(
+        (binding) =>
+          binding.kind === "reference" || delayMinutesSchema.safeParse(binding.value).success,
+      ),
+    }),
     inputs: { minutes: "number" },
     outputs: { resumeAt: "string" },
     effect: "wait",

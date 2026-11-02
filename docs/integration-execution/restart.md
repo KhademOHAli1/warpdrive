@@ -1,12 +1,23 @@
 # Restart and restore the integration programme
 
-Consolidation context, 1 November 2026: this historical programme record is being integrated from `12dd62cb` (application `7c8bb7ed`) onto published Sales main `e10b75a3`. Its earlier source/runtime receipts retain their original cuts and limits; references below to the latest programme application describe that historical programme checkout. Combined main preserves Privacy0000–0085, Workflow0086 and CONN0087; the old CONN83/Workflow84 installed lineage is refused by the guarded migrator. Do not treat historical preview or migration-allocation instructions as the current main upgrade procedure. New work follows the main-only consolidation policy in `CLAUDE.md`. Current combined qualification is recorded in [the source inventory register](../privacy-data-inventory.md); it does not transfer old provider, browser or installation acceptance.
+Current-main context, 1 November 2026: the source admission recorded here is `43a5fb4d2a6be7bbbd260855a6a8e1ce55fbf3c1`, tree `4b477872f1e9010383343060dc15949169dcf89e`. Read [the main admission record](main-admission-20261101.md) for exact hosted CI and source-review limits. Canonical history retains the published prefix 0000 to 0085 (including Privacy 0083 to 0085), followed by Workflow 0086, CONN 0087 and MAIL 0088 to 0097. Divergent installed CONN83/Workflow84 histories remain refused. New work follows the main-only policy, explicit ownership and serial test windows. Historical programme receipts and restore instructions below retain their original source cuts and do not authorize a current-main upgrade or profile restart.
 
 
 The persistent goal is active, has no token budget, and covers all 446 task IDs. Do not
 create a replacement goal or mark it complete merely because BASE has closed.
 
-## Resume current source
+## Resume current main
+
+1. Use the canonical checkout `/Users/ali/Developer/warpdrive-settings-ux` on `main`. Re-read its current HEAD, visible dirty paths, remotes and ownership before editing; do not assume the admission cut is still the newest source.
+2. Read the authoritative `tasks.csv`, current admission record and accepted architecture contracts. Keep the 446-task scope and original acceptance/dependency fields. A source review does not close its later implementation or provider tasks.
+3. Coordinate the exact next-file scope, serial test window and sequential main commit/push with the active owners. Preserve unfinished work and private data; do not create replacement branches, overlay old whole files or skip hooks.
+4. Preserve `/tmp/warpdrive-integrations-20261031`, its shared Git metadata, the detached historical preview, and retained review directories. Alias retirement does not remove their unfinished files or grant permission to delete data.
+5. Do not launch an old source-pinned runner or private profile against current main. Select a fresh finite synthetic qualification profile and revalidate its source, dependencies, ports, process ownership, database history and headroom before a campaign. Historical or completed grants are not current grants.
+6. Keep live-provider, public-hosting, publication and installed-legacy upgrades behind their actual resource/authorization/evidence gates. Never make a test pass by erasing retained user data or changing an applied migration ledger.
+
+## Historical programme checkout and service profile
+
+The following numbered profile instructions describe the earlier programme source. They are retained for receipt interpretation and controlled historical restoration, not current-main startup.
 
 1. Read this folder's README, `tasks.csv`, qualification record and the source project plan.
 2. Inspect current branch, HEAD, dirty files, remotes and every peer checkout before editing.
@@ -41,14 +52,14 @@ create a replacement goal or mark it complete merely because BASE has closed.
    intentionally added, use another disposable qualification profile or adapt its contract
    with explicit tests; do not erase user data to make that smoke pass.
 
-## Current source and qualification
+## Historical programme source and qualification
 
 Application/test source 7c8bb7ed013ef5eb9543399566bc5175a12df633 fixes the digit-choice
 coupling. Read [its current qualification](numbering-qualification-20261101.md): 6,040 unit
 cases in 963 files, full lint, standalone types and application/worker compilation passed.
 The 149 focused cases are included in that full total. This source/unit/compile evidence
 alone establishes no service or browser result. The later scoped native record below
-adds separate actual runtime evidence. Task register stays 40 complete/406 planned.
+adds separate actual runtime evidence. At that historical cut, the task register recorded 40 complete/406 planned.
 
 The independent qualification clone was fast-forwarded cleanly to 7c8bb7e for whole lint.
 Its package/lock hashes stayed unchanged; retained dependencies are an ordinary directory.
@@ -63,7 +74,7 @@ populated; do not rerun an empty-profile preparer or reuse a completed grant. Or
 zero-user programme data stayed empty. Regional controls are at `/settings/regional`.
 Actual receipts, failed attempts and unresolved visual/dev issue limits are preserved.
 
-## Independent source restoration
+## Historical source restoration
 
 The later native records/source delta is
 `/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/native-browser-qualified-20261101`.
@@ -93,7 +104,7 @@ results and retains its historical pending labels. Read `qualification-20261101.
 later evidence and remaining gates; never reinterpret the old interrupted run as a pass.
 
 The earlier dated foundation export remains an independently verified historical
-37-task baseline, not the current 40-task register:
+37-task baseline, not the then-current 40-task register:
 
 Durable artifacts are in:
 `/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/foundation-20261031`.
@@ -115,7 +126,7 @@ bun install --frozen-lockfile
 The clone initially points `origin` at the bundle. The current temporary checkout's origin
 points at a local auth checkout. Neither is a public push destination. Preserve the intended
 fork/upstream relationship and verify explicit destinations before any future push. This
-programme has not pushed, merged to main, hosted publicly or published artifacts externally.
+programme had not yet pushed, merged to main, hosted publicly or published artifacts externally at that historical checkpoint.
 
 Dependencies, compiled output, database content and keys are deliberately absent. Reuse
 existing private keys only with their corresponding private data. For a fresh empty profile,
@@ -123,7 +134,7 @@ run the documented config generator, initialize a new isolated PostgreSQL cluste
 volume, migrate the clean chain, build workers and start the separate services. Do not
 restore a database dump from this source bundle: it contains none.
 
-## Qualified migration boundary
+## Historical programme migration boundary
 
 The source integrates both branches' migration 0083 collision by retaining integration
 0083 and appending workflow 0084, with combined metadata and original workflow SQL guards.
@@ -137,7 +148,7 @@ An independently installed workflow-0083 peer database has a divergent migration
 upgrading it to this branch needs a separately reviewed additive migration/recovery drill.
 Do not rename files, manipulate its migration ledger, reset it or claim that path passed.
 
-## Next execution batch
+## Historical next-batch record
 
 BASE and ARCH have their own evidence in the live register. Architecture closure is design
 review only: grant/capability enforcement, the richer lifecycle, transactional outbox,
@@ -181,7 +192,7 @@ Never close a live-provider, public-hosting or publication task with local fixtu
 Those later finite tests need actual selected resources and appropriate authorization;
 they do not block unrelated local foundations or independent provider tracks.
 
-## Authorized mail/platform coordination
+## Historical mail/platform coordination
 
 Ali's direct human approval for coordinating shared interfaces was verified in the mail
 chat, and the prepared `mail-platform-agreement-proposal.md` was sent there. That file
@@ -210,7 +221,7 @@ mail source adoption, real-provider action or DDL is implied by this coordinatio
 
 During BASE checkpointing, a peer writer added a planning amendment with 586 slots,
 140 additions and priority/dependency overrides. The files remain uncommitted and peer-owned
-in this checkout: `docs/integration-coordination*.csv`, `docs/integration-coordination.md`,
+in the preserved historical preview: `docs/integration-coordination*.csv`, `docs/integration-coordination.md`,
 `docs/integration-sms-providers.*`, changed planning snapshots, and
 `docs/integration-execution/coordination-handoff.md`. They have not been imported into the
 446-row live register or persistent-goal objective. Preserve them and review source authority,

@@ -87,6 +87,9 @@ const nextConfig: NextConfig = {
   // Top-level, not experimental: Next 16 promoted the key.
   reactCompiler: true,
   experimental: {
+    // TypeScript 6 provides the compiler API. Keep build-time checking in process:
+    // the CLI path has intermittently returned truncated --showConfig JSON under Bun.
+    useTypeScriptCli: false,
     // Icons are imported from the lucide-react barrel in ~13 files. Without this, any chunk that
     // touches one icon pulls the whole barrel; Next rewrites them to direct module paths instead.
     optimizePackageImports: ["lucide-react"],
