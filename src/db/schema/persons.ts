@@ -9,6 +9,7 @@ import {
   timestamp,
   uuid,
 } from "drizzle-orm/pg-core";
+import type { PhonePointMetadata } from "@/types/contactPoint";
 import { users, visibilityGroups, visibilityLevelEnum } from "./identity";
 import { organizations } from "./organizations";
 
@@ -27,7 +28,7 @@ type ContactPoint = {
   label: string;
   value: string;
   primary?: boolean;
-};
+} & PhonePointMetadata;
 
 export const persons = pgTable(
   "persons",

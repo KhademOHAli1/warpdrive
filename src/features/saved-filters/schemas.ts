@@ -9,6 +9,8 @@ import {
   OPS_BY_FIELD,
   SORT_DIRS,
 } from "./filterFields";
+import { SAVED_VIEW_DEFINITION_VERSION } from "./viewDefinitionConstants";
+import { savedViewPresentationSchemaFor } from "./viewPresentationSchema";
 
 export { FILTER_FIELDS, OPS_BY_FIELD };
 
@@ -48,8 +50,40 @@ const DEFINITION_BY_ENTITY = {
   lead: buildFilterSchema(LEAD_CONDITION_CONFIG),
 } as const;
 
-// The definition validator for one target entity. Server callers (actions, router, saved-view
-// plumbing) parse a stored or posted definition through this rather than the deal schema.
+// Read compatibility and new writes have separate contracts. A writer must reject a future
+// constraint that a stripping object schema could otherwise weaken before persistence.
+const BARE_WRITE_DEFINITION_BY_ENTITY = {
+  deal: filterDefinition.strict().extend({
+    conditions: z.array(filterCondition.strict()).default([]),
+    sort: filterDefinition.shape.sort.unwrap().strict().optional(),
+  }),
+  person: buildFilterSchema(PERSON_FILTER_CONFIG, { strict: true }),
+  organization: buildFilterSchema(ORG_FILTER_CONFIG, { strict: true }),
+  lead: buildFilterSchema(LEAD_CONDITION_CONFIG, { strict: true }),
+} as const;
+
+function writeDefinitionFor<T extends Exclude<SavedFilterTargetEntity, "deal">>(targetEntity: T) {
+  const definition = BARE_WRITE_DEFINITION_BY_ENTITY[targetEntity];
+  return z.union([
+    definition,
+    z.strictObject({
+      version: z.literal(SAVED_VIEW_DEFINITION_VERSION),
+      targetEntity: z.literal(targetEntity),
+      definition,
+      presentation: savedViewPresentationSchemaFor(targetEntity).optional(),
+    }),
+  ]);
+}
+
+const WRITE_DEFINITION_BY_ENTITY = {
+  deal: BARE_WRITE_DEFINITION_BY_ENTITY.deal,
+  person: writeDefinitionFor("person"),
+  organization: writeDefinitionFor("organization"),
+  lead: writeDefinitionFor("lead"),
+} as const;
+
+// The compatibility validator for one target entity's stored or ad-hoc definition. Persisted
+// definition writes use the strict map above so unsupported constraints cannot be discarded.
 export function savedFilterDefinitionSchema(
   targetEntity: SavedFilterTargetEntity,
 ): (typeof DEFINITION_BY_ENTITY)[SavedFilterTargetEntity] {
@@ -62,21 +96,25 @@ const savedFilterBase = {
 };
 
 export const saveFilterInput = z.discriminatedUnion("targetEntity", [
-  z.object({ ...savedFilterBase, targetEntity: z.literal("deal"), definition: filterDefinition }),
+  z.object({
+    ...savedFilterBase,
+    targetEntity: z.literal("deal"),
+    definition: WRITE_DEFINITION_BY_ENTITY.deal,
+  }),
   z.object({
     ...savedFilterBase,
     targetEntity: z.literal("person"),
-    definition: DEFINITION_BY_ENTITY.person,
+    definition: WRITE_DEFINITION_BY_ENTITY.person,
   }),
   z.object({
     ...savedFilterBase,
     targetEntity: z.literal("organization"),
-    definition: DEFINITION_BY_ENTITY.organization,
+    definition: WRITE_DEFINITION_BY_ENTITY.organization,
   }),
   z.object({
     ...savedFilterBase,
     targetEntity: z.literal("lead"),
-    definition: DEFINITION_BY_ENTITY.lead,
+    definition: WRITE_DEFINITION_BY_ENTITY.lead,
   }),
 ]);
 
@@ -85,7 +123,7 @@ export const saveFilterInput = z.discriminatedUnion("targetEntity", [
 export function updateSavedFilterInputFor(targetEntity: SavedFilterTargetEntity) {
   return z.object({
     name: z.string().min(1).max(120).optional(),
-    definition: savedFilterDefinitionSchema(targetEntity).optional(),
+    definition: WRITE_DEFINITION_BY_ENTITY[targetEntity].optional(),
     isShared: z.boolean().optional(),
   });
 }

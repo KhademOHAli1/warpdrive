@@ -2,7 +2,7 @@
 
 import {
   Background,
-  type Connection,
+  ConnectionLineType,
   Controls,
   type Edge,
   type EdgeChange,
@@ -15,7 +15,6 @@ import { useState } from "react";
 import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
 import {
   type ConnectionProblem,
-  connectNodes,
   disconnectNodes,
   edgeId,
   moveNode,
@@ -24,18 +23,15 @@ import {
 import { positionFor } from "../nodeLayout";
 import { displayNodeName } from "../nodeNames";
 import type { WorkflowDefinition, WorkflowEdge } from "../schemas";
-import { ResponsiveViewport } from "./ResponsiveViewport";
+import { ConnectionFeedback } from "./ConnectionFeedback";
+import { ResponsiveViewport, type RevealNode } from "./ResponsiveViewport";
+import { type AddFromOutput, useConnectionGestures } from "./useConnectionGestures";
 import { type CanvasNode, WorkflowNodeCard } from "./WorkflowNodeCard";
 import "@xyflow/react/dist/style.css";
 import "./workflowCanvas.css";
 
 const nodeTypes = { workflow: WorkflowNodeCard };
 type CanvasEdge = Edge<{ spec: WorkflowEdge }>;
-function asEdge(connection: Connection): WorkflowEdge | null {
-  const port = connection.sourceHandle ?? "next";
-  if (!["next", "true", "false"].includes(port)) return null;
-  return { from: connection.source, to: connection.target, port: port as WorkflowEdge["port"] };
-}
 
 export function WorkflowCanvas({
   definition,
@@ -48,6 +44,9 @@ export function WorkflowCanvas({
   editable,
   invalidNodes,
   layoutRevision,
+  onAdd,
+  reveal,
+  completedNodes,
 }: {
   definition: WorkflowDefinition;
   selected: string;
@@ -59,10 +58,22 @@ export function WorkflowCanvas({
   editable: boolean;
   invalidNodes: Set<string>;
   layoutRevision: number;
+  onAdd?: AddFromOutput;
+  reveal?: RevealNode;
+  completedNodes?: Set<string>;
 }) {
   const t = useAppTranslations("workflows");
   const locale = useLocale();
   const [dragging, setDragging] = useState(false);
+  const [dragPositions, setDragPositions] = useState(new Map<string, { x: number; y: number }>());
+  const gestures = useConnectionGestures({
+    definition,
+    editable,
+    onChange,
+    onProblem,
+    onSelectEdge,
+    onAdd,
+  });
   const [measurements, setMeasurements] = useState(
     new Map<string, { width: number; height: number }>(),
   );
@@ -73,8 +84,15 @@ export function WorkflowCanvas({
   const nodes: CanvasNode[] = definition.nodes.map((node, index) => ({
     id: node.id,
     type: "workflow",
-    data: { node, invalid: invalidNodes.has(node.id), index },
-    position: positionFor(definition, node.id),
+    data: {
+      node,
+      invalid: invalidNodes.has(node.id),
+      index,
+      completed: completedNodes?.has(node.id) === true,
+      onAdd: editable ? onAdd : undefined,
+      outputs: definition.edges.filter((edge) => edge.from === node.id).map((edge) => edge.port),
+    },
+    position: dragPositions.get(node.id) ?? positionFor(definition, node.id),
     measured: measurements.get(node.id),
     selected: selectedEdge === null && selected === node.id,
     deletable: editable && !node.type.startsWith("trigger."),
@@ -95,19 +113,11 @@ export function WorkflowCanvas({
     deletable: editable,
     reconnectable: editable,
     interactionWidth: 28,
+    style:
+      completedNodes?.has(spec.from) === true && completedNodes.has(spec.to)
+        ? { stroke: "hsl(var(--success))", strokeWidth: 2.5 }
+        : undefined,
   }));
-  function connect(connection: Connection, previous?: WorkflowEdge) {
-    const spec = asEdge(connection);
-    if (!editable || spec === null) return;
-    const result = connectNodes(definition, spec, previous);
-    if (!result.ok) {
-      onProblem(result.error);
-      return;
-    }
-    onChange(result.value);
-    onProblem(null);
-    onSelectEdge(edgeId(spec));
-  }
   function recordMeasurement(id: string, dimensions: { width: number; height: number }) {
     setMeasurements((previous) => {
       const current = previous.get(id);
@@ -120,7 +130,13 @@ export function WorkflowCanvas({
     if (!editable) return;
     if (change.type === "position" && change.position !== undefined) {
       const position = change.position;
-      onChange((graph) => moveNode(graph, change.id, position));
+      setDragPositions((previous) => {
+        const next = new Map(previous);
+        if (change.dragging === true) next.set(change.id, position);
+        else next.delete(change.id);
+        return next;
+      });
+      if (change.dragging !== true) onChange((graph) => moveNode(graph, change.id, position));
     }
     if (change.type === "remove") {
       onChange((graph) => removeNode(graph, change.id));
@@ -162,7 +178,7 @@ export function WorkflowCanvas({
         nodeTypes={nodeTypes}
         fitView
         minZoom={0.1}
-        fitViewOptions={{ padding: 0.2, maxZoom: 1.1 }}
+        fitViewOptions={{ padding: 0.12, minZoom: 0.75, maxZoom: 1.1 }}
         nodeExtent={[
           [-100000, -100000],
           [100000, 100000],
@@ -172,8 +188,17 @@ export function WorkflowCanvas({
         edgesReconnectable={editable}
         onNodesChange={nodeChanges}
         onEdgesChange={edgeChanges}
-        onConnect={connect}
-        onReconnect={(edge, connection) => connect(connection, edge.data?.spec)}
+        onConnect={gestures.connect}
+        isValidConnection={gestures.isValidConnection}
+        connectionRadius={32}
+        connectionDragThreshold={4}
+        connectionLineType={ConnectionLineType.SmoothStep}
+        onInit={gestures.initialize}
+        onConnectStart={() => onProblem(null)}
+        onConnectEnd={gestures.finish}
+        onReconnectStart={(_, edge) => gestures.startReconnect(edge.data?.spec)}
+        onReconnect={(edge, connection) => gestures.connect(connection, edge.data?.spec)}
+        onReconnectEnd={gestures.endReconnect}
         onNodeClick={(_, node) => {
           onSelect(node.id);
           onSelectEdge(null);
@@ -198,7 +223,8 @@ export function WorkflowCanvas({
           "controls.fitView.ariaLabel": t("fitView"),
         }}
       >
-        <ResponsiveViewport />
+        <ResponsiveViewport reveal={reveal} />
+        <ConnectionFeedback occupied={definition.edges} />
         <Background gap={22} size={1} />
         <Controls
           showInteractive={false}

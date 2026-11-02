@@ -7,6 +7,7 @@ import { QuickAddContact } from "@/features/contacts/QuickAddContact";
 import { listDefs } from "@/features/custom-fields/defsRepo";
 import { getAppTranslations } from "@/features/i18n/server";
 import { getPreferencesForActor } from "@/features/identity/preferencesForActor";
+import { resolveSavedViewSelection } from "@/features/saved-filters/savedViewSelection";
 import { readBaseCurrency } from "@/features/settings/readBaseCurrency";
 import { createContext } from "@/server/trpc/context";
 import { createCaller } from "@/server/trpc/root";
@@ -46,20 +47,45 @@ async function PeopleSection({ actorId }: { actorId: string }): Promise<React.Re
   const t = await getAppTranslations("contacts");
   const ctx = await createContext();
   const caller = createCaller(ctx);
-  const [{ rows, total, refLabels }, orgOptions, prefs, customFieldDefs, baseCurrency] =
-    await Promise.all([
-      caller.contacts.listPeople({ offset: 0, limit: 50 }),
-      caller.contacts.orgOptions(),
-      getPreferencesForActor(ctx.db, actorId),
+  const prefs = await getPreferencesForActor(ctx.db, actorId);
+  const storedSelection = prefs.ui.peopleSavedViewSelection;
+  const visibleViews =
+    storedSelection !== undefined &&
+    !("status" in storedSelection) &&
+    storedSelection.savedViewId !== null
+      ? await caller.savedFilters.listByTarget({ targetEntity: "person" })
+      : [];
+  const seed = resolveSavedViewSelection(storedSelection, visibleViews);
+  const blocked =
+    seed.initialSelectionBlocked || seed.initialSavedView?.availability === "unavailable";
+  const selected = seed.initialSavedView;
+  const sort =
+    selected !== null && selected.availability !== "unavailable"
+      ? selected.presentation?.sort
+      : undefined;
+  const [{ rows, total, refLabels }, orgOptions, customFieldDefs, baseCurrency] = await Promise.all(
+    [
+      blocked
+        ? { rows: [], total: 0, refLabels: { user: {}, person: {}, org: {} } }
+        : caller.contacts.listPeople({
+            offset: 0,
+            limit: 50,
+            filter: selected?.definition ?? undefined,
+            sort,
+          }),
+      blocked ? [] : caller.contacts.orgOptions(),
       listDefs(ctx.db, "person", {}, AbortSignal.timeout(8000)),
       readBaseCurrency(ctx.db, AbortSignal.timeout(8000)),
-    ]);
+    ],
+  );
   // Resolve each person's org name from the visible org set (hidden orgs stay unnamed).
   // orgOptions is the plain {id,name} lookup (no count computation, no pagination cap),
   // which is all this page needs; listOrgs would compute people/deal counts for nothing.
   const orgNameById = new Map(orgOptions.map((o) => [o.id, o.name]));
   return (
     <PeopleList
+      key={actorId}
+      preferenceActorId={actorId}
       rows={rows.map((r) => ({
         id: r.id,
         name: r.name,
@@ -73,6 +99,7 @@ async function PeopleSection({ actorId }: { actorId: string }): Promise<React.Re
       total={total}
       orgNames={Object.fromEntries(orgNameById)}
       initialColumns={prefs.ui.peopleView}
+      {...seed}
       customFieldDefs={customFieldDefs}
       baseCurrency={baseCurrency}
       refLabels={refLabels}

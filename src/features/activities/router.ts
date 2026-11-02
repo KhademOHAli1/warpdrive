@@ -12,6 +12,7 @@ import { calendarRange } from "./calendar";
 import { getDayLoad } from "./dayLoad";
 import { listActivitiesForEntity } from "./forEntity";
 import { getActivityForEdit } from "./getForEdit";
+import { nextActionQueueProcedure } from "./nextActionQueueProcedure";
 import { activityListFilter, activitySortInput } from "./schemas";
 
 // listRows' input: the list filter (every field defaulted, so an empty call still resolves to
@@ -23,6 +24,7 @@ const listRowsInput = activityListFilter.extend({
 });
 
 export const activitiesRouter = router({
+  nextActionQueue: nextActionQueueProcedure,
   // All visible activities enriched for the Activities table (deal/contact/org/priority).
   listRows: protectedProcedure.input(listRowsInput).query(async ({ ctx, input }) => {
     const { sort, timeZone, ...filter } = input;

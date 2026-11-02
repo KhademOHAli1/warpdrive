@@ -22,11 +22,13 @@ export function RunDialog({
   mode,
   onClose,
   onStarted,
+  onCloseAutoFocus,
 }: {
   workflowId: string;
   mode: "simulation" | "live";
   onClose: () => void;
   onStarted: () => void;
+  onCloseAutoFocus?: (event: Event) => void;
 }) {
   const t = useAppTranslations("workflows");
   const [query, setQuery] = useState("");
@@ -71,7 +73,7 @@ export function RunDialog({
         if (!value && !pending) onClose();
       }}
     >
-      <DialogContent>
+      <DialogContent onCloseAutoFocus={onCloseAutoFocus}>
         <DialogHeader>
           <DialogTitle>{t("runTitle")}</DialogTitle>
           <DialogDescription>

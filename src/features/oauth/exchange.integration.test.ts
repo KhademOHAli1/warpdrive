@@ -1,6 +1,8 @@
+import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import { eq, isNull } from "drizzle-orm";
 import { afterAll, beforeAll, expect, test } from "vitest";
+import { env } from "@/config/env";
 import { oauthAccessTokens, oauthClients, oauthRefreshTokens, users } from "@/db/schema";
 import { lockMcpGrants, revokeMcpGrants } from "@/features/auth/management/mcpGrants";
 import { makeTestDb, type TestDb } from "@/test/db";
@@ -17,6 +19,30 @@ afterAll(async () => {
   await h.close();
 });
 const signal = () => AbortSignal.timeout(10000);
+const resource = `${env.BASE_URL.replace(/\/$/, "")}/api/mcp`;
+
+async function authorizationCodeInput(userId: string, clientId: string, verifier: string) {
+  const code = await issueAuthCode(
+    h.db,
+    {
+      userId,
+      clientId,
+      redirectUri: "https://client.example.com/callback",
+      codeChallenge: sha256Base64Url(verifier),
+      resource,
+    },
+    signal(),
+  );
+  assert(code.ok);
+  return {
+    grant_type: "authorization_code" as const,
+    client_id: clientId,
+    code_verifier: verifier,
+    redirect_uri: "https://client.example.com/callback",
+    code: code.value,
+    resource,
+  };
+}
 
 test.each(["refresh_token", "authorization_code"] as const)(
   "%s exchange waits for policy revocation and cannot mint replacement grants afterwards",
@@ -36,23 +62,9 @@ test.each(["refresh_token", "authorization_code"] as const)(
             grant_type,
             client_id: clientId,
             refresh_token: await issueRefreshToken(h.db, { userId: id, clientId }, signal()),
+            resource,
           }
-        : {
-            grant_type,
-            client_id: clientId,
-            code_verifier: verifier,
-            redirect_uri: "https://client.example.com/callback",
-            code: await issueAuthCode(
-              h.db,
-              {
-                userId: id,
-                clientId,
-                redirectUri: "https://client.example.com/callback",
-                codeChallenge: sha256Base64Url(verifier),
-              },
-              signal(),
-            ),
-          };
+        : await authorizationCodeInput(id, clientId, verifier);
     let release = () => {};
     let started = () => {};
     const gate = new Promise<void>((resolve) => {
@@ -97,12 +109,12 @@ test("valid grants exchange once and a suspended owner cannot rotate them", asyn
   const refresh = await issueRefreshToken(h.db, { userId: id, clientId }, signal());
   const first = await exchangeMcpGrant(
     h.db,
-    { grant_type: "refresh_token", client_id: clientId, refresh_token: refresh },
+    { grant_type: "refresh_token", client_id: clientId, refresh_token: refresh, resource },
     signal(),
   );
   expect(first.ok).toBe(true);
   await h.db.update(users).set({ isActive: false }).where(eq(users.id, id));
-  if (!first.ok) return;
+  assert(first.ok);
   expect(
     await exchangeMcpGrant(
       h.db,
@@ -110,6 +122,7 @@ test("valid grants exchange once and a suspended owner cannot rotate them", asyn
         grant_type: "refresh_token",
         client_id: clientId,
         refresh_token: first.value.refresh_token,
+        resource,
       },
       signal(),
     ),

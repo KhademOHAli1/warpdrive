@@ -105,11 +105,12 @@ export async function finishSlackConnection(
       })
       .onConflictDoUpdate({
         target: [integrationConnections.provider, integrationConnections.accountId],
+        // The conflict-row lock keeps custody admission atomic with credential replacement.
+        setWhere: eq(integrationConnections.ownerId, input.userId),
         set: {
           credentials,
           status: "connected",
           scopes: result.scopes,
-          ownerId: input.userId,
           connectedAt: new Date(),
           lastCheckedAt: null,
           updatedAt: new Date(),
@@ -117,7 +118,11 @@ export async function finishSlackConnection(
       })
       .returning({ id: integrationConnections.id });
     if (!connection)
-      throw new AppError(ERROR_IDS.INTEGRATION_SAVE_FAILED, "integration_save_failed", {});
+      throw new AppError(
+        ERROR_IDS.INTEGRATION_CUSTODY_CONFLICT,
+        "integration_custody_conflict",
+        {},
+      );
     await tx
       .insert(integrationEvents)
       .values({ connectionId: connection.id, actorId: input.userId, action: "connected" });

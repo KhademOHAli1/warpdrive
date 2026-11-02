@@ -3,6 +3,7 @@
 // zod to read its own views.
 import type { FilterOpKey } from "@/constants/filterOps";
 import type { ConditionCombinator, ConditionValue } from "@/schemas/filterCondition";
+import type { SavedViewPresentation } from "./viewPresentation";
 
 // The entity-agnostic shape every parsed saved view definition has. Each entity's own definition
 // type (ContactFilterDefinition, LeadConditionInput) is assignable to it, so a view applies to its
@@ -18,7 +19,7 @@ export type SavedViewProblem = {
 };
 
 export type SavedViewDefinitionAvailability<D> =
-  | { availability?: "available"; definition: D }
+  | { availability?: "available"; definition: D; presentation?: SavedViewPresentation }
   | { availability: "unavailable"; definition: null; problem: SavedViewProblem };
 
 export type SavedView = {

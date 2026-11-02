@@ -18,6 +18,9 @@ import { CALENDAR_MESSAGES } from "@/features/activities/calendarMessages";
 import activitiesGerman from "@/features/activities/messages/activities.de.json";
 import activitiesEnglish from "@/features/activities/messages/activities.en.json";
 import activitiesPersian from "@/features/activities/messages/activities.fa.json";
+import nextActionQueueGerman from "@/features/activities/messages/nextActionQueue.de.json";
+import nextActionQueueEnglish from "@/features/activities/messages/nextActionQueue.en.json";
+import nextActionQueuePersian from "@/features/activities/messages/nextActionQueue.fa.json";
 import managementGerman from "@/features/auth/management/messages/authManagement.de.json";
 import managementEnglish from "@/features/auth/management/messages/authManagement.en.json";
 import managementPersian from "@/features/auth/management/messages/authManagement.fa.json";
@@ -33,6 +36,9 @@ import customPersian from "@/features/custom-fields/messages/customFields.fa.jso
 import salesGerman from "@/features/deals/messages/sales.de.json";
 import salesEnglish from "@/features/deals/messages/sales.en.json";
 import salesPersian from "@/features/deals/messages/sales.fa.json";
+import deliveryGerman from "@/features/email/messages/deliveryReports.de.json";
+import deliveryEnglish from "@/features/email/messages/deliveryReports.en.json";
+import deliveryPersian from "@/features/email/messages/deliveryReports.fa.json";
 import emailGerman from "@/features/email/messages/email.de.json";
 import emailEnglish from "@/features/email/messages/email.en.json";
 import emailPersian from "@/features/email/messages/email.fa.json";
@@ -60,6 +66,9 @@ import notificationsPersian from "@/features/notifications/messages/notification
 import pipelineLifecycleGerman from "@/features/pipelines/messages/lifecycle.de.json";
 import pipelineLifecycleEnglish from "@/features/pipelines/messages/lifecycle.en.json";
 import pipelineLifecyclePersian from "@/features/pipelines/messages/lifecycle.fa.json";
+import privacyGerman from "@/features/privacy/messages/privacyRequest.de.json";
+import privacyEnglish from "@/features/privacy/messages/privacyRequest.en.json";
+import privacyPersian from "@/features/privacy/messages/privacyRequest.fa.json";
 import quickGerman from "@/features/quick-add/messages/quickAdd.de.json";
 import quickEnglish from "@/features/quick-add/messages/quickAdd.en.json";
 import quickPersian from "@/features/quick-add/messages/quickAdd.fa.json";
@@ -87,6 +96,7 @@ import type { Locale } from "./registry";
 
 const english = {
   ...en,
+  nextActionQueue: nextActionQueueEnglish,
   pipelineLifecycle: pipelineLifecycleEnglish,
   viewCompatibility: viewCompatibilityEnglish,
   integrations: integrationsEnglish,
@@ -99,6 +109,7 @@ const english = {
   customFields: customEnglish,
   files: filesEnglish,
   email: emailEnglish,
+  deliveryReports: deliveryEnglish,
   quickAdd: quickEnglish,
   boundaries: boundaryEnglish,
   calendar: CALENDAR_MESSAGES.en,
@@ -114,9 +125,11 @@ const english = {
   filters: filtersEnglish,
   tableControls: tableEnglish,
   notifications: notificationsEnglish,
+  privacyRequest: privacyEnglish,
 };
 const persian: typeof english = mergeMessages(english, {
   ...fa,
+  nextActionQueue: nextActionQueuePersian,
   pipelineLifecycle: pipelineLifecyclePersian,
   viewCompatibility: viewCompatibilityPersian,
   integrations: integrationsPersian,
@@ -129,6 +142,7 @@ const persian: typeof english = mergeMessages(english, {
   customFields: customPersian,
   files: filesPersian,
   email: emailPersian,
+  deliveryReports: deliveryPersian,
   quickAdd: quickPersian,
   boundaries: boundaryPersian,
   calendar: CALENDAR_MESSAGES.fa,
@@ -144,9 +158,11 @@ const persian: typeof english = mergeMessages(english, {
   filters: filtersPersian,
   tableControls: tablePersian,
   notifications: notificationsPersian,
+  privacyRequest: privacyPersian,
 });
 const german: typeof english = mergeMessages(english, {
   ...de,
+  nextActionQueue: nextActionQueueGerman,
   pipelineLifecycle: pipelineLifecycleGerman,
   viewCompatibility: viewCompatibilityGerman,
   integrations: integrationsGerman,
@@ -159,6 +175,7 @@ const german: typeof english = mergeMessages(english, {
   customFields: customGerman,
   files: filesGerman,
   email: emailGerman,
+  deliveryReports: deliveryGerman,
   quickAdd: quickGerman,
   boundaries: boundaryGerman,
   calendar: CALENDAR_MESSAGES.de,
@@ -174,6 +191,7 @@ const german: typeof english = mergeMessages(english, {
   filters: filtersGerman,
   tableControls: tableGerman,
   notifications: notificationsGerman,
+  privacyRequest: privacyGerman,
 });
 const catalogs = { en: english, fa: persian, de: german } satisfies Record<Locale, typeof english>;
 export type AppMessages = typeof english;

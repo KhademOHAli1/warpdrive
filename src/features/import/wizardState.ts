@@ -3,7 +3,10 @@
 // UI's per-column choices into the backend columnMappingSchema shape via
 // buildColumnMapping. No React, no I/O: the orchestrator owns the async calls.
 import { DEFAULT_IMPORT_SOURCE, type ImportSource } from "@/constants/importSources";
+import type { CalendarSystem } from "@/lib/localeFormatting";
 import { assertNever } from "@/types/result";
+import type { PhoneCountry } from "@/utils/phoneNormalization";
+import { IMPORT_DATE_FIELDS } from "./importDateConventions";
 import type { MappableEntity } from "./importFields";
 import { primaryEntityOf, requiredFieldsFor, targetsFor } from "./importFields";
 import type { ColumnMapping } from "./schemas";
@@ -26,6 +29,9 @@ export interface WizardState {
   step: WizardStep;
   source: ImportSource;
   createMissingStages: boolean;
+  phoneCountry?: PhoneCountry;
+  dateCalendar?: CalendarSystem;
+  dateTimeZone?: string;
   target: ImportTarget;
   filename: string;
   headers: string[];
@@ -61,6 +67,9 @@ export type WizardAction =
   | { type: "setTarget"; target: ImportTarget; suggest?: SuggestContext }
   | { type: "setSource"; source: ImportSource; suggest?: SuggestContext }
   | { type: "setCreateMissingStages"; createMissingStages: boolean }
+  | { type: "setPhoneCountry"; phoneCountry: PhoneCountry | undefined }
+  | { type: "setDateCalendar"; dateCalendar: CalendarSystem }
+  | { type: "setDateTimeZone"; dateTimeZone: string }
   | {
       type: "loadFile";
       filename: string;
@@ -103,6 +112,12 @@ export function wizardReducer(state: WizardState, action: WizardAction): WizardS
         columns: reseed(state.headers, target, action.source, action.suggest),
       };
     }
+    case "setDateCalendar":
+      return { ...state, validation: null, dateCalendar: action.dateCalendar };
+    case "setDateTimeZone":
+      return { ...state, validation: null, dateTimeZone: action.dateTimeZone };
+    case "setPhoneCountry":
+      return { ...state, validation: null, phoneCountry: action.phoneCountry };
     case "setCreateMissingStages":
       return { ...state, validation: null, createMissingStages: action.createMissingStages };
     case "loadFile":
@@ -208,6 +223,17 @@ export function buildColumnMapping(state: WizardState): ColumnMapping {
     columns,
     options: {
       rowNoteFromUnmapped: state.rowNoteFromUnmapped,
+      ...(state.phoneCountry === undefined ? {} : { phoneCountry: state.phoneCountry }),
+      ...(state.dateCalendar !== undefined ||
+      state.dateTimeZone !== undefined ||
+      Object.values(state.columns).some((column) =>
+        IMPORT_DATE_FIELDS.some((field) => field === column.field),
+      )
+        ? {
+            dateCalendar: state.dateCalendar ?? "gregory",
+            dateTimeZone: state.dateTimeZone ?? "UTC",
+          }
+        : {}),
       createMissingStages:
         state.source === "pipedrive" && state.target === "deal" && state.createMissingStages,
     },

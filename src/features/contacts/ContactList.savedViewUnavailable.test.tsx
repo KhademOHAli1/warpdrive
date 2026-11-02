@@ -19,7 +19,10 @@ vi.mock("@/lib/trpc-client", () => ({
     },
   },
 }));
-vi.mock("@/features/identity/preferencesActions", () => ({ setColumnViewAction: vi.fn() }));
+vi.mock("@/features/identity/preferencesActions", () => ({
+  setColumnViewAction: vi.fn(),
+  setSavedViewSelectionAction: vi.fn(() => Promise.resolve({ ok: true })),
+}));
 vi.mock("./actions", () => ({
   deletePersonAction: vi.fn(),
   deleteOrgAction: vi.fn(),

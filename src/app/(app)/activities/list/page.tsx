@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { env } from "@/config/env";
 import { ActivitiesTable } from "@/features/activities/ActivitiesTable";
 import { activitiesMessagesForLocale } from "@/features/activities/activitiesMessages";
 import { getLocalePreferences } from "@/features/i18n/server";
@@ -20,7 +21,10 @@ export default async function ActivityListPage(): Promise<React.ReactNode> {
   }
   return (
     <main aria-label={S.activities} className="h-full">
-      <ActivitiesTable currentUserId={ctx.actor.id} />
+      <ActivitiesTable
+        currentUserId={ctx.actor.id}
+        queueEnabled={env.SALES_NEXT_ACTION_QUEUE_ENABLED}
+      />
     </main>
   );
 }

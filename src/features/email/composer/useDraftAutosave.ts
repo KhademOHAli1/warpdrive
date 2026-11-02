@@ -1,123 +1,67 @@
 "use client";
+import { useEffect, useLayoutEffect, useState } from "react";
+import type { DraftAutosaveDeps, DraftSaveState } from "./draftAutosave.types";
+import { createDraftAutosaveScope, DRAFT_DEBOUNCE_MS } from "./draftAutosaveScope";
 
-import { useEffect, useRef, useState } from "react";
-import { captureException, currentRoute } from "@/features/observability/capture";
-import { readCsrfToken } from "@/utils/csrfCookie";
-import { deleteDraftAction, saveDraftAction } from "../folderActions";
-import type { EmailVisibility } from "../threadVisibility";
+export type { DraftAutosaveDeps } from "./draftAutosave.types";
+export const DEBOUNCE_MS = DRAFT_DEBOUNCE_MS;
 
-// Exported so a test can drive the clock past it rather than duplicating the number.
-export const DEBOUNCE_MS = 1500;
-
-export interface DraftAutosaveDeps {
-  accountId: string;
-  threadId: string | null;
-  subject: string;
-  body: string;
-  toList: string[];
-  ccList: string[];
-  visibility: EmailVisibility;
-  // CRM link context of this compose (deal workspace, or the inbox compose's link sidebar).
-  // Persisted with the draft so resuming it sends against the same record.
-  linkDealId?: string | undefined;
-  linkPersonId?: string | undefined;
-  initialDraftId: string | undefined;
-  // Shared with the send path so delete-on-send targets the id autosave created/resumed.
-  draftIdRef: { current: string | undefined };
-  // Shared with the send path. Holds the in-flight save promise (null when idle) so concurrent
-  // ticks coalesce (no double INSERT) and send can await a racing save before deleting the draft.
-  inFlightRef: { current: Promise<void> | null };
-}
-
-function hasContent(d: {
-  subject: string;
-  body: string;
-  toList: string[];
-  ccList: string[];
-}): boolean {
-  return (
-    d.subject.trim() !== "" || d.body.trim() !== "" || d.toList.length > 0 || d.ccList.length > 0
-  );
-}
-
-// Debounced autosave (D1). Seeds draftIdRef from a resumed draft on mount. After ~1.5s idle:
-// if the composer has content, upsert (create when no id yet, update by id thereafter) and
-// record the returned id in the shared ref; if the composer is empty, delete the tracked
-// draft and clear the ref. Last-write-wins across tabs (no conflict resolution).
 export function useDraftAutosave(deps: DraftAutosaveDeps) {
-  const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [status, setStatus] = useState<DraftSaveState>("idle");
   const [retryNonce, setRetryNonce] = useState(0);
-  const { accountId, threadId, subject, body, toList, ccList, initialDraftId, draftIdRef } = deps;
-  const { visibility, inFlightRef, linkDealId, linkPersonId } = deps;
-  // Seed the shared draft id once. Writing a ref during render is unsafe under concurrent
-  // rendering (and react-hooks/refs flags it); this effect is declared before the autosave effect,
-  // so the id is in place well before that effect's debounce timer can fire.
-  const seeded = useRef(false);
-  useEffect(() => {
-    if (!seeded.current) {
-      draftIdRef.current = initialDraftId;
-      seeded.current = true;
-    }
-  }, [draftIdRef, initialDraftId]);
-
-  // biome-ignore lint/correctness/useExhaustiveDependencies: Retry deliberately saves the same snapshot again.
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      const run = async (): Promise<void> => {
-        setStatus("saving");
-        if (hasContent({ subject, body, toList, ccList })) {
-          const res = await saveDraftAction(readCsrfToken(), {
-            id: draftIdRef.current,
-            accountId,
-            threadId,
-            subject,
-            bodyHtml: body,
-            toEmails: toList,
-            ccEmails: ccList,
-            visibility,
-            // Null, not undefined: clearing the link in the composer must clear it on the row.
-            linkDealId: linkDealId ?? null,
-            linkPersonId: linkPersonId ?? null,
-          });
-          if (res.ok) draftIdRef.current = res.value.id;
-          setStatus(res.ok ? "saved" : "error");
-          return;
-        }
-        const id = draftIdRef.current;
-        if (id !== undefined) {
-          const res = await deleteDraftAction(readCsrfToken(), { draftId: id });
-          if (res.ok) draftIdRef.current = undefined;
-          setStatus(res.ok ? "idle" : "error");
-        } else setStatus("idle");
-      };
-      // The shared promise includes queued saves, so Send waits for the newest snapshot.
-      const next = (inFlightRef.current ?? Promise.resolve())
-        .then(run)
-        .catch((e: unknown) => {
-          setStatus("error");
-          captureException(e, { surface: "email-draft-autosave", route: currentRoute() });
-        })
-        .finally(() => {
-          if (inFlightRef.current === next) inFlightRef.current = null;
-        });
-      inFlightRef.current = next;
-    }, DEBOUNCE_MS);
-    return () => clearTimeout(timer);
-    // Depend on the tracked primitives (and stable refs) only. NOT the deps object literal, whose
-    // fresh identity every render would otherwise reset the debounce on any unrelated re-render.
-  }, [
-    retryNonce,
+  const [scope] = useState(() => createDraftAutosaveScope(setStatus));
+  useLayoutEffect(() => scope.update(deps), [scope, deps]);
+  const {
     accountId,
     threadId,
     subject,
     body,
     toList,
     ccList,
+    bccList,
+    attachments,
+    sendIntentId,
+    trackOpens,
+    trackLinks,
     visibility,
     linkDealId,
     linkPersonId,
     draftIdRef,
     inFlightRef,
-  ]);
-  return { status, retry: () => setRetryNonce((value) => value + 1) };
+    enabled,
+  } = deps;
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Tracked snapshots and Retry deliberately schedule saves.
+  useEffect(
+    () => scope.schedule(),
+    [
+      scope,
+      retryNonce,
+      accountId,
+      threadId,
+      subject,
+      body,
+      toList,
+      ccList,
+      bccList,
+      attachments,
+      sendIntentId,
+      trackOpens,
+      trackLinks,
+      visibility,
+      linkDealId,
+      linkPersonId,
+      draftIdRef,
+      inFlightRef,
+      enabled,
+    ],
+  );
+  useEffect(() => () => scope.dispose(), [scope]);
+  return {
+    status,
+    retry: () => setRetryNonce((value) => value + 1),
+    flush: scope.flush,
+    rebind: scope.rebind,
+    suspend: scope.suspend,
+    resume: scope.resume,
+  };
 }

@@ -24,6 +24,9 @@ pnpm-debug.log*
 # Claude Code local state and git worktrees (worktrees carry their own .next caches, which
 # otherwise bloat the build context and can exhaust disk on a local docker build).
 .claude
+# Private finite profiles include credentials, dumps and local database files.
+.runtime
+**/.runtime
 
 # Editor / OS cruft
 .vscode

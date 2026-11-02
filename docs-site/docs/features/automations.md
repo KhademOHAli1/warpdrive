@@ -5,27 +5,39 @@ description: "Connect nodes, configure conditional branches, simulate, publish, 
 
 # Visual workflows
 
-**Early access:** create a process by connecting a manual start, deal-read nodes, conditions,
-and follow-up tasks. Automatic CRM triggers, waits, email, and provider integrations remain
-in development. Existing email scheduling and reminders keep their existing workers.
+**Early access:** connect a manual start, deal reads, conditions, fixed waits, and follow-up
+tasks. Automatic CRM triggers, email, and provider integrations remain in development.
+Existing email scheduling and reminders keep their existing workers.
 
 ## Start a workflow
 
-Open **Workflows** in the sidebar and choose **New workflow**. Select a follow-up template
+Open **Workflows** in the sidebar and choose **New workflow**. Select the built-in follow-up starter
 or a blank canvas with just the manual start, then give the workflow a name.
 
-**Add node** offers **Read deal**, **Create task**, and **Condition**. Each new node starts
-unconnected. Adding or removing a node never silently rewrites the process.
+**Add node** offers **Read deal**, **Create task**, **Condition**, and **Wait**. Each new node starts
+unconnected when added from the toolbar. To extend a specific path, use **+ Next step**
+on a node or **Add a new connected step** in its Connections panel. Conditions offer an
+independent add control for each outcome. The searchable picker identifies the source and
+connects the chosen step in one edit.
 
 ## Connect the process
 
-Drag an output dot to another node's input dot. Manual starts have no input. Ordinary
+Drag an output dot to another node's input dot, or release it on the destination card.
+Ports have a larger transparent hit area and snap radius. A valid port highlights green;
+an unavailable port highlights red. Manual starts have no input. Ordinary
 nodes have one next-step output; conditions have separate **Matches** and **Does not match**
 outputs. Both condition outputs need a destination before publication.
 
 Select a connection to change its source, output, or target in the settings panel. You can
 also drag its endpoint onto another node. **Remove connection** or Delete removes the
-selected edge. Removing a node removes its incident connections, leaving the remaining
+selected edge. Drawing from an occupied output moves its existing connection; a rejected
+drop or release on empty space preserves the original. Inputs already used by another path
+cannot be stolen. Dragging a free output onto empty canvas opens the connected-step picker.
+Closing that picker leaves the graph unchanged.
+
+![German action picker on mobile](../../../docs/images/workflows/interaction-review/picker-de-mobile.jpg)
+
+Removing a node removes its incident connections, leaving the remaining
 process for you to reconnect explicitly.
 
 Connections form a tree with one incoming path per node. Loops and joins are rejected.
@@ -35,12 +47,24 @@ Drag nodes to position them. **Arrange nodes** lays out the connected branches a
 unconnected nodes. Pan, zoom, and fit controls are available. **Focus canvas** opens a larger
 editing workspace; Escape returns to the workflow. Node positions are saved with the draft.
 
+**Undo** and **Redo** restore graph edits, configuration, connections, and positions,
+including a removed step's mappings. A completed drag is one undo operation. Up to 50 edits
+are kept in this browser session; reload discards this undo history. Save does not clear it.
+Use Command/Ctrl+Z and Command/Ctrl+Shift+Z inside the builder. Text fields keep their native
+text-editing shortcuts. A new edit after undo discards the redo path.
+
 The step selector and per-node **Connections** controls provide an alternative to drawing
 connections. Select a node, then choose its next node for each output in the settings panel.
+Selecting a step from the selector or issue list brings it into view at a readable scale.
 Keyboard users can select nodes from the step selector; Delete/Backspace on a selected graph
 node removes it. Editing text with Backspace does not remove graph nodes.
 
-![Farsi conditional workflow in focused editing](../../../docs/images/workflows/node-review/graph-fa-focus.jpg)
+Closing the step picker, run setup or run details returns keyboard focus to the control
+that opened it. Adding a step moves focus to its name field. If a history update removes
+the original run-details control, focus returns to **Refresh**, or to the **Run history**
+heading while Refresh is unavailable.
+
+![Farsi mobile canvas with condition branches](../../../docs/images/workflows/interaction-review/editor-fa-mobile.jpg)
 
 Captured 31 October 2026 using synthetic local records. The current application shell,
 fonts, colors, and shared controls are retained.
@@ -62,6 +86,12 @@ contains is case-sensitive. Deal statuses and boolean values have translated cho
 the stored values stay language-neutral. Numeric/money comparisons, AND/OR groups, and
 parallel joins remain later work. Only the selected condition branch executes.
 
+**Wait** pauses the run for a fixed number of whole minutes, from 1 to 525,600. Enter `1`
+for one minute. The wait begins when the run reaches this step and measures elapsed time,
+independent of timezone, calendar, or business days. Values from earlier steps and waits
+until a calendar date are not supported.
+
+Node cards summarize task titles, selected record sources, condition comparisons, and waits.
 A step can use its automatic localized title or a custom name. Automatic titles follow
 language changes; custom names and task text remain exactly as entered.
 
@@ -78,7 +108,8 @@ only the draft. Existing runs retain their original published version.
 
 Select **Simulate**, enter at least two characters to search for a visible deal, select it,
 and confirm. Simulation uses the published version and canonical CRM validation, then rolls
-back task changes. Run history is retained. Publication is currently required before simulation.
+back task changes. Simulation skips real waiting and shows the simulated resume time. Run
+history is retained. Publication is currently required before simulation.
 
 ## Run and inspect
 
@@ -87,13 +118,22 @@ on the selected path. The background worker continues after the browser closes. 
 minutely reconciliation recover missed enqueues.
 
 **Run history** shows mode, status, timestamps, completed-step count, and stable failure IDs.
-Raw CRM inputs/outputs are withheld because historical access may change. Detailed redacted
-step payloads and manual retry are later milestones.
+Choose **View run** to inspect the immutable published graph used for that run. Completed
+steps and their connected path appear in green; the step list distinguishes completed,
+simulated, not-reached, and failed-cursor states. Selecting a step focuses it on the graph.
+Later draft changes do not alter this historical view. Waiting runs show their scheduled
+resume time. This is the earliest time they can continue; background processing may resume
+them later. Queued, running, and waiting details update while open.
 
-**Cancel run** stops subsequent steps; already committed tasks remain. **Pause** prevents
-new runs while previously admitted runs continue. Publishing reactivates a paused workflow.
-The worker rechecks the initiating user's current permissions and deal visibility at every
-step. Losing access or being deactivated stops the run.
+![Farsi simulation graph and step results](../../../docs/images/workflows/interaction-review/run-fa.jpg)
+
+Raw CRM inputs/outputs are withheld because historical access may change. Detailed redacted
+step payloads, attempt timing, and manual retry are later milestones.
+
+**Cancel run** stops a pending wait and subsequent steps; already completed tasks remain.
+**Pause** prevents new runs while previously admitted runs continue. Publishing reactivates
+a paused workflow. Runs use the initiating user's current permissions. Deal reads and task
+creation check access when they execute. Deactivation or a denied action stops the run.
 
 ## Permissions and languages
 
@@ -113,7 +153,8 @@ the Iranian calendar. Calendar display does not enable Iranian recurring schedul
 
 The repository's `docs/workflows/` directory contains the approved 42-task plan, Mobbin
 references, architecture, operations, and visual test ledger. This manual node builder is
-one milestone within R1. CRM events, richer actions, grouped conditions, waits, notifications,
-controlled email, operational limits, retention, and full accessibility qualification remain.
+one milestone within R1. CRM events, richer actions, grouped conditions, waits until a date
+or based on earlier values, notifications, controlled email, operational limits, retention,
+and full accessibility qualification remain.
 Calendar-aware recurrence and provider connections follow in R2; approvals, loops, and
 sub-workflows follow in R3.

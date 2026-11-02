@@ -136,6 +136,8 @@ export const activityImportRowSchema = z.object({
   subject: z.string().min(1).max(255),
   typeKey: z.string().trim().min(1).nullable().default(null),
   dueAt: dueAtField,
+  allDay: z.boolean().optional(),
+  dueDate: z.string().date().nullable().optional(),
   durationMinutes: z.coerce.number().int().positive().nullable().default(null),
   pipedriveId: optionalText,
   assignee: optionalText,

@@ -1,50 +1,38 @@
 import type { ReactNode } from "react";
+import { env } from "@/config/env";
 import { db } from "@/db/client";
-import { getActorMailboxStatus } from "@/features/email/mailboxOwnership";
+import { mailboxConnectionMessages } from "@/features/email/connections/messages";
+import { listActorMailboxes } from "@/features/email/mailAccountsRepo";
+import { getLocalePreferences } from "@/features/i18n/server";
 import { getServerSettingsMessages } from "@/features/identity/settingsMessages.server";
 import { createContext } from "@/server/trpc/context";
 import { SettingsHeading } from "../SettingsHeading";
 import { SettingsPage } from "../SettingsSurface";
-import { EmailSyncClient } from "./EmailSyncClient";
+import { MailboxConnectionsClient } from "./MailboxConnectionsClient";
 
 export async function generateMetadata() {
   const L = await getServerSettingsMessages();
   return { title: L._emailSync.title };
 }
 
-// Settings > Email sync (spec section 8). A "my account" page: gated to any authenticated
-// actor (mirrors settings/profile), NOT the admin MANAGE gate used by Company pages. Shows the
-// actor's single mailbox (email_accounts.user_id is UNIQUE) with connect / reconnect /
-// disconnect controls. The org-level email tracking default lives on Company > General and is
-// intentionally NOT duplicated here.
+// Keep personal mailbox ownership at the server boundary; credentials never enter page props.
 export default async function EmailSyncPage(): Promise<ReactNode> {
   const L = await getServerSettingsMessages();
-
   const { actor } = await createContext();
   if (actor === null) return <p className="text-sm text-red-600">{L._emailSync.requiresAuth}</p>;
-
-  const mailbox = await getActorMailboxStatus(db, actor.id, AbortSignal.timeout(5000));
-
+  const preferences = await getLocalePreferences();
+  const copy = mailboxConnectionMessages(preferences.locale);
+  const mailboxes = await listActorMailboxes(db, actor.id, AbortSignal.timeout(5000));
+  const gmailAvailable =
+    env.GOOGLE_OAUTH_CLIENT_ID.length > 0 && env.GOOGLE_OAUTH_CLIENT_SECRET.length > 0;
   return (
     <SettingsPage>
       <SettingsHeading
         scope="personal"
         title={L._emailSync.title}
-        description={L._emailSync.intro}
+        description={copy.settingsDescription}
       />
-      <EmailSyncClient
-        mailbox={
-          mailbox === null
-            ? null
-            : {
-                id: mailbox.id,
-                emailAddress: mailbox.emailAddress,
-                status: mailbox.status,
-                lastSyncAtIso: mailbox.lastSyncAt?.toISOString() ?? null,
-                lastErrorId: mailbox.lastErrorId,
-              }
-        }
-      />
+      <MailboxConnectionsClient initialMailboxes={mailboxes} gmailAvailable={gmailAvailable} />
     </SettingsPage>
   );
 }

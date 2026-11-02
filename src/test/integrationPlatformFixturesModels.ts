@@ -75,7 +75,7 @@ export interface IntegrationPlatformFixtures extends IntegrationFixtureCore {
   sessions: { member: { id: string; token: string }; adminPending: { id: string; token: string } };
   limits: {
     oauthCapabilities: "not-persisted-in-current-model";
-    personalMailboxesPerUser: 1;
+    personalMailboxesSeededPerUser: 1;
     serviceConnections: "shared-admin-managed";
     evidence: "synthetic-real-postgresql-only";
     authentication: "synthetic-native-model-not-browser-enrollment";

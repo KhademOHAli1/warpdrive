@@ -20,7 +20,6 @@ export function CalendarEventSchedule({
   const allDay = draft.startTime === "";
   return (
     <div className="space-y-3">
-      <ToggleField label={t("allDay")} checked={allDay} onCheckedChange={onAllDay} />
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="space-y-1.5">
           <span className="text-xs font-medium text-muted-foreground">{t("editor.start")}</span>
@@ -67,6 +66,12 @@ export function CalendarEventSchedule({
           </div>
         </div>
       </div>
+      <ToggleField
+        label={t("allDay")}
+        checked={allDay}
+        onCheckedChange={onAllDay}
+        className="text-xs text-muted-foreground"
+      />
     </div>
   );
 }

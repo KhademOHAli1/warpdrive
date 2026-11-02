@@ -153,6 +153,8 @@
     "signInWithProvider": "Sign in with {provider}",
     "linkWithProvider": "Link {provider}",
     "confirmWithProvider": "Confirm with {provider}",
+    "confirmIdentityInNewTab": "Confirm identity in a new tab",
+    "confirmNewTabDescription": "Complete confirmation in Security settings, then return here and retry.",
     "eventSignIn": "Sign-in attempt",
     "eventSignOut": "Signed out",
     "eventSessions": "Session access changed",

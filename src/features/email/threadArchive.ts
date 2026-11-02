@@ -3,6 +3,7 @@ import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import type { AuthUser } from "@/features/permissions/types";
 import { err, ok, type Result } from "@/types/result";
+import { privateIntakeBlocksThread } from "./privateIntakeRestrictions";
 
 // Set/clear the local archive flag on a thread the actor OWNS (mailbox owner). Missing and
 // not-owned both return E_GMAIL_011 (404-on-invisible), matching getThread's privacy shape.
@@ -22,6 +23,7 @@ async function setArchivedAt(
       SET archived_at = ${expr}
       FROM email_accounts a
       WHERE t.account_id = a.id AND t.id = ${threadId} AND a.user_id = ${actor.id}
+        AND NOT ${privateIntakeBlocksThread(sql`t.account_id`, sql`t.id`)}
       RETURNING t.id
     `)
   ).rows[0] as { id: string } | undefined;

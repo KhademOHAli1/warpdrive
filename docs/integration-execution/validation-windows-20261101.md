@@ -34,11 +34,11 @@ or end-to-end service evidence. Private configuration and data remain unchanged.
 The owned `.next/cache` and `.next/dev/cache` paths are already absent from the
 earlier cleanup. A fresh ignored-path inventory measured allocated file blocks:
 
-| Path under the preview checkout | Allocated file bytes | Action |
-| --- | ---: | --- |
-| `node_modules/.vite` | 122,880 | Retained |
-| `.next/dev` | 96,604,160 | Retained, includes generated route state |
-| `.next/types` | 954,368 | Retained |
+| Path under the preview checkout | Allocated file bytes | Action                                   |
+| ------------------------------- | -------------------: | ---------------------------------------- |
+| `node_modules/.vite`            |              122,880 | Retained                                 |
+| `.next/dev`                     |           96,604,160 | Retained, includes generated route state |
+| `.next/types`                   |              954,368 | Retained                                 |
 
 All three were ordinary non-symlink ignored directories. No deletion was performed
 in this recovery window, so reclaimed allocation is zero. Peer processes, source,
@@ -72,18 +72,18 @@ recorded PostgreSQL 16 qualification lane.
 The coordinator explicitly released the mail window after its receipt cases became
 terminal. The programme then ran only the following sequential selected profiles:
 
-| Profile | Evidence and result |
-| --- | --- |
-| Actor initial red | `actor-freshness-red-20261101`, group 80824; one pass/one failure, valid CAS and four actual-effect assertion failures |
-| Actor green | `actor-freshness-green-20261101`, group 82612; two passes on PostgreSQL 16 |
-| Slack failure red | `slack-read-failures-red-20261101`, group 81296; 21 failures/two controls passed |
-| Slack failure baseline green | `slack-read-failures-green-20261101`, group 82444; 23 passes |
-| Slack cancellation behavioral red | `slack-read-cancellation-red-20261101`, group 83065; three failures/three controls passed on the actual helper |
-| Slack cancellation green | `slack-read-cancellation-green-20261101`, group 84020; six passes |
+| Profile                                            | Evidence and result                                                                                                      |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Actor initial red                                  | `actor-freshness-red-20261101`, group 80824; one pass/one failure, valid CAS and four actual-effect assertion failures   |
+| Actor green                                        | `actor-freshness-green-20261101`, group 82612; two passes on PostgreSQL 16                                               |
+| Slack failure red                                  | `slack-read-failures-red-20261101`, group 81296; 21 failures/two controls passed                                         |
+| Slack failure baseline green                       | `slack-read-failures-green-20261101`, group 82444; 23 passes                                                             |
+| Slack cancellation behavioral red                  | `slack-read-cancellation-red-20261101`, group 83065; three failures/three controls passed on the actual helper           |
+| Slack cancellation green                           | `slack-read-cancellation-green-20261101`, group 84020; six passes                                                        |
 | Failure/control reruns before monotonic correction | `slack-read-failures-final-20261101`, group 84029, 23 passes; `slack-legacy-controls-20261101`, group 84034, four passes |
-| Monotonic deadline red | `slack-monotonic-red-20261101`, group 86783; four overdue-phase failures/eight controls passed, 12 cases |
-| Monotonic deadline green | `slack-monotonic-green-20261101`, group 87650; 12 passes after absolute elapsed-time checks |
-| Final-source retained regressions | `slack-final-classification-20261101`, group 88255, 23 passes; `slack-final-legacy-20261101`, group 88261, four passes |
+| Monotonic deadline red                             | `slack-monotonic-red-20261101`, group 86783; four overdue-phase failures/eight controls passed, 12 cases                 |
+| Monotonic deadline green                           | `slack-monotonic-green-20261101`, group 87650; 12 passes after absolute elapsed-time checks                              |
+| Final-source retained regressions                  | `slack-final-classification-20261101`, group 88255, 23 passes; `slack-final-legacy-20261101`, group 88261, four passes   |
 
 The actor correction is committed as `643738b`; its
 [focused qualification](actor-freshness-qualification.md) records the pending 12-file
@@ -111,3 +111,20 @@ matched source. The task register now records **38 completed, 408 planned**, sti
 446 tasks total. Runtime bindings, future journeys, native-speaker rendering and
 browser acceptance are not implied by this design-copy closure. No other task was
 closed for the actor/Slack work or resource recovery.
+
+## Completed affected/static window
+
+The later explicit handoff admitted the 12-file affected PG16 selection, which
+passed 59/59. Final scoped Biome/type-aware ESLint and standalone types passed
+after bounded repairs; 39 Slack and 51 guard unit cases passed too. Mail then
+took the native lane, and no further programme PG campaign was started. All
+programme campaign processes were terminal when the remaining slot was released.
+See [the exact later evidence](qualification-20261101.md).
+
+The independently reviewed MCP inventory and trilingual consent design subsequently
+closed AISEC-001/002. Current tracker: **40 completed, 406 planned**, 446 total.
+Those design/source closures do not implement scoped grants. The later D225 checkpoint
+passed the complete 6,024-case unit lane, production/worker compilation and independent
+frozen dependency install. D225 whole-source lint failed at Biome before ESLint; the later
+docs-only `d238bcb` full-lint recheck passed. Full-PG,
+runtime/browser and provider gates remain separate in the linked current record.

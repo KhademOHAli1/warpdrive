@@ -4,9 +4,11 @@ import type { Db } from "@/db/client";
 import type { AuthUser } from "@/features/permissions/types";
 import { err, ok, type Result } from "@/types/result";
 import { attachmentsForMessages } from "./attachmentReads";
+import { readDeliveryObservationMessageRefs } from "./deliveryObservationMessageRefs";
 import type { ThreadMessage } from "./emailReads";
 import { canSeeEmail } from "./emailVisibility";
 import { plainTextToSafeHtml } from "./plainText";
+import { readPrivateIntakeProjection } from "./privateIntakeProjection";
 import { sanitizeInboundHtml } from "./sanitizeHtml";
 import { trackingForMessages } from "./trackingReads";
 
@@ -89,7 +91,22 @@ export async function getMessage(
   signal.throwIfAborted();
   const tracking = await trackingForMessages(db, [row.id], signal);
   signal.throwIfAborted();
+  const deliveryRefs = await readDeliveryObservationMessageRefs(
+    db,
+    { actor: args.actor, accountId: row.account_id, messageIds: [row.id] },
+    signal,
+  );
+  signal.throwIfAborted();
 
+  const privateProjection = await readPrivateIntakeProjection(
+    db,
+    {
+      actor: args.actor,
+      threadIds: [],
+      messageIds: [row.id],
+    },
+    signal,
+  );
   return ok({
     messageId: row.id,
     gmailMessageId: row.gmail_message_id,
@@ -110,6 +127,8 @@ export async function getMessage(
     sentAt: row.sent_at,
     attachments: attachments.get(row.id) ?? [],
     tracking: tracking.get(row.id) ?? [],
+    deliveryReportRef: deliveryRefs.get(row.id) ?? null,
+    privateIntake: privateProjection.messages.get(row.id) ?? null,
     accountId: row.account_id,
     ownerEmail: row.owner_email,
   });

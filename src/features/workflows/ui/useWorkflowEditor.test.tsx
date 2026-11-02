@@ -47,4 +47,7 @@ it("adopts normalized server content after saving so the editor is clean", async
   await act(() => result.current.perform("save"));
   expect(result.current.dirty).toBe(false);
   expect(result.current.definition.nodes[1]?.name).toBe("Read deal");
+  act(() => result.current.setName("Changed again"));
+  expect(result.current.dirty).toBe(true);
+  expect(result.current.notice).toBeNull();
 });

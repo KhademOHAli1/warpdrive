@@ -18,15 +18,44 @@
   cursor: grabbing;
 }
 .workflow-canvas .react-flow__handle {
-  width: 18px;
-  height: 18px;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.workflow-canvas .react-flow__handle::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 16px;
+  height: 16px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
   border: 3px solid hsl(var(--card));
   background: hsl(var(--primary));
   box-shadow: 0 0 0 1px hsl(var(--border));
+  pointer-events: none;
+  transition:
+    box-shadow 120ms ease,
+    background-color 120ms ease;
 }
-.workflow-canvas .react-flow__handle.connectingto.valid {
+.workflow-canvas .react-flow__handle:hover::after {
+  box-shadow: 0 0 0 5px color-mix(in srgb, hsl(var(--primary)) 15%, transparent);
+}
+.workflow-canvas .react-flow__handle.connectingto.valid::after {
   background: hsl(var(--success));
   box-shadow: 0 0 0 5px color-mix(in srgb, hsl(var(--success)) 20%, transparent);
+}
+.workflow-canvas .react-flow__handle.connectingto:not(.valid)::after {
+  background: hsl(var(--destructive));
+  box-shadow: 0 0 0 5px color-mix(in srgb, hsl(var(--destructive)) 15%, transparent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .workflow-canvas .react-flow__handle::after {
+    transition: none;
+  }
 }
 .workflow-canvas .react-flow__edge.selected .react-flow__edge-path {
   stroke: hsl(var(--primary));

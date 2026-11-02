@@ -153,6 +153,8 @@
     "signInWithProvider": "Mit {provider} anmelden",
     "linkWithProvider": "{provider} verknüpfen",
     "confirmWithProvider": "Mit {provider} bestätigen",
+    "confirmIdentityInNewTab": "Identität in neuem Tab bestätigen",
+    "confirmNewTabDescription": "Bestätige deine Identität in den Sicherheitseinstellungen. Kehre anschließend hierher zurück und versuche es erneut.",
     "eventSignIn": "Anmeldeversuch",
     "eventSignOut": "Abmeldung",
     "eventSessions": "Sitzungszugriff geändert",

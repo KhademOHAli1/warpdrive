@@ -69,6 +69,10 @@
         {
           "path": "docs/sales-platform/evidence/local-lineage.json",
           "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/evidence/current-main-source-lineage-2026-11-01.json",
+          "level": "observed-source"
         }
       ],
       "remainingGates": [
@@ -76,7 +80,7 @@
         "WF-0083 and MAIL-dev forward convergence/recovery not qualified.",
         "New privacy branch migration drift needs allocator-owned reconciliation."
       ],
-      "notes": "Read-only fail-closed tool implemented; 24 tests pass. Newly created candidate DB ledger matches 85 migrations; no retained path inferred."
+      "notes": "Read-only fail-closed tool implemented; 24 tests pass. Newly created candidate DB ledger matches 85 migrations; no retained path inferred. Current main a0490c1 and committed MAIL a660039 were independently inspected: shared prefix through 0082, divergent 0083; all applied retained ledgers remain unknown and no history was changed."
     },
     {
       "id": "SP-00.4",
@@ -92,12 +96,16 @@
         {
           "path": "docs/sales-platform/verification.md",
           "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/critical-journey-permission-fixtures.json",
+          "level": "observed-source"
         }
       ],
       "remainingGates": [
         "All protected browser/provider/state fixtures and domain-owner review still required."
       ],
-      "notes": "Twelve journey categories map source tests and explicit missing acceptance evidence."
+      "notes": "Twelve protected categories now bind82 exact test definitions across41 source files to concrete fixtures, actors, permission context, oracles and limits. Missing browser/provider/revocation/isolation journeys and owner review remain explicit. Source inspection is separate from historical or rerun evidence."
     },
     {
       "id": "SP-00.5",
@@ -113,12 +121,24 @@
         {
           "path": "docs/integration-execution/mail-platform-agreement-proposal.md",
           "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/platform-handoff-inventory-2026-11-01.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/evidence/builder-source-adoption-2026-11-01.json",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/sales-storage-coordination-request.md",
+          "level": "observed-source"
         }
       ],
       "remainingGates": [
         "Existing WF outbox/shared command and MAIL integration interfaces await actual exports/owner acceptance."
       ],
-      "notes": "Preserves one Better Auth, one WF engine and one IG sender; existing platform allocator and MAIL 0085-0091 reservation retained."
+      "notes": "Preserves one Better Auth, one WF engine and one IG sender; existing platform allocator and MAIL 0085-0091 reservation retained. Current committed shared-source inventory and history-aware builder adoption preserve Sales code. The combined source remains unqualified pending its selected window; Sales storage allocation and actual event/wait/MAIL bindings remain absent."
     },
     {
       "id": "SP-00.6",
@@ -152,12 +172,17 @@
         {
           "path": "docs/sales-platform/verification.md",
           "level": "local-unit"
+        },
+        {
+          "path": "docs/sales-platform/distribution-notices-review.md",
+          "level": "observed-source"
         }
       ],
       "remainingGates": [
-        "Full production web build and complete combined candidate still required."
+        "Full production web build and complete combined candidate still required.",
+        "Fix private .runtime Docker-context exclusion and explicit application/third-party notice distribution, then inspect exact runtime artifacts and unresolved/transitive license entries."
       ],
-      "notes": "Pinned Bun 1.4.4 frozen install no changes; typecheck/lint/worker bundling/UI-source audit pass. Inherited broad unit 5897 pass plus expected red collection failure, final tool 44 pass."
+      "notes": "Pinned Bun 1.4.4 frozen install no changes; typecheck/lint/worker bundling/UI-source audit pass. Inherited broad unit 5897 pass plus expected red collection failure, final tool 44 pass. Current f006 source preserves the frozen lock. A bounded notice inventory identified explicit Docker context/runtime notice-copy work; no Docker image or transitive notice closure is claimed."
     },
     {
       "id": "SP-00.8",
@@ -215,12 +240,20 @@
         {
           "path": "docs/sales-platform/current-shell-research.md",
           "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/research/ux-04-saved-view-reference-review-2026-11-01.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/research/ux-04-saved-view-reference-metadata-2026-11-01.json",
+          "level": "observed-source"
         }
       ],
       "remainingGates": [
         "Remaining prioritized flow/reference studies and prototype validation still required."
       ],
-      "notes": "18 Mobbin gallery frames actually inspected: 8 sharing, 6 template, 4 workspace. Missing failure/security/keyboard evidence is recorded."
+      "notes": "Historical18 gallery-frame observations are preserved. A later UX-04 connector inspection adds8preview observations representing7distinct screen IDs within that inspection, with actual position1/3/4 coverage for two4-frame flows. Position2/openfilter/recovery/prototype/participant evidence remains missing; no study completion or authority/persistence proof is inferred."
     },
     {
       "id": "SP-01.4",
@@ -339,12 +372,32 @@
     {
       "id": "SP-02.3",
       "projectId": "SP-02",
-      "status": "planned",
+      "status": "in-progress",
       "owner": "sales-platform",
       "dependsOn": ["SP-02.2"],
-      "evidence": [],
-      "remainingGates": [],
-      "notes": ""
+      "evidence": [
+        {
+          "path": "docs/sales-platform/pipeline-rename-contract.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "src/features/pipelines/pipelineRename.integration.test.ts",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/evidence/r1-rename/native-journey.json",
+          "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/evidence/r1-rename/qualification.json",
+          "level": "local-runtime"
+        }
+      ],
+      "remainingGates": [
+        "Durable creation/duplicate intent receipts, atomic native creation authority and duplicate-configuration behavior remain unimplemented.",
+        "Native global MFA/passkey-policy concurrency, create/stage authority and all required cross-surface/FA-DE-EN/recovery criteria remain open."
+      ],
+      "notes": "Existing rename now uses native fresh proof, scope, CAS and transactional audit. Focused native-PG and editor recovery tests passed; native warm two-tab conflict/refetch/review/save preserved the draft and produced only three intended rename audits. Cold dev error-boundary draft durability is not qualified. Full root 6068/972 and affected PG 245/51 passed on unchanged f006b5a source. Full typecheck/lint and the later coordinated production webpack build passed. No production operation or whole parent completion is inferred."
     },
     {
       "id": "SP-02.4",
@@ -534,13 +587,21 @@
         {
           "path": "docs/sales-platform/evidence/r1-lifecycle/qualification.json",
           "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/saved-view-presentation-contract.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/evidence/saved-view-presentation-2026-11-01.json",
+          "level": "local-runtime"
         }
       ],
       "remainingGates": [
-        "A bounded inventory of real retained definitions, unknown keys and all installed entity variants still requires evidence.",
-        "Versioned writes, old-client compatibility, presentation columns/sort and explicit recovery/edit workflows beyond clear/replace remain open."
+        "A bounded inventory of real retained definitions, unknown keys and installed entity variants still requires evidence.",
+        "Old-client compatibility, custom-field presentation, complete recovery/edit workflows and current-source native browser/retained-upgrade qualification remain open."
       ],
-      "notes": "Bare historical and V1 definitions reuse entity-specific validators; supported values round-trip and authored strings stay unchanged. Unsupported versions/operators/fields/keys return typed unavailable state rather than an executable empty filter. Stored reads retain IDs/names/ownership and raw JSONB. Native version-99 selection blocked cards/totals, persisted across reload without card payload and recovered only after explicit clear; its raw definition stayed unchanged."
+      "notes": "Bare historical and explicit V1 definitions retain strict entity validation. Checked source 03100336 adds full builtin presentation envelopes for person, organization and lead while unknown/future/unsupported definitions remain unavailable without rewriting raw JSONB. Actual envelope round trips and metadata preservation passed within the 18-case PostgreSQL batch. Native current-source browser and old-client/retained data evidence remain separate."
     },
     {
       "id": "SP-03.2",
@@ -576,13 +637,30 @@
         {
           "path": "docs/sales-platform/evidence/r1-lifecycle/qualification.json",
           "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/evidence/saved-view-write-boundary-2026-11-01.json",
+          "level": "local-unit"
+        },
+        {
+          "path": "docs/sales-platform/evidence/activity-replay-and-view-preservation-2026-11-01.json",
+          "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/saved-view-presentation-contract.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/evidence/saved-view-presentation-2026-11-01.json",
+          "level": "local-runtime"
         }
       ],
       "remainingGates": [
         "Complete new pipeline/owner/team/source/date/status/label/custom-field composition and SQL/UI parity qualification remain open.",
-        "Permission-aware dynamic custom-field filter resolution, scope editing and all server export/search/realtime paths remain unqualified by client availability guards."
+        "Permission-aware dynamic custom-field filter resolution, scope editing and all server export/search/realtime paths remain unqualified by client availability guards.",
+        "Builtin person/organization/lead read-write and PostgreSQL checks passed; current-source browser qualification and the separate Deals global server sort/paging contract remain open."
       ],
-      "notes": "Existing executing-viewer query authority is preserved while invalid stored definitions close record-query admission. Board/list scope receipts and entity paging delivery keys prevent mismatched or previous broader cached results from appearing as a narrower view. Contact/lead unavailable selections suppress queries, rows, counts and reference labels. This extends safe composition boundaries without adding a permission grant."
+      "notes": "Existing executing-viewer authority is preserved. Checked source 03100336 applies conditions/columns/sort together, blocks unavailable selections before initial record/count/reference-label admission and refuses unsaved search/quick-filter scope rather than weakening it. Actual affected 425/33 units, PostgreSQL18/3, full types and full lint passed. Existing strict writes and metadata preservation remain. This does not complete dynamic-field, cross-surface authority, native browser, build or main-history upgrade qualification."
     },
     {
       "id": "SP-03.3",
@@ -606,23 +684,65 @@
         {
           "path": "docs/sales-platform/evidence/r1-lifecycle/native-journey.json",
           "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/evidence/saved-view-write-boundary-2026-11-01.json",
+          "level": "local-unit"
+        },
+        {
+          "path": "docs/sales-platform/evidence/activity-replay-and-view-preservation-2026-11-01.json",
+          "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/saved-view-presentation-contract.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/evidence/saved-view-presentation-2026-11-01.json",
+          "level": "local-runtime"
         }
       ],
       "remainingGates": [
-        "New per-view column/sort persistence, duplicate/rename/reset behavior and the full preference/return-navigation matrix remain open.",
-        "The reserved presentation envelope is not active column/sort support; existing personal/shared/favorite metadata preservation is not new sharing implementation."
+        "Duplicate/rename/reset behavior, full return-navigation/preferences matrix and native FA/DE/EN browser acceptance remain open.",
+        "Existing personal/shared/favorite metadata preservation is not new sharing authority; execution-time shared revocation remains open.",
+        "Deals full presentation/global server sorting and custom-field presentation remain outside the adopted three-entity builtin contract."
       ],
-      "notes": "Valid existing personal/shared/favorite metadata is retained. Full selected-view state now survives invalid/missing/deleted selections and refresh instead of clearing to all records; only explicit clear or a valid replacement resumes data. Board/list restored unavailable context and native reload recovery were exercised. Existing bare write format remains unchanged."
+      "notes": "Checked source 03100336 persists person/organization/lead V1 builtin columns/sort and native actor ID-only selected-view preferences. Selecting a view preserves the personal baseline; view-mode debounce/unmount writes are cancelled. Clear restores personal mode, while local editing detaches selection without overwriting personal layout. Malformed/private/missing selections block data. Queued writes fence principal changes, and actual native preferences passed nine PostgreSQL cases within 18/3. Affected 425/33 units, full types and full lint passed; no new browser/release claim."
     },
     {
       "id": "SP-03.4",
       "projectId": "SP-03",
-      "status": "planned",
+      "status": "in-progress",
       "owner": "sales-platform",
       "dependsOn": ["SP-03.3"],
-      "evidence": [],
-      "remainingGates": [],
-      "notes": ""
+      "evidence": [
+        {
+          "path": "docs/sales-platform/next-action-queue-contract.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/verification.md",
+          "level": "local-unit"
+        },
+        {
+          "path": "docs/sales-platform/activity-command-admission-review.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/evidence/next-action-queue-2026-11-01.json",
+          "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/evidence/activity-replay-and-view-preservation-2026-11-01.json",
+          "level": "local-runtime"
+        }
+      ],
+      "remainingGates": [
+        "Literal unassigned work requires an approved ownership/storage decision; current fields are nonnullable.",
+        "Shared current-native/OAuth/job mutation admission, revocation and unknown-outcome qualification remain open.",
+        "Full exact-candidate build, native FA/DE/EN accessibility/state journeys and performance remain open."
+      ],
+      "notes": "Partial default-off read queue for canonical overdue work and opportunities with no nondeleted open activity. Strict protected RPC, bounded permission-scoped counts/pages, redacted links and existing native edit/schedule forms. Actor/input/preference/revision-scoped client hides stale reads, including preference-save and late pre-save races. Adjacent containerless run of 125 tests across 16 files passed; 14 actual read PostgreSQL tests across 4 files and later focused units 44/5 plus scoped typed ESLint 38 files passed. At that queue checkpoint, full types/lint/build/browser remained separate. Later full types/lint are recorded below; current build/browser, release and parent completion remain open. Later d4bf15a passed six actual PostgreSQL replay/saved-preservation cases; strict completion action input passed 24 units. Full current types/lint passed after a preserved test-only type failure and repair. Native authority/browser/build and main-history upgrade gates remain open."
     },
     {
       "id": "SP-03.5",
@@ -670,13 +790,21 @@
         {
           "path": "docs/sales-platform/evidence/r1-lifecycle/qualification.json",
           "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/saved-view-presentation-contract.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/evidence/saved-view-presentation-2026-11-01.json",
+          "level": "local-runtime"
         }
       ],
       "remainingGates": [
         "Asynchronous scoped export jobs, field/currency/unit/date manifests, safe CSV text and progress are not delivered by this increment.",
         "Execution/download authorization rechecks and shared-view export revocation require complete server/runtime qualification."
       ],
-      "notes": "Partial export admission is implemented for leads: an unavailable selected view disables the CSV entry and the export handler, so a null invalid definition cannot become an all-records export. Tests cover cached rows/counts, paging and export suppression through explicit recovery. This is client admission evidence, not completion of the scoped asynchronous export service."
+      "notes": "Leads unavailable selections continue to disable both CSV entry and handler. Checked source 03100336 reuses the existing CSV path with effective builtin columns, sort, conditions and quick filters; unsupported capture cannot silently weaken scope. The native export route independently retains current session/data.export checks. Affected presentation units and 18/3 PostgreSQL passed, but this is not asynchronous export/download authority, after-wait revocation or current-source browser qualification."
     },
     {
       "id": "SP-03.8",
@@ -712,23 +840,56 @@
         {
           "path": "docs/sales-platform/evidence/r1-lifecycle/qualification.json",
           "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/saved-view-presentation-contract.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/evidence/saved-view-presentation-2026-11-01.json",
+          "level": "local-runtime"
         }
       ],
       "remainingGates": [
         "Hidden-field changes, complete shared-view revocation, server export/search/cache/realtime authority and mobile next-action queues remain open.",
         "Native cross-entity language/accessibility/theme matrices and actual retained-filter inventory are still required."
       ],
-      "notes": "Compatibility/recovery is integrated across deal board/list and person/organization/lead selections. Invalid, unsupported, missing or deleted views do not silently widen; cached totals/rows and late results are suppressed, and valid narrower replacements wait for matching data. Source/cache/component and PostgreSQL route tests passed in the current candidate; native Farsi unsupported-deal-view reload/explicit recovery was observed. No cross-surface closure is inferred."
+      "notes": "Compatibility/recovery remains integrated across deal board/list and person/organization/lead selection. Checked source 03100336 adds three-entity builtin presentation and native preference persistence with initial query blocking, personal-baseline isolation, actor queue fences and explicit unsupported transient scope guidance. Actual 425/33 units,18/3 PostgreSQL, full types and full lint passed. Existing older Farsi unsupported-deal-view browser evidence remains historical; no current-source native matrix or broader authority closure is inferred."
     },
     {
       "id": "SP-04.1",
       "projectId": "SP-04",
-      "status": "planned",
+      "status": "in-progress",
       "owner": "sales-platform",
       "dependsOn": ["SP-00.5", "SP-01.8"],
-      "evidence": [],
-      "remainingGates": [],
-      "notes": ""
+      "evidence": [
+        {
+          "path": "docs/sales-platform/template-contract.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "src/features/process-templates/templateManifest.test.ts",
+          "level": "local-unit"
+        },
+        {
+          "path": "src/features/process-templates/templatePlan.test.ts",
+          "level": "local-unit"
+        },
+        {
+          "path": "src/features/process-templates/basicCatalog.test.ts",
+          "level": "local-unit"
+        },
+        {
+          "path": "docs/sales-platform/evidence/r1-rename/qualification.json",
+          "level": "local-runtime"
+        }
+      ],
+      "remainingGates": [
+        "Native field/rule/action capability registries, contextual copy/design review and original parent dependencies remain open.",
+        "Runtime immutability does not bind historical template versions to content. Reviewed persistence, durable intent receipts, installation ID mapping and upgrade/local-override behavior remain unimplemented.",
+        "No UI, installer, authorization, DB operation, rule or provider effect is supplied by this source-only manifest/preview increment."
+      ],
+      "notes": "Strict bounded JSON manifests, duplicate/prototype-key rejection, deep readonly values and deterministic FA/DE/EN stage-only previews implemented. Thirty-six focused tests passed. Unknown capabilities block preview, native IDs are unallocated and installation stays explicitly unavailable. Basic and one-stage structures are original optional design proposals."
     },
     {
       "id": "SP-04.2",
@@ -803,12 +964,29 @@
     {
       "id": "SP-05.1",
       "projectId": "SP-05",
-      "status": "planned",
+      "status": "in-progress",
       "owner": "sales-platform",
       "dependsOn": ["SP-04.1", "SP-01.8"],
-      "evidence": [],
-      "remainingGates": [],
-      "notes": ""
+      "evidence": [
+        {
+          "path": "docs/sales-platform/qualification-framework-research.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/qualification-contract.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/evidence/qualification-export-static-2026-11-01.json",
+          "level": "local-unit"
+        }
+      ],
+      "remainingGates": [
+        "Rights/content/contextual language decision for exact copy/naming/distribution remains open.",
+        "Real per-pipeline opt-in selection, controlled authoring and durable definition/version bindings require owner-reviewed storage and authority.",
+        "Native selection/switching/historical evidence/UI/recovery acceptance remains open; no installed framework exists."
+      ],
+      "notes": "Partial original neutral catalog covers six researched framework families in FA/DE/EN; strict frozen definitions and stable localized previews have seven unit tests, plus 43 adjacent stage/qualification tests across 6 files. Rights status pending; installation/persisted selection/evidence writes/scoring/stage policy/effects all unavailable. Full types and scoped 18-file typed lint passed on 15950b6; this does not complete SP-05.1 or later evidence/rule tasks."
     },
     {
       "id": "SP-05.2",
@@ -1383,9 +1561,20 @@
       "status": "planned",
       "owner": "sales-platform",
       "dependsOn": ["SP-12.1", "SP-06.2"],
-      "evidence": [],
-      "remainingGates": [],
-      "notes": ""
+      "evidence": [
+        {
+          "path": "docs/sales-platform/product-signal-event-contract.md",
+          "level": "observed-source"
+        }
+      ],
+      "remainingGates": [
+        "SP-12.1 still requires a named permitted actual source, operational owner, purpose, consent/suppression and retention decisions before any connector.",
+        "SP-06.2 native account/person identity and shared server-owned source/destination authority contracts remain dependencies; no automatic contact merge or parallel auth store is admitted.",
+        "The specified strict object parser and bounded synthetic preview require meaningful test-first implementation and actual passing checks; this specification includes no executed tests or implementation.",
+        "Native body-byte/UTF-8/duplicate-key limits, authenticated/rate-bounded ingestion, real PostgreSQL duplicate races, current authority after waits, durable deletion/tombstone/retention and restore/replay guarantees remain unimplemented and unqualified.",
+        "Versioned native rules, evidence/work queues, explicitly activated shared WF/IG effects, provider/source qualification, contextual FA/DE/EN UI and pilot/release acceptance remain separate open work."
+      ],
+      "notes": "Original proposed V1 specification defines five allowlisted event shapes, bounded opaque source IDs/timestamps/properties and a pure synthetic preview. Only syntactically valid payloads form semantic duplicate groups; invalid records expose safe index-based diagnostics without untrusted identifiers. One current source/account/user lookup context applies across every copy: suppression/revocation outranks earliest delivery, and mapping changes do not silently promote history. All heuristics are proposed and unqualified; no parser, evaluator, native ingestion, durable state or effects are implemented. SP-12.2 remains planned with its original dependencies."
     },
     {
       "id": "SP-12.3",
@@ -1641,13 +1830,33 @@
         {
           "path": "docs/sales-platform/evidence/r1-lifecycle/qualification.json",
           "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/evidence/lead-export-permission-2026-11-01.json",
+          "level": "local-unit"
+        },
+        {
+          "path": "docs/sales-platform/evidence/qualification-export-static-2026-11-01.json",
+          "level": "local-unit"
+        },
+        {
+          "path": "docs/sales-platform/evidence/activity-replay-and-view-preservation-2026-11-01.json",
+          "level": "local-runtime"
+        },
+        {
+          "path": "docs/sales-platform/saved-view-presentation-contract.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/evidence/saved-view-presentation-2026-11-01.json",
+          "level": "local-runtime"
         }
       ],
       "remainingGates": [
         "Remaining exact-candidate functional/browser/provider/release acceptance still required.",
         "Full protected foreground/background/provider/browser/state and release acceptance remains open."
       ],
-      "notes": "Checkpoint c655b8e: final root unit summary inspected with 6020 tests across 966 files passing; affected PostgreSQL summary inspected with 239 tests across 50 files passing. Existing registry and guards retain all 128 parent IDs and evidence ceilings. Native lifecycle/unavailable-view journeys and the 103-table synthetic restore add current local runtime evidence; aggregate checks do not complete parent acceptance. Version-matched qualification.json now records the checkpoint build/check evidence separately from release acceptance."
+      "notes": "Checkpoint c655b8e: final root unit summary inspected with 6020 tests across 966 files passing; affected PostgreSQL summary inspected with 239 tests across 50 files passing. Existing registry and guards retain all 128 parent IDs and evidence ceilings. Native lifecycle/unavailable-view journeys and the 103-table synthetic restore add current local runtime evidence; aggregate checks do not complete parent acceptance. Version-matched qualification.json now records the checkpoint build/check evidence separately from release acceptance. Later lead CSV export gate 6efe4dd adds native session/global data.export refusal before reads; 44 adjacent units across 5 files passed. Full 15950b6 types passed with 18-file affected typed lint; that type/unit record alone establishes no newer build/browser/native replay result; subsequent actual replay evidence is recorded below. Later d4bf15a passed six actual PostgreSQL replay/saved-preservation cases; strict completion action input passed 24 units. Full current types/lint passed after a preserved test-only type failure and repair. Native authority/browser/build and main-history upgrade gates remain open. Later checked source 03100336, locally adopted 7c1076 with an identical tree, passed 425 affected units/33 files, 18 actual PostgreSQL cases/three files, full Next types/TypeScript and full repository lint. Failed presentation type/lint attempts and behavioral RED classifications remain preserved. Current-source browser/build/provider/release and current-main/retained upgrades remain open."
     },
     {
       "id": "SP-15.2",
@@ -1845,12 +2054,24 @@
     {
       "id": "SP-15.8",
       "projectId": "SP-15",
-      "status": "planned",
+      "status": "in-progress",
       "owner": "sales-platform",
       "dependsOn": ["SP-15.7"],
-      "evidence": [],
-      "remainingGates": [],
-      "notes": ""
+      "evidence": [
+        {
+          "path": "docs/sales-platform/distribution-notices-review.md",
+          "level": "observed-source"
+        },
+        {
+          "path": "docs/sales-platform/evidence/distribution-fix-2026-11-01.json",
+          "level": "local-unit"
+        }
+      ],
+      "remainingGates": [
+        "Actual runtime image artifact and transitive notice/license closure remain unqualified.",
+        "Version-matched install/upgrade/disable/diagnose/recovery maintainer acceptance and release gates remain open."
+      ],
+      "notes": "Partial source packaging repair at 0d8247f: private .runtime excluded by effective Docker ignore matching and root/curated notices explicitly copied. Two focused tests, scoped Biome and typed ESLint passed. No Docker image was built or distributed and no release was published."
     }
   ]
 }

@@ -5,7 +5,9 @@ import type { AuthUser } from "@/features/permissions/types";
 import { ok, type Result } from "@/types/result";
 import { applyMessageIds } from "./applyMessages";
 import type { GmailClient } from "./gmailClient";
+import { readGmailConnection, withGmailConnection } from "./gmailConnectionFence";
 import type { HistoryList } from "./gmailSchemas";
+import { seedGmailHistoryCursor } from "./gmailSyncCheckpoint";
 import { recoverFrom404 } from "./resync";
 import { hydrateOwner } from "./syncCursor";
 import { markThreadTrashed, reconcileThreadTrash } from "./trashReconcile";
@@ -54,6 +56,7 @@ function threadsWithTrashSignal(page: HistoryList): string[] {
 async function applyTrashTransitions(
   db: Db,
   accountId: string,
+  generation: number,
   threadIds: Iterable<string>,
   gmail: GmailClient,
   signal: AbortSignal,
@@ -62,13 +65,19 @@ async function applyTrashTransitions(
     const thread = await gmail.getThread({ id: gmailThreadId, signal });
     if (!thread.ok) {
       if (thread.error.context?.status === 404) {
-        await markThreadTrashed(db, accountId, gmailThreadId);
+        const written = await withGmailConnection(db, accountId, generation, signal, (tx) =>
+          markThreadTrashed(tx, accountId, gmailThreadId),
+        );
+        if (!written.ok) return written;
         signal.throwIfAborted();
         continue;
       }
       return thread;
     }
-    await reconcileThreadTrash(db, accountId, gmailThreadId, thread.value.messages);
+    const written = await withGmailConnection(db, accountId, generation, signal, (tx) =>
+      reconcileThreadTrash(tx, accountId, gmailThreadId, thread.value.messages),
+    );
+    if (!written.ok) return written;
     signal.throwIfAborted();
   }
   return ok(undefined);
@@ -83,6 +92,7 @@ async function applyHistoryPage(args: {
   db: Db;
   accountId: string;
   owner: AuthUser;
+  generation: number;
   page: HistoryList;
   gmail: GmailClient;
   signal: AbortSignal;
@@ -96,6 +106,7 @@ async function applyHistoryPage(args: {
       gmail: args.gmail,
       signal: args.signal,
       touchedThreadIds: touched,
+      expectedGeneration: args.generation,
     },
     addedMessageIds(args.page),
   );
@@ -103,6 +114,7 @@ async function applyHistoryPage(args: {
   const trashed = await applyTrashTransitions(
     args.db,
     args.accountId,
+    args.generation,
     touched,
     args.gmail,
     args.signal,
@@ -117,34 +129,14 @@ async function applyHistoryPage(args: {
 // exactly-once effect). A 404 (expired cursor) triggers recoverFrom404.
 export async function syncMailbox(
   db: Db,
-  args: { accountId: string; gmail: GmailClient; signal: AbortSignal },
+  args: { accountId: string; gmail: GmailClient; signal: AbortSignal; expectedGeneration?: number },
 ): Promise<Result<{ applied: number }, AppError>> {
   args.signal.throwIfAborted();
-  const acctRow = await db.execute(
-    sql`SELECT last_history_id, status, user_id FROM email_accounts WHERE id=${args.accountId}`,
-  );
-  const acct = acctRow.rows[0] as
-    | { last_history_id: string | null; status: string; user_id: string }
-    | undefined;
-  if (acct === undefined || acct.status === "disconnected") return ok({ applied: 0 });
+  const acct = await readGmailConnection(db, args.accountId, args.signal, args.expectedGeneration);
+  if (acct === null) return ok({ applied: 0 });
+  const generation = acct.connection_generation;
   const startHistoryId = acct.last_history_id;
-  if (startHistoryId === null) {
-    // First run after connect: the mailbox has no cursor yet. Seed it from the mailbox's
-    // current historyId so subsequent ticks poll deltas go-forward. Nothing else seeds this
-    // (there is no separate bootstrap step), so without it every tick no-ops on the null
-    // cursor and the mailbox never syncs. Historical backfill is intentionally out of scope:
-    // incremental polling starts from now. A profile-fetch failure leaves the cursor null so
-    // the next tick retries.
-    const profile = await args.gmail.getProfile({ signal: args.signal });
-    if (!profile.ok) return profile;
-    await db.execute(sql`
-      UPDATE email_accounts
-      SET last_history_id=${profile.value.historyId}, last_sync_at=now(), last_error_id=NULL
-      WHERE id=${args.accountId}
-    `);
-    args.signal.throwIfAborted();
-    return ok({ applied: 0 });
-  }
+  if (startHistoryId === null) return seedGmailHistoryCursor(db, args, generation);
 
   const owner = await hydrateOwner(db, acct.user_id, args.signal);
   if (!owner.ok) return owner;
@@ -161,6 +153,7 @@ export async function syncMailbox(
           accountId: args.accountId,
           gmail: args.gmail,
           signal: args.signal,
+          expectedGeneration: generation,
         });
       }
       return page; // cursor NOT advanced
@@ -170,6 +163,7 @@ export async function syncMailbox(
       db,
       accountId: args.accountId,
       owner: owner.value,
+      generation,
       page: page.value,
       gmail: args.gmail,
       signal: args.signal,
@@ -181,11 +175,14 @@ export async function syncMailbox(
   } while (pageToken !== undefined);
 
   // Single checkpoint AFTER the last page committed.
-  await db.execute(sql`
+  const checkpoint = await withGmailConnection(db, args.accountId, generation, args.signal, (tx) =>
+    tx.execute(sql`
     UPDATE email_accounts
     SET last_history_id=${newHistoryId}, last_sync_at=now(), last_error_id=NULL
     WHERE id=${args.accountId}
-  `);
+  `),
+  );
+  if (!checkpoint.ok) return checkpoint;
   args.signal.throwIfAborted();
   return ok({ applied });
 }

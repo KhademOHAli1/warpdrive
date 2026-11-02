@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const sendMock = vi.fn(() => Promise.resolve({ ok: true, value: {} }));
+const sendMock = vi.fn(() => Promise.resolve({ ok: true, value: { status: "sent" } }));
 const deleteMock = vi.fn(() => Promise.resolve({ ok: true, value: { id: "d-new" } }));
 vi.mock("../actions", () => ({ sendEmail: (...a: unknown[]) => sendMock(...(a as [])) }));
 vi.mock("../folderActions", () => ({

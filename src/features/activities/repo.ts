@@ -233,7 +233,8 @@ export async function completeActivity(
     const [current] = await tx
       .select()
       .from(activities)
-      .where(and(eq(activities.id, id), isNull(activities.deletedAt)));
+      .where(and(eq(activities.id, id), isNull(activities.deletedAt)))
+      .for("update");
 
     if (current === undefined) {
       return err(new AppError(ERROR_IDS.ACTIVITY_NOT_FOUND, "activity not found", { id }));
@@ -249,6 +250,9 @@ export async function completeActivity(
     if (!can(actor, "activity.complete", vis)) {
       return err(new AppError(ERROR_IDS.ACTIVITY_FORBIDDEN, "forbidden", { id }));
     }
+
+    // A retry must retain the acknowledged timestamp and avoid repeating linked writes.
+    if (current.done === done) return ok(current);
 
     const [row] = await tx
       .update(activities)

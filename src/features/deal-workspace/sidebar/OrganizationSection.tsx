@@ -26,6 +26,7 @@ export function OrganizationSection({
   customFieldDefs = [],
   currency = "USD",
   showLabels = false,
+  defaultOpen = true,
   children,
 }: {
   org: Organization;
@@ -37,6 +38,7 @@ export function OrganizationSection({
   customFieldDefs?: CustomFieldDef[];
   currency?: string;
   showLabels?: boolean;
+  defaultOpen?: boolean;
   children?: React.ReactNode;
 }): React.ReactNode {
   const translateSales = useAppTranslations("sales");
@@ -44,14 +46,18 @@ export function OrganizationSection({
   return (
     <CollapsibleSection
       title={translateSales("organization_d764d")}
-      headerActions={() => (
+      defaultOpen={defaultOpen}
+      headerActions={({ showEmptyFields }) => (
         <EnrichButton entityType="organization" entityId={org.id} entityName={org.name}>
           {(fill) => (
             <FindPeopleButton orgId={org.id} orgName={org.name}>
               {(findPeople) => (
                 <SectionHeaderMenu
                   sectionLabel={translateSales("organization_d764d")}
-                  onEdit={onStartBulk}
+                  onEdit={() => {
+                    showEmptyFields();
+                    onStartBulk();
+                  }}
                   menuItems={findPeople === null ? menuItems : [...menuItems, findPeople]}
                   {...fill}
                 />

@@ -24,19 +24,12 @@ const UNAUTH = () => err(new AppError(ERROR_IDS.AUTH_LOGIN_REJECTED, "unauthenti
 
 // The folder domain functions scope every query by actor.id alone; the rest of the AuthUser
 // shape is not consulted, so a minimal regular-actor projection is sufficient here.
-const toActor = (id: string): AuthUser => ({
-  id,
-  type: "regular",
-  isActive: true,
-  groupIds: new Set(),
-});
-
-async function actor(csrfToken: string | null): Promise<Result<{ id: string }, AppError>> {
+async function actor(csrfToken: string | null): Promise<Result<AuthUser, AppError>> {
   const csrf = await guardCsrf(csrfToken);
   if (!csrf.ok) return CSRF_FAIL();
   const ctx = await createContext();
   if (ctx.actor === null) return UNAUTH();
-  return { ok: true, value: { id: ctx.actor.id } };
+  return { ok: true, value: ctx.actor };
 }
 
 async function archiveOrUnarchive(
@@ -56,7 +49,7 @@ async function archiveOrUnarchive(
   return op(
     db,
     {
-      actor: toActor(who.value.id),
+      actor: who.value,
       threadId: parsed.data.threadId,
     },
     SIG(),
@@ -97,7 +90,7 @@ export async function saveDraftAction(
     await saveDraft(
       db,
       {
-        actor: toActor(who.value.id),
+        actor: who.value,
         draft: parsed.data,
       },
       signal,
@@ -122,7 +115,7 @@ export async function deleteDraftAction(
     await deleteDraft(
       db,
       {
-        actor: toActor(who.value.id),
+        actor: who.value,
         draftId: parsed.data.draftId,
       },
       SIG(),
@@ -147,7 +140,7 @@ export async function cancelOutboxAction(
     await cancelOutbox(
       db,
       {
-        actor: toActor(who.value.id),
+        actor: who.value,
         attemptId: parsed.data.attemptId,
       },
       SIG(),

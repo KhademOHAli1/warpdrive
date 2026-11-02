@@ -2,6 +2,7 @@ import { randomBytes } from "node:crypto";
 import { sql } from "drizzle-orm";
 import { env } from "@/config/env";
 import type { Db } from "@/db/client";
+import type { DbOrTx } from "@/server/realtime/channelVersions";
 import { loadTokenRow, recordEvent } from "./trackingRecord";
 
 export interface LinkToken {
@@ -35,7 +36,7 @@ function isSafeHttpUrl(raw: string): boolean {
 // Mint tracking rows for a send (message_id NULL until backfillTokens runs after the
 // send reconciles). trackOpens/trackLinks are independent: false mints nothing for that type.
 export async function mintTokensForSend(
-  db: Db,
+  db: DbOrTx,
   args: {
     sendAttemptId: string;
     recipient: string;

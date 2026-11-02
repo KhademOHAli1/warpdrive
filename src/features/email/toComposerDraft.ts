@@ -1,7 +1,16 @@
+import type { SendEmailOutcome } from "@/types/mail";
+import type { AttachedFile } from "./composer/AttachmentList";
 import type { DraftSummary } from "./draftRepo";
 
 export interface ComposerDraftSeed {
   id: string;
+  accountId?: string;
+  bcc?: string[];
+  attachments?: AttachedFile[];
+  sendIntentId?: string;
+  trackOpens?: boolean;
+  trackLinks?: boolean;
+  sendOutcome?: SendEmailOutcome;
   subject: string;
   bodyHtml: string;
   to: string[];
@@ -18,6 +27,13 @@ export interface ComposerDraftSeed {
 export function toComposerDraft(d: DraftSummary): ComposerDraftSeed {
   return {
     id: d.id,
+    accountId: d.accountId,
+    bcc: d.bccEmails,
+    attachments: d.attachments,
+    sendIntentId: d.sendIntentId,
+    trackOpens: d.trackOpens,
+    trackLinks: d.trackLinks,
+    sendOutcome: d.sendOutcome,
     subject: d.subject ?? "",
     bodyHtml: d.bodyHtml ?? "",
     to: d.toEmails,

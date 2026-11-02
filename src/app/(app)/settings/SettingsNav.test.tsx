@@ -40,19 +40,23 @@ afterEach(() => {
   route.pathname = "/settings/users";
 });
 
-it("keeps permission gates, destination links and dismissal in the mobile settings sheet", async () => {
+it("provides permitted mobile section routes through the searchable Settings sheet", async () => {
   route.pathname = "/settings/connections";
   render(<SettingsNav isAdmin={false} canManageCompany={false} canImport={false} />);
   const user = userEvent.setup();
   await user.click(screen.getByRole("button", { name: "Settings category: Connected apps" }));
-  const sheet = screen.getByRole("dialog", { name: "Settings sections" });
-  expect(
-    within(sheet).queryByRole("link", { name: "Security administration" }),
-  ).not.toBeInTheDocument();
-  expect(within(sheet).queryByRole("link", { name: "Enrichment" })).not.toBeInTheDocument();
-  const regional = within(sheet).getByRole("link", { name: "Language & region" });
-  expect(regional).toHaveAttribute("href", "/settings/regional");
-  await user.click(regional);
+  const sheet = within(screen.getByRole("dialog", { name: "Settings sections" }));
+  expect(sheet.queryByRole("link", { name: "Security administration" })).not.toBeInTheDocument();
+  expect(sheet.queryByRole("link", { name: "Enrichment" })).not.toBeInTheDocument();
+  expect(sheet.getByRole("link", { name: "Language & region" })).toHaveAttribute(
+    "href",
+    "/settings/regional",
+  );
+  expect(sheet.getByRole("link", { name: "Connected apps" })).toHaveAttribute(
+    "aria-current",
+    "page",
+  );
+  await user.click(sheet.getByRole("link", { name: "Language & region" }));
   expect(screen.queryByRole("dialog", { name: "Settings sections" })).not.toBeInTheDocument();
 });
 

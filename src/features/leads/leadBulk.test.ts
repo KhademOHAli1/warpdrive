@@ -17,7 +17,7 @@ function session(userId: string, extra: Partial<LeadSession> = {}): LeadSession 
     visibilityGroupIds: [],
     managedUserIds: [] as string[],
     primaryVisibilityGroupId: null,
-    flags: { "deal.create": true },
+    flags: { "deal.create": true, "deal.edit_own": true, "bulk.edit": true },
     ...extra,
   };
 }
@@ -63,7 +63,11 @@ describe("bulkUpdateLeads", () => {
 
       const r = await bulkUpdateLeads(
         db,
-        await hydratedSession(db, { "deal.changeOwner_any": true }),
+        await hydratedSession(db, {
+          "deal.changeOwner_any": true,
+          "deal.edit_any": true,
+          "bulk.edit": true,
+        }),
         { ids: [l1.id, l2.id], change: { ownerId: b.id } },
         sig(),
       );
@@ -86,7 +90,7 @@ describe("bulkUpdateLeads", () => {
 
       const r = await bulkUpdateLeads(
         db,
-        session(a.id), // only deal.create, not deal.changeOwner
+        session(a.id), // can bulk edit own lead, but cannot change its owner
         { ids: [l1.id], change: { ownerId: b.id } },
         sig(),
       );
@@ -179,7 +183,11 @@ describe("bulkUpdateLeads", () => {
 describe("bulkUpdateLeads: scoped changeOwner flags", () => {
   it("reassigns every visible lead for deal.changeOwner_any", async () => {
     await withTestDb(async (db) => {
-      const actor = await hydratedSession(db, { "deal.changeOwner_any": true });
+      const actor = await hydratedSession(db, {
+        "deal.changeOwner_any": true,
+        "deal.edit_any": true,
+        "bulk.edit": true,
+      });
       const other = await seedUser(db);
       const target = await seedUser(db);
       const l1 = await insertLead(db, other.id);
@@ -196,7 +204,11 @@ describe("bulkUpdateLeads: scoped changeOwner flags", () => {
 
   it("reassigns only the actor's own leads for deal.changeOwner_own", async () => {
     await withTestDb(async (db) => {
-      const actor = await hydratedSession(db, { "deal.changeOwner_own": true });
+      const actor = await hydratedSession(db, {
+        "deal.changeOwner_own": true,
+        "deal.edit_own": true,
+        "bulk.edit": true,
+      });
       const other = await seedUser(db);
       const target = await seedUser(db);
       const mine = await insertLead(db, actor.userId);
@@ -219,7 +231,11 @@ describe("bulkUpdateLeads: scoped changeOwner flags", () => {
 
   it("does not overwrite a lead reassigned concurrently when the actor may only move their own", async () => {
     await withTestDb(async (db) => {
-      const actor = await hydratedSession(db, { "deal.changeOwner_own": true });
+      const actor = await hydratedSession(db, {
+        "deal.changeOwner_own": true,
+        "deal.edit_own": true,
+        "bulk.edit": true,
+      });
       const other = await seedUser(db);
       const target = await seedUser(db);
       const lead = await insertLead(db, actor.userId);
@@ -257,7 +273,11 @@ describe("bulkUpdateLeads: scoped changeOwner flags", () => {
 
   it("refuses a set with neither changeOwner flag", async () => {
     await withTestDb(async (db) => {
-      const actor = await hydratedSession(db, { "deal.create": true });
+      const actor = await hydratedSession(db, {
+        "deal.create": true,
+        "deal.edit_own": true,
+        "bulk.edit": true,
+      });
       const target = await seedUser(db);
       const mine = await insertLead(db, actor.userId);
       const r = await bulkUpdateLeads(

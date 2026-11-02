@@ -3,6 +3,7 @@ import { INBOX_PAGE_SIZE } from "@/constants/inbox";
 import type { Db } from "@/db/client";
 import type { AuthUser } from "@/features/permissions/types";
 import { type InboxThread, toInboxThread } from "./emailReads";
+import { decorateThreadMailCapabilities } from "./imapThreadOperationsCapabilities";
 
 interface ThreadRow {
   id: string;
@@ -126,7 +127,11 @@ export async function listArchivedThreads(
     `)
   ).rows as unknown as ThreadRow[];
   signal.throwIfAborted();
-  return toPage(rows, limit, actor.id);
+  const page = toPage(rows, limit, actor.id);
+  return {
+    ...page,
+    threads: await decorateThreadMailCapabilities(db, actor, page.threads, signal),
+  };
 }
 
 // Threads on the actor's mailbox with at least one outbound, sent message. Ordered by the
@@ -165,7 +170,11 @@ export async function listSentThreads(
     `)
   ).rows as unknown as ThreadRow[];
   signal.throwIfAborted();
-  return toPage(rows, limit, actor.id);
+  const page = toPage(rows, limit, actor.id);
+  return {
+    ...page,
+    threads: await decorateThreadMailCapabilities(db, actor, page.threads, signal),
+  };
 }
 
 export interface OutboxItem {

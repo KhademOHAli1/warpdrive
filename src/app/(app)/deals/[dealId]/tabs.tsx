@@ -1,10 +1,11 @@
 "use client";
 import { useCallback, useMemo } from "react";
+import { Button } from "@/components/ui/Button";
 import type { Deal } from "@/db/schema";
 import type { CalendarActivity } from "@/features/activities/calendar";
-import { HistoryFeed } from "@/features/deal-workspace/HistoryFeed";
 import type { HistoryTab } from "@/features/deal-workspace/HistoryTypeTabs";
 import { HistoryTypeTabs } from "@/features/deal-workspace/HistoryTypeTabs";
+import { resolveCustomFieldOptions } from "@/features/deal-workspace/history/customFieldOptions";
 import { resolveStageChangeNames } from "@/features/deal-workspace/history/stageNames";
 import { countHistoryTabs } from "@/features/deal-workspace/historyTabCounts";
 import type { HistoryItem } from "@/features/deal-workspace/historyTimeline";
@@ -14,6 +15,7 @@ import {
   mergeEmailItems,
   partitionFocusHistory,
 } from "@/features/deal-workspace/historyTimeline";
+import { NextActions, type WorkspaceReadState } from "@/features/deal-workspace/NextActions";
 import { PinnedNotesSection } from "@/features/deal-workspace/PinnedNotesSection";
 import { SectionHeading } from "@/features/deal-workspace/SectionHeading";
 import type { DraftSummary } from "@/features/email/draftRepo";
@@ -21,6 +23,7 @@ import { emailTabStatusLabel } from "@/features/email/emailTabStatus";
 import { useEmailMessages } from "@/features/email/useEmailMessages";
 import { useAppTranslations, useLocale, useNumberingSystem } from "@/features/i18n/LocaleProvider";
 import { trpc } from "@/lib/trpc-client";
+import type { CustomFieldDef } from "@/types/customFields";
 
 // Stable empty array: a new [] on every render would churn useMemo dependencies below.
 const EMPTY: never[] = [];
@@ -32,8 +35,12 @@ interface WorkspaceTabsProps {
   tab: Tab;
   onTab: (t: Tab) => void;
   activities: CalendarActivity[];
+  activityReadState?: WorkspaceReadState;
+  onRetryActivities?: () => void;
+  onScheduleActivity?: () => void;
   // Pipeline stages (id + name) used to resolve stageId changelog rows to names.
   stages: { id: string; name: string }[];
+  customFieldDefs?: CustomFieldDef[];
   // Display name of the creating actor for the synthesized "Deal created" anchor.
   createdActorName: string | null;
   // Invalidate the activities query after an in-feed mutation (mark-as-done).
@@ -66,7 +73,11 @@ export function WorkspaceTabs({
   tab,
   onTab,
   activities,
+  activityReadState = "success",
+  onRetryActivities,
+  onScheduleActivity,
   stages,
+  customFieldDefs = EMPTY,
   createdActorName,
   onActivityChanged,
   onNoteChanged,
@@ -74,24 +85,33 @@ export function WorkspaceTabs({
   onResumeDraft,
 }: WorkspaceTabsProps) {
   const translateSales = useAppTranslations("sales");
+  const t = useAppTranslations("dealWorkspace");
   const emailMessages = useEmailMessages();
   const locale = useLocale();
   const numberingSystem = useNumberingSystem();
 
   // `?? EMPTY` rather than `?? []`: a fresh array literal each render changes the identity of every
   // downstream useMemo dependency, so the timeline was rebuilt on every render while data was absent.
-  const notes =
-    trpc.collaboration.listNotes.useQuery({ entityType: "deal", entityId: deal.id }).data ?? EMPTY;
-  const changelog =
-    trpc.collaboration.listChangeLog.useQuery({ entityType: "deal", entityId: deal.id }).data ??
-    EMPTY;
+  const notesQuery = trpc.collaboration.listNotes.useQuery({
+    entityType: "deal",
+    entityId: deal.id,
+  });
+  const changesQuery = trpc.collaboration.listChangeLog.useQuery({
+    entityType: "deal",
+    entityId: deal.id,
+  });
+  const notes = notesQuery.data ?? EMPTY;
+  const changelog = changesQuery.data ?? EMPTY;
 
   // Resolve stageId changelog rows (id values) to stage names before the model
   // builds the timeline, so the stage event row shows names, never raw ids.
   const resolvedChangelog = useMemo(() => {
     const stageNameById = new Map(stages.map((s) => [s.id, s.name]));
-    return resolveStageChangeNames(changelog, stageNameById);
-  }, [changelog, stages]);
+    return resolveCustomFieldOptions(
+      resolveStageChangeNames(changelog, stageNameById),
+      customFieldDefs,
+    );
+  }, [changelog, stages, customFieldDefs]);
 
   // Lazy "Deal created" anchor (decision 1): synthesized, not a persisted row, so
   // it appears in the interleaved "All" feed but not the raw Changelog audit trail.
@@ -162,24 +182,52 @@ export function WorkspaceTabs({
         </p>
       )}
 
-      <section aria-label={translateSales("focus_c51fa")}>
-        <SectionHeading>{translateSales("focus_9d3ca")}</SectionHeading>
-        <HistoryFeed
-          items={focus}
-          emptyLabel={translateSales("nothing_needs_your_attention_8fa19")}
-          onActivityChanged={onActivityChanged}
-          onNoteChanged={onNoteChanged}
-          onEditActivity={onEditActivity}
-          emailScope={emailScope}
-          onEmailChanged={onEmailChanged}
-          onResumeDraft={onResumeDraft}
-          onDraftChanged={onDraftChanged}
-        />
-      </section>
+      <NextActions
+        readState={activityReadState}
+        onRetry={onRetryActivities}
+        onSchedule={onScheduleActivity}
+        items={focus}
+        emptyLabel={translateSales("nothing_needs_your_attention_8fa19")}
+        onActivityChanged={onActivityChanged}
+        onNoteChanged={onNoteChanged}
+        onEditActivity={onEditActivity}
+        emailScope={emailScope}
+        onEmailChanged={onEmailChanged}
+        onResumeDraft={onResumeDraft}
+        onDraftChanged={onDraftChanged}
+      />
 
       <section aria-label={translateSales("history_259aa")}>
         <SectionHeading>{translateSales("history_0e769")}</SectionHeading>
+        {(notesQuery.isPending || changesQuery.isPending) && (
+          <p role="status" className="py-3 text-sm text-muted-foreground">
+            {t("loadingHistory")}
+          </p>
+        )}
+        {(notesQuery.isError || changesQuery.isError) && (
+          <div
+            role="alert"
+            className="my-3 flex items-center justify-between gap-3 text-sm text-destructive"
+          >
+            <p>{t("historyFailed")}</p>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                void notesQuery.refetch();
+                void changesQuery.refetch();
+              }}
+            >
+              {t("retryHistory")}
+            </Button>
+          </div>
+        )}
         <HistoryTypeTabs
+          hideEmptyState={
+            (tab === "notes" && (notesQuery.isPending || notesQuery.isError)) ||
+            (tab === "changelog" && (changesQuery.isPending || changesQuery.isError)) ||
+            (tab === "activities" && activityReadState !== "success")
+          }
           tab={tab}
           onTab={onTab}
           counts={counts}

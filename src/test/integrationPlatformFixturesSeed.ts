@@ -150,7 +150,7 @@ export async function seedIntegrationPlatformFixtures(
     sessions,
     limits: {
       oauthCapabilities: "not-persisted-in-current-model",
-      personalMailboxesPerUser: 1,
+      personalMailboxesSeededPerUser: 1,
       serviceConnections: "shared-admin-managed",
       evidence: "synthetic-real-postgresql-only",
       authentication: "synthetic-native-model-not-browser-enrollment",

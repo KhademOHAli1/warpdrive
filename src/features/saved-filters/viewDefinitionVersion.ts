@@ -5,11 +5,12 @@ import {
   type SavedFilterTargetEntity,
   savedFilterDefinitionSchema,
 } from "./schemas";
+import { SAVED_VIEW_DEFINITION_VERSION } from "./viewDefinitionConstants";
+import type { ReservedSavedViewPresentation, SavedViewPresentation } from "./viewPresentation";
+import { savedViewPresentationSchemaFor } from "./viewPresentationSchema";
 
-export const SAVED_VIEW_DEFINITION_VERSION = 1;
+export { SAVED_VIEW_DEFINITION_VERSION };
 export type SavedViewFilterDefinition = z.output<ReturnType<typeof savedFilterDefinitionSchema>>;
-// Columns and presentation sort need their own entity/field permission resolver before support.
-const reservedPresentation = z.strictObject({ version: z.literal(SAVED_VIEW_DEFINITION_VERSION) });
 const envelopeSchema = z.strictObject({
   version: z.literal(SAVED_VIEW_DEFINITION_VERSION),
   targetEntity: z.enum(SAVED_FILTER_TARGET_ENTITIES),
@@ -20,7 +21,7 @@ export type SavedViewEnvelopeV1 = {
   version: typeof SAVED_VIEW_DEFINITION_VERSION;
   targetEntity: SavedFilterTargetEntity;
   definition: SavedViewFilterDefinition;
-  presentation?: z.output<typeof reservedPresentation>;
+  presentation?: ReservedSavedViewPresentation | SavedViewPresentation;
 };
 export type DecodedSavedViewDefinition = {
   source: "legacy" | "v1";
@@ -149,7 +150,7 @@ export function decodeSavedViewDefinition(
   const presentation =
     envelope.data.presentation === undefined
       ? undefined
-      : reservedPresentation.safeParse(envelope.data.presentation);
+      : savedViewPresentationSchemaFor(targetEntity).safeParse(envelope.data.presentation);
   if (presentation !== undefined && !presentation.success)
     return err(problem(raw, "unsupported", "unsupported-presentation", [["presentation"]]));
   return ok({

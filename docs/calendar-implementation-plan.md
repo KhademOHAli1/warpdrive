@@ -1,6 +1,6 @@
 # Calendar workflow implementation
 
-Status: first implementation slice on the local `codex/calendar-workflows` branch, based on main `8539fe8`. Updated 31 October 2026.
+Status: ordinary event editor and approved UI refinement on the local `codex/calendar-workflows` branch, based on main `8539fe8`. Updated 31 October 2026.
 
 The product target is the Google Calendar desktop workflow described in [the reference inventory](google-calendar-event-workflow.md). Preserve Warpdrive's current shell, CRM relationships, permission checks, Farsi and German support, independent calendar preferences and Iranian date pickers. This document records implementation progress; it does not claim full Google Calendar parity.
 
@@ -19,6 +19,20 @@ Implemented locally:
 - All new visible copy and accessible names exist in contextual Farsi, German and English. Persian inputs retain Iranian dates and Persian digits; URLs and time-zone identifiers retain their direction.
 
 No database migration, dependency change, account connection, invitation, external meeting or live-user-data change is part of this slice. The existing activity model remains the persistence boundary. The global activity composer and the app shell remain outside these changes.
+
+### Approved UI refinement
+
+The user approved the design direction after a logged-in Mobbin review. The strongest references were [Attio meeting creation](https://mobbin.com/flows/c3b26607-269c-4114-a01f-4b3c4788de7b), [Cron event creation](https://mobbin.com/flows/d9fb870e-7981-49ca-8371-d70c03a97abe), [Cron conferencing](https://mobbin.com/flows/ff70aad9-7995-43ca-b783-ad4ee63ba542), [Calendly one-on-one setup](https://mobbin.com/flows/5e9342e1-58b7-4d94-9600-9e995d489723) and [Cal.com event editing](https://mobbin.com/flows/757679b1-6099-4212-8e9e-80916a2fb787). Mobbin's visible Google Calendar search results were for iOS; this research does not establish a direct Google desktop visual cross-check.
+
+Implemented using Warpdrive's existing components, fonts and tokens:
+
+- A prominent event title and grouped start/end controls lead the form. Location and description can be revealed when needed in compact mode.
+- Expanding the same draft adds a separate CRM details column containing the real activity type, priority, accessible linked records and preserved participant counts. On narrow screens this column follows event details in the scrollable body; the save/cancel footer remains available.
+- Meeting links appear as a provider/hostname summary with join, copy, edit and remove controls. The inline editor validates HTTPS links, rejects URL credentials and applies changes to the draft without saving the event. Escape cancels only the link edit. Query strings and fragments are omitted from the summary.
+- Description styling is neutral, with formatting controls revealed on focus or through an explicit toggle. Completion/reopening and deletion live in the event actions menu.
+- Ctrl/Command+Enter saves the event after committing a visible time draft. Invalid clock input blocks submission. Farsi retains RTL layout, Iranian dates and Persian digits; German receives the same workflow with contextual terminology.
+
+These UI changes do not add guest invitation delivery, conferencing provisioning, recurrence, free/busy or synchronization. Those require the service contracts below before their controls become actionable.
 
 ## 2. Required work for the full service, in order
 
@@ -46,7 +60,9 @@ The first slice has unit coverage for Farsi/German/English draft continuity, Per
 
 Real PostgreSQL 16 tests exercise Farsi/German create, reopen and edit round trips for timed and all-day events, canonical civil dates across display-zone changes, and unrelated-user read/edit denial. The local check uses a disposable, separately initialized PostgreSQL instance because Docker is unavailable, with the repository's real migrations and test database helper. CI retains the normal Docker integration lane.
 
-Verification on 31 October: 536 unit tests across 89 files and 11 real-PostgreSQL tests across four files passed. Type checking, the locale audit and scoped Biome/ESLint checks also passed.
+Verification after UI refinement on 31 October: 614 unit tests across 104 files and 11 real-PostgreSQL tests across four files passed. The unit selection includes the calendar, activity composer, shared UI and locale layers. Additional editor regressions cover compact/expanded continuity, linked context, meeting-link validation and cancellation, completion from the actions menu, and raw-time keyboard saves.
+
+Type checking, the locale audit and whole-repository lint passed. Biome reports 11 existing warnings in unrelated files. Browser review covered Farsi and German compact/full editors and a 390 by 844 viewport, including access to lower CRM fields with the dialog header/footer stationary. It caught and resolved horizontal clipping, native hidden-select overflow and Farsi empty-title alignment.
 
 The production webpack build passed with dummy validation configuration, not a live provider deployment. Browser visual checks use the actual editor components, fonts and design-system styles with synthetic records and mocked transport. This proves presentation and local interactions; it is not a signed-in browser/server-action or external-provider acceptance run. The main preview required sign-in, so its authentication state was left unchanged.
 

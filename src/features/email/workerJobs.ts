@@ -4,10 +4,13 @@ import { BACKOFF_START_MS } from "@/constants/email";
 import { AppError } from "@/constants/errorIds";
 import {
   EMAIL_JOB_RETRY_LIMIT,
+  PGBOSS_QUEUE_EMAIL_RECOVERY,
   PGBOSS_QUEUE_EMAIL_SEND,
   PGBOSS_QUEUE_EMAIL_SYNC,
 } from "@/constants/jobNames";
 import { db } from "@/db/client";
+import { recoverMailJobs } from "./mailJobRecovery";
+import { isMailboxSyncEnabled } from "./mailSyncEligibility";
 import { syncFailureDetail } from "./syncFailureDetail";
 import { pendingTicksVia, reEnqueueSync } from "./syncReEnqueue";
 import { jitterFor, runSendJob, runSyncJob } from "./worker";
@@ -52,7 +55,11 @@ export async function registerEmailJobs(boss: PgBoss): Promise<void> {
     // waiting. singletonKey does NOT dedup here: pg-boss only enforces it on a queue whose policy
     // is short/singleton/stately/exclusive, and this queue is standard, so the bare re-enqueue
     // piled up ~45 overlapping ticks per mailbox and the backlog fed itself.
-    await reEnqueueSync(boss, accountId, pendingTicks);
+    await reEnqueueSync(boss, accountId, pendingTicks, {
+      more: r.ok && r.value.more,
+      deferred: r.ok && r.value.deferred,
+      isEnabled: () => isMailboxSyncEnabled(db, accountId, AbortSignal.timeout(5000)),
+    });
     // On failure THROW a sanitized AppError (id + accountId only, NO tokens) so pg-boss
     // applies its retry/backoff. runSyncJob already stamped last_error_id.
     if (!r.ok) throw syncJobError(accountId, r.error);
@@ -72,8 +79,11 @@ export async function registerEmailJobs(boss: PgBoss): Promise<void> {
   });
 
   // Enqueue the first sync job per connected mailbox, offset by jitter (no herd).
-  const rows = (await db.execute(sql`SELECT id FROM email_accounts WHERE status <> 'disconnected'`))
-    .rows as { id: string }[];
+  const rows = (
+    await db.execute(sql`SELECT a.id FROM email_accounts a JOIN users u ON u.id=a.user_id
+    WHERE a.status <> 'disconnected' AND NOT a.paused AND u.is_active AND u.invited_at IS NULL
+      AND a.provider IN ('gmail','imap_smtp')`)
+  ).rows as { id: string }[];
   for (const row of rows) {
     await boss.send(
       PGBOSS_QUEUE_EMAIL_SYNC,
@@ -87,4 +97,10 @@ export async function registerEmailJobs(boss: PgBoss): Promise<void> {
       },
     );
   }
+  await boss.createQueue(PGBOSS_QUEUE_EMAIL_RECOVERY);
+  await boss.schedule(PGBOSS_QUEUE_EMAIL_RECOVERY, "* * * * *");
+  await boss.work(PGBOSS_QUEUE_EMAIL_RECOVERY, async () => {
+    await recoverMailJobs(db, boss, AbortSignal.timeout(60_000));
+  });
+  await recoverMailJobs(db, boss, AbortSignal.timeout(60_000));
 }

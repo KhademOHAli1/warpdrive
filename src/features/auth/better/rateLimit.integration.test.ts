@@ -49,6 +49,19 @@ describe("shared authentication rate limits", () => {
     expect(results.filter(Boolean)).toHaveLength(20);
   });
 
+  test("one trusted client cannot exhaust another client's sensitive budget", async () => {
+    const enforce = createAuthRateLimiter("x-real-ip");
+    const abusive = new Headers({ "x-real-ip": "192.0.2.77" });
+    const other = new Headers({ "x-real-ip": "198.51.100.77" });
+    const results = await Promise.all(
+      Array.from({ length: 21 }, () =>
+        enforce(h.db, abusive, "/sign-in/email", undefined, signal()),
+      ),
+    );
+    expect(results.filter(Boolean)).toHaveLength(20);
+    expect(await enforce(h.db, other, "/sign-in/email", undefined, signal())).toBe(true);
+  });
+
   test("enforces an account budget across different trusted client addresses", async () => {
     const enforce = createAuthRateLimiter("x-real-ip");
     const results = await Promise.all(

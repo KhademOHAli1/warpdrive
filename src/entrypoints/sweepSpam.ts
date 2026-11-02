@@ -18,6 +18,7 @@ async function resolveClient(
   signal: AbortSignal,
 ): Promise<Result<GmailClient, AppError>> {
   const token = await ensureAccessToken(db, {
+    signal,
     accountId,
     deps: { refresh: makeRefresh(signal) },
   });

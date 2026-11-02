@@ -3,6 +3,7 @@ import { currentLayout } from "./nodeLayout";
 import type { NodePosition, WorkflowDefinition, WorkflowEdge, WorkflowNode } from "./schemas";
 
 export type ConnectionProblem =
+  | "nodeLimit"
   | "missingNode"
   | "cycle"
   | "occupiedInput"

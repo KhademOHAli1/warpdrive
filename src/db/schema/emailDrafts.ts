@@ -1,4 +1,4 @@
-import { foreignKey, jsonb, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { boolean, foreignKey, jsonb, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { emailAccounts, emailThreads, emailVisibility } from "./email";
 
 // Autosave drafts (D1). Owned by the mailbox (account_id -> email_accounts). A reply
@@ -17,6 +17,11 @@ export const emailDrafts = pgTable(
     bodyHtml: text("body_html"),
     toEmails: jsonb("to_emails").notNull().default("[]"),
     ccEmails: jsonb("cc_emails").notNull().default("[]"),
+    bccEmails: jsonb("bcc_emails").notNull().default("[]"),
+    attachments: jsonb("attachments").notNull().default("[]"),
+    sendIntentId: uuid("send_intent_id").notNull().defaultRandom(),
+    trackOpens: boolean("track_opens").notNull().default(false),
+    trackLinks: boolean("track_links").notNull().default(false),
     // Compose privacy in progress (C1). Defaults to "shared" (the composer's default) so a private
     // selection survives autosave + resume instead of silently reverting to shared (codex P1).
     visibility: emailVisibility("visibility").notNull().default("shared"),

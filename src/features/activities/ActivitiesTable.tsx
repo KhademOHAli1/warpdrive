@@ -1,8 +1,8 @@
 "use client";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { useCallback, useMemo, useState } from "react";
+import { ActivitiesToggle } from "@/app/(app)/activities/ActivitiesToggle";
 import { BulkActionBar } from "@/components/data-table/BulkActionBar";
 import { type ColumnSort, useColumnSort } from "@/components/data-table/useColumnSort";
 import { RENDER_WINDOW_STEP, useRenderWindow } from "@/components/data-table/useRenderWindow";
@@ -43,7 +43,13 @@ const DEFAULT_SORT: ColumnSort<ActivitySortField> = { field: "dueAtIso", dir: "a
 // so neither has to be kept in sync by hand when a column is added.
 const ACTIVITY_TABLE_COLUMN_COUNT = 12;
 
-export function ActivitiesTable({ currentUserId }: { currentUserId: string }): React.ReactNode {
+export function ActivitiesTable({
+  currentUserId,
+  queueEnabled = false,
+}: {
+  currentUserId: string;
+  queueEnabled?: boolean;
+}): React.ReactNode {
   const S = useActivitiesMessages();
   const locale = useLocale();
   const preferences = useLocalePreferences();
@@ -156,18 +162,7 @@ export function ActivitiesTable({ currentUserId }: { currentUserId: string }): R
   return (
     <div className="flex h-full flex-col p-4">
       <div className="mb-3 flex flex-wrap items-center gap-3">
-        {/* View toggle: List (active) vs Calendar. */}
-        <div className="inline-flex rounded-md border bg-card p-0.5 text-sm">
-          <span className="rounded-sm bg-accent px-2 py-1 font-medium text-accent-foreground">
-            {S.list}
-          </span>
-          <Link
-            href="/activities/calendar"
-            className="rounded-sm px-2 py-1 text-muted-foreground hover:text-foreground"
-          >
-            {S.calendar}
-          </Link>
-        </div>
+        <ActivitiesToggle active="list" queueEnabled={queueEnabled} className="mb-0" />
         <button
           type="button"
           onClick={() => setModalOpen(true)}

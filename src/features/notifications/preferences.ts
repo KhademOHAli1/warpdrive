@@ -4,6 +4,7 @@ import type { NotificationType } from "@/constants/notificationTypes";
 import { NOTIFICATION_TYPES } from "@/constants/notificationTypes";
 import type { Db } from "@/db/client";
 import { notificationPreferences } from "@/db/schema";
+import type { DbOrTx } from "@/server/realtime/channelVersions";
 
 // Single source of truth for the defaults applied when a user has no row for a type,
 // so both getPreferences and resolveDelivery read them from one place.
@@ -12,7 +13,7 @@ function defaultPreference(type: NotificationType): { inApp: boolean; email: boo
 }
 
 export async function getPreferences(
-  db: Db,
+  db: DbOrTx,
   userId: string,
   signal: AbortSignal,
 ): Promise<Record<NotificationType, { inApp: boolean; email: boolean }>> {
@@ -51,7 +52,7 @@ export async function setPreference(
 }
 
 export async function resolveDelivery(
-  db: Db,
+  db: DbOrTx,
   userId: string,
   type: NotificationType,
   signal: AbortSignal,

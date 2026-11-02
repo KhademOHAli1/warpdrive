@@ -74,3 +74,23 @@ WORKFLOW_TEST_DATABASE_URL=postgres://workflow_test@127.0.0.1:55434/postgres \
 ```
 
 Supply an already running disposable local PostgreSQL instance with a `workflow_test` role that can create databases. The lane rejects other hosts/roles, creates a uniquely named migrated template, and uses isolated cloned databases. Do not point it at an application database or a shared production cluster. Stop/remove the disposable cluster after the test campaign; ordinary CI continues to use disposable Docker containers.
+
+## Builder edit history and run inspection
+
+`useGraphHistory` stores at most 50 prior graph snapshots and clears redo when a new edit
+follows undo. Save adopts normalized server content without adding an undo operation.
+The server revision and saved comparison remain independent of local history. Node drag
+frames use local canvas positions; only the final position becomes a graph edit. This is
+session-local undo, not persisted version restoration. Text inputs retain native undo.
+
+`drawConnection` validates the graph after removing only the edge being replaced. A fresh
+drag from an occupied output moves that output; an explicit endpoint reconnection removes
+only its selected edge. Failed gestures leave the original graph intact. Connected node
+creation validates insertion and the new edge together. Existing-input ownership, cycle,
+port, and trigger constraints remain domain rules shared by pointer and form controls.
+
+`workflows.run` reuses workflow ownership/capability checks, restricts the run and pinned
+version to the same workflow, and returns historical configuration plus safe step metadata.
+Stored trigger values, outputs, and per-step CRM payloads are excluded. The read-only graph
+marks completed nodes and edges on that immutable version. It does not infer compensation,
+expose raw record values, or provide retries.

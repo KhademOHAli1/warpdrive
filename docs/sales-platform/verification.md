@@ -1,13 +1,199 @@
 # Sales-platform checkpoint verification
 
-31 October 2026, Europe/Berlin. Application source is frozen at
+The earlier 31 October 2026 checkpoint froze application source at
 `c655b8e3aa0d9aada5ac3c533bef13688b8ec700` on the task-owned sales branch.
 This checkpoint extends the preserved shell with guarded pipeline lifecycle and
 recoverable saved views. It reuses existing authentication, authorization,
 queries, optimistic cache/realtime machinery and integrations. The programme
 and production-release acceptance remain open.
 
-## Current checkpoint evidence
+## Builtin presentation and native selection checkpoint
+
+Source `03100336a1053155d282f4f8e016e509bdb7ec31` was adopted by a normal local
+merge at `7c10761647633a6d2c0f701f3a1426d58357ee96`. Both trees equal
+`4924b8a4a7ad4abad9b12db18c0aa7142656a93b`. The changed source introduces no
+Sales DDL, dependency change or modification of the eight approved originals.
+People, Organizations and Leads now persist strict V1 builtin columns/sort,
+resolve native ID-only selected views before data admission, preserve personal
+baselines and block unavailable selections. The complete implemented behavior is
+in [the contract](saved-view-presentation-contract.md).
+
+| Check                           | Actual terminal result                     | Scope                                                                                                        |
+| ------------------------------- | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------ |
+| Affected units                  | 425 tests/33 files passed, 17.770 seconds  | One worker, 45-second guard, minimum 14,487,355,392 free bytes                                               |
+| Full route types and TypeScript | Exit 0, 12.185 seconds                     | 90-second guard, 5 GiB floor, minimum 13,215,555,584 free bytes                                              |
+| Actual PostgreSQL               | 18 tests/three files passed, 5.101 seconds | PostgreSQL 16, one worker, selected synthetic 85-entry history; exact peer baseline restored                 |
+| Full repository lint            | Exit 0, 39.529 seconds                     | i18n, Biome 3697 files, typed ESLint; 11 existing warnings and nine infos; minimum 12,040,028,160 free bytes |
+
+Native cases cover six envelope round trips, nine native preference selections
+and three strict-write preservation cases. They do not establish runtime browser,
+shared revocation after waits or retained-installation upgrade acceptance.
+The lock and journal hashes are unchanged in the source-bound evidence.
+
+The first scoped typed lint failed with 18 diagnostics, repaired at 91cc233;
+its 56-file rerun passed, followed by the three newly changed files passing on
+03100336. The first full type attempt generated route types successfully, then
+failed with 44 diagnostics: 42 output optional-key cascades, one address fixture
+and one bare/envelope union assertion. The outer schema optional output and two
+fixture repairs at 03100336 passed the final unit, type, PostgreSQL and lint checks.
+No failed attempt is overwritten or presented as a pass.
+
+Behavioral RED receipts remain separate: 38 data failures, 20 shared presentation
+failures, separate layout-only and malformed-selection failures, 41 selection
+failures, nine initial-route failures, and two principal-fence failures. The final
+scope batch had 15 failures, of which 14 were behavioral and one was an ambiguous
+implicit output-status fixture; its real status assertions stayed unchanged.
+See [the sanitized receipt record](evidence/saved-view-presentation-2026-11-01.json)
+for actual timing, counts, hashes and boundaries. Raw logs remain private.
+
+The latest production build-checked application remains f006 below. Current-source
+FA/DE/EN browser, accessibility, provider, current-main/retained-history and release
+gates remain open. The separate unadopted Deals server sort/paging path has six
+native cases whose later attempt stopped before database setup or assertions;
+it provides infrastructure evidence only and is outside this 18-case batch.
+All 16 projects and 128 parent tasks remain in scope with zero completed parents.
+
+## Separate Deals runner attempts
+
+The unadopted client selection first executed 14 cases across three files:
+five passed and nine failed in 12.693 seconds. Seven failures reproduced missing
+create/unarchive/realtime invalidation and have candidate fixes awaiting GREEN.
+The inline-edit case returned undefined cache data from a fixture configured with
+a zero cache lifetime. That lifetime was corrected without changing its assertions;
+the membership oracle still needs a valid RED run. The long paging case
+hit its five-second test timeout and supplies no behavioral failure oracle.
+
+Later targeted attempts 2 through 4 stopped before RUN. Attempts 5 and 6 reached
+RUN but executed zero cases; the separately granted 90-second attempt ended at
+90.239 seconds with exit 143. The frozen native six-case attempt likewise reached
+RUN, then stopped before database creation or any assertion. Its watchdog sent
+TERM at 180 seconds; the existing kill grace produced 185.261 seconds total and
+wrapper exit 137 (reported child exit -9). The overrun was acknowledged. Its
+minimum free space was 12,948,320,256 bytes and Docker returned to the exact
+original three-container baseline. Lock and selected 85-entry journal were unchanged.
+
+These later attempts supply neither behavioral RED nor GREEN. The server
+implementation stays held; client fixes and the new owner-metadata tests stay
+unqualified. The prepared, unexecuted future native wrapper reserves ten seconds
+for cleanup within its 180-second total, and needs a fresh grant. Read the
+[source and receipt handoff](deal-list-runner-status.md) for classifications,
+hashes and dependency-loading observations. Existing presentation proof above
+and frozen source packs remain unchanged.
+
+## Completion and stored-view preservation checkpoint
+
+Application source `901ba96d668a29fa5d34a38a9fc0dfc7bc25014e` passed full Next route type generation and
+TypeScript in 4.072 seconds and full-repository lint in
+39.073 seconds, in separate finite groups with a 5 GiB disk
+floor. The preceding type attempt on 2133e94 exited 2 on two test assertion
+comparator types; commit 601be53 repairs those assertions without changing
+production code. That failed attempt is retained in the source-bound evidence. The first full
+lint stopped at the queue i18n audit; commit 3b79edc aligns the three Farsi ICU
+count contracts and renames a test-only helper under the existing audit convention.
+A second lint attempt passed i18n but stopped on qualification-contract.md table
+formatting; 59cb7d9 changes only that document. A third lint attempt reached full typed ESLint and found two recovery-test callback
+issues. The 901ba96 test-only repair awaits the actual rejected response; 23
+pipeline tests/3 files and affected typed lint passed. Full types and final full
+lint then passed together on `901ba96d668a29fa5d34a38a9fc0dfc7bc25014e` with unchanged production files since
+3b79edc. The later affected
+completion/queue selection passed 68 tests/6 files.
+
+Real PostgreSQL reproduced two completion replay failures among six cases on
+2fdef03. The minimal d4bf15a repair locks the activity row and returns the
+already-desired canonical row before any UPDATE. All six cases across two files
+then passed, including concurrent identical completions, permission/parent
+denial and saved-definition refusal/metadata preservation for all four entities.
+The test container returned to the peer baseline after both finite runs.
+
+Completion action input is now parsed strictly after existing CSRF/actor checks
+and before the native command. Its 24 boundary tests passed after an actual
+17-failure RED; seven-file typed lint passed. The selected native fixture uses
+the synthetic 85-entry Sales history. It does not qualify current-main upgrades,
+revocation while waiting, durable command-intent receipts or native UI recovery.
+Queue quick completion remains unwired. See
+`evidence/activity-replay-and-view-preservation-2026-11-01.json`.
+
+## Earlier bounded source checks
+
+The later `db925000ec20b9b8d8a3131ae3d183553d2a080c` write-boundary repair
+rejects lossy saved-definition inputs for all four entities. RED reproduced 26
+failures among 49 new schema cases. The final schema/read-compatibility selection
+passed 105 tests/5 files, and scoped typed ESLint passed the three changed files
+in 6.595 seconds, minimum free space 19,657,760,768 bytes. Subsequent full TypeScript and actual PostgreSQL preservation results are
+recorded above. No stored-data rewrite or native UI result is inferred.
+See `evidence/saved-view-write-boundary-2026-11-01.json` and
+`saved-view-presentation-path.md` for the later implemented three-entity path and
+its remaining native-browser/Deals gates.
+
+Source `15950b6d81083b14239b5f54539ae828af406d67`, including queue, native lead
+export permission guard and the separate qualification catalog/preview, passed
+full Next route type generation and TypeScript. The finite process returned
+terminal 0 in 21.264 seconds, with minimum live free space 14,998,421,504 bytes
+above its 5 GiB floor. The prepared untracked activity replay test was compiled
+only and hash-recorded; no native replay assertion was executed.
+
+Scoped typed ESLint for the 18 new export/qualification files passed in 6.089
+seconds, minimum free space 20,424,019,968 bytes. Committed qualification plus
+adjacent stage contracts passed 43 tests/6 files in 1.015 seconds. The formatted
+lead export route plus adjacent permission/CSV units passed 44/5 in 1.532 seconds.
+These checks establish no current full lint/build, native browser, installed
+framework or migration upgrade. See
+`evidence/qualification-export-static-2026-11-01.json` and
+`evidence/lead-export-permission-2026-11-01.json`.
+
+The latest full build-checked application remains f006 below. The later builder
+adoption, distribution and recovery changes have narrower evidence:
+
+- Builder workflow/auth/locale: 133 units/47 files; workflow PostgreSQL 22/8,
+  on the preserved adopted workflow tree. Full combined types/build/browser
+  qualification is separate.
+- Distribution `0d8247f`: two effective Docker-context/notice tests, scoped Biome
+  and typed ESLint passed. No Docker image or transitive notice closure observed.
+- Pipeline outcome recovery `b120ab9`: intended behavioral RED followed by 23
+  passing adjacent tests; the later formatted regression is included in the
+  125-test run below. No backend authority or full-reload durability changed.
+- Queue client/API/route/navigation plus affected existing activity-table and
+  pipeline recovery regressions: 125 units/16 files passed in 12.175 seconds,
+  one worker and at least 12,512,600,064 available bytes. These tests do not replace
+  current full type/lint/build or native browser evidence.
+
+The initial queue PostgreSQL collection run executed no assertions. The later
+importable fail-closed baseline ran all 14 cases: 13 failed assertions and one
+scaffold pass. That pass is not operational-read qualification. The preserved
+proposed SQL implementation was restored afterward. Its separately granted GREEN
+passed all 14 tests/4 files in 6.124 seconds, with at least 12,231,712,768 available
+bytes and the original Docker baseline restored. The actual independent-reader
+table-lock timeout returned safe `E_DB_004`; that proof is distinct from the
+earlier scaffold pass. All seven native production files are hash-identical
+through source `62466a7`. Later focused queue units passed 44/5 after typed-test
+cleanup, and scoped typed ESLint passed 38 files in 7.588 seconds. The initial
+23 and subsequent 14 lint diagnostics remain recorded as failed attempts.
+No scaffold is presented as working functionality.
+See `next-action-queue-contract.md` for exposure and remaining native write gates.
+
+## Rename and template continuation
+
+The later application source is `f006b5a5026449fd2bf792439b9149ba3517feb8`.
+Its full root unit suite passed 6068 tests across 972 files and its affected
+PostgreSQL batch passed 245 tests across 51 files. Full typecheck and full lint passed with terminal exit 0; the existing
+11 warnings and 9 informational notices remain.
+
+The first production build was deliberately stopped with terminal exit 143 during
+the user-authorized shared resource-recovery window. The later explicitly granted
+finite build passed with terminal exit 0 on the same source, in 60.222 seconds.
+The separate process group and watchdog observed at least 12558819328 available
+bytes, above the 5 GiB floor. No production service was started or deployed.
+Current-source worker bundles were not rerun in that slot; prior c655 bundling
+remains separately scoped. See the [source-bound check record](evidence/r1-rename/qualification.json).
+
+See [guarded rename](pipeline-rename-contract.md),
+[stage-only template contract](template-contract.md) and
+[native continuation evidence](evidence/r1-rename/native-journey.json).
+The template code is strict manifest validation and deterministic preview only;
+installation remains unavailable pending persistence and authority qualification.
+The full roadmap remains active and all broad parent packages remain open.
+
+## Earlier c655 checkpoint evidence
 
 | Check                                         | Actual result                                                                                                                                                      | Evidence ceiling                                                                                                                                                          |
 | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

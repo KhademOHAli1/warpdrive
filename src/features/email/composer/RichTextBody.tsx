@@ -24,6 +24,7 @@ import { richTextExtensions } from "./richText.extensions";
 
 interface RichTextBodyProps {
   html: string;
+  readOnly?: boolean;
   onChange: (html: string) => void;
   // Callers name their own surface, since email bodies and activity notes share this editor.
   ariaLabel?: string;
@@ -50,6 +51,7 @@ export function RichTextBody({
   contentClassName,
   frameClassName,
   grow = false,
+  readOnly = false,
 }: RichTextBodyProps): React.ReactNode {
   // Track the last HTML we emitted so we can distinguish "parent changed the
   // prop" from "our own typing round-tripped back through state".
@@ -84,6 +86,11 @@ export function RichTextBody({
       onChange(sanitized);
     },
   });
+
+  useEffect(() => {
+    if (editor === null || editor.isDestroyed) return;
+    editor.setEditable(!readOnly);
+  }, [editor, readOnly]);
 
   // Controlled-sync: when the incoming html prop differs from both what we last
   // emitted AND the editor's current content, the parent changed it externally
@@ -134,7 +141,11 @@ export function RichTextBody({
           contentClassName,
         )}
       />
-      {editor !== null && <FormatToolbar editor={editor} />}
+      {editor !== null && (
+        <fieldset disabled={readOnly} className="contents">
+          <FormatToolbar editor={editor} />
+        </fieldset>
+      )}
     </div>
   );
 }

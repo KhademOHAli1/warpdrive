@@ -82,24 +82,28 @@ export function refineCondition(
   }
 }
 
-function buildConditionSchema(config: ConditionFieldConfig) {
-  return z
-    .object({
-      field: z.enum(config.fields as unknown as [string, ...string[]]),
-      op: z.enum(FILTER_OP_KEYS),
-      // Optional because isEmpty/isNotEmpty compare against no value.
-      value: conditionValue.optional(),
-    })
-    .superRefine((c, ctx) => {
-      refineCondition(c, ctx, config);
-    });
+function buildConditionSchema(config: ConditionFieldConfig, strict: boolean) {
+  const schema = z.object({
+    field: z.enum(config.fields as unknown as [string, ...string[]]),
+    op: z.enum(FILTER_OP_KEYS),
+    // Optional because isEmpty/isNotEmpty compare against no value.
+    value: conditionValue.optional(),
+  });
+  return (strict ? schema.strict() : schema).superRefine((c, ctx) => {
+    refineCondition(c, ctx, config);
+  });
 }
 
 // Full ad-hoc filter shape: how the rows fold, plus the rows. The combinator defaults to "and" so
 // a definition stored before the key existed keeps meaning what it meant when it was written.
-export function buildFilterSchema(config: ConditionFieldConfig) {
-  return z.object({
+export function buildFilterSchema(
+  config: ConditionFieldConfig,
+  options: { strict?: boolean } = {},
+) {
+  const schema = z.object({
     combinator: z.enum(CONDITION_COMBINATORS).default("and"),
-    conditions: z.array(buildConditionSchema(config)).max(20),
+    conditions: z.array(buildConditionSchema(config, options.strict === true)).max(20),
   });
+  // Persisted writes must reject unknown keys instead of silently discarding authored constraints.
+  return options.strict === true ? schema.strict() : schema;
 }

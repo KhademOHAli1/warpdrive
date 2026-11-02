@@ -1,5 +1,6 @@
 import { eq, like } from "drizzle-orm";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
+import { env } from "@/config/env";
 import {
   deals,
   emailAccounts,
@@ -23,6 +24,7 @@ import { createIntegrationPlatformFixtures } from "./integrationPlatformFixtures
 
 const now = new Date("2026-10-31T12:00:00.000Z");
 const signal = () => AbortSignal.timeout(10_000);
+const resource = `${env.BASE_URL.replace(/\/$/, "")}/api/mcp`;
 let h: TestDb;
 beforeEach(async () => {
   h = await makeTestDb();
@@ -69,6 +71,7 @@ test("actual current OAuth rows encode valid, expired, revoked and inactive-owne
           grant_type: "refresh_token",
           client_id: grant.clientId,
           refresh_token: grant.refreshToken,
+          resource,
         },
         signal(),
       ),
@@ -112,6 +115,7 @@ test("the valid refresh fixture exchanges and rotates through the actual OAuth p
     grant_type: "refresh_token" as const,
     client_id: grant.clientId,
     refresh_token: grant.refreshToken,
+    resource,
   };
   const first = await exchangeMcpGrant(h.db, input, signal());
   expect(first.ok).toBe(true);
@@ -162,12 +166,7 @@ test("multiple service workspaces and personal accounts retain current shared-ad
     (await assertMailboxOwner(h.db, f.mailboxes.member.id, f.users.outsider.id, signal())).ok,
   ).toBe(false);
   expect(await h.db.select().from(emailAccounts)).toHaveLength(2);
-  await expect(
-    h.db
-      .insert(emailAccounts)
-      .values({ userId: f.users.member.id, emailAddress: "second-personal@example.test" }),
-  ).rejects.toMatchObject({ cause: { code: "23505" } });
-  expect(f.limits.personalMailboxesPerUser).toBe(1);
+  expect(f.limits.personalMailboxesSeededPerUser).toBe(1);
 });
 
 test("FA/DE/EN preferences preserve calendar, numbering and zone independently in PostgreSQL", async () => {

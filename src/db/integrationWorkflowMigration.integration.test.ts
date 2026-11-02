@@ -1,35 +1,49 @@
 import { randomUUID } from "node:crypto";
-import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { copyFile, mkdir, mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { migrate } from "drizzle-orm/node-postgres/migrator";
 import { expect, test } from "vitest";
-import { z } from "zod";
-import { makeTestDb, type TestDb } from "@/test/db";
+import type { TestDb } from "@/test/db";
+import { applyMigrations } from "./migrate";
+import { parseMigrationJournal } from "./migrationAdmission";
+import {
+  canonicalFolder,
+  freshMigrationDb,
+  installPrefix,
+  ledger,
+} from "./migrationAdmission.test-helpers";
 
-const folder = fileURLToPath(new URL("../../drizzle", import.meta.url));
-const journalInput = z.object({
-  version: z.string(),
-  dialect: z.string(),
-  entries: z.array(
-    z.object({
-      idx: z.number(),
-      version: z.string(),
-      when: z.number(),
-      tag: z.string(),
-      breakpoints: z.boolean(),
-    }),
-  ),
-});
+async function journalEntries(folder: string) {
+  const raw: unknown = JSON.parse(await readFile(join(folder, "meta/_journal.json"), "utf8"));
+  const result = parseMigrationJournal(raw);
+  if (!result.ok) throw new TypeError(result.error);
+  return result.value;
+}
 
-async function rebuild(h: TestDb, migrationsFolder: string): Promise<void> {
-  // The reset is restricted to a disposable harness database, never the local preview.
-  expect(new URL(h.url).pathname).toMatch(/^\/t_[a-f0-9]+$/);
-  await h.pool.query(
-    "DROP SCHEMA public CASCADE; DROP SCHEMA drizzle CASCADE; CREATE SCHEMA public",
+async function installOriginalPlatformHistory(h: TestDb): Promise<void> {
+  const archive = fileURLToPath(
+    new URL("../../docs/migration-history/platform-original", import.meta.url),
   );
-  await migrate(h.db, { migrationsFolder });
+  const baseline = await mkdtemp(join(tmpdir(), "warpdrive-original-platform-migration-"));
+  try {
+    await mkdir(join(baseline, "meta"));
+    const raw: unknown = JSON.parse(await readFile(join(archive, "_journal.json"), "utf8"));
+    const original = parseMigrationJournal(raw);
+    if (!original.ok) throw new TypeError(original.error);
+    await copyFile(join(archive, "_journal.json"), join(baseline, "meta/_journal.json"));
+    for (const entry of original.value) {
+      const source = ["0083_integration_connections", "0084_visual_workflows"].includes(entry.tag)
+        ? archive
+        : canonicalFolder;
+      await copyFile(join(source, `${entry.tag}.sql`), join(baseline, `${entry.tag}.sql`));
+    }
+    // Stock migration establishes the actual foreign history, never admission into main.
+    await migrate(h.db, { migrationsFolder: baseline });
+  } finally {
+    await rm(baseline, { recursive: true, force: true });
+  }
 }
 
 async function seedOwner(h: TestDb): Promise<string> {
@@ -38,24 +52,44 @@ async function seedOwner(h: TestDb): Promise<string> {
     "INSERT INTO users (id,email,name,is_admin) VALUES ($1,'migration-owner@example.com','علی آزمون',true)",
     [owner],
   );
+  await h.pool.query(
+    "INSERT INTO auth_users(id,email,name,email_verified) SELECT id,email,name,true FROM users WHERE id=$1",
+    [owner],
+  );
+  await h.pool.query("INSERT INTO user_preferences(user_id,ui) VALUES ($1,$2)", [
+    owner,
+    {
+      localePreferences: {
+        locale: "fa",
+        calendar: "gregory",
+        numberingSystem: "latn",
+        timeZone: "Europe/Berlin",
+      },
+    },
+  ]);
+  await h.pool.query(
+    "INSERT INTO privacy_cases(kind,created_by,intake_key,intake_digest,metadata_enc) VALUES ('access',$1,'migration-fixture','synthetic-digest',decode('00ff81','hex'))",
+    [owner],
+  );
   return owner;
 }
 
+async function businessSnapshot(h: TestDb) {
+  return Promise.all(
+    [
+      "SELECT * FROM users ORDER BY id",
+      "SELECT * FROM auth_users ORDER BY id",
+      "SELECT * FROM user_preferences ORDER BY user_id",
+      "SELECT * FROM privacy_cases ORDER BY id",
+      "SELECT * FROM workflows ORDER BY id",
+      "SELECT * FROM workflow_versions ORDER BY id",
+      "SELECT to_jsonb(r) - 'resume_at' AS value FROM workflow_runs r ORDER BY id",
+      "SELECT * FROM workflow_steps ORDER BY id",
+    ].map(async (query) => (await h.pool.query(query)).rows),
+  );
+}
+
 async function assertWorkflowConstraints(h: TestDb, owner: string): Promise<void> {
-  expect(
-    (
-      await h.pool.query(
-        "SELECT to_regclass('public.workflows')::text AS workflows, to_regclass('public.workflow_versions')::text AS versions, to_regclass('public.workflow_runs')::text AS runs, to_regclass('public.workflow_steps')::text AS steps",
-      )
-    ).rows,
-  ).toEqual([
-    {
-      workflows: "workflows",
-      versions: "workflow_versions",
-      runs: "workflow_runs",
-      steps: "workflow_steps",
-    },
-  ]);
   const workflow = randomUUID();
   const otherWorkflow = randomUUID();
   const version = randomUUID();
@@ -98,10 +132,10 @@ async function assertWorkflowConstraints(h: TestDb, owner: string): Promise<void
   ).toEqual([{ definition }]);
 }
 
-test("clean migrations install integrations and workflows with database-enforced version safety", async () => {
-  const h = await makeTestDb();
+test("guarded clean migrations install integrations and workflows with version safety", async () => {
+  const h = await freshMigrationDb();
   try {
-    await rebuild(h, folder);
+    expect(await applyMigrations(h.db)).toEqual({ ok: true, value: { applied: true } });
     expect(
       (await h.pool.query("SELECT to_regclass('public.integration_connections')::text AS name"))
         .rows,
@@ -112,33 +146,40 @@ test("clean migrations install integrations and workflows with database-enforced
   }
 });
 
-test("workflow upgrade preserves existing connections, credentials, settings and independent locale preferences", async () => {
-  const baseline = mkdtempSync(join(tmpdir(), "warpdrive-integration-workflow-migration-"));
-  const h = await makeTestDb();
+test("connection upgrade preserves canonical workflow, privacy and identity data, then admits a safe rerun", async () => {
+  const h = await freshMigrationDb();
   try {
-    const journal = journalInput.parse(
-      JSON.parse(readFileSync(join(folder, "meta/_journal.json"), "utf8")),
-    );
-    const entries = journal.entries.filter((entry) => entry.idx <= 83);
-    expect(entries.at(-1)?.tag).toBe("0083_integration_connections");
-    mkdirSync(join(baseline, "meta"));
-    writeFileSync(join(baseline, "meta/_journal.json"), JSON.stringify({ ...journal, entries }));
-    for (const entry of entries)
-      copyFileSync(join(folder, `${entry.tag}.sql`), join(baseline, `${entry.tag}.sql`));
-    await rebuild(h, baseline);
+    const entries = await journalEntries(canonicalFolder);
+    const connectionEntry = entries.find((entry) => entry.tag.endsWith("_integration_connections"));
+    if (connectionEntry === undefined)
+      throw new TypeError("missing canonical connection migration");
+    await installPrefix(h, connectionEntry.idx);
+    expect(
+      (await h.pool.query("SELECT to_regclass('public.integration_connections') AS name")).rows,
+    ).toEqual([{ name: null }]);
     const owner = await seedOwner(h);
+    await assertWorkflowConstraints(h, owner);
+    const beforeLedger = await ledger(h);
+    const beforeBusiness = await businessSnapshot(h);
+    const legacyRunIds = (
+      await h.pool.query<{ id: string }>("SELECT id FROM workflow_runs ORDER BY id")
+    ).rows;
+    expect(legacyRunIds.length).toBeGreaterThan(0);
+    expect(await applyMigrations(h.db)).toEqual({ ok: true, value: { applied: true } });
+    expect(
+      (await h.pool.query("SELECT id, resume_at FROM workflow_runs ORDER BY id")).rows,
+    ).toEqual(legacyRunIds.map(({ id }) => ({ id, resume_at: null })));
+    expect((await ledger(h)).slice(0, beforeLedger.length)).toEqual(beforeLedger);
+    expect(await ledger(h)).toHaveLength(entries.length);
+    expect(await businessSnapshot(h)).toEqual(beforeBusiness);
+    expect(
+      (await h.pool.query("SELECT to_regclass('public.integration_connections')::text AS name"))
+        .rows,
+    ).toEqual([{ name: "integration_connections" }]);
     const connection = randomUUID();
-    // Synthetic opaque bytes only, not a usable provider credential or encryption key.
-    const credentials = Buffer.from("synthetic-encrypted-credential-fixture");
+    // Synthetic opaque bytes, never a usable provider credential or encryption key.
+    const credentials = Buffer.from("00ff81696e746567726174696f6e", "hex");
     const settings = { channelId: "CLOCALTEST", channelName: "آزمون محلی" };
-    const preferences = {
-      localePreferences: {
-        locale: "fa",
-        calendar: "gregory",
-        numberingSystem: "latn",
-        timeZone: "Europe/Berlin",
-      },
-    };
     await h.pool.query(
       "INSERT INTO integration_connections (id,provider,account_id,account_name,owner_id,credentials,scopes,settings) VALUES ($1,'slack','TLOCALTEST','Local workspace',$2,$3,$4,$5)",
       [connection, owner, credentials, JSON.stringify(["chat:write", "channels:read"]), settings],
@@ -147,24 +188,47 @@ test("workflow upgrade preserves existing connections, credentials, settings and
       "INSERT INTO integration_events (connection_id,actor_id,action) VALUES ($1,$2,'connected')",
       [connection, owner],
     );
-    await h.pool.query("INSERT INTO user_preferences (user_id,ui) VALUES ($1,$2)", [
-      owner,
-      preferences,
-    ]);
-    const beforeConnections = (await h.pool.query("SELECT * FROM integration_connections")).rows;
-    const beforeEvents = (await h.pool.query("SELECT * FROM integration_events")).rows;
-    const beforeUsers = (await h.pool.query("SELECT * FROM users")).rows;
-    const beforePreferences = (await h.pool.query("SELECT * FROM user_preferences")).rows;
-    await migrate(h.db, { migrationsFolder: folder });
-    expect((await h.pool.query("SELECT * FROM integration_connections")).rows).toEqual(
-      beforeConnections,
+    const connections = (await h.pool.query("SELECT * FROM integration_connections ORDER BY id"))
+      .rows;
+    const events = (await h.pool.query("SELECT * FROM integration_events ORDER BY id")).rows;
+    const completedLedger = await ledger(h);
+    expect(await applyMigrations(h.db)).toEqual({ ok: true, value: { applied: true } });
+    expect(
+      (await h.pool.query("SELECT id, resume_at FROM workflow_runs ORDER BY id")).rows,
+    ).toEqual(legacyRunIds.map(({ id }) => ({ id, resume_at: null })));
+    expect(await ledger(h)).toEqual(completedLedger);
+    expect(await businessSnapshot(h)).toEqual(beforeBusiness);
+    expect((await h.pool.query("SELECT * FROM integration_connections ORDER BY id")).rows).toEqual(
+      connections,
     );
-    expect((await h.pool.query("SELECT * FROM integration_events")).rows).toEqual(beforeEvents);
-    expect((await h.pool.query("SELECT * FROM users")).rows).toEqual(beforeUsers);
-    expect((await h.pool.query("SELECT * FROM user_preferences")).rows).toEqual(beforePreferences);
-    await assertWorkflowConstraints(h, owner);
+    expect((await h.pool.query("SELECT * FROM integration_events ORDER BY id")).rows).toEqual(
+      events,
+    );
   } finally {
     await h.close();
-    rmSync(baseline, { recursive: true, force: true });
+  }
+});
+
+test("guarded migration rejects the real original CONN83 and WF84 platform history", async () => {
+  const h = await freshMigrationDb();
+  try {
+    await installOriginalPlatformHistory(h);
+    const before = await ledger(h);
+    expect(await applyMigrations(h.db)).toEqual({
+      ok: false,
+      error: "unsupported migration history: expected an exact canonical prefix",
+    });
+    expect(await ledger(h)).toEqual(before);
+    expect(
+      (
+        await h.pool.query(
+          "SELECT to_regclass('public.integration_connections')::text AS connections, to_regclass('public.workflow_versions')::text AS versions, to_regclass('public.privacy_cases') AS privacy",
+        )
+      ).rows,
+    ).toEqual([
+      { connections: "integration_connections", versions: "workflow_versions", privacy: null },
+    ]);
+  } finally {
+    await h.close();
   }
 });

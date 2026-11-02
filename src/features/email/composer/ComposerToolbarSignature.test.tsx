@@ -44,6 +44,12 @@ vi.mock("@/features/email/actions", () => ({
   sendEmail: () => Promise.resolve({ ok: true }),
 }));
 
+vi.mock("../folderActions", () => ({
+  saveDraftAction: () => Promise.resolve({ ok: true, value: { id: "saved-draft" } }),
+  deleteDraftAction: () => Promise.resolve({ ok: true, value: { id: "saved-draft" } }),
+  cancelOutboxAction: () => Promise.resolve({ ok: false, error: { id: "E_GMAIL_017" } }),
+}));
+
 import { Composer } from "./Composer";
 
 // The signature control must live in the toolbar row (next to the template / insert-field

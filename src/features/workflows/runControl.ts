@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { z } from "zod";
 import { ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
@@ -22,14 +22,22 @@ export async function cancelWorkflowRun(
     const [workflow] = await tx.select().from(workflows).where(eq(workflows.id, run.workflowId));
     if (workflow === undefined || !canWorkflow(currentActor, "cancel", workflow.ownerId))
       return err(ERROR_IDS.WORKFLOW_DENIED);
-    if (run.status !== "queued" && run.status !== "running") return ok(run.status);
+    if (run.status !== "queued" && run.status !== "running" && run.status !== "waiting")
+      return ok(run.status);
+    const clock = await tx.execute<{ milliseconds: number }>(
+      sql`SELECT extract(epoch from clock_timestamp())::double precision * 1000 AS milliseconds`,
+    );
+    const now = new Date(clock.rows[0]?.milliseconds ?? Number.NaN);
+    if (!Number.isFinite(now.getTime())) return err(ERROR_IDS.WORKFLOW_WRITE_FAILED);
+    signal.throwIfAborted();
     await tx
       .update(workflowRuns)
       .set({
         status: "cancelled",
+        resumeAt: null,
         cancelledBy: actor.id,
-        cancelledAt: new Date(),
-        updatedAt: new Date(),
+        cancelledAt: now,
+        updatedAt: now,
       })
       .where(eq(workflowRuns.id, id));
     signal.throwIfAborted();

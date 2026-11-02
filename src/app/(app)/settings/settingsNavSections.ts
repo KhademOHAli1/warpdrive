@@ -22,6 +22,7 @@ import { authScreensMessagesForLocale } from "@/features/auth/authScreensMessage
 import { managementMessagesForLocale } from "@/features/auth/management/messages";
 import type { Locale } from "@/features/i18n/registry";
 import type { SettingsMessages } from "@/features/identity/settingsMessages";
+import { privacyRequestMessagesForLocale } from "@/features/privacy/privacyRequestMessages";
 
 export interface SettingsNavItem {
   href: string;
@@ -49,6 +50,7 @@ export function settingsNavSections(
   const H = L._hierarchy;
   const securityLabel = authScreensMessagesForLocale(locale).flow.securityTitle;
   const managementLabel = managementMessagesForLocale(locale).title;
+  const privacyLabel = privacyRequestMessagesForLocale(locale).workspaceTitle;
   return [
     {
       id: "personal",
@@ -56,6 +58,7 @@ export function settingsNavSections(
       items: [
         { href: "/settings/profile", label: H.profile, icon: User },
         { href: "/settings/security", label: securityLabel, icon: ShieldCheck },
+        { href: "/settings/privacy", label: privacyLabel, icon: ShieldCheck },
         { href: "/settings/regional", label: H.regional, icon: Globe2 },
         { href: "/settings/appearance", label: H.appearance, icon: Palette },
         { href: "/settings/workflow", label: H.workflow, icon: ListChecks },

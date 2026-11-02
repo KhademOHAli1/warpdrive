@@ -7,6 +7,11 @@ const row = {
   bodyHtml: "<p>body</p>",
   toEmails: ["a@y.com"],
   ccEmails: [],
+  bccEmails: ["private@example.com"],
+  attachments: [{ fileId: "file", filename: "پیشنهاد.pdf", size: 12 }],
+  sendIntentId: "intent",
+  trackOpens: true,
+  trackLinks: false,
   threadId: null,
   accountId: "acct-1",
   visibility: "shared" as const,
@@ -19,6 +24,12 @@ describe("toComposerDraft", () => {
   it("carries the saved CRM links into the composer seed", () => {
     expect(toComposerDraft(row)).toMatchObject({
       id: "draft-1",
+      accountId: "acct-1",
+      bcc: ["private@example.com"],
+      attachments: [{ fileId: "file", filename: "پیشنهاد.pdf", size: 12 }],
+      sendIntentId: "intent",
+      trackOpens: true,
+      trackLinks: false,
       linkDealId: "deal-9",
       linkPersonId: "person-9",
     });

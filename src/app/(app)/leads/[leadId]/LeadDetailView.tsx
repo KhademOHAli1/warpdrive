@@ -49,7 +49,7 @@ export async function LeadDetailView({ leadId }: { leadId: string }): Promise<Re
 
   // Load the linked person/org records and the Settings > Data fields hides so the sidebar's
   // Person/Organization blocks render the contact's full field set (PD parity), dropping the same
-  // built-in rows the contact detail pages do. The lead visibility gate above is the authority.
+  // built-in rows the contact detail pages do. Each linked contact is independently authorized.
   const signal = AbortSignal.timeout(10_000);
   const [
     relations,
@@ -59,7 +59,7 @@ export async function LeadDetailView({ leadId }: { leadId: string }): Promise<Re
     leadCustomFieldDefs,
     baseCurrency,
   ] = await Promise.all([
-    getLeadRelations(db, loaded.lead, signal),
+    getLeadRelations(db, loaded.actor, loaded.lead, signal),
     listHiddenBuiltins(db, signal),
     listDefs(db, "person", {}, signal),
     listDefs(db, "organization", {}, signal),

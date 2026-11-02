@@ -3,6 +3,7 @@ import { z } from "zod";
 import { INBOX_PAGE_SIZE } from "@/constants/inbox";
 import type { Db } from "@/db/client";
 import type { AuthUser } from "@/features/permissions/types";
+import { decorateThreadMailCapabilities } from "./imapThreadOperationsCapabilities";
 import { type InboxCursor, quickFilterPredicate } from "./inboxList";
 import { INBOX_VIEWS, type InboxView, MAILBOX_FILTERS } from "./inboxLocation";
 import { type AttributeFilterState, NO_ATTRIBUTE_FILTER } from "./threadAttributeFilter";
@@ -120,7 +121,12 @@ export async function readMailboxWorkspace(db: Db, args: WorkspaceArgs, signal: 
       ? { lastMessageAt: last.last_message_at, id: last.id }
       : null;
   return {
-    threads: page.map((row) => toInboxThread(row, args.actor.id)),
+    threads: await decorateThreadMailCapabilities(
+      db,
+      args.actor,
+      page.map((row) => toInboxThread(row, args.actor.id)),
+      signal,
+    ),
     total: Number((countResult.rows[0] as { total: number }).total),
     nextCursor,
   };

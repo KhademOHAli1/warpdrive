@@ -46,6 +46,7 @@ export function ReaderActions({
     return (
       <Composer
         accountId={accountId}
+        fromAddress={selfEmail}
         threadId={mode === "forward" ? undefined : threadId}
         prefill={buildReplyPrefill(mode, message, selfEmail)}
         context={context}

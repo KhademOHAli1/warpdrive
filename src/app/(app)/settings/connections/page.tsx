@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { env } from "@/config/env";
 import { db } from "@/db/client";
-import { getActorMailboxStatus } from "@/features/email/mailboxOwnership";
+import { getActorGmailMailboxStatus } from "@/features/email/mailboxOwnership";
 import { getAppTranslations } from "@/features/i18n/server";
 import { getServerSettingsMessages } from "@/features/identity/settingsMessages.server";
 import { IntegrationHub } from "@/features/integrations/IntegrationHub";
@@ -34,7 +34,7 @@ export default async function ConnectionsPage({
   const [connections, services, mailbox, query] = await Promise.all([
     createCaller(ctx).oauth.listConnections(),
     listServiceConnections(db),
-    getActorMailboxStatus(db, ctx.actor.id, AbortSignal.timeout(5000)),
+    getActorGmailMailboxStatus(db, ctx.actor.id, AbortSignal.timeout(5000)),
     searchParams,
   ]);
   const mcpEndpoint = resolveMcpEndpoint({
