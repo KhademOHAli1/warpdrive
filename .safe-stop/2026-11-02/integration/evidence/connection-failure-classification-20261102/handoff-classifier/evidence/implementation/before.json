@@ -1,0 +1,5 @@
+{
+  "src/features/integrations/slack.ts": "2fece3be197eb962310615034ddcefccbf3cd204a57e2870b2cb2cc532b8c0a2",
+  "src/features/integrations/slackReadFailures.test.ts": "db62abf24ffc360d63cc4063e06ae0e0e20b40dfaa9f485f97aa188df510dff3",
+  "src/features/privacy/registryIdsSales1.ts": "31075c8b9044e6a3c107f4daf4223825541cc88fa1bc1b65553c7df2dd211bd3"
+}

@@ -1,4 +1,6 @@
+import assert from "node:assert/strict";
 import { expect, test } from "vitest";
+import { env } from "@/config/env";
 import { ERROR_IDS } from "@/constants/errorIds";
 import { oauthAuthCodes, oauthClients } from "@/db/schema/oauth";
 import { withTestDb } from "@/db/testing";
@@ -9,6 +11,7 @@ const clientId = "authorize-test-client";
 const userId = "00000000-0000-0000-0000-000000000002";
 const redirectUri = "https://client.example.com/callback";
 const verifier = "authorize-verifier-123456789012345678901234567890";
+const resource = `${env.BASE_URL.replace(/\/$/, "")}/api/mcp`;
 
 test("authorization codes enforce PKCE, expiry, binding, and single use", async () => {
   await withTestDb(async (db) => {
@@ -19,11 +22,13 @@ test("authorization codes enforce PKCE, expiry, binding, and single use", async 
       redirectUris: [redirectUri],
     });
 
-    const code = await issueAuthCode(
+    const issuedCode = await issueAuthCode(
       db,
-      { clientId, userId, redirectUri, codeChallenge: sha256Base64Url(verifier) },
+      { clientId, userId, redirectUri, codeChallenge: sha256Base64Url(verifier), resource },
       signal,
     );
+    assert(issuedCode.ok);
+    const code = issuedCode.value;
     const consumed = await consumeAuthCode(
       db,
       { code, clientId, redirectUri, codeVerifier: verifier },
@@ -40,12 +45,13 @@ test("authorization codes enforce PKCE, expiry, binding, and single use", async 
 
     const wrongPkceCode = await issueAuthCode(
       db,
-      { clientId, userId, redirectUri, codeChallenge: sha256Base64Url(verifier) },
+      { clientId, userId, redirectUri, codeChallenge: sha256Base64Url(verifier), resource },
       signal,
     );
+    assert(wrongPkceCode.ok);
     const wrongPkce = await consumeAuthCode(
       db,
-      { code: wrongPkceCode, clientId, redirectUri, codeVerifier: "wrong-verifier" },
+      { code: wrongPkceCode.value, clientId, redirectUri, codeVerifier: "wrong-verifier" },
       signal,
     );
     expect(wrongPkce.ok).toBe(false);

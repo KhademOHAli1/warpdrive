@@ -1,0 +1,344 @@
+diff --git a/src/features/integrations/slack.ts b/src/features/integrations/slack.ts
+--- a/src/features/integrations/slack.ts
++++ b/src/features/integrations/slack.ts
+@@ -5,6 +5,13 @@
+ 
+ export const SLACK_SCOPES = ["chat:write", "channels:read"] as const;
+ const responseBase = z.object({ ok: z.boolean(), error: z.string().optional() });
++const revocationResponse = z.union([
++  z.object({ ok: z.literal(true), revoked: z.literal(true) }),
++  z.object({
++    ok: z.literal(false),
++    error: z.enum(["token_revoked", "token_expired", "account_inactive"]),
++  }),
++]);
+ 
+ export function slackConfiguration() {
+   const clientId = env.SLACK_CLIENT_ID;
+@@ -67,15 +74,9 @@
+       {},
+     );
+   const data: unknown = await response.json();
+-  const parsed = responseBase.safeParse(data);
+-  if (
+-    method === "auth.revoke" &&
+-    parsed.success &&
+-    ["invalid_auth", "token_revoked", "token_expired", "account_inactive"].includes(
+-      parsed.data.error ?? "",
+-    )
+-  )
+-    return { ok: true };
++  const parsed = (method === "auth.revoke" ? revocationResponse : responseBase).safeParse(data);
++  // Ambiguous authentication failures do not prove revocation, so retain retry material.
++  if (method === "auth.revoke" && parsed.success && !parsed.data.ok) return { ok: true };
+   if (!parsed.success || !parsed.data.ok)
+     throw new AppError(ERROR_IDS.SLACK_REQUEST_FAILED, "slack_request_failed", {});
+   return data;
+diff --git a/src/features/integrations/slackRevocation.test.ts b/src/features/integrations/slackRevocation.test.ts
+new file mode 100644
+--- /dev/null
++++ b/src/features/integrations/slackRevocation.test.ts
+@@ -0,0 +1,49 @@
++import { expect, it, vi } from "vitest";
++import { ERROR_IDS } from "@/constants/errorIds";
++import { slackRequest } from "./slack";
++
++const token = "synthetic-private-revocation-token";
++
++it.each([
++  ["ambiguous authentication denial", { ok: false, error: "invalid_auth" }],
++  ["explicitly unrevoked response", { ok: true, revoked: false }],
++  ["missing revocation confirmation", { ok: true }],
++])("keeps %s unresolved instead of reporting remote revocation", async (_name, body) => {
++  const fetcher = vi.fn<typeof fetch>().mockResolvedValue(Response.json(body));
++
++  await expect(slackRequest("auth.revoke", token, undefined, fetcher)).rejects.toMatchObject({
++    id: ERROR_IDS.SLACK_REQUEST_FAILED,
++  });
++  expect(fetcher).toHaveBeenCalledTimes(1);
++});
++
++it("accepts an explicit successful revocation without changing the request contract", async () => {
++  const fetcher = vi
++    .fn<typeof fetch>()
++    .mockResolvedValue(Response.json({ ok: true, revoked: true }));
++
++  await expect(slackRequest("auth.revoke", token, undefined, fetcher)).resolves.toEqual({
++    ok: true,
++    revoked: true,
++  });
++  expect(fetcher).toHaveBeenCalledWith(
++    "https://slack.com/api/auth.revoke",
++    expect.objectContaining({
++      method: "POST",
++      redirect: "error",
++      signal: expect.any(AbortSignal),
++      body: expect.any(URLSearchParams),
++    }),
++  );
++});
++
++it.each(["token_revoked", "token_expired", "account_inactive"])(
++  "retains idempotent success when Slack explicitly reports %s",
++  async (error) => {
++    const fetcher = vi.fn<typeof fetch>().mockResolvedValue(Response.json({ ok: false, error }));
++
++    await expect(slackRequest("auth.revoke", token, undefined, fetcher)).resolves.toEqual({
++      ok: true,
++    });
++  },
++);
+diff --git a/src/features/integrations/slackRevocation.integration.test.ts b/src/features/integrations/slackRevocation.integration.test.ts
+new file mode 100644
+--- /dev/null
++++ b/src/features/integrations/slackRevocation.integration.test.ts
+@@ -0,0 +1,237 @@
++import assert from "node:assert/strict";
++import { randomUUID } from "node:crypto";
++import { eq } from "drizzle-orm";
++import { afterEach, beforeEach, expect, test, vi } from "vitest";
++import { env } from "@/config/env";
++import { ERROR_IDS } from "@/constants/errorIds";
++import type { Db } from "@/db/client";
++import { users } from "@/db/schema/identity";
++import { integrationConnections, integrationEvents } from "@/db/schema/integrations";
++import { makeTestDb, type TestDb } from "@/test/db";
++import {
++  beginSlackConnection,
++  disconnectSlack,
++  finishSlackConnection,
++  withSlackConnection,
++} from "./service";
++
++type Connection = typeof integrationConnections.$inferSelect;
++interface Fixture {
++  db: Db;
++  adminId: string;
++  id: string;
++  initial: Connection;
++}
++let testDb: TestDb | undefined;
++let fixture: Fixture | undefined;
++let revocationReplies: unknown[] = [];
++let revokeTargets: string[] = [];
++let exchangeCalls = 0;
++const botToken = "synthetic-slack-revocation-token";
++const originalConfig = { id: env.SLACK_CLIENT_ID, secret: env.SLACK_CLIENT_SECRET };
++const signal = () => AbortSignal.timeout(10_000);
++
++async function loadConnection(db: Db, id: string, abortSignal: AbortSignal) {
++  const [row] = await db
++    .select()
++    .from(integrationConnections)
++    .where(eq(integrationConnections.id, id));
++  abortSignal.throwIfAborted();
++  assert(row !== undefined);
++  return row;
++}
++
++beforeEach(async () => {
++  revocationReplies = [];
++  revokeTargets = [];
++  exchangeCalls = 0;
++  env.SLACK_CLIENT_ID = "synthetic-slack-client-id";
++  env.SLACK_CLIENT_SECRET = "synthetic-slack-client-secret";
++  testDb = await makeTestDb();
++  const [admin] = await testDb.db
++    .insert(users)
++    .values({
++      email: `${randomUUID()}@example.test`,
++      name: "Revocation fixture administrator",
++      isAdmin: true,
++      isActive: true,
++    })
++    .returning();
++  assert(admin !== undefined);
++  const controlledFetch: typeof fetch = (input, init) => {
++    const target =
++      typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
++    expect(init?.method).toBe("POST");
++    if (target === "https://slack.com/api/oauth.v2.access") {
++      exchangeCalls++;
++      return Promise.resolve(
++        Response.json({
++          ok: true,
++          access_token: botToken,
++          scope: "chat:write,channels:read",
++          team: { id: "T_REVOCATION_FIXTURE", name: "Synthetic revocation workspace" },
++        }),
++      );
++    }
++    expect(target).toBe("https://slack.com/api/auth.revoke");
++    expect(init?.redirect).toBe("error");
++    // Assert a boolean so a failure cannot print the credential-bearing header.
++    expect(new Headers(init?.headers).get("authorization") === `Bearer ${botToken}`).toBe(true);
++    revokeTargets.push(target);
++    const reply = revocationReplies.shift();
++    assert(reply !== undefined);
++    return Promise.resolve(Response.json(reply));
++  };
++  vi.stubGlobal("fetch", controlledFetch);
++  const sessionId = randomUUID();
++  const attempt = await beginSlackConnection(testDb.db, admin.id, sessionId);
++  const id = await finishSlackConnection(testDb.db, {
++    state: attempt.state,
++    cookieState: attempt.state,
++    userId: admin.id,
++    sessionId,
++    code: "synthetic-revocation-code",
++  });
++  await testDb.db
++    .update(integrationConnections)
++    .set({
++      settings: { channelId: "C_REVOCATION_FIXTURE", channelName: "Synthetic fixture channel" },
++      lastCheckedAt: new Date("2020-01-02T03:04:05Z"),
++    })
++    .where(eq(integrationConnections.id, id));
++  const initial = await loadConnection(testDb.db, id, signal());
++  assert(initial.credentials !== null);
++  expect(initial.credentials.includes(Buffer.from(botToken))).toBe(false);
++  expect(initial.status).toBe("connected");
++  expect(exchangeCalls).toBe(1);
++  fixture = { db: testDb.db, adminId: admin.id, id, initial };
++});
++
++afterEach(async () => {
++  const closingDb = testDb;
++  fixture = undefined;
++  testDb = undefined;
++  const cleanup = await Promise.allSettled([
++    Promise.resolve().then(() => vi.unstubAllGlobals()),
++    Promise.resolve().then(() => {
++      env.SLACK_CLIENT_ID = originalConfig.id;
++      env.SLACK_CLIENT_SECRET = originalConfig.secret;
++    }),
++    closingDb?.close(),
++  ]);
++  for (const outcome of cleanup) {
++    if (outcome.status === "rejected") throw outcome.reason;
++  }
++});
++
++function accountFacts(row: Connection) {
++  return {
++    id: row.id,
++    provider: row.provider,
++    accountId: row.accountId,
++    accountName: row.accountName,
++    ownerId: row.ownerId,
++    scopes: row.scopes,
++    settings: row.settings,
++    connectedAt: row.connectedAt,
++    lastCheckedAt: row.lastCheckedAt,
++  };
++}
++
++async function disconnectedEvents(f: Fixture, abortSignal: AbortSignal) {
++  const events = await f.db
++    .select()
++    .from(integrationEvents)
++    .where(eq(integrationEvents.connectionId, f.id));
++  abortSignal.throwIfAborted();
++  return events.filter((event) => event.action === "disconnected");
++}
++
++async function expectLocallyBlocked(f: Fixture, abortSignal: AbortSignal) {
++  let callbackCalls = 0;
++  // Ignore callback arguments, and never retain token values in a mock call log.
++  const run = () => {
++    callbackCalls++;
++    return Promise.resolve(undefined);
++  };
++  await expect(withSlackConnection(f.db, f.adminId, f.id, run)).rejects.toMatchObject({
++    id: ERROR_IDS.INTEGRATION_NOT_CONNECTED,
++  });
++  abortSignal.throwIfAborted();
++  expect(callbackCalls).toBe(0);
++}
++
++async function expectPending(f: Fixture, abortSignal: AbortSignal) {
++  const row = await loadConnection(f.db, f.id, abortSignal);
++  expect(row.status).toBe("revocation-pending");
++  assert(f.initial.credentials !== null);
++  // Exact encrypted bytes are retained; boolean comparison avoids logging either buffer.
++  expect(row.credentials?.equals(f.initial.credentials)).toBe(true);
++  expect(accountFacts(row)).toEqual(accountFacts(f.initial));
++  expect(await disconnectedEvents(f, abortSignal)).toHaveLength(0);
++  await expectLocallyBlocked(f, abortSignal);
++}
++
++async function expectDisconnected(f: Fixture, abortSignal: AbortSignal) {
++  const row = await loadConnection(f.db, f.id, abortSignal);
++  expect(row.status).toBe("disconnected");
++  expect(row.credentials === null).toBe(true);
++  expect(accountFacts(row)).toEqual(accountFacts(f.initial));
++  const events = await disconnectedEvents(f, abortSignal);
++  expect(events).toHaveLength(1);
++  expect(events[0]).toMatchObject({
++    connectionId: f.id,
++    actorId: f.adminId,
++    action: "disconnected",
++  });
++  await expectLocallyBlocked(f, abortSignal);
++}
++
++const ambiguous = [
++  { name: "ambiguous invalid_auth", response: { ok: false, error: "invalid_auth" } },
++  { name: "revoked:false", response: { ok: true, revoked: false } },
++  { name: "missing revoked confirmation", response: { ok: true } },
++] as const;
++test.each(ambiguous)(
++  "$name retains encrypted retry material and local blocking",
++  async ({ response }) => {
++    assert(fixture !== undefined);
++    revocationReplies = [response];
++    expect(await disconnectSlack(fixture.db, fixture.adminId, fixture.id)).toBe(false);
++    await expectPending(fixture, signal());
++    expect(revokeTargets).toEqual(["https://slack.com/api/auth.revoke"]);
++  },
++);
++
++const confirmed = [
++  { name: "explicit revoked:true", response: { ok: true, revoked: true } },
++  { name: "explicit already token_revoked", response: { ok: false, error: "token_revoked" } },
++] as const;
++test.each(confirmed)(
++  "$name clears credentials only after confirmed revocation",
++  async ({ response }) => {
++    assert(fixture !== undefined);
++    revocationReplies = [response];
++    expect(await disconnectSlack(fixture.db, fixture.adminId, fixture.id)).toBe(true);
++    await expectDisconnected(fixture, signal());
++    expect(revokeTargets).toEqual(["https://slack.com/api/auth.revoke"]);
++  },
++);
++
++test("retry after ambiguous revocation preserves pending bytes then records one confirmed transition", async () => {
++  assert(fixture !== undefined);
++  revocationReplies = [
++    { ok: false, error: "invalid_auth" },
++    { ok: true, revoked: true },
++  ];
++  expect(await disconnectSlack(fixture.db, fixture.adminId, fixture.id)).toBe(false);
++  await expectPending(fixture, signal());
++  expect(revokeTargets).toEqual(["https://slack.com/api/auth.revoke"]);
++  expect(await disconnectSlack(fixture.db, fixture.adminId, fixture.id)).toBe(true);
++  await expectDisconnected(fixture, signal());
++  expect(revokeTargets).toEqual([
++    "https://slack.com/api/auth.revoke",
++    "https://slack.com/api/auth.revoke",
++  ]);
++  expect(exchangeCalls).toBe(1);
++});
+diff --git a/src/features/privacy/registryIdsSales1.ts b/src/features/privacy/registryIdsSales1.ts
+--- a/src/features/privacy/registryIdsSales1.ts
++++ b/src/features/privacy/registryIdsSales1.ts
+@@ -1,7 +1,7 @@
+ // Exact reviewed Sales and Integration boundaries from the frozen inventory packet.
+ export const salesIntegrationIds1: string[] = [
+   "derived:src/features/integrations/slackReadFailure.ts",
+-  "sourceReview:src/features/integrations/slack.ts#4eaa308d24fed9d8a1069d3afcfb1ed4d50d3cfebc2da8554cb678823e21dba5",
++  "sourceReview:src/features/integrations/slack.ts#2fece3be197eb962310615034ddcefccbf3cd204a57e2870b2cb2cc532b8c0a2",
+   "sourceReview:src/features/integrations/slackRead.ts#83aabc1dfcfeb076684951ca6da6a378091ff3db18a7aab0940f189f212ca36a",
+   "sourceReview:src/features/integrations/slackReadFailure.ts#fdf59462107754c7a767bb98e7261086dbb823e05a8454b1bdb2a276cae02ff4",
+ 

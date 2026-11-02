@@ -1,0 +1,10 @@
+{
+  "at": "2026-11-02T05:02:06.884489+00:00",
+  "state": "actual47 baseline45assertionRED2controls; production unchanged pending native6 and shared-contract review",
+  "testSha256": "1705b56a885c558c3aac262bc71e0c363b10a4391b3b8dd89e08e4ccbca81655",
+  "productionSha256": "2fece3be197eb962310615034ddcefccbf3cd204a57e2870b2cb2cc532b8c0a2",
+  "native6InputsUnchanged": true,
+  "historical18": "../operation-definitions/ACTUAL-RED-RECEIPT.json",
+  "actual47": "ACTUAL-RED-RECEIPT.json",
+  "next": "After separate6 terminal and Main contract review, minimum implementation; strengthen response-consumption oracle before GREEN claims."
+}

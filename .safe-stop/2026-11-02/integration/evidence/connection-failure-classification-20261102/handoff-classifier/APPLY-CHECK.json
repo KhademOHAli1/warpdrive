@@ -1,0 +1,65 @@
+{
+  "at": "2026-11-02T05:30:46.384339+00:00",
+  "scope": "Finite source-artifact-only diff and apply-check against packet-owned frozen confirmation-parent preimages; no repository, index, worktree, application, compiler, database or provider mutation/execution",
+  "admission": {
+    "pressure": 1,
+    "availablePercent": 51,
+    "freeBytes": 12222181376
+  },
+  "command": [
+    "/usr/bin/git",
+    "apply",
+    "--check",
+    "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/increment.patch"
+  ],
+  "cwd": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/base",
+  "exitCode": 0,
+  "seconds": 0.07142741698771715,
+  "patchSha256": "ab61f73d7cf8f233ad85a701a0ec98aa8227ee9ba91606a8c0ea7a4e84c97641",
+  "diffs": [
+    {
+      "path": "src/features/integrations/slack.ts",
+      "exitCode": 1,
+      "stderr": "",
+      "meaning": "git diff --no-index exit1 means intended differences"
+    },
+    {
+      "path": "src/features/integrations/slackOperationFailure.ts",
+      "exitCode": 1,
+      "stderr": "",
+      "meaning": "git diff --no-index exit1 means intended differences"
+    },
+    {
+      "path": "src/features/integrations/slackOperationFailures.test.ts",
+      "exitCode": 1,
+      "stderr": "",
+      "meaning": "git diff --no-index exit1 means intended differences"
+    },
+    {
+      "path": "src/features/integrations/slackReadFailures.test.ts",
+      "exitCode": 1,
+      "stderr": "",
+      "meaning": "git diff --no-index exit1 means intended differences"
+    },
+    {
+      "path": "src/features/privacy/registryIdsSales1.ts",
+      "exitCode": 1,
+      "stderr": "",
+      "meaning": "git diff --no-index exit1 means intended differences"
+    }
+  ],
+  "baseBefore": {
+    "src/features/privacy/registryIdsSales1.ts": "31075c8b9044e6a3c107f4daf4223825541cc88fa1bc1b65553c7df2dd211bd3",
+    "src/features/integrations/slack.ts": "2fece3be197eb962310615034ddcefccbf3cd204a57e2870b2cb2cc532b8c0a2",
+    "src/features/integrations/slackReadFailures.test.ts": "db62abf24ffc360d63cc4063e06ae0e0e20b40dfaa9f485f97aa188df510dff3"
+  },
+  "baseAfter": {
+    "src/features/privacy/registryIdsSales1.ts": "31075c8b9044e6a3c107f4daf4223825541cc88fa1bc1b65553c7df2dd211bd3",
+    "src/features/integrations/slack.ts": "2fece3be197eb962310615034ddcefccbf3cd204a57e2870b2cb2cc532b8c0a2",
+    "src/features/integrations/slackReadFailures.test.ts": "db62abf24ffc360d63cc4063e06ae0e0e20b40dfaa9f485f97aa188df510dff3"
+  },
+  "baseFilesUnchanged": true,
+  "newFilesNotWrittenToBase": true,
+  "currentMainQualification": false,
+  "peakRss": "not measured"
+}

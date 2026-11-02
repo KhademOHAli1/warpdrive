@@ -1,0 +1,167 @@
+{
+  "preparedAt": "2026-11-02T05:32:54.179Z",
+  "state": "PRIVATE_SOURCE5_CLASSIFIER_UNIT_AND_PRIVACY_QUALIFIED_MAIN_INTEGRATION_PENDING",
+  "requirement": {
+    "issue": "https://github.com/KhademOHAli1/warpdrive/issues/137",
+    "id": "integration/CONN-014",
+    "AC1": "Distinguish revoked authorization, insufficient scope, missing resource, rate limit, transient outage and invalid configuration.",
+    "localCriterionAudit": "evidence/implementation/ACCEPTANCE-AUDIT.md",
+    "conclusion": "Complete six-distinction local criterion covered for current integration-owned Slack protocol operations by actual wrapper evidence. Main adoption/static/current inventory/exact-source CI/publication and canonical recording remain pending; no issue/task/count mutation."
+  },
+  "sourcePaths": {
+    "src/features/integrations/slack.ts": {
+      "kind": "modified",
+      "preimageSha256": "2fece3be197eb962310615034ddcefccbf3cd204a57e2870b2cb2cc532b8c0a2",
+      "postimageSha256": "8585d466afbbfd91cff7b64306de14e7a13383e1f17d794a6c7ed669dc43e1e3"
+    },
+    "src/features/integrations/slackOperationFailure.ts": {
+      "kind": "added",
+      "preimageSha256": null,
+      "postimageSha256": "6d841bb5ea5bae3939273ea443c3f7bf321452497324ac585b5c87db155c1f37"
+    },
+    "src/features/integrations/slackOperationFailures.test.ts": {
+      "kind": "added",
+      "preimageSha256": null,
+      "postimageSha256": "8bbbfcc93517590492ecefd0512ea0c7b8dca7c28691ab84a312f3cdd39d2ba7"
+    },
+    "src/features/integrations/slackReadFailures.test.ts": {
+      "kind": "modified",
+      "preimageSha256": "db62abf24ffc360d63cc4063e06ae0e0e20b40dfaa9f485f97aa188df510dff3",
+      "postimageSha256": "3d2ed3d7f648321d55c29d694555104604acaf00ef138f5252a97798663e3e4e"
+    },
+    "src/features/privacy/registryIdsSales1.ts": {
+      "kind": "modified",
+      "preimageSha256": "31075c8b9044e6a3c107f4daf4223825541cc88fa1bc1b65553c7df2dd211bd3",
+      "postimageSha256": "7e302626a62212c2051dacdf0d9736600719f6563a1b2ca075b9dbec16c6be2a"
+    }
+  },
+  "patch": "increment.patch",
+  "patchSha256": "ab61f73d7cf8f233ad85a701a0ec98aa8227ee9ba91606a8c0ea7a4e84c97641",
+  "base": {
+    "meaning": "Virtual sequential source cut after the frozen confirmation4 candidate; not a published Git commit or current public Main preimage.",
+    "modifiedPreimages": {
+      "src/features/integrations/slack.ts": "2fece3be197eb962310615034ddcefccbf3cd204a57e2870b2cb2cc532b8c0a2",
+      "src/features/integrations/slackReadFailures.test.ts": "db62abf24ffc360d63cc4063e06ae0e0e20b40dfaa9f485f97aa188df510dff3",
+      "src/features/privacy/registryIdsSales1.ts": "31075c8b9044e6a3c107f4daf4223825541cc88fa1bc1b65553c7df2dd211bd3"
+    },
+    "newPaths": [
+      "src/features/integrations/slackOperationFailure.ts",
+      "src/features/integrations/slackOperationFailures.test.ts"
+    ],
+    "confirmationParent": {
+      "path": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final",
+      "meaning": "Frozen confirmation4 prerequisite. ORIGINAL-PARENT-SHA256SUMS is the exact external60-entry parent manifest, retained for identification, not a checksum list of this dependency directory.",
+      "candidateSha256": "a080f16da7b3f80cc0f80ef942e6df54090bd7251f0de5674b46e01580955214",
+      "manifestSha256": "29b69457e62cf0a5c42174dcd1e47ffc4cbde82c63301632aad66d46011a7bb4",
+      "native6Source": "2fe only; no native confirmation credit on8585",
+      "sourceOnlyComposition": "Apply classifier5 after confirmation4, or Main composes both narrowly. This packet is not directly based on current public Main4eaa."
+    },
+    "composition": "Apply after confirmation4, or Main composes both narrowly. Preserve confirmation unit/native files and peer registry metadata. Never overlay the complete private workspace."
+  },
+  "acceptedContract": "evidence/implementation/CONTRACT-DECISION.md",
+  "sourceReview": "evidence/implementation/SOURCE-REVIEW.md",
+  "actualChecks": {
+    "original18": {
+      "failed": 16,
+      "passed": 2,
+      "setupErrors": 0,
+      "scope": "Historical nested-loop run; later vectors not credited",
+      "receipt": "evidence/operation-definitions/ACTUAL-RED-RECEIPT.json"
+    },
+    "strengthened47Baseline": {
+      "tests": 47,
+      "assertionFailures": 45,
+      "successControls": 2,
+      "setupOrCollectionErrors": 0,
+      "bodyConsumptionAssertionsReachedAndPassed": 18,
+      "missingContext": 39,
+      "nonAppErrorTransport": 3,
+      "nonAppErrorUnreadableJson": 3,
+      "schemaAssertions": "still not reached in failed cases",
+      "privateFixtureMarkersInLogs": 0,
+      "source": "Frozen confirmationSlack2fe with strengthened independent47 definitions",
+      "receipt": "evidence/operation-consumption/ACTUAL-RED-RECEIPT.json"
+    },
+    "first93": {
+      "source": "c37d1481 firstGREEN four-file cut, retained separately before pure-error-builder extraction",
+      "receipt": "evidence/implementation/LOCAL-GREEN-RECEIPT.json",
+      "sourceDirectory": "evidence/implementation/first-green-source/"
+    },
+    "final93": {
+      "files": 5,
+      "tests": 93,
+      "passed": 93,
+      "failed": 0,
+      "setupOrCollectionErrors": 0,
+      "classificationVectors": 47,
+      "retainedAffectedRegressions": 46,
+      "errorContextSchemasValidated": 45,
+      "earlyBodyConsumptionAssertions": 18,
+      "source": {
+        "src/features/integrations/slack.ts": "8585d466afbbfd91cff7b64306de14e7a13383e1f17d794a6c7ed669dc43e1e3",
+        "src/features/integrations/slackOperationFailure.ts": "6d841bb5ea5bae3939273ea443c3f7bf321452497324ac585b5c87db155c1f37",
+        "src/features/integrations/slackOperationFailures.test.ts": "8bbbfcc93517590492ecefd0512ea0c7b8dca7c28691ab84a312f3cdd39d2ba7",
+        "src/features/integrations/slackReadFailures.test.ts": "3d2ed3d7f648321d55c29d694555104604acaf00ef138f5252a97798663e3e4e"
+      },
+      "seconds": 0.7521877080434933,
+      "wholeFocusedSeconds": 1.021302332985215,
+      "receipt": "evidence/implementation/REFINED-RECEIPT.json"
+    },
+    "formatting": "Actual Biome4 on final source cut and Biome1 on metadata, separate invocations",
+    "registry": {
+      "distinctPassed": 30,
+      "composition": "18 registry cases plus10 discovery and2 validity across two unchanged-five-source invocations, not one30case run",
+      "receipts": [
+        "evidence/implementation/PRIVACY-RECEIPT.json",
+        "evidence/implementation/REGISTRY-REMAINING-RECEIPT.json"
+      ],
+      "sameFiveSourceCut": true
+    },
+    "privateInventory": {
+      "registryTests": 18,
+      "registryPassed": 18,
+      "scope": "Private recorded2351-source cut only; no current canonical inventory/report adoption claim",
+      "privateInventorySourceFiles": 2351,
+      "privateInventorySourceFingerprint": "e16142f3a02134ee5997d67884c234b22100917f58be93ab1c6000224673e30d",
+      "coverage": {
+        "ok": true,
+        "missing": [],
+        "invalid": []
+      },
+      "receipt": "evidence/implementation/PRIVACY-RECEIPT.json"
+    },
+    "artifactApplyCheck": {
+      "exitCode": 0,
+      "seconds": 0.07142741698771715,
+      "baseUnchanged": true,
+      "newPathsNotWritten": true,
+      "scope": "Finite source-artifact-only diff and apply-check against packet-owned frozen confirmation-parent preimages; no repository, index, worktree, application, compiler, database or provider mutation/execution",
+      "receipt": "APPLY-CHECK.json"
+    }
+  },
+  "privacy": {
+    "delta": "Exactly one existing manual Slack sourceReview digest replacement,2fe to8585; no new ID/lifecycle/capability/storage/provider acceptance.",
+    "exactSingleReplacementVerified": true,
+    "discoveryLimit": "Existing literal-fetch heuristic does not discover the fetcher alias; explicit source review and registry source-byte rehash establish the manual binding, not empty missing lists."
+  },
+  "excluded": [
+    "New reauthorization2 definitions and any future review API",
+    "Whole private source/WIP overlay",
+    "New runtime/native/DB/provider/browser/retry/UI/health/DDL work",
+    "Native6 requalification on8585: native6 remains only at frozen2fe confirmation parent"
+  ],
+  "remaining": [
+    "Main current-source reconciliation and narrow confirmation/classifier composition",
+    "Main configured typegen/fullTSC and typed lint",
+    "Main current reviewed registry metadata and regenerated canonical inventory/report",
+    "Exact adopted-source CI, publication and canonical AC recording"
+  ],
+  "limits": [
+    "Adjacent malformed-success channel payloads may still escape listSlackChannels as raw ZodError; no all-possible-failures-normalized claim and no extra gate to the six-distinction AC",
+    "Existing internal10s deadline/post-body guard source-reviewed; no separately executed deadline/caller-abort matrix claimed",
+    "No full CONN017/018, released/deployed/provider/installed/browser/goal completion claim"
+  ],
+  "MainSolePublisher": true,
+  "sourceProductionEditsByPacketAuthor": false,
+  "applicationExecutionByPacketAuthor": false
+}

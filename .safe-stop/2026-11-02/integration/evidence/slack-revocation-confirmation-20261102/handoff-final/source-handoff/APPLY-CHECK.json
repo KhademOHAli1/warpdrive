@@ -1,0 +1,25 @@
+{
+  "startedAt": "2026-11-02T03:56:12.668078+00:00",
+  "finishedAt": "2026-11-02T03:56:12.695339+00:00",
+  "command": [
+    "/opt/homebrew/bin/gtimeout",
+    "--signal=INT",
+    "--kill-after=5s",
+    "25s",
+    "/usr/bin/git",
+    "apply",
+    "--check",
+    "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-source/increment.patch"
+  ],
+  "cwd": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-source/base",
+  "exit": 0,
+  "seconds": 0.02657999994698912,
+  "pressure": 1,
+  "availablePercent": 55,
+  "freeBytes": 15583100928,
+  "scope": "source-only apply check on packet-owned exact a7 preimages; no repo/index/worktree mutation or current-head acceptance",
+  "baseUnchanged": true,
+  "newTestsNotWrittenToBase": true,
+  "productTestsCompilerDbRun": false,
+  "peakRss": "not measured"
+}

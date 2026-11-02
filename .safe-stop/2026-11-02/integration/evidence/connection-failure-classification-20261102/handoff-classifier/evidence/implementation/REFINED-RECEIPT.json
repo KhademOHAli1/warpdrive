@@ -1,0 +1,135 @@
+{
+  "at": "2026-11-02T05:23:11.512283+00:00",
+  "admission": {
+    "pressure": 1,
+    "q": 55,
+    "freeBytes": 12614701056
+  },
+  "terminal": {
+    "pressure": 1,
+    "q": 55,
+    "freeBytes": 12611211264
+  },
+  "sourceBeforeBiome": {
+    "src/features/integrations/slack.ts": "8585d466afbbfd91cff7b64306de14e7a13383e1f17d794a6c7ed669dc43e1e3",
+    "src/features/integrations/slackOperationFailure.ts": "6d841bb5ea5bae3939273ea443c3f7bf321452497324ac585b5c87db155c1f37",
+    "src/features/integrations/slackOperationFailures.test.ts": "8bbbfcc93517590492ecefd0512ea0c7b8dca7c28691ab84a312f3cdd39d2ba7",
+    "src/features/integrations/slackReadFailures.test.ts": "3d2ed3d7f648321d55c29d694555104604acaf00ef138f5252a97798663e3e4e"
+  },
+  "sourceAfterBiome": {
+    "src/features/integrations/slack.ts": "8585d466afbbfd91cff7b64306de14e7a13383e1f17d794a6c7ed669dc43e1e3",
+    "src/features/integrations/slackOperationFailure.ts": "6d841bb5ea5bae3939273ea443c3f7bf321452497324ac585b5c87db155c1f37",
+    "src/features/integrations/slackOperationFailures.test.ts": "8bbbfcc93517590492ecefd0512ea0c7b8dca7c28691ab84a312f3cdd39d2ba7",
+    "src/features/integrations/slackReadFailures.test.ts": "3d2ed3d7f648321d55c29d694555104604acaf00ef138f5252a97798663e3e4e"
+  },
+  "sourceAfterRun": {
+    "src/features/integrations/slack.ts": "8585d466afbbfd91cff7b64306de14e7a13383e1f17d794a6c7ed669dc43e1e3",
+    "src/features/integrations/slackOperationFailure.ts": "6d841bb5ea5bae3939273ea443c3f7bf321452497324ac585b5c87db155c1f37",
+    "src/features/integrations/slackOperationFailures.test.ts": "8bbbfcc93517590492ecefd0512ea0c7b8dca7c28691ab84a312f3cdd39d2ba7",
+    "src/features/integrations/slackReadFailures.test.ts": "3d2ed3d7f648321d55c29d694555104604acaf00ef138f5252a97798663e3e4e"
+  },
+  "phases": [
+    {
+      "name": "biome-refined",
+      "exitCode": 0,
+      "seconds": 0.1869024169864133,
+      "command": [
+        "/Users/ali/Developer/warpdrive-integrations/.runtime/bin/bun",
+        "--no-env-file",
+        "--bun",
+        "node_modules/@biomejs/biome/bin/biome",
+        "check",
+        "--write",
+        "src/features/integrations/slack.ts",
+        "src/features/integrations/slackOperationFailure.ts",
+        "src/features/integrations/slackOperationFailures.test.ts",
+        "src/features/integrations/slackReadFailures.test.ts"
+      ],
+      "resourceStop": null,
+      "sampledGroupMaxKiB": 6000
+    },
+    {
+      "name": "units-refined",
+      "exitCode": 0,
+      "seconds": 0.7521877080434933,
+      "command": [
+        "/usr/bin/time",
+        "-l",
+        "/Users/ali/Developer/warpdrive-integrations/.runtime/bin/bun",
+        "--no-env-file",
+        "--bun",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        ".runtime/handoffs/mcp-validation-20261102/vitest.isolated.config.ts",
+        "--project",
+        "unit",
+        "--pool=forks",
+        "--maxWorkers=1",
+        "--no-file-parallelism",
+        "--execArgv=--no-env-file",
+        "src/features/integrations/slackOperationFailures.test.ts",
+        "src/features/integrations/slackRevocation.test.ts",
+        "src/features/integrations/slack.test.ts",
+        "src/features/integrations/slackReadFailures.test.ts",
+        "src/features/integrations/slackReadCancellation.test.ts"
+      ],
+      "resourceStop": null,
+      "sampledGroupMaxKiB": 265040
+    }
+  ],
+  "samples": [
+    {
+      "pressure": 1,
+      "q": 55,
+      "freeBytes": 12614696960,
+      "ownedGroupRssKiB": 6000
+    },
+    {
+      "pressure": 1,
+      "q": 55,
+      "freeBytes": 12613341184,
+      "ownedGroupRssKiB": 3360
+    },
+    {
+      "pressure": 1,
+      "q": 55,
+      "freeBytes": 12612268032,
+      "ownedGroupRssKiB": 167136
+    },
+    {
+      "pressure": 1,
+      "q": 55,
+      "freeBytes": 12612304896,
+      "ownedGroupRssKiB": 265040
+    },
+    {
+      "pressure": 1,
+      "q": 55,
+      "freeBytes": 12611162112,
+      "ownedGroupRssKiB": 245584
+    }
+  ],
+  "wholeSeconds": 1.021302332985215,
+  "tests": [
+    "src/features/integrations/slackOperationFailures.test.ts",
+    "src/features/integrations/slackRevocation.test.ts",
+    "src/features/integrations/slack.test.ts",
+    "src/features/integrations/slackReadFailures.test.ts",
+    "src/features/integrations/slackReadCancellation.test.ts"
+  ],
+  "databaseOrProviderCalls": false,
+  "native6Qualification": "remains separate at frozen2fe source, not rebound",
+  "aggregatePeak": "unmeasured",
+  "actual": {
+    "files": 5,
+    "tests": 93,
+    "passed": 93,
+    "failed": 0,
+    "setupOrCollectionErrors": 0,
+    "classificationVectors": 47,
+    "retainedAffectedRegressions": 46,
+    "errorContextSchemasValidated": 45,
+    "earlyBodyConsumptionAssertions": 18
+  }
+}

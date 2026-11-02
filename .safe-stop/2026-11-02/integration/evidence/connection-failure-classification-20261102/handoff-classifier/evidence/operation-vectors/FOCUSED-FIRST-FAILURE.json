@@ -1,0 +1,12 @@
+{
+  "at": "2026-11-02T04:58:21.616924+00:00",
+  "state": "focused orchestration failure after Biome; unit not launched",
+  "cause": "elapsed-time variable a overwritten by ps row parser assignment expression",
+  "ownedProcessGroup": 63230,
+  "groupGone": true,
+  "allElevenNative6InputsUnchanged": true,
+  "unitInvocations": 0,
+  "nativeOrProviderCalls": false,
+  "biomeExit": "not recorded; actual output retained",
+  "testAfterFormattingSha256": "1705b56a885c558c3aac262bc71e0c363b10a4391b3b8dd89e08e4ccbca81655"
+}

@@ -1,0 +1,357 @@
+{
+  "at": "2026-11-02T05:13:58.504Z",
+  "patchSha256": "b3ed5a65d43bf9737307f16b2d6c9ceb6c49e87357f6a33375e80b4417f13e7b",
+  "allFourPacketPostimagesMatchActualNativeBeforePins": true,
+  "actualNativeSourceHashes": {
+    "src/features/integrations/slack.ts": "2fece3be197eb962310615034ddcefccbf3cd204a57e2870b2cb2cc532b8c0a2",
+    "src/features/integrations/service.ts": "9b8374acfc0cbcbff6e0feed36a541de0c1fbe334f91873d585d4b44534ed228",
+    "src/features/integrations/slackRevocation.integration.test.ts": "790c380056521344e121113a35310ec15293c9effdac5c0eb2b90b6330859950",
+    "src/features/integrations/slackRevocation.test.ts": "491e6dec299c57cd0891441192ac8eec6fa439520979295c628564a20e9d76e3",
+    "src/features/privacy/registryIdsSales1.ts": "31075c8b9044e6a3c107f4daf4223825541cc88fa1bc1b65553c7df2dd211bd3",
+    "src/features/email/crypto.ts": "fbe1633057080384f7f58a78f7f0bf4a57b5717022d553664f6c087cc0e1d1f3",
+    "src/db/schema/integrations.ts": "195d6ff5e836745f8c71b5e728c8389777d4e554e27a78644b37a81dd7608d35",
+    "src/db/schema/identity.ts": "40a58a28e60bca38a94a0ed0e353b0ba52245c9e2928aad42554c7662e199a32",
+    "src/test/db.ts": "a2e17fcd595b368e294c65fbd775566e2b5a91680b075f5a27abe808f9946ba3",
+    "vitest.config.ts": "eb300f409ce431f415b89619bb5c3150e63ff14b1c6864a52f66dfe56989e6f7",
+    ".runtime/handoffs/mcp-validation-20261102/vitest.isolated.config.ts": "0cab1ace68ee361d17a82fbfad0ff0a6fe32582c809e3939c69b35aa67077c01"
+  },
+  "sourceOnlyApplyCheck": "source-handoff/APPLY-CHECK.json: actual PASS against packet-owned a7 preimages only; no new apply check run for this packet",
+  "currentMainModifiedPreimages": [
+    {
+      "path": "src/features/integrations/slack.ts",
+      "url": "https://github.com/KhademOHAli1/warpdrive/blob/df26904d3daebecf3428d6fec303be098aa9d3ab/src/features/integrations/slack.ts",
+      "sha256": "4eaa308d24fed9d8a1069d3afcfb1ed4d50d3cfebc2da8554cb678823e21dba5",
+      "retainedPreimageSha256": "4eaa308d24fed9d8a1069d3afcfb1ed4d50d3cfebc2da8554cb678823e21dba5",
+      "preimageStillIdentical": true
+    },
+    {
+      "path": "src/features/privacy/registryIdsSales1.ts",
+      "url": "https://github.com/KhademOHAli1/warpdrive/blob/df26904d3daebecf3428d6fec303be098aa9d3ab/src/features/privacy/registryIdsSales1.ts",
+      "sha256": "b5876ce716368695faa0392dd644ae5c8475d1c4cc691c641eb8f2f298fad3eb",
+      "retainedPreimageSha256": "b5876ce716368695faa0392dd644ae5c8475d1c4cc691c641eb8f2f298fad3eb",
+      "preimageStillIdentical": true
+    }
+  ],
+  "copyManifest": [
+    {
+      "from": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-source/APPLY-CHECK.json",
+      "to": "source-handoff/APPLY-CHECK.json",
+      "sha256": "210b1f5e7ac6661543b51b2bf7367878eabd5f27de706439344f08477d55d2c0",
+      "bytes": 940
+    },
+    {
+      "from": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-source/apply-check.stderr.log",
+      "to": "source-handoff/apply-check.stderr.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "from": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-source/apply-check.stdout.log",
+      "to": "source-handoff/apply-check.stdout.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "from": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-source/base/src/features/integrations/slack.ts",
+      "to": "source-handoff/base/src/features/integrations/slack.ts",
+      "sha256": "4eaa308d24fed9d8a1069d3afcfb1ed4d50d3cfebc2da8554cb678823e21dba5",
+      "bytes": 4965
+    },
+    {
+      "from": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-source/base/src/features/privacy/registryIdsSales1.ts",
+      "to": "source-handoff/base/src/features/privacy/registryIdsSales1.ts",
+      "sha256": "b5876ce716368695faa0392dd644ae5c8475d1c4cc691c641eb8f2f298fad3eb",
+      "bytes": 5333
+    },
+    {
+      "from": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-source/CANDIDATE.json",
+      "to": "source-handoff/CANDIDATE.json",
+      "sha256": "f11f54717288457c48971bee27d6340b22578ce8deb02929bd98939b0ca22883",
+      "bytes": 5691
+    },
+    {
+      "from": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-source/evidence/biome.log",
+      "to": "source-handoff/evidence/biome.log",
+      "sha256": "a76fadf49391ed388bb5babe1f024a3833df7177125633d724dcc9736460a1bf",
+      "bytes": 39
+    },
+    {
+      "from": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-source/evidence/focused-green.receipt.json",
+      "to": "source-handoff/evidence/focused-green.receipt.json",
+      "sha256": "89e61156f74356ba1ba505c79ee8c374a86d0ce0b2883086298f75a8d88cba33",
+      "bytes": 1696
+    },
+    {
+      "from": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-source/evidence/inventory-diagnostic.json",
+      "to": "source-handoff/evidence/inventory-diagnostic.json",
+      "sha256": "ec5226a282b5037fee5e2bcbca7adaaa56b72f734a8f9dcc95430acce448531d",
+      "bytes": 648
+    },
+    {
+      "from": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-source/evidence/inventory-diagnostic.receipt.json",
+      "to": "source-handoff/evidence/inventory-diagnostic.receipt.json",
+      "sha256": "9b92d022bff91cc856bc8ac500b2ba6edbd89915cce422c6b384f80685558708",
+      "bytes": 504
+    },
+    {
+      "from": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-source/evidence/inventory-diagnostic.stderr.log",
+      "to": "source-handoff/evidence/inventory-diagnostic.stderr.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "from": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-source/evidence/inventory-green.json",
+      "to": "source-handoff/evidence/inventory-green.json",
+      "sha256": "6a8e3dd773818a7262250fa68d64c81b73124357adcb0fd94e5b3796ec730b99",
+      "bytes": 648
+    },
+    {
+      "from": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-source/evidence/inventory-green.stderr.log",
+      "to": "source-handoff/evidence/inventory-green.stderr.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "from": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-source/evidence/native-definitions/DEFINITIONS.json",
+      "to": "source-handoff/evidence/native-definitions/DEFINITIONS.json",
+      "sha256": "0c2f6931264d453997f04229dcbb377b604db6b0a08f154b9136fedfc6cf6c51",
+      "bytes": 1703
+    },
+    {
+      "from": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-source/evidence/native-definitions-biome-final.log",
+      "to": "source-handoff/evidence/native-definitions-biome-final.log",
+      "sha256": "46ca58d1a0d217dd8b8d1e6a136761e8d6d6065831ad21da206745d7fb2d12dd",
+      "bytes": 42
+    },
+    {
+      "from": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-source/evidence/native-definitions-biome-final.receipt.json",
+      "to": "source-handoff/evidence/native-definitions-biome-final.receipt.json",
+      "sha256": "31926a152f14e746877c2e0819a6e3b9d2c4aef63cbb02aada5eecae038e949b",
+      "bytes": 253
+    },
+    {
+      "from": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-source/evidence/native-definitions-biome.log",
+      "to": "source-handoff/evidence/native-definitions-biome.log",
+      "sha256": "e98d4041ac3c16c85d6a2ff47bc7b56c09976fcd68cc6d4d7d7bedf7aa06b373",
+      "bytes": 1566
+    },
+    {
+      "from": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-source/evidence/native-definitions-biome.receipt.json",
+      "to": "source-handoff/evidence/native-definitions-biome.receipt.json",
+      "sha256": "4ab468d74f1aca8d3db28b9ad66fd7c1308543e947de77fd2e8d11721f706de9",
+      "bytes": 516
+    },
+    {
+      "from": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-source/evidence/NATIVE-DEFINITIONS-REVIEW.md",
+      "to": "source-handoff/evidence/NATIVE-DEFINITIONS-REVIEW.md",
+      "sha256": "091cdee99e1407989675901bda6ba4e25b00df29e8ac6add6d765e7844450b22",
+      "bytes": 4018
+    },
+    {
+      "from": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-source/evidence/NATIVE6-COMMAND.json",
+      "to": "source-handoff/evidence/NATIVE6-COMMAND.json",
+      "sha256": "d322a9e65f211b141095087de18ebdd14a837b7933c31a5e882b7b7e55532631",
+      "bytes": 2995
+    },
+    {
+      "from": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-source/evidence/NATIVE6-PINS.json",
+      "to": "source-handoff/evidence/NATIVE6-PINS.json",
+      "sha256": "2b91965cd3bfc27f14619fc8a62cc8bb9e7505bb2e843f72e66a60284a42592a",
+      "bytes": 1807
+    },
+    {
+      "from": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-source/evidence/privacy-maintenance.receipt.json",
+      "to": "source-handoff/evidence/privacy-maintenance.receipt.json",
+      "sha256": "3a0d7cc7ba3c63d36fe76faa36e2b8d7058a025c6603784f0e74070720457c65",
+      "bytes": 2038
+    },
+    {
+      "from": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-source/evidence/PRIVACY-REVIEW.json",
+      "to": "source-handoff/evidence/PRIVACY-REVIEW.json",
+      "sha256": "567c5cb251dbabc76ad529d8ce72d2cfb69be438e2043c9147ab0ae826e3daa5",
+      "bytes": 1418
+    },
+    {
+      "from": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-source/evidence/registry-biome.log",
+      "to": "source-handoff/evidence/registry-biome.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "from": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-source/evidence/registry-biome.stderr.log",
+      "to": "source-handoff/evidence/registry-biome.stderr.log",
+      "sha256": "4b21d2316607b252636601a39949b2be3394cefb0d5b199d5b4f883fd205f9cd",
+      "bytes": 42
+    },
+    {
+      "from": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-source/evidence/registry-units.log",
+      "to": "source-handoff/evidence/registry-units.log",
+      "sha256": "7e504d20902bfa79174a72618d5f3994bd89929c8016324dadbd16f033212367",
+      "bytes": 987
+    },
+    {
+      "from": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-source/evidence/registry-units.stderr.log",
+      "to": "source-handoff/evidence/registry-units.stderr.log",
+      "sha256": "b5d193ec935c0ff2c2d1a43af83417a367fc5f94a41fd5a3b570b8d155ac797f",
+      "bytes": 718
+    },
+    {
+      "from": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-source/evidence/slack-discovery-observation.json",
+      "to": "source-handoff/evidence/slack-discovery-observation.json",
+      "sha256": "8ed9f2e450c395e529ae259cd20a883fcd69e8d0d076a5a56ea2ce405ad5817d",
+      "bytes": 66
+    },
+    {
+      "from": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-source/evidence/slack-discovery-observation.stderr.log",
+      "to": "source-handoff/evidence/slack-discovery-observation.stderr.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "from": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-source/evidence/SOURCE-REVIEW.md",
+      "to": "source-handoff/evidence/SOURCE-REVIEW.md",
+      "sha256": "97ecca50ab5595221859fce08b07626276cd35eb5ae43f6c53c4923134502a3f",
+      "bytes": 6354
+    },
+    {
+      "from": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-source/evidence/unit-green.log",
+      "to": "source-handoff/evidence/unit-green.log",
+      "sha256": "9aa67575ee5abac85550aebcc025a633486f30dcc106395259e7c64a09980a15",
+      "bytes": 2487
+    },
+    {
+      "from": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-source/evidence/unit-red.log",
+      "to": "source-handoff/evidence/unit-red.log",
+      "sha256": "ad019c9025a1ae4857c86a6c4ee5e722e2c79b58fb7315d76d3ad902fc05236e",
+      "bytes": 5363
+    },
+    {
+      "from": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-source/evidence/unit-red.receipt.json",
+      "to": "source-handoff/evidence/unit-red.receipt.json",
+      "sha256": "8e65ecf656060a130b8b09215fcbd2c787f59493850159e483d805546332a431",
+      "bytes": 1190
+    },
+    {
+      "from": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-source/EVIDENCE-COPY-MAP.json",
+      "to": "source-handoff/EVIDENCE-COPY-MAP.json",
+      "sha256": "e0b5027a6175798b668f0176c0a18701e20ae81919a380e19a54396116947948",
+      "bytes": 9906
+    },
+    {
+      "from": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-source/HANDOFF.md",
+      "to": "source-handoff/HANDOFF.md",
+      "sha256": "29b74b51c1ed69e5606ef5ad0f4ea695475f14a29f2e3265ee948a3de864d433",
+      "bytes": 5141
+    },
+    {
+      "from": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-source/increment.patch",
+      "to": "source-handoff/increment.patch",
+      "sha256": "b3ed5a65d43bf9737307f16b2d6c9ceb6c49e87357f6a33375e80b4417f13e7b",
+      "bytes": 13352
+    },
+    {
+      "from": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-source/NATIVE6-PINS.pre-run.json",
+      "to": "source-handoff/NATIVE6-PINS.pre-run.json",
+      "sha256": "2b91965cd3bfc27f14619fc8a62cc8bb9e7505bb2e843f72e66a60284a42592a",
+      "bytes": 1807
+    },
+    {
+      "from": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-source/repo/src/features/integrations/slack.ts",
+      "to": "source-handoff/repo/src/features/integrations/slack.ts",
+      "sha256": "2fece3be197eb962310615034ddcefccbf3cd204a57e2870b2cb2cc532b8c0a2",
+      "bytes": 5207
+    },
+    {
+      "from": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-source/repo/src/features/integrations/slackRevocation.integration.test.ts",
+      "to": "source-handoff/repo/src/features/integrations/slackRevocation.integration.test.ts",
+      "sha256": "790c380056521344e121113a35310ec15293c9effdac5c0eb2b90b6330859950",
+      "bytes": 8526
+    },
+    {
+      "from": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-source/repo/src/features/integrations/slackRevocation.test.ts",
+      "to": "source-handoff/repo/src/features/integrations/slackRevocation.test.ts",
+      "sha256": "491e6dec299c57cd0891441192ac8eec6fa439520979295c628564a20e9d76e3",
+      "bytes": 1726
+    },
+    {
+      "from": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-source/repo/src/features/privacy/registryIdsSales1.ts",
+      "to": "source-handoff/repo/src/features/privacy/registryIdsSales1.ts",
+      "sha256": "31075c8b9044e6a3c107f4daf4223825541cc88fa1bc1b65553c7df2dd211bd3",
+      "bytes": 5333
+    },
+    {
+      "from": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-source/RESTART-AND-DATA-IMPACT.md",
+      "to": "source-handoff/RESTART-AND-DATA-IMPACT.md",
+      "sha256": "121815950d3287067c2bd825a27c3ef09ce1d4629fa73fa54f065b756f3e05bc",
+      "bytes": 2241
+    },
+    {
+      "from": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-source/SHA256SUMS",
+      "to": "source-handoff/SHA256SUMS",
+      "sha256": "2b4289efc731dacb649c670ebc62b2c81f708102d6b773057f0384c38f088964",
+      "bytes": 4284
+    },
+    {
+      "from": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-source/SOURCE-HASHES.md",
+      "to": "source-handoff/SOURCE-HASHES.md",
+      "sha256": "4625ea25007edfda8dded230ebae3bfe0c772c69bfc3d2b1afda6f23f435a2fe",
+      "bytes": 820
+    },
+    {
+      "from": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/native-green/ACTUAL6-REVIEW.md",
+      "to": "native-green/ACTUAL6-REVIEW.md",
+      "sha256": "9249bde829812d3ea5090936532b70f81b3b0154158c0fb84a0f1a08defa916c",
+      "bytes": 2357
+    },
+    {
+      "from": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/native-green/before.json",
+      "to": "native-green/before.json",
+      "sha256": "ff5d6ec05d4bfec84d2dc3ef05a727a9da14dc7b875464150b6c674480c68833",
+      "bytes": 8581
+    },
+    {
+      "from": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/native-green/immediate-terminal.json",
+      "to": "native-green/immediate-terminal.json",
+      "sha256": "66f41b1c11f03e6c0976ed88d2230ca9a8fe0d12a03915d2865971c8134082dd",
+      "bytes": 5114
+    },
+    {
+      "from": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/native-green/NATIVE-RESULT.json",
+      "to": "native-green/NATIVE-RESULT.json",
+      "sha256": "c4bd7c4531fc39b04cc0565c3488d73f4f7abacfc8ec892e5210b4ca38215b4d",
+      "bytes": 5753
+    },
+    {
+      "from": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/native-green/resource-observations.json",
+      "to": "native-green/resource-observations.json",
+      "sha256": "970a3bdba62ea09e4240ca2a5cfd19a673d9bf5a01be02302be6bc529adfb74a",
+      "bytes": 339
+    },
+    {
+      "from": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/native-green/result.json",
+      "to": "native-green/result.json",
+      "sha256": "0848a014237454ec68fa0c74184061f46e3b60f8039ab9d08328817ddede5bb7",
+      "bytes": 313
+    },
+    {
+      "from": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/native-green/SHA256SUMS",
+      "to": "native-green/SHA256SUMS",
+      "sha256": "20cb3d448df47fc9876a1c8cf8ed6489d15c0f6cb9b90540b34a6d87903382e2",
+      "bytes": 665
+    },
+    {
+      "from": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/native-green/terminal.json",
+      "to": "native-green/terminal.json",
+      "sha256": "351cff9f7250db72d93ab89add7031db64ac23222eba2c1421b881ef1c8ca36a",
+      "bytes": 621
+    },
+    {
+      "from": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/native-green/vitest.log",
+      "to": "native-green/vitest.log",
+      "sha256": "bf41884bac96d12a468c4cfba749563f78cc12ec2c29e65e6623aee14e6d3516",
+      "bytes": 2023
+    }
+  ],
+  "oldSourcePacketManifestUnchanged": true,
+  "sourceMutation": "None by final packet author; files copied from frozen source packet, not whole private WIP"
+}

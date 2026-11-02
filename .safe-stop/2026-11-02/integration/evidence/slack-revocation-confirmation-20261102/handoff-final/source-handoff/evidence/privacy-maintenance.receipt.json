@@ -1,0 +1,63 @@
+{
+  "at": "2026-11-02T03:43:02.836716+00:00",
+  "pressure": 1,
+  "availablePercent": 54,
+  "BUN_OPTIONS": "--no-env-file",
+  "phases": [
+    {
+      "phase": "registry-units",
+      "exitCode": 0,
+      "seconds": 1.8928653750335798,
+      "command": [
+        "/Users/ali/Developer/warpdrive-integrations/.runtime/bin/bun",
+        "--no-env-file",
+        "--bun",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        ".runtime/handoffs/mcp-validation-20261102/vitest.isolated.config.ts",
+        "--project",
+        "unit",
+        "--pool=forks",
+        "--maxWorkers=1",
+        "--no-file-parallelism",
+        "--execArgv=--no-env-file",
+        "src/features/privacy/registry.test.ts",
+        "src/features/privacy/registryDiscovery.test.ts",
+        "src/features/privacy/registryValidity.test.ts"
+      ]
+    },
+    {
+      "phase": "registry-biome",
+      "exitCode": 0,
+      "seconds": 0.10763250000309199,
+      "command": [
+        "/Users/ali/Developer/warpdrive-integrations/.runtime/bin/bun",
+        "--no-env-file",
+        "--bun",
+        "node_modules/@biomejs/biome/bin/biome",
+        "check",
+        "src/features/privacy/registryIdsSales1.ts"
+      ]
+    },
+    {
+      "phase": "inventory-green",
+      "exitCode": 0,
+      "seconds": 0.5313229579478502,
+      "command": [
+        "/Users/ali/Developer/warpdrive-integrations/.runtime/bin/bun",
+        "--no-env-file",
+        "scripts/privacy-inventory.ts"
+      ]
+    }
+  ],
+  "sourceSha256": {
+    "src/features/integrations/slack.ts": "2fece3be197eb962310615034ddcefccbf3cd204a57e2870b2cb2cc532b8c0a2",
+    "src/features/integrations/slackRevocation.test.ts": "491e6dec299c57cd0891441192ac8eec6fa439520979295c628564a20e9d76e3",
+    "src/features/privacy/registryIdsSales1.ts": "31075c8b9044e6a3c107f4daf4223825541cc88fa1bc1b65553c7df2dd211bd3"
+  },
+  "allEightFrozenMcpInputsUnchanged": true,
+  "manualReviewBindingMatchesCurrentSource": true,
+  "canonicalReportInstalled": false,
+  "databaseOrProviderCalls": false
+}

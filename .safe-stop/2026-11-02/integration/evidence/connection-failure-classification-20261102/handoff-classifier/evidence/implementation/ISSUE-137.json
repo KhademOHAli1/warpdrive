@@ -1,0 +1,49 @@
+{
+  "url": "https://github.com/KhademOHAli1/warpdrive/issues/137",
+  "title": "[integration/CONN-014] Classify provider failures",
+  "issue_number": 137,
+  "body": "<!-- warpdrive:spec:start -->\n<!-- warpdrive:delivery-id:integration/CONN-014 -->\n## Approved scope: integration/CONN-014\n\nModule: **integrations** · Type: **deliverable**\nCoordinating owner: @KhademOHAli1\nImplementation responsibility: Platform + integrations\n\n### Original roadmap references\n\n- `integration-execution / CONN-014`: [specification](https://github.com/KhademOHAli1/warpdrive/blob/ee36663b3318ba84b7a0b1600e34e773f9597d88/docs/integration-execution/tasks.csv)\n- `integration-plan / CONN-014`: [specification](https://github.com/KhademOHAli1/warpdrive/blob/ee36663b3318ba84b7a0b1600e34e773f9597d88/docs/integration-platform-tasks.csv)\n\n<details><summary>Historical source qualification flags</summary>\n\n- `integration-execution / CONN-014`: {\"status\": \"planned\"}\n- `integration-plan / CONN-014`: {\"status\": \"planned\"}\n\n</details>\n\nAll original records, notes, source bindings and limitations remain in the [preserved roadmap register](https://github.com/KhademOHAli1/warpdrive/blob/main/docs/delivery/roadmap.json). False source-match and acceptance flags remain limitations.\n\n### Acceptance criteria\n\n- **AC1**: CONN-014: Distinguish revoked authorization, insufficient scope, missing resource, rate limit, transient outage and invalid configuration.\n\n### Blocking deliverables\n\n- `integration/CONN-001` (native GitHub blocking relationship after reconciliation)\n\n### Historical import observation\n\nObserved source status: **planned**; observed stage: **unassessed**.\nThis observation is historical evidence, not acceptance, release, deployment, or provider/installation qualification. Live execution is maintained on this issue and its Project item.\n<!-- warpdrive:spec:end -->\n\n## Live delivery record\n\nMaintain updates below this heading. The importer preserves this section and GitHub status, assignee, milestone, labels and comments.\n\n- [ ] Source implemented: link exact source revision and focused evidence.\n- [ ] Integrated: required CI passed for the included main revision.\n- [ ] User journey accepted: record applicable AC IDs, revision, reviewer and evidence.\n- [ ] Released: link the published version and release manifest.\n- [ ] Deployed: link separately authorized deployment evidence, if applicable.\n- [ ] Provider/installation accepted: record real target/provider evidence, if applicable.\n\nDo not close this issue from a subset, synthetic tests, generated packets or failed-first diagnostics.\n",
+  "state": "open",
+  "user": {
+    "login": "KhademOHAli1",
+    "name": "KhademOHAli1",
+    "email": null,
+    "avatar_url": "https://avatars.githubusercontent.com/u/118572997?v=4",
+    "id": 118572997
+  },
+  "assignees": [
+    {
+      "login": "KhademOHAli1",
+      "name": "KhademOHAli1",
+      "email": null,
+      "avatar_url": "https://avatars.githubusercontent.com/u/118572997?v=4",
+      "id": 118572997
+    }
+  ],
+  "labels": [
+    {
+      "name": "kind:deliverable",
+      "color": "1d76db",
+      "description": "Warpdrive delivery tracking"
+    },
+    {
+      "name": "module:integrations",
+      "color": "1d76db",
+      "description": "Warpdrive delivery tracking"
+    },
+    {
+      "name": "roadmap",
+      "color": "1d76db",
+      "description": "Warpdrive delivery tracking"
+    }
+  ],
+  "milestone": null,
+  "state_reason": null,
+  "comments": 0,
+  "created_at": "2026-11-01T23:48:18Z",
+  "updated_at": "2026-11-01T23:48:18Z",
+  "closed_at": null,
+  "display_url": "https://github.com/KhademOHAli1/warpdrive/issues/137",
+  "display_title": "[integration/CONN-014] Classify provider failures"
+}
+

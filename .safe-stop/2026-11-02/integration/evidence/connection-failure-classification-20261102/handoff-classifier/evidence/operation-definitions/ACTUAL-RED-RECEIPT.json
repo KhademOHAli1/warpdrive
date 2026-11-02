@@ -1,0 +1,62 @@
+{
+  "at": "2026-11-02T04:31:58.164661+00:00",
+  "pressure": 1,
+  "availablePercent": 55,
+  "phases": [
+    {
+      "phase": "biome",
+      "exitCode": 0,
+      "seconds": 0.16184079099912196,
+      "command": [
+        "/Users/ali/Developer/warpdrive-integrations/.runtime/bin/bun",
+        "--no-env-file",
+        "--bun",
+        "node_modules/@biomejs/biome/bin/biome",
+        "check",
+        "--write",
+        "src/features/integrations/slackOperationFailures.test.ts"
+      ]
+    },
+    {
+      "phase": "unit-red",
+      "exitCode": 1,
+      "seconds": 0.770890458021313,
+      "command": [
+        "/usr/bin/time",
+        "-l",
+        "/Users/ali/Developer/warpdrive-integrations/.runtime/bin/bun",
+        "--no-env-file",
+        "--bun",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        ".runtime/handoffs/mcp-validation-20261102/vitest.isolated.config.ts",
+        "--project",
+        "unit",
+        "--pool=forks",
+        "--maxWorkers=1",
+        "--no-file-parallelism",
+        "--execArgv=--no-env-file",
+        "src/features/integrations/slackOperationFailures.test.ts"
+      ]
+    }
+  ],
+  "currentProductionSha256": "2fece3be197eb962310615034ddcefccbf3cd204a57e2870b2cb2cc532b8c0a2",
+  "testSha256": "4dffa31acd7f4005ec543dd627462f016b71251c828e71a9a28196904ed09c1e",
+  "allElevenNative6InputsUnchanged": true,
+  "databaseOrProviderCalls": false,
+  "scope": "future operation classification, excluded from confirmation4pathpacket/native6selection",
+  "expected": "16 assertion RED /2success controls; actual log authoritative; nested vectors after first assertion failure are not credited",
+  "actual": {
+    "tests": 18,
+    "failed": 16,
+    "passed": 2,
+    "setupErrors": 0,
+    "failureKinds": [
+      "missing normalized detail",
+      "raw transport error"
+    ],
+    "vectorsNotReached": "Per-case loops stop on first assertion failure; later response vectors are not credited."
+  },
+  "contractStatus": "Concrete additive server-only failure detail sent to Main for one shared-contract review; production implementation deferred until frozen native6 returned."
+}

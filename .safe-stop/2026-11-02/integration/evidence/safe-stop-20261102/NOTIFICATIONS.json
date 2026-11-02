@@ -1,0 +1,82 @@
+{
+  "source": "Verified current Main send_message_to_thread call records plus Main closure acknowledgment",
+  "recipients": [
+    {
+      "threadId": "01a18868-3300-7dc2-b49d-c3bdb067fae7",
+      "toolCallId": "exec-982e0d1a-1a80-40e7-8c48-732a26b72295",
+      "status": "completed"
+    },
+    {
+      "threadId": "01a19290-d076-74e2-ac3f-46c9853bc5b5",
+      "toolCallId": "exec-9f5d784c-bbda-45a0-8c5d-72b1d85ead3d",
+      "status": "completed"
+    },
+    {
+      "threadId": "01a1929d-3672-79f1-9590-279dfca4aef9",
+      "toolCallId": "exec-66c4ea8e-ffa2-4719-8e54-5130e0af882a",
+      "status": "completed"
+    },
+    {
+      "threadId": "01a19263-b767-7611-9ee3-f395e66557ac",
+      "toolCallId": "exec-087b34fd-4c70-4d79-8be7-0989405abf41",
+      "status": "completed"
+    },
+    {
+      "threadId": "01a19263-11f1-7e30-adfb-e418eb02876e",
+      "toolCallId": "exec-5d724f2a-9ccd-4d06-9f6e-fd898c9b782e",
+      "status": "completed"
+    },
+    {
+      "threadId": "01a192a3-dba9-7a52-80b6-43f384542fe6",
+      "toolCallId": "exec-7a5cab9e-9041-41f8-acc5-47f211118769",
+      "status": "completed"
+    },
+    {
+      "threadId": "01a19971-a449-7422-a9eb-fdbfb94bf3fc",
+      "toolCallId": "exec-45c2b010-d3d8-4e9a-80f7-e413b871a5c9",
+      "status": "completed"
+    },
+    {
+      "threadId": "01a199a1-f2ca-7173-9785-622297531716",
+      "toolCallId": "exec-8f1d4979-981b-458e-a3a1-c78cfc2da2ba",
+      "status": "completed"
+    }
+  ],
+  "expected": [
+    {
+      "id": "01a199a1-f2ca-7173-9785-622297531716",
+      "title": "Fix Warpdrive security alerts"
+    },
+    {
+      "id": "01a19971-a449-7422-a9eb-fdbfb94bf3fc",
+      "title": "Warpdrive GitHub roadmaps and release…"
+    },
+    {
+      "id": "01a19263-b767-7611-9ee3-f395e66557ac",
+      "title": "Warpdrive — full sales platform implementation"
+    },
+    {
+      "id": "01a19290-d076-74e2-ac3f-46c9853bc5b5",
+      "title": "Complete the calendar roadmap"
+    },
+    {
+      "id": "01a18868-3300-7dc2-b49d-c3bdb067fae7",
+      "title": "Assess Warpdrive Farsi and Bun migration"
+    },
+    {
+      "id": "01a192a3-dba9-7a52-80b6-43f384542fe6",
+      "title": "Warpdrive agency projects implementation"
+    },
+    {
+      "id": "01a1929d-3672-79f1-9590-279dfca4aef9",
+      "title": "Warpdrive workflows: autonomous completion"
+    },
+    {
+      "id": "01a19263-11f1-7e30-adfb-e418eb02876e",
+      "title": "Warpdrive privacy and data lifecycle"
+    }
+  ],
+  "missing": [],
+  "soleCloser": "01a19251-a472-7cd1-86cd-8dc245dd5b84"
+}
+

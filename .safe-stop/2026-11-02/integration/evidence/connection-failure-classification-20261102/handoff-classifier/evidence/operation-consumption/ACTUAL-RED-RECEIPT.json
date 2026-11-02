@@ -1,0 +1,108 @@
+{
+  "at": "2026-11-02T05:12:42.907114+00:00",
+  "admission": {
+    "pressure": 1,
+    "availablePercent": 52,
+    "diskFreeBytes": 13342449664
+  },
+  "terminal": {
+    "pressure": 1,
+    "availablePercent": 52,
+    "diskFreeBytes": 13346312192
+  },
+  "phases": [
+    {
+      "phase": "biome",
+      "exitCode": 0,
+      "seconds": 0.1877015419304371,
+      "command": [
+        "/Users/ali/Developer/warpdrive-integrations/.runtime/bin/bun",
+        "--no-env-file",
+        "--bun",
+        "node_modules/@biomejs/biome/bin/biome",
+        "check",
+        "src/features/integrations/slackOperationFailures.test.ts"
+      ],
+      "resourceStop": null,
+      "sampledGroupRssKiB": 6656
+    },
+    {
+      "phase": "unit-red",
+      "exitCode": 1,
+      "seconds": 0.5696078330511227,
+      "command": [
+        "/usr/bin/time",
+        "-l",
+        "/Users/ali/Developer/warpdrive-integrations/.runtime/bin/bun",
+        "--no-env-file",
+        "--bun",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        ".runtime/handoffs/mcp-validation-20261102/vitest.isolated.config.ts",
+        "--project",
+        "unit",
+        "--pool=forks",
+        "--maxWorkers=1",
+        "--no-file-parallelism",
+        "--execArgv=--no-env-file",
+        "src/features/integrations/slackOperationFailures.test.ts"
+      ],
+      "resourceStop": null,
+      "sampledGroupRssKiB": 253328
+    }
+  ],
+  "wholeSeconds": 0.8471714579500258,
+  "samples": [
+    {
+      "pressure": 1,
+      "availablePercent": 52,
+      "diskFreeBytes": 13342445568,
+      "ownedGroupRssKiB": 6656
+    },
+    {
+      "pressure": 1,
+      "availablePercent": 52,
+      "diskFreeBytes": 13342601216,
+      "ownedGroupRssKiB": 3360
+    },
+    {
+      "pressure": 1,
+      "availablePercent": 52,
+      "diskFreeBytes": 13342269440,
+      "ownedGroupRssKiB": 169280
+    },
+    {
+      "pressure": 1,
+      "availablePercent": 52,
+      "diskFreeBytes": 13346340864,
+      "ownedGroupRssKiB": 253328
+    }
+  ],
+  "testBeforeSha256": "8bbbfcc93517590492ecefd0512ea0c7b8dca7c28691ab84a312f3cdd39d2ba7",
+  "testSha256": "8bbbfcc93517590492ecefd0512ea0c7b8dca7c28691ab84a312f3cdd39d2ba7",
+  "allElevenNative6InputsUnchanged": true,
+  "automaticDotenvFilesAbsent": [
+    ".env",
+    ".env.local",
+    ".env.test",
+    ".env.test.local",
+    ".env.production",
+    ".env.production.local"
+  ],
+  "databaseOrProviderCalls": false,
+  "scope": "future47 same vectors with body-consumption assertions before classification checks; excluded from completed confirmation6",
+  "actual": {
+    "tests": 47,
+    "assertionFailures": 45,
+    "successControls": 2,
+    "setupOrCollectionErrors": 0,
+    "bodyConsumptionAssertionsReachedAndPassed": 18,
+    "missingContext": 39,
+    "nonAppErrorTransport": 3,
+    "nonAppErrorUnreadableJson": 3,
+    "schemaAssertions": "still not reached in failed cases",
+    "privateFixtureMarkersInLogs": 0
+  },
+  "aggregatePeak": "unmeasured"
+}

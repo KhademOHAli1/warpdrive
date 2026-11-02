@@ -1,0 +1,2214 @@
+{
+  "at": "2026-11-02T07:31:02.471738+00:00",
+  "scope": "244 files enumerated in five exact owner-curated handoff dirs, nine outer safe-stop files including later FREEZE-VERIFICATION, six explicit provider-abort receipts/before/test files. No unrelated directories/workspaces or premium scanned.",
+  "targetConvention": "targetRelative is relative to caller-selected evidence archive root, preserving owner outputs-relative layout; explicitly requested source test is under provider-abort-reason-20261102/source/.",
+  "files": [
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/CURRENT-MAIN-PREIMAGES.json",
+      "targetRelative": "slack-revocation-confirmation-20261102/handoff-final/CURRENT-MAIN-PREIMAGES.json",
+      "sha256": "d3ca9711b2108582bd4d17a0bb703b6430ddc7e566215cad8de9d644286ffdda",
+      "bytes": 1651,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/CANDIDATE.json",
+      "targetRelative": "slack-revocation-confirmation-20261102/handoff-final/CANDIDATE.json",
+      "sha256": "a080f16da7b3f80cc0f80ef942e6df54090bd7251f0de5674b46e01580955214",
+      "bytes": 6943,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/RESTART-AND-DATA-IMPACT.md",
+      "targetRelative": "slack-revocation-confirmation-20261102/handoff-final/RESTART-AND-DATA-IMPACT.md",
+      "sha256": "2f25d37f0c280101776700c70b09d0acb423606e5c39a12e7b0c80f8bbacd931",
+      "bytes": 2492,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/SOURCE-LINKAGE.json",
+      "targetRelative": "slack-revocation-confirmation-20261102/handoff-final/SOURCE-LINKAGE.json",
+      "sha256": "9fafe00a47456c10bb2e5cd4c703b599907341ccf971746aed4eb47fbeda2189",
+      "bytes": 21415,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/SHA256SUMS",
+      "targetRelative": "slack-revocation-confirmation-20261102/handoff-final/SHA256SUMS",
+      "sha256": "29b69457e62cf0a5c42174dcd1e47ffc4cbde82c63301632aad66d46011a7bb4",
+      "bytes": 6566,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/HANDOFF.md",
+      "targetRelative": "slack-revocation-confirmation-20261102/handoff-final/HANDOFF.md",
+      "sha256": "3a99612f763d9d5b6784ea24b5a2d36a9b12761e27e234322771d8b0ddc70f39",
+      "bytes": 5700,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/CANDIDATE.json",
+      "targetRelative": "slack-revocation-confirmation-20261102/handoff-final/source-handoff/CANDIDATE.json",
+      "sha256": "f11f54717288457c48971bee27d6340b22578ce8deb02929bd98939b0ca22883",
+      "bytes": 5691,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/RESTART-AND-DATA-IMPACT.md",
+      "targetRelative": "slack-revocation-confirmation-20261102/handoff-final/source-handoff/RESTART-AND-DATA-IMPACT.md",
+      "sha256": "121815950d3287067c2bd825a27c3ef09ce1d4629fa73fa54f065b756f3e05bc",
+      "bytes": 2241,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/EVIDENCE-COPY-MAP.json",
+      "targetRelative": "slack-revocation-confirmation-20261102/handoff-final/source-handoff/EVIDENCE-COPY-MAP.json",
+      "sha256": "e0b5027a6175798b668f0176c0a18701e20ae81919a380e19a54396116947948",
+      "bytes": 9906,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/SOURCE-HASHES.md",
+      "targetRelative": "slack-revocation-confirmation-20261102/handoff-final/source-handoff/SOURCE-HASHES.md",
+      "sha256": "4625ea25007edfda8dded230ebae3bfe0c772c69bfc3d2b1afda6f23f435a2fe",
+      "bytes": 820,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/APPLY-CHECK.json",
+      "targetRelative": "slack-revocation-confirmation-20261102/handoff-final/source-handoff/APPLY-CHECK.json",
+      "sha256": "210b1f5e7ac6661543b51b2bf7367878eabd5f27de706439344f08477d55d2c0",
+      "bytes": 940,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/increment.patch",
+      "targetRelative": "slack-revocation-confirmation-20261102/handoff-final/source-handoff/increment.patch",
+      "sha256": "b3ed5a65d43bf9737307f16b2d6c9ceb6c49e87357f6a33375e80b4417f13e7b",
+      "bytes": 13352,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/SHA256SUMS",
+      "targetRelative": "slack-revocation-confirmation-20261102/handoff-final/source-handoff/SHA256SUMS",
+      "sha256": "2b4289efc731dacb649c670ebc62b2c81f708102d6b773057f0384c38f088964",
+      "bytes": 4284,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/NATIVE6-PINS.pre-run.json",
+      "targetRelative": "slack-revocation-confirmation-20261102/handoff-final/source-handoff/NATIVE6-PINS.pre-run.json",
+      "sha256": "2b91965cd3bfc27f14619fc8a62cc8bb9e7505bb2e843f72e66a60284a42592a",
+      "bytes": 1807,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/HANDOFF.md",
+      "targetRelative": "slack-revocation-confirmation-20261102/handoff-final/source-handoff/HANDOFF.md",
+      "sha256": "29b74b51c1ed69e5606ef5ad0f4ea695475f14a29f2e3265ee948a3de864d433",
+      "bytes": 5141,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/privacy-maintenance.receipt.json",
+      "targetRelative": "slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/privacy-maintenance.receipt.json",
+      "sha256": "3a0d7cc7ba3c63d36fe76faa36e2b8d7058a025c6603784f0e74070720457c65",
+      "bytes": 2038,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/SOURCE-REVIEW.md",
+      "targetRelative": "slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/SOURCE-REVIEW.md",
+      "sha256": "97ecca50ab5595221859fce08b07626276cd35eb5ae43f6c53c4923134502a3f",
+      "bytes": 6354,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/NATIVE-DEFINITIONS-REVIEW.md",
+      "targetRelative": "slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/NATIVE-DEFINITIONS-REVIEW.md",
+      "sha256": "091cdee99e1407989675901bda6ba4e25b00df29e8ac6add6d765e7844450b22",
+      "bytes": 4018,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/PRIVACY-REVIEW.json",
+      "targetRelative": "slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/PRIVACY-REVIEW.json",
+      "sha256": "567c5cb251dbabc76ad529d8ce72d2cfb69be438e2043c9147ab0ae826e3daa5",
+      "bytes": 1418,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/inventory-diagnostic.json",
+      "targetRelative": "slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/inventory-diagnostic.json",
+      "sha256": "ec5226a282b5037fee5e2bcbca7adaaa56b72f734a8f9dcc95430acce448531d",
+      "bytes": 648,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/inventory-green.json",
+      "targetRelative": "slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/inventory-green.json",
+      "sha256": "6a8e3dd773818a7262250fa68d64c81b73124357adcb0fd94e5b3796ec730b99",
+      "bytes": 648,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/focused-green.receipt.json",
+      "targetRelative": "slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/focused-green.receipt.json",
+      "sha256": "89e61156f74356ba1ba505c79ee8c374a86d0ce0b2883086298f75a8d88cba33",
+      "bytes": 1696,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/native-definitions-biome-final.receipt.json",
+      "targetRelative": "slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/native-definitions-biome-final.receipt.json",
+      "sha256": "31926a152f14e746877c2e0819a6e3b9d2c4aef63cbb02aada5eecae038e949b",
+      "bytes": 253,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/inventory-diagnostic.receipt.json",
+      "targetRelative": "slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/inventory-diagnostic.receipt.json",
+      "sha256": "9b92d022bff91cc856bc8ac500b2ba6edbd89915cce422c6b384f80685558708",
+      "bytes": 504,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/NATIVE6-PINS.json",
+      "targetRelative": "slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/NATIVE6-PINS.json",
+      "sha256": "2b91965cd3bfc27f14619fc8a62cc8bb9e7505bb2e843f72e66a60284a42592a",
+      "bytes": 1807,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/NATIVE6-COMMAND.json",
+      "targetRelative": "slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/NATIVE6-COMMAND.json",
+      "sha256": "d322a9e65f211b141095087de18ebdd14a837b7933c31a5e882b7b7e55532631",
+      "bytes": 2995,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/slack-discovery-observation.json",
+      "targetRelative": "slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/slack-discovery-observation.json",
+      "sha256": "8ed9f2e450c395e529ae259cd20a883fcd69e8d0d076a5a56ea2ce405ad5817d",
+      "bytes": 66,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/native-definitions-biome.receipt.json",
+      "targetRelative": "slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/native-definitions-biome.receipt.json",
+      "sha256": "4ab468d74f1aca8d3db28b9ad66fd7c1308543e947de77fd2e8d11721f706de9",
+      "bytes": 516,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/unit-red.receipt.json",
+      "targetRelative": "slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/unit-red.receipt.json",
+      "sha256": "8e65ecf656060a130b8b09215fcbd2c787f59493850159e483d805546332a431",
+      "bytes": 1190,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/native-definitions/DEFINITIONS.json",
+      "targetRelative": "slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/native-definitions/DEFINITIONS.json",
+      "sha256": "0c2f6931264d453997f04229dcbb377b604db6b0a08f154b9136fedfc6cf6c51",
+      "bytes": 1703,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/repo/src/features/privacy/registryIdsSales1.ts",
+      "targetRelative": "slack-revocation-confirmation-20261102/handoff-final/source-handoff/repo/src/features/privacy/registryIdsSales1.ts",
+      "sha256": "31075c8b9044e6a3c107f4daf4223825541cc88fa1bc1b65553c7df2dd211bd3",
+      "bytes": 5333,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/repo/src/features/integrations/slack.ts",
+      "targetRelative": "slack-revocation-confirmation-20261102/handoff-final/source-handoff/repo/src/features/integrations/slack.ts",
+      "sha256": "2fece3be197eb962310615034ddcefccbf3cd204a57e2870b2cb2cc532b8c0a2",
+      "bytes": 5207,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/repo/src/features/integrations/slackRevocation.integration.test.ts",
+      "targetRelative": "slack-revocation-confirmation-20261102/handoff-final/source-handoff/repo/src/features/integrations/slackRevocation.integration.test.ts",
+      "sha256": "790c380056521344e121113a35310ec15293c9effdac5c0eb2b90b6330859950",
+      "bytes": 8526,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/repo/src/features/integrations/slackRevocation.test.ts",
+      "targetRelative": "slack-revocation-confirmation-20261102/handoff-final/source-handoff/repo/src/features/integrations/slackRevocation.test.ts",
+      "sha256": "491e6dec299c57cd0891441192ac8eec6fa439520979295c628564a20e9d76e3",
+      "bytes": 1726,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/base/src/features/privacy/registryIdsSales1.ts",
+      "targetRelative": "slack-revocation-confirmation-20261102/handoff-final/source-handoff/base/src/features/privacy/registryIdsSales1.ts",
+      "sha256": "b5876ce716368695faa0392dd644ae5c8475d1c4cc691c641eb8f2f298fad3eb",
+      "bytes": 5333,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/base/src/features/integrations/slack.ts",
+      "targetRelative": "slack-revocation-confirmation-20261102/handoff-final/source-handoff/base/src/features/integrations/slack.ts",
+      "sha256": "4eaa308d24fed9d8a1069d3afcfb1ed4d50d3cfebc2da8554cb678823e21dba5",
+      "bytes": 4965,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/native-green/before.json",
+      "targetRelative": "slack-revocation-confirmation-20261102/handoff-final/native-green/before.json",
+      "sha256": "ff5d6ec05d4bfec84d2dc3ef05a727a9da14dc7b875464150b6c674480c68833",
+      "bytes": 8581,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/native-green/ACTUAL6-REVIEW.md",
+      "targetRelative": "slack-revocation-confirmation-20261102/handoff-final/native-green/ACTUAL6-REVIEW.md",
+      "sha256": "9249bde829812d3ea5090936532b70f81b3b0154158c0fb84a0f1a08defa916c",
+      "bytes": 2357,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/native-green/resource-observations.json",
+      "targetRelative": "slack-revocation-confirmation-20261102/handoff-final/native-green/resource-observations.json",
+      "sha256": "970a3bdba62ea09e4240ca2a5cfd19a673d9bf5a01be02302be6bc529adfb74a",
+      "bytes": 339,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/native-green/result.json",
+      "targetRelative": "slack-revocation-confirmation-20261102/handoff-final/native-green/result.json",
+      "sha256": "0848a014237454ec68fa0c74184061f46e3b60f8039ab9d08328817ddede5bb7",
+      "bytes": 313,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/native-green/immediate-terminal.json",
+      "targetRelative": "slack-revocation-confirmation-20261102/handoff-final/native-green/immediate-terminal.json",
+      "sha256": "66f41b1c11f03e6c0976ed88d2230ca9a8fe0d12a03915d2865971c8134082dd",
+      "bytes": 5114,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/native-green/NATIVE-RESULT.json",
+      "targetRelative": "slack-revocation-confirmation-20261102/handoff-final/native-green/NATIVE-RESULT.json",
+      "sha256": "c4bd7c4531fc39b04cc0565c3488d73f4f7abacfc8ec892e5210b4ca38215b4d",
+      "bytes": 5753,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/native-green/terminal.json",
+      "targetRelative": "slack-revocation-confirmation-20261102/handoff-final/native-green/terminal.json",
+      "sha256": "351cff9f7250db72d93ab89add7031db64ac23222eba2c1421b881ef1c8ca36a",
+      "bytes": 621,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/native-green/SHA256SUMS",
+      "targetRelative": "slack-revocation-confirmation-20261102/handoff-final/native-green/SHA256SUMS",
+      "sha256": "20cb3d448df47fc9876a1c8cf8ed6489d15c0f6cb9b90540b34a6d87903382e2",
+      "bytes": 665,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/current-main-preimages/src/features/privacy/registryIdsSales1.ts",
+      "targetRelative": "slack-revocation-confirmation-20261102/handoff-final/current-main-preimages/src/features/privacy/registryIdsSales1.ts",
+      "sha256": "b5876ce716368695faa0392dd644ae5c8475d1c4cc691c641eb8f2f298fad3eb",
+      "bytes": 5333,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/current-main-preimages/src/features/integrations/slack.ts",
+      "targetRelative": "slack-revocation-confirmation-20261102/handoff-final/current-main-preimages/src/features/integrations/slack.ts",
+      "sha256": "4eaa308d24fed9d8a1069d3afcfb1ed4d50d3cfebc2da8554cb678823e21dba5",
+      "bytes": 4965,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/CANDIDATE.json",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/CANDIDATE.json",
+      "sha256": "93d3118e3f8fa26f73a65d7ec69c7bbef8f60cf798120d310751b2e22721ca2f",
+      "bytes": 9082,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/RESTART-AND-DATA-IMPACT.md",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/RESTART-AND-DATA-IMPACT.md",
+      "sha256": "06433c318d48c6cac3fad8f630fb3af79aaf1dac9ba5b914a684daa1bb6a3162",
+      "bytes": 2878,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/EVIDENCE-COPY-MAP.json",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/EVIDENCE-COPY-MAP.json",
+      "sha256": "a1e61c97920bd3ef26830f4c785ca0c6fc3b0cad0fcb18e73bb32c95dee9fe8a",
+      "bytes": 23446,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/SOURCE-HASHES.md",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/SOURCE-HASHES.md",
+      "sha256": "b7d8f94ce599d5e06e8544f38fd1169c9c1318a53d1d7c79fd80c4fde02ace24",
+      "bytes": 1369,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/APPLY-CHECK.json",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/APPLY-CHECK.json",
+      "sha256": "271ac914d604822c97606c464811bb0ac46d158a6cf40f3c94138519d75ce4cf",
+      "bytes": 2733,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/increment.patch",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/increment.patch",
+      "sha256": "ab61f73d7cf8f233ad85a701a0ec98aa8227ee9ba91606a8c0ea7a4e84c97641",
+      "bytes": 23429,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/SOURCE-MAP.json",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/SOURCE-MAP.json",
+      "sha256": "49d4bc5013995646b9e28768ca875a7b205708b6cae9b4df24369464832cc96a",
+      "bytes": 1680,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/SHA256SUMS",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/SHA256SUMS",
+      "sha256": "3c02aa1690fc102363a1f378773ed3708796395e47ce8b475c108b79f325e7b2",
+      "bytes": 9710,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/HANDOFF.md",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/HANDOFF.md",
+      "sha256": "9a07587a61889abc6688d127f7c3435cdc313e18baa2c177547cfd7720fdfc21",
+      "bytes": 6907,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/PRIMARY-SOURCES.md",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/PRIMARY-SOURCES.md",
+      "sha256": "c606e4ef0649fde3cc965000032fad6e873138e7fa09a784c6b0a8becb3b5211",
+      "bytes": 3073,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/REQUIREMENT-SCOPE.md",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/REQUIREMENT-SCOPE.md",
+      "sha256": "0e15bfb8bf3fa363b268fea872b7df3a93b6eded34dab34e0cece8f8d544fb03",
+      "bytes": 12552,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/operation-definitions/ACTUAL-RED-RECEIPT.json",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/operation-definitions/ACTUAL-RED-RECEIPT.json",
+      "sha256": "1aaeae73f4ac6b67c08e729e64014c53f10b8283568936b219bbfa12f936ade9",
+      "bytes": 2137,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/operation-definitions/RESTART.md",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/operation-definitions/RESTART.md",
+      "sha256": "2121a54360ac54f52885ccd58f1deed05ac7e7f66c8b6898e3c52bf6f8e4f4f0",
+      "bytes": 1606,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/operation-definitions/CONTRACT-PROPOSAL.md",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/operation-definitions/CONTRACT-PROPOSAL.md",
+      "sha256": "7f4e785ff3654ea7a53b9261ccad5755c1146a6e6e8a1e8de42ca0dfb4d7cad8",
+      "bytes": 6330,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/operation-definitions/DEFINITIONS.json",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/operation-definitions/DEFINITIONS.json",
+      "sha256": "34d771972273d726b0693eef5ce1c4de2a03fd7cf64c659efcf33b3ad88cdde4",
+      "bytes": 2552,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/operation-definitions/CASE-MATRIX.csv",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/operation-definitions/CASE-MATRIX.csv",
+      "sha256": "145aacfa10531a15b25c1a82820380824e3c0bb34eacbbcc02ac0d2a71b158dd",
+      "bytes": 1570,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/operation-definitions/SHA256SUMS",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/operation-definitions/SHA256SUMS",
+      "sha256": "5d4aa553473b912d87faef5ad7279f2dac1cf503cfae756dd9b24da7e46c74ac",
+      "bytes": 574,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/ACTUAL-SHA256SUMS",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/ACTUAL-SHA256SUMS",
+      "sha256": "eca6882e94985bb5a126202454cbc2a77cb81c20fbcb1b7b265cbb56d34a8faf",
+      "bytes": 1227,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/ACTUAL-RED-AUDIT.md",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/ACTUAL-RED-AUDIT.md",
+      "sha256": "ea3e18b0ac78309b751b30e0b1285321b49e86aaca578d88dd09e7670fcab5ad",
+      "bytes": 2528,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/ACTUAL-RED-RECEIPT.json",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/ACTUAL-RED-RECEIPT.json",
+      "sha256": "5d7c8ea3f6d2adab5875b78560765519576d0a062fec8012006fc986e69ccd0e",
+      "bytes": 3082,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/FOCUSED-FIRST-FAILURE.json",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/FOCUSED-FIRST-FAILURE.json",
+      "sha256": "2e59317b3712f68fef59a8245f7426db2dc23d18dfb898c31bb75945cc170f67",
+      "bytes": 517,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/slackOperationFailures.47-case.definition.ts",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/slackOperationFailures.47-case.definition.ts",
+      "sha256": "1705b56a885c558c3aac262bc71e0c363b10a4391b3b8dd89e08e4ccbca81655",
+      "bytes": 9883,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/DEFINITIONS.md",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/DEFINITIONS.md",
+      "sha256": "0b5b20ac7c43ac01c12c44ac38b0f8b4ed7a8bb41a717661e2f1e3588d7638a6",
+      "bytes": 2207,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/CURRENT.json",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/CURRENT.json",
+      "sha256": "446c322286411aa8552d631a66f30c2bb98a7032ec2fda2006ddb4f87566d6f3",
+      "bytes": 634,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/DEFINITIONS.json",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/DEFINITIONS.json",
+      "sha256": "9d1cfd30046d7be33549497ab8b00c1572b085c0c76bfe779b33f21f544f7031",
+      "bytes": 17560,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/slackOperationFailures.18-case.original.ts",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/slackOperationFailures.18-case.original.ts",
+      "sha256": "4dffa31acd7f4005ec543dd627462f016b71251c828e71a9a28196904ed09c1e",
+      "bytes": 9594,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/SHA256SUMS",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/SHA256SUMS",
+      "sha256": "c60eb6e8d7941c3212e54a7ea79891749b6b39b0737261a738f08ea6a69165a3",
+      "bytes": 384,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/before.json",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/implementation/before.json",
+      "sha256": "ba653ee1b0165bc7e07deba569986f0deafc94a1637ac0624234787a2641ff39",
+      "bytes": 351,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/SOURCE-REVIEW.md",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/implementation/SOURCE-REVIEW.md",
+      "sha256": "7ab14c83b05cd975a74e552acc92d2bd378ae158aa9d30fa3dddd7a82f5f8024",
+      "bytes": 3587,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/REFINED-RECEIPT.json",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/implementation/REFINED-RECEIPT.json",
+      "sha256": "2ea8ecd6417a25af637b4c8fe6a4e5cb3485ad3e4067df3a3d38ed23b835251e",
+      "bytes": 4744,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/LOCAL-GREEN-RECEIPT.json",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/implementation/LOCAL-GREEN-RECEIPT.json",
+      "sha256": "d5e9904e1f6ca1468a5668709783c02dd38094d98445de1d5607351b0ce79890",
+      "bytes": 4763,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/REGISTRY-REMAINING-RECEIPT.json",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/implementation/REGISTRY-REMAINING-RECEIPT.json",
+      "sha256": "fc90e6ec4b0482fd660b146c22d1be5f2fa68c2633417ab814ec90a267786d44",
+      "bytes": 2214,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/ISSUE-137.json",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/implementation/ISSUE-137.json",
+      "sha256": "04d2cf9c44739e2724344161e847241dbac090c5eb681882f0a95ced4bded0c5",
+      "bytes": 3764,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/CONTRACT-DECISION.md",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/implementation/CONTRACT-DECISION.md",
+      "sha256": "0b80b413a7f1dfe5dcdd53ea37d21fc387f22f7ee77cba665f072554d5257cf5",
+      "bytes": 2424,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/PRIVACY-RECEIPT.json",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/implementation/PRIVACY-RECEIPT.json",
+      "sha256": "045283a6598a8470f771bb1c2b68a2a00b94829ca82c81c5d79e1af12b293e3f",
+      "bytes": 5087,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/ACCEPTANCE-AUDIT.md",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/implementation/ACCEPTANCE-AUDIT.md",
+      "sha256": "cf13eed3c8b605d7547b48eaaf4b17d9a667be176431a2e60ab8fa3266f532b5",
+      "bytes": 2916,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/before/src/features/privacy/registryIdsSales1.ts",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/implementation/before/src/features/privacy/registryIdsSales1.ts",
+      "sha256": "31075c8b9044e6a3c107f4daf4223825541cc88fa1bc1b65553c7df2dd211bd3",
+      "bytes": 5333,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/before/src/features/integrations/slack.ts",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/implementation/before/src/features/integrations/slack.ts",
+      "sha256": "2fece3be197eb962310615034ddcefccbf3cd204a57e2870b2cb2cc532b8c0a2",
+      "bytes": 5207,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/before/src/features/integrations/slackReadFailures.test.ts",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/implementation/before/src/features/integrations/slackReadFailures.test.ts",
+      "sha256": "db62abf24ffc360d63cc4063e06ae0e0e20b40dfaa9f485f97aa188df510dff3",
+      "bytes": 6696,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/first-green-source/src/features/integrations/slackOperationFailure.ts",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/implementation/first-green-source/src/features/integrations/slackOperationFailure.ts",
+      "sha256": "6d841bb5ea5bae3939273ea443c3f7bf321452497324ac585b5c87db155c1f37",
+      "bytes": 2597,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/first-green-source/src/features/integrations/slack.ts",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/implementation/first-green-source/src/features/integrations/slack.ts",
+      "sha256": "c37d1481cd0836b11488e97c0c379de48611953127bce1ec2fd654ea84db5fbb",
+      "bytes": 8063,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/first-green-source/src/features/integrations/slackOperationFailures.test.ts",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/implementation/first-green-source/src/features/integrations/slackOperationFailures.test.ts",
+      "sha256": "8bbbfcc93517590492ecefd0512ea0c7b8dca7c28691ab84a312f3cdd39d2ba7",
+      "bytes": 10013,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/first-green-source/src/features/integrations/slackReadFailures.test.ts",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/implementation/first-green-source/src/features/integrations/slackReadFailures.test.ts",
+      "sha256": "3d2ed3d7f648321d55c29d694555104604acaf00ef138f5252a97798663e3e4e",
+      "bytes": 6903,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/operation-consumption/ACTUAL-RED-RECEIPT.json",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/operation-consumption/ACTUAL-RED-RECEIPT.json",
+      "sha256": "5956d3529287a5f2c4291d18dc26b642166d4269a76e8c980a4676ecd92def6f",
+      "bytes": 2957,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/operation-consumption/source-47.original.ts",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/operation-consumption/source-47.original.ts",
+      "sha256": "1705b56a885c558c3aac262bc71e0c363b10a4391b3b8dd89e08e4ccbca81655",
+      "bytes": 9883,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/operation-consumption/CURRENT.json",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/operation-consumption/CURRENT.json",
+      "sha256": "df6a3bb2760d6aae37d0ef4329d68da402112fb12fc39b0bcba3e21f85b2891b",
+      "bytes": 668,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/operation-consumption/SHA256SUMS",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/operation-consumption/SHA256SUMS",
+      "sha256": "c6f8fc7ea69933d9ca22de93874ff45b8ba1262abbbd936c2e3021beb91b8654",
+      "bytes": 581,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/safe-stop-20261102/PRIVATE-INVENTORY.json",
+      "targetRelative": "safe-stop-20261102/PRIVATE-INVENTORY.json",
+      "sha256": "294c214a084516b1e20e6575a03267d7bb1a199fb2f80e186c38b30240fc09d6",
+      "bytes": 20704,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/safe-stop-20261102/OWNED-ALLOWLIST.json",
+      "targetRelative": "safe-stop-20261102/OWNED-ALLOWLIST.json",
+      "sha256": "4efeff3fad001a3de7d826218d0da4465e32354418b8f55c7c279db53a841069",
+      "bytes": 21958,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/safe-stop-20261102/owned-paths.txt",
+      "targetRelative": "safe-stop-20261102/owned-paths.txt",
+      "sha256": "4d571e7ff2a0aff29a166056d94b02970f1912d909cd52db060e110399ba5165",
+      "bytes": 2612,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/safe-stop-20261102/PROCESS-STATE.json",
+      "targetRelative": "safe-stop-20261102/PROCESS-STATE.json",
+      "sha256": "ae2eb6179b855fcf8b672eb5d476e70c26a5bf1cde2205bcec2f937fcc015a31",
+      "bytes": 353,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/safe-stop-20261102/private-status.porcelain.z",
+      "targetRelative": "safe-stop-20261102/private-status.porcelain.z",
+      "sha256": "4e87585edc3fe062643e9328f59c620e5fbf9796a52c063d4219e3ce0dd0f32e",
+      "bytes": 3361,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/safe-stop-20261102/NOTIFICATIONS.json",
+      "targetRelative": "safe-stop-20261102/NOTIFICATIONS.json",
+      "sha256": "1f97ac6d6309c8f03adf8a10180bbd0e3a578306736862845ffc36f1ef51f694",
+      "bytes": 2505,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/safe-stop-20261102/SHA256SUMS",
+      "targetRelative": "safe-stop-20261102/SHA256SUMS",
+      "sha256": "625a0de9165286a40c984825c0b04c8a6e41087bbd41a52d79eb7fc05b83c769",
+      "bytes": 689,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/safe-stop-20261102/HANDOFF.md",
+      "targetRelative": "safe-stop-20261102/HANDOFF.md",
+      "sha256": "c5a979220f4b04890f531908359d1a6413e95c25d4a19eab54228f1aca99744c",
+      "bytes": 9623,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/safe-stop-20261102/FREEZE-VERIFICATION.json",
+      "targetRelative": "safe-stop-20261102/FREEZE-VERIFICATION.json",
+      "sha256": "a38441266cbdb499109a78cd5d61c4ee096113ddf0ebcaa039090062cf764aed",
+      "bytes": 356,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/provider-abort-reason-20261102/ACTUAL-RED-RECEIPT.json",
+      "targetRelative": "provider-abort-reason-20261102/ACTUAL-RED-RECEIPT.json",
+      "sha256": "689c1d36ba740d760c54b07b61b4c1a445093911eaa6525ff90be77b6a995bd7",
+      "bytes": 3091,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/provider-abort-reason-20261102/CURRENT.json",
+      "targetRelative": "provider-abort-reason-20261102/CURRENT.json",
+      "sha256": "c7f493e1c0cda58af0b5628f635148cd0eb30a02a868558ae507a52f065c05dc",
+      "bytes": 634,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/provider-abort-reason-20261102/before.json",
+      "targetRelative": "provider-abort-reason-20261102/before.json",
+      "sha256": "31bc39bc52bc5fb6387f45a6b505ba9d55b7126a441a710159fcd4b1449ad9ef",
+      "bytes": 237,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/provider-abort-reason-20261102/before/src/features/integrations/providers/invoke.ts",
+      "targetRelative": "provider-abort-reason-20261102/before/src/features/integrations/providers/invoke.ts",
+      "sha256": "9ff62214d4d2f6bc25e8ed7f704b318d16013545c4d3294264abad4e4d1a400f",
+      "bytes": 6149,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/provider-abort-reason-20261102/before/src/features/privacy/registryIdsSales1.ts",
+      "targetRelative": "provider-abort-reason-20261102/before/src/features/privacy/registryIdsSales1.ts",
+      "sha256": "7e302626a62212c2051dacdf0d9736600719f6563a1b2ca075b9dbec16c6be2a",
+      "bytes": 5333,
+      "mode": 420
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-integrations/src/features/integrations/providers/invokeAbortReason.test.ts",
+      "targetRelative": "provider-abort-reason-20261102/source/src/features/integrations/providers/invokeAbortReason.test.ts",
+      "sha256": "3ed29f2f4618dca64754bbed3a44ece6706c7d1da0ba81b183fcf897570d5e89",
+      "bytes": 4098,
+      "mode": 420
+    }
+  ],
+  "excluded": [
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/apply-check.stderr.log",
+      "targetRelative": "slack-revocation-confirmation-20261102/handoff-final/source-handoff/apply-check.stderr.log",
+      "bytes": 0,
+      "reasons": [
+        "raw log/stdout/stderr intentionally retained locally only under Root instruction"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/apply-check.stdout.log",
+      "targetRelative": "slack-revocation-confirmation-20261102/handoff-final/source-handoff/apply-check.stdout.log",
+      "bytes": 0,
+      "reasons": [
+        "raw log/stdout/stderr intentionally retained locally only under Root instruction"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/native-definitions-biome-final.log",
+      "targetRelative": "slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/native-definitions-biome-final.log",
+      "bytes": 42,
+      "reasons": [
+        "raw log/stdout/stderr intentionally retained locally only under Root instruction"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/registry-biome.stderr.log",
+      "targetRelative": "slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/registry-biome.stderr.log",
+      "bytes": 42,
+      "reasons": [
+        "raw log/stdout/stderr intentionally retained locally only under Root instruction"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/unit-red.log",
+      "targetRelative": "slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/unit-red.log",
+      "bytes": 5363,
+      "reasons": [
+        "raw log/stdout/stderr intentionally retained locally only under Root instruction"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/registry-biome.log",
+      "targetRelative": "slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/registry-biome.log",
+      "bytes": 0,
+      "reasons": [
+        "raw log/stdout/stderr intentionally retained locally only under Root instruction"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/inventory-diagnostic.stderr.log",
+      "targetRelative": "slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/inventory-diagnostic.stderr.log",
+      "bytes": 0,
+      "reasons": [
+        "raw log/stdout/stderr intentionally retained locally only under Root instruction"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/native-definitions-biome.log",
+      "targetRelative": "slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/native-definitions-biome.log",
+      "bytes": 1566,
+      "reasons": [
+        "raw log/stdout/stderr intentionally retained locally only under Root instruction"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/slack-discovery-observation.stderr.log",
+      "targetRelative": "slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/slack-discovery-observation.stderr.log",
+      "bytes": 0,
+      "reasons": [
+        "raw log/stdout/stderr intentionally retained locally only under Root instruction"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/biome.log",
+      "targetRelative": "slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/biome.log",
+      "bytes": 39,
+      "reasons": [
+        "raw log/stdout/stderr intentionally retained locally only under Root instruction"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/unit-green.log",
+      "targetRelative": "slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/unit-green.log",
+      "bytes": 2487,
+      "reasons": [
+        "raw log/stdout/stderr intentionally retained locally only under Root instruction"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/inventory-green.stderr.log",
+      "targetRelative": "slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/inventory-green.stderr.log",
+      "bytes": 0,
+      "reasons": [
+        "raw log/stdout/stderr intentionally retained locally only under Root instruction"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/registry-units.log",
+      "targetRelative": "slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/registry-units.log",
+      "bytes": 987,
+      "reasons": [
+        "raw log/stdout/stderr intentionally retained locally only under Root instruction"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/registry-units.stderr.log",
+      "targetRelative": "slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/registry-units.stderr.log",
+      "bytes": 718,
+      "reasons": [
+        "raw log/stdout/stderr intentionally retained locally only under Root instruction"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/native-green/vitest.log",
+      "targetRelative": "slack-revocation-confirmation-20261102/handoff-final/native-green/vitest.log",
+      "bytes": 2023,
+      "reasons": [
+        "raw log/stdout/stderr intentionally retained locally only under Root instruction"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/apply-check.stderr.log",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/apply-check.stderr.log",
+      "bytes": 0,
+      "reasons": [
+        "raw log/stdout/stderr intentionally retained locally only under Root instruction"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/apply-check.stdout.log",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/apply-check.stdout.log",
+      "bytes": 0,
+      "reasons": [
+        "raw log/stdout/stderr intentionally retained locally only under Root instruction"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/operation-definitions/unit-red.log",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/operation-definitions/unit-red.log",
+      "bytes": 17638,
+      "reasons": [
+        "raw log/stdout/stderr intentionally retained locally only under Root instruction"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/operation-definitions/biome.log",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/operation-definitions/biome.log",
+      "bytes": 38,
+      "reasons": [
+        "raw log/stdout/stderr intentionally retained locally only under Root instruction"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/unit-red.stderr.log",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/unit-red.stderr.log",
+      "bytes": 26474,
+      "reasons": [
+        "raw log/stdout/stderr intentionally retained locally only under Root instruction"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/unit-red.log",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/unit-red.log",
+      "bytes": 6491,
+      "reasons": [
+        "raw log/stdout/stderr intentionally retained locally only under Root instruction"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/first-biome.log",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/first-biome.log",
+      "bytes": 0,
+      "reasons": [
+        "raw log/stdout/stderr intentionally retained locally only under Root instruction"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/first-biome.stderr.log",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/first-biome.stderr.log",
+      "bytes": 42,
+      "reasons": [
+        "raw log/stdout/stderr intentionally retained locally only under Root instruction"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/biome.log",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/biome.log",
+      "bytes": 0,
+      "reasons": [
+        "raw log/stdout/stderr intentionally retained locally only under Root instruction"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/biome.stderr.log",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/biome.stderr.log",
+      "bytes": 41,
+      "reasons": [
+        "raw log/stdout/stderr intentionally retained locally only under Root instruction"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/biome-refined.stderr.log",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/implementation/biome-refined.stderr.log",
+      "bytes": 42,
+      "reasons": [
+        "raw log/stdout/stderr intentionally retained locally only under Root instruction"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/units.log",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/implementation/units.log",
+      "bytes": 1136,
+      "reasons": [
+        "raw log/stdout/stderr intentionally retained locally only under Root instruction"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/units-refined.stderr.log",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/implementation/units-refined.stderr.log",
+      "bytes": 1495,
+      "reasons": [
+        "raw log/stdout/stderr intentionally retained locally only under Root instruction"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/units.stderr.log",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/implementation/units.stderr.log",
+      "bytes": 1495,
+      "reasons": [
+        "raw log/stdout/stderr intentionally retained locally only under Root instruction"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/privacy-biome.stderr.log",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/implementation/privacy-biome.stderr.log",
+      "bytes": 41,
+      "reasons": [
+        "raw log/stdout/stderr intentionally retained locally only under Root instruction"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/units-refined.log",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/implementation/units-refined.log",
+      "bytes": 1136,
+      "reasons": [
+        "raw log/stdout/stderr intentionally retained locally only under Root instruction"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/registry-remaining.stderr.log",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/implementation/registry-remaining.stderr.log",
+      "bytes": 1495,
+      "reasons": [
+        "raw log/stdout/stderr intentionally retained locally only under Root instruction"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/biome-refined.log",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/implementation/biome-refined.log",
+      "bytes": 0,
+      "reasons": [
+        "raw log/stdout/stderr intentionally retained locally only under Root instruction"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/privacy-biome.log",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/implementation/privacy-biome.log",
+      "bytes": 0,
+      "reasons": [
+        "raw log/stdout/stderr intentionally retained locally only under Root instruction"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/biome.log",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/implementation/biome.log",
+      "bytes": 0,
+      "reasons": [
+        "raw log/stdout/stderr intentionally retained locally only under Root instruction"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/registry-units.log",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/implementation/registry-units.log",
+      "bytes": 678,
+      "reasons": [
+        "raw log/stdout/stderr intentionally retained locally only under Root instruction"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/registry-units.stderr.log",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/implementation/registry-units.stderr.log",
+      "bytes": 1495,
+      "reasons": [
+        "raw log/stdout/stderr intentionally retained locally only under Root instruction"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/registry-remaining.log",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/implementation/registry-remaining.log",
+      "bytes": 665,
+      "reasons": [
+        "raw log/stdout/stderr intentionally retained locally only under Root instruction"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/inventory.stderr.log",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/implementation/inventory.stderr.log",
+      "bytes": 0,
+      "reasons": [
+        "raw log/stdout/stderr intentionally retained locally only under Root instruction"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/inventory.log",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/implementation/inventory.log",
+      "bytes": 648,
+      "reasons": [
+        "raw log/stdout/stderr intentionally retained locally only under Root instruction"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/biome.stderr.log",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/implementation/biome.stderr.log",
+      "bytes": 43,
+      "reasons": [
+        "raw log/stdout/stderr intentionally retained locally only under Root instruction"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/operation-consumption/unit-red.stderr.log",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/operation-consumption/unit-red.stderr.log",
+      "bytes": 26474,
+      "reasons": [
+        "raw log/stdout/stderr intentionally retained locally only under Root instruction"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/operation-consumption/unit-red.log",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/operation-consumption/unit-red.log",
+      "bytes": 6490,
+      "reasons": [
+        "raw log/stdout/stderr intentionally retained locally only under Root instruction"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/operation-consumption/biome.log",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/operation-consumption/biome.log",
+      "bytes": 0,
+      "reasons": [
+        "raw log/stdout/stderr intentionally retained locally only under Root instruction"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/operation-consumption/biome.stderr.log",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/evidence/operation-consumption/biome.stderr.log",
+      "bytes": 41,
+      "reasons": [
+        "raw log/stdout/stderr intentionally retained locally only under Root instruction",
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/confirmation-parent/PARENT.json",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/confirmation-parent/PARENT.json",
+      "bytes": 758,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/confirmation-parent/ORIGINAL-PARENT-SHA256SUMS",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/confirmation-parent/ORIGINAL-PARENT-SHA256SUMS",
+      "bytes": 6566,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/confirmation-parent/CANDIDATE.json",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/confirmation-parent/CANDIDATE.json",
+      "bytes": 6943,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/repo/src/features/privacy/registryIdsSales1.ts",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/repo/src/features/privacy/registryIdsSales1.ts",
+      "bytes": 5333,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/repo/src/features/integrations/slackOperationFailure.ts",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/repo/src/features/integrations/slackOperationFailure.ts",
+      "bytes": 2597,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/repo/src/features/integrations/slack.ts",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/repo/src/features/integrations/slack.ts",
+      "bytes": 8148,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/repo/src/features/integrations/slackOperationFailures.test.ts",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/repo/src/features/integrations/slackOperationFailures.test.ts",
+      "bytes": 10013,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/repo/src/features/integrations/slackReadFailures.test.ts",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/repo/src/features/integrations/slackReadFailures.test.ts",
+      "bytes": 6903,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/base/src/features/privacy/registryIdsSales1.ts",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/base/src/features/privacy/registryIdsSales1.ts",
+      "bytes": 5333,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/base/src/features/integrations/slack.ts",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/base/src/features/integrations/slack.ts",
+      "bytes": 5207,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/base/src/features/integrations/slackReadFailures.test.ts",
+      "targetRelative": "connection-failure-classification-20261102/handoff-classifier/base/src/features/integrations/slackReadFailures.test.ts",
+      "bytes": 6696,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/ACCEPTANCE-MATRIX.md",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/ACCEPTANCE-MATRIX.md",
+      "bytes": 1315,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/INTEGRITY4-PINS.pre-run.json",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/INTEGRITY4-PINS.pre-run.json",
+      "bytes": 1505,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/CANDIDATE.json",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/CANDIDATE.json",
+      "bytes": 9532,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/RESTORE.md",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/RESTORE.md",
+      "bytes": 2150,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/EVIDENCE-COPY-MAP.json",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/EVIDENCE-COPY-MAP.json",
+      "bytes": 26738,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/PRESERVATION.json",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/PRESERVATION.json",
+      "bytes": 1437,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/CORRECTION-CUSTODY.json",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/CORRECTION-CUSTODY.json",
+      "bytes": 1297,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/SOURCE-HASHES.md",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/SOURCE-HASHES.md",
+      "bytes": 972,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/GREEN15-PINS.first-run.json",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/GREEN15-PINS.first-run.json",
+      "bytes": 1536,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/increment.patch",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/increment.patch",
+      "bytes": 34487,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/SHA256SUMS",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/SHA256SUMS",
+      "bytes": 7640,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/HANDOFF.md",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/HANDOFF.md",
+      "bytes": 6210,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/evidence/NATIVE-COVERAGE-LINK.json",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/evidence/NATIVE-COVERAGE-LINK.json",
+      "bytes": 877,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/evidence/integrity-test-cause-review.md",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/evidence/integrity-test-cause-review.md",
+      "bytes": 4069,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/evidence/fix-inventory-green.log",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/evidence/fix-inventory-green.log",
+      "bytes": 648,
+      "reasons": [
+        "raw log/stdout/stderr intentionally retained locally only under Root instruction",
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/evidence/PRIVACY-REVIEW.json",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/evidence/PRIVACY-REVIEW.json",
+      "bytes": 614,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/evidence/RUNTIME-ENV-GUARD.json",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/evidence/RUNTIME-ENV-GUARD.json",
+      "bytes": 1835,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/evidence/INTEGRITY4-PINS.json",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/evidence/INTEGRITY4-PINS.json",
+      "bytes": 1505,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/evidence/fix-inventory-green.receipt.json",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/evidence/fix-inventory-green.receipt.json",
+      "bytes": 304,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/evidence/integrity-correction-biome.receipt.json",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/evidence/integrity-correction-biome.receipt.json",
+      "bytes": 501,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/evidence/fix-inventory-diagnostic.receipt.json",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/evidence/fix-inventory-diagnostic.receipt.json",
+      "bytes": 523,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/evidence/fix-final-biome.receipt.json",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/evidence/fix-final-biome.receipt.json",
+      "bytes": 205,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/evidence/fix-final-biome.log",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/evidence/fix-final-biome.log",
+      "bytes": 0,
+      "reasons": [
+        "raw log/stdout/stderr intentionally retained locally only under Root instruction",
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/evidence/fix-final-biome.stderr.log",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/evidence/fix-final-biome.stderr.log",
+      "bytes": 819,
+      "reasons": [
+        "raw log/stdout/stderr intentionally retained locally only under Root instruction",
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/evidence/integrity-correction-biome.log",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/evidence/integrity-correction-biome.log",
+      "bytes": 42,
+      "reasons": [
+        "raw log/stdout/stderr intentionally retained locally only under Root instruction",
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/evidence/RESTART.snapshot.md",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/evidence/RESTART.snapshot.md",
+      "bytes": 5528,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/evidence/fix-inventory-diagnostic.json",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/evidence/fix-inventory-diagnostic.json",
+      "bytes": 815,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/evidence/isolated-config-check.receipt.json",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/evidence/isolated-config-check.receipt.json",
+      "bytes": 456,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/evidence/INTEGRITY4-COMMAND.json",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/evidence/INTEGRITY4-COMMAND.json",
+      "bytes": 2991,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/evidence/registry-green.log",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/evidence/registry-green.log",
+      "bytes": 987,
+      "reasons": [
+        "raw log/stdout/stderr intentionally retained locally only under Root instruction",
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/evidence/registry-green.receipt.json",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/evidence/registry-green.receipt.json",
+      "bytes": 931,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/evidence/safety-definitions/DEFINITIONS.json",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/evidence/safety-definitions/DEFINITIONS.json",
+      "bytes": 2372,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/evidence/native-red/before.json",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/evidence/native-red/before.json",
+      "bytes": 7868,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/evidence/native-red/resource-observations.json",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/evidence/native-red/resource-observations.json",
+      "bytes": 9141,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/evidence/native-red/result.json",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/evidence/native-red/result.json",
+      "bytes": 505,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/evidence/native-red/live.json",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/evidence/native-red/live.json",
+      "bytes": 142,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/evidence/native-red/immediate-terminal.json",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/evidence/native-red/immediate-terminal.json",
+      "bytes": 957,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/evidence/native-red/vitest.log",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/evidence/native-red/vitest.log",
+      "bytes": 10705,
+      "reasons": [
+        "raw log/stdout/stderr intentionally retained locally only under Root instruction",
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/evidence/native-red/terminal.json",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/evidence/native-red/terminal.json",
+      "bytes": 543,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/evidence/native-red/CLASSIFICATION.json",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/evidence/native-red/CLASSIFICATION.json",
+      "bytes": 713,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/evidence/native-red/SHA256SUMS",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/evidence/native-red/SHA256SUMS",
+      "bytes": 658,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/evidence/native-first-15/before.json",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/evidence/native-first-15/before.json",
+      "bytes": 8414,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/evidence/native-first-15/resource-observations.json",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/evidence/native-first-15/resource-observations.json",
+      "bytes": 508,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/evidence/native-first-15/result.json",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/evidence/native-first-15/result.json",
+      "bytes": 312,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/evidence/native-first-15/live.json",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/evidence/native-first-15/live.json",
+      "bytes": 215,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/evidence/native-first-15/immediate-terminal.json",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/evidence/native-first-15/immediate-terminal.json",
+      "bytes": 5114,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/evidence/native-first-15/vitest.log",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/evidence/native-first-15/vitest.log",
+      "bytes": 5613,
+      "reasons": [
+        "raw log/stdout/stderr intentionally retained locally only under Root instruction",
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/evidence/native-first-15/terminal.json",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/evidence/native-first-15/terminal.json",
+      "bytes": 619,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/evidence/native-first-15/CLASSIFICATION.json",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/evidence/native-first-15/CLASSIFICATION.json",
+      "bytes": 822,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/evidence/native-first-15/SHA256SUMS",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/evidence/native-first-15/SHA256SUMS",
+      "bytes": 658,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/evidence/native-integrity-green/before.json",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/evidence/native-integrity-green/before.json",
+      "bytes": 8257,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/evidence/native-integrity-green/resource-observations.json",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/evidence/native-integrity-green/resource-observations.json",
+      "bytes": 339,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/evidence/native-integrity-green/result.json",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/evidence/native-integrity-green/result.json",
+      "bytes": 311,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/evidence/native-integrity-green/live.json",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/evidence/native-integrity-green/live.json",
+      "bytes": 219,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/evidence/native-integrity-green/immediate-terminal.json",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/evidence/native-integrity-green/immediate-terminal.json",
+      "bytes": 5114,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/evidence/native-integrity-green/vitest.log",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/evidence/native-integrity-green/vitest.log",
+      "bytes": 2012,
+      "reasons": [
+        "raw log/stdout/stderr intentionally retained locally only under Root instruction",
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/evidence/native-integrity-green/terminal.json",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/evidence/native-integrity-green/terminal.json",
+      "bytes": 621,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/evidence/native-integrity-green/CLASSIFICATION.json",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/evidence/native-integrity-green/CLASSIFICATION.json",
+      "bytes": 1812,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/evidence/native-integrity-green/SHA256SUMS",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/evidence/native-integrity-green/SHA256SUMS",
+      "bytes": 658,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/evidence/integrity-definitions/DEFINITIONS.json",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/evidence/integrity-definitions/DEFINITIONS.json",
+      "bytes": 1002,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/acceptance-audit/EVIDENCE.json",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/acceptance-audit/EVIDENCE.json",
+      "bytes": 50109,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/acceptance-audit/REQUIREMENT-MATRIX.csv",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/acceptance-audit/REQUIREMENT-MATRIX.csv",
+      "bytes": 5456,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/acceptance-audit/AUDIT.md",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/acceptance-audit/AUDIT.md",
+      "bytes": 11322,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/acceptance-audit/TEST-MATRIX.csv",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/acceptance-audit/TEST-MATRIX.csv",
+      "bytes": 7543,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/acceptance-audit/SHA256SUMS",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/acceptance-audit/SHA256SUMS",
+      "bytes": 326,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/repo/src/features/oauth/refreshFamilyIntegrity.integration.test.ts",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/repo/src/features/oauth/refreshFamilyIntegrity.integration.test.ts",
+      "bytes": 6482,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/repo/src/features/oauth/refreshFamilySafety.integration.test.ts",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/repo/src/features/oauth/refreshFamilySafety.integration.test.ts",
+      "bytes": 14475,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/repo/src/features/oauth/tokens.ts",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/repo/src/features/oauth/tokens.ts",
+      "bytes": 8993,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/repo/src/features/oauth/refreshFamily.integration.test.ts",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/repo/src/features/oauth/refreshFamily.integration.test.ts",
+      "bytes": 5619,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/repo/src/features/privacy/registryIdsAuthentication1.ts",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/repo/src/features/privacy/registryIdsAuthentication1.ts",
+      "bytes": 12361,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/base/src/features/oauth/tokens.ts",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/base/src/features/oauth/tokens.ts",
+      "bytes": 6393,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/base/src/features/privacy/registryIdsAuthentication1.ts",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/base/src/features/privacy/registryIdsAuthentication1.ts",
+      "bytes": 12319,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/prior-apply-check/apply-check.stderr.log",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/prior-apply-check/apply-check.stderr.log",
+      "bytes": 0,
+      "reasons": [
+        "raw log/stdout/stderr intentionally retained locally only under Root instruction",
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/prior-apply-check/APPLY-CHECK.json",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/prior-apply-check/APPLY-CHECK.json",
+      "bytes": 937,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-next-increment-audit-20261102/handoff-final/prior-apply-check/apply-check.stdout.log",
+      "targetRelative": "mcp-next-increment-audit-20261102/handoff-final/prior-apply-check/apply-check.stdout.log",
+      "bytes": 0,
+      "reasons": [
+        "raw log/stdout/stderr intentionally retained locally only under Root instruction",
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-security-operations-20261102/localized-handoff/CANDIDATE.json",
+      "targetRelative": "mcp-security-operations-20261102/localized-handoff/CANDIDATE.json",
+      "bytes": 3072,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-security-operations-20261102/localized-handoff/increment.patch",
+      "targetRelative": "mcp-security-operations-20261102/localized-handoff/increment.patch",
+      "bytes": 47286,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-security-operations-20261102/localized-handoff/SHA256SUMS",
+      "targetRelative": "mcp-security-operations-20261102/localized-handoff/SHA256SUMS",
+      "bytes": 1179,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-security-operations-20261102/localized-handoff/HANDOFF.md",
+      "targetRelative": "mcp-security-operations-20261102/localized-handoff/HANDOFF.md",
+      "bytes": 1853,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-security-operations-20261102/localized-handoff/ROOT-REVIEW.json",
+      "targetRelative": "mcp-security-operations-20261102/localized-handoff/ROOT-REVIEW.json",
+      "bytes": 167,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-security-operations-20261102/localized-handoff/evidence/LOCALIZATION-WALKTHROUGH.json",
+      "targetRelative": "mcp-security-operations-20261102/localized-handoff/evidence/LOCALIZATION-WALKTHROUGH.json",
+      "bytes": 2476,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-security-operations-20261102/localized-handoff/evidence/SOURCE-WALKTHROUGH.json",
+      "targetRelative": "mcp-security-operations-20261102/localized-handoff/evidence/SOURCE-WALKTHROUGH.json",
+      "bytes": 1746,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-security-operations-20261102/localized-handoff/evidence/FINAL-REVIEW.json",
+      "targetRelative": "mcp-security-operations-20261102/localized-handoff/evidence/FINAL-REVIEW.json",
+      "bytes": 1550,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-security-operations-20261102/localized-handoff/evidence/requirements/aisec024-operational-gaps.md",
+      "targetRelative": "mcp-security-operations-20261102/localized-handoff/evidence/requirements/aisec024-operational-gaps.md",
+      "bytes": 6720,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-security-operations-20261102/localized-handoff/evidence/acceptance-audit/documentation-walkthrough-scope.md",
+      "targetRelative": "mcp-security-operations-20261102/localized-handoff/evidence/acceptance-audit/documentation-walkthrough-scope.md",
+      "bytes": 4660,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-security-operations-20261102/localized-handoff/repo/docs/mcp-security-operations.md",
+      "targetRelative": "mcp-security-operations-20261102/localized-handoff/repo/docs/mcp-security-operations.md",
+      "bytes": 11029,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-security-operations-20261102/localized-handoff/repo/docs/mcp-security-operations.fa.md",
+      "targetRelative": "mcp-security-operations-20261102/localized-handoff/repo/docs/mcp-security-operations.fa.md",
+      "bytes": 20201,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-security-operations-20261102/localized-handoff/repo/docs/mcp-security-operations.de.md",
+      "targetRelative": "mcp-security-operations-20261102/localized-handoff/repo/docs/mcp-security-operations.de.md",
+      "bytes": 15045,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-bdb-acceptance-20261102/final-audit/EVIDENCE.json",
+      "targetRelative": "mcp-bdb-acceptance-20261102/final-audit/EVIDENCE.json",
+      "bytes": 39478,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-bdb-acceptance-20261102/final-audit/FINAL-AUDIT.md",
+      "targetRelative": "mcp-bdb-acceptance-20261102/final-audit/FINAL-AUDIT.md",
+      "bytes": 10469,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-bdb-acceptance-20261102/final-audit/SOURCE-LINKAGE.json",
+      "targetRelative": "mcp-bdb-acceptance-20261102/final-audit/SOURCE-LINKAGE.json",
+      "bytes": 37618,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-bdb-acceptance-20261102/final-audit/ISSUE-214-UPDATE.md",
+      "targetRelative": "mcp-bdb-acceptance-20261102/final-audit/ISSUE-214-UPDATE.md",
+      "bytes": 4269,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-bdb-acceptance-20261102/final-audit/ISSUE-215-UPDATE.md",
+      "targetRelative": "mcp-bdb-acceptance-20261102/final-audit/ISSUE-215-UPDATE.md",
+      "bytes": 3459,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-bdb-acceptance-20261102/final-audit/AC-MATRIX.csv",
+      "targetRelative": "mcp-bdb-acceptance-20261102/final-audit/AC-MATRIX.csv",
+      "bytes": 13406,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-bdb-acceptance-20261102/final-audit/SHA256SUMS",
+      "targetRelative": "mcp-bdb-acceptance-20261102/final-audit/SHA256SUMS",
+      "bytes": 499,
+      "reasons": [
+        "cloud-dataless flag; locally retained, no download/retry for closure"
+      ],
+      "locallyRetained": true
+    }
+  ],
+  "findings": [
+    {
+      "path": "slack-revocation-confirmation-20261102/handoff-final/source-handoff/increment.patch",
+      "line": 125,
+      "category": "literal-secret-assignment",
+      "classification": "synthetic-or-placeholder",
+      "reason": "Explicit nearby synthetic/test-only cue"
+    },
+    {
+      "path": "slack-revocation-confirmation-20261102/handoff-final/source-handoff/increment.patch",
+      "line": 144,
+      "category": "literal-secret-assignment",
+      "classification": "synthetic-or-placeholder",
+      "reason": "Explicit nearby synthetic/test-only cue"
+    },
+    {
+      "path": "slack-revocation-confirmation-20261102/handoff-final/source-handoff/repo/src/features/integrations/slackRevocation.integration.test.ts",
+      "line": 30,
+      "category": "literal-secret-assignment",
+      "classification": "synthetic-or-placeholder",
+      "reason": "Explicit nearby synthetic/test-only cue"
+    },
+    {
+      "path": "slack-revocation-confirmation-20261102/handoff-final/source-handoff/repo/src/features/integrations/slackRevocation.integration.test.ts",
+      "line": 49,
+      "category": "literal-secret-assignment",
+      "classification": "synthetic-or-placeholder",
+      "reason": "Explicit nearby synthetic/test-only cue"
+    },
+    {
+      "path": "connection-failure-classification-20261102/handoff-classifier/increment.patch",
+      "line": 329,
+      "category": "literal-secret-assignment",
+      "classification": "synthetic-or-placeholder",
+      "reason": "Explicit nearby synthetic/test-only cue"
+    },
+    {
+      "path": "connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/slackOperationFailures.47-case.definition.ts",
+      "line": 16,
+      "category": "literal-secret-assignment",
+      "classification": "synthetic-or-placeholder",
+      "reason": "Explicit nearby synthetic/test-only cue"
+    },
+    {
+      "path": "connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/slackOperationFailures.18-case.original.ts",
+      "line": 16,
+      "category": "literal-secret-assignment",
+      "classification": "synthetic-or-placeholder",
+      "reason": "Explicit nearby synthetic/test-only cue"
+    },
+    {
+      "path": "connection-failure-classification-20261102/handoff-classifier/evidence/implementation/first-green-source/src/features/integrations/slackOperationFailures.test.ts",
+      "line": 16,
+      "category": "literal-secret-assignment",
+      "classification": "synthetic-or-placeholder",
+      "reason": "Explicit nearby synthetic/test-only cue"
+    },
+    {
+      "path": "connection-failure-classification-20261102/handoff-classifier/evidence/operation-consumption/source-47.original.ts",
+      "line": 16,
+      "category": "literal-secret-assignment",
+      "classification": "synthetic-or-placeholder",
+      "reason": "Explicit nearby synthetic/test-only cue"
+    }
+  ],
+  "audit": "Bounded high-confidence credential/PEM/provider-token and literal credential/URL pattern scan; values withheld, no universal absence guarantee.",
+  "history": "Initial read-only scanner stalled on cloud-backed raw logs. Only its positively identified PID7132 was terminated. No source/Git mutation. Parent instructed skip raw logs/stdout/stderr, keep local immutable originals and manifests; no slow-file retries.",
+  "counts": {
+    "candidates": 259,
+    "files": 108,
+    "bytes": 509632,
+    "excluded": 151,
+    "patternHits": 9,
+    "unresolved": 0
+  },
+  "seconds": 0.26634391606785357,
+  "result": "108 explicit files are safe candidates for remote evidence preservation at509632bytes; no unresolved high-confidence credential/private-key pattern.151 files remain locally retained and excluded:55 raw-log names and107 cloud-dataless files (11 overlap). No slow file retried. Hash manifests may mention locally retained logs; only explicit files[] are proposed for remote copying.",
+  "classification": "SAFE-BOUNDED-ALLOWLIST; not full244-file remote evidence custody",
+  "completedAt": "2026-11-02T07:31:20.080658+00:00"
+}

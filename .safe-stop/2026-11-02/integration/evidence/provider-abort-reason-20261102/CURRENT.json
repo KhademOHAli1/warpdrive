@@ -1,0 +1,9 @@
+{
+  "at": "2026-11-02T07:01:03.443896+00:00",
+  "state": "actual6 baseline3identityRED3precontrolsPASS; production unchanged",
+  "testSha256": "3ed29f2f4618dca64754bbed3a44ece6706c7d1da0ba81b183fcf897570d5e89",
+  "invokerSha256": "9ff62214d4d2f6bc25e8ed7f704b318d16013545c4d3294264abad4e4d1a400f",
+  "native2InputsUnchanged": 18,
+  "next": "After native2 returns, preserve exact caller reason in stopped rejection; retain adapter-error sanitation and update existing invoke manual privacy digest/affected checks.",
+  "sharedFrozenMetadata": "registryIdsSales1.ts is one of18 native2 inputs, so production/metadata fix is deferred."
+}

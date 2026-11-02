@@ -160,5 +160,11 @@ it("does not apply read classifications or no-effect claims to a mutating reques
     "chat.postMessage",
   );
   expect(result?.id).toBe(ERROR_IDS.SLACK_REQUEST_FAILED);
-  expect(result?.context).toEqual({});
+  expect(result?.context).toEqual({
+    slackOperationFailure: {
+      reason: "transient_outage",
+      providerFailure: { code: "unavailable", outcome: "unknown" },
+    },
+  });
+  expect(result?.context).not.toHaveProperty("slackReadFailure");
 });

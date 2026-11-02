@@ -1,0 +1,1129 @@
+{
+  "owner": "Integration",
+  "state": "UNFINISHED PRESERVATION - NOT FOR DEPLOYMENT",
+  "originalHead": "9fb734e0129f6dcc5be69963e2aafddd0b7836ea",
+  "branch": "codex/preserve-integration-20261102",
+  "sourceFiles": [
+    {
+      "status": " M",
+      "path": "docs/mcp-server.md",
+      "mode": "0o644",
+      "bytes": 9163,
+      "symlink": false,
+      "sha256": "262cac55304437d691a78fb8c91350f761e0c21a33fef27d8080915ea93876b5",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/app/.well-known/oauth-authorization-server/route.ts",
+      "mode": "0o644",
+      "bytes": 511,
+      "symlink": false,
+      "sha256": "5509574914473a505cf72d81e0ed313f27a0cab06b3e62d2ef099b1cc572ef15",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/app/.well-known/oauth-protected-resource/route.ts",
+      "mode": "0o644",
+      "bytes": 474,
+      "symlink": false,
+      "sha256": "6dcefd5e0bc280ec797731fb307beafe142e97c5ff1dc8e29a1f2cfb2960cacf",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/app/oauth/authorize/route.ts",
+      "mode": "0o644",
+      "bytes": 236,
+      "symlink": false,
+      "sha256": "4b373d00bb9f112ee186574a7216f8ec19b97267b5eb4c1af328fbea482fec68",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/app/oauth/register/route.ts",
+      "mode": "0o644",
+      "bytes": 3256,
+      "symlink": false,
+      "sha256": "6478812fc8ac09ab8915e473d18d25726b60e082758d4616b47efb9dcb5e93d3",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/app/oauth/token/route.ts",
+      "mode": "0o644",
+      "bytes": 144,
+      "symlink": false,
+      "sha256": "5afe4fbbc7a3d151dfb0726a2bfa4b5f4ed8bd93d16cc6c1e483cffb6b1feec5",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/constants/errorIds.ts",
+      "mode": "0o644",
+      "bytes": 18572,
+      "symlink": false,
+      "sha256": "9c2fd47faab1fe8aa4e9f9dcfc6a6cadebadc8c2e87fb97890950c91b353e1e7",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/features/integrations/providers/invoke.ts",
+      "mode": "0o644",
+      "bytes": 6147,
+      "symlink": false,
+      "sha256": "946301672e4b59dc86a24272ba91244d0f613d9a4bdc9bc64a93b1ac5ff1706e",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/features/integrations/slack.ts",
+      "mode": "0o644",
+      "bytes": 8148,
+      "symlink": false,
+      "sha256": "8585d466afbbfd91cff7b64306de14e7a13383e1f17d794a6c7ed669dc43e1e3",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/features/integrations/slackReadFailures.test.ts",
+      "mode": "0o644",
+      "bytes": 6903,
+      "symlink": false,
+      "sha256": "3d2ed3d7f648321d55c29d694555104604acaf00ef138f5252a97798663e3e4e",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/features/mcp/auth.ts",
+      "mode": "0o644",
+      "bytes": 1938,
+      "symlink": false,
+      "sha256": "0d263ca89d3c9ebcdcbe2a06ed38579bf9c18defaf7b1aa079624f824996e42f",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/features/mcp/http.test.ts",
+      "mode": "0o644",
+      "bytes": 5313,
+      "symlink": false,
+      "sha256": "8a627e1e83929fe6039afd6a5e114d35e839c3cc34071c6958755289c7f67c81",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/features/mcp/http.ts",
+      "mode": "0o644",
+      "bytes": 2129,
+      "symlink": false,
+      "sha256": "6271ea875e43fcde24eeb2d1a2496f2ef89cbc707c1c3d2b6a8d2674f44f5e9a",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/features/oauth/authorize.test.ts",
+      "mode": "0o644",
+      "bytes": 2650,
+      "symlink": false,
+      "sha256": "974c30477af4bea4fcfc507823f149f275ad60218f1bd663b3ef90b5e5a05fae",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/features/oauth/authorize.ts",
+      "mode": "0o644",
+      "bytes": 3639,
+      "symlink": false,
+      "sha256": "8c912d297b1c7950dea8780e8f8f25e66d4dab292ba99963cd232c483620432f",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/features/oauth/consent.integration.test.ts",
+      "mode": "0o644",
+      "bytes": 3306,
+      "symlink": false,
+      "sha256": "8f445d11b3810da4944d5095b8c021892cda95df4fc8bbe62483eb36c02d1710",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/features/oauth/consent.ts",
+      "mode": "0o644",
+      "bytes": 1336,
+      "symlink": false,
+      "sha256": "0dffa6a9f18560041a27278da04952b070101c7575aad0ea5747e754d46b4be5",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/features/oauth/exchange.integration.test.ts",
+      "mode": "0o644",
+      "bytes": 4328,
+      "symlink": false,
+      "sha256": "88c857623ff71c73430f93965d615c9225e45d1a89978e0e636e12573f7af340",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/features/oauth/exchange.ts",
+      "mode": "0o644",
+      "bytes": 2818,
+      "symlink": false,
+      "sha256": "3018cac74f7a590288d5ba365fa0dcda9c5ba71b0a22cc4cc1c60295ef997ca3",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/features/oauth/mcpEndpoint.test.ts",
+      "mode": "0o644",
+      "bytes": 1024,
+      "symlink": false,
+      "sha256": "3b7374b43ed34cc0cdf173712f6b93990050008bea9eb729f09bdabc847ae47d",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/features/oauth/mcpEndpoint.ts",
+      "mode": "0o644",
+      "bytes": 327,
+      "symlink": false,
+      "sha256": "9b59f6c071000a86367e9ed760480c4e7905f126cad8650cb5e6e62ddc987bc3",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/features/oauth/metadata.test.ts",
+      "mode": "0o644",
+      "bytes": 1781,
+      "symlink": false,
+      "sha256": "cc93b0d5bcc7cad2bf81a37c14073323d863c825c6638fcb5b2db2b56e12395c",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/features/oauth/metadata.ts",
+      "mode": "0o644",
+      "bytes": 1266,
+      "symlink": false,
+      "sha256": "5bcea7fdb6086975412a7a93c7f739cf94bda572fb3052de495a80aad87f8b19",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/features/oauth/tokens.ts",
+      "mode": "0o644",
+      "bytes": 8993,
+      "symlink": false,
+      "sha256": "9a79e82208a2cc9d387040afab6d8d6b60dfa33bfaf8d5b2050fd5ae116cc9e3",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/features/privacy/registryIdsAuthentication1.ts",
+      "mode": "0o644",
+      "bytes": 12361,
+      "symlink": false,
+      "sha256": "7d7e6bd4e71892947134ea4a50c2574c0891bf15bd738e79fc1ca74152f0aafb",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/features/privacy/registryIdsAuthentication2.ts",
+      "mode": "0o644",
+      "bytes": 7998,
+      "symlink": false,
+      "sha256": "03d97d57a557506b881ef8b84a9cf42bbdb8052a303ed8fe1273cef5fa8ca68c",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/features/privacy/registryIdsInfrastructure1.ts",
+      "mode": "0o644",
+      "bytes": 12415,
+      "symlink": false,
+      "sha256": "8a4e7ae363bdd3d7969c7948f8f872ab25258b68606cfbd727b10773ae5bb1f0",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/features/privacy/registryIdsSales1.ts",
+      "mode": "0o644",
+      "bytes": 5333,
+      "symlink": false,
+      "sha256": "7e302626a62212c2051dacdf0d9736600719f6563a1b2ca075b9dbec16c6be2a",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": " M",
+      "path": "src/test/integrationPlatformFixtures.integration.test.ts",
+      "mode": "0o644",
+      "bytes": 9592,
+      "symlink": false,
+      "sha256": "55a2582e60a243d04bd56f9c785feedf21f3ff8e1ee6297573f618e5e29eeede",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "docs/mcp-security-operations.de.md",
+      "mode": "0o644",
+      "bytes": 15045,
+      "symlink": false,
+      "sha256": "2fb1b6523d5859a59d9358f8540b7b8e09001aeacd7e1e8019cdad62ad8ab62d",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "docs/mcp-security-operations.fa.md",
+      "mode": "0o644",
+      "bytes": 20201,
+      "symlink": false,
+      "sha256": "28323ee0f2bdb600c5615b6e25e47aea80832029a5f85c78c82b98f030451a6a",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "docs/mcp-security-operations.md",
+      "mode": "0o644",
+      "bytes": 11029,
+      "symlink": false,
+      "sha256": "2e218735b6b64e5dfc92cc7ea397ed662ff706a9d5dff7cf73a050139722d701",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/integrations/SlackConnectionPhases.test.tsx",
+      "mode": "0o644",
+      "bytes": 2786,
+      "symlink": false,
+      "sha256": "4bedf1fde9d9c157e90748ed3caee84eeb38472db74b47a48ab8c0b61ad3586d",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/integrations/providers/invokeAbortReason.test.ts",
+      "mode": "0o644",
+      "bytes": 4098,
+      "symlink": false,
+      "sha256": "3ed29f2f4618dca64754bbed3a44ece6706c7d1da0ba81b183fcf897570d5e89",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/integrations/slackChannelResponse.test.ts",
+      "mode": "0o644",
+      "bytes": 3320,
+      "symlink": false,
+      "sha256": "781fc5c7f0c6194d3ba97808946f18b66ffca9926ed5898f0700e1a9c0f83a9d",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/integrations/slackOperationFailure.ts",
+      "mode": "0o644",
+      "bytes": 2597,
+      "symlink": false,
+      "sha256": "6d841bb5ea5bae3939273ea443c3f7bf321452497324ac585b5c87db155c1f37",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/integrations/slackOperationFailures.test.ts",
+      "mode": "0o644",
+      "bytes": 10013,
+      "symlink": false,
+      "sha256": "8bbbfcc93517590492ecefd0512ea0c7b8dca7c28691ab84a312f3cdd39d2ba7",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/integrations/slackReauthorization.integration.test.ts",
+      "mode": "0o644",
+      "bytes": 7356,
+      "symlink": false,
+      "sha256": "176f47512ceb41f98d1fcb05d9e7653efd8ae0aba0a996caaa59ddb29cbb124e",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/integrations/slackRevocation.integration.test.ts",
+      "mode": "0o644",
+      "bytes": 8526,
+      "symlink": false,
+      "sha256": "790c380056521344e121113a35310ec15293c9effdac5c0eb2b90b6330859950",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/integrations/slackRevocation.test.ts",
+      "mode": "0o644",
+      "bytes": 1726,
+      "symlink": false,
+      "sha256": "491e6dec299c57cd0891441192ac8eec6fa439520979295c628564a20e9d76e3",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/oauth/authorizationHttp.ts",
+      "mode": "0o644",
+      "bytes": 6253,
+      "symlink": false,
+      "sha256": "5ffbe4282c70ffea11cd4267ab6fb470278ab4b524734d90684c17c1993b99e5",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/oauth/connectionJourney.integration.test.ts",
+      "mode": "0o644",
+      "bytes": 5683,
+      "symlink": false,
+      "sha256": "757f62ce3d565391564cc0dc61f24f3a7e7885936d4fdad5c1bf6ee6e5956007",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/oauth/issuerMetadata.test.ts",
+      "mode": "0o644",
+      "bytes": 1470,
+      "symlink": false,
+      "sha256": "9e68f317b93686bd22fc3a00170a1239d6bc1cbe59c3851ce3430160a0bd2738",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/oauth/issuerResponse.integration.test.ts",
+      "mode": "0o644",
+      "bytes": 6850,
+      "symlink": false,
+      "sha256": "f080d8bf3f4039276a105b67027a29a4d71965565d5d788a9e4d1367d6d03ae9",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/oauth/issuerValidation.test.ts",
+      "mode": "0o644",
+      "bytes": 2595,
+      "symlink": false,
+      "sha256": "644244d07365b512fb25d0b710a933f167067615f56cafe8e6122833920759f6",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/oauth/jsonResourceIngress.ts",
+      "mode": "0o644",
+      "bytes": 4187,
+      "symlink": false,
+      "sha256": "4c2b98d8c51597de68c548ea38419f8c43a03d8291d9ea3d7cf48179a3421794",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/oauth/refreshFamily.integration.test.ts",
+      "mode": "0o644",
+      "bytes": 5619,
+      "symlink": false,
+      "sha256": "9bff863fe8dd9451cfcd43a1f79c977adbe1f812b038ebb470d8e55403055adc",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/oauth/refreshFamilyIntegrity.integration.test.ts",
+      "mode": "0o644",
+      "bytes": 6482,
+      "symlink": false,
+      "sha256": "e121f612c3aebf22847920dfd714c48ad60cf61b3cecbb33084127f13136afa6",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/oauth/refreshFamilySafety.integration.test.ts",
+      "mode": "0o644",
+      "bytes": 14475,
+      "symlink": false,
+      "sha256": "36bd6100ac276df075ce37a1c0f0ed9eb0adbfd4afd8c5c5c8ce8f9b0e058b06",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/oauth/requestIngress.test.ts",
+      "mode": "0o644",
+      "bytes": 9085,
+      "symlink": false,
+      "sha256": "08480fdb4e8ac1edddea1f4af3193966c223c0684b99861d8b70b975a85382eb",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/oauth/requestIngress.ts",
+      "mode": "0o644",
+      "bytes": 4980,
+      "symlink": false,
+      "sha256": "711a57a9d1f6c43f89346c3860467f1404a5c7031ad828f809502b156177d9ea",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/oauth/requestSchemas.ts",
+      "mode": "0o644",
+      "bytes": 1705,
+      "symlink": false,
+      "sha256": "53b9f70f6ebee0799068a533cc22ca86a0840f7c3d4e3108e56d7680e08cda2f",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/oauth/resource.test.ts",
+      "mode": "0o644",
+      "bytes": 6351,
+      "symlink": false,
+      "sha256": "2719bf9abf89b24ca13ee402b7120d5e3ff2feae825e6704731a18b14cd143ba",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/oauth/resource.ts",
+      "mode": "0o644",
+      "bytes": 1967,
+      "symlink": false,
+      "sha256": "b8020b551a1a868f9a04633256336f77081859b016bcf765cb67fe949d1157f0",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/oauth/resourceDiscovery.test.ts",
+      "mode": "0o644",
+      "bytes": 3349,
+      "symlink": false,
+      "sha256": "58be8e8cc356240c66427ebf6ee0221433d1d059cc60933d1935f612eec62637",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/oauth/resourceHttp.integration.test.ts",
+      "mode": "0o644",
+      "bytes": 10376,
+      "symlink": false,
+      "sha256": "2e413bd74da5ed3828514fbb8c318f80826f854f00081fb62138c3ccfe4b2f39",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/oauth/resourcePolicy.test.ts",
+      "mode": "0o644",
+      "bytes": 2574,
+      "symlink": false,
+      "sha256": "6f5510cf353b0cca4147b297a1267b51408ab4528309094fc21b4c46c9433aa8",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/oauth/resourceServices.integration.test.ts",
+      "mode": "0o644",
+      "bytes": 7634,
+      "symlink": false,
+      "sha256": "eca1d114713837f6bd35692bc1df245f97796ebef8ab95178827d78e439916ca",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/oauth/revoke.integration.test.ts",
+      "mode": "0o644",
+      "bytes": 8558,
+      "symlink": false,
+      "sha256": "9d7de52ec03bdb8351c0de2cebc68305564affdee46f1f00485c5961b7d1fa9b",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/features/oauth/tokenHttp.ts",
+      "mode": "0o644",
+      "bytes": 1581,
+      "symlink": false,
+      "sha256": "494fea3658970f9088ebe809dd72cffdd0f3b326ca68138852ede263f2062627",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    },
+    {
+      "status": "??",
+      "path": "src/test/mcpResourceFixtures.ts",
+      "mode": "0o644",
+      "bytes": 5627,
+      "symlink": false,
+      "sha256": "28079b1dd08f6a8af6ca3c83ed96fa5b6a2381184b62446ca70440ca48afb83d",
+      "recommendation": "preserve source candidate after owner allowlist and content-secret review; not acceptance"
+    }
+  ],
+  "extraFiles": [
+    {
+      "source": "/Users/ali/Developer/warpdrive-integrations/docs/integration-coordination.md",
+      "target": "integration/preexisting-protected-drafts/docs/integration-coordination.md",
+      "sha256": "959d1348a6f3e6e66f07d939c3e53d1d10459b2be5a0fbe8be4fd0f6001689e2"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-integrations/docs/integration-sms-providers.csv",
+      "target": "integration/preexisting-protected-drafts/docs/integration-sms-providers.csv",
+      "sha256": "0265706600bf3375526743ff779fd03e15340bb7cce08d9d6ffbfbef930ac36c"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-integrations/docs/integration-sms-providers.md",
+      "target": "integration/preexisting-protected-drafts/docs/integration-sms-providers.md",
+      "sha256": "66b55da20f4f43674e5a6bcc8bd6a5a3eae0d19440e11d22d547ccfa117f50eb"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-integrations/docs/local-integrations-plan.md",
+      "target": "integration/preexisting-protected-drafts/docs/local-integrations-plan.md",
+      "sha256": "2de23ba8ab7afb58579ccbeb6426d10ddbfde3850413f9e895ebcffc00fed923"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/CURRENT-MAIN-PREIMAGES.json",
+      "target": "integration/evidence/slack-revocation-confirmation-20261102/handoff-final/CURRENT-MAIN-PREIMAGES.json",
+      "sha256": "d3ca9711b2108582bd4d17a0bb703b6430ddc7e566215cad8de9d644286ffdda"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/CANDIDATE.json",
+      "target": "integration/evidence/slack-revocation-confirmation-20261102/handoff-final/CANDIDATE.json",
+      "sha256": "a080f16da7b3f80cc0f80ef942e6df54090bd7251f0de5674b46e01580955214"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/RESTART-AND-DATA-IMPACT.md",
+      "target": "integration/evidence/slack-revocation-confirmation-20261102/handoff-final/RESTART-AND-DATA-IMPACT.md",
+      "sha256": "2f25d37f0c280101776700c70b09d0acb423606e5c39a12e7b0c80f8bbacd931"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/SOURCE-LINKAGE.json",
+      "target": "integration/evidence/slack-revocation-confirmation-20261102/handoff-final/SOURCE-LINKAGE.json",
+      "sha256": "9fafe00a47456c10bb2e5cd4c703b599907341ccf971746aed4eb47fbeda2189"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/SHA256SUMS",
+      "target": "integration/evidence/slack-revocation-confirmation-20261102/handoff-final/SHA256SUMS",
+      "sha256": "29b69457e62cf0a5c42174dcd1e47ffc4cbde82c63301632aad66d46011a7bb4"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/HANDOFF.md",
+      "target": "integration/evidence/slack-revocation-confirmation-20261102/handoff-final/HANDOFF.md",
+      "sha256": "3a99612f763d9d5b6784ea24b5a2d36a9b12761e27e234322771d8b0ddc70f39"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/CANDIDATE.json",
+      "target": "integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/CANDIDATE.json",
+      "sha256": "f11f54717288457c48971bee27d6340b22578ce8deb02929bd98939b0ca22883"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/RESTART-AND-DATA-IMPACT.md",
+      "target": "integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/RESTART-AND-DATA-IMPACT.md",
+      "sha256": "121815950d3287067c2bd825a27c3ef09ce1d4629fa73fa54f065b756f3e05bc"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/EVIDENCE-COPY-MAP.json",
+      "target": "integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/EVIDENCE-COPY-MAP.json",
+      "sha256": "e0b5027a6175798b668f0176c0a18701e20ae81919a380e19a54396116947948"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/SOURCE-HASHES.md",
+      "target": "integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/SOURCE-HASHES.md",
+      "sha256": "4625ea25007edfda8dded230ebae3bfe0c772c69bfc3d2b1afda6f23f435a2fe"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/APPLY-CHECK.json",
+      "target": "integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/APPLY-CHECK.json",
+      "sha256": "210b1f5e7ac6661543b51b2bf7367878eabd5f27de706439344f08477d55d2c0"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/increment.patch",
+      "target": "integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/increment.patch",
+      "sha256": "b3ed5a65d43bf9737307f16b2d6c9ceb6c49e87357f6a33375e80b4417f13e7b"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/SHA256SUMS",
+      "target": "integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/SHA256SUMS",
+      "sha256": "2b4289efc731dacb649c670ebc62b2c81f708102d6b773057f0384c38f088964"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/NATIVE6-PINS.pre-run.json",
+      "target": "integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/NATIVE6-PINS.pre-run.json",
+      "sha256": "2b91965cd3bfc27f14619fc8a62cc8bb9e7505bb2e843f72e66a60284a42592a"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/HANDOFF.md",
+      "target": "integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/HANDOFF.md",
+      "sha256": "29b74b51c1ed69e5606ef5ad0f4ea695475f14a29f2e3265ee948a3de864d433"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/privacy-maintenance.receipt.json",
+      "target": "integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/privacy-maintenance.receipt.json",
+      "sha256": "3a0d7cc7ba3c63d36fe76faa36e2b8d7058a025c6603784f0e74070720457c65"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/SOURCE-REVIEW.md",
+      "target": "integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/SOURCE-REVIEW.md",
+      "sha256": "97ecca50ab5595221859fce08b07626276cd35eb5ae43f6c53c4923134502a3f"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/NATIVE-DEFINITIONS-REVIEW.md",
+      "target": "integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/NATIVE-DEFINITIONS-REVIEW.md",
+      "sha256": "091cdee99e1407989675901bda6ba4e25b00df29e8ac6add6d765e7844450b22"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/PRIVACY-REVIEW.json",
+      "target": "integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/PRIVACY-REVIEW.json",
+      "sha256": "567c5cb251dbabc76ad529d8ce72d2cfb69be438e2043c9147ab0ae826e3daa5"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/inventory-diagnostic.json",
+      "target": "integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/inventory-diagnostic.json",
+      "sha256": "ec5226a282b5037fee5e2bcbca7adaaa56b72f734a8f9dcc95430acce448531d"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/inventory-green.json",
+      "target": "integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/inventory-green.json",
+      "sha256": "6a8e3dd773818a7262250fa68d64c81b73124357adcb0fd94e5b3796ec730b99"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/focused-green.receipt.json",
+      "target": "integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/focused-green.receipt.json",
+      "sha256": "89e61156f74356ba1ba505c79ee8c374a86d0ce0b2883086298f75a8d88cba33"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/native-definitions-biome-final.receipt.json",
+      "target": "integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/native-definitions-biome-final.receipt.json",
+      "sha256": "31926a152f14e746877c2e0819a6e3b9d2c4aef63cbb02aada5eecae038e949b"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/inventory-diagnostic.receipt.json",
+      "target": "integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/inventory-diagnostic.receipt.json",
+      "sha256": "9b92d022bff91cc856bc8ac500b2ba6edbd89915cce422c6b384f80685558708"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/NATIVE6-PINS.json",
+      "target": "integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/NATIVE6-PINS.json",
+      "sha256": "2b91965cd3bfc27f14619fc8a62cc8bb9e7505bb2e843f72e66a60284a42592a"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/NATIVE6-COMMAND.json",
+      "target": "integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/NATIVE6-COMMAND.json",
+      "sha256": "d322a9e65f211b141095087de18ebdd14a837b7933c31a5e882b7b7e55532631"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/slack-discovery-observation.json",
+      "target": "integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/slack-discovery-observation.json",
+      "sha256": "8ed9f2e450c395e529ae259cd20a883fcd69e8d0d076a5a56ea2ce405ad5817d"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/native-definitions-biome.receipt.json",
+      "target": "integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/native-definitions-biome.receipt.json",
+      "sha256": "4ab468d74f1aca8d3db28b9ad66fd7c1308543e947de77fd2e8d11721f706de9"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/unit-red.receipt.json",
+      "target": "integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/unit-red.receipt.json",
+      "sha256": "8e65ecf656060a130b8b09215fcbd2c787f59493850159e483d805546332a431"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/native-definitions/DEFINITIONS.json",
+      "target": "integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/evidence/native-definitions/DEFINITIONS.json",
+      "sha256": "0c2f6931264d453997f04229dcbb377b604db6b0a08f154b9136fedfc6cf6c51"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/repo/src/features/privacy/registryIdsSales1.ts",
+      "target": "integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/repo/src/features/privacy/registryIdsSales1.ts",
+      "sha256": "31075c8b9044e6a3c107f4daf4223825541cc88fa1bc1b65553c7df2dd211bd3"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/repo/src/features/integrations/slack.ts",
+      "target": "integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/repo/src/features/integrations/slack.ts",
+      "sha256": "2fece3be197eb962310615034ddcefccbf3cd204a57e2870b2cb2cc532b8c0a2"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/repo/src/features/integrations/slackRevocation.integration.test.ts",
+      "target": "integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/repo/src/features/integrations/slackRevocation.integration.test.ts",
+      "sha256": "790c380056521344e121113a35310ec15293c9effdac5c0eb2b90b6330859950"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/repo/src/features/integrations/slackRevocation.test.ts",
+      "target": "integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/repo/src/features/integrations/slackRevocation.test.ts",
+      "sha256": "491e6dec299c57cd0891441192ac8eec6fa439520979295c628564a20e9d76e3"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/base/src/features/privacy/registryIdsSales1.ts",
+      "target": "integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/base/src/features/privacy/registryIdsSales1.ts",
+      "sha256": "b5876ce716368695faa0392dd644ae5c8475d1c4cc691c641eb8f2f298fad3eb"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/source-handoff/base/src/features/integrations/slack.ts",
+      "target": "integration/evidence/slack-revocation-confirmation-20261102/handoff-final/source-handoff/base/src/features/integrations/slack.ts",
+      "sha256": "4eaa308d24fed9d8a1069d3afcfb1ed4d50d3cfebc2da8554cb678823e21dba5"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/native-green/before.json",
+      "target": "integration/evidence/slack-revocation-confirmation-20261102/handoff-final/native-green/before.json",
+      "sha256": "ff5d6ec05d4bfec84d2dc3ef05a727a9da14dc7b875464150b6c674480c68833"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/native-green/ACTUAL6-REVIEW.md",
+      "target": "integration/evidence/slack-revocation-confirmation-20261102/handoff-final/native-green/ACTUAL6-REVIEW.md",
+      "sha256": "9249bde829812d3ea5090936532b70f81b3b0154158c0fb84a0f1a08defa916c"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/native-green/resource-observations.json",
+      "target": "integration/evidence/slack-revocation-confirmation-20261102/handoff-final/native-green/resource-observations.json",
+      "sha256": "970a3bdba62ea09e4240ca2a5cfd19a673d9bf5a01be02302be6bc529adfb74a"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/native-green/result.json",
+      "target": "integration/evidence/slack-revocation-confirmation-20261102/handoff-final/native-green/result.json",
+      "sha256": "0848a014237454ec68fa0c74184061f46e3b60f8039ab9d08328817ddede5bb7"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/native-green/immediate-terminal.json",
+      "target": "integration/evidence/slack-revocation-confirmation-20261102/handoff-final/native-green/immediate-terminal.json",
+      "sha256": "66f41b1c11f03e6c0976ed88d2230ca9a8fe0d12a03915d2865971c8134082dd"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/native-green/NATIVE-RESULT.json",
+      "target": "integration/evidence/slack-revocation-confirmation-20261102/handoff-final/native-green/NATIVE-RESULT.json",
+      "sha256": "c4bd7c4531fc39b04cc0565c3488d73f4f7abacfc8ec892e5210b4ca38215b4d"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/native-green/terminal.json",
+      "target": "integration/evidence/slack-revocation-confirmation-20261102/handoff-final/native-green/terminal.json",
+      "sha256": "351cff9f7250db72d93ab89add7031db64ac23222eba2c1421b881ef1c8ca36a"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/native-green/SHA256SUMS",
+      "target": "integration/evidence/slack-revocation-confirmation-20261102/handoff-final/native-green/SHA256SUMS",
+      "sha256": "20cb3d448df47fc9876a1c8cf8ed6489d15c0f6cb9b90540b34a6d87903382e2"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/current-main-preimages/src/features/privacy/registryIdsSales1.ts",
+      "target": "integration/evidence/slack-revocation-confirmation-20261102/handoff-final/current-main-preimages/src/features/privacy/registryIdsSales1.ts",
+      "sha256": "b5876ce716368695faa0392dd644ae5c8475d1c4cc691c641eb8f2f298fad3eb"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/handoff-final/current-main-preimages/src/features/integrations/slack.ts",
+      "target": "integration/evidence/slack-revocation-confirmation-20261102/handoff-final/current-main-preimages/src/features/integrations/slack.ts",
+      "sha256": "4eaa308d24fed9d8a1069d3afcfb1ed4d50d3cfebc2da8554cb678823e21dba5"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/CANDIDATE.json",
+      "target": "integration/evidence/connection-failure-classification-20261102/handoff-classifier/CANDIDATE.json",
+      "sha256": "93d3118e3f8fa26f73a65d7ec69c7bbef8f60cf798120d310751b2e22721ca2f"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/RESTART-AND-DATA-IMPACT.md",
+      "target": "integration/evidence/connection-failure-classification-20261102/handoff-classifier/RESTART-AND-DATA-IMPACT.md",
+      "sha256": "06433c318d48c6cac3fad8f630fb3af79aaf1dac9ba5b914a684daa1bb6a3162"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/EVIDENCE-COPY-MAP.json",
+      "target": "integration/evidence/connection-failure-classification-20261102/handoff-classifier/EVIDENCE-COPY-MAP.json",
+      "sha256": "a1e61c97920bd3ef26830f4c785ca0c6fc3b0cad0fcb18e73bb32c95dee9fe8a"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/SOURCE-HASHES.md",
+      "target": "integration/evidence/connection-failure-classification-20261102/handoff-classifier/SOURCE-HASHES.md",
+      "sha256": "b7d8f94ce599d5e06e8544f38fd1169c9c1318a53d1d7c79fd80c4fde02ace24"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/APPLY-CHECK.json",
+      "target": "integration/evidence/connection-failure-classification-20261102/handoff-classifier/APPLY-CHECK.json",
+      "sha256": "271ac914d604822c97606c464811bb0ac46d158a6cf40f3c94138519d75ce4cf"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/increment.patch",
+      "target": "integration/evidence/connection-failure-classification-20261102/handoff-classifier/increment.patch",
+      "sha256": "ab61f73d7cf8f233ad85a701a0ec98aa8227ee9ba91606a8c0ea7a4e84c97641"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/SOURCE-MAP.json",
+      "target": "integration/evidence/connection-failure-classification-20261102/handoff-classifier/SOURCE-MAP.json",
+      "sha256": "49d4bc5013995646b9e28768ca875a7b205708b6cae9b4df24369464832cc96a"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/SHA256SUMS",
+      "target": "integration/evidence/connection-failure-classification-20261102/handoff-classifier/SHA256SUMS",
+      "sha256": "3c02aa1690fc102363a1f378773ed3708796395e47ce8b475c108b79f325e7b2"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/HANDOFF.md",
+      "target": "integration/evidence/connection-failure-classification-20261102/handoff-classifier/HANDOFF.md",
+      "sha256": "9a07587a61889abc6688d127f7c3435cdc313e18baa2c177547cfd7720fdfc21"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/PRIMARY-SOURCES.md",
+      "target": "integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/PRIMARY-SOURCES.md",
+      "sha256": "c606e4ef0649fde3cc965000032fad6e873138e7fa09a784c6b0a8becb3b5211"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/REQUIREMENT-SCOPE.md",
+      "target": "integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/REQUIREMENT-SCOPE.md",
+      "sha256": "0e15bfb8bf3fa363b268fea872b7df3a93b6eded34dab34e0cece8f8d544fb03"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/operation-definitions/ACTUAL-RED-RECEIPT.json",
+      "target": "integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/operation-definitions/ACTUAL-RED-RECEIPT.json",
+      "sha256": "1aaeae73f4ac6b67c08e729e64014c53f10b8283568936b219bbfa12f936ade9"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/operation-definitions/RESTART.md",
+      "target": "integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/operation-definitions/RESTART.md",
+      "sha256": "2121a54360ac54f52885ccd58f1deed05ac7e7f66c8b6898e3c52bf6f8e4f4f0"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/operation-definitions/CONTRACT-PROPOSAL.md",
+      "target": "integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/operation-definitions/CONTRACT-PROPOSAL.md",
+      "sha256": "7f4e785ff3654ea7a53b9261ccad5755c1146a6e6e8a1e8de42ca0dfb4d7cad8"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/operation-definitions/DEFINITIONS.json",
+      "target": "integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/operation-definitions/DEFINITIONS.json",
+      "sha256": "34d771972273d726b0693eef5ce1c4de2a03fd7cf64c659efcf33b3ad88cdde4"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/operation-definitions/CASE-MATRIX.csv",
+      "target": "integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/operation-definitions/CASE-MATRIX.csv",
+      "sha256": "145aacfa10531a15b25c1a82820380824e3c0bb34eacbbcc02ac0d2a71b158dd"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/operation-definitions/SHA256SUMS",
+      "target": "integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/operation-definitions/SHA256SUMS",
+      "sha256": "5d4aa553473b912d87faef5ad7279f2dac1cf503cfae756dd9b24da7e46c74ac"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/ACTUAL-SHA256SUMS",
+      "target": "integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/ACTUAL-SHA256SUMS",
+      "sha256": "eca6882e94985bb5a126202454cbc2a77cb81c20fbcb1b7b265cbb56d34a8faf"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/ACTUAL-RED-AUDIT.md",
+      "target": "integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/ACTUAL-RED-AUDIT.md",
+      "sha256": "ea3e18b0ac78309b751b30e0b1285321b49e86aaca578d88dd09e7670fcab5ad"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/ACTUAL-RED-RECEIPT.json",
+      "target": "integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/ACTUAL-RED-RECEIPT.json",
+      "sha256": "5d7c8ea3f6d2adab5875b78560765519576d0a062fec8012006fc986e69ccd0e"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/FOCUSED-FIRST-FAILURE.json",
+      "target": "integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/FOCUSED-FIRST-FAILURE.json",
+      "sha256": "2e59317b3712f68fef59a8245f7426db2dc23d18dfb898c31bb75945cc170f67"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/slackOperationFailures.47-case.definition.ts",
+      "target": "integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/slackOperationFailures.47-case.definition.ts",
+      "sha256": "1705b56a885c558c3aac262bc71e0c363b10a4391b3b8dd89e08e4ccbca81655"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/DEFINITIONS.md",
+      "target": "integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/DEFINITIONS.md",
+      "sha256": "0b5b20ac7c43ac01c12c44ac38b0f8b4ed7a8bb41a717661e2f1e3588d7638a6"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/CURRENT.json",
+      "target": "integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/CURRENT.json",
+      "sha256": "446c322286411aa8552d631a66f30c2bb98a7032ec2fda2006ddb4f87566d6f3"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/DEFINITIONS.json",
+      "target": "integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/DEFINITIONS.json",
+      "sha256": "9d1cfd30046d7be33549497ab8b00c1572b085c0c76bfe779b33f21f544f7031"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/slackOperationFailures.18-case.original.ts",
+      "target": "integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/slackOperationFailures.18-case.original.ts",
+      "sha256": "4dffa31acd7f4005ec543dd627462f016b71251c828e71a9a28196904ed09c1e"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/SHA256SUMS",
+      "target": "integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/operation-vectors/SHA256SUMS",
+      "sha256": "c60eb6e8d7941c3212e54a7ea79891749b6b39b0737261a738f08ea6a69165a3"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/before.json",
+      "target": "integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/before.json",
+      "sha256": "ba653ee1b0165bc7e07deba569986f0deafc94a1637ac0624234787a2641ff39"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/SOURCE-REVIEW.md",
+      "target": "integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/SOURCE-REVIEW.md",
+      "sha256": "7ab14c83b05cd975a74e552acc92d2bd378ae158aa9d30fa3dddd7a82f5f8024"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/REFINED-RECEIPT.json",
+      "target": "integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/REFINED-RECEIPT.json",
+      "sha256": "2ea8ecd6417a25af637b4c8fe6a4e5cb3485ad3e4067df3a3d38ed23b835251e"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/LOCAL-GREEN-RECEIPT.json",
+      "target": "integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/LOCAL-GREEN-RECEIPT.json",
+      "sha256": "d5e9904e1f6ca1468a5668709783c02dd38094d98445de1d5607351b0ce79890"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/REGISTRY-REMAINING-RECEIPT.json",
+      "target": "integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/REGISTRY-REMAINING-RECEIPT.json",
+      "sha256": "fc90e6ec4b0482fd660b146c22d1be5f2fa68c2633417ab814ec90a267786d44"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/ISSUE-137.json",
+      "target": "integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/ISSUE-137.json",
+      "sha256": "04d2cf9c44739e2724344161e847241dbac090c5eb681882f0a95ced4bded0c5"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/CONTRACT-DECISION.md",
+      "target": "integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/CONTRACT-DECISION.md",
+      "sha256": "0b80b413a7f1dfe5dcdd53ea37d21fc387f22f7ee77cba665f072554d5257cf5"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/PRIVACY-RECEIPT.json",
+      "target": "integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/PRIVACY-RECEIPT.json",
+      "sha256": "045283a6598a8470f771bb1c2b68a2a00b94829ca82c81c5d79e1af12b293e3f"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/ACCEPTANCE-AUDIT.md",
+      "target": "integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/ACCEPTANCE-AUDIT.md",
+      "sha256": "cf13eed3c8b605d7547b48eaaf4b17d9a667be176431a2e60ab8fa3266f532b5"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/before/src/features/privacy/registryIdsSales1.ts",
+      "target": "integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/before/src/features/privacy/registryIdsSales1.ts",
+      "sha256": "31075c8b9044e6a3c107f4daf4223825541cc88fa1bc1b65553c7df2dd211bd3"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/before/src/features/integrations/slack.ts",
+      "target": "integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/before/src/features/integrations/slack.ts",
+      "sha256": "2fece3be197eb962310615034ddcefccbf3cd204a57e2870b2cb2cc532b8c0a2"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/before/src/features/integrations/slackReadFailures.test.ts",
+      "target": "integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/before/src/features/integrations/slackReadFailures.test.ts",
+      "sha256": "db62abf24ffc360d63cc4063e06ae0e0e20b40dfaa9f485f97aa188df510dff3"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/first-green-source/src/features/integrations/slackOperationFailure.ts",
+      "target": "integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/first-green-source/src/features/integrations/slackOperationFailure.ts",
+      "sha256": "6d841bb5ea5bae3939273ea443c3f7bf321452497324ac585b5c87db155c1f37"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/first-green-source/src/features/integrations/slack.ts",
+      "target": "integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/first-green-source/src/features/integrations/slack.ts",
+      "sha256": "c37d1481cd0836b11488e97c0c379de48611953127bce1ec2fd654ea84db5fbb"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/first-green-source/src/features/integrations/slackOperationFailures.test.ts",
+      "target": "integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/first-green-source/src/features/integrations/slackOperationFailures.test.ts",
+      "sha256": "8bbbfcc93517590492ecefd0512ea0c7b8dca7c28691ab84a312f3cdd39d2ba7"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/first-green-source/src/features/integrations/slackReadFailures.test.ts",
+      "target": "integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/implementation/first-green-source/src/features/integrations/slackReadFailures.test.ts",
+      "sha256": "3d2ed3d7f648321d55c29d694555104604acaf00ef138f5252a97798663e3e4e"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/operation-consumption/ACTUAL-RED-RECEIPT.json",
+      "target": "integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/operation-consumption/ACTUAL-RED-RECEIPT.json",
+      "sha256": "5956d3529287a5f2c4291d18dc26b642166d4269a76e8c980a4676ecd92def6f"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/operation-consumption/source-47.original.ts",
+      "target": "integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/operation-consumption/source-47.original.ts",
+      "sha256": "1705b56a885c558c3aac262bc71e0c363b10a4391b3b8dd89e08e4ccbca81655"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/operation-consumption/CURRENT.json",
+      "target": "integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/operation-consumption/CURRENT.json",
+      "sha256": "df6a3bb2760d6aae37d0ef4329d68da402112fb12fc39b0bcba3e21f85b2891b"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/handoff-classifier/evidence/operation-consumption/SHA256SUMS",
+      "target": "integration/evidence/connection-failure-classification-20261102/handoff-classifier/evidence/operation-consumption/SHA256SUMS",
+      "sha256": "c6f8fc7ea69933d9ca22de93874ff45b8ba1262abbbd936c2e3021beb91b8654"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/safe-stop-20261102/PRIVATE-INVENTORY.json",
+      "target": "integration/evidence/safe-stop-20261102/PRIVATE-INVENTORY.json",
+      "sha256": "294c214a084516b1e20e6575a03267d7bb1a199fb2f80e186c38b30240fc09d6"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/safe-stop-20261102/OWNED-ALLOWLIST.json",
+      "target": "integration/evidence/safe-stop-20261102/OWNED-ALLOWLIST.json",
+      "sha256": "4efeff3fad001a3de7d826218d0da4465e32354418b8f55c7c279db53a841069"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/safe-stop-20261102/owned-paths.txt",
+      "target": "integration/evidence/safe-stop-20261102/owned-paths.txt",
+      "sha256": "4d571e7ff2a0aff29a166056d94b02970f1912d909cd52db060e110399ba5165"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/safe-stop-20261102/PROCESS-STATE.json",
+      "target": "integration/evidence/safe-stop-20261102/PROCESS-STATE.json",
+      "sha256": "ae2eb6179b855fcf8b672eb5d476e70c26a5bf1cde2205bcec2f937fcc015a31"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/safe-stop-20261102/private-status.porcelain.z",
+      "target": "integration/evidence/safe-stop-20261102/private-status.porcelain.z",
+      "sha256": "4e87585edc3fe062643e9328f59c620e5fbf9796a52c063d4219e3ce0dd0f32e"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/safe-stop-20261102/NOTIFICATIONS.json",
+      "target": "integration/evidence/safe-stop-20261102/NOTIFICATIONS.json",
+      "sha256": "1f97ac6d6309c8f03adf8a10180bbd0e3a578306736862845ffc36f1ef51f694"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/safe-stop-20261102/SHA256SUMS",
+      "target": "integration/evidence/safe-stop-20261102/SHA256SUMS",
+      "sha256": "625a0de9165286a40c984825c0b04c8a6e41087bbd41a52d79eb7fc05b83c769"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/safe-stop-20261102/HANDOFF.md",
+      "target": "integration/evidence/safe-stop-20261102/HANDOFF.md",
+      "sha256": "c5a979220f4b04890f531908359d1a6413e95c25d4a19eab54228f1aca99744c"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/safe-stop-20261102/FREEZE-VERIFICATION.json",
+      "target": "integration/evidence/safe-stop-20261102/FREEZE-VERIFICATION.json",
+      "sha256": "a38441266cbdb499109a78cd5d61c4ee096113ddf0ebcaa039090062cf764aed"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/provider-abort-reason-20261102/ACTUAL-RED-RECEIPT.json",
+      "target": "integration/evidence/provider-abort-reason-20261102/ACTUAL-RED-RECEIPT.json",
+      "sha256": "689c1d36ba740d760c54b07b61b4c1a445093911eaa6525ff90be77b6a995bd7"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/provider-abort-reason-20261102/CURRENT.json",
+      "target": "integration/evidence/provider-abort-reason-20261102/CURRENT.json",
+      "sha256": "c7f493e1c0cda58af0b5628f635148cd0eb30a02a868558ae507a52f065c05dc"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/provider-abort-reason-20261102/before.json",
+      "target": "integration/evidence/provider-abort-reason-20261102/before.json",
+      "sha256": "31bc39bc52bc5fb6387f45a6b505ba9d55b7126a441a710159fcd4b1449ad9ef"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/provider-abort-reason-20261102/before/src/features/integrations/providers/invoke.ts",
+      "target": "integration/evidence/provider-abort-reason-20261102/before/src/features/integrations/providers/invoke.ts",
+      "sha256": "9ff62214d4d2f6bc25e8ed7f704b318d16013545c4d3294264abad4e4d1a400f"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/provider-abort-reason-20261102/before/src/features/privacy/registryIdsSales1.ts",
+      "target": "integration/evidence/provider-abort-reason-20261102/before/src/features/privacy/registryIdsSales1.ts",
+      "sha256": "7e302626a62212c2051dacdf0d9736600719f6563a1b2ca075b9dbec16c6be2a"
+    },
+    {
+      "source": "/Users/ali/Developer/warpdrive-integrations/src/features/integrations/providers/invokeAbortReason.test.ts",
+      "target": "integration/evidence/provider-abort-reason-20261102/source/src/features/integrations/providers/invokeAbortReason.test.ts",
+      "sha256": "3ed29f2f4618dca64754bbed3a44ece6706c7d1da0ba81b183fcf897570d5e89"
+    },
+    {
+      "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-settings-ux/outputs/safe-stop-20261102/integration-evidence-allowlist.json",
+      "target": "integration/evidence-review.json",
+      "sha256": "c93c46d4652611b838d1b8544a920dbaf609cb02fdef7fa31da4b69a1cb0718f"
+    }
+  ],
+  "qualification": "MCP work delivered separately. Private refresh/slack confirmation/classifier cuts retain recorded types/unit/native evidence. Latest invoke caller-abort identity fix source-reviewed only after3RED3controls; GREEN and matching registry digest NOT DONE. Slack reauthorization native2 withdrawn unstarted.",
+  "limitations": "UNFINISHED preservation cut at older workspace HEAD. Do not merge wholesale onto main or deploy. Reconcile current main, private migration labels, metadata and real journey acceptance separately. Runtime/dependencies/secrets/raw unreviewed artifacts excluded; exact local evidence remains preserved. Four preexisting unowned planning drafts archived separately, never attributed to Integration source. Only108 reviewed evidence files are copied;151 excluded raw/cloud-dataless files remain locally retained and are not claimed remotely synchronized.",
+  "authorization": "Human safe-stop instruction verified in Integration chat on 2026-11-02; Root sole closer.",
+  "workspace": "/Users/ali/Developer/warpdrive-integrations",
+  "createdAt": "2026-11-02T07:32:15.420783+00:00"
+}

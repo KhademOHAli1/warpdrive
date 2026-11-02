@@ -1,0 +1,398 @@
+[
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/implementation/CONTRACT-DECISION.md",
+    "packetPath": "evidence/implementation/CONTRACT-DECISION.md",
+    "sha256": "0b80b413a7f1dfe5dcdd53ea37d21fc387f22f7ee77cba665f072554d5257cf5",
+    "bytes": 2424
+  },
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/implementation/ISSUE-137.json",
+    "packetPath": "evidence/implementation/ISSUE-137.json",
+    "sha256": "04d2cf9c44739e2724344161e847241dbac090c5eb681882f0a95ced4bded0c5",
+    "bytes": 3764
+  },
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/implementation/LOCAL-GREEN-RECEIPT.json",
+    "packetPath": "evidence/implementation/LOCAL-GREEN-RECEIPT.json",
+    "sha256": "d5e9904e1f6ca1468a5668709783c02dd38094d98445de1d5607351b0ce79890",
+    "bytes": 4763
+  },
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/implementation/PRIVACY-RECEIPT.json",
+    "packetPath": "evidence/implementation/PRIVACY-RECEIPT.json",
+    "sha256": "045283a6598a8470f771bb1c2b68a2a00b94829ca82c81c5d79e1af12b293e3f",
+    "bytes": 5087
+  },
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/implementation/REFINED-RECEIPT.json",
+    "packetPath": "evidence/implementation/REFINED-RECEIPT.json",
+    "sha256": "2ea8ecd6417a25af637b4c8fe6a4e5cb3485ad3e4067df3a3d38ed23b835251e",
+    "bytes": 4744
+  },
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/implementation/REGISTRY-REMAINING-RECEIPT.json",
+    "packetPath": "evidence/implementation/REGISTRY-REMAINING-RECEIPT.json",
+    "sha256": "fc90e6ec4b0482fd660b146c22d1be5f2fa68c2633417ab814ec90a267786d44",
+    "bytes": 2214
+  },
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/implementation/SOURCE-REVIEW.md",
+    "packetPath": "evidence/implementation/SOURCE-REVIEW.md",
+    "sha256": "7ab14c83b05cd975a74e552acc92d2bd378ae158aa9d30fa3dddd7a82f5f8024",
+    "bytes": 3587
+  },
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/implementation/before/src/features/integrations/slack.ts",
+    "packetPath": "evidence/implementation/before/src/features/integrations/slack.ts",
+    "sha256": "2fece3be197eb962310615034ddcefccbf3cd204a57e2870b2cb2cc532b8c0a2",
+    "bytes": 5207
+  },
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/implementation/before/src/features/integrations/slackReadFailures.test.ts",
+    "packetPath": "evidence/implementation/before/src/features/integrations/slackReadFailures.test.ts",
+    "sha256": "db62abf24ffc360d63cc4063e06ae0e0e20b40dfaa9f485f97aa188df510dff3",
+    "bytes": 6696
+  },
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/implementation/before/src/features/privacy/registryIdsSales1.ts",
+    "packetPath": "evidence/implementation/before/src/features/privacy/registryIdsSales1.ts",
+    "sha256": "31075c8b9044e6a3c107f4daf4223825541cc88fa1bc1b65553c7df2dd211bd3",
+    "bytes": 5333
+  },
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/implementation/before.json",
+    "packetPath": "evidence/implementation/before.json",
+    "sha256": "ba653ee1b0165bc7e07deba569986f0deafc94a1637ac0624234787a2641ff39",
+    "bytes": 351
+  },
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/implementation/biome-refined.log",
+    "packetPath": "evidence/implementation/biome-refined.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/implementation/biome-refined.stderr.log",
+    "packetPath": "evidence/implementation/biome-refined.stderr.log",
+    "sha256": "2d33f4526b4bd0bc501386094970f8dc53b365f69e9da0b53f388b8baf14231f",
+    "bytes": 42
+  },
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/implementation/biome.log",
+    "packetPath": "evidence/implementation/biome.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/implementation/biome.stderr.log",
+    "packetPath": "evidence/implementation/biome.stderr.log",
+    "sha256": "e2eaefaae2c39dda767dc850bf842eb86ff60fdf565a635d9f9bdc79e6d1e255",
+    "bytes": 43
+  },
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/implementation/first-green-source/src/features/integrations/slack.ts",
+    "packetPath": "evidence/implementation/first-green-source/src/features/integrations/slack.ts",
+    "sha256": "c37d1481cd0836b11488e97c0c379de48611953127bce1ec2fd654ea84db5fbb",
+    "bytes": 8063
+  },
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/implementation/first-green-source/src/features/integrations/slackOperationFailure.ts",
+    "packetPath": "evidence/implementation/first-green-source/src/features/integrations/slackOperationFailure.ts",
+    "sha256": "6d841bb5ea5bae3939273ea443c3f7bf321452497324ac585b5c87db155c1f37",
+    "bytes": 2597
+  },
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/implementation/first-green-source/src/features/integrations/slackOperationFailures.test.ts",
+    "packetPath": "evidence/implementation/first-green-source/src/features/integrations/slackOperationFailures.test.ts",
+    "sha256": "8bbbfcc93517590492ecefd0512ea0c7b8dca7c28691ab84a312f3cdd39d2ba7",
+    "bytes": 10013
+  },
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/implementation/first-green-source/src/features/integrations/slackReadFailures.test.ts",
+    "packetPath": "evidence/implementation/first-green-source/src/features/integrations/slackReadFailures.test.ts",
+    "sha256": "3d2ed3d7f648321d55c29d694555104604acaf00ef138f5252a97798663e3e4e",
+    "bytes": 6903
+  },
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/implementation/inventory.log",
+    "packetPath": "evidence/implementation/inventory.log",
+    "sha256": "1c5d780c3ac1615f96679aa825c37a2a5f2ae7fe0f6d03b1212eff5b257a1a29",
+    "bytes": 648
+  },
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/implementation/inventory.stderr.log",
+    "packetPath": "evidence/implementation/inventory.stderr.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/implementation/privacy-biome.log",
+    "packetPath": "evidence/implementation/privacy-biome.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/implementation/privacy-biome.stderr.log",
+    "packetPath": "evidence/implementation/privacy-biome.stderr.log",
+    "sha256": "9db65e5b8464d24822105a525af2b621ca9d3a5e56b109b66ca01893241df743",
+    "bytes": 41
+  },
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/implementation/registry-remaining.log",
+    "packetPath": "evidence/implementation/registry-remaining.log",
+    "sha256": "2cf6ae05781ec2b0c9f0e537caafc559587c82796f5aedbc98edf49a7ebfed1a",
+    "bytes": 665
+  },
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/implementation/registry-remaining.stderr.log",
+    "packetPath": "evidence/implementation/registry-remaining.stderr.log",
+    "sha256": "e22f9f85cde6af6fe7d1087473a88d780d8af19ae41263317132dfb5a7099b6c",
+    "bytes": 1495
+  },
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/implementation/registry-units.log",
+    "packetPath": "evidence/implementation/registry-units.log",
+    "sha256": "92cb719b3f0bab36bf7efd1c5051aca14f8394f4e40b60da0583ce1c8383b6b3",
+    "bytes": 678
+  },
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/implementation/registry-units.stderr.log",
+    "packetPath": "evidence/implementation/registry-units.stderr.log",
+    "sha256": "72f071e298d33fa29d35e304013756377a6effc114618a0580bdfe5b7c336774",
+    "bytes": 1495
+  },
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/implementation/units-refined.log",
+    "packetPath": "evidence/implementation/units-refined.log",
+    "sha256": "1ae6d087e205635b95937edd543128836b8565b84aa930e684492e2eefdfb70b",
+    "bytes": 1136
+  },
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/implementation/units-refined.stderr.log",
+    "packetPath": "evidence/implementation/units-refined.stderr.log",
+    "sha256": "86e5b5940c1a744a68ddb1ead54d8902f320d84453aa64adec9017db0d593f29",
+    "bytes": 1495
+  },
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/implementation/units.log",
+    "packetPath": "evidence/implementation/units.log",
+    "sha256": "560353d6f759d3176c9d4ff75dbfb612c4ed02c76b515f0d8fc04182df52a444",
+    "bytes": 1136
+  },
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/implementation/units.stderr.log",
+    "packetPath": "evidence/implementation/units.stderr.log",
+    "sha256": "ca7119b505b02a2e58ac4965d82dd1ea3d0c2c720c2b22026513f6e019581994",
+    "bytes": 1495
+  },
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/operation-consumption/ACTUAL-RED-RECEIPT.json",
+    "packetPath": "evidence/operation-consumption/ACTUAL-RED-RECEIPT.json",
+    "sha256": "5956d3529287a5f2c4291d18dc26b642166d4269a76e8c980a4676ecd92def6f",
+    "bytes": 2957
+  },
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/operation-consumption/CURRENT.json",
+    "packetPath": "evidence/operation-consumption/CURRENT.json",
+    "sha256": "df6a3bb2760d6aae37d0ef4329d68da402112fb12fc39b0bcba3e21f85b2891b",
+    "bytes": 668
+  },
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/operation-consumption/SHA256SUMS",
+    "packetPath": "evidence/operation-consumption/SHA256SUMS",
+    "sha256": "c6f8fc7ea69933d9ca22de93874ff45b8ba1262abbbd936c2e3021beb91b8654",
+    "bytes": 581
+  },
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/operation-consumption/biome.log",
+    "packetPath": "evidence/operation-consumption/biome.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/operation-consumption/biome.stderr.log",
+    "packetPath": "evidence/operation-consumption/biome.stderr.log",
+    "sha256": "fd06ed1906864d862af1b302e14f95710bd4ba5d86680bb0976e34e5bf20f03a",
+    "bytes": 41
+  },
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/operation-consumption/source-47.original.ts",
+    "packetPath": "evidence/operation-consumption/source-47.original.ts",
+    "sha256": "1705b56a885c558c3aac262bc71e0c363b10a4391b3b8dd89e08e4ccbca81655",
+    "bytes": 9883
+  },
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/operation-consumption/unit-red.log",
+    "packetPath": "evidence/operation-consumption/unit-red.log",
+    "sha256": "cc74614d8e2661e7720c415a384515caa7818badfc61c6abef4d51fd4958648b",
+    "bytes": 6490
+  },
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/operation-consumption/unit-red.stderr.log",
+    "packetPath": "evidence/operation-consumption/unit-red.stderr.log",
+    "sha256": "b52839bbaaae524f5a871e1f1107025542ca933965ba252a313ff799f04dca03",
+    "bytes": 26474
+  },
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/operation-definitions/ACTUAL-RED-RECEIPT.json",
+    "packetPath": "evidence/operation-definitions/ACTUAL-RED-RECEIPT.json",
+    "sha256": "1aaeae73f4ac6b67c08e729e64014c53f10b8283568936b219bbfa12f936ade9",
+    "bytes": 2137
+  },
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/operation-definitions/CASE-MATRIX.csv",
+    "packetPath": "evidence/operation-definitions/CASE-MATRIX.csv",
+    "sha256": "145aacfa10531a15b25c1a82820380824e3c0bb34eacbbcc02ac0d2a71b158dd",
+    "bytes": 1570
+  },
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/operation-definitions/CONTRACT-PROPOSAL.md",
+    "packetPath": "evidence/operation-definitions/CONTRACT-PROPOSAL.md",
+    "sha256": "7f4e785ff3654ea7a53b9261ccad5755c1146a6e6e8a1e8de42ca0dfb4d7cad8",
+    "bytes": 6330
+  },
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/operation-definitions/DEFINITIONS.json",
+    "packetPath": "evidence/operation-definitions/DEFINITIONS.json",
+    "sha256": "34d771972273d726b0693eef5ce1c4de2a03fd7cf64c659efcf33b3ad88cdde4",
+    "bytes": 2552
+  },
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/operation-definitions/RESTART.md",
+    "packetPath": "evidence/operation-definitions/RESTART.md",
+    "sha256": "2121a54360ac54f52885ccd58f1deed05ac7e7f66c8b6898e3c52bf6f8e4f4f0",
+    "bytes": 1606
+  },
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/operation-definitions/SHA256SUMS",
+    "packetPath": "evidence/operation-definitions/SHA256SUMS",
+    "sha256": "5d4aa553473b912d87faef5ad7279f2dac1cf503cfae756dd9b24da7e46c74ac",
+    "bytes": 574
+  },
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/operation-definitions/biome.log",
+    "packetPath": "evidence/operation-definitions/biome.log",
+    "sha256": "901f9cc7a0f199bb981fbb1795f6248b98358de2b57e5c2142039f2cc63a5fdc",
+    "bytes": 38
+  },
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/operation-definitions/unit-red.log",
+    "packetPath": "evidence/operation-definitions/unit-red.log",
+    "sha256": "045838d75812f06dd3af22c3057619d80a9e354670767efc5ce80b765929ba13",
+    "bytes": 17638
+  },
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/operation-vectors/ACTUAL-RED-AUDIT.md",
+    "packetPath": "evidence/operation-vectors/ACTUAL-RED-AUDIT.md",
+    "sha256": "ea3e18b0ac78309b751b30e0b1285321b49e86aaca578d88dd09e7670fcab5ad",
+    "bytes": 2528
+  },
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/operation-vectors/ACTUAL-RED-RECEIPT.json",
+    "packetPath": "evidence/operation-vectors/ACTUAL-RED-RECEIPT.json",
+    "sha256": "5d7c8ea3f6d2adab5875b78560765519576d0a062fec8012006fc986e69ccd0e",
+    "bytes": 3082
+  },
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/operation-vectors/ACTUAL-SHA256SUMS",
+    "packetPath": "evidence/operation-vectors/ACTUAL-SHA256SUMS",
+    "sha256": "eca6882e94985bb5a126202454cbc2a77cb81c20fbcb1b7b265cbb56d34a8faf",
+    "bytes": 1227
+  },
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/operation-vectors/CURRENT.json",
+    "packetPath": "evidence/operation-vectors/CURRENT.json",
+    "sha256": "446c322286411aa8552d631a66f30c2bb98a7032ec2fda2006ddb4f87566d6f3",
+    "bytes": 634
+  },
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/operation-vectors/DEFINITIONS.json",
+    "packetPath": "evidence/operation-vectors/DEFINITIONS.json",
+    "sha256": "9d1cfd30046d7be33549497ab8b00c1572b085c0c76bfe779b33f21f544f7031",
+    "bytes": 17560
+  },
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/operation-vectors/DEFINITIONS.md",
+    "packetPath": "evidence/operation-vectors/DEFINITIONS.md",
+    "sha256": "0b5b20ac7c43ac01c12c44ac38b0f8b4ed7a8bb41a717661e2f1e3588d7638a6",
+    "bytes": 2207
+  },
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/operation-vectors/FOCUSED-FIRST-FAILURE.json",
+    "packetPath": "evidence/operation-vectors/FOCUSED-FIRST-FAILURE.json",
+    "sha256": "2e59317b3712f68fef59a8245f7426db2dc23d18dfb898c31bb75945cc170f67",
+    "bytes": 517
+  },
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/operation-vectors/SHA256SUMS",
+    "packetPath": "evidence/operation-vectors/SHA256SUMS",
+    "sha256": "c60eb6e8d7941c3212e54a7ea79891749b6b39b0737261a738f08ea6a69165a3",
+    "bytes": 384
+  },
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/operation-vectors/biome.log",
+    "packetPath": "evidence/operation-vectors/biome.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/operation-vectors/biome.stderr.log",
+    "packetPath": "evidence/operation-vectors/biome.stderr.log",
+    "sha256": "ab962aa11bd1ed5b16656f287912619345d255d470d23504b720a17e4edbe37b",
+    "bytes": 41
+  },
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/operation-vectors/first-biome.log",
+    "packetPath": "evidence/operation-vectors/first-biome.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/operation-vectors/first-biome.stderr.log",
+    "packetPath": "evidence/operation-vectors/first-biome.stderr.log",
+    "sha256": "d6522cd435529de050cf5131239fa3e82d9c77486bdd1c7df2d2e11f69fdf273",
+    "bytes": 42
+  },
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/operation-vectors/slackOperationFailures.18-case.original.ts",
+    "packetPath": "evidence/operation-vectors/slackOperationFailures.18-case.original.ts",
+    "sha256": "4dffa31acd7f4005ec543dd627462f016b71251c828e71a9a28196904ed09c1e",
+    "bytes": 9594
+  },
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/operation-vectors/slackOperationFailures.47-case.definition.ts",
+    "packetPath": "evidence/operation-vectors/slackOperationFailures.47-case.definition.ts",
+    "sha256": "1705b56a885c558c3aac262bc71e0c363b10a4391b3b8dd89e08e4ccbca81655",
+    "bytes": 9883
+  },
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/operation-vectors/unit-red.log",
+    "packetPath": "evidence/operation-vectors/unit-red.log",
+    "sha256": "ad234d8d5ded970c267131aae6289a3145ed9d9b5febdc336e52069803919553",
+    "bytes": 6491
+  },
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/operation-vectors/unit-red.stderr.log",
+    "packetPath": "evidence/operation-vectors/unit-red.stderr.log",
+    "sha256": "c4d71631f6952a4104f0a4f29176914b5c9810c2abc81960b855ef1a78fefdd8",
+    "bytes": 26474
+  },
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/implementation/ACCEPTANCE-AUDIT.md",
+    "packetPath": "evidence/implementation/ACCEPTANCE-AUDIT.md",
+    "sha256": "cf13eed3c8b605d7547b48eaaf4b17d9a667be176431a2e60ab8fa3266f532b5",
+    "bytes": 2916
+  },
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/PRIMARY-SOURCES.md",
+    "packetPath": "evidence/PRIMARY-SOURCES.md",
+    "sha256": "c606e4ef0649fde3cc965000032fad6e873138e7fa09a784c6b0a8becb3b5211",
+    "bytes": 3073
+  },
+  {
+    "source": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/connection-failure-classification-20261102/REQUIREMENT-SCOPE.md",
+    "packetPath": "evidence/REQUIREMENT-SCOPE.md",
+    "sha256": "0e15bfb8bf3fa363b268fea872b7df3a93b6eded34dab34e0cece8f8d544fb03",
+    "bytes": 12552
+  }
+]

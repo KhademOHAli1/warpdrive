@@ -1,0 +1,18 @@
+{
+  "at": "2026-11-02T03:46:11.759566+00:00",
+  "exitCode": 0,
+  "seconds": 0.1845515000168234,
+  "pressure": 1,
+  "availablePercent": 56,
+  "command": [
+    "/Users/ali/Developer/warpdrive-integrations/.runtime/bin/bun",
+    "--no-env-file",
+    "--bun",
+    "node_modules/@biomejs/biome/bin/biome",
+    "check",
+    "--write",
+    "src/features/integrations/slackRevocation.integration.test.ts"
+  ],
+  "sourceSha256": "750fd8ff6fe4a97581631b9b84a4ed8af77e4f418a1f01d199a2c9f0d796ddda",
+  "nativeExecuted": false
+}

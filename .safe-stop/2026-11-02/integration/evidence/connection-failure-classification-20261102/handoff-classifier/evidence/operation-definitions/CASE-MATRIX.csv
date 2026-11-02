@@ -1,0 +1,19 @@
+case,operation,vectors,reason,provider_code,outcome
+R1,send,token_revoked,authorization_revoked,authorization_expired,omitted
+R2,send,missing_scope,insufficient_scope,forbidden,omitted
+R3,send,channel_not_found,missing_resource,invalid_input,omitted
+R4,exchange,bad_client_secret,invalid_configuration,invalid_input,omitted
+R5,revoke,invalid_auth,permission_denied,forbidden,omitted
+RL,all3,HTTP429 five bounded retry hints per operation,rate_limited,rate_limited,omitted
+send-internal_error+fatal_error,send,internal_error+fatal_error,transient_outage,unavailable,unknown
+send-HTTP503,send,HTTP503,transient_outage,unavailable,unknown
+send-transport failure,send,transport failure,transient_outage,unavailable,unknown
+exchange-internal_error+fatal_error,exchange,internal_error+fatal_error,transient_outage,unavailable,unknown
+exchange-HTTP503,exchange,HTTP503,transient_outage,unavailable,unknown
+exchange-transport failure,exchange,transport failure,transient_outage,unavailable,unknown
+revoke-internal_error+fatal_error,revoke,internal_error+fatal_error,transient_outage,unavailable,unknown
+revoke-HTTP503,revoke,HTTP503,transient_outage,unavailable,unknown
+revoke-transport failure,revoke,transport failure,transient_outage,unavailable,unknown
+F,all3,unknown/request_timeout/malformed/unreadable per operation; under-scoped successful exchange,unclassified/invalid_response/insufficient_scope,failed/invalid_response,unknown
+C1,revoke,token_revoked,success,existing success,not failure
+C2,revoke,revoked:true,success,existing success,not failure

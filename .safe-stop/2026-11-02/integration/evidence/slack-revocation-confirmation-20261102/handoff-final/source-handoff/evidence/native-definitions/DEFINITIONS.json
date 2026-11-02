@@ -1,0 +1,22 @@
+{
+  "preparedAt": "2026-11-02T03:43:23.502640+00:00",
+  "state": "NOT EXECUTED",
+  "file": "/Users/ali/Developer/warpdrive-integrations/src/features/integrations/slackRevocation.integration.test.ts",
+  "sourceSha256": "1b4894445cb88a9b5a6f5c108845056b7b729fc87f3863c8ba3c08e6db2b5e8b",
+  "casesDefined": 6,
+  "expectedPrivateFix": "6PASS, unexecuted expectation only",
+  "expectedPriorLaxSource": "4RED/2PASS: ambiguous3 plus retry first phase fail, explicit confirmed/already controls pass",
+  "oracles": [
+    "ambiguous invalid_auth, revoked:false and missing revoked retain exact encrypted bytes and revocation-pending; zero disconnected events",
+    "explicit confirmed and token_revoked clear credentials, disconnected status, exact one audit event",
+    "retry preserves first pending state then one confirmed transition/event",
+    "all cases preserve account/owner/scopes/settings/connection-health facts and block ordinary local credential callback",
+    "controlled OAuth handshake and auth.revoke HTTP only; sanitized URL observations and boolean credential checks"
+  ],
+  "cleanup": "Restore original Slack config, unstub globals and close isolated real TestDb using allSettled; propagate cleanup failure after every cleanup attempt. No asynchronous real provider requests.",
+  "productionPreimages": {
+    "src/features/integrations/slack.ts": "2fece3be197eb962310615034ddcefccbf3cd204a57e2870b2cb2cc532b8c0a2",
+    "src/features/integrations/service.ts": "9b8374acfc0cbcbff6e0feed36a541de0c1fbe334f91873d585d4b44534ed228"
+  },
+  "boundaries": "No real provider/browser/installed claim, no DB mock, no DDL or production/helper edits; Root owns formatting/review/fresh native allocation"
+}

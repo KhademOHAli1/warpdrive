@@ -1,0 +1,25 @@
+{
+  "at": "2026-11-02T05:13:58.502Z",
+  "canonicalWorkspace": "/Users/ali/Developer/warpdrive-settings-ux",
+  "head": "df26904d3daebecf3428d6fec303be098aa9d3ab",
+  "headRead": "Exact local canonical Git HEAD/ref pointer, read-only filesystem inspection",
+  "blobRead": "Exactly two official published raw source blobs at that commit through the connected GitHub fetch tool; no broad scan, checkout, rebase, apply or execution",
+  "modifiedPreimages": [
+    {
+      "path": "src/features/integrations/slack.ts",
+      "url": "https://github.com/KhademOHAli1/warpdrive/blob/df26904d3daebecf3428d6fec303be098aa9d3ab/src/features/integrations/slack.ts",
+      "sha256": "4eaa308d24fed9d8a1069d3afcfb1ed4d50d3cfebc2da8554cb678823e21dba5",
+      "retainedPreimageSha256": "4eaa308d24fed9d8a1069d3afcfb1ed4d50d3cfebc2da8554cb678823e21dba5",
+      "preimageStillIdentical": true
+    },
+    {
+      "path": "src/features/privacy/registryIdsSales1.ts",
+      "url": "https://github.com/KhademOHAli1/warpdrive/blob/df26904d3daebecf3428d6fec303be098aa9d3ab/src/features/privacy/registryIdsSales1.ts",
+      "sha256": "b5876ce716368695faa0392dd644ae5c8475d1c4cc691c641eb8f2f298fad3eb",
+      "retainedPreimageSha256": "b5876ce716368695faa0392dd644ae5c8475d1c4cc691c641eb8f2f298fad3eb",
+      "preimageStillIdentical": true
+    }
+  ],
+  "patchSha256": "b3ed5a65d43bf9737307f16b2d6c9ceb6c49e87357f6a33375e80b4417f13e7b",
+  "scopeLimit": "Both modified preimages still match the historical a7 baselines. New-path absence, latest working-tree state and actual current-head adoption are not established by this two-blob check. Main must reconcile at actual landing."
+}

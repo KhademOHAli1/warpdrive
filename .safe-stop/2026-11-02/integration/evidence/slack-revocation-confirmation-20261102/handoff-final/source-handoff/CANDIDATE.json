@@ -1,0 +1,108 @@
+{
+  "preparedAt": "2026-11-02T03:56:12.695584+00:00",
+  "state": "SOURCE/UNIT CANDIDATE; NATIVE6 UNEXECUTED; MAIN QUALIFICATION PENDING",
+  "baseCommit": "a7df229f33e6e47216e4e2ba3b132d9ffcfa6846",
+  "baseMeaning": "Public a7 tracking repair is separate from this Slack increment; exact Slack preimage tied to actual unit RED receipt",
+  "paths": {
+    "src/features/integrations/slack.ts": {
+      "kind": "modified",
+      "preimageSha256": "4eaa308d24fed9d8a1069d3afcfb1ed4d50d3cfebc2da8554cb678823e21dba5",
+      "postimageSha256": "2fece3be197eb962310615034ddcefccbf3cd204a57e2870b2cb2cc532b8c0a2",
+      "baseGitBlob": "21f13c963ba2074fddb23a9a4a2c067bfb4d0a53",
+      "mode": "100644",
+      "frozenSourcePath": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/native-source/src/features/integrations/slack.ts"
+    },
+    "src/features/integrations/slackRevocation.test.ts": {
+      "kind": "added",
+      "preimageSha256": null,
+      "postimageSha256": "491e6dec299c57cd0891441192ac8eec6fa439520979295c628564a20e9d76e3",
+      "baseGitBlob": null,
+      "mode": "100644",
+      "frozenSourcePath": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/native-source/src/features/integrations/slackRevocation.test.ts"
+    },
+    "src/features/integrations/slackRevocation.integration.test.ts": {
+      "kind": "added",
+      "preimageSha256": null,
+      "postimageSha256": "790c380056521344e121113a35310ec15293c9effdac5c0eb2b90b6330859950",
+      "baseGitBlob": null,
+      "mode": "100644",
+      "frozenSourcePath": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/native-source/src/features/integrations/slackRevocation.integration.test.ts"
+    },
+    "src/features/privacy/registryIdsSales1.ts": {
+      "kind": "modified",
+      "preimageSha256": "b5876ce716368695faa0392dd644ae5c8475d1c4cc691c641eb8f2f298fad3eb",
+      "postimageSha256": "31075c8b9044e6a3c107f4daf4223825541cc88fa1bc1b65553c7df2dd211bd3",
+      "baseGitBlob": "63516c0946bf87a470ef001958369f0fb2ca6ad6",
+      "mode": "100644",
+      "frozenSourcePath": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/native-source/src/features/privacy/registryIdsSales1.ts"
+    }
+  },
+  "patchSha256": "b3ed5a65d43bf9737307f16b2d6c9ceb6c49e87357f6a33375e80b4417f13e7b",
+  "registryDelta": "One existing manual Slack sourceReview digest hunk only; no new IDs/classification change",
+  "postimageSourceEquivalence": "Exact a7 registry preimage equals retained baseline; replacing only old Slack digest produces the exact frozen/private registry postimage. Current Main must still preserve newer metadata and reconcile this hunk rather than overlay the whole postimage.",
+  "actualEvidence": {
+    "unitBaseline": {
+      "cases": 7,
+      "failed": 3,
+      "passed": 4,
+      "sourceSha256": "4eaa308d24fed9d8a1069d3afcfb1ed4d50d3cfebc2da8554cb678823e21dba5",
+      "databaseOrProviderCalls": false
+    },
+    "affectedUnits": {
+      "passed": 46,
+      "files": 4,
+      "composition": "new7+existing4+read-classification23+cancellation12",
+      "sourceSha256": "2fece3be197eb962310615034ddcefccbf3cd204a57e2870b2cb2cc532b8c0a2",
+      "databaseOrProviderCalls": false
+    },
+    "formatting": "Source/unit Biome2 PASS; registry Biome1 PASS; final native-definition Biome1 PASS, all copied existing receipts",
+    "registryUnitsPassed": 30,
+    "unmodifiedInventoryBeforeManualBinding": {
+      "coverage": {
+        "ok": true,
+        "missing": [],
+        "invalid": []
+      },
+      "sourceFiles": 2350
+    },
+    "unmodifiedInventoryAfterManualBinding": {
+      "coverage": {
+        "ok": true,
+        "missing": [],
+        "invalid": []
+      },
+      "sourceFiles": 2350
+    },
+    "privacyReason": "Explicit source review updates pre-existing manual digest. Fetcher alias is not discovered; pre-maintenance empty CLI lists did not force or automatically accept a new digest. No IDs added or canonical report installed.",
+    "existingIndependentReviews": "SOURCE-REVIEW.md and NATIVE-DEFINITIONS-REVIEW.md PASS within their source-only scope"
+  },
+  "native6": {
+    "files": [
+      "src/features/integrations/slackRevocation.integration.test.ts"
+    ],
+    "cases": 6,
+    "executed": false,
+    "authorization": "fresh Main allocation requested; no execution or native baseline result",
+    "sourceDefinitionSha256": "2b91965cd3bfc27f14619fc8a62cc8bb9e7505bb2e843f72e66a60284a42592a",
+    "expectedPrivateFix": "6PASS expectation only",
+    "expectedFormerSource": "4RED/2PASS expectation only, not actual PG result"
+  },
+  "officialReference": "https://docs.slack.dev/reference/methods/auth.revoke/",
+  "sourceOnlyApplyCheck": "PASS against exact a7 packet preimages; Main current-head reconciliation still required",
+  "pending": [
+    "exact Main native6 allocation and actual six-case persisted-outcome result/cleanup",
+    "Main current-head configured typegen/full TSC and typed lint",
+    "Main current-source privacy inventory/report and exact-source CI",
+    "Main canonical attribution/publication for the bounded increment"
+  ],
+  "notClaimed": [
+    "full CONN014/017/018",
+    "app uninstall/all-token/upstream refresh grant revocation",
+    "installed/live-provider/browser/release completion",
+    "new permissions/errors/schema/lifecycle capability",
+    "MCP packet or tracker acceptance changes"
+  ],
+  "MainSolePublisher": true,
+  "RootPublication": false,
+  "productPinsCurrentPeerMcpFilesChangedByPacketAuthor": false
+}

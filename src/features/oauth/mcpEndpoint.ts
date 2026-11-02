@@ -1,4 +1,4 @@
-import { buildProtectedResourceMetadata } from "./metadata";
+import { resolveMcpResourceProfile } from "./resource";
 
 export function resolveMcpEndpoint({
   mcpEnabled,
@@ -8,5 +8,6 @@ export function resolveMcpEndpoint({
   baseUrl: string;
 }): string | null {
   if (!mcpEnabled) return null;
-  return buildProtectedResourceMetadata(baseUrl).resource;
+  const profile = resolveMcpResourceProfile(baseUrl);
+  return profile.ok ? profile.value.resource : null;
 }

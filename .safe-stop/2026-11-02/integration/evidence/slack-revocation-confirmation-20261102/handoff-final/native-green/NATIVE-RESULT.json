@@ -1,0 +1,134 @@
+{
+  "preparedAt": "2026-11-02T05:13:00.639Z",
+  "state": "ACTUAL_NATIVE6_GREEN_PRIVATE_SOURCE",
+  "jobId": "SLACK-REVOCATION6-GREEN-20261102-1",
+  "selection": {
+    "files": [
+      "src/features/integrations/slackRevocation.integration.test.ts"
+    ],
+    "casesPassed": 6,
+    "filesPassed": 1,
+    "setupOrCollectionFailuresObserved": 0,
+    "unselectedFutureCases": [
+      "slackOperationFailures.test.ts future47",
+      "slackReauthorization.integration.test.ts future2"
+    ]
+  },
+  "result": {
+    "startedAt": "2026-11-02T05:08:23.628070+00:00",
+    "endedAt": "2026-11-02T05:08:26.922251+00:00",
+    "exitCode": 0,
+    "commandSeconds": 3.2942153749754652,
+    "resourceStop": null,
+    "monitorError": null,
+    "sampledHostProcessGroupMaxKiB": 352720,
+    "aggregateIncludingDockerAndSupervisorPeakMeasured": false
+  },
+  "terminal": {
+    "at": "2026-11-02T05:08:37.698161+00:00",
+    "newContainersRemaining": [],
+    "baselineContainersMissing": [],
+    "foreignContainersRetained": 3,
+    "foreignStateChanges": [],
+    "dockerResourceChanges": {
+      "networks": {
+        "added": [],
+        "missing": []
+      },
+      "volumes": {
+        "added": [],
+        "missing": []
+      }
+    },
+    "ownedProcessesRemaining": [],
+    "sourceChanges": [],
+    "totalSecondsIncludingCleanup": 14.070198375033215,
+    "wholeInvocationSeconds": 14.323396250023507,
+    "forcedRemoval": false,
+    "postMetrics": {
+      "pressure": 1,
+      "availablePercent": 51,
+      "freeBytes": 13453230080
+    }
+  },
+  "resources": {
+    "pressureMode": "normal pressure1",
+    "preAvailablePercent": 50,
+    "terminalAvailablePercent": 51,
+    "reportedHostGroupMaxKiB": 352720,
+    "retainedObservationRows": 2,
+    "retainedRowsMaxHostGroupKiB": 260368,
+    "resolution": "Result accumulator samples every0.2s; retained observation rows every2s. The individual intermediate maximum is not retained, so the larger reported sample cannot be reconstructed from those two rows.",
+    "continuousOrDockerInclusiveAggregatePeakMeasured": false
+  },
+  "sourcePins": {
+    "src/features/integrations/slack.ts": "2fece3be197eb962310615034ddcefccbf3cd204a57e2870b2cb2cc532b8c0a2",
+    "src/features/integrations/service.ts": "9b8374acfc0cbcbff6e0feed36a541de0c1fbe334f91873d585d4b44534ed228",
+    "src/features/integrations/slackRevocation.integration.test.ts": "790c380056521344e121113a35310ec15293c9effdac5c0eb2b90b6330859950",
+    "src/features/integrations/slackRevocation.test.ts": "491e6dec299c57cd0891441192ac8eec6fa439520979295c628564a20e9d76e3",
+    "src/features/privacy/registryIdsSales1.ts": "31075c8b9044e6a3c107f4daf4223825541cc88fa1bc1b65553c7df2dd211bd3",
+    "src/features/email/crypto.ts": "fbe1633057080384f7f58a78f7f0bf4a57b5717022d553664f6c087cc0e1d1f3",
+    "src/db/schema/integrations.ts": "195d6ff5e836745f8c71b5e728c8389777d4e554e27a78644b37a81dd7608d35",
+    "src/db/schema/identity.ts": "40a58a28e60bca38a94a0ed0e353b0ba52245c9e2928aad42554c7662e199a32",
+    "src/test/db.ts": "a2e17fcd595b368e294c65fbd775566e2b5a91680b075f5a27abe808f9946ba3",
+    "vitest.config.ts": "eb300f409ce431f415b89619bb5c3150e63ff14b1c6864a52f66dfe56989e6f7",
+    ".runtime/handoffs/mcp-validation-20261102/vitest.isolated.config.ts": "0cab1ace68ee361d17a82fbfad0ff0a6fe32582c809e3939c69b35aa67077c01"
+  },
+  "privacyReviewOfReceipts": {
+    "containerSummaryFieldsOnly": true,
+    "environmentKeysOnly": true,
+    "noRawForeignEnvironmentOrCredentialValues": true,
+    "jobDockerConfigurationExcluded": true
+  },
+  "limits": [
+    "No in-flight or concurrent reconnect/revocation race ordering",
+    "No durable worker retry execution",
+    "No browser/native-auth or live-provider execution",
+    "token_expired/account_inactive are unit-only paths, not additional native cases",
+    "Main configured type/lint/current privacy metadata/inventory/exact-source CI and publication remain pending"
+  ],
+  "copyMap": [
+    {
+      "from": "/private/tmp/warpdrive-slack-revocation6-green-20261102-1/vitest.log",
+      "to": "native-green/vitest.log",
+      "sha256": "bf41884bac96d12a468c4cfba749563f78cc12ec2c29e65e6623aee14e6d3516",
+      "bytes": 2023
+    },
+    {
+      "from": "/private/tmp/warpdrive-slack-revocation6-green-20261102-1/result.json",
+      "to": "native-green/result.json",
+      "sha256": "0848a014237454ec68fa0c74184061f46e3b60f8039ab9d08328817ddede5bb7",
+      "bytes": 313
+    },
+    {
+      "from": "/private/tmp/warpdrive-slack-revocation6-green-20261102-1/terminal.json",
+      "to": "native-green/terminal.json",
+      "sha256": "351cff9f7250db72d93ab89add7031db64ac23222eba2c1421b881ef1c8ca36a",
+      "bytes": 621
+    },
+    {
+      "from": "/private/tmp/warpdrive-slack-revocation6-green-20261102-1/before.json",
+      "to": "native-green/before.json",
+      "sha256": "ff5d6ec05d4bfec84d2dc3ef05a727a9da14dc7b875464150b6c674480c68833",
+      "bytes": 8581
+    },
+    {
+      "from": "/private/tmp/warpdrive-slack-revocation6-green-20261102-1/resource-observations.json",
+      "to": "native-green/resource-observations.json",
+      "sha256": "970a3bdba62ea09e4240ca2a5cfd19a673d9bf5a01be02302be6bc529adfb74a",
+      "bytes": 339
+    },
+    {
+      "from": "/private/tmp/warpdrive-slack-revocation6-green-20261102-1/immediate-terminal.json",
+      "to": "native-green/immediate-terminal.json",
+      "sha256": "66f41b1c11f03e6c0976ed88d2230ca9a8fe0d12a03915d2865971c8134082dd",
+      "bytes": 5114
+    },
+    {
+      "from": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/slack-revocation-confirmation-20261102/ACTUAL6-REVIEW.md",
+      "to": "native-green/ACTUAL6-REVIEW.md",
+      "sha256": "9249bde829812d3ea5090936532b70f81b3b0154158c0fb84a0f1a08defa916c",
+      "bytes": 2357
+    }
+  ]
+}

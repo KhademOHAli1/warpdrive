@@ -1,0 +1,76 @@
+{
+  "at": "2026-11-02T05:26:08.001619+00:00",
+  "exitCode": 0,
+  "command": [
+    "/usr/bin/time",
+    "-l",
+    "/Users/ali/Developer/warpdrive-integrations/.runtime/bin/bun",
+    "--no-env-file",
+    "--bun",
+    "node_modules/vitest/vitest.mjs",
+    "run",
+    "--config",
+    ".runtime/handoffs/mcp-validation-20261102/vitest.isolated.config.ts",
+    "--project",
+    "unit",
+    "--pool=forks",
+    "--maxWorkers=1",
+    "--no-file-parallelism",
+    "--execArgv=--no-env-file",
+    "src/features/privacy/registryDiscovery.test.ts",
+    "src/features/privacy/registryValidity.test.ts"
+  ],
+  "seconds": 0.5913608329137787,
+  "admission": {
+    "pressure": 1,
+    "q": 55,
+    "freeBytes": 12572258304
+  },
+  "terminal": {
+    "pressure": 1,
+    "q": 55,
+    "freeBytes": 12576702464
+  },
+  "sourceFiveUnchanged": true,
+  "sources": {
+    "src/features/integrations/slack.ts": "8585d466afbbfd91cff7b64306de14e7a13383e1f17d794a6c7ed669dc43e1e3",
+    "src/features/integrations/slackOperationFailure.ts": "6d841bb5ea5bae3939273ea443c3f7bf321452497324ac585b5c87db155c1f37",
+    "src/features/integrations/slackOperationFailures.test.ts": "8bbbfcc93517590492ecefd0512ea0c7b8dca7c28691ab84a312f3cdd39d2ba7",
+    "src/features/integrations/slackReadFailures.test.ts": "3d2ed3d7f648321d55c29d694555104604acaf00ef138f5252a97798663e3e4e",
+    "src/features/privacy/registryIdsSales1.ts": "7e302626a62212c2051dacdf0d9736600719f6563a1b2ca075b9dbec16c6be2a"
+  },
+  "samples": [
+    {
+      "pressure": 1,
+      "q": 55,
+      "freeBytes": 12572254208,
+      "ownedGroupRssKiB": 3360
+    },
+    {
+      "pressure": 1,
+      "q": 55,
+      "freeBytes": 12580675584,
+      "ownedGroupRssKiB": 171424
+    },
+    {
+      "pressure": 1,
+      "q": 55,
+      "freeBytes": 12580106240,
+      "ownedGroupRssKiB": 293280
+    }
+  ],
+  "sampledGroupMaxKiB": 293280,
+  "resourceStop": null,
+  "groupGone": true,
+  "aggregatePeak": "unmeasured",
+  "databaseOrProviderCalls": false,
+  "actual": {
+    "files": 2,
+    "passed": 12,
+    "failed": 0,
+    "setupOrCollectionErrors": 0,
+    "discovery": 10,
+    "validity": 2,
+    "combinedWithPrior18": "30distinctcases passed across two unchangedsource invocations, not one30case run"
+  }
+}
