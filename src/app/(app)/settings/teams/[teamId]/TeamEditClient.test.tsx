@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 
 beforeAll(() => {
@@ -80,7 +80,10 @@ describe("TeamEditClient", () => {
 
   it("deletes the team and navigates back to the list", async () => {
     renderClient();
-    fireEvent.click(screen.getByRole("button", { name: "Delete team" }));
+    fireEvent.click(screen.getByRole("button", { name: "Delete team: West Team" }));
+    fireEvent.click(
+      within(screen.getByRole("alertdialog")).getByRole("button", { name: "Delete team" }),
+    );
     await waitFor(() => expect(deleteTeamAction).toHaveBeenCalledTimes(1));
     expect(deleteTeamAction.mock.calls[0]?.[1]).toMatchObject({ teamId: TEAM_ID });
     await waitFor(() => expect(push).toHaveBeenCalledWith("/settings/teams"));

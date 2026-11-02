@@ -3,6 +3,7 @@ import type { Db } from "@/db/client";
 import type { Person } from "@/db/schema";
 import { persons } from "@/db/schema";
 import { canSee } from "@/features/permissions/canSee";
+import { normalizePhoneInput } from "@/utils/phoneNormalization";
 import type { ContactActor } from "./personsRepo";
 import { toVisibleRecord } from "./personsRepo";
 
@@ -93,7 +94,15 @@ export async function listPersonMatchCandidates(
       id: row.id,
       name: row.name,
       emails: contactValues(row.primaryEmail, row.emails),
-      phones: contactValues(null, row.phones),
+      phones: contactValues(
+        null,
+        row.phones.map((phone) => ({
+          value:
+            phone.country === undefined
+              ? phone.value
+              : (normalizePhoneInput(phone.value, phone.country).e164 ?? phone.value),
+        })),
+      ),
     }));
 }
 

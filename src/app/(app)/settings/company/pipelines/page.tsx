@@ -1,8 +1,12 @@
+import { randomUUID } from "node:crypto";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { env } from "@/config/env";
 import { PERMISSION_FLAGS } from "@/constants/permissionFlags";
 import { getServerSettingsMessages } from "@/features/identity/settingsMessages.server";
 import { CreatePipelineButton } from "@/features/pipelines/CreatePipelineButton";
+import { PipelineDirectoryClient } from "@/features/pipelines/PipelineDirectoryClient";
+import { listLifecyclePipelines } from "@/features/pipelines/pipelineLifecycle";
 import { createContext } from "@/server/trpc/context";
 import { createCaller } from "@/server/trpc/root";
 import { SettingsCard, SettingsCardBody, SettingsCardHeader } from "../../SettingsSurface";
@@ -24,6 +28,17 @@ export default async function PipelinesSettingsPage(): Promise<ReactNode> {
     (actor.type !== "admin" && !actor.flags.has(PERMISSION_FLAGS.PIPELINE_MANAGE))
   ) {
     return <p className="text-sm text-red-600">{L.requiresAdmin}</p>;
+  }
+
+  if (env.SALES_PIPELINE_LIFECYCLE_ENABLED) {
+    const result = await listLifecyclePipelines(ctx.db, actor.id, AbortSignal.timeout(8000));
+    if (!result.ok)
+      return (
+        <p role="alert" className="text-sm text-destructive">
+          {L.requiresAdmin}
+        </p>
+      );
+    return <PipelineDirectoryClient rows={result.value} snapshotId={randomUUID()} />;
   }
 
   const caller = createCaller(ctx);

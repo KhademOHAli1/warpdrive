@@ -20,6 +20,8 @@ const sidebars: SidebarsConfig = {
         "features/leads",
         "features/contacts",
         "features/activities",
+        "features/regional-settings",
+        "features/automations",
         "features/email",
         "features/enrichment",
         "features/import",

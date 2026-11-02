@@ -3,8 +3,8 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
 
-vi.mock("@/features/activities/AddActivityModal", () => ({
-  AddActivityModal: ({ defaultDate }: { defaultDate: string }) => (
+vi.mock("@/features/activities/CalendarEventDialog", () => ({
+  CalendarEventDialog: ({ defaultDate }: { defaultDate: string }) => (
     <div data-testid="add-activity-modal">{defaultDate}</div>
   ),
 }));

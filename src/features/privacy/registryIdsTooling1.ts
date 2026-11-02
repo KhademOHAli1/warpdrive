@@ -64,4 +64,8 @@ export const toolingIds1: string[] = [
   "writer:scripts/seed-smoke-phase5.ts#q:dynamic",
   "writer:scripts/seed-smoke.ts#q:dynamic",
   "writer:scripts/seed-smoke.ts#query:text",
+  "sourceReview:scripts/workflows-test-setup.ts#1822f78a2036fab5ec0aaddc996c5befcec5406467ce17d321cde7aa65273692",
+  "writer:scripts/workflows-test-setup.ts#query:CREATE EXTENSION IF NOT EXISTS citext",
+  "writer:scripts/workflows-test-setup.ts#query:CREATE EXTENSION IF NOT EXISTS pgcrypto",
+  "writer:scripts/workflows-test-setup.ts#query:dynamic",
 ];

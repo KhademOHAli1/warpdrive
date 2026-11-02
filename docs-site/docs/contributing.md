@@ -7,12 +7,13 @@ description: "How to contribute to Warpdrive: running it locally, the test-drive
 # Contributing
 
 Warpdrive is MIT licensed and developed at
-[github.com/sneg55/warpdrive](https://github.com/sneg55/warpdrive).
+[github.com/KhademOHAli1/warpdrive](https://github.com/KhademOHAli1/warpdrive),
+with upstream history retained from [sneg55/warpdrive](https://github.com/sneg55/warpdrive).
 
 ## Running locally
 
 ```sh
-bun install
+bun install --frozen-lockfile
 cp .env.example .env    # fill in values
 bun run db:migrate
 bun run dev
@@ -73,3 +74,21 @@ build rather than shipping a dead link.
 Screenshots are captured from a locally seeded demo instance rather than from
 production, so that no real customer data can reach a public site. The procedure is
 documented in `docs-site/screenshots/capture.md`.
+
+## Interface and documentation changes
+
+Preserve the current application shell and shared component adapters. Check new UI
+in Farsi RTL and German LTR, with realistic long labels, light/dark themes, narrow
+screens, keyboard navigation, and loading/error/empty states. Use existing locale,
+calendar, timezone, digit, and currency helpers. A translated label alone does not
+establish a complete localized workflow.
+
+Update the feature guide and relevant operations/architecture notes with the code.
+Record current availability separately from proposals and test evidence. The root
+`docs/README.md` indexes technical notes; `docs/workflows/status.md` tracks visual
+workflow implementation. Never refresh screenshots using real account/customer data.
+
+The documentation site has its own `package.json` and `bun.lock`. Install with its
+declared Bun version and `bun install --frozen-lockfile` before its build. Application
+checks, documentation builds, provider verification, and production deployment are
+separate results.

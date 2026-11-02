@@ -55,6 +55,12 @@ vi.mock("@/features/activities/actions", () => ({
   completeActivityAction: () => Promise.resolve({ ok: true, value: { id: "act-1" } }),
 }));
 
+vi.mock("../folderActions", () => ({
+  saveDraftAction: () => Promise.resolve({ ok: true, value: { id: "saved-draft" } }),
+  deleteDraftAction: () => Promise.resolve({ ok: true, value: { id: "saved-draft" } }),
+  cancelOutboxAction: () => Promise.resolve({ ok: false, error: { id: "E_GMAIL_017" } }),
+}));
+
 import { Composer } from "./Composer";
 
 describe("Composer – add-as-activity toggle (Phase 5)", () => {

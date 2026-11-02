@@ -2,6 +2,7 @@ import type { savedFilters } from "@/db/schema/savedFilters";
 import type { DbOrTx } from "@/server/realtime/channelVersions";
 import { listSavedFilters } from "./savedFilterActions";
 import type { SavedFilterTargetEntity } from "./schemas";
+import { storedViewDefinition } from "./storedViewDefinition";
 
 type SavedFilterRow = typeof savedFilters.$inferSelect;
 
@@ -38,4 +39,15 @@ export async function listSavedFilterViews<D>(
     isOwn: r.ownerId === ctx.actor.id,
     definition: parse(r.definition),
   }));
+}
+
+// Unavailable rows stay visible and selected, but cannot be mistaken for an empty executable filter.
+export async function listCompatibleSavedFilterViews<T extends SavedFilterTargetEntity>(
+  ctx: SavedFilterListCtx,
+  targetEntity: T,
+) {
+  const rows = await listSavedFilterViews(ctx, targetEntity, (raw) =>
+    storedViewDefinition(targetEntity, raw),
+  );
+  return rows.map(({ definition, ...row }) => ({ ...row, ...definition }));
 }

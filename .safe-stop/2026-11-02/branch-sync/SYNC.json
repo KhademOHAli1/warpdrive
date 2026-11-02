@@ -1,0 +1,93 @@
+{
+  "atUtc": "2026-11-02T08:50:47.076716+00:00",
+  "operation": "Merge main INTO existing branch; never publish branch work to main",
+  "branch": "codex/preserve-privacy-20261102",
+  "preSyncSnapshot": "05c99625341f85928b10e73df9e7fda0ae6955af",
+  "mainMerged": "09288d518fd574fd069fb6a1dc670596f71a8831",
+  "behindBefore": 182,
+  "resolvedConflictPaths": [
+    "docs/privacy-implementation-status.md",
+    "src/constants/errorIds.ts",
+    "src/features/privacy/authorityCompletionExpiry.test-helpers.ts",
+    "src/features/privacy/registryIdsPersonalRequests1.ts",
+    "src/features/privacy/reviewerActions.ts",
+    "src/features/privacy/ui/ReviewerIntakeCard.tsx",
+    "src/features/privacy/ui/useReviewerIntake.ts"
+  ],
+  "sourceResolutions": [
+    {
+      "path": "docs/privacy-implementation-status.md",
+      "mode": "100644",
+      "oid": "106615f24fdb45cb339f695bce9093a89983a349",
+      "sha256": "78a768a1f8c980d2dd24c991c682e53900af1550580f7f342055e737ea1e11d9"
+    },
+    {
+      "path": "src/constants/errorIds.ts",
+      "mode": "100644",
+      "oid": "79d58cba6d610d9696f947a2c2504f1498a36213",
+      "sha256": "d578ad0f39a4ed573e72094e572efd99f9d1fcf2e482d8d6f109037dfa7d7d6c"
+    },
+    {
+      "path": "src/features/privacy/authorityCompletionExpiry.test-helpers.ts",
+      "mode": "100644",
+      "oid": "f2156f4209ee3be76aa013428610fe2025ee0c96",
+      "sha256": "4f5de9d62502d890a6381a1cfe7bb0431ed735721239f4cc3673c96dba3b1bee"
+    },
+    {
+      "path": "src/features/privacy/registryIdsPersonalRequests1.ts",
+      "mode": "100644",
+      "oid": "e6f033d3a63c5976a21c64c7bc50a0b1da0eade3",
+      "sha256": "1789cbe26d711ef94f5fb5b771924b2588c967d35dc8ac6b978fe950c6c9d814"
+    },
+    {
+      "path": "src/features/privacy/registryIdsRequestServices1.ts",
+      "mode": "100644",
+      "oid": "7bb063a0927154c3c98ba2242aad709938acbf48",
+      "sha256": "ec5eef4e2cd906d8debb7637d9e3fc03227e941def0173d650e7a406385e0955"
+    },
+    {
+      "path": "src/features/privacy/reviewerActions.ts",
+      "mode": "100644",
+      "oid": "e6f3c052adf3b19bede90b12a82580d7cf1f40e9",
+      "sha256": "47e7bfc0d81161ad4b699bd4b2ad3d962203c5592f79020f867bda09261251ed"
+    },
+    {
+      "path": "src/features/privacy/ui/ReviewerIntakeCard.tsx",
+      "mode": "100644",
+      "oid": "fedb15e0e4b8a20da392aeaf151248987e578dd1",
+      "sha256": "e3e1fcfde63833e69cf502f0fc031c6e61fc36559536e5169ca47478932ebd74"
+    },
+    {
+      "path": "src/features/privacy/ui/useReviewerIntake.ts",
+      "mode": "100644",
+      "oid": "16e6d8ddafea8f4ff41846a1d712ba341584628a",
+      "sha256": "1152edc1e7284d1ee1e2ca683dccc3ecd4afbba33adbb7b61d456e3df638a492"
+    }
+  ],
+  "canonicalDrizzleTree": "1a496c5a05b7a3d78257149d639645b4eb2c30cf",
+  "canonicalMigrationFiles": 195,
+  "preSyncMigrationSnapshots": [
+    {
+      "originalPath": "drizzle/meta/_journal.json",
+      "archivePath": ".safe-stop/2026-11-02/branch-sync/private-migration-proposals/drizzle/meta/_journal.json.source",
+      "sha256": "bbf0309c9c77869a4e207b43f1efc9f400a82a6dac6daa830c107495622f9618",
+      "gitBlob": "f2821d3aa4d158fad8b60793e3bed7623eb257f3",
+      "mode": "100644"
+    }
+  ],
+  "validation": {
+    "passed": 125,
+    "failed": 0,
+    "pending": 0,
+    "allRequestedFilesObserved": true,
+    "candidateBytesUnchanged": true,
+    "ownedGroupGone": true,
+    "seconds": 3.264889082987793
+  },
+  "limitations": [
+    "This synchronization preserves unfinished work; it is not branch-wide type/native/CI, user-journey or deployment acceptance.",
+    "Original snapshot commits remain ancestors; archived migration proposals are inert and have not been renumbered/admitted.",
+    "Existing status/CI/inventory receipts qualify their named historical cuts and are not re-aged to this merged tree.",
+    "Paused dirty source workspaces remain byte-exact and detached at their original source heads; existing branch references advance separately."
+  ]
+}

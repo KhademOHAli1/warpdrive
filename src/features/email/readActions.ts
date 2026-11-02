@@ -9,6 +9,7 @@ import type { AuthUser } from "@/features/permissions/types";
 import { createContext } from "@/server/trpc/context";
 import { type ActionResult, toClientResult } from "@/types/actionResult";
 import { err, type Result } from "@/types/result";
+import { reconcileThreadImapOperation } from "./imapThreadOperationsQueue";
 import { markThreadRead, markThreadUnread } from "./readState";
 
 const CSRF_FAIL = () => err(new AppError(ERROR_IDS.PERM_DENIED, "csrf check failed", {}));
@@ -39,7 +40,15 @@ async function markRead(
       }),
     );
   }
-  return op(db, { actor: who.value, threadId: parsed.data.threadId }, SIG());
+  const signal = SIG();
+  const result = await op(db, { actor: who.value, threadId: parsed.data.threadId }, signal);
+  if (
+    !result.ok &&
+    (result.error.id === ERROR_IDS.MAIL_WRITE_UNKNOWN ||
+      result.error.id === ERROR_IDS.MAIL_WRITE_PARTIAL)
+  )
+    await reconcileThreadImapOperation(db, who.value.id, parsed.data.threadId, signal);
+  return result;
 }
 
 export async function markThreadReadAction(

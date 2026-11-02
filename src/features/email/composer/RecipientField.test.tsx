@@ -181,3 +181,12 @@ it("supports Persian recipient validation and punctuation without changing addre
   fireEvent.keyDown(input, { key: "،" });
   expect(onChange).toHaveBeenCalledWith(["Sara.Example+sales@example.com"]);
 });
+
+it("accepts a Farsi local part and internationalized domain without transliteration", () => {
+  const onChange = vi.fn();
+  render(<RecipientField label="To" values={[]} onChange={onChange} />);
+  const input = screen.getByRole("combobox");
+  fireEvent.change(input, { target: { value: "پشتیبانی@مثال.ایران" } });
+  fireEvent.keyDown(input, { key: "Enter" });
+  expect(onChange).toHaveBeenCalledWith(["پشتیبانی@مثال.ایران"]);
+});

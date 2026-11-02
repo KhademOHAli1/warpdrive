@@ -44,7 +44,7 @@ describe("ProfileClient", () => {
     );
   });
 
-  it("shows an error id when the name save fails", async () => {
+  it("retains the name and shows an error id when the name save fails", async () => {
     updateUserProfileAction.mockResolvedValueOnce({
       ok: false,
       error: { id: "E_USER_002" },
@@ -52,11 +52,25 @@ describe("ProfileClient", () => {
     render(<ProfileClient name="Jane" email="jane@example.com" avatarUrl={null} />);
 
     fireEvent.change(screen.getByLabelText(STRINGS.settings.name), {
-      target: { value: "" },
+      target: { value: "Changed Name" },
     });
     fireEvent.click(screen.getByRole("button", { name: STRINGS.settings.saveName }));
 
     await vi.waitFor(() => expect(screen.getByRole("alert")).toHaveTextContent("E_USER_002"));
+    expect(screen.getByLabelText(STRINGS.settings.name)).toHaveValue("Changed Name");
+  });
+
+  it("disables unchanged and blank names, and recognizes the last saved name", async () => {
+    render(<ProfileClient name="Jane" email="jane@example.com" avatarUrl={null} />);
+    const input = screen.getByLabelText(STRINGS.settings.name);
+    const save = screen.getByRole("button", { name: STRINGS.settings.saveName });
+    expect(save).toBeDisabled();
+    fireEvent.change(input, { target: { value: "   " } });
+    expect(save).toBeDisabled();
+    fireEvent.change(input, { target: { value: "Jane Doe" } });
+    fireEvent.click(save);
+    expect(await screen.findByRole("status")).toHaveTextContent(STRINGS.settings.saved);
+    expect(save).toBeDisabled();
   });
 
   it("keeps regional and appearance controls out of the identity form", () => {

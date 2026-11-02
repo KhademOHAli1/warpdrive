@@ -35,7 +35,7 @@ export const enrichmentIds1: string[] = [
   "external:src/features/enrichment/providers/getprospectSearch.ts#fetch",
   "external:src/features/enrichment/providers/rocketreach.ts#fetch",
   "external:src/features/enrichment/providers/rocketreachSearch.ts#fetch",
-  "sourceReview:src/app/(app)/settings/enrichment/EnrichmentClient.tsx#e8bce73e3c37220659dd7720aba72bed7c65ae9c84072c1e0c508fba0cdf5d60",
+  "sourceReview:src/app/(app)/settings/enrichment/EnrichmentClient.tsx#f242ceecde71c20f54c843b2614c06aef00e0e36a4859b33afef51a3f6562d52",
   "sourceReview:src/app/(app)/settings/enrichment/page.tsx#62730feaa4ae4e1817945ca7e2c59d1ec329b33ad875352002399638db78a3da",
   "sourceReview:src/app/(app)/settings/enrichment/targetOptions.ts#0e1221fde0d89f9607ebd104add0cca84c24bca2d4adbdf705a71aacaff534ea",
   "sourceReview:src/features/enrichment/applyGuards.ts#5edfa2400fd8e72c4f0fa0fd3a60764f7cb619558d2f92942050461671ca93d6",
@@ -96,4 +96,5 @@ export const enrichmentIds1: string[] = [
   "writer:src/features/enrichment/router.ts#query:dynamic",
   "writer:src/features/enrichment/runsRepo.ts#insert:enrichmentRuns",
   "writer:src/features/enrichment/runsRepo.ts#update:enrichmentRuns",
+  "writer:src/app/(app)/settings/enrichment/EnrichmentClient.tsx#delete:provider",
 ];

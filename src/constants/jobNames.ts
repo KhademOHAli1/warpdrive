@@ -10,6 +10,7 @@ export const IMPORT_REMINDER_MIN_LEAD_MS = 60_000;
 // mailboxes and per-mailbox isolation is structural (each job is independent).
 export const PGBOSS_QUEUE_EMAIL_SYNC = "email.sync";
 export const PGBOSS_QUEUE_EMAIL_SEND = "email.send.process";
+export const PGBOSS_QUEUE_EMAIL_RECOVERY = "email.recovery";
 
 // Retry budget for transient Gmail failures (429/5xx) before a job is parked.
 export const EMAIL_JOB_RETRY_LIMIT = 8;
@@ -33,3 +34,6 @@ export const PGBOSS_QUEUE_IMPORT_VALIDATE = "import.validate";
 export const PGBOSS_QUEUE_IMPORT_COMMIT = "import.commit";
 export const PGBOSS_QUEUE_IMPORT_UNDO = "import.undo";
 export const IMPORT_JOB_TIMEOUT_MS = 5 * 60 * 1000;
+
+export const PGBOSS_QUEUE_WORKFLOW_RUN = "workflow.run";
+export const PGBOSS_QUEUE_WORKFLOW_RECONCILE = "workflow.reconcile";

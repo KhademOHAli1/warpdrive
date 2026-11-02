@@ -40,6 +40,10 @@ export function reduceRealtime(state: RealtimeState, action: RealtimeAction): Re
     return { lastSeq: seq, effect: "invalidate" };
   }
 
+  // A stage move can invalidate the selected filter. Only the server query can decide
+  // membership, including for a local optimistic move.
+  if (state.data.filterIsActive === true) return { lastSeq: seq, effect: "invalidate" };
+
   // Echo suppression: the actor already applied this optimistically; advancing
   // lastSeq prevents a subsequent in-order event from being mistaken for a gap.
   // Only deal_moved is applied optimistically on the board, so it is the only self

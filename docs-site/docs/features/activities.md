@@ -8,6 +8,18 @@ description: "Calls, meetings, and tasks in Warpdrive: scheduling against deals 
 
 Activities are the scheduled work attached to records: calls, meetings, and tasks.
 
+## Regional calendar behavior
+
+The calendar and shared date pickers support Gregorian and Iranian Solar Hijri
+calendars. Select the display calendar and account timezone in
+[Regional settings](./regional-settings.md). Farsi has RTL layout and a digit choice;
+German has localized date and numeric input. Changing display preferences does not
+reschedule stored activities.
+
+The full Google Calendar event workflow, external synchronization, and Meet/Zoom/
+Teams provisioning are specified future work. A stored video-call URL is not proof
+that a conferencing provider created a meeting.
+
 ## Views
 
 `/activities/list` is the table view and `/activities/calendar` is the calendar.
@@ -25,6 +37,9 @@ checkbox selects the row. The list can also be walked with `j`/`k` and opened wi
 Enter, see [Keyboard shortcuts](./keyboard-shortcuts.md).
 
 ![The activities calendar](/img/screenshots/activities/calendar.png)
+
+Screenshots illustrate earlier captures; navigation, theme, and localized date controls
+may differ from the current maintained fork.
 
 The week calendar has a time gutter, a line at the current minute, and a highlighted
 today column, and it opens scrolled to the working day. Activities without a time

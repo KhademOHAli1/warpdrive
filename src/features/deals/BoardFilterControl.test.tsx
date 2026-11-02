@@ -216,7 +216,7 @@ describe("BoardFilterControl delete", () => {
     await waitFor(() => expect(invalidate).toHaveBeenCalled());
   });
 
-  it("clears the selection when the deleted filter was the applied one", async () => {
+  it("retains a deleted active selection as unavailable until explicit recovery", async () => {
     savedFiltersData.mockReturnValue([savedRow(OR_DEFINITION)]);
     const onSelectFilter = vi.fn();
     const user = userEvent.setup();
@@ -224,7 +224,16 @@ describe("BoardFilterControl delete", () => {
 
     await confirmDelete(user);
 
-    await waitFor(() => expect(onSelectFilter).toHaveBeenCalledWith(null));
+    await waitFor(() =>
+      expect(onSelectFilter).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: "f1",
+          availability: "unavailable",
+          definition: null,
+        }),
+      ),
+    );
+    expect(onSelectFilter).not.toHaveBeenCalledWith(null);
   });
 
   it("leaves the selection alone when a different filter is deleted", async () => {
@@ -264,11 +273,21 @@ describe("BoardFilterControl reconciles the applied saved filter with the live r
     await waitFor(() => expect(onSelectFilter).toHaveBeenCalledWith(live));
   });
 
-  it("clears the applied filter when it no longer exists", async () => {
+  it("retains the missing applied filter as unavailable until explicit recovery", async () => {
     savedFiltersData.mockReturnValue([]);
     const onSelectFilter = vi.fn();
     renderControl("f1", { appliedFilter: applied, onSelectFilter });
-    await waitFor(() => expect(onSelectFilter).toHaveBeenCalledWith(null));
+    await waitFor(() =>
+      expect(onSelectFilter).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: "f1",
+          availability: "unavailable",
+          definition: null,
+          problem: { kind: "missing", code: "missing-or-no-longer-visible" },
+        }),
+      ),
+    );
+    expect(onSelectFilter).not.toHaveBeenCalledWith(null);
   });
 
   it("leaves an applied filter that matches its live row alone", async () => {

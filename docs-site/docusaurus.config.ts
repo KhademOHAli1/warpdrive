@@ -2,13 +2,11 @@ import type * as Preset from "@docusaurus/preset-classic";
 import type { Config } from "@docusaurus/types";
 import { themes as prismThemes } from "prism-react-renderer";
 
-// Documentation site for warpdrive, served at docs.warpdrivecrm.com from its own
-// Cloudflare Pages project (`warpdrive-docs`). It builds from the PUBLIC mirror
-// sneg55/warpdrive, so every outward-facing link here must point at the mirror and
-// never at the private source-of-truth repo.
+// The maintained fork's documentation source and edit links point to its public repository.
+// Deployment hostnames below retain upstream defaults; a local build does not publish them.
 // Design: docs/superpowers/specs/2026-07-19-docs-site-docusaurus-design.md
 
-const GITHUB_REPO = "https://github.com/sneg55/warpdrive";
+const GITHUB_REPO = "https://github.com/KhademOHAli1/warpdrive";
 const MARKETING_SITE = "https://warpdrivecrm.com";
 
 const config: Config = {

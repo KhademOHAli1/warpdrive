@@ -1,0 +1,33 @@
+{
+  "mode": "parser-only; no program/typecheck/emit or test execution",
+  "files": [
+    {
+      "path": "/private/tmp/warpdrive-branch-sync-20261102-__96l2qz/privacy/repo/src/constants/errorIds.ts",
+      "parseDiagnostics": []
+    },
+    {
+      "path": "/private/tmp/warpdrive-branch-sync-20261102-__96l2qz/privacy/repo/src/features/privacy/authorityCompletionExpiry.test-helpers.ts",
+      "parseDiagnostics": []
+    },
+    {
+      "path": "/private/tmp/warpdrive-branch-sync-20261102-__96l2qz/privacy/repo/src/features/privacy/registryIdsPersonalRequests1.ts",
+      "parseDiagnostics": []
+    },
+    {
+      "path": "/private/tmp/warpdrive-branch-sync-20261102-__96l2qz/privacy/repo/src/features/privacy/reviewerActions.ts",
+      "parseDiagnostics": []
+    },
+    {
+      "path": "/private/tmp/warpdrive-branch-sync-20261102-__96l2qz/privacy/repo/src/features/privacy/ui/ReviewerIntakeCard.tsx",
+      "parseDiagnostics": []
+    },
+    {
+      "path": "/private/tmp/warpdrive-branch-sync-20261102-__96l2qz/privacy/repo/src/features/privacy/ui/useReviewerIntake.ts",
+      "parseDiagnostics": []
+    },
+    {
+      "path": "/private/tmp/warpdrive-branch-sync-20261102-__96l2qz/privacy/repo/src/features/privacy/registryIdsRequestServices1.ts",
+      "parseDiagnostics": []
+    }
+  ]
+}

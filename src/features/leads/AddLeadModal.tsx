@@ -213,6 +213,7 @@ export function AddLeadModal({
       personCustomFields={
         <CustomFieldCreateFields
           title={tLeads("personFields")}
+          currency={baseCurrency}
           defs={personFieldsQ.data ?? []}
           values={state.personCustomFields}
           onChange={(key, value) =>
@@ -243,6 +244,7 @@ export function AddLeadModal({
           organizationCustomFields={
             <CustomFieldCreateFields
               title={tLeads("organizationFields")}
+              currency={baseCurrency}
               defs={orgFieldsQ.data ?? []}
               values={state.orgCustomFields}
               onChange={(key, value) =>
@@ -253,6 +255,7 @@ export function AddLeadModal({
           leadCustomFields={
             <CustomFieldCreateFields
               title={tLeads("leadFields")}
+              currency={baseCurrency}
               defs={leadFieldsQ.data ?? []}
               values={state.leadCustomFields}
               onChange={(key, value) =>

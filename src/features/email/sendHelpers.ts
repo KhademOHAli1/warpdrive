@@ -7,7 +7,13 @@ import type { Db } from "@/db/client";
 import { files } from "@/db/schema";
 import { canActorAccessParent } from "@/features/files/fileAuthz";
 import type { AuthUser } from "@/features/permissions/types";
+import type { DbOrTx } from "@/server/realtime/channelVersions";
 import { err, ok, type Result } from "@/types/result";
+import {
+  attachmentLimitError,
+  GMAIL_ATTACHMENT_LIMITS,
+  hasDuplicateAttachmentIds,
+} from "./emailAttachmentLimits";
 import { assertSignatureOwner } from "./mailboxOwnership";
 import { sanitizeAuthorHtml } from "./sanitizeHtml";
 import { mintTokensForSend, rewriteBody } from "./tracking";
@@ -37,7 +43,7 @@ function extractLinks(html: string): string[] {
 // Apply tracking token rewrites (Phase 2) then append the sanitised signature (Phase 4).
 // Returns the final body string for MIME build and CRM copy storage.
 export async function applyTrackingAndSignature(
-  db: Db,
+  db: DbOrTx,
   args: {
     attemptId: string;
     actorId: string;
@@ -69,7 +75,7 @@ export async function applyTrackingAndSignature(
     await db.execute(sql`
       UPDATE email_send_attempts
       SET payload = jsonb_set(payload, '{html}', ${JSON.stringify(body)}::jsonb)
-      WHERE id=${args.attemptId}
+      WHERE id=${args.attemptId} AND send_started_at IS NULL
     `);
     signal.throwIfAborted();
   }
@@ -81,7 +87,7 @@ export async function applyTrackingAndSignature(
     await db.execute(sql`
       UPDATE email_send_attempts
       SET payload = jsonb_set(payload, '{html}', ${JSON.stringify(body)}::jsonb)
-      WHERE id=${args.attemptId}
+      WHERE id=${args.attemptId} AND send_started_at IS NULL
     `);
     signal.throwIfAborted();
   }
@@ -98,7 +104,10 @@ export async function resolveAttachments(
   attachments: Array<{ fileId: string }>,
   signal: AbortSignal,
 ): Promise<Result<ResolvedAttachment[], AppError>> {
+  if (attachments.length > GMAIL_ATTACHMENT_LIMITS.count || hasDuplicateAttachmentIds(attachments))
+    return err(attachmentLimitError("Too many or duplicate email attachments"));
   const resolved: ResolvedAttachment[] = [];
+  let totalBytes = 0;
   for (const att of attachments) {
     const [row] = await db.select().from(files).where(eq(files.id, att.fileId));
     signal.throwIfAborted();
@@ -118,6 +127,12 @@ export async function resolveAttachments(
         }),
       );
     }
+    totalBytes += row.sizeBytes;
+    if (
+      row.sizeBytes > GMAIL_ATTACHMENT_LIMITS.itemBytes ||
+      totalBytes > GMAIL_ATTACHMENT_LIMITS.totalBytes
+    )
+      return err(attachmentLimitError("Email attachment size limit exceeded"));
     resolved.push({
       fileId: att.fileId,
       s3Key: row.s3Key,

@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security vulnerability privately
+    url: https://github.com/KhademOHAli1/warpdrive/security/advisories/new
+    about: Keep exploit details, credentials, customer data and security evidence out of public issues.
+  - name: Search the canonical roadmap
+    url: https://github.com/users/KhademOHAli1/projects/3
+    about: Find an existing deliverable before creating another issue.

@@ -21,7 +21,7 @@ export async function hydrateOwner(
     .where(eq(users.id, userId))
     .limit(1);
   signal.throwIfAborted();
-  if (u === undefined) {
+  if (u === undefined || !u.isActive) {
     return { ok: false, error: new AppError("E_USER_001", "mailbox owner not found", { userId }) };
   }
 

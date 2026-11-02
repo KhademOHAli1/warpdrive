@@ -1,42 +1,24 @@
 {
   "registryVersion": 1,
   "evidenceLevel": "source_inventory",
-  "sourceFingerprint": "1d2a215901b4f4a2688f5ab32956678889833cb5d56b5e4fd686600e2701b9c5",
-  "sourceFiles": 1845,
+  "sourceFingerprint": "daba9645a3ba8ec345f1a87cfe92c144fef63c08bb533f678bf49a033899f0c2",
+  "sourceFiles": 2379,
   "discoveredCounts": {
     "browserStore": 3,
-    "derived": 241,
-    "external": 26,
-    "log": 41,
-    "objectNamespace": 17,
-    "queue": 12,
-    "sourceReview": 574,
-    "table": 93,
-    "writer": 536
+    "derived": 311,
+    "external": 33,
+    "log": 46,
+    "objectNamespace": 23,
+    "queue": 15,
+    "sourceReview": 757,
+    "table": 107,
+    "writer": 726
   },
-  "classifiedDeclarations": 1599,
+  "classifiedDeclarations": 2129,
   "coverage": {
     "ok": true,
     "missing": [],
     "invalid": []
   },
-  "sourceReviewVerification": {
-    "declared": 605,
-    "verified": 605,
-    "failures": [],
-    "requiredManualReviews": [
-      {
-        "id": "sourceReview:src/features/privacy/jobStatus.ts#d80b32df70cc7c781826b69b01823ffabb6d6661ee1eaccfdd8fc47a853225f3",
-        "basis": "manual_review_hash_binding",
-        "discoveredByAst": false
-      },
-      {
-        "id": "sourceReview:next.config.ts#7f1ec3ce7c808ddfc9eb02dec4bf5f4ac6eeaf99d920511d88ea0b59c2bd3ea5",
-        "basis": "manual_review_hash_binding",
-        "discoveredByAst": false
-      }
-    ]
-  },
-  "qualification": "Source inventory only; PostgreSQL, real HTTP/browser and installed acceptance are separate evidence. This report grants no lifecycle capability.",
   "installationGates": "OPEN: physical storage, provider contracts/receipts, production logs and backup destinations require separate acceptance."
 }

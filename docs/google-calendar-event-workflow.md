@@ -2,6 +2,8 @@
 
 Research date: **30 October 2026**. Purpose: document the Google Calendar reference workflow before designing or implementing calendar changes in Warpdrive.
 
+Implementation resumed on 31 October 2026 in a separate calendar branch. See the [implementation plan](calendar-implementation-plan.md) for the delivered first slice and remaining work. The documentation-only status and deferred-work statements below describe the original research handoff.
+
 This is a documentation inventory, not a statement that Warpdrive implements these features. No provider accounts were connected and no events, invitations, or bookings were created during research. Primary scope is the **desktop web application**. Sources are official Google Help, Workspace and developer documentation. Mobile-only evidence and API contracts are identified separately. **No actual Google Calendar screenshot or live-account visual validation was obtained; that validation is deferred.** A future visual cross-check must not turn a screenshot from one account or release into a universal entitlement or default.
 
 ## Evidence and account boundaries

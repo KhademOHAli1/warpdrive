@@ -138,7 +138,7 @@ export function PersonBlock({
           empty={phones.length === 0}
           initialDraft={serializePoints(phones)}
           renderEditor={contactPointsEditor("Phone")}
-          onSave={(draft) => save({ phones: committedPoints(parsePoints(draft)) })}
+          onSave={(draft) => save({ phones: committedPoints(parsePoints(draft), true) })}
         />
       )}
       {!hidden.has("emails") && (

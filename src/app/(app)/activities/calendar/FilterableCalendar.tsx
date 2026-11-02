@@ -74,6 +74,7 @@ export function FilterableCalendar({
         dayIsos={dayIsos}
         activities={filtered}
         initialTodayIso={initialTodayIso}
+        onChanged={() => router.refresh()}
         empty={
           <CalendarEmpty
             view={view}

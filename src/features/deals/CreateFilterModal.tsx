@@ -20,7 +20,7 @@ import { filterSaveCopy, filterSaveMode } from "./createFilterModalCopy";
 import { blankConditionRow, dealFilterFields, OP_LABELS } from "./dealFilterCatalog";
 import { conditionRowIssue, dealRowsToDefinition, definitionToRows } from "./dealFilterRows";
 import { describeRows } from "./describeFilter";
-import type { SavedFilterView } from "./savedFilterView";
+import type { AvailableSavedFilterView } from "./savedFilterView";
 
 interface CreateFilterModalProps {
   onClose: () => void;
@@ -42,7 +42,7 @@ interface CreateFilterModalProps {
   }) => void;
   // The saved filter the dialog was opened on. Owning it makes Save an update in place; someone
   // else's shared filter can only be forked, which the title and the Save button say.
-  savedFilter?: SavedFilterView;
+  savedFilter?: AvailableSavedFilterView;
   // Seeds the builder from an ad-hoc definition, so reopening the board's inline filter shows the
   // conditions and the combinator it applied instead of a blank "match all" form.
   initialDefinition?: FilterDefinition;

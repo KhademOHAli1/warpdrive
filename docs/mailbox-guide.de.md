@@ -1,0 +1,55 @@
+# Postfächer verbinden und verwenden
+
+[English](mailbox-guide.en.md) · [فارسی](mailbox-guide.fa.md)
+
+Eine Postfachverbindung ist unabhängig von der Anmeldung bei Warpdrive. Diese Anleitung beschreibt den implementierten IMAP/SMTP-Ablauf und bestätigt keine allgemeine Anbieterkompatibilität. Die [offenen Abnahmepunkte](local-integrations-progress.md) umfassen weiterhin externe Anbieter und die vollständige Browserprüfung.
+
+## Ein Postfach verbinden
+
+1. Öffnen Sie **Einstellungen → E-Mail-Synchronisierung → Postfach hinzufügen** und wählen Sie **Eigenes E-Mail-Postfach**. Gmail ist eine eigene Option, wenn der OAuth-Zugang für Google-Postfächer in dieser Installation eingerichtet ist.
+2. Tragen Sie die zulässige E-Mail-Adresse und den Absendernamen ein. Geben Sie für IMAP-Empfang und SMTP-Versand jeweils Server, Port, Sicherheitsmodus, Benutzername und Passwort an. Nutzen Sie ein App-Passwort, falls Ihr Anbieter dies verlangt. **TLS direkt** und **Mit STARTTLS** verlangen eine geprüfte verschlüsselte Verbindung; ein Rückfall auf Klartext findet nicht statt.
+3. Wählen Sie **Verbindung prüfen**. Dabei wird keine Testnachricht versendet. Falls eine erneute Identitätsbestätigung nötig ist, schließen Sie den Dialog der Kontosicherheit ab, gegebenenfalls mit einem Code Ihrer Authenticator-App, und wiederholen Sie anschließend die vorherige Aktion. Die Postfachpasswörter werden vor diesem Dialog geleert und müssen erneut eingegeben werden. Nach erfolgreicher Prüfung verschwinden die Passwortfelder. Eine abgelaufene Prüfung muss vor dem Speichern wiederholt werden.
+4. Prüfen Sie Ordner, Zeitraum und Kopien gesendeter Nachrichten und wählen Sie **Postfach verbinden**. Zugangsdaten werden serverseitig verschlüsselt und beim Bearbeiten nicht erneut angezeigt.
+
+Bei Anmeldefehlern korrigieren Sie die Zugangsdaten. Zertifikatsfehler erfordern den richtigen Servernamen, Port oder Vertrauensanker. Lassen Sie Zertifikats- und Netzwerkrichtlinien durch die Administration prüfen, statt die TLS-Prüfung abzuschalten.
+
+## Ordner, Zeitraum und Fortschritt
+
+Prüfen Sie die vorgeschlagenen Ordner für Posteingang und erkannte gesendete Nachrichten. Mindestens ein Ordner ist erforderlich. Standardmäßig werden **90 Tage** berücksichtigt; zulässig sind **1 bis 3.650 Tage**. Der Import löscht keine Nachrichten beim Anbieter. Schreibgeschützte Ordner können eingelesen werden. **Zugriff ungeprüft** bedeutet keine Schreibberechtigung. Lesestatus, Verschieben und Papierkorb stehen nur entsprechend den Fähigkeiten der Verbindung zur Verfügung.
+
+Die Synchronisierung läuft im Hintergrund. Die Einstellungsliste aktualisiert sich bei sichtbarem Tab; **Postfachstatus aktualisieren** lädt den Stand zusätzlich neu. „Einträge verarbeitet“ zählt die Elemente der ausgewählten Ordner einschließlich übersprungener Einträge, nicht eindeutige Nachrichten oder Gespräche. Eine Gesamtzahl kann fehlen.
+
+Übersprungene Einträge zeigen einen begrenzten Grund: Verarbeitungsgrenzen, unlesbare Nachrichtenstruktur oder eine auf dem Server nicht mehr vorhandene Nachricht. Aktuelle Grenzen: **25 MiB je Nachricht, 10 MiB je Anhang, 2 MiB Nachrichteninhalt, 64 KiB Kopfzeilen und 50 Anhänge**. Ungültige oder zu große Nachrichten werden übersprungen und nicht stillschweigend gekürzt; auf dem Server bleiben sie erhalten. Prüfen Sie diese im ursprünglichen Postfach. Maßgeblich sind die [implementierten Grenzen](../src/features/email/providers/rawMimeTypes.ts).
+
+Von angenommenen ausgehenden Nachrichten bleibt in beiden Kopiermodi eine CRM-Kopie. Standard ist **CRM-Kopie, keine zusätzliche Serverkopie**. Aktivieren Sie **Zusätzliche Kopie im Gesendet-Ordner** nur, wenn der Anbieter ausgehende Nachrichten nicht selbst speichert, und wählen Sie den richtigen Ordner. Eine automatische Erkennung gibt es nicht. Ungeprüfte Ordnerrechte werden vor dem Anlegen der Kopie geprüft; als schreibgeschützt bekannte Ordner sind ausgeschlossen. Eine fehlgeschlagene oder unbestätigte Serverkopie löst keinen erneuten E-Mail-Versand aus.
+
+## Absender, Entwürfe und Versandplanung
+
+Sie können mehrere persönliche Postfächer verbinden. Unter **Postfach verwalten → Als Standardabsender festlegen** bestimmen Sie den bevorzugten Absender. Neue Nachrichten verwenden einen verfügbaren Standard; mit **Absenderpostfach auswählen** wählen Sie eine andere aktive, sendefähige Verbindung. Der Wechsel erfordert **Entwurf kopieren**: Empfänger, Inhalt und Anhänge werden in einem eigenen Entwurf übernommen; das Original bleibt im bisherigen Postfach. Antworten bleiben an das Postfach des ursprünglichen Gesprächs gebunden. Ein gespeicherter Entwurf wird mit seinem zugehörigen Postfach fortgesetzt.
+
+Öffnen Sie **Später senden** neben der Sendeschaltfläche und wählen Sie Datum und Uhrzeit in der Zukunft. Beachten Sie die angezeigte Zeitzone und UTC-Abweichung; der Kalender folgt Ihren Einstellungen. Nicht existierende Ortszeiten werden abgewiesen. Bei einer doppelt vorkommenden Uhrzeit weist die Auswahl darauf hin, dass das frühere Vorkommen verwendet wird. Die Planung speichert einen Versandauftrag und bestätigt noch keinen Versand. Zum Ausführungszeitpunkt müssen Hintergrunddienst und Postfach nutzbar sein.
+
+## Versandstatus richtig einordnen
+
+| Ergebnis                                | Vorgehen                                                                                                                                                                                                                      |
+| --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Geplant, in Bearbeitung oder ausstehend | Behalten Sie den gespeicherten Auftrag und wählen Sie **Sendestatus prüfen**.                                                                                                                                                 |
+| Angenommen                              | Der SMTP-Server hat die Nachricht angenommen; eine Zustellung beim Empfänger ist damit nicht bestätigt.                                                                                                                       |
+| Angenommen, CRM-Kopie unvollständig     | Eine Statusprüfung kann die lokale Speicherung abschließen, ohne erneut zu senden.                                                                                                                                            |
+| Teilweise angenommen                    | Prüfen Sie angenommene und abgewiesene Empfänger. Ein Teil kann die Nachricht bereits erhalten; senden Sie nicht ungeprüft erneut an alle.                                                                                    |
+| Unbekannt                               | Eine Annahme durch den Server ist möglich. Bewahren Sie Entwurf und Auftrag auf und prüfen Sie den Status vor einem neuen Versand.                                                                                            |
+| Sicher fehlgeschlagen                   | Falls angeboten, verwendet **Denselben Auftrag erneut versuchen** die bestehende Versandabsicht. **Entwurf bearbeiten** erzeugt erst dann einen neuen Auftrag, wenn der bisherige ungesendete Auftrag sicher storniert wurde. |
+
+Eine Statusprüfung versendet keine weitere E-Mail. Teilweise angenommene und unklare Übermittlungen werden zur Prüfung angehalten und nicht automatisch erneut versendet. Ein Netzwerk-Timeout allein beweist keinen Fehlschlag. Die strukturierte Verarbeitung von Zustellmeldungen und Rückläufern, **DSN/Bounces**, ist weiterhin offen. Klären Sie spätere Zustellprobleme mit Ihrem Mailanbieter.
+
+## Pausieren, aktualisieren und trennen
+
+**Synchronisierung pausieren** verhindert vorübergehend neue Synchronisierung und neuen Versand über diese Verbindung. **Synchronisierung fortsetzen** macht sie wieder nutzbar. Prüfen Sie geplante Aufträge gesondert. **Synchronisierung erneut versuchen** betrifft den Empfang und versendet keine ausgehende Nachricht erneut. **Zugangsdaten aktualisieren** prüft neue Zugangsdaten desselben Postfachs; Gespräche und gespeicherte Auswahl bleiben erhalten, die Passwortfelder sind leer. **Verbindung trennen** verlangt eine Bestätigung, beendet künftigen Zugriff und bewahrt CRM-Gespräche mit ihren bisherigen Berechtigungen. Angenommene Nachrichten lassen sich nicht zurückrufen. Ein hier entferntes Passwort oder App-Passwort bleibt beim Anbieter gültig, bis Sie es dort widerrufen. Wird der Widerruf beim Anbieter als ausstehend angezeigt, ist der lokale Zugriff bereits gestoppt; der entfernte Zugriff wurde jedoch noch nicht vollständig widerrufen.
+
+## Hinweise für den Betrieb
+
+Verwenden Sie die [Umgebungsvorlage](../.env.example), die [Bereitstellungsanleitung](deploy.md) und die [Authentifizierungsanleitung](auth-operations.de.md). `AUTH_SMTP_*` dient Authentifizierungs- und Sicherheitshinweisen und verbindet kein Kundenpostfach.
+
+Für interne Server und private Adressen sind explizite Betreiberfreigaben nötig: `MAIL_INTERNAL_ENDPOINTS` enthält ein JSON-Array; alternativ verweist `MAIL_INTERNAL_ENDPOINTS_FILE` auf dessen Datei. Diese Einstellungen gehören zur Bereitstellung und stehen nicht im Postfachformular. Eine Freigabe passt exakt auf `protocol`, `host` und `port`. Mailprotokolle sind `imaps`, `imap+starttls`, `smtps` und `smtp+starttls`. Begrenzen Sie die Zieladressen möglichst mit `allowedAddresses`. Loopback benötigt zusätzlich `allowLoopback: true`; Metadatendienste und andere verbotene Ziele bleiben gesperrt. Für eine eigene Zertifizierungsstelle enthält das optionale Feld `ca` den PEM-Zertifikatstext, keinen Dateipfad. Die Prüfung des Servernamens beziehungsweise der IP bleibt aktiv. Verwenden Sie weder `NODE_TLS_REJECT_UNAUTHORIZED=0` noch unbeschränkte Netzwerkfreigaben als Fehlerbehebung. Stellen Sie die Richtlinie App und Worker bereit und starten Sie betroffene Prozesse nach Änderungen neu. Felddefinitionen: [Mailkonfiguration](../src/config/mailEnv.ts), [Dateivariablen](../src/config/env.ts), [Zielrichtlinie](../src/features/connections/endpointPolicy.ts).
+
+Zugangsdaten, Richtliniendateien, Schlüssel und Sicherungsarchive gehören weder in Git noch in Diagnoseberichte. Bewahren Sie `TOKEN_ENCRYPTION_KEY` auf; ein neuer Schlüssel entschlüsselt bestehende Zugangsdaten nicht. Für Anhänge gelten die CRM-Berechtigungen. Ausgehende Kopien verwenden privaten Objektspeicher; manche eingehenden Anhänge werden bei Bedarf aus dem ursprünglichen Postfach geladen. Ein Datenbankdump allein sichert deshalb nicht alle Anhänge. Sichern Sie Datenbank, private Objekte und benötigte Verschlüsselungs- und Signaturschlüssel abgestimmt, bewahren Sie erforderliche Anbieterdaten auf und prüfen Sie die Wiederherstellung tatsächlich. Beachten Sie den [Migrations- und Wiederherstellungsplan](mail-migration-qualification.md). Ein erfolgreicher Build oder lokaler Versand belegt weder eine Wiederherstellung noch Produktionsreife.

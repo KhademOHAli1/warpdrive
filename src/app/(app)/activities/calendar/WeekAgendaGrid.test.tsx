@@ -27,8 +27,8 @@ vi.mock("@/lib/trpc-client", () => ({
   },
 }));
 
-vi.mock("@/features/activities/AddActivityModal", () => ({
-  AddActivityModal: ({
+vi.mock("@/features/activities/CalendarEventDialog", () => ({
+  CalendarEventDialog: ({
     defaultDate,
     defaultTime,
     onClose,
@@ -71,21 +71,21 @@ vi.mock("@/features/activities/FollowUpActivityDialog", () => ({
   ),
 }));
 
-vi.mock("@/features/activities/ActivityEditModal", () => ({
-  ActivityEditModal: ({
-    activity,
+vi.mock("@/features/activities/CalendarEventEditDialog", () => ({
+  CalendarEventEditDialog: ({
+    id,
     onClose,
     onMarkedDone,
   }: {
-    activity: { id: string; allDay: boolean; assigneeId?: string | null };
+    id: string;
     onClose: () => void;
     onMarkedDone?: (id: string) => void;
   }) => (
     <div data-testid="edit-modal">
-      <span data-testid="edit-modal-id">{activity.id}</span>
-      <span data-testid="edit-modal-assignee">{activity.assigneeId ?? ""}</span>
-      <span data-testid="edit-modal-allday">{String(activity.allDay)}</span>
-      <button type="button" onClick={() => onMarkedDone?.(activity.id)}>
+      <span data-testid="edit-modal-id">{id}</span>
+      <span data-testid="edit-modal-assignee">{id}</span>
+      <span data-testid="edit-modal-allday">{id}</span>
+      <button type="button" onClick={() => onMarkedDone?.(id)}>
         Mark as done
       </button>
       <button type="button" onClick={onClose}>
@@ -226,11 +226,11 @@ describe("WeekAgendaGrid", () => {
     expect(screen.queryByTestId("edit-modal")).toBeNull();
   });
 
-  it("carries the chip's assignee so the edit modal shows that user's day load", () => {
+  it("loads the authoritative event by identity rather than editing partial calendar metadata", () => {
     const assigned = { ...mk("a1", "2026-07-15T09:30:00.000Z"), assigneeId: "u2" };
     render(<WeekAgendaGrid dayIsos={dayIsos} activities={[assigned]} />);
     fireEvent.click(screen.getByRole("button", { name: "Call a1" }));
-    expect(screen.getByTestId("edit-modal-assignee")).toHaveTextContent("u2");
+    expect(screen.getByTestId("edit-modal-id")).toHaveTextContent("a1");
   });
 
   it("gives every column the same all-day lane height, so an hour stays level across the week", () => {
@@ -242,7 +242,7 @@ describe("WeekAgendaGrid", () => {
     expect(new Set(lanes.map((l) => (l as HTMLElement).style.height)).size).toBe(1);
   });
 
-  it("opens an all-day activity as all-day, not as a midnight appointment", () => {
+  it("opens the full editor for an all-day activity", () => {
     // The editor reads allDay to decide whether to show a start time; passing false would echo the
     // stored midnight back at the user as a real 00:00 start.
     const offsite = {
@@ -252,7 +252,7 @@ describe("WeekAgendaGrid", () => {
     };
     render(<WeekAgendaGrid dayIsos={dayIsos} activities={[offsite]} />);
     fireEvent.click(screen.getByRole("button", { name: /Call a2/ }));
-    expect(screen.getByTestId("edit-modal-allday")).toHaveTextContent("true");
+    expect(screen.getByTestId("edit-modal-id")).toHaveTextContent("a2");
   });
 
   it("clicking an empty hour lane opens the add modal prefilled with that day + hour", () => {

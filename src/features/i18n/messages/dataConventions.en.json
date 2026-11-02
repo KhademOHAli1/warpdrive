@@ -1,0 +1,29 @@
+{
+  "phone": {
+    "country": "Phone number country",
+    "international": "International number",
+    "internationalFormat": "International format",
+    "chooseCountry": "Choose a country or enter the number with + and its country code.",
+    "review": "Check the number before calling or messaging. Your original entry is preserved.",
+    "extension": "This number has an extension. Review the recipient before calling or messaging.",
+    "importCountry": "Country for national phone numbers",
+    "importHint": "Used only for numbers without an international prefix. Original CSV values are preserved."
+  },
+  "money": {
+    "unit": "Display Iranian amounts in",
+    "rial": "Iranian rial (IRR)",
+    "toman": "Toman ({factor, number} rials)",
+    "help": "Changes the display of IRR amounts only. Saved amounts and other currencies stay the same.",
+    "preview": "Amount preview",
+    "entryUnit": "Enter amounts in <unit>{currency}</unit>. Display settings do not change this unit."
+  },
+  "dates": {
+    "calendar": "Calendar in the source file",
+    "gregory": "Gregorian",
+    "persian": "Persian (Jalali)",
+    "timeZone": "Time zone for dates without an offset",
+    "hint": "Use YYYY-MM-DD, YYYY/MM/DD or DD.MM.YYYY. ISO timestamps with an explicit UTC offset always use the Gregorian calendar. Date-only values keep their calendar day.",
+    "ambiguous": "This clock time occurs twice. Use a Gregorian ISO timestamp with an explicit UTC offset to choose the correct occurrence.",
+    "nonexistent": "This clock time does not exist in the selected time zone. Check the time in the source file."
+  }
+}

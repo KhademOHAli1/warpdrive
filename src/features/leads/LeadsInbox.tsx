@@ -2,15 +2,25 @@
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { useEffect, useMemo, useState } from "react";
+import { resolveVisibleOrder } from "@/components/data-table/columnModel";
 import { useColumns } from "@/components/data-table/useColumns";
 import { useActionError } from "@/components/shell/ActionErrorProvider";
+import { Button } from "@/components/ui/Button";
 import { DEFAULT_BASE_CURRENCY } from "@/constants/currency";
 import { addFormCustomFieldDefs } from "@/features/custom-fields/CustomFieldCreateFields";
 import { customFieldColumns } from "@/features/custom-fields/listColumns";
 import { CustomFieldRefLabelsProvider } from "@/features/custom-fields/refLabelsContext";
 import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
+import { SavedViewSelectionStatus } from "@/features/saved-filters/SavedViewSelectionStatus";
+import type { SavedView } from "@/features/saved-filters/savedView";
+import { useSavedViewSelection } from "@/features/saved-filters/useSavedViewSelection";
+import {
+  captureSavedViewPresentation,
+  type SavedViewPresentationCapture,
+} from "@/features/saved-filters/viewPresentation";
 import { trpc } from "@/lib/trpc-client";
 import type { CustomFieldDef } from "@/types/customFields";
+import { err } from "@/types/result";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { ConvertLeadDialog } from "./ConvertLeadDialog";
 import { BulkEditPanel } from "./inbox/BulkEditPanel";
@@ -38,6 +48,9 @@ export interface LeadsInboxProps {
   baseCurrency?: string;
   // Seeded from user_preferences.ui.leadsView (server); falls back to columns.ts defaults.
   initialView?: { columns: string[]; sort: LeadSort } | null;
+  initialSavedView?: SavedView | null;
+  initialSelectionBlocked?: boolean;
+  preferenceActorId?: string;
   // Whether the actor holds data.import; gates the action bar's "Import leads" link.
   canImport?: boolean;
   customFieldDefs?: CustomFieldDef[];
@@ -46,10 +59,14 @@ export interface LeadsInboxProps {
 export function LeadsInbox({
   baseCurrency,
   initialView,
+  initialSavedView,
+  initialSelectionBlocked = false,
+  preferenceActorId,
   canImport = false,
   customFieldDefs = [],
 }: LeadsInboxProps): React.ReactNode {
   const tLeads = useAppTranslations("leads");
+  const tViews = useAppTranslations("viewCompatibility");
 
   const router = useRouter();
   const reportError = useActionError();
@@ -65,16 +82,43 @@ export function LeadsInbox({
   const [labelKeys, setLabelKeys] = useState<string[]>([]);
   const [nextActivity, setNextActivity] = useState<LeadNextActivityBucket | null>(null);
   const [ownerIds, setOwnerIds] = useState<string[]>([]);
-  const [condition, setCondition] = useState<LeadConditionInput | null>(null);
 
-  const sort = useLeadSort(initialView?.sort ?? null);
   const selection = useLeadSelection();
   const locale = useLocale();
   const catalog = useMemo<readonly LeadColumn[]>(
     () => [...leadColumns(locale), ...customFieldColumns(customFieldDefs)],
     [customFieldDefs, locale],
   );
-  const columns = useColumns(catalog, initialView?.columns);
+  const nativeView = useSavedViewSelection<LeadSort["field"]>(
+    "lead",
+    {
+      columns: resolveVisibleOrder(catalog, initialView?.columns),
+      sort: initialView?.sort ?? null,
+    },
+    { initialSavedView, initialSelectionBlocked, preferenceActorId },
+  );
+  const sort = useLeadSort(nativeView.initialPresentation.sort);
+  const columns = useColumns(catalog, nativeView.initialPresentation.columns);
+  const condition: LeadConditionInput | null = nativeView.definition;
+  const selectedView = nativeView.selectedView;
+  const blocked = nativeView.blocked;
+
+  function selectView(view: SavedView | null): void {
+    setFilter("inbox");
+    const next = nativeView.select(view, { columns: columns.order, sort: sort.sort });
+    columns.replace(next.columns);
+    sort.replace(next.sort);
+    setOwnerIds([]);
+    setLabelKeys([]);
+    setNextActivity(null);
+    selection.clear();
+    setConvertTarget(null);
+  }
+  function editView(edit: () => void): void {
+    if (blocked) return;
+    nativeView.detach();
+    edit();
+  }
 
   // Ungated: every user gets the full active-user list so owner filtering runs server-side by id.
   const usersQ = trpc.identity.assignableUsers.useQuery(undefined, { retry: false });
@@ -92,6 +136,7 @@ export function LeadsInbox({
     labelKeys,
     nextActivity,
     condition,
+    enabled: !blocked,
   });
   const rows = list.rows;
 
@@ -102,7 +147,7 @@ export function LeadsInbox({
   }
 
   async function bulkChange(ids: string[], change: BulkUpdateLeadsInput["change"]): Promise<void> {
-    if (ids.length === 0) return;
+    if (blocked || ids.length === 0) return;
     const r = await bulkUpdateLeadsAction({ ids, change }, readCsrfToken());
     if (r.ok) {
       selection.clear();
@@ -124,6 +169,7 @@ export function LeadsInbox({
   });
 
   async function archiveToggle(id: string, archived: boolean): Promise<void> {
+    if (blocked) return;
     const r = await archiveLeadAction({ leadId: id, archived }, readCsrfToken());
     if (r.ok) await refetch();
     else reportError(r.error.id);
@@ -133,6 +179,7 @@ export function LeadsInbox({
   // sort, inline condition, and visible-column order as query params. The route re-applies the
   // visibility gate and streams text/csv (not just the loaded page).
   function exportCsv(): void {
+    if (blocked) return;
     window.location.href = buildLeadExportHref({
       filter,
       sort: sort.effective,
@@ -144,10 +191,18 @@ export function LeadsInbox({
     });
   }
 
-  useLeadsViewPersist(columns.order, sort.effective);
+  useLeadsViewPersist(columns.order, sort.effective, { enabled: nativeView.mode === "personal" });
 
-  const owner: OwnerFilter = { users, selected: ownerIds, onChange: setOwnerIds };
+  const owner: OwnerFilter = {
+    users,
+    selected: ownerIds,
+    onChange: (ids) => editView(() => setOwnerIds(ids)),
+  };
 
+  const presentationCapture: SavedViewPresentationCapture =
+    filter !== "inbox" || ownerIds.length > 0 || labelKeys.length > 0 || nextActivity !== null
+      ? err("unsupported-scope")
+      : captureSavedViewPresentation("lead", columns.order, sort.effective);
   const archived = filter === "archived";
   const hasFilter =
     ownerIds.length > 0 || labelKeys.length > 0 || nextActivity !== null || condition !== null;
@@ -156,13 +211,15 @@ export function LeadsInbox({
     setOwnerIds([]);
     setLabelKeys([]);
     setNextActivity(null);
-    setCondition(null);
+    selectView(null);
+    selection.clear();
+    setConvertTarget(null);
   }
 
   // Zero rows while the first page is still in flight is not an empty inbox, so the message waits
   // for the read to land rather than accusing the user of having no leads.
   const empty =
-    list.isLoading || rows.length > 0 ? null : (
+    blocked || list.error || list.isLoading || rows.length > 0 ? null : (
       <LeadsEmpty
         archived={archived}
         hasFilter={hasFilter}
@@ -198,26 +255,53 @@ export function LeadsInbox({
       </h1>
       <LeadsActionBar
         filter={filter}
-        onFilter={setFilter}
-        count={list.total}
+        onFilter={(next) => editView(() => setFilter(next))}
+        count={blocked || list.error || list.isLoading ? null : list.total}
         baseCurrency={baseCurrency}
         canImport={canImport}
         onCreated={() => void refetch()}
         labelKeys={labelKeys}
-        onLabelKeys={setLabelKeys}
+        onLabelKeys={(next) => editView(() => setLabelKeys(next))}
         nextActivity={nextActivity}
-        onNextActivity={setNextActivity}
+        onNextActivity={(next) => editView(() => setNextActivity(next))}
         owner={owner}
         catalog={catalog}
         order={columns.order}
         visibleKeys={columns.visibleKeys}
-        onToggleColumn={columns.toggle}
-        onReorderColumn={columns.reorder}
+        onToggleColumn={(key) => editView(() => columns.toggle(key))}
+        onReorderColumn={(from, to) => editView(() => columns.reorder(from, to))}
         onExport={exportCsv}
+        exportDisabled={blocked}
         filterBuilder={
-          <LeadsFilterControls users={users} condition={condition} onCondition={setCondition} />
+          <LeadsFilterControls
+            users={users}
+            condition={condition}
+            selectedView={selectedView}
+            selectionBlocked={nativeView.selectionBlocked}
+            presentationCapture={presentationCapture}
+            onSelectView={selectView}
+            onCondition={(next) => {
+              if (blocked) return;
+              nativeView.editDefinition(next);
+              selection.clear();
+              setConvertTarget(null);
+            }}
+          />
         }
       />
+      <SavedViewSelectionStatus status={nativeView.persistence} />
+
+      {!blocked && list.error && (
+        <div
+          role="alert"
+          className="mb-3 flex flex-wrap items-center justify-between gap-3 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+        >
+          <span>{tViews("queryError")}</span>
+          <Button type="button" variant="outline" size="sm" onClick={() => void refetch()}>
+            {tViews("retry")}
+          </Button>
+        </div>
+      )}
 
       {convertError !== null && (
         <div
@@ -228,7 +312,7 @@ export function LeadsInbox({
         </div>
       )}
 
-      {selection.count > 0 && (
+      {!blocked && selection.count > 0 && (
         <div className="mb-3">
           <BulkEditPanel
             count={selection.count}
@@ -245,11 +329,11 @@ export function LeadsInbox({
         </div>
       )}
 
-      <div className="min-h-0 flex-1 overflow-auto rounded-sg border">
+      <div aria-busy={list.isLoading} className="min-h-0 flex-1 overflow-auto rounded-sg border">
         {/* Nothing exists and nothing is filtered: the header row, select-all and sort controls
             are machinery over zero rows, so the table goes and the empty state stands alone.
             A filtered-to-nothing list keeps its columns, since the columns are still the view. */}
-        {empty !== null && !hasFilter ? (
+        {blocked || (list.error && rows.length === 0) ? null : empty !== null && !hasFilter ? (
           empty
         ) : (
           <CustomFieldRefLabelsProvider value={list.refLabels}>
@@ -259,7 +343,7 @@ export function LeadsInbox({
               now={now}
               currency={currency}
               sort={sort.effective}
-              onSort={sort.cycle}
+              onSort={(field) => editView(() => sort.cycle(field))}
               isSelected={selection.isSelected}
               allSelected={selection.allSelected(visibleIds)}
               onToggleRow={selection.toggle}
@@ -274,7 +358,7 @@ export function LeadsInbox({
 
       {list.canLoadMore && <LeadsLoadMore onClick={list.loadMore} />}
 
-      {convertTarget !== null && (
+      {!blocked && convertTarget !== null && (
         <ConvertLeadDialog
           defs={dealFields}
           onClose={() => setConvertTarget(null)}

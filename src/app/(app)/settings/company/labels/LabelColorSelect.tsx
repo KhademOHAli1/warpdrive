@@ -8,6 +8,7 @@ interface LabelColorSelectProps {
   ariaLabel: string;
   value: LabelColor;
   onChange: (color: LabelColor) => void;
+  disabled?: boolean;
 }
 
 // One color picker for both existing-label rows and add-label forms. Keeping the options and
@@ -16,6 +17,7 @@ export function LabelColorSelect({
   ariaLabel,
   value,
   onChange,
+  disabled,
 }: LabelColorSelectProps): React.ReactNode {
   const L = useSettingsMessages();
   const LABEL_COLOR_OPTIONS = LABEL_COLORS.map((color) => ({
@@ -32,6 +34,7 @@ export function LabelColorSelect({
   return (
     <Select
       ariaLabel={ariaLabel}
+      disabled={disabled}
       value={value}
       onChange={(next) => onChange(next as LabelColor)}
       options={LABEL_COLOR_OPTIONS}

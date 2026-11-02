@@ -4,8 +4,11 @@ import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { Button } from "@/components/ui/Button";
 import { Composer } from "@/features/email/Composer";
 import { ComposeLinkSidebar } from "@/features/email/composer/ComposeLinkSidebar";
+import type { ComposerMailbox } from "@/features/email/composer/composerMailbox.types";
+import { useComposerMailboxMessages } from "@/features/email/composer/useComposerMailboxMessages";
 import { toComposerDraft } from "@/features/email/toComposerDraft";
 import { useEmailMessages } from "@/features/email/useEmailMessages";
 import { useInboxRealtime } from "@/features/email/useInboxRealtime";
@@ -13,6 +16,7 @@ import { trpc } from "@/lib/trpc-client";
 
 interface ComposePageClientProps {
   accountId: string;
+  mailboxes?: ComposerMailbox[];
   fromAddress: string;
   selfActorId: string;
   draftId?: string;
@@ -25,10 +29,12 @@ interface ComposePageClientProps {
 export function ComposePageClient({
   accountId,
   fromAddress,
+  mailboxes,
   selfActorId,
   draftId,
 }: ComposePageClientProps): React.ReactNode {
   const E = useEmailMessages();
+  const L = useComposerMailboxMessages();
 
   const router = useRouter();
   // Opening compose unmounts InboxListClient (the full pane replaces the list), which would close
@@ -43,13 +49,8 @@ export function ComposePageClient({
     enabled: draftId !== undefined,
   });
   const resumeDraft = draftsQuery.data?.find((d) => d.id === draftId);
-  // A draftId resume has a real row to wait for: mount the composer only once drafts.list
-  // resolves, so an interactive blank composer never mounts and then remounts (discarding
-  // any edits) once the draft arrives. A plain compose (no draftId) has nothing to wait
-  // for, so it mounts immediately regardless of this query's state. If the query errors,
-  // `data` stays undefined forever (React Query does not retry indefinitely), so stop waiting
-  // once it has settled in error and fall through to a fresh, unseeded composer rather than
-  // spinning "Loading draft..." forever.
+  // Wait for the saved row before mounting editable state. A failed or missing resume
+  // stays separate from a fresh compose so its account/content can never be silently replaced.
   const waitingForDraft =
     draftId !== undefined && draftsQuery.data === undefined && !draftsQuery.isError;
   // Picked/created deal, lifted here (not into Composer) so it survives independent of the
@@ -77,11 +78,28 @@ export function ComposePageClient({
         <div className="flex min-w-0 flex-1 flex-col">
           {waitingForDraft ? (
             <p className="p-3 text-sm text-muted-foreground">{E.loadingDraft}</p>
+          ) : draftId !== undefined && resumeDraft === undefined ? (
+            <div role="alert" className="space-y-3 rounded-md border border-border p-3 text-sm">
+              <p>{draftsQuery.isError ? L.draftLoadingError : L.draftMissing}</p>
+              {draftsQuery.isError && (
+                <Button variant="outline" size="sm" onClick={() => void draftsQuery.refetch()}>
+                  {L.retry}
+                </Button>
+              )}
+              <Link href="/inbox" className="block text-action hover:underline">
+                {L.openInbox}
+              </Link>
+            </div>
           ) : (
             <Composer
               key={resumeDraft?.id ?? "new-email"}
-              accountId={accountId}
-              fromAddress={fromAddress}
+              accountId={resumeDraft?.accountId ?? accountId}
+              fromAddress={
+                resumeDraft === undefined || resumeDraft.accountId === accountId
+                  ? fromAddress
+                  : mailboxes?.find((mailbox) => mailbox.id === resumeDraft.accountId)?.emailAddress
+              }
+              mailboxes={mailboxes}
               draft={resumeDraft !== undefined ? toComposerDraft(resumeDraft) : undefined}
               linkDealId={linkedDeal?.id}
               onSent={backToInbox}

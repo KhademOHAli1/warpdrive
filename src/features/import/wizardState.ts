@@ -3,7 +3,10 @@
 // UI's per-column choices into the backend columnMappingSchema shape via
 // buildColumnMapping. No React, no I/O: the orchestrator owns the async calls.
 import { DEFAULT_IMPORT_SOURCE, type ImportSource } from "@/constants/importSources";
+import type { CalendarSystem } from "@/lib/localeFormatting";
 import { assertNever } from "@/types/result";
+import type { PhoneCountry } from "@/utils/phoneNormalization";
+import { IMPORT_DATE_FIELDS } from "./importDateConventions";
 import type { MappableEntity } from "./importFields";
 import { primaryEntityOf, requiredFieldsFor, targetsFor } from "./importFields";
 import type { ColumnMapping } from "./schemas";
@@ -26,6 +29,9 @@ export interface WizardState {
   step: WizardStep;
   source: ImportSource;
   createMissingStages: boolean;
+  phoneCountry?: PhoneCountry;
+  dateCalendar?: CalendarSystem;
+  dateTimeZone?: string;
   target: ImportTarget;
   filename: string;
   headers: string[];
@@ -61,6 +67,9 @@ export type WizardAction =
   | { type: "setTarget"; target: ImportTarget; suggest?: SuggestContext }
   | { type: "setSource"; source: ImportSource; suggest?: SuggestContext }
   | { type: "setCreateMissingStages"; createMissingStages: boolean }
+  | { type: "setPhoneCountry"; phoneCountry: PhoneCountry | undefined }
+  | { type: "setDateCalendar"; dateCalendar: CalendarSystem }
+  | { type: "setDateTimeZone"; dateTimeZone: string }
   | {
       type: "loadFile";
       filename: string;
@@ -90,6 +99,7 @@ export function wizardReducer(state: WizardState, action: WizardAction): WizardS
       return {
         ...state,
         target: action.target,
+        validation: null,
         columns: reseed(state.headers, action.target, state.source, action.suggest),
       };
     case "setSource": {
@@ -97,12 +107,19 @@ export function wizardReducer(state: WizardState, action: WizardAction): WizardS
       return {
         ...state,
         source: action.source,
+        validation: null,
         target,
         columns: reseed(state.headers, target, action.source, action.suggest),
       };
     }
+    case "setDateCalendar":
+      return { ...state, validation: null, dateCalendar: action.dateCalendar };
+    case "setDateTimeZone":
+      return { ...state, validation: null, dateTimeZone: action.dateTimeZone };
+    case "setPhoneCountry":
+      return { ...state, validation: null, phoneCountry: action.phoneCountry };
     case "setCreateMissingStages":
-      return { ...state, createMissingStages: action.createMissingStages };
+      return { ...state, validation: null, createMissingStages: action.createMissingStages };
     case "loadFile":
       return {
         ...state,
@@ -114,16 +131,21 @@ export function wizardReducer(state: WizardState, action: WizardAction): WizardS
         validation: null,
       };
     case "setColumn":
-      return { ...state, columns: { ...state.columns, [action.header]: action.choice } };
+      return {
+        ...state,
+        validation: null,
+        columns: { ...state.columns, [action.header]: action.choice },
+      };
     case "setDedup":
-      return { ...state, dedupMode: action.dedupMode };
+      return { ...state, validation: null, dedupMode: action.dedupMode };
     case "setRowNote":
-      return { ...state, rowNoteFromUnmapped: action.rowNoteFromUnmapped };
+      return { ...state, validation: null, rowNoteFromUnmapped: action.rowNoteFromUnmapped };
     case "batchCreated":
-      return { ...state, batchId: action.batchId, step: "map" };
+      return { ...state, validation: null, batchId: action.batchId, step: "map" };
     case "uploaded":
       return {
         ...state,
+        validation: null,
         batchId: action.batchId,
         source: action.source,
         target: action.target,
@@ -132,6 +154,7 @@ export function wizardReducer(state: WizardState, action: WizardAction): WizardS
     case "prepared":
       return {
         ...state,
+        validation: null,
         headers: action.headers,
         totalRows: action.totalRows,
         rows: action.previewRows,
@@ -139,9 +162,21 @@ export function wizardReducer(state: WizardState, action: WizardAction): WizardS
         step: "map",
       };
     case "validated":
+      if (state.step !== "validating") return state;
       return { ...state, validation: action.validation, step: "preview" };
     case "goto":
-      return { ...state, step: action.step };
+      if (state.step === "commit") return state;
+      if (action.step === "preview" && state.validation === null) return state;
+      if (
+        action.step === "commit" &&
+        (state.step !== "preview" || state.validation === null || state.validation.valid === 0)
+      )
+        return state;
+      return {
+        ...state,
+        step: action.step,
+        validation: action.step === "map" || action.step === "validating" ? null : state.validation,
+      };
     case "reset":
       return initialWizardState();
     default:
@@ -188,6 +223,17 @@ export function buildColumnMapping(state: WizardState): ColumnMapping {
     columns,
     options: {
       rowNoteFromUnmapped: state.rowNoteFromUnmapped,
+      ...(state.phoneCountry === undefined ? {} : { phoneCountry: state.phoneCountry }),
+      ...(state.dateCalendar !== undefined ||
+      state.dateTimeZone !== undefined ||
+      Object.values(state.columns).some((column) =>
+        IMPORT_DATE_FIELDS.some((field) => field === column.field),
+      )
+        ? {
+            dateCalendar: state.dateCalendar ?? "gregory",
+            dateTimeZone: state.dateTimeZone ?? "UTC",
+          }
+        : {}),
       createMissingStages:
         state.source === "pipedrive" && state.target === "deal" && state.createMissingStages,
     },

@@ -62,6 +62,7 @@ export function SavedFilterItem({
   onRequestDelete?: (target: PendingFilterDelete) => void;
 }): React.ReactNode {
   const translateSales = useAppTranslations("sales");
+  const compatibility = useAppTranslations("viewCompatibility");
 
   return (
     <div className="flex items-center">
@@ -72,6 +73,11 @@ export function SavedFilterItem({
       >
         <span className="truncate">
           <bdi dir="auto">{filter.name}</bdi>
+          {filter.availability === "unavailable" && (
+            <span className="ms-1 text-muted-foreground">
+              ({compatibility("unavailableLabel")})
+            </span>
+          )}
         </span>
       </DropdownMenuItem>
       {/* Only the owner can toggle the favorite (it is a per-row, owner-scoped flag) or delete the

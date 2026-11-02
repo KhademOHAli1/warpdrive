@@ -1,0 +1,45 @@
+{
+  "observedAt": "2026-11-01T05:16:23.298215+00:00",
+  "sourceCommit": "6efe4dd4e1fc706553ef4b7ff4521e65d4fe2044",
+  "behavior": "Native actor+session and existing data.export capability are required before currency/lead reads. Native can denies inactive actors, including admins.",
+  "unitBoundary": "Actual Drizzle/Pool remains unconnected; context and domain read commands substituted. No SQL/query builder mocked or real-DB export result inferred.",
+  "red": {
+    "tests": 12,
+    "failed": 5,
+    "passed": 7,
+    "result": "Existing ungated route returned200 where native-session or export-capability denial required401/403."
+  },
+  "formattedAdjacentGreen": {
+    "tests": 44,
+    "files": 5,
+    "startedAt": "2026-11-01T05:11:01.050612+00:00",
+    "finishedAt": "2026-11-01T05:11:02.582670+00:00",
+    "exitCode": 0,
+    "durationSeconds": 1.532,
+    "minimumObservedFreeBytes": 16685826048,
+    "headroomFloorBytes": 3221225472,
+    "timeoutSeconds": 45,
+    "selection": [
+      "src/app/(app)/leads/export/route.authorization.test.ts",
+      "src/features/leads/inbox/exportCsv.test.ts",
+      "src/features/leads/inbox/exportQuery.test.ts",
+      "src/features/leads/inbox/exportHref.test.ts",
+      "src/features/permissions/can.test.ts"
+    ]
+  },
+  "testedSha256": {
+    "src/app/(app)/leads/export/route.ts": "353186699fab803c2d5e2da45ab4d04f09e50167db6258abae37f5f7814a3caf",
+    "src/app/(app)/leads/export/route.authorization.test.ts": "3273ee73b62cab9dc288720aa01dbe9bdf58363e3103e6de73ecab3c06a85bae",
+    "src/features/leads/inbox/exportCsv.test.ts": "cce5e4641fb1e4e75efdd193d96623be0cdac26f5ebc323ccd9ea697ae99ed26",
+    "src/features/leads/inbox/exportQuery.test.ts": "29db2a83bacdc0dc7441a58a332b56ed52659eba487dfdac7a89a06d2f07b58d",
+    "src/features/leads/inbox/exportHref.test.ts": "2eb5c531a44ccdbcf0393885683d90fc2ab6a4bd6ccdfc825f561c2d1f644ea3",
+    "src/features/permissions/can.test.ts": "7f7469d51c5952e47602f6675ada1d517f39b67647e1cb5b2146c7520af60d2d"
+  },
+  "limits": [
+    "Current-request read boundary only; no shared transaction-time mutation admission/revocation proof.",
+    "Record visibility/filter/sort/CSV/currency behavior is reused; source seam and adjacent units do not rerun native PostgreSQL visibility or browser export journeys.",
+    "Full latest-candidate types/lint/build remain pending appropriate finite slots.",
+    "UI capability discovery and all-channel export/evidence visibility remain programme gates."
+  ],
+  "resourceNote": "The first delegated RED/GREEN reported memory estimates; no disk-floor proof is inferred from those estimates. Root reran the formatted files under an actual live free-disk/process-group/deadline guard."
+}

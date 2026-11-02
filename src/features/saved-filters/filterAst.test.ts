@@ -24,7 +24,7 @@ describe("filterToSql: functional", () => {
         baseCurrency: "USD",
         defaultVisibilityLevels: { deal: "all", person: "all", organization: "all" },
       });
-      const u = await seedUser(db);
+      const u = await seedUser(db, { isAdmin: true });
       const p = await seedPipelineWithStages(db, ["A"]);
       const open = await createDeal(
         db,

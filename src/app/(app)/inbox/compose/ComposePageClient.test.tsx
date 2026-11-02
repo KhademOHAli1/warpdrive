@@ -79,6 +79,7 @@ vi.mock("@/features/files/serverActions", () => ({
 }));
 vi.stubGlobal("fetch", () => Promise.resolve(new Response(null, { status: 204 })));
 
+import { composerMailboxMessages } from "@/features/email/composer/mailboxMessages";
 import { ComposePageClient } from "./ComposePageClient";
 
 describe("ComposePageClient", () => {
@@ -163,7 +164,7 @@ describe("ComposePageClient", () => {
     expect(screen.getByText("Loading draft...")).toBeInTheDocument();
   });
 
-  it("with a draftId: mounts a fresh composer instead of waiting forever when drafts.list errors", () => {
+  it("with a draftId: keeps the failed draft out of a fresh composer and offers a retry", () => {
     draftsListQuery.mockReturnValue({ data: undefined, isError: true });
     render(
       <ComposePageClient
@@ -173,7 +174,13 @@ describe("ComposePageClient", () => {
         draftId="draft-1"
       />,
     );
-    expect(screen.getByRole("region", { name: "compose email" })).toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "compose email" })).not.toBeInTheDocument();
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      composerMailboxMessages("en").draftLoadingError,
+    );
+    expect(
+      screen.getByRole("button", { name: composerMailboxMessages("en").retry }),
+    ).toBeInTheDocument();
     expect(screen.queryByText("Loading draft...")).not.toBeInTheDocument();
   });
 

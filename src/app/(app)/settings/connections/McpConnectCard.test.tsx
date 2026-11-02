@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { McpConnectCard } from "./McpConnectCard";
@@ -12,9 +13,25 @@ describe("McpConnectCard", () => {
     render(<McpConnectCard endpointUrl={ENDPOINT} />);
     expect(screen.getByRole("heading", { name: "Connect an AI client" })).not.toBeNull();
     const field = screen.getByLabelText("Server URL");
-    expect(field).toBeInstanceOf(HTMLInputElement);
-    expect((field as HTMLInputElement).value).toBe(ENDPOINT);
-    expect((field as HTMLInputElement).readOnly).toBe(true);
+    expect(field).toBeInstanceOf(HTMLTextAreaElement);
+    expect((field as HTMLTextAreaElement).value).toBe(ENDPOINT);
+    expect((field as HTMLTextAreaElement).readOnly).toBe(true);
+  });
+
+  it("offers a wrapped left-to-right URL and manual copy recovery if clipboard access fails", async () => {
+    const writeText = vi.fn<(text: string) => Promise<void>>(() =>
+      Promise.reject(new TypeError("clipboard blocked")),
+    );
+    Object.assign(navigator, { clipboard: { writeText } });
+    render(<McpConnectCard endpointUrl={ENDPOINT} />);
+    const field = screen.getByLabelText("Server URL");
+    expect(field).toHaveAttribute("dir", "ltr");
+    expect(field).toBeInstanceOf(HTMLTextAreaElement);
+    fireEvent.click(screen.getByRole("button", { name: "Copy" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent("copy it manually");
+    expect(field).toHaveFocus();
+    expect((field as HTMLTextAreaElement).selectionEnd).toBe(ENDPOINT.length);
+    expect(screen.getByRole("button", { name: "Copy" })).toBeEnabled();
   });
 
   it("lists the Claude Desktop connector steps and links to the docs", () => {

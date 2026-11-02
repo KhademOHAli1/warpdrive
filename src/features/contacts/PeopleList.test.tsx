@@ -32,7 +32,10 @@ vi.mock("./actions", () => ({
   mergePersonsAction: (...a: unknown[]) => mergePersonsAction(...a),
 }));
 vi.mock("@/utils/csrfCookie", () => ({ readCsrfToken: () => "csrf" }));
-vi.mock("@/features/identity/preferencesActions", () => ({ setColumnViewAction: vi.fn() }));
+vi.mock("@/features/identity/preferencesActions", () => ({
+  setColumnViewAction: vi.fn(),
+  setSavedViewSelectionAction: vi.fn(() => Promise.resolve({ ok: true })),
+}));
 
 import { PeopleList } from "./PeopleList";
 

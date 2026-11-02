@@ -50,7 +50,7 @@ describe("useDraftAutosave", () => {
     await vi.advanceTimersByTimeAsync(1600);
     expect(saveMock).toHaveBeenCalledTimes(1);
     expect(saveCalls()[0]?.[1]).toMatchObject({
-      id: undefined,
+      createId: expect.stringMatching(/^[0-9a-f-]{36}$/),
       accountId: "acc",
       subject: "Hi",
     });

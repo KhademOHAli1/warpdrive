@@ -17,8 +17,11 @@ import { users } from "@/db/schema/identity";
 import { type Lead, leads } from "@/db/schema/leads";
 import { type Organization, organizations } from "@/db/schema/organizations";
 import { type Person, persons } from "@/db/schema/persons";
+import { contactVisibilityClause } from "@/features/contacts/visibilitySql";
 import { isCustomFieldSortKey } from "@/features/custom-fields/sortKey";
 import { customFieldOrderBy, resolveCustomFieldSort } from "@/features/custom-fields/sortSql";
+import { canSee } from "@/features/permissions/canSee";
+import type { AuthUser } from "@/features/permissions/types";
 import { isUuidParam } from "@/lib/isUuidParam";
 import { assertNever } from "@/types/result";
 import type { DealVisibilitySession } from "@/types/session";
@@ -33,6 +36,23 @@ import {
 import { leadVisibilityClause } from "./visibility";
 
 type Db = NodePgDatabase<typeof schema>;
+
+function linkedContactVisibility(session: DealVisibilitySession): { person: SQL; org: SQL } {
+  return {
+    person: contactVisibilityClause(session, {
+      ownerId: sql`${persons.ownerId}`,
+      visibilityLevel: sql`${persons.visibilityLevel}`,
+      visibilityGroupId: sql`${persons.visibilityGroupId}`,
+      visibleToUserIds: sql`${persons.visibleToUserIds}`,
+    }),
+    org: contactVisibilityClause(session, {
+      ownerId: sql`${organizations.ownerId}`,
+      visibilityLevel: sql`${organizations.visibilityLevel}`,
+      visibilityGroupId: sql`${organizations.visibilityGroupId}`,
+      visibleToUserIds: sql`${organizations.visibleToUserIds}`,
+    }),
+  };
+}
 
 // Shared row projection so the paged list and the full export stay in lockstep.
 const leadRowSelection = {
@@ -79,9 +99,7 @@ export type LeadDetail = Lead & {
 };
 
 // The fully-loaded linked person + organization records for the lead sidebar's Person/Organization
-// blocks (reused from the deal workspace so the lead surfaces the contact's whole field set, not
-// just the name). Loaded by id like summaryRepo.getWorkspace does for deals: the lead's own
-// visibility gate (getLeadById) is the authority, so the contact reads are ungated here.
+// blocks. Each linked contact has its own visibility rule, independent of the lead.
 export interface LeadRelations {
   person: Person | null;
   org: Organization | null;
@@ -91,6 +109,7 @@ export interface LeadRelations {
 // renders a link to a detail page that 404s, matching summaryRepo's deletedAt filter for deals.
 export async function getLeadRelations(
   db: Db,
+  actor: AuthUser,
   lead: Pick<Lead, "personId" | "orgId">,
   signal: AbortSignal,
 ): Promise<LeadRelations> {
@@ -110,7 +129,32 @@ export async function getLeadRelations(
       : Promise.resolve([]),
   ]);
   signal.throwIfAborted();
-  return { person: personRows[0] ?? null, org: orgRows[0] ?? null };
+  const person = personRows[0];
+  const org = orgRows[0];
+  return {
+    person:
+      person !== undefined &&
+      canSee(actor, {
+        kind: "person",
+        ownerId: person.ownerId,
+        visibilityLevel: person.visibilityLevel,
+        visibilityGroupId: person.visibilityGroupId,
+        visibleToUserIds: person.visibleToUserIds,
+      })
+        ? person
+        : null,
+    org:
+      org !== undefined &&
+      canSee(actor, {
+        kind: "organization",
+        ownerId: org.ownerId,
+        visibilityLevel: org.visibilityLevel,
+        visibilityGroupId: org.visibilityGroupId,
+        visibleToUserIds: org.visibleToUserIds,
+      })
+        ? org
+        : null,
+  };
 }
 
 // A single visible lead with resolved names, or null when not visible (404-on-invisible:
@@ -125,16 +169,25 @@ export async function getLeadById(
   // A non-uuid id (a malformed [leadId] path param) can never match a row; short-circuit to the
   // not-found sentinel instead of letting Postgres reject the uuid cast and throw a 500.
   if (!isUuidParam(id)) return null;
+  const contacts = linkedContactVisibility(session);
   const [row] = await db
     .select({
       ...getTableColumns(leads),
+      personId: persons.id,
+      orgId: organizations.id,
       personName: persons.name,
       orgName: organizations.name,
       ownerName: users.name,
     })
     .from(leads)
-    .leftJoin(persons, eq(persons.id, leads.personId))
-    .leftJoin(organizations, eq(organizations.id, leads.orgId))
+    .leftJoin(
+      persons,
+      and(eq(persons.id, leads.personId), isNull(persons.deletedAt), contacts.person),
+    )
+    .leftJoin(
+      organizations,
+      and(eq(organizations.id, leads.orgId), isNull(organizations.deletedAt), contacts.org),
+    )
     .leftJoin(users, eq(users.id, leads.ownerId))
     .where(and(eq(leads.id, id), isNull(leads.deletedAt), leadVisibilityClause(session)));
   signal.throwIfAborted();
@@ -237,12 +290,19 @@ export async function listLeads(
   );
 
   const orderBy = await leadOrderBy(db, parsed.sort, signal);
+  const contacts = linkedContactVisibility(session);
 
   const rows = await db
     .select(leadRowSelection)
     .from(leads)
-    .leftJoin(persons, eq(persons.id, leads.personId))
-    .leftJoin(organizations, eq(organizations.id, leads.orgId))
+    .leftJoin(
+      persons,
+      and(eq(persons.id, leads.personId), isNull(persons.deletedAt), contacts.person),
+    )
+    .leftJoin(
+      organizations,
+      and(eq(organizations.id, leads.orgId), isNull(organizations.deletedAt), contacts.org),
+    )
     .leftJoin(users, eq(users.id, leads.ownerId))
     .where(where)
     // Stable tiebreak so equal sort keys keep a deterministic order. leads.id is the final,
@@ -275,12 +335,19 @@ export async function listLeadsForExport(
     ...buildFilters(parsed),
   );
   const orderBy = await leadOrderBy(db, parsed.sort, signal);
+  const contacts = linkedContactVisibility(session);
 
   const rows = await db
     .select(leadRowSelection)
     .from(leads)
-    .leftJoin(persons, eq(persons.id, leads.personId))
-    .leftJoin(organizations, eq(organizations.id, leads.orgId))
+    .leftJoin(
+      persons,
+      and(eq(persons.id, leads.personId), isNull(persons.deletedAt), contacts.person),
+    )
+    .leftJoin(
+      organizations,
+      and(eq(organizations.id, leads.orgId), isNull(organizations.deletedAt), contacts.org),
+    )
     .leftJoin(users, eq(users.id, leads.ownerId))
     .where(where)
     .orderBy(orderBy, desc(leads.createdAt), asc(leads.id));

@@ -1,0 +1,34 @@
+{
+  "observedAt": "2026-11-01T04:08:36.502705+00:00",
+  "adoptedApplicationSource": "f78c342e2e6f062bd1602c2928d925028bc0d44f",
+  "workflowTree": "13eb7da7ffabe9ef6552608616f320cffce5259b",
+  "unitSource": "27006e422bd5e241b8281bca1468a93659b6a4c5",
+  "postgresSource": "0d8247f676f54899aa8b54c3699e3eaba9f22ead",
+  "checks": [
+    {
+      "name": "selected-workflow-auth-ui-locale-units",
+      "tests": 133,
+      "files": 47,
+      "exitCode": 0,
+      "durationSeconds": 21.284,
+      "privateLog": ".runtime/sales-evidence/builder-adoption-units.log",
+      "sha256": "6c1d0a7683f3d6618b5db8eb701eea8c73a336afad8ba65a907d518d7fec6339"
+    },
+    {
+      "name": "selected-workflow-postgresql",
+      "tests": 22,
+      "files": 8,
+      "exitCode": 0,
+      "durationSeconds": 14.212,
+      "dockerBackToRecordedBaseline": true,
+      "privateLog": ".runtime/sales-evidence/builder-adoption-pg.log",
+      "sha256": "f8728b5f03a87daa0d28699107b083e1a1ff58e9e96db3d4bef445a38413c7f3"
+    }
+  ],
+  "limits": [
+    "Selected scopes only, not full new-candidate type/lint/build/browser/provider or release acceptance",
+    "The later queue work is separate and its real PostgreSQL tests are unrun",
+    "f006 full-suite/build qualification is preserved separately",
+    "Automatic triggers, outbox, waits and shared MAIL effects remain unimplemented"
+  ]
+}

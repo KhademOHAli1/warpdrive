@@ -11,11 +11,13 @@ export function InlineCustomField({
   def,
   value,
   currency,
+  initiallyEditing = false,
 }: {
   onSave: CustomFieldsSave;
   def: CustomFieldDef;
   value: unknown;
   currency: string;
+  initiallyEditing?: boolean;
 }): React.ReactNode {
   const router = useRouter();
 
@@ -25,5 +27,13 @@ export function InlineCustomField({
     return r;
   }
 
-  return <InlineCustomFieldEditor def={def} value={value} currency={currency} onSave={save} />;
+  return (
+    <InlineCustomFieldEditor
+      def={def}
+      value={value}
+      currency={currency}
+      onSave={save}
+      initiallyEditing={initiallyEditing}
+    />
+  );
 }

@@ -8,7 +8,7 @@ import { withTestDb } from "@/db/testing";
 import { seedUser } from "@/db/testing/factories";
 import { updateDeal } from "./dealActions";
 import { adminSession, noEditSession, regularSession } from "./dealMove.test-helpers";
-import { setupDeal } from "./dealUpdate.test-helpers";
+import { seedDealOwnerEditor, setupDeal } from "./dealUpdate.test-helpers";
 
 describe("updateDeal: CAS precondition", () => {
   it("returns E_DEAL_002 on stale expectedUpdatedAt and leaves row unchanged", async () => {
@@ -59,7 +59,7 @@ describe("updateDeal: permissions", () => {
   it("denies a non-owner with only deal.edit_own (E_PERM_001)", async () => {
     await withTestDb(async (db) => {
       const { deal } = await setupDeal(db);
-      const other = await seedUser(db);
+      const other = await seedDealOwnerEditor(db, new AbortController().signal);
       const r = await updateDeal(
         db,
         regularSession(other.id),

@@ -141,6 +141,7 @@ describe("deal.savedFilters", () => {
         rotting: true,
       });
       expect(Object.keys(row ?? {}).sort()).toEqual([
+        "availability",
         "createdAt",
         "definition",
         "favorite",

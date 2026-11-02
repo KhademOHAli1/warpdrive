@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { env } from "@/config/env";
 import { calendarRange } from "@/features/activities/calendar";
 import { CALENDAR_MESSAGES } from "@/features/activities/calendarMessages";
 import { parseCalendarParams, selectWindow } from "@/features/activities/calendarView";
@@ -47,7 +48,7 @@ export default async function CalendarPage({
       {/* The screen's own name. The toggle and the week label read as controls without it, and the
           page had no heading of any level for a screen reader to land on. */}
       <h1 className="sr-only">{CALENDAR_MESSAGES[preferences.locale].title}</h1>
-      <ActivitiesToggle active="calendar" />
+      <ActivitiesToggle active="calendar" queueEnabled={env.SALES_NEXT_ACTION_QUEUE_ENABLED} />
       <FilterableCalendar
         view={view}
         anchorIso={anchorIso}

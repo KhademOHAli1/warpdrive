@@ -1,5 +1,7 @@
 "use client";
+import { Plus } from "lucide-react";
 import type { CalendarActivity } from "@/features/activities/calendar";
+import { calendarActivityTarget } from "@/features/activities/calendarActivityTarget";
 import {
   calendarWeekdayLabels,
   formatCalendarDate,
@@ -24,11 +26,15 @@ function DayCell({
   anchor,
   items,
   todayIso,
+  onCreate,
+  onEdit,
 }: {
   iso: string;
   anchor: Date;
   items: CalendarActivity[];
   todayIso: string;
+  onCreate?: (date: string) => void;
+  onEdit?: (id: string) => void;
 }): React.ReactNode {
   const preferences = useLocalePreferences();
   const t = useAppTranslations("calendar");
@@ -50,15 +56,35 @@ function DayCell({
       data-today={isToday}
       className={`border border-border rounded-md p-1 min-h-24 ${cellTone} ${todayRing}`}
     >
-      <a
-        href={calendarHref("week", iso)}
-        aria-label={isToday ? t("todayLabel", { date: dateLabel }) : dateLabel}
-        className="block text-xs font-medium hover:underline mb-0.5 tabular-nums"
-      >
-        {formatCalendarDate(day, preferences, { day: "numeric" })}
-      </a>
+      <div className="mb-0.5 flex items-center justify-between gap-1">
+        <a
+          href={calendarHref("week", iso)}
+          aria-label={isToday ? t("todayLabel", { date: dateLabel }) : dateLabel}
+          className="block text-xs font-medium hover:underline mb-0.5 tabular-nums"
+        >
+          {formatCalendarDate(day, preferences, { day: "numeric" })}
+        </a>
+        {onCreate !== undefined && (
+          <button
+            type="button"
+            aria-label={t("editor.createOnDate", { date: dateLabel })}
+            onClick={() => onCreate(iso)}
+            className="flex size-7 shrink-0 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <Plus className="size-3.5" aria-hidden />
+          </button>
+        )}
+      </div>
       {items.slice(0, MAX_CHIPS).map((a) => (
-        <ActivityChip key={a.id} a={a} />
+        <ActivityChip
+          key={a.id}
+          a={a}
+          onOpen={
+            onEdit !== undefined && calendarActivityTarget(a).kind === "edit"
+              ? () => onEdit(a.id)
+              : undefined
+          }
+        />
       ))}
       {overflow > 0 ? (
         <a
@@ -77,11 +103,15 @@ export function MonthView({
   dayIsos,
   activities,
   todayIso,
+  onCreate,
+  onEdit,
 }: {
   anchorIso: string;
   dayIsos: string[];
   activities: CalendarActivity[];
   todayIso: string;
+  onCreate?: (date: string) => void;
+  onEdit?: (id: string) => void;
 }): React.ReactNode {
   const preferences = useLocalePreferences();
   const t = useAppTranslations("calendar");
@@ -114,6 +144,8 @@ export function MonthView({
               anchor={anchor}
               items={grouped.get(iso) ?? []}
               todayIso={todayIso}
+              onCreate={onCreate}
+              onEdit={onEdit}
             />
           ))}
         </div>

@@ -63,6 +63,27 @@ const secondRow = {
   hasAttachment: false,
 };
 
+it("disables remote bulk read for a mixed selection with a readonly mailbox while keeping local archive", () => {
+  render(
+    <ThreadList
+      folder="inbox"
+      threads={[
+        inboxRow,
+        {
+          ...secondRow,
+          mailCapabilities: { read: true, send: true, markRead: false, move: false, trash: false },
+        },
+      ]}
+    />,
+  );
+  fireEvent.click(screen.getByRole("checkbox", { name: "Select Renewal" }));
+  fireEvent.click(screen.getByRole("checkbox", { name: "Select Follow up" }));
+  const bar = screen.getByRole("toolbar", { name: "Bulk actions" });
+  expect(within(bar).getByRole("button", { name: "Mark read" })).toBeDisabled();
+  expect(within(bar).getByRole("button", { name: "Mark unread" })).toBeDisabled();
+  expect(within(bar).getByRole("button", { name: "Archive" })).not.toBeDisabled();
+});
+
 // ThreadList pages the inbox via useInfiniteQuery; the mock mirrors its page shape.
 const inboxPages = { pages: [{ threads: [inboxRow], nextCursor: null }] };
 const inboxListQuery = vi.fn(() => ({

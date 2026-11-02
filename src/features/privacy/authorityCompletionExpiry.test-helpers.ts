@@ -8,7 +8,19 @@ import type { Db } from "@/db/client";
 import * as schema from "@/db/schema";
 import type { TestDb } from "@/test/db";
 import type { Result } from "@/types/result";
-import { statusExpirySnapshot } from "./jobStatusSessionExpiry.test-helpers";
+
+async function statusExpirySnapshot(observer: PoolClient, signal: AbortSignal) {
+  signal.throwIfAborted();
+  const result = await observer.query<{ state: unknown }>(`SELECT jsonb_build_object(
+    'cases', (SELECT jsonb_agg(t ORDER BY id) FROM privacy_cases t),
+    'proofs', (SELECT jsonb_agg(t ORDER BY case_id) FROM privacy_case_verifications t),
+    'events', (SELECT jsonb_agg(t ORDER BY id) FROM privacy_case_events t),
+    'jobs', (SELECT jsonb_agg(t ORDER BY id) FROM privacy_jobs t)
+  ) AS state`);
+  signal.throwIfAborted();
+  assert(result.rows[0] !== undefined, "STATE: missing native durable-state snapshot");
+  return result.rows[0].state;
+}
 
 type Outcome =
   | { kind: "resolved"; value: Result<unknown, unknown> }

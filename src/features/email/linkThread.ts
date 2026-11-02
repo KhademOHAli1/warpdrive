@@ -10,6 +10,7 @@ import {
   type ThreadVisibilityRow,
 } from "./emailVisibility";
 import { assertMailboxOwner } from "./mailboxOwnership";
+import { privateIntakeBlocksThread } from "./privateIntakeRestrictions";
 
 export interface ApplyThreadLinkArgs {
   actor: AuthUser;
@@ -75,13 +76,16 @@ export async function applyThreadLink(
   }
 
   // (c) Apply the link. undefined leaves the column as-is; explicit null clears it.
-  await db.execute(sql`
+  const updated = await db.execute(sql`
     UPDATE email_threads
     SET person_id = ${args.personId === undefined ? sql`person_id` : args.personId},
         deal_id = ${args.dealId === undefined ? sql`deal_id` : args.dealId},
         updated_at = now()
     WHERE id = ${args.threadId}
+      AND NOT ${privateIntakeBlocksThread(visRow.accountId, args.threadId)} RETURNING id
   `);
   signal.throwIfAborted();
-  return ok({ threadId: args.threadId });
+  return updated.rows.length === 1
+    ? ok({ threadId: args.threadId })
+    : err(new AppError("E_GMAIL_011", "thread not found", {}));
 }

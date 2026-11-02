@@ -1,0 +1,2 @@
+ALTER TABLE "mail_message_locators" ADD COLUMN "source_fingerprint" text;--> statement-breakpoint
+CREATE INDEX "mail_locators_account_source_idx" ON "mail_message_locators" USING btree ("account_id","source_fingerprint");

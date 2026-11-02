@@ -22,6 +22,8 @@
       "!**/globals.css",
       "!**/parity-tools",
       "!docs/parity-baselines",
+      "!docs/migration-history/*-original",
+      "!docs/sales-platform/approved",
       "!src/components/ui/primitives"
     ]
   },

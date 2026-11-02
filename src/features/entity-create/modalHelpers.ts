@@ -2,7 +2,7 @@ import { createOrgAction, createPersonAction } from "@/features/contacts/actions
 import type { ContactPoint } from "@/features/deals/AddDealPersonColumn";
 import { createAppTranslator } from "@/features/i18n/catalog";
 import type { Locale } from "@/features/i18n/registry";
-import { normalizeDigits } from "@/utils/normalizeNumberInput";
+import type { PhoneCountry } from "@/utils/phoneNormalization";
 import type { EntityCreateState, Option } from "./modalState";
 
 // Drop blank contact rows so an empty row never becomes a "" contact point; mark the first
@@ -10,12 +10,13 @@ import type { EntityCreateState, Option } from "./modalState";
 function cleanPoints(
   rows: ContactPoint[],
   phone = false,
-): Array<{ label: string; value: string; primary: boolean }> {
+): Array<{ label: string; value: string; primary: boolean; country?: PhoneCountry }> {
   return rows
     .filter((r) => r.value.trim() !== "")
     .map((r, i) => ({
       label: r.label,
-      value: phone ? normalizeDigits(r.value.trim()) : r.value.trim(),
+      value: phone ? r.value : r.value.trim(),
+      ...(phone && r.country !== undefined ? { country: r.country } : {}),
       primary: i === 0,
     }));
 }

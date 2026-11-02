@@ -1,0 +1,85 @@
+.workflow-canvas {
+  --xy-background-color: transparent;
+  --xy-background-pattern-dots-color: hsl(var(--border));
+  --xy-edge-stroke: hsl(var(--muted-foreground));
+  --xy-edge-stroke-selected: hsl(var(--primary));
+  --xy-controls-button-background-color: hsl(var(--card));
+  --xy-controls-button-color: hsl(var(--foreground));
+  --xy-controls-button-border-color: hsl(var(--border));
+  --xy-controls-button-background-color-hover: hsl(var(--accent));
+  --xy-node-border: 0;
+  --xy-handle-background-color: hsl(var(--card));
+  --xy-handle-border-color: hsl(var(--muted-foreground));
+}
+.workflow-canvas .react-flow__node {
+  cursor: grab;
+}
+.workflow-canvas[data-dragging="true"] .react-flow__node {
+  cursor: grabbing;
+}
+.workflow-canvas .react-flow__handle {
+  width: 36px;
+  height: 36px;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.workflow-canvas .react-flow__handle::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 16px;
+  height: 16px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 3px solid hsl(var(--card));
+  background: hsl(var(--primary));
+  box-shadow: 0 0 0 1px hsl(var(--border));
+  pointer-events: none;
+  transition:
+    box-shadow 120ms ease,
+    background-color 120ms ease;
+}
+.workflow-canvas .react-flow__handle:hover::after {
+  box-shadow: 0 0 0 5px color-mix(in srgb, hsl(var(--primary)) 15%, transparent);
+}
+.workflow-canvas .react-flow__handle.connectingto.valid::after {
+  background: hsl(var(--success));
+  box-shadow: 0 0 0 5px color-mix(in srgb, hsl(var(--success)) 20%, transparent);
+}
+.workflow-canvas .react-flow__handle.connectingto:not(.valid)::after {
+  background: hsl(var(--destructive));
+  box-shadow: 0 0 0 5px color-mix(in srgb, hsl(var(--destructive)) 15%, transparent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .workflow-canvas .react-flow__handle::after {
+    transition: none;
+  }
+}
+.workflow-canvas .react-flow__edge.selected .react-flow__edge-path {
+  stroke: hsl(var(--primary));
+  stroke-width: 2.5;
+}
+.workflow-canvas .react-flow__connection-path {
+  stroke: hsl(var(--primary));
+  stroke-width: 2;
+}
+.workflow-canvas .react-flow__edge-textbg {
+  fill: hsl(var(--card));
+}
+.workflow-canvas .react-flow__edge-text {
+  fill: hsl(var(--foreground));
+  font-family: inherit;
+}
+.workflow-canvas .react-flow__node:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 5px;
+  border-radius: var(--radius);
+}
+.workflow-canvas .react-flow__controls {
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid hsl(var(--border));
+  box-shadow: none;
+}

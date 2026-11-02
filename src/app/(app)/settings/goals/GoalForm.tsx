@@ -1,5 +1,5 @@
 "use client";
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { Button } from "@/components/ui/Button";
 import { DatePicker } from "@/components/ui/DatePicker";
 import { Input } from "@/components/ui/Input";
@@ -14,33 +14,18 @@ import {
 import type { Goal } from "@/db/schema/goals";
 import { CurrencySelect } from "@/features/currencies/CurrencySelect";
 import { goalTargetInput } from "@/features/goals/goalTargetText";
-import { useLocale } from "@/features/i18n/LocaleProvider";
+import { useAppTranslations, useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import type { Locale } from "@/features/i18n/registry";
 import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import { useFormatters } from "@/lib/useFormatters";
+import { instantCivilDate } from "@/lib/zonedDateTime";
 import { normalizeNumberInput } from "@/utils/normalizeNumberInput";
+import { GoalFormField as Field } from "./GoalFormField";
+import type { GoalDraft, Option } from "./types";
+
+export type { GoalDraft, Option } from "./types";
 
 const ANY = "goal:any";
-
-export interface Option {
-  id: string;
-  name: string;
-}
-
-export interface GoalDraft {
-  subject: string;
-  action: string;
-  metric: string;
-  assigneeKind: string;
-  assigneeId: string | null;
-  pipelineId: string | null;
-  activityTypeId: string | null;
-  interval: string;
-  target: string;
-  currency?: string;
-  startsOn: string;
-  endsOn: string | null;
-}
 
 interface Props {
   users: Option[];
@@ -53,6 +38,8 @@ interface Props {
   submitLabel: string;
   onSubmit: (draft: GoalDraft) => Promise<{ ok: boolean; errorId?: string }>;
   onDone: () => void;
+  onCancel?: () => void;
+  onBusyChange?: (busy: boolean) => void;
 }
 
 export function GoalForm({
@@ -65,11 +52,14 @@ export function GoalForm({
   submitLabel,
   onSubmit,
   onDone,
+  onCancel,
+  onBusyChange,
 }: Props): React.ReactElement {
   const L = useSettingsMessages();
   const S = L;
-  const locale = useLocale();
+  const { locale, timeZone } = useLocalePreferences();
   const format = useFormatters();
+  const sales = useAppTranslations("sales");
 
   const [currency, setCurrency] = useState(initial?.currency ?? baseCurrency);
   const [subject, setSubject] = useState<GoalSubject>(initial?.subject ?? "deal");
@@ -90,11 +80,12 @@ export function GoalForm({
       ? ""
       : format.number(seedTarget, { useGrouping: false, maximumFractionDigits: 20 }));
   const [startsOn, setStartsOn] = useState<string>(
-    initial?.startsOn ?? new Date().toISOString().slice(0, 10),
+    () => initial?.startsOn ?? instantCivilDate(new Date(), timeZone),
   );
   const [endsOn, setEndsOn] = useState<string | null>(initial?.endsOn ?? null);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const busy = useRef(false);
 
   // Switching subject can strand an action that no longer applies, so both reset together
   // rather than letting the form submit a pair the boundary will reject.
@@ -116,136 +107,190 @@ export function GoalForm({
 
   function submit(e: React.FormEvent<HTMLFormElement>): void {
     e.preventDefault();
+    if (busy.current) return;
+    busy.current = true;
+    onBusyChange?.(true);
     setError(null);
     startTransition(async () => {
-      const r = await onSubmit({
-        subject,
-        action,
-        metric,
-        assigneeKind,
-        assigneeId: assigneeKind === "company" || assigneeId === ANY ? null : assigneeId,
-        pipelineId: pipelineId === ANY ? null : pipelineId,
-        activityTypeId: subject === "activity" && activityTypeId !== ANY ? activityTypeId : null,
-        interval,
-        currency,
-        target:
-          targetDraft === null
-            ? seedTarget
-            : (normalizeNumberInput(targetDraft.raw, targetDraft.locale) ?? targetDraft.raw.trim()),
-        startsOn,
-        endsOn,
-      });
-      if (!r.ok) {
-        setError(r.errorId === "E_GOAL_001" ? S.goalInvalid : S.goalSaveFailed);
-        return;
+      try {
+        const r = await onSubmit({
+          subject,
+          action,
+          metric,
+          assigneeKind,
+          assigneeId: assigneeKind === "company" || assigneeId === ANY ? null : assigneeId,
+          pipelineId: pipelineId === ANY ? null : pipelineId,
+          activityTypeId: subject === "activity" && activityTypeId !== ANY ? activityTypeId : null,
+          interval,
+          currency,
+          target:
+            targetDraft === null
+              ? seedTarget
+              : (normalizeNumberInput(targetDraft.raw, targetDraft.locale) ??
+                targetDraft.raw.trim()),
+          startsOn,
+          endsOn,
+        });
+        if (!r.ok) {
+          setError(r.errorId === "E_GOAL_001" ? S.goalInvalid : S.goalSaveFailed);
+          return;
+        }
+        onDone();
+      } catch {
+        setError(S.goalSaveFailed);
+      } finally {
+        busy.current = false;
+        onBusyChange?.(false);
       }
-      onDone();
     });
   }
 
   return (
-    <form onSubmit={submit} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-      {metric === "value" && <CurrencySelect value={currency} onChange={setCurrency} />}
-      <Select
-        ariaLabel={S.goalSubject}
-        value={subject}
-        onChange={chooseSubject}
-        options={[
-          { value: "deal", label: L._extra.deals },
-          { value: "activity", label: L._extra.activities },
-        ]}
-      />
-      <Select
-        ariaLabel={S.goalAction}
-        value={action}
-        onChange={setAction}
-        options={actionOptions}
-      />
-      <Select
-        ariaLabel={S.goalMetric}
-        value={metric}
-        onChange={setMetric}
-        options={
-          subject === "deal"
-            ? [
-                { value: "count", label: L._extra.count },
-                { value: "value", label: L._extra.value },
-              ]
-            : [{ value: "count", label: L._extra.count }]
-        }
-      />
-      <Select
-        ariaLabel={S.goalAssignee}
-        value={assigneeKind}
-        onChange={(v) => {
-          setAssigneeKind(v as GoalAssigneeKind);
-          setAssigneeId(ANY);
-        }}
-        options={[
-          { value: "company", label: L._extra.whole_company },
-          { value: "team", label: L._extra.a_team },
-          { value: "user", label: L._extra.one_person },
-        ]}
-      />
-      {assigneeKind !== "company" && (
-        <Select
-          ariaLabel={S.goalAssignee}
-          value={assigneeId}
-          onChange={setAssigneeId}
-          options={[{ value: ANY, label: L._extra.select }, ...assigneeOptions]}
-        />
-      )}
-      <Select
-        ariaLabel={S.goalPipeline}
-        value={pipelineId}
-        onChange={setPipelineId}
-        options={[
-          { value: ANY, label: S.goalAnyPipeline },
-          ...pipelines.map((p) => ({ value: p.id, label: p.name })),
-        ]}
-      />
-      {subject === "activity" && (
-        <Select
-          ariaLabel={S.goalActivityType}
-          value={activityTypeId}
-          onChange={setActivityTypeId}
-          options={[
-            { value: ANY, label: S.goalAnyActivityType },
-            ...activityTypes.map((t) => ({ value: t.id, label: t.name })),
-          ]}
-        />
-      )}
-      <Select
-        ariaLabel={S.goalInterval}
-        value={interval}
-        onChange={setInterval}
-        options={GOAL_INTERVALS.map((i) => ({ value: i, label: L._extra.goalIntervals[i] }))}
-      />
-      <Input
-        aria-label={S.goalTarget}
-        placeholder={S.goalTarget}
-        value={target}
-        onChange={(e) => {
-          const raw = e.target.value;
-          setTargetDraft((current) => ({ raw, locale: current?.locale ?? locale }));
-        }}
-      />
-      <DatePicker
-        ariaLabel={S.goalStartsOn}
-        value={startsOn}
-        onChange={(v) => setStartsOn(v ?? startsOn)}
-      />
-      <DatePicker
-        ariaLabel={S.goalEndsOn}
-        value={endsOn}
-        onChange={setEndsOn}
-        placeholder={S.goalNoEnd}
-      />
-      <Button type="submit" disabled={isPending || target.trim() === ""}>
-        {submitLabel}
-      </Button>
+    <form onSubmit={submit} className="grid gap-4 sm:grid-cols-2" aria-busy={isPending}>
+      <fieldset disabled={isPending} inert={isPending} className="contents">
+        {metric === "value" && (
+          <Field label={sales("currencyLabel")}>
+            <CurrencySelect value={currency} onChange={setCurrency} />
+          </Field>
+        )}
+        <Field label={S.goalSubject}>
+          <Select
+            disabled={isPending}
+            ariaLabel={S.goalSubject}
+            value={subject}
+            onChange={chooseSubject}
+            options={[
+              { value: "deal", label: L._extra.deals },
+              { value: "activity", label: L._extra.activities },
+            ]}
+          />
+        </Field>
+        <Field label={S.goalAction}>
+          <Select
+            disabled={isPending}
+            ariaLabel={S.goalAction}
+            value={action}
+            onChange={setAction}
+            options={actionOptions}
+          />
+        </Field>
+        <Field label={S.goalMetric}>
+          <Select
+            disabled={isPending}
+            ariaLabel={S.goalMetric}
+            value={metric}
+            onChange={setMetric}
+            options={
+              subject === "deal"
+                ? [
+                    { value: "count", label: L._extra.count },
+                    { value: "value", label: L._extra.value },
+                  ]
+                : [{ value: "count", label: L._extra.count }]
+            }
+          />
+        </Field>
+        <Field label={S.goalAssignee}>
+          <Select
+            disabled={isPending}
+            ariaLabel={S.goalAssignee}
+            value={assigneeKind}
+            onChange={(v) => {
+              setAssigneeKind(v as GoalAssigneeKind);
+              setAssigneeId(ANY);
+            }}
+            options={[
+              { value: "company", label: L._extra.whole_company },
+              { value: "team", label: L._extra.a_team },
+              { value: "user", label: L._extra.one_person },
+            ]}
+          />
+        </Field>
+        {assigneeKind !== "company" && (
+          <Field label={S.goalAssignee}>
+            <Select
+              disabled={isPending}
+              ariaLabel={S.goalAssignee}
+              value={assigneeId}
+              onChange={setAssigneeId}
+              options={[{ value: ANY, label: L._extra.select }, ...assigneeOptions]}
+            />
+          </Field>
+        )}
+        <Field label={S.goalPipeline}>
+          <Select
+            disabled={isPending}
+            ariaLabel={S.goalPipeline}
+            value={pipelineId}
+            onChange={setPipelineId}
+            options={[
+              { value: ANY, label: S.goalAnyPipeline },
+              ...pipelines.map((p) => ({ value: p.id, label: p.name })),
+            ]}
+          />
+        </Field>
+        {subject === "activity" && (
+          <Field label={S.goalActivityType}>
+            <Select
+              disabled={isPending}
+              ariaLabel={S.goalActivityType}
+              value={activityTypeId}
+              onChange={setActivityTypeId}
+              options={[
+                { value: ANY, label: S.goalAnyActivityType },
+                ...activityTypes.map((t) => ({ value: t.id, label: t.name })),
+              ]}
+            />
+          </Field>
+        )}
+        <Field label={S.goalInterval}>
+          <Select
+            disabled={isPending}
+            ariaLabel={S.goalInterval}
+            value={interval}
+            onChange={setInterval}
+            options={GOAL_INTERVALS.map((i) => ({ value: i, label: L._extra.goalIntervals[i] }))}
+          />
+        </Field>
+        <Field label={S.goalTarget}>
+          <Input
+            aria-label={S.goalTarget}
+            placeholder={S.goalTarget}
+            value={target}
+            onChange={(e) => {
+              const raw = e.target.value;
+              setTargetDraft((current) => ({ raw, locale: current?.locale ?? locale }));
+            }}
+          />
+        </Field>
+        <Field label={S.goalStartsOn}>
+          <DatePicker
+            ariaLabel={S.goalStartsOn}
+            value={startsOn}
+            onChange={(v) => setStartsOn(v ?? startsOn)}
+          />
+        </Field>
+        <Field label={S.goalEndsOn}>
+          <DatePicker
+            ariaLabel={S.goalEndsOn}
+            value={endsOn}
+            onChange={setEndsOn}
+            placeholder={S.goalNoEnd}
+          />
+        </Field>
+      </fieldset>
+      <div className="flex flex-wrap justify-end gap-2 sm:col-span-2">
+        {onCancel !== undefined && (
+          <Button variant="outline" disabled={isPending} onClick={onCancel}>
+            {L.cancel}
+          </Button>
+        )}
+        <Button type="submit" disabled={isPending || target.trim() === ""}>
+          {isPending ? L._extra.saving : submitLabel}
+        </Button>
+      </div>
       {error !== null && (
-        <p role="alert" className="text-sm text-destructive sm:col-span-2 lg:col-span-4">
+        <p role="alert" className="text-sm text-destructive sm:col-span-2">
           {error}
         </p>
       )}

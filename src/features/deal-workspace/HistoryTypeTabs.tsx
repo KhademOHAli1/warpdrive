@@ -14,6 +14,7 @@ const TABS: HistoryTab[] = ["all", "activities", "notes", "email", "files", "cha
 
 interface HistoryTypeTabsProps {
   tab: HistoryTab;
+  hideEmptyState?: boolean;
   onTab: (t: HistoryTab) => void;
   counts: Partial<Record<HistoryTab, number>>;
   items: Record<HistoryTab, HistoryItem[]>;
@@ -41,6 +42,7 @@ interface HistoryTypeTabsProps {
 // filtering the History bucket instead of the raw activities/notes/changelog).
 export function HistoryTypeTabs({
   tab,
+  hideEmptyState = false,
   onTab,
   counts,
   items,
@@ -90,7 +92,7 @@ export function HistoryTypeTabs({
         {/* History is a view of what is attached, not a compose surface: read-only so the
             deal page shows one uploader (the compose bar's Files tab), not two. */}
         {tab === "files" && <FileAttachments entityType="deal" entityId={dealId} readOnly />}
-        {tab !== "files" && (
+        {tab !== "files" && !(hideEmptyState && items[tab].length === 0) && (
           <HistoryFeed
             items={items[tab]}
             emptyLabel={

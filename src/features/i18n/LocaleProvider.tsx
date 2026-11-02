@@ -3,6 +3,7 @@
 import { NextIntlClientProvider } from "next-intl";
 import { createContext, type ReactNode, useContext, useMemo } from "react";
 import { DirectionProvider } from "@/components/ui/direction";
+import type { IranianMoneyUnit } from "@/lib/iranianMoney";
 import {
   displayNumberingSystem,
   localeWithNumberingSystem,
@@ -33,17 +34,20 @@ export function LocaleProvider({
   calendar,
   timeZone,
   numberingSystem,
+  iranianMoneyUnit,
   children,
 }: {
   locale?: Locale;
   calendar?: CalendarSystem;
   timeZone?: string;
   numberingSystem?: NumberingSystem;
+  iranianMoneyUnit?: IranianMoneyUnit;
   children: ReactNode;
 }): ReactNode {
   const stored = useMemo(
-    () => resolveLocalePreferences({ locale, calendar, timeZone, numberingSystem }),
-    [locale, calendar, timeZone, numberingSystem],
+    () =>
+      resolveLocalePreferences({ locale, calendar, timeZone, numberingSystem, iranianMoneyUnit }),
+    [locale, calendar, timeZone, numberingSystem, iranianMoneyUnit],
   );
   const choice = usePreferencePersistence(stored);
   const preferences = choice.preferences;

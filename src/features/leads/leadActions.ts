@@ -13,6 +13,7 @@ import {
 } from "@/features/permissions/entityCreate";
 import { assertReferenceVisible } from "@/features/permissions/referenceCheck";
 import { err, ok, type Result } from "@/types/result";
+import { canLeadAction, leadActionClause } from "./leadWriteAuth";
 import {
   type LeadArchiveInput,
   type LeadCreateInput,
@@ -134,7 +135,13 @@ export async function archiveLead(
 
   // Only a lead visible to the actor can be archived (404-on-invisible: do not leak existence).
   const [visible] = await db
-    .select({ id: leads.id })
+    .select({
+      id: leads.id,
+      ownerId: leads.ownerId,
+      visibilityLevel: leads.visibilityLevel,
+      visibilityGroupId: leads.visibilityGroupId,
+      visibleToUserIds: leads.visibleToUserIds,
+    })
     .from(leads)
     .where(and(eq(leads.id, input.leadId), isNull(leads.deletedAt), leadVisibilityClause(session)));
   signal.throwIfAborted();
@@ -145,11 +152,21 @@ export async function archiveLead(
       }),
     );
   }
+  if (!canLeadAction(session, "deal.edit", visible)) {
+    return err(new AppError(ERROR_IDS.PERM_DENIED, "Not permitted to archive this lead"));
+  }
 
   const [row] = await db
     .update(leads)
     .set({ archivedAt: input.archived ? sql`now()` : null, updatedAt: new Date() })
-    .where(eq(leads.id, input.leadId))
+    .where(
+      and(
+        eq(leads.id, input.leadId),
+        isNull(leads.deletedAt),
+        leadVisibilityClause(session),
+        leadActionClause(session, "deal.edit"),
+      ),
+    )
     .returning();
   if (row === undefined) {
     return err(

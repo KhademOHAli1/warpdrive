@@ -45,6 +45,13 @@ export function useInboxRealtime({
       }
       if (frame.kind !== "event" || frame.event === undefined) return;
       const event = frame.event;
+      if (event.type === "email_mailbox_changed") {
+        onMailboxChanged?.();
+        void utils.email.inbox.list.invalidate();
+        if (openThreadId !== undefined) {
+          void utils.email.thread.get.invalidate({ threadId: openThreadId });
+        }
+      }
       if (event.type === "email_arrived") {
         onMailboxChanged?.();
         void utils.email.inbox.list.invalidate();

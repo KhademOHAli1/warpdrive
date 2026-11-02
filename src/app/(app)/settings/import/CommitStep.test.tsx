@@ -54,6 +54,25 @@ it("shows the importing status while the commit job runs", () => {
   expect(screen.getByText("Importing...")).toBeInTheDocument();
 });
 
+it("waits for terminal result counts instead of inventing a zero split", () => {
+  getBatch.mockReturnValue({ data: { status: "partial" } });
+  getResult.mockReturnValue({ data: undefined, isError: false });
+  render(<CommitStep batchId="b1" onReset={vi.fn()} />);
+  expect(screen.getByText("Import partially complete")).toBeInTheDocument();
+  expect(screen.getByRole("status")).toHaveTextContent("Loading import results");
+  expect(screen.queryByText("0 imported, 0 skipped, 0 failed")).not.toBeInTheDocument();
+});
+
+it("retries a failed terminal result read without submitting the import again", () => {
+  const retry = vi.fn();
+  getBatch.mockReturnValue({ data: { status: "completed" } });
+  getResult.mockReturnValue({ data: undefined, isError: true, refetch: retry });
+  render(<CommitStep batchId="b1" onReset={vi.fn()} />);
+  expect(screen.getByRole("alert")).toHaveTextContent("Could not load these import details");
+  fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+  expect(retry).toHaveBeenCalledOnce();
+});
+
 it("lists the warnings of imported rows after the commit", () => {
   getBatch.mockReturnValue({ data: { status: "completed" } });
   getResult.mockReturnValue({ data: { imported: 2, skipped: 0, invalid: 0, total: 2 } });

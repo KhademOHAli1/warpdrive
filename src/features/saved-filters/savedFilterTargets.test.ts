@@ -60,7 +60,8 @@ describe("saveFilterInput per target entity", () => {
       targetEntity: "person",
       definition: { conditions: [{ field: "name", op: "contains", value: "a" }] },
     });
-    expect(r.success && r.data.definition.combinator).toBe("and");
+    expect(r.success).toBe(true);
+    if (r.success) expect(r.data.definition).toHaveProperty("combinator", "and");
   });
 });
 

@@ -1,10 +1,10 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useRef, useState } from "react";
-import { ActivityEditModal, type EditableActivity } from "@/features/activities/ActivityEditModal";
-import { AddActivityModal } from "@/features/activities/AddActivityModal";
 import { allDayRowCount } from "@/features/activities/agendaLayout";
 import { initialScrollHour } from "@/features/activities/agendaScroll";
+import { CalendarEventDialog } from "@/features/activities/CalendarEventDialog";
+import { CalendarEventEditDialog } from "@/features/activities/CalendarEventEditDialog";
 import type { CalendarActivity } from "@/features/activities/calendar";
 import { calendarActivityTarget } from "@/features/activities/calendarActivityTarget";
 import { followUpLinksOf, useFollowUpAfterDone } from "@/features/activities/followUpAfterDone";
@@ -18,7 +18,6 @@ import {
 } from "@/features/activities/weekAgenda";
 import { useAppTranslations, useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import { useRecordPreview } from "@/features/navigation/recordPreviewStore";
-import { trpc } from "@/lib/trpc-client";
 import { useIsomorphicLayoutEffect } from "@/lib/useIsomorphicLayoutEffect";
 import { AgendaDayColumn } from "./AgendaDayColumn";
 import { AgendaDayHeader } from "./AgendaDayHeader";
@@ -35,28 +34,6 @@ interface CreateSlot {
 // Stable identity so a day with nothing on it does not defeat AgendaDayColumn's memo.
 const NO_ITEMS: CalendarActivity[] = [];
 
-// Maps a calendar-view activity onto ActivityEditModal's field shape. CalendarActivity (from
-// calendarRange) doesn't carry priority, and location is only populated by the deal-history
-// projection, not the calendar one; both default to null here. That's safe by the same rule
-// ActivitiesTable's toEditable relies on: Save only ships fields the user actually touched
-// (see buildActivityPatch), so an unseen existing value is never clobbered.
-function toEditable(a: CalendarActivity, typeIdByKey: Map<string, string>): EditableActivity {
-  return {
-    id: a.id,
-    subject: a.subject,
-    typeId: typeIdByKey.get(a.typeKey) ?? "",
-    priority: null,
-    dueAtIso: a.dueAt.toISOString(),
-    allDay: a.allDay,
-    dueDate: a.dueDate,
-    endDate: a.endDate,
-    durationMinutes: a.durationMinutes,
-    location: a.location ?? null,
-    done: a.done,
-    assigneeId: a.assigneeId ?? null,
-  };
-}
-
 // Interactive hourly week agenda: a time gutter plus seven day columns, sharing one set of grid
 // tracks across a pinned header row, a pinned all-day row, and a scrolling hour region. Clicking a
 // chip opens the record the activity hangs off; clicking an empty hour lane opens AddActivityModal
@@ -72,11 +49,6 @@ export function WeekAgendaGrid({
   const router = useRouter();
   const preferences = useLocalePreferences();
   const t = useAppTranslations("calendar");
-  const typesQ = trpc.activities.listTypes.useQuery();
-  const typeIdByKey = useMemo(
-    () => new Map((typesQ.data ?? []).map((t) => [t.key, t.id])),
-    [typesQ.data],
-  );
 
   const setPreview = useRecordPreview((s) => s.setPreview);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -210,17 +182,17 @@ export function WeekAgendaGrid({
       </div>
 
       {createSlot !== null && (
-        <AddActivityModal
+        <CalendarEventDialog
           onClose={() => setCreateSlot(null)}
-          onCreated={refresh}
+          onSaved={refresh}
           defaultDate={createSlot.date}
           defaultTime={createSlot.time}
         />
       )}
 
       {selected !== null && (
-        <ActivityEditModal
-          activity={toEditable(selected, typeIdByKey)}
+        <CalendarEventEditDialog
+          id={selected.id}
           onClose={() => setSelectedId(null)}
           onSaved={refresh}
           onMarkedDone={(activityId) => {

@@ -9,6 +9,7 @@ import { AppError } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import { err, ok, type Result } from "@/types/result";
 import type { GmailClient } from "./gmailClient";
+import { storeNotificationGmailCopy } from "./notificationGmailCopy";
 import type { SendPayload } from "./outboxClaim";
 import type { SendEmailInput } from "./send";
 import { storeOutboundCopy } from "./sendStore";
@@ -65,6 +66,7 @@ export async function performWorkerSendCrm(
   }
 
   const payload = row.payload;
+  if (payload.systemPurpose !== undefined) return storeNotificationGmailCopy(db, args);
   // Derive resolvedTrackingEnabled from the resolved flags written at enqueue time.
   // Fall back to legacy trackingEnabled for rows written before the split.
   const resolvedTrackingEnabled =

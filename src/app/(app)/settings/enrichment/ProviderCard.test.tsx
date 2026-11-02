@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import type { ComponentProps } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { QuotaRemaining } from "@/features/enrichment/providers/types";
 import { LocaleProvider } from "@/features/i18n/LocaleProvider";
@@ -24,7 +25,9 @@ const BASE: ProviderCardView = {
 
 function renderCard(
   view: Partial<ProviderCardView>,
-  handlers: Record<string, () => void> = {},
+  handlers: Partial<
+    Pick<ComponentProps<typeof ProviderCard>, "onToggle" | "onSaveKey" | "onRemoveKey" | "onTest">
+  > = {},
   extra: {
     testResult?: string | null;
     testQuota?: QuotaRemaining | null;
@@ -35,7 +38,7 @@ function renderCard(
 ) {
   const props = {
     onToggle: vi.fn(),
-    onSaveKey: vi.fn(),
+    onSaveKey: vi.fn(() => Promise.resolve(true)),
     onRemoveKey: vi.fn(),
     onTest: vi.fn(),
     ...handlers,
@@ -166,13 +169,13 @@ describe("ProviderCard", () => {
     expect(screen.getByText(S.statusDisabled)).toBeInTheDocument();
   });
 
-  it("saves the typed key and clears the field", () => {
+  it("saves the typed key and clears the field after success", async () => {
     const { onSaveKey } = renderCard({});
     const field = screen.getByLabelText(S.apiKeyLabel);
     fireEvent.change(field, { target: { value: "secret-key-1234" } });
     fireEvent.click(screen.getByRole("button", { name: S.save }));
     expect(onSaveKey).toHaveBeenCalledWith("secret-key-1234");
-    expect(field).toHaveValue("");
+    await waitFor(() => expect(field).toHaveValue(""));
   });
 
   it("will not save an empty key", () => {

@@ -22,3 +22,11 @@ describe("TeamsTable", () => {
     expect(screen.getByText("None")).toBeInTheDocument();
   });
 });
+
+it("explains an empty team directory instead of showing a bare table header", () => {
+  render(<TeamsTable teams={[]} users={USERS} />);
+  expect(screen.getByText("No teams yet")).toBeInTheDocument();
+  expect(
+    screen.getByText(/membership is separate from permissions and record visibility/i),
+  ).toBeInTheDocument();
+});

@@ -92,38 +92,85 @@ describe("sendEmail with signatureId", () => {
     });
   });
 
-  it("denies (E_PERM_004) when the signatureId belongs to a different user", async () => {
-    await withTestDb(async (db) => {
-      const user = await seedUser(db);
-      const other = await seedUser(db);
-      const accountId = await seedAccount(db, user.id);
-      const sigId = await seedSignature(db, {
-        userId: other.id,
-        bodyHtml: "<p>Other user sig</p>",
+  it.each(["foreign", "missing"] as const)(
+    "records a rejected receipt without sending for a %s signature",
+    async (kind) => {
+      await withTestDb(async (db) => {
+        const user = await seedUser(db);
+        const other = await seedUser(db);
+        const accountId = await seedAccount(db, user.id);
+        const sigId =
+          kind === "foreign"
+            ? await seedSignature(db, {
+                userId: other.id,
+                bodyHtml: "<p>Other user sig</p>",
+              })
+            : "99999999-9999-4999-8999-999999999999";
+        const gmail = new FakeGmailClient();
+        const args = {
+          actorId: user.id,
+          actorType: "regular" as const,
+          actorGroupIds: new Set<string>(),
+          gmail,
+          storage: new FakeStorageClient(),
+          input: {
+            accountId,
+            idempotencyKey: "44444444-4444-4444-4444-444444444444",
+            to: ["recipient@example.com"],
+            subject: "Hi",
+            bodyHtml: '<p>Body <a href="https://customer.example.invalid/path">visit</a></p>',
+            signatureId: sigId,
+            trackLinks: true,
+            trackOpens: true,
+          },
+        };
+        const result = await sendEmail(db, args);
+        expect(result).toEqual({
+          ok: true,
+          value: {
+            status: "failed",
+            attemptId: expect.any(String),
+            deliveryOutcome: { state: "rejected" },
+          },
+        });
+        const before = (
+          await db.execute(sql`SELECT id,status,error_id,payload_prepared,send_started_at,claim_token,payload
+        FROM email_send_attempts WHERE account_id=${accountId}`)
+        ).rows;
+        expect(before).toEqual([
+          expect.objectContaining({
+            status: "failed",
+            error_id: "E_PERM_004",
+            payload_prepared: false,
+            send_started_at: null,
+            claim_token: null,
+            payload: expect.objectContaining({ signatureId: sigId, html: args.input.bodyHtml }),
+          }),
+        ]);
+        // A retry cannot replace the original denied snapshot by omitting the signature.
+        const retried = await sendEmail(db, {
+          ...args,
+          input: { ...args.input, signatureId: undefined },
+        });
+        expect(retried).toEqual(result);
+        const after = (
+          await db.execute(sql`SELECT id,status,error_id,payload_prepared,send_started_at,claim_token,payload
+        FROM email_send_attempts WHERE account_id=${accountId}`)
+        ).rows;
+        expect(after).toEqual(before);
+        expect(gmail.calls).toEqual([]);
+        expect(
+          (await db.execute(sql`SELECT id FROM email_messages WHERE account_id=${accountId}`)).rows,
+        ).toEqual([]);
+        expect(
+          (
+            await db.execute(sql`SELECT token FROM email_tracking_tokens WHERE send_attempt_id IN
+        (SELECT id FROM email_send_attempts WHERE account_id=${accountId})`)
+          ).rows,
+        ).toEqual([]);
       });
-
-      const r = await sendEmail(db, {
-        actorId: user.id,
-        actorType: "regular",
-        actorGroupIds: new Set<string>(),
-        gmail: new FakeGmailClient(),
-        storage: new FakeStorageClient(),
-        input: {
-          accountId,
-          idempotencyKey: "44444444-4444-4444-4444-444444444444",
-          to: ["recipient@example.com"],
-          subject: "Hi",
-          bodyHtml: "<p>Body</p>",
-          signatureId: sigId,
-          trackingEnabled: false,
-        },
-      });
-
-      expect(r.ok).toBe(false);
-      if (r.ok !== false) return;
-      expect(r.error.id).toBe("E_PERM_004");
-    });
-  });
+    },
+  );
 
   // Item 5: signature links must NOT be rewritten to tracking redirects;
   // only authored-body links should be tokenised.
