@@ -1,0 +1,18 @@
+{
+  "atUtc": "2026-11-02T07:44:15.743790+00:00",
+  "authorization": "Human requests relevant GitHub issue updates and continuity base after safe stop. Only tracking/documentation work; no feature/chat restart.",
+  "main": "09288d518fd574fd069fb6a1dc670596f71a8831",
+  "preservationRefs": {
+    "refs/heads/codex/preserve-agency-20261102": "e87e99174aa0d6b393d16b93f2650e652d19856c",
+    "refs/heads/codex/preserve-calendar-20261102": "1e93e8e4f7fc67da3fa204b688731dc551334c4b",
+    "refs/heads/codex/preserve-integration-20261102": "76e6f7bb7c0e1861a8ae668fc86be5c05bfcee4c",
+    "refs/heads/codex/preserve-mail-20261102": "300f0784be93b2e187980f0894db30fea64d42d5",
+    "refs/heads/codex/preserve-privacy-20261102": "05c99625341f85928b10e73df9e7fda0ae6955af",
+    "refs/heads/codex/preserve-sales-20261102": "f0de0768a25dc89b3f11cc0b8a431f5b495fdd95",
+    "refs/heads/codex/preserve-settings-20261102": "c226bba5b901a1122e9783ee923536d301a40a87",
+    "refs/heads/codex/preserve-workflow-20261102": "4e0280e973aa04fe2fb1946c86b3509dbea8289b",
+    "refs/heads/main": "09288d518fd574fd069fb6a1dc670596f71a8831"
+  },
+  "canonicalAuthority": "GitHub issues/Project; historical source ledgers unchanged",
+  "newIssuesOrBranches": 0
+}

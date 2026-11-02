@@ -1,0 +1,107 @@
+{
+  "schema_version": 1,
+  "state": "CORRECTION_FOR_ROOT_RECORDING_ONLY_NO_GITHUB_WRITES",
+  "generated_at_utc": "2026-11-02T08:01:47.244511+00:00",
+  "supersedes": "Only conflicting214/215/914 acceptance/gate prose in integration-agency-operations-draft.json; preserve the original draft as historical evidence.",
+  "audit_provenance": {
+    "path": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-integration-program/outputs/mcp-bdb-acceptance-20261102/final-audit/FINAL-AUDIT.md",
+    "status": "Prior complete local AC/source audit explicitly confirmed by Root in this task; no new human approval gate.",
+    "prior_match_record": "Exact bdb27-source and11-issuer postimages matched in that completed audit.",
+    "this_pass_file_access": "Metadata only: all7 final-audit files are SF_DATALESS; contents deliberately not rehydrated/reread, per skip-slow-cloud instruction.",
+    "profile": {
+      "issuer_I": "literal configured BASE_URL",
+      "resource_R": "exact advertised MCP resource",
+      "audience_A": "R"
+    }
+  },
+  "fresh_source_equivalence": {
+    "base": "bdb4fdd876428aefe12de4bf4653580df1f8c05c",
+    "current_main": "09288d518fd574fd069fb6a1dc670596f71a8831",
+    "read_method": "Immutable Git objects only; git ls-tree mode/type/blob/path bytes compared and git diff --name-status empty.",
+    "scopes": [
+      "src/features/oauth",
+      "src/features/mcp",
+      "src/app/.well-known",
+      "src/app/oauth",
+      "docs/mcp-server.md",
+      "docs/integration-execution",
+      "vitest.config.ts",
+      "src/constants/errorIds.ts"
+    ],
+    "tracked_files_unchanged": 131,
+    "changed_paths": [],
+    "identical_tree_listing_sha256": "6fb198c8c21c55cb1c9f8e47f6086d9307be4c55ad106052780ad49ca2ccfee9",
+    "note": "This fresh131-file scoped equivalence carries the prior completed MCP/OAuth/discovery/issuer source audit forward; later Workflow/Privacy changes do not modify these source postimages. No tests were rerun."
+  },
+  "current_hosted_ci": {
+    "url": "https://github.com/KhademOHAli1/warpdrive/actions/runs/41403094273",
+    "head": "09288d518fd574fd069fb6a1dc670596f71a8831",
+    "all8checks": "SUCCESS",
+    "actual_receipt_sha256": "180fb1cbdfca21b903f433bc6e61369aa3272a78aef6277c86c044a38a179359"
+  },
+  "corrections": [
+    {
+      "issue": 214,
+      "canonical_id": "integration/AISEC-009",
+      "url": "https://github.com/KhademOHAli1/warpdrive/issues/214",
+      "original_acceptance_preserved": [
+        "AISEC-009: Check the requested resource, audience and issuer consistently during authorization, exchange and token verification.",
+        "MCP-02: Retain this original scope/history in the detailed canonical issue: | MCP-02    | Bind JWT audience to the MCP endpoint        | Implemented; other audiences rejected                                                            |"
+      ],
+      "replacement_progress_note": "The complete local acceptance/source audit is already recorded at the bdb cut: the27-source and11-issuer postimages matched. It validated the agreed literal issuer I=BASE_URL and exact resource R / audience A=R binding across authorization, exchange and verification. The issue remained OPEN for Root canonical recording, not another local review or human approval. Current09288d5 preserves the audited MCP/OAuth source and has all8 hosted checks green.",
+      "local_ac_audit": "COMPLETE_ALREADY_RECORDED",
+      "remaining_local_acceptance_gates": [],
+      "next_action": "Root records the completed audit and current source-equivalence/CI evidence in the canonical issue; this draft performs no GitHub write or closure.",
+      "external_limits_not_ac_blockers": [
+        "No live-provider, deployment, installed/customer or whole-product acceptance is inferred. These are outside the stated AISEC009/010 acceptance criteria, not new gates for recording their completed local audit."
+      ],
+      "remove_prior_draft_requirements": [
+        "new whole-scope local review",
+        "new human approval",
+        "provider or installation acceptance as AISEC009/010 blockers"
+      ]
+    },
+    {
+      "issue": 215,
+      "canonical_id": "integration/AISEC-010",
+      "url": "https://github.com/KhademOHAli1/warpdrive/issues/215",
+      "original_acceptance_preserved": [
+        "AISEC-010: Pin the targeted specification and test protected-resource metadata and authorization-server discovery."
+      ],
+      "replacement_progress_note": "The complete local discovery/specification acceptance/source audit is already recorded at the bdb cut, including the agreed issuer/resource/audience profile and matching27-source plus11-issuer postimages. The issue remained OPEN for Root canonical recording. Current09288d5 preserves the audited source and has all8 hosted checks green; no unchanged rerun or new approval gate is needed.",
+      "local_ac_audit": "COMPLETE_ALREADY_RECORDED",
+      "remaining_local_acceptance_gates": [],
+      "next_action": "Root records the completed audit and current source-equivalence/CI evidence in the canonical issue; this draft performs no GitHub write or closure.",
+      "external_limits_not_ac_blockers": [
+        "No live-provider, deployment, installed/customer or whole-product acceptance is inferred. These are outside the stated AISEC009/010 acceptance criteria, not new gates for recording their completed local audit."
+      ],
+      "remove_prior_draft_requirements": [
+        "new whole-scope local review",
+        "new human approval",
+        "provider or installation acceptance as AISEC009/010 blockers"
+      ]
+    },
+    {
+      "issue": 914,
+      "canonical_id": "ops/security-regressions-2026-11-02",
+      "url": "https://github.com/KhademOHAli1/warpdrive/issues/914",
+      "original_acceptance_preserved": [
+        "The bounded security hardening in PR #913 is merged with adversarial regression coverage.",
+        "Unit, integration, typecheck, lint, CodeQL, and relevant configuration checks pass at the reviewed source revision.",
+        "The merged main commit has a canonical delivery link and the post-merge open alert state is reviewed."
+      ],
+      "replacement_progress_note": "PR913 source/regressions are merged and attributed in green Main. Direct exact-MinIO-server validation remains an honest external evidence limitation, but it is not an added acceptance criterion or closure blocker for this issue. Apply only the existing three criteria, including the merged delivery link and bounded post-merge alert review.",
+      "remaining_original_ac_recording": "Root independently records the actual live bounded alert-review result and existing source/CI/canonical-link evidence. This correction does not claim a new zero-alert observation.",
+      "external_limit_not_ac_blocker": "Direct MinIO-server behavior was not validated; retain this limit without inventing an extra AC.",
+      "remove_prior_draft_requirement": "MinIO-target evidence as an additional prerequisite to issue914 acceptance"
+    }
+  ],
+  "operations": {
+    "github_writes": 0,
+    "issue_closures": 0,
+    "test_or_feature_jobs": 0,
+    "source_or_ref_mutations": 0,
+    "cloud_contents_materialized": 0,
+    "only_new_owned_correction_json_written": true
+  }
+}

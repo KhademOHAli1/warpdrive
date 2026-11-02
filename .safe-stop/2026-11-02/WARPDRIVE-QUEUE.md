@@ -218,3 +218,5 @@ For this Mac's existing daemon use job-local DOCKER_HOST=unix:///Users/ali/.coli
 - MAIL-COMPILER71-LINTFIX-20261102-2 actualALLGREEN: typegen.760/TSC15.963/scopedtypedlint71zero8.562s, total25.835s<180. Source83/all7fixtures/ONLY13legacyexclusioncandidate scope explicit, notwholeMainqualification. Allgroups/83pins/configs/foreign3listeners/head-index-legacy-package-deps retained/noDB. Normal1Q55→47/sampleTSC6.391GB/nopeakclaim;199affectedunits/Biome5+earliernative6PASS retained, old-1UNSTARTEDseparate.
 
 - ROOT-WORKFLOW0098-CURRENT-VALIDATE-20261102-1 partial: typegen/fullTSC PASS, typedlint42exactonefixturecognitivecomplexity19>15 atseedDurationUpgradeData. Biome0/native0/inventory0/reportnotgenerated; actualcompiler26.242s/total27.996s/ownedgroup49988gone/foreign3-3-2/deps/dotenv/5454pins+53source exact. Sample5.64GiB/minQ46/noresourcestop. Minimumfixtureloop-extractionallowed, sameoracles/IDs; no native10repeat/sourceSQLchanges.
+
+Tracking-only checkpoint:57 existing GitHub issues updated; restart through issue80. No heavy allocation is reopened by this update.
