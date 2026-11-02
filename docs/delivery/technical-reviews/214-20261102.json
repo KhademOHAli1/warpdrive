@@ -1,0 +1,131 @@
+{
+  "schema_version": 1,
+  "review_type": "independent_source_review",
+  "result": "accepted",
+  "canonical_id": "integration/AISEC-009",
+  "acceptance_sha256": "0a57758f9c8a97bb148811a7a1a900d7dba5e0640b7ee3fca83acc3dbcb53a53",
+  "reviewed_revision": "2469028a110ca47c276d2da29b4422bad829967f",
+  "reviewer_agent": {
+    "runtime": "codex",
+    "session_id": "01a19251-a472-7cd1-86cd-8dc245dd5b84",
+    "task_id": "/root/close_ready_issues"
+  },
+  "summary": "Independently reviewed both original AISEC-009 and retained MCP-02 clauses. Authorization and token ingress require exactly one explicit supported resource before grants are mutated; literal configured issuer identification is emitted on validated authorize responses, and access tokens are issued and verified for the configured MCP audience and issuer. The HTTP handler checks configured/supplied resource-profile agreement. Required source and relevant negative-test definitions are unchanged from the prior integrated cc62682 review.",
+  "limitations": "Bounded local resource/issuer/audience contract only. Existing source/native/hosted evidence is retained at its original revisions; this review launches no app, database, provider or client. It does not implement granular grant migration, per-effect native-session revocation, full connection journeys, public-client certification, deployment, installation or release acceptance. Native prerequisite #206 and exact final-main CI remain required.",
+  "criteria": [
+    {
+      "id": "AC1",
+      "result": "passed",
+      "evidence": [
+        "https://github.com/KhademOHAli1/warpdrive/blob/2469028a110ca47c276d2da29b4422bad829967f/src/features/oauth/requestIngress.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/2469028a110ca47c276d2da29b4422bad829967f/src/features/oauth/requestSchemas.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/2469028a110ca47c276d2da29b4422bad829967f/src/features/oauth/authorizationHttp.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/2469028a110ca47c276d2da29b4422bad829967f/src/features/oauth/tokens.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/2469028a110ca47c276d2da29b4422bad829967f/src/features/mcp/auth.ts"
+      ],
+      "criterion": "AISEC-009: Check the requested resource, audience and issuer consistently during authorization, exchange and token verification.",
+      "basis": "Independent current-source review plus unchanged retained qualification. Final acceptance revision CI is checked separately by the completion gate."
+    },
+    {
+      "id": "AC2",
+      "result": "passed",
+      "evidence": [
+        "https://github.com/KhademOHAli1/warpdrive/blob/2469028a110ca47c276d2da29b4422bad829967f/src/features/oauth/requestIngress.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/2469028a110ca47c276d2da29b4422bad829967f/src/features/oauth/requestSchemas.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/2469028a110ca47c276d2da29b4422bad829967f/src/features/oauth/authorizationHttp.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/2469028a110ca47c276d2da29b4422bad829967f/src/features/oauth/tokens.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/2469028a110ca47c276d2da29b4422bad829967f/src/features/mcp/auth.ts"
+      ],
+      "criterion": "MCP-02: Retain this original scope/history in the detailed canonical issue: | MCP-02    | Bind JWT audience to the MCP endpoint        | Implemented; other audiences rejected                                                            |",
+      "basis": "Independent current-source review plus unchanged retained qualification. Final acceptance revision CI is checked separately by the completion gate."
+    }
+  ],
+  "source_pins": [
+    {
+      "path": "src/features/oauth/resource.ts",
+      "sha256": "b8020b551a1a868f9a04633256336f77081859b016bcf765cb67fe949d1157f0"
+    },
+    {
+      "path": "src/features/oauth/requestIngress.ts",
+      "sha256": "711a57a9d1f6c43f89346c3860467f1404a5c7031ad828f809502b156177d9ea"
+    },
+    {
+      "path": "src/features/oauth/requestSchemas.ts",
+      "sha256": "53b9f70f6ebee0799068a533cc22ca86a0840f7c3d4e3108e56d7680e08cda2f"
+    },
+    {
+      "path": "src/features/oauth/authorizationHttp.ts",
+      "sha256": "5ffbe4282c70ffea11cd4267ab6fb470278ab4b524734d90684c17c1993b99e5"
+    },
+    {
+      "path": "src/features/oauth/tokenHttp.ts",
+      "sha256": "494fea3658970f9088ebe809dd72cffdd0f3b326ca68138852ede263f2062627"
+    },
+    {
+      "path": "src/features/oauth/exchange.ts",
+      "sha256": "3018cac74f7a590288d5ba365fa0dcda9c5ba71b0a22cc4cc1c60295ef997ca3"
+    },
+    {
+      "path": "src/features/oauth/tokens.ts",
+      "sha256": "9a79e82208a2cc9d387040afab6d8d6b60dfa33bfaf8d5b2050fd5ae116cc9e3"
+    },
+    {
+      "path": "src/features/mcp/auth.ts",
+      "sha256": "0d263ca89d3c9ebcdcbe2a06ed38579bf9c18defaf7b1aa079624f824996e42f"
+    },
+    {
+      "path": "src/features/mcp/http.ts",
+      "sha256": "6271ea875e43fcde24eeb2d1a2496f2ef89cbc707c1c3d2b6a8d2674f44f5e9a"
+    },
+    {
+      "path": "src/features/oauth/authorize.ts",
+      "sha256": "8c912d297b1c7950dea8780e8f8f25e66d4dab292ba99963cd232c483620432f"
+    },
+    {
+      "path": "src/features/oauth/resourcePolicy.test.ts",
+      "sha256": "6f5510cf353b0cca4147b297a1267b51408ab4528309094fc21b4c46c9433aa8"
+    },
+    {
+      "path": "src/features/oauth/resourceHttp.integration.test.ts",
+      "sha256": "2e413bd74da5ed3828514fbb8c318f80826f854f00081fb62138c3ccfe4b2f39"
+    },
+    {
+      "path": "src/features/oauth/resourceServices.integration.test.ts",
+      "sha256": "eca1d114713837f6bd35692bc1df245f97796ebef8ab95178827d78e439916ca"
+    },
+    {
+      "path": "src/features/oauth/issuerResponse.integration.test.ts",
+      "sha256": "f080d8bf3f4039276a105b67027a29a4d71965565d5d788a9e4d1367d6d03ae9"
+    },
+    {
+      "path": "src/features/oauth/issuerValidation.test.ts",
+      "sha256": "644244d07365b512fb25d0b710a933f167067615f56cafe8e6122833920759f6"
+    }
+  ],
+  "reviewed_at_utc": "2026-11-02T13:51:28.779193+00:00",
+  "issue": 214,
+  "findings": [
+    "Repeated, missing, empty and unsupported resource values fail at ingress/schema boundaries before exchange or refresh mutation.",
+    "The authorization HTTP redirect uses the literal configured issuer; JWT verification restricts algorithm, issuer and audience and verifies persisted token state and subject binding.",
+    "MCP-02 is retained as its own original acceptance clause, rather than dropped as redundant with AISEC-009. Wrong audiences are denied by the verification contract and regression definitions."
+  ],
+  "native_prerequisites": ["integration/AISEC-001"],
+  "prior_review_comparison": {
+    "reviewed_revision": "cc6268266885f215e357d440523e9f9dec9cb0a1",
+    "all_pinned_source_bytes_unchanged": true,
+    "prior_issue_record": "outputs/merge-and-close-20261102/issue-update-plan.json",
+    "preserve_historical_cuts": true
+  },
+  "retained_evidence": {
+    "urls": [
+      "https://github.com/KhademOHAli1/warpdrive/actions/runs/41403094273",
+      "https://github.com/KhademOHAli1/warpdrive/blob/c226bba5b901a1122e9783ee923536d301a40a87/.safe-stop/2026-11-02/main-hosted-ci-final.json",
+      "https://github.com/KhademOHAli1/warpdrive/commit/fc5fae837b4b8e532a8bfd89ff303e941bcf1439",
+      "https://github.com/KhademOHAli1/warpdrive/blob/09288d518fd574fd069fb6a1dc670596f71a8831/src/features/oauth/requestIngress.ts",
+      "https://github.com/KhademOHAli1/warpdrive/blob/09288d518fd574fd069fb6a1dc670596f71a8831/src/features/oauth/authorizationHttp.ts"
+    ],
+    "exact_previous_main_unit_integration_run": "https://github.com/KhademOHAli1/warpdrive/actions/runs/41431140380",
+    "status": "Historical supporting evidence only; no CI result claimed for the eventual new acceptance revision."
+  },
+  "provenance_limit": "GitHub authenticates the later delegated posting principal only. This actual Codex review task and retained report are process provenance, not an independently authenticated GitHub reviewer."
+}

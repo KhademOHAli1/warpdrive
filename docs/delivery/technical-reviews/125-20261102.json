@@ -1,0 +1,102 @@
+{
+  "schema_version": 1,
+  "review_type": "independent_source_review",
+  "result": "accepted",
+  "canonical_id": "integration/CONN-002",
+  "acceptance_sha256": "2f323c034cb2929a2b7d25f773a407f059552933381361cb678dadf3ff7b6060",
+  "reviewed_revision": "2469028a110ca47c276d2da29b4422bad829967f",
+  "reviewer_agent": {
+    "runtime": "codex",
+    "session_id": "01a19251-a472-7cd1-86cd-8dc245dd5b84",
+    "task_id": "/root/close_ready_issues"
+  },
+  "summary": "Independently reviewed the seven correlated ProviderAdapter operation slots, mandatory AbortSignal and Promise<Result<...>> signatures, input/output schemas, invocation deadline/failure validation and exact caller-owned abort propagation. All seven operations are explicitly declared, unsupported slots remain unsupported, and conformance/cancellation fixtures cover the boundary. The current required files match the previously integrated cc62682 source review. This satisfies the original typed-contract criterion; it does not assert that legacy Slack production wrappers already conform.",
+  "limitations": "Independent bounded technical contract review only. Existing local conformance and integrated unit evidence are retained at their real cuts. Caller cancellation is an intentional exception channel; trusted synchronous JavaScript cannot be forcibly preempted. Actual Slack/Gmail adapter rollout, reauthorization, provider installation, user journey and release remain separate. Native prerequisite #124 and exact final-main CI must pass before issue completion.",
+  "criteria": [
+    {
+      "id": "AC1",
+      "result": "passed",
+      "evidence": [
+        "https://github.com/KhademOHAli1/warpdrive/blob/2469028a110ca47c276d2da29b4422bad829967f/src/features/integrations/providers/contract.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/2469028a110ca47c276d2da29b4422bad829967f/src/features/integrations/providers/models.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/2469028a110ca47c276d2da29b4422bad829967f/src/features/integrations/providers/invoke.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/2469028a110ca47c276d2da29b4422bad829967f/src/features/integrations/providers/conformance.test.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/2469028a110ca47c276d2da29b4422bad829967f/src/features/integrations/providers/invokeAbortReason.test.ts"
+      ],
+      "criterion": "CONN-002: Cover authorize, exchange, refresh, list resources, check, disconnect and capability discovery using Result and AbortSignal.",
+      "basis": "Independent current-source review plus unchanged retained qualification. Final acceptance revision CI is checked separately by the completion gate."
+    }
+  ],
+  "source_pins": [
+    {
+      "path": "docs/integration-execution/provider-contract-qualification.md",
+      "sha256": "6bcda54f75824d25eda394bef977c4e15c6cd98de97f404072e427c3561c6af4"
+    },
+    {
+      "path": "src/features/integrations/providers/conformance.test.ts",
+      "sha256": "8965c76c99de01d8e24e9256c687c0d6f9ebb226b977bae14e4d111b226086cf"
+    },
+    {
+      "path": "src/features/integrations/providers/contract.ts",
+      "sha256": "1a10b6c5176ff3313cdfdda1797e36f16ac53c2ea6b17f1c2667f4ba62c73f08"
+    },
+    {
+      "path": "src/features/integrations/providers/inputSchemas.ts",
+      "sha256": "ec812ffdc15099de8161b75428f14ad5823bd02e6bfc554a52be3df750831205"
+    },
+    {
+      "path": "src/features/integrations/providers/invoke.test.ts",
+      "sha256": "21431d17688e6414a494b7601f6614a54f26f514813d70aba7b3b1cc9ebf44b3"
+    },
+    {
+      "path": "src/features/integrations/providers/invoke.ts",
+      "sha256": "03cbca4c055bc3d71586e3213ed5d87e63cf476646ad22a05c3669edde073233"
+    },
+    {
+      "path": "src/features/integrations/providers/invokeAbortReason.test.ts",
+      "sha256": "3ed29f2f4618dca64754bbed3a44ece6706c7d1da0ba81b183fcf897570d5e89"
+    },
+    {
+      "path": "src/features/integrations/providers/models.ts",
+      "sha256": "c7de6bb18c77769d41af719f9037873ba65d49997d34b89c5fc7abaec1c960d0"
+    },
+    {
+      "path": "src/features/integrations/providers/outputSchemas.ts",
+      "sha256": "0caed9be7331297aa7e0c33e9efae686632f97946fae93a7fc09bb90b6eb2da7"
+    },
+    {
+      "path": "src/features/integrations/providers/safety.test.ts",
+      "sha256": "f4d02af1d663cf6b548f1d466346990df4cb325473ef45da17683ed61134b0be"
+    },
+    {
+      "path": "src/types/result.ts",
+      "sha256": "ebba2cc3e43560f2ee347a8eb15489429e7bd90e213fab56f6976b75099079d9"
+    }
+  ],
+  "reviewed_at_utc": "2026-11-02T13:51:28.502990+00:00",
+  "issue": 125,
+  "findings": [
+    "Authorize, exchange, refresh, listResources, check, disconnect and discoverCapabilities are correlated through ProviderOperation and typed schema maps.",
+    "Every supported slot takes AbortSignal and returns Promise<Result>. Caller cancellation deliberately escapes with its exact caller-owned reason, rather than becoming an operational failure.",
+    "Unknown/overdue adapter outcomes are bounded and redacted; synthetic fixtures do not instantiate a new provider broker or make actual upstream calls."
+  ],
+  "native_prerequisites": ["integration/CONN-001"],
+  "prior_review_comparison": {
+    "reviewed_revision": "cc6268266885f215e357d440523e9f9dec9cb0a1",
+    "all_pinned_source_bytes_unchanged": true,
+    "prior_issue_record": "outputs/merge-and-close-20261102/issue-update-plan.json",
+    "preserve_historical_cuts": true
+  },
+  "retained_evidence": {
+    "urls": [
+      "https://github.com/KhademOHAli1/warpdrive/blob/76e6f7bb7c0e1861a8ae668fc86be5c05bfcee4c/src/features/integrations/providers/invoke.ts",
+      "https://github.com/KhademOHAli1/warpdrive/blob/76e6f7bb7c0e1861a8ae668fc86be5c05bfcee4c/src/features/integrations/providers/invokeAbortReason.test.ts",
+      "https://github.com/KhademOHAli1/warpdrive/blob/76e6f7bb7c0e1861a8ae668fc86be5c05bfcee4c/.safe-stop/2026-11-02/integration/evidence/provider-abort-reason-20261102/ACTUAL-RED-RECEIPT.json",
+      "https://github.com/KhademOHAli1/warpdrive/blob/c226bba5b901a1122e9783ee923536d301a40a87/.safe-stop/2026-11-02/WARPDRIVE-PROJECT-STATUS.md",
+      "https://github.com/KhademOHAli1/warpdrive/blob/09288d518fd574fd069fb6a1dc670596f71a8831/src/features/integrations/providers/invoke.ts"
+    ],
+    "exact_previous_main_unit_integration_run": "https://github.com/KhademOHAli1/warpdrive/actions/runs/41431140380",
+    "status": "Historical supporting evidence only; no CI result claimed for the eventual new acceptance revision."
+  },
+  "provenance_limit": "GitHub authenticates the later delegated posting principal only. This actual Codex review task and retained report are process provenance, not an independently authenticated GitHub reviewer."
+}

@@ -1,0 +1,365 @@
+{
+  "schema_version": 1,
+  "review_type": "independent_source_review",
+  "result": "accepted",
+  "canonical_id": "ops/code-scanning-2026-11-02",
+  "acceptance_sha256": "4f2832d14dd77b650b617e41f5e5a9775d783a26178a0180bc72c677dc4decf3",
+  "reviewed_revision": "b0b53587ac8f64b8cb73710a7f0344255e72fd4f",
+  "reviewer_agent": {
+    "runtime": "codex",
+    "session_id": "01a19251-a472-7cd1-86cd-8dc245dd5b84",
+    "task_id": "/root/deal_core_next_slice"
+  },
+  "summary": "Independently reviewed the dated batch scope, all seven retained false-positive source/sink reviews, current source preservation and the two actual stored explanation corrections. Alerts10 and6 now identify their actual AUTHENTICATE parsing and random Gmail OAuth-state cross-protocol sources. The five other false-positive explanations remain supported. The public source-fix/regression increment is retained; current explicit UID dispatch strengthens the earlier bounded fixture change, while companion privacy changes are source inventory digest/derived-edge updates. The only changed prior false-positive source file is release.py: its narrow technical-completion audit opt-in and text change preserve the public-policy evidence/gh-environment separation reviewed for alerts13/14. The new gate itself received independent source review, and Root reports all127 delivery tests passed. The old exact-cc62682 CI/zero-alert evidence and the fresh post-correction zero-alert observation are retained with their actual cuts; final candidate CI/scan/alert checks remain mandatory before issue completion.",
+  "limitations": "This is independent bounded source/process review under explicit single-account agent delegation, not human approval. The alert-state and corrected-comment persistence observations were made by Root through authenticated GitHub reads; this reviewer inspected the retained results and their source-bound accuracy, without repeating API calls or tests. Old hosted CI is atcc62682, not at reviewed sourceb0b5358 or any final acceptance revision. The accepting integrator must wait for and independently check the final exact-main unit/integration/types/lint/CodeQL/traceability jobs and fresh post-scan open-alert state before posting acceptance. Loopback protocol fixtures and deterministic SHA indices do not establish real mailbox/provider/installation or production security. No blanket product-security, user-journey, release or deployment acceptance is claimed. Private findings and credentials are not copied.",
+  "criteria": [
+    {
+      "id": "AC1",
+      "result": "passed",
+      "evidence": [
+        "https://github.com/KhademOHAli1/warpdrive/security/code-scanning",
+        "https://github.com/KhademOHAli1/warpdrive/commit/3dc7fe76ea9c90b1321754873c349b50caaef3a1",
+        "https://github.com/KhademOHAli1/warpdrive/actions/runs/41431139984"
+      ],
+      "assessment": "The retained dated batch contains fixed alerts1/2/3/4/8/9 and seven explained false-positive dismissals5/6/7/10/13/14/15. Public true-positive source/regression files remain preserved, with reviewed explicit UID switch and privacy inventory companion deltas. Root independently reread zero open alerts after the actual comment corrections. This supports the reviewed source/evidence scope; final exact-candidate CodeQL and post-scan alert state must still be observed by the accepting gate."
+    },
+    {
+      "id": "AC2",
+      "result": "passed",
+      "evidence": [
+        "https://github.com/KhademOHAli1/warpdrive/security/code-scanning/15",
+        "https://github.com/KhademOHAli1/warpdrive/security/code-scanning/14",
+        "https://github.com/KhademOHAli1/warpdrive/security/code-scanning/13",
+        "https://github.com/KhademOHAli1/warpdrive/security/code-scanning/10",
+        "https://github.com/KhademOHAli1/warpdrive/security/code-scanning/7",
+        "https://github.com/KhademOHAli1/warpdrive/security/code-scanning/6",
+        "https://github.com/KhademOHAli1/warpdrive/security/code-scanning/5"
+      ],
+      "assessment": "All seven alert-specific traces were reviewed. The two previously mismatched/partial comments are now corrected and Root reread their stored exact text, dismissed state and false-positive reason. The five existing explanations remain tied to unchanged sources/sinks. Actual reopen-then-redismiss API transitions are preserved below rather than claiming a metadata-only HTTP update."
+    },
+    {
+      "id": "AC3",
+      "result": "passed",
+      "evidence": [
+        "https://github.com/KhademOHAli1/warpdrive/actions/runs/41431140380",
+        "https://github.com/KhademOHAli1/warpdrive/actions/runs/41431139984",
+        "https://github.com/KhademOHAli1/warpdrive/actions/runs/41431140404",
+        "https://github.com/KhademOHAli1/warpdrive/blob/b0b53587ac8f64b8cb73710a7f0344255e72fd4f/scripts/delivery/release_agent_acceptance_test.py"
+      ],
+      "assessment": "Historical exact-cc62682 hosted results record9028 unit passes/3 skips and3152 PostgreSQL passes, with successful type/lint/build, all three CodeQL analyses and delivery traceability. Root additionally reports127 standard-library delivery tests passed on the committed policy cut. This review preserves those actual results; it does not assign them to a later revision. Final exact-main acceptance CI and actual post-scan alert state are independently enforced before closure."
+    }
+  ],
+  "source_pins": [
+    {
+      "path": "docs/delivery/release-policy.json",
+      "sha256": "d915398cef7eda89d685400182d215fcead27373ab1c3b09c46c4050df195fb9"
+    },
+    {
+      "path": "scripts/delivery/release.py",
+      "sha256": "f076918de489306bd236f284e8c986c1c941b62848e4a543adb792d3f482e214"
+    },
+    {
+      "path": "scripts/delivery/release_artifacts.py",
+      "sha256": "ba521305dfb2b71536369f1a08597ab1fa7a56ba4f1bc0986ebca84252e235f5"
+    },
+    {
+      "path": "scripts/delivery/release_gates.py",
+      "sha256": "3e1118ef639ecfd9f56e1269cb94275ed7c0407d6995518f1e31a9508f2bbb39"
+    },
+    {
+      "path": "scripts/delivery/release_support.py",
+      "sha256": "768e675468837b0a6daa90c462b4b315e257c73b142994874a8f8864a4fadb8a"
+    },
+    {
+      "path": "scripts/sales-platform/programmeFiles.test.ts",
+      "sha256": "a5c018cdc628a57ab468d862034a3fbd492526078a8a43226ddb7728ba449b38"
+    },
+    {
+      "path": "scripts/sales-platform/programmeFiles.ts",
+      "sha256": "a2a4da4f03a0edcbc577564ec67318174e0680e7ab6ae403b09372f48a91f097"
+    },
+    {
+      "path": "src/features/activities/isBlankHtml.test.ts",
+      "sha256": "5d6bc5568b85d91e9d4babdb583f413f5d18f2f89efea90775b4e90c22375805"
+    },
+    {
+      "path": "src/features/activities/isBlankHtml.ts",
+      "sha256": "f0ddf220c4ba92bf79bdb0ab652fd41b3661ccdfcd5ebe0c7b69dd50344a0266"
+    },
+    {
+      "path": "src/features/auth/better/rateLimit.ts",
+      "sha256": "b3c0f31f838aa84709eb7c1364c8acb54d7bdd764fd64b66b0d1ea3af48053b7"
+    },
+    {
+      "path": "src/features/email/mailConnectionCommit.ts",
+      "sha256": "6ca3aa006fa6cdd1d9e3d115a6b05e44a67669546ee7c99b6bb7cb464d714656"
+    },
+    {
+      "path": "src/features/email/mailConnectionProofContext.ts",
+      "sha256": "b4500b61f018333389594ab722b9e7ae35dc30e2397a436f4e53d03828e07051"
+    },
+    {
+      "path": "src/features/email/mailConnectionProofs.ts",
+      "sha256": "4de8b32d379ea566b5257f51c47409ebef9e8d54a7280dc909e36209b183ded4"
+    },
+    {
+      "path": "src/features/email/merge.test.ts",
+      "sha256": "273e75a1b6fc706a2dcc1be070b213245625ea9e86037863de4ec779dc9eaf49"
+    },
+    {
+      "path": "src/features/email/merge.ts",
+      "sha256": "954e8ef97452e4c29b70d165f2e5eabd1a425f8102dbe9e465b4ab97ce8fa5a5"
+    },
+    {
+      "path": "src/features/email/oauthStart.ts",
+      "sha256": "d33b8ef3cbbb21f563aea455274626120e066d294241f5076acd05e09bbca4aa"
+    },
+    {
+      "path": "src/features/email/oauthState.integration.test.ts",
+      "sha256": "e0b1ecfc78657bec49539a10bd086cfcc6f09d3566f32a0193f022521414ab6a"
+    },
+    {
+      "path": "src/features/email/oauthState.ts",
+      "sha256": "724d2ccc064197eafb027a4b96449dfa718067d0395055cf1d46d549f6a6957f"
+    },
+    {
+      "path": "src/features/email/tracking.test.ts",
+      "sha256": "e60849952f7958e486f87bb8c7def99454ebdf1d65699d3832d68823341e1264"
+    },
+    {
+      "path": "src/features/email/tracking.ts",
+      "sha256": "c3ff4586366c30e225365ff1487e06be54be97ecc7c6c2af7d65b5d167555766"
+    },
+    {
+      "path": "src/features/integrations/slack.ts",
+      "sha256": "8585d466afbbfd91cff7b64306de14e7a13383e1f17d794a6c7ed669dc43e1e3"
+    },
+    {
+      "path": "src/features/privacy/registryIdsCrm1.ts",
+      "sha256": "bdf5038abbd80575c658ffa2162e5239744837bd8a1cd2164500f0e75a4b4f29"
+    },
+    {
+      "path": "src/features/privacy/registryIdsEmail1.ts",
+      "sha256": "4214943547f13571d0811ff5325c767a15fd08c34684476fa96199f65eb624de"
+    },
+    {
+      "path": "src/features/privacy/registryIdsSalesTooling1.ts",
+      "sha256": "023d603e5185917222f3af273bc624b0c85c3d048498a582f3493d1e0fa878fe"
+    },
+    {
+      "path": "src/test/mailProtocolImap.test.ts",
+      "sha256": "8dca6f7e80204f0225d2cc6a6747ce68e1f6b9449ba43cd2931fbe0db18678cf"
+    },
+    {
+      "path": "src/test/mailProtocolImap.ts",
+      "sha256": "65a58bf84f412ebe5bba98f9fa8f90c936f135a450bda4a088245b7a2967bde7"
+    },
+    {
+      "path": "src/test/mailProtocolImapCommands.ts",
+      "sha256": "199dffdef7475825f76617b9de3e80c939567dba16d0a405db0d80422cf57894"
+    }
+  ],
+  "issue": 910,
+  "recorded_at_utc": "2026-11-02T13:49:51.895878+00:00",
+  "false_positive_reviews": [
+    {
+      "alert": 15,
+      "url": "https://github.com/KhademOHAli1/warpdrive/security/code-scanning/15",
+      "rule": "js/user-controlled-bypass",
+      "trace": {
+        "source": "mailProtocolImap.ts205 socket data \u2192 commandLine",
+        "guard": "171 authTag !== null",
+        "sink": "172 authentication(authTag,line)",
+        "checks": "AUTHENTICATE rejects plaintext at136\u2013140 before assigning authTag147; authentication85\u201395 sets authenticated only for exact synthetic credentials; server binds127.0.0.1 at229."
+      },
+      "source_conclusion": "The user-controlled value selects an intended IMAP continuation. It does not replace TLS/credential checks or production authorization. Existing comment matches this exact fixture trace.",
+      "current_explanation": "This is an IMAP test fixture. authTag is set only after an AUTHENTICATE command passes the TLS check; the next line is the protocol continuation. authentication() requires exact synthetic credentials before setting session.authenticated. No access check is bypassed.",
+      "explanation_review": "Prior explanation matches the reviewed trace; source bytes remain unchanged except the separately reviewed delivery gate edit.",
+      "state": "dismissed",
+      "reason": "false positive",
+      "claim_limit": "Specific reported source/sink only; a dismissal is not a source repair or global security qualification."
+    },
+    {
+      "alert": 14,
+      "url": "https://github.com/KhademOHAli1/warpdrive/security/code-scanning/14",
+      "rule": "py/clear-text-storage-sensitive-data",
+      "trace": {
+        "source": "release.py218 trusted_release_policy(args.revision)",
+        "sink": "release_artifacts.py32 JSON serialization into traceability.json",
+        "checks": "trusted_release_policy101\u2013108 parses committed release-policy JSON and requires equality to trusted committed policy; evidence97 constructs public release/CI/issue/commit metadata. release_support.GitHub29\u201340 invokes gh without reading/serializing credential environment into evidence."
+      },
+      "source_conclusion": "The marked source is committed public policy, not token material. The exact stored evidence object has repository/revision/milestone/issue/commit/CI/stage metadata; authentication remains with gh. Existing false-positive explanation fits this taint source/sink.",
+      "current_explanation": "CodeQL marks trusted_release_policy() secret, but traceability.json contains documented evidence from committed public policy: repository, commit SHA, workflow name and URL. GH_TOKEN stays in the gh subprocess environment and is not serialized.",
+      "explanation_review": "Prior explanation matches the reviewed trace; source bytes remain unchanged except the separately reviewed delivery gate edit.",
+      "state": "dismissed",
+      "reason": "false positive",
+      "claim_limit": "Specific reported source/sink only; a dismissal is not a source repair or global security qualification."
+    },
+    {
+      "alert": 13,
+      "url": "https://github.com/KhademOHAli1/warpdrive/security/code-scanning/13",
+      "rule": "py/clear-text-logging-sensitive-data",
+      "trace": {
+        "source": "release.py218 trusted_release_policy(args.revision)",
+        "sink": "243 print(json.dumps(evidence)) in check command",
+        "checks": "Same trusted committed-policy input and structured evidence97 as#14; code does not add GH_TOKEN or an API client/environment object to evidence."
+      },
+      "source_conclusion": "The check output is structured release evidence derived from committed public policy and public API metadata, not the inherited gh credential. This supports this logging false-positive explanation only.",
+      "current_explanation": "CodeQL marks trusted_release_policy() secret, but check prints evidence from committed public policy: repository, commit SHA, workflow name and URL. GH_TOKEN stays in the gh subprocess environment and is absent from the output.",
+      "explanation_review": "Prior explanation matches the reviewed trace; source bytes remain unchanged except the separately reviewed delivery gate edit.",
+      "state": "dismissed",
+      "reason": "false positive",
+      "claim_limit": "Specific reported source/sink only; a dismissal is not a source repair or global security qualification."
+    },
+    {
+      "alert": 10,
+      "url": "https://github.com/KhademOHAli1/warpdrive/security/code-scanning/10",
+      "rule": "js/user-controlled-bypass",
+      "trace": {
+        "source": "mailProtocolImap.ts205 socket data \u2192 commandLine \u2192 authenticate",
+        "guard": "146 encoded === undefined",
+        "sink": "149 authentication(tag,encoded)",
+        "checks": "The guard chooses initial-response versus continuation parsing. TLS check136\u2013140 runs first; exact credential validation85\u201395 still gates session.authenticated."
+      },
+      "source_conclusion": "The false-positive conclusion is supported by the loopback protocol fixture and preserved authentication checks. However, the existing comment describes missingStarttls, which is used at58/188 and is not the currently reported146\u2192149 trace.",
+      "current_explanation": "AUTHENTICATE parsing, not missingStarttls: mailProtocolImap.ts:146-149 selects initial response vs continuation. This loopback fixture requires TLS first (136-140) and exact synthetic credentials (85-95); neither branch bypasses authentication or production policy.",
+      "explanation_review": "Corrected actual stored comment independently reread by Root; now matches reported source/sink.",
+      "state": "dismissed",
+      "reason": "false positive",
+      "claim_limit": "Specific reported source/sink only; a dismissal is not a source repair or global security qualification."
+    },
+    {
+      "alert": 7,
+      "url": "https://github.com/KhademOHAli1/warpdrive/security/code-scanning/7",
+      "rule": "js/insufficient-password-hash",
+      "trace": {
+        "source": "oauthState.integration.test.ts26 consumeGmailOAuthState \u2192 accepted.value.verifier",
+        "sink": "32 createHash(sha256).update(verifier).digest(base64url)",
+        "checks": "oauthState.ts68\u201376 creates state and verifier from separate32-byte random values and computes the S256 challenge; the test compares the returned verifier derivation to issued codeChallenge."
+      },
+      "source_conclusion": "This is a PKCE S256 protocol derivation assertion for a random verifier, not password storage/verification. Existing comment matches the actual reported test trace.",
+      "current_explanation": "Not a password hash. The OAuth PKCE verifier is 32 random bytes; SHA-256 computes the protocol-required S256 code challenge. This test asserts that derivation.",
+      "explanation_review": "Prior explanation matches the reviewed trace; source bytes remain unchanged except the separately reviewed delivery gate edit.",
+      "state": "dismissed",
+      "reason": "false positive",
+      "claim_limit": "Specific reported source/sink only; a dismissal is not a source repair or global security qualification."
+    },
+    {
+      "alert": 6,
+      "url": "https://github.com/KhademOHAli1/warpdrive/security/code-scanning/6",
+      "rule": "js/insufficient-password-hash",
+      "trace": {
+        "source": "oauthState.integration.test.ts16 and116 createGmailOAuthState \u2192 Gmail OAuth state",
+        "sink": "mailConnectionProofContext.ts21 hashMailboxProof(token) reached by domain-separation/cross-use tests21/119",
+        "checks": "oauthState.ts68 generates state with randomBytes(32). Production mailConnectionProofs.ts26 similarly generates random32-byte checkId; mailConnectionCommit.ts130\u2013140 locks current authority and verifies user/session/unconsumed/unexpired proof, then decrypts and validates envelope38\u201350."
+      },
+      "source_conclusion": "The existing comment is correct about the production proof helper and lack of password hashing, but the reported source instances are Gmail OAuth states in explicit cross-protocol tests, not production checkId creation. The false-positive conclusion remains supported; identify that actual random-token source in the comment.",
+      "current_explanation": "SHA-256 indexes random bearer tokens, not passwords. These traces start at createGmailOAuthState in oauthState.integration.test.ts:16/116: oauthState.ts:68 uses 32 random bytes. Cross-hash/remap tests intentionally prove protocol separation and reject cross-use.",
+      "explanation_review": "Corrected actual stored comment independently reread by Root; now matches reported source/sink.",
+      "state": "dismissed",
+      "reason": "false positive",
+      "claim_limit": "Specific reported source/sink only; a dismissal is not a source repair or global security qualification."
+    },
+    {
+      "alert": 5,
+      "url": "https://github.com/KhademOHAli1/warpdrive/security/code-scanning/5",
+      "rule": "js/insufficient-password-hash",
+      "trace": {
+        "source": "oauthStart.ts23 resolveGmailOAuthSession \u2192 authenticated native.value.user.id at30",
+        "sink": "rateLimit.ts69 deterministic SHA256 bucketKey(kind,identity)",
+        "checks": "oauthStart passes mail-connections:<user.id>, not a password. rateLimit.ts124\u2013128 normalizes the subject and keys a subject abuse bucket;69 domain-separates the database index with warpdrive-auth-v1 and kind."
+      },
+      "source_conclusion": "The digest is a rate-limit identity index, not password storage. Existing explanation matches the exact source/caller and sink.",
+      "current_explanation": "Not a password hash. oauthStart.ts passes the authenticated user ID as a rate-limit subject; SHA-256 derives a deterministic database bucket key from kind and identity. Password storage/verification is not involved.",
+      "explanation_review": "Prior explanation matches the reviewed trace; source bytes remain unchanged except the separately reviewed delivery gate edit.",
+      "state": "dismissed",
+      "reason": "false positive",
+      "claim_limit": "Specific reported source/sink only; a dismissal is not a source repair or global security qualification."
+    }
+  ],
+  "actual_explanation_corrections": {
+    "observed_at_utc": "2026-11-02T13:42:54.671738+00:00",
+    "operations": [
+      {
+        "number": 10,
+        "url": "https://github.com/KhademOHAli1/warpdrive/security/code-scanning/10",
+        "steps": [
+          {
+            "state": "open",
+            "atUtc": "2026-11-02T13:42:56.768404+00:00"
+          },
+          {
+            "state": "dismissed",
+            "atUtc": "2026-11-02T13:42:58.574507+00:00"
+          }
+        ],
+        "explanationVerified": true,
+        "comment": "AUTHENTICATE parsing, not missingStarttls: mailProtocolImap.ts:146-149 selects initial response vs continuation. This loopback fixture requires TLS first (136-140) and exact synthetic credentials (85-95); neither branch bypasses authentication or production policy.",
+        "finalState": "dismissed",
+        "reason": "false positive"
+      },
+      {
+        "number": 6,
+        "url": "https://github.com/KhademOHAli1/warpdrive/security/code-scanning/6",
+        "steps": [
+          {
+            "state": "open",
+            "atUtc": "2026-11-02T13:43:00.841516+00:00"
+          },
+          {
+            "state": "dismissed",
+            "atUtc": "2026-11-02T13:43:02.535563+00:00"
+          }
+        ],
+        "explanationVerified": true,
+        "comment": "SHA-256 indexes random bearer tokens, not passwords. These traces start at createGmailOAuthState in oauthState.integration.test.ts:16/116: oauthState.ts:68 uses 32 random bytes. Cross-hash/remap tests intentionally prove protocol separation and reject cross-use.",
+        "finalState": "dismissed",
+        "reason": "false positive"
+      }
+    ],
+    "prior_nonmutating_request_failures": [
+      "HTTP422 max280chars",
+      "HTTP400 already-dismissed",
+      "HTTP422 state required"
+    ],
+    "fresh_open_alerts": [],
+    "observation_source": "Root authenticated update and independent reread retained in the current execution evidence; this reviewer verified the corrected prose against exact preserved source."
+  },
+  "source_preservation": {
+    "prior_false_positive_review_cut": "09288d518fd574fd069fb6a1dc670596f71a8831",
+    "unchanged_prior_false_positive_source_paths": [
+      "src/test/mailProtocolImap.ts",
+      "scripts/delivery/release_artifacts.py",
+      "scripts/delivery/release_support.py",
+      "docs/delivery/release-policy.json",
+      "src/features/email/oauthState.integration.test.ts",
+      "src/features/email/oauthState.ts",
+      "src/features/email/mailConnectionProofContext.ts",
+      "src/features/email/mailConnectionProofs.ts",
+      "src/features/email/mailConnectionCommit.ts",
+      "src/features/email/oauthStart.ts",
+      "src/features/auth/better/rateLimit.ts"
+    ],
+    "changed_prior_false_positive_source_path": "scripts/delivery/release.py",
+    "reviewed_delta": "Audit closure opts into strict bounded delegated technical evidence and explains the allowed path. trusted_release_policy, release evidence construction/printing and GitHub gh subprocess credential handling are unchanged. Newly pinned release_gates.py validates only public committed policy/source/process review fields.",
+    "true_positive_source_increment": "3dc7fe76ea9c90b1321754873c349b50caaef3a1",
+    "later_companion_deltas": [
+      "src/test/mailProtocolImapCommands.ts replaces a fixed-handler Map lookup/call with explicit UID SEARCH/FETCH/STORE/MOVE switch; unsupported default remains rejected.",
+      "src/features/privacy/registryIdsEmail1.ts updates outbox/sendHelpers source digests and adds the attachment-limit derived source edge; no policy activation is inferred."
+    ]
+  },
+  "historical_qualification": {
+    "revision": "cc6268266885f215e357d440523e9f9dec9cb0a1",
+    "unit_passed": 9028,
+    "unit_skipped": 3,
+    "postgresql_passed": 3152,
+    "runs": {
+      "public_bun": 41431140380,
+      "delivery": 41431140404,
+      "codeql": 41431139984
+    },
+    "new_candidate_result": "Pending actual final exact-main hosted checks and scan/alert reread by accepting integrator."
+  },
+  "provenance_limit": "GitHub authenticates the later delegated posting account only; this actual Codex session/task declares an independent process reviewer, not a separately authenticated GitHub reviewer.",
+  "completion_boundary": "The independent review is accepted for the original bounded technical scope. It creates no GitHub acceptance comment or issue-state change. Later completion requires a separate exact-candidate schema2 attestation with this committed artifact digest, fresh actual CI/alert observations and recursive native prerequisite verification."
+}

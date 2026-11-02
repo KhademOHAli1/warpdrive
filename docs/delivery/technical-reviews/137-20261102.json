@@ -1,0 +1,87 @@
+{
+  "schema_version": 1,
+  "review_type": "independent_source_review",
+  "result": "accepted",
+  "canonical_id": "integration/CONN-014",
+  "acceptance_sha256": "62c01a269bea8173e6ee03a7a23a9e0f8aad3f5169d444ce122e000a1d054e2f",
+  "reviewed_revision": "2469028a110ca47c276d2da29b4422bad829967f",
+  "reviewer_agent": {
+    "runtime": "codex",
+    "session_id": "01a19251-a472-7cd1-86cd-8dc245dd5b84",
+    "task_id": "/root/close_ready_issues"
+  },
+  "summary": "Independently reviewed the original six provider-failure distinctions in current Slack read and operation boundaries, finite structured reason projections, bounded Retry-After and conservative unknown mutation outcomes. The retained independent 47-vector wrapper audit plus affected regression evidence supports all six original categories, and the current required files are unchanged from the prior integrated cc62682 review. No extension to unimplemented future vendors or runtime adapter extraction is inferred.",
+  "limitations": "Bounded classification review only. The current legacy public Slack wrappers still throw and have no caller AbortSignal. Terminal revoke compatibility, selected-resource decoder support, durable retry/reauthorization, real provider setup, user journeys, installation and release remain distinct. Historical 93 affected unit and 30 distinct registry passes are not re-aged or combined into a new run. Native prerequisite #124 and exact final-main CI remain required.",
+  "criteria": [
+    {
+      "id": "AC1",
+      "result": "passed",
+      "evidence": [
+        "https://github.com/KhademOHAli1/warpdrive/blob/2469028a110ca47c276d2da29b4422bad829967f/src/features/integrations/slackReadFailure.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/2469028a110ca47c276d2da29b4422bad829967f/src/features/integrations/slackOperationFailure.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/2469028a110ca47c276d2da29b4422bad829967f/src/features/integrations/slackReadFailures.test.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/2469028a110ca47c276d2da29b4422bad829967f/src/features/integrations/slackOperationFailures.test.ts"
+      ],
+      "criterion": "CONN-014: Distinguish revoked authorization, insufficient scope, missing resource, rate limit, transient outage and invalid configuration.",
+      "basis": "Independent current-source review plus unchanged retained qualification. Final acceptance revision CI is checked separately by the completion gate."
+    }
+  ],
+  "source_pins": [
+    {
+      "path": "src/features/integrations/slack.ts",
+      "sha256": "8585d466afbbfd91cff7b64306de14e7a13383e1f17d794a6c7ed669dc43e1e3"
+    },
+    {
+      "path": "src/features/integrations/slackRead.ts",
+      "sha256": "83aabc1dfcfeb076684951ca6da6a378091ff3db18a7aab0940f189f212ca36a"
+    },
+    {
+      "path": "src/features/integrations/slackReadFailure.ts",
+      "sha256": "fdf59462107754c7a767bb98e7261086dbb823e05a8454b1bdb2a276cae02ff4"
+    },
+    {
+      "path": "src/features/integrations/slackOperationFailure.ts",
+      "sha256": "2b95cc61fd8ca47be7d32e4d6ec4fb6b37fbeefee34b3b4c79600cba6a3920fc"
+    },
+    {
+      "path": "src/features/integrations/slackReadFailures.test.ts",
+      "sha256": "3d2ed3d7f648321d55c29d694555104604acaf00ef138f5252a97798663e3e4e"
+    },
+    {
+      "path": "src/features/integrations/slackOperationFailures.test.ts",
+      "sha256": "6a9b5586582d18de78ff77599d93462d9928277388ff069cdd64ddf99bd94178"
+    },
+    {
+      "path": "src/features/integrations/service.ts",
+      "sha256": "9b8374acfc0cbcbff6e0feed36a541de0c1fbe334f91873d585d4b44534ed228"
+    },
+    {
+      "path": "src/features/integrations/providers/models.ts",
+      "sha256": "c7de6bb18c77769d41af719f9037873ba65d49997d34b89c5fc7abaec1c960d0"
+    }
+  ],
+  "reviewed_at_utc": "2026-11-02T13:51:28.601896+00:00",
+  "issue": 137,
+  "findings": [
+    "Structured reasons distinguish authorization_revoked, insufficient_scope, missing_resource, rate_limited, transient_outage and invalid_configuration even where their generic ProviderFailure codes share a category.",
+    "Operation errors do not copy raw provider/parser/credential details; 429 carries only bounded integer Retry-After and uncertain mutation failure retains unknown outcome.",
+    "Legacy auth.revoke resolves token_revoked, token_expired and account_inactive as terminal compatibility success; disconnectSlack then clears credentials. This is explicitly a remaining compatibility boundary, not proof every resolved revoke had a positive remote revoked:true response."
+  ],
+  "native_prerequisites": ["integration/CONN-001"],
+  "prior_review_comparison": {
+    "reviewed_revision": "cc6268266885f215e357d440523e9f9dec9cb0a1",
+    "all_pinned_source_bytes_unchanged": true,
+    "prior_issue_record": "outputs/merge-and-close-20261102/issue-update-plan.json",
+    "preserve_historical_cuts": true
+  },
+  "retained_evidence": {
+    "urls": [
+      "https://github.com/KhademOHAli1/warpdrive/blob/76e6f7bb7c0e1861a8ae668fc86be5c05bfcee4c/.safe-stop/2026-11-02/integration/evidence/connection-failure-classification-20261102/handoff-classifier/HANDOFF.md",
+      "https://github.com/KhademOHAli1/warpdrive/blob/76e6f7bb7c0e1861a8ae668fc86be5c05bfcee4c/.safe-stop/2026-11-02/integration/evidence/provider-abort-reason-20261102/ACTUAL-RED-RECEIPT.json",
+      "https://github.com/KhademOHAli1/warpdrive/blob/76e6f7bb7c0e1861a8ae668fc86be5c05bfcee4c/src/features/integrations/providers/invoke.ts"
+    ],
+    "exact_previous_main_unit_integration_run": "https://github.com/KhademOHAli1/warpdrive/actions/runs/41431140380",
+    "status": "Historical supporting evidence only; no CI result claimed for the eventual new acceptance revision."
+  },
+  "provenance_limit": "GitHub authenticates the later delegated posting principal only. This actual Codex review task and retained report are process provenance, not an independently authenticated GitHub reviewer."
+}

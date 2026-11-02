@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "review_type": "independent_source_review",
+  "result": "accepted",
+  "canonical_id": "integration/AISEC-014",
+  "acceptance_sha256": "35e5f15d37c39ed3253be68f3d49291bb7525eb2ef54ad3943b0990b25c4fb62",
+  "reviewed_revision": "2469028a110ca47c276d2da29b4422bad829967f",
+  "reviewer_agent": {
+    "runtime": "codex",
+    "session_id": "01a19251-a472-7cd1-86cd-8dc245dd5b84",
+    "task_id": "/root/close_ready_issues"
+  },
+  "summary": "Independently reviewed serialized refresh-token claim/rotation, successor creation in one transaction, consumed-token reuse detection and validation-before-update containment of only the affected same-user/client successor chain. Corrupt/cyclic/missing links deny without a partial sweep, independent lineages remain intact, and caller identity/grant inputs cannot widen scope. The retained 15 native refresh-family witnesses and current regression definitions cover replay, races, rollback and exact abort behavior; current required files match the prior cc62682 integrated review.",
+  "limitations": "Bounded refresh-family integrity and containment only. This does not claim per-family access-token revocation, fine-grained consent, native-session rechecks on every effect, provider rollout, installation, full user journey or release acceptance. Fifteen native witnesses are historical retained evidence, not a newly executed campaign. Native prerequisite #206 and exact final-main CI remain required.",
+  "criteria": [
+    {
+      "id": "AC1",
+      "result": "passed",
+      "evidence": [
+        "https://github.com/KhademOHAli1/warpdrive/blob/2469028a110ca47c276d2da29b4422bad829967f/src/features/oauth/tokens.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/2469028a110ca47c276d2da29b4422bad829967f/src/features/oauth/exchange.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/2469028a110ca47c276d2da29b4422bad829967f/src/features/oauth/refreshFamily.integration.test.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/2469028a110ca47c276d2da29b4422bad829967f/src/features/oauth/refreshFamilyIntegrity.integration.test.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/2469028a110ca47c276d2da29b4422bad829967f/src/features/oauth/refreshFamilySafety.integration.test.ts"
+      ],
+      "criterion": "AISEC-014: Rotate refresh tokens safely, detect reuse and revoke affected families without widening scope.",
+      "basis": "Independent current-source review plus unchanged retained qualification. Final acceptance revision CI is checked separately by the completion gate."
+    }
+  ],
+  "source_pins": [
+    {
+      "path": "src/features/oauth/exchange.ts",
+      "sha256": "3018cac74f7a590288d5ba365fa0dcda9c5ba71b0a22cc4cc1c60295ef997ca3"
+    },
+    {
+      "path": "src/features/oauth/tokens.ts",
+      "sha256": "9a79e82208a2cc9d387040afab6d8d6b60dfa33bfaf8d5b2050fd5ae116cc9e3"
+    },
+    {
+      "path": "src/features/oauth/refreshFamily.integration.test.ts",
+      "sha256": "9bff863fe8dd9451cfcd43a1f79c977adbe1f812b038ebb470d8e55403055adc"
+    },
+    {
+      "path": "src/features/oauth/refreshFamilyIntegrity.integration.test.ts",
+      "sha256": "e121f612c3aebf22847920dfd714c48ad60cf61b3cecbb33084127f13136afa6"
+    },
+    {
+      "path": "src/features/oauth/refreshFamilySafety.integration.test.ts",
+      "sha256": "36bd6100ac276df075ce37a1c0f0ed9eb0adbfd4afd8c5c5c8ce8f9b0e058b06"
+    },
+    {
+      "path": "src/features/auth/management/mcpGrants.ts",
+      "sha256": "fa88084946ba8dc728b9a272eedfe010a7b92b9ddc20a154462630c278858aeb"
+    },
+    {
+      "path": "src/db/schema/oauth.ts",
+      "sha256": "5b394d938a054fbc91652a67614bbcc33c6abf125f84942c1fd1a66f635f663a"
+    },
+    {
+      "path": "src/features/oauth/requestSchemas.ts",
+      "sha256": "53b9f70f6ebee0799068a533cc22ca86a0840f7c3d4e3108e56d7680e08cda2f"
+    }
+  ],
+  "reviewed_at_utc": "2026-11-02T13:51:29.053580+00:00",
+  "issue": 219,
+  "findings": [
+    "Rotation uses the shared grant lock and atomic live/unrevoked/unexpired claim, then inserts the successor inside the transaction.",
+    "Replayed consumed roots/intermediates identify only their validated same-user/client successor chain; complete chain integrity is checked before containment updates.",
+    "Unknown tokens/wrong clients are denied without changing independent lineages. Concurrency and insertion/containment failures have retained native regression evidence.",
+    "Containment commits its denial result rather than throwing it and rolling back the revocation. No new capabilities, resources or user/client identity are issued by rotation."
+  ],
+  "native_prerequisites": ["integration/AISEC-001"],
+  "prior_review_comparison": {
+    "reviewed_revision": "cc6268266885f215e357d440523e9f9dec9cb0a1",
+    "all_pinned_source_bytes_unchanged": true,
+    "prior_issue_record": "outputs/merge-and-close-20261102/issue-update-plan.json",
+    "preserve_historical_cuts": true
+  },
+  "retained_evidence": {
+    "urls": [
+      "https://github.com/KhademOHAli1/warpdrive/blob/76e6f7bb7c0e1861a8ae668fc86be5c05bfcee4c/src/features/oauth/refreshFamilySafety.integration.test.ts",
+      "https://github.com/KhademOHAli1/warpdrive/blob/c226bba5b901a1122e9783ee923536d301a40a87/.safe-stop/2026-11-02/WARPDRIVE-PROJECT-STATUS.md",
+      "https://github.com/KhademOHAli1/warpdrive/blob/09288d518fd574fd069fb6a1dc670596f71a8831/src/features/oauth/tokens.ts"
+    ],
+    "exact_previous_main_unit_integration_run": "https://github.com/KhademOHAli1/warpdrive/actions/runs/41431140380",
+    "status": "Historical supporting evidence only; no CI result claimed for the eventual new acceptance revision."
+  },
+  "provenance_limit": "GitHub authenticates the later delegated posting principal only. This actual Codex review task and retained report are process provenance, not an independently authenticated GitHub reviewer."
+}

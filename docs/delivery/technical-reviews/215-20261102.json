@@ -1,0 +1,121 @@
+{
+  "schema_version": 1,
+  "review_type": "independent_source_review",
+  "result": "accepted",
+  "canonical_id": "integration/AISEC-010",
+  "acceptance_sha256": "ab4e6865d3755a70d3d80b44772c814c6af397d35f006547640e2731aa9f93d1",
+  "reviewed_revision": "2469028a110ca47c276d2da29b4422bad829967f",
+  "reviewer_agent": {
+    "runtime": "codex",
+    "session_id": "01a19251-a472-7cd1-86cd-8dc245dd5b84",
+    "task_id": "/root/close_ready_issues"
+  },
+  "summary": "Independently reviewed the original pin-and-test criterion against the immutable 2026-07-28 MCP authorization target, the retained dated compatibility receipt, current metadata builders, both discovery routes and their positive/negative test definitions. A fresh official-source read confirms that the dated target and its discovery page are retrievable and describe the advertised resource/authorization-server discovery profile. The source pins the target explicitly and tests the selected single configured HTTPS profile; no current universal client compatibility is asserted.",
+  "limitations": "Only the original pinned specification and local metadata/discovery compatibility criterion is accepted by this source review. The 2026-07-28 target was freshly read, but no external client, browser, provider, installed deployment or universal whole-spec conformance was tested. Historical native/unit receipts keep their original cuts and counts. The old admission document predates the later issuer work; its AISEC-009-planned statement is historical, not current task status. Native prerequisite #206 and exact final-main CI remain required.",
+  "criteria": [
+    {
+      "id": "AC1",
+      "result": "passed",
+      "evidence": [
+        "https://github.com/KhademOHAli1/warpdrive/blob/2469028a110ca47c276d2da29b4422bad829967f/docs/integration-execution/mcp-discovery-acceptance-20261102.md",
+        "https://github.com/KhademOHAli1/warpdrive/blob/2469028a110ca47c276d2da29b4422bad829967f/src/features/oauth/metadata.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/2469028a110ca47c276d2da29b4422bad829967f/src/features/oauth/resourceDiscovery.test.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/2469028a110ca47c276d2da29b4422bad829967f/src/features/oauth/issuerMetadata.test.ts",
+        "https://modelcontextprotocol.io/specification/2026-07-28/basic/authorization",
+        "https://modelcontextprotocol.io/specification/2026-07-28/basic/authorization/authorization-server-discovery"
+      ],
+      "criterion": "AISEC-010: Pin the targeted specification and test protected-resource metadata and authorization-server discovery.",
+      "basis": "Independent current-source review plus unchanged retained qualification. Final acceptance revision CI is checked separately by the completion gate."
+    }
+  ],
+  "source_pins": [
+    {
+      "path": "package.json",
+      "sha256": "33e0ea11342a92b351845f2f5760f67d3463a6ce359bc6747df6a30bc1c14f04"
+    },
+    {
+      "path": "bun.lock",
+      "sha256": "5f609b438462d5f1a06bfeae500c5a7e266f664dc4b19b0ca6cd91c5ee56ca2b"
+    },
+    {
+      "path": "src/features/oauth/metadata.ts",
+      "sha256": "5bcea7fdb6086975412a7a93c7f739cf94bda572fb3052de495a80aad87f8b19"
+    },
+    {
+      "path": "src/features/oauth/resource.ts",
+      "sha256": "b8020b551a1a868f9a04633256336f77081859b016bcf765cb67fe949d1157f0"
+    },
+    {
+      "path": "src/features/oauth/mcpEndpoint.ts",
+      "sha256": "9b59f6c071000a86367e9ed760480c4e7905f126cad8650cb5e6e62ddc987bc3"
+    },
+    {
+      "path": "src/features/oauth/resourceDiscovery.test.ts",
+      "sha256": "58be8e8cc356240c66427ebf6ee0221433d1d059cc60933d1935f612eec62637"
+    },
+    {
+      "path": "src/features/oauth/issuerMetadata.test.ts",
+      "sha256": "9e68f317b93686bd22fc3a00170a1239d6bc1cbe59c3851ce3430160a0bd2738"
+    },
+    {
+      "path": "docs/integration-execution/mcp-discovery-acceptance-20261102.md",
+      "sha256": "421a7a16282d8407608301621641f88df06adb6b51828c36ef8baea93b6ebce2"
+    },
+    {
+      "path": "docs/integration-execution/architecture-clients-runtime-release.md",
+      "sha256": "e86c5dd2a0c62dc02654f597b69496a2bccd77b1477d30597936e57fa0057d55"
+    },
+    {
+      "path": "docs/mcp-server.md",
+      "sha256": "262cac55304437d691a78fb8c91350f761e0c21a33fef27d8080915ea93876b5"
+    },
+    {
+      "path": "src/features/oauth/metadata.test.ts",
+      "sha256": "cc93b0d5bcc7cad2bf81a37c14073323d863c825c6638fcb5b2db2b56e12395c"
+    },
+    {
+      "path": "src/features/oauth/mcpEndpoint.test.ts",
+      "sha256": "3b7374b43ed34cc0cdf173712f6b93990050008bea9eb729f09bdabc847ae47d"
+    },
+    {
+      "path": "src/app/.well-known/oauth-authorization-server/route.ts",
+      "sha256": "5509574914473a505cf72d81e0ed313f27a0cab06b3e62d2ef099b1cc572ef15"
+    },
+    {
+      "path": "src/app/.well-known/oauth-protected-resource/route.ts",
+      "sha256": "6dcefd5e0bc280ec797731fb307beafe142e97c5ff1dc8e29a1f2cfb2960cacf"
+    }
+  ],
+  "reviewed_at_utc": "2026-11-02T13:51:28.951037+00:00",
+  "issue": 215,
+  "findings": [
+    "The dated discovery admission document and ARCH-008 retain the exact 2026-07-28 authorization URL rather than treating a moving latest page or SDK package version as the pin.",
+    "Current builders advertise the configured literal issuer, MCP resource, authorization_servers, authorization/token endpoints, S256 and issuer-response support; registration endpoint presence follows open/disabled policy.",
+    "The retained 20 direct builder/route discovery cases are nested in their historical composed qualification; current route/profile tests also retain invalid-configuration and MCP-disabled denials.",
+    "Official dated discovery text supports resource metadata with authorization_servers and server metadata discovery. This is a bounded server profile; client endpoint probing, CIMD and whole-spec certification remain outside this criterion."
+  ],
+  "native_prerequisites": ["integration/AISEC-001"],
+  "prior_review_comparison": {
+    "reviewed_revision": "cc6268266885f215e357d440523e9f9dec9cb0a1",
+    "all_pinned_source_bytes_unchanged": true,
+    "prior_issue_record": "outputs/merge-and-close-20261102/issue-update-plan.json",
+    "preserve_historical_cuts": true
+  },
+  "retained_evidence": {
+    "urls": [
+      "https://github.com/KhademOHAli1/warpdrive/actions/runs/41403094273",
+      "https://github.com/KhademOHAli1/warpdrive/blob/c226bba5b901a1122e9783ee923536d301a40a87/.safe-stop/2026-11-02/WARPDRIVE-PROJECT-STATUS.md",
+      "https://github.com/KhademOHAli1/warpdrive/blob/09288d518fd574fd069fb6a1dc670596f71a8831/docs/integration-execution/mcp-discovery-acceptance-20261102.md",
+      "https://github.com/KhademOHAli1/warpdrive/blob/09288d518fd574fd069fb6a1dc670596f71a8831/src/features/oauth/metadata.ts"
+    ],
+    "exact_previous_main_unit_integration_run": "https://github.com/KhademOHAli1/warpdrive/actions/runs/41431140380",
+    "status": "Historical supporting evidence only; no CI result claimed for the eventual new acceptance revision."
+  },
+  "provenance_limit": "GitHub authenticates the later delegated posting principal only. This actual Codex review task and retained report are process provenance, not an independently authenticated GitHub reviewer.",
+  "official_specification_recheck": {
+    "authorization": "https://modelcontextprotocol.io/specification/2026-07-28/basic/authorization",
+    "discovery": "https://modelcontextprotocol.io/specification/2026-07-28/basic/authorization/authorization-server-discovery",
+    "retrieved_at_utc": "2026-11-02T13:51:28.951073+00:00",
+    "result": "Both dated official pages retrieved successfully; source review confined to pinned authorization and discovery server profile, not universal compatibility."
+  }
+}
