@@ -115,7 +115,10 @@ export function useCalendarEventPersistence({
         } catch {
           /* Calendar can refresh when opened. */
         }
-        if (active()) onClose();
+        if (active()) {
+          onSaved?.();
+          onClose();
+        }
       }
     });
   }

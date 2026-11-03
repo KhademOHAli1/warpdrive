@@ -266,7 +266,8 @@ it("retains a confirmed save and retries only its authoritative read after refre
 it("blocks unsafe resubmission after a lost acknowledgment and preserves the draft and choice", async () => {
   api.createCalendarEventAction.mockRejectedValue(new Error("lost response"));
   const onClose = vi.fn();
-  render(view({ onClose }));
+  const onSaved = vi.fn();
+  render(view({ onClose, onSaved }));
   fireEvent.click(screen.getByRole("checkbox", { name: "In-app reminder" }));
   titleAndSave();
   const check = await screen.findByRole("button", { name: "Check Calendar" });
@@ -279,6 +280,10 @@ it("blocks unsafe resubmission after a lost acknowledgment and preserves the dra
   await waitFor(() => expect(onClose).toHaveBeenCalledOnce());
   expect(api.createCalendarEventAction).toHaveBeenCalledOnce();
   expect(api.readCalendarEventAction).not.toHaveBeenCalled();
+  expect(api.invalidate).toHaveBeenCalledTimes(2);
+  expect(api.editCalendarEventAction).not.toHaveBeenCalled();
+  expect(api.retryCalendarReminderAction).not.toHaveBeenCalled();
+  expect(onSaved).toHaveBeenCalledOnce();
 });
 it("ignores a completed save response after the account changes", async () => {
   let complete: ((value: unknown) => void) | undefined;
