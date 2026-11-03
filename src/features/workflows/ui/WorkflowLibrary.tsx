@@ -30,11 +30,11 @@ export function WorkflowLibrary({ canCreate }: { canCreate: boolean }) {
   const router = useRouter();
   const list = trpc.workflows.list.useQuery();
   const confirmedEmpty =
-    list.data !== undefined &&
-    list.data.length === 0 &&
     !list.isLoading &&
     !list.isFetching &&
-    !list.isError;
+    !list.isError &&
+    list.data !== undefined &&
+    list.data.length === 0;
   const [open, setOpen] = useState(false);
   const [template, setTemplate] = useState("followUp");
   const [name, setName] = useState("");
