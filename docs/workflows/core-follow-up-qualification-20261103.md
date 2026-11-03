@@ -1,0 +1,22 @@
+# Selected durable Workflow follow-up technical qualification
+
+Issue [#909](https://github.com/KhademOHAli1/warpdrive/issues/909), `delivery/core-workflow-follow-up-support`. Scope digest `ee4f8b4e3e8b023bda1aacf7d7d9e58ebbd1346baf3766128fec2f7d3e0249aa`. Independently reviewed current source `b53cac92982d04c289e304a301e7545d266d72c8`, tree `0c0c2242d5537c8b705f30d044274dbe57bff9c4`.
+
+All four original technical clauses are supported by current source review plus explicitly attributed ancestral evidence. This proposed record does not complete the issue or its separate human #85 journey. Current hosted CRM CI failed before tests; later exact-publication green CI, permitted account attestation/native gate and closure audit remain pending.
+
+- AC1: published definition/version and original execution actor remain pinned, with durable cursor, completed-step identities, outputs and truthful status.
+- AC2: actual selected success, invalid/changed-input, denied/revoked authority, duplicate dispatch and worker interruption/restart witnesses exist. Invalid/duplicate/revoked-admission controls are native service/queue checks, not browser claims.
+- AC3: actual failed-task repair and same-run Retry preserve earlier completed effects; waiting-run cancellation records its actor and prevents later tasks. Row locking serializes cooperative cancellation with a database step. A committed step is preserved, not reversed.
+- AC4: current exact Git pins and dependency reconciliation accompany exact ancestral runtime and separate native cuts. No evidence is relabeled as current-cut execution.
+
+Production runtime3 belongs to `89262d516da029a51aee9f9cfa28dd22c47735cb`, BuildID `Eq8HuaZflDaUq3VsSAMPc`: 23 browser checks and 31 independent readback checks passed in 189.668s, sampled maximum 736,406,405.12 bytes. It proves natural 60-second waits, real worker stop/restart, pinned N after publishing N+1, actual failed task and permission repair then original-run Retry, waiting-run cancellation, exactly three intended linked tasks and two positively completed stale jobs without additional effects. The two earlier runtime failures remain failures.
+
+Runtime execution/admission/cancellation/worker/action/step/retry-receipt and feedback source remain byte-identical. The intentional later retry-session correction has its own 25 selected PostgreSQL passes with 14 unselected. It matches the public credential loader's supported legacy behavior and preserves modern verification/MFA/idle/absolute controls. Its final formatting change retains whitespace-stripped source identity. Keep native34's 31 PASS/3 FAIL and later native9's 9 PASS/27 unselected separate; there was no single all34-green run.
+
+The current credential-loader read body, policy-reader body, CSRF/context/actor hydration, access decision and fresh-publication resolver remain unchanged. Native Auth now buffers exact raw request ingress before its cooperative authority transaction and retains private configuration when rebinding. The current product's separate C build and positive password-login browser witness corroborate that source path; they do not become Workflow runtime evidence. No new routine fresh-auth or global revocation-fence requirement is inferred.
+
+The selected Workflow task supplies only subject, resolved deal ID and active task type, with `scheduleReminder:false`. New optional reminder/time-zone inputs remain absent, so the new Calendar branches are inactive. The account-zone argument, dateless task defaults, references, insertion and deal-date recomputation preserve prior semantics. The outer run transaction and nested Activity savepoint still commit task, step, outputs and cursor together. Migration0102 adds no activity-insert trigger.
+
+Failed-wait restart, arbitrary cached bindings, broader retry/rerun/alert engines, triggers, scheduler/templates and providers remain outside the selected profile. Human #85 operational/localized acceptance, installation, release, deployment and full privacy lifecycle remain open. Measurements are sampled.
+
+Reviewer: Codex session `01a19251-a472-7cd1-86cd-8dc245dd5b84`, task `/root/native_stage_browser_review`, distinct from accepting task `/root`. This is declared process provenance, not a separately authenticated GitHub reviewer. Exact current pins, changed-dependency details and local receipt hashes are retained in [the qualification JSON](core-follow-up-qualification-20261103.json). No new jobs or canonical edits were performed for this review.

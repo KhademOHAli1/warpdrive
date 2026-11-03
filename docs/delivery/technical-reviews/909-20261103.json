@@ -1,0 +1,545 @@
+{
+  "schema_version": 1,
+  "review_type": "independent_source_review",
+  "result": "accepted",
+  "canonical_id": "delivery/core-workflow-follow-up-support",
+  "acceptance_sha256": "ee4f8b4e3e8b023bda1aacf7d7d9e58ebbd1346baf3766128fec2f7d3e0249aa",
+  "reviewed_revision": "b53cac92982d04c289e304a301e7545d266d72c8",
+  "reviewer_agent": {
+    "runtime": "codex",
+    "session_id": "01a19251-a472-7cd1-86cd-8dc245dd5b84",
+    "task_id": "/root/native_stage_browser_review"
+  },
+  "summary": "Independently reconciled the unchanged original four-clause selected follow-up against exact current b53 source. Direct runtime core remains byte-identical to892; the intentional retry-session change has separate25-case PG evidence, and changed Auth/Activity dependencies preserve the selected execution semantics as individually documented. Actual ancestral runtime3 supplies23browser and31readback checks for pinned execution, duplicate/restart, failed task, cooperative cancellation and safe retry. No material source blocker found. This accepts the technical source/process review only; current CI failure, future exact-green publication/account/native gate/audit and human85 remain unresolved.",
+  "limitations": "Proposed independent technical source/process review only. Runtime3 is ancestral892, not current b53 execution; every changed source pin is separately recorded and reviewed. Current-product C build and positive native login support unchanged product bytes but do not become Workflow runtime evidence. Native/static subsets remain at their own cuts; no single all34 or current full suite claimed. Current b53 hosted CRM CI failed before tests; latest exact-publication green CI, account-authorized attestation/native gate and closure audit remain pending. Cooperative cancellation waits for an in-flight database step and preserves completed effects; no global abort/revocation/COMMIT-time guarantee. Failed-wait restart, arbitrary cached bindings, external outcomes, broad engine/trigger/scheduler/template/provider programmes, human85 operational/localized journey, installation, release and deployment are not accepted. Declared Codex process identity is not independently authenticated GitHub/human review.",
+  "criteria": [
+    {
+      "id": "AC1",
+      "result": "passed",
+      "evidence": [
+        "https://github.com/KhademOHAli1/warpdrive/blob/b53cac92982d04c289e304a301e7545d266d72c8/src/features/workflows/runAdmission.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/b53cac92982d04c289e304a301e7545d266d72c8/src/features/workflows/execution.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/b53cac92982d04c289e304a301e7545d266d72c8/src/features/workflows/runActions.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/b53cac92982d04c289e304a301e7545d266d72c8/src/features/workflows/ui/RunHistory.tsx"
+      ],
+      "assessment": "Current source preserves published-version/actor admission, strict request identity, serialized cursor and atomic task/step/output persistence. Actual892 runtime3 proves natural wait, pinnedN afterN+1, original actor and truthful run status."
+    },
+    {
+      "id": "AC2",
+      "result": "passed",
+      "evidence": [
+        "https://github.com/KhademOHAli1/warpdrive/blob/b53cac92982d04c289e304a301e7545d266d72c8/src/features/workflows/runAdmission.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/b53cac92982d04c289e304a301e7545d266d72c8/src/features/workflows/worker.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/b53cac92982d04c289e304a301e7545d266d72c8/src/features/workflows/executionSafety.integration.test.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/b53cac92982d04c289e304a301e7545d266d72c8/src/features/workflows/runRetryWorker.integration.test.ts"
+      ],
+      "assessment": "Success, invalid/changed-input, denied/revoked authority, duplicate dispatch and worker interruption/restart have bounded actual runtime3 and realPG witnesses. Service-only admission controls are not relabeled HTTP/browser checks. Two actual stale jobs completed without new effects. Current dependency changes are reconciled individually, not declared byte-identical."
+    },
+    {
+      "id": "AC3",
+      "result": "passed",
+      "evidence": [
+        "https://github.com/KhademOHAli1/warpdrive/blob/b53cac92982d04c289e304a301e7545d266d72c8/src/features/workflows/runControl.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/b53cac92982d04c289e304a301e7545d266d72c8/src/features/workflows/runRetry.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/b53cac92982d04c289e304a301e7545d266d72c8/src/features/workflows/runRetrySession.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/b53cac92982d04c289e304a301e7545d266d72c8/src/features/workflows/runRecovery.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/b53cac92982d04c289e304a301e7545d266d72c8/src/features/workflows/ui/RunRecovery.tsx"
+      ],
+      "assessment": "Actual terminal failed task, permission repair, same-run retry and waiting-run cancellation preserve earlier completed tasks, pinned actor/version/cursor/outputs and failure receipt. Same-row locking serializes cancellation and effects; cooperative cancellation prevents later steps and does not reverse a committed step. Separate25-case native evidence qualifies current retry-session policy correction. Failed waits/unsupported profiles remain ineligible."
+    },
+    {
+      "id": "AC4",
+      "result": "passed",
+      "evidence": [
+        "https://github.com/KhademOHAli1/warpdrive/blob/b53cac92982d04c289e304a301e7545d266d72c8/src/features/workflows/runRetry.integration.test.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/b53cac92982d04c289e304a301e7545d266d72c8/src/features/workflows/runRetrySafety.integration.test.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/b53cac92982d04c289e304a301e7545d266d72c8/src/features/workflows/runRetrySessionCompatibility.integration.test.ts",
+        "https://github.com/KhademOHAli1/warpdrive/blob/b53cac92982d04c289e304a301e7545d266d72c8/src/features/workflows/runRetryWorker.integration.test.ts"
+      ],
+      "assessment": "Exact reviewed current Git pins and changed-dependency source proof are attached. Runtime3 retains its actual892 source/build and23browser+31independentreadback witnesses; retry native34 retains31PASS3FAIL plus later9selectedPASS27unselected, and legacy correction retains25PASS14unselected. Current-product C build has identical product bytes to b53 and supports compilation only. Current hostedCI failure, future exact-greenCI/account/audit and human85 remain explicit pending gates."
+    }
+  ],
+  "source_pins": [
+    {
+      "path": "bun.lock",
+      "sha256": "5f609b438462d5f1a06bfeae500c5a7e266f664dc4b19b0ca6cd91c5ee56ca2b"
+    },
+    {
+      "path": "docs-site/docs/features/automations.md",
+      "sha256": "5b9207f2e0a7995cd64d0f7d928095d63d0f87d551ecb8e29a11e44556b14cc8"
+    },
+    {
+      "path": "docs/workflows/operations.md",
+      "sha256": "642b2b9be3364b0cb9a60d4f5ed7e096b1dc3148e4845f1dc8d286fa5d13b637"
+    },
+    {
+      "path": "docs/workflows/retry-qualification-2026-11-02.json",
+      "sha256": "d93dca25a488d371640a73eb57abf4f78de847a8f0ecdfff9837c09b1f7d4cd8"
+    },
+    {
+      "path": "docs/workflows/retry-session-qualification-2026-11-02.md",
+      "sha256": "d0f86f5f47ae7501f9f109455b4020517a9fea2ecb047e5735f9c3044d943a50"
+    },
+    {
+      "path": "drizzle/0098_workflow_duration_wait.sql",
+      "sha256": "ba65deaf21f4f5c38cd7414afd851f91a14b5c2aed3e758bb75b36b56b3a63ef"
+    },
+    {
+      "path": "drizzle/0100_workflow_failed_step_retry.sql",
+      "sha256": "69b420cb2f8219dd82889f70569d9ae41ca5affddf54b6083b08b5ef3d1a266c"
+    },
+    {
+      "path": "drizzle/0102_activity_reminder_intents.sql",
+      "sha256": "76ab427c5891c6e10fb9707511d56e6b16039af3a108953c0e46d0a5f4c0b110"
+    },
+    {
+      "path": "drizzle/meta/_journal.json",
+      "sha256": "1497b769f64616c1e53f798640df2b02bf9b0e741dbbe0974d3a6cd092df2926"
+    },
+    {
+      "path": "next.config.ts",
+      "sha256": "e84ae8a6a38e0e6438c527a1c053e9fad2b4c148ca83fa59ee9bd5ea9e397337"
+    },
+    {
+      "path": "package.json",
+      "sha256": "33e0ea11342a92b351845f2f5760f67d3463a6ce359bc6747df6a30bc1c14f04"
+    },
+    {
+      "path": "src/config/env.ts",
+      "sha256": "ca6f8e9650a02069899aa038b6faabd236974635cc039a40317795167ec49d7e"
+    },
+    {
+      "path": "src/constants/jobNames.ts",
+      "sha256": "06610fea75310f1694786ce63440ce8cfb1b5f20811c920d6c7a9f881334f561"
+    },
+    {
+      "path": "src/db/client.ts",
+      "sha256": "f12a319a1f5e3de8e71c17877659e6e9cb0fe3962b5cc9f366d58362a6cd59b9"
+    },
+    {
+      "path": "src/db/schema/activities.ts",
+      "sha256": "a37eb66b82bfc1e08e4ba7677dc2e74c504410728a6b62d20e9a9d17547b942c"
+    },
+    {
+      "path": "src/db/schema/authManagement.ts",
+      "sha256": "98ffc191408cbbe5ab468c4e38c7be2cea2ecea95a075680a8c7f7b5bdfdfab8"
+    },
+    {
+      "path": "src/db/schema/authentication.ts",
+      "sha256": "67750b06be4aede0139f7888be912a8df09e2ac8f4d189b5f7cec3348fd23650"
+    },
+    {
+      "path": "src/db/schema/workflowExecutions.ts",
+      "sha256": "a548ec7bba706d46094b43a12b50a1eb7b9952b5efea740418a17205cb2e8578"
+    },
+    {
+      "path": "src/features/activities/accountTimeZone.ts",
+      "sha256": "a6ecf1ad7b4aa824df37f99319ed3c20008bac5f1d7ae425428a827fe9b8934d"
+    },
+    {
+      "path": "src/features/activities/activityTemporalWrite.ts",
+      "sha256": "7ef1c7239b088c1b8ca42311d76c900cf6ead47c6a9faea84eff56a1d88d1120"
+    },
+    {
+      "path": "src/features/activities/nextActivity.ts",
+      "sha256": "974f5ff8733af6a7dbd7fe49a11c06c4a26dfbb013a7b9143efc59b903887b1a"
+    },
+    {
+      "path": "src/features/activities/reminderIntent.ts",
+      "sha256": "b8d472f00215e96cb040e5934530ba9cb31f3d192e4799a486645c3112c8de30"
+    },
+    {
+      "path": "src/features/activities/reminderIntentTypes.ts",
+      "sha256": "1ca6d9630a23c0d3f7fbe8a18520d644f6001e661dd657f59a147d079aca8091"
+    },
+    {
+      "path": "src/features/activities/reminders.ts",
+      "sha256": "45dbcf06da234d2abb70ae0bb67dc4aee5cf06aff191771df4b9a87d181380ab"
+    },
+    {
+      "path": "src/features/activities/repo.ts",
+      "sha256": "ec805044599629511ab0f24882db58492faa358f4a868fefc6de8ad09c14cfa0"
+    },
+    {
+      "path": "src/features/activities/schemas.ts",
+      "sha256": "21e5d6ef38f77091c77e645dc12e2507bce609ecb4ae36cc67f3d5f3fb7ff7a2"
+    },
+    {
+      "path": "src/features/activities/visibility.ts",
+      "sha256": "33d8c5976d02d3e69fca4eb4d1f953e8c5335257c9e9717c41bd8054f81450ce"
+    },
+    {
+      "path": "src/features/auth/better/accessPolicy.ts",
+      "sha256": "8542556aed30191058bc114e1f3b65c598375a5d207adec05fff898e6f126c4e"
+    },
+    {
+      "path": "src/features/auth/better/assurancePlugin.ts",
+      "sha256": "6e9fe9241fbcef838090875f6f26d471b27a7da1f7e2edeed92d9783f9fe0480"
+    },
+    {
+      "path": "src/features/auth/better/auth.ts",
+      "sha256": "a6c34cd5c6632d59427ff6f819a4cd7f87b850d90b339e25d6a40c8c02429c81"
+    },
+    {
+      "path": "src/features/auth/better/freshness.ts",
+      "sha256": "4abf6dd4e63e899529234c53ce77f7bc36143e47e39ef66cf089747697375e33"
+    },
+    {
+      "path": "src/features/auth/better/nativeGateway.ts",
+      "sha256": "b7d96bbba61d4a7d5d8e40c6c11d5e1493500e2fa883af5c81f51c7ed69ccce3"
+    },
+    {
+      "path": "src/features/auth/better/prepareNativeAuthRequest.ts",
+      "sha256": "83b6a15a9a9794838113b17f22d5bbe46fecb65c73834089ed3de35c31a1883b"
+    },
+    {
+      "path": "src/features/auth/better/sessionPolicy.ts",
+      "sha256": "d0d8c9079b7ab05a27f6afbc6c08765b4002780945de6cfde22502e07f5c4789"
+    },
+    {
+      "path": "src/features/auth/better/sessionToken.ts",
+      "sha256": "61f40fcda77fb75623ca987322fe239da9e251164e9feacd717d5d00df4823d4"
+    },
+    {
+      "path": "src/features/auth/csrf.ts",
+      "sha256": "cedc0fce11ed7e19fd83be933a7e55f7d4ec7360601a653eff6861c9792546de"
+    },
+    {
+      "path": "src/features/auth/currentAuthority.ts",
+      "sha256": "58a84b6fabb7455f408bddd1e6f3c5ef021874970e13cc34a15dc5ce1f9a031b"
+    },
+    {
+      "path": "src/features/auth/management/domain.ts",
+      "sha256": "60f9e298c16d1acc3c99c0b348fae8ecf209ccb753efe4533ad019a10a755939"
+    },
+    {
+      "path": "src/features/auth/management/policy.ts",
+      "sha256": "515f8fc1908a52331f54aac4a101a6b0da329dab3a4c10ea03c8c007990be82d"
+    },
+    {
+      "path": "src/features/auth/session.ts",
+      "sha256": "f79a2b1968c668dbeb1f144b2aa2c33b88e5e704ea95cb4995688c09cecb9b0a"
+    },
+    {
+      "path": "src/features/identity/actions/fresh.ts",
+      "sha256": "055057ab1649933ffeb23d84b1f57c79a6ce6a55ad4c812f8a772653496f5670"
+    },
+    {
+      "path": "src/features/identity/actions/shared.ts",
+      "sha256": "3ec0e2fefda694087f49167438c4d96498ecb19f9ef25960c1b462de93b82f3c"
+    },
+    {
+      "path": "src/features/permissions/can.ts",
+      "sha256": "c28ee5927eef7b898283555076d8e7ba1dbcdef550db0137a19546f74b92b9e1"
+    },
+    {
+      "path": "src/features/permissions/canSee.ts",
+      "sha256": "6572def92f8c050ff4df6a257270ce31c04e5f0b9975756364f7b4810b8eca5f"
+    },
+    {
+      "path": "src/features/permissions/effective.ts",
+      "sha256": "a9dd02828dd766719542ee4abc90221fe904a5cbc7126acce3be6358f1928a88"
+    },
+    {
+      "path": "src/features/permissions/referenceCheck.ts",
+      "sha256": "5ec259d9641900c269f19147406ab460463da313bf4c0b1c93127b24c9b03416"
+    },
+    {
+      "path": "src/features/workflows/access.ts",
+      "sha256": "8b2e97b1ca5c4efc219223ef3b2311c7e8b870453cbc6bf61ab58c6affcc4629"
+    },
+    {
+      "path": "src/features/workflows/actions.ts",
+      "sha256": "d64dc3bdb1a27036c815935066c084082b3310e70aadb2ec21f2f65db147f029"
+    },
+    {
+      "path": "src/features/workflows/definition.ts",
+      "sha256": "a11346b9d8865da79319ced7052777577a3d20084680b3485f62e96b04ca1e9d"
+    },
+    {
+      "path": "src/features/workflows/delay.ts",
+      "sha256": "96979424469010ede1fa0e5b311de6f2f6bb6fee0de1b5033c9c0ec5b07f3062"
+    },
+    {
+      "path": "src/features/workflows/delayRecovery.integration.test.ts",
+      "sha256": "2800c4924a0c7781e87ed06bdf3e55e5391b2cd1230877d6f426f8d3fa05a443"
+    },
+    {
+      "path": "src/features/workflows/execution.integration.test.ts",
+      "sha256": "0e1fc830c88705d7ba07d76d927cb03d6b954c7f815d9e42bfdaf72abcd65e88"
+    },
+    {
+      "path": "src/features/workflows/execution.ts",
+      "sha256": "79aaf3a06069215f4c9d1fcdf69d84c9e56ec26a5266f6c12d5339c26218fb38"
+    },
+    {
+      "path": "src/features/workflows/executionSafety.integration.test.ts",
+      "sha256": "178092236094a9d5ef8e315a85047ed336635c81edaec5505ec0b8b344099dfe"
+    },
+    {
+      "path": "src/features/workflows/messages/workflows.de.json",
+      "sha256": "88d004577f16c76849611385d7938691bc2396962cab337256838ac30545f406"
+    },
+    {
+      "path": "src/features/workflows/messages/workflows.en.json",
+      "sha256": "7000e3fcedf55eda885e15a85a7c6667354803b4f32e51e4cb83e0408e98ffe7"
+    },
+    {
+      "path": "src/features/workflows/messages/workflows.fa.json",
+      "sha256": "0ea1d4b687ab6f018d8671078415d7423a8c52ebf0b44bba5eebbb4c22bb3a32"
+    },
+    {
+      "path": "src/features/workflows/persistence.ts",
+      "sha256": "f0f0b2ce6dce6309c7398144085347300063cd91eb5e569c42a3b023ce6531d3"
+    },
+    {
+      "path": "src/features/workflows/queries.ts",
+      "sha256": "3b1846580968a7a7eb7663df1eaba4fb767b80bd65438633e9396fca9da81b9b"
+    },
+    {
+      "path": "src/features/workflows/readiness.ts",
+      "sha256": "17fe18d43c4563d5aea6a16a14ca6482c2050a8589a936414f654b26744d6f1e"
+    },
+    {
+      "path": "src/features/workflows/runActions.ts",
+      "sha256": "94d9233c19442715d73023330c82f43a148cf4186306cacbabc6c7b7539b43c0"
+    },
+    {
+      "path": "src/features/workflows/runAdmission.ts",
+      "sha256": "bcc5151df4e2d601fc4cba720bdfa6865eef41eea943ba4e194ab37dcb7b154c"
+    },
+    {
+      "path": "src/features/workflows/runBindings.ts",
+      "sha256": "48a3bdd9311eaaffc854725e300b0615572b57f3f86d350d45ffd95e7e5da49b"
+    },
+    {
+      "path": "src/features/workflows/runControl.integration.test.ts",
+      "sha256": "e21048f8934582096fb3e22007fffdd67ed4a36314b2543d405a0b60db1a2a23"
+    },
+    {
+      "path": "src/features/workflows/runControl.ts",
+      "sha256": "f148af993e57bc4f2b95bced9b56ea3d9529ae647d34ab94d7367752ae245057"
+    },
+    {
+      "path": "src/features/workflows/runDetail.ts",
+      "sha256": "ba7cfcf82821cbfa5b95b9806d28c77f7d5bee576b8612ba73bd15b859439ea9"
+    },
+    {
+      "path": "src/features/workflows/runRecovery.ts",
+      "sha256": "d4f80230671bfccc536931ca0b92e75b96629c66f8c00eb6ee63040d048fb81a"
+    },
+    {
+      "path": "src/features/workflows/runRetry.integration.test.ts",
+      "sha256": "8a38cc843135117e2a62d87e8dbe318727b08d602b8c15552c3dd1058763b42c"
+    },
+    {
+      "path": "src/features/workflows/runRetry.test-helpers.ts",
+      "sha256": "39194bc99a16387129f25385e9f89a5ff1be54c68ce34b4860ccfd9d98b9d766"
+    },
+    {
+      "path": "src/features/workflows/runRetry.ts",
+      "sha256": "476b3f2705554b9e80a4a786a9a992ba791177cd0066c27f68721ed1dda49a07"
+    },
+    {
+      "path": "src/features/workflows/runRetryActions.test.ts",
+      "sha256": "1c24794fae888a7597cee95f50cca605b419cf857cf359c87713c48a5a9b9768"
+    },
+    {
+      "path": "src/features/workflows/runRetryMigration.integration.test.ts",
+      "sha256": "da41ad90d5ce58ad31299da4ba8b98a5acca0c3a8c0f0ca1a974f2f1c81a26c8"
+    },
+    {
+      "path": "src/features/workflows/runRetryProfile.test.ts",
+      "sha256": "fcc7b952eb7656bd0ea13467739be02271076afab2c8df8e2da466c9fd78d708"
+    },
+    {
+      "path": "src/features/workflows/runRetryProfile.ts",
+      "sha256": "a54bf4430cf9ec84c68f580bff4cd6c9016efc7f606a25b28b511f96bab8f5c5"
+    },
+    {
+      "path": "src/features/workflows/runRetrySafety.integration.test.ts",
+      "sha256": "2855f432b3a986355215c54e0cddac866aae66b4e224cee4a41bc9795542efea"
+    },
+    {
+      "path": "src/features/workflows/runRetrySchema.integration.test.ts",
+      "sha256": "31f90a26f8429cb9f804fceae316b2f3035c19f6d1e29434783e3c5d93aea5b5"
+    },
+    {
+      "path": "src/features/workflows/runRetrySession.ts",
+      "sha256": "290fab3bc07b7e2bc14e97ddea951d8830b710e79f454c15186e78f7e0378c39"
+    },
+    {
+      "path": "src/features/workflows/runRetrySessionCompatibility.integration.test.ts",
+      "sha256": "d833c09ebca261b93095e55ef7eccb555421a19e31bc393de943420993dff07b"
+    },
+    {
+      "path": "src/features/workflows/runRetryTypes.ts",
+      "sha256": "1a00f7e429ef749fdb350b96438a02398a21498b318faff62abcca2d1b6dbfc2"
+    },
+    {
+      "path": "src/features/workflows/runRetryWorker.integration.test.ts",
+      "sha256": "03ef388f2688191197f3493fad94c7370d837e546794297561cacd8c5ebbf6f2"
+    },
+    {
+      "path": "src/features/workflows/runStep.ts",
+      "sha256": "02413024451583b1414f5516e76597eb3b2a449707d7425658bc46b63abb245a"
+    },
+    {
+      "path": "src/features/workflows/schemas.ts",
+      "sha256": "b0a692e9c47edc3fe74e6d4b56be69995147b86d63f422f487a6a47c8380aff7"
+    },
+    {
+      "path": "src/features/workflows/ui/RunDetailDialog.tsx",
+      "sha256": "83cdb21752b532a8e542ba047c20b42387f7eee2217f6dd5152f725833e695d9"
+    },
+    {
+      "path": "src/features/workflows/ui/RunDialog.tsx",
+      "sha256": "98b2cc7a4fc32359e461b48e3d4ebafef82e5f70a4a65f62e9042ac40e32c31f"
+    },
+    {
+      "path": "src/features/workflows/ui/RunHistory.tsx",
+      "sha256": "39d7685abac3908b74e49dc960168a4a3004f0320c52901d97ce401e72cc55e6"
+    },
+    {
+      "path": "src/features/workflows/ui/RunRecovery.test.tsx",
+      "sha256": "b608a61b1723345313ee2bbdad193d79e0a0f1a0e989cc788af4acd1a9980b50"
+    },
+    {
+      "path": "src/features/workflows/ui/RunRecovery.tsx",
+      "sha256": "0b6effb5ec6ef89b56265b52e774ed4980003f77e40eb5c0d5c78ca709fbcfea"
+    },
+    {
+      "path": "src/features/workflows/ui/RunTrace.tsx",
+      "sha256": "960dbc06d93d22a2916d7a2760fcb1214bf0d77f260b23fe8c630a4a617dd7a0"
+    },
+    {
+      "path": "src/features/workflows/ui/WorkflowEditor.tsx",
+      "sha256": "ba4ce0606f1f4c0b34efc6c5499bea831473200202324a11a9717f57cb3c1ff1"
+    },
+    {
+      "path": "src/features/workflows/worker.integration.test.ts",
+      "sha256": "3876655e532f79249a4c1da9cd6ead10744dcab51d2752be31d0aba1227960ea"
+    },
+    {
+      "path": "src/features/workflows/worker.ts",
+      "sha256": "b6957f7910a8c36050d1942edad79ebc497f875304b70689237824ae3297d1c0"
+    },
+    {
+      "path": "src/jobs/boss.ts",
+      "sha256": "749cf3a521d947a1ad37fa5fccca8aa3ecf8386b0f054f6af615760a5baa4f87"
+    },
+    {
+      "path": "src/server/hydrateActor.ts",
+      "sha256": "9ffbe2a292f540dab520cbb2c68de53283fcfbb92bdff96f6532c9e429fa3030"
+    },
+    {
+      "path": "src/server/trpc/context.ts",
+      "sha256": "5c6352a7b530f9899514c329045ed71818c840e07348675cf1c24f91471bbee8"
+    },
+    {
+      "path": "src/server/worker.ts",
+      "sha256": "2eb3a215812b05fc38efb0af940094fec7c6acd35b7958e022e421de719a6730"
+    }
+  ],
+  "issue": 909,
+  "recorded_at_utc": "2026-11-03T06:03:59.710748+00:00",
+  "findings": [],
+  "qualification_record": {
+    "path": "docs/workflows/core-follow-up-qualification-20261103.json",
+    "sha256": "21ace9851f4fe51c6b308682ad86cfa7a9db063f516b937140e3eceb91626fd0",
+    "markdown_path": "docs/workflows/core-follow-up-qualification-20261103.md",
+    "markdown_sha256": "31a775a15e4d21e5fc30937ea168fff6814d742a9a2c66129f0fd8c78cbb6886"
+  },
+  "source_reconciliation_private_sha256": "5281463073e73c1eeef7659f58a66d5a21248fd353d0c617ed2cd598b489d551",
+  "local_evidence_pins": [
+    {
+      "name": "runtime3_31checks",
+      "path": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-settings-ux/outputs/goal-core-journeys-20261102/workflow-follow-up/production-89262d516d/runtime-attempt3/runtime.public.json",
+      "sha256": "e021ed9ec55674d01899ef755d873c22bc434aa4109232bea19624f4abbf9869"
+    },
+    {
+      "name": "runtime3_23browser",
+      "path": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-settings-ux/outputs/goal-core-journeys-20261102/workflow-follow-up/production-89262d516d/runtime-attempt3/browser-result.public.json",
+      "sha256": "f289c5f4b92b9ad018e8dc4c76d9e73139bbd1b1b6d81d8a5261ce722b2d1193"
+    },
+    {
+      "name": "runtime3_Root_review",
+      "path": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-settings-ux/outputs/goal-core-journeys-20261102/workflow-follow-up/production-89262d516d/runtime-attempt3/root-proof-review.public.json",
+      "sha256": "4c749da0f9b91bb89b1c01b503134e897dcf1fa46d220ecd1e75e851afb06c8a"
+    },
+    {
+      "name": "runtime3_admitted_build",
+      "path": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-settings-ux/outputs/goal-core-journeys-20261102/workflow-follow-up/production-89262d516d/runtime-attempt3/admitted-build.public.json",
+      "sha256": "943454337902f4ee89b7a3099148dc34e3f8d5066582588d83a27761988c7f48"
+    },
+    {
+      "name": "runtime3_foundation",
+      "path": "/Users/ali/Developer/warpdrive-settings-ux/.runtime/goal-wf909-production-89262d516d/runtime3/foundation.public.json",
+      "sha256": "aeeccb8e824853ac869cff1f849dc7fe3eb8b1740c3a03df6c4fd2d162f1c492"
+    },
+    {
+      "name": "runtime3_service_admission_controls",
+      "path": "/Users/ali/Developer/warpdrive-settings-ux/.runtime/goal-wf909-production-89262d516d/runtime3/operator-admission.public.json",
+      "sha256": "41a189ddc6e438dd0f843462df0e5d0ab199ee9a8fdefb24313858059fe18488"
+    },
+    {
+      "name": "retry_native34_31PASS3FAIL",
+      "path": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-settings-ux/outputs/goal-core-journeys-20261102/workflow-terminal-retry/native34-receipt.json",
+      "sha256": "219b12ef7f491398885cae12f6089b90bb3d81d2f534b0aafa78d267d9a97d53"
+    },
+    {
+      "name": "retry_native9_9PASS27unselected",
+      "path": "/Users/ali/Documents/Codex/2026-10-31/warpdrive-settings-ux/outputs/goal-core-journeys-20261102/workflow-terminal-retry/native9-receipt.json",
+      "sha256": "a76eb56aedadadad580b9281bc598349cf10a0df46f51fd878cd271bf3626168"
+    },
+    {
+      "name": "retry_session_native25",
+      "path": "/Users/ali/Developer/warpdrive-settings-ux/.runtime/goal-workflow-retry-session-compat/control/green-attempt3/green-receipt.json",
+      "sha256": "c77918a041d447a6666f04c5bd481c7327a58410144b75db820be719dd47c33f"
+    },
+    {
+      "name": "retry_session_test_results",
+      "path": "/Users/ali/Developer/warpdrive-settings-ux/.runtime/goal-workflow-retry-session-compat/control/green-attempt3/green-tests.json",
+      "sha256": "db3c155d231c4f098e83575281e581bb877d70f7fe00c38287b2b53dd8fbccb1"
+    },
+    {
+      "name": "retry_session_format_only",
+      "path": "/Users/ali/Developer/warpdrive-settings-ux/.runtime/goal-workflow-retry-session-compat/control/green-attempt3/format-only-addendum.json",
+      "sha256": "a194c435c5f436a932eaf64105de98d34ecfaacbc21d40d2e1ee821fc42bcdd8"
+    },
+    {
+      "name": "retry_session_9PASS6FAIL_RED",
+      "path": "/Users/ali/Developer/warpdrive-settings-ux/.runtime/goal-workflow-retry-session-compat/control/baseline-receipt.json",
+      "sha256": "ec9489f4dfb8aef38d6cc993e41b41ecdb17f9d3f8b54fb9c69e99c47a5977a0"
+    },
+    {
+      "name": "current_product_C_normal_build",
+      "path": "/Users/ali/Developer/warpdrive-settings-ux/.runtime/goal-native-stage-candidate-build/attempt1/admitted-build.public.json",
+      "sha256": "1f95b9255b5d04f75b1f362d5e4f557840ab6d9131d46438466856adb77fb770"
+    },
+    {
+      "name": "current_product_auth_positive_browser54",
+      "path": "/Users/ali/Developer/warpdrive-settings-ux/.runtime/goal-native-stage-browser/attempt2/browser-result.public.json",
+      "sha256": "d592ae3eec0be2f2cb517de92d4697e0fc09912a6391a3d2fe8e1643ea88a216"
+    }
+  ],
+  "current_hosted_evidence": {
+    "reviewed_revision": "b53cac92982d04c289e304a301e7545d266d72c8",
+    "CRM_CI": "ACTUAL_FAIL_BEFORE_TESTS_RETAINED",
+    "later_exact_green_CI": null,
+    "account_acceptance": null,
+    "closure_audit": null
+  },
+  "completion_boundary": "No issue completion, human85, broader workflow programme, provider/install/release/deployment acceptance.",
+  "later_scope_only_addendum": {
+    "reviewed_ancestor": "b53cac92982d04c289e304a301e7545d266d72c8",
+    "later_revision": "4764303b580fa9c0f578ff80238cbb026945ee11",
+    "scope": "Only the95 required source pins; all exact Git blob SHA256s match at both revisions",
+    "scopedPinCount": 95,
+    "changedScopedPins": [],
+    "whole_app_equivalence_claim": false,
+    "unrelated_MAIL_or_privacy_report_pins": [],
+    "MAIL_projection_WIP": "Protected unpublished emailReads/test/email registry overlays were not read, pinned, adopted or qualified. No called selected Workflow-to-Activity/Auth path dependency on emailReads or registryIdsEmail1 identified.",
+    "CI": "Root reports laterF7of8 checks green with CRM unit step running. This is pending, not independently API-verified or accepted; ancestralb53 formatter failure remains retained."
+  }
+}
