@@ -60,6 +60,16 @@ function commands(name: keyof typeof PACKAGES): string[] {
   return job(name).steps.flatMap((step) => (step.run === undefined ? [] : [step.run]));
 }
 
+function toolingEnvironment(name: string, command: string | undefined) {
+  if (name === "docs" && command === DOCS_DEPENDENCY_CONTRACT) {
+    return { BUN_OPTIONS: "--no-env-file" };
+  }
+  if (name === "site" && command === "bun run build") {
+    return { NEXT_TELEMETRY_DISABLED: "1" };
+  }
+  return undefined;
+}
+
 describe("public Bun CI", () => {
   it("checks every branch push, ordinary pull requests and manual runs with a read-only token", () => {
     expect(workflow.on).toEqual({ push: null, pull_request: null, workflow_dispatch: null });
@@ -161,14 +171,7 @@ describe("public Bun CI", () => {
     }
     for (const [name, check] of Object.entries(workflow.jobs)) {
       for (const step of check.steps) {
-        if (step === build) continue;
-        if (name === "docs" && step.run === DOCS_DEPENDENCY_CONTRACT) {
-          expect(step.env).toEqual({ BUN_OPTIONS: "--no-env-file" });
-        } else if (name === "site" && step.run === "bun run build") {
-          expect(step.env).toEqual({ NEXT_TELEMETRY_DISABLED: "1" });
-        } else {
-          expect(step.env).toBeUndefined();
-        }
+        if (step !== build) expect(step.env).toEqual(toolingEnvironment(name, step.run));
       }
     }
   });
