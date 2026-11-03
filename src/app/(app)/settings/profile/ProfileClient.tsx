@@ -97,9 +97,9 @@ export function ProfileClient(props: ProfileClientProps): React.ReactNode {
         </div>
       </SettingsCardBody>
       <SettingsCardFooter>
-        {nameSaved && draftName.trim() === savedName && (
+        {(nameSaving || (nameSaved && draftName.trim() === savedName)) && (
           <span role="status" className="me-auto text-sm text-muted-foreground">
-            {L.saved}
+            {nameSaving ? L._extra.saving : L.saved}
           </span>
         )}
         <Button
