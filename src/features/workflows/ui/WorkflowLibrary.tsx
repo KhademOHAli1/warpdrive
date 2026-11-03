@@ -29,6 +29,12 @@ export function WorkflowLibrary({ canCreate }: { canCreate: boolean }) {
   const fmt = useFormatters();
   const router = useRouter();
   const list = trpc.workflows.list.useQuery();
+  const confirmedEmpty =
+    list.data !== undefined &&
+    list.data.length === 0 &&
+    !list.isLoading &&
+    !list.isFetching &&
+    !list.isError;
   const [open, setOpen] = useState(false);
   const [template, setTemplate] = useState("followUp");
   const [name, setName] = useState("");
@@ -93,16 +99,22 @@ export function WorkflowLibrary({ canCreate }: { canCreate: boolean }) {
       <p className="rounded-lg border border-primary/15 bg-primary/5 px-5 py-4 text-sm leading-6 text-muted-foreground">
         {t("scope")}
       </p>
-      {list.isLoading && <p role="status">{t("loading")}</p>}
+      {(list.isLoading || (list.isFetching && list.data?.length === 0)) && (
+        <p role="status">{t("loading")}</p>
+      )}
       {list.isError && (
         <div role="alert" className="space-y-3 rounded-lg border bg-card p-6">
           <p>{t("loadError")}</p>
-          <Button variant="outline" onClick={() => void list.refetch()}>
+          <Button
+            variant="outline"
+            disabled={list.isFetching}
+            onClick={() => void list.refetch()}
+          >
             {t("retry")}
           </Button>
         </div>
       )}
-      {list.data?.length === 0 && (
+      {confirmedEmpty && (
         <div className="flex min-h-80 flex-col items-center justify-center rounded-lg border bg-card p-8 text-center">
           <GitBranch className="mb-5 size-9 text-primary" />
           <h2 className="text-lg font-semibold">{t("empty")}</h2>
