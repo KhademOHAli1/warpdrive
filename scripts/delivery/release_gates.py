@@ -75,11 +75,23 @@ def passed_checks(checks):
 
 
 def trusted_policy(revision, path, repo):
-    """Candidate policy cannot introduce eligibility or roll back today's trusted policy."""
+    """Preserve historical technical opt-ins without borrowing or changing authority."""
     trusted_revision = run("git", "rev-parse", "HEAD").strip()
     trusted = load_candidate_json(trusted_revision, path)
     candidate = load_candidate_json(revision, path)
-    if not isinstance(candidate, dict) or canonical_json(candidate) != canonical_json(trusted) or candidate.get("repository") != repo:
+    compatible = isinstance(candidate, dict) and isinstance(trusted, dict) and candidate.get("repository") == repo
+    if compatible and path == TECHNICAL_POLICY:
+        candidate_items, trusted_items = candidate.get("items"), trusted.get("items")
+        compatible = (
+            isinstance(candidate_items, dict) and isinstance(trusted_items, dict)
+            and canonical_json({k: v for k, v in candidate.items() if k != "items"})
+            == canonical_json({k: v for k, v in trusted.items() if k != "items"})
+            and all(key in trusted_items and canonical_json(value) == canonical_json(trusted_items[key])
+                    for key, value in candidate_items.items())
+        )
+    elif compatible:
+        compatible = canonical_json(candidate) == canonical_json(trusted)
+    if not compatible:
         raise GateError(f"Candidate {path} differs from committed trusted main policy or repository")
     return candidate
 

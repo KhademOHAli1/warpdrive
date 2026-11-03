@@ -169,6 +169,78 @@ class DelegatedAcceptanceTests(unittest.TestCase):
         self.assertIn("not separately authenticated", proof["provenance_limit"])
         self.assertTrue(all(method == "GET" for _, method, _ in self.api.calls))
 
+    def test_historical_acceptance_survives_later_identical_policy_opt_ins(self):
+        self.candidate_policy = json.loads(json.dumps(self.policy))
+        self.policy["items"]["technical/later"] = dict(self.policy["items"][ITEM["id"]])
+        self.assertEqual(self.accept()["mode"], "delegated_agent")
+        historical = gates.trusted_policy(REVISION, gates.TECHNICAL_POLICY, "o/r")
+        self.assertNotIn("technical/later", historical["items"])
+
+    def test_historical_policy_cannot_introduce_or_change_eligibility(self):
+        mutations = (
+            lambda p: p["items"].update({"technical/unknown": dict(p["items"][ITEM["id"]])}),
+            lambda p: p["items"][ITEM["id"]].update(required_source_paths=[]),
+            lambda p: p["items"][ITEM["id"]].update(acceptance_sha256="0" * 64),
+            lambda p: p["items"][ITEM["id"]].update(classification="journey"),
+            lambda p: p["items"][ITEM["id"]].update(rationale="Different authorization"),
+        )
+        for mutation in mutations:
+            with self.subTest(mutation=mutation):
+                self.policy = policy()
+                self.candidate_policy = json.loads(json.dumps(self.policy))
+                mutation(self.candidate_policy)
+                self.assert_rejected()
+
+    def test_historical_subset_cannot_borrow_a_later_item_opt_in(self):
+        self.candidate_policy = json.loads(json.dumps(self.policy))
+        self.candidate_policy["items"] = {}
+        self.assert_rejected()
+
+    def test_historical_item_json_types_are_not_python_equal_values(self):
+        self.policy["items"][ITEM["id"]]["qualification_revision"] = 1
+        self.candidate_policy = json.loads(json.dumps(self.policy))
+        self.candidate_policy["items"][ITEM["id"]]["qualification_revision"] = True
+        self.assert_rejected()
+
+    def test_historical_policy_preserves_every_global_safeguard(self):
+        for key, value in (("repository", "other/repo"), ("mode", "human"),
+                           ("human_only_ids", [ITEM["id"]]), ("delegated_actors", []),
+                           ("required_workflows", {}), ("codeql_workflow_id", "999"),
+                           ("schema_version", True), ("unexpected_global", True)):
+            with self.subTest(key=key):
+                self.policy = policy()
+                self.candidate_policy = json.loads(json.dumps(self.policy))
+                self.policy["items"]["technical/later"] = dict(self.policy["items"][ITEM["id"]])
+                self.candidate_policy[key] = value
+                self.assert_rejected()
+
+    def test_historical_global_json_types_are_not_python_equal_values(self):
+        self.policy["authorization_revision"] = 1
+        self.candidate_policy = json.loads(json.dumps(self.policy))
+        self.policy["items"]["technical/later"] = dict(self.policy["items"][ITEM["id"]])
+        self.candidate_policy["authorization_revision"] = True
+        self.assert_rejected()
+
+    def test_technical_policy_requires_well_formed_item_maps(self):
+        for broken in (None, [], "invalid"):
+            for side in ("candidate", "trusted", "both"):
+                with self.subTest(broken=broken, side=side):
+                    self.policy = policy()
+                    self.candidate_policy = json.loads(json.dumps(self.policy))
+                    if side in ("candidate", "both"):
+                        self.candidate_policy["items"] = broken
+                    if side in ("trusted", "both"):
+                        self.policy["items"] = broken
+                    with self.assertRaises(gates.GateError):
+                        gates.trusted_policy(REVISION, gates.TECHNICAL_POLICY, "o/r")
+
+    def test_release_policy_does_not_gain_historical_subset_compatibility(self):
+        historical = dict(self.release_policy, items={"old": {"scope": "original"}})
+        current = dict(self.release_policy, items={"old": {"scope": "original"}, "new": {}})
+        with patch.object(gates, "load_candidate_json", side_effect=lambda revision, path: historical if revision == REVISION else current):
+            with self.assertRaises(gates.GateError):
+                gates.trusted_policy(REVISION, gates.RELEASE_POLICY, "o/r")
+
     def test_default_and_release_context_do_not_admit_agent_proof(self):
         self.assert_rejected(allow_agent=False)
 
