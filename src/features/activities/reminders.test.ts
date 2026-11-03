@@ -4,6 +4,10 @@ import { PGBOSS_QUEUE_ACTIVITY_REMINDER } from "@/constants/jobNames";
 import { activities, activityTypes, deals, notifications } from "@/db/schema";
 import { withTestDb } from "@/db/testing";
 import { seedPipelineWithStages, seedUser } from "@/db/testing/factories";
+import {
+  NATIVE_ACTIVITY_REMINDER_QUEUE,
+  NATIVE_ACTIVITY_REMINDER_RECONCILE_QUEUE,
+} from "./reminderScheduling";
 import { handleReminderJob, registerReminderWorker } from "./reminders";
 
 // ---------------------------------------------------------------------------
@@ -198,6 +202,12 @@ function makeFakeBoss() {
       workers.push({ name });
       return Promise.resolve();
     },
+    schedule(): Promise<void> {
+      return Promise.resolve();
+    },
+    send(): Promise<string> {
+      return Promise.resolve("recording-only");
+    },
   };
 }
 
@@ -211,8 +221,12 @@ describe("registerReminderWorker", () => {
 
     const queueNames = fakeBoss.queues.map((q) => q.name);
     expect(queueNames).toContain(PGBOSS_QUEUE_ACTIVITY_REMINDER);
+    expect(queueNames).toContain(NATIVE_ACTIVITY_REMINDER_QUEUE);
+    expect(queueNames).toContain(NATIVE_ACTIVITY_REMINDER_RECONCILE_QUEUE);
 
     const workerNames = fakeBoss.workers.map((w) => w.name);
     expect(workerNames).toContain(PGBOSS_QUEUE_ACTIVITY_REMINDER);
+    expect(workerNames).toContain(NATIVE_ACTIVITY_REMINDER_QUEUE);
+    expect(workerNames).toContain(NATIVE_ACTIVITY_REMINDER_RECONCILE_QUEUE);
   });
 });

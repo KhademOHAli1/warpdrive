@@ -715,6 +715,13 @@
       "when": 1793646279910,
       "tag": "0101_deal_create_operations",
       "breakpoints": true
+    },
+    {
+      "idx": 102,
+      "version": "7",
+      "when": 1793661203191,
+      "tag": "0102_activity_reminder_intents",
+      "breakpoints": true
     }
   ]
 }

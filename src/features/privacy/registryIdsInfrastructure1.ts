@@ -82,6 +82,7 @@ export const infrastructureIds1: string[] = [
   "sourceReview:src/db/schema/activities.ts#a37eb66b82bfc1e08e4ba7677dc2e74c504410728a6b62d20e9a9d17547b942c",
   "sourceReview:src/db/schema/activityGuests.ts#aada3b846147eab2f690f2bd37ea4473762b4ae7ec43ff55f2846574dcbe3ff7",
   "sourceReview:src/db/schema/activityParticipants.ts#e1b94aa0d346d7043b1f1462913ca31a2e604fc90ed138568696586ab6e58933",
+  "sourceReview:src/db/schema/activityReminderIntents.ts#92fdd84ffe6f3af78a7dc5040833e48b23af753ad89ca6b6ac1839d6d307d287",
   "sourceReview:src/db/schema/activityTypes.ts#5a6c0528ff111f9d9651c94fbdb6f474da2208766d127e72fa86083b3469a74c",
   "sourceReview:src/db/schema/changeLogs.ts#b263a7107a17619e9cdc55d17f26961a01a27de9829c19c50716ed8e25ce5fd9",
   "sourceReview:src/db/schema/comments.ts#bbb326bf9b5cbf82e54143f30dca1ac2a80bd759f0bfea663f067e4aae1d7cc5",

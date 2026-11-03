@@ -1,6 +1,7 @@
 export * from "./activities";
 export * from "./activityGuests";
 export * from "./activityParticipants";
+export * from "./activityReminderIntents";
 export * from "./activityTypes";
 export * from "./authEmailVerification";
 export * from "./authentication";

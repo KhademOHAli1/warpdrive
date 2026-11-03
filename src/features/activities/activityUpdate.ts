@@ -20,6 +20,7 @@ import { err, ok, type Result } from "@/types/result";
 import { activityAccountPreferences } from "./accountTimeZone";
 import { canonicalUpdateDates, civilEndBeforeStart } from "./activityTemporalWrite";
 import { recomputeDealsActivityDates } from "./nextActivity";
+import { assertActivityReminderGeneration, synchronizeActivityReminder } from "./reminderIntent";
 import { type ActivityUpdateInput, activityUpdateInput } from "./schemas";
 import { resolveActivityVisibility } from "./visibility";
 
@@ -180,7 +181,8 @@ export async function updateActivity(
     const [current] = await tx
       .select()
       .from(activities)
-      .where(and(eq(activities.id, input.id), isNull(activities.deletedAt)));
+      .where(and(eq(activities.id, input.id), isNull(activities.deletedAt)))
+      .for("update");
 
     if (current === undefined) {
       return err(
@@ -201,6 +203,14 @@ export async function updateActivity(
       return err(new AppError(ERROR_IDS.ACTIVITY_FORBIDDEN, "forbidden", { id: input.id }));
     }
 
+    const generation = await assertActivityReminderGeneration(
+      tx,
+      current.id,
+      input.expectedReminderGeneration,
+      signal,
+    );
+    if (!generation.ok) return generation;
+
     const refsOk = await assertPatchRefsVisible(tx, actor, input, signal);
     if (!refsOk.ok) return refsOk;
 
@@ -212,7 +222,11 @@ export async function updateActivity(
 
     // A guest/participant-only edit has no scalar columns to write; skip the row UPDATE (Drizzle
     // rejects an empty .set()) and keep the current row for the recompute below.
-    const civilDates = canonicalUpdateDates(current, input, prefs.timeZone);
+    const civilDates = canonicalUpdateDates(
+      current,
+      input,
+      input.authoredTimeZone ?? prefs.timeZone,
+    );
     if (civilEndBeforeStart(civilDates))
       return err(
         new AppError(ERROR_IDS.ACTIVITY_END_BEFORE_START, "activity end is before its start", {
@@ -239,6 +253,18 @@ export async function updateActivity(
     }
 
     await reconcileGuestsAndParticipants(tx, row.id, input);
+
+    await synchronizeActivityReminder(
+      tx,
+      current,
+      row,
+      {
+        eventTimeZone: input.authoredTimeZone,
+        reminderTimeZone: input.reminderTimeZone,
+        selection: input.reminder,
+      },
+      signal,
+    );
 
     // Recompute next_activity for the new deal AND the previous one when the link moved.
     const affectedDeals = new Set<string>();

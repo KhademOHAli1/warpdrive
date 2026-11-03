@@ -14,6 +14,11 @@ function group(stores: readonly string[], status: Status, reason: string): Disco
 // Literal reviewed declarations deliberately do not learn new tables from the catalog.
 export const DISCOVERY_COVERAGE: readonly DiscoveryCoverage[] = [
   ...group(
+    ["activity_reminder_intents"],
+    "unsupported",
+    "Activity-linked reminder selections, authored time zones, generation/attempt identifiers and current delivery outcomes require reviewed subject relationships and a purpose-specific lifecycle adapter. Activity owner, assignee or notification recipient identity does not establish disclosure or erasure authority. Soft cancellation retains metadata; hard activity deletion cascades, while notification deletion clears only its link and retains the delivered tombstone. Generation replacement and current attempt counters are not an append-only history. No expiry, purge or retention period is activated; queued references, notification payloads and backups remain separate reviewed boundaries.",
+  ),
+  ...group(
     ["deal_create_operations"],
     "unsupported",
     "Actor-linked native deal creation receipts and intent fingerprints require a dedicated provenance and retention adapter. Deal visibility, a deleted-deal tombstone and account administration do not establish subject disclosure or erasure authority. Actor deletion remains restricted until a coordinated lifecycle is reviewed.",

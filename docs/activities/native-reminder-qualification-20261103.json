@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "snapshotAtUtc": "2026-11-03T00:15:11.513510+00:00",
+  "workItems": {
+    "technical": 907,
+    "humanJourney": 83
+  },
+  "sourceBase": "6101e35f054c9a203b385222f26d2ff6889e7c6b",
+  "scope": "Local source/static/controlled PostgreSQL qualification before production build/browser",
+  "static": {
+    "casesPassed": 39,
+    "receipt": ".runtime/goal-calendar-static-2/qualification/static.receipt.json"
+  },
+  "privacy": {
+    "casesPassed": 31,
+    "coverage": {
+      "ok": true,
+      "missing": [],
+      "invalid": []
+    },
+    "eligibleSourceFiles": 2399,
+    "sourceFingerprint": "a6ef01d7635c36e31814b1da91a7f6dee22a38918d80e315a25535d99253d94f",
+    "receipt": ".runtime/goal-calendar-privacy-companion/qualification1/control/phase1.receipt.json"
+  },
+  "native": {
+    "firstRun": {
+      "passed": 47,
+      "failed": 1,
+      "filteredFairness": 1,
+      "receipt": ".runtime/goal-calendar-native-0102-2/qualification/native.receipt.json"
+    },
+    "selectedCorrectedUpgrade": {
+      "passed": 1,
+      "nativeSeconds": 4.118277083034627,
+      "inclusiveSeconds": 7.871145249926485,
+      "receipt": ".runtime/goal-calendar-upgrade-0102-4/qualification/native.receipt.json"
+    },
+    "singleCombinedGreenRun": false,
+    "actualCanonicalEntries": 103,
+    "earlierFairness": {
+      "passed": 1,
+      "scope": "Separate earlier private-schema cut",
+      "receipt": ".runtime/goal-calendar-fairness-green-1/qualification/native.receipt.json"
+    }
+  },
+  "formatter": {
+    "calendarFilesChecked": 47,
+    "testOnlyFilesChangedAtFixedPoint": 3,
+    "receipt": ".runtime/goal-calendar-format-fixedpoint-1/receipt.json"
+  },
+  "actualDdl": {
+    "sql": "drizzle/0102_activity_reminder_intents.sql",
+    "sqlSha256": "76ab427c5891c6e10fb9707511d56e6b16039af3a108953c0e46d0a5f4c0b110",
+    "snapshotSha256": "25c10e3c31fd1fd4ce42e4e6e1650f8121a6e6e1f72d4713dba5040218e6749d",
+    "journalSha256": "1497b769f64616c1e53f798640df2b02bf9b0e741dbbe0974d3a6cd092df2926",
+    "historicalSqlAndSnapshotsPreserved": true
+  },
+  "openAtSnapshot": [
+    "Normal production build and exact artifact admission",
+    "Actual HTTP and browser reminder journey",
+    "Exact included-main CI",
+    "Human journey and installation/provider/release acceptance"
+  ],
+  "capabilityExpansionFromInventoryMaintenance": false
+}

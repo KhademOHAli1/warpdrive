@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { ACTIVITY_PRIORITY_KEYS } from "@/constants/activityPriorities";
+import { activityReminderSelectionV1, activityReminderTimeZone } from "./reminderIntentTypes";
 
 export const activityCreateInput = z
   .object({
@@ -17,6 +18,10 @@ export const activityCreateInput = z
     // Multi-day end timestamp (Pipedrive parity). Ordering vs dueAt is enforced in the repo.
     endAt: z.string().datetime().nullable().default(null),
     durationMinutes: z.number().int().positive().nullable().default(null),
+    // Native Calendar sends these explicitly; omission preserves legacy callers.
+    authoredTimeZone: activityReminderTimeZone.optional(),
+    reminderTimeZone: activityReminderTimeZone.optional(),
+    reminder: activityReminderSelectionV1.optional(),
     dealId: z.string().uuid().nullable().default(null),
     // A lead-scoped activity (Leads Inbox timeline). Mutually exclusive with dealId:
     // the activities table enforces the same single-parent (deal XOR lead) check.
@@ -58,6 +63,10 @@ export const activityUpdateInput = z
     endDate: z.string().date().nullable().optional(),
     endAt: z.string().datetime().nullable().optional(),
     durationMinutes: z.number().int().positive().nullable().optional(),
+    authoredTimeZone: activityReminderTimeZone.optional(),
+    reminderTimeZone: activityReminderTimeZone.optional(),
+    reminder: activityReminderSelectionV1.optional(),
+    expectedReminderGeneration: z.string().uuid().nullable().optional(),
     location: z.string().trim().max(255).nullable().optional(),
     note: z.string().max(50_000).nullable().optional(),
     assigneeId: z.string().uuid().optional(),
@@ -71,7 +80,12 @@ export const activityUpdateInput = z
     personId: z.string().uuid().nullable().optional(),
     orgId: z.string().uuid().nullable().optional(),
   })
-  .refine((v) => Object.keys(v).length > 1, { message: "no fields to update" });
+  .refine(
+    (v) => Object.keys(v).some((key) => key !== "id" && key !== "expectedReminderGeneration"),
+    {
+      message: "no fields to update",
+    },
+  );
 
 export type ActivityUpdateInput = z.input<typeof activityUpdateInput>;
 

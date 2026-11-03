@@ -7,6 +7,7 @@ import { canSee } from "@/features/permissions/canSee";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { err, ok, type Result } from "@/types/result";
 import { recomputeDealActivityDates } from "./nextActivity";
+import { cancelActivityReminder } from "./reminderIntent";
 import { resolveActivityVisibility } from "./visibility";
 
 // Soft-delete: mirrors completeActivity's gate order (load -> visibility 404 -> permission 403 ->
@@ -23,7 +24,8 @@ export async function deleteActivity(
     const [current] = await tx
       .select()
       .from(activities)
-      .where(and(eq(activities.id, id), isNull(activities.deletedAt)));
+      .where(and(eq(activities.id, id), isNull(activities.deletedAt)))
+      .for("update");
 
     if (current === undefined) {
       return err(new AppError(ERROR_IDS.ACTIVITY_NOT_FOUND, "activity not found", { id }));
@@ -49,6 +51,8 @@ export async function deleteActivity(
     if (row === undefined) {
       return err(new AppError(ERROR_IDS.DB_INSERT_FAILED, "activity delete returned no rows", {}));
     }
+
+    await cancelActivityReminder(tx, row.id, signal);
 
     if (row.dealId !== null) {
       await recomputeDealActivityDates(tx, row.dealId, signal);

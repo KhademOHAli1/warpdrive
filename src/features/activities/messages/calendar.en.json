@@ -86,6 +86,31 @@
     "copyFailed": "The link could not be copied. You can open it and copy it from your browser.",
     "currentType": "Current activity type",
     "openInNewTab": "Opens in a new tab",
-    "saveShortcut": "Save (⌘ or Ctrl + Enter)"
+    "saveShortcut": "Save (⌘ or Ctrl + Enter)",
+    "actorMissing": "Your account could not be confirmed. Reopen Calendar before editing.",
+    "savedRefreshFailed": "The event was saved. Its latest details could not be refreshed. Refresh to continue; this will not save it again.",
+    "saveUnconfirmed": "We could not confirm the result. Your draft is still here. Check Calendar before submitting again to avoid creating a duplicate.",
+    "refreshSaved": "Refresh saved event",
+    "checkCalendar": "Check Calendar"
+  },
+  "reminder": {
+    "title": "Reminder",
+    "enable": "In-app reminder",
+    "beforeStart": "10 minutes before the event starts, in the assigned person’s notifications.",
+    "time": "Reminder time",
+    "legacy": "This older event has no managed in-app reminder. Its earlier reminder history is unknown.",
+    "priorDelivery": "An earlier reminder may already have been sent. This sets a new in-app reminder.",
+    "saveChanges": "Save the event to apply this reminder choice.",
+    "delivered": "Added to notifications",
+    "pending": "Reminder set",
+    "cancelled": "Reminder off or event completed",
+    "eventFinished": "The event has ended. No reminder was added.",
+    "needsAttention": "Needs attention. Check the event, access and notification settings.",
+    "refresh": "Refresh status",
+    "retry": "Try reminder again",
+    "stale": "The event or reminder changed. Refresh its details and check the schedule before saving.",
+    "invalid": "Check the reminder time and event schedule. This local time may not exist in the selected time zone.",
+    "authorDate": "Save the displayed date as this event’s date in {zone}.",
+    "dateConfirmationRequired": "Confirm the displayed date and time zone before setting a reminder on this older all-day event."
   }
 }

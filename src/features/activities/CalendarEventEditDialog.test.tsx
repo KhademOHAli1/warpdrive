@@ -1,22 +1,13 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
+import { NativeActorProvider } from "@/features/identity/NativeActorProvider";
 import { CalendarEventEditDialog } from "./CalendarEventEditDialog";
 
-const state = vi.hoisted(() => ({
-  query: {
-    data: undefined as { id: string; allDay: boolean; assigneeId: string } | undefined,
-    isFetching: true,
-    isFetchedAfterMount: false,
-    isError: false,
-    isSuccess: false,
-    refetch: vi.fn(),
-  },
-}));
-vi.mock("@/lib/trpc-client", () => ({
-  trpc: { activities: { getForEdit: { useQuery: () => state.query } } },
-}));
+const api = vi.hoisted(() => ({ readCalendarEventAction: vi.fn() }));
+vi.mock("./calendarNativeActions", () => api);
+vi.mock("@/utils/csrfCookie", () => ({ readCsrfToken: () => "csrf" }));
 vi.mock("./CalendarEventDialog", () => ({
   CalendarEventDialog: ({
     editing,
@@ -28,48 +19,63 @@ vi.mock("./CalendarEventDialog", () => ({
     </div>
   ),
 }));
+const actorA = "00000000-0000-4000-8000-000000000001";
+const actorB = "00000000-0000-4000-8000-000000000002";
+const eventId = "00000000-0000-4000-8000-000000000003";
+function view(actorId = actorA) {
+  return (
+    <NativeActorProvider actorId={actorId}>
+      <CalendarEventEditDialog id={eventId} onClose={vi.fn()} onSaved={vi.fn()} />
+    </NativeActorProvider>
+  );
+}
 afterEach(() => {
   cleanup();
-  Object.assign(state.query, {
-    data: undefined,
-    isFetching: true,
-    isFetchedAfterMount: false,
-    isError: false,
-    isSuccess: false,
-  });
+  vi.resetAllMocks();
 });
 
-it("waits for a fresh visibility-checked read even if an old record is cached", () => {
-  state.query.data = { id: "a1", allDay: false, assigneeId: "stale-assignee" };
-  render(<CalendarEventEditDialog id="a1" onClose={vi.fn()} onSaved={vi.fn()} />);
+it("waits for a new credential-bound read instead of using a cached DTO", () => {
+  api.readCalendarEventAction.mockReturnValue(new Promise(() => {}));
+  render(view());
   expect(screen.queryByTestId("loaded-event")).not.toBeInTheDocument();
   expect(screen.getByRole("status")).toHaveTextContent("Opening event");
-});
-
-it("keeps an open draft mounted when a later refresh fails", () => {
-  Object.assign(state.query, {
-    data: { id: "a1", allDay: true, assigneeId: "assigned-user" },
-    isFetching: false,
-    isFetchedAfterMount: true,
-    isSuccess: true,
-  });
-  const { rerender } = render(
-    <CalendarEventEditDialog id="a1" onClose={vi.fn()} onSaved={vi.fn()} />,
+  expect(api.readCalendarEventAction).toHaveBeenCalledWith(
+    { v: 1, expectedActorId: actorA, activityId: eventId },
+    "csrf",
   );
-  expect(screen.getByTestId("loaded-event")).toHaveTextContent("a1,true,assigned-user");
-  Object.assign(state.query, { isError: true, isSuccess: false });
-  rerender(<CalendarEventEditDialog id="a1" onClose={vi.fn()} onSaved={vi.fn()} />);
-  expect(screen.getByTestId("loaded-event")).toHaveTextContent("a1,true,assigned-user");
 });
-
-it("does not show cached data after an initial read fails", () => {
-  Object.assign(state.query, {
-    data: { id: "a1", allDay: true, assigneeId: "private-user" },
-    isFetching: false,
-    isFetchedAfterMount: true,
-    isError: true,
+it("keeps an opened draft mounted across ordinary rerenders", async () => {
+  api.readCalendarEventAction.mockResolvedValue({
+    ok: true,
+    value: { id: eventId, allDay: true, assigneeId: actorA },
   });
-  render(<CalendarEventEditDialog id="a1" onClose={vi.fn()} onSaved={vi.fn()} />);
+  const { rerender } = render(view());
+  const mounted = await screen.findByTestId("loaded-event");
+  api.readCalendarEventAction.mockRejectedValue(new Error("offline"));
+  rerender(view());
+  expect(screen.getByTestId("loaded-event")).toBe(mounted);
+  expect(api.readCalendarEventAction).toHaveBeenCalledTimes(1);
+});
+it("does not reveal event data when the initial authoritative read fails", async () => {
+  api.readCalendarEventAction.mockResolvedValue({ ok: false, error: { id: "E_ACTIVITY_001" } });
+  render(view());
+  expect(await screen.findByRole("alert")).toBeInTheDocument();
   expect(screen.queryByTestId("loaded-event")).not.toBeInTheDocument();
-  expect(screen.getByRole("alert")).toBeInTheDocument();
+});
+it("discards a late read from the previous account", async () => {
+  let finish: ((result: unknown) => void) | undefined;
+  api.readCalendarEventAction
+    .mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finish = resolve;
+        }),
+    )
+    .mockResolvedValue({ ok: false, error: { id: "E_ACTIVITY_001" } });
+  const { rerender } = render(view());
+  rerender(view(actorB));
+  await screen.findByRole("alert");
+  finish?.({ ok: true, value: { id: eventId, allDay: true, assigneeId: actorA } });
+  await waitFor(() => expect(api.readCalendarEventAction).toHaveBeenCalledTimes(2));
+  expect(screen.queryByTestId("loaded-event")).not.toBeInTheDocument();
 });

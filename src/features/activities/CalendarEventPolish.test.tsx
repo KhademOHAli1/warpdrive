@@ -1,17 +1,28 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
-import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
-import { afterEach, beforeAll, expect, it, vi } from "vitest";
+import {
+  cleanup,
+  fireEvent,
+  render as renderUi,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
+import type { ReactElement } from "react";
+import { afterEach, beforeAll, beforeEach, expect, it, vi } from "vitest";
+import { NativeActorProvider } from "@/features/identity/NativeActorProvider";
 import { CalendarEventDialog } from "./CalendarEventDialog";
 import type { EditableActivity } from "./getForEdit";
 
 const api = vi.hoisted(() => ({
-  createActivityAction: vi.fn(),
-  editActivityAction: vi.fn(),
-  deleteActivityAction: vi.fn(),
-  completeActivityAction: vi.fn(),
+  createCalendarEventAction: vi.fn(),
+  editCalendarEventAction: vi.fn(),
+  deleteCalendarEventAction: vi.fn(),
+  completeCalendarEventAction: vi.fn(),
+  readCalendarEventAction: vi.fn(),
+  retryCalendarReminderAction: vi.fn(),
 }));
-vi.mock("./actions", () => api);
+vi.mock("./calendarNativeActions", () => api);
 vi.mock("@/utils/csrfCookie", () => ({ readCsrfToken: () => "csrf" }));
 vi.mock("@/features/email/composer/RichTextBodyLazy", () => ({
   RichTextBody: ({
@@ -48,6 +59,13 @@ vi.mock("@/lib/trpc-client", () => ({
     },
   },
 }));
+const actorId = "00000000-0000-4000-8000-000000000003";
+function render(ui: ReactElement) {
+  return renderUi(<NativeActorProvider actorId={actorId}>{ui}</NativeActorProvider>);
+}
+beforeEach(() => {
+  api.readCalendarEventAction.mockResolvedValue({ ok: true, value: stored });
+});
 beforeAll(() => {
   Element.prototype.scrollIntoView = vi.fn();
   Element.prototype.hasPointerCapture = vi.fn(() => false);
@@ -124,12 +142,12 @@ it("shows a meeting summary, and applying a link never submits the event", () =>
     "href",
     "https://zoom.us/j/123456789",
   );
-  expect(api.createActivityAction).not.toHaveBeenCalled();
-  expect(api.editActivityAction).not.toHaveBeenCalled();
+  expect(api.createCalendarEventAction).not.toHaveBeenCalled();
+  expect(api.editCalendarEventAction).not.toHaveBeenCalled();
 });
 
 it("keeps linked CRM context visible and places completion in the actions menu", async () => {
-  api.completeActivityAction.mockResolvedValue({ ok: true });
+  api.completeCalendarEventAction.mockResolvedValue({ ok: true, value: { id: stored.id } });
   const onMarkedDone = vi.fn();
   render(<CalendarEventDialog editing={stored} onClose={vi.fn()} onMarkedDone={onMarkedDone} />);
   expect(screen.getByRole("link", { name: "Sara" })).toHaveAttribute(
@@ -147,28 +165,32 @@ it("keeps linked CRM context visible and places completion in the actions menu",
 });
 
 it("supports the save shortcut without duplicating the submission", async () => {
-  api.createActivityAction.mockResolvedValue({ ok: true });
+  api.createCalendarEventAction.mockResolvedValue({ ok: true, value: { id: stored.id } });
   render(<CalendarEventDialog defaultDate="2027-03-21" defaultTime="09:00" onClose={vi.fn()} />);
   const title = screen.getByLabelText("Event title");
   fireEvent.change(title, { target: { value: "Planning" } });
   fireEvent.keyDown(title, { key: "Enter", ctrlKey: true });
-  await waitFor(() => expect(api.createActivityAction).toHaveBeenCalledTimes(1));
+  await waitFor(() => expect(api.createCalendarEventAction).toHaveBeenCalledTimes(1));
 });
 
 it("commits the visible clock draft before keyboard saving and blocks an invalid clock", async () => {
-  api.createActivityAction.mockResolvedValue({ ok: true });
+  api.createCalendarEventAction.mockResolvedValue({ ok: true, value: { id: stored.id } });
   render(<CalendarEventDialog defaultDate="2027-03-21" defaultTime="09:00" onClose={vi.fn()} />);
   fireEvent.change(screen.getByLabelText("Event title"), { target: { value: "Planning" } });
   const clock = screen.getByLabelText("Start time");
   fireEvent.change(clock, { target: { value: "25:99" } });
   fireEvent.keyDown(clock, { key: "Enter", ctrlKey: true });
   await waitFor(() => expect(clock).toHaveAttribute("aria-invalid", "true"));
-  expect(api.createActivityAction).not.toHaveBeenCalled();
+  expect(api.createCalendarEventAction).not.toHaveBeenCalled();
   fireEvent.change(clock, { target: { value: "11:30" } });
   fireEvent.keyDown(clock, { key: "Enter", ctrlKey: true });
-  await waitFor(() => expect(api.createActivityAction).toHaveBeenCalledTimes(1));
-  expect(api.createActivityAction).toHaveBeenCalledWith(
-    expect.objectContaining({ dueAt: "2027-03-21T11:30:00.000Z", durationMinutes: 60 }),
+  await waitFor(() => expect(api.createCalendarEventAction).toHaveBeenCalledTimes(1));
+  expect(api.createCalendarEventAction).toHaveBeenCalledWith(
+    {
+      v: 1,
+      expectedActorId: actorId,
+      activity: expect.objectContaining({ dueAt: "2027-03-21T11:30:00.000Z", durationMinutes: 60 }),
+    },
     "csrf",
   );
 });

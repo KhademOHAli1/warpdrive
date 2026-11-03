@@ -1,20 +1,24 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+import { cleanup, fireEvent, render as renderUi, screen, waitFor } from "@testing-library/react";
+import type { ReactElement } from "react";
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { LocaleProvider } from "@/features/i18n/LocaleProvider";
 import type { Locale } from "@/features/i18n/registry";
+import { NativeActorProvider } from "@/features/identity/NativeActorProvider";
 import { CalendarEventDialog } from "./CalendarEventDialog";
 import type { EditableActivity } from "./getForEdit";
 
 const actions = vi.hoisted(() => ({
-  createActivityAction: vi.fn(),
-  editActivityAction: vi.fn(),
-  deleteActivityAction: vi.fn(),
-  completeActivityAction: vi.fn(),
+  createCalendarEventAction: vi.fn(),
+  editCalendarEventAction: vi.fn(),
+  deleteCalendarEventAction: vi.fn(),
+  completeCalendarEventAction: vi.fn(),
+  readCalendarEventAction: vi.fn(),
+  retryCalendarReminderAction: vi.fn(),
   invalidate: vi.fn(() => Promise.resolve(undefined)),
 }));
-vi.mock("./actions", () => actions);
+vi.mock("./calendarNativeActions", () => actions);
 vi.mock("@/utils/csrfCookie", () => ({ readCsrfToken: () => "csrf" }));
 vi.mock("@/features/email/composer/RichTextBodyLazy", () => ({
   RichTextBody: ({ html, onChange }: { html: string; onChange: (value: string) => void }) => (
@@ -44,6 +48,13 @@ vi.mock("@/lib/trpc-client", () => ({
   },
 }));
 
+const actorId = "00000000-0000-4000-8000-000000000003";
+function render(ui: ReactElement) {
+  return renderUi(<NativeActorProvider actorId={actorId}>{ui}</NativeActorProvider>);
+}
+beforeEach(() => {
+  actions.readCalendarEventAction.mockResolvedValue({ ok: true, value: stored });
+});
 beforeAll(() => {
   Element.prototype.scrollIntoView = vi.fn();
   Element.prototype.hasPointerCapture = vi.fn(() => false);
@@ -69,6 +80,7 @@ const labels = {
     addMeeting: "Add video meeting",
     applyLink: "Apply link",
     save: "Save",
+    check: "Check Calendar",
     zone: "UTC",
   },
   fa: {
@@ -85,6 +97,7 @@ const labels = {
     addMeeting: "افزودن جلسهٔ آنلاین",
     applyLink: "ثبت پیوند",
     save: "ذخیره",
+    check: "بررسی تقویم",
     zone: "Asia/Tehran",
   },
   de: {
@@ -101,6 +114,7 @@ const labels = {
     addMeeting: "Videobesprechung hinzufügen",
     applyLink: "Link übernehmen",
     save: "Speichern",
+    check: "Kalender prüfen",
     zone: "Europe/Berlin",
   },
 };
@@ -142,7 +156,7 @@ describe.each(["fa", "de", "en"] as Locale[])("calendar event workflow in %s", (
   }
 
   it("keeps one draft through quick/details and timed/all-day transitions, then saves it", async () => {
-    actions.createActivityAction.mockResolvedValue({ ok: true, value: { id: "created" } });
+    actions.createCalendarEventAction.mockResolvedValue({ ok: true, value: { id: stored.id } });
     open();
     expect(screen.getByLabelText(l.title)).toHaveAttribute("dir", locale === "fa" ? "rtl" : "ltr");
     expect(screen.getByRole("dialog", { name: l.create })).toHaveAttribute(
@@ -174,33 +188,41 @@ describe.each(["fa", "de", "en"] as Locale[])("calendar event workflow in %s", (
       "<p>برنامهٔ جلسه / Tagesordnung</p>",
     );
     fireEvent.click(screen.getByRole("button", { name: l.save }));
-    await waitFor(() => expect(actions.createActivityAction).toHaveBeenCalledTimes(1));
-    expect(actions.createActivityAction).toHaveBeenCalledWith(
-      expect.objectContaining({
-        subject: "جلسه با تیم / Teamtermin",
-        location: "تهران / Berlin",
-        allDay: false,
-        durationMinutes: 60,
-        note: "<p>برنامهٔ جلسه / Tagesordnung</p>",
-        videoCallUrl: "https://meet.google.com/abc-defg-hij",
-      }),
+    await waitFor(() => expect(actions.createCalendarEventAction).toHaveBeenCalledTimes(1));
+    expect(actions.createCalendarEventAction).toHaveBeenCalledWith(
+      {
+        v: 1,
+        expectedActorId: actorId,
+        activity: expect.objectContaining({
+          subject: "جلسه با تیم / Teamtermin",
+          location: "تهران / Berlin",
+          allDay: false,
+          durationMinutes: 60,
+          note: "<p>برنامهٔ جلسه / Tagesordnung</p>",
+          videoCallUrl: "https://meet.google.com/abc-defg-hij",
+          authoredTimeZone: l.zone,
+          reminder: { kind: "none" },
+        }),
+      },
       "csrf",
     );
   });
 
   it("retains the draft when a save fails", async () => {
-    actions.createActivityAction.mockRejectedValue(new Error("offline"));
+    actions.createCalendarEventAction.mockRejectedValue(new Error("offline"));
     open();
     fireEvent.change(screen.getByLabelText(l.title), { target: { value: "Besprechung / جلسه" } });
     fireEvent.click(screen.getByRole("button", { name: l.save }));
     expect(await screen.findByRole("alert")).not.toHaveTextContent("offline");
     expect(screen.getByLabelText(l.title)).toHaveValue("Besprechung / جلسه");
-    expect(screen.getByRole("button", { name: l.save })).not.toBeDisabled();
+    expect(screen.getByLabelText(l.title)).toBeDisabled();
+    fireEvent.click(screen.getByRole("button", { name: l.check }));
+    expect(actions.createCalendarEventAction).toHaveBeenCalledTimes(1);
   });
 });
 
 it("accepts Persian clock digits and moves the end without changing duration", async () => {
-  actions.createActivityAction.mockResolvedValue({ ok: true, value: { id: "created" } });
+  actions.createCalendarEventAction.mockResolvedValue({ ok: true, value: { id: stored.id } });
   render(
     <LocaleProvider locale="fa" timeZone="Asia/Tehran">
       <CalendarEventDialog defaultDate="2027-03-21" defaultTime="09:00" onClose={vi.fn()} />
@@ -212,19 +234,23 @@ it("accepts Persian clock digits and moves the end without changing duration", a
   fireEvent.blur(screen.getByLabelText("ساعت شروع"));
   fireEvent.click(screen.getByRole("button", { name: "ذخیره" }));
   await waitFor(() =>
-    expect(actions.createActivityAction).toHaveBeenCalledWith(
-      expect.objectContaining({
-        dueAt: "2027-03-21T07:00:00.000Z",
-        endAt: "2027-03-21T08:00:00.000Z",
-        durationMinutes: 60,
-      }),
+    expect(actions.createCalendarEventAction).toHaveBeenCalledWith(
+      {
+        v: 1,
+        expectedActorId: actorId,
+        activity: expect.objectContaining({
+          dueAt: "2027-03-21T07:00:00.000Z",
+          endAt: "2027-03-21T08:00:00.000Z",
+          durationMinutes: 60,
+        }),
+      },
       "csrf",
     ),
   );
 });
 
 it("reopens details and patches only a changed description", async () => {
-  actions.editActivityAction.mockResolvedValue({ ok: true });
+  actions.editCalendarEventAction.mockResolvedValue({ ok: true, value: { id: stored.id } });
   render(
     <LocaleProvider locale="de" timeZone="Europe/Berlin">
       <CalendarEventDialog editing={stored} onClose={vi.fn()} />
@@ -237,15 +263,23 @@ it("reopens details and patches only a changed description", async () => {
   });
   fireEvent.click(screen.getByRole("button", { name: "Speichern" }));
   await waitFor(() =>
-    expect(actions.editActivityAction).toHaveBeenCalledWith(
-      { id: stored.id, note: "<p>Geänderte Beschreibung</p>" },
+    expect(actions.editCalendarEventAction).toHaveBeenCalledWith(
+      {
+        v: 1,
+        expectedActorId: actorId,
+        activity: {
+          id: stored.id,
+          note: "<p>Geänderte Beschreibung</p>",
+          expectedReminderGeneration: null,
+        },
+      },
       "csrf",
     ),
   );
 });
 
 it("retains the completion workflow and reports it to the follow-up caller", async () => {
-  actions.completeActivityAction.mockResolvedValue({ ok: true });
+  actions.completeCalendarEventAction.mockResolvedValue({ ok: true, value: { id: stored.id } });
   const onMarkedDone = vi.fn();
   render(<CalendarEventDialog editing={stored} onClose={vi.fn()} onMarkedDone={onMarkedDone} />);
   fireEvent.pointerDown(screen.getByRole("button", { name: "Event actions" }), {
@@ -255,8 +289,8 @@ it("retains the completion workflow and reports it to the follow-up caller", asy
   });
   fireEvent.click(await screen.findByRole("menuitem", { name: "Mark as done" }));
   await waitFor(() => expect(onMarkedDone).toHaveBeenCalledWith(stored.id));
-  expect(actions.completeActivityAction).toHaveBeenCalledWith(
-    { id: stored.id, done: true },
+  expect(actions.completeCalendarEventAction).toHaveBeenCalledWith(
+    { v: 1, expectedActorId: actorId, activity: { id: stored.id, done: true } },
     "csrf",
   );
 });

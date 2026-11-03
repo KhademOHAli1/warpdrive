@@ -4,13 +4,64 @@ import { Button } from "@/components/ui/Button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/Input";
 import { Tip } from "@/components/ui/tooltip";
+import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { cn } from "@/lib/utils";
 import { ActivityTimeZoneHint } from "./ActivityTimeZoneHint";
 import { CalendarEventActions } from "./CalendarEventActions";
 import { CalendarEventCrmDetails } from "./CalendarEventCrmDetails";
 import { CalendarEventDetails } from "./CalendarEventDetails";
 import { CalendarEventSchedule } from "./CalendarEventSchedule";
+import { CalendarReminderFields } from "./CalendarReminderFields";
 import { type CalendarEventDialogProps, useCalendarEventEditor } from "./useCalendarEventEditor";
+
+type CalendarRecovery = ReturnType<typeof useCalendarEventEditor>["recovery"];
+
+function CalendarRecoveryNotice({
+  pending,
+  recovery,
+  actorMissing,
+}: {
+  pending: boolean;
+  recovery: CalendarRecovery;
+  actorMissing: boolean;
+}): React.ReactNode {
+  const t = useAppTranslations("calendar");
+  if (!actorMissing && (pending || recovery === null)) return null;
+  return (
+    <p
+      role="alert"
+      className="mx-6 mb-6 rounded-md border border-border bg-muted/40 px-3 py-2 text-sm leading-relaxed"
+    >
+      {t(
+        actorMissing
+          ? "editor.actorMissing"
+          : recovery === "saved"
+            ? "editor.savedRefreshFailed"
+            : "editor.saveUnconfirmed",
+      )}
+    </p>
+  );
+}
+
+function saveButtonLabel({
+  pending,
+  recovery,
+  saving,
+  save,
+  refreshSaved,
+  checkCalendar,
+}: {
+  pending: boolean;
+  recovery: CalendarRecovery;
+  saving: string;
+  save: string;
+  refreshSaved: string;
+  checkCalendar: string;
+}): string {
+  if (pending) return saving;
+  if (recovery === "saved") return refreshSaved;
+  return recovery === "unknown" ? checkCalendar : save;
+}
 
 // Layout changes keep the same mounted form and draft. The sidebar contains actual CRM
 // fields; provider provisioning and invitation delivery retain their separate contracts.
@@ -35,6 +86,13 @@ export function CalendarEventDialog(props: CalendarEventDialogProps): React.Reac
     save,
     manage,
     moveStart,
+    canEdit,
+    recovery,
+    actorMissing,
+    reminder,
+    retryReminder,
+    refreshReminder,
+    dateConfirmation,
   } = useCalendarEventEditor(props);
   return (
     <Dialog
@@ -66,7 +124,7 @@ export function CalendarEventDialog(props: CalendarEventDialogProps): React.Reac
             <div className="absolute end-12 top-1.5">
               <CalendarEventActions
                 done={doneNow}
-                pending={pending}
+                pending={pending || !canEdit}
                 onManage={(kind) => {
                   void manage(kind);
                 }}
@@ -101,9 +159,9 @@ export function CalendarEventDialog(props: CalendarEventDialogProps): React.Reac
           <div className="relative min-h-0 min-w-0 flex-1 overflow-y-auto">
             <fieldset
               ref={attachFields}
-              disabled={pending}
+              disabled={pending || !canEdit}
               aria-busy={pending}
-              inert={pending}
+              inert={pending || !canEdit}
               className="min-w-0 disabled:opacity-70"
             >
               <div className={cn(details && "md:grid md:grid-cols-[minmax(0,1fr)_17rem]")}>
@@ -145,6 +203,28 @@ export function CalendarEventDialog(props: CalendarEventDialogProps): React.Reac
                       />
                     )}
                   </section>
+                  <CalendarReminderFields
+                    selection={reminder.selection}
+                    date={draft.startDate}
+                    timeZone={reminder.reminderZone}
+                    metadata={reminder.metadata}
+                    legacyWarning={reminder.legacyWarning}
+                    changed={reminder.changed}
+                    pending={pending || !canEdit}
+                    onEnable={(enabled) => reminder.enable(enabled, draft.startTime === "")}
+                    onTime={reminder.chooseTime}
+                    onRefresh={
+                      refreshReminder === undefined
+                        ? undefined
+                        : () => {
+                            void refreshReminder();
+                          }
+                    }
+                    onRetry={() => {
+                      void retryReminder();
+                    }}
+                    dateConfirmation={dateConfirmation}
+                  />
                   <div className="border-t border-border/70 pt-4">
                     <CalendarEventDetails draft={draft} expanded={details} onChange={change} />
                   </div>
@@ -167,6 +247,11 @@ export function CalendarEventDialog(props: CalendarEventDialogProps): React.Reac
                 )}
               </div>
             </fieldset>
+            <CalendarRecoveryNotice
+              pending={pending}
+              recovery={recovery}
+              actorMissing={actorMissing}
+            />
           </div>
           <footer className="flex shrink-0 items-center justify-between gap-2 border-t border-border/70 bg-card px-4 py-3 sm:px-6">
             <Button
@@ -174,7 +259,7 @@ export function CalendarEventDialog(props: CalendarEventDialogProps): React.Reac
               size="sm"
               aria-label={t(details ? "editor.fewerOptions" : "editor.moreOptions")}
               aria-expanded={details}
-              disabled={pending}
+              disabled={pending || !canEdit}
               onClick={() => setDetails(!details)}
               className="text-muted-foreground"
             >
@@ -192,8 +277,15 @@ export function CalendarEventDialog(props: CalendarEventDialogProps): React.Reac
                 {S.cancel}
               </Button>
               <Tip label={t("editor.saveShortcut")}>
-                <Button type="submit" disabled={pending} className="min-w-24">
-                  {pending ? S.saving : S.save}
+                <Button type="submit" disabled={pending || actorMissing} className="min-w-24">
+                  {saveButtonLabel({
+                    pending,
+                    recovery,
+                    saving: S.saving,
+                    save: S.save,
+                    refreshSaved: t("editor.refreshSaved"),
+                    checkCalendar: t("editor.checkCalendar"),
+                  })}
                 </Button>
               </Tip>
             </div>

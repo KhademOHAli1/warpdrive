@@ -1,20 +1,35 @@
-import { and, eq, isNull } from "drizzle-orm";
 import type { Job, PgBoss } from "pg-boss";
+import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import { PGBOSS_QUEUE_ACTIVITY_REMINDER, REMINDER_LEAD_MINUTES } from "@/constants/jobNames";
 import type { Db } from "@/db/client";
 import { db as prodDb } from "@/db/client";
-import { activities } from "@/db/schema";
-import { notifyActivityReminder } from "@/features/notifications/wire";
+import { enqueueEmailNotification } from "@/features/notifications/emailDispatch";
 import { requireBoss } from "@/jobs/requireBoss";
-import { activityParentRef } from "./notifyHelpers";
+import { processActivityReminder } from "./reminderDelivery";
+import { activityReminderJobV1, legacyActivityReminderNudge } from "./reminderIntentTypes";
+import {
+  NATIVE_ACTIVITY_REMINDER_QUEUE,
+  NATIVE_ACTIVITY_REMINDER_RECONCILE_QUEUE,
+  reconcileActivityReminders,
+} from "./reminderScheduling";
 
 interface ReminderJob {
-  data: { activityId: string };
+  data: unknown;
+}
+function reminderTarget(raw: unknown): { activityId: string; generationId: string | undefined } {
+  const native = activityReminderJobV1.safeParse(raw);
+  if (native.success) return native.data;
+  const legacy = legacyActivityReminderNudge.safeParse(raw);
+  if (!legacy.success)
+    throw new AppError(
+      ERROR_IDS.ACTIVITY_NATIVE_INPUT_INVALID,
+      "Unsupported reminder job protocol",
+    );
+  return { activityId: legacy.data.activityId, generationId: undefined };
 }
 
-// Enqueue an activity-reminder job to fire REMINDER_LEAD_MINUTES before dueAt.
-// No-ops when dueAt is null (undated) or no pg-boss is set (tests, scripts); in production
-// requireBoss throws rather than dropping the reminder. singletonKey dedups re-schedules.
+// Existing legacy producer. Native Calendar uses durable managed intent instead.
+// A singleton key is a scheduling hint, not a logical notification receipt.
 export async function scheduleReminder(
   activityId: string,
   dueAt: Date | null,
@@ -32,46 +47,48 @@ export async function scheduleReminder(
   );
 }
 
-// Re-read the activity at fire time and notify its assignee.
-// Skips if the activity was completed, deleted, or rescheduled away (done/missing),
-// so a stale job never produces a reminder for an activity that no longer needs one.
-//
-// Delivery goes through notifyActivityReminder rather than a direct insert. Inserting here stored
-// entityType "activity" plus the ACTIVITY id, which the feed turned into /deals/<activityId>
-// (always Not found), and it also bypassed the shared producer's visibility gate and its realtime
-// publish. The row now targets the activity's DOMINANT PARENT, a record the user can actually
-// open; the activity id stays in the payload.
+// Versioned native job or legacy nudge. The same activity lock chooses the
+// current path: managed delivery is in-app only; legacy email enqueue remains
+// after the local transaction and outside the authority fence.
 export async function handleReminderJob(
   db: Db,
   job: ReminderJob,
   signal: AbortSignal,
 ): Promise<void> {
-  signal.throwIfAborted();
-  const [a] = await db
-    .select()
-    .from(activities)
-    .where(and(eq(activities.id, job.data.activityId), isNull(activities.deletedAt)));
-  if (a === undefined || a.done === true) return;
-  const parent = activityParentRef(a);
-  await notifyActivityReminder(db, {
-    activityId: a.id,
-    assigneeId: a.assigneeId,
-    entityType: parent.entityType,
-    entityId: parent.entityId,
-    subject: a.subject,
-    dueAt: a.dueAt?.toISOString() ?? null,
-    signal,
-  });
+  const { activityId, generationId } = reminderTarget(job.data);
+  const outcome = await processActivityReminder(db, activityId, generationId, signal);
+  if (outcome.legacyReschedule !== undefined)
+    await scheduleReminder(
+      outcome.legacyReschedule.activityId,
+      outcome.legacyReschedule.dueAt,
+      signal,
+    );
+  if (outcome.legacyNotification !== undefined)
+    await enqueueEmailNotification(
+      db,
+      outcome.legacyNotification.notificationId,
+      outcome.legacyNotification.recipientId,
+      "activity_reminder",
+      signal,
+    );
 }
 
 // Register the pg-boss worker that processes activity-reminder jobs.
 // Follows the exact pattern in src/features/email/workerJobs.ts (job ARRAY
 // destructure). If handleReminderJob throws (DB error), the error propagates
 // so pg-boss applies its retry/backoff.
-export async function registerReminderWorker(boss: PgBoss): Promise<void> {
+export async function registerReminderWorker(boss: PgBoss, db: Db = prodDb): Promise<void> {
   await boss.createQueue(PGBOSS_QUEUE_ACTIVITY_REMINDER);
-  await boss.work(PGBOSS_QUEUE_ACTIVITY_REMINDER, async ([job]: Job<{ activityId: string }>[]) => {
-    if (job === undefined) return;
-    await handleReminderJob(prodDb, job, AbortSignal.timeout(30_000));
-  });
+  await boss.createQueue(NATIVE_ACTIVITY_REMINDER_QUEUE);
+  await boss.createQueue(NATIVE_ACTIVITY_REMINDER_RECONCILE_QUEUE);
+  const deliver = async (jobs: Job<unknown>[]) => {
+    for (const job of jobs) await handleReminderJob(db, job, AbortSignal.timeout(30_000));
+  };
+  await boss.work(PGBOSS_QUEUE_ACTIVITY_REMINDER, deliver);
+  await boss.work(NATIVE_ACTIVITY_REMINDER_QUEUE, deliver);
+  await boss.work(NATIVE_ACTIVITY_REMINDER_RECONCILE_QUEUE, () =>
+    reconcileActivityReminders(db, boss, AbortSignal.timeout(30_000)),
+  );
+  await boss.schedule(NATIVE_ACTIVITY_REMINDER_RECONCILE_QUEUE, "* * * * *", { v: 1 });
+  await boss.send(NATIVE_ACTIVITY_REMINDER_RECONCILE_QUEUE, { v: 1 }, { singletonKey: "boot" });
 }

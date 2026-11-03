@@ -86,6 +86,31 @@
     "copyFailed": "Der Link konnte nicht kopiert werden. Öffnen Sie ihn und kopieren Sie ihn aus der Adressleiste Ihres Browsers.",
     "currentType": "Aktueller Aktivitätstyp",
     "openInNewTab": "Öffnet sich in einem neuen Tab",
-    "saveShortcut": "Speichern (⌘ oder Strg + Eingabe)"
+    "saveShortcut": "Speichern (⌘ oder Strg + Eingabe)",
+    "actorMissing": "Dein Konto konnte nicht bestätigt werden. Öffne den Kalender erneut, bevor du Änderungen vornimmst.",
+    "savedRefreshFailed": "Der Termin wurde gespeichert. Die aktuellen Details konnten nicht geladen werden. Aktualisiere sie, um fortzufahren. Der Termin wird dabei nicht erneut gespeichert.",
+    "saveUnconfirmed": "Das Ergebnis konnte nicht bestätigt werden. Dein Entwurf bleibt erhalten. Prüfe den Kalender vor dem erneuten Speichern, um einen doppelten Termin zu vermeiden.",
+    "refreshSaved": "Gespeicherten Termin laden",
+    "checkCalendar": "Kalender prüfen"
+  },
+  "reminder": {
+    "title": "Erinnerung",
+    "enable": "Erinnerung in der App",
+    "beforeStart": "10 Minuten vor Terminbeginn in den Benachrichtigungen der zuständigen Person.",
+    "time": "Erinnerungszeit",
+    "legacy": "Dieser ältere Termin hat keine verwaltete Erinnerung in der App. Ob früher eine Erinnerung gesendet wurde, ist unbekannt.",
+    "priorDelivery": "Eine frühere Erinnerung wurde möglicherweise bereits gesendet. Hiermit wird eine neue Erinnerung in der App eingerichtet.",
+    "saveChanges": "Speichere den Termin, um diese Erinnerung zu übernehmen.",
+    "delivered": "Zu den Benachrichtigungen hinzugefügt",
+    "pending": "Erinnerung eingerichtet",
+    "cancelled": "Erinnerung aus oder Termin erledigt",
+    "eventFinished": "Der Termin ist beendet. Es wurde keine Erinnerung hinzugefügt.",
+    "needsAttention": "Prüfung erforderlich. Prüfe den Termin, die Zugriffsrechte und die Benachrichtigungseinstellungen.",
+    "refresh": "Status aktualisieren",
+    "retry": "Erinnerung erneut versuchen",
+    "stale": "Der Termin oder die Erinnerung wurde geändert. Lade die Details neu und prüfe die Zeiten vor dem Speichern.",
+    "invalid": "Prüfe die Erinnerungszeit und den Termin. Diese Ortszeit existiert möglicherweise nicht in der gewählten Zeitzone.",
+    "authorDate": "Das angezeigte Datum als Termindatum in {zone} speichern.",
+    "dateConfirmationRequired": "Bestätige das angezeigte Datum und die Zeitzone, bevor du für diesen älteren ganztägigen Termin eine Erinnerung einrichtest."
   }
 }

@@ -20,6 +20,7 @@ import { err, ok, type Result } from "@/types/result";
 import { activityAccountPreferences } from "./accountTimeZone";
 import { canonicalCreateDates, civilEndBeforeStart } from "./activityTemporalWrite";
 import { recomputeDealActivityDates } from "./nextActivity";
+import { cancelActivityReminder, synchronizeActivityReminder } from "./reminderIntent";
 import { scheduleReminder } from "./reminders";
 import { type ActivityCreateInput, activityCreateInput } from "./schemas";
 import { resolveActivityVisibility } from "./visibility";
@@ -147,7 +148,7 @@ export async function createActivity(
   if (!orderCheck.ok) return orderCheck;
 
   const preferences = await activityAccountPreferences(db, actor.id);
-  const civilDates = canonicalCreateDates(input, preferences.timeZone);
+  const civilDates = canonicalCreateDates(input, input.authoredTimeZone ?? preferences.timeZone);
   if (civilEndBeforeStart(civilDates))
     return err(
       new AppError(ERROR_IDS.ACTIVITY_END_BEFORE_START, "activity end is before its start", {}),
@@ -209,6 +210,24 @@ export async function createActivity(
         .values(input.participantUserIds.map((userId) => ({ activityId: row.id, userId })));
     }
 
+    if (
+      input.reminder !== undefined ||
+      input.authoredTimeZone !== undefined ||
+      input.reminderTimeZone !== undefined
+    ) {
+      await synchronizeActivityReminder(
+        tx,
+        null,
+        row,
+        {
+          eventTimeZone: input.authoredTimeZone,
+          reminderTimeZone: input.reminderTimeZone,
+          selection: options.scheduleReminder === false ? { kind: "none" } : input.reminder,
+        },
+        signal,
+      );
+    }
+
     if (row.dealId !== null) {
       await recomputeDealActivityDates(tx, row.dealId, signal);
     }
@@ -216,7 +235,7 @@ export async function createActivity(
     return ok(row);
   });
 
-  if (result.ok === true && options.scheduleReminder !== false) {
+  if (result.ok === true && options.scheduleReminder !== false && input.reminder === undefined) {
     await scheduleReminder(result.value.id, result.value.dueAt, signal);
   }
   return result;
@@ -263,6 +282,9 @@ export async function completeActivity(
     if (row === undefined) {
       return err(new AppError(ERROR_IDS.DB_INSERT_FAILED, "activity update returned no rows", {}));
     }
+
+    if (done) await cancelActivityReminder(tx, row.id, signal);
+    else await synchronizeActivityReminder(tx, current, row, {}, signal);
 
     if (row.dealId !== null) {
       await recomputeDealActivityDates(tx, row.dealId, signal);

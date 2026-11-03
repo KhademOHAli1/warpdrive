@@ -14,6 +14,7 @@ import type { PermSetUser } from "@/features/permissions/effective";
 import type { DbOrTx } from "@/server/realtime/channelVersions";
 import { err, ok, type Result } from "@/types/result";
 import { linkedParentVisible } from "./parentLinkVisibility";
+import { type ActivityReminderView, readActivityReminderView } from "./reminderReadModel";
 import { resolveActivityVisibility } from "./visibility";
 
 // Every field the inline composer needs to prefill an edit. Timestamps are ISO strings so the
@@ -26,6 +27,8 @@ export interface EditableActivity {
   dueAt: string | null;
   // The user set a day but no time; the composer must not echo the stored midnight back.
   allDay: boolean;
+  authoredTimeZone?: string | null;
+  reminder?: ActivityReminderView | null;
   dueDate?: string | null;
   endDate?: string | null;
   endAt: string | null;
@@ -120,7 +123,8 @@ export async function getActivityForEdit(
   const [row] = await db
     .select()
     .from(activities)
-    .where(and(eq(activities.id, id), isNull(activities.deletedAt)));
+    .where(and(eq(activities.id, id), isNull(activities.deletedAt)))
+    .for("share");
   if (row === undefined) {
     return err(new AppError(ERROR_IDS.ACTIVITY_NOT_FOUND, "activity not found", { id }));
   }
@@ -139,9 +143,11 @@ export async function getActivityForEdit(
     .from(activityParticipants)
     .where(eq(activityParticipants.activityId, id));
   const names = await linkNames(db, actor, row, signal);
+  const reminder = await readActivityReminderView(db, row.id, signal);
 
   return ok({
     ...names,
+    ...reminder,
     id: row.id,
     typeId: row.typeId,
     subject: row.subject,

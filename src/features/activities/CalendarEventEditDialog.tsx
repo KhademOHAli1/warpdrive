@@ -1,13 +1,16 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
-import { trpc } from "@/lib/trpc-client";
+import { useNativeActor } from "@/features/identity/NativeActorProvider";
+import { readCsrfToken } from "@/utils/csrfCookie";
 import { CalendarEventDialog } from "./CalendarEventDialog";
+import { readCalendarEventAction } from "./calendarNativeActions";
 import type { EditableActivity } from "./getForEdit";
 
-// Load the authoritative, visibility-checked record rather than patching a partial grid DTO.
+// Each opening performs a fresh credential-bound read. A previous account's
+// cached DTO cannot seed this form, and late results cannot cross an actor change.
 export function CalendarEventEditDialog({
   id,
   onClose,
@@ -20,25 +23,58 @@ export function CalendarEventEditDialog({
   onMarkedDone?: (id: string) => void;
 }): React.ReactNode {
   const t = useAppTranslations("calendar");
-  const query = trpc.activities.getForEdit.useQuery(
-    { id },
-    {
-      staleTime: 0,
-      refetchOnMount: "always",
-      refetchOnWindowFocus: false,
-      refetchOnReconnect: false,
-    },
-  );
-  const [snapshot, setSnapshot] = useState<EditableActivity | null>(null);
-  // Seed once after this opening's successful read. A background error must neither replace
-  // the draft with an older cached record nor unmount the user's unsaved work.
-  if ((snapshot === null || snapshot.id !== id) && query.isFetchedAfterMount && query.isSuccess) {
-    setSnapshot(query.data);
-  }
+  const actor = useNativeActor();
+  const currentActor = useRef(actor);
+  const actorId = actor.actorId;
+  const [attempt, setAttempt] = useState(0);
+  const readToken = useMemo(() => ({ actorId, id, attempt }), [actorId, id, attempt]);
+  const latestAttempt = useRef(attempt);
+  const currentRead = useRef(readToken);
+  useLayoutEffect(() => {
+    currentActor.current = actor;
+    latestAttempt.current = attempt;
+    currentRead.current = readToken;
+  });
+  const [readResult, setReadResult] = useState<{
+    token: typeof readToken;
+    event: EditableActivity | null;
+  } | null>(null);
+  const snapshot = readResult !== null && readResult.token === readToken ? readResult.event : null;
+  const failed =
+    actorId === null ||
+    (readResult !== null && readResult.token === readToken && readResult.event === null);
+  useEffect(() => {
+    let active = true;
+    if (actorId === null) return;
+    const current = () =>
+      active &&
+      latestAttempt.current === attempt &&
+      currentRead.current === readToken &&
+      currentActor.current.actorId === actorId &&
+      currentActor.current.isCurrent();
+    void readCalendarEventAction(
+      { v: 1, expectedActorId: actorId, activityId: id },
+      readCsrfToken(),
+    )
+      .then((result) => {
+        if (!current()) return;
+        if (!result.ok || result.value.id !== id) {
+          setReadResult({ token: readToken, event: null });
+          return;
+        }
+        setReadResult({ token: readToken, event: result.value });
+      })
+      .catch(() => {
+        if (current()) setReadResult({ token: readToken, event: null });
+      });
+    return () => {
+      active = false;
+    };
+  }, [actorId, id, attempt, readToken]);
   if (snapshot !== null && snapshot.id === id)
     return (
       <CalendarEventDialog
-        key={id}
+        key={`${actorId}:${id}`}
         editing={snapshot}
         onClose={onClose}
         onSaved={onSaved}
@@ -56,14 +92,13 @@ export function CalendarEventEditDialog({
         <DialogHeader>
           <DialogTitle>{t("editor.edit")}</DialogTitle>
         </DialogHeader>
-        {query.isError ? (
+        {failed ? (
           <div className="space-y-4">
-            <p role="alert">{t("editor.loadFailed")}</p>
+            <p role="alert">{t(actorId === null ? "editor.actorMissing" : "editor.loadFailed")}</p>
             <Button
               variant="outline"
-              onClick={() => {
-                void query.refetch();
-              }}
+              disabled={actorId === null}
+              onClick={() => setAttempt((value) => value + 1)}
             >
               {t("editor.retry")}
             </Button>
