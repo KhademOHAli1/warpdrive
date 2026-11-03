@@ -214,7 +214,7 @@ describe("credential-free workflow draft copy", () => {
     expect(result.nodes[0]!.config.subject).not.toBe(source.nodes[0]!.config.subject);
     expect(result.nodes[0]!.config.dealId).not.toBe(source.nodes[0]!.config.dealId);
     expect(result.edges[0]).not.toBe(source.edges[0]);
-    expect(result.layout!.step).not.toBe(source.layout!.step);
+    expect(result.layout!.step).not.toBe(source.layout.step);
     result.nodes[0]!.config.subject = { kind: "value", value: "Changed copy" };
     result.layout!.step!.x = 900;
     result.edges[0]!.to = "another";

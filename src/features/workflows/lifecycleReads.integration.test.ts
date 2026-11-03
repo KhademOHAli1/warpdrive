@@ -16,7 +16,15 @@ import { hydrateActor } from "@/server/hydrateActor";
 import { makeTestDb } from "@/test/db";
 import { restoreWorkflowDraft } from "./lifecycle";
 import { createWorkflow } from "./persistence";
-import { getWorkflow, pauseWorkflow, readWorkflowVersion, readWorkflowVersions } from "./queries";
+import {
+  getWorkflow,
+  listWorkflows,
+  pauseWorkflow,
+  readRunHistory,
+  readWorkflowVersion,
+  readWorkflowVersions,
+} from "./queries";
+import { readRunDetail } from "./runDetail";
 import type { WorkflowDefinition } from "./schemas";
 
 const signal = new AbortController().signal;
@@ -120,6 +128,7 @@ async function setupReads() {
       first,
       second,
       recordId,
+      run,
     };
   } catch (error) {
     await test.close();
@@ -159,6 +168,8 @@ async function expectDenied(test: Fixture, actor: PermSetUser, id = test.workflo
     await getWorkflow(test.db, actor, id, signal),
     await readWorkflowVersions(test.db, actor, id, signal),
     await readWorkflowVersion(test.db, actor, { id, versionNumber: 1 }, signal),
+    await readRunHistory(test.db, actor, id, signal),
+    await readRunDetail(test.db, actor, id, test.run.id, signal),
   ];
   for (const result of results) expect(result).toEqual(denied);
 }
@@ -397,6 +408,7 @@ it.each([
       }
       const before = await snapshot(test.db);
       await expectDenied(test, test.actor);
+      expect(await listWorkflows(test.db, test.actor, signal)).toEqual(denied);
       expect(await snapshot(test.db)).toEqual(before);
     } finally {
       await test.close();
@@ -407,8 +419,19 @@ it.each([
 it("does not retain an administrator bypass after current administrator revocation", async () => {
   const test = await setupReads();
   try {
+    const control = await createWorkflow(
+      test.db,
+      test.actor,
+      { name: "Visible owner scope control", definition: definition("Scope control") },
+      signal,
+    );
+    if (!control.ok) throw new Error(control.error);
     await archive(test);
     expect(test.admin.type).toBe("admin");
+    const visible = await listWorkflows(test.db, test.admin, signal);
+    expect(visible.ok).toBe(true);
+    if (!visible.ok) throw new Error(visible.error);
+    expect(visible.value.map((workflow) => workflow.id)).toEqual([control.value.id]);
     await test.db
       .update(users)
       .set({ isAdmin: false, permissionSetId: null })
@@ -416,6 +439,17 @@ it("does not retain an administrator bypass after current administrator revocati
     expect((await hydrateActor(test.db, test.admin.id, signal))?.type).toBe("regular");
     const before = await snapshot(test.db);
     await expectDenied(test, test.admin);
+    expect(await snapshot(test.db)).toEqual(before);
+    await test.db
+      .update(users)
+      .set({ permissionSetId: test.permissions.id })
+      .where(eq(users.id, test.admin.id));
+    const current = await hydrateActor(test.db, test.admin.id, signal);
+    expect(current?.type).toBe("regular");
+    expect(current?.flags.has("workflow.view")).toBe(true);
+    expect(test.admin.type).toBe("admin");
+    await expectDenied(test, test.admin);
+    expect(await listWorkflows(test.db, test.admin, signal)).toEqual({ ok: true, value: [] });
     expect(await snapshot(test.db)).toEqual(before);
   } finally {
     await test.close();

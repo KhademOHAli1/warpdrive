@@ -24,6 +24,7 @@ import {
   unarchiveWorkflow,
 } from "./lifecycle";
 import { createWorkflow, publishWorkflow, saveWorkflowDraft } from "./persistence";
+import { listWorkflows } from "./queries";
 import { admitManualRun } from "./runAdmission";
 import { cancelWorkflowRun } from "./runControl";
 import { retryFlags, setupRetryActor } from "./runRetry.test-helpers";
@@ -86,7 +87,7 @@ async function inLockOrder<A, B>(
   const ready = deferred();
   const release = deferred();
   let blockerPid = 0;
-  let firstError: unknown;
+  let firstError: Error | undefined;
   const leading = test.db.transaction(async (tx) => {
     try {
       const pid = await tx.execute<{ pid: number }>(sql`SELECT pg_backend_pid() AS pid`);
@@ -96,9 +97,12 @@ async function inLockOrder<A, B>(
       await release.promise;
       return value;
     } catch (error) {
-      firstError = error;
+      firstError =
+        error instanceof Error
+          ? error
+          : new Error("Leading lifecycle command failed", { cause: error });
       ready.resolve();
-      throw error;
+      throw firstError;
     }
   });
   // Attach handlers immediately; cleanup must drain both contenders on barrier failure.
@@ -141,6 +145,9 @@ it("LC01 archives an active published workflow without changing its definition o
   const test = await setupWorkflowExecution();
   try {
     await admit(test);
+    const visibleBefore = await listWorkflows(test.db, test.actor, signal);
+    assert(visibleBefore.ok, JSON.stringify(visibleBefore));
+    expect(visibleBefore.value.map((workflow) => workflow.id)).toEqual([test.workflow.id]);
     const before = await snapshot(test);
     const archived = await archiveWorkflow(
       test.db,
@@ -154,6 +161,7 @@ it("LC01 archives an active published workflow without changing its definition o
       revision: 2,
       archivedAt: expect.any(Date),
     });
+    expect(await listWorkflows(test.db, test.actor, signal)).toEqual({ ok: true, value: [] });
     const after = await snapshot(test);
     expect(after.versions).toEqual(before.versions);
     expect(after.runs).toEqual(before.runs);
@@ -1308,3 +1316,50 @@ for (const unarchiveFirst of [true, false]) {
     }
   }, 15_000);
 }
+
+it.each(["archive", "unarchive", "restore"] as const)(
+  "LC07 denies %s after current edit revocation before revealing revision conflicts",
+  async (command) => {
+    const test = await setupRetryActor();
+    try {
+      let revision = 1;
+      if (command === "unarchive") {
+        assert(
+          (await archiveWorkflow(test.db, test.actor, { id: test.workflow.id, revision }, signal))
+            .ok,
+        );
+        revision++;
+      }
+      await test.db
+        .update(permissionSets)
+        .set({ flags: { ...retryFlags, "workflow.edit": false } })
+        .where(eq(permissionSets.id, test.permissions.id));
+      expect(test.actor.flags.has("workflow.edit")).toBe(true);
+      const current = await hydrateActor(test.db, test.actor.id, signal);
+      assert(current !== null);
+      expect(current.type).toBe("regular");
+      expect(current.isActive).toBe(true);
+      expect(current.flags.has("workflow.view")).toBe(true);
+      expect(current.flags.has("workflow.edit")).toBe(false);
+      const before = await snapshot(test);
+      for (const expectedRevision of [revision, 99]) {
+        const input = { id: test.workflow.id, revision: expectedRevision };
+        const result =
+          command === "archive"
+            ? await archiveWorkflow(test.db, test.actor, input, signal)
+            : command === "unarchive"
+              ? await unarchiveWorkflow(test.db, test.actor, input, signal)
+              : await restoreWorkflowDraft(
+                  test.db,
+                  test.actor,
+                  { ...input, versionNumber: 1 },
+                  signal,
+                );
+        expect(result).toEqual(denied);
+        expect(await snapshot(test)).toEqual(before);
+      }
+    } finally {
+      await test.close();
+    }
+  },
+);
