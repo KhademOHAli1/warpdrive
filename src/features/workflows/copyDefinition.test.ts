@@ -150,7 +150,7 @@ describe("credential-free workflow draft copy", () => {
     },
   );
 
-  it.each([
+  const partialBindings: WorkflowNode["config"][string][] = [
     {},
     { kind: "value" },
     { value: "" },
@@ -160,10 +160,14 @@ describe("credential-free workflow draft copy", () => {
     { nodeId: "read", path: ["id"] },
     { kind: "reference", nodeId: "read" },
     { kind: "reference", path: [] },
-  ])("preserves a strict partial binding %j without completing it", (binding) => {
-    const source = draft("record.read", { recordId: binding });
-    expect(copied(source)).toStrictEqual(source);
-  });
+  ];
+  it.each(partialBindings)(
+    "preserves a strict partial binding %j without completing it",
+    (binding) => {
+      const source = draft("record.read", { recordId: binding });
+      expect(copied(source)).toStrictEqual(source);
+    },
+  );
 
   it.each(["", "literal text", 0, -1.5, true, false, null])(
     "preserves the bounded scalar literal %j",
