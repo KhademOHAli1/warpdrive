@@ -10,6 +10,15 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 ## Shared Warpdrive work
 
+## CI and release publication
+
+Product feature PRs target `integration`; customer release PRs target `main`. Follow
+`docs/delivery/ci-release-controls.md`. Main changes require the configured CI and
+release-PR gates. Automation-only maintenance may land without declaring a customer
+version; it cannot include application or root/site dependency changes. Every main
+commit still needs its canonical issue identity. Never publish a customer release or
+approve a publication environment from implementation authorization alone.
+
 Each feature chat owns its module, private helpers, UI and focused tests. Continue ordinary implementation autonomously; coordinate changes to shared contracts and overlapping files with the integration chat.
 
 Main publication belongs to the settings/integration coordinator (chat `01a19251-a472-7cd1-86cd-8dc245dd5b84`). Hand off qualified increments for sequential integration. Finish the current main CI before the next feature publication; a forward repair of a failing CI gate is a separate, explicitly reviewed increment. Preserve the actual results of cancelled or failed runs.

@@ -22,6 +22,7 @@ def item_for_issue(issue, items, allow_parent=False):
     return item
 
 def verify_ci(api, repo, revision, policy, dynamic_codeql_workflow=None):
+    dynamic_codeql_workflow = dynamic_codeql_workflow or policy.get("codeql_workflow_id")
     evidence = []
     for filename, expected_jobs in policy["required_workflows"].items():
         runs = api.pages(f"repos/{repo}/actions/workflows/{filename}/runs?head_sha={revision}", "workflow_runs")
@@ -43,6 +44,11 @@ def verify_ci(api, repo, revision, policy, dynamic_codeql_workflow=None):
             if len(matches) != 1 or matches[0].get("conclusion") != "success":
                 raise GateError(f"Required exact-revision job {name} did not pass")
         evidence.append({"workflow": filename, "run_id": latest["id"], "url": latest["html_url"], "attempt": latest.get("run_attempt", 1), "jobs": expected_jobs})
+    if policy.get("require_security_results"):
+        alerts = api.pages(f"repos/{repo}/code-scanning/alerts?state=open&ref={revision}")
+        blocking = [a for a in alerts if a.get("rule", {}).get("security_severity_level") in ("high", "critical") or a.get("rule", {}).get("severity") == "error"]
+        if blocking:
+            raise GateError("Release revision has blocking code-scanning findings")
     return evidence
 
 TECHNICAL_POLICY = "docs/delivery/technical-acceptance-policy.json"

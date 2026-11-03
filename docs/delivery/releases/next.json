@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "version": "1.4.1",
+  "version": "1.5.0",
   "milestone": 1,
   "issues": [80, 82, 83, 84, 85, 905, 906, 907, 908, 909, 910, 912, 914],
   "required_journeys": [

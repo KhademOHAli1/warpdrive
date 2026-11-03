@@ -230,6 +230,18 @@ export default tseslint.config(
     },
   },
 
+  // Browser CI is an independent JavaScript package with its own frozen Bun lockfile.
+  {
+    files: ["tests/browser/**/*.mjs"],
+    extends: [tseslint.configs.disableTypeChecked],
+    rules: {
+      "no-restricted-properties": "off",
+      "no-restricted-syntax": "off",
+      "no-console": "off",
+      "import-x/no-extraneous-dependencies": "off",
+    },
+  },
+
   // vitest.setup.ts seeds process.env for the test harness: process.env access
   // is intentional here, and it runs before app modules load.
   {

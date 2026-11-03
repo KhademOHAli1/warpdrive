@@ -59,8 +59,12 @@ function commands(name: keyof typeof PACKAGES): string[] {
 }
 
 describe("public Bun CI", () => {
-  it("checks every branch push, ordinary pull requests and manual runs with a read-only token", () => {
-    expect(workflow.on).toEqual({ push: null, pull_request: null, workflow_dispatch: null });
+  it("checks integration and release pushes, ordinary pull requests and manual runs with a read-only token", () => {
+    expect(workflow.on).toEqual({
+      push: { branches: ["main", "integration", "release/**"] },
+      pull_request: null,
+      workflow_dispatch: null,
+    });
     expect(workflow.permissions).toEqual({ contents: "read" });
     expect(workflow.concurrency.group).toContain("github.workflow");
     expect(workflow.concurrency.group).toContain("github.ref");

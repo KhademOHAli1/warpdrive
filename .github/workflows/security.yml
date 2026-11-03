@@ -1,0 +1,65 @@
+name: CI security
+
+on:
+  push:
+    branches: [main, integration, 'release/**']
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '23 6 * * 1'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: security-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    name: Dependency audit
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version-file: package.json
+      - name: Audit every frozen lockfile and retain existing findings
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          AUDIT_EVENT: ${{ github.event_name }}
+        run: |
+          if [ -z "$BASE_SHA" ] || [ "$BASE_SHA" = 0000000000000000000000000000000000000000 ]; then
+            BASE_SHA=$(git merge-base HEAD origin/main)
+          fi
+          extra=()
+          if [ "$AUDIT_EVENT" = schedule ] || [ "$AUDIT_EVENT" = workflow_dispatch ]; then extra+=(--strict); fi
+          python3 scripts/delivery/security_audit.py --base "$BASE_SHA" --output audit-results "${extra[@]}"
+      - name: Retain advisory details even when the gate fails
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: dependency-audit-${{ github.run_id }}-${{ github.run_attempt }}
+          path: audit-results/
+          if-no-files-found: error
+          retention-days: 14
+
+  workflows:
+    name: Workflow validation
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Install checksum-pinned Actionlint
+        run: |
+          curl --fail --location --retry 0 --output "$RUNNER_TEMP/actionlint.tar.gz" https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz
+          echo "8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8  $RUNNER_TEMP/actionlint.tar.gz" | sha256sum --check
+          tar -xzf "$RUNNER_TEMP/actionlint.tar.gz" -C "$RUNNER_TEMP" actionlint
+      - name: Validate all workflow definitions and shell scripts
+        run: '"$RUNNER_TEMP/actionlint" -pyflakes= .github/workflows/*.yml'

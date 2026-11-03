@@ -4,7 +4,10 @@
   "traceability_baseline": "ee36663b3318ba84b7a0b1600e34e773f9597d88",
   "required_workflows": {
     "ci.yml": ["CRM checks", "Marketing site checks", "Documentation site checks"],
-    "delivery.yml": ["Delivery tooling", "Delivery traceability"]
+    "delivery.yml": ["Delivery tooling", "Delivery traceability"],
+    "security.yml": ["Dependency audit", "Workflow validation"],
+    "browser.yml": ["Browser smoke checks"],
+    "403980173": ["Analyze (javascript-typescript)", "Analyze (actions)", "Analyze (python)"]
   },
   "initial_milestone": "Next usable release: Core CRM journeys",
   "initial_journeys": [
@@ -18,5 +21,7 @@
     "calendar-reminders": "ops/journey-calendar-reminders",
     "mailbox-recovery": "ops/journey-mailbox-recovery",
     "durable-follow-up": "ops/journey-durable-follow-up"
-  }
+  },
+  "codeql_workflow_id": "403980173",
+  "require_security_results": true
 }
