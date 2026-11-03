@@ -12,28 +12,99 @@ import { LanguageSwitcher, useAppTranslations } from "@/features/i18n/LocaleProv
 import { IdentityActionError } from "@/features/identity/IdentityActionError";
 import { trpc } from "@/lib/trpc-client";
 import { BuilderWorkspace } from "./BuilderWorkspace";
+import { EditorDuplicateDialog } from "./EditorDuplicateDialog";
+import { EditorLifecycleConfirmation } from "./EditorLifecycleConfirmation";
+import { sanitizeLibraryReturnTo } from "./libraryLocation";
 import { RunDialog } from "./RunDialog";
 import { RunHistory } from "./RunHistory";
 import { useDialogFocus } from "./useDialogFocus";
 import { useWorkflowEditor, type WorkflowDetail } from "./useWorkflowEditor";
+import { useWorkflowLifecycle } from "./useWorkflowLifecycle";
+import { VersionsDialog } from "./VersionsDialog";
 
-export function WorkflowEditor({ initial }: { initial: WorkflowDetail }) {
+export function WorkflowEditor({
+  initial,
+  returnTo = "/workflows",
+  initialHistory = false,
+}: {
+  initial: WorkflowDetail;
+  returnTo?: string;
+  initialHistory?: boolean;
+}) {
   const t = useAppTranslations("workflows");
   const utils = trpc.useUtils();
   const editor = useWorkflowEditor(initial);
+  const libraryReturn = sanitizeLibraryReturnTo(returnTo);
+  const lifecycle = useWorkflowLifecycle(initial.id, editor, libraryReturn);
+  const [versionsOpen, setVersionsOpen] = useState(initialHistory);
+  const [duplicateOpen, setDuplicateOpen] = useState(false);
+  const [copyName, setCopyName] = useState(() =>
+    t("duplicateDefaultName", { name: initial.name }).slice(0, 120),
+  );
+  const confirming = useRef(false);
+  const [confirmation, setConfirmation] = useState<{
+    operation: "archive" | "unarchive" | "restore";
+    versionNumber?: number;
+  } | null>(null);
+  const lifecycleFocus = useDialogFocus();
+  const heading = useRef<HTMLHeadingElement>(null);
+  const lifecycleError = lifecycle.error === null ? null : t(lifecycle.error);
+  function author(operation: "save" | "publish" | "pause") {
+    lifecycle.dismissAck();
+    void editor.perform(operation);
+  }
   const [tab, setTab] = useState("configure");
   const [runMode, setRunMode] = useState<"simulation" | "live" | null>(null);
   const fieldId = useId();
   const runFocus = useDialogFocus();
   const runsTab = useRef<HTMLButtonElement>(null);
-  const editable = initial.capabilities.edit && !editor.pending;
-  const runnable = initial.capabilities.run && editor.active && !editor.pending;
+  const editable = editor.archivedAt === null && editor.capabilities.edit && !editor.pending;
+  const runnable =
+    editor.archivedAt === null && editor.capabilities.run && editor.active && !editor.pending;
+  const recovery = (lifecycle.refreshFailed ||
+    lifecycle.unknown ||
+    lifecycle.navigationPending) && (
+    <div className="flex flex-wrap items-center gap-3 rounded-lg border p-4 text-sm">
+      <p>
+        {t(
+          lifecycle.unknown
+            ? "writeUnknown"
+            : lifecycle.navigationPending
+              ? "navigationAfterAck"
+              : "refreshAfterAck",
+        )}
+      </p>
+      <Button
+        variant="outline"
+        disabled={lifecycle.refreshing}
+        onClick={() => void lifecycle.refresh()}
+      >
+        {t("refresh")}
+      </Button>
+      {lifecycle.copyId !== null && (
+        <Button variant="outline" onClick={() => lifecycle.openCopy()}>
+          {t("openCopy")}
+        </Button>
+      )}
+      {lifecycle.unknown && (
+        <>
+          <Link href={libraryReturn}>{t("reviewLibrary")}</Link>
+          <p>{t("retryReconcileHint")}</p>
+          <Button variant="outline" onClick={lifecycle.allowRetry}>
+            {t("allowRetry")}
+          </Button>
+        </>
+      )}
+    </div>
+  );
   return (
     <div className="mx-auto flex max-w-[1700px] flex-col gap-4 xl:h-[calc(100dvh-120px)] xl:min-h-[620px]">
-      <h1 className="sr-only">{editor.name}</h1>
+      <h1 ref={heading} tabIndex={-1} className="sr-only">
+        {editor.name}
+      </h1>
       <div className="flex items-center justify-between gap-4">
         <Link
-          href="/workflows"
+          href={libraryReturn}
           className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="size-4" />
@@ -60,50 +131,107 @@ export function WorkflowEditor({ initial }: { initial: WorkflowDetail }) {
           />
           <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
             <Badge variant={editor.active ? "success" : "secondary"}>
-              {editor.active ? t("active") : editor.number === null ? t("draft") : t("paused")}
+              {editor.archivedAt !== null
+                ? t("archived")
+                : editor.active
+                  ? t("active")
+                  : editor.number === null
+                    ? t("draft")
+                    : t("paused")}
             </Badge>
             <span>
               {editor.number === null ? t("notPublished") : t("version", { number: editor.number })}
             </span>
             {editor.dirty && <span>{t("unsaved")}</span>}
-            {editor.notice !== null && (
+            {(lifecycle.acknowledged !== null || editor.notice !== null) && (
               <span role="status" className="text-success">
-                {editor.notice}
+                {lifecycle.acknowledged !== null ? t(lifecycle.acknowledged) : editor.notice}
               </span>
             )}
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
-          {initial.capabilities.edit && (
+          {editor.available && (
+            <Button
+              variant="outline"
+              disabled={editor.pending}
+              onClick={(event) => {
+                lifecycleFocus.remember(event.currentTarget);
+                setVersionsOpen(true);
+              }}
+            >
+              {t("versions")}
+            </Button>
+          )}
+          {editor.capabilities.duplicate && (
+            <Button
+              variant="outline"
+              disabled={editor.pending || lifecycle.unknown || lifecycle.copyId !== null}
+              onClick={(event) => {
+                lifecycleFocus.remember(event.currentTarget);
+                lifecycle.clearError();
+                setDuplicateOpen(true);
+              }}
+            >
+              {t("duplicate")}
+            </Button>
+          )}
+          {(editor.archivedAt === null
+            ? editor.capabilities.edit
+            : editor.capabilities.unarchive) && (
+            <Button
+              variant="outline"
+              disabled={editor.pending || lifecycle.unknown}
+              onClick={(event) => {
+                lifecycleFocus.remember(event.currentTarget);
+                lifecycle.clearError();
+                setConfirmation({
+                  operation: editor.archivedAt === null ? "archive" : "unarchive",
+                });
+              }}
+            >
+              {t(editor.archivedAt === null ? "archive" : "unarchive")}
+            </Button>
+          )}
+          {editor.capabilities.edit && (
             <Button
               variant="outline"
               disabled={editor.pending || !editor.dirty}
-              onClick={() => void editor.perform("save")}
+              onClick={() => author("save")}
             >
               <Save className="size-4" />
               {t("save")}
             </Button>
           )}
-          {initial.capabilities.publish && (
+          {editor.capabilities.publish && (
             <Button
               disabled={editor.pending || editor.issues.length > 0 || editor.name.trim() === ""}
-              onClick={() => void editor.perform("publish")}
+              onClick={() => author("publish")}
             >
               {t("publish")}
             </Button>
           )}
-          {editor.active && initial.capabilities.edit && (
+          {editor.active && editor.capabilities.edit && (
             <Button
               variant="outline"
               title={t("pauseHint")}
               disabled={editor.pending}
-              onClick={() => void editor.perform("pause")}
+              onClick={() => author("pause")}
             >
               {t("pause")}
             </Button>
           )}
         </div>
       </header>
+      {editor.archivedAt !== null && (
+        <p className="rounded-lg border bg-muted/30 p-4 text-sm">{t("archivedHint")}</p>
+      )}
+      {lifecycleError !== null && !versionsOpen && !duplicateOpen && (
+        <p role="alert" className="text-destructive">
+          {lifecycleError}
+        </p>
+      )}
+      {!duplicateOpen && recovery}
       {editor.error !== null && (
         <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-4">
           <IdentityActionError message={editor.error} />
@@ -126,6 +254,7 @@ export function WorkflowEditor({ initial }: { initial: WorkflowDetail }) {
               <TabsTrigger
                 ref={runsTab}
                 value="runs"
+                disabled={!editor.available}
                 className="border-b-2 border-transparent py-2 data-[state=active]:border-primary data-[state=active]:text-primary"
               >
                 {t("runs")}
@@ -168,10 +297,85 @@ export function WorkflowEditor({ initial }: { initial: WorkflowDetail }) {
             />
           </TabsContent>
           <TabsContent value="runs" className="mt-0 xl:min-h-0 xl:flex-1 xl:overflow-auto">
-            <RunHistory workflowId={initial.id} canCancel={initial.capabilities.cancel} />
+            {editor.available && (
+              <RunHistory workflowId={initial.id} canCancel={editor.capabilities.cancel} />
+            )}
           </TabsContent>
         </Tabs>
       </div>
+      {versionsOpen && (
+        <VersionsDialog
+          workflowId={initial.id}
+          revision={editor.revision}
+          canRestore={
+            editor.capabilities.restore && editor.archivedAt === null && !lifecycle.unknown
+          }
+          pending={editor.pending}
+          error={lifecycleError}
+          onClose={() => setVersionsOpen(false)}
+          onCloseAutoFocus={(event) => lifecycleFocus.restore(event, heading.current)}
+          onRestore={(versionNumber) => setConfirmation({ operation: "restore", versionNumber })}
+        />
+      )}
+      {duplicateOpen && (
+        <EditorDuplicateDialog
+          name={copyName}
+          onNameChange={setCopyName}
+          recovery={recovery}
+          pending={editor.pending}
+          blocked={lifecycle.unknown || lifecycle.copyId !== null}
+          error={lifecycleError}
+          onClose={() => setDuplicateOpen(false)}
+          onCloseAutoFocus={(event) => lifecycleFocus.restore(event, heading.current)}
+          onSubmit={(name) =>
+            editor.requestDeparture(() => {
+              void lifecycle.duplicate(name).then((committed) => {
+                if (committed) setDuplicateOpen(false);
+              });
+            })
+          }
+        />
+      )}
+      <EditorLifecycleConfirmation
+        open={confirmation !== null}
+        onCloseAutoFocus={(event) => lifecycleFocus.restore(event, heading.current)}
+        pending={editor.pending}
+        onOpenChange={(open) => {
+          if (!open && !editor.pending && !confirming.current) setConfirmation(null);
+        }}
+        title={
+          confirmation?.operation === "restore"
+            ? t("restoreTitle", { number: confirmation.versionNumber ?? 1 })
+            : t(confirmation?.operation === "unarchive" ? "unarchiveTitle" : "archiveTitle")
+        }
+        description={
+          confirmation?.operation === "restore"
+            ? `${t("restoreHint")} ${t("restoreRevision", { revision: editor.revision })} ${editor.dirty ? t("restoreUnsaved") : ""}`
+            : t(confirmation?.operation === "unarchive" ? "unarchiveHint" : "archiveHint")
+        }
+        confirmLabel={t(
+          confirmation?.operation === "restore"
+            ? "restoreAsDraft"
+            : confirmation?.operation === "unarchive"
+              ? "unarchive"
+              : "archive",
+        )}
+        cancelLabel={t("cancel")}
+        onConfirm={() => {
+          const request = confirmation;
+          if (request === null || confirming.current) return;
+          confirming.current = true;
+          void lifecycle
+            .change(request.operation, request.versionNumber)
+            .then((committed) => {
+              if (committed && request.operation === "restore") setVersionsOpen(false);
+            })
+            .finally(() => {
+              confirming.current = false;
+              setConfirmation(null);
+            });
+        }}
+      />
       <ConfirmDialog
         open={editor.leaveRequest !== null}
         onOpenChange={(open) => {

@@ -1,4 +1,4 @@
-import { and, desc, eq, isNull } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
@@ -16,31 +16,7 @@ import {
 } from "./lifecycleShared";
 import { describeRunRecovery, readFailureHistories } from "./runRecovery";
 
-export async function listWorkflows(db: Db, actor: PermSetUser, signal: AbortSignal) {
-  signal.throwIfAborted();
-  const currentActor = await hydrateActor(db, actor.id, signal);
-  if (currentActor === null || !canWorkflow(currentActor, "view"))
-    return err(ERROR_IDS.WORKFLOW_DENIED);
-  const rows = await db
-    .select({
-      id: workflows.id,
-      name: workflows.name,
-      active: workflows.active,
-      publishedNumber: workflows.publishedNumber,
-      updatedAt: workflows.updatedAt,
-    })
-    .from(workflows)
-    .where(
-      and(
-        isNull(workflows.archivedAt),
-        currentActor.type === "admin" ? undefined : eq(workflows.ownerId, currentActor.id),
-      ),
-    )
-    .orderBy(desc(workflows.updatedAt))
-    .limit(100);
-  signal.throwIfAborted();
-  return ok(rows);
-}
+export { listWorkflows } from "./library";
 
 export async function getWorkflow(db: Db, actor: PermSetUser, id: string, signal: AbortSignal) {
   signal.throwIfAborted();

@@ -513,3 +513,27 @@ integration/user-journey/release gates are maintained on
 [PR #958](https://github.com/KhademOHAli1/warpdrive/pull/958). This checkpoint does not mark
 WF-010 complete or accept its broader dependencies. WF-016 pagination/library/UI work
 and privacy erasure/retention remain separate.
+
+
+## WF-016 library follow-up — draft PR #959
+
+The selected roadmap work now covers the full library/lifecycle UI source contract in
+[library.md](library.md), using the separately qualified WF-010 backend. It includes bounded
+server pages and owners, visibility-scoped metadata, independent lifecycle/live health,
+templates entry, archive/unarchive/duplicate/history/restore review, retained return context
+and write acknowledgement recovery. This is a source candidate, not a native or release
+acceptance statement.
+
+The existing-source real-PostgreSQL baseline in CI41731549474 reproduced one intended
+page-shape failure (old array of 61 owned workflows), with 3,520 other PG cases and
+9,458 units passing (3 existing skips). Types/lint/sites/Delivery passed; later builds
+were skipped. Later local focused checks passed 47 editor/save/navigation cases and
+73 library/filter/loading/focus cases at distinct recorded cuts, with direct source
+witnesses and process/link cleanup. The earlier 46-case command has incomplete direct
+witnesses and remains TRIAGE; a separate Vitest module-cache setting was initially missed,
+and broad dependency-cache preservation claims were withdrawn. Later checks disabled
+that cache and used private cache paths. Original receipts/results, including the first
+library access-recovery failure, are retained. Full exact-head hosted qualification,
+query-plan review and all integrated/native/human/release/install gates
+remain pending on [issue #673](https://github.com/KhademOHAli1/warpdrive/issues/673) and
+[PR #959](https://github.com/KhademOHAli1/warpdrive/pull/959).

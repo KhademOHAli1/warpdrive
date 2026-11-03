@@ -11,16 +11,21 @@ import english from "../messages/workflows.en.json";
 import persian from "../messages/workflows.fa.json";
 import { WorkflowLibrary } from "./WorkflowLibrary";
 
-type WorkflowRow = RouterOutputs["workflows"]["list"][number];
+type WorkflowPage = RouterOutputs["workflows"]["list"];
+type WorkflowRow = WorkflowPage["items"][number];
 type TestLinkProps = { href: string; className?: string; children: ReactNode };
 
 const queries = vi.hoisted(() => ({
   data: [] as WorkflowRow[] | undefined,
+  canCreate: true,
   isLoading: false,
   isFetching: false,
   isError: false,
   refetch: vi.fn<() => Promise<void>>(),
   create: vi.fn(),
+  archive: vi.fn(),
+  unarchive: vi.fn(),
+  duplicate: vi.fn(),
   push: vi.fn(),
 }));
 
@@ -29,7 +34,15 @@ vi.mock("@/lib/trpc-client", () => ({
     workflows: {
       list: {
         useQuery: () => ({
-          data: queries.data,
+          data:
+            queries.data === undefined
+              ? undefined
+              : {
+                  items: queries.data,
+                  nextCursor: null,
+                  scopeHasItems: queries.data.length > 0,
+                  capabilities: { create: queries.canCreate, filterOwners: false },
+                },
           isLoading: queries.isLoading,
           isFetching: queries.isFetching,
           isError: queries.isError,
@@ -39,7 +52,12 @@ vi.mock("@/lib/trpc-client", () => ({
     },
   },
 }));
-vi.mock("../actions", () => ({ createWorkflowAction: queries.create }));
+vi.mock("../actions", () => ({
+  createWorkflowAction: queries.create,
+  archiveWorkflowAction: queries.archive,
+  unarchiveWorkflowAction: queries.unarchive,
+  duplicateWorkflowAction: queries.duplicate,
+}));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: queries.push }) }));
 vi.mock("next/link", () => ({
   default: ({ href, className, children }: TestLinkProps) => (
@@ -65,6 +83,12 @@ function workflow(): WorkflowRow {
   return {
     id: workflowId,
     name: workflowName,
+    revision: 1,
+    archivedAt: null,
+    lifecycle: "active",
+    owner: { id: "81a2e35a-8c1e-44c2-ae06-e9879d52af58", name: "Visible workflow owner" },
+    latestLiveRun: null,
+    capabilities: { archive: false, unarchive: false, duplicate: false },
     active: true,
     publishedNumber: 4,
     updatedAt: new Date("2026-11-01T10:00:00Z"),
@@ -72,6 +96,7 @@ function workflow(): WorkflowRow {
 }
 
 function page(locale: "en" | "de" | "fa" = "en", canCreate = true) {
+  queries.canCreate = canCreate;
   return (
     <LocaleProvider locale={locale}>
       <WorkflowLibrary canCreate={canCreate} />
@@ -86,6 +111,9 @@ function expectNoEmptyClaim(messages: LibraryMessages) {
 
 function expectNoWrites() {
   expect(queries.create).not.toHaveBeenCalled();
+  expect(queries.archive).not.toHaveBeenCalled();
+  expect(queries.unarchive).not.toHaveBeenCalled();
+  expect(queries.duplicate).not.toHaveBeenCalled();
   expect(queries.push).not.toHaveBeenCalled();
 }
 
@@ -97,6 +125,7 @@ function expectWorkflowLink() {
 }
 
 beforeEach(() => {
+  queries.canCreate = true;
   queries.data = [];
   queries.isLoading = false;
   queries.isFetching = false;
@@ -104,6 +133,9 @@ beforeEach(() => {
   queries.refetch.mockReset();
   queries.refetch.mockResolvedValue(undefined);
   queries.create.mockReset();
+  queries.archive.mockReset();
+  queries.unarchive.mockReset();
+  queries.duplicate.mockReset();
   queries.push.mockReset();
 });
 afterEach(cleanup);

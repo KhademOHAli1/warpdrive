@@ -431,7 +431,7 @@ it("does not retain an administrator bypass after current administrator revocati
     const visible = await listWorkflows(test.db, test.admin, signal);
     expect(visible.ok).toBe(true);
     if (!visible.ok) throw new Error(visible.error);
-    expect(visible.value.map((workflow) => workflow.id)).toEqual([control.value.id]);
+    expect(visible.value.items.map((workflow) => workflow.id)).toEqual([control.value.id]);
     await test.db
       .update(users)
       .set({ isAdmin: false, permissionSetId: null })
@@ -449,7 +449,10 @@ it("does not retain an administrator bypass after current administrator revocati
     expect(current?.flags.has("workflow.view")).toBe(true);
     expect(test.admin.type).toBe("admin");
     await expectDenied(test, test.admin);
-    expect(await listWorkflows(test.db, test.admin, signal)).toEqual({ ok: true, value: [] });
+    const currentScope = await listWorkflows(test.db, test.admin, signal);
+    expect(currentScope.ok).toBe(true);
+    if (!currentScope.ok) throw new Error(currentScope.error);
+    expect(currentScope.value.items).toEqual([]);
     expect(await snapshot(test.db)).toEqual(before);
   } finally {
     await test.close();

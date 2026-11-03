@@ -6,14 +6,17 @@ import type { ReactNode } from "react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { LocaleProvider } from "@/features/i18n/LocaleProvider";
 import type { RouterOutputs } from "@/lib/trpc-client";
+import type { WorkflowLibraryInput } from "../library";
 import german from "../messages/workflows.de.json";
 import english from "../messages/workflows.en.json";
 import persian from "../messages/workflows.fa.json";
 import { WorkflowLibrary } from "./WorkflowLibrary";
 
-type WorkflowRow = RouterOutputs["workflows"]["list"][number];
+type WorkflowPage = RouterOutputs["workflows"]["list"];
+type WorkflowRow = WorkflowPage["items"][number];
+type OriginalRow = Pick<WorkflowRow, "id" | "name" | "active" | "publishedNumber" | "updatedAt">;
 type QuerySnapshot = {
-  data: WorkflowRow[] | undefined;
+  data: WorkflowPage | undefined;
   isLoading: boolean;
   isFetching: boolean;
   isError: boolean;
@@ -26,16 +29,25 @@ const query = vi.hoisted(() => ({
   isLoading: false,
   isFetching: false,
   isError: false,
-  read: vi.fn<() => QuerySnapshot>(),
+  canCreate: true,
+  read: vi.fn<(input?: WorkflowLibraryInput, options?: unknown) => QuerySnapshot>(),
   refetch: vi.fn<() => Promise<void>>(),
   create: vi.fn(),
+  archive: vi.fn(),
+  unarchive: vi.fn(),
+  duplicate: vi.fn(),
   push: vi.fn(),
 }));
 
 vi.mock("@/lib/trpc-client", () => ({
   trpc: { workflows: { list: { useQuery: query.read } } },
 }));
-vi.mock("../actions", () => ({ createWorkflowAction: query.create }));
+vi.mock("../actions", () => ({
+  createWorkflowAction: query.create,
+  archiveWorkflowAction: query.archive,
+  unarchiveWorkflowAction: query.unarchive,
+  duplicateWorkflowAction: query.duplicate,
+}));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: query.push }) }));
 vi.mock("next/link", () => ({
   default: ({ href, className, children }: LinkProps) => (
@@ -58,7 +70,7 @@ const locales = [
   { locale: "fa", messages: persian },
 ] as const;
 type LibraryMessages = (typeof locales)[number]["messages"];
-const rows: WorkflowRow[] = [
+const originalRows: OriginalRow[] = [
   {
     id: "00000000-0000-4000-8000-000000000001",
     name: "Alpha Berlin",
@@ -95,8 +107,20 @@ const rows: WorkflowRow[] = [
     updatedAt: new Date("2026-11-01T06:00:00Z"),
   },
 ];
+const rows: WorkflowRow[] = originalRows.map(
+  (row): WorkflowRow => ({
+    ...row,
+    revision: 1,
+    archivedAt: null,
+    lifecycle: row.active ? "active" : row.publishedNumber === null ? "draft" : "paused",
+    owner: { id: "81a2e35a-8c1e-44c2-ae06-e9879d52af58", name: "Visible workflow owner" },
+    latestLiveRun: null,
+    capabilities: { archive: false, unarchive: false, duplicate: false },
+  }),
+);
 
 function page(locale: "en" | "de" | "fa" = "en", canCreate = true) {
+  query.canCreate = canCreate;
   return (
     <LocaleProvider locale={locale}>
       <WorkflowLibrary canCreate={canCreate} />
@@ -105,9 +129,11 @@ function page(locale: "en" | "de" | "fa" = "en", canCreate = true) {
 }
 
 function expectRows(expected: readonly WorkflowRow[]) {
-  expect(screen.queryAllByRole("link").map((link) => link.getAttribute("href"))).toEqual(
-    expected.map((row) => `/workflows/${row.id}`),
-  );
+  expect(
+    screen
+      .queryAllByRole("link")
+      .map((link) => new URL(link.getAttribute("href") ?? "", "https://workflow.invalid").pathname),
+  ).toEqual(expected.map((row) => `/workflows/${row.id}`));
   for (const row of expected) {
     expect(screen.getByRole("link", { name: new RegExp(row.name) })).toBeVisible();
   }
@@ -123,8 +149,13 @@ function subset(...indices: number[]): WorkflowRow[] {
 
 function expectNoWrites() {
   expect(query.create).not.toHaveBeenCalled();
+  expect(query.archive).not.toHaveBeenCalled();
+  expect(query.unarchive).not.toHaveBeenCalled();
+  expect(query.duplicate).not.toHaveBeenCalled();
   expect(query.push).not.toHaveBeenCalled();
-  expect(query.read).toHaveBeenLastCalledWith();
+  expect(query.read.mock.calls.at(-1)?.[0]).toEqual(
+    expect.objectContaining({ query: expect.any(String), status: expect.any(String), limit: 25 }),
+  );
 }
 
 async function chooseStatus(
@@ -141,8 +172,24 @@ beforeEach(() => {
   query.isLoading = false;
   query.isFetching = false;
   query.isError = false;
-  query.read.mockReset().mockImplementation(() => ({
-    data: query.data,
+  query.canCreate = true;
+  query.read.mockReset().mockImplementation((input = {}) => ({
+    // A deterministic server fixture for each request key, not filtering in the component.
+    data:
+      query.data === undefined
+        ? undefined
+        : {
+            items: query.data.filter(
+              (row) =>
+                (input.status === undefined ||
+                  input.status === "all" ||
+                  row.lifecycle === input.status) &&
+                row.name.toLowerCase().includes((input.query ?? "").trim().toLowerCase()),
+            ),
+            nextCursor: null,
+            scopeHasItems: query.data.length > 0,
+            capabilities: { create: query.canCreate, filterOwners: false },
+          },
     isLoading: query.isLoading,
     isFetching: query.isFetching,
     isError: query.isError,
@@ -150,11 +197,14 @@ beforeEach(() => {
   }));
   query.refetch.mockReset().mockResolvedValue(undefined);
   query.create.mockReset();
+  query.archive.mockReset();
+  query.unarchive.mockReset();
+  query.duplicate.mockReset();
   query.push.mockReset();
 });
 afterEach(cleanup);
 
-it.each(locales)("searches loaded names and clears in $locale", async ({ locale, messages }) => {
+it.each(locales)("requests matching names and clears in $locale", async ({ locale, messages }) => {
   const user = userEvent.setup();
   render(page(locale));
   const search = screen.getByRole("searchbox", { name: messages.librarySearch });

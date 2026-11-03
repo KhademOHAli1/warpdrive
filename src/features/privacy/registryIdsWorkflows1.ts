@@ -1,5 +1,15 @@
 // Reviewed Workflow boundary identifiers. New or changed source requires review.
 export const workflowIds1: string[] = [
+  // WF016: raw execute below is scoped SELECT only; Hash.update is transient cursor
+  // fingerprinting. Neither conservative writer identifier introduces database DML.
+  "derived:src/features/workflows/ui/RunHistory.tsx",
+  "external:src/features/workflows/ui/useWorkflowLifecycle.ts#fetch",
+  "writer:src/features/workflows/library.ts#execute:dynamic",
+  "writer:src/features/workflows/libraryCursor.ts#update:dynamic",
+  "sourceReview:src/features/workflows/library.ts#3d76c9ca01a4c9025aa4378832ca265ad05a61df79bef2961d877e15017d62a2",
+  "sourceReview:src/features/workflows/libraryCursor.ts#3e901a412af65086d29e61f66388ab7d44c46bf2740c114ffa4f6c08de28de8e",
+  "sourceReview:src/features/workflows/ui/RunHistory.tsx#2b154c2e4d8c1b10306f4c44b76fe072240fce3ab076a6190d3979ef71590bb8",
+  "sourceReview:src/features/workflows/ui/useWorkflowLifecycle.ts#086534ec918de6e7bbef3fbc0abdf3fa075d5348306141cd6c664d6ac2cdf694",
   "writer:src/features/workflows/lifecycle.ts#update:workflows",
   "writer:src/features/workflows/lifecycle.ts#insert:workflows",
   "sourceReview:src/features/workflows/copyDefinition.ts#1fb19e24e9f42648ad8fb468fe632fb96be2e83ba09a191f80719adc1c18a091",
@@ -40,8 +50,8 @@ export const workflowIds1: string[] = [
   "sourceReview:src/features/workflows/nodeFactory.ts#b24b728b40f3e2de87cd1dac6c8acb8ec4358bee29f350b429637bcbf3b8c376",
   "sourceReview:src/features/workflows/nodeLayout.ts#7966955c38bff47fb36867a63230ea3339e3fc68bfdc0074930a7099b11c054d",
   "sourceReview:src/features/workflows/persistence.ts#3a9beebd1989aed9c13fae827ba4b7f28d8e997240279ee9e4471e6bc5bf6151",
-  "sourceReview:src/features/workflows/queries.ts#fef081c01c981fea93c24a28daf0772099f00d032d434f60abe532ddab056f83",
-  "sourceReview:src/features/workflows/router.ts#c3bbb7ac9ad057e116be4f20b3ba906ebd9becc09f7ad3efaabdfa99086c13b5",
+  "sourceReview:src/features/workflows/queries.ts#5c4b47a3c273908c76e1ed55c012bc4c5ee83aa15e1c2f6976e73c3b48aaa9e7",
+  "sourceReview:src/features/workflows/router.ts#65ad0695b4cf5dd202c2f06f4e6cccc3726e2928137da69b5e0027c7bdc704c9",
   "sourceReview:src/features/workflows/runAdmission.ts#bcc5151df4e2d601fc4cba720bdfa6865eef41eea943ba4e194ab37dcb7b154c",
   "sourceReview:src/features/workflows/runControl.ts#f148af993e57bc4f2b95bced9b56ea3d9529ae647d34ab94d7367752ae245057",
   "sourceReview:src/features/workflows/runDetail.ts#85f804b234bb799c7ef374e2f7449f1f5b13de2f9fcda2336a6a7759a2e8aae9",

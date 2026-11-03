@@ -1,121 +1,299 @@
 "use client";
 
-import { ArrowUpRight, GitBranch, Plus } from "lucide-react";
+import { ArrowUpRight, GitBranch, MoreHorizontal, Plus } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { type MouseEvent, useId, useRef, useState } from "react";
+import { type MouseEvent, useEffect, useId, useRef, useState } from "react";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 import { trpc } from "@/lib/trpc-client";
 import { useFormatters } from "@/lib/useFormatters";
-import { readCsrfToken } from "@/utils/csrfCookie";
-import { createWorkflowAction } from "../actions";
-import { initialBlankDefinition, initialDefinition } from "../editorModel";
+import type { WorkflowLibraryPage, WorkflowLibraryRow } from "../library";
+import {
+  libraryReadDenied,
+  libraryReadInvalid,
+  libraryRefetchFailed,
+  libraryRefetchHasData,
+} from "./libraryErrors";
+import {
+  buildLibraryLocation,
+  defaultLibraryLocation,
+  type LibraryLocationInput,
+  parseLibraryLocation,
+  sanitizeLibraryReturnTo,
+  workflowLocation,
+} from "./libraryLocation";
+import {
+  type LibraryOverlay,
+  libraryEmptyState,
+  libraryFilterChips,
+  libraryHasFilters,
+  libraryOverlay,
+  libraryVisibleRows,
+} from "./libraryView";
+import { NewWorkflowDialog, type NewWorkflowMemory } from "./NewWorkflowDialog";
 import { useDialogFocus } from "./useDialogFocus";
+import {
+  type LibraryAcknowledgement,
+  type LibraryCommandMemory,
+  type LibraryOperation,
+  WorkflowLifecycleDialog,
+} from "./WorkflowLifecycleDialog";
+import { WorkflowOwnerFilter } from "./WorkflowOwnerFilter";
 
-type LibraryStatus = "all" | "active" | "draft" | "paused";
+type Selection = { operation: LibraryOperation; row: WorkflowLibraryRow };
+type Ack = { operation: "archive" | "unarchive"; id: string };
 
-export function WorkflowLibrary({ canCreate }: { canCreate: boolean }) {
+function fallbackTarget(...candidates: (HTMLElement | null)[]): HTMLElement | null {
+  return (
+    candidates.find(
+      (element) =>
+        element?.isConnected === true && !element.matches(":disabled,[aria-disabled=true]"),
+    ) ?? null
+  );
+}
+
+export function WorkflowLibrary({
+  canCreate,
+  initialLocation = "/workflows",
+}: {
+  canCreate: boolean;
+  initialLocation?: string;
+}) {
   const t = useAppTranslations("workflows");
   const fmt = useFormatters();
-  const router = useRouter();
-  const list = trpc.workflows.list.useQuery();
-  const confirmedEmpty =
-    !list.isLoading &&
-    !list.isFetching &&
-    !list.isError &&
-    list.data !== undefined &&
-    list.data.length === 0;
-  const [open, setOpen] = useState(false);
-  const [template, setTemplate] = useState("followUp");
-  const [name, setName] = useState("");
-  const [pending, setPending] = useState(false);
-  const [error, setError] = useState(false);
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<LibraryStatus>("all");
+  const initial = parseLibraryLocation(sanitizeLibraryReturnTo(initialLocation));
+  const [input, setInput] = useState<LibraryLocationInput>(initial);
+  const [search, setSearch] = useState(initial.query);
+  const [previous, setPrevious] = useState<(string | undefined)[]>([]);
+  const [creating, setCreating] = useState(false);
+  const [selection, setSelection] = useState<Selection | null>(null);
+  const [creationMemory, setCreationMemory] = useState<NewWorkflowMemory>();
+  const [commandMemory, setCommandMemory] = useState<Record<string, LibraryCommandMemory>>({});
+  const [ownerDenied, setOwnerDenied] = useState(false);
+  const ownerDeniedAt = useRef<WorkflowLibraryPage | undefined>(undefined);
+  const [ack, setAck] = useState<Ack | null>(null);
+  const [overlays, setOverlays] = useState<Record<string, LibraryOverlay>>({});
+  const [readProblem, setReadProblem] = useState(false);
+  const [retrying, setRetrying] = useState(false);
+  const [refreshingAck, setRefreshingAck] = useState(false);
+  const [cursorReset, setCursorReset] = useState(false);
+  const [confirmedAfterAck, setConfirmedAfterAck] = useState(true);
+  const retryGuard = useRef(false);
   const id = useId();
   const focus = useDialogFocus();
-  const newWorkflow = useRef<HTMLButtonElement>(null);
   const searchInput = useRef<HTMLInputElement>(null);
-  const normalizedSearch = search.trim().toLowerCase();
-  const hasFilters = search !== "" || statusFilter !== "all";
-  const filteredRows = (list.data ?? []).filter((row) => {
-    const status = row.active ? "active" : row.publishedNumber === null ? "draft" : "paused";
-    return (
-      (statusFilter === "all" || statusFilter === status) &&
-      row.name.toLowerCase().includes(normalizedSearch)
-    );
-  });
-  const noMatches =
-    !list.isLoading &&
-    !list.isFetching &&
-    !list.isError &&
-    list.data !== undefined &&
-    list.data.length > 0 &&
-    filteredRows.length === 0;
-  function clearFilters() {
+  const heading = useRef<HTMLHeadingElement>(null);
+  const newWorkflow = useRef<HTMLButtonElement>(null);
+  const rowButtons = useRef<Record<string, HTMLButtonElement | null>>({});
+  const opening = useRef(false);
+  const activeInput = useRef(input);
+  activeInput.current = input;
+  const list = trpc.workflows.list.useQuery(input, { placeholderData: (old) => old });
+  const denied = ownerDenied || (list.isError && libraryReadDenied(list.error));
+  const invalid = list.isError && libraryReadInvalid(list.error);
+  const data = list.data;
+  const createAllowed = !denied && (data?.capabilities.create ?? canCreate);
+  const ownersAllowed = !denied && data?.capabilities.filterOwners === true;
+  const currentKey = JSON.stringify(input);
+  const returnTo = buildLibraryLocation(input);
+
+  useEffect(() => {
+    if (!denied) return;
+    setCreating(false);
+    setSelection(null);
+    opening.current = false;
+  }, [denied]);
+  useEffect(() => {
+    if (window.location.pathname === "/workflows")
+      window.history.replaceState(window.history.state, "", returnTo);
+  }, [returnTo]);
+  useEffect(() => {
+    const restore = () => {
+      if (window.location.pathname !== "/workflows") return;
+      const value = parseLibraryLocation(window.location.search);
+      setInput(value);
+      setSearch(value.query);
+      setPrevious([]);
+      setCursorReset(false);
+    };
+    window.addEventListener("popstate", restore);
+    return () => window.removeEventListener("popstate", restore);
+  }, []);
+  useEffect(() => {
+    if (data !== undefined && !data.capabilities.filterOwners && input.ownerId !== undefined) {
+      setInput((current) => {
+        const next = { ...current };
+        delete next.ownerId;
+        delete next.cursor;
+        return next;
+      });
+      setPrevious([]);
+    }
+  }, [data, input.ownerId]);
+  useEffect(() => {
+    if (invalid && input.cursor !== undefined) {
+      setInput((current) => {
+        const next = { ...current };
+        delete next.cursor;
+        return next;
+      });
+      setPrevious([]);
+      setCursorReset(true);
+    }
+  }, [invalid, input.cursor]);
+  useEffect(() => {
+    if (data !== undefined && !list.isError && !list.isFetching && !list.isPlaceholderData)
+      setConfirmedAfterAck(true);
+  }, [data, list.isError, list.isFetching, list.isPlaceholderData]);
+  useEffect(() => {
+    if (
+      ownerDenied &&
+      data !== undefined &&
+      data !== ownerDeniedAt.current &&
+      !list.isError &&
+      !list.isFetching &&
+      !list.isPlaceholderData
+    )
+      setOwnerDenied(false);
+  }, [ownerDenied, data, list.isError, list.isFetching, list.isPlaceholderData]);
+
+  function change(patch: Partial<LibraryLocationInput>) {
+    setInput((current) => {
+      const next = { ...current, ...patch };
+      delete next.cursor;
+      if (next.ownerId === undefined) delete next.ownerId;
+      return next;
+    });
+    setPrevious([]);
+    setCursorReset(false);
+    setReadProblem(false);
+  }
+  function clear() {
+    setInput(defaultLibraryLocation());
     setSearch("");
-    setStatusFilter("all");
+    setPrevious([]);
+    setCursorReset(false);
+    setReadProblem(false);
     searchInput.current?.focus();
   }
-  async function create() {
-    setPending(true);
-    setError(false);
+  function next() {
+    if (list.isFetching || data?.nextCursor === null || data?.nextCursor === undefined) return;
+    setPrevious((current) => [...current, input.cursor]);
+    setInput((current) => ({ ...current, cursor: data.nextCursor ?? undefined }));
+    setReadProblem(false);
+  }
+  function back() {
+    if (list.isFetching || previous.length === 0) return;
+    const token = previous[previous.length - 1];
+    setPrevious((current) => current.slice(0, -1));
+    setInput((current) => {
+      const next = { ...current };
+      if (token === undefined) delete next.cursor;
+      else next.cursor = token;
+      return next;
+    });
+    setReadProblem(false);
+  }
+  async function reread(force = false): Promise<boolean> {
+    if (retryGuard.current || (!force && list.isFetching)) return false;
+    retryGuard.current = true;
+    setRetrying(true);
+    setReadProblem(false);
+    const requestedKey = currentKey;
     try {
-      const result = await createWorkflowAction(
-        {
-          name,
-          definition:
-            template === "blank"
-              ? initialBlankDefinition(t("start"))
-              : initialDefinition({
-                  start: t("start"),
-                  read: t("read"),
-                  task: t("task"),
-                  subject: t("subject"),
-                }),
-        },
-        readCsrfToken(),
-      );
-      if (!result.ok) {
-        setError(true);
-        return;
+      const result = await list.refetch();
+      const ok = !libraryRefetchFailed(result);
+      if (JSON.stringify(activeInput.current) === requestedKey) {
+        setReadProblem(!ok);
+        if (ok && libraryRefetchHasData(result)) setConfirmedAfterAck(true);
       }
-      router.push(`/workflows/${result.value.id}`);
+      return (
+        ok && libraryRefetchHasData(result) && JSON.stringify(activeInput.current) === requestedKey
+      );
     } catch {
-      setError(true);
+      if (JSON.stringify(activeInput.current) === requestedKey) setReadProblem(true);
+      return false;
     } finally {
-      setPending(false);
+      retryGuard.current = false;
+      setRetrying(false);
     }
   }
   function start(event: MouseEvent<HTMLButtonElement>) {
+    if (!createAllowed) return;
     focus.remember(event.currentTarget);
-    setName(t("defaultName"));
-    setError(false);
-    setOpen(true);
+    opening.current = true;
+    setCreating(true);
   }
+  function select(operation: LibraryOperation, row: WorkflowLibraryRow) {
+    if (!row.capabilities[operation]) return;
+    focus.remember(rowButtons.current[row.id] ?? null);
+    opening.current = true;
+    setSelection({ operation, row });
+  }
+  function close() {
+    setCreating(false);
+    setSelection(null);
+    opening.current = false;
+  }
+  function ownersDenied() {
+    ownerDeniedAt.current = data;
+    setOwnerDenied(true);
+    setInput((current) => {
+      const next = { ...current };
+      delete next.ownerId;
+      delete next.cursor;
+      return next;
+    });
+    setPrevious([]);
+    void reread();
+  }
+  function restoreFocus(event: Event) {
+    focus.restore(event, fallbackTarget(searchInput.current, heading.current));
+  }
+  async function acknowledged(operation: "archive" | "unarchive", row: LibraryAcknowledgement) {
+    setOverlays((current) => ({ ...current, [row.id]: libraryOverlay(row) }));
+    setAck({ operation, id: row.id });
+    setConfirmedAfterAck(false);
+    setRefreshingAck(true);
+    close();
+    try {
+      await reread(true);
+    } finally {
+      setRefreshingAck(false);
+    }
+  }
+
+  const rows = libraryVisibleRows(data, overlays, input, denied, list.isPlaceholderData);
+  const pendingRead = list.isLoading || list.isFetching || list.isPlaceholderData || refreshingAck;
+  const readError = !denied && (list.isError || readProblem);
+  const confirmed =
+    data !== undefined && !denied && !pendingRead && !readError && confirmedAfterAck;
+  const empties = libraryEmptyState(data, rows, input, confirmed);
+  const filters = libraryHasFilters(input);
+  const chips = libraryFilterChips(input, rows, t);
+
   return (
     <div className="mx-auto max-w-6xl space-y-7">
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-display font-semibold tracking-tight">{t("title")}</h1>
+            <h1 ref={heading} tabIndex={-1} className="text-display font-semibold tracking-tight">
+              {t("title")}
+            </h1>
             <Badge variant="outline">{t("early")}</Badge>
           </div>
           <p className="mt-2 text-sm text-muted-foreground">{t("subtitle")}</p>
         </div>
-        {canCreate && (
+        {createAllowed && (
           <Button ref={newWorkflow} onClick={start}>
             <Plus className="size-4" />
             {t("new")}
@@ -123,11 +301,11 @@ export function WorkflowLibrary({ canCreate }: { canCreate: boolean }) {
         )}
       </header>
       <p className="rounded-lg border border-primary/15 bg-primary/5 px-5 py-4 text-sm leading-6 text-muted-foreground">
-        {t("scope")}
+        {t("scope")} <span className="block">{t("libraryRunIdentity")}</span>
       </p>
-      <div className="space-y-2">
-        <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_14rem_auto]">
-          <div className="space-y-2">
+      <fieldset className="space-y-3" disabled={denied}>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="space-y-2 sm:col-span-2 lg:col-span-1">
             <label htmlFor={`${id}-search`} className="text-sm font-medium">
               {t("librarySearch")}
             </label>
@@ -136,165 +314,355 @@ export function WorkflowLibrary({ canCreate }: { canCreate: boolean }) {
               id={`${id}-search`}
               type="search"
               dir="auto"
-              aria-describedby={`${id}-filter-hint`}
+              maxLength={200}
+              aria-describedby={`${id}-hint`}
               value={search}
-              onChange={(event) => setSearch(event.target.value)}
+              onChange={(event) => {
+                setSearch(event.target.value);
+                change({ query: event.target.value.trim() });
+              }}
+            />
+          </div>
+          <div className="space-y-2">
+            <p className="text-sm font-medium">{t("libraryArchive")}</p>
+            <Select
+              ariaLabel={t("libraryArchive")}
+              value={input.archive}
+              options={[
+                { value: "current", label: t("libraryCurrent") },
+                { value: "archived", label: t("libraryArchived") },
+              ]}
+              onChange={(value) =>
+                change({ archive: value === "archived" ? "archived" : "current", status: "all" })
+              }
             />
           </div>
           <div className="space-y-2">
             <p className="text-sm font-medium">{t("libraryStatus")}</p>
             <Select
               ariaLabel={t("libraryStatus")}
-              value={statusFilter}
+              disabled={input.archive === "archived"}
+              value={input.status}
               options={[
                 { value: "all", label: t("libraryAllStatuses") },
                 { value: "active", label: t("active") },
                 { value: "draft", label: t("draft") },
                 { value: "paused", label: t("paused") },
               ]}
+              onChange={(value) =>
+                change({
+                  status:
+                    value === "active"
+                      ? "active"
+                      : value === "draft"
+                        ? "draft"
+                        : value === "paused"
+                          ? "paused"
+                          : "all",
+                })
+              }
+            />
+          </div>
+          <div className="space-y-2">
+            <p className="text-sm font-medium">{t("libraryHealth")}</p>
+            <Select
+              ariaLabel={t("libraryHealth")}
+              value={input.health}
+              options={[
+                { value: "all", label: t("libraryHealthAll") },
+                { value: "latest-live-failed", label: t("libraryHealthFailed") },
+              ]}
+              onChange={(value) =>
+                change({ health: value === "latest-live-failed" ? "latest-live-failed" : "all" })
+              }
+            />
+          </div>
+          <div className="space-y-2">
+            <p className="text-sm font-medium">{t("librarySort")}</p>
+            <Select
+              ariaLabel={t("librarySort")}
+              value={input.sort}
+              options={[
+                { value: "updated-desc", label: t("librarySortUpdated") },
+                { value: "name-asc", label: t("librarySortNameAsc") },
+                { value: "name-desc", label: t("librarySortNameDesc") },
+              ]}
+              onChange={(value) =>
+                change({
+                  sort:
+                    value === "name-asc"
+                      ? "name-asc"
+                      : value === "name-desc"
+                        ? "name-desc"
+                        : "updated-desc",
+                })
+              }
+            />
+          </div>
+          <div className="space-y-2">
+            <p className="text-sm font-medium">{t("libraryPageSize")}</p>
+            <Select
+              ariaLabel={t("libraryPageSize")}
+              value={String(input.limit)}
+              options={[25, 50, 100, ...(![25, 50, 100].includes(input.limit) ? [input.limit] : [])]
+                .sort((a, b) => a - b)
+                .map((value) => ({ value: String(value), label: String(value) }))}
               onChange={(value) => {
-                if (
-                  value === "all" ||
-                  value === "active" ||
-                  value === "draft" ||
-                  value === "paused"
-                )
-                  setStatusFilter(value);
+                const size = Number(value);
+                if (Number.isInteger(size) && size >= 1 && size <= 100) change({ limit: size });
               }}
             />
           </div>
-          <Button
-            type="button"
-            variant="outline"
-            className="self-end"
-            disabled={!hasFilters}
-            onClick={clearFilters}
-          >
+        </div>
+        {ownersAllowed && (
+          <WorkflowOwnerFilter
+            key={input.archive}
+            archive={input.archive}
+            value={input.ownerId}
+            selectedName={rows.find((row) => row.owner.id === input.ownerId)?.owner.name}
+            onChange={(ownerId) => change({ ownerId })}
+            onDenied={ownersDenied}
+          />
+        )}
+        <div className="flex flex-wrap items-center gap-3">
+          <Button type="button" variant="outline" disabled={!filters} onClick={clear}>
             {t("libraryClearFilters")}
           </Button>
+          {chips.length > 0 && (
+            <fieldset className="flex flex-wrap gap-2">
+              <legend className="sr-only">{t("libraryAppliedFilters")}</legend>
+              {chips.map((chip) => (
+                <Badge key={chip.id} variant="secondary">
+                  <bdi>{chip.label}</bdi>
+                </Badge>
+              ))}
+            </fieldset>
+          )}
         </div>
-        <p id={`${id}-filter-hint`} className="text-xs leading-5 text-muted-foreground">
+        <p id={`${id}-hint`} className="text-xs leading-5 text-muted-foreground">
           {t("libraryFilterHint")}
         </p>
-      </div>
-      {(list.isLoading || (list.isFetching && filteredRows.length === 0)) && (
-        <p role="status">{t("loading")}</p>
+      </fieldset>
+      {ack !== null && (
+        <p role="status" className="text-success">
+          {t(ack.operation === "archive" ? "archivedSaved" : "unarchivedSaved")}
+          {refreshingAck && <span className="ms-2">{t("loading")}</span>}
+        </p>
       )}
-      {list.isError && (
+      {pendingRead && rows.length === 0 && ack === null && <p role="status">{t("loading")}</p>}
+      {cursorReset && (
+        <p className="text-sm text-muted-foreground">{t("libraryPageChangedHint")}</p>
+      )}
+      {denied && (
+        <p role="alert" className="rounded-lg border p-6">
+          {t("denied")}
+        </p>
+      )}
+      {readError && (
         <div role="alert" className="space-y-3 rounded-lg border bg-card p-6">
-          <p>{t("loadError")}</p>
-          <Button variant="outline" disabled={list.isFetching} onClick={() => void list.refetch()}>
-            {t("retry")}
+          <p>
+            {ack !== null && readProblem
+              ? t("refreshAfterAck")
+              : invalid
+                ? t("libraryInvalidFilters")
+                : t("loadError")}
+          </p>
+          <Button
+            variant="outline"
+            disabled={list.isFetching || retrying}
+            onClick={() => void reread()}
+          >
+            {t(ack !== null && readProblem ? "refresh" : "retry")}
           </Button>
         </div>
       )}
-      {confirmedEmpty && (
+      {empties.scope && (
         <div className="flex min-h-80 flex-col items-center justify-center rounded-lg border bg-card p-8 text-center">
           <GitBranch className="mb-5 size-9 text-primary" />
-          <h2 className="text-lg font-semibold">{t("empty")}</h2>
-          <p className="mb-6 mt-2 text-sm text-muted-foreground">{t("emptyHint")}</p>
-          {canCreate && <Button onClick={start}>{t("new")}</Button>}
+          <h2 className="text-lg font-semibold">
+            {t(input.archive === "archived" ? "libraryArchivedEmpty" : "empty")}
+          </h2>
+          <p className="mb-6 mt-2 text-sm text-muted-foreground">
+            {t(input.archive === "archived" ? "libraryArchivedEmptyHint" : "emptyHint")}
+          </p>
+          {createAllowed && input.archive === "current" && (
+            <Button onClick={start}>{t("new")}</Button>
+          )}
         </div>
       )}
-      {noMatches && (
+      {empties.matches && (
         <div role="status" className="rounded-lg border border-dashed bg-card p-8 text-center">
           <h2 className="text-lg font-semibold">{t("libraryNoMatches")}</h2>
           <p className="mt-2 text-sm text-muted-foreground">{t("libraryNoMatchesHint")}</p>
         </div>
       )}
-      {filteredRows.length > 0 && (
+      {empties.continuation && (
+        <div role="status" className="space-y-3 rounded-lg border p-6">
+          <h2>{t("libraryPageChanged")}</h2>
+          <p>{t("libraryPageChangedHint")}</p>
+          <Button variant="outline" onClick={() => change({})}>
+            {t("libraryFirst")}
+          </Button>
+        </div>
+      )}
+      {rows.length > 0 && (
         <div className="overflow-hidden rounded-lg border bg-card">
-          <div className="hidden grid-cols-[1fr_140px_200px_32px] gap-5 border-b px-6 py-3 text-xs font-medium text-muted-foreground md:grid">
+          <div className="hidden grid-cols-[1fr_180px_180px_40px] gap-5 border-b px-6 py-3 text-xs font-medium text-muted-foreground md:grid">
             <span>{t("name")}</span>
-            <span>{t("published")}</span>
+            <span>{t("libraryStatus")}</span>
             <span>{t("updated")}</span>
             <span />
           </div>
-          {filteredRows.map((row) => (
-            <Link
+          {rows.map((row) => (
+            <div
               key={row.id}
-              href={`/workflows/${row.id}`}
-              className="flex items-center gap-5 border-b px-6 py-5 transition-colors last:border-0 hover:bg-accent/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring md:grid md:grid-cols-[1fr_140px_200px_32px]"
+              className="flex items-center gap-4 border-b px-4 py-4 last:border-0 md:px-6"
             >
-              <div className="flex min-w-0 flex-1 items-center gap-4">
-                <div className="rounded-lg border bg-muted/40 p-3 text-primary">
-                  <GitBranch className="size-5" />
+              <Link
+                href={workflowLocation(row.id, returnTo)}
+                className="flex min-w-0 flex-1 items-center gap-4 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:grid md:grid-cols-[1fr_180px_180px]"
+              >
+                <div className="flex min-w-0 items-center gap-4">
+                  <div className="rounded-lg border bg-muted/40 p-3 text-primary">
+                    <GitBranch className="size-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <bdi className="block truncate text-sm font-semibold">{row.name}</bdi>
+                    <span className="mt-1 block text-xs text-muted-foreground">
+                      {t("libraryOwner")}: <bdi>{row.owner.name}</bdi>
+                    </span>
+                  </div>
                 </div>
-                <bdi className="block truncate text-sm font-semibold">{row.name}</bdi>
-              </div>
-              <Badge variant={row.active ? "success" : "secondary"}>
-                {row.active ? t("active") : row.publishedNumber === null ? t("draft") : t("paused")}
-              </Badge>
-              <span className="hidden text-xs text-muted-foreground md:block">
-                {fmt.dateTime(row.updatedAt)}
-              </span>
-              <ArrowUpRight aria-hidden className="hidden size-4 text-muted-foreground md:block" />
-            </Link>
+                <div className="flex flex-wrap gap-2">
+                  <Badge variant={row.lifecycle === "active" ? "success" : "secondary"}>
+                    {t(row.lifecycle)}
+                  </Badge>
+                  {row.latestLiveRun !== null && (
+                    <Badge
+                      variant={row.latestLiveRun.status === "failed" ? "destructive" : "outline"}
+                    >
+                      {row.latestLiveRun.status === "failed"
+                        ? t("libraryHealthFailed")
+                        : t(`status.${row.latestLiveRun.status}`)}
+                    </Badge>
+                  )}
+                </div>
+                <span className="hidden text-xs text-muted-foreground md:block">
+                  {fmt.dateTime(row.updatedAt)}
+                </span>
+                <ArrowUpRight aria-hidden className="sr-only" />
+              </Link>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    ref={(element) => {
+                      rowButtons.current[row.id] = element;
+                    }}
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    aria-label={t("libraryActions", { name: row.name })}
+                  >
+                    <MoreHorizontal className="size-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="end"
+                  onCloseAutoFocus={(event) => {
+                    if (opening.current) event.preventDefault();
+                  }}
+                >
+                  <DropdownMenuItem asChild>
+                    <Link href={workflowLocation(row.id, returnTo, true)}>
+                      {t("libraryHistory")}
+                    </Link>
+                  </DropdownMenuItem>
+                  {row.capabilities.duplicate && (
+                    <DropdownMenuItem onSelect={() => select("duplicate", row)}>
+                      {t("duplicate")}
+                    </DropdownMenuItem>
+                  )}
+                  {row.capabilities.archive && (
+                    <DropdownMenuItem onSelect={() => select("archive", row)}>
+                      {t("archive")}
+                    </DropdownMenuItem>
+                  )}
+                  {row.capabilities.unarchive && (
+                    <DropdownMenuItem onSelect={() => select("unarchive", row)}>
+                      {t("unarchive")}
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           ))}
         </div>
       )}
-      <Dialog
-        open={open}
-        onOpenChange={(value) => {
-          if (!pending) setOpen(value);
-        }}
-      >
-        <DialogContent onCloseAutoFocus={(event) => focus.restore(event, newWorkflow.current)}>
-          <DialogHeader>
-            <DialogTitle>{t("new")}</DialogTitle>
-            <DialogDescription>{t("createHint")}</DialogDescription>
-          </DialogHeader>
-          <form
-            onSubmit={(event) => {
-              event.preventDefault();
-              void create();
-            }}
-            className="space-y-5"
+      {!denied && (data !== undefined || input.cursor !== undefined) && (
+        <nav aria-label={t("libraryPageSize")} className="flex flex-wrap justify-between gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            disabled={previous.length === 0 || pendingRead}
+            onClick={back}
           >
-            <div className="space-y-2">
-              <p className="text-sm font-medium">{t("template")}</p>
-              <Select
-                ariaLabel={t("template")}
-                value={template}
-                disabled={pending}
-                options={[
-                  { value: "followUp", label: t("followUpTemplate") },
-                  { value: "blank", label: t("blankTemplate") },
-                ]}
-                onChange={setTemplate}
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium" htmlFor={id}>
-                {t("name")}
-              </label>
-              <Input
-                dir="auto"
-                id={id}
-                value={name}
-                maxLength={120}
-                required
-                disabled={pending}
-                onChange={(e) => setName(e.target.value)}
-                autoFocus
-              />
-            </div>
-            {error && (
-              <p role="alert" className="text-sm text-destructive">
-                {t("error")}
-              </p>
-            )}
-            <DialogFooter>
-              <Button variant="outline" disabled={pending} onClick={() => setOpen(false)}>
-                {t("cancel")}
-              </Button>
-              <Button type="submit" disabled={pending || name.trim().length === 0}>
-                {t("create")}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+            {t("libraryPrevious")}
+          </Button>
+          {input.cursor !== undefined && !empties.continuation && (
+            <Button
+              type="button"
+              variant="outline"
+              disabled={pendingRead}
+              onClick={() => change({})}
+            >
+              {t("libraryFirst")}
+            </Button>
+          )}
+          <Button
+            type="button"
+            variant="outline"
+            disabled={data === undefined || data.nextCursor === null || pendingRead}
+            onClick={next}
+          >
+            {t("libraryNext")}
+          </Button>
+        </nav>
+      )}
+      {creating && !denied && (
+        <NewWorkflowDialog
+          allowed={createAllowed}
+          returnTo={returnTo}
+          memory={creationMemory}
+          onMemory={setCreationMemory}
+          onClose={close}
+          onCloseAutoFocus={(event) => {
+            focus.restore(
+              event,
+              fallbackTarget(newWorkflow.current, searchInput.current, heading.current),
+            );
+          }}
+          onReview={reread}
+        />
+      )}
+      {selection !== null && !denied && (
+        <WorkflowLifecycleDialog
+          key={`${selection.operation}-${selection.row.id}`}
+          operation={selection.operation}
+          row={selection.row}
+          returnTo={returnTo}
+          memory={commandMemory[`${selection.operation}-${selection.row.id}`]}
+          onMemory={(memory) =>
+            setCommandMemory((current) => ({
+              ...current,
+              [`${selection.operation}-${selection.row.id}`]: memory,
+            }))
+          }
+          onClose={close}
+          onCloseAutoFocus={restoreFocus}
+          onAcknowledged={acknowledged}
+          onReview={reread}
+        />
+      )}
     </div>
   );
 }

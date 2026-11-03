@@ -147,7 +147,7 @@ it("LC01 archives an active published workflow without changing its definition o
     await admit(test);
     const visibleBefore = await listWorkflows(test.db, test.actor, signal);
     assert(visibleBefore.ok, JSON.stringify(visibleBefore));
-    expect(visibleBefore.value.map((workflow) => workflow.id)).toEqual([test.workflow.id]);
+    expect(visibleBefore.value.items.map((workflow) => workflow.id)).toEqual([test.workflow.id]);
     const before = await snapshot(test);
     const archived = await archiveWorkflow(
       test.db,
@@ -161,7 +161,9 @@ it("LC01 archives an active published workflow without changing its definition o
       revision: 2,
       archivedAt: expect.any(Date),
     });
-    expect(await listWorkflows(test.db, test.actor, signal)).toEqual({ ok: true, value: [] });
+    const hiddenAfter = await listWorkflows(test.db, test.actor, signal);
+    assert(hiddenAfter.ok, JSON.stringify(hiddenAfter));
+    expect(hiddenAfter.value.items).toEqual([]);
     const after = await snapshot(test);
     expect(after.versions).toEqual(before.versions);
     expect(after.runs).toEqual(before.runs);

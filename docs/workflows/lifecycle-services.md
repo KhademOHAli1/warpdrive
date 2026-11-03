@@ -5,7 +5,8 @@ The current source and qualification checkpoints are recorded on
 [issue #668](https://github.com/KhademOHAli1/warpdrive/issues/668) and
 [PR #958](https://github.com/KhademOHAli1/warpdrive/pull/958).
 This guide does not establish main integration, user-journey, release, installation or
-provider acceptance. The library and lifecycle controls in the UI remain WF-016 work.
+provider acceptance. The library and lifecycle UI contract is documented in
+[library.md](library.md); WF-016 qualification and acceptance are tracked separately.
 
 Every command requires an AbortSignal. Inputs are strict: UUID workflow IDs, positive
 safe-integer expected revisions and trimmed names of 1–120 characters. Current database
