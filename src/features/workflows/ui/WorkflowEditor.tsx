@@ -191,7 +191,11 @@ export function WorkflowEditor({ initial }: { initial: WorkflowDetail }) {
           onClose={() => setRunMode(null)}
           onStarted={() => {
             runFocus.remember(runsTab.current);
-            void utils.workflows.runs.invalidate({ id: initial.id });
+            void Promise.resolve()
+              .then(() => utils.workflows.runs.invalidate({ id: initial.id }))
+              .catch(() => {
+                // History refresh failure does not undo the acknowledged run submission.
+              });
             setRunMode(null);
             editor.setNotice("runStarted");
             setTab("runs");
