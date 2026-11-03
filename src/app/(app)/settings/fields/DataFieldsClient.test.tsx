@@ -151,7 +151,7 @@ describe("DataFieldsClient", () => {
 
   it("archives a field via archiveDefAction", async () => {
     render(<DataFieldsClient byTarget={BY_TARGET} />);
-    fireEvent.click(screen.getByRole("button", { name: "Archive" }));
+    fireEvent.click(screen.getByRole("button", { name: "Archive: Budget" }));
     await waitFor(() =>
       expect(actions.archiveDefAction).toHaveBeenCalledWith({ id: "d1" }, "csrf"),
     );
@@ -172,9 +172,9 @@ describe("DataFieldsClient", () => {
 
   it("renames a field via renameDefAction (name only)", async () => {
     render(<DataFieldsClient byTarget={BY_TARGET} />);
-    fireEvent.click(screen.getByRole("button", { name: "Rename" }));
-    fireEvent.change(screen.getByLabelText("Rename"), { target: { value: "Deal size" } });
-    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+    fireEvent.click(screen.getByRole("button", { name: "Rename: Budget" }));
+    fireEvent.change(screen.getByLabelText("Rename: Budget"), { target: { value: "Deal size" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save: Budget" }));
     await waitFor(() =>
       expect(actions.renameDefAction).toHaveBeenCalledWith({ id: "d1", name: "Deal size" }, "csrf"),
     );
@@ -183,8 +183,14 @@ describe("DataFieldsClient", () => {
   it("uses arrow controls to reorder fields", async () => {
     render(<DataFieldsClient byTarget={BY_TARGET} />);
     chooseSelect("Entity", "Organization");
-    const moveUp = screen.getAllByRole("button", { name: "Move up" });
-    const moveDown = screen.getAllByRole("button", { name: "Move down" });
+    const moveUp = [
+      screen.getByRole("button", { name: "Move up: Region" }),
+      screen.getByRole("button", { name: "Move up: Segment" }),
+    ];
+    const moveDown = [
+      screen.getByRole("button", { name: "Move down: Region" }),
+      screen.getByRole("button", { name: "Move down: Segment" }),
+    ];
     expect(moveUp).toHaveLength(2);
     expect(moveDown).toHaveLength(2);
     expect(moveUp[0]).toBeDisabled();
@@ -198,7 +204,7 @@ describe("DataFieldsClient", () => {
   it("adds an option via addOptionAction from the option editor", async () => {
     render(<DataFieldsClient byTarget={BY_TARGET} />);
     chooseSelect("Entity", "Person");
-    fireEvent.click(screen.getByRole("button", { name: "Edit options" }));
+    fireEvent.click(screen.getByRole("button", { name: "Edit options: Priority" }));
     fireEvent.change(screen.getByLabelText("New option"), { target: { value: "Medium" } });
     fireEvent.click(screen.getByRole("button", { name: "Add option" }));
     await waitFor(() =>
@@ -209,7 +215,7 @@ describe("DataFieldsClient", () => {
   it("removes an active option via archiveOptionAction (never a hard-delete)", async () => {
     render(<DataFieldsClient byTarget={BY_TARGET} />);
     chooseSelect("Entity", "Person");
-    fireEvent.click(screen.getByRole("button", { name: "Edit options" }));
+    fireEvent.click(screen.getByRole("button", { name: "Edit options: Priority" }));
     // Only the active option ("Low") has a Remove button; the archived one shows a tag.
     fireEvent.click(screen.getByRole("button", { name: "Remove" }));
     await waitFor(() =>
