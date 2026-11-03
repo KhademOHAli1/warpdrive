@@ -4,6 +4,7 @@ import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/re
 import { afterEach, expect, it, vi } from "vitest";
 import { LocaleProvider } from "@/features/i18n/LocaleProvider";
 import { MailboxConnectionsPanel } from "./MailboxConnectionsPanel";
+import { mailboxConnectionMessages } from "./messages";
 import type { MailboxConnectionActions, MailboxConnectionView } from "./types";
 
 const capabilities = { read: true, send: true, markRead: true, move: false, trash: false };
@@ -171,7 +172,7 @@ it("resumes a paused connection and offers a default sender only for send-capabl
   expect(
     screen.queryByRole("button", { name: "Als Standardabsender festlegen" }),
   ).not.toBeInTheDocument();
-  fireEvent.click(screen.getByRole("button", { name: "Synchronisierung fortsetzen" }));
+  fireEvent.click(screen.getByRole("button", { name: mailboxConnectionMessages("de").resume }));
   await waitFor(() =>
     expect(actions.mutate).toHaveBeenCalledWith("owned-account", "resume", expect.any(AbortSignal)),
   );
