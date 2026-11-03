@@ -41,11 +41,13 @@ export const workflowLibraryInputSchema = libraryOptions.default({
   health: "all",
   sort: "updated-desc",
   limit: 25,
+  cursor: undefined,
 });
 export const workflowOwnersInputSchema = ownersOptions.default({
   query: "",
   archive: "current",
   limit: 25,
+  cursor: undefined,
 });
 export type WorkflowLibraryInput = z.input<typeof libraryOptions>;
 export type WorkflowOwnersInput = z.input<typeof ownersOptions>;

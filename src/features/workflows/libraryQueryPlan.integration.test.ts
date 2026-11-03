@@ -77,7 +77,7 @@ it("LC20/21 records real query plans over a finite mixed-owner library and live-
       })
       .returning();
     assert(permissions !== undefined);
-    const owners = [];
+    const owners: Awaited<ReturnType<typeof seedUser>>[] = [];
     for (let index = 0; index < 10; index++)
       owners.push(
         await seedUser(test.db, {

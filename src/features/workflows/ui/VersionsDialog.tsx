@@ -62,7 +62,9 @@ export function VersionsDialog({
             {error}
           </p>
         )}
-        <p className="text-sm text-muted-foreground">{t("savedRevision", { revision })}</p>
+        <p className="text-sm text-muted-foreground">
+          {t("savedRevision", { revision: String(revision) })}
+        </p>
         {versions.isLoading && <p role="status">{t("loading")}</p>}
         {versions.isError ? (
           <div>
@@ -81,7 +83,7 @@ export function VersionsDialog({
             {versions.data?.map((item) => (
               <Button
                 key={item.id}
-                variant={selected === item.number ? "secondary" : "outline"}
+                variant={selected === item.number ? "default" : "outline"}
                 className="h-auto w-full justify-between whitespace-normal text-start"
                 disabled={pending}
                 onClick={() => setSelected(item.number)}

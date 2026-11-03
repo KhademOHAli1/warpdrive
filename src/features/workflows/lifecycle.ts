@@ -3,7 +3,7 @@ import { ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import { workflows, workflowVersions } from "@/db/schema";
 import type { PermSetUser } from "@/features/permissions/effective";
-import { err, ok } from "@/types/result";
+import { err, ok, type Result } from "@/types/result";
 import { copyWorkflowDefinition } from "./copyDefinition";
 import {
   lifecycleStateError,
@@ -104,7 +104,10 @@ export async function duplicateWorkflow(
   actor: PermSetUser,
   raw: unknown,
   signal: AbortSignal,
-) {
+): Promise<
+  | Result<typeof workflows.$inferSelect, string>
+  | Extract<ReturnType<typeof copyWorkflowDefinition>, { ok: false }>
+> {
   signal.throwIfAborted();
   const input = duplicateSchema.safeParse(raw);
   if (!input.success) return err(ERROR_IDS.WORKFLOW_INVALID);

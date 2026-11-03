@@ -35,7 +35,10 @@ export async function unarchiveWorkflowAction(input: unknown, token: string | nu
   if (ctx === null) return err(ERROR_IDS.WORKFLOW_DENIED);
   return unarchiveWorkflow(ctx.db, ctx.actor, input, AbortSignal.timeout(10_000));
 }
-export async function duplicateWorkflowAction(input: unknown, token: string | null) {
+export async function duplicateWorkflowAction(
+  input: unknown,
+  token: string | null,
+): ReturnType<typeof duplicateWorkflow> {
   const ctx = await authorizedContext(token);
   if (ctx === null) return err(ERROR_IDS.WORKFLOW_DENIED);
   return duplicateWorkflow(ctx.db, ctx.actor, input, AbortSignal.timeout(10_000));

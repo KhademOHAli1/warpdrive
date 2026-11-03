@@ -211,7 +211,7 @@ export function WorkflowLifecycleDialog({
             <DialogDescription>{t("duplicateHint")}</DialogDescription>
           </DialogHeader>
           <p className="text-sm">
-            <bdi>{row.name}</bdi> · {t("savedRevision", { revision: row.revision })}
+            <bdi>{row.name}</bdi> · {t("savedRevision", { revision: String(row.revision) })}
           </p>
           {ackId !== null ? (
             <div className="space-y-4">
@@ -297,7 +297,7 @@ export function WorkflowLifecycleDialog({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <p className="text-sm">
-          <bdi>{row.name}</bdi> · {t("savedRevision", { revision: row.revision })}
+          <bdi>{row.name}</bdi> · {t("savedRevision", { revision: String(row.revision) })}
         </p>
         {feedback}
         {ackId !== null && (

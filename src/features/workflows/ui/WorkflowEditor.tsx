@@ -345,12 +345,12 @@ export function WorkflowEditor({
         }}
         title={
           confirmation?.operation === "restore"
-            ? t("restoreTitle", { number: confirmation.versionNumber ?? 1 })
+            ? t("restoreTitle", { number: String(confirmation.versionNumber ?? 1) })
             : t(confirmation?.operation === "unarchive" ? "unarchiveTitle" : "archiveTitle")
         }
         description={
           confirmation?.operation === "restore"
-            ? `${t("restoreHint")} ${t("restoreRevision", { revision: editor.revision })} ${editor.dirty ? t("restoreUnsaved") : ""}`
+            ? `${t("restoreHint")} ${t("restoreRevision", { revision: String(editor.revision) })} ${editor.dirty ? t("restoreUnsaved") : ""}`
             : t(confirmation?.operation === "unarchive" ? "unarchiveHint" : "archiveHint")
         }
         confirmLabel={t(
