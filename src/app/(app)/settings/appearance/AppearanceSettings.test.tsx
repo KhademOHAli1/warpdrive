@@ -75,7 +75,7 @@ async function settle(save: ReturnType<typeof deferred>, result: SaveResult) {
 }
 
 describe("explicit density save", () => {
-  it("keeps a density choice as a draft until Save and ignores unchanged values", async () => {
+  it("keeps a density choice as a draft until Save and ignores unchanged values", () => {
     show();
     expect(screen.getByRole("button", { name: "Save" })).toBeDisabled();
     fireEvent.click(screen.getByRole("radio", { name: "Compact" }));
