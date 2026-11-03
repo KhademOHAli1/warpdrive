@@ -41,7 +41,7 @@ export function ComposerForm({
   onSendLater: (at: Date) => void;
   onDiscard: () => void;
   attachEntityId: string;
-  attachEntityType: "deal" | "email_message";
+  attachEntityType: "deal" | "email_mailbox";
 }): React.ReactNode {
   const E = useEmailMessages();
   const {

@@ -24,7 +24,7 @@
   "acceptedRecipients": "Accepted by the sending server",
   "rejectedRecipients": "Refused by the sending server",
   "unknownTitle": "Send status is not confirmed",
-  "unknownDescription": "The server acknowledgment was not received. The message may already have been sent. Check its status before creating another message.",
+  "unknownDescription": "The sending server may already have accepted this message. Check its status before sending it again.",
   "acceptedReviewTitle": "Message accepted, CRM copy pending",
   "acceptedReviewDescription": "The sending server accepted your message. Its CRM copy still needs to be saved. Checking status repairs the copy without sending again.",
   "pendingTitle": "Sending is in progress",
