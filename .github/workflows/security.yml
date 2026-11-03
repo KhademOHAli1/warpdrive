@@ -2,11 +2,11 @@ name: CI security
 
 on:
   push:
-    branches: [main, integration, 'release/**']
+    branches: [main, integration, "release/**"]
   pull_request:
   workflow_dispatch:
   schedule:
-    - cron: '23 6 * * 1'
+    - cron: "23 6 * * 1"
 
 permissions:
   contents: read

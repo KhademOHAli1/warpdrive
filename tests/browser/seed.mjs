@@ -38,7 +38,7 @@ try {
     pipeline,
   ]);
   await pool.query(
-    "INSERT INTO stages(pipeline_id,name,\"order\",probability) VALUES($1,'CI New',0,10),($1,'CI Qualified',1,50)",
+    "INSERT INTO stages(pipeline_id,name,\"order\") VALUES($1,'CI New',0),($1,'CI Qualified',1)",
     [pipeline],
   );
   await pool.query(
