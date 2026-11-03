@@ -20,16 +20,16 @@ missing workflows share WORKFLOW_DENIED. Current authority is checked before rep
 revision/state information. Authorized stale revisions return WORKFLOW_CONFLICT without
 overwriting the saved draft. Invalid input returns WORKFLOW_INVALID.
 
-| Service | Input | Result |
-| --- | --- | --- |
-| createWorkflow | name, definition | New caller-owned draft. Incomplete structurally valid drafts remain saveable. |
-| saveWorkflowDraft | id, revision, name, definition | Change draft/name and increment revision; publication and activation are unchanged. |
-| publishWorkflow | id, revision | Validate the saved definition and executable handlers, then publish/activate atomically. Draft revision is unchanged. Same-definition retry reuses the current immutable version. |
-| pauseWorkflow | id, revision | Current view and edit authority required. Deactivate and increment revision; existing runs are not cancelled. |
-| archiveWorkflow | id, revision | Current edit authority required. Set archive time, deactivate and increment revision; retain draft, pointer, versions, runs and effects. |
-| unarchiveWorkflow | id, revision | Current edit authority required. Clear archive time and increment revision; remain inactive, preserving publication/history. |
-| duplicateWorkflow | id, revision, name | Current source view plus create authority required. Copy persisted reviewed configuration into a new caller-owned revision-1, inactive, unpublished and unarchived draft. Archived sources are eligible. |
-| restoreWorkflowDraft | id, revision, versionNumber | Current edit authority on an unarchived workflow required. Replace only draft name/definition/layout, increment revision and update time. The immutable version must belong to that same workflow. |
+| Service              | Input                          | Result                                                                                                                                                                                                   |
+| -------------------- | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| createWorkflow       | name, definition               | New caller-owned draft. Incomplete structurally valid drafts remain saveable.                                                                                                                            |
+| saveWorkflowDraft    | id, revision, name, definition | Change draft/name and increment revision; publication and activation are unchanged.                                                                                                                      |
+| publishWorkflow      | id, revision                   | Validate the saved definition and executable handlers, then publish/activate atomically. Draft revision is unchanged. Same-definition retry reuses the current immutable version.                        |
+| pauseWorkflow        | id, revision                   | Current view and edit authority required. Deactivate and increment revision; existing runs are not cancelled.                                                                                            |
+| archiveWorkflow      | id, revision                   | Current edit authority required. Set archive time, deactivate and increment revision; retain draft, pointer, versions, runs and effects.                                                                 |
+| unarchiveWorkflow    | id, revision                   | Current edit authority required. Clear archive time and increment revision; remain inactive, preserving publication/history.                                                                             |
+| duplicateWorkflow    | id, revision, name             | Current source view plus create authority required. Copy persisted reviewed configuration into a new caller-owned revision-1, inactive, unpublished and unarchived draft. Archived sources are eligible. |
+| restoreWorkflowDraft | id, revision, versionNumber    | Current edit authority on an unarchived workflow required. Replace only draft name/definition/layout, increment revision and update time. The immutable version must belong to that same workflow.       |
 
 Restoring an identical version still consumes a revision. Restore never changes activation,
 the published pointer or existing runs. A later explicit publication can create a new
