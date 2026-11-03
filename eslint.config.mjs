@@ -263,6 +263,17 @@ export default tseslint.config(
     },
   },
 
+  // Node tooling shares one explicit type graph while retaining the type-aware rules above.
+  {
+    files: ["*.mjs", "scripts/*.mjs", ".env.example.test.ts"],
+    languageOptions: {
+      parserOptions: {
+        projectService: false,
+        project: "./tsconfig.tooling.json",
+      },
+    },
+  },
+
   // env.test.ts spreads process.env to build production-config test inputs for
   // parseEnv. This is the ONLY test file that needs raw process.env; the ban
   // stays in force for all other test files. Placed last so it wins.
