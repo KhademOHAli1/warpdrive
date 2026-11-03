@@ -16,16 +16,18 @@ import {
   settingsNavSections,
 } from "./settingsNavSections";
 
-const DESKTOP_SETTINGS_QUERY = "(min-width: 768px)";
+const DESKTOP_SETTINGS_QUERY = "(min-width: 48rem)";
 
 function MobileSettingsNav({
   sections,
   activeHref,
   currentLabel,
+  onDesktopCloseFocus,
 }: {
   sections: SettingsNavSection[];
   activeHref?: string;
   currentLabel: string;
+  onDesktopCloseFocus: () => void;
 }): React.ReactNode {
   const L = useSettingsMessages();
   const rtl = useLocale() === "fa";
@@ -67,7 +69,14 @@ function MobileSettingsNav({
           className="w-80 max-w-[calc(100vw-2rem)] p-4 pt-5"
           onCloseAutoFocus={(event) => {
             event.preventDefault();
-            trigger.current?.focus();
+            if (
+              typeof window.matchMedia === "function" &&
+              window.matchMedia(DESKTOP_SETTINGS_QUERY).matches
+            ) {
+              onDesktopCloseFocus();
+            } else {
+              trigger.current?.focus();
+            }
           }}
         >
           <SheetTitle className="mb-5 pe-8 text-base">{L._extra.settingsSections}</SheetTitle>
@@ -86,8 +95,16 @@ export function SettingsNav(access: SettingsNavAccess): React.ReactNode {
   const L = useSettingsMessages();
   const locale = useLocale();
   const pathname = usePathname();
+  const desktopNav = useRef<HTMLDivElement>(null);
   const sections = settingsNavSections(L, locale, access);
   const active = activeSettingsItem(sections, pathname);
+
+  function focusDesktopNavigation(): void {
+    const target =
+      desktopNav.current?.querySelector<HTMLAnchorElement>('a[aria-current="page"]') ??
+      desktopNav.current?.querySelector<HTMLInputElement>('input[type="search"]');
+    target?.focus();
+  }
 
   return (
     <>
@@ -96,8 +113,12 @@ export function SettingsNav(access: SettingsNavAccess): React.ReactNode {
         sections={sections}
         activeHref={active?.href}
         currentLabel={active?.label ?? L._extra.settingsNav}
+        onDesktopCloseFocus={focusDesktopNavigation}
       />
-      <div className="hidden w-60 shrink-0 md:sticky md:top-4 md:block md:max-h-[calc(100dvh-6rem)] md:self-start md:overflow-y-auto md:pe-2">
+      <div
+        ref={desktopNav}
+        className="hidden w-60 shrink-0 md:sticky md:top-4 md:block md:max-h-[calc(100dvh-6rem)] md:self-start md:overflow-y-auto md:pe-2"
+      >
         <SettingsNavContent sections={sections} activeHref={active?.href} />
       </div>
     </>
