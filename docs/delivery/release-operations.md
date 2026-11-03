@@ -2,7 +2,7 @@
 
 GitHub issues and the central Project own live execution. Source implementation, integration with green CI, user-journey acceptance, release publication, deployment, and real provider/installation acceptance are separate statements. A source snapshot, generated packet, diagnostic, synthetic suite, or successful subset does not complete the original acceptance scope.
 
-Only the existing integration coordinator stages, commits, and pushes canonical main. This tooling adds no branch or pull-request requirement and grants no deployment authorization.
+Product feature PRs target integration and versioned customer release PRs target main. The integration coordinator owns publication; follow [CI release controls](ci-release-controls.md), including the bounded automation-only maintenance exception. This tooling grants no deployment authorization.
 
 ## Delivery and completion
 
@@ -148,20 +148,20 @@ Later feature and improvement releases use a new milestone containing exactly th
 Run `python3 scripts/delivery/release.py next-version` for a patch suggestion, or use `--bump minor`/`--bump major`. The suggestion exceeds the current package version and stable tags/releases. The integration coordinator prepares the chosen package version before committing the release plan. The dry run lists only changed files, and the explicit apply mode writes only the package version plus a Bun root-workspace version field if the lockfile declares one. Current Bun lockfiles omit that field, so the lock stays unchanged. No install or dependency regeneration runs.
 
 ```sh
-python3 scripts/delivery/release.py bump-version --version 1.4.1
-python3 scripts/delivery/release.py bump-version --version 1.4.1 --apply
+python3 scripts/delivery/release.py bump-version --version 1.5.0
+python3 scripts/delivery/release.py bump-version --version 1.5.0 --apply
 ```
 
 Have the coordinator integrate that ordinary version change with its canonical issue. The selected release must exactly match its committed package version and exceed every other stable tag/release. `VERSION`, source package metadata, and release tag therefore agree.
 
-The committed `docs/delivery/releases/next.json` is the initial planning plan used by the manual workflow default. It proposes version `1.4.1` and the actual first-release milestone items, including the four required journeys. This file records planned scope; the selected version, exact main CI and full authenticated acceptance must still pass the release checks. Refresh it when reviewed milestone membership changes.
+The committed `docs/delivery/releases/next.json` is the initial planning plan used by the manual workflow default. It proposes version `1.5.0` and the actual first-release milestone items, including the four required journeys. This file records planned scope; the selected version, exact main CI and full authenticated acceptance must still pass the release checks. Refresh it when reviewed milestone membership changes.
 
-Commit a plan such as `docs/delivery/releases/1.4.1.json` through the integration coordinator:
+Commit a plan such as `docs/delivery/releases/1.5.0.json` through the integration coordinator:
 
 ```json
 {
   "schema_version": 1,
-  "version": "1.4.1",
+  "version": "1.5.0",
   "milestone": 1,
   "issues": [123, 124, 125, 126],
   "required_journeys": [
@@ -193,8 +193,8 @@ After the chosen main revision passes CI and has acceptance comments for its ent
 The equivalent local read-only check uses trusted release tooling in the existing main checkout and reads the selected committed revision without switching branches or disturbing unrelated WIP:
 
 ```sh
-python3 scripts/delivery/release.py check --plan docs/delivery/releases/1.4.1.json --revision FULL_MAIN_SHA
-python3 scripts/delivery/release.py prepare --plan docs/delivery/releases/1.4.1.json --revision FULL_MAIN_SHA --output work/release-1.4.1
+python3 scripts/delivery/release.py check --plan docs/delivery/releases/1.5.0.json --revision FULL_MAIN_SHA
+python3 scripts/delivery/release.py prepare --plan docs/delivery/releases/1.5.0.json --revision FULL_MAIN_SHA --output work/release-1.5.0
 ```
 
 Use `draft` or `publish` in the same command only when that explicit external action is intended. A rerun reuses an existing draft at the same tag/revision, reuploads deterministic files, and verifies uploaded names, sizes, and SHA256 digests. It refuses another commit under that version, attempts to edit published artifacts, stale unrelated output files, missing scope, unaccepted issues, missing CI, and incomplete blockers. A tag created before a failed draft upload is safe to resume at the same revision. Published versions are immutable in this flow; ship a new version for improvements. The included commit range starts at the latest actually published stable release. Drafts, prereleases and abandoned tags reserve their versions but never remove unpublished commits from traceability or acceptance gates. If publication succeeded but receipt tracking was interrupted, rerun `publish` with the identical plan/revision. It verifies the published artifact digests and repairs only missing receipt labels/comments/milestone closure without editing the published release.

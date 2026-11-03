@@ -4,7 +4,7 @@ The [central GitHub Project](https://github.com/users/KhademOHAli1/projects/3) a
 
 ## Ownership and scope
 
-@KhademOHAli1 is the accountable GitHub owner. Each canonical issue records its responsible module, original task IDs, specification links, full acceptance scope, observed historical status and dependencies. The established integration coordinator remains the sole canonical-main writer and heavy-job scheduler. Module implementation continues in existing workspaces. No branch or PR is required for delivery: direct-main commits link their canonical issues.
+@KhademOHAli1 is the accountable GitHub owner. Each canonical issue records its responsible module, original task IDs, specification links, full acceptance scope, observed historical status and dependencies. The established integration coordinator remains the sole canonical-main writer and heavy-job scheduler. Module implementation continues in existing workspaces. Product features use PRs into integration; versioned product release PRs target main. Automation-only maintenance follows the bounded exception in [CI release controls](ci-release-controls.md). Every included commit links its canonical issue.
 
 Source snapshots are historical observations, not certification. Imported work starts open unless current GitHub acceptance proves its full scope. Passing a subset, synthetic provider protocol checks, generated packets and failed-first diagnostics do not close a broad item. Overlapping plans have different denominators; do not publish a combined completion percentage.
 

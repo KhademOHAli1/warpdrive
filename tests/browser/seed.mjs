@@ -31,8 +31,8 @@ try {
   const auth = createBetterAuth(db);
   const password = await (await auth.$context).password.hash("CI-browser-only-password-2026!");
   await pool.query(
-    "INSERT INTO auth_accounts(user_id,account_id,provider_id,password) VALUES($1,$1,'credential',$2)",
-    [id, password],
+    "INSERT INTO auth_accounts(user_id,account_id,provider_id,password) VALUES($1,$2,'credential',$3)",
+    [id, id, password],
   );
   await pool.query("INSERT INTO pipelines(id,name,\"order\") VALUES($1,'CI Pipeline',0)", [
     pipeline,

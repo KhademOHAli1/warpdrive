@@ -36,6 +36,8 @@ def audit(directory):
     output = completed.stdout.strip()
     report = {} if completed.returncode == 0 and output in ("", "No vulnerabilities found") else json.loads(output)
     blocking(report)
+    if completed.returncode == 1 and not report:
+        raise ValueError("Audit failed without advisory details")
     return report
 
 
