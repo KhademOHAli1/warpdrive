@@ -79968,6 +79968,42 @@
       "remaining_gates": [
         "Qualify the configuration fix with a complete bounded production build, configuration regressions and exact-main CI."
       ]
+    },
+    {
+      "id": "ops/release-maintenance-2026-11-03",
+      "title": "Qualify release-critical dependency, CI and mailbox hydration repairs",
+      "module": "operations",
+      "kind": "maintenance",
+      "parent": "ops/maintenance-intake",
+      "source_tasks": [],
+      "acceptance": [
+        "Qualify only the selected release-maintenance dependency graph and patches with declared Bun versions and preserved package-manager/lockfile discipline. Retain exact manifests, locks, resolved identities/SRIs, actual installed patched bytes, frozen full/production install and runtime-resolution evidence, engine/license/advisory deltas, and complete all-severity audits of affected root, docs, site and isolated browser locks. No ignore/filter, false version, unreviewed override or disabled security/configuration check obtains success.",
+        "On that exact changed SDK graph, preserve the existing storage Client/API and serialization behavior through actual API/JSONL/notification contracts and controlled S3-compatible POST policy, stat, presigned GET, conditional server copy, delete and physical object download. Cover supported Persian/German filenames and percent/plus/space/quote/header cases, affected file-authorization/avatar/upload/download/email-attachment integration, and a fresh built-production browser upload/confirm/physical-download flow. Retain affected authority/error/abort behavior; import, clean audit or synthetic parsed bytes alone is insufficient.",
+        "Qualify each changed tooling consumer on the final graph: matcher file sets and bounded cancellation/traversal, temporary archive round-trip and actual Testcontainers PostgreSQL lifecycle; actual TypeScript Drizzle config/schema generation, changed legacy esbuild-loader path and relevant fresh/migrated PostgreSQL rehearsals; real shadcn/registry merge/order/clone/reference/hardening behavior; and actual Bun1.4.2 documentation worker/serializer/UUID/serve-handler compatibility. Preserve normal ignore, Unicode, array/order and failure semantics. Do not change shared migration history or current UI to manufacture fixture success.",
+        "Repair only the declared release CI/tooling/configuration defects and MailboxConnectionRow last-sync hydration mismatch. Retain existing environment restrictions, complexity threshold 15 and full checks. Render deterministic ISO text through server/client hydration, then the browser-localized value, preserving datetime meaning, ownership/actions and fallbacks. Retain the focused hydration regression and real EN/DE/FA browser evidence without hydration errors or warning suppression. This accepts the maintenance defect, not the wider mailbox journey.",
+        "Produce reproducible exact-candidate qualification for the bounded repair files: affected unit/integration/PostgreSQL, typecheck, typed lint, i18n/UI registry and normal application/worker and site/docs builds under existing limits. Retain failed attempts, final source/lock/artifact/action identities and actual owned-resource cleanup, and supply safe committed qualification and canonical commit/PR traceability through existing branch ownership. Preserve managed CodeQL, delivery checks and all four required-quality job definitions and thresholds. A private subset or generated packet is not evidence for an unexercised operation."
+      ],
+      "dependencies": [],
+      "evidence": [],
+      "owner": "KhademOHAli1",
+      "owner_role": "Settings/integration coordinator; affected module owners provide bounded evidence",
+      "module_owner_chat": "01a19251-a472-7cd1-86cd-8dc245dd5b84",
+      "observed_status": "in-progress",
+      "observed_stage": "private candidate qualification; not integrated or accepted",
+      "priority": "P1",
+      "release": "next",
+      "labels": [
+        "type:maintenance"
+      ],
+      "contributes_to": [
+        "delivery/core-mailbox-recovery-support"
+      ],
+      "notes": "New bounded operations maintenance under #81. The five implementation/qualification criteria do not require their own later acceptance attestation or closure audit. Existing exact-main CI, independent technical review, permitted attestation, closure audit and publication remain separate mandatory policy gates. No completion of #272/#908, original MAIL/IG scopes, human journeys, live Google/provider/installation profiles, release or deployment. MAIL-001 closes independently on its existing gates; no original source-task bindings are borrowed.",
+      "remaining_gates": [
+        "Complete the five bounded implementation/qualification criteria; retain actual failed and passing source cuts.",
+        "Then apply unchanged independent technical review, exact integrated main CI, permitted attestation and closure audit policy.",
+        "If selected for publication, pass the unchanged MAIL release plan/milestone/version/traceability/CI gate separately."
+      ]
     }
   ],
   "aliases": {
