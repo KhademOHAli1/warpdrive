@@ -206,7 +206,7 @@ describe("Lost-reason archive consequence guidance", () => {
         </LocaleProvider>,
       );
       expect(screen.getByText(copy[locale])).toBeVisible();
-      for (const button of screen.getAllByRole("button", { name: L.archive, exact: true })) {
+      for (const button of screen.getAllByRole("button", { name: L.archive })) {
         expect(button).toHaveAccessibleDescription(copy[locale]);
         expect(button).toBeEnabled();
       }
@@ -224,7 +224,7 @@ describe("Lost-reason archive consequence guidance", () => {
     actions.archiveLostReasonAction.mockReturnValueOnce(pending);
     render(<LostReasonsClient rows={[...ROWS, { id: "b", name: "Chose a competitor" }]} />);
     const reason = screen.getByRole("listitem", { name: "Too expensive" });
-    const archive = within(reason).getByRole("button", { name: S.archive, exact: true });
+    const archive = within(reason).getByRole("button", { name: S.archive });
     expect(archive).toHaveAccessibleDescription(copy.en);
     fireEvent.click(archive);
     expect(actions.archiveLostReasonAction).toHaveBeenCalledTimes(1);
