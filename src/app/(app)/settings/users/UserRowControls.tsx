@@ -1,7 +1,7 @@
 "use client";
 
 import { MoreHorizontal } from "lucide-react";
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -58,46 +58,48 @@ export function UserRowControls({
 
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const inFlight = useRef(false);
   const canAssignSet = permissionSets.length > 0 && (viewerIsAdmin || !isAdmin);
 
-  function toggleAdmin(): void {
+  function run(task: () => ReturnType<typeof setUserActiveAction>): void {
+    if (inFlight.current || isPending) return;
+    inFlight.current = true;
     setError(null);
-    const csrf = readCsrfToken();
     startTransition(async () => {
-      const result = await setUserAdminAction(csrf, { userId, isAdmin: !isAdmin });
-      if (result.ok) {
-        onChanged();
-      } else {
-        setError(identityErrorMessage(result.error));
+      try {
+        let result: Awaited<ReturnType<typeof setUserActiveAction>>;
+        try {
+          result = await task();
+        } catch {
+          setError(L._errors.generic);
+          return;
+        }
+        if (!result.ok) {
+          setError(identityErrorMessage(result.error));
+          return;
+        }
+        try {
+          onChanged();
+        } catch {
+          // The write was acknowledged; a refresh interruption is not a failed mutation.
+        }
+      } finally {
+        inFlight.current = false;
       }
     });
+  }
+
+  function toggleAdmin(): void {
+    run(() => setUserAdminAction(readCsrfToken(), { userId, isAdmin: !isAdmin }));
   }
 
   function assignSet(setId: string): void {
     if (setId === permissionSetId) return;
-    setError(null);
-    const csrf = readCsrfToken();
-    startTransition(async () => {
-      const result = await assignPermissionSetAction(csrf, { userId, setId });
-      if (result.ok) {
-        onChanged();
-      } else {
-        setError(identityErrorMessage(result.error));
-      }
-    });
+    run(() => assignPermissionSetAction(readCsrfToken(), { userId, setId }));
   }
 
   function toggleActive(): void {
-    setError(null);
-    const csrf = readCsrfToken();
-    startTransition(async () => {
-      const result = await setUserActiveAction(csrf, { userId, isActive: !isActive });
-      if (result.ok) {
-        onChanged();
-      } else {
-        setError(identityErrorMessage(result.error));
-      }
-    });
+    run(() => setUserActiveAction(readCsrfToken(), { userId, isActive: !isActive }));
   }
 
   return (
