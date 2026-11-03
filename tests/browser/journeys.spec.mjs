@@ -16,7 +16,7 @@ test.beforeEach(async ({ page }) => {
   await page.locator('input[name="password"]').fill("CI-browser-only-password-2026!");
   await page.locator('button[type="submit"]').click();
   await expect(page).not.toHaveURL(/\/login|\/auth\//);
-  await expect(page.getByRole("main")).toBeVisible();
+  await expect(page.getByRole("main", { name: "Board CI Pipeline", exact: true })).toBeVisible();
 });
 
 test("deal creation persists through a production-page reload", async ({ page }) => {
