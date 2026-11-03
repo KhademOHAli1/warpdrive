@@ -29,17 +29,26 @@ export function RunHistory({ workflowId, canCancel }: { workflowId: string; canC
   );
   const [pending, setPending] = useState<string | null>(null);
   const [error, setError] = useState(false);
+  const [readError, setReadError] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
   const detailFocus = useDialogFocus();
   const refreshButton = useRef<HTMLButtonElement>(null);
   const historyHeading = useRef<HTMLHeadingElement>(null);
+  async function refreshHistory() {
+    setReadError(false);
+    try {
+      await list.refetch();
+    } catch {
+      setReadError(true);
+    }
+  }
   async function cancel(id: string) {
     setPending(id);
     setError(false);
     try {
       const result = await cancelWorkflowAction(id, readCsrfToken());
       if (!result.ok) setError(true);
-      await list.refetch();
+      await refreshHistory();
     } catch {
       setError(true);
     } finally {
@@ -56,16 +65,21 @@ export function RunHistory({ workflowId, canCancel }: { workflowId: string; canC
           ref={refreshButton}
           variant="outline"
           size="sm"
-          onClick={() => void list.refetch()}
+          onClick={() => void refreshHistory()}
           disabled={list.isFetching}
         >
           <RefreshCw className="size-4" />
           {t("refresh")}
         </Button>
       </header>
-      {(error || list.isError) && (
+      {error && (
         <p role="alert" className="text-sm text-destructive">
           {t("error")}
+        </p>
+      )}
+      {(readError || list.isError) && (
+        <p role="alert" className="text-sm text-destructive">
+          {t("loadError")}
         </p>
       )}
       {list.isLoading && <p role="status">{t("loading")}</p>}
