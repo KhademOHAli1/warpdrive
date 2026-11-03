@@ -104,6 +104,9 @@ export function GoalForm({
     assigneeKind === "user"
       ? users.map((u) => ({ value: u.id, label: u.name }))
       : teams.map((t) => ({ value: t.id, label: t.name }));
+  const assigneeLabel = `${S.goalAssignee}: ${
+    assigneeKind === "user" ? L._extra.one_person : L._extra.a_team
+  }`;
 
   function submit(e: React.FormEvent<HTMLFormElement>): void {
     e.preventDefault();
@@ -207,10 +210,10 @@ export function GoalForm({
           />
         </Field>
         {assigneeKind !== "company" && (
-          <Field label={S.goalAssignee}>
+          <Field label={assigneeLabel}>
             <Select
               disabled={isPending}
-              ariaLabel={S.goalAssignee}
+              ariaLabel={assigneeLabel}
               value={assigneeId}
               onChange={setAssigneeId}
               options={[{ value: ANY, label: L._extra.select }, ...assigneeOptions]}
