@@ -65,7 +65,7 @@ export function RunRecovery({
           utils.workflows.run.invalidate({ id: workflowId, runId }),
         ]);
       } catch {
-        setError({ failureId, key: "retryUnknown" });
+        // A read refresh failure cannot change the authoritative retry outcome.
       } finally {
         inFlight.current = false;
         setPending(false);
