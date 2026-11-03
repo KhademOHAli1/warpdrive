@@ -17,6 +17,30 @@ const mailbox: MailboxConnectionView = {
   capabilities,
 };
 const copy = {
+  en: {
+    add: "Add mailbox",
+    independent: "Work or personal email",
+    email: "Email address",
+    imapHost: "Incoming mail server",
+    smtpHost: "Outgoing mail server",
+    imapUser: "Incoming username",
+    smtpUser: "Outgoing username",
+    imapPassword: "Incoming password",
+    smtpPassword: "Outgoing password",
+    check: "Check connection",
+    save: "Connect mailbox",
+    inbox: "Inbox",
+    sent: "Sent mail",
+    historyDays: "History in days",
+    cancel: "Cancel",
+    manage: "Manage mailbox",
+    pause: "Pause receiving and sending",
+    disconnect: "Disconnect",
+    confirm: "Disconnect this mailbox",
+    default: "Default sender",
+    error: "The username or password was not accepted. Check your credentials and try again.",
+    empty: "No mailbox connected yet.",
+  },
   fa: {
     add: "افزودن صندوق ایمیل",
     independent: "ایمیل سازمانی یا شخصی",
@@ -31,9 +55,10 @@ const copy = {
     save: "اتصال صندوق",
     inbox: "صندوق ورودی",
     sent: "ارسال‌شده‌ها",
+    historyDays: "بازه زمانی (روز)",
     cancel: "انصراف",
     manage: "مدیریت صندوق",
-    pause: "توقف همگام‌سازی",
+    pause: "توقف دریافت و ارسال",
     disconnect: "قطع اتصال",
     confirm: "قطع اتصال صندوق",
     default: "فرستنده پیش‌فرض",
@@ -54,9 +79,10 @@ const copy = {
     save: "Postfach verbinden",
     inbox: "Posteingang",
     sent: "Gesendet",
+    historyDays: "Zeitraum in Tagen",
     cancel: "Abbrechen",
     manage: "Postfach verwalten",
-    pause: "Synchronisierung pausieren",
+    pause: "Empfang und Versand pausieren",
     disconnect: "Verbindung trennen",
     confirm: "Postfachverbindung trennen",
     default: "Standardabsender",
@@ -108,7 +134,7 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
-for (const locale of ["fa", "de"] as const) {
+for (const locale of ["fa", "de", "en"] as const) {
   describe(locale, () => {
     it("checks credentials before saving a selected folder and history scope without resending secrets", async () => {
       const { actions, changed } = fixture();
@@ -127,9 +153,7 @@ for (const locale of ["fa", "de"] as const) {
       await screen.findByRole("button", { name: L.save });
       expect(screen.queryByLabelText(L.imapPassword)).not.toBeInTheDocument();
       expect(screen.getByRole("checkbox", { name: L.inbox })).toBeChecked();
-      expect(
-        screen.getByLabelText(locale === "fa" ? "بازه زمانی (روز)" : "Zeitraum in Tagen"),
-      ).toHaveValue(locale === "fa" ? "۹۰" : "90");
+      expect(screen.getByLabelText(L.historyDays)).toHaveValue(locale === "fa" ? "۹۰" : "90");
       expect(screen.getByRole("checkbox", { name: L.sent })).toBeChecked();
       fireEvent.click(screen.getByRole("checkbox", { name: L.sent }));
       fireEvent.click(screen.getByRole("button", { name: L.save }));

@@ -1,138 +1,217 @@
-// Integration test for the readActions.ts server-action boundary. Real Postgres (via
-// makeTestDb), redirected into the prod db singleton the same way server/worker.test.ts does:
-// this is NOT mocking the DB, just pointing @/db/client at the test container instead of the
-// placeholder URL from vitest.setup.ts. Only the request-context boundary (createContext,
-// guardCsrf) is mocked, since those depend on next/headers rather than the database.
-//
-// Bug: markThreadReadAction/markThreadUnreadAction built a bare toActor(ctx.actor.id) (always
-// type: "regular", empty groupIds) before calling markThreadRead/markThreadUnread, instead of
-// passing the hydrated ctx.actor. canSeeEmail's shared-thread path defers to canSee, which needs
-// the real type (admin bypass) and groupIds (visibility-group membership) to grant access to a
-// thread the actor can see only via one of those, not as the mailbox owner.
+// Native authority cases require the canonical migrated read-intent schema.
+// Only next/headers-dependent request context and CSRF are substituted. The db
+// singleton is redirected to a real canonical-migrated PostgreSQL clone.
+import { randomUUID } from "node:crypto";
+import { sql } from "drizzle-orm";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { AppError, ERROR_IDS } from "@/constants/errorIds";
+import { deals, visibilityGroupMembers, visibilityGroups } from "@/db/schema";
+import { seedPipelineWithStages, seedUser } from "@/db/testing/factories";
+import { lockDeliveryObservationSession } from "@/features/email/deliveryObservationAuthority";
+import { seedMailHttpSession } from "@/features/email/mailConnectionHttp.test-helpers";
+import { hydrateOwner } from "@/features/email/syncCursor";
 import type { AuthUser } from "@/features/permissions/types";
-import type { TestDb } from "@/test/db";
+import { makeTestDb, type TestDb } from "@/test/db";
 
-const testDbHolder: { db: TestDb | null } = { db: null };
-
+const context = vi.hoisted(() => ({
+  harness: null as TestDb | null,
+  actor: null as AuthUser | null,
+  session: null as { userId: string; sessionId: string } | null,
+}));
 vi.mock("@/db/client", () => ({
   get db() {
-    if (testDbHolder.db === null) throw new Error("testDbHolder.db not initialized");
-    return testDbHolder.db.db;
+    if (context.harness === null)
+      throw new AppError(ERROR_IDS.DB_INVARIANT, "Native read action database is not bound");
+    return context.harness.db;
   },
 }));
 vi.mock("@/features/identity/actions/shared", () => ({
-  guardCsrf: vi.fn(() => Promise.resolve({ ok: true })),
+  guardCsrf: () => Promise.resolve({ ok: true }),
 }));
-
-const ctxActor: { current: AuthUser | null } = { current: null };
 vi.mock("@/server/trpc/context", () => ({
-  createContext: vi.fn(() => Promise.resolve({ actor: ctxActor.current })),
+  createContext: () =>
+    Promise.resolve({ actor: context.actor, session: context.session, db: context.harness?.db }),
 }));
 
-import { sql } from "drizzle-orm";
-import { deals } from "@/db/schema";
-import { seedPipelineWithStages, seedUser } from "@/db/testing/factories";
-import { makeTestDb } from "@/test/db";
-import { markThreadReadAction, markThreadUnreadAction } from "./readActions";
+import { markThreadReadAction, markThreadUnreadAction } from "@/features/email/readActions";
+import { prepareThreadReadIntentAction } from "@/features/email/readIntentActions";
 
-async function seedSharedDealThread(
-  db: TestDb["db"],
-  opts: { dealOwnerId: string; mailboxOwnerId: string; visibilityGroupId?: string },
-): Promise<string> {
-  const p = await seedPipelineWithStages(db, ["A"]);
+function nativeDb() {
+  if (context.harness === null)
+    throw new AppError(ERROR_IDS.DB_INVARIANT, "Native read action fixture is missing");
+  return context.harness.db;
+}
+
+async function bind(native: Awaited<ReturnType<typeof seedMailHttpSession>>) {
+  const db = nativeDb();
+  const signal = AbortSignal.timeout(15_000);
+  const actor = await hydrateOwner(db, native.user.id, signal);
+  if (!actor.ok) throw actor.error;
+  expect(
+    await db.transaction((tx) => lockDeliveryObservationSession(tx, native.context, signal)),
+  ).toBe(true);
+  context.actor = actor.value;
+  context.session = { userId: native.user.id, sessionId: native.context.sessionId };
+  return actor.value;
+}
+
+async function seedSharedDealThread(opts: {
+  dealOwnerId: string;
+  mailboxOwnerId: string;
+  visibilityGroupId?: string;
+}) {
+  const db = nativeDb();
+  const pipeline = await seedPipelineWithStages(db, ["A"]);
+  const stage = pipeline.stages[0];
+  if (stage === undefined) throw new AppError(ERROR_IDS.DB_INVARIANT, "Missing native stage");
   const [deal] = await db
     .insert(deals)
     .values({
-      title: "D",
-      pipelineId: p.pipeline.id,
-      stageId: p.stages[0]!.id,
+      title: "Shared read authority",
+      pipelineId: pipeline.pipeline.id,
+      stageId: stage.id,
       ownerId: opts.dealOwnerId,
-      visibilityLevel: opts.visibilityGroupId !== undefined ? "group" : "owner",
+      visibilityLevel: opts.visibilityGroupId === undefined ? "owner" : "group",
       visibilityGroupId: opts.visibilityGroupId ?? null,
     })
-    .returning();
-  if (!deal) throw new Error("deal seed failed");
-
-  const acctRows = await db.execute(sql`
-    INSERT INTO email_accounts (user_id, email_address, status)
-    VALUES (${opts.mailboxOwnerId}, ${`mbx-${Date.now()}-${Math.random().toString(36).slice(2)}@ex.com`}, 'connected')
-    RETURNING id
-  `);
-  const acct = acctRows.rows[0] as { id: string };
-  const threadRows = await db.execute(sql`
-    INSERT INTO email_threads (gmail_thread_id, account_id, subject, last_message_at, visibility, deal_id)
-    VALUES (${`g-${Date.now()}`}, ${acct.id}, 'Hi', now(), 'shared', ${deal.id})
-    RETURNING id
-  `);
-  const thread = threadRows.rows[0] as { id: string };
+    .returning({ id: deals.id });
+  if (deal === undefined) throw new AppError(ERROR_IDS.DB_INVARIANT, "Missing native deal");
+  const account = (
+    await db.execute(sql`INSERT INTO email_accounts
+    (user_id,email_address,status,provider) VALUES
+    (${opts.mailboxOwnerId},${`${randomUUID()}@example.test`},'connected','gmail') RETURNING id`)
+  ).rows[0];
+  if (typeof account?.id !== "string")
+    throw new AppError(ERROR_IDS.DB_INVARIANT, "Missing native mailbox");
+  const thread = (
+    await db.execute(sql`INSERT INTO email_threads
+    (gmail_thread_id,account_id,subject,last_message_at,visibility,deal_id) VALUES
+    (${randomUUID()},${account.id},'Shared authority',clock_timestamp(),'shared',${deal.id})
+    RETURNING id`)
+  ).rows[0];
+  if (typeof thread?.id !== "string")
+    throw new AppError(ERROR_IDS.DB_INVARIANT, "Missing native shared thread");
   return thread.id;
+}
+
+async function prepare(threadId: string, read: boolean) {
+  const result = await prepareThreadReadIntentAction("csrf", { threadId, read });
+  expect(result).toMatchObject({
+    ok: true,
+    value: {
+      kind: "created",
+      readIntent: {
+        threadId,
+        desiredRead: read,
+        state: "prepared",
+      },
+    },
+  });
+  if (!result.ok || result.value.kind !== "created")
+    throw new AppError(ERROR_IDS.DB_INVARIANT, "Native command was not prepared");
+  return result.value.readIntent.operationId;
+}
+
+async function execute(threadId: string, read: boolean) {
+  const operationId = await prepare(threadId, read);
+  const action = read ? markThreadReadAction : markThreadUnreadAction;
+  const result = await action("csrf", { threadId, operationId });
+  expect(result).toMatchObject({
+    ok: true,
+    value: {
+      threadId,
+      readIntent: {
+        operationId,
+        threadId,
+        desiredRead: read,
+        state: "applied",
+      },
+    },
+  });
+}
+
+async function markers(threadId: string) {
+  return (
+    await nativeDb().execute(sql`SELECT user_id,read_at::text FROM email_thread_reads
+    WHERE thread_id=${threadId} ORDER BY user_id`)
+  ).rows;
 }
 
 describe("readActions actor visibility", () => {
   beforeEach(async () => {
-    const h = await makeTestDb();
-    testDbHolder.db = h;
+    context.harness = await makeTestDb();
   });
   afterEach(async () => {
-    await testDbHolder.db?.close();
-    testDbHolder.db = null;
-    ctxActor.current = null;
+    const harness = context.harness;
+    context.harness = null;
+    context.actor = null;
+    context.session = null;
+    await harness?.close();
     vi.clearAllMocks();
   });
 
   it("lets an admin (not the mailbox owner, not the deal owner) mark a shared thread read", async () => {
-    const db = testDbHolder.db!.db;
+    const db = nativeDb();
     const mailboxOwner = await seedUser(db);
     const dealOwner = await seedUser(db);
-    const admin = await seedUser(db, { isAdmin: true });
-    const threadId = await seedSharedDealThread(db, {
+    const admin = await seedMailHttpSession(db, {
+      isAdmin: true,
+      twoFactorEnabled: true,
+      assurance: "mfa",
+      mfaAt: new Date(),
+    });
+    const threadId = await seedSharedDealThread({
       dealOwnerId: dealOwner.id,
       mailboxOwnerId: mailboxOwner.id,
     });
-
-    ctxActor.current = { id: admin.id, type: "admin", isActive: true, groupIds: new Set() };
-    const r = await markThreadReadAction("csrf", { threadId });
-    expect(r.ok).toBe(true);
+    const actor = await bind(admin);
+    expect(actor.type).toBe("admin");
+    await execute(threadId, true);
+    expect(await markers(threadId)).toMatchObject([{ user_id: admin.user.id }]);
   });
 
   it("lets a visibility-group member (not owner, not admin) mark a shared thread unread", async () => {
-    const db = testDbHolder.db!.db;
+    const db = nativeDb();
     const mailboxOwner = await seedUser(db);
     const dealOwner = await seedUser(db);
-    const member = await seedUser(db);
-    const groupId = "11111111-1111-4111-8111-111111111111";
-    await db.execute(sql`INSERT INTO visibility_groups (id, name) VALUES (${groupId}, 'G')`);
-    const threadId = await seedSharedDealThread(db, {
+    const member = await seedMailHttpSession(db);
+    const groupId = randomUUID();
+    await db.insert(visibilityGroups).values({ id: groupId, name: "Persisted read authority" });
+    await db.insert(visibilityGroupMembers).values({ groupId, userId: member.user.id });
+    const threadId = await seedSharedDealThread({
       dealOwnerId: dealOwner.id,
       mailboxOwnerId: mailboxOwner.id,
       visibilityGroupId: groupId,
     });
-
-    ctxActor.current = {
-      id: member.id,
-      type: "regular",
-      isActive: true,
-      groupIds: new Set([groupId]),
-    };
-    // Mark read first (bypassing the action under test) so unread has a state to flip.
-    await markThreadReadAction("csrf", { threadId });
-    const r = await markThreadUnreadAction("csrf", { threadId });
-    expect(r.ok).toBe(true);
+    const actor = await bind(member);
+    expect(actor.type).toBe("regular");
+    expect(actor.groupIds.has(groupId)).toBe(true);
+    await execute(threadId, true);
+    expect(await markers(threadId)).toMatchObject([{ user_id: member.user.id }]);
+    await execute(threadId, false);
+    expect(await markers(threadId)).toEqual([]);
   });
 
   it("still rejects a stranger who cannot see the thread via ownership, admin, or group", async () => {
-    const db = testDbHolder.db!.db;
-    const mailboxOwner = await seedUser(db);
+    const db = nativeDb();
+    const mailboxOwner = await seedMailHttpSession(db);
     const dealOwner = await seedUser(db);
-    const stranger = await seedUser(db);
-    const threadId = await seedSharedDealThread(db, {
+    const stranger = await seedMailHttpSession(db);
+    const threadId = await seedSharedDealThread({
       dealOwnerId: dealOwner.id,
-      mailboxOwnerId: mailboxOwner.id,
+      mailboxOwnerId: mailboxOwner.user.id,
     });
-
-    ctxActor.current = { id: stranger.id, type: "regular", isActive: true, groupIds: new Set() };
-    const r = await markThreadReadAction("csrf", { threadId });
-    expect(r.ok).toBe(false);
+    await bind(mailboxOwner);
+    const operationId = await prepare(threadId, true);
+    const receipts = () =>
+      db.execute(sql`SELECT to_jsonb(i) AS receipt FROM email_read_intents i
+      WHERE thread_id=${threadId} ORDER BY actor_id,operation_id`);
+    const before = (await receipts()).rows;
+    await bind(stranger);
+    const missing = { ok: false, error: { id: ERROR_IDS.GMAIL_THREAD_NOT_FOUND } };
+    expect(await prepareThreadReadIntentAction("csrf", { threadId, read: true })).toEqual(missing);
+    expect(await markThreadReadAction("csrf", { threadId, operationId })).toEqual(missing);
+    expect(await markers(threadId)).toEqual([]);
+    expect((await receipts()).rows).toEqual(before);
   });
 });

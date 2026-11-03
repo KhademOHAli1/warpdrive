@@ -1,12 +1,11 @@
 "use client";
 
 import { PanelRightOpen } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/Popover";
 import { useEmailMessages } from "@/features/email/useEmailMessages";
 import { type RouterOutputs, trpc } from "@/lib/trpc-client";
-import { readCsrfToken } from "@/utils/csrfCookie";
 import { InboxReaderSidebar } from "./InboxReaderSidebar";
 import styles from "./inboxWorkspace.module.css";
 import { invalidateRecordTimelines } from "./invalidateRecordTimelines";
@@ -16,9 +15,9 @@ import { canMarkThreadRead } from "./privateIntakePolicy";
 import { ReaderConversation } from "./ReaderConversation";
 import { ReaderPrivateIntake } from "./ReaderPrivateIntake";
 import { ReaderTopBar } from "./ReaderTopBar";
-import { markThreadReadAction, markThreadUnreadAction } from "./readActions";
 import { ThreadFollowUpControls } from "./ThreadFollowUpControls";
 import { ThreadPrivacyToggle } from "./ThreadPrivacyToggle";
+import { useThreadReadState } from "./useThreadReadState";
 
 interface ThreadPaneProps {
   threadId: string;
@@ -61,31 +60,23 @@ export function ThreadPane({
     if (embedded && active && ready) titleRef.current?.focus({ preventScroll: true });
   }, [embedded, active, ready]);
   const utils = trpc.useUtils();
-  // Guards mark-read-on-open to fire once per thread: re-renders (e.g. from a Composer send
-  // triggering refetch()) share the same threadId and must not re-fire the action.
-  const markedReadForThreadId = useRef<string | null>(null);
-  const [markUnreadError, setMarkUnreadError] = useState<string | null>(null);
   const canMarkRead =
     data !== undefined &&
     canMarkThreadRead({ ...data.thread, mailCapabilities: data.mailCapabilities });
 
-  useEffect(() => {
-    if (!canMarkRead) return;
-    if (markedReadForThreadId.current === threadId) return;
-    markedReadForThreadId.current = threadId;
-    void markThreadReadAction(readCsrfToken(), { threadId }).then((res) => {
-      // Silent on failure (best-effort background call): only invalidate on success so a
-      // permission/CSRF failure doesn't mask itself behind a cache that looks refreshed.
-      // Invalidate both queries, mirroring handleMarkUnread below: ThreadRow reads its
-      // unread dot/bold from the cached inbox.list query, not unreadCount, so invalidating
-      // only unreadCount left the just-opened row looking unread in the list.
-      if (res.ok) {
-        void utils.email.inbox.list.invalidate();
-        void utils.email.inbox.unreadCount.invalidate();
-        onChanged?.();
-      }
-    });
-  }, [canMarkRead, threadId, utils, onChanged]);
+  const onReadStateConfirmed = useCallback(() => {
+    void utils.email.inbox.list.invalidate();
+    void utils.email.inbox.unreadCount.invalidate();
+    onChanged?.();
+  }, [utils, onChanged]);
+  const readState = useThreadReadState({
+    threadId,
+    canMarkRead,
+    readFresh: (signal) =>
+      utils.client.email.thread.get.query({ threadId, allowRemote }, { signal }),
+    cacheFresh: (fresh) => utils.email.thread.get.setData({ threadId, allowRemote }, fresh),
+    onConfirmed: onReadStateConfirmed,
+  });
 
   // A reply sent here and a change to the thread's linked deal/person both alter what the deal and
   // person timelines should show, and those queries live on other routes: refetching the thread
@@ -93,19 +84,6 @@ export function ThreadPane({
   function handleThreadChanged(): void {
     invalidateRecordTimelines(utils);
     void refetch();
-    onChanged?.();
-  }
-
-  async function handleMarkUnread(): Promise<void> {
-    if (!canMarkRead) return;
-    const res = await markThreadUnreadAction(readCsrfToken(), { threadId });
-    if (!res.ok) {
-      setMarkUnreadError(E.errorMarkUnread);
-      return;
-    }
-    setMarkUnreadError(null);
-    void utils.email.inbox.list.invalidate();
-    void utils.email.inbox.unreadCount.invalidate();
     onChanged?.();
   }
 
@@ -184,8 +162,22 @@ export function ThreadPane({
             {inboxThread.subject ?? E._extra.no_subject}
           </h1>
           <div className="flex flex-wrap items-center gap-2">
-            {markUnreadError !== null && (
-              <p className="text-xs text-destructive">{markUnreadError}</p>
+            {(readState.uncertain || readState.failed) && (
+              <p role="alert" className="text-xs text-destructive">
+                {readState.uncertain
+                  ? E.remoteActions.refreshBeforeRetry
+                  : E.remoteActions.readStatusFailed}
+              </p>
+            )}
+            {readState.uncertain && (
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={readState.busy}
+                onClick={() => void readState.refresh()}
+              >
+                {E.remoteActions.refresh}
+              </Button>
             )}
             {/* Owner-only thread privacy (B2). Same canCompose gate as the follow-up controls: only
                 the mailbox owner may flip visibility, and the server re-checks ownership. Reuses the
@@ -221,8 +213,8 @@ export function ThreadPane({
             <MailOperationHint enabled={canMarkRead}>
               <button
                 type="button"
-                disabled={!canMarkRead}
-                onClick={() => void handleMarkUnread()}
+                disabled={!canMarkRead || readState.busy || readState.uncertain}
+                onClick={() => void readState.markUnread()}
                 className="shrink-0 rounded-md px-2 py-1 text-xs text-muted-foreground transition-transform hover:bg-accent active:scale-[0.96]"
               >
                 {E.markAsUnread}

@@ -15,11 +15,11 @@ import type { InboxFilter, InboxThread } from "./emailReads";
 import { archiveThreadAction, unarchiveThreadAction } from "./folderActions";
 import { MailOperationHint } from "./MailOperationHint";
 import { canApplySelectedMailAction } from "./privateIntakePolicy";
-import { markThreadReadAction, markThreadUnreadAction } from "./readActions";
 import { ThreadListToolbar } from "./ThreadListToolbar";
 import { canArchiveInFolder, canSelectInFolder, type ThreadFolder, ThreadRow } from "./ThreadRow";
 import { filterByAttributes, NO_ATTRIBUTE_FILTER } from "./threadAttributeFilter";
 import { runBulk } from "./threadBulkActions";
+import { useBulkThreadReadState } from "./useBulkThreadReadState";
 import { useThreadFeed } from "./useThreadFeed";
 
 interface ThreadListProps {
@@ -79,6 +79,21 @@ export function ThreadList({
   const threads =
     folder === "inbox" ? filterByAttributes(sourceThreads, attrFilter) : sourceThreads;
   const selection = useRowSelection();
+  const canBulkRead = canApplySelectedMailAction(sourceThreads, selection.selected, "markRead");
+  const canBulkArchive = canApplySelectedMailAction(sourceThreads, selection.selected, "archive");
+  const readState = useBulkThreadReadState({
+    frameKey: JSON.stringify([folder, filter, attrFilter, activeThreadId ?? null, canBulkRead]),
+    selected: selection.selected,
+    replaceSelection: (ids) => {
+      selection.clear();
+      ids.forEach(selection.toggle);
+    },
+    readFresh: (threadId, signal) =>
+      utils.client.email.thread.get.query({ threadId, allowRemote: false }, { signal }),
+    cacheFresh: (threadId, data) =>
+      utils.email.thread.get.setData({ threadId, allowRemote: false }, data),
+    onConfirmed: afterReadChange,
+  });
   // A pending feed has made no claim about the mailbox yet, so neither the "no threads" copy nor a
   // conversation count may be painted until it resolves.
   const pending = providedThreads !== undefined ? threadsPending : feed.pending;
@@ -91,12 +106,17 @@ export function ThreadList({
 
   function afterReadChange(): void {
     void utils.email.inbox.unreadCount.invalidate();
+    void utils.email.inbox.list.invalidate();
+    void utils.email.search.invalidate();
+    void utils.email.folders.sent.invalidate();
+    void utils.email.folders.archive.invalidate();
   }
 
   // Manual Refresh (A1, Pipedrive parity): re-pull the current folder's feed without a full
   // navigation. Realtime already nudges these, but a user-driven refetch matches PD and covers the
   // gap between poll cycles. Folder-aware so Sent/Archive refetch their own read (D2), not the inbox.
   function refreshFolder(): void {
+    void readState.refresh();
     // In-mail search overrides whichever folder tab is active (InboxListClient feeds email.search
     // results to this list), so refresh must invalidate search regardless of the folder or the
     // displayed results never update (codex P2). A no-op when no search query is mounted.
@@ -143,30 +163,24 @@ export function ThreadList({
   }
 
   function bulkArchive(): void {
-    if (!canBulkArchive) return;
+    if (!canBulkArchive || bulkBusy || readState.locked) return;
     const op = folder === "archive" ? unarchiveThreadAction : archiveThreadAction;
     void applyBulk((threadId) => op(readCsrfToken(), { threadId }), afterArchive);
   }
 
   function bulkMarkRead(): void {
-    if (!canBulkRead) return;
-    void applyBulk(
-      (threadId) => markThreadReadAction(readCsrfToken(), { threadId }),
-      afterReadChange,
-    );
+    if (!canBulkRead || bulkBusy || readState.locked) return;
+    setBulkError(null);
+    void readState.run(true);
   }
 
   function bulkMarkUnread(): void {
-    if (!canBulkRead) return;
-    void applyBulk(
-      (threadId) => markThreadUnreadAction(readCsrfToken(), { threadId }),
-      afterReadChange,
-    );
+    if (!canBulkRead || bulkBusy || readState.locked) return;
+    setBulkError(null);
+    void readState.run(false);
   }
 
   const visibleIds = threads.map((t) => t.id);
-  const canBulkRead = canApplySelectedMailAction(sourceThreads, selection.selected, "markRead");
-  const canBulkArchive = canApplySelectedMailAction(sourceThreads, selection.selected, "archive");
 
   return (
     <div className="flex flex-col h-full">
@@ -203,7 +217,7 @@ export function ThreadList({
               {canArchiveInFolder(folder) && (
                 <button
                   type="button"
-                  disabled={bulkBusy || !canBulkArchive}
+                  disabled={bulkBusy || readState.locked || !canBulkArchive}
                   onClick={bulkArchive}
                   className="rounded-md border px-3 py-1 text-sm transition-transform hover:bg-accent active:scale-[0.96] disabled:opacity-50"
                 >
@@ -213,7 +227,7 @@ export function ThreadList({
               <MailOperationHint enabled={canBulkRead}>
                 <button
                   type="button"
-                  disabled={bulkBusy || !canBulkRead}
+                  disabled={bulkBusy || readState.locked || !canBulkRead}
                   onClick={bulkMarkRead}
                   className="rounded-md border px-3 py-1 text-sm transition-transform hover:bg-accent active:scale-[0.96] disabled:opacity-50"
                 >
@@ -223,7 +237,7 @@ export function ThreadList({
               <MailOperationHint enabled={canBulkRead}>
                 <button
                   type="button"
-                  disabled={bulkBusy || !canBulkRead}
+                  disabled={bulkBusy || readState.locked || !canBulkRead}
                   onClick={bulkMarkUnread}
                   className="rounded-md border px-3 py-1 text-sm transition-transform hover:bg-accent active:scale-[0.96] disabled:opacity-50"
                 >
@@ -235,9 +249,13 @@ export function ThreadList({
         </div>
       )}
 
-      {bulkError !== null && (
+      {(readState.uncertain || readState.failed || bulkError !== null) && (
         <p role="alert" className="border-b px-3 py-1.5 text-xs text-destructive">
-          {bulkError}
+          {readState.uncertain
+            ? E.remoteActions.bulkReadUnconfirmed
+            : readState.failed
+              ? E.remoteActions.readStatusFailed
+              : bulkError}
         </p>
       )}
 

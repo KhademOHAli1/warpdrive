@@ -20,11 +20,31 @@ import type {
   PrivateIntakeReviewResult,
   PrivateIntakeSummary,
 } from "./privateIntakeTypes";
+import {
+  applyReadIntent,
+  applyUnreadIntent,
+  prepareCreatedReadIntent,
+  READ_OPERATION_ID,
+  type ReadInput,
+  reconcileAppliedReadIntent,
+  UNREAD_OPERATION_ID,
+} from "./ThreadPane.readIntent.test.fixtures";
 
-const { query, markRead, markUnread } = vi.hoisted(() => ({
+type PrepareRead = (
+  csrf: string | null,
+  input: Parameters<typeof prepareCreatedReadIntent>[0],
+) => ReturnType<typeof prepareCreatedReadIntent>;
+type ExecuteRead = (csrf: string | null, input: ReadInput) => ReturnType<typeof applyReadIntent>;
+type ReconcileRead = (
+  csrf: string | null,
+  input: ReadInput,
+) => ReturnType<typeof reconcileAppliedReadIntent>;
+const { query, markRead, markUnread, prepareRead, reconcileRead } = vi.hoisted(() => ({
   query: vi.fn(),
-  markRead: vi.fn(),
-  markUnread: vi.fn(),
+  markRead: vi.fn<ExecuteRead>(),
+  markUnread: vi.fn<ExecuteRead>(),
+  prepareRead: vi.fn<PrepareRead>(),
+  reconcileRead: vi.fn<ReconcileRead>(),
 }));
 vi.mock("./privateIntakeTransport.client", () => ({
   readPrivateIntakeSummary: vi.fn(),
@@ -39,6 +59,10 @@ vi.mock("@/lib/trpc-client", () => ({
 vi.mock("./readActions", () => ({
   markThreadReadAction: markRead,
   markThreadUnreadAction: markUnread,
+}));
+vi.mock("./readIntentActions", () => ({
+  prepareThreadReadIntentAction: prepareRead,
+  reconcileThreadReadIntentAction: reconcileRead,
 }));
 vi.mock("./ReaderTopBar", () => ({ ReaderTopBar: () => null }));
 vi.mock("./InboxReaderSidebar", () => ({ InboxReaderSidebar: () => null }));
@@ -90,8 +114,10 @@ const data = {
 beforeEach(() => {
   configure({ asyncUtilTimeout: 500 });
   resetPrivateReader();
-  markRead.mockReset().mockResolvedValue({ ok: true });
-  markUnread.mockReset().mockResolvedValue({ ok: true });
+  prepareRead.mockReset().mockImplementation((_csrf, input) => prepareCreatedReadIntent(input));
+  reconcileRead.mockReset().mockImplementation((_csrf, input) => reconcileAppliedReadIntent(input));
+  markRead.mockReset().mockImplementation((_csrf, input) => applyReadIntent(input));
+  markUnread.mockReset().mockImplementation((_csrf, input) => applyUnreadIntent(input));
   data.thread.id = privateReaderIds.thread;
   data.thread.isOwner = true;
   data.thread.privateIntake = purged;
@@ -249,17 +275,32 @@ it.each(readWorkflows)(
     if (kind === "held_denied") {
       expect(unread).toBeDisabled();
       await userEvent.setup().click(unread);
+      expect(prepareRead).not.toHaveBeenCalled();
       expect(markRead).not.toHaveBeenCalled();
       expect(markUnread).not.toHaveBeenCalled();
       return;
     }
-    expect(unread).toBeEnabled();
     await waitFor(() => expect(markRead).toHaveBeenCalledTimes(1));
-    expect(markRead.mock.calls[0]?.[1]).toEqual({ threadId: data.thread.id });
+    await waitFor(() => expect(privateReaderInvalidate).toHaveBeenCalledTimes(2));
+    expect(unread).toBeEnabled();
+    expect(prepareRead).toHaveBeenCalledTimes(1);
+    expect(prepareRead.mock.calls[0]?.[1]).toEqual({
+      threadId: data.thread.id,
+      read: true,
+    });
+    expect(markRead.mock.calls[0]?.[1]).toEqual({
+      threadId: data.thread.id,
+      operationId: READ_OPERATION_ID,
+    });
     await userEvent.setup().click(unread);
     expect(markUnread).toHaveBeenCalledTimes(1);
-    expect(markUnread.mock.calls[0]?.[1]).toEqual({ threadId: data.thread.id });
+    expect(prepareRead).toHaveBeenCalledTimes(2);
+    expect(prepareRead.mock.calls[1]?.[1]).toEqual({ threadId: data.thread.id, read: false });
+    expect(markUnread.mock.calls[0]?.[1]).toEqual({
+      threadId: data.thread.id,
+      operationId: UNREAD_OPERATION_ID,
+    });
     await waitFor(() => expect(privateReaderInvalidate).toHaveBeenCalledTimes(4));
-    expect(screen.queryByText(text.errorMarkUnread)).toBeNull();
+    expect(screen.queryByText(text.remoteActions.readStatusFailed)).toBeNull();
   },
 );

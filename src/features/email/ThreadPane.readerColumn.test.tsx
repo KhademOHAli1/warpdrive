@@ -3,21 +3,29 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { STRINGS } from "@/constants/strings";
+import {
+  applyReadIntent,
+  applyUnreadIntent,
+  prepareCreatedReadIntent,
+  type ReadInput,
+  reconcileAppliedReadIntent,
+} from "./ThreadPane.readIntent.test.fixtures";
 
 // U2 reader reading column: message card, width constraint, and reply-bar placement (B10 + B8).
 // Kept in its own file so ThreadPane.test.tsx (mark-read / attributes behavior) stays under the
 // file-size cap. Same trpc/action mocks as ThreadPane.test.tsx, trimmed to what the layout needs.
 
-type Res = { ok: true; value: { threadId: string } } | { ok: false; error: string };
-const markReadMock = vi.fn<() => Promise<Res>>(() =>
-  Promise.resolve({ ok: true, value: { threadId: "t1" } }),
-);
-const markUnreadMock = vi.fn<() => Promise<Res>>(() =>
-  Promise.resolve({ ok: true, value: { threadId: "t1" } }),
-);
+const markReadMock = vi.fn((_csrf: string, input: ReadInput) => applyReadIntent(input));
+const markUnreadMock = vi.fn((_csrf: string, input: ReadInput) => applyUnreadIntent(input));
 vi.mock("./readActions", () => ({
-  markThreadReadAction: (...a: unknown[]) => markReadMock(...(a as [])),
-  markThreadUnreadAction: (...a: unknown[]) => markUnreadMock(...(a as [])),
+  markThreadReadAction: (csrf: string, input: ReadInput) => markReadMock(csrf, input),
+  markThreadUnreadAction: (csrf: string, input: ReadInput) => markUnreadMock(csrf, input),
+}));
+vi.mock("./readIntentActions", () => ({
+  prepareThreadReadIntentAction: (_csrf: string, input: { threadId: string; read: boolean }) =>
+    prepareCreatedReadIntent(input),
+  reconcileThreadReadIntentAction: (_csrf: string, input: ReadInput) =>
+    reconcileAppliedReadIntent(input),
 }));
 vi.mock("@/utils/csrfCookie", () => ({ readCsrfToken: () => "csrf" }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));

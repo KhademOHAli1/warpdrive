@@ -15,6 +15,7 @@ import {
 import { Select } from "@/components/ui/Select";
 import { useAppTranslations, useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import { formatDateTime } from "@/lib/localeFormatting";
+import { DeliveryReportReviewError } from "./DeliveryReportReviewError";
 import type {
   DeliveryObservationError,
   DeliveryObservationView,
@@ -47,6 +48,7 @@ export function DeliveryReportReview({
   const [address, setAddress] = useState("");
   const [confirmed, setConfirmed] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [unconfirmed, setUnconfirmed] = useState(false);
   const [error, setError] = useState<DeliveryObservationError | null>(null);
   const [openedRevision, setOpenedRevision] = useState(review.revision);
   const [blocked, setBlocked] = useState<{
@@ -62,8 +64,14 @@ export function DeliveryReportReview({
   const selectedRecipient = selected?.recipients.find((entry) => entry.address === address);
   const changed = open && openedRevision !== review.revision;
   const activeBlock = blocked !== null && blocked.revision === review.revision;
-  const visibleError = changed ? "conflict" : activeBlock ? blocked.error : error;
-  const locked = changed || activeBlock;
+  const visibleError = unconfirmed
+    ? "unknown"
+    : changed
+      ? "conflict"
+      : activeBlock
+        ? blocked.error
+        : error;
+  const locked = unconfirmed || changed || activeBlock;
   const disabled = busy || locked;
   const targetTime = (iso: string) =>
     formatDateTime(new Date(iso), preferences, {
@@ -81,6 +89,9 @@ export function DeliveryReportReview({
     setOpen(next);
     if (next) {
       setOpenedRevision(review.revision);
+      // A fresh authenticated parent read remounts this component. Reopening alone
+      // must not repeat a review whose outcome is unknown.
+      if (unconfirmed) return;
       if (blocked !== null && blocked.revision !== review.revision) setBlocked(null);
       setAttemptId("");
       setAddress("");
@@ -108,6 +119,11 @@ export function DeliveryReportReview({
     setError(null);
     try {
       const result = await onReview(input);
+      if (!result.ok && result.error === "unknown") {
+        setUnconfirmed(true);
+        setError("unknown");
+        return;
+      }
       if (currentRevision.current !== input.expectedRevision) {
         setBlocked({ revision: input.expectedRevision, error: "conflict" });
         return;
@@ -125,6 +141,7 @@ export function DeliveryReportReview({
       onSaved(result.value);
       setOpen(false);
     } catch {
+      setUnconfirmed(true);
       setError("unknown");
     } finally {
       submitting.current = false;
@@ -246,15 +263,7 @@ export function DeliveryReportReview({
             <span>{t("confirmation")}</span>
           </label>
         </div>
-        {visibleError !== null && (
-          <p role="alert" className="text-sm leading-relaxed text-destructive">
-            {visibleError === "conflict"
-              ? t("conflict")
-              : visibleError === "permission" || visibleError === "not_found"
-                ? t("permission")
-                : t("failure")}
-          </p>
-        )}
+        <DeliveryReportReviewError error={visibleError} />
         {busy && (
           <p role="status" className="text-xs text-muted-foreground">
             {t("saving")}

@@ -39,6 +39,10 @@ export function SendReviewNotice({
     outcome.deliveryOutcome?.state === "accepted" ||
     outcome.deliveryOutcome?.state === "partial";
   const done = accepted && outcome.messageId !== undefined;
+  const retryable =
+    outcome.status === "failed" &&
+    (outcome.deliveryOutcome === undefined || outcome.deliveryOutcome.state === "rejected") &&
+    outcome.sentCopy === undefined;
   return (
     <div
       role="alert"
@@ -82,7 +86,7 @@ export function SendReviewNotice({
         <Button variant="outline" size="sm" disabled={busy} onClick={onCheck}>
           {busy ? L.checkingStatus : L.checkStatus}
         </Button>
-        {outcome.status === "failed" && onRetry !== undefined && (
+        {retryable && onRetry !== undefined && (
           <Button variant="outline" size="sm" disabled={busy} onClick={onRetry}>
             {L.retrySend}
           </Button>
