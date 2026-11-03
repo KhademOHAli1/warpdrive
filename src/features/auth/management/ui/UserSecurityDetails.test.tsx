@@ -6,6 +6,7 @@ import { LocaleProvider } from "@/features/i18n/LocaleProvider";
 import type { Locale } from "@/features/i18n/registry";
 import type { ManagedUserDetails } from "../contracts";
 import { managementMessagesForLocale } from "../messages";
+import type { AskManagementAction } from "./types";
 import { UserSecurityDetails } from "./UserSecurityDetails";
 
 vi.mock("@/features/i18n/actions", () => ({ saveLocalePreferencesAction: vi.fn() }));
@@ -81,7 +82,7 @@ function tree({
   userId?: string;
   revision?: string;
   pending?: boolean;
-  ask: ReturnType<typeof vi.fn>;
+  ask: AskManagementAction;
 }) {
   return (
     <LocaleProvider locale={locale}>
@@ -109,7 +110,7 @@ describe("Managed security-details read recovery", () => {
       else fetcher.mockRejectedValueOnce(new Error("private read diagnostic"));
       const retryRead = deferred();
       fetcher.mockReturnValueOnce(retryRead.promise);
-      const ask = vi.fn();
+      const ask = vi.fn<AskManagementAction>();
       render(tree({ locale, ask }));
       expect(await screen.findByRole("alert")).toHaveTextContent(L.loadError);
       expect(screen.queryByRole("heading", { name: L.securityDetails })).not.toBeInTheDocument();
@@ -149,7 +150,7 @@ describe("Managed security-details read recovery", () => {
     const oldRevision = deferred();
     const nextAccount = deferred();
     fetcher.mockReturnValueOnce(oldRevision.promise).mockReturnValueOnce(nextAccount.promise);
-    const ask = vi.fn();
+    const ask = vi.fn<AskManagementAction>();
     const view = render(tree({ ask }));
     expect(await screen.findByText("Fixture browser for account A")).toBeInTheDocument();
     view.rerender(tree({ ask, revision: "revision-2" }));
@@ -187,7 +188,7 @@ describe("Managed security-details read recovery", () => {
         Response.json({ ok: true, data: details(USER_B, "Other account response") }),
       )
       .mockResolvedValueOnce(Response.json({ ok: true, data: details() }));
-    const ask = vi.fn();
+    const ask = vi.fn<AskManagementAction>();
     render(tree({ ask }));
     expect(await screen.findByRole("alert")).toHaveTextContent(L.loadError);
     expect(screen.queryByText("Other account response")).not.toBeInTheDocument();
@@ -202,7 +203,7 @@ describe("Managed security-details read recovery", () => {
     const fetcher = mockFetch()
       .mockRejectedValueOnce(new Error("read unavailable"))
       .mockResolvedValueOnce(Response.json({ ok: true, data: details() }));
-    const ask = vi.fn();
+    const ask = vi.fn<AskManagementAction>();
     const view = render(tree({ ask, pending: true }));
     await screen.findByRole("alert");
     const retry = screen.getByRole("button", { name: L.retry });
@@ -221,7 +222,7 @@ describe("Managed security-details read recovery", () => {
     const fetcher = mockFetch().mockRejectedValueOnce(new Error("read unavailable"));
     const retryRead = deferred();
     fetcher.mockReturnValueOnce(retryRead.promise);
-    const ask = vi.fn();
+    const ask = vi.fn<AskManagementAction>();
     const view = render(tree({ ask }));
     await screen.findByRole("alert");
     fireEvent.click(screen.getByRole("button", { name: L.retry }));
