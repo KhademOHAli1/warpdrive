@@ -4,6 +4,18 @@ GitHub issues and the central Project own live execution. Source implementation,
 
 Prepare all implementation, policy, version and release-plan changes on feature branches and integrate them through reviewed pull requests. Do not commit or push directly to main. The existing integration coordinator serializes PR integration and publication; this tooling grants no deployment authorization.
 
+The `required-quality.yml` workflow supplies four required checks on pull requests and pushes:
+`Dependency audit` audits every app, marketing, documentation and isolated browser lockfile, including
+development dependencies, and fails on any reported vulnerability; `Workflow validation` runs the
+checksum-verified official actionlint release against all workflows; `Browser smoke checks` runs real
+Chromium against the built application with disposable loopback PostgreSQL and HTTPS, checking EN/DE/FA
+login hydration and unauthenticated redirects without provider traffic or mail sends; `Release PR
+validation` checks version, canonical plan and newly proposed independent source-review coherence.
+The browser tooling has its own exact dependency and lockfile under `tools/browser-smoke`; app
+dependencies are unchanged. These checks do not attest the four complete human journeys, live provider
+behavior or publication readiness. MAIL publication additionally requires all four jobs successful on
+the exact main revision through its own policy. Historical core release policy remains unchanged.
+
 ## Delivery and completion
 
 Every new main commit after the recorded bootstrap revision must reference its canonical issue, for example `Fix reminder recovery, refs #123` or a `Delivery-Issues: #123, #456` trailer. A PR reference by itself does not satisfy this rule. Historical commits at or before the bootstrap are preserved without rewriting their messages. An immutable commit-to-issue exception can also be recorded in the committed `docs/delivery/commit-links.json` `commit_issues` object, or a release plan, for a commit that has already landed. Both the push workflow and release generation read the default file. Bootstrap records cover only actual commits reconciled with the integration coordinator; they assert traceability, not acceptance.
