@@ -809,6 +809,7 @@
     "activityTypesDescription": "Define the types of activities your team can schedule.",
     "labelsDescription": "Manage the labels your team uses to organize records.",
     "lostReasonsDescription": "Define the reasons your team can select when a deal is lost.",
+    "lostReasonArchiveHelp": "Archiving removes a reason from future selection. It stays recorded on existing deals.",
     "emailContent": "Templates & signatures",
     "onlyYou": "Only you",
     "wholeWorkspace": "Whole workspace",

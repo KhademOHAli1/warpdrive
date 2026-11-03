@@ -1,18 +1,23 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { STRINGS } from "@/constants/strings";
+import { LocaleProvider } from "@/features/i18n/LocaleProvider";
+import { settingsMessagesForLocale } from "@/features/identity/settingsMessages";
 
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
+  document.documentElement.removeAttribute("dir");
+  document.documentElement.removeAttribute("lang");
 });
 
 const report = vi.hoisted(() => vi.fn());
 vi.mock("@/components/shell/ActionErrorProvider", () => ({ useActionError: () => report }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
 vi.mock("@/utils/csrfCookie", () => ({ readCsrfToken: () => "csrf" }));
+vi.mock("@/features/i18n/actions", () => ({ saveLocalePreferencesAction: vi.fn() }));
 const actions = vi.hoisted(() => ({
   createLostReasonAction: vi.fn<() => Promise<MockVoidActionResult>>(() =>
     Promise.resolve({ ok: true }),
@@ -180,5 +185,61 @@ describe("LostReasonsClient surfaces failed mutations", () => {
     fireEvent.click(screen.getByRole("button", { name: S.cancel }));
     expect(screen.getByText("Too expensive")).toBeInTheDocument();
     expect(actions.renameLostReasonAction).not.toHaveBeenCalled();
+  });
+});
+
+// UI/copy/accessibility semantics only; historical-deal preservation still needs native evidence.
+describe("Lost-reason archive consequence guidance", () => {
+  const copy = {
+    en: "Archiving removes a reason from future selection. It stays recorded on existing deals.",
+    de: "Archivierte Gründe können künftig nicht mehr ausgewählt werden. Bei bestehenden Verkaufschancen bleibt der erfasste Grund erhalten.",
+    fa: "با بایگانی، این دلیل دیگر در گزینه‌های قابل انتخاب نمایش داده نمی‌شود. دلیل ثبت‌شده در فرصت‌های فروش موجود حفظ می‌شود.",
+  };
+
+  it.each(["en", "de", "fa"] as const)(
+    "explains the soft-archive consequence before each Archive action in %s",
+    (locale) => {
+      const L = settingsMessagesForLocale(locale);
+      render(
+        <LocaleProvider locale={locale}>
+          <LostReasonsClient rows={[...ROWS, { id: "b", name: "Chose a competitor" }]} />
+        </LocaleProvider>,
+      );
+      expect(screen.getByText(copy[locale])).toBeVisible();
+      for (const button of screen.getAllByRole("button", { name: L.archive, exact: true })) {
+        expect(button).toHaveAccessibleDescription(copy[locale]);
+        expect(button).toBeEnabled();
+      }
+      expect(document.documentElement.dir).toBe(locale === "fa" ? "rtl" : "ltr");
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+      expect(actions.archiveLostReasonAction).not.toHaveBeenCalled();
+    },
+  );
+
+  it("keeps the existing exact-row archive action and waits for acknowledgement before removing the row", async () => {
+    let settle!: (result: MockVoidActionResult) => void;
+    const pending = new Promise<MockVoidActionResult>((resolve) => {
+      settle = resolve;
+    });
+    actions.archiveLostReasonAction.mockReturnValueOnce(pending);
+    render(<LostReasonsClient rows={[...ROWS, { id: "b", name: "Chose a competitor" }]} />);
+    const reason = screen.getByRole("listitem", { name: "Too expensive" });
+    const archive = within(reason).getByRole("button", { name: S.archive, exact: true });
+    expect(archive).toHaveAccessibleDescription(copy.en);
+    fireEvent.click(archive);
+    expect(actions.archiveLostReasonAction).toHaveBeenCalledTimes(1);
+    expect(actions.archiveLostReasonAction).toHaveBeenCalledWith({ id: "a" }, "csrf");
+    expect(reason).toBeInTheDocument();
+    expect(archive).toBeDisabled();
+    expect(screen.getByText(copy.en)).toBeVisible();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    await act(async () => {
+      settle({ ok: true });
+      await pending;
+    });
+    expect(screen.queryByRole("listitem", { name: "Too expensive" })).not.toBeInTheDocument();
+    expect(screen.getByRole("listitem", { name: "Chose a competitor" })).toBeInTheDocument();
+    expect(screen.getByText(copy.en)).toBeVisible();
+    expect(report).not.toHaveBeenCalled();
   });
 });

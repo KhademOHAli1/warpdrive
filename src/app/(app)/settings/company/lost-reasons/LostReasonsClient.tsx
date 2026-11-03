@@ -1,7 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
 import type React from "react";
-import { useRef, useState } from "react";
+import { useId, useRef, useState } from "react";
 import { useActionError } from "@/components/shell/ActionErrorProvider";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -29,6 +29,7 @@ type MutationResult = { ok: true } | { ok: false; error: { id: string } };
 export function LostReasonsClient({ rows: initial }: { rows: LostReasonRow[] }): React.ReactNode {
   const L = useSettingsMessages();
   const S = L;
+  const archiveHelpId = useId();
 
   const router = useRouter();
   const reportError = useActionError();
@@ -123,6 +124,9 @@ export function LostReasonsClient({ rows: initial }: { rows: LostReasonRow[] }):
 
   return (
     <div className="space-y-4" aria-busy={pending}>
+      <p id={archiveHelpId} className="text-sm text-muted-foreground">
+        {L._hierarchy.lostReasonArchiveHelp}
+      </p>
       <ul className="divide-y overflow-hidden rounded-lg border bg-card shadow-sm">
         {rows.map((row, i) => (
           <li
@@ -193,6 +197,7 @@ export function LostReasonsClient({ rows: initial }: { rows: LostReasonRow[] }):
                 size="sm"
                 className={ROW_BUTTON}
                 disabled={pending}
+                aria-describedby={archiveHelpId}
                 onClick={() => void archive(row.id)}
               >
                 {S.archive}
