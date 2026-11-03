@@ -4,12 +4,12 @@ Original technical issue: [#906](https://github.com/KhademOHAli1/warpdrive/issue
 
 Independent source/process review accepts all four unchanged technical clauses. The separate account attestation, latest green exact published-revision CI and closure audit remain pending. This is not human acceptance of #82 or a release/deployment decision.
 
-| Clause | Actual technical evidence |
-| --- | --- |
-| AC1 | Permission-checked native creation, persisted exact money/owner/revision reread, UUID stage movement, one stage history/channel effect and current-state feedback. |
-| AC2 | Existing CSRF/server actor/current-session/modern-MFA policy, locked visibility/pipeline/target validation, real PG expiry/concurrency/rollback denial and actual old-UUID pointer conflict without extra effects. Routine access adds no separate fresh-auth requirement. |
-| AC3 | Retained immutable draft/operation and same-operation create retry on the historical unchanged create source; actual C committed stage response loss, truthful disabled unknown state, protected current-ID read before causal Board refetch, explicit non-receipt disclaimer, stale conflict and second recovery. |
-| AC4 | Exact C build and source/artifact provenance, selected affected units and real PG cases, Root finite allocations and complete cleanup. Historical cuts stay separate. |
+| Clause | Actual technical evidence                                                                                                                                                                                                                                                                                          |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| AC1    | Permission-checked native creation, persisted exact money/owner/revision reread, UUID stage movement, one stage history/channel effect and current-state feedback.                                                                                                                                                 |
+| AC2    | Existing CSRF/server actor/current-session/modern-MFA policy, locked visibility/pipeline/target validation, real PG expiry/concurrency/rollback denial and actual old-UUID pointer conflict without extra effects. Routine access adds no separate fresh-auth requirement.                                         |
+| AC3    | Retained immutable draft/operation and same-operation create retry on the historical unchanged create source; actual C committed stage response loss, truthful disabled unknown state, protected current-ID read before causal Board refetch, explicit non-receipt disclaimer, stale conflict and second recovery. |
+| AC4    | Exact C build and source/artifact provenance, selected affected units and real PG cases, Root finite allocations and complete cleanup. Historical cuts stay separate.                                                                                                                                              |
 
 C's normal full production build exited 0 with TypeScript validation enabled and 199 provenance checks. Its build phase took 111.884899s, inclusive 131.782918s, sampled maximum 7,100,235,776 owned bytes. All 7,709 source files and 777 immutable noncache artifacts were independently rehashed. Exactly two favicon runtime cache files remain separately declared. Owned USB cache placement, link/root cleanup and foreign entries were preserved.
 
