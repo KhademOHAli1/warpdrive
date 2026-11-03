@@ -95,7 +95,7 @@ export function SavedViewMenu({
                   else's shared view. */}
               {v.isOwn && (
                 <DropdownMenuItem
-                  aria-label={v.favorite ? t("unfavoriteView") : t("favoriteView")}
+                  aria-label={`${v.favorite ? t("unfavoriteView") : t("favoriteView")}: ${v.name}`}
                   // Starring is not picking, so the menu stays open.
                   onSelect={(e) => {
                     e.preventDefault();
