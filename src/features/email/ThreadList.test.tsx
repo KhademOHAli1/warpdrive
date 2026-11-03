@@ -2,6 +2,18 @@
 import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import type { ActionResult } from "@/types/actionResult";
+import type { ReadActionValue } from "./readIntentTypes";
+import {
+  applyReadIntent,
+  applyUnreadIntent,
+  prepareCreatedReadIntent,
+  READ_OPERATION_ID,
+  type ReadInput,
+  readIntentReceipt,
+  reconcileAppliedReadIntent,
+  UNREAD_OPERATION_ID,
+} from "./ThreadPane.readIntent.test.fixtures";
 
 const push = vi.fn();
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
@@ -13,19 +25,28 @@ vi.mock("./folderActions", () => ({
   unarchiveThreadAction: (...a: unknown[]) => unarchiveMock(...(a as [])),
 }));
 
-type ReadActionResult =
-  | { ok: true; value: { threadId: string } }
-  | { ok: false; error: { id: string } };
-const markReadMock = vi.fn<
-  (csrfToken: string, input: { threadId: string }) => Promise<ReadActionResult>
->(() => Promise.resolve({ ok: true, value: { threadId: "t1" } }));
-const markUnreadMock = vi.fn<
-  (csrfToken: string, input: { threadId: string }) => Promise<ReadActionResult>
->(() => Promise.resolve({ ok: true, value: { threadId: "t1" } }));
+type ReadActionResult = ActionResult<ReadActionValue>;
+const markReadMock = vi.fn<(csrfToken: string, input: ReadInput) => Promise<ReadActionResult>>(
+  (_csrf, input) => applyReadIntent(input),
+);
+const markUnreadMock = vi.fn<(csrfToken: string, input: ReadInput) => Promise<ReadActionResult>>(
+  (_csrf, input) => applyUnreadIntent(input),
+);
+const prepareReadMock = vi.fn(async (_csrf: string, input: { threadId: string; read: boolean }) => {
+  const result = await prepareCreatedReadIntent(input);
+  if (result.ok && input.threadId === "t2")
+    result.value.readIntent.operationId = "00000000-0000-4000-8000-000000000003";
+  return result;
+});
+vi.mock("./readIntentActions", () => ({
+  prepareThreadReadIntentAction: (_csrf: string, input: { threadId: string; read: boolean }) =>
+    prepareReadMock(_csrf, input),
+  reconcileThreadReadIntentAction: (_csrf: string, input: ReadInput) =>
+    reconcileAppliedReadIntent(input),
+}));
 vi.mock("./readActions", () => ({
-  markThreadReadAction: (...a: unknown[]) => markReadMock(...(a as [string, { threadId: string }])),
-  markThreadUnreadAction: (...a: unknown[]) =>
-    markUnreadMock(...(a as [string, { threadId: string }])),
+  markThreadReadAction: (_csrf: string, input: ReadInput) => markReadMock(_csrf, input),
+  markThreadUnreadAction: (_csrf: string, input: ReadInput) => markUnreadMock(_csrf, input),
 }));
 
 vi.mock("@/utils/csrfCookie", () => ({ readCsrfToken: () => "csrf" }));
@@ -94,6 +115,8 @@ const inboxListQuery = vi.fn(() => ({
 }));
 const invalidateInboxList = vi.fn();
 const invalidateFoldersArchive = vi.fn();
+const invalidateFoldersSent = vi.fn();
+const invalidateSearch = vi.fn();
 const invalidateUnreadCount = vi.fn();
 vi.mock("@/lib/trpc-client", () => ({
   trpc: {
@@ -125,7 +148,11 @@ vi.mock("@/lib/trpc-client", () => ({
           list: { invalidate: invalidateInboxList },
           unreadCount: { invalidate: invalidateUnreadCount },
         },
-        folders: { archive: { invalidate: invalidateFoldersArchive } },
+        folders: {
+          archive: { invalidate: invalidateFoldersArchive },
+          sent: { invalidate: invalidateFoldersSent },
+        },
+        search: { invalidate: invalidateSearch },
       },
     }),
   },
@@ -140,10 +167,14 @@ afterEach(() => {
   archiveMock.mockImplementation(() => Promise.resolve({ ok: true, value: { threadId: "t1" } }));
   unarchiveMock.mockReset();
   markReadMock.mockReset();
-  markReadMock.mockImplementation(() => Promise.resolve({ ok: true, value: { threadId: "t1" } }));
+  markReadMock.mockImplementation((_csrf, input) => applyReadIntent(input));
   markUnreadMock.mockReset();
+  markUnreadMock.mockImplementation((_csrf, input) => applyUnreadIntent(input));
+  prepareReadMock.mockClear();
   invalidateInboxList.mockReset();
   invalidateFoldersArchive.mockReset();
+  invalidateFoldersSent.mockReset();
+  invalidateSearch.mockReset();
   invalidateUnreadCount.mockReset();
   inboxListQuery.mockReset();
   inboxListQuery.mockReturnValue({
@@ -220,20 +251,36 @@ describe("ThreadList", () => {
     const bulkBar = screen.getByRole("toolbar", { name: "Bulk actions" });
     fireEvent.click(within(bulkBar).getByRole("button", { name: "Mark read" }));
 
-    await vi.waitFor(() => expect(markReadMock).toHaveBeenCalledWith("csrf", { threadId: "t1" }));
+    await vi.waitFor(() =>
+      expect(markReadMock).toHaveBeenCalledWith("csrf", {
+        threadId: "t1",
+        operationId: READ_OPERATION_ID,
+      }),
+    );
+    expect(prepareReadMock).toHaveBeenCalledWith("csrf", { threadId: "t1", read: true });
     await vi.waitFor(() => expect(invalidateUnreadCount).toHaveBeenCalled());
+    expect(invalidateInboxList).toHaveBeenCalledTimes(1);
+    expect(invalidateSearch).toHaveBeenCalledTimes(1);
+    expect(invalidateFoldersSent).toHaveBeenCalledTimes(1);
+    expect(invalidateFoldersArchive).toHaveBeenCalledTimes(1);
     await vi.waitFor(() => expect(screen.queryByText(/selected/)).not.toBeInTheDocument());
   });
 
   it("bulk mark-unread calls markThreadUnreadAction for the selected thread", async () => {
-    markUnreadMock.mockResolvedValue({ ok: true, value: { threadId: "t1" } });
+    markUnreadMock.mockImplementation((_csrf, input) => applyUnreadIntent(input));
     render(<ThreadList folder="inbox" />);
     fireEvent.click(screen.getByRole("checkbox", { name: "Select Renewal" }));
 
     const bulkBar = screen.getByRole("toolbar", { name: "Bulk actions" });
     fireEvent.click(within(bulkBar).getByRole("button", { name: "Mark unread" }));
 
-    await vi.waitFor(() => expect(markUnreadMock).toHaveBeenCalledWith("csrf", { threadId: "t1" }));
+    await vi.waitFor(() =>
+      expect(markUnreadMock).toHaveBeenCalledWith("csrf", {
+        threadId: "t1",
+        operationId: UNREAD_OPERATION_ID,
+      }),
+    );
+    expect(prepareReadMock).toHaveBeenCalledWith("csrf", { threadId: "t1", read: false });
   });
 
   it("bulk-archives the selected thread and invalidates the inbox + archive queries", async () => {
@@ -266,7 +313,7 @@ describe("ThreadList", () => {
     expect(within(bulkBar).getByRole("button", { name: "Mark unread" })).toBeInTheDocument();
   });
 
-  it("disables the bulk action buttons while a bulk action is in flight", () => {
+  it("disables the bulk action buttons while a bulk action is in flight", async () => {
     let resolveMarkRead: (value: ReadActionResult) => void = () => {};
     markReadMock.mockImplementation(
       () =>
@@ -285,7 +332,12 @@ describe("ThreadList", () => {
     expect(within(bulkBar).getByRole("button", { name: "Archive" })).toBeDisabled();
     expect(within(bulkBar).getByRole("button", { name: "Mark unread" })).toBeDisabled();
 
-    resolveMarkRead({ ok: true, value: { threadId: "t1" } });
+    await vi.waitFor(() => expect(markReadMock).toHaveBeenCalledTimes(1));
+    resolveMarkRead({
+      ok: true,
+      value: { threadId: "t1", readIntent: readIntentReceipt("t1", true) },
+    });
+    await vi.waitFor(() => expect(screen.queryByText(/selected/)).not.toBeInTheDocument());
   });
 
   it("keeps the failed thread selected and surfaces an error on a partial bulk mark-read failure", async () => {
@@ -295,10 +347,16 @@ describe("ThreadList", () => {
       isFetchingNextPage: false,
       fetchNextPage: vi.fn(),
     });
-    markReadMock.mockImplementation((_csrf: string, input: { threadId: string }) =>
+    markReadMock.mockImplementation((_csrf: string, input: ReadInput) =>
       Promise.resolve(
         input.threadId === "t1"
-          ? { ok: true, value: { threadId: "t1" } }
+          ? {
+              ok: true,
+              value: {
+                threadId: "t1",
+                readIntent: readIntentReceipt("t1", true, "applied", input.operationId),
+              },
+            }
           : { ok: false, error: { id: "E_GMAIL_019" } },
       ),
     );

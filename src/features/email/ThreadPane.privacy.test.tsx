@@ -3,14 +3,27 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import {
+  applyReadIntent,
+  applyUnreadIntent,
+  prepareCreatedReadIntent,
+  type ReadInput,
+  reconcileAppliedReadIntent,
+} from "./ThreadPane.readIntent.test.fixtures";
 
 // B2: the reader header shows an owner-only privacy dropdown (ThreadPrivacyToggle), gated by
 // canCompose, wired to setThreadVisibilityAction and surfacing a failed flip via useActionError.
 type Res = { ok: true; value: { threadId: string } } | { ok: false; error: { id: string } };
 
 vi.mock("./readActions", () => ({
-  markThreadReadAction: vi.fn(() => Promise.resolve({ ok: true, value: { threadId: "t1" } })),
-  markThreadUnreadAction: vi.fn(() => Promise.resolve({ ok: true, value: { threadId: "t1" } })),
+  markThreadReadAction: vi.fn((_csrf: string, input: ReadInput) => applyReadIntent(input)),
+  markThreadUnreadAction: vi.fn((_csrf: string, input: ReadInput) => applyUnreadIntent(input)),
+}));
+vi.mock("./readIntentActions", () => ({
+  prepareThreadReadIntentAction: (_csrf: string, input: { threadId: string; read: boolean }) =>
+    prepareCreatedReadIntent(input),
+  reconcileThreadReadIntentAction: (_csrf: string, input: ReadInput) =>
+    reconcileAppliedReadIntent(input),
 }));
 vi.mock("./threadAttributesActions", () => ({
   setFollowUpStatusAction: vi.fn(),

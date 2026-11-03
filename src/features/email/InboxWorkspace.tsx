@@ -19,9 +19,9 @@ import type { InboxLocation } from "./inboxLocation";
 import styles from "./inboxWorkspace.module.css";
 import { OutboxList } from "./OutboxList";
 import { canApplySelectedMailAction } from "./privateIntakePolicy";
-import { markThreadReadAction } from "./readActions";
 import { NO_ATTRIBUTE_FILTER } from "./threadAttributeFilter";
 import { runBulk } from "./threadBulkActions";
+import { useBulkThreadReadState } from "./useBulkThreadReadState";
 import { useEmailMessages } from "./useEmailMessages";
 import { useInboxRealtime } from "./useInboxRealtime";
 
@@ -80,6 +80,25 @@ export function InboxWorkspace({
   const ids = threads.map((thread) => thread.id);
   const canBulkArchive = canApplySelectedMailAction(threads, selection.selected, "archive");
   const canBulkRead = canApplySelectedMailAction(threads, selection.selected, "markRead");
+  const readState = useBulkThreadReadState({
+    frameKey: JSON.stringify([location, canBulkRead]),
+    selected: selection.selected,
+    replaceSelection: (next) => {
+      selection.clear();
+      next.forEach(selection.toggle);
+    },
+    readFresh: (threadId, signal) =>
+      utils.client.email.thread.get.query({ threadId, allowRemote: false }, { signal }),
+    cacheFresh: (threadId, data) =>
+      utils.email.thread.get.setData({ threadId, allowRemote: false }, data),
+    onConfirmed: () => {
+      refresh();
+      void utils.email.inbox.unreadCount.invalidate();
+      void utils.email.inbox.list.invalidate();
+      void utils.email.folders.archive.invalidate();
+      void utils.email.folders.sent.invalidate();
+    },
+  });
   const pending = feed.isPending || (location.query !== "" && location.query !== query);
   const failed = Boolean(feed.error);
   const narrowed =
@@ -93,16 +112,18 @@ export function InboxWorkspace({
     onNavigate(next, replace);
   };
   const closeReader = () => onNavigate({ ...location, threadId: null }, true);
-  const applyBulk = async (readOnly: boolean): Promise<void> => {
-    if (readOnly ? !canBulkRead : !canBulkArchive) return;
+  const markRead = () => {
+    if (!canBulkRead || busy || readState.locked) return;
+    setBulkError(false);
+    void readState.run(true);
+  };
+  const applyBulk = async (): Promise<void> => {
+    // Folder-write recovery is separate; an unresolved selected read blocks new writes.
+    if (!canBulkArchive || busy || readState.locked) return;
     setBusy(true);
     setBulkError(false);
     try {
-      const action = readOnly
-        ? markThreadReadAction
-        : location.folder === "archive"
-          ? unarchiveThreadAction
-          : archiveThreadAction;
+      const action = location.folder === "archive" ? unarchiveThreadAction : archiveThreadAction;
       const failedIds = await runBulk([...selection.selected], (threadId) =>
         action(readCsrfToken(), { threadId }),
       );
@@ -152,17 +173,24 @@ export function InboxWorkspace({
               selected={selection.count}
               allSelected={selection.allSelected(ids)}
               onSelectAll={() => selection.toggleAll(ids)}
-              onArchive={() => void applyBulk(false)}
-              onMarkRead={() => void applyBulk(true)}
+              onArchive={() => void applyBulk()}
+              onMarkRead={markRead}
               onClearSelection={selection.clear}
-              busy={busy}
-              canArchive={canBulkArchive}
-              canMarkRead={canBulkRead}
-              onRefresh={refresh}
+              busy={busy || readState.busy}
+              canArchive={canBulkArchive && !readState.locked}
+              canMarkRead={canBulkRead && !readState.locked}
+              onRefresh={() => {
+                refresh();
+                void readState.refresh();
+              }}
             />
-            {bulkError && (
+            {(readState.uncertain || readState.failed || bulkError) && (
               <p role="alert" className="border-b px-3 py-2 text-xs text-destructive">
-                {E._extra.bulkActionError}
+                {readState.uncertain
+                  ? E.remoteActions.bulkReadUnconfirmed
+                  : readState.failed
+                    ? E.remoteActions.readStatusFailed
+                    : E._extra.bulkActionError}
               </p>
             )}
             <InboxConversationResults

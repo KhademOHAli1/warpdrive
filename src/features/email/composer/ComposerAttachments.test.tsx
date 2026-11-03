@@ -5,7 +5,10 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  vi.unstubAllGlobals();
+});
 
 // ---------------------------------------------------------------------------
 // Module mocks (hoisted by Vitest)
@@ -47,12 +50,17 @@ vi.mock("@/features/email/actions", () => ({
 }));
 
 // Presigned-upload handshake: requestUpload returns fileId "attach-file-1".
+const requestUploadSpy = vi.fn((_csrf: unknown, _input: Record<string, unknown>) => {
+  void _csrf;
+  void _input;
+  return Promise.resolve({
+    ok: true,
+    value: { fileId: "attach-file-1", post: { url: "https://fake/up", fields: {} } },
+  });
+});
 vi.mock("@/features/files/serverActions", () => ({
-  requestUploadAction: () =>
-    Promise.resolve({
-      ok: true,
-      value: { fileId: "attach-file-1", post: { url: "https://fake/up", fields: {} } },
-    }),
+  requestUploadAction: (csrf: unknown, input: Record<string, unknown>) =>
+    requestUploadSpy(csrf, input),
   confirmUploadAction: () => Promise.resolve({ ok: true }),
 }));
 
@@ -72,6 +80,8 @@ import { Composer } from "./Composer";
 // ---------------------------------------------------------------------------
 describe("Composer – attachments wired (Task 6.3)", () => {
   beforeEach(() => {
+    requestUploadSpy.mockClear();
+    vi.stubGlobal("fetch", () => Promise.resolve(new Response(null, { status: 204 })));
     sendEmailSpy.mockClear();
     sendEmailSpy.mockImplementation(() => Promise.resolve({ ok: true }));
   });
@@ -148,5 +158,73 @@ describe("Composer – attachments wired (Task 6.3)", () => {
     // Discard clears the draft including attachments.
     fireEvent.click(screen.getByRole("button", { name: /discard/i }));
     expect(screen.queryByText("draft.pdf")).not.toBeInTheDocument();
+  });
+
+  for (const mode of ["new", "reply", "resumed"] as const)
+    it(`uses an explicit owned mailbox parent for a ${mode} inbox attachment`, async () => {
+      const mailboxes = ["first", "second"].map((id) => ({
+        id,
+        emailAddress: `${id}@example.com`,
+        status: "connected" as const,
+        isDefault: id === "first",
+        capabilities: { read: true, send: true, markRead: true, move: true, trash: true },
+      }));
+      render(
+        <Composer
+          accountId="first"
+          mailboxes={mailboxes}
+          context={{ kind: "inbox" }}
+          threadId={mode === "reply" ? "first-thread" : undefined}
+          draft={
+            mode === "resumed"
+              ? {
+                  id: "second-draft",
+                  accountId: "second",
+                  subject: "Retained",
+                  bodyHtml: "<p>Retained</p>",
+                  to: [],
+                  cc: [],
+                  sendIntentId: "9d65da88-eae5-4f81-a674-d3f52fcb03d9",
+                }
+              : undefined
+          }
+        />,
+      );
+      const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+      Object.defineProperty(input, "files", {
+        value: [new File(["actual unit bytes"], "scope.txt", { type: "text/plain" })],
+        configurable: true,
+      });
+      fireEvent.change(input);
+      await waitFor(() => expect(requestUploadSpy).toHaveBeenCalledTimes(1));
+      await waitFor(() => expect(screen.getByText("scope.txt")).toBeInTheDocument());
+      expect(requestUploadSpy).toHaveBeenCalledWith(
+        "csrf",
+        expect.objectContaining({
+          entityType: "email_mailbox",
+          entityId: mode === "resumed" ? "second" : "first",
+        }),
+      );
+    });
+
+  it("keeps deal-context upload authorization on its actual deal parent", async () => {
+    render(
+      <Composer
+        accountId="first"
+        context={{ kind: "deal", dealId: "actual-deal", defaultTo: "to@example.com" }}
+      />,
+    );
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    Object.defineProperty(input, "files", {
+      value: [new File(["deal bytes"], "deal.txt", { type: "text/plain" })],
+      configurable: true,
+    });
+    fireEvent.change(input);
+    await waitFor(() => expect(requestUploadSpy).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(screen.getByText("deal.txt")).toBeInTheDocument());
+    expect(requestUploadSpy).toHaveBeenCalledWith(
+      "csrf",
+      expect.objectContaining({ entityType: "deal", entityId: "actual-deal" }),
+    );
   });
 });

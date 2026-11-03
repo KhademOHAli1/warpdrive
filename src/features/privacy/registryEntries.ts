@@ -13,7 +13,7 @@ import { emailIds1 } from "./registryIdsEmail1";
 import { emailIds2 } from "./registryIdsEmail2";
 import { enrichmentIds1 } from "./registryIdsEnrichment1";
 import { exportStorageIds1 } from "./registryIdsExportStorage1";
-import { filesIds1 } from "./registryIdsFiles1";
+import { filesIds1, mailboxFileAuthorizationIds1 } from "./registryIdsFiles1";
 import { importsIds1 } from "./registryIdsImports1";
 import { infrastructureIds1 } from "./registryIdsInfrastructure1";
 import { infrastructureIds2 } from "./registryIdsInfrastructure2";
@@ -48,6 +48,22 @@ export const registryEntries: RegistryEntry[] = [
   classifyInventory([...emailIds1, ...emailIds2], classifications.email),
   classifyInventory([...enrichmentIds1], classifications.enrichment),
   classifyInventory([...filesIds1], classifications.files),
+  classifyInventory(mailboxFileAuthorizationIds1, {
+    ...classifications.files,
+    owner: "MAIL mailbox file authorization",
+    categories: ["mailbox and workforce identifiers", "current owner activity and invitation state"],
+    subjectRelation:
+      "Mailbox ownership authorizes local file access but does not identify every subject in attachment contents. Account IDs are explicit mailbox parents, not message IDs or reviewed subject scope.",
+    purpose:
+      "Read the current mailbox owner and workforce status for mailbox-scoped local draft attachments. Require the active, non-invited exact owner; administrator or shared-message access does not grant mailbox-parent authority.",
+    disclosure:
+      "The helper returns an access decision only. It discloses no message bodies, file contents or credentials and grants no generic subject discovery, archive or disclosure authority.",
+    retention:
+      "This authorization check creates no durable rows, objects or retention policy. Paused or disconnected transport does not remove local draft access. Existing file metadata and object lifecycle remain separately classified.",
+    externalEffects:
+      "The scanner's execute:sql writer identifier represents a PostgreSQL SELECT of existing account and user rows, with cancellation checks. This helper performs no database mutation, object request, provider I/O or mailbox-owner discovery sweep.",
+    erasureTask: "DPL-17",
+  }),
   classifyInventory(exportStorageIds1, exportStorageClassification),
   classifyInventory([...importsIds1], classifications.imports),
   classifyInventory([...infrastructureIds1, ...infrastructureIds2], classifications.infrastructure),

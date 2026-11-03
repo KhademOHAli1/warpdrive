@@ -25,3 +25,8 @@ export const filesIds1: string[] = [
   "writer:src/features/files/storage.ts#putObject:dynamic",
   "writer:src/features/files/storage.ts#removeObject:dynamic",
 ];
+
+export const mailboxFileAuthorizationIds1: string[] = [
+  "sourceReview:src/features/files/mailboxFileAuthz.ts#d5eb92fa40ea7e290c2fb467a24217c370b1616a119e46055adc231ac0aed5a8",
+  "writer:src/features/files/mailboxFileAuthz.ts#execute:sql",
+];
