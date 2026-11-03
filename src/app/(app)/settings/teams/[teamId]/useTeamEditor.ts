@@ -76,7 +76,11 @@ export function useTeamEditor(teamId: string, initial: TeamDraft) {
       setDraft(next);
       setPartial(false);
       setSaved(true);
-      router.refresh();
+      try {
+        router.refresh();
+      } catch {
+        // Both writes were acknowledged; refresh must not offer another membership save.
+      }
     } catch {
       setPartial(detailsSaved);
       setError(L._errors.generic);
