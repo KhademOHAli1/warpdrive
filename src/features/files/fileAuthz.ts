@@ -14,6 +14,7 @@ import { canSeeEmail } from "@/features/email/emailVisibility";
 import { canSee } from "@/features/permissions/canSee";
 import type { AuthUser, VisiblePersonOrOrg } from "@/features/permissions/types";
 import type { DbOrTx } from "@/server/realtime/channelVersions";
+import { canUseMailboxFiles } from "./mailboxFileAuthz";
 
 // Dispatch a file's parent-entity authorization to the EXISTING per-entity
 // visibility logic. Never invents rules. A missing parent row OR a canSee/
@@ -39,6 +40,8 @@ export async function canActorAccessParent(
       return canSeeActivityParent(db, actor, entityId, signal);
     case "email_message":
       return canSeeEmailParent(db, actor, entityId, signal);
+    case "email_mailbox":
+      return canUseMailboxFiles(db, actor, entityId, signal);
     default:
       return false;
   }

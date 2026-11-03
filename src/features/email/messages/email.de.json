@@ -13,7 +13,9 @@
     "moving": "Wird verschoben…",
     "cancel": "Abbrechen",
     "refreshBeforeRetry": "Der Server hat möglicherweise bereits Änderungen vorgenommen. Aktualisieren Sie die Unterhaltung, bevor Sie es erneut versuchen.",
-    "refresh": "Unterhaltung aktualisieren"
+    "refresh": "Unterhaltung aktualisieren",
+    "readStatusFailed": "Der Lesestatus der Unterhaltung konnte nicht geändert werden. Bitte versuchen Sie es erneut.",
+    "bulkReadUnconfirmed": "Ob der Lesestatus geändert wurde, ist noch unklar. Prüfen Sie den Status mit „Aktualisieren“."
   },
   "title": "Posteingang",
   "composeTitle": "Neue E-Mail",

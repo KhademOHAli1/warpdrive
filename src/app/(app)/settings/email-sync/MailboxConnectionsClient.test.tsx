@@ -45,7 +45,7 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-for (const locale of ["fa", "de"] as const) {
+for (const locale of ["fa", "de", "en"] as const) {
   it(`completes native identity confirmation then retries mailbox setup and refreshes the list in ${locale}`, async () => {
     let fresh = false;
     const calls: { path: string; body?: unknown }[] = [];

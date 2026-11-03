@@ -15,7 +15,7 @@ import type { AttachedFile } from "./AttachmentList";
 import { ATTACH_MAX_FILE_BYTES } from "./composer.constants";
 
 interface AttachButtonProps {
-  entityType: "deal" | "person" | "organization" | "activity" | "email_message";
+  entityType: "deal" | "person" | "organization" | "activity" | "email_message" | "email_mailbox";
   entityId: string;
   onAttached: (file: AttachedFile) => void;
   // Called with true when an upload batch starts, false when it finishes (success or error).

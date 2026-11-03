@@ -202,7 +202,7 @@ describe.each(["fa", "de", "en"] as const)("owner-only delivery report panel in 
     await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent(L.saved));
   });
 
-  it("preserves the review on a safe failure and never renders exception messages", async () => {
+  it("preserves an uncertain review and never presents provider exceptions or definite failure", async () => {
     const onReview = vi.fn(() => Promise.reject(new Error("synthetic-secret-provider-response")));
     render(
       <LocaleProvider locale={locale}>
@@ -217,7 +217,7 @@ describe.each(["fa", "de", "en"] as const)("owner-only delivery report panel in 
     chooseTarget(locale);
     fireEvent.click(screen.getByRole("checkbox", { name: L.confirmation }));
     fireEvent.click(screen.getByRole("button", { name: L.save }));
-    expect(await screen.findByRole("alert")).toHaveTextContent(L.failure);
+    expect(await screen.findByRole("alert")).not.toHaveTextContent(L.failure);
     expect(screen.queryByText(/synthetic-secret/u)).not.toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: L.sentEmail })).toHaveTextContent(
       deliveryUiPrimaryTarget.subject,

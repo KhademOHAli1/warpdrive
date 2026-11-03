@@ -7,6 +7,7 @@ import { can } from "@/features/permissions/can";
 import type { PermSetUser } from "@/features/permissions/effective";
 import type { VisiblePersonOrOrg } from "@/features/permissions/types";
 import { canSeeEmailParent } from "./fileAuthz";
+import { canUseMailboxFiles } from "./mailboxFileAuthz";
 
 // F18: attaching a file to an entity requires canSee AND that entity's write/upload
 // capability (ops spec C2 step 2), not read visibility alone: a read-only user who can see
@@ -34,6 +35,8 @@ export async function canActorModifyParent(
       // No distinct email write capability exists; the mailbox-privacy canSeeEmail gate is
       // the binding rule for attaching to a thread the actor can see (kept from the read path).
       return canSeeEmailParent(db, actor, entityId, signal);
+    case "email_mailbox":
+      return canUseMailboxFiles(db, actor, entityId, signal);
     default:
       return false;
   }
