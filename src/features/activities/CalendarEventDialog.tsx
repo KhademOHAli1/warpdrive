@@ -117,7 +117,8 @@ export function CalendarEventDialog(props: CalendarEventDialogProps): React.Reac
         dir={preferences.locale === "fa" ? "rtl" : "ltr"}
         onCloseAutoFocus={(event) => {
           if (
-            opener?.isConnected &&
+            opener !== null &&
+            opener.isConnected &&
             !opener.matches(":disabled") &&
             opener.closest("[hidden],[inert]") === null
           ) {

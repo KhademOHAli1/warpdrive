@@ -4,6 +4,7 @@ import { cleanup, render, screen, waitFor, within } from "@testing-library/react
 import userEvent from "@testing-library/user-event";
 import type { ComponentPropsWithoutRef, ElementRef } from "react";
 import { afterEach, beforeAll, expect, it, vi } from "vitest";
+import type * as DialogModule from "@/components/ui/dialog";
 import { LocaleProvider } from "@/features/i18n/LocaleProvider";
 import { NativeActorProvider } from "@/features/identity/NativeActorProvider";
 import { CalendarClient } from "./CalendarClient";
@@ -79,7 +80,7 @@ vi.mock("@/lib/trpc-client", () => ({
 }));
 
 vi.mock("@/components/ui/dialog", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@/components/ui/dialog")>();
+  const actual = await importOriginal<typeof DialogModule>();
   const { forwardRef } = await import("react");
   return {
     ...actual,
