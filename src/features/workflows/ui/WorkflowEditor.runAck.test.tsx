@@ -32,6 +32,7 @@ const locales = [
   { locale: "de", messages: german },
   { locale: "fa", messages: persian },
 ] as const;
+type RunMessages = (typeof locales)[number]["messages"];
 
 vi.mock("@/lib/trpc-client", () => ({
   trpc: {
@@ -83,7 +84,7 @@ function mount(locale: "en" | "de" | "fa" = "en", active = true, canRun = true) 
 
 async function chooseRecord(
   user: ReturnType<typeof userEvent.setup>,
-  messages: typeof english,
+  messages: RunMessages,
   mode: Mode,
 ) {
   await user.click(
@@ -122,7 +123,7 @@ function expectRunPayload(mode: Mode, times: number) {
   expect(calls.pause).not.toHaveBeenCalled();
 }
 
-async function expectSubmitted(messages: typeof english) {
+async function expectSubmitted(messages: RunMessages) {
   expect(screen.queryByRole("dialog", { name: messages.runTitle })).not.toBeInTheDocument();
   expect(screen.getByRole("status")).toHaveTextContent(messages.runStarted);
   expect(screen.queryByText(messages.runError)).not.toBeInTheDocument();
