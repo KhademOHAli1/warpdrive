@@ -8,6 +8,7 @@ export const fileEntityType = pgEnum("file_entity_type", [
   "organization",
   "activity",
   "email_message",
+  "email_mailbox",
 ]);
 
 export const fileStatus = pgEnum("file_status", FILE_STATUS);

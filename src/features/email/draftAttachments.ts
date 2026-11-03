@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
+import type { FILE_ENTITY_TYPE } from "@/constants/fileEntityTypes";
 import type { Db } from "@/db/client";
 import { canActorAccessParent } from "@/features/files/fileAuthz";
 import type { AuthUser } from "@/features/permissions/types";
@@ -27,7 +28,7 @@ export async function resolveDraftAttachments(
       | {
           filename: string;
           size_bytes: string | number;
-          entity_type: "deal" | "person" | "organization";
+          entity_type: (typeof FILE_ENTITY_TYPE)[number];
           entity_id: string;
         }
       | undefined;

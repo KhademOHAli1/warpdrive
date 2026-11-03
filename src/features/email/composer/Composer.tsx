@@ -199,7 +199,7 @@ export function Composer({
 
   const attachEntityId = context?.kind === "deal" ? context.dealId : activeAccountId;
   const attachEntityType =
-    context?.kind === "deal" ? ("deal" as const) : ("email_message" as const);
+    context?.kind === "deal" ? ("deal" as const) : ("email_mailbox" as const);
 
   return (
     <section

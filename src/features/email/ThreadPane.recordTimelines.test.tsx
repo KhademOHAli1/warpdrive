@@ -3,10 +3,23 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
 import type { ThreadMailCapabilities } from "./imapThreadOperationsCapabilities";
+import {
+  applyReadIntent,
+  applyUnreadIntent,
+  prepareCreatedReadIntent,
+  type ReadInput,
+  reconcileAppliedReadIntent,
+} from "./ThreadPane.readIntent.test.fixtures";
 
 vi.mock("./readActions", () => ({
-  markThreadReadAction: () => Promise.resolve({ ok: true, value: { threadId: "t1" } }),
-  markThreadUnreadAction: () => Promise.resolve({ ok: true, value: { threadId: "t1" } }),
+  markThreadReadAction: (_csrf: string, input: ReadInput) => applyReadIntent(input),
+  markThreadUnreadAction: (_csrf: string, input: ReadInput) => applyUnreadIntent(input),
+}));
+vi.mock("./readIntentActions", () => ({
+  prepareThreadReadIntentAction: (_csrf: string, input: { threadId: string; read: boolean }) =>
+    prepareCreatedReadIntent(input),
+  reconcileThreadReadIntentAction: (_csrf: string, input: ReadInput) =>
+    reconcileAppliedReadIntent(input),
 }));
 vi.mock("./threadVisibilityActions", () => ({ setThreadVisibilityAction: vi.fn() }));
 vi.mock("@/utils/csrfCookie", () => ({ readCsrfToken: () => "csrf" }));
