@@ -12,6 +12,7 @@ const { ALL_PERMISSION_FLAG_KEYS } = await import("../../src/constants/permissio
 const id = "00000000-0000-4000-8000-000000000501";
 const permission = "00000000-0000-4000-8000-000000000502";
 const pipeline = "00000000-0000-4000-8000-000000000503";
+const group = "00000000-0000-4000-8000-000000000504";
 try {
   await pool.query(
     "INSERT INTO permission_sets(id,name,flags) VALUES($1,'CI browser permissions',$2)",
@@ -20,10 +21,15 @@ try {
       JSON.stringify(Object.fromEntries(ALL_PERMISSION_FLAG_KEYS.map((key) => [key, true]))),
     ],
   );
+  await pool.query("INSERT INTO visibility_groups(id,name) VALUES($1,'CI browser group')", [group]);
   await pool.query(
-    "INSERT INTO users(id,email,name,permission_set_id) VALUES($1,'browser@example.invalid','CI Browser',$2)",
-    [id, permission],
+    "INSERT INTO users(id,email,name,permission_set_id,primary_visibility_group_id) VALUES($1,'browser@example.invalid','CI Browser',$2,$3)",
+    [id, permission, group],
   );
+  await pool.query("INSERT INTO visibility_group_members(group_id,user_id) VALUES($1,$2)", [
+    group,
+    id,
+  ]);
   await pool.query(
     "INSERT INTO auth_users(id,email,name,email_verified) VALUES($1,'browser@example.invalid','CI Browser',true)",
     [id],
