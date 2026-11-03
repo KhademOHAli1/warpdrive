@@ -445,6 +445,7 @@
     "members": "اعضا",
     "add_or_remove_users_from_this_group": "کاربران را به این گروه اضافه کنید یا از آن خارج کنید.",
     "no_members_yet": "هنوز عضوی اضافه نشده است.",
+    "visibilityGroupMembersUnavailable": "فهرست اعضای این گروه در دسترس نیست. دوباره تلاش کنید.",
     "remove": "حذف",
     "add_member": "افزودن عضو",
     "select_a_user": "یک کاربر انتخاب کنید",

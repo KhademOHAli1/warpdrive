@@ -1,9 +1,10 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { Button } from "@/components/ui/Button";
 import { Combobox, type ComboboxOption } from "@/components/ui/Combobox";
+import { useMessages } from "@/features/i18n/LocaleProvider";
 import { addGroupMemberAction, removeGroupMemberAction } from "@/features/identity/actions/groups";
 import { IdentityActionError } from "@/features/identity/IdentityActionError";
 import { settingsIdentityError } from "@/features/identity/settingsMessages";
@@ -28,6 +29,44 @@ interface Props {
   allUsers: AssignableUser[];
 }
 
+// An unknown roster never exposes empty-state copy or membership mutations.
+export function GroupMembersUnavailable(): React.ReactElement {
+  const L = useSettingsMessages();
+  const messages = useMessages();
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+
+  return (
+    <SettingsCard>
+      <SettingsCardHeader
+        title={L._extra.members}
+        description={L._extra.add_or_remove_users_from_this_group}
+      />
+      <SettingsCardBody className="space-y-3">
+        <p role="alert" className="text-sm text-destructive">
+          {L._extra.visibilityGroupMembersUnavailable}
+        </p>
+        <Button
+          type="button"
+          variant="outline"
+          disabled={isPending}
+          onClick={() => {
+            startTransition(() => {
+              try {
+                router.refresh();
+              } catch {
+                // Keep the unavailable roster and its retry when refresh cannot start.
+              }
+            });
+          }}
+        >
+          {messages.boundaries.retry}
+        </Button>
+      </SettingsCardBody>
+    </SettingsCard>
+  );
+}
+
 // Member roster + add/remove for a single visibility group. Mirrors the inline-form
 // pattern used by CreateGroupForm/CreateTeamForm: local pending/error state, a server
 // action per mutation, router.refresh() to reload the server-loaded roster on success.
@@ -39,35 +78,60 @@ export function GroupMembersClient({ groupId, members, allUsers }: Props): React
   const [selectedUserId, setSelectedUserId] = useState("");
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const inFlight = useRef(false);
 
   const memberIds = new Set(members.map((m) => m.userId));
   const nonMembers = allUsers.filter((u) => !memberIds.has(u.id));
 
+  function refreshMembers(): void {
+    try {
+      router.refresh();
+    } catch {
+      // The mutation was acknowledged; a refresh failure must not report a failed write.
+    }
+  }
+
   function handleRemove(userId: string): void {
+    if (isPending || inFlight.current) return;
+    inFlight.current = true;
     setError(null);
     const csrf = readCsrfToken();
     startTransition(async () => {
-      const result = await removeGroupMemberAction(csrf, { groupId, userId });
-      if (!result.ok) {
-        setError(identityErrorMessage(result.error));
-        return;
+      try {
+        const result = await removeGroupMemberAction(csrf, { groupId, userId });
+        if (!result.ok) {
+          setError(identityErrorMessage(result.error));
+          return;
+        }
+        refreshMembers();
+      } catch {
+        setError(L._errors.generic);
+      } finally {
+        inFlight.current = false;
       }
-      router.refresh();
     });
   }
 
   function handleAdd(): void {
-    if (selectedUserId === "") return;
+    if (selectedUserId === "" || isPending || inFlight.current) return;
+    inFlight.current = true;
     setError(null);
     const csrf = readCsrfToken();
+    const userId = selectedUserId;
     startTransition(async () => {
-      const result = await addGroupMemberAction(csrf, { groupId, userId: selectedUserId });
-      if (!result.ok) {
-        setError(identityErrorMessage(result.error));
-        return;
+      try {
+        const result = await addGroupMemberAction(csrf, { groupId, userId });
+        if (!result.ok) {
+          setError(identityErrorMessage(result.error));
+          return;
+        }
+        setSelectedUserId("");
+        refreshMembers();
+      } catch {
+        setError(L._errors.generic);
+      } finally {
+        inFlight.current = false;
       }
-      setSelectedUserId("");
-      router.refresh();
     });
   }
 
@@ -105,6 +169,7 @@ export function GroupMembersClient({ groupId, members, allUsers }: Props): React
             <span className="mb-1 block text-sm font-medium">{L._extra.add_member}</span>
             <Combobox
               ariaLabel={L._extra.add_member}
+              disabled={isPending}
               value={selectedUserId}
               onChange={setSelectedUserId}
               placeholder={L._extra.select_a_user}

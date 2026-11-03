@@ -11,7 +11,7 @@ import {
 import { createContext } from "@/server/trpc/context";
 import { SettingsHeading } from "../../SettingsHeading";
 import { SettingsPage } from "../../SettingsSurface";
-import { GroupMembersClient } from "./GroupMembersClient";
+import { GroupMembersClient, GroupMembersUnavailable } from "./GroupMembersClient";
 
 export async function generateMetadata() {
   const L = await getServerSettingsMessages();
@@ -36,11 +36,21 @@ export default async function GroupDetailPage({
   const group = groups.find((g) => g.id === groupId);
   if (group === undefined) notFound();
 
-  const [membersResult, allUsers] = await Promise.all([
-    listGroupMembers(db, actor, groupId, signal),
-    listAssignableUsers(db, signal),
-  ]);
-  const members = membersResult.ok ? membersResult.value : [];
+  let roster: ReactNode;
+  try {
+    const [membersResult, allUsers] = await Promise.all([
+      listGroupMembers(db, actor, groupId, signal),
+      listAssignableUsers(db, signal),
+    ]);
+    roster = membersResult.ok ? (
+      <GroupMembersClient groupId={groupId} members={membersResult.value} allUsers={allUsers} />
+    ) : (
+      <GroupMembersUnavailable />
+    );
+  } catch {
+    // The group is known; retain its heading and navigation while the roster is unavailable.
+    roster = <GroupMembersUnavailable />;
+  }
 
   return (
     <SettingsPage>
@@ -58,7 +68,7 @@ export default async function GroupDetailPage({
         title={group.name}
         description={L._extra.manage_who_belongs_to_this_visibility_group}
       />
-      <GroupMembersClient groupId={groupId} members={members} allUsers={allUsers} />
+      {roster}
     </SettingsPage>
   );
 }
