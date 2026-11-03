@@ -51,7 +51,10 @@ export const registryEntries: RegistryEntry[] = [
   classifyInventory(mailboxFileAuthorizationIds1, {
     ...classifications.files,
     owner: "MAIL mailbox file authorization",
-    categories: ["mailbox and workforce identifiers", "current owner activity and invitation state"],
+    categories: [
+      "mailbox and workforce identifiers",
+      "current owner activity and invitation state",
+    ],
     subjectRelation:
       "Mailbox ownership authorizes local file access but does not identify every subject in attachment contents. Account IDs are explicit mailbox parents, not message IDs or reviewed subject scope.",
     purpose:
