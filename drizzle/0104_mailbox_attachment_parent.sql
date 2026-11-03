@@ -1,0 +1,1 @@
+ALTER TYPE "public"."file_entity_type" ADD VALUE 'email_mailbox';

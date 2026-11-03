@@ -6,6 +6,22 @@ import { LocaleProvider } from "@/features/i18n/LocaleProvider";
 import type { MailboxConnectionView } from "../connections/types";
 import { emailMessagesForLocale } from "../emailMessages";
 
+const upload = vi.fn((_csrf: unknown, _input: Record<string, unknown>) => {
+  void _csrf;
+  void _input;
+  return Promise.resolve({
+    ok: true,
+    value: {
+      fileId: "new-mailbox-file",
+      post: { url: "https://unit-storage.invalid/upload", fields: {} },
+    },
+  });
+});
+vi.mock("@/features/files/serverActions", () => ({
+  requestUploadAction: (csrf: unknown, input: Record<string, unknown>) => upload(csrf, input),
+  confirmUploadAction: () => Promise.resolve({ ok: true }),
+}));
+
 const save =
   vi.fn<
     (
@@ -92,8 +108,12 @@ const draft = {
   trackOpens: true,
   trackLinks: false,
 };
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  vi.unstubAllGlobals();
+});
 beforeEach(() => {
+  upload.mockClear();
   save.mockReset();
   save.mockImplementation((_csrf, input) =>
     Promise.resolve({ ok: true, value: { id: String(input.id ?? input.createId) } }),
@@ -240,4 +260,34 @@ it("keeps the original mailbox after a copy failure and retries with the same co
   expect(attempts[0]?.[1].createId).toBe(attempts[1]?.[1].createId);
   expect(attempts[0]?.[1].sendIntentId).toBe(attempts[1]?.[1].sendIntentId);
   expect(screen.getByText("private@example.com")).toBeInTheDocument();
+});
+
+it("uploads subsequent attachments into the selected mailbox after a real draft copy", async () => {
+  vi.stubGlobal("fetch", () => Promise.resolve(new Response(null, { status: 204 })));
+  const L = composerMailboxMessages("en");
+  render(
+    <Composer
+      accountId="first"
+      fromAddress="first@example.com"
+      mailboxes={mailboxes}
+      draft={draft}
+    />,
+  );
+  fireEvent.keyDown(screen.getByRole("combobox", { name: L.chooseSender }), { key: "ArrowDown" });
+  fireEvent.click(screen.getByRole("option", { name: /second@example.com/ }));
+  fireEvent.click(screen.getByRole("button", { name: L.copyConfirm }));
+  await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+  const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+  Object.defineProperty(input, "files", {
+    value: [new File(["selected mailbox bytes"], "selected.txt", { type: "text/plain" })],
+    configurable: true,
+  });
+  fireEvent.change(input);
+  await waitFor(() => expect(upload).toHaveBeenCalledTimes(1));
+  await waitFor(() => expect(screen.getByText("selected.txt")).toBeInTheDocument());
+  expect(upload).toHaveBeenCalledWith(
+    "csrf",
+    expect.objectContaining({ entityType: "email_mailbox", entityId: "second" }),
+  );
+  expect(screen.getByText("پیشنهاد.pdf")).toBeInTheDocument();
 });

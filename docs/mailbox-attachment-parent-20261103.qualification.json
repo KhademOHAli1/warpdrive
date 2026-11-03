@@ -1,0 +1,436 @@
+{
+  "schemaVersion": 1,
+  "status": "BOUNDED_STATIC_NATIVE_QUALIFIED_PENDING_PRODUCTION_AND_PUBLICATION",
+  "recordedAtUtc": "2026-11-03T11:20:02.649743+00:00",
+  "issues": [908, 84],
+  "scope": "Explicit mailbox attachment parent for ordinary fresh/resumed/reply composition; bounded contribution to the mailbox journey.",
+  "source": {
+    "baseRevision": "57cbbacaf693f75733a15c39b7be48e594f38244",
+    "candidateRevision": null,
+    "candidateState": "QUALIFIED_OWNED_SOURCE_FOR_LOCAL_CANONICAL_ADOPTION",
+    "manifest": {
+      "path": "/Users/ali/Developer/warpdrive-settings-ux/.runtime/goal-mailbox-composer-attachment/qualification-source3/source-manifest.json",
+      "sha256": "3eba50f4ed6e8691cd84a01bbcb61f18937086833850b927f9514063414f4820"
+    },
+    "files": 7781,
+    "overlayPaths": 22,
+    "ownedPins": [
+      {
+        "path": "src/constants/fileEntityTypes.ts",
+        "sha256": "26dbf1d91c4f492ab56a8eabfaa5996301b5a6f3dee8ca31b044c3f17b768667",
+        "mode": 420
+      },
+      {
+        "path": "src/db/schema/files.ts",
+        "sha256": "affb6f280aafc0d5e94df500ad0e94daede886d8a2d2f1337681eebf84854181",
+        "mode": 420
+      },
+      {
+        "path": "src/features/files/mailboxFileAuthz.ts",
+        "sha256": "d5eb92fa40ea7e290c2fb467a24217c370b1616a119e46055adc231ac0aed5a8",
+        "mode": 420
+      },
+      {
+        "path": "src/features/files/fileAuthz.ts",
+        "sha256": "bcfcc65eff92395f3ddef59b4713ab215886c08197b558a0273bb8ccc7415333",
+        "mode": 420
+      },
+      {
+        "path": "src/features/files/fileWriteAuthz.ts",
+        "sha256": "46b020eae6c3e6f2f339966c2871357839331530e562323bc4b26edbf208c717",
+        "mode": 420
+      },
+      {
+        "path": "src/features/email/composer/Composer.tsx",
+        "sha256": "2dcba90996c41e470dd4dfa167ba3a6ccc97a37faa3b863be8685876e0e6d791",
+        "mode": 420
+      },
+      {
+        "path": "src/features/email/composer/ComposerForm.tsx",
+        "sha256": "4b343ec9e26167e9850be0508d9130b6b72beaa0a96c0bf4b43c24c291e92017",
+        "mode": 420
+      },
+      {
+        "path": "src/features/email/composer/AttachButton.tsx",
+        "sha256": "e3c3a1823eb603f41fe231350bd8087c14e23d19ef2b7c1d0f75907c2316002e",
+        "mode": 420
+      },
+      {
+        "path": "src/features/email/draftAttachments.ts",
+        "sha256": "5320e3e777a806f944f305a7581ff8164494a4eac328ba303596bbefc5e09d8e",
+        "mode": 420
+      },
+      {
+        "path": "src/features/files/mailboxFileAuthz.integration.test.ts",
+        "sha256": "751a395c1895a31e06ce4fa45b76f3b9ce894ba37d2c186df09b2910bdb23131",
+        "mode": 420
+      },
+      {
+        "path": "src/features/email/composer/ComposerAttachments.test.tsx",
+        "sha256": "e0cb0432e53c2b5751bfea2b53f1bdbd37f81d71cbc5f65c8c419f51f2afa7f3",
+        "mode": 420
+      },
+      {
+        "path": "src/features/email/composer/Composer.mailboxes.test.tsx",
+        "sha256": "11d31d337f6c03abe4a866623be8f0f06638a33403c3658382eb4f99a0ab1a21",
+        "mode": 420
+      },
+      {
+        "path": "src/db/migrationAdmissionMailboxAttachment.integration.test.ts",
+        "sha256": "e9381e3e3105698a6c2bf974d338e5344445e067d2d377eeb9fba082568b85d4",
+        "mode": 420
+      },
+      {
+        "path": "src/features/privacy/registryIdsInfrastructure1.ts",
+        "sha256": "a4e8b49b89b67de782bf49d3c8809765ba1dacc478bfc628ec1958d5630ecae8",
+        "mode": 420
+      },
+      {
+        "path": "src/features/privacy/registryIdsEmail1.ts",
+        "sha256": "715cbfa5b3389f632810aa0e7d4006f2ef3ac4126917eed89ff16118c6d3c9fb",
+        "mode": 420
+      },
+      {
+        "path": "src/features/privacy/registryIdsMail1.ts",
+        "sha256": "b27274dc7c9fee4a2bc521c8b9879089b39f26a2b049c8e38d1a7272d8385363",
+        "mode": 420
+      },
+      {
+        "path": "src/features/privacy/registryIdsFiles1.ts",
+        "sha256": "9a18b01e6e8539adce1bcfeb5dc46f86c9caab4cbf2d1d377745b928c1ebd70b",
+        "mode": 420
+      },
+      {
+        "path": "src/features/privacy/registryEntries.ts",
+        "sha256": "f285758ab4d2279cab5bcd93ba7cf367065a6653ba4683bf0a0e6059e270da0d",
+        "mode": 420
+      },
+      {
+        "path": "docs/privacy-inventory-report.json",
+        "sha256": "f3d1c8c4d7481ace07ea8aaab438cbc8b7dc1bb71a7511ac0922e4fba511cbdb",
+        "mode": 420
+      },
+      {
+        "path": "drizzle/0104_mailbox_attachment_parent.sql",
+        "sha256": "ad52e5963eefbc52c72a7a1f275d34294a7d93dbe1178e42efb7c214e0cdae29",
+        "mode": 420
+      },
+      {
+        "path": "drizzle/meta/0104_snapshot.json",
+        "sha256": "3fbb4eb89edd435673a86cd2143e21f648e1695cb58ac3f35612605bca4ee745",
+        "mode": 420
+      },
+      {
+        "path": "drizzle/meta/_journal.json",
+        "sha256": "4ce97b453a5d2ba493947b66a4b55d1b021a8ec3b4df56c092668ceb4375cec5",
+        "mode": 420
+      }
+    ],
+    "sourceReviewCut": "Core independent review is pinned to source1 manifest6f6256e1. Source2 changes only two typed mock bodies; source3 changes only the paused-account seed representation in one native test. Production, registry, schema and all test assertions are unchanged. Compiler/runtime evidence remains on its actual cut. Independent source3 addendum reconstructs all three fixture-only changes and preserves all remaining7778 inputs."
+  },
+  "implementation": [
+    "Non-deal Composer uploads use email_mailbox with activeAccountId. Deal composition retains its actual deal parent; email_message continues to require a real message UUID.",
+    "The mailbox read and write dispatchers require an active actor and a current database mailbox owner whose user is active and not invited. Missing/foreign mailbox IDs, administrator role and shared-message visibility grant no ownership bypass.",
+    "Local draft/file access does not depend on provider type, connected status or paused state. This adds no sending authority or provider mutation.",
+    "Existing persisted file parent is reauthorized for draft attachment resolution and initial interactive send; caller input cannot reparent an existing file. Same-owner sender A-to-B copy retains fileIds and requires continued access to the original parent.",
+    "Existing upload/confirm/list/download storage behavior and immutable queued send snapshots/replay remain unchanged."
+  ],
+  "migration": {
+    "tag": "0104_mailbox_attachment_parent",
+    "statement": "ALTER TYPE \"public\".\"file_entity_type\" ADD VALUE 'email_mailbox';",
+    "journalEntriesBefore": 104,
+    "journalEntriesAfter": 105,
+    "historicalSqlAndSnapshotFilesPreserved": 204,
+    "journalPrefix104Preserved": true,
+    "generatedPins": {
+      "drizzle/0104_mailbox_attachment_parent.sql": {
+        "sha256": "ad52e5963eefbc52c72a7a1f275d34294a7d93dbe1178e42efb7c214e0cdae29",
+        "mode": 420
+      },
+      "drizzle/meta/0104_snapshot.json": {
+        "sha256": "3fbb4eb89edd435673a86cd2143e21f648e1695cb58ac3f35612605bca4ee745",
+        "mode": 420
+      },
+      "drizzle/meta/_journal.json": {
+        "sha256": "4ce97b453a5d2ba493947b66a4b55d1b021a8ec3b4df56c092668ceb4375cec5",
+        "mode": 420
+      }
+    },
+    "installedUpgradeAcceptance": "Source2: new populated104-to105 enum admission and historical103-to104 read-operation admission each passed within Native2 overall38PASS/2FAIL run. This establishes those database fixture outcomes, not browser/provider/installation-wide acceptance."
+  },
+  "localEvidence": [
+    {
+      "kind": "baselineRed",
+      "path": "/Users/ali/Developer/warpdrive-settings-ux/.runtime/goal-mailbox-composer-attachment/reproduction1/control/native.receipt.json",
+      "sha256": "7049cb9918b8431beb96dee473a4bc21b366fe9eb0f420317ba31e580aef87a8",
+      "recordedState": "FAIL",
+      "outcome": "Expected owner-upload assertion failed; four controls passed. Overall FAIL retained.",
+      "scope": "Exact Q baseline with one reproducer: account UUID incorrectly submitted as an email_message parent; four foreign/admin/missing/real-message controls. Not post-fix acceptance.",
+      "inclusiveSeconds": 7.759976000059396
+    },
+    {
+      "kind": "focusedUi",
+      "path": "/Users/ali/Developer/warpdrive-settings-ux/.runtime/goal-mailbox-composer-attachment/focused1/receipt.json",
+      "sha256": "14f37e808c93aa93dafce95ce9b7ccece961c1b43edf1930d9ab85651285322b",
+      "recordedState": "PASS",
+      "outcome": "15 of15 cases in two complete component suites passed.",
+      "scope": "Earlier pre-format implementation cut; seven attachment and eight mailbox cases. Mocked server actions do not establish real upload, storage or browser acceptance.",
+      "inclusiveSeconds": 4.805508499965072
+    },
+    {
+      "kind": "biome13",
+      "path": "/Users/ali/Developer/warpdrive-settings-ux/.runtime/goal-mailbox-composer-attachment/format4/receipt.json",
+      "sha256": "141f2c734182398c4bf03d5920746f423bb55cb8144635f762250e188fff733c",
+      "recordedState": "PASS_BIOME13",
+      "outcome": "Thirteen owned source/test files passed.",
+      "scope": "Earlier cut before the two explicit unused-parameter mock corrections; not a current whole-candidate formatter result.",
+      "inclusiveSeconds": 0.21093429194297642
+    },
+    {
+      "kind": "privacyInventory",
+      "path": "/Users/ali/Developer/warpdrive-settings-ux/.runtime/goal-mailbox-composer-attachment/privacy-companion1/verification1/receipt.json",
+      "sha256": "04e6fe689c8659a1069784acb415136e51f12662805271f811a27257002fd211",
+      "recordedState": "PASS",
+      "outcome": "2433 eligible source files,2236 classified declarations; no missing or invalid classifications.",
+      "scope": "Source inventory only, fingerprint7ea2265d8c076dbaff4baf12bfbb3598af42e89c12dd6332ed4c0895dc7af6e7; no lifecycle capability or physical/provider acceptance.",
+      "inclusiveSeconds": 6.483881874941289
+    },
+    {
+      "kind": "generation2",
+      "path": "/Users/ali/Developer/warpdrive-settings-ux/.runtime/goal-mailbox-composer-attachment/generation2/generation.receipt.json",
+      "sha256": "c87864eedb77837fa9a452f89e373ad3126174f6cac28b5af04e7d2352c544d4",
+      "recordedState": "GENERATED_DDL_ONLY_PASS_NATIVE_AND_STATIC_PENDING",
+      "outcome": "Offline Drizzle generation passed; enum append only with matching snapshot/journal.",
+      "scope": "No database services; all204 historical SQL/snapshot bytes and104-entry journal prefix retained.",
+      "inclusiveSeconds": 1.8179253749549389
+    },
+    {
+      "kind": "independentCoreSourceReview",
+      "path": "/Users/ali/Developer/warpdrive-settings-ux/.runtime/goal-mailbox-composer-attachment/review/core-source-review.json",
+      "sha256": "dddf62c7be6c871a910e2f7dae41ce900538bcebfd7cac7f1585ede7e1573d0e",
+      "recordedState": "SOURCE_REVIEW_ACCEPTED_NO_CONCRETE_FINDINGS",
+      "outcome": "No concrete findings within the approved bounded contract.",
+      "scope": "Source review on source1 manifest6f6256e1; no runtime or concurrent-revocation proof.",
+      "inclusiveSeconds": null
+    },
+    {
+      "kind": "static1",
+      "path": "/Users/ali/Developer/warpdrive-settings-ux/.runtime/goal-mailbox-attachment-qualification/static1/static.receipt.json",
+      "sha256": "54f292817320807e6e26341adcc716c1207c72c2f893a07af6da0d00db11b8ac",
+      "recordedState": "FAIL",
+      "outcome": "Fresh typegen and full configured TypeScript passed; typed lint18 failed on four unused parameters in two test mocks. Overall FAIL retained; units/native were not run.",
+      "scope": "Exact source1 cut. Typegen1.054s; fullTSC17.512s; lint8.252s. All groups gone, source/harness/foreign pins held and cleanup errors empty.",
+      "inclusiveSeconds": 28.853033958002925
+    },
+    {
+      "kind": "static2",
+      "path": "/Users/ali/Developer/warpdrive-settings-ux/.runtime/goal-mailbox-attachment-qualification/static2/static.receipt.json",
+      "sha256": "75750e193e187ffa0de5ab68d4cea089aaacbb77ef2f15b62ec382c1e84b4985",
+      "recordedState": "PASS",
+      "outcome": "70 of70 cases across ten complete unit suites, typed lint18 and Biome2 passed.",
+      "scope": "Exact source2; typegen/fullTSC were not repeated. Actual Static1 successful typegen/fullTSC and33 fresh generated inputs are retained through the pinned source2 delta proof; original Static1 overallFAIL remains.",
+      "inclusiveSeconds": 14.631753040943295
+    },
+    {
+      "kind": "static2RootTerminalReview",
+      "path": "/Users/ali/Developer/warpdrive-settings-ux/.runtime/goal-mailbox-attachment-qualification/static2/root-terminal-review.json",
+      "sha256": "6236fa1f7977113b3c041fe39425dd971850686f621c157fe5570fecba9af0c8",
+      "recordedState": "ROOT_VERIFIED_TERMINAL_PASS",
+      "outcome": "Root verified actual terminal0 and all owned groups gone.",
+      "scope": "Static2 receipt75750e19; actual source/foreign/private cleanup passed.",
+      "inclusiveSeconds": null
+    },
+    {
+      "kind": "native2",
+      "path": "/Users/ali/Developer/warpdrive-settings-ux/.runtime/goal-mailbox-attachment-qualification/native2/native.receipt.json",
+      "sha256": "fd8e0908f3cbe5bf4810877a40320baec6444c197ef0457371d175e463da1439",
+      "recordedState": "FAIL",
+      "outcome": "40 cases:38 passed,2 failed. Both failures occurred during paused IMAP/Gmail fixture INSERT, before attachment authorization. OverallFAIL retained.",
+      "scope": "Exact source2. New populated upgrade1, historical read upgrade1, legacy22 and mailbox-authority14 passed; two paused states were incorrectly passed as enum values.",
+      "inclusiveSeconds": 13.371355165960267
+    },
+    {
+      "kind": "native2RootTerminalReview",
+      "path": "/Users/ali/Developer/warpdrive-settings-ux/.runtime/goal-mailbox-attachment-qualification/native2/root-terminal-review.json",
+      "sha256": "9cce8f9f177a5c1684b5bcedb993fa4b4cafd69292212dc7d82cb351e3a0b909",
+      "recordedState": "ROOT_VERIFIED_TERMINAL_FAIL_38PASS_2FIXTURE_INSERT_FAILURES",
+      "outcome": "Root verified terminal1, owned process/PG label gone and cleanup passed.",
+      "scope": "Original38PASS/2FAIL is not relabeled into a40PASS result.",
+      "inclusiveSeconds": 13.371355165960267
+    },
+    {
+      "kind": "native3Failure",
+      "path": "/Users/ali/Developer/warpdrive-settings-ux/.runtime/goal-mailbox-attachment-qualification/native3/native.receipt.json",
+      "sha256": "06900ee302aac2c1fc4473bcec2d4b89edbe9582524c9c4dff1dc20a82c74df9",
+      "recordedState": "FAIL",
+      "outcome": "FAILbeforePG/native0; actualBiome1PASS; lintwrongnativecap andEPERMcleanup retained.",
+      "inclusiveSeconds": 7.691158000030555
+    },
+    {
+      "kind": "native3DelayedCleanup",
+      "path": "/Users/ali/Developer/warpdrive-settings-ux/.runtime/goal-mailbox-attachment-qualification/native3/root-delayed-terminal-review.json",
+      "sha256": "363dfe5b7e779de55ae866256d13e669625e8e916ac37593c3e558a5d0ccc7e9",
+      "recordedState": "ACTUAL_FAIL_RETAINED_DELAYED_ROOT_CONFIRMED_GROUPS_GONE",
+      "outcome": "Rootlaterobservedexactgroupsgone, signals0; originalreceiptunchanged.",
+      "inclusiveSeconds": null
+    },
+    {
+      "kind": "native4",
+      "path": "/Users/ali/Developer/warpdrive-settings-ux/.runtime/goal-mailbox-attachment-qualification/native4/native.receipt.json",
+      "sha256": "7cceabaeb2756405c948b5becebea94560466aaba4f2b6ce9ee88b484b127613",
+      "recordedState": "PASS",
+      "outcome": "PASS16allcurrentauthcases+typedlint1; actualcleanup/sourceforeignprivateheld.",
+      "inclusiveSeconds": 15.522505166940391
+    },
+    {
+      "kind": "native4RootReview",
+      "path": "/Users/ali/Developer/warpdrive-settings-ux/.runtime/goal-mailbox-attachment-qualification/native4/root-terminal-review.json",
+      "sha256": "a921cb8e08861bbb9a2e9222fbc95b7beb1d5c8e1126afd2b5f5145e1b13359b",
+      "recordedState": "ROOT_VERIFIED_TERMINAL_PASS16",
+      "outcome": "Rootverifiedactualterminal0/groupsandPGlabelgone.",
+      "inclusiveSeconds": 15.522505166940391
+    },
+    {
+      "kind": "source3IndependentAddendum",
+      "path": "/Users/ali/Developer/warpdrive-settings-ux/.runtime/goal-mailbox-composer-attachment/review/core-source-review-source3-addendum.json",
+      "sha256": "3430c7c831d60ba2ee84e3996b55a652caf6dfa3dacd90c675a5eceab73186fb",
+      "recordedState": "SOURCE3_TEST_ONLY_ADDENDUM_ACCEPTED",
+      "outcome": "Only3fixturechanges; priorindependentsourceacceptancecontinued, nofindings.",
+      "inclusiveSeconds": null
+    }
+  ],
+  "minimumTestCorrection": {
+    "paths": [
+      "src/features/email/composer/Composer.mailboxes.test.tsx",
+      "src/features/email/composer/ComposerAttachments.test.tsx"
+    ],
+    "change": "Retain original typed two-argument mock signatures and return values; explicitly discard both unused argument values. Assertions and production bytes unchanged.",
+    "handoff": {
+      "path": "/Users/ali/Developer/warpdrive-settings-ux/.runtime/goal-mailbox-composer-attachment/mock-lint-fix1/handoff.json",
+      "sha256": "0b415758a47255a17bc04e47c01d7350ca0f153d031690f48aea647a788e4a40"
+    },
+    "exactDiff": {
+      "path": "/Users/ali/Developer/warpdrive-settings-ux/.runtime/goal-mailbox-composer-attachment/mock-lint-fix1/exact.diff",
+      "sha256": "64086c59928c57c72242d67ad6c9526b4681944ce869e4c4124559ae53f51a5f"
+    }
+  },
+  "privacy": {
+    "report": {
+      "path": "docs/privacy-inventory-report.json",
+      "sha256": "f3d1c8c4d7481ace07ea8aaab438cbc8b7dc1bb71a7511ac0922e4fba511cbdb"
+    },
+    "sourceFingerprint": "7ea2265d8c076dbaff4baf12bfbb3598af42e89c12dd6332ed4c0895dc7af6e7",
+    "eligibleSourceFiles": 2433,
+    "classifiedDeclarations": 2236,
+    "missing": [],
+    "invalid": [],
+    "change": "Four superseded reviewed source digests refreshed; helper sourceReview and syntactic execute:sql identifier classified as operational current-owner SELECT. Existing stores/namespaces and unsupported lifecycle capabilities are retained."
+  },
+  "separateQEvidence": {
+    "revision": "57cbbacaf693f75733a15c39b7be48e594f38244",
+    "scope": "Prior durable-read operation/reconciliation implementation; separate exact source cut, not attachment fix validation. Revision is local at draft creation.",
+    "sourceManifestSha256": "a6f130d6880d4d92a4c458e44af2fe3a1072651e48f8fb18537ba0f26e101e12",
+    "unitAndPrivacy": {
+      "cases": 307,
+      "passed": 307,
+      "path": "/Users/ali/Developer/warpdrive-settings-ux/.runtime/goal-mail-read-recovery-next/qualification2/static2/static.receipt.json",
+      "sha256": "cd088c755147003ace644f16b4314b58906e0eb5ebc6f8578d0a0ceecd44d43b"
+    },
+    "native": {
+      "cases": 138,
+      "passed": 138,
+      "path": "/Users/ali/Developer/warpdrive-settings-ux/.runtime/goal-mail-read-recovery-next/qualification2/native2/native.receipt.json",
+      "sha256": "f422ea58604104d6d73f8ea065add38f9a5627b67d26960ba58c8ab0360c4184"
+    }
+  },
+  "pendingEvidence": {
+    "canonicalAdoption": "PENDING",
+    "productionBuild": "PENDING",
+    "populatedBrowserAndSmtpJourney": "PENDING",
+    "exactCandidateHostedCi": "PENDING",
+    "publication": "PENDING",
+    "issue908FullScopeAcceptance": "OPEN",
+    "humanJourney84": "OPEN"
+  },
+  "limits": [
+    "Separate receipts remain on their exact source cuts; counts overlap and are not one combined campaign or whole-project acceptance.",
+    "Pre-storage authorization is not a concurrent revocation fence and does not revoke an issued presigned URL. Existing queued snapshots/replay do not acquire new blanket current-parent acceptance.",
+    "Native2 remains an overall38PASS/2FAIL run. Source3 changes only its paused fixture seed; affected16 rerun is pending. No single40PASS campaign is claimed.",
+    "No current production build, actual populated browser upload/send, real provider, installation, release, deployment or customer acceptance is established here.",
+    "Neither issue908 nor parent journey84 is closed by this document."
+  ],
+  "results": {
+    "static2": {
+      "cases": 70,
+      "passed": 70,
+      "failed": 0,
+      "completeUnitSuites": 10,
+      "typedLintFiles": 18,
+      "biomeFiles": 2,
+      "unitPerFileCounts": {
+        "src/features/privacy/discoveryCoverage.test.ts": 1,
+        "src/features/privacy/registry.test.ts": 18,
+        "src/features/privacy/registryValidity.test.ts": 2,
+        "src/features/privacy/registryDiscovery.test.ts": 10,
+        "src/features/files/keys.test.ts": 7,
+        "src/features/files/serverActions.test.ts": 5,
+        "src/features/files/FileAttachments.test.tsx": 8,
+        "src/features/email/composer/AttachButton.test.tsx": 4,
+        "src/features/email/composer/Composer.mailboxes.test.tsx": 8,
+        "src/features/email/composer/ComposerAttachments.test.tsx": 7
+      },
+      "retainedCompilerEvidence": {
+        "receiptPath": "/Users/ali/Developer/warpdrive-settings-ux/.runtime/goal-mailbox-attachment-qualification/static1/static.receipt.json",
+        "receiptSha256": "54f292817320807e6e26341adcc716c1207c72c2f893a07af6da0d00db11b8ac",
+        "source1ManifestPath": "/Users/ali/Developer/warpdrive-settings-ux/.runtime/goal-mailbox-composer-attachment/qualification-source1/source-manifest.json",
+        "source1ManifestSha256": "6f6256e1d3a60d518aacac93ac91f23a37bbe21836cd40f076f7d86713345eb8",
+        "source2DeltaProofPath": "/Users/ali/Developer/warpdrive-settings-ux/.runtime/goal-mailbox-attachment-qualification/source2-delta-proof.json",
+        "source2DeltaProofSha256": "353582a8152be97c6aa3de5b8c9a912c749bfd48713a31d519f52484453d687b",
+        "actualFreshGeneratedFiles": 33,
+        "originalOverallState": "FAIL",
+        "actualTypegenExitCode": 0,
+        "actualFullTscExitCode": 0,
+        "currentAttemptRepeatsTypegenOrTsc": false,
+        "noQTypeTransfer": true
+      },
+      "inclusiveSeconds": 14.631753040943295
+    },
+    "native2": {
+      "cases": 40,
+      "passed": 38,
+      "failed": 2,
+      "newMailboxAuthorityPassed": 14,
+      "newMailboxAuthorityFixtureFailures": 2,
+      "newPopulatedUpgradePassed": 1,
+      "historicalReadUpgradePassed": 1,
+      "legacyPassed": 22,
+      "inclusiveSeconds": 13.371355165960267,
+      "meaning": "OverallFAIL. Failedcases=IMAPpaused/Gmailpaused fixture INSERT, not a failed permission assertion. No current40green claim."
+    }
+  },
+  "pausedFixtureCorrection": {
+    "handoff": {
+      "path": "/Users/ali/Developer/warpdrive-settings-ux/.runtime/goal-mailbox-composer-attachment/paused-fixture-fix1/handoff.json",
+      "sha256": "29f123e11afc15b32d54694041c9571430f89ab6c97741472c611acc255628eb"
+    },
+    "exactDiff": {
+      "path": "/Users/ali/Developer/warpdrive-settings-ux/.runtime/goal-mailbox-composer-attachment/paused-fixture-fix1/exact.diff",
+      "sha256": "635afe74d7cb5a4d6281d9b2587b4dd5670e19b29d7642b39d676c80439369ed"
+    },
+    "change": "Represent paused as connectionStatus=connected plus paused=true; status enum accepts connected/disconnected/error. Provider matrix, all16 definitions/assertions and denial controls retained.",
+    "affectedFile": "src/features/files/mailboxFileAuthz.integration.test.ts",
+    "affectedFileSha256": "751a395c1895a31e06ce4fa45b76f3b9ce894ba37d2c186df09b2910bdb23131",
+    "validation": "Native3 affected16 pending at draft preparation."
+  },
+  "actualNativeQualification": {
+    "currentAuthSuite": 16,
+    "unchangedPriorUpgrades": 2,
+    "unchangedPriorLegacy": 22,
+    "uniqueCasesWithPassingWitnesses": 40,
+    "singleAll40PassRun": false,
+    "native2Overall": "FAIL38PASS2fixtureFAIL retained",
+    "native3Overall": "FAILbeforePGnative0; wronglintcap/cleanupEPERM retained; delayedRootgroupsgone separatelyverified",
+    "native4Overall": "PASS16/lint1 withfullcleanup",
+    "currentSourceManifestSha256": "3eba50f4ed6e8691cd84a01bbcb61f18937086833850b927f9514063414f4820"
+  }
+}

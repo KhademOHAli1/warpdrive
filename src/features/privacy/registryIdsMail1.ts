@@ -224,7 +224,7 @@ export const mailOutboxIds1: string[] = [
   "sourceReview:src/features/email/attachmentDownloadBytes.ts#457c9be86a68bc050b2332996714ce4c663021758ead997caae101d1d5d344b9",
   "sourceReview:src/features/email/composer/recordComposerActivity.ts#551431cf7fe8badd49b74afb1f709003532f06570a664834009a9067629c03c8",
   "sourceReview:src/features/email/composer/useDraftAutosave.ts#b537b68045e56a2d032b2ab8eacf9753d72a9279d6da1ac85e92ca4e9b367ebe",
-  "sourceReview:src/features/email/draftAttachments.ts#382627aaf1eb8c90457206d6854eebe7bfe90d62c1b40886fc2be58ceae61a54",
+  "sourceReview:src/features/email/draftAttachments.ts#5320e3e777a806f944f305a7581ff8164494a4eac328ba303596bbefc5e09d8e",
   "sourceReview:src/features/email/draftCreation.ts#44772d0600b74d1c52ae502ea54377148f0d1fac2ccdab2d5ae96cc9109571cb",
   "sourceReview:src/features/email/mailJobRecovery.ts#b8239e23dee0c4232374c8014aacfc86ce6e0eb4ac8ce55728fc6e2114c8fa16",
   "sourceReview:src/features/email/mailNotificationRecovery.ts#878ec24562d310a93b92a6782a8a6df3c8f5aa12f5d1b554d65eb1c389ce80f0",

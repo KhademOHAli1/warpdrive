@@ -44,7 +44,7 @@ export const emailIds1: string[] = [
   "sourceReview:src/features/email/attachmentReads.ts#132d749a6637a0408718a3caf0874354ce46addcf9cd529d84b277ee67f6e28c",
   "sourceReview:src/features/email/authoring.ts#0dafc8ffe02308bd4bf2e39597a98400f620aed0cb4e3bd902d2ee4fac0a4ca9",
   "sourceReview:src/features/email/authoringActions.ts#19b4ebd5d49fe4a70372b6871f2e7e1395409f5cd14832d2bea4b5923dc19622",
-  "sourceReview:src/features/email/composer/AttachButton.tsx#63437abc8fab976776d1debe879f56d80e5d43b8fa2a881cf63c80907ad839b1",
+  "sourceReview:src/features/email/composer/AttachButton.tsx#e3c3a1823eb603f41fe231350bd8087c14e23d19ef2b7c1d0f75907c2316002e",
   "sourceReview:src/features/email/composer/dealRecipients.ts#96c3498d32e96d3729285b463b1bbe39b8dd6c447c90669d2cfae6c09577aebc",
   "sourceReview:src/features/email/composer/InsertFieldMenu.tsx#0c88e09df8cccba14846bbfc1b61c529ad7dd3f9b6ba48297d5e1d9ad78b91ee",
   "sourceReview:src/features/email/composer/ScheduleSendPicker.tsx#24cd539150c5cedfaf4c2730a421c2452f743130b6cffdc87ba95f1b9b842ac8",
