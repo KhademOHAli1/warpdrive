@@ -29,8 +29,9 @@ def record_publication(api, evidence, release_id):
             api.request(f"repos/{repo}/issues/{number}/comments", "POST", {"body": body})
             if not any(c.get("body") == body for c in api.pages(f"repos/{repo}/issues/{number}/comments")):
                 raise GateError("Publication receipt comment could not be verified")
-    if api.request(f"repos/{repo}/milestones/{milestone}").get("state") != "closed":
-        api.request(f"repos/{repo}/milestones/{milestone}", "PATCH", {"state": "closed"})
-    if api.request(f"repos/{repo}/milestones/{milestone}").get("state") != "closed":
-        raise GateError("Published milestone closure could not be verified")
+    if evidence.get("close_milestone", True):
+        if api.request(f"repos/{repo}/milestones/{milestone}").get("state") != "closed":
+            api.request(f"repos/{repo}/milestones/{milestone}", "PATCH", {"state": "closed"})
+        if api.request(f"repos/{repo}/milestones/{milestone}").get("state") != "closed":
+            raise GateError("Published milestone closure could not be verified")
     return published["html_url"]

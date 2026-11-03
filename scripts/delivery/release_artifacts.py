@@ -7,10 +7,28 @@ from release_support import GateError, run
 
 def notes(evidence):
     rows = [f"# Warpdrive {evidence['version']}", "", f"Revision: `{evidence['revision']}`", f"Milestone: [{evidence['milestone']['title']}]({evidence['milestone']['url']})", "", "## Accepted deliveries", ""]
+    if evidence.get("release_track") == "mail":
+        rows[2:2] = ["<!-- warpdrive:release-track:mail -->", f"MAIL {evidence['mail_mode']} release; primary issue #{evidence['primary_issue']}.", "This publication accepts only the recorded scope; a technical patch does not accept the full mail programme or a human user journey.", ""]
     rows += [f"- [#{i['number']} {i['title']}]({i['url']}): [acceptance]({i['acceptance']['comment']})" for i in evidence["issues"]]
-    rows += ["", "## Included commits", ""]
-    rows += [f"- [{c['sha'][:12]}]({c['url']}) {c['subject']} ({', '.join('#' + str(n) for n in c['issues'])})" for c in evidence["commits"]]
-    broad = [(c["sha"], n) for c in evidence["commits"] for n in c.get("contributes_to", [])]
+    if evidence.get("release_track") == "mail":
+        context = evidence.get("unreleased_context", [])
+        if context:
+            rows += ["", "## Unreleased source context", "",
+                     "The source snapshot retains this history. These issues are not accepted or released by this publication and receive no publication updates."]
+            rows += [f"- [#{i['number']} {i['title']}]({i['url']}): UNRELEASED context; source issue state `{i['source_state']}`." for i in context]
+        if evidence.get("programme_coverage"):
+            rows += ["", "## Verified full MAIL programme coverage", "",
+                     "Previously released tasks keep their original milestones and publication receipts."]
+            rows += [f"- [#{i['number']} {i['title']}]({i['url']}): [full-scope acceptance]({i['acceptance']['comment']})" for i in evidence["programme_coverage"]]
+        rows += ["", "## Complete source-history ledger", ""]
+        for commit in evidence["commits"]:
+            released = ", ".join("#" + str(n) for n in commit["released_issues"]) or "none"
+            unreleased = ", ".join("#" + str(n) for n in sorted(set(commit["unreleased_issues"] + commit["unreleased_contributions"]))) or "none"
+            rows += [f"- [{commit['sha'][:12]}]({commit['url']}) {commit['subject']} — released scope: {released}; UNRELEASED context: {unreleased}."]
+    else:
+        rows += ["", "## Included commits", ""]
+        rows += [f"- [{c['sha'][:12]}]({c['url']}) {c['subject']} ({', '.join('#' + str(n) for n in c['issues'])})" for c in evidence["commits"]]
+    broad = [] if evidence.get("release_track") == "mail" else [(c["sha"], n) for c in evidence["commits"] for n in c.get("contributes_to", [])]
     if broad:
         rows += ["", "## Contributions to unfinished roadmap scope", ""]
         rows += [f"- `{sha[:12]}` contributes to #{number}; this is not a full-scope completion claim." for sha, number in broad]

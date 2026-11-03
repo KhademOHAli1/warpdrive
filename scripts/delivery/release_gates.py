@@ -274,7 +274,7 @@ def verify_issue(api, repo, number, revision, items, require_closed=True, allow_
         if expected_children != actual_children:
             raise GateError(f"Issue #{number} native children do not cover its canonical full scope")
         for child in children:
-            verify_issue(api, repo, child["number"], revision, items, allow_parent=True, memo=memo, trail=trail + (number,), allow_agent=agent_context)
+            verify_issue(api, repo, child["number"], revision, items, allow_parent=True, memo=memo, trail=trail + (number,), allow_agent=allow_agent)
     blockers = api.pages(f"repos/{repo}/issues/{number}/dependencies/blocked_by")
     if any(b.get("state") != "closed" or b.get("state_reason") != "completed" for b in blockers):
         raise GateError(f"Issue #{number} has an unfinished blocking dependency")
@@ -282,7 +282,7 @@ def verify_issue(api, repo, number, revision, items, require_closed=True, allow_
     if not set(item.get("dependencies", [])).issubset(actual_dependencies):
         raise GateError(f"Issue #{number} is missing a canonical blocking dependency on GitHub")
     for blocker in blockers:
-        verify_issue(api, repo, blocker["number"], revision, items, allow_parent=True, memo=memo, trail=trail + (number,), allow_agent=agent_context)
+        verify_issue(api, repo, blocker["number"], revision, items, allow_parent=True, memo=memo, trail=trail + (number,), allow_agent=allow_agent)
     proof = acceptance(api, repo, issue, item, revision, allow_agent=agent_context)
     memo[memo_key] = {"number": number, "id": item["id"], "title": issue["title"], "url": issue["html_url"], "acceptance": proof}
     return memo[memo_key]
