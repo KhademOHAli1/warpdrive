@@ -29,6 +29,7 @@ import { DealCard } from "./DealCard";
 import { DragDropZones, zoneTransition } from "./DragDropZones";
 import { resolveNeighbors } from "./dragNeighbors";
 import { MoveDealDialog } from "./MoveDealDialog";
+import { NativeStageMoveFeedback } from "./NativeStageMoveFeedback";
 import { NewDealButton } from "./NewDealButton";
 import { useBoardDerived } from "./useBoardDerived";
 import { useBoardPageQuery } from "./useBoardPageQuery";
@@ -43,7 +44,6 @@ export function Board(props: BoardProps): React.ReactNode {
   const { locale } = useLocalePreferences();
   const { pipelineId, selfActorId, stages, cards, pipelines, density, baseCurrency } = props;
   const { serverNow } = props;
-  const { move } = useDealMove(pipelineId);
   const { close } = useDealClose(pipelineId);
   useBoardRealtime(pipelineId, selfActorId);
   const resolveLabels = useLabelColorResolver("deal");
@@ -70,6 +70,9 @@ export function Board(props: BoardProps): React.ReactNode {
     previewDefinition,
     cards,
     initialView: props.initialView,
+  });
+  const stageMove = useDealMove(pipelineId, async () => {
+    await refetch({ throwOnError: true });
   });
 
   // All display derivations (owner + saved-filter + quick-condition narrowing, per-stage sums,
@@ -135,16 +138,25 @@ export function Board(props: BoardProps): React.ReactNode {
 
   // Move a deal to the end of a stage column via the CAS move mutation.
   function moveToStage(dealId: string, toStageId: string): void {
+    if (stageMove.blocked) return;
     const destCards = liveCards.filter((c) => c.stageId === toStageId && c.id !== dealId);
     const { beforePosition, afterPosition } = resolveNeighbors(destCards, destCards.length);
-    const expectedUpdatedAt = cardUpdatedAt[dealId];
-    if (expectedUpdatedAt === undefined) return;
-    move({ dealId, toStageId, beforePosition, afterPosition, expectedUpdatedAt });
+    const card = liveCards.find((candidate) => candidate.id === dealId);
+    if (card === undefined) return;
+    // Missing/invalid tokens require a reload; never fall back to a timestamp precondition.
+    stageMove.move({
+      dealId,
+      toStageId,
+      beforePosition,
+      afterPosition,
+      expectedWriteVersion: card.writeVersion ?? "",
+    });
   }
 
   function onDragEnd(e: DragEndEvent): void {
     setDragActive(false);
     setActiveId(null);
+    if (stageMove.blocked) return;
     const dealId = String(e.active.id);
     const toStageId = e.over !== null ? String(e.over.id) : null;
     const stageFrom = liveCards.find((card) => card.id === dealId)?.stageId ?? "";
@@ -196,6 +208,8 @@ export function Board(props: BoardProps): React.ReactNode {
         canManagePipelines={props.canManagePipelines}
       />
 
+      <NativeStageMoveFeedback move={stageMove} />
+
       {viewUnavailable ? (
         <SavedViewUnavailable
           missing={
@@ -245,6 +259,7 @@ export function Board(props: BoardProps): React.ReactNode {
               pipelineId={pipelineId}
               pipelines={pipelines}
               baseCurrency={baseCurrency}
+              movesDisabled={stageMove.blocked}
             />
           )}
 

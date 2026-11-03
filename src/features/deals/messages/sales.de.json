@@ -597,5 +597,19 @@
     "chooseExisting": "Kontaktauswahl prüfen",
     "selectExisting": "Wähle einen bestehenden Kontakt aus oder fahre ausdrücklich ohne Kontakt fort.",
     "rejected": "Der Speichervorgang wurde abgelehnt ({id}). Deine Deal-Daten bleiben zur Prüfung erhalten."
+  },
+  "nativeMove": {
+    "pending": "Phasenänderung wird gespeichert…",
+    "unknown": "Die Verschiebung konnte nicht bestätigt werden. Lade den aktuellen Stand, bevor du diesen Deal erneut verschiebst.",
+    "confirmed": "Die Verschiebung wurde gespeichert, aber das Board konnte nicht aktualisiert werden. Lade den aktuellen Stand.",
+    "conflict": "Dieser Deal wurde geändert, bevor deine Verschiebung gespeichert wurde. Lade und prüfe den aktuellen Stand.",
+    "denied": "Die Verschiebung war nicht erlaubt. Lade den aktuellen Stand oder melde dich erneut an.",
+    "invalid": "Die Verschiebung konnte nicht gesendet werden. Lade den aktuellen Stand und versuche es erneut.",
+    "unavailable": "Dieser Deal ist in diesem Board derzeit nicht verfügbar. Die aktuelle Ansicht bestätigt nicht, ob eine frühere Verschiebung abgeschlossen wurde.",
+    "moved": "Phasenänderung gespeichert.",
+    "current": "Aktueller Stand geladen. Er kann andere Änderungen enthalten und bestätigt nicht, ob eine frühere Verschiebung abgeschlossen wurde.",
+    "readFailed": "Der aktuelle Stand konnte nicht geladen werden. Deine Verschiebung wird nicht erneut gesendet. Versuche das Laden noch einmal.",
+    "load": "Aktuellen Stand laden",
+    "loading": "Aktueller Stand wird geladen…"
   }
 }

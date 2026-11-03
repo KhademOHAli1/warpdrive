@@ -17,6 +17,7 @@ interface BoardStagesProps {
   pipelineId: string;
   pipelines: BoardProps["pipelines"];
   baseCurrency?: string;
+  movesDisabled?: boolean;
 }
 
 // The horizontal list of stage columns. Extracted from Board so Board stays under the file-size
@@ -30,6 +31,7 @@ export function BoardStages({
   pipelineId,
   pipelines,
   baseCurrency,
+  movesDisabled,
 }: BoardStagesProps): React.ReactNode {
   const translateSales = useAppTranslations("sales");
 
@@ -68,6 +70,7 @@ export function BoardStages({
               pipelineId={pipelineId}
               pipelines={pipelines}
               baseCurrency={baseCurrency}
+              movesDisabled={movesDisabled}
             />
           </li>
         );

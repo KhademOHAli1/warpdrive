@@ -597,5 +597,19 @@
     "chooseExisting": "Review contact selection",
     "selectExisting": "Select an existing contact, or explicitly continue without one.",
     "rejected": "The save was rejected ({id}). Your deal details are still here for review."
+  },
+  "nativeMove": {
+    "pending": "Saving the stage change…",
+    "unknown": "We could not confirm the move. Load the current state before moving this deal again.",
+    "confirmed": "The move was saved, but the Board could not be refreshed. Load its current state.",
+    "conflict": "This deal changed before your move was saved. Load the current state and review it.",
+    "denied": "The move was not permitted. Load the current state or sign in again.",
+    "invalid": "The move could not be submitted. Load the current state and try again.",
+    "unavailable": "This deal is currently unavailable in this Board. The current view does not confirm whether an earlier move completed.",
+    "moved": "Stage change saved.",
+    "current": "Current state loaded. It may include other changes and does not confirm whether an earlier move completed.",
+    "readFailed": "We could not load the current state. Your move will not be sent again. Try loading once more.",
+    "load": "Load current state",
+    "loading": "Loading current state…"
   }
 }

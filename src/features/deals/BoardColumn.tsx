@@ -17,6 +17,7 @@ interface DraggableCardProps {
   density: "comfortable" | "compact";
   now: Date;
   currency?: string;
+  disabled?: boolean;
 }
 
 function DraggableCard(props: DraggableCardProps): React.ReactNode {
@@ -26,6 +27,7 @@ function DraggableCard(props: DraggableCardProps): React.ReactNode {
   const resolveLabels = useLabelColorResolver("deal");
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: card.id,
+    disabled: props.disabled,
     attributes: { roleDescription: translateSales("computed.draggableDeal") },
     data: { stageId: card.stageId, boardPosition: card.boardPosition },
   });
@@ -70,6 +72,7 @@ export interface BoardColumnProps {
   pipelineId: string;
   pipelines: Array<{ id: string; name: string; stages: Array<{ id: string; name: string }> }>;
   baseCurrency?: string;
+  movesDisabled?: boolean;
 }
 
 export function BoardColumn(props: BoardColumnProps): React.ReactNode {
@@ -134,6 +137,7 @@ export function BoardColumn(props: BoardColumnProps): React.ReactNode {
                   rottingDays={rottingDays}
                   density={density}
                   now={now}
+                  disabled={props.movesDisabled}
                 />
               </li>
             ))}

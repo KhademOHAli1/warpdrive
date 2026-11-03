@@ -45,7 +45,7 @@ export async function notifyOnDealUpdate(db: Db, args: NotifyOnDealUpdateArgs): 
 }
 
 interface NotifyOnDealMoveArgs {
-  deal: Deal;
+  deal: Pick<Deal, "id">;
   actorId: string;
   signal: AbortSignal;
 }

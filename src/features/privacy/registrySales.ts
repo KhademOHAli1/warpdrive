@@ -1,5 +1,6 @@
 import { classifications, classifyInventory } from "./registryClassification";
 import { nativeCreationIds1 } from "./registryIdsNativeCreation1";
+import { nativeStageIds1 } from "./registryIdsNativeStage1";
 import {
   salesDesignIds1,
   salesDiagnosticsIds1,
@@ -8,6 +9,27 @@ import {
 } from "./registryIdsSales1";
 
 export const salesInventoryEntries = [
+  classifyInventory(nativeStageIds1, {
+    ...classifications.crm,
+    owner: "native Board stage changes and current-state recovery",
+    categories: [
+      "workforce actor and deal identifiers",
+      "pipeline, stage, order and opaque row revision",
+      "transient move, uncertainty and reconciliation state",
+      "existing stage history and follower notifications",
+    ],
+    subjectRelation:
+      "The workforce actor differs from the people described by the CRM deal. A posted expected actor ID and row revision are deny-only selectors, never credentials or subject-case authority.",
+    purpose:
+      "Apply one authorized native Board stage change with a database-owned UUID precondition; retain uncertain outcomes in document memory and explicitly read current state without blindly resending a move.",
+    disclosure:
+      "CSRF-guarded actions use credential-derived server references and the existing routine native session policy, including modern verification/MFA requirements. Current actor and record visibility/edit permission are rechecked after domain waits and after effects. Returns contain only authorized deal/pipeline/stage IDs, status, order, update time and revision. Current-state reads have no move/create fallback and cannot attest whether the original request completed; the filtered Board refetch preserves existing contact masking.",
+    retention:
+      "Per-actor move state and read gates exist only in document memory. Uncertain, conflicting or acknowledged-but-unrefreshed outcomes remain until an explicit successful current-state read/refetch; a hard reload drops that memory and reads the current Board. Map/Set deletion is transient bookkeeping, not database erasure. No new command receipt, persistent browser store, raw form, purge, expiry or retention period is introduced. Existing deal/history/channel/notification and backup lifecycles remain separate.",
+    externalEffects:
+      "PostgreSQL applies the UUID-conditional row update, stage history and channel notification atomically; final denial rolls them back. Existing best-effort follower notification runs after response outside that transaction. The authority fence covers participating writers only, with no universal or COMMIT-time fence and no whole-transaction/network deadline. Native recovery never retries the mutation automatically. MCP/import and other legacy timestamp consumers remain unchanged; no provider or privacy lifecycle action is added.",
+    erasureTask: "DPL-16",
+  }),
   classifyInventory(nativeCreationIds1, {
     ...classifications.crm,
     owner: "native deal creation and recovery receipts",
