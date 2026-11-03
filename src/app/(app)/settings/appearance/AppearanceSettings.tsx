@@ -1,12 +1,12 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { useId, useState } from "react";
+import { useId, useRef, useState } from "react";
 import { useActionError } from "@/components/shell/ActionErrorProvider";
 import { Button } from "@/components/ui/Button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/RadioGroup";
 import { Select } from "@/components/ui/Select";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
-import { setDensityAction } from "@/features/identity/preferencesActions";
+import { type PrefActionResult, setDensityAction } from "@/features/identity/preferencesActions";
 import type { Density } from "@/features/identity/preferencesSchema";
 import { useSettingsMessages } from "@/features/identity/useSettingsMessages";
 import type { Appearance } from "@/features/theme/appearance";
@@ -19,6 +19,34 @@ import {
   SettingsCardHeader,
 } from "../SettingsSurface";
 
+type SaveStatus = "idle" | "saving" | "saved" | "error";
+
+// Keep both live regions mounted so updates can be announced without moving focus.
+function AppearanceSaveFeedback({
+  status,
+  label,
+  saving,
+  saved,
+  error,
+}: {
+  status: SaveStatus;
+  label: string;
+  saving: string;
+  saved: string;
+  error: string;
+}) {
+  return (
+    <div className="min-w-0 text-sm">
+      <p role="status" aria-label={label} aria-atomic="true" className="text-muted-foreground">
+        {status === "saving" ? saving : status === "saved" ? saved : ""}
+      </p>
+      <p role="alert" aria-label={label} aria-atomic="true" className="text-destructive">
+        {status === "error" ? error : ""}
+      </p>
+    </div>
+  );
+}
+
 export function AppearanceSettings({
   density: storedDensity,
   appearance,
@@ -28,6 +56,7 @@ export function AppearanceSettings({
 }) {
   const L = useSettingsMessages();
   const H = L._hierarchy;
+  const F = H.appearanceFeedback;
   const t = useAppTranslations("shell.appearance");
   const choice = useAppearanceChoice(appearance);
   const router = useRouter();
@@ -35,24 +64,44 @@ export function AppearanceSettings({
   const id = useId();
   const [density, setDensity] = useState(storedDensity);
   const [savedDensity, setSavedDensity] = useState(storedDensity);
-  const [pending, setPending] = useState(false);
-  const [saved, setSaved] = useState(false);
+  const [status, setStatus] = useState<SaveStatus>("idle");
+  const saving = useRef(false);
+  const themeControl = useRef<HTMLDivElement>(null);
+  const pending = status === "saving";
 
   async function save(): Promise<void> {
-    setPending(true);
-    setSaved(false);
+    if (saving.current || density === savedDensity) return;
+    saving.current = true;
+    const nextDensity = density;
+    setStatus("saving");
+    let result: PrefActionResult;
     try {
-      const result = await setDensityAction({ density }, readCsrfToken());
-      if (result.ok) {
-        setSavedDensity(density);
-        setSaved(true);
-        router.refresh();
-      } else reportError(result.error.id);
+      result = await setDensityAction({ density: nextDensity }, readCsrfToken());
     } catch {
+      setStatus("error");
       reportError();
+      return;
     } finally {
-      setPending(false);
+      saving.current = false;
     }
+    if (!result.ok) {
+      setStatus("error");
+      reportError(result.error.id);
+      return;
+    }
+    setSavedDensity(nextDensity);
+    setStatus("saved");
+    try {
+      router.refresh();
+    } catch {
+      // A failed refresh does not undo the save; the generic error would wrongly say it failed.
+    }
+  }
+
+  function retryTheme(): void {
+    // Retry disappears while saving; return keyboard focus to the stable theme control first.
+    themeControl.current?.querySelector<HTMLElement>('[role="combobox"]')?.focus();
+    choice.retry();
   }
 
   return (
@@ -60,17 +109,31 @@ export function AppearanceSettings({
       <SettingsCard>
         <SettingsCardHeader title={H.theme} description={H.themeDescription} />
         <SettingsCardBody className="space-y-3">
-          <Select
-            ariaLabel={H.theme}
-            value={choice.value}
-            onChange={choice.choose}
-            options={[
-              { value: "system", label: t("system") },
-              { value: "day", label: t("day") },
-              { value: "night", label: t("night") },
-            ]}
-          />
+          <div ref={themeControl}>
+            <Select
+              ariaLabel={H.theme}
+              value={choice.value}
+              onChange={choice.choose}
+              options={[
+                { value: "system", label: t("system") },
+                { value: "day", label: t("day") },
+                { value: "night", label: t("night") },
+              ]}
+            />
+          </div>
           <p className="text-sm text-muted-foreground">{H.autoSave}</p>
+          <AppearanceSaveFeedback
+            status={choice.status}
+            label={H.theme}
+            saving={F.themeSaving}
+            saved={F.themeSaved}
+            error={F.themeError}
+          />
+          {choice.status === "error" && (
+            <Button type="button" size="sm" onClick={retryTheme}>
+              {F.themeRetry}
+            </Button>
+          )}
         </SettingsCardBody>
       </SettingsCard>
       <SettingsCard>
@@ -80,9 +143,13 @@ export function AppearanceSettings({
             value={density}
             disabled={pending}
             onValueChange={(value) => {
-              if (value === "comfortable" || value === "compact") {
+              if (
+                !saving.current &&
+                value !== density &&
+                (value === "comfortable" || value === "compact")
+              ) {
                 setDensity(value);
-                setSaved(false);
+                setStatus("idle");
               }
             }}
             aria-label={L.density}
@@ -99,19 +166,23 @@ export function AppearanceSettings({
           </RadioGroup>
           <p className="mt-3 text-sm text-muted-foreground">{H.saveToApply}</p>
         </SettingsCardBody>
-        <SettingsCardFooter>
-          {saved && (
-            <span role="status" className="me-auto text-sm text-muted-foreground">
-              {L.saved}
-            </span>
-          )}
+        <SettingsCardFooter className="flex-wrap">
+          <div className="me-auto min-w-0 flex-1">
+            <AppearanceSaveFeedback
+              status={status}
+              label={L.density}
+              saving={F.densitySaving}
+              saved={F.densitySaved}
+              error={F.densityError}
+            />
+          </div>
           <Button
             type="button"
             size="sm"
             disabled={pending || density === savedDensity}
             onClick={() => void save()}
           >
-            {L.save}
+            {status === "error" ? F.densityRetry : L.save}
           </Button>
         </SettingsCardFooter>
       </SettingsCard>

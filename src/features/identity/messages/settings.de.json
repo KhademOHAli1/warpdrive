@@ -816,6 +816,16 @@
     "autoSave": "Änderungen werden automatisch gespeichert.",
     "saveToApply": "Wählen Sie einen Wert aus und speichern Sie, um ihn zu übernehmen.",
     "theme": "Design",
+    "appearanceFeedback": {
+      "themeSaving": "Design wird gespeichert…",
+      "themeSaved": "Design gespeichert.",
+      "themeError": "Das Design konnte nicht gespeichert werden. Das vorherige Design wird angezeigt. Versuchen Sie es erneut.",
+      "themeRetry": "Design erneut speichern",
+      "densitySaving": "Anzeigedichte wird gespeichert…",
+      "densitySaved": "Anzeigedichte gespeichert.",
+      "densityError": "Die Anzeigedichte konnte nicht gespeichert werden. Ihre Auswahl bleibt erhalten. Versuchen Sie es erneut.",
+      "densityRetry": "Dichte erneut speichern"
+    },
     "themeDescription": "Wählen Sie ein helles oder dunkles Design oder übernehmen Sie die Einstellung Ihres Geräts.",
     "densityDescription": "Legen Sie die Abstände zwischen Zeilen und Bedienelementen fest.",
     "preview": "Formatvorschau",
