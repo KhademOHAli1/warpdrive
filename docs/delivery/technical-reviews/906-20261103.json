@@ -1,0 +1,587 @@
+{
+  "schema_version": 1,
+  "review_type": "independent_source_review",
+  "result": "accepted",
+  "canonical_id": "delivery/core-deal-stage-support",
+  "acceptance_sha256": "4f1d997ea18bec541326a631cc78791c0aa12bbdc57e1e727d502460c851c50b",
+  "reviewed_revision": "8db88b39c7648bc3c97dd88002fcd9eca97a0b8c",
+  "reviewer_agent": {
+    "runtime": "codex",
+    "session_id": "01a19251-a472-7cd1-86cd-8dc245dd5b84",
+    "task_id": "/root/native_stage_browser_review"
+  },
+  "summary": "Independently reconciled all four original #906 clauses against actual C Git source, unchanged create-source closure, retained executed unit/real-PG mutation/concurrency cases, exact C normal build admission and actual full stage Browser2. Independently rehashed 7709 source files, all777 immutable artifacts and the complete build/source/tracing/browser hash chain; the only additional noncache files are the two separately declared favicon runtime cache files. Actual Browser2 passes54 checks including committed lost response, protected current-ID reads before causal Board refetch, genuine stale-UUID conflict and unchanged domain effects. No remaining blocking finding in this bounded technical source/profile. This accepts the independent technical source/process review only; later published-revision CI, account-authorized attestation/native gate and closure audit remain pending.",
+  "limitations": "This is declared Codex agent process provenance, not human acceptance or a separately authenticated GitHub reviewer. Root authored/executed runtime controllers and supplied terminal corroboration; this reviewer independently source-reviewed their semantic oracles and terminal-state correction, rehashed exact evidence and visually inspected three terminal PNGs. Controlled local English actor-positive profile, document-scoped retention and sampled native+PG resources only; shared browser RSS is separately unmeasured. No durable hard-reload draft guarantee, broader browser authority, FA/DE/EN human journey, provider, installation, global authority-writer/COMMIT-time guarantee, complete privacy disclosure/erasure, release, deployment or broader Sales parent completion. Routine current-session/modern-MFA/CSRF policy is preserved without a separate fresh-auth requirement. Historical overlapping unit/native/browser runs, failures and privacy prior30 remain attributed to actual cuts; no combined total or current full31 privacy pass. C is local reviewed source; no hosted C or later D URL/CI evidence is asserted.",
+  "criteria": [
+    {
+      "id": "AC1",
+      "result": "passed",
+      "evidence": ["https://github.com/KhademOHAli1/warpdrive/issues/906"],
+      "assessment": "Native create delegates the existing permission-checked createDeal domain path, validates existing pipeline/stage and relationships, rereads persisted exact money/owner/revision and stores the operation receipt atomically. Actual C UI creates one exact-money deal, performs one UUID stage move with one history/channel effect, shows truthful feedback, recovers authoritative target state and hard-reloads the same ID/revision.",
+      "evidence_url_role": "Existing canonical scope anchor only; local source/receipt pins below provide actual unhosted C evidence. Hosted D links remain pending.",
+      "reviewed_source_paths": [
+        "src/features/deals/nativeCreate.ts",
+        "src/features/deals/nativeStage.ts",
+        "src/features/deals/Board.tsx"
+      ],
+      "local_evidence_names": ["older_create_browser44", "source4_realPG36", "C_stage_browser54"]
+    },
+    {
+      "id": "AC2",
+      "result": "passed",
+      "evidence": ["https://github.com/KhademOHAli1/warpdrive/issues/906"],
+      "assessment": "Native actions preserve existing CSRF and genuine server-derived session context. CurrentNativeActor rehydrates current visibility/permission and the existing modern/MFA/legacy session access policy, with no new routine fresh-auth requirement. Strict UUID input, locked current row/pipeline, same-pipeline selected stage and repeated post-wait authority checks reject hidden/denied/invalid/stale moves without row/audit/channel/receipt effects. Actual PG concurrency/wait/expiry/rollback cases and C genuine stale-pointer conflict corroborate the source.",
+      "evidence_url_role": "Existing canonical scope anchor only; local source/receipt pins below provide actual unhosted C evidence. Hosted D links remain pending.",
+      "reviewed_source_paths": [
+        "src/features/deals/nativeStageAction.ts",
+        "src/features/deals/nativeStageAccess.ts",
+        "src/features/auth/currentNativeActor.ts",
+        "src/features/deals/nativeStageAuthority.integration.test.ts"
+      ],
+      "local_evidence_names": ["source4_realPG36", "C_stage_browser54"]
+    },
+    {
+      "id": "AC3",
+      "result": "passed",
+      "evidence": ["https://github.com/KhademOHAli1/warpdrive/issues/906"],
+      "assessment": "Failed/definitive creation restores or retains the actor-partitioned draft; uncertainty preserves immutable operation identity and intent. Actual older source-compatible create Browser2 drops a committed response and explicitly retries the same operation without duplicate completed effects. C stage path retains truthful unknown/conflict state without stale rollback or mutation replay; explicit protected current-ID read precedes genuine Board refetch with the non-receipt disclaimer, followed by genuine stale-pointer conflict, second recovery and same-ID reload. Failed read/refresh and actor-unmount cases retain safe state in qualified units.",
+      "evidence_url_role": "Existing canonical scope anchor only; local source/receipt pins below provide actual unhosted C evidence. Hosted D links remain pending.",
+      "reviewed_source_paths": [
+        "src/features/deals/useNativeDealCreation.ts",
+        "src/features/deals/retainedCreation.ts",
+        "src/features/deals/useDealMove.ts",
+        "src/features/deals/retainedStageMove.ts"
+      ],
+      "local_evidence_names": ["older_create_browser44", "source4_static43", "C_stage_browser54"]
+    },
+    {
+      "id": "AC4",
+      "result": "passed",
+      "evidence": ["https://github.com/KhademOHAli1/warpdrive/issues/906"],
+      "assessment": "Exact C/source tree, 7709 Git blob/mode/path and current export proofs, normal production build with TypeScript validation and199 provenance guards, native move/read registrations and browser compilation chains are retained. Source4 selected43units/36realPG mutation/concurrency cases have22 stage files byte-identical to C; older create/static/native evidence retains its own cut. Root one-use allocations and complete bounded cleanup accompany actual C Browser2. Privacy4 is actual CLI/selected source-binding1/lint3/report PASS with prior30 only at its older cut. Residual hosted revision CI/account/audit and separate #82 human/provider/install/release gates are explicitly recorded.",
+      "evidence_url_role": "Existing canonical scope anchor only; local source/receipt pins below provide actual unhosted C evidence. Hosted D links remain pending.",
+      "reviewed_source_paths": [
+        "src/features/deals/nativeStage.integration.test.ts",
+        "src/features/deals/nativeStageRetirement.integration.test.ts",
+        "src/features/deals/nativeCreateReplay.integration.test.ts"
+      ],
+      "local_evidence_names": [
+        "C_build_admission",
+        "C_compiler_and_action_trace",
+        "source4_static43",
+        "source4_realPG36",
+        "C_stage_browser_runtime"
+      ]
+    }
+  ],
+  "source_pins": [
+    {
+      "path": "docs/privacy-inventory-report.json",
+      "sha256": "009fe14325a2b36baf34b8ee2c8c5968daec5f5526e414c43f8b5acb5be4d4a1"
+    },
+    {
+      "path": "docs/sales-platform/native-deal-create-retry.qualification.json",
+      "sha256": "e26b48fb449464818e4ece914c66c7a7c49b074d8deb8e6112520d460513e6f5"
+    },
+    {
+      "path": "drizzle/0099_deal_write_version.sql",
+      "sha256": "a5c77f4aa42ad90d87a6834201819166ad8a04f4c02c02e896be34dc751b0bfd"
+    },
+    {
+      "path": "drizzle/0101_deal_create_operations.sql",
+      "sha256": "bdf2880045dbe791de7c37dc766131d361df763c2ef8c5f4802d75ae30a1f0f5"
+    },
+    {
+      "path": "drizzle/meta/_journal.json",
+      "sha256": "1497b769f64616c1e53f798640df2b02bf9b0e741dbbe0974d3a6cd092df2926"
+    },
+    {
+      "path": "src/app/(app)/layout.tsx",
+      "sha256": "e58a7127f79a14dd8348533929fa8fd8c916259f55e0ee1ee26fe31749ad9c86"
+    },
+    {
+      "path": "src/db/schema/changeLogs.ts",
+      "sha256": "b263a7107a17619e9cdc55d17f26961a01a27de9829c19c50716ed8e25ce5fd9"
+    },
+    {
+      "path": "src/db/schema/dealCreateOperations.ts",
+      "sha256": "819ee383217e06003065a6cf294b925500a734d1867061ffa31261b038f1da04"
+    },
+    {
+      "path": "src/db/schema/deals.ts",
+      "sha256": "06524f5b232c71a076fe8477940d29f86991f5fbb91ce6372f38648c1fb45ce8"
+    },
+    {
+      "path": "src/db/testing/factories.ts",
+      "sha256": "c8efb3c5a2b0a1a7c31c914255a51cd39ce76c5f8e54f5d33c5b0c490b273e29"
+    },
+    {
+      "path": "src/features/auth/better/accessPolicy.ts",
+      "sha256": "8542556aed30191058bc114e1f3b65c598375a5d207adec05fff898e6f126c4e"
+    },
+    {
+      "path": "src/features/auth/better/auth.ts",
+      "sha256": "a6c34cd5c6632d59427ff6f819a4cd7f87b850d90b339e25d6a40c8c02429c81"
+    },
+    {
+      "path": "src/features/auth/better/nativeGateway.ts",
+      "sha256": "b7d96bbba61d4a7d5d8e40c6c11d5e1493500e2fa883af5c81f51c7ed69ccce3"
+    },
+    {
+      "path": "src/features/auth/currentAuthority.ts",
+      "sha256": "58a84b6fabb7455f408bddd1e6f3c5ef021874970e13cc34a15dc5ce1f9a031b"
+    },
+    {
+      "path": "src/features/auth/currentNativeActor.ts",
+      "sha256": "c95fe6e04fd6dcd2037daf264afed1973cdeddc7dd9da499ec038c69ec053bcb"
+    },
+    {
+      "path": "src/features/auth/management/policy.ts",
+      "sha256": "515f8fc1908a52331f54aac4a101a6b0da329dab3a4c10ea03c8c007990be82d"
+    },
+    {
+      "path": "src/features/collaboration/changeLog.ts",
+      "sha256": "f135b1ac21dc8dd7e31d0f735233f49d731113fab22ea2832272e1570150f273"
+    },
+    {
+      "path": "src/features/deals/AddDealModal.test.tsx",
+      "sha256": "cd40f3f578810b12d6482c7e73b2a14841cae8c49a4d272c03b8a121d50cea41"
+    },
+    {
+      "path": "src/features/deals/AddDealModal.tsx",
+      "sha256": "fee04acab7fcd3e2aac72e38f3c5d3d577fe9ba00bd5f79cbbe6e7d2acbb1fa4"
+    },
+    {
+      "path": "src/features/deals/Board.tsx",
+      "sha256": "9564e6a297f270e165379630226165050a32cebb909206bd4e223b5d34da715b"
+    },
+    {
+      "path": "src/features/deals/BoardColumn.tsx",
+      "sha256": "9fec7eed81f6cfa6facb99d641611fa25d9b3ec7cea0e1a51cfd51edba595170"
+    },
+    {
+      "path": "src/features/deals/BoardStages.tsx",
+      "sha256": "3bd3309f0cfc557ab4821cd5455f44dc65d109b19d579eb58478d96a4585b78c"
+    },
+    {
+      "path": "src/features/deals/DealCard.tsx",
+      "sha256": "4ea9e2877f1f9fe01348a32d3cf0e1119d362e1c354fba63fe3425f2d687fdd2"
+    },
+    {
+      "path": "src/features/deals/DragDropZones.tsx",
+      "sha256": "65876a048c17072e7682d62df8e703398fe987e7b1a1c41374169c5c34d8a6e7"
+    },
+    {
+      "path": "src/features/deals/MoveDealDialog.tsx",
+      "sha256": "dc73ceb6ff08ae6a8d2c4b1aa0ea3be17425bd34c433310f9dad6e6e308563af"
+    },
+    {
+      "path": "src/features/deals/NativeStageMoveFeedback.test.tsx",
+      "sha256": "f6a602a65f71d890fcd374e8589a2bebcf9907e53a8086b1eb4bb6bfe60516e1"
+    },
+    {
+      "path": "src/features/deals/NativeStageMoveFeedback.tsx",
+      "sha256": "a818942238030c9f57b77b8bcd1084e05b3e9d0c187f78f96c2286f41f7eab5a"
+    },
+    {
+      "path": "src/features/deals/NewDealButton.tsx",
+      "sha256": "b7d013831bc0f84f345c142be14f412bdbb0ba135364c6b7d37eb23a3b322c31"
+    },
+    {
+      "path": "src/features/deals/addDealState.ts",
+      "sha256": "ddf6241f634f08d557371facc2ebc234fab696bfdb277576044ddc60b3a1d347"
+    },
+    {
+      "path": "src/features/deals/boardCache.ts",
+      "sha256": "abf73c5f906bd64d162849bd51aba341f80d39df8e1afaae29624a71cea92b1d"
+    },
+    {
+      "path": "src/features/deals/boardPosition.ts",
+      "sha256": "a74c274d88792bcdbd18b6a493bdc0b71751b65e11602a20d4fcd71cc44ac41d"
+    },
+    {
+      "path": "src/features/deals/dealActions.ts",
+      "sha256": "22bf4001eaa975951e386c8dcacd92fd7e2aa54a0e3f13a4753a0315a915ad5b"
+    },
+    {
+      "path": "src/features/deals/dealAuth.ts",
+      "sha256": "836dbd4cda72d6c15f4b8124a31d69dfcdee03f8b97d179b9d94ec44689f4731"
+    },
+    {
+      "path": "src/features/deals/dealMove.ts",
+      "sha256": "240257888e7e4fe9f4ea283d0a91efb3a46fe9a4d3bf1809b5bb495d79cf6665"
+    },
+    {
+      "path": "src/features/deals/dealRepo.ts",
+      "sha256": "ffad6aeea583bab6138da4ece2844fe1ea4af676283e000bca01ea8b17dfe471"
+    },
+    {
+      "path": "src/features/deals/dragNeighbors.ts",
+      "sha256": "b56b0b1660055244a7867cfa552356d3287c3f2d20f311e563005d9c2cf23287"
+    },
+    {
+      "path": "src/features/deals/knownCreatedReconciliation.test.tsx",
+      "sha256": "5d93c10cd91150eead96abb8fefd944b3d858ed4ca2f1879519391e030d92b8f"
+    },
+    {
+      "path": "src/features/deals/messages/sales.de.json",
+      "sha256": "05cbf2661d58844cf30415d7c55f120827c4d08eddccaf6cc9840c78f0a0a044"
+    },
+    {
+      "path": "src/features/deals/messages/sales.en.json",
+      "sha256": "5b6fc1f270943e95c89094f937e5faa9b8f0995bdba74c122d06e8d001081ea2"
+    },
+    {
+      "path": "src/features/deals/messages/sales.fa.json",
+      "sha256": "f8c112fbb27cd47992e1e805c449f2901ac45c0c5aeebf60ef77e42188650c2e"
+    },
+    {
+      "path": "src/features/deals/moveAction.ts",
+      "sha256": "3d40e89eb5a69bfd261db9c5ffee4843df33d8bffd062122254dfc71035fd9d5"
+    },
+    {
+      "path": "src/features/deals/nativeCreate.integration.test.ts",
+      "sha256": "e5d6642394810680dda59cc6365e9dd1d877f8a2302a0257602f2baca4478cbf"
+    },
+    {
+      "path": "src/features/deals/nativeCreate.test-helpers.ts",
+      "sha256": "1cbdee14f6cbfd841b6d611f91114909b7b4b488130031596da8d5610809dc30"
+    },
+    {
+      "path": "src/features/deals/nativeCreate.ts",
+      "sha256": "60346781267ada154c3bd7e57860cf30f0c980e4357d3833f649d1b30dc6daf0"
+    },
+    {
+      "path": "src/features/deals/nativeCreateAction.ts",
+      "sha256": "e8ff175382ca1a32f39fddd5bbd99c16c135378bc3e30a5c484508ab6aefa02c"
+    },
+    {
+      "path": "src/features/deals/nativeCreateAuthority.integration.test.ts",
+      "sha256": "f34de9830da649e0f73c186c1da5b7543ce3039bb2fa4a0b5308c640dbc45648"
+    },
+    {
+      "path": "src/features/deals/nativeCreateInputs.ts",
+      "sha256": "b1cde2c5cbbdb49cebb8cde125a4db69f5c0347d46e82442ae488852d3e1402d"
+    },
+    {
+      "path": "src/features/deals/nativeCreateIntentV1.test.ts",
+      "sha256": "12c6a9d858aabec92717d83549fcfd540e570f0810e5358a59b8a55d86018edf"
+    },
+    {
+      "path": "src/features/deals/nativeCreateIntentV1.ts",
+      "sha256": "0c37ff5255672d8d2d9a6f4d2d0e109bcce69f3663049303a41e9aaba41aafb1"
+    },
+    {
+      "path": "src/features/deals/nativeCreateMigration.integration.test.ts",
+      "sha256": "4cf728d5dce0349c2c3b8159e819870151ef1a90df2ab1ce63594536b75c325c"
+    },
+    {
+      "path": "src/features/deals/nativeCreateReplay.integration.test.ts",
+      "sha256": "c9bac7d75dd89fb49e9a05e3eed975f756bbd347e1d179b5558f958dd0546ca2"
+    },
+    {
+      "path": "src/features/deals/nativeCreateTypes.ts",
+      "sha256": "8252a689ea24fdf30dcc951af19c86855669f2df30e77ea7b9c036580a8e9113"
+    },
+    {
+      "path": "src/features/deals/nativeCreatedRead.ts",
+      "sha256": "294a0ae82377708b551c0ab8dea0f2b0d9c8a7a2699e093ca8182b7fc3954839"
+    },
+    {
+      "path": "src/features/deals/nativeStage.integration.test.ts",
+      "sha256": "152f641ac57cda78419fc02fbe37ff022ee75a4588d433c76e9e4f20a36eebeb"
+    },
+    {
+      "path": "src/features/deals/nativeStage.test-helpers.ts",
+      "sha256": "bbb3f1cac8a1749ea5604bbcd23167e9b1add7575da52a6e11269e7dac725146"
+    },
+    {
+      "path": "src/features/deals/nativeStage.ts",
+      "sha256": "7aac17e9d845ab9056ca2fe213596673d3af53011ab082c6f9550e29caf680c5"
+    },
+    {
+      "path": "src/features/deals/nativeStageAccess.ts",
+      "sha256": "116695780c5d2e30098b25164f8c1fb2537111a52411b38454deab56e75e0724"
+    },
+    {
+      "path": "src/features/deals/nativeStageAction.test.ts",
+      "sha256": "69133a8a36b74929a4c8ff9da6b8084b85f0b63755b4cf5028b14d40c68d0840"
+    },
+    {
+      "path": "src/features/deals/nativeStageAction.ts",
+      "sha256": "fa95122e886e4282aaf329f148f24f8734f85e53c786e3f8d2d1c43c0a08b5ee"
+    },
+    {
+      "path": "src/features/deals/nativeStageAuthority.integration.test.ts",
+      "sha256": "4a643c227f77f8807328113b055c1e6e1fa7484d94d8e21d3765c1a4721ac3c8"
+    },
+    {
+      "path": "src/features/deals/nativeStageRetirement.integration.test.ts",
+      "sha256": "3b98178b1c1bd2cb510dfed5ebbec0f26836dc1f2881fcc46253a78628eb912f"
+    },
+    {
+      "path": "src/features/deals/nativeStageTypes.test.ts",
+      "sha256": "274022dc4b475644963fadd1de7a67162d34561bc1bdf3c73fa9c15ffca33d42"
+    },
+    {
+      "path": "src/features/deals/nativeStageTypes.ts",
+      "sha256": "ecbcaa6eb78fd323c4591c7a2c12cc6875c1f46651061e530a8f5763178db802"
+    },
+    {
+      "path": "src/features/deals/newDealForm.ts",
+      "sha256": "94b0b702b988e31399bd1ecfdd672609ffd19db28c9013751342f9c8990a9f58"
+    },
+    {
+      "path": "src/features/deals/notifyHelpers.ts",
+      "sha256": "ff8cee2b7bba1094e6ed6242e2372c7403abe8a6acf136b89f2a56c1edac0cfa"
+    },
+    {
+      "path": "src/features/deals/realtimeReducer.ts",
+      "sha256": "7ced46c199b0b2d295c253b2812bb45fa837a9f2bf8a792fefc25faffe9bc428"
+    },
+    {
+      "path": "src/features/deals/retainedCreation.test.ts",
+      "sha256": "aa5083573ddadf7c3adc18d2ab27e03fe0f47c99170176936460274665d67bd2"
+    },
+    {
+      "path": "src/features/deals/retainedCreation.ts",
+      "sha256": "da98a9bf30e1a8f6d7ae8194c504f032ca8efb7903ece4b3538fa0cc7591f10f"
+    },
+    {
+      "path": "src/features/deals/retainedStageMove.ts",
+      "sha256": "3bbaf2095b14609d33f98dedc4dd626ab6e0a735b43c8f14eb87f356f692e189"
+    },
+    {
+      "path": "src/features/deals/schemas.ts",
+      "sha256": "066fd71d972638ab1db7f5aa4742bb57a3578b76d6bd354669d00440753131f0"
+    },
+    {
+      "path": "src/features/deals/useBoardPageQuery.ts",
+      "sha256": "d61d16e21c544e5a10845c112b17ed4d1b0c9823a8bbd824c051401801dc09ec"
+    },
+    {
+      "path": "src/features/deals/useDealMove.test.tsx",
+      "sha256": "d68928e679b137e3c7dc5bb62cd013ceab3d9a16902ad529eaa387e6d953b677"
+    },
+    {
+      "path": "src/features/deals/useDealMove.ts",
+      "sha256": "f252e6ba2546b7f4ba33a291741a7f690991b4e5e528bd98ba745b85ddc54b52"
+    },
+    {
+      "path": "src/features/deals/useNativeDealCreation.test.tsx",
+      "sha256": "907ff03cdb2f85306175fd7c8ace78cf557c0b1d657beb9cf4372d4a07cb06c5"
+    },
+    {
+      "path": "src/features/deals/useNativeDealCreation.ts",
+      "sha256": "911a36ca13dd67ea3b5186269af1345244153cd09eb7e035ed71ca40dcf9c05d"
+    },
+    {
+      "path": "src/features/identity/NativeActorProvider.tsx",
+      "sha256": "afc37cc155a0b62cc5800a0906847f2d1de2382f50292d4b1702f2279de1463f"
+    },
+    {
+      "path": "src/features/identity/actions/shared.ts",
+      "sha256": "3ec0e2fefda694087f49167438c4d96498ecb19f9ef25960c1b462de93b82f3c"
+    },
+    {
+      "path": "src/features/identity/actions/sig.ts",
+      "sha256": "2ec14dbf4cdf9c283d7b2a6970f6df6c936de12dfde599e162d41ddf5950dbb9"
+    },
+    {
+      "path": "src/features/permissions/can.ts",
+      "sha256": "c28ee5927eef7b898283555076d8e7ba1dbcdef550db0137a19546f74b92b9e1"
+    },
+    {
+      "path": "src/features/permissions/canSee.ts",
+      "sha256": "6572def92f8c050ff4df6a257270ce31c04e5f0b9975756364f7b4810b8eca5f"
+    },
+    {
+      "path": "src/features/permissions/effective.ts",
+      "sha256": "a9dd02828dd766719542ee4abc90221fe904a5cbc7126acce3be6358f1928a88"
+    },
+    {
+      "path": "src/features/privacy/registryIdsCrm2.ts",
+      "sha256": "d7fa38974347da6bc8a4b634691ff325a39a7b8d01ee3d12110878e2a8d28a67"
+    },
+    {
+      "path": "src/features/privacy/registryIdsNativeStage1.ts",
+      "sha256": "0ab127c039a91dd8d3be83f75f81206fcbe64a0d76705f1272aefbc52f6a7815"
+    },
+    {
+      "path": "src/features/privacy/registrySales.ts",
+      "sha256": "e6dd6ed51c59d8b0efc311d2f4085310ada0b3990190325ba0b0d8775752368e"
+    },
+    {
+      "path": "src/server/hydrateActor.ts",
+      "sha256": "9ffbe2a292f540dab520cbb2c68de53283fcfbb92bdff96f6532c9e429fa3030"
+    },
+    {
+      "path": "src/server/trpc/context.ts",
+      "sha256": "5c6352a7b530f9899514c329045ed71818c840e07348675cf1c24f91471bbee8"
+    },
+    {
+      "path": "src/utils/csrfCookie.ts",
+      "sha256": "ca7b66e448e31f34939c3bf8f15c542a9e0de726c15447fdd1b376b503f5b3b0"
+    }
+  ],
+  "issue": 906,
+  "recorded_at_utc": "2026-11-03T03:15:20.784890+00:00",
+  "findings": [],
+  "qualification_record": {
+    "path": "docs/sales-platform/native-deal-stage-runtime-qualification-20261103.json",
+    "sha256": "5a90eb7953f4a74b23e5c9b1f84011187f0abb2831bd2233d782b9d0aa7e5877",
+    "markdown_path": "docs/sales-platform/native-deal-stage-runtime-qualification-20261103.md",
+    "markdown_sha256": "63cbc65cc53c35b11f489706bcc62165a61c7f6f87fc9959d5612473c42bef32"
+  },
+  "local_evidence_pins": [
+    {
+      "name": "candidate",
+      "path": ".runtime/goal-native-stage-candidate-C/candidate.json",
+      "sha256": "9b0ce105f52c1255e8c6c17930890d37cc9e4c09828f560d6feadecfdbe2700b"
+    },
+    {
+      "name": "C_build_admission",
+      "path": ".runtime/goal-native-stage-candidate-build/attempt1/admitted-build.public.json",
+      "sha256": "1f95b9255b5d04f75b1f362d5e4f557840ab6d9131d46438466856adb77fb770"
+    },
+    {
+      "name": "C_build_receipt",
+      "path": ".runtime/goal-native-stage-candidate-build/attempt1/build.public.json",
+      "sha256": "fb8ee4737151e3d871ce304a670759e2fae1ca6c85b0343f7ba4a848b5aa35ec"
+    },
+    {
+      "name": "C_compiler_and_action_trace",
+      "path": ".runtime/goal-native-stage-candidate-build/attempt1/tracing.public.json",
+      "sha256": "7dea59df9c00ff081ca558ed81d97165f0c7279d5dcd6b4e2704ba3457cb4ab5"
+    },
+    {
+      "name": "C_source_manifest",
+      "path": ".runtime/goal-native-stage-candidate-build/attempt1/source-manifest.json",
+      "sha256": "9abfc6d6f4ae827830c912b2e9a196b85d1024b0142548724c639096f569bb99"
+    },
+    {
+      "name": "C_stage_browser_runtime",
+      "path": ".runtime/goal-native-stage-browser/attempt2/runtime.public.json",
+      "sha256": "2733601ddd158afe27dddc6341fdc7422bf48b0a7d2d9f3d15fa8508e4738298"
+    },
+    {
+      "name": "C_stage_browser54",
+      "path": ".runtime/goal-native-stage-browser/attempt2/browser-result.public.json",
+      "sha256": "d592ae3eec0be2f2cb517de92d4697e0fc09912a6391a3d2fe8e1643ea88a216"
+    },
+    {
+      "name": "Root_terminal_review",
+      "path": ".runtime/goal-native-stage-browser/attempt2/root-terminal-review.json",
+      "sha256": "8ec84b4663d4cf5ee67d4ff804eb97eb5ff485b6072b8cb7ce55827f080ebe27"
+    },
+    {
+      "name": "C_browser_binding",
+      "path": ".runtime/goal-native-stage-browser/attempt2/binding.json",
+      "sha256": "fe327e02b63846e66958779b7a7f7c460605df0e4453c80d2e8f6c4d90f723ca"
+    },
+    {
+      "name": "C_777_immutable_artifacts",
+      "path": ".runtime/goal-native-stage-browser/attempt2/artifact-manifest.json",
+      "sha256": "b9e291fe3521fa401ff039c329f44d5989c64ab50297aae1814bc62d66c1b04e"
+    },
+    {
+      "name": "browser_allocation",
+      "path": ".runtime/goal-native-stage-browser/attempt2/root-allocation.json",
+      "sha256": "db8e1e4f558d389e3230d14edbb369d28ff810787ee69baebc05439da1a3814f"
+    },
+    {
+      "name": "selector_only_correction",
+      "path": ".runtime/goal-native-stage-browser/attempt2/selector-correction.source-review.json",
+      "sha256": "de520d80ead0046d20d798c9bcc0636f86bc7305e685cca730d478ad430d4971"
+    },
+    {
+      "name": "favicon_cache_scope",
+      "path": ".runtime/goal-native-stage-browser/attempt2/same-artifact-scope.source-review.json",
+      "sha256": "16438d9917703cb8e134aaf0baa9dc9827411118d9ace0a20b77729dcb4e85cb"
+    },
+    {
+      "name": "preserved_C_browser1_FAIL",
+      "path": ".runtime/goal-native-stage-browser/runtime.public.json",
+      "sha256": "ab59e66f02fd3001a67ff54e3c8e106656a93dea406cf9c0fe3204753baa4143"
+    },
+    {
+      "name": "preserved_C_browser1_21_true_incomplete",
+      "path": ".runtime/goal-native-stage-browser/browser-result.public.json",
+      "sha256": "8be43353cbbd6af6d4f1cfb373116162859fc38630cfcf4db05c34e5abcf93c8"
+    },
+    {
+      "name": "original_stage_lost_response_RED",
+      "path": ".runtime/goal-sales-stage-browser/attempt2/root-domain-red-review.json",
+      "sha256": "e7ada196a45a736f112faba34715fdfa26fd167ef2dd6a5abd2f3d2c5d70eb4e"
+    },
+    {
+      "name": "source4_static43",
+      "path": ".runtime/goal-native-board-stage/qualification-source4/static-control/static.receipt.json",
+      "sha256": "e8ff5e81737504b7636c2428a64021814c451f62f58dd7f2b7f3c0a0a477ba14"
+    },
+    {
+      "name": "source4_realPG36",
+      "path": ".runtime/goal-native-board-stage/qualification-source4/native-control/native.receipt.json",
+      "sha256": "a306f8cd18e1913559a5771555b4df72a9456afe9c4a07b96ddb621ef4c59491"
+    },
+    {
+      "name": "older_create_browser_runtime",
+      "path": ".runtime/goal-sales-native-browser-green/attempt2/runtime.public.json",
+      "sha256": "ecc114d7e7f7b6bfc6e3579f19d36f5a9956bd8e09717b432341d2c76275c06c"
+    },
+    {
+      "name": "older_create_browser44",
+      "path": ".runtime/goal-sales-native-browser-green/attempt2/browser-result.public.json",
+      "sha256": "3774e07a18df99fce3d31103a1cdbfda0693eac0eaa56d4ec37ff763d56e214b"
+    },
+    {
+      "name": "preserved_older_create_browser_FAIL",
+      "path": ".runtime/goal-sales-native-browser-green/runtime.public.json",
+      "sha256": "6f6541e5c89562f016b2b2257965c875bf7d06e223099c58023ced80df263fdb"
+    },
+    {
+      "name": "older_create_native34",
+      "path": ".runtime/goal-sales-create-native-0101-2/qualification/native.receipt.json",
+      "sha256": "4c6ae6c92f50adee305ef13584327076d0cf0bf90060189205f625a60c423ef5"
+    },
+    {
+      "name": "older_create_static43",
+      "path": ".runtime/goal-sales-auth-static-7c82-3/qualification/receipt.json",
+      "sha256": "242a44eab0c78f4fac0f9a35482027f9fb70c4f7bef299f7ad4c8286616157fc"
+    },
+    {
+      "name": "Privacy4_selected1_and_CLI_lint_report",
+      "path": ".runtime/goal-native-stage-privacy-companion/qualification4/control/phase1.receipt.json",
+      "sha256": "59ed19b4298eba32b6e7bb658dbf191513f7a2ec269555ffcf40929833faad98"
+    },
+    {
+      "name": "Privacy4_reused_exact_source_cut",
+      "path": ".runtime/goal-native-stage-privacy-companion/qualification3/control/source-manifest.json",
+      "sha256": "f93def5e129774aeabdd4893d5a65c6491362354fbdfd4f7b7d1f363e0c83eb4"
+    },
+    {
+      "name": "older_privacy30PASS1FAIL",
+      "path": ".runtime/goal-native-stage-privacy-companion/qualification2/control/unit-results.private.json",
+      "sha256": "2e2e5e332610e0ccf9b40572cd8cd9738d21a4f75349ac7eba59043a33eb3acd"
+    },
+    {
+      "name": "A_B_source_identity",
+      "path": ".runtime/goal-native-stage-candidate-build/attempt1/calendar-b-source-identity.json",
+      "sha256": "f9b0f61a6dd5999c142453d2dd12bc97d15e8386c2c531c9fb77348e8fda849e"
+    }
+  ],
+  "current_hosted_evidence": {
+    "published_revision": null,
+    "ci": null,
+    "account_attestation": null,
+    "closure_audit": null,
+    "status": "PENDING_EXACT_LATER_D_PUBLICATION_AND_ACCOUNT_GATE"
+  },
+  "publication_provenance": {
+    "source_reviewed": "8db88b39c7648bc3c97dd88002fcd9eca97a0b8c",
+    "future_metadata_revision": null,
+    "source_pins_must_match_later_revision": true,
+    "root_sole_publisher": true
+  },
+  "completion_boundary": "Independent technical source/process review accepted only. No issue completion, account acceptance, human82, provider/install/release/deployment or broader Sales acceptance has occurred."
+}

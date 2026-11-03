@@ -1,0 +1,24 @@
+# Native persisted deal creation and stage movement technical qualification
+
+Original technical issue: [#906](https://github.com/KhademOHAli1/warpdrive/issues/906), `delivery/core-deal-stage-support`. Scope digest: `4f1d997ea18bec541326a631cc78791c0aa12bbdc57e1e727d502460c851c50b`. Reviewed source C: `8db88b39c7648bc3c97dd88002fcd9eca97a0b8c`, tree `49270fc509be0e3aa58a4c3796a2f5eb2c683b10`, BuildID `G__O8fcqlicV1cGBnvbGD`.
+
+Independent source/process review accepts all four unchanged technical clauses. The separate account attestation, latest green exact published-revision CI and closure audit remain pending. This is not human acceptance of #82 or a release/deployment decision.
+
+| Clause | Actual technical evidence |
+| --- | --- |
+| AC1 | Permission-checked native creation, persisted exact money/owner/revision reread, UUID stage movement, one stage history/channel effect and current-state feedback. |
+| AC2 | Existing CSRF/server actor/current-session/modern-MFA policy, locked visibility/pipeline/target validation, real PG expiry/concurrency/rollback denial and actual old-UUID pointer conflict without extra effects. Routine access adds no separate fresh-auth requirement. |
+| AC3 | Retained immutable draft/operation and same-operation create retry on the historical unchanged create source; actual C committed stage response loss, truthful disabled unknown state, protected current-ID read before causal Board refetch, explicit non-receipt disclaimer, stale conflict and second recovery. |
+| AC4 | Exact C build and source/artifact provenance, selected affected units and real PG cases, Root finite allocations and complete cleanup. Historical cuts stay separate. |
+
+C's normal full production build exited 0 with TypeScript validation enabled and 199 provenance checks. Its build phase took 111.884899s, inclusive 131.782918s, sampled maximum 7,100,235,776 owned bytes. All 7,709 source files and 777 immutable noncache artifacts were independently rehashed. Exactly two favicon runtime cache files remain separately declared. Owned USB cache placement, link/root cleanup and foreign entries were preserved.
+
+Actual C Browser2 passed 54 checks in 59.207283s inclusive, sampled maximum 506,656,194 native plus PG bytes; shared browser RSS was separate. Counts: create 1, create-result read 1, stage attempts 2 (one genuine stale-UUID conflict), protected current-stage reads 2. The same ID, exact money, creation receipt and first committed row/history/channel effects persist through both recoveries and a real reload. The second page obtained genuine old SSR; no secondary Board query needed holding in this run. Context/pages, native groups, owned PG, foreign resources, source/binding and private-credential cleanup passed.
+
+Source4's 43 units (24 new plus 19 regressions) and 36 real PG cases (24 new plus 12 legacy) retain their exact older cut; all 22 stage files match C. The historical native-create Browser2 passed 44 checks on `7d13fc714dee96db1b5920a4661377f801c3b61e`; its 11 core create files match C. `notifyHelpers` changes only an erased interface type, with runtime imports and bodies unchanged. Historical native-create 34/static 43 and any other overlapping subsets are not summed into a new run. Privacy4 passed its actual CLI, one selected current source-binding case, lint 3 and report checks; prior 30 belong to their older cut. No current full 31 privacy result is claimed.
+
+Preserve the original real stage baseline RED (38 controls/prerequisites passed and three desired behavior failures), C Browser1's overall FAIL after 21 true checks and a selector strict-mode error, the older create browser FAIL34/35, native-create waiter failures and privacy zero-test rejection. Browser2's selector change narrows the source-column card/drag wrapper; it preserves the semantic disabled-state, no-replay and persisted-effect oracles.
+
+Remaining gates: Root publication and latest green CI/CodeQL on actual published D, permitted account attestation/native gate and closure audit. Human #82 FA/DE/EN use, durable hard-reload drafts, broader browser authority, providers, installed upgrades, privacy disclosure/erasure, broader Sales parents, release and deployment remain separate. Current-state recovery does not prove which request caused the current state.
+
+Independent reviewer: Codex session `01a19251-a472-7cd1-86cd-8dc245dd5b84`, task `/root/native_stage_browser_review`, distinct from Root accepting task `/root`. This is declared process provenance, not separately authenticated GitHub or human review. Three actual terminal screenshots were independently inspected. Exact source pins and retained local receipt hashes are in [the qualification record](native-deal-stage-runtime-qualification-20261103.json); raw `.runtime` paths are local retained evidence. No unhosted C blob URL or future CI URL is asserted.
