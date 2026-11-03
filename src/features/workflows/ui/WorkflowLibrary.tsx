@@ -105,11 +105,7 @@ export function WorkflowLibrary({ canCreate }: { canCreate: boolean }) {
       {list.isError && (
         <div role="alert" className="space-y-3 rounded-lg border bg-card p-6">
           <p>{t("loadError")}</p>
-          <Button
-            variant="outline"
-            disabled={list.isFetching}
-            onClick={() => void list.refetch()}
-          >
+          <Button variant="outline" disabled={list.isFetching} onClick={() => void list.refetch()}>
             {t("retry")}
           </Button>
         </div>
