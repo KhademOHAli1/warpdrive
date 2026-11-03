@@ -24,6 +24,8 @@ import { createWorkflowAction } from "../actions";
 import { initialBlankDefinition, initialDefinition } from "../editorModel";
 import { useDialogFocus } from "./useDialogFocus";
 
+type LibraryStatus = "all" | "active" | "draft" | "paused";
+
 export function WorkflowLibrary({ canCreate }: { canCreate: boolean }) {
   const t = useAppTranslations("workflows");
   const fmt = useFormatters();
@@ -40,9 +42,33 @@ export function WorkflowLibrary({ canCreate }: { canCreate: boolean }) {
   const [name, setName] = useState("");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState(false);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<LibraryStatus>("all");
   const id = useId();
   const focus = useDialogFocus();
   const newWorkflow = useRef<HTMLButtonElement>(null);
+  const searchInput = useRef<HTMLInputElement>(null);
+  const normalizedSearch = search.trim().toLowerCase();
+  const hasFilters = search !== "" || statusFilter !== "all";
+  const filteredRows = (list.data ?? []).filter((row) => {
+    const status = row.active ? "active" : row.publishedNumber === null ? "draft" : "paused";
+    return (
+      (statusFilter === "all" || statusFilter === status) &&
+      row.name.toLowerCase().includes(normalizedSearch)
+    );
+  });
+  const noMatches =
+    !list.isLoading &&
+    !list.isFetching &&
+    !list.isError &&
+    list.data !== undefined &&
+    list.data.length > 0 &&
+    filteredRows.length === 0;
+  function clearFilters() {
+    setSearch("");
+    setStatusFilter("all");
+    searchInput.current?.focus();
+  }
   async function create() {
     setPending(true);
     setError(false);
@@ -99,7 +125,59 @@ export function WorkflowLibrary({ canCreate }: { canCreate: boolean }) {
       <p className="rounded-lg border border-primary/15 bg-primary/5 px-5 py-4 text-sm leading-6 text-muted-foreground">
         {t("scope")}
       </p>
-      {(list.isLoading || (list.isFetching && list.data?.length === 0)) && (
+      <div className="space-y-2">
+        <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_14rem_auto]">
+          <div className="space-y-2">
+            <label htmlFor={`${id}-search`} className="text-sm font-medium">
+              {t("librarySearch")}
+            </label>
+            <Input
+              ref={searchInput}
+              id={`${id}-search`}
+              type="search"
+              dir="auto"
+              aria-describedby={`${id}-filter-hint`}
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <p className="text-sm font-medium">{t("libraryStatus")}</p>
+            <Select
+              ariaLabel={t("libraryStatus")}
+              value={statusFilter}
+              options={[
+                { value: "all", label: t("libraryAllStatuses") },
+                { value: "active", label: t("active") },
+                { value: "draft", label: t("draft") },
+                { value: "paused", label: t("paused") },
+              ]}
+              onChange={(value) => {
+                if (
+                  value === "all" ||
+                  value === "active" ||
+                  value === "draft" ||
+                  value === "paused"
+                )
+                  setStatusFilter(value);
+              }}
+            />
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            className="self-end"
+            disabled={!hasFilters}
+            onClick={clearFilters}
+          >
+            {t("libraryClearFilters")}
+          </Button>
+        </div>
+        <p id={`${id}-filter-hint`} className="text-xs leading-5 text-muted-foreground">
+          {t("libraryFilterHint")}
+        </p>
+      </div>
+      {(list.isLoading || (list.isFetching && filteredRows.length === 0)) && (
         <p role="status">{t("loading")}</p>
       )}
       {list.isError && (
@@ -118,7 +196,13 @@ export function WorkflowLibrary({ canCreate }: { canCreate: boolean }) {
           {canCreate && <Button onClick={start}>{t("new")}</Button>}
         </div>
       )}
-      {(list.data?.length ?? 0) > 0 && (
+      {noMatches && (
+        <div role="status" className="rounded-lg border border-dashed bg-card p-8 text-center">
+          <h2 className="text-lg font-semibold">{t("libraryNoMatches")}</h2>
+          <p className="mt-2 text-sm text-muted-foreground">{t("libraryNoMatchesHint")}</p>
+        </div>
+      )}
+      {filteredRows.length > 0 && (
         <div className="overflow-hidden rounded-lg border bg-card">
           <div className="hidden grid-cols-[1fr_140px_200px_32px] gap-5 border-b px-6 py-3 text-xs font-medium text-muted-foreground md:grid">
             <span>{t("name")}</span>
@@ -126,7 +210,7 @@ export function WorkflowLibrary({ canCreate }: { canCreate: boolean }) {
             <span>{t("updated")}</span>
             <span />
           </div>
-          {list.data?.map((row) => (
+          {filteredRows.map((row) => (
             <Link
               key={row.id}
               href={`/workflows/${row.id}`}
