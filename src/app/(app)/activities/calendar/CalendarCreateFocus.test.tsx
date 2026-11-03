@@ -191,7 +191,8 @@ it.each([
       expect(within(dialog).getByLabelText("Start time")).toHaveValue("09:00");
     }
 
-    if (close === "Cancel") await user.click(within(dialog).getByRole("button", { name: "Cancel" }));
+    if (close === "Cancel")
+      await user.click(within(dialog).getByRole("button", { name: "Cancel" }));
     else await user.keyboard("{Escape}");
     await waitFor(() => expect(api.closeAutoFocus).toHaveBeenCalledTimes(1));
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
