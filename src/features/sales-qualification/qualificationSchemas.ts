@@ -20,12 +20,7 @@ function boundedText(max: number) {
     .min(1)
     .max(max)
     .refine((value) => value.trim().length > 0)
-    .refine((value) =>
-      [...value].every((character) => {
-        const code = character.charCodeAt(0);
-        return code >= 32 && code !== 127;
-      }),
-    );
+    .refine((value) => !/\p{Cc}/u.test(value));
 }
 
 function localizedText(max: number) {
