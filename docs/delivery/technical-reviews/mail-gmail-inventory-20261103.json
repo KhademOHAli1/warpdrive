@@ -9,8 +9,8 @@
     "session_id": "01a1a273-9418-7090-a0eb-1b72fb8a6655",
     "task_id": "/root/gmail_inventory_review"
   },
-  "reviewed_revision": "4b21daf7ee0b270fcdcc63e532a2df7a71b6f304",
-  "reviewed_at_utc": "2026-11-03T17:43:14.649278+00:00",
+  "reviewed_revision": "6a1802d2e7e533ea0222c8e7e0d7d7c99b2bc994",
+  "reviewed_at_utc": "2026-11-03T18:20:58.020911+00:00",
   "summary": "Accepted the complete MAIL-001 source-inventory criterion: sync, local drafts, interactive and scheduled sending, tracking, domain restrictions, and current single-mailbox assumptions. The document accurately distinguishes implemented behavior from gaps after correction of an overbroad draft-replay claim. Current source and the actual worker, native login and mailbox OAuth paths support the inventory.",
   "limitations": "This accepts the bounded source-inventory deliverable only, not MAIL-002 through MAIL-012, other IG scopes, live Google/provider behavior, installation or restore, EN/DE/FA human journeys, issue closure, release or deployment. Semantic review covered selected functions and sections; whole-file source hashes are drift fences, not a whole-file security-audit claim. Existing application-wide CI and controlled independent-mail R1 evidence remain contextual at their own revisions. The reviewed commit and its URLs are local and pending branch push at the time of review; integrated exact-main CI and all acceptance/release gates remain Root responsibilities.",
   "criteria": [
@@ -18,8 +18,8 @@
       "id": "AC1",
       "result": "passed",
       "evidence": [
-        "https://github.com/KhademOHAli1/warpdrive/blob/4b21daf7ee0b270fcdcc63e532a2df7a71b6f304/docs/mail/gmail-behavior-ownership.md",
-        "https://github.com/KhademOHAli1/warpdrive/blob/4b21daf7ee0b270fcdcc63e532a2df7a71b6f304/docs/mail/gmail-behavior-ownership.qualification.json"
+        "https://github.com/KhademOHAli1/warpdrive/blob/6a1802d2e7e533ea0222c8e7e0d7d7c99b2bc994/docs/mail/gmail-behavior-ownership.md",
+        "https://github.com/KhademOHAli1/warpdrive/blob/6a1802d2e7e533ea0222c8e7e0d7d7c99b2bc994/docs/mail/gmail-behavior-ownership.qualification.json"
       ],
       "assessment": "All seven areas in the unchanged canonical criterion are recorded from current source, including explicit limits and missing behavior. No live-provider or other task acceptance is inferred from the inventory."
     }
@@ -27,11 +27,11 @@
   "source_pins": [
     {
       "path": "docs/mail/gmail-behavior-ownership.md",
-      "sha256": "6e07eb0cb500682d50df62416c9ed04b91e557c3811b5cf058def76290217732"
+      "sha256": "fcb05fa5c5108c553a96448189b74ed2d4c4ac51485d17a5860b284e937e906f"
     },
     {
       "path": "docs/mail/gmail-behavior-ownership.qualification.json",
-      "sha256": "008a650b5a841ff6f15cde861cf3f1b0134c73bbfd5f38a7e34b69f75cf6f573"
+      "sha256": "b7db5d85542a2ddeeb2a834afb684705a9093b0acf96b4cc98d22b1b04cbee15"
     },
     {
       "path": "src/app/(app)/inbox/compose/ComposePageClient.tsx",
