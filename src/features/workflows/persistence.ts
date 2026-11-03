@@ -1,21 +1,24 @@
-import { and, eq, isNull, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { z } from "zod";
 import { ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import { workflows, workflowVersions } from "@/db/schema";
 import type { PermSetUser } from "@/features/permissions/effective";
+import { hydrateActor } from "@/server/hydrateActor";
 import { err, ok } from "@/types/result";
 import { canWorkflow } from "./access";
 import { validateDefinition } from "./definition";
+import {
+  lifecycleStateError,
+  lockWorkflowForCommand,
+  workflowCommandSchema,
+  workflowNameSchema,
+} from "./lifecycleShared";
 import { executableDefinition } from "./readiness";
 import { definitionSchema } from "./schemas";
 
-const nameSchema = z.string().trim().min(1).max(120);
-const createSchema = z.strictObject({ name: nameSchema, definition: z.unknown() });
-const saveSchema = createSchema.extend({
-  id: z.string().uuid(),
-  revision: z.number().int().positive(),
-});
+const createSchema = z.strictObject({ name: workflowNameSchema, definition: z.unknown() });
+const saveSchema = workflowCommandSchema.extend(createSchema.shape);
 
 export async function createWorkflow(
   db: Db,
@@ -24,21 +27,25 @@ export async function createWorkflow(
   signal: AbortSignal,
 ) {
   signal.throwIfAborted();
-  if (!canWorkflow(actor, "create")) return err(ERROR_IDS.WORKFLOW_DENIED);
   const input = createSchema.safeParse(raw);
   if (!input.success) return err(ERROR_IDS.WORKFLOW_INVALID);
   const definition = definitionSchema.safeParse(input.data.definition);
   if (!definition.success) return err(ERROR_IDS.WORKFLOW_INVALID);
-  const [row] = await db
-    .insert(workflows)
-    .values({
-      ownerId: actor.id,
-      name: input.data.name,
-      draft: definition.data,
-    })
-    .returning();
-  signal.throwIfAborted();
-  return row === undefined ? err(ERROR_IDS.WORKFLOW_WRITE_FAILED) : ok(row);
+  return db.transaction(async (tx) => {
+    const currentActor = await hydrateActor(tx, actor.id, signal);
+    if (currentActor === null || !canWorkflow(currentActor, "create"))
+      return err(ERROR_IDS.WORKFLOW_DENIED);
+    const [row] = await tx
+      .insert(workflows)
+      .values({
+        ownerId: currentActor.id,
+        name: input.data.name,
+        draft: definition.data,
+      })
+      .returning();
+    signal.throwIfAborted();
+    return row === undefined ? err(ERROR_IDS.WORKFLOW_WRITE_FAILED) : ok(row);
+  });
 }
 
 export async function saveWorkflowDraft(
@@ -52,25 +59,24 @@ export async function saveWorkflowDraft(
   if (!input.success) return err(ERROR_IDS.WORKFLOW_INVALID);
   const definition = definitionSchema.safeParse(input.data.definition);
   if (!definition.success) return err(ERROR_IDS.WORKFLOW_INVALID);
-  const [current] = await db
-    .select()
-    .from(workflows)
-    .where(and(eq(workflows.id, input.data.id), isNull(workflows.archivedAt)));
-  signal.throwIfAborted();
-  if (current === undefined || !canWorkflow(actor, "edit", current.ownerId))
-    return err(ERROR_IDS.WORKFLOW_DENIED);
-  const [saved] = await db
-    .update(workflows)
-    .set({
-      name: input.data.name,
-      draft: definition.data,
-      revision: input.data.revision + 1,
-      updatedAt: new Date(),
-    })
-    .where(and(eq(workflows.id, current.id), eq(workflows.revision, input.data.revision)))
-    .returning();
-  signal.throwIfAborted();
-  return saved === undefined ? err(ERROR_IDS.WORKFLOW_CONFLICT) : ok(saved);
+  return db.transaction(async (tx) => {
+    const locked = await lockWorkflowForCommand(tx, actor, input.data.id, "edit", signal);
+    if (!locked.ok) return locked;
+    const stateError = lifecycleStateError(locked.value.workflow, input.data.revision, false);
+    if (stateError !== null) return err(stateError);
+    const [saved] = await tx
+      .update(workflows)
+      .set({
+        name: input.data.name,
+        draft: definition.data,
+        revision: input.data.revision + 1,
+        updatedAt: new Date(),
+      })
+      .where(and(eq(workflows.id, input.data.id), eq(workflows.revision, input.data.revision)))
+      .returning();
+    signal.throwIfAborted();
+    return saved === undefined ? err(ERROR_IDS.WORKFLOW_CONFLICT) : ok(saved);
+  });
 }
 
 export async function publishWorkflow(
@@ -81,18 +87,14 @@ export async function publishWorkflow(
   signal: AbortSignal,
 ) {
   signal.throwIfAborted();
-  if (!z.string().uuid().safeParse(id).success || !Number.isSafeInteger(revision) || revision < 1)
+  if (!workflowCommandSchema.safeParse({ id, revision }).success)
     return err(ERROR_IDS.WORKFLOW_INVALID);
   return db.transaction(async (tx) => {
-    const [current] = await tx
-      .select()
-      .from(workflows)
-      .where(and(eq(workflows.id, id), isNull(workflows.archivedAt)))
-      .for("update");
-    signal.throwIfAborted();
-    if (current === undefined || !canWorkflow(actor, "publish", current.ownerId))
-      return err(ERROR_IDS.WORKFLOW_DENIED);
-    if (current.revision !== revision) return err(ERROR_IDS.WORKFLOW_CONFLICT);
+    const locked = await lockWorkflowForCommand(tx, actor, id, "publish", signal);
+    if (!locked.ok) return locked;
+    const { workflow: current, actor: currentActor } = locked.value;
+    const stateError = lifecycleStateError(current, revision, false);
+    if (stateError !== null) return err(stateError);
     const definition = validateDefinition(current.draft);
     if (!definition.ok) return err(ERROR_IDS.WORKFLOW_INVALID);
     if (!executableDefinition(definition.value)) return err(ERROR_IDS.WORKFLOW_NOT_READY);
@@ -125,7 +127,7 @@ export async function publishWorkflow(
         number,
         name: current.name,
         definition: definition.value,
-        publishedBy: actor.id,
+        publishedBy: currentActor.id,
       })
       .returning();
     await tx

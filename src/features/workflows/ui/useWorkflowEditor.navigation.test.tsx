@@ -78,7 +78,15 @@ function fixture(): WorkflowDetail {
     archivedAt: null,
     createdAt: new Date("2026-11-02T12:00:00Z"),
     updatedAt: new Date("2026-11-02T12:00:00Z"),
-    capabilities: { edit: true, publish: true, run: true, cancel: true },
+    capabilities: {
+      edit: true,
+      publish: true,
+      run: true,
+      cancel: true,
+      unarchive: false,
+      duplicate: true,
+      restore: true,
+    },
   };
 }
 function mount() {

@@ -5,6 +5,12 @@ import { requireFreshIdentityAction } from "@/features/identity/actions/fresh";
 import { guardCsrf } from "@/features/identity/actions/shared";
 import { createContext } from "@/server/trpc/context";
 import { err } from "@/types/result";
+import {
+  archiveWorkflow,
+  duplicateWorkflow,
+  restoreWorkflowDraft,
+  unarchiveWorkflow,
+} from "./lifecycle";
 import { createWorkflow, publishWorkflow, saveWorkflowDraft } from "./persistence";
 import { pauseWorkflow } from "./queries";
 import { admitManualRun } from "./runAdmission";
@@ -17,6 +23,27 @@ async function authorizedContext(token: string | null) {
   if (!csrf.ok) return null;
   const ctx = await createContext();
   return ctx.actor === null ? null : { db: ctx.db, actor: ctx.actor, session: ctx.session };
+}
+
+export async function archiveWorkflowAction(input: unknown, token: string | null) {
+  const ctx = await authorizedContext(token);
+  if (ctx === null) return err(ERROR_IDS.WORKFLOW_DENIED);
+  return archiveWorkflow(ctx.db, ctx.actor, input, AbortSignal.timeout(10_000));
+}
+export async function unarchiveWorkflowAction(input: unknown, token: string | null) {
+  const ctx = await authorizedContext(token);
+  if (ctx === null) return err(ERROR_IDS.WORKFLOW_DENIED);
+  return unarchiveWorkflow(ctx.db, ctx.actor, input, AbortSignal.timeout(10_000));
+}
+export async function duplicateWorkflowAction(input: unknown, token: string | null) {
+  const ctx = await authorizedContext(token);
+  if (ctx === null) return err(ERROR_IDS.WORKFLOW_DENIED);
+  return duplicateWorkflow(ctx.db, ctx.actor, input, AbortSignal.timeout(10_000));
+}
+export async function restoreWorkflowDraftAction(input: unknown, token: string | null) {
+  const ctx = await authorizedContext(token);
+  if (ctx === null) return err(ERROR_IDS.WORKFLOW_DENIED);
+  return restoreWorkflowDraft(ctx.db, ctx.actor, input, AbortSignal.timeout(10_000));
 }
 
 export async function createWorkflowAction(input: unknown, token: string | null) {

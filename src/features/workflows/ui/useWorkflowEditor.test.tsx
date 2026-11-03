@@ -32,7 +32,15 @@ it("adopts normalized server content after saving so the editor is clean", async
     archivedAt: null,
     createdAt: new Date(),
     updatedAt: new Date(),
-    capabilities: { edit: true, publish: true, run: true, cancel: true },
+    capabilities: {
+      edit: true,
+      publish: true,
+      run: true,
+      cancel: true,
+      unarchive: false,
+      duplicate: true,
+      restore: true,
+    },
   };
   const { result } = renderHook(() => useWorkflowEditor(initial), {
     wrapper: ({ children }: { children: ReactNode }) => (

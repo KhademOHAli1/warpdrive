@@ -496,3 +496,20 @@ This is a private follow-up candidate awaiting configured static qualification a
 - The viewer's AX tree proves document identity, not canvas semantics. DE's right edge was cropped at actual-size viewer scaling. FA was fitted through the visible viewer menu. This is neither actual CRM, DOM focus, keyboard nor assistive-technology acceptance. Other author/test/correction/publication and return routes remain unplayed; WF-005 stays open.
 - A step inserted into an occupied connection was appended to the stored node array. Six UI surfaces incorrectly reused that array's indexes for display. A shared dependency order now keeps the step list, canvas numbering, trace and reference/connection labels consistent without changing graph data or canvas positions/z-order. Among currently eligible nodes it retains creation priority. Draft cycles and duplicate identities remain visible for correction; runtime branch selection and publication validation are unchanged.
 - Actual test-first evidence: six UI behavior failures and six pure ordering failures were observed before the semantic fix, with controls and two earlier selector mistakes retained separately. Final affected 37 cases across 9 files passed. Biome on 12 files exited with 0 with two informational template-literal suggestions. These counts overlap prior cuts and must not be added. Current configured whole-project type generation/typecheck and typed lint, actual narrow CRM/browser/AT, Main/CI and full WF-017 acceptance remain separate gates.
+
+## WF-010 backend follow-up — PR #958
+
+The follow-up adds revision-checked archive/unarchive, safe persisted-draft duplication,
+and immutable-version restore-as-draft, with current-actor checks, common workflow-row
+locking and authorized archived/version reads. Existing publication revision/idempotency,
+run pins and the accepted archive fence remain required. See
+[lifecycle-services.md](lifecycle-services.md) for the source boundary.
+
+The original-source PostgreSQL baseline exposed nine intended authority/archived-read
+assertion failures and two passing controls before implementation. The pure copy-policy
+suite passed 105 cases locally. Exact-revision hosted qualification and subsequent
+integration/user-journey/release gates are maintained on
+[issue #668](https://github.com/KhademOHAli1/warpdrive/issues/668) and
+[PR #958](https://github.com/KhademOHAli1/warpdrive/pull/958). This checkpoint does not mark
+WF-010 complete or accept its broader dependencies. WF-016 pagination/library/UI work
+and privacy erasure/retention remain separate.

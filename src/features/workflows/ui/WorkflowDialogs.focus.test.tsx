@@ -284,7 +284,15 @@ describe("workflow controlled-dialog keyboard focus return", () => {
         archivedAt: null,
         createdAt: new Date("2026-10-31T12:00:00Z"),
         updatedAt: new Date("2026-10-31T12:00:00Z"),
-        capabilities: { edit: true, publish: true, run: true, cancel: true },
+        capabilities: {
+          edit: true,
+          publish: true,
+          run: true,
+          cancel: true,
+          unarchive: false,
+          duplicate: true,
+          restore: true,
+        },
       };
       render(
         <LocaleProvider locale="en">

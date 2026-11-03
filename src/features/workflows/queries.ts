@@ -4,12 +4,23 @@ import { ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import { workflowRuns, workflowSteps, workflows, workflowVersions } from "@/db/schema";
 import type { PermSetUser } from "@/features/permissions/effective";
+import { hydrateActor } from "@/server/hydrateActor";
 import { err, ok } from "@/types/result";
 import { canWorkflow } from "./access";
+import {
+  lifecycleStateError,
+  lockWorkflowForCommand,
+  MAX_WORKFLOW_VERSION_NUMBER,
+  workflowCommandSchema,
+  workflowRevisionSchema,
+} from "./lifecycleShared";
 import { describeRunRecovery, readFailureHistories } from "./runRecovery";
 
 export async function listWorkflows(db: Db, actor: PermSetUser, signal: AbortSignal) {
-  if (!canWorkflow(actor, "view")) return err(ERROR_IDS.WORKFLOW_DENIED);
+  signal.throwIfAborted();
+  const currentActor = await hydrateActor(db, actor.id, signal);
+  if (currentActor === null || !canWorkflow(currentActor, "view"))
+    return err(ERROR_IDS.WORKFLOW_DENIED);
   const rows = await db
     .select({
       id: workflows.id,
@@ -22,7 +33,7 @@ export async function listWorkflows(db: Db, actor: PermSetUser, signal: AbortSig
     .where(
       and(
         isNull(workflows.archivedAt),
-        actor.type === "admin" ? undefined : eq(workflows.ownerId, actor.id),
+        currentActor.type === "admin" ? undefined : eq(workflows.ownerId, currentActor.id),
       ),
     )
     .orderBy(desc(workflows.updatedAt))
@@ -32,21 +43,25 @@ export async function listWorkflows(db: Db, actor: PermSetUser, signal: AbortSig
 }
 
 export async function getWorkflow(db: Db, actor: PermSetUser, id: string, signal: AbortSignal) {
-  if (!z.string().uuid().safeParse(id).success) return err(ERROR_IDS.WORKFLOW_INVALID);
-  const [row] = await db
-    .select()
-    .from(workflows)
-    .where(and(eq(workflows.id, id), isNull(workflows.archivedAt)));
   signal.throwIfAborted();
-  if (row === undefined || !canWorkflow(actor, "view", row.ownerId))
+  if (!z.string().uuid().safeParse(id).success) return err(ERROR_IDS.WORKFLOW_INVALID);
+  const [row] = await db.select().from(workflows).where(eq(workflows.id, id));
+  const currentActor = await hydrateActor(db, actor.id, signal);
+  signal.throwIfAborted();
+  if (row === undefined || currentActor === null || !canWorkflow(currentActor, "view", row.ownerId))
     return err(ERROR_IDS.WORKFLOW_DENIED);
+  const archived = row.archivedAt !== null;
+  const edit = canWorkflow(currentActor, "edit", row.ownerId);
   return ok({
     ...row,
     capabilities: {
-      edit: canWorkflow(actor, "edit", row.ownerId),
-      publish: canWorkflow(actor, "publish", row.ownerId),
-      run: canWorkflow(actor, "run", row.ownerId),
-      cancel: canWorkflow(actor, "cancel", row.ownerId),
+      edit: !archived && edit,
+      publish: !archived && canWorkflow(currentActor, "publish", row.ownerId),
+      run: !archived && canWorkflow(currentActor, "run", row.ownerId),
+      cancel: canWorkflow(currentActor, "cancel", row.ownerId),
+      unarchive: archived && edit,
+      duplicate: canWorkflow(currentActor, "create"),
+      restore: !archived && edit,
     },
   });
 }
@@ -59,7 +74,10 @@ export async function readRunHistory(
   workflowId: string,
   signal: AbortSignal,
 ) {
-  const workflow = await getWorkflow(db, actor, workflowId, signal);
+  signal.throwIfAborted();
+  const currentActor = await hydrateActor(db, actor.id, signal);
+  if (currentActor === null) return err(ERROR_IDS.WORKFLOW_DENIED);
+  const workflow = await getWorkflow(db, currentActor, workflowId, signal);
   if (!workflow.ok) return workflow;
   const rows = await db
     .select({
@@ -99,7 +117,7 @@ export async function readRunHistory(
         .orderBy(workflowSteps.completedAt);
       const recovery = await describeRunRecovery(
         db,
-        actor,
+        currentActor,
         workflow.value,
         run,
         definition,
@@ -129,14 +147,83 @@ export async function pauseWorkflow(
   revision: number,
   signal: AbortSignal,
 ) {
+  signal.throwIfAborted();
+  if (!workflowCommandSchema.safeParse({ id, revision }).success)
+    return err(ERROR_IDS.WORKFLOW_INVALID);
+  return db.transaction(async (tx) => {
+    const locked = await lockWorkflowForCommand(tx, actor, id, "edit", signal);
+    if (!locked.ok) return locked;
+    if (!canWorkflow(locked.value.actor, "view", locked.value.workflow.ownerId))
+      return err(ERROR_IDS.WORKFLOW_DENIED);
+    const stateError = lifecycleStateError(locked.value.workflow, revision, false);
+    if (stateError !== null) return err(stateError);
+    const [row] = await tx
+      .update(workflows)
+      .set({ active: false, updatedAt: new Date(), revision: revision + 1 })
+      .where(and(eq(workflows.id, id), eq(workflows.revision, revision)))
+      .returning();
+    signal.throwIfAborted();
+    return row === undefined ? err(ERROR_IDS.WORKFLOW_CONFLICT) : ok(row);
+  });
+}
+
+// Summaries are bounded and omit definition contents and publisher identity. An older
+// known version remains available through the independently authorized exact lookup.
+export async function readWorkflowVersions(
+  db: Db,
+  actor: PermSetUser,
+  id: string,
+  signal: AbortSignal,
+) {
   const workflow = await getWorkflow(db, actor, id, signal);
   if (!workflow.ok) return workflow;
-  if (!workflow.value.capabilities.edit) return err(ERROR_IDS.WORKFLOW_DENIED);
-  const [row] = await db
-    .update(workflows)
-    .set({ active: false, updatedAt: new Date(), revision: revision + 1 })
-    .where(and(eq(workflows.id, id), eq(workflows.revision, revision)))
-    .returning();
+  const versions = await db
+    .select({
+      id: workflowVersions.id,
+      number: workflowVersions.number,
+      name: workflowVersions.name,
+      createdAt: workflowVersions.createdAt,
+    })
+    .from(workflowVersions)
+    .where(eq(workflowVersions.workflowId, id))
+    .orderBy(desc(workflowVersions.number))
+    .limit(100);
   signal.throwIfAborted();
-  return row === undefined ? err(ERROR_IDS.WORKFLOW_CONFLICT) : ok(row);
+  return ok(versions);
+}
+
+const versionInput = z.strictObject({
+  id: z.string().uuid(),
+  versionNumber: workflowRevisionSchema,
+});
+
+export async function readWorkflowVersion(
+  db: Db,
+  actor: PermSetUser,
+  raw: unknown,
+  signal: AbortSignal,
+) {
+  signal.throwIfAborted();
+  const input = versionInput.safeParse(raw);
+  if (!input.success) return err(ERROR_IDS.WORKFLOW_INVALID);
+  const workflow = await getWorkflow(db, actor, input.data.id, signal);
+  if (!workflow.ok) return workflow;
+  if (input.data.versionNumber > MAX_WORKFLOW_VERSION_NUMBER) return err(ERROR_IDS.WORKFLOW_DENIED);
+  const [version] = await db
+    .select({
+      id: workflowVersions.id,
+      number: workflowVersions.number,
+      name: workflowVersions.name,
+      createdAt: workflowVersions.createdAt,
+      definition: workflowVersions.definition,
+    })
+    .from(workflowVersions)
+    .where(
+      and(
+        eq(workflowVersions.workflowId, input.data.id),
+        eq(workflowVersions.number, input.data.versionNumber),
+      ),
+    );
+  signal.throwIfAborted();
+  return version === undefined ? err(ERROR_IDS.WORKFLOW_DENIED) : ok(version);
 }
