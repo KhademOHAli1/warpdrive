@@ -3,6 +3,8 @@ from release_pr import validate
 from security_audit import blocking
 from release_gates import verify_ci
 from release_support import GateError
+from unittest.mock import patch
+from release_test import r, REVISION
 
 
 class ReleasePRTests(unittest.TestCase):
@@ -51,6 +53,12 @@ class ReleaseSecurityResultsTests(unittest.TestCase):
                 return [{"rule": {"security_severity_level": "high"}}]
         with self.assertRaises(GateError):
             verify_ci(API(), "owner/repo", "a" * 40, {"required_workflows": {}, "require_security_results": True})
+
+    def test_alternate_plan_cannot_reuse_a_maintenance_audit_as_release_proof(self):
+        plan = {"revision": REVISION, "version": "1.4.0"}
+        policy = {"repository": "owner/repo", "require_security_results": True}
+        with patch.object(r, "require_revision"), patch.object(r, "load_candidate_json", return_value={"version": "1.5.0"}), self.assertRaisesRegex(GateError, "strict dependency CI"):
+            r.release_gate(None, plan, policy)
 
     def test_clean_exact_revision_results_pass(self):
         class API:

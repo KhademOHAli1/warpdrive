@@ -57,6 +57,12 @@ def commit_references(api, repo, revision, base, overrides=None):
 def release_gate(api, plan, policy, allow_published=False):
     repo, revision = policy["repository"], plan["revision"]
     require_revision(revision)
+    # The successful dependency job must have run in release-strict mode. That mode is
+    # selected by package == next-plan version; alternate plan filenames cannot bypass it.
+    if policy.get("require_security_results"):
+        next_plan = load_candidate_json(revision, "docs/delivery/releases/next.json")
+        if next_plan.get("version") != plan.get("version"):
+            raise GateError("Release version differs from its committed next-release plan; strict dependency CI is not established")
     items = manifest_items(revision)
     if plan.get("schema_version") != 1:
         raise GateError("Unsupported release-plan schema")
