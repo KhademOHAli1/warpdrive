@@ -10,22 +10,41 @@ import type { InboxLocation } from "./inboxLocation";
 import de from "./messages/email.de.json";
 import en from "./messages/email.en.json";
 import fa from "./messages/email.fa.json";
+import {
+  applyReadIntent,
+  applyUnreadIntent,
+  prepareCreatedReadIntent,
+  type ReadInput,
+  reconcileAppliedReadIntent,
+} from "./ThreadPane.readIntent.test.fixtures";
 import { NO_ATTRIBUTE_FILTER } from "./threadAttributeFilter";
 
 type MailAction = (...args: unknown[]) => Promise<{ ok: true; value: { threadId: string } }>;
 const archive = vi
   .fn<MailAction>()
   .mockResolvedValue({ ok: true, value: { threadId: "ordinary" } });
-const markRead = vi
-  .fn<MailAction>()
-  .mockResolvedValue({ ok: true, value: { threadId: "ordinary" } });
+const HELD_OPERATION_ID = "00000000-0000-4000-8000-000000000003";
+const markRead = vi.fn((_csrf: string, input: ReadInput) => applyReadIntent(input));
+const prepareRead = vi.fn(async (_csrf: string, input: { threadId: string; read: boolean }) => {
+  const result = await prepareCreatedReadIntent(input);
+  if (result.ok && input.threadId === "held")
+    result.value.readIntent.operationId = HELD_OPERATION_ID;
+  return result;
+});
+vi.mock("./readIntentActions", () => ({
+  prepareThreadReadIntentAction: (_csrf: string, input: { threadId: string; read: boolean }) =>
+    prepareRead(_csrf, input),
+  reconcileThreadReadIntentAction: (_csrf: string, input: ReadInput) =>
+    reconcileAppliedReadIntent(input),
+}));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));
 vi.mock("./folderActions", () => ({
   archiveThreadAction: (...args: unknown[]) => archive(...args),
   unarchiveThreadAction: (...args: unknown[]) => archive(...args),
 }));
 vi.mock("./readActions", () => ({
-  markThreadReadAction: (...args: unknown[]) => markRead(...args),
+  markThreadReadAction: (_csrf: string, input: ReadInput) => markRead(_csrf, input),
+  markThreadUnreadAction: (_csrf: string, input: ReadInput) => applyUnreadIntent(input),
 }));
 vi.mock("./InboxMailboxContext", () => ({ useInboxMailbox: () => true }));
 vi.mock("./useInboxRealtime", () => ({ useInboxRealtime: vi.fn() }));
@@ -132,6 +151,7 @@ describe.each<Locale>(["fa", "de", "en"])("workspace mutation gates in %s", (loc
     fireEvent.click(readButton);
     expect(archive).not.toHaveBeenCalled();
     expect(markRead).not.toHaveBeenCalled();
+    expect(prepareRead).not.toHaveBeenCalled();
   });
   it("retains ordinary local archive while remote read is unavailable", () => {
     threads = [
@@ -181,7 +201,11 @@ describe.each<Locale>(["fa", "de", "en"])("workspace mutation gates in %s", (loc
       expect(button).toBeEnabled();
       fireEvent.click(button);
       await vi.waitFor(() => expect(markRead).toHaveBeenCalledTimes(2));
-      expect(markRead).toHaveBeenCalledWith("csrf", { threadId: "held" });
+      expect(markRead).toHaveBeenCalledWith("csrf", {
+        threadId: "held",
+        operationId: HELD_OPERATION_ID,
+      });
+      expect(prepareRead).toHaveBeenCalledWith("csrf", { threadId: "held", read: true });
       expect(archive).not.toHaveBeenCalled();
     },
   );

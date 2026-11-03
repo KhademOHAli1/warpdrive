@@ -145,6 +145,9 @@ export function InboxWorkspaceToolbar({
           <Button variant="ghost" size="sm" disabled={busy || !canMarkRead} onClick={onMarkRead}>
             {E.workspace.markRead}
           </Button>
+          <Button variant="ghost" size="icon" aria-label={E.workspace.refresh} onClick={onRefresh}>
+            <RefreshCw aria-hidden="true" className="size-4" />
+          </Button>
           <Button
             variant="ghost"
             size="icon"

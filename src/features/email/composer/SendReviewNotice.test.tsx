@@ -77,4 +77,48 @@ for (const locale of ["fa", "de", "en"] as const) {
     expect(screen.getByRole("alert")).toHaveTextContent(L.sentCopyFailed);
     expect(screen.getByText("ارسالی‌ها")).toBeInTheDocument();
   });
+  it.each(["unknown", "accepted", "partial", "sent-copy"] as const)(
+    `keeps resend unavailable for %s despite a failed legacy status in ${locale}`,
+    (state) => {
+      const L = composerMailboxMessages(locale);
+      const onCheck = vi.fn();
+      render(
+        <LocaleProvider locale={locale}>
+          <SendReviewNotice
+            outcome={
+              state === "sent-copy"
+                ? { status: "failed", sentCopy: { state: "failed", folderPath: "Sent" } }
+                : { status: "failed", deliveryOutcome: { state } }
+            }
+            busy={false}
+            onCheck={onCheck}
+            onDone={vi.fn()}
+            onRetry={vi.fn()}
+            onKeepDraft={vi.fn()}
+          />
+        </LocaleProvider>,
+      );
+      expect(screen.queryByRole("button", { name: L.retrySend })).not.toBeInTheDocument();
+      fireEvent.click(screen.getByRole("button", { name: L.checkStatus }));
+      expect(onCheck).toHaveBeenCalledOnce();
+      expect(screen.getByRole("button", { name: L.closeKeepDraft })).toBeEnabled();
+    },
+  );
+  it(`offers retry for a definite rejection in ${locale}`, () => {
+    const L = composerMailboxMessages(locale);
+    const onRetry = vi.fn();
+    render(
+      <LocaleProvider locale={locale}>
+        <SendReviewNotice
+          outcome={{ status: "failed", deliveryOutcome: { state: "rejected" } }}
+          busy={false}
+          onCheck={vi.fn()}
+          onDone={vi.fn()}
+          onRetry={onRetry}
+        />
+      </LocaleProvider>,
+    );
+    fireEvent.click(screen.getByRole("button", { name: L.retrySend }));
+    expect(onRetry).toHaveBeenCalledOnce();
+  });
 }

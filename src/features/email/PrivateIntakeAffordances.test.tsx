@@ -10,11 +10,26 @@ import en from "./messages/email.en.json";
 import fa from "./messages/email.fa.json";
 import type { PrivateIntakeSummary } from "./privateIntakeTypes";
 import { ThreadList } from "./ThreadList";
+import {
+  applyReadIntent,
+  applyUnreadIntent,
+  prepareCreatedReadIntent,
+  READ_OPERATION_ID,
+  type ReadInput,
+  reconcileAppliedReadIntent,
+  UNREAD_OPERATION_ID,
+} from "./ThreadPane.readIntent.test.fixtures";
 import { ThreadRow } from "./ThreadRow";
 
 const archive = vi.fn(() => Promise.resolve({ ok: true, value: { threadId: "thread" } }));
-const markRead = vi.fn(() => Promise.resolve({ ok: true, value: { threadId: "thread" } }));
-const markUnread = vi.fn(() => Promise.resolve({ ok: true, value: { threadId: "thread" } }));
+const markRead = vi.fn((_csrf: string, input: ReadInput) => applyReadIntent(input));
+const markUnread = vi.fn((_csrf: string, input: ReadInput) => applyUnreadIntent(input));
+vi.mock("./readIntentActions", () => ({
+  prepareThreadReadIntentAction: (_csrf: string, input: { threadId: string; read: boolean }) =>
+    prepareCreatedReadIntent(input),
+  reconcileThreadReadIntentAction: (_csrf: string, input: ReadInput) =>
+    reconcileAppliedReadIntent(input),
+}));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));
 vi.mock("@/components/shell/ActionErrorProvider", () => ({ useActionError: () => vi.fn() }));
 vi.mock("./folderActions", () => ({
@@ -22,8 +37,8 @@ vi.mock("./folderActions", () => ({
   unarchiveThreadAction: (...args: unknown[]) => archive(...(args as [])),
 }));
 vi.mock("./readActions", () => ({
-  markThreadReadAction: (...args: unknown[]) => markRead(...(args as [])),
-  markThreadUnreadAction: (...args: unknown[]) => markUnread(...(args as [])),
+  markThreadReadAction: (_csrf: string, input: ReadInput) => markRead(_csrf, input),
+  markThreadUnreadAction: (_csrf: string, input: ReadInput) => markUnread(_csrf, input),
 }));
 vi.mock("./threadVisibilityActions", () => ({ setThreadVisibilityAction: vi.fn() }));
 vi.mock("@/utils/csrfCookie", () => ({ readCsrfToken: () => "csrf" }));
@@ -202,7 +217,10 @@ describe.each<Locale>(["fa", "de", "en"])("private intake affordances in %s", (l
       fireEvent.click(button);
       const mutation = action === "read" ? markRead : markUnread;
       await vi.waitFor(() =>
-        expect(mutation).toHaveBeenCalledWith("csrf", { threadId: ordinary.id }),
+        expect(mutation).toHaveBeenCalledWith("csrf", {
+          threadId: ordinary.id,
+          operationId: action === "read" ? READ_OPERATION_ID : UNREAD_OPERATION_ID,
+        }),
       );
       expect(archive).not.toHaveBeenCalled();
     },

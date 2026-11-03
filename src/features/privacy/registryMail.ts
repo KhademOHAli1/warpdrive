@@ -6,8 +6,32 @@ import {
   mailPrivateIntakeIds1,
   mailSyncIds1,
 } from "./registryIdsMail1";
+import { mailReadRecoveryIds1 } from "./registryIdsMailReadRecovery1";
 
 export const mailInventoryEntries = [
+  classifyInventory(mailReadRecoveryIds1, {
+    ...classifications.email,
+    owner: "native MAIL read operations and recovery receipts",
+    categories: [
+      "workforce actor and mailbox-owner provenance",
+      "opaque operation, account and thread identifiers",
+      "provider, generation, private-copy and read-state bindings",
+      "dispatch claims, outcome states, fixed error identifiers and database timestamps",
+      "transient reader and bulk recovery state",
+      "database backend identity and transaction cleanup state",
+    ],
+    subjectRelation:
+      "The acting workforce user and captured mailbox owner identify operation provenance, not every person described by a conversation. An operation, thread or account identifier does not establish approved subject disclosure or erasure scope.",
+    purpose:
+      "Prepare one actor-bound immutable read or unread command, retain its dispatch and outcome evidence, apply local markers atomically with confirmed receipts and reconcile the exact operation without blindly replaying uncertain provider changes.",
+    disclosure:
+      "Current native session and thread visibility checks guard preparation, execution and exact-operation reconciliation. The public receipt contains only operation ID, thread ID, desired read state, outcome state, admission cutoff and an optional fixed error identifier. Credentials, message bodies, attachments, session references and raw dispatch claims are not receipt fields. Current thread state is an observation and cannot certify that an unanswered command completed. No generic receipt disclosure adapter is activated.",
+    retention:
+      "Receipt actor, account and thread references remain restrictive. Supported disconnect, deactivation, reconnect and trash flows preserve content and operation evidence; they do not erase receipts. Prepared commands have a database-clock admission cutoff and may be cancelled without admitting a delayed execution. Admitted or unknown commands retain their immutable claims and unresolved barriers and cannot be reset, taken over or pruned. Terminal receipts remain retained. Browser Map/Set deletion is transient bookkeeping. No automatic cleanup, physical purge, admitted-claim expiry or retention period is activated.",
+    externalEffects:
+      "Local PostgreSQL preparation, admission, read-marker and receipt transactions use the existing native authority and record scope. Generic query identifiers also cover protected current-thread client reads and database transaction/backend cleanup observations; generic delete identifiers on bulk Maps remove only transient entries. An owned ordinary IMAP read command reaches the existing flag adapter only after its claim commit is acknowledged and current runtime/session authority is observed before mutation; native authority locks do not span provider I/O. Protected private copies and permitted shared viewers use local markers without loading provider credentials. Unconfirmed or partial provider effects remain unresolved and cannot authorize a replay. This classification grants no sending, remote erasure or privacy lifecycle execution capability.",
+    erasureTask: "DPL-16",
+  }),
   classifyInventory(mailCredentialsIds1, {
     ...classifications.email,
     owner: "mailbox configuration and connection proofs",

@@ -11,8 +11,38 @@ import {
   privateLocalReadRemote,
   privateLocalReadRows,
 } from "./privateIntakeLocalRead.test-helpers";
+import { withPrivateIntakeLocalReadLocks } from "./privateIntakeLocalReadLock";
+import {
+  heldPrivateReviewMutation,
+  observePrivateReview,
+} from "./privateIntakeReview.race.test-helpers";
 import { markThreadRead, markThreadUnread } from "./readState";
 import { hydrateOwner } from "./syncCursor";
+
+const CANCEL_SETTLEMENT_MS = 1000;
+
+type Settlement<Value> = { kind: "settled"; value: Value } | { kind: "deadline" };
+
+async function settleBeforeRelease<Value>(
+  pending: Promise<Value>,
+  signal: AbortSignal,
+): Promise<Settlement<Value>> {
+  signal.throwIfAborted();
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const deadline = new Promise<{ kind: "deadline" }>((resolve) => {
+    timer = setTimeout(() => resolve({ kind: "deadline" }), CANCEL_SETTLEMENT_MS);
+  });
+  try {
+    const result = await Promise.race([
+      pending.then((value) => ({ kind: "settled" as const, value })),
+      deadline,
+    ]);
+    signal.throwIfAborted();
+    return result;
+  } finally {
+    if (timer !== undefined) clearTimeout(timer);
+  }
+}
 
 it.each([false, true])(
   "lets the current private-intake owner change only local read state (administrator=%s)",
@@ -150,5 +180,116 @@ it("keeps ordinary owner IMAP read and unread on the actual remote STORE path", 
     } finally {
       await f.server.close();
     }
+  });
+});
+
+it.each([20, 250])(
+  "honors a configured %s ms lock timeout without abort or indefinite retry",
+  async (ms) => {
+    await withTestDb(async (db) => {
+      const signal = AbortSignal.timeout(5000);
+      const holder = await heldPrivateReviewMutation(
+        db,
+        async (tx) => {
+          await tx.execute(sql`SELECT pg_advisory_xact_lock(19831101)`);
+        },
+        signal,
+      );
+      const pending = withPrivateIntakeLocalReadLocks(db, signal, async (tx) => {
+        await tx.execute(sql`SELECT set_config('lock_timeout',${`${ms}ms`},true)`);
+        await tx.execute(sql`SELECT pg_advisory_xact_lock(19831101)`);
+      });
+      const observed = observePrivateReview(pending);
+      try {
+        const result = await settleBeforeRelease(observed, signal);
+        expect(result.kind).toBe("settled");
+        if (result.kind === "settled") {
+          expect(result.value).toMatchObject({
+            status: "rejected",
+            reason: { cause: { code: "55P03" } },
+          });
+        }
+      } finally {
+        holder.release();
+        await Promise.allSettled([holder.pending, observed]);
+      }
+      await holder.pending;
+      await withPrivateIntakeLocalReadLocks(db, signal, async (tx) => {
+        await tx.execute(sql`SELECT set_config('lock_timeout',${`${ms}ms`},true)`);
+        await tx.execute(sql`SELECT 1`);
+        expect((await tx.execute(sql`SHOW lock_timeout`)).rows).toEqual([
+          { lock_timeout: `${ms}ms` },
+        ]);
+      });
+    });
+  },
+);
+
+it("preserves an unrelated native SQL error when cancellation happens concurrently", async () => {
+  await withTestDb(async (db) => {
+    const controller = new AbortController();
+    let captured: unknown;
+    const pending = withPrivateIntakeLocalReadLocks(db, controller.signal, async (tx) => {
+      try {
+        await tx.execute(sql`SELECT 1/0`);
+      } catch (error) {
+        captured = error;
+        controller.abort();
+        throw error;
+      }
+    });
+    const outcome = await observePrivateReview(pending);
+    expect(outcome).toMatchObject({ status: "rejected", reason: { cause: { code: "22012" } } });
+    if (outcome.status === "rejected") expect(outcome.reason).toBe(captured);
+    expect((await db.execute(sql`SELECT 1 AS usable`)).rows).toEqual([{ usable: 1 }]);
+  });
+});
+
+it("honors a configured statement timeout without retries or abort", async () => {
+  await withTestDb(async (db) => {
+    const signal = AbortSignal.timeout(5000);
+    const action = new AbortController();
+    const holder = await heldPrivateReviewMutation(
+      db,
+      async (tx) => {
+        await tx.execute(sql`SELECT pg_advisory_xact_lock(19831102)`);
+      },
+      signal,
+    );
+    const pending = withPrivateIntakeLocalReadLocks(db, action.signal, async (tx) => {
+      await tx.execute(sql`SET LOCAL lock_timeout='0'; SET LOCAL statement_timeout='250ms'`);
+      await tx.execute(sql`SELECT pg_advisory_xact_lock(19831102)`);
+    });
+    const observed = observePrivateReview(pending);
+    let outcome: Settlement<Awaited<typeof observed>> = { kind: "deadline" };
+    try {
+      await vi.waitFor(
+        async () => {
+          const waiting = await db.execute(sql`SELECT pid FROM pg_stat_activity
+          WHERE datname=current_database() AND pid<>pg_backend_pid() AND state='active'
+            AND wait_event_type='Lock' AND ${holder.pid}=ANY(pg_blocking_pids(pid))
+            AND query ~* '^[[:space:]]*SELECT[[:space:]]+pg_advisory_xact_lock[(]19831102[)]'`);
+          signal.throwIfAborted();
+          expect(waiting.rows).toHaveLength(1);
+        },
+        { timeout: 2000, interval: 10 },
+      );
+      outcome = await settleBeforeRelease(observed, signal);
+    } finally {
+      holder.release();
+      await Promise.allSettled([holder.pending, observed]);
+    }
+    await holder.pending;
+    expect((await db.execute(sql`SELECT 1 AS usable`)).rows).toEqual([{ usable: 1 }]);
+    signal.throwIfAborted();
+    expect(action.signal.aborted).toBe(false);
+    expect(outcome.kind, "statement timeout must settle before releasing the holder").toBe(
+      "settled",
+    );
+    if (outcome.kind === "settled")
+      expect(outcome.value).toMatchObject({
+        status: "rejected",
+        reason: { cause: { code: "57014" } },
+      });
   });
 });

@@ -3,17 +3,23 @@ import type { Db } from "@/db/client";
 import type { Result } from "@/types/result";
 import type { ImapConnectionRuntime } from "./mailConnectionRuntime";
 import type { ImapFailure } from "./providers/imapTypes";
+import type { ReadIntentRemoteDispatch } from "./readIntentRemoteReceipt";
+import type { ReadActionValue } from "./readIntentTypes";
 
 export type ImapThreadOperation =
   | { kind: "read"; read: boolean }
   | { kind: "move"; destinationPath: string }
   | { kind: "trash" };
 export interface ImapThreadOperationDeps {
+  readIntent?: ReadIntentRemoteDispatch;
   loadConnection?: (
     db: Db,
     accountId: string,
     signal: AbortSignal,
   ) => Promise<Result<ImapConnectionRuntime, AppError>>;
+}
+export interface ImapThreadOperationValue extends ReadActionValue {
+  requiresResync?: boolean;
 }
 export interface ImapOperationLocator {
   id: string;

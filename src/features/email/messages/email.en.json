@@ -13,7 +13,9 @@
     "moving": "Moving…",
     "cancel": "Cancel",
     "refreshBeforeRetry": "The server may have applied some changes. Refresh this conversation before trying again.",
-    "refresh": "Refresh conversation"
+    "refresh": "Refresh conversation",
+    "readStatusFailed": "The conversation's read status could not be updated. Please try again.",
+    "bulkReadUnconfirmed": "Changes to the read status haven’t been confirmed. Use Refresh to check their status."
   },
   "title": "Inbox",
   "composeTitle": "New email",

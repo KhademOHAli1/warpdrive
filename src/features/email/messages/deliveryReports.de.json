@@ -23,6 +23,7 @@
   "saving": "Prüfung wird gespeichert…",
   "saved": "Prüfung gespeichert",
   "failure": "Ihre Prüfung konnte nicht gespeichert werden. Versuchen Sie es erneut.",
+  "saveUnconfirmed": "Wir konnten nicht bestätigen, dass Ihre Prüfung gespeichert wurde. Schließen Sie das Fenster und aktualisieren Sie den Bericht, bevor Sie es erneut versuchen.",
   "permission": "Ihre Zugriffsrechte haben sich geändert. Laden Sie diese Nachricht vor einer erneuten Prüfung neu.",
   "conflict": "Dieser Bericht wurde geändert. Laden Sie ihn vor einer erneuten Prüfung neu.",
   "conflictingStatus": "Das gemeldete Ergebnis und der Statuscode widersprechen sich. Prüfen Sie den Originalbericht.",
