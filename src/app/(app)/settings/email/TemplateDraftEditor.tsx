@@ -54,6 +54,7 @@ export function TemplateDraftEditor({
 
   return (
     <fieldset
+      aria-label={S.templates}
       disabled={pending}
       inert={pending}
       aria-busy={pending}
@@ -88,6 +89,7 @@ export function TemplateDraftEditor({
         />
       </div>
       <RichTextBody
+        ariaLabel={`${S.templates}: ${S.bodyLabel}`}
         html={draft.bodyHtml}
         onChange={(bodyHtml) => onChange({ ...draft, bodyHtml })}
         insertToken={insertToken}
