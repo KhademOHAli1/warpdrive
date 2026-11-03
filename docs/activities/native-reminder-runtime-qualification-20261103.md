@@ -1,0 +1,25 @@
+# Native Calendar event and reminder qualification
+
+The bounded technical scope of #907 passed controlled local qualification at source `5f781975b8348a8e702dfd4ff6e6d59a3447319a`, tree `73390e87ef207e13871dc3afc4a400818e215d7b`, BuildID `4jFa7gXE63md_rHUNcbd9`. Final publication and exact hosted CI are pending at this record's creation. This adds runtime evidence and preserves the historical prebuild qualification record.
+
+The normal Next production webpack build, with full TypeScript validation, passed in 113.292 seconds (132.030 seconds inclusive). All 170 artifact/source checks passed: the 90 retained Sales/MAIL checks plus 80 Calendar checks, 7,692 exact Git files/modes, 103 NFT manifests, actual native action registrations, Calendar server page and nested client compilation/chunk chains. Sampled owned RSS reached 7,064,043,520 bytes below the 8 GiB cap; the internal 8 GiB free-space floor remained enforced.
+
+Only disposable Next cache used a unique owned local APFS USB directory. Sampled allocated cache reached 1,375,850,496 bytes below 2 GiB. Mount identity and 16 GiB external free-space guards remained active. The exact cache link/root and newly created empty parents were removed after all owned groups stopped, with pre-existing external root entries retained. Source/build artifacts remained internal. No backup or snapshot was deleted.
+
+The final production browser campaign passed 192 checks and all three selected invariants in 9.335 seconds (92.161 seconds including controlled native setup and cleanup):
+
+- Real native HTTP sign-in, permissions and a real production reminder worker handled an actual scoped notification failure, truthful current failed status, explicit UI Retry and exactly one delivered in-app outcome. Reads added no notification or mail.
+- An all-day event retained civil-date/authored-zone semantics, explicit reminder opt-in and explicit cancellation with stale work suppressed.
+- A real create committed upstream before its response was lost. The UI retained uncertainty and blocked unsafe resubmission. “Check Calendar” itself issued a real parent RSC refresh and displayed the uniquely committed event, then a protected native read confirmed the same ID/title before manual navigation. A separate real document reload (HTTP 200) again displayed/read that same event. Neither recovery nor read/reload created, edited, retried or delivered an extra domain effect.
+
+The profile was an owned synthetic English/Gregorian/America_New_York account with a genuine Secure HttpOnly session. Actual activity-type query (HTTP 200, six rows) and genuine selected controls established readiness. The product's pending-type UX was not changed; it remains a separate #83 follow-up. Root visually reviewed the final pre-reload and final Calendar screenshots.
+
+Real PostgreSQL evidence separately covers timed/all-day storage and edits, exact repeated-hour milliseconds and approved duration, DST-gap rollback, CRM parent visibility, native current-actor authority/permission denial and rollback, reschedule/cancel/stale/replay suppression, current recipient preferences, real pg-boss worker boot/restart, actual interrupted notification insertion and failure/retry. The original native campaign remains **overall FAIL: 47 PASS / 1 old upgrade-fixture FAIL / 1 filtered**. The corrected populated 0102 upgrade was a separate 1 PASS; fairness was another selected 1 PASS / 1 filtered. These are separate source-bound cuts, not one full 49-case green run. The minimum recovery fix additionally passed32 UI tests, formatting and typed lint.
+
+Current inventory CLI/report format/check passed with 2,399 eligible sources, clean coverage and fingerprint `63ee67ef3979c4928638587fed950085891f16a7a02f7c3d479b2c3d26531d09`. Only the fingerprint changed from the previous report. The prior 31 registry tests remain at their historical passed cut; 253 privacy/CLI files were verified byte-identical. No lifecycle/export/erasure capability was expanded.
+
+Earlier browser attempts 1–4 remain failures: the original inert-fieldset locator; the actual 7ff missing-parent-refresh defect; unresolved type-response readiness evidence; and unavailable CDP response-body evidence. The source fix and final complete campaign do not overwrite those receipts.
+
+The companion JSON records exact hashes for retained local receipts. Those raw `.runtime` artifacts remain local; this record does not invent hosted URLs for them. Root may publish metadata-only B after this review, proving production blobs and reviewed pins unchanged from A. Browser evidence remains bound to A/BuildID; hosted evidence must be the actual final published B. No B hash, CI result, acceptance comment or closure is asserted here.
+
+Completing this technical child does not accept human-only journey #83, actual localized human use, a supported installed runtime/profile, real providers, invitations/RSVP/conferencing, release or deployment. Sampled resources are not continuous maxima or shared-browser memory measurements.

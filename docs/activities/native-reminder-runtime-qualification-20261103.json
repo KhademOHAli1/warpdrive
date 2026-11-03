@@ -1,0 +1,246 @@
+{
+  "schema_version": 1,
+  "evidence_level": "controlled_local_technical_qualification",
+  "canonical_id": "delivery/core-calendar-reminder-support",
+  "issue": 907,
+  "acceptance_sha256": "2628ec58e20df55e15fc18fa39d6aaa594c83251e150090ed30ac5c0fbd64293",
+  "recorded_at_utc": "2026-11-03T02:15:40.610397+00:00",
+  "source_revision": "5f781975b8348a8e702dfd4ff6e6d59a3447319a",
+  "source_tree": "73390e87ef207e13871dc3afc4a400818e215d7b",
+  "build_id": "4jFa7gXE63md_rHUNcbd9",
+  "technical_qualification": "PASS for original bounded four-clause technical scope; no issue acceptance, final hostedCI or humanjourney claim",
+  "build": {
+    "state": "PASS",
+    "normal_production": true,
+    "build_seconds": 113.29241587501019,
+    "inclusive_seconds": 132.02959958300926,
+    "guard_count": 170,
+    "retained_sales_mail_guards": 90,
+    "calendar_guards": 80,
+    "source_files": 7692,
+    "nft_manifests": 103,
+    "maximum_sampled_owned_bytes": 7064043520,
+    "rss_cap_bytes": 8589934592,
+    "internal_disk_floor_bytes": 8589934592,
+    "cache": {
+      "placement": "Unique disposable Next .next/cache only on local APFS USB; source/artifacts remain internal app",
+      "maximum_sampled_logical_bytes": 1358748548,
+      "maximum_sampled_allocated_bytes": 1375850496,
+      "maximum_owned_cap_bytes": 2147483648,
+      "external_free_floor_bytes": 17179869184,
+      "owned_link_root_and_new_empty_parents_removed": true,
+      "preexisting_external_root_entries_retained": true,
+      "backup_snapshots_untouched": true
+    }
+  },
+  "browser": {
+    "state": "PASS",
+    "checks_passed": 192,
+    "invariants_passed": [
+      "reminder failure/current-generation UI Retry/one delivered inapp outcome",
+      "all-day civil-date/zone/reminder opt-in/explicit cancellation",
+      "real committed lost-create ACK loss/blocked replay/CheckCalendar current parent refresh and protected sameID read before navigation, then actual full document reload/current sameID"
+    ],
+    "browser_seconds": 9.335,
+    "inclusive_runtime_seconds": 92.16075633396395,
+    "maximum_sampled_owned_native_and_postgres_bytes": 562578063,
+    "shared_browser_rss_separately_unmeasured": true,
+    "profile": {
+      "locale": "en",
+      "calendar": "gregory",
+      "authored_zone": "America/New_York",
+      "actor": "Owned synthetic account using actual native HTTP password sign-in, Secure HttpOnly cookie, persisted permissions and current fresh session"
+    },
+    "activity_type_readiness": "Actual queryHTTP200/sixrows and real selected controls observed; source pending-type UX was not changed and remains humanjourney83 follow-up.",
+    "no_extra_domain_effects_after_recovery_reads": true
+  },
+  "native_cuts": {
+    "original": "47PASS/1oldupgradefixtureFAIL/1filtered, overallFAIL retained",
+    "corrected_upgrade": "Separate1PASS/7.871s inclusive",
+    "fairness": "Separate selected1PASS/1filtered;4.899s inclusive",
+    "scope": "Do not combine those cuts into one full49PASS. Older production evidence remains attributed to its sourcecut; actualA minimumUI fix is qualified separately."
+  },
+  "retained_failed_browser_attempts": [
+    {
+      "attempt": 1,
+      "revision": "7ff07c8b83a577e50ebf1573bf79502962ed8425",
+      "state": "FAIL",
+      "seconds": 55.603667999967,
+      "runtime": {
+        "path": ".runtime/goal-calendar-browser-907-1/runtime.public.json",
+        "sha256": "a6c690e4337c6e7e0a4c5cd7427b960666d317ba40be41ce8d847f1436f1c582",
+        "scope": "Lost-create inert-fieldset locator timeout; primary/all-day142checks passed, overallFAIL retained."
+      },
+      "browser": {
+        "path": ".runtime/goal-calendar-browser-907-1/browser-result.public.json",
+        "sha256": "aeb3b211f1aa8a7f34ade6b98ec1fcd4e2469c7a30e8cbf97a3556183a219efd",
+        "scope": "Lost-create inert-fieldset locator timeout; primary/all-day142checks passed, overallFAIL retained."
+      }
+    },
+    {
+      "attempt": 2,
+      "revision": "7ff07c8b83a577e50ebf1573bf79502962ed8425",
+      "state": "FAIL",
+      "seconds": 51.41158933297265,
+      "runtime": {
+        "path": ".runtime/goal-calendar-browser-907-1/attempt2/runtime.public.json",
+        "sha256": "21c22704546ade45168272be11c951d9627d01b8c1a8707058bf07d76e4a6591",
+        "scope": "Actual7ff current-view recovery defect: committed third event absent after CheckCalendar; preserved failingcut."
+      },
+      "browser": {
+        "path": ".runtime/goal-calendar-browser-907-1/attempt2/browser-result.public.json",
+        "sha256": "4bb531e932e7440916a8a2546b60a2a69a36e7b8caa206d187d8b6fb411902b9",
+        "scope": "Actual7ff current-view recovery defect: committed third event absent after CheckCalendar; preserved failingcut."
+      }
+    },
+    {
+      "attempt": 3,
+      "revision": "5f781975b8348a8e702dfd4ff6e6d59a3447319a",
+      "state": "FAIL",
+      "seconds": 57.52022179204505,
+      "runtime": {
+        "path": ".runtime/goal-calendar-browser-907-1/attempt3/runtime.public.json",
+        "sha256": "399bc6a4820fdca73cc2f024bc6477c6648cb2fa329da9d5238955a5fd301d34",
+        "scope": "Type-query/readiness response could not be established; no type-readiness/productfix claim."
+      },
+      "browser": {
+        "path": ".runtime/goal-calendar-browser-907-1/attempt3/browser-result.public.json",
+        "sha256": "e6ca7b972416c1a4d052f91f7078abb091dcf6559e92587b220e7e96945f410b",
+        "scope": "Type-query/readiness response could not be established; no type-readiness/productfix claim."
+      }
+    },
+    {
+      "attempt": 4,
+      "revision": "5f781975b8348a8e702dfd4ff6e6d59a3447319a",
+      "state": "FAIL",
+      "seconds": 41.46089020802174,
+      "runtime": {
+        "path": ".runtime/goal-calendar-browser-907-1/attempt4/runtime.public.json",
+        "sha256": "16218deffb74d6352478da4e7c6b9e639a446b02990f6c9b4d91368d8cf16ba3",
+        "scope": "RSC response-body unavailable through CDP after navigation; no fresh/currentview claim from that partialattempt."
+      },
+      "browser": {
+        "path": ".runtime/goal-calendar-browser-907-1/attempt4/browser-result.public.json",
+        "sha256": "3d3beddea5215e35ccf08ce5bbca4a719be819953edb0f91464f69a1b1e49636",
+        "scope": "RSC response-body unavailable through CDP after navigation; no fresh/currentview claim from that partialattempt."
+      }
+    }
+  ],
+  "cleanup": {
+    "all_owned_groups_and_pg_gone": true,
+    "browser_context_closed": true,
+    "foreign_sets_states_listeners_contexts_retained": true,
+    "source7692_and_artifact779_pins_held": true,
+    "private_credentials_deleted": true,
+    "cache_cleaned_after_allgroupsgone": true
+  },
+  "review_provenance": {
+    "runtime": "codex",
+    "session_id": "01a19251-a472-7cd1-86cd-8dc245dd5b84",
+    "task_id": "/root/live_issue_checkpoints",
+    "disclosure": "Reviewer authored bounded privacy companion/build preparation. Root independently reviewed and executed the build and production runtime; retained receipts/Root review corroborate the harness. Calendar product implementation/tests are a separate agent ownership. This report is technical process provenance, not separately authenticated GitHub human review."
+  },
+  "publication": {
+    "state": "PENDING_ACTUAL_METADATA_B_COMMIT_PUSH_AND_EXACT_HOSTED_CI",
+    "source_revision_A": "5f781975b8348a8e702dfd4ff6e6d59a3447319a",
+    "final_revision_B": null,
+    "runs": null,
+    "constraints": [
+      "Root alone adds exact metadata allowlistB after this independent scope review.",
+      "Verify all production blobsA==B and all37 reviewed source pins unchanged; browser remains sourceA/BuildID, never relabelledB.",
+      "Official exactB CI/committed record URLs must be read after actual publication; no futureB hash/run/link invented.",
+      "Only after exactB all8green can Root perform separate permitted account attestation/native prerequisite verification and closureaudit."
+    ]
+  },
+  "evidence": {
+    "build": {
+      "path": ".runtime/goal-calendar-candidate-build/attempt2/admitted-build.public.json",
+      "sha256": "87a673a4989651fed3af7189c10afc152462f5ebd6a3a48a5d6aff0d0e4464a9",
+      "scope": "Actual normal productionA build113.292s/132.030inclusive/170guards; source7692/full TypeScript and webpack;103NFT; no services."
+    },
+    "trace": {
+      "path": ".runtime/goal-calendar-candidate-build/attempt2/tracing.public.json",
+      "sha256": "28d64eeace2df419836951bc438a610684146c47339139ce378783219d4e7d6a",
+      "scope": "Actual170positive source/compiler/action/page/chunk/NFTguards,0forbidden; retained90Sales/MAIL+80Calendar."
+    },
+    "runtime": {
+      "path": ".runtime/goal-calendar-browser-907-1/attempt5/runtime.public.json",
+      "sha256": "6f3f8fcfb7519360f37e55d3fdec3037676ab9472d80e56bf9b308ed6f9db416",
+      "scope": "Actual fresh local native/server/PG/worker runtime PASS92.160756s including cleanup; not full deployed worker service."
+    },
+    "browser": {
+      "path": ".runtime/goal-calendar-browser-907-1/attempt5/browser-result.public.json",
+      "sha256": "968d661d9632550d990ef1924a723e42967087463fb34dcf53fbdcfebfcc0c70",
+      "scope": "Actual192checks/three invariants PASS9.335s, English/Gregorian/America_New_York; no preload session/event effects, real HTTP cookie and worker."
+    },
+    "root_review": {
+      "path": ".runtime/goal-calendar-browser-907-1/attempt5/root-terminal-review.json",
+      "sha256": "26865e29766f311fc5d5f6614f1774036c6af48365cc8051cdb54f4cba83369d",
+      "scope": "Root independently checked terminal artifacts/cleanup and visually viewed two final PNGs."
+    },
+    "native_original": {
+      "path": ".runtime/goal-calendar-native-0102-2/qualification/native.receipt.json",
+      "sha256": "51bc9da74700d0fd683e6ff6dec53eae5d96bfb081196ffa61e0ce863cb8e3f9",
+      "scope": "Original overallFAIL:47PASS/1oldpublic-ledgerupgradefixtureFAIL/1filtered; includes4compatibility upgrades and5legacy reminder checks; not47newCalendar tests."
+    },
+    "native_original_results": {
+      "path": ".runtime/goal-calendar-native-0102-2/qualification/native.vitest.json",
+      "sha256": "681e8c56e9d1fe744259e2d17bb09c44a7af74792c729efccec1022eb0642efb",
+      "scope": "Actual passing realDB/time/authority/race/workerboot-restart cases; retained at original source cut."
+    },
+    "upgrade_selected": {
+      "path": ".runtime/goal-calendar-upgrade-0102-4/qualification/native.receipt.json",
+      "sha256": "7cdd617bff93367f5f369aa88c1d55d45e46ed6a1de6e1edf9c480cd81544e40",
+      "scope": "Separate corrected populated0102 upgrade1PASS/7.871s inclusive with olddata/ledger/idempotence proof, no combined full49PASS."
+    },
+    "fairness_selected": {
+      "path": ".runtime/goal-calendar-fairness-green-1/qualification/native.receipt.json",
+      "sha256": "a1ecdcbe89d428e1e3dbb942ab401e683e5082880980b270bd42797e2d6ae512",
+      "scope": "Separate historical fairness selected1PASS/1filtered,4.899s inclusive; not included as new aggregate native pass."
+    },
+    "static": {
+      "path": ".runtime/goal-calendar-static-2/qualification/static.receipt.json",
+      "sha256": "fcc35c1b3968446a760c9e6516e25b66b04bce7781b9316666a64835d5466646",
+      "scope": "Actual static configuredTSC/lint/i18n/focused39 at its retained cut; no transfer to a fabricated combined run."
+    },
+    "fix_freeze": {
+      "path": ".runtime/goal-calendar-unknown-recovery-3/source-freeze.json",
+      "sha256": "7e95d5557208308fa62241485470cee242872580600cad8caaa1697351b4892d",
+      "scope": "Actual red callback0expected1 then minimum guarded hook change and32UI/Biome2/typedlint2 GREEN; earlier disk/setup/observer failures retained."
+    },
+    "fix_green": {
+      "path": ".runtime/goal-calendar-unknown-recovery-3/green/receipt.json",
+      "sha256": "d5ed1d55e335ea4b82d069ec5387eec9d78fe2ba1d628cd2a98325e265324dee",
+      "scope": "Actual32UI+Biome2+typedlint2 PASS11.654s, source/cleanup retained; not fullTSC/native/browser."
+    },
+    "privacy_current": {
+      "path": ".runtime/goal-calendar-privacy-companion/qualification2/control/phase1.receipt.json",
+      "sha256": "01282a11df253e8744a13543b63c290231035152e4c6e749669d504e7c6de6ea",
+      "scope": "Current clean unmodifiedCLI/private filesystemreport format/CHECK PASS2.592s;2399source/fingerprint63ee; no registry31 rerun."
+    },
+    "privacy_historical31": {
+      "path": ".runtime/goal-calendar-privacy-companion/qualification1/control/phase1.receipt.json",
+      "sha256": "6836085fd8d8bf6ed3c24fabd5c83ac796f84d8778dd9326962a9b1d621ef8f7",
+      "scope": "Historical registry31PASS separately retained;253currentprivacy/CLI paths byte-exact verified by build preflight."
+    },
+    "source_manifest": {
+      "path": ".runtime/goal-calendar-candidate-build/attempt2/source-manifest.json",
+      "sha256": "d20fcf306ae1312f87500ebee1bf3673a9983774a93ab1dee966307ffe23a19b",
+      "scope": "All7692 actualA Gitblobs/modes/pathset independently rehashed after runtime."
+    },
+    "artifact_manifest": {
+      "path": ".runtime/goal-calendar-browser-907-1/attempt5/artifact-manifest.json",
+      "sha256": "841cecaacede792fa7c9db0cc9a69b4b072691f1ea91f23ce403484db0b51b27",
+      "scope": "All779 actual noncache build artifacts independently rehashed after runtime."
+    }
+  },
+  "limitations": [
+    "Original four-clause technical child only. Human-only ops/journey-calendar-reminders/#83, contextual localized human acceptance and supported installed runtime/profile remain open.",
+    "FA/DE database/fixture and focused UI evidence is not actual FA/DE human browser acceptance.",
+    "Inapp notification delivery is not email, invitation, RSVP, conferencing or proof that a user read a notification.",
+    "Worker restart proof uses actual production registration with real pg-boss, plus real interrupted-insert rollback; no full deployed fleet/forcedOScrash/provider claim.",
+    "Inventory lifecycle/export/erasure operations remain unsupported and installation gates open.",
+    "Sampled RSS/cache/disk observations are not continuous maxima, whole-machine isolation or shared-browser RSS measurements.",
+    "No provider/deployment/customer release or whole programme/goal completion."
+  ]
+}
