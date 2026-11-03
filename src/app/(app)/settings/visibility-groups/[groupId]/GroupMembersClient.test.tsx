@@ -137,7 +137,7 @@ describe("GroupMembersClient", () => {
       }
       render(<GroupMembersClient groupId="g1" members={[ANN]} allUsers={[BOB]} />);
       pickBob();
-      fireEvent.click(screen.getByRole("button", { name: "Add", exact: true }));
+      fireEvent.click(screen.getByRole("button", { name: "Add" }));
       expect(await screen.findByRole("alert")).toHaveTextContent(
         failure === "returned"
           ? IDENTITY_ERROR_MESSAGES.permission
@@ -146,12 +146,12 @@ describe("GroupMembersClient", () => {
       expect(screen.queryByText("private database diagnostic")).not.toBeInTheDocument();
       expect(screen.getByText("Ann")).toBeInTheDocument();
       expect(screen.getByLabelText("Add member")).toHaveTextContent("Bob");
-      expect(screen.getByRole("button", { name: "Add", exact: true })).toBeEnabled();
+      expect(screen.getByRole("button", { name: "Add" })).toBeEnabled();
       expect(refresh).not.toHaveBeenCalled();
 
       const retry = deferred();
       addGroupMemberAction.mockReturnValueOnce(retry.promise);
-      fireEvent.click(screen.getByRole("button", { name: "Add", exact: true }));
+      fireEvent.click(screen.getByRole("button", { name: "Add" }));
       expect(screen.queryByRole("alert")).not.toBeInTheDocument();
       expect(screen.getByLabelText("Add member")).toBeDisabled();
       expect(screen.getByLabelText("Add member")).toHaveTextContent("Bob");
@@ -168,7 +168,7 @@ describe("GroupMembersClient", () => {
       });
       expect(refresh).toHaveBeenCalledTimes(1);
       expect(screen.getByLabelText("Add member")).toHaveTextContent("Select a user");
-      expect(screen.getByRole("button", { name: "Add", exact: true })).toBeDisabled();
+      expect(screen.getByRole("button", { name: "Add" })).toBeDisabled();
       expect(screen.queryByRole("alert")).not.toBeInTheDocument();
     },
   );
@@ -213,7 +213,7 @@ describe("GroupMembersClient", () => {
       expect(refresh).toHaveBeenCalledTimes(1);
       expect(screen.getByText("Ann")).toBeInTheDocument();
       expect(screen.getByLabelText("Add member")).toHaveTextContent("Bob");
-      expect(screen.getByRole("button", { name: "Add", exact: true })).toBeEnabled();
+      expect(screen.getByRole("button", { name: "Add" })).toBeEnabled();
       expect(screen.queryByRole("alert")).not.toBeInTheDocument();
     },
   );
@@ -226,11 +226,11 @@ describe("GroupMembersClient", () => {
     const remove = screen.getByRole("button", { name: "Remove Ann" });
     fireEvent.click(remove);
     fireEvent.click(remove);
-    fireEvent.click(screen.getByRole("button", { name: "Add", exact: true }));
+    fireEvent.click(screen.getByRole("button", { name: "Add" }));
     expect(removeGroupMemberAction).toHaveBeenCalledTimes(1);
     expect(addGroupMemberAction).not.toHaveBeenCalled();
     expect(screen.getByLabelText("Add member")).toBeDisabled();
-    expect(screen.getByRole("button", { name: "Add", exact: true })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Add" })).toBeDisabled();
     expect(refresh).not.toHaveBeenCalled();
     await act(async () => {
       pending.settle({ ok: false, error: "unauthorized" });
@@ -248,7 +248,7 @@ describe("GroupMembersClient", () => {
     });
     render(<GroupMembersClient groupId="g1" members={[ANN]} allUsers={[BOB]} />);
     pickBob();
-    fireEvent.click(screen.getByRole("button", { name: "Add", exact: true }));
+    fireEvent.click(screen.getByRole("button", { name: "Add" }));
     await waitFor(() => expect(refresh).toHaveBeenCalledTimes(1));
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
     expect(screen.getByText("Ann")).toBeInTheDocument();
@@ -283,9 +283,7 @@ describe("GroupMembersClient", () => {
       expect(screen.getByRole("heading", { name: L._extra.members })).toBeInTheDocument();
       expect(screen.queryByText(L._extra.no_members_yet)).not.toBeInTheDocument();
       expect(screen.queryByLabelText(L._extra.add_member)).not.toBeInTheDocument();
-      expect(
-        screen.queryByRole("button", { name: L._extra.add, exact: true }),
-      ).not.toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: L._extra.add })).not.toBeInTheDocument();
       expect(document.documentElement.dir).toBe(locale === "fa" ? "rtl" : "ltr");
       fireEvent.click(screen.getByRole("button", { name: copy.retry }));
       await waitFor(() => expect(refresh).toHaveBeenCalledTimes(1));
