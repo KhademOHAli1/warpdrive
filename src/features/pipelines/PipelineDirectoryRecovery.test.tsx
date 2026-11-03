@@ -1,9 +1,13 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
-import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, expect, it, vi } from "vitest";
+import { LocaleProvider } from "@/features/i18n/LocaleProvider";
 import type { PipelineLifecycleResult } from "./lifecycleTypes";
+import german from "./messages/lifecycle.de.json";
+import english from "./messages/lifecycle.en.json";
+import persian from "./messages/lifecycle.fa.json";
 import { PipelineDirectory, type PipelineDirectoryProps } from "./PipelineDirectory";
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: vi.fn(), push: vi.fn() }) }));
@@ -36,7 +40,128 @@ async function confirm() {
   await user.click(screen.getByRole("button", { name: "Archive: Enterprise علی" }));
   await user.click(screen.getByRole("button", { name: "Archive pipeline" }));
 }
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  document.documentElement.removeAttribute("dir");
+  document.documentElement.removeAttribute("lang");
+});
+
+const catalogs = { en: english, de: german, fa: persian };
+const acknowledgedCases = (["en", "de", "fa"] as const).flatMap((locale) =>
+  (["archive", "restore"] as const).map((action) => ({ locale, action })),
+);
+
+function deferred() {
+  let resolve!: (result: PipelineLifecycleResult) => void;
+  const promise = new Promise<PipelineLifecycleResult>((done) => {
+    resolve = done;
+  });
+  return { promise, resolve };
+}
+
+it.each(acknowledgedCases)(
+  "keeps $action acknowledged after refresh throws in $locale and uses its version for the next action",
+  async ({ locale, action }) => {
+    const L = catalogs[locale];
+    const user = userEvent.setup();
+    const firstWrite = deferred();
+    const nextWrite = deferred();
+    const first = vi.fn<PipelineDirectoryProps["onArchive"]>(() => firstWrite.promise);
+    const opposite = vi.fn<PipelineDirectoryProps["onArchive"]>(() => nextWrite.promise);
+    const onRefresh = vi.fn(() => {
+      throw new Error("private refresh diagnostic");
+    });
+    const initialArchived = action === "restore";
+    const firstName = (action === "archive" ? L.archiveNamed : L.restoreNamed).replace(
+      "{name}",
+      row.name,
+    );
+    const oppositeName = (action === "archive" ? L.restoreNamed : L.archiveNamed).replace(
+      "{name}",
+      row.name,
+    );
+    const onArchive = action === "archive" ? first : opposite;
+    const onRestore = action === "restore" ? first : opposite;
+    render(
+      <LocaleProvider locale={locale}>
+        <PipelineDirectory
+          {...fixture(onArchive)}
+          onRestore={onRestore}
+          onRefresh={onRefresh}
+          rows={[{ ...row, isArchived: initialArchived }]}
+        />
+      </LocaleProvider>,
+    );
+    await user.type(screen.getByRole("searchbox", { name: L.searchLabel }), "Enterprise");
+    if (initialArchived) {
+      await user.click(screen.getByRole("combobox", { name: L.statusLabel }));
+      await user.click(screen.getByRole("option", { name: L.archived }));
+    }
+    await user.click(screen.getByRole("button", { name: firstName }));
+    await user.click(
+      within(screen.getByRole("dialog")).getByRole("button", {
+        name: action === "archive" ? L.confirmArchive : L.confirmRestore,
+      }),
+    );
+    expect(screen.getByRole("button", { name: L.saving })).toBeDisabled();
+    expect(screen.getByRole("button", { name: L.cancel })).toBeDisabled();
+    expect(first).toHaveBeenCalledExactlyOnceWith({
+      pipelineId: row.id,
+      expectedUpdatedAt: row.updatedAt,
+    });
+    expect(opposite).not.toHaveBeenCalled();
+    expect(onRefresh).not.toHaveBeenCalled();
+
+    const acknowledgedVersion = "2026-10-31T12:01:00.000Z";
+    await act(async () => {
+      firstWrite.resolve({ ok: true, value: { updatedAt: acknowledgedVersion } });
+      await firstWrite.promise;
+    });
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+    expect(screen.getByRole("status")).toHaveTextContent(
+      action === "archive" ? L.archiveSuccess : L.restoreSuccess,
+    );
+    expect(screen.getByRole("status")).toHaveTextContent(row.name);
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(screen.queryByText("private refresh diagnostic")).not.toBeInTheDocument();
+    expect(onRefresh).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole("button", { name: firstName })).not.toBeInTheDocument();
+    expect(screen.getByRole("searchbox", { name: L.searchLabel })).toHaveValue("Enterprise");
+
+    await user.click(screen.getByRole("combobox", { name: L.statusLabel }));
+    await user.click(screen.getByRole("option", { name: initialArchived ? L.active : L.archived }));
+    await user.click(screen.getByRole("button", { name: oppositeName }));
+    const dialog = screen.getByRole("dialog");
+    expect(within(dialog).queryByRole("alert")).not.toBeInTheDocument();
+    expect(dialog).not.toHaveTextContent(L.errorUnconfirmed);
+    expect(dialog).toHaveTextContent(L.historyNote);
+    const confirmOpposite = within(dialog).getByRole("button", {
+      name: action === "archive" ? L.confirmRestore : L.confirmArchive,
+    });
+    expect(confirmOpposite).toBeEnabled();
+    expect(opposite).not.toHaveBeenCalled();
+    await user.click(confirmOpposite);
+    expect(opposite).toHaveBeenCalledExactlyOnceWith({
+      pipelineId: row.id,
+      expectedUpdatedAt: acknowledgedVersion,
+    });
+    expect(screen.getByRole("button", { name: L.saving })).toBeDisabled();
+    expect(screen.getByRole("button", { name: L.cancel })).toBeDisabled();
+    expect(first).toHaveBeenCalledTimes(1);
+    await act(async () => {
+      nextWrite.resolve({ ok: true, value: { updatedAt: "2026-10-31T12:02:00.000Z" } });
+      await nextWrite.promise;
+    });
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+    expect(screen.getByRole("status")).toHaveTextContent(
+      action === "archive" ? L.restoreSuccess : L.archiveSuccess,
+    );
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(onRefresh).toHaveBeenCalledTimes(2);
+    expect(first).toHaveBeenCalledTimes(1);
+    expect(opposite).toHaveBeenCalledTimes(1);
+  },
+);
 
 it.each([
   { error: "denied", text: "no longer manage" },

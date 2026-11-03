@@ -167,7 +167,11 @@ export function PipelineDirectory({
         Object.fromEntries(Object.entries(previous).filter(([id]) => id !== target.id)),
       );
       setSelection(null);
-      onRefresh?.();
+      try {
+        onRefresh?.();
+      } catch {
+        // A refresh failure cannot make the acknowledged lifecycle change unconfirmed.
+      }
     } catch {
       // A read received during the write cannot confirm its later unknown outcome.
       const snapshotAtOutcome = outcomeSnapshot.current;
