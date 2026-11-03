@@ -244,5 +244,12 @@
     "unsupported": "This run cannot safely resume from this step. Review completed work before starting another run.",
     "repair": "Resolve the reported issue, then refresh to check whether the step can be retried.",
     "inconsistent": "The saved progress needs review before this run can be resumed."
-  }
+  },
+  "librarySearch": "Search loaded workflows",
+  "libraryStatus": "Workflow status",
+  "libraryAllStatuses": "All statuses",
+  "libraryClearFilters": "Clear filters",
+  "libraryFilterHint": "Search and filters apply only to the workflows loaded in this list.",
+  "libraryNoMatches": "No workflows match these filters",
+  "libraryNoMatchesHint": "Try a different search or status, or clear the filters."
 }

@@ -244,5 +244,12 @@
     "unsupported": "Diese Ausführung kann hier nicht sicher fortgesetzt werden. Prüfe abgeschlossene Aufgaben vor einer neuen Ausführung.",
     "repair": "Behebe das angezeigte Problem und aktualisiere die Ansicht, um die Wiederholung erneut zu prüfen.",
     "inconsistent": "Der gespeicherte Fortschritt muss geprüft werden, bevor diese Ausführung fortgesetzt werden kann."
-  }
+  },
+  "librarySearch": "Geladene Workflows durchsuchen",
+  "libraryStatus": "Workflow-Status",
+  "libraryAllStatuses": "Alle Status",
+  "libraryClearFilters": "Filter zurücksetzen",
+  "libraryFilterHint": "Suche und Filter gelten nur für die in dieser Liste geladenen Workflows.",
+  "libraryNoMatches": "Keine Workflows passen zu diesen Filtern",
+  "libraryNoMatchesHint": "Passe den Suchbegriff oder Status an oder setze die Filter zurück."
 }
