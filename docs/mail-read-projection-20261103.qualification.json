@@ -1,0 +1,140 @@
+{
+  "schema_version": 1,
+  "issue": 908,
+  "canonical_id": "delivery/core-mailbox-recovery-support",
+  "qualification_scope": "Actor-specific current thread read observation only; full issue remains open",
+  "source_base": "4764303b580fa9c0f578ff80238cbb026945ee11",
+  "source_pins": [
+    {
+      "path": "src/features/email/emailReads.ts",
+      "sha256": "a268de8c12c8535cdeaccf54f8ecff17733c23a47f738355f0de07b4e633b0f0"
+    },
+    {
+      "path": "src/features/email/threadReadObservation.integration.test.ts",
+      "sha256": "db70602fd38d8e869927f23a02a83dc2273f4c76cc9ad6c4693c23edb1e3f833"
+    },
+    {
+      "path": "src/features/privacy/registryIdsEmail1.ts",
+      "sha256": "cbb7973b5f80c0d71bda2b6b7d665c3e7e44a737fb715c33ca21a123a991d6b1"
+    },
+    {
+      "path": "docs/privacy-inventory-report.json",
+      "sha256": "6e311ecca5784e7934558a70fa30f659a86672ac9ee146cde5ffd7d26fb36855"
+    }
+  ],
+  "actual_evidence": {
+    "red": {
+      "passed": 2,
+      "failed": 4,
+      "setup_failure": false
+    },
+    "new_postgres": {
+      "passed": 11,
+      "inclusive_seconds": 9.007751208962873
+    },
+    "existing_postgres": {
+      "passed": 10,
+      "inclusive_seconds": 8.976314875064418
+    },
+    "static4": {
+      "full_configured_typegen_tsc": "passed",
+      "typed_lint_files": 3,
+      "source_binding_passed": 1,
+      "filtered_cases": 17,
+      "inclusive_seconds": 29.702982084010728,
+      "maximum_sampled_owned_bytes": 5802344448
+    },
+    "canonical_inventory": {
+      "state": "CLEAN_GIT_SOURCE_REPORT_ADOPTED",
+      "sourceFiles": 2406,
+      "sourceFingerprint": "8ae28cdf01048e662e6f4b33e2f5e0b44b57ede6c272bc6445f58e71bcbadf09",
+      "coverage": {
+        "ok": true,
+        "missing": [],
+        "invalid": []
+      },
+      "sha256": "6e311ecca5784e7934558a70fa30f659a86672ac9ee146cde5ffd7d26fb36855",
+      "generatedContextReportPreserved": true,
+      "noSourceOrArtifactDeletion": true,
+      "sourceBase": "4764303b580fa9c0f578ff80238cbb026945ee11",
+      "overlayCount": 3,
+      "atUtc": "2026-11-03T06:23:04.748030+00:00"
+    }
+  },
+  "independent_source_review": {
+    "result": "accepted",
+    "reviewer_agent": {
+      "runtime": "codex",
+      "session_id": "01a19251-a472-7cd1-86cd-8dc245dd5b84",
+      "task_id": "/root/mail_next_acceptance_slice"
+    },
+    "scope": "Two-file query and eleven-case test review; no whole908 acceptance"
+  },
+  "local_evidence_pins": [
+    {
+      "path": ".runtime/goal-mail-read-projection/red1/control/native.receipt.json",
+      "sha256": "1d268b2b7adc8961ee9c84b0928da07b416c874a53060b7bf67343f0aec93b0c"
+    },
+    {
+      "path": ".runtime/goal-mail-read-projection/red1/control/root-semantic-red-review.json",
+      "sha256": "0ef5e7073d02d32098caefe5b7ab0d1c70d5bdb0cd10a1d1a5e53bedc2c444d8"
+    },
+    {
+      "path": ".runtime/goal-mail-read-projection/green1/control/native.receipt.json",
+      "sha256": "1f8647159976d1f7bcfbd4ea4f7ffffc405feaa470b868551c3b8b235fe93ada"
+    },
+    {
+      "path": ".runtime/goal-mail-read-projection/static1/control/static.receipt.json",
+      "sha256": "247a505945c6cdb7d2f89fc7634cdbce6b9cf48e3fc57329cca0b39b6e04e667"
+    },
+    {
+      "path": ".runtime/goal-mail-read-projection/static1/control/root-delayed-cleanup-observation.json",
+      "sha256": "d7c2ee3cf2430c10950f95e4cf2fb568a3854d92f4f0a7da7c2669973992d17c"
+    },
+    {
+      "path": ".runtime/goal-mail-read-projection/static2/control/static.receipt.json",
+      "sha256": "2f57f651f5846f646971ed4aa4b37254a470fe066c60022e41628c7a902b823b"
+    },
+    {
+      "path": ".runtime/goal-mail-read-projection/static2/control/root-delayed-cleanup-observation.json",
+      "sha256": "f3c63c35a4233cc8067eede7057502db02f81ca5a88e5a2d608d04b9de0803b1"
+    },
+    {
+      "path": ".runtime/goal-mail-read-projection/static3/control/static.receipt.json",
+      "sha256": "d93a77eb3f646624c1841d95f0b52eaab4a91cbc4eb92fabf4b61ce75749b80e"
+    },
+    {
+      "path": ".runtime/goal-mail-read-projection/static4/control/static.receipt.json",
+      "sha256": "e62f67bb70b654cab1962ea2766a3cd0b463a4662de13b6d8b57af4612fe1afc"
+    },
+    {
+      "path": ".runtime/goal-mail-read-projection/static4/control/root-terminal-review.json",
+      "sha256": "43daf2ea22f3cb8ce3fe55b4ebfaf2f130508dd95f7ae40e80a4bffb77faef83"
+    },
+    {
+      "path": ".runtime/goal-mail-read-projection/regression1/control/native.receipt.json",
+      "sha256": "4052f0e7575343f1526c12bfe6fc940acc2b42d744fa127ec312b3c5d7f60377"
+    },
+    {
+      "path": ".runtime/goal-mail-read-projection/clean-source-inventory/proof.json",
+      "sha256": "32c09691f1697472db54383ddfa70acb81502e9e0f31e02b49b615010a98a3a6"
+    },
+    {
+      "path": ".runtime/goal-mail-read-projection/independent-source-review.json",
+      "sha256": "c5b4138006f51ecbbfa939f71d479aef08fbc5ff0a1693ab4f1c07e592e17616"
+    }
+  ],
+  "publication": {
+    "revision": null,
+    "ci": null,
+    "state": "LOCAL_QUALIFIED_INCREMENT_PENDING_SEQUENTIAL_PUBLICATION"
+  },
+  "limitations": [
+    "Current state is not a mutation receipt",
+    "No new provider I/O or DDL",
+    "Full908 and human84 remain open",
+    "No build/browser/provider/installed/release/deployment acceptance"
+  ],
+  "markdown_path": "docs/mail-read-projection-20261103.md",
+  "markdown_sha256": "26f3e3ef0c97f88361b8e94d2c950833c7898b5523fa473bec1f05b11aaa49bc"
+}

@@ -1,0 +1,17 @@
+# Actor-specific mailbox read observations
+
+Thread detail now returns the viewing actor's saved unread state. A missing marker or a marker older than the last message is unread; an equal or newer marker is read. An undated thread is unread until that actor has a marker. PostgreSQL compares the stored timestamps directly, preserving microsecond precision. Shared readers use their own marker, and existing private-thread visibility checks remain authoritative.
+
+This bounded source increment contributes to [#908](https://github.com/KhademOHAli1/warpdrive/issues/908). The full mailbox recovery issue and human journey #84 remain open. Current-state observation does not establish that an unanswered mutation completed.
+
+The actual pre-fix PostgreSQL run produced four intended incorrect-read-state failures and two passing controls. The reviewed minimum query/return change then passed all 11 new PostgreSQL cases, including NULL and microsecond boundaries. A separate run passed all 10 existing reader and visibility regressions, including private/admin denial, message ordering/sanitization, owner/CC addresses, attachments and Inbox/Sent/Outbox behavior. These are separate executions on the same production overlay.
+
+The final static run passed normal Next type generation, full configured TypeScript with Bun memory-saving mode and incremental state disabled, typed lint for the three changed TypeScript files, and the existing source-binding case (one executed, 17 filtered). Complete owned process/service cleanup and foreign resource/source custody passed for the qualified runs. Measurements are sampled.
+
+The inventory source-review digest changes only for the reader. Lifecycle classifications and capabilities are unchanged. The unmodified CLI on clean exact Git source plus the three source/test overlays produced 2,406 source entries, empty missing/invalid coverage and fingerprint `8ae28cdf01048e662e6f4b33e2f5e0b44b57ede6c272bc6445f58e71bcbadf09`. Its formatted report is adopted. The earlier static CLI report includes 28 generated translation declaration sidecars; that separate generated-filesystem result is retained and was not adopted as the canonical source report.
+
+Historical failures remain intact: two overly small 4 GiB compiler allocations stopped at the resource guard and reported cleanup errors, with their registered groups later independently observed absent. The third setup omitted generated translation declarations and produced two translation-contract diagnostics. The fourth run restored complete generation in the same app, used the standing 8 GiB compiler allocation and passed in 29.703 seconds inclusive. No source contract was relaxed, backup deleted or provider campaign launched.
+
+Qualification base is `4764303b580fa9c0f578ff80238cbb026945ee11` plus the exact production, test and privacy-binding hashes in the [qualification record](mail-read-projection-20261103.qualification.json). Independent source review was by `/root/mail_next_acceptance_slice` in Codex session `01a19251-a472-7cd1-86cd-8dc245dd5b84`. This is declared agent process provenance. Local receipt paths and digests are retained in the record.
+
+Sequential publication and exact integrated CI remain pending. No new local app build/browser or complete message/draft/attachment/read/send recovery, confirmed/failed/partial/unknown SMTP, provider, installation, human, release or deployment acceptance is inferred. The preserved durable read-intent packet still needs canonical schema and lifecycle reconciliation before activation.
