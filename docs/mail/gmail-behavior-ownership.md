@@ -1,0 +1,135 @@
+# MAIL-001: Gmail behavior and ownership inventory
+
+Reviewed 3 November 2026 against `386e31652da094ddcc7daec7003164b5b9c81882`. This is the source-review deliverable for [#272 / MAIL-001](https://github.com/KhademOHAli1/warpdrive/issues/272). Its complete criterion is: “Record sync, drafts, send, scheduled send, tracking, domain restrictions and current single-mailbox assumptions.” The [qualification record](gmail-behavior-ownership.qualification.json) pins the reviewed source, line ranges and criterion coverage.
+
+This inventory describes implemented behavior and visible limits. It does not qualify a live Google account, accept the other MAIL deliverables, establish installation or human-journey acceptance, or publish a release. Independent review, integration and the repository's applicable acceptance gates remain separate.
+
+## Ownership and authority
+
+| Operation or object | Current authority and boundary | Source |
+| --- | --- | --- |
+| Gmail consent and binding | Fresh native actor/session; single-use, ten-minute encrypted OAuth state envelope and PKCE. The verified Google identity must have the configured Workspace `hd` and the same normalized email as the current CRM user. Reconnect retains the existing account ID and advances generation/credential version. | [`oauthStart.ts`](../../src/features/email/oauthStart.ts), [`oauthState.ts`](../../src/features/email/oauthState.ts), [`oauth.ts`](../../src/features/email/oauth.ts) |
+| Account ownership | `email_accounts.user_id` owns the account. A missing or foreign account produces the same ownership error. Selecting a default does not transfer ownership. | [`mailboxOwnership.ts`](../../src/features/email/mailboxOwnership.ts), [`mailAccountsRepo.ts`](../../src/features/email/mailAccountsRepo.ts) |
+| Token refresh | Requires an active, non-invited owner and a connected, unpaused Gmail account. Cached and refreshed grants are fenced by current generation and credential version. Provider refresh happens outside the short persistence lock. | [`tokens.ts`](../../src/features/email/tokens.ts), [`gmailConnectionFence.ts`](../../src/features/email/gmailConnectionFence.ts) |
+| Draft save, read and delete | Local drafts belong to their account's owner; active/current actor and CRM-link visibility are rechecked on save. Local drafting may continue for an owned paused/disconnected account; remote sending has separate eligibility. | [`draftRepo.ts`](../../src/features/email/draftRepo.ts), [`draftLinks.ts`](../../src/features/email/draftLinks.ts), [`folderActions.ts`](../../src/features/email/folderActions.ts) |
+| Interactive send | CSRF and trusted actor context first; exact mailbox ownership before token refresh. The chosen account, immutable intent and connection generation remain the submission boundary. | [`actions.ts`](../../src/features/email/actions.ts), [`sendConnection.ts`](../../src/features/email/sendConnection.ts), [`send.ts`](../../src/features/email/send.ts) |
+| Worker sync/send | Jobs carry the account ID; send jobs also carry the idempotency key. They resolve the actual account/provider and current owner authority, rather than switching to the user's latest default. | [`workerJobs.ts`](../../src/features/email/workerJobs.ts), [`worker.ts`](../../src/features/email/worker.ts) |
+| Shared CRM thread | The owner sees their mailbox. A non-owner may see a shared thread through an authorized linked deal/person; private threads have no admin bypass. Seeing a shared thread does not grant mailbox credentials, draft access, sending or visibility-change authority. | [`emailVisibility.ts`](../../src/features/email/emailVisibility.ts), [`threadVisibility.ts`](../../src/features/email/threadVisibility.ts), [`router.ts`](../../src/features/email/router.ts) |
+| Signatures | A signature supplied to send must belong to the actor, independently of mailbox choice. | [`mailboxOwnership.ts`](../../src/features/email/mailboxOwnership.ts), [`sendHelpers.ts`](../../src/features/email/sendHelpers.ts) |
+| MCP mail tools | Authenticated tool actors may read permitted email and create/update/delete their own unsent drafts. Draft creation implicitly chooses the actor's preferred usable mailbox; the tool input has no explicit account selector. The reviewed write-tool surface exposes no send tool. | [`writes-email.ts`](../../src/features/mcp/tools/writes-email.ts), [`reads-email.ts`](../../src/features/mcp/tools/reads-email.ts) |
+| Disconnect | The legacy action delegates to a fresh native-session mutation. Local credentials are cleared and generation/version advance; Gmail remote revocation is queued separately. Account/history rows remain, and pending revocation blocks a new consent for that mailbox. | [`mailConnectionMutations.ts`](../../src/features/email/mailConnectionMutations.ts), [`mailAccountsRepo.ts`](../../src/features/email/mailAccountsRepo.ts), [`oauthState.ts`](../../src/features/email/oauthState.ts) |
+
+There is no delegated/shared-mailbox membership model in the reviewed account ownership path. A shared CRM email thread is a visibility feature, not a shared Google grant or permission to act as another user's sender.
+
+## 1. Synchronization
+
+The Gmail adapter calls `/gmail/v1/users/me`; the access token determines the remote mailbox. The local `accountId` scopes cursors, threads, messages, jobs and persistence. The worker dispatches Gmail to `syncMailbox` and independent mail to the IMAP implementation.
+
+For a Gmail account with no history cursor, `seedGmailHistoryCursor` reads Google's current profile cursor, stores it under the captured generation and returns `applied: 0`. This bootstrap is not an initial historical-mail import. With an existing cursor, `syncMailbox` paginates history, applies messages and Trash transitions, then advances the checkpoint only after all pages succeed. A failed page/application leaves the cursor unadvanced.
+
+An expired cursor (`historyList` 404) invokes recovery. The account is marked with `E_SYNC_001`; recovery covers the recent window from last sync minus a margin and every locally linked Gmail thread, then reads a fresh profile cursor. Only completed coverage clears the error and advances the cursor. Generation/current-owner fences prevent a stale worker's persistence after reconnect, pause or disconnect.
+
+Connect/reconnect queues an initial account sync; worker boot also enumerates eligible connected mailboxes, and each sync handler maintains the next tick with queue deduplication/cadence checks. `src/entrypoints/worker.ts` starts `src/server/worker.ts`, whose `registerAllJobs` actually calls `registerEmailJobs`. The old “NOT wired into startWorker here” comment in `workerJobs.ts` describes that module's responsibility, not the current application wiring.
+
+Source: [`gmailClient.ts`](../../src/features/email/gmailClient.ts), [`sync.ts`](../../src/features/email/sync.ts), [`gmailSyncCheckpoint.ts`](../../src/features/email/gmailSyncCheckpoint.ts), [`resync.ts`](../../src/features/email/resync.ts), [`gmailRecoveryCoverage.ts`](../../src/features/email/gmailRecoveryCoverage.ts), [`syncScheduling.ts`](../../src/features/email/syncScheduling.ts), [`worker.ts`](../../src/features/email/worker.ts), [`workerJobs.ts`](../../src/features/email/workerJobs.ts), [`server/worker.ts`](../../src/server/worker.ts).
+
+Remaining qualification and scope: this source inventory does not establish live Google sync, large-mailbox performance or a complete installed legacy-history migration. Gmail's worker cursor flow and IMAP folder/history controls are distinct; the latter must not be described as Gmail import filters. Follow MAIL-003, MAIL-005, MAIL-007, MAIL-010 and MAIL-012.
+
+## 2. Drafts
+
+The composer and MCP tools persist drafts in Warpdrive's `email_drafts` table. The reviewed Gmail client has no Gmail Drafts API operation; saving a Warpdrive draft is not saving or synchronizing a draft in Google's Drafts folder.
+
+A draft records account/thread, subject, HTML body, To/Cc/Bcc, file references, send intent, independent tracking flags, privacy choice and explicit CRM links. A reply draft's composite foreign key pins it to the same account as its thread. Drafts are owner-only even when their intended sent-thread privacy is `shared`; linked-record draft lists retain that owner restriction.
+
+A replayed creation ID returns the existing owned draft without overwriting its fields while that row exists; autosave then explicitly updates it with the latest snapshot from the mounted composer. Missing update/resume operations fail, and a row seen at preflight but lost within that transaction is not recreated. This does not provide a deleted-ID tombstone or concurrent-edit version guarantee. Changing sender for a new-message draft is an explicit copy with a distinct draft ID and send intent. The original draft remains; the copy clears reply-thread binding and retains the composed content/file references subject to authorization. Reply/active-submission states lock sender switching. A failed or missing resumed draft remains an error, rather than silently mounting an empty compose against the current default.
+
+MCP creates plain-text-authored drafts, converts the body to escaped paragraph HTML and chooses the actor's mailbox through `getActorMailbox`. Patching only names supplied fields. Its reviewed create/update input does not expose the composer's complete Bcc, attachment, tracking and sender-selection surface.
+
+Source: [`emailDrafts.ts`](../../src/db/schema/emailDrafts.ts), [`draftRepo.ts`](../../src/features/email/draftRepo.ts), [`draftLinks.ts`](../../src/features/email/draftLinks.ts), [`router.ts`](../../src/features/email/router.ts), [`useMailboxDraftCopy.ts`](../../src/features/email/composer/useMailboxDraftCopy.ts), [`FromPicker.tsx`](../../src/features/email/composer/FromPicker.tsx), [`ComposePageClient.tsx`](../../src/app/(app)/inbox/compose/ComposePageClient.tsx), [`writes-email.ts`](../../src/features/mcp/tools/writes-email.ts).
+
+Remaining qualification and scope: documenting the local draft contract does not qualify every scheduled-send, reconnect or concurrent-edit journey. MCP's implicit account choice and narrower input are explicit current assumptions for MAIL-002/004/006; no new remote-Gmail draft feature is claimed.
+
+## 3. Sending
+
+The interactive send action validates CSRF, trusted actor and input, checks ownership before obtaining a Gmail grant, and resolves the selected account's actual provider. The orchestration rechecks ownership. Recipient input, signature ownership, CRM links and attachments are validated; authored merge fields are resolved and the HTML sanitized before durable submission preparation.
+
+The outbox is unique on `(account_id, idempotency_key)`. A deterministic RFC Message-ID, captured generation and prepared payload bind retries to the same operation. A reply thread must belong to that same account. Files are authorized before enqueue, and physical bytes are fetched before the submission stamp. The Gmail path stamps before `messages/send` without holding a database transaction across provider IO.
+
+Already-sent operations short-circuit or repair the local CRM copy. The current Gmail implementation treats HTTP 4xx send errors as definite pre-acceptance rejection and clears the submission stamp/claim for retry. Other send errors retain the stamp and reconcile through a Sent search for the deterministic Message-ID. A found message is adopted; an unresolved operation waits within its reconcile window, then becomes `needs_review` without an automatic resend. These are the application's current rules, not a new live-Google acceptance claim.
+
+The exported legacy `sendGmail` system primitive is different: it builds MIME and calls the Gmail client without the interactive outbox, tracking or ownership wrapper. Callers own its idempotency. The scoped production search found the definition but no direct `sendGmail(...)` invocation outside that definition. It must not be used as evidence that a future system caller inherits interactive send guarantees. Provider-neutral notification delivery has its own separate roadmap scope.
+
+Source: [`actions.ts`](../../src/features/email/actions.ts), [`send.ts`](../../src/features/email/send.ts), [`sendConnection.ts`](../../src/features/email/sendConnection.ts), [`sendPreparation.ts`](../../src/features/email/sendPreparation.ts), [`sendDelivery.ts`](../../src/features/email/sendDelivery.ts), [`outbox.ts`](../../src/features/email/outbox.ts), [`outboxReconcile.ts`](../../src/features/email/outboxReconcile.ts), [`gmailSendFence.ts`](../../src/features/email/gmailSendFence.ts), [`sendSystem.ts`](../../src/features/email/sendSystem.ts).
+
+Remaining qualification and scope: Gmail acknowledgement/reconciliation and independent SMTP accepted/rejected/partial/unknown semantics are different adapters. Do not transfer a controlled SMTP outcome to Gmail, or a Gmail result to SMTP. Complete send/retry/cancel and provider qualification remain MAIL-006/010/012 and IG-04/05.
+
+## 4. Scheduled send
+
+A future `scheduledSendAt` persists the attempt and schedules a delayed pg-boss send job with the account ID and idempotency key. The interactive connection resolver avoids Gmail token refresh for a new future-scheduled operation. Preparation stores the final signature/tracking/body snapshot before a worker may claim it; the worker later uses the ordinary account-specific provider path and stores the resulting CRM copy/tracking association.
+
+The queued operation does not follow later default-sender changes. Worker eligibility and Gmail generation checks still apply; reconnect does not silently rebind an earlier attempt to a new generation. Missing production queue wiring raises an error instead of pretending a send was queued. Cancellation is owner-scoped and succeeds only while the attempt is unclaimed, unstamped, unsent and pending/failed without a protected receipt; the delete repeats those predicates to close the claim race. A claimed or possibly submitted send is not made safe by calling Cancel.
+
+Source: [`sendScheduling.ts`](../../src/features/email/sendScheduling.ts), [`sendConnection.ts`](../../src/features/email/sendConnection.ts), [`sendDelivery.ts`](../../src/features/email/sendDelivery.ts), [`sendPreparation.ts`](../../src/features/email/sendPreparation.ts), [`worker.ts`](../../src/features/email/worker.ts), [`outboxCancel.ts`](../../src/features/email/outboxCancel.ts).
+
+Remaining qualification and scope: this records the implemented queue contract; it does not prove a live Google delayed send, installed worker recovery or the full scheduled-send race matrix. Those remain in MAIL-004/006/010/012.
+
+## 5. Tracking
+
+Open and link tracking are independent, default-off flags; the legacy combined `trackingEnabled` input maps to both unless the independent flag is supplied. Preparation mints opaque tokens, rewrites validated HTTP(S) links and optionally appends an open pixel, then saves the prepared body. Tokens become associated with a stored message after send reconciliation; disabled or unassociated tokens do not record events.
+
+The public open route always serves a pixel; under rate limiting it skips recording. The click route reads only the server-stored validated target, never a destination from request input, and resolves the target without recording when rate-limited. Unknown or failed lookup uses the application Inbox fallback. Recorded events carry the stored recipient label, event kind, target/user-agent metadata and timestamp, and notify the mailbox owner's channel.
+
+Current attribution is not a distinct MIME/token set for every recipient: preparation supplies the first To address, and the one prepared body is sent to all To/Cc/Bcc recipients. A tracking request is not a provider delivery acknowledgement or proof that the named person read the message. The inventory does not assert tracking consent, retention or full privacy-lifecycle qualification.
+
+Source: [`send.ts`](../../src/features/email/send.ts), [`sendPreparation.ts`](../../src/features/email/sendPreparation.ts), [`sendHelpers.ts`](../../src/features/email/sendHelpers.ts), [`tracking.ts`](../../src/features/email/tracking.ts), [`trackingRecord.ts`](../../src/features/email/trackingRecord.ts), [`open route`](../../src/app/t/open/[token]/route.ts), [`click route`](../../src/app/t/click/[token]/route.ts), [`email.ts`](../../src/db/schema/email.ts).
+
+## 6. Domain restrictions
+
+Gmail consent requests `openid`, `email`, `gmail.modify` and `gmail.send`, plus offline access, consent and the configured `GOOGLE_WORKSPACE_DOMAIN` hint. The hint is not the enforcement boundary: `exchangeAndBind` requires a verified email, exact `id.hd === GOOGLE_WORKSPACE_DOMAIN`, and normalized identity email equal to the signed-in CRM user's email. A pending prior Gmail revocation also blocks the new binding. Refresh grants are encrypted with AES-256-GCM; public account/status projections do not expose token bytes.
+
+Application login and Gmail mailbox consent are separate grants. Current login is handled by the native Better Auth gateway. Its optional Google social provider is enabled only with the configured flag/client credentials, requests identity scopes, and uses native identity/admission policy. The old `/auth/start` redirects to `/login`; `/auth/callback` rejects the old callback route. The case-insensitive `hd` verifier still present in `src/features/auth/google.ts` is a legacy helper, not evidence that the current native login route enforces that same domain rule. The Gmail OAuth comment referring to that old login flow is historical.
+
+Gmail mailbox binding still has its explicit exact/case-sensitive `hd` check. Configuration defaults the domain to an empty string; that is not a switch enabling arbitrary personal Google mailboxes: the Gmail identity's missing/null `hd` does not pass the required string equality. A permitted application login therefore does not imply an eligible Gmail mailbox grant. This report does not certify which external Google account types are supported in an installation.
+
+The same configured Workspace domain is also used by email CRM linking to classify internal participants. That classification is not a sender allowlist and does not itself grant mailbox access. Independent IMAP/SMTP setup uses a separate endpoint/credential policy; it must not be conflated with the Gmail OAuth identity rule.
+
+Source: [`oauth.ts`](../../src/features/email/oauth.ts), [`oauthState.ts`](../../src/features/email/oauthState.ts), [`native auth route`](../../src/app/api/auth/[...all]/route.ts), [`nativeGateway.ts`](../../src/features/auth/better/nativeGateway.ts), [`better/auth.ts`](../../src/features/auth/better/auth.ts), [`admission.ts`](../../src/features/auth/better/admission.ts), [`legacy auth start`](../../src/app/auth/start/route.ts), [`legacy auth callback`](../../src/app/auth/callback/route.ts), [`legacy auth/google.ts`](../../src/features/auth/google.ts), [`env.ts`](../../src/config/env.ts), [`crypto.ts`](../../src/features/email/crypto.ts), [`linking.ts`](../../src/features/email/linking.ts), [`mailAccountsRepo.ts`](../../src/features/email/mailAccountsRepo.ts).
+
+Remaining qualification and scope: account/domain policy decisions and approved Google consent/scope/account testing remain MAIL-002/012. The inventory records these restrictions without relaxing them or claiming delegated, alias, consumer-account or cross-domain qualification.
+
+## 7. Current single-mailbox assumptions and obsolete terminology
+
+| Area | Current fact | Consequence for further work |
+| --- | --- | --- |
+| Account model | One owner may have several account rows; at most one default per owner; mailbox address is globally unique. Gmail/provider thread and message keys are scoped by account. | “One mailbox per user” is obsolete for the general model. Reusing the same address under two owners is not mailbox delegation. |
+| Gmail consent identity | The Google address must match the CRM user's email and configured Workspace domain. | Multi-account schema does not imply arbitrary second-Gmail-account consent. |
+| Login versus Gmail consent | The native auth gateway handles application login; old Google login routes redirect/reject, while Gmail mailbox OAuth retains its separate Workspace/email binding. | Old login-helper checks and OAuth comments must not be presented as the current login path or as authorization to connect a Gmail mailbox. |
+| Default selection | The preferred usable mailbox is selected deterministically; legacy callers may fall back by default/creation order. | New flows should carry an explicit account ID. A default change must not reroute an existing draft, reply or queued send. |
+| Gmail-specific status helper | `getActorGmailMailboxStatus` filters Gmail first and returns one row (`LIMIT 1`). | It is a provider-specific legacy projection, not the complete mailbox list. |
+| Unified settings | `listActorMailboxes` lists all owned Gmail/IMAP accounts without credentials; the current public view exposes last-sync time but no distinct last-check timestamp. | MAIL-005 still needs the original check-versus-sync health distinction. |
+| Composer | Sender selection appears when another sendable owned mailbox exists; reply state locks it. Changing account copies a new-message draft explicitly. | A single-account plain From address is an intentional UI state, not proof of a single-account backend. |
+| MCP draft creation | No account ID input; `getActorMailbox` chooses the actor's preferred usable mailbox. Missing-account wording still says “Gmail.” | This is an implicit default/legacy terminology seam for MAIL-002/004, not a send or delegated-mailbox tool. |
+| Signatures | Signature ownership is per actor; the selected signature must be owned. | Do not assume independent per-mailbox signature storage or delegated signatures. |
+| Tracking | One prepared body and first-To recipient label. | Do not advertise per-recipient open/delivery certainty. |
+| Provider vocabulary | Gmail-named errors and historical ID columns coexist with provider-specific fields; the model reserves `microsoft`. | A reserved provider value or a Gmail-named field is not proof of a working Microsoft adapter or Gmail-only routing. |
+| Thread sharing | Shared linked CRM threads may be visible to colleagues; drafts/credentials/sender control remain owner-scoped. | Shared visibility must remain distinct from shared/delegated mailbox authority. |
+
+Source: [`email.ts`](../../src/db/schema/email.ts), [`mailboxOwnership.ts`](../../src/features/email/mailboxOwnership.ts), [`mailAccountsRepo.ts`](../../src/features/email/mailAccountsRepo.ts), [`connections/types.ts`](../../src/features/email/connections/types.ts), [`FromPicker.tsx`](../../src/features/email/composer/FromPicker.tsx), [`composerMailbox.types.ts`](../../src/features/email/composer/composerMailbox.types.ts), [`writes-email.ts`](../../src/features/mcp/tools/writes-email.ts).
+
+## Criterion coverage and evidence ceiling
+
+| MAIL-001 AC1 area | Inventory result | Verification in this change |
+| --- | --- | --- |
+| Sync | Recorded in section 1 | Source review of bootstrap, incremental/recovery cursor and actual worker wiring |
+| Drafts | Recorded in section 2 | Source review of local storage, ownership, idempotent creation and sender copy/resume |
+| Send | Recorded in section 3 | Source review of interactive/provider selection, outbox, generation and reconciliation; legacy primitive distinguished |
+| Scheduled send | Recorded in section 4 | Source review of delayed job, prepared snapshot, worker and cancellation guards |
+| Tracking | Recorded in section 5 | Source review of independent flags, token lifecycle, routes, attribution and limits |
+| Domain restrictions | Recorded in section 6 | Source review of Gmail binding, separate login rule, configuration and linking |
+| Current single-mailbox assumptions | Recorded in section 7 | Source review of ownership/schema/default selection, legacy projections, MCP and sharing boundaries |
+
+All seven requested inventory areas are covered. Missing behavior is recorded as missing behavior; documenting it does not finish its separate implementation or acceptance issue. No production code, schema or configuration is changed by this inventory.
+
+Contextual evidence already exists at `e866050e7364a500a76dd390cc226f8ca43a38f4`: [push CI](https://github.com/KhademOHAli1/warpdrive/actions/runs/41661071859) and [PR CI](https://github.com/KhademOHAli1/warpdrive/actions/runs/41661086923) each recorded 9,318 unit passes / three skips and 3,440 PostgreSQL passes. Those are application-wide counts, not Gmail-only counts. The local populated R1-2 journey passed 138 checks against two synthetic independent TLS mailboxes, with retained drafts/files/read state and an accepted SMTP acknowledgement-loss case. It exercised no live Gmail account. The qualification record keeps these exact revisions/digests separate from this source-review deliverable; the later branch merge changed only delivery commit links, with application production/tests byte-identical.
+
+No tests, database/browser services, requests to Google or other mail providers, release or deployment were started for this documentation change. The inventory and source pins require independent review and exact integrated CI before issue acceptance. The approved release scheme allocates the next available `1.5.x` in completed-task order; it does not reserve a number for MAIL-001 or make this document a release. `1.6.0` remains reserved for the entire mail programme's complete applicable gates.
