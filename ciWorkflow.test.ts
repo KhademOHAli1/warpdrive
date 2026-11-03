@@ -48,6 +48,8 @@ const workflow = z
 const CHECKOUT = "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1";
 const SETUP_BUN = "oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6";
 const PACKAGES = { crm: "package.json", site: "site/package.json", docs: "docs-site/package.json" };
+const DOCS_DEPENDENCY_CONTRACT =
+  "timeout 60s bun --no-env-file ../scripts/docs-dependency-contracts.mjs";
 
 function job(name: keyof typeof PACKAGES) {
   const found = workflow.jobs[name];
@@ -118,6 +120,7 @@ describe("public Bun CI", () => {
     expect(job("docs").defaults?.run["working-directory"]).toBe("docs-site");
     expect(commands("docs")).toEqual([
       "bun install --frozen-lockfile",
+      DOCS_DEPENDENCY_CONTRACT,
       "bun run typecheck",
       "bun run build",
     ]);
@@ -156,9 +159,16 @@ describe("public Bun CI", () => {
     for (const [key, value] of Object.entries(env)) {
       if (key !== "APP_COMMIT") expect(value).not.toContain("${{");
     }
-    for (const check of Object.values(workflow.jobs)) {
+    for (const [name, check] of Object.entries(workflow.jobs)) {
       for (const step of check.steps) {
-        if (step.run !== "bun run build") expect(step.env).toBeUndefined();
+        if (step === build) continue;
+        if (name === "docs" && step.run === DOCS_DEPENDENCY_CONTRACT) {
+          expect(step.env).toEqual({ BUN_OPTIONS: "--no-env-file" });
+        } else if (name === "site" && step.run === "bun run build") {
+          expect(step.env).toEqual({ NEXT_TELEMETRY_DISABLED: "1" });
+        } else {
+          expect(step.env).toBeUndefined();
+        }
       }
     }
   });
