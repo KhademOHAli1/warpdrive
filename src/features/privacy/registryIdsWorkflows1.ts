@@ -74,7 +74,7 @@ export const workflowIds1: string[] = [
   "sourceReview:src/features/workflows/ui/ConditionValue.tsx#b18da08db88e9e7fc3d0f72be2cdc32384ae9d68c400d3e20cca9dd49fc167ae",
   "sourceReview:src/features/workflows/ui/ConfigurationMetadataStatus.tsx#0693d54c6ce9e60b1812311be18ec0882f1d48da6bc070b86f9fe69c616cbdc1",
   "sourceReview:src/features/workflows/ui/ConfigurationName.tsx#5284cc972ffc1957ce5f71fe195c63886b803cf22c38b7482bfc0add141271a7",
-  "sourceReview:src/features/workflows/ui/ConfigurationNodeFields.tsx#f117067d9901a148ea869767fc0bd46b2eeeb73abc2f567a86a2ba1dc936fdde",
+  "sourceReview:src/features/workflows/ui/ConfigurationNodeFields.tsx#d330978fd876b37a0020682b3b1a79e3120751a616436680993ba35b693f0bdf",
   "sourceReview:src/features/workflows/ui/DelayFields.tsx#897eb59e7299ec1de22cb6e516db13d961588c36d3148037e2038555d431537c",
   "sourceReview:src/features/workflows/ui/NodeInspector.tsx#94282ceaf8232072d9178149a523f7b18806a56aa4bbd8c8f949aef44d34b3e7",
   "sourceReview:src/features/workflows/ui/WorkflowCustomBinding.tsx#66a6df3ba41747d121e16bfb16eb043094b11ca381c00d5e8896f1deeedd32e5",

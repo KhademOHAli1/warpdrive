@@ -13,8 +13,8 @@ import type { WorkflowDefinition, WorkflowNode } from "../schemas";
 import { NodeInspector } from "./NodeInspector";
 import { useGraphHistory } from "./useGraphHistory";
 
-const query = vi.hoisted(() => ({
-  metadata: { status: "complete", defs: [] } as ConfigurationMetadata,
+const query = vi.hoisted<{ metadata: ConfigurationMetadata; authoring: boolean }>(() => ({
+  metadata: { status: "complete", defs: [] },
   authoring: true,
 }));
 vi.mock("./useWorkflowConfiguration", () => ({

@@ -145,7 +145,7 @@ export function ConfigurationNodeFields(props: ConfigurationFieldsProps) {
   const t = useAppTranslations("workflows");
   const { spec, definition, node, editable, onChange, validation } = props;
   if (spec === null) return null;
-  if (node.type === "delay" && node.version === 1 && spec.supported)
+  if (node.type === "delay" && spec.supported)
     return (
       <DelayConfigurationFields
         config={node.config}

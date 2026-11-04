@@ -25,6 +25,44 @@ function describeDelay(
   return minutes.success ? format(minutes.data) : invalid;
 }
 
+function FixedInstantDelaySummary({ config }: { config: WorkflowNode["config"] }) {
+  const t = useAppTranslations("workflows");
+  const binding = bindingSchema.safeParse(config.until);
+  const raw =
+    binding.success && binding.data.kind === "value" && binding.data.literalType === "instant"
+      ? binding.data.value
+      : null;
+  const date = Object.keys(config).length === 1 ? delayUntilDate(raw) : null;
+  if (date !== null && typeof raw === "string")
+    return (
+      <p
+        dir="auto"
+        className="mt-3 line-clamp-2 break-words text-xs leading-5 text-muted-foreground"
+      >
+        <WaitTimestamp
+          value={date}
+          label={t("delayUntilSummary")}
+          precision="millisecond"
+          exactValue={raw}
+        />
+      </p>
+    );
+  const invalid =
+    binding.success && binding.data.kind === "reference"
+      ? t("delayUntilLiteralRequired")
+      : t("setupRequired");
+  return (
+    <Tip label={invalid}>
+      <p
+        dir="auto"
+        className="mt-3 line-clamp-2 break-words text-xs leading-5 text-muted-foreground"
+      >
+        {invalid}
+      </p>
+    </Tip>
+  );
+}
+
 function ConditionSummary({
   node,
   definition,
@@ -100,42 +138,8 @@ export function NodeSummary({
   const fmt = useFormatters();
   const fields: Record<string, string> = useMessages().workflows.fields;
   if (node.type === "condition") return <ConditionSummary node={node} definition={definition} />;
-  if (node.type === "delay" && Object.hasOwn(node.config, "until")) {
-    const binding = bindingSchema.safeParse(node.config.until);
-    const raw =
-      binding.success && binding.data.kind === "value" && binding.data.literalType === "instant"
-        ? binding.data.value
-        : null;
-    const date = Object.keys(node.config).length === 1 ? delayUntilDate(raw) : null;
-    if (date !== null && typeof raw === "string")
-      return (
-        <p
-          dir="auto"
-          className="mt-3 line-clamp-2 break-words text-xs leading-5 text-muted-foreground"
-        >
-          <WaitTimestamp
-            value={date}
-            label={t("delayUntilSummary")}
-            precision="millisecond"
-            exactValue={raw}
-          />
-        </p>
-      );
-    const invalid =
-      binding.success && binding.data.kind === "reference"
-        ? t("delayUntilLiteralRequired")
-        : t("setupRequired");
-    return (
-      <Tip label={invalid}>
-        <p
-          dir="auto"
-          className="mt-3 line-clamp-2 break-words text-xs leading-5 text-muted-foreground"
-        >
-          {invalid}
-        </p>
-      </Tip>
-    );
-  }
+  if (node.type === "delay" && Object.hasOwn(node.config, "until"))
+    return <FixedInstantDelaySummary config={node.config} />;
   function value(input: unknown, status = false): string {
     const parsed = bindingSchema.safeParse(input);
     if (!parsed.success) return t("setupRequired");
