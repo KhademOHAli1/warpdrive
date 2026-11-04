@@ -50,7 +50,11 @@ export function GoalsTable({ goals, assigneeNames, onChanged, onEdit }: Props): 
           setError(S.goalSaveFailed);
           return;
         }
-        onChanged();
+        try {
+          onChanged();
+        } catch {
+          // A failed refresh does not undo the acknowledged goal deletion.
+        }
       } catch {
         setError(S.goalSaveFailed);
       } finally {
