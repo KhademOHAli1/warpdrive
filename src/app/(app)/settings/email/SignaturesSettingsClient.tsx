@@ -149,6 +149,7 @@ export function SignaturesSettingsClient({ signatures }: { signatures: Sig[] }):
 
         {draft !== null && (
           <fieldset
+            aria-label={S.signatures}
             disabled={task.pending}
             inert={task.pending}
             aria-busy={task.pending}
@@ -171,6 +172,7 @@ export function SignaturesSettingsClient({ signatures }: { signatures: Sig[] }):
             )}
             <p className="text-xs text-muted-foreground">{S.maxNameHint}</p>
             <RichTextBody
+              ariaLabel={`${S.signatures}: ${S.bodyLabel}`}
               html={draft.bodyHtml}
               onChange={(bodyHtml) => changeDraft({ ...draft, bodyHtml })}
             />
